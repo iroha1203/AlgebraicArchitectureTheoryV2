@@ -48,7 +48,7 @@ fn dependent_private_example(
     flags: [Option<bool>; 2],
 ) -> ObservedEvaluation {
     let result =
-        evaluate_observed_bytes(dependent_private_fixture(body, flags), asks, &mut quiet())
+        evaluate_observed_bytes(dependent_private_fixture(body, flags), asks, &quiet())
             .unwrap();
     assert_ne!(result.status(), "error", "{:?}", result.issues);
     rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
@@ -117,10 +117,10 @@ fn dependent_private_body_phase_stop() {
         "later=evaluate(Inspect.seed)",
     ];
     let inputs = dependent_private_fixture(&body, [None, Some(false)]);
-    let mut quiet = quiet();
-    let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
+    let quiet = quiet();
+    let prepared = prepare_observed(inputs.clone(), &asks, &quiet).unwrap();
     let target = prepared.inputs().law().declarations()["Inspect.chain"].span;
-    let normal = evaluate_observed(prepared, &mut quiet).unwrap();
+    let normal = evaluate_observed(prepared, &quiet).unwrap();
     assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
@@ -138,7 +138,7 @@ fn dependent_private_body_phase_stop() {
     let frozen = Rc::new(Cell::new(None));
     let seen = Rc::new(Cell::new(false));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(move |checkpoint| {
+    let control = Control::new(move |checkpoint| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert_eq!(checkpoint, Checkpoint::FiniteIteration);
@@ -148,10 +148,10 @@ fn dependent_private_body_phase_stop() {
             None
         }
     });
-    let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
+    let prepared = prepare_observed(inputs, &asks, &control).unwrap();
     let stopped = evaluate_observed_with_validator(
         prepared,
-        &mut control,
+        &control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
             if request.id == "hole" {

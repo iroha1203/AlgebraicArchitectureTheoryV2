@@ -12,7 +12,7 @@ impl Environment<'_> {
             c: &Control,
         ) -> Result<(), ValidationFailure> {
             stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-                c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+                c.checkpoint(Checkpoint::FiniteIteration)?;
                 if let Some((&index, rest)) = path.split_first() {
                     let Scalar::Tuple(items) = value else {
                         return Err("数値補完成分の元型がTupleでない".into());

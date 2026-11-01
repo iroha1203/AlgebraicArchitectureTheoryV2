@@ -32,7 +32,7 @@ pub(super) struct Table {
     component_source: NodeRef,
     plan: FamilyPlan,
 }
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;
     Ok(())
 }
@@ -40,7 +40,7 @@ fn refs(
     env: &Environment<'_>,
     g: &Graph,
     rs: impl IntoIterator<Item = NodeRef>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     for r in rs {
         tick(c)?;
@@ -129,7 +129,7 @@ fn cell(
     architecture: NodeRef,
     evaluation: NodeRef,
     holds: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     refs(env, g, [origin, architecture, evaluation, holds], c)?;
     g.expect(origin, &NodeType::LawInstance)?;
@@ -202,7 +202,7 @@ impl Table {
         &self,
         env: &Environment<'_>,
         g: &Graph,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         tick(c)?;
         refs(env, g, [self.architecture, self.component_source], c)?;
@@ -289,7 +289,7 @@ pub(super) fn retain(
     g: &mut Graph,
     inputs: Arc<CheckedInputs>,
     architecture: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Table>, ValidationFailure> {
     tick(c)?;
     if g.active != g.context_at(architecture.0) {

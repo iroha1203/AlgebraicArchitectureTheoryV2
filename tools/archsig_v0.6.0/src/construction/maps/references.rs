@@ -71,7 +71,7 @@ impl ReferenceTypeTransport {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         if self
             != &reference_type_transport(inputs, &self.declarations, &self.source_type, control)?
@@ -83,7 +83,7 @@ impl ReferenceTypeTransport {
         tick(control)
     }
 }
-fn tick(control: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(control: &Control) -> Result<(), ConstructionFailure> {
     control
         .checkpoint(Checkpoint::ReferenceTypeTransport)
         .map_err(Into::into)
@@ -113,7 +113,7 @@ pub fn reference_type_transport(
     inputs: &CheckedInputs,
     declarations: &DeclarationCorrespondence,
     source_type: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ReferenceTypeTransport, ConstructionFailure> {
     tick(control)?;
     declarations.recheck(inputs, control)?;
@@ -264,16 +264,16 @@ mod tests {
                     .replace("@DIGEST@", digest)
                     .into_bytes(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
-        let map = correspondence(&i, "v", "m", "Read", None, &mut Control::unlimited()).unwrap();
+        let map = correspondence(&i, "v", "m", "Read", None, &Control::unlimited()).unwrap();
         let declarations =
-            declaration_correspondence(&i, map.map().unwrap(), &mut Control::unlimited()).unwrap();
+            declaration_correspondence(&i, map.map().unwrap(), &Control::unlimited()).unwrap();
         let external =
-            reference_type_transport(&i, &declarations, "V.M", &mut Control::unlimited()).unwrap();
+            reference_type_transport(&i, &declarations, "V.M", &Control::unlimited()).unwrap();
         let failed =
-            reference_type_transport(&i, &declarations, "V.S", &mut Control::unlimited()).unwrap();
+            reference_type_transport(&i, &declarations, "V.S", &Control::unlimited()).unwrap();
         let mut forgeries = Vec::new();
         let mut r = external.clone();
         r.source.clear();
@@ -307,11 +307,11 @@ mod tests {
         forgeries.push(r);
         for r in forgeries {
             assert!(matches!(
-                r.recheck(&i, &mut Control::unlimited()),
+                r.recheck(&i, &Control::unlimited()),
                 Err(ConstructionFailure::Inconsistent(_))
             ));
         }
-        external.recheck(&i, &mut Control::unlimited()).unwrap();
-        failed.recheck(&i, &mut Control::unlimited()).unwrap();
+        external.recheck(&i, &Control::unlimited()).unwrap();
+        failed.recheck(&i, &Control::unlimited()).unwrap();
     }
 }

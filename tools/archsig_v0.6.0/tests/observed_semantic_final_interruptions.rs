@@ -33,15 +33,15 @@ fn prepared_byte_inputs_report_a_late_stop_after_known_semantic_invalid() {
         "view wrong(): Z = true;",
         "view wrong(t: Option<Bool>): Z = t();",
     ] {
-        let (mut baseline, total) = probe(usize::MAX);
-        let invalid = check_inputs(sources(body), &mut baseline).unwrap_err();
+        let (baseline, total) = probe(usize::MAX);
+        let invalid = check_inputs(sources(body), &baseline).unwrap_err();
         assert_eq!(invalid.status(), InputStatus::Invalid);
         assert!(total.get() > 5);
-        let (mut control, seen) = probe(total.get());
+        let (control, seen) = probe(total.get());
         let failure = prepare_observed(
             sources(body),
             &["a=evaluate(CountCheck.amount,s=@v/s)"],
-            &mut control,
+            &control,
         )
         .unwrap_err();
         let PrepareFailure::Inputs(failure) = failure else {
@@ -61,14 +61,14 @@ fn nested_type_erasure_and_invalid_call_diagnostics_remain_interruptible_from_by
         "view nested(t: Option<Option<Bool>>): Option<Option<Bool>> = t;",
         "view wrong(t: Option<Option<Bool>>): Z = t();",
     ] {
-        let (mut baseline, total) = probe(usize::MAX);
-        let _ = check_inputs(sources(body), &mut baseline);
+        let (baseline, total) = probe(usize::MAX);
+        let _ = check_inputs(sources(body), &baseline);
         assert!(total.get() > 20);
         // Small representative interior and terminal points; private units cover
         // every nested component of erasure and diagnostic rendering directly.
         for at in [total.get() / 2, total.get() - 1, total.get()] {
-            let (mut control, seen) = probe(at);
-            let failure = check_inputs(sources(body), &mut control).unwrap_err();
+            let (control, seen) = probe(at);
+            let failure = check_inputs(sources(body), &control).unwrap_err();
             assert_eq!(seen.get(), at);
             assert_eq!(failure.status(), InputStatus::Interrupted);
             assert!(matches!(control.stop_reason(), Some(Signal::Term)));

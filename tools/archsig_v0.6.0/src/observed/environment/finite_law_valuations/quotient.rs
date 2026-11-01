@@ -9,11 +9,11 @@ fn invalid(f: ConstructionFailure) -> ValidationFailure {
         f => format!("有限整数値関数の構成: {f:?}").into(),
     }
 }
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
-    c.checkpoint(Checkpoint::FiniteLawQuotient)?;
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
+    c.checkpoint(Checkpoint::Work)?;
     Ok(())
 }
-fn paths(ty: &Type, c: &mut Control) -> Result<Vec<Vec<usize>>, ValidationFailure> {
+fn paths(ty: &Type, c: &Control) -> Result<Vec<Vec<usize>>, ValidationFailure> {
     let mut pending = vec![(vec![], ty)];
     let mut result = vec![];
     while let Some((path, ty)) = pending.pop() {
@@ -73,10 +73,7 @@ pub(in crate::observed) struct FiniteLawQuotient<'a> {
     owner: Arc<()>,
 }
 impl FiniteLawFamilyValuations {
-    pub fn integer_ring(
-        &self,
-        c: &mut Control,
-    ) -> Result<FiniteIntegerRing<'_>, ValidationFailure> {
+    pub fn integer_ring(&self, c: &Control) -> Result<FiniteIntegerRing<'_>, ValidationFailure> {
         c.checkpoint(Checkpoint::FiniteLawFunction)?;
         if !self.domain_complete {
             return Err("未完成Dに整数値関数環を作れない".into());
@@ -92,7 +89,7 @@ impl FiniteLawFamilyValuations {
         &self,
         column: usize,
         component: Option<&[usize]>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ValidationFailure> {
         let ring = self.integer_ring(c)?;
         let q = self.columns.get(column).ok_or("有限Lawの列が範囲外")?;
@@ -129,7 +126,7 @@ impl FiniteLawFamilyValuations {
     }
     pub fn required_generators(
         &self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Vec<FiniteLawGenerator>, ValidationFailure> {
         self.integer_ring(c)?;
         let mut result = vec![];
@@ -157,7 +154,7 @@ impl FiniteLawFamilyValuations {
     }
     pub fn required_quotient(
         &self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteLawQuotient<'_>, ValidationFailure> {
         tick(c)?;
         if !self.is_complete() {
@@ -188,7 +185,7 @@ impl FiniteLawQuotient<'_> {
     pub fn points(&self) -> &[usize] {
         &self.points
     }
-    fn check(&self, c: &mut Control) -> Result<(), ValidationFailure> {
+    fn check(&self, c: &Control) -> Result<(), ValidationFailure> {
         tick(c)?;
         if !self.base.is_complete() || self.base.required_zero.as_ref() != Some(&self.points) {
             return Err("required商の座標が元Law族と違う".into());
@@ -203,10 +200,7 @@ impl FiniteLawQuotient<'_> {
         }
         Ok(())
     }
-    pub fn integer_ring(
-        &self,
-        c: &mut Control,
-    ) -> Result<FiniteIntegerRing<'_>, ValidationFailure> {
+    pub fn integer_ring(&self, c: &Control) -> Result<FiniteIntegerRing<'_>, ValidationFailure> {
         self.check(c)?;
         Ok(FiniteIntegerRing::new(
             &self.owner,
@@ -217,7 +211,7 @@ impl FiniteLawQuotient<'_> {
     pub fn project(
         &self,
         f: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ValidationFailure> {
         self.check(c)?;
         self.base.integer_ring(c)?.member(f, c).map_err(invalid)?;
@@ -228,15 +222,11 @@ impl FiniteLawQuotient<'_> {
         }
         self.integer_ring(c)?.computed(values, c).map_err(invalid)
     }
-    pub fn recheck(
-        &self,
-        inputs: &CheckedInputs,
-        c: &mut Control,
-    ) -> Result<(), ValidationFailure> {
+    pub fn recheck(&self, inputs: &CheckedInputs, c: &Control) -> Result<(), ValidationFailure> {
         self.base.recheck(inputs, c).map_err(|f| f.cause)?;
         self.recheck_projection(c)
     }
-    pub(super) fn recheck_projection(&self, c: &mut Control) -> Result<(), ValidationFailure> {
+    pub(super) fn recheck_projection(&self, c: &Control) -> Result<(), ValidationFailure> {
         self.check(c)?;
         let ring = self.integer_ring(c)?;
         for g in self.base.required_generators(c)? {
@@ -250,7 +240,7 @@ impl FiniteLawQuotient<'_> {
     pub fn ideal_membership(
         &self,
         f: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIdealMembership, ValidationFailure> {
         self.check(c)?;
         let image = self.project(f, c)?;
@@ -293,7 +283,7 @@ impl FiniteLawQuotient<'_> {
         &self,
         f: &FiniteIntegerFunction,
         w: &FiniteIdealWitness,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         self.check(c)?;
         let ring = self.base.integer_ring(c)?;
@@ -326,7 +316,7 @@ impl FiniteLawQuotient<'_> {
         inputs: &CheckedInputs,
         f: &FiniteIntegerFunction,
         membership: &FiniteIdealMembership,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         self.recheck(inputs, c)?;
         self.recheck_membership_value(f, membership, c)
@@ -335,7 +325,7 @@ impl FiniteLawQuotient<'_> {
         &self,
         f: &FiniteIntegerFunction,
         membership: &FiniteIdealMembership,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         match membership {
             FiniteIdealMembership::Member(w) => self.verify_witness(f, w, c),

@@ -111,7 +111,7 @@ fn inputs(script: &str, mode: &str) -> CheckedInputs {
             law.into_bytes(),
             map.canonical().into_bytes(),
         ),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_or_else(|failure| panic!("{:?}", failure.issues()))
 }
@@ -185,7 +185,7 @@ fn check_proof(r: &Congruence, a: usize, b: usize, proof: &[ProofStep]) {
 #[test]
 fn identical_actual_actions_without_relations_keep_four_distinct_names() {
     let i = inputs(SEED, "normal");
-    let r = congruence(&i, "Walk", &mut quiet()).unwrap();
+    let r = congruence(&i, "Walk", &quiet()).unwrap();
     assert!(r.complete());
     assert_eq!(r.words.len(), 5);
     assert_eq!(r.edges.len(), 0);
@@ -206,44 +206,39 @@ fn identical_actual_actions_without_relations_keep_four_distinct_names() {
     for a in ["a", "b", "c", "d"] {
         for b in ["a", "b", "c", "d"] {
             assert_eq!(
-                r.equivalent(at(&r, "p", &[a]), at(&r, "p", &[b]), &mut quiet())
+                r.equivalent(at(&r, "p", &[a]), at(&r, "p", &[b]), &quiet())
                     .unwrap(),
                 Some(a == b)
             );
         }
     }
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn actual_adjacent_relations_generate_symmetric_and_transitive_derivations() {
     let i = inputs(&format!("{SEED}{ADJACENT}"), "normal");
-    let r = congruence(&i, "Walk", &mut quiet()).unwrap();
+    let r = congruence(&i, "Walk", &quiet()).unwrap();
     assert!(r.complete());
     assert_eq!(r.words.len(), 5);
     assert_eq!(r.edges.len(), 3);
     let a = at(&r, "p", &["a"]);
     let d = at(&r, "p", &["d"]);
     for (from, to) in [(a, d), (d, a)] {
-        let proof = r.derivation(from, to, &mut quiet()).unwrap().unwrap();
+        let proof = r.derivation(from, to, &quiet()).unwrap().unwrap();
         assert_eq!(proof.len(), 3);
         check_proof(&r, from, to, &proof);
     }
     let z = at(&r, "q", &["z"]);
-    assert_eq!(r.equivalent(a, z, &mut quiet()).unwrap(), Some(false));
-    assert!(r.derivation(a, z, &mut quiet()).unwrap().is_none());
-    assert!(
-        r.derivation(a, a, &mut quiet())
-            .unwrap()
-            .unwrap()
-            .is_empty()
-    );
-    r.recheck(&i, &mut quiet()).unwrap();
+    assert_eq!(r.equivalent(a, z, &quiet()).unwrap(), Some(false));
+    assert!(r.derivation(a, z, &quiet()).unwrap().is_none());
+    assert!(r.derivation(a, a, &quiet()).unwrap().unwrap().is_empty());
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn context_rewriting_saturates_all_sixteen_pairs_and_keeps_empty_words_separate() {
     let i = family();
     let bytes = i.sources().clone();
-    let r = congruence(&i, "Walk", &mut quiet()).unwrap();
+    let r = congruence(&i, "Walk", &quiet()).unwrap();
     assert!(r.complete());
     assert_eq!(r.words.len(), 24);
     assert_eq!(r.edges.len(), 18);
@@ -252,56 +247,55 @@ fn context_rewriting_saturates_all_sixteen_pairs_and_keeps_empty_words_separate(
     for a in ["a", "b", "c", "d"] {
         for b in ["a", "b", "c", "d"] {
             let to = at(&r, "p", &[a, b]);
-            assert_eq!(r.equivalent(aa, to, &mut quiet()).unwrap(), Some(true));
+            assert_eq!(r.equivalent(aa, to, &quiet()).unwrap(), Some(true));
             check_proof(
                 &r,
                 aa,
                 to,
-                &r.derivation(aa, to, &mut quiet()).unwrap().unwrap(),
+                &r.derivation(aa, to, &quiet()).unwrap().unwrap(),
             );
         }
     }
     let dd = at(&r, "p", &["d", "d"]);
-    let proof = r.derivation(aa, dd, &mut quiet()).unwrap().unwrap();
+    let proof = r.derivation(aa, dd, &quiet()).unwrap().unwrap();
     assert!(proof.len() >= 6);
     check_proof(&r, aa, dd, &proof);
     let zz = at(&r, "q", &["z", "z"]);
-    assert_eq!(r.equivalent(aa, zz, &mut quiet()).unwrap(), Some(false));
+    assert_eq!(r.equivalent(aa, zz, &quiet()).unwrap(), Some(false));
     let empty = at(&r, "p", &[]);
     assert_eq!(
-        r.equivalent(empty, at(&r, "q", &[]), &mut quiet()).unwrap(),
+        r.equivalent(empty, at(&r, "q", &[]), &quiet()).unwrap(),
         Some(false)
     );
     assert_eq!(
-        r.equivalent(empty, at(&r, "p", &["a"]), &mut quiet())
-            .unwrap(),
+        r.equivalent(empty, at(&r, "p", &["a"]), &quiet()).unwrap(),
         Some(false)
     );
     assert!(r.words.iter().all(|w| w.generators.len() <= 2));
     assert_eq!(i.sources(), &bytes);
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn reading_scope_keeps_same_named_relations_independent() {
     let i = inputs(&format!("{SEED}{ADJACENT}"), "normal");
-    let a = congruence(&i, "Walk", &mut quiet()).unwrap();
-    let b = congruence(&i, "Other", &mut quiet()).unwrap();
+    let a = congruence(&i, "Walk", &quiet()).unwrap();
+    let b = congruence(&i, "Other", &quiet()).unwrap();
     assert_eq!(a.edges.len(), 3);
     assert!(b.edges.is_empty());
     assert!(b.complete());
     assert_eq!(
-        b.equivalent(at(&b, "p", &["a"]), at(&b, "p", &["b"]), &mut quiet())
+        b.equivalent(at(&b, "p", &["a"]), at(&b, "p", &["b"]), &quiet())
             .unwrap(),
         Some(false)
     );
     assert_eq!(b.scope.readings, BTreeSet::from(["Other".into()]));
-    b.recheck(&i, &mut quiet()).unwrap();
-    assert!(congruence(&i, "Absent", &mut quiet()).is_err());
+    b.recheck(&i, &quiet()).unwrap();
+    assert!(congruence(&i, "Absent", &quiet()).is_err());
 }
 #[test]
 fn pending_relations_keep_original_missing_and_do_not_certify_negative_membership() {
     let i = inputs(&format!("{SEED}{ADJACENT}"), "missing");
-    let r = congruence(&i, "Walk", &mut quiet()).unwrap();
+    let r = congruence(&i, "Walk", &quiet()).unwrap();
     assert!(!r.complete());
     assert!(r.edges.is_empty());
     assert!(r.relations.as_ref().unwrap().instances.iter().any(|row| {
@@ -312,11 +306,11 @@ fn pending_relations_keep_original_missing_and_do_not_certify_negative_membershi
                 .any(|f| f.subject == "b" && f.field.as_deref() == Some("Loops.Loop.label"))
     }));
     assert_eq!(
-        r.equivalent(at(&r, "p", &["a"]), at(&r, "p", &["b"]), &mut quiet())
+        r.equivalent(at(&r, "p", &["a"]), at(&r, "p", &["b"]), &quiet())
             .unwrap(),
         None
     );
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn action_refutation_is_retained_without_using_the_invalid_relation() {
@@ -324,7 +318,7 @@ fn action_refutation_is_retained_without_using_the_invalid_relation() {
         &format!("{SEED}relation invalid(n:Node,m:Node):identity(n)=identity(m);"),
         "normal",
     );
-    let r = congruence(&i, "Walk", &mut quiet()).unwrap();
+    let r = congruence(&i, "Walk", &quiet()).unwrap();
     assert!(!r.complete());
     assert!(
         r.relations
@@ -335,7 +329,7 @@ fn action_refutation_is_retained_without_using_the_invalid_relation() {
             .any(|row| row.state == RelationState::Refuted && row.difference.is_some())
     );
     assert!(r.edges.is_empty());
-    assert_eq!(r.equivalent(0, 1, &mut quiet()).unwrap(), None);
+    assert_eq!(r.equivalent(0, 1, &quiet()).unwrap(), None);
 }
 #[test]
 fn length_changing_relations_are_retained_as_unfinished_algorithm_work() {
@@ -343,7 +337,7 @@ fn length_changing_relations_are_retained_as_unfinished_algorithm_work() {
         &format!("{SEED}relation unit_rule(e:Loop):path(e)=identity(source(path(e)));"),
         "normal",
     );
-    let r = congruence(&i, "Walk", &mut quiet()).unwrap();
+    let r = congruence(&i, "Walk", &quiet()).unwrap();
     assert!(!r.complete());
     assert_eq!(r.unbalanced.len(), 5);
     assert!(r.edges.is_empty());
@@ -353,11 +347,11 @@ fn length_changing_relations_are_retained_as_unfinished_algorithm_work() {
         assert_eq!(row.state, RelationState::Established);
     }
     assert_eq!(
-        r.equivalent(at(&r, "p", &[]), at(&r, "p", &["a"]), &mut quiet())
+        r.equivalent(at(&r, "p", &[]), at(&r, "p", &["a"]), &quiet())
             .unwrap(),
         None
     );
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn nonfinite_parameters_do_not_become_empty_completed_relations() {
@@ -365,15 +359,15 @@ fn nonfinite_parameters_do_not_become_empty_completed_relations() {
         &format!("{SEED}relation all(z:Z,n:Node):identity(n)=identity(n);"),
         "normal",
     );
-    let r = congruence(&i, "Walk", &mut quiet()).unwrap();
+    let r = congruence(&i, "Walk", &quiet()).unwrap();
     assert!(!r.complete());
     assert_eq!(r.relations.as_ref().unwrap().outside_finite[0].ty, Type::Z);
-    assert_eq!(r.equivalent(0, 1, &mut quiet()).unwrap(), None);
+    assert_eq!(r.equivalent(0, 1, &quiet()).unwrap(), None);
     let empty = inputs(
         "relation empty(z:Z,u:Unused):identity(u)=identity(u);",
         "normal",
     );
-    let r = congruence(&empty, "Walk", &mut quiet()).unwrap();
+    let r = congruence(&empty, "Walk", &quiet()).unwrap();
     assert!(r.complete());
     assert!(r.words.is_empty());
     assert!(r.seeds.is_empty());
@@ -384,7 +378,7 @@ fn inactive_relations_do_not_contribute_seeds_or_edges() {
         "relation idle(e:Loop,f:Loop) when false:path(e)=path(f);",
         "normal",
     );
-    let r = congruence(&i, "Walk", &mut quiet()).unwrap();
+    let r = congruence(&i, "Walk", &quiet()).unwrap();
     assert!(r.complete());
     assert!(r.words.is_empty());
     assert!(r.edges.is_empty());
@@ -395,24 +389,24 @@ fn interrupt_stops_keep_only_unfinished_components_and_freeze_the_probe() {
     let i = family();
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(move |cp| {
+    let c = Control::new(move |cp| {
         if cp == Checkpoint::FiniteIteration {
             seen.set(seen.get() + 1);
         }
         None
     });
-    let completed = congruence(&i, "Walk", &mut c).unwrap();
+    let completed = congruence(&i, "Walk", &c).unwrap();
     let total = count.get();
     assert!(total > 20);
     let phase = Rc::new(Cell::new(0));
     let observed = phase.clone();
-    let mut before = Control::new(move |cp| {
+    let before = Control::new(move |cp| {
         if cp == Checkpoint::FiniteIteration {
             observed.set(observed.get() + 1);
         }
         None
     });
-    relation_instances(&i, "Walk", &mut before).unwrap();
+    relation_instances(&i, "Walk", &before).unwrap();
     let middle = phase.get() + (total - phase.get()) / 2;
     assert!(middle > phase.get());
     for at in [middle, total] {
@@ -420,7 +414,7 @@ fn interrupt_stops_keep_only_unfinished_components_and_freeze_the_probe() {
         let samples = Rc::new(Cell::new(0));
         let seen = count.clone();
         let calls = samples.clone();
-        let mut c = Control::new(move |cp| {
+        let c = Control::new(move |cp| {
             calls.set(calls.get() + 1);
             if cp == Checkpoint::FiniteIteration {
                 seen.set(seen.get() + 1);
@@ -428,7 +422,7 @@ fn interrupt_stops_keep_only_unfinished_components_and_freeze_the_probe() {
             let stop = seen.get() >= at;
             stop.then_some(Signal::Int)
         });
-        let failure = match congruence(&i, "Walk", &mut c) {
+        let failure = match congruence(&i, "Walk", &c) {
             Err(failure) => failure,
             Ok(_) => panic!("停止しなかった"),
         };
@@ -436,16 +430,13 @@ fn interrupt_stops_keep_only_unfinished_components_and_freeze_the_probe() {
         if at == middle {
             assert!(!failure.partial.words.is_empty());
         }
-        assert_eq!(
-            failure.partial.equivalent(0, 0, &mut quiet()).unwrap(),
-            None
-        );
+        assert_eq!(failure.partial.equivalent(0, 0, &quiet()).unwrap(), None);
         let expected = Signal::Int;
         assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
         let frozen = samples.get();
         assert!(c.checkpoint(Checkpoint::FiniteIteration).is_err());
         assert_eq!(samples.get(), frozen);
-        completed.recheck(&i, &mut quiet()).unwrap();
+        completed.recheck(&i, &quiet()).unwrap();
     }
 }
 
@@ -455,7 +446,7 @@ fn noncomposable_original_paths_remain_condition_failed() {
         "relation bad(e:Loop,f:Loop):then(path(e),path(f))=then(path(e),path(f));",
         "normal",
     );
-    let r = congruence(&i, "Walk", &mut quiet()).unwrap();
+    let r = congruence(&i, "Walk", &quiet()).unwrap();
     assert!(!r.complete());
     let failed: Vec<_> = r
         .relations
@@ -472,8 +463,8 @@ fn noncomposable_original_paths_remain_condition_failed() {
             .all(|row| row.difference.is_none() && row.missing.is_empty())
     );
     assert!(r.edges.is_empty());
-    assert_eq!(r.equivalent(0, 0, &mut quiet()).unwrap(), None);
-    r.recheck(&i, &mut quiet()).unwrap();
+    assert_eq!(r.equivalent(0, 0, &quiet()).unwrap(), None);
+    r.recheck(&i, &quiet()).unwrap();
 }
 
 fn query_path(r: &Congruence, generator: &str) -> QueryPath {
@@ -507,13 +498,13 @@ fn twice(query: &QueryPath) -> QueryPath {
 #[test]
 fn current_query_paths_add_unrepresented_words_and_keep_their_provenance() {
     let i = inputs(&format!("{SEED}{ADJACENT}"), "normal");
-    let base = congruence(&i, "Walk", &mut quiet()).unwrap();
+    let base = congruence(&i, "Walk", &quiet()).unwrap();
     assert_eq!(base.words.len(), 5);
     let queries = [
         twice(&query_path(&base, "a")),
         twice(&query_path(&base, "d")),
     ];
-    let r = with_queries(&i, "Walk", &queries, &mut quiet()).unwrap();
+    let r = with_queries(&i, "Walk", &queries, &quiet()).unwrap();
     assert!(r.complete());
     assert_eq!(r.words.len(), 21);
     assert_eq!(r.classes.iter().copied().collect::<BTreeSet<_>>().len(), 3);
@@ -536,11 +527,11 @@ fn current_query_paths_add_unrepresented_words_and_keep_their_provenance() {
             .collect::<Vec<_>>(),
         ["d", "d"]
     );
-    assert_eq!(r.equivalent(*a, *b, &mut quiet()).unwrap(), Some(true));
-    let proof = r.derivation(*a, *b, &mut quiet()).unwrap().unwrap();
+    assert_eq!(r.equivalent(*a, *b, &quiet()).unwrap(), Some(true));
+    let proof = r.derivation(*a, *b, &quiet()).unwrap().unwrap();
     check_proof(&r, *a, *b, &proof);
-    r.recheck_queries(&i, &queries, &mut quiet()).unwrap();
-    assert!(r.recheck(&i, &mut quiet()).is_err());
+    r.recheck_queries(&i, &queries, &quiet()).unwrap();
+    assert!(r.recheck(&i, &quiet()).is_err());
     for kind in 0..5 {
         let mut fresh = queries.clone();
         match kind {
@@ -551,25 +542,22 @@ fn current_query_paths_add_unrepresented_words_and_keep_their_provenance() {
             _ => fresh.swap(0, 1),
         }
         assert!(fresh != queries);
-        assert!(
-            r.recheck_queries(&i, &fresh, &mut quiet()).is_err(),
-            "{kind}"
-        );
+        assert!(r.recheck_queries(&i, &fresh, &quiet()).is_err(), "{kind}");
     }
 }
 #[test]
 fn a_query_empty_word_is_not_identified_by_its_identity_action() {
     let i = inputs(&format!("{SEED}{ADJACENT}"), "normal");
-    let base = congruence(&i, "Walk", &mut quiet()).unwrap();
+    let base = congruence(&i, "Walk", &quiet()).unwrap();
     let a = query_path(&base, "a");
     let mut identity = a.clone();
     identity.path.step = None;
     assert!(a.path.same_action(&identity.path, &quiet()).unwrap());
     let queries = [a, identity];
-    let r = with_queries(&i, "Walk", &queries, &mut quiet()).unwrap();
+    let r = with_queries(&i, "Walk", &queries, &quiet()).unwrap();
     let [a, b] = r.query_ids.as_slice() else {
         panic!()
     };
-    assert_eq!(r.equivalent(*a, *b, &mut quiet()).unwrap(), Some(false));
-    r.recheck_queries(&i, &queries, &mut quiet()).unwrap();
+    assert_eq!(r.equivalent(*a, *b, &quiet()).unwrap(), Some(false));
+    r.recheck_queries(&i, &queries, &quiet()).unwrap();
 }

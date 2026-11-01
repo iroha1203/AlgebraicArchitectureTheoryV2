@@ -8,13 +8,8 @@ use crate::control::quiet;
 fn prepared(missing: bool, body: &str, root: &str) -> PreparedObserved {
     let inputs = fixture::inputs(missing, body);
     let ask = format!("b=build(Selected,on=@v/{root})");
-    let requests = resolve_native_for_test(
-        inputs.law(),
-        inputs.archmap(),
-        &[ask.as_str()],
-        &mut quiet(),
-    )
-    .unwrap();
+    let requests =
+        resolve_native_for_test(inputs.law(), inputs.archmap(), &[ask.as_str()], &quiet()).unwrap();
     PreparedObserved {
         inputs,
         requests,
@@ -22,8 +17,8 @@ fn prepared(missing: bool, body: &str, root: &str) -> PreparedObserved {
     }
 }
 fn built(p: &PreparedObserved) -> (Graph, NodeRef) {
-    let mut c = quiet();
-    let env = Environment::with_prepared(p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(p, &c).unwrap();
     let mut g = Graph::new(&c);
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -31,7 +26,7 @@ fn built(p: &PreparedObserved) -> (Graph, NodeRef) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert!(a.complete, "{:?}", a.reasons);
@@ -42,8 +37,8 @@ fn replay(
     original: &Graph,
     nodes: &[Node],
 ) -> Result<Graph, ValidationFailure> {
-    let mut c = quiet();
-    let env = Environment::with_prepared(p, &mut c)?;
+    let c = quiet();
+    let env = Environment::with_prepared(p, &c)?;
     let mut g = Graph::new(&c);
     g.requests = original.requests.clone();
     g.checked_answers = original.checked_answers.clone();
@@ -85,7 +80,7 @@ const BODY: &str = "law required zero(c:Part):c.quantity=0;law optional one(c:Pa
 fn observed_law_body_and_conditional_values_keep_every_object_and_original_row() {
     let p = prepared(false, BODY, "root");
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet())
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(ds.len(), 3);
@@ -128,7 +123,7 @@ fn false_guard_keeps_conditional_true_without_creating_body_or_missing_epsilon()
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet())
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     for (object, d) in ds.iter().enumerate() {
@@ -174,7 +169,7 @@ fn missing_guard_and_body_are_unknown_and_never_false_or_zero() {
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet())
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     let known = row(&g, &ds[0], "Selected.guarded", "p");
@@ -201,7 +196,7 @@ fn missing_self_equality_separates_finite_constant_from_unobserved_body() {
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet())
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     let r = row(&g, &ds[0], "Selected.reflexive", "q");
@@ -247,7 +242,7 @@ fn parameter_rows_keep_distinct_actual_bool_values_and_do_not_use_a_display_witn
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet())
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     for (object, d) in ds.iter().enumerate() {
@@ -286,7 +281,7 @@ fn parameter_rows_keep_distinct_actual_bool_values_and_do_not_use_a_display_witn
 fn source_and_graph_reject_bool_value_role_origin_metadata_and_output_tampering() {
     let p = prepared(false, BODY, "root");
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet())
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     let original = data(&g, ds[0].ring).source.clone();
@@ -328,7 +323,7 @@ fn source_and_graph_reject_bool_value_role_origin_metadata_and_output_tampering(
         }
         assert!(
             changed
-                .recheck(p.inputs(), &original.architecture, 0, &mut quiet())
+                .recheck(p.inputs(), &original.architecture, 0, &quiet())
                 .is_err(),
             "source {kind}"
         );
@@ -360,11 +355,11 @@ fn raw_reading_rejects_other_inputs_and_preserves_pending_and_failed_owned_condi
             p.inputs().law(),
             p.inputs().archmap(),
             &["b=build(Selected,on=@v/root)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
-        let mut c = quiet();
-        let env = Environment::with_prepared(&p, &mut c).unwrap();
+        let c = quiet();
+        let env = Environment::with_prepared(&p, &c).unwrap();
         let mut g = Graph::new(&c);
         g.requests = p.requests().requests().to_vec();
         let a = crate::observed::architecture_result::build(
@@ -372,13 +367,12 @@ fn raw_reading_rejects_other_inputs_and_preserves_pending_and_failed_owned_condi
             &env,
             &mut g,
             &p.requests().requests()[0],
-            &mut c,
+            &c,
         )
         .unwrap();
         let origin = &a.witness;
         assert_eq!(a.complete, choice.is_some());
-        let full =
-            finite_automatic_law_family(p.inputs(), origin.readings(), &mut quiet()).unwrap();
+        let full = finite_automatic_law_family(p.inputs(), origin.readings(), &quiet()).unwrap();
         let f = full.family().unwrap();
         let mut found = false;
         for (column, _) in f.columns().iter().enumerate() {
@@ -391,13 +385,13 @@ fn raw_reading_rejects_other_inputs_and_preserves_pending_and_failed_owned_condi
             {
                 continue;
             }
-            let reading = f.observed_law(p.inputs(), column, &mut quiet()).unwrap();
+            let reading = f.observed_law(p.inputs(), column, &quiet()).unwrap();
             found = true;
             assert_eq!(reading.condition_pending, pending);
             assert_eq!(reading.condition_failed, failed);
             assert_eq!(reading.holds, (!pending && !failed).then_some(true));
             assert!(
-                f.observed_law(prepared(true, BODY, "root").inputs(), column, &mut quiet())
+                f.observed_law(prepared(true, BODY, "root").inputs(), column, &quiet())
                     .is_err()
             );
         }
@@ -426,7 +420,7 @@ fn observed_law_booleans_stop_with_exact_finished_prefixes_on_interrupt() {
     let (initial, a) = built(&p);
     let before = initial.nodes.len();
     let mut complete = prefix(&initial, &quiet());
-    let ds = retain_family(&mut complete, p.shared_inputs(), a, &mut quiet())
+    let ds = retain_family(&mut complete, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     for at in [
@@ -435,7 +429,7 @@ fn observed_law_booleans_stop_with_exact_finished_prefixes_on_interrupt() {
     ] {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::NativeResultNode {
                 count.set(count.get() + 1);
             }
@@ -444,7 +438,7 @@ fn observed_law_booleans_stop_with_exact_finished_prefixes_on_interrupt() {
         });
         let mut g = prefix(&initial, &c);
         assert!(matches!(
-            retain_family(&mut g, p.shared_inputs(), a, &mut c),
+            retain_family(&mut g, p.shared_inputs(), a, &c),
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.nodes.len(), before + at.div_ceil(2));

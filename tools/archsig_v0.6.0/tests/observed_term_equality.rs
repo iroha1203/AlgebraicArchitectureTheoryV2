@@ -46,7 +46,7 @@ fn finite_term_equality_compares_the_entire_bool_domain_from_original_bodies() {
             "p=check(Terms.same,s=@v/s)",
             "c=check(Terms.different,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -69,7 +69,7 @@ fn finite_term_domains_keep_zero_unit_fp_data_tuple_and_parameter_products() {
             "t=evaluate(Terms.tuple)",
             "m=evaluate(Terms.multi)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -88,7 +88,7 @@ fn finite_term_equality_recurses_through_containers_membership_and_functions() {
             "a=evaluate(Terms.arg,s=@v/s)",
             "h=evaluate(Terms.higher)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -107,7 +107,7 @@ fn finite_term_values_use_extensional_equality_in_unknown_branches_and_completio
             "u=evaluate(Terms.unstable,s=@v/s)",
             "x=evaluate(Terms.unresolved,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial");
@@ -262,14 +262,14 @@ fn finite_term_missing_function_keeps_its_original_slot_and_inputs() {
         good.law().bytes().to_vec(),
         missing.into_bytes(),
     );
-    let before = archsig::input::check_inputs(src.clone(), &mut quiet()).unwrap();
+    let before = archsig::input::check_inputs(src.clone(), &quiet()).unwrap();
     let field = before.archmap().snapshots()[0].subjects[0]
         .fields
         .iter()
         .find(|f| f.name == "Terms.Sample.g")
         .unwrap();
     assert!(matches!(field.slot, archsig::archmap::Slot::Missing));
-    let r = evaluate_observed_bytes(src, &["e=evaluate(Terms.eq,s=@v/s)"], &mut quiet()).unwrap();
+    let r = evaluate_observed_bytes(src, &["e=evaluate(Terms.eq,s=@v/s)"], &quiet()).unwrap();
     assert_eq!(r.status(), "partial");
     let w = r.wire();
     let a = answer(&w, "e");

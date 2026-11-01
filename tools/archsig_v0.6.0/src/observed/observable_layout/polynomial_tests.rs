@@ -10,7 +10,7 @@ use crate::control::quiet;
 fn prepared(inputs: Arc<CheckedInputs>, root: &str) -> PreparedObserved {
     let ask = format!("b=build(Selected,on=@v/{root})");
     let requests =
-        resolve_native_for_test(inputs.law(), inputs.archmap(), &[&ask], &mut quiet()).unwrap();
+        resolve_native_for_test(inputs.law(), inputs.archmap(), &[&ask], &quiet()).unwrap();
     PreparedObserved {
         inputs,
         requests,
@@ -18,7 +18,7 @@ fn prepared(inputs: Arc<CheckedInputs>, root: &str) -> PreparedObserved {
     }
 }
 fn start(p: &PreparedObserved) -> (Graph, NodeRef) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = super::super::architecture_result::build(
@@ -26,13 +26,13 @@ fn start(p: &PreparedObserved) -> (Graph, NodeRef) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     (g, a.reference)
 }
 fn replay(p: &PreparedObserved, g: &Graph) -> Result<(), ValidationFailure> {
-    let env = Environment::with_prepared(p, &mut quiet())?;
+    let env = Environment::with_prepared(p, &quiet())?;
     let mut prefix = Graph::new(&quiet());
     prefix.requests = g.requests.clone();
     prefix.frames = g.frames.clone();
@@ -71,14 +71,14 @@ fn from_inputs(
     root: &str,
 ) -> (PreparedObserved, Graph, Arc<Table>, Layout) {
     let p = prepared(inputs, root);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, a) = start(&p);
     let table = Arc::new(
-        law_table::retain(&env, &mut g, p.shared_inputs(), a, &mut quiet())
+        law_table::retain(&env, &mut g, p.shared_inputs(), a, &quiet())
             .unwrap()
             .unwrap(),
     );
-    let layout = retain(&env, &g, table.clone(), &mut quiet()).unwrap();
+    let layout = retain(&env, &g, table.clone(), &quiet()).unwrap();
     (p, g, table, layout)
 }
 fn polynomial(g: &Graph, r: NodeRef) -> Vec<(crate::canonical::Json, Vec<crate::canonical::Json>)> {
@@ -147,7 +147,7 @@ fn mixed_z_q_fp_components_share_factors_and_place_only_at_the_root_atom() {
                 law.into_bytes(),
                 map.into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
@@ -156,8 +156,8 @@ fn mixed_z_q_fp_components_share_factors_and_place_only_at_the_root_atom() {
     assert_eq!(l.data.indices, t.indices);
     assert_eq!(l.data.indices.len(), 4);
     assert_eq!(l.data.objects.len(), 3);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let checked = l.checked(&env, &g, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let checked = l.checked(&env, &g, &quiet()).unwrap();
     assert!(checked.is_complete()); // 対象外の生差は未評価のまま、記号表示と条件付き零を保持。
     assert_eq!(
         l.data.anchor,
@@ -190,7 +190,7 @@ fn mixed_z_q_fp_components_share_factors_and_place_only_at_the_root_atom() {
             for factor in 0..3 {
                 for atom in checked.atoms {
                     let v = checked
-                        .at(object, i, Reading::Residual, factor, atom, &mut quiet())
+                        .at(object, i, Reading::Residual, factor, atom, &quiet())
                         .unwrap();
                     if atom == &l.data.anchor && factor == expected {
                         let Placed::Value { ring, reference } = v else {
@@ -222,8 +222,8 @@ fn a_complete_refuted_equation_is_not_confused_with_an_unfinished_layout() {
         "law required contradiction(r:Root):0=1;",
         "r2",
     );
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let checked = l.checked(&env, &g, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let checked = l.checked(&env, &g, &quiet()).unwrap();
     assert!(checked.is_complete());
     assert_eq!(l.data.factors.len(), 1);
     assert_eq!(l.data.objects.len(), 1);
@@ -239,7 +239,7 @@ fn a_complete_refuted_equation_is_not_confused_with_an_unfinished_layout() {
     );
     for reading in [Reading::Nu, Reading::Epsilon, Reading::Residual] {
         let Placed::Value { ring, reference } = checked
-            .at(0, 0, reading, 0, &l.data.anchor, &mut quiet())
+            .at(0, 0, reading, 0, &l.data.anchor, &quiet())
             .unwrap()
         else {
             panic!()
@@ -260,8 +260,8 @@ fn non_applicable_rows_keep_raw_epsilon_absent_and_real_residual_zero() {
         "law required zero(c:Part):c.quantity=0;",
         "root",
     );
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let checked = l.checked(&env, &g, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let checked = l.checked(&env, &g, &quiet()).unwrap();
     let mut outside = 0;
     for (object, row) in l.data.objects.iter().enumerate() {
         for (i, q) in row.coordinates.iter().enumerate() {
@@ -273,27 +273,20 @@ fn non_applicable_rows_keep_raw_epsilon_absent_and_real_residual_zero() {
                 );
                 assert!(matches!(
                     checked
-                        .at(object, i, Reading::Nu, 0, &l.data.anchor, &mut quiet())
+                        .at(object, i, Reading::Nu, 0, &l.data.anchor, &quiet())
                         .unwrap(),
                     Placed::Value { .. }
                 ));
                 assert_eq!(
                     checked
-                        .at(object, i, Reading::Epsilon, 0, &l.data.anchor, &mut quiet())
+                        .at(object, i, Reading::Epsilon, 0, &l.data.anchor, &quiet())
                         .unwrap(),
                     Placed::Uncomputed {
                         ring: l.data.factors[0]
                     }
                 );
                 let Placed::Value { reference, .. } = checked
-                    .at(
-                        object,
-                        i,
-                        Reading::Residual,
-                        0,
-                        &l.data.anchor,
-                        &mut quiet(),
-                    )
+                    .at(object, i, Reading::Residual, 0, &l.data.anchor, &quiet())
                     .unwrap()
                 else {
                     panic!()
@@ -313,8 +306,8 @@ fn missing_quantities_and_unavailable_presentations_retain_every_position_withou
         "law required bounded(c:Part):c.quantity<=0;",
     ] {
         let (p, g, _, l) = sample(true, false, body, "root");
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-        let checked = l.checked(&env, &g, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
+        let checked = l.checked(&env, &g, &quiet()).unwrap();
         assert!(!checked.is_complete());
         assert_eq!(l.data.indices.len(), 2);
         assert_eq!(l.data.objects.len(), 3);
@@ -342,7 +335,7 @@ fn missing_quantities_and_unavailable_presentations_retain_every_position_withou
                 .unwrap();
             assert_eq!(
                 checked
-                    .at(0, q, Reading::Epsilon, 0, &l.data.anchor, &mut quiet())
+                    .at(0, q, Reading::Epsilon, 0, &l.data.anchor, &quiet())
                     .unwrap(),
                 Placed::Uncomputed {
                     ring: l.data.factors[0]
@@ -360,8 +353,8 @@ fn finite_parameter_rows_keep_bindings_cases_and_symbolic_global_indices() {
         "law optional bit(c:Part,b:Bool) when b:c.quantity=0;",
         "root",
     );
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let checked = l.checked(&env, &g, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let checked = l.checked(&env, &g, &quiet()).unwrap();
     assert!(checked.is_complete());
     assert_eq!(l.data.indices.len(), 2);
     assert_eq!(l.data.objects[0].coordinates.len(), 4);
@@ -394,8 +387,8 @@ fn finite_parameter_rows_keep_bindings_cases_and_symbolic_global_indices() {
 #[test]
 fn the_empty_family_is_an_empty_block_product_with_all_objects_and_the_actual_universe() {
     let (p, g, _, l) = sample(false, false, "", "root");
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let checked = l.checked(&env, &g, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let checked = l.checked(&env, &g, &quiet()).unwrap();
     assert!(checked.is_complete());
     assert!(l.data.factors.is_empty() && l.data.indices.is_empty());
     assert_eq!(l.data.objects.len(), 3);
@@ -410,7 +403,7 @@ fn the_empty_family_is_an_empty_block_product_with_all_objects_and_the_actual_un
 
     assert!(
         checked
-            .at(0, 0, Reading::Residual, 0, &l.data.anchor, &mut quiet())
+            .at(0, 0, Reading::Residual, 0, &l.data.anchor, &quiet())
             .is_err()
     );
     replay(&p, &g).unwrap();
@@ -423,30 +416,30 @@ fn checked_placement_rejects_foreign_atoms_indices_and_coordinates() {
         "law required zero(c:Part):c.quantity=0;",
         "root",
     );
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let checked = l.checked(&env, &g, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let checked = l.checked(&env, &g, &quiet()).unwrap();
     let foreign = Fact {
         snapshot: "other".into(),
         ..l.data.anchor.clone()
     };
     assert!(
         checked
-            .at(0, 0, Reading::Nu, 0, &foreign, &mut quiet())
+            .at(0, 0, Reading::Nu, 0, &foreign, &quiet())
             .is_err()
     );
     assert!(
         checked
-            .at(30, 0, Reading::Nu, 0, &l.data.anchor, &mut quiet())
+            .at(30, 0, Reading::Nu, 0, &l.data.anchor, &quiet())
             .is_err()
     );
     assert!(
         checked
-            .at(0, 30, Reading::Nu, 0, &l.data.anchor, &mut quiet())
+            .at(0, 30, Reading::Nu, 0, &l.data.anchor, &quiet())
             .is_err()
     );
     assert!(
         checked
-            .at(0, 0, Reading::Nu, 30, &l.data.anchor, &mut quiet())
+            .at(0, 0, Reading::Nu, 30, &l.data.anchor, &quiet())
             .is_err()
     );
 }
@@ -456,14 +449,14 @@ fn four_stops_do_not_return_a_layout_or_mutate_the_finished_graph() {
     let (p, g, t, l) = sample(false, false, "law required zero(r:Root):0=0;", "r2");
     let seen = Rc::new(Cell::new(0));
     let counter = seen.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::EquationPresentation {
             counter.set(counter.get() + 1)
         }
         None
     });
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let full = retain(&env, &g, t.clone(), &mut c).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let full = retain(&env, &g, t.clone(), &c).unwrap();
     assert_eq!(full.data, l.data);
     let total = seen.get();
     assert!(total > 4);
@@ -471,7 +464,7 @@ fn four_stops_do_not_return_a_layout_or_mutate_the_finished_graph() {
         for at in [1, total / 2, total - 1, total] {
             let seen = Rc::new(Cell::new(0));
             let counter = seen.clone();
-            let mut c = Control::new(move |point| {
+            let c = Control::new(move |point| {
                 if point == Checkpoint::EquationPresentation {
                     counter.set(counter.get() + 1)
                 }
@@ -480,9 +473,9 @@ fn four_stops_do_not_return_a_layout_or_mutate_the_finished_graph() {
             let before = g.nodes.clone();
             let contexts = g.contexts.clone();
             let active = g.active;
-            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+            let env = Environment::with_prepared(&p, &quiet()).unwrap();
             assert!(matches!(
-                retain(&env, &g, t.clone(), &mut c),
+                retain(&env, &g, t.clone(), &c),
                 Err(ValidationFailure::Stop(_))
             ));
             assert_eq!(g.nodes, before);

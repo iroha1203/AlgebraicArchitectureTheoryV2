@@ -19,8 +19,7 @@ pub(super) struct Fiber {
     pub obstruction: Option<usize>,
 }
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
-    c.clone()
-        .checkpoint(Checkpoint::PrimitiveValuation)
+    c.checkpoint(Checkpoint::PrimitiveValuation)
         .map_err(Into::into)
 }
 fn op(a: &Scalar, operation: BinOp, b: &Scalar, c: &Control) -> Result<Scalar, ValidationFailure> {

@@ -21,7 +21,7 @@ fn needed_has_a_request_head_and_no_declaration_in_the_checked_bundle() {
     let prepared = prepare_observed(
         inputs(),
         &["p=needed($n)", "n=evaluate(CountCheck.amount,s=@v/s)"],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let requests = prepared.requests().requests();
@@ -42,8 +42,8 @@ fn byte_inputs_and_checked_inputs_resolve_the_same_requests() {
         "a=evaluate(CountCheck.amount,s=@v/s)",
         "c=check(CountCheck.nonnegative)",
     ];
-    let mut control = Control::unlimited();
-    let prepared = prepare_observed(inputs(), &texts, &mut control).unwrap();
+    let control = Control::unlimited();
+    let prepared = prepare_observed(inputs(), &texts, &control).unwrap();
     assert_eq!(prepared.requests().evaluation_order(), &[0, 1]);
     assert_eq!(
         prepared.requests().requests()[0].declaration(),
@@ -51,8 +51,8 @@ fn byte_inputs_and_checked_inputs_resolve_the_same_requests() {
     );
     assert_eq!(prepared.inputs().sources(), &inputs());
     // 検査済み bundle を所有したまま、別の問いを再解決する入口も同じ元入力を使う。
-    let checked = archsig::input::check_inputs(inputs(), &mut control).unwrap();
-    let reused = prepare_checked_observed(checked, &texts, &mut control).unwrap();
+    let checked = archsig::input::check_inputs(inputs(), &control).unwrap();
+    let reused = prepare_checked_observed(checked, &texts, &control).unwrap();
     assert_eq!(prepared.requests(), reused.requests());
     assert_eq!(prepared.inputs().inputs(), reused.inputs().inputs());
 }
@@ -62,7 +62,7 @@ fn request_failure_preserves_checked_input_tables() {
     let failure = prepare_observed(
         inputs(),
         &["a=evaluate(CountCheck.amount)"],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_err();
     let PrepareFailure::Requests {
@@ -88,9 +88,9 @@ fn request_failure_preserves_checked_input_tables() {
 
 #[test]
 fn the_same_control_reaches_request_resolution() {
-    let mut control = Control::new(|point| (point == Checkpoint::Resolve).then_some(Signal::Int));
+    let control = Control::new(|point| (point == Checkpoint::Resolve).then_some(Signal::Int));
     let failure =
-        prepare_observed(inputs(), &["c=check(CountCheck.nonnegative)"], &mut control).unwrap_err();
+        prepare_observed(inputs(), &["c=check(CountCheck.nonnegative)"], &control).unwrap_err();
     let PrepareFailure::Requests {
         inputs: checked,
         failure,
@@ -128,7 +128,7 @@ fn cycles_keep_the_graph_and_leave_computation_outputs_empty() {
             "b=evaluate(CountCheck.same,s=$a.value)",
             "c=evaluate(CountCheck.amount,s=$a.value)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_err();
     let wire = failure.wire().unwrap();
@@ -171,7 +171,7 @@ fn diagnose_missing_handle_is_a_static_request_failure() {
     let failure = prepare_observed(
         inputs(),
         &["d=diagnose($b.system,degree=1)"],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_err();
     assert!(failure.wire().is_some());
@@ -189,7 +189,7 @@ fn public_build_is_prepared_with_its_checked_inputs() {
     let p = prepare_observed(
         inputs(),
         &["b=build(CountCheck,on=@v/s)"],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(p.requests().requests().len(), 1);

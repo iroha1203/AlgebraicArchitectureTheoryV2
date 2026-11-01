@@ -28,7 +28,7 @@ pub(crate) struct Term {
     pub quantifier_types: BTreeMap<usize, Type>,
 }
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
-    c.clone().checkpoint(Checkpoint::Expression)?;
+    c.checkpoint(Checkpoint::Expression)?;
     Ok(())
 }
 pub(super) fn contains(

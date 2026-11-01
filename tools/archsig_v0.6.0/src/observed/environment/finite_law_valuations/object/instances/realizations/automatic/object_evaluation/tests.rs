@@ -11,11 +11,11 @@ mod fixture {
 }
 use crate::control::quiet;
 fn reading(i: &CheckedInputs, root: &str) -> ObjectReadingInstances {
-    let base = construct(i, "Selected", "v", root, &mut quiet()).unwrap();
-    object_reading_instances(i, &base, &mut quiet()).unwrap()
+    let base = construct(i, "Selected", "v", root, &quiet()).unwrap();
+    object_reading_instances(i, &base, &quiet()).unwrap()
 }
 fn run(i: &CheckedInputs, r: &ObjectReadingInstances) -> FiniteAutomaticLawFamily {
-    finite_automatic_law_family(i, r, &mut quiet()).unwrap()
+    finite_automatic_law_family(i, r, &quiet()).unwrap()
 }
 fn inputs(body: &str) -> Arc<CheckedInputs> {
     fixture::with_body(fixture::MAP, body)
@@ -29,7 +29,7 @@ fn the_observed_point_determines_every_basis_image_unit_and_product() {
     let a = reading(&i, "root");
     let result = run(&i, &a);
     let f = result.family().unwrap();
-    let ev = f.object_evaluation(&mut quiet()).unwrap().unwrap();
+    let ev = f.object_evaluation(&quiet()).unwrap().unwrap();
     assert_eq!(
         f.positions()
             .iter()
@@ -40,30 +40,27 @@ fn the_observed_point_determines_every_basis_image_unit_and_product() {
     assert_eq!(f.domain().len(), 4);
     assert_eq!(ev.point(), 1); // independent observations p=0, q=1.
     assert_eq!(ev.basis_images(), &[0.into(), 1.into(), 0.into(), 0.into()]);
-    let ring = f.integer_ring(&mut quiet()).unwrap();
-    let mut sum = ring.zero(&mut quiet()).unwrap();
+    let ring = f.integer_ring(&quiet()).unwrap();
+    let mut sum = ring.zero(&quiet()).unwrap();
     for p in 0..4 {
-        let basis = ring.basis(p, &mut quiet()).unwrap();
-        assert_eq!(
-            ev.apply(&basis, &mut quiet()).unwrap(),
-            BigInt::from(p == 1)
-        );
-        sum = ring.add(&sum, &basis, &mut quiet()).unwrap();
+        let basis = ring.basis(p, &quiet()).unwrap();
+        assert_eq!(ev.apply(&basis, &quiet()).unwrap(), BigInt::from(p == 1));
+        sum = ring.add(&sum, &basis, &quiet()).unwrap();
         for q in 0..4 {
-            let other = ring.basis(q, &mut quiet()).unwrap();
-            let product = ring.mul(&basis, &other, &mut quiet()).unwrap();
+            let other = ring.basis(q, &quiet()).unwrap();
+            let product = ring.mul(&basis, &other, &quiet()).unwrap();
             assert_eq!(
-                ev.apply(&product, &mut quiet()).unwrap(),
+                ev.apply(&product, &quiet()).unwrap(),
                 BigInt::from(p == 1 && q == 1)
             );
         }
     }
     assert!(
-        ring.equal(&sum, &ring.one(&mut quiet()).unwrap(), &mut quiet())
+        ring.equal(&sum, &ring.one(&quiet()).unwrap(), &quiet())
             .unwrap()
     );
-    assert_eq!(ev.apply(&sum, &mut quiet()).unwrap(), BigInt::one());
-    ev.recheck(f, &i, &a, &mut quiet()).unwrap();
+    assert_eq!(ev.apply(&sum, &quiet()).unwrap(), BigInt::one());
+    ev.recheck(f, &i, &a, &quiet()).unwrap();
 }
 #[test]
 fn arbitrary_integer_functions_preserve_ring_operations_and_return_to_the_same_ring_as_constants() {
@@ -71,49 +68,41 @@ fn arbitrary_integer_functions_preserve_ring_operations_and_return_to_the_same_r
     let a = reading(&i, "root");
     let result = run(&i, &a);
     let f = result.family().unwrap();
-    let ev = f.object_evaluation(&mut quiet()).unwrap().unwrap();
-    let ring = f.integer_ring(&mut quiet()).unwrap();
+    let ev = f.object_evaluation(&quiet()).unwrap().unwrap();
+    let ring = f.integer_ring(&quiet()).unwrap();
     let x = ring
-        .computed(
-            vec![(-2).into(), 3.into(), 5.into(), 7.into()],
-            &mut quiet(),
-        )
+        .computed(vec![(-2).into(), 3.into(), 5.into(), 7.into()], &quiet())
         .unwrap();
     let y = ring
         .computed(
             vec![11.into(), (-13).into(), 17.into(), 19.into()],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
-    assert_eq!(ev.apply(&x, &mut quiet()).unwrap(), BigInt::from(3));
-    assert_eq!(ev.apply(&y, &mut quiet()).unwrap(), BigInt::from(-13));
+    assert_eq!(ev.apply(&x, &quiet()).unwrap(), BigInt::from(3));
+    assert_eq!(ev.apply(&y, &quiet()).unwrap(), BigInt::from(-13));
     for (value, expected) in [
-        (ring.add(&x, &y, &mut quiet()).unwrap(), -10),
-        (ring.sub(&x, &y, &mut quiet()).unwrap(), 16),
-        (ring.mul(&x, &y, &mut quiet()).unwrap(), -39),
+        (ring.add(&x, &y, &quiet()).unwrap(), -10),
+        (ring.sub(&x, &y, &quiet()).unwrap(), 16),
+        (ring.mul(&x, &y, &quiet()).unwrap(), -39),
     ] {
-        assert_eq!(
-            ev.apply(&value, &mut quiet()).unwrap(),
-            BigInt::from(expected)
-        );
+        assert_eq!(ev.apply(&value, &quiet()).unwrap(), BigInt::from(expected));
     }
     assert_eq!(
-        ev.apply(&ring.one(&mut quiet()).unwrap(), &mut quiet())
-            .unwrap(),
+        ev.apply(&ring.one(&quiet()).unwrap(), &quiet()).unwrap(),
         BigInt::one()
     );
     assert_eq!(
-        ev.apply(&ring.zero(&mut quiet()).unwrap(), &mut quiet())
-            .unwrap(),
+        ev.apply(&ring.zero(&quiet()).unwrap(), &quiet()).unwrap(),
         BigInt::zero()
     );
     let huge = BigInt::parse_bytes(b"1361129467683753853853498429727072845827", 10).unwrap();
-    let constant = ring.constant(-&huge, &mut quiet()).unwrap();
-    assert_eq!(ev.apply(&constant, &mut quiet()).unwrap(), -&huge);
-    let image = ev.constant_image(&x, &mut quiet()).unwrap();
+    let constant = ring.constant(-&huge, &quiet()).unwrap();
+    assert_eq!(ev.apply(&constant, &quiet()).unwrap(), -&huge);
+    let image = ev.constant_image(&x, &quiet()).unwrap();
     assert_eq!(image.values(), &[3.into(), 3.into(), 3.into(), 3.into()]);
-    ring.member(&image, &mut quiet()).unwrap();
-    assert_eq!(ev.apply(&image, &mut quiet()).unwrap(), BigInt::from(3));
+    ring.member(&image, &quiet()).unwrap();
+    assert_eq!(ev.apply(&image, &quiet()).unwrap(), BigInt::from(3));
     assert_eq!(x.values(), &[(-2).into(), 3.into(), 5.into(), 7.into()]);
 }
 #[test]
@@ -127,15 +116,10 @@ fn every_original_parameter_and_object_is_evaluated_without_quotienting_its_nonz
         .iter()
         .map(|c| c.rows().to_vec())
         .collect::<Vec<_>>();
-    let ev = f.object_evaluation(&mut quiet()).unwrap().unwrap();
+    let ev = f.object_evaluation(&quiet()).unwrap().unwrap();
     assert_eq!(f.columns().len(), 24);
     assert_eq!(f.required_zero(), Some([].as_slice()));
-    assert!(
-        f.required_quotient(&mut quiet())
-            .unwrap()
-            .points()
-            .is_empty()
-    );
+    assert!(f.required_quotient(&quiet()).unwrap().points().is_empty());
     let mut positive = 0;
     for (index, column) in f.columns().iter().enumerate() {
         let subject = &f.instance_source(index).unwrap().0.bindings()[0]
@@ -149,10 +133,10 @@ fn every_original_parameter_and_object_is_evaluated_without_quotienting_its_nonz
         let original = if subject == "p" { 0 } else { 1 };
         let applicable = target == "root" || target == subject;
         let expected = BigInt::from(applicable && original != n);
-        let nu = f.integer_function(index, None, &mut quiet()).unwrap();
-        assert_eq!(ev.apply(&nu, &mut quiet()).unwrap(), expected);
+        let nu = f.integer_function(index, None, &quiet()).unwrap();
+        assert_eq!(ev.apply(&nu, &quiet()).unwrap(), expected);
         assert!(
-            ev.constant_image(&nu, &mut quiet())
+            ev.constant_image(&nu, &quiet())
                 .unwrap()
                 .values()
                 .iter()
@@ -175,7 +159,7 @@ fn every_original_parameter_and_object_is_evaluated_without_quotienting_its_nonz
             .collect::<Vec<_>>()
             == before
     );
-    ev.recheck(f, &i, &a, &mut quiet()).unwrap();
+    ev.recheck(f, &i, &a, &quiet()).unwrap();
 }
 #[test]
 fn a_required_ideal_does_not_change_the_actual_nonzero_evaluation() {
@@ -184,7 +168,7 @@ fn a_required_ideal_does_not_change_the_actual_nonzero_evaluation() {
     let a = reading(&i, "root");
     let result = run(&i, &a);
     let f = result.family().unwrap();
-    let ev = f.object_evaluation(&mut quiet()).unwrap().unwrap();
+    let ev = f.object_evaluation(&quiet()).unwrap().unwrap();
     assert_eq!(f.required_zero(), Some([0].as_slice()));
     assert_eq!(ev.point(), 1);
     let column = (0..f.columns().len())
@@ -197,18 +181,18 @@ fn a_required_ideal_does_not_change_the_actual_nonzero_evaluation() {
                     == "q"
         })
         .unwrap();
-    let nu = f.integer_function(column, None, &mut quiet()).unwrap();
+    let nu = f.integer_function(column, None, &quiet()).unwrap();
     assert_eq!(
-        f.required_quotient(&mut quiet())
+        f.required_quotient(&quiet())
             .unwrap()
-            .project(&nu, &mut quiet())
+            .project(&nu, &quiet())
             .unwrap()
             .values(),
         &[0.into()]
     );
-    assert_eq!(ev.apply(&nu, &mut quiet()).unwrap(), BigInt::one());
+    assert_eq!(ev.apply(&nu, &quiet()).unwrap(), BigInt::one());
     assert_eq!(
-        ev.constant_image(&nu, &mut quiet()).unwrap().values(),
+        ev.constant_image(&nu, &quiet()).unwrap().values(),
         &[1.into(), 1.into(), 1.into(), 1.into()]
     );
     assert_eq!(f.columns()[column].rows()[1].predicate, Some(false));
@@ -220,7 +204,7 @@ fn typed_tuple_components_keep_their_actual_values_and_separate_indicators() {
     let a = reading(&i, "root");
     let result = run(&i, &a);
     let f = result.family().unwrap();
-    let ev = f.object_evaluation(&mut quiet()).unwrap().unwrap();
+    let ev = f.object_evaluation(&quiet()).unwrap().unwrap();
     assert_eq!(f.domain().len(), 16);
     assert_eq!(ev.point(), 6);
     for index in 0..f.columns().len() {
@@ -229,18 +213,18 @@ fn typed_tuple_components_keep_their_actual_values_and_separate_indicators() {
             .subject;
         let target = &f.column_object_identity(index).unwrap().subject().subject;
         let applicable = target == "root" || target == subject;
-        let whole = f.integer_function(index, None, &mut quiet()).unwrap();
+        let whole = f.integer_function(index, None, &quiet()).unwrap();
         assert_eq!(
-            ev.apply(&whole, &mut quiet()).unwrap(),
+            ev.apply(&whole, &quiet()).unwrap(),
             BigInt::from(applicable)
         );
         for component in 0..2 {
             let nu = f
-                .integer_function(index, Some(&[component]), &mut quiet())
+                .integer_function(index, Some(&[component]), &quiet())
                 .unwrap();
             let expected = applicable
                 && ((subject == "p" && component == 1) || (subject == "q" && component == 0));
-            assert_eq!(ev.apply(&nu, &mut quiet()).unwrap(), BigInt::from(expected));
+            assert_eq!(ev.apply(&nu, &quiet()).unwrap(), BigInt::from(expected));
         }
         if applicable {
             let row = &f.columns()[index].rows()[6];
@@ -255,7 +239,7 @@ fn typed_tuple_components_keep_their_actual_values_and_separate_indicators() {
             );
         }
     }
-    ev.recheck(f, &i, &a, &mut quiet()).unwrap();
+    ev.recheck(f, &i, &a, &quiet()).unwrap();
 }
 #[test]
 fn missing_observations_do_not_choose_a_completion_or_construct_an_evaluation() {
@@ -269,10 +253,10 @@ fn missing_observations_do_not_choose_a_completion_or_construct_an_evaluation() 
     assert!(f.is_complete());
     assert_eq!(f.domain().len(), 4);
     assert_eq!(f.observed_point(), None);
-    assert!(f.object_evaluation(&mut quiet()).unwrap().is_none());
+    assert!(f.object_evaluation(&quiet()).unwrap().is_none());
     assert_eq!(f.positions().len(), 2);
     assert!(f.columns().iter().all(|c| c.rows().len() == 4));
-    result.recheck(&i, &a, &mut quiet()).unwrap();
+    result.recheck(&i, &a, &quiet()).unwrap();
 }
 #[test]
 fn empty_laws_and_false_guards_keep_the_single_observed_empty_assignment() {
@@ -284,22 +268,18 @@ fn empty_laws_and_false_guards_keep_the_single_observed_empty_assignment() {
         let a = reading(&i, "root");
         let result = run(&i, &a);
         let f = result.family().unwrap();
-        let ev = f.object_evaluation(&mut quiet()).unwrap().unwrap();
+        let ev = f.object_evaluation(&quiet()).unwrap().unwrap();
         assert_eq!(ev.point(), 0);
         assert_eq!(ev.basis_images(), &[1.into()]);
         assert!(f.positions().is_empty());
-        let one = f
-            .integer_ring(&mut quiet())
-            .unwrap()
-            .one(&mut quiet())
-            .unwrap();
-        assert_eq!(ev.apply(&one, &mut quiet()).unwrap(), BigInt::one());
+        let one = f.integer_ring(&quiet()).unwrap().one(&quiet()).unwrap();
+        assert_eq!(ev.apply(&one, &quiet()).unwrap(), BigInt::one());
         for index in 0..f.columns().len() {
-            let nu = f.integer_function(index, None, &mut quiet()).unwrap();
-            assert_eq!(ev.apply(&nu, &mut quiet()).unwrap(), BigInt::zero());
+            let nu = f.integer_function(index, None, &quiet()).unwrap();
+            assert_eq!(ev.apply(&nu, &quiet()).unwrap(), BigInt::zero());
             assert_eq!(f.columns()[index].rows()[0].operands, None);
         }
-        ev.recheck(f, &i, &a, &mut quiet()).unwrap();
+        ev.recheck(f, &i, &a, &quiet()).unwrap();
     }
 }
 fn empty_primitive_sources() -> InputSources {
@@ -323,7 +303,7 @@ fn empty_primitive_sources() -> InputSources {
 }
 #[test]
 fn inconsistent_empty_carriers_and_forged_empty_domains_never_become_integer_evaluations() {
-    let failure = check_inputs(empty_primitive_sources(), &mut quiet())
+    let failure = check_inputs(empty_primitive_sources(), &quiet())
         .err()
         .unwrap();
     assert!(
@@ -343,21 +323,17 @@ fn inconsistent_empty_carriers_and_forged_empty_domains_never_become_integer_eva
     assert!(f.is_complete());
     assert!(f.domain_complete());
     assert!(f.domain().is_empty());
-    assert!(f.object_evaluation(&mut quiet()).unwrap().is_none());
+    assert!(f.object_evaluation(&quiet()).unwrap().is_none());
     let invalid = FiniteLawObjectEvaluation {
         family: f,
         point: 0,
         basis_images: vec![],
     };
-    assert!(invalid.recheck(f, &i, &a, &mut quiet()).is_err());
-    let zero = f
-        .integer_ring(&mut quiet())
-        .unwrap()
-        .zero(&mut quiet())
-        .unwrap();
-    assert!(invalid.apply(&zero, &mut quiet()).is_err());
+    assert!(invalid.recheck(f, &i, &a, &quiet()).is_err());
+    let zero = f.integer_ring(&quiet()).unwrap().zero(&quiet()).unwrap();
+    assert!(invalid.apply(&zero, &quiet()).is_err());
     f.value.observed_point = Some(0);
-    assert!(f.object_evaluation(&mut quiet()).is_err());
+    assert!(f.object_evaluation(&quiet()).is_err());
 }
 #[test]
 fn forged_basis_points_families_and_foreign_functions_are_rejected_at_the_consumer() {
@@ -367,13 +343,9 @@ fn forged_basis_points_families_and_foreign_functions_are_rejected_at_the_consum
     let f = result.family().unwrap();
     let other = run(&i, &a);
     let other = other.family().unwrap();
-    let foreign = other
-        .integer_ring(&mut quiet())
-        .unwrap()
-        .one(&mut quiet())
-        .unwrap();
+    let foreign = other.integer_ring(&quiet()).unwrap().one(&quiet()).unwrap();
     for mutation in 0..6 {
-        let mut bad = f.object_evaluation(&mut quiet()).unwrap().unwrap();
+        let mut bad = f.object_evaluation(&quiet()).unwrap().unwrap();
         match mutation {
             0 => bad.point = 0,
             1 => bad.basis_images[1] = 2.into(),
@@ -390,40 +362,33 @@ fn forged_basis_points_families_and_foreign_functions_are_rejected_at_the_consum
             }
         }
         assert!(
-            bad.recheck(f, &i, &a, &mut quiet()).is_err(),
+            bad.recheck(f, &i, &a, &quiet()).is_err(),
             "mutation {mutation}"
         );
         if mutation < 4 {
             assert!(
                 bad.apply(
-                    &f.integer_ring(&mut quiet())
-                        .unwrap()
-                        .one(&mut quiet())
-                        .unwrap(),
-                    &mut quiet()
+                    &f.integer_ring(&quiet()).unwrap().one(&quiet()).unwrap(),
+                    &quiet()
                 )
                 .is_err()
             );
         }
     }
-    let ev = f.object_evaluation(&mut quiet()).unwrap().unwrap();
-    assert!(ev.apply(&foreign, &mut quiet()).is_err());
-    assert!(ev.constant_image(&foreign, &mut quiet()).is_err());
-    let mut short = f
-        .integer_ring(&mut quiet())
-        .unwrap()
-        .one(&mut quiet())
-        .unwrap();
+    let ev = f.object_evaluation(&quiet()).unwrap().unwrap();
+    assert!(ev.apply(&foreign, &quiet()).is_err());
+    assert!(ev.constant_image(&foreign, &quiet()).is_err());
+    let mut short = f.integer_ring(&quiet()).unwrap().one(&quiet()).unwrap();
     short.values.pop();
-    assert!(ev.apply(&short, &mut quiet()).is_err());
-    assert!(ev.constant_image(&short, &mut quiet()).is_err());
-    assert!(ev.recheck(other, &i, &a, &mut quiet()).is_err());
-    assert!(ev.recheck(f, &i, &reading(&i, "r2"), &mut quiet()).is_err());
+    assert!(ev.apply(&short, &quiet()).is_err());
+    assert!(ev.constant_image(&short, &quiet()).is_err());
+    assert!(ev.recheck(other, &i, &a, &quiet()).is_err());
+    assert!(ev.recheck(f, &i, &reading(&i, "r2"), &quiet()).is_err());
     let changed = fixture::with_body(
         &(fixture::MAP.to_string() + " "),
         "law required zero(c:Part):c.quantity=0;",
     );
-    assert!(ev.recheck(f, &changed, &a, &mut quiet()).is_err());
+    assert!(ev.recheck(f, &changed, &a, &quiet()).is_err());
 }
 fn stopping(signal: Signal, at: usize) -> Control {
     let count = Rc::new(Cell::new(0));
@@ -441,28 +406,24 @@ fn cancellation_stops_do_not_return_partial_maps_values_or_constant_images() {
     let a = reading(&i, "root");
     let result = run(&i, &a);
     let f = result.family().unwrap();
-    let ev = f.object_evaluation(&mut quiet()).unwrap().unwrap();
-    let one = f
-        .integer_ring(&mut quiet())
-        .unwrap()
-        .one(&mut quiet())
-        .unwrap();
+    let ev = f.object_evaluation(&quiet()).unwrap().unwrap();
+    let one = f.integer_ring(&quiet()).unwrap().one(&quiet()).unwrap();
     for signal in [Signal::Int, Signal::Term] {
-        let mut c = stopping(signal, 3);
-        let failure = f.object_evaluation(&mut c).err().unwrap();
+        let c = stopping(signal, 3);
+        let failure = f.object_evaluation(&c).err().unwrap();
         assert!(matches!(failure, ValidationFailure::Stop(_)));
-        let mut c = stopping(signal, 10);
-        let failure = ev.apply(&one, &mut c).err().unwrap();
+        let c = stopping(signal, 10);
+        let failure = ev.apply(&one, &c).err().unwrap();
         assert!(matches!(failure, ValidationFailure::Stop(_)));
-        let mut c = stopping(signal, 18);
-        let failure = ev.constant_image(&one, &mut c).err().unwrap();
+        let c = stopping(signal, 18);
+        let failure = ev.constant_image(&one, &c).err().unwrap();
         assert!(matches!(failure, ValidationFailure::Stop(_)));
-        let mut c = stopping(signal, 1);
-        let failure = ev.recheck(f, &i, &a, &mut c).err().unwrap();
+        let c = stopping(signal, 1);
+        let failure = ev.recheck(f, &i, &a, &c).err().unwrap();
         assert!(matches!(failure, ValidationFailure::Stop(_)));
     }
-    ev.recheck(f, &i, &a, &mut quiet()).unwrap();
-    assert_eq!(ev.apply(&one, &mut quiet()).unwrap(), BigInt::one());
+    ev.recheck(f, &i, &a, &quiet()).unwrap();
+    assert_eq!(ev.apply(&one, &quiet()).unwrap(), BigInt::one());
 }
 #[test]
 fn unfinished_or_unsupported_law_families_are_preserved_without_a_completed_object_evaluation() {
@@ -472,8 +433,8 @@ fn unfinished_or_unsupported_law_families_are_preserved_without_a_completed_obje
     let count = seen.clone();
     let stage = Rc::new(Cell::new(false));
     let started = stage.clone();
-    let mut c = Control::new(move |p| {
-        if p == Checkpoint::FiniteLawAutomatic {
+    let c = Control::new(move |p| {
+        if p == Checkpoint::Work {
             started.set(true);
         }
         if started.get() && p == Checkpoint::FiniteLawEvaluation {
@@ -481,19 +442,19 @@ fn unfinished_or_unsupported_law_families_are_preserved_without_a_completed_obje
         }
         (count.get() >= 3).then_some(Signal::Term)
     });
-    let failure = finite_automatic_law_family(&i, &a, &mut c).err().unwrap();
+    let failure = finite_automatic_law_family(&i, &a, &c).err().unwrap();
     assert!(matches!(failure.cause, ValidationFailure::Stop(_)));
     let partial = failure.partial.unwrap();
     let f = partial.family().unwrap();
     assert!(!f.is_complete());
     assert!(f.domain_complete());
     assert_eq!(f.columns()[0].rows().len(), 1);
-    assert!(f.object_evaluation(&mut quiet()).unwrap().is_none());
+    assert!(f.object_evaluation(&quiet()).unwrap().is_none());
     let i = inputs("law required parts(c:Part):(0,fn(n:Z)=>n*n)=(1,fn(n:Z)=>n*n+0);");
     let a = reading(&i, "root");
     let result = run(&i, &a);
     let f = result.family().unwrap();
     assert!(matches!(f.state(), FiniteLawState::Unavailable { .. }));
-    assert!(f.object_evaluation(&mut quiet()).unwrap().is_none());
+    assert!(f.object_evaluation(&quiet()).unwrap().is_none());
     assert_eq!(f.columns()[0].rows()[0].predicate, Some(false));
 }

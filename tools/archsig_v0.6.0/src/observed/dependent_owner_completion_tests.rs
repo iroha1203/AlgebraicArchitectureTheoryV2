@@ -8,7 +8,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -23,7 +23,7 @@ fn example() -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         fixture::input(2, false, false, Some(false)),
         &asks,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.issues);
@@ -160,7 +160,7 @@ fn dependent_owner_completion_coverage_stop_keeps_cases_without_whole_claim() {
         "current=check(RefCalc.each,a=@v/A)",
         "later=evaluate(RefCalc.seed)",
     ];
-    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), &asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
@@ -172,7 +172,7 @@ fn dependent_owner_completion_coverage_stop_keeps_cases_without_whole_claim() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(move |_| {
+    let control = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -181,8 +181,8 @@ fn dependent_owner_completion_coverage_stop_keeps_cases_without_whole_claim() {
             None
         }
     });
-    let prepared = prepare_observed(input, &asks, &mut control).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut control, |e, g, q, a| {
+    let prepared = prepare_observed(input, &asks, &control).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &control, |e, g, q, a| {
         e.validate_answer(g, q, a)?;
         if q.id == "hole" {
             let (arm, hit) = (armed.clone(), seen.clone());

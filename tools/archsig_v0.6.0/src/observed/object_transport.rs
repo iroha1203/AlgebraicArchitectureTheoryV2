@@ -18,7 +18,7 @@ pub(super) fn mapped_instance(
     source: &ObjectInstance,
     pair: &DeclarationPair,
     target: &ObjectReadingInstances,
-    c: &mut Control,
+    c: &Control,
     point: Checkpoint,
 ) -> Result<MappedInstance, ConstructionFailure> {
     let mut bindings = Vec::new();
@@ -103,7 +103,7 @@ pub(super) fn same_evaluation(a: Option<&ObjectEvaluation>, b: Option<&ObjectEva
 pub(super) fn same_evaluation_controlled(
     a: Option<&ObjectEvaluation>,
     b: Option<&ObjectEvaluation>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectViewTransportFamily)?;
     match (a, b) {

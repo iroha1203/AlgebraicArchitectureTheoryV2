@@ -239,7 +239,7 @@ impl Environment<'_> {
                 ) || !crate::observed::finite::completion_supported(
                     &parameter.ty,
                     self.indexes.inputs.law(),
-                    &mut self.control.clone(),
+                    &self.control.clone(),
                 )? {
                     return Ok(None);
                 }
@@ -254,7 +254,7 @@ impl Environment<'_> {
                     self.indexes.inputs,
                     instance,
                     &finite,
-                    &mut self.control.clone(),
+                    &self.control.clone(),
                 )
                 .map_err(|e| match e {
                     crate::construction::ConstructionFailure::Stopped(stop) => {
@@ -1706,7 +1706,7 @@ impl Environment<'_> {
                 let value = source
                     .difference
                     .constant
-                    .evaluate(&[], &mut self.control.clone())
+                    .evaluate(&[], &self.control.clone())
                     .map_err(|e| match e {
                         crate::construction::ConstructionFailure::Stopped(stop) => {
                             ValidationFailure::Stop(stop)

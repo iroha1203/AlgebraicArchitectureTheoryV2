@@ -240,7 +240,7 @@ fn localize_signal_stop_keeps_the_prior_architecture() {
     let dir = input("local-stop", Some(true));
     let seen = Rc::new(Cell::new(false));
     let active = seen.clone();
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         if point == Checkpoint::Localize {
             active.set(true);
         }
@@ -254,7 +254,7 @@ fn localize_signal_stop_keeps_the_prior_architecture() {
     let result = evaluate_observed_bytes(
         sources,
         &["a=build(Fixed,on=@fixed/s)", "l=localize($a.object)"],
-        &mut control,
+        &control,
     )
     .unwrap();
     assert!(seen.get());
@@ -2147,16 +2147,16 @@ fn integer_local_empty_cover_degree_iteration_observes_cancellation() {
     ];
     let total = Rc::new(Cell::new(0usize));
     let count = total.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::Localize {
             count.set(count.get() + 1);
         }
         None
     });
-    evaluate_observed_bytes(inputs(), &asks, &mut c).unwrap();
+    evaluate_observed_bytes(inputs(), &asks, &c).unwrap();
     let stop = total.get() + 2;
     let mut count = 0;
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::Localize {
             count += 1;
         }
@@ -2165,7 +2165,7 @@ fn integer_local_empty_cover_degree_iteration_observes_cancellation() {
     let result = evaluate_observed_bytes(
         inputs(),
         &[asks[0], asks[1], "d=diagnose($l.system,degree=20)"],
-        &mut c,
+        &c,
     )
     .unwrap();
     let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();

@@ -32,7 +32,7 @@ fn transport(
     declarations: &DeclarationCorrespondence,
     object: usize,
     instance: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Arc<object_law_transport::ObjectLawTransport>, ValidationFailure> {
     if !std::ptr::eq(env.indexes.inputs, inputs.as_ref()) {
         return Err("Law保存cacheの元入力が違う".into());
@@ -83,7 +83,7 @@ pub(super) struct Output {
     pub pending: Option<super::environment::numeric_law_function::Pending>,
     pub evidence: Vec<NodeRef>,
 }
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectLawCircuitTransport)?;
     Ok(())
 }
@@ -185,7 +185,7 @@ fn matching_component(
     target: &Detector,
     inputs: &CheckedInputs,
     declarations: &DeclarationCorrespondence,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ValidationFailure> {
     if source.component != target.component {
         return Ok(false);
@@ -264,7 +264,7 @@ fn detectors(
     g: &Graph,
     algebra: NodeRef,
     plan: &Plan,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Detector>, ValidationFailure> {
     let mut out = vec![];
     let layout = plan
@@ -413,7 +413,7 @@ pub(super) fn retain(
     declarations: &DeclarationCorrespondence,
     algebras: [NodeRef; 2],
     plans: [&Plan; 2],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Output, ValidationFailure> {
     let mut out = Output {
         preserved: true,

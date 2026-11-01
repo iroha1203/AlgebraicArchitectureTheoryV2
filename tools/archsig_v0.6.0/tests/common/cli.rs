@@ -120,10 +120,8 @@ pub fn run(dir: &Path, args: &[&str]) -> Run {
     let execute = move || {
         let (io, signals) = (&mut archsig::run::FileIo, &mut NoSignal);
         let outcome = match parse_args(&words) {
-            Ok(Command::Check(check)) => run_check(io, signals, &check, &mut Control::unlimited()),
-            Ok(Command::Run(request)) => {
-                run_requests(io, signals, &request, &mut Control::unlimited())
-            }
+            Ok(Command::Check(check)) => run_check(io, signals, &check, &Control::unlimited()),
+            Ok(Command::Run(request)) => run_requests(io, signals, &request, &Control::unlimited()),
             Ok(Command::Version) => panic!("version は run_binary で確かめる"),
             Err(error) => usage_outcome(io, signals, error),
         };
@@ -319,7 +317,7 @@ pub fn internal_graph(dir: &Path, saved: &JNode) -> JNode {
     let result = archsig::observed::evaluate_observed_bytes(
         sources,
         &asks,
-        &mut archsig::control::Control::unlimited(),
+        &archsig::control::Control::unlimited(),
     )
     .unwrap();
     parse(result.wire().canonical().as_bytes()).unwrap()

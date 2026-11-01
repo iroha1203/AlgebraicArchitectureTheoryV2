@@ -22,7 +22,7 @@ use crate::{
     input::CheckedInputs,
 };
 use std::sync::Arc;
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::InternalArrow)?;
     Ok(())
 }
@@ -394,7 +394,7 @@ fn push(
     parts: &mut Vec<Part>,
     base: usize,
     part: Part,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     tick(c)?;
     let at = base
@@ -443,7 +443,7 @@ fn plan(
     universe: NodeRef,
     base: usize,
     core: &InternalArrows,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Part>, Diagram), ValidationFailure> {
     if !core.is_complete() || core.construction() != a.construction() {
         return Err("内部arrowの元構成または全件検査が違う".into());
@@ -605,7 +605,7 @@ impl Source {
         graph: &Graph,
         inputs: &CheckedInputs,
         a: &Arc<ArchitectureWitness>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         tick(c)?;
         let (original, objects) =
@@ -638,7 +638,7 @@ pub(super) fn retain(
     reference: NodeRef,
     objects: &Objects,
     universe: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Diagram, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((
         graph, inputs, reference, objects, universe, c,
@@ -737,7 +737,7 @@ impl Environment<'_> {
             return Ok(());
         }
         data.source
-            .recheck(graph, self.indexes.inputs, a, &mut self.control.clone())?;
+            .recheck(graph, self.indexes.inputs, a, &self.control.clone())?;
         self.results.remember(data.source.clone());
         Ok(())
     }
@@ -750,7 +750,7 @@ impl super::result_kind::ResultKind for Data {
         NodeRef,
         &'a Objects,
         NodeRef,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = Diagram;
     fn compute_and_retain<'a, 'input: 'a>(

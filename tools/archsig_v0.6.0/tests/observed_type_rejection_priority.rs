@@ -87,8 +87,8 @@ fn baseline(input: &InputSources, in_law: bool, point: Checkpoint) -> (Issue, us
             .issue
     };
     assert!(matches!(issue.code, Code::Syntax | Code::Type));
-    let (mut control, total) = probe(point, usize::MAX);
-    let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+    let (control, total) = probe(point, usize::MAX);
+    let failure = check_inputs(input.clone(), &control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert_eq!(
         failure.issues(),
@@ -106,8 +106,8 @@ fn terminal_priority(input: InputSources, in_law: bool, point: Checkpoint, unwin
     let post = total.checked_sub(unwind).unwrap();
     assert!(post > 1);
     for at in post..=total {
-        let (mut control, seen) = probe(point, at);
-        let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+        let (control, seen) = probe(point, at);
+        let failure = check_inputs(input.clone(), &control).unwrap_err();
         assert_eq!(seen.get(), at, "{point:?} at {at}/{total}");
         empty_stage(&failure);
         let reason = control.stop_reason().expect("shared terminal stop");
@@ -137,8 +137,8 @@ fn definition_set_and_term_rejections_keep_original_pointer_and_stop() {
             issue
         );
         // The immediately preceding sample is before the forbidden component is read.
-        let (mut control, _) = probe(Checkpoint::DefinitionData, ordinal - 1);
-        let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+        let (control, _) = probe(Checkpoint::DefinitionData, ordinal - 1);
+        let failure = check_inputs(input.clone(), &control).unwrap_err();
         assert_eq!(failure.status(), InputStatus::Interrupted);
         empty_stage(&failure);
         assert_eq!(failure.issues(), [control.stop_reason().unwrap().issue()]);
@@ -159,8 +159,8 @@ fn negative_data_self_occurrence_keeps_constructor_argument_location() {
         "data self-reference must be direct or through Tuple, List, or Option"
     );
     let (_, total) = baseline(&input, false, Checkpoint::DefinitionData);
-    let (mut control, _) = probe(Checkpoint::DefinitionData, total - 2);
-    let failure = check_inputs(input, &mut control).unwrap_err();
+    let (control, _) = probe(Checkpoint::DefinitionData, total - 2);
+    let failure = check_inputs(input, &control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Interrupted);
     empty_stage(&failure);
 }
@@ -266,8 +266,8 @@ fn data_property_true_remains_an_intermediate_fact_when_a_stop_interrupts_it() {
     assert!(ordinary.data_properties()["Counter.Tree"].term_or_path);
     // Initial map (2), iteration/name (2), Leaf pre/post (2), Node/argument
     // entries (2), Term entry/post (2): the true predicate's post is step 10.
-    let (mut control, seen) = probe(Checkpoint::DefinitionData, 10);
-    let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+    let (control, seen) = probe(Checkpoint::DefinitionData, 10);
+    let failure = check_inputs(input.clone(), &control).unwrap_err();
     assert_eq!(seen.get(), 10);
     assert_eq!(failure.status(), InputStatus::Interrupted);
     empty_stage(&failure);

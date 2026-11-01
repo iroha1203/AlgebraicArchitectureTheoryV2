@@ -159,14 +159,10 @@ fn tree_type() -> Json {
 #[test]
 fn recursive_tree_known_branch_calls_compute_from_original_bytes() {
     let inputs = sources(false, "", "r1");
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
     let before = checked.metadata_wire();
-    let result = evaluate_observed_bytes(
-        inputs,
-        &["a=evaluate(Trees.read,s=@v/sample)"],
-        &mut quiet(),
-    )
-    .unwrap();
+    let result =
+        evaluate_observed_bytes(inputs, &["a=evaluate(Trees.read,s=@v/sample)"], &quiet()).unwrap();
     assert_eq!(result.prepared().inputs().metadata_wire(), before);
     let after = result.prepared().inputs();
     assert_eq!(
@@ -232,7 +228,7 @@ fn recursive_tree_values_preserve_constructors_wrappers_and_structural_equality(
             "wrapped=evaluate(Trees.wrapped,s=@v/sample)",
             "same=evaluate(Trees.same,s=@v/sample)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     audit(&result);
@@ -268,7 +264,7 @@ fn recursive_tree_let_nested_patterns_and_finite_containers_use_actual_values() 
             "b=evaluate(Trees.bag,s=@v/sample)",
             "l=evaluate(Trees.literals,s=@v/sample)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     audit(&result);
@@ -287,7 +283,7 @@ fn recursive_tree_missing_preserves_original_slot_without_inventing_a_tree() {
             "a=evaluate(Trees.read,s=@v/sample)",
             "c=evaluate(Trees.ignores,s=@v/sample)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     audit(&result);
@@ -327,8 +323,8 @@ fn recursive_tree_provenance_pair_and_law_judgments_keep_current_sources() {
         "a=evaluate(Trees.read,s=@v/sample)",
         "ok=check(Trees.four,s=@v/sample)",
     ];
-    let first = evaluate_observed_bytes(sources(false, "", "r1"), &asks, &mut quiet()).unwrap();
-    let second = evaluate_observed_bytes(sources(false, "", "r2"), &asks, &mut quiet()).unwrap();
+    let first = evaluate_observed_bytes(sources(false, "", "r1"), &asks, &quiet()).unwrap();
+    let second = evaluate_observed_bytes(sources(false, "", "r2"), &asks, &quiet()).unwrap();
     audit(&first);
     audit(&second);
     let (a, b) = (first.wire(), second.wire());
@@ -344,7 +340,7 @@ fn recursive_tree_provenance_pair_and_law_judgments_keep_current_sources() {
     );
     let mut inputs = sources(false, "", "r1");
     // 独立した不成立例は同じ木の合計4を5と比較する。
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
     let law = String::from_utf8(checked.sources().law().bytes().to_vec())
         .unwrap()
         .replace("total(s.tree)=4", "total(s.tree)=5");
@@ -354,8 +350,7 @@ fn recursive_tree_provenance_pair_and_law_judgments_keep_current_sources() {
         checked.sources().archmap().bytes().to_vec(),
     );
     let refuted =
-        evaluate_observed_bytes(inputs, &["bad=check(Trees.four,s=@v/sample)"], &mut quiet())
-            .unwrap();
+        evaluate_observed_bytes(inputs, &["bad=check(Trees.four,s=@v/sample)"], &quiet()).unwrap();
     audit(&refuted);
     let wire = refuted.wire();
     assert_eq!(get(&wire, "status"), &Json::str("complete"));
@@ -379,7 +374,7 @@ fn recursive_tree_infinite_domains_keep_typed_results_and_invalid_self_calls_are
                 "a=check(Trees.bad)"
             };
             let input = sources(false, &extra, "r1");
-            let result = evaluate_observed_bytes(input.clone(), &[ask], &mut quiet()).unwrap();
+            let result = evaluate_observed_bytes(input.clone(), &[ask], &quiet()).unwrap();
             assert_eq!(result.prepared().inputs().sources(), &input);
             audit(&result);
             let wire = result.wire();
@@ -442,7 +437,7 @@ fn recursive_tree_infinite_domains_keep_typed_results_and_invalid_self_calls_are
         "view bad(t:Tree):Z=match t {Empty=>0;Leaf(_)=>0;Branch(l,r)=>bad(t);Packed(_)=>0;};",
         "view one(t:Tree):Z=two(t);view two(t:Tree):Z=one(t);",
     ] {
-        let error = check_inputs(sources(false, extra, "r1"), &mut quiet()).unwrap_err();
+        let error = check_inputs(sources(false, extra, "r1"), &quiet()).unwrap_err();
         assert!(
             error
                 .issues()

@@ -66,7 +66,6 @@ pub(super) fn observe_iteration(operation: &'static str, index: usize) {
 
 fn tick(control: &Control) -> Result<(), ValidationFailure> {
     control
-        .clone()
         .checkpoint(Checkpoint::FiniteIteration)
         .map_err(ValidationFailure::Stop)
 }

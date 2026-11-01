@@ -43,23 +43,15 @@ fn inputs(law: &str) -> CheckedInputs {
             expand(law),
             expand(A),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
 fn declarations(i: &CheckedInputs) -> DeclarationCorrespondence {
-    let r = correspondence(
-        i,
-        "v",
-        "m",
-        "Before",
-        Some("After"),
-        &mut Control::unlimited(),
-    )
-    .unwrap();
+    let r = correspondence(i, "v", "m", "Before", Some("After"), &Control::unlimited()).unwrap();
     assert!(r.counterexamples().is_empty(), "{:?}", r.counterexamples());
     assert!(r.missing().is_empty(), "{:?}", r.missing());
-    declaration_correspondence(i, r.map().unwrap(), &mut Control::unlimited()).unwrap()
+    declaration_correspondence(i, r.map().unwrap(), &Control::unlimited()).unwrap()
 }
 fn result(i: &CheckedInputs, p: usize) -> NumericValueTransport {
     numeric_declaration_value_transport(
@@ -67,7 +59,7 @@ fn result(i: &CheckedInputs, p: usize) -> NumericValueTransport {
         &declarations(i),
         "Before.axes",
         Position::Parameter(p),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap()
 }
@@ -89,7 +81,7 @@ fn whole_numeric_types_have_identity_maps_without_finite_enumeration() {
         assert_eq!(r.target_type(), &ty);
         assert_eq!(r.forward().ty(), &ty);
         assert_eq!(r.inverse().ty(), &ty);
-        r.recheck(&i, &mut Control::unlimited()).unwrap();
+        r.recheck(&i, &Control::unlimited()).unwrap();
     }
     let r = result(&i, 4);
     assert_eq!(
@@ -120,26 +112,16 @@ fn both_compositions_preserve_large_negative_rationals_fp_and_nested_positions()
         ),
     ] {
         let r = result(&i, p);
-        let f = r
-            .forward()
-            .apply(&value, &mut Control::unlimited())
-            .unwrap();
-        let g = r
-            .inverse()
-            .apply(&value, &mut Control::unlimited())
-            .unwrap();
+        let f = r.forward().apply(&value, &Control::unlimited()).unwrap();
+        let g = r.inverse().apply(&value, &Control::unlimited()).unwrap();
         assert_eq!(f.wire().canonical(), expected);
         assert_eq!(g.wire().canonical(), expected);
         assert_eq!(
-            r.inverse()
-                .apply_value(&f, &mut Control::unlimited())
-                .unwrap(),
+            r.inverse().apply_value(&f, &Control::unlimited()).unwrap(),
             f
         );
         assert_eq!(
-            r.forward()
-                .apply_value(&g, &mut Control::unlimited())
-                .unwrap(),
+            r.forward().apply_value(&g, &Control::unlimited()).unwrap(),
             g
         );
     }
@@ -154,7 +136,7 @@ fn return_position_and_operation_survive_separate_body_and_signature_failures() 
         &d,
         "Before.returned",
         Position::Return,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(r.declaration(), "Before.returned");
@@ -162,7 +144,7 @@ fn return_position_and_operation_survive_separate_body_and_signature_failures() 
     assert_eq!(r.operation(), d.operation());
     assert_eq!(
         r.forward()
-            .apply(&nested(), &mut Control::unlimited())
+            .apply(&nested(), &Control::unlimited())
             .unwrap()
             .wire()
             .canonical(),
@@ -174,7 +156,7 @@ fn return_position_and_operation_survive_separate_body_and_signature_failures() 
         &d,
         "Before.changed",
         Position::Return,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(changed.operation(), d.operation());
@@ -196,7 +178,7 @@ fn bad_selection_wrong_types_and_noncanonical_values_are_rejected() {
     ] {
         assert!(
             matches!(
-                numeric_declaration_value_transport(&i, &d, name, pos, &mut Control::unlimited()),
+                numeric_declaration_value_transport(&i, &d, name, pos, &Control::unlimited()),
                 Err(ConstructionFailure::InvalidSelection(_))
             ),
             "{name} {pos:?}"
@@ -220,18 +202,18 @@ fn bad_selection_wrong_types_and_noncanonical_values_are_rejected() {
         ),
     ] {
         assert!(matches!(
-            result(&i, p).forward().apply(&v, &mut Control::unlimited()),
+            result(&i, p).forward().apply(&v, &Control::unlimited()),
             Err(ConstructionFailure::InvalidSelection(_))
         ));
     }
     let z = result(&i, 1)
         .forward()
-        .apply(&Value::Z(2.into()), &mut Control::unlimited())
+        .apply(&Value::Z(2.into()), &Control::unlimited())
         .unwrap();
     assert!(matches!(
         result(&i, 2)
             .inverse()
-            .apply_value(&z, &mut Control::unlimited()),
+            .apply_value(&z, &Control::unlimited()),
         Err(ConstructionFailure::InvalidSelection(_))
     ));
 }
@@ -243,12 +225,12 @@ fn current_declaration_types_are_rechecked_instead_of_reusing_stale_corresponden
         &L.replace("c: Left.Child, z: Z", "c: Left.Child, z: Q")
             .replace("c: Right.Child, z: Z", "c: Right.Child, z: Q"),
     );
-    assert!(r.recheck(&changed, &mut Control::unlimited()).is_err());
+    assert!(r.recheck(&changed, &Control::unlimited()).is_err());
     assert_eq!(result(&changed, 1).source_type(), &Type::Q);
     let changed = inputs(&L.replace("nested: (Z, (Q, Fp(3)))", "nested: ((Z, Q), Fp(3))"));
     assert!(
         result(&i, 4)
-            .recheck(&changed, &mut Control::unlimited())
+            .recheck(&changed, &Control::unlimited())
             .is_err()
     );
 }
@@ -257,10 +239,7 @@ fn fixed_checkpoints_stop_construction_application_and_recheck_without_reentry()
     let i = inputs(L);
     let d = declarations(&i);
     let r = result(&i, 4);
-    let v = r
-        .forward()
-        .apply(&nested(), &mut Control::unlimited())
-        .unwrap();
+    let v = r.forward().apply(&nested(), &Control::unlimited()).unwrap();
     for action in 0..4 {
         for point in [
             Checkpoint::NumericValueTransport,

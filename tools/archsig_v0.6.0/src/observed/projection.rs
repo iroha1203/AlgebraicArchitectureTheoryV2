@@ -109,7 +109,7 @@ pub fn resolve_projection(
     initial: ProjectionType,
     path: &[ProjectionStep],
 ) -> Result<ProjectionPlan, String> {
-    match resolve_projection_controlled(law, initial, path, &mut Control::unlimited()) {
+    match resolve_projection_controlled(law, initial, path, &Control::unlimited()) {
         Ok(plan) => Ok(plan),
         Err(ProjectionFailure::Invalid(message)) => Err(message),
         Err(ProjectionFailure::Interrupted(_)) => unreachable!("取消通知のない制御"),
@@ -121,7 +121,7 @@ pub fn resolve_projection_controlled(
     law: &CheckedLaw,
     initial: ProjectionType,
     path: &[ProjectionStep],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ProjectionPlan, ProjectionFailure> {
     tick(control)?;
     let mut plan = ProjectionPlan {
@@ -141,7 +141,7 @@ pub fn resolve_projection_controlled(
     Ok(plan)
 }
 
-fn tick(control: &mut Control) -> Result<(), Signal> {
+fn tick(control: &Control) -> Result<(), Signal> {
     control.checkpoint(Checkpoint::Projection)
 }
 
@@ -149,7 +149,7 @@ fn project(
     law: &CheckedLaw,
     ty: &ProjectionType,
     path: &[ProjectionStep],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(ProjectionPlan, usize), ProjectionFailure> {
     tick(control)?;
     let result = project_inner(law, ty, path, control);
@@ -158,7 +158,7 @@ fn project(
 
 fn finish_projection<T>(
     result: Result<T, ProjectionFailure>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<T, ProjectionFailure> {
     tick(control).map_err(ProjectionFailure::Interrupted)?;
     result
@@ -168,7 +168,7 @@ fn project_inner(
     law: &CheckedLaw,
     ty: &ProjectionType,
     path: &[ProjectionStep],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(ProjectionPlan, usize), ProjectionFailure> {
     use ProjectionStep::{Field, Index};
     use ProjectionType::{Architecture, Dynamic, Evaluation, Law};
@@ -495,14 +495,14 @@ fn project_inner(
 
 /// 動的な候補が一つでも宣言型へ適合し得る場合だけ、束縛制約として残せる。
 pub fn can_bind(actual: &ProjectionType, expected: &Type) -> bool {
-    can_bind_controlled(actual, expected, &mut Control::unlimited()).expect("取消通知のない制御")
+    can_bind_controlled(actual, expected, &Control::unlimited()).expect("取消通知のない制御")
 }
 
 /// 候補と型構造に共有制御を通し、全候補の不適合を確定した場合だけ false を返す。
 pub fn can_bind_controlled(
     actual: &ProjectionType,
     expected: &Type,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<bool, Signal> {
     tick(control)?;
     let mut candidates = vec![actual];
@@ -534,7 +534,7 @@ pub fn can_bind_controlled(
 }
 
 /// 取消は判定より優先する。呼出し側で、一候補の不一致と全候補の不適合を区別する。
-fn finish_type_match(same: bool, control: &mut Control) -> Result<bool, Signal> {
+fn finish_type_match(same: bool, control: &Control) -> Result<bool, Signal> {
     tick(control).map(|()| same)
 }
 
@@ -543,7 +543,7 @@ fn law_types_match(
     left: &Type,
     right: &Type,
     erase_owner: bool,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<bool, Signal> {
     let mut pending = vec![(left, right)];
     while let Some((left, right)) = pending.pop() {
@@ -612,7 +612,7 @@ fn law_types_match(
 fn push_unique(
     candidates: &mut Vec<ProjectionType>,
     candidate: ProjectionType,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(), Signal> {
     tick(control)?;
     for existing in candidates.iter() {
@@ -631,7 +631,7 @@ fn push_unique(
 fn projection_types_match(
     left: &ProjectionType,
     right: &ProjectionType,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<bool, Signal> {
     let mut pending = vec![(left, right)];
     while let Some((left, right)) = pending.pop() {

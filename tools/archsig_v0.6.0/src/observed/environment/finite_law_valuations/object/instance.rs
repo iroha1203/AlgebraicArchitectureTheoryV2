@@ -2,7 +2,7 @@
 use super::*;
 use crate::construction::readings::{InstanceApplication, ObjectInstance};
 fn select_tick(c: &Control) -> Result<(), ValidationFailure> {
-    c.clone().checkpoint(Checkpoint::FiniteLawSelection)?;
+    c.checkpoint(Checkpoint::FiniteLawSelection)?;
     Ok(())
 }
 
@@ -13,7 +13,7 @@ pub(in super::super) fn validate_selection(
     instance: usize,
     law: &str,
     bindings: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     select_tick(c)?;
     let object = objects
@@ -61,7 +61,7 @@ pub(in super::super) fn zero_indicator(
         return Err("元Lawでない".into());
     };
     row.indicator = Some(0.into());
-    if let Some(eq) = equation(e.indexes.inputs, body, &mut e.control.clone())? {
+    if let Some(eq) = equation(e.indexes.inputs, body, &e.control.clone())? {
         let ExprKind::Binary { lhs, .. } = e.indexes.inputs.law().exprs()[eq].kind else {
             return Err("元等式がない".into());
         };
@@ -328,7 +328,7 @@ impl FiniteLawFamilyValuations {
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
         selected: &[(usize, usize)],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), FiniteLawFamilyFailure> {
         if !self.instance_mode
             || self.columns.len() != selected.len()
@@ -359,7 +359,7 @@ pub(in crate::observed) fn finite_instance_law_family_valuations(
     inputs: &CheckedInputs,
     readings: &ObjectReadingInstances,
     selected: &[(usize, usize, Vec<(String, Scalar)>)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
     readings
         .recheck(inputs, c)

@@ -450,11 +450,11 @@ fn guarded_case(
     conditional: Option<bool>,
 ) {
     let inputs = fixture(gate, body);
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
     let result = evaluate_observed_bytes(
         inputs,
         &["g=check(Inspect.guarded,item=@current/root)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .wire();
@@ -689,7 +689,7 @@ fn bool_false_view_is_established_while_the_same_field_law_is_refuted() {
             "v=evaluate(Inspect.value,item=@current/root)",
             "l=check(Inspect.raw,item=@current/root)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .wire();
@@ -776,13 +776,13 @@ fn stop_between_guard_body_and_law_completion(expression_offset: usize, signal: 
     let prefix = "seed=evaluate(Inspect.value,item=@current/root)";
     let prefix_count = Rc::new(Cell::new(0));
     let seen = prefix_count.clone();
-    let mut baseline = Control::new(move |point| {
+    let baseline = Control::new(move |point| {
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
         None
     });
-    let prior = evaluate_observed_bytes(fixture(None, Some(true)), &[prefix], &mut baseline)
+    let prior = evaluate_observed_bytes(fixture(None, Some(true)), &[prefix], &baseline)
         .unwrap()
         .wire();
     assert_eq!(f(&prior, "status"), &Json::str("complete"));
@@ -791,7 +791,7 @@ fn stop_between_guard_body_and_law_completion(expression_offset: usize, signal: 
     let calls = Rc::new(Cell::new(0));
     let stopped_calls = Rc::new(Cell::new(None));
     let (seen, probes, frozen) = (expressions.clone(), calls.clone(), stopped_calls.clone());
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         probes.set(probes.get() + 1);
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
@@ -809,7 +809,7 @@ fn stop_between_guard_body_and_law_completion(expression_offset: usize, signal: 
             "g=check(Inspect.guarded,item=@current/root)",
             "later=check(Inspect.raw,item=@current/root)",
         ],
-        &mut control,
+        &control,
     )
     .unwrap()
     .wire();

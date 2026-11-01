@@ -7,7 +7,7 @@ fn partial_container_result(asks: &[&str]) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         partial_container_fixture::input(false, "r1"),
         asks,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", r.issues);

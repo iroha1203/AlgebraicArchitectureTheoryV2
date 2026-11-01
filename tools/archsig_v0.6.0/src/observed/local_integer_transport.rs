@@ -17,7 +17,7 @@ impl<'a> Renaming<'a> {
         g: &Graph,
         law: &'a crate::law::CheckedLaw,
         along: NodeRef,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<Self>, ValidationFailure> {
         let op = public_compose::op(g, along)?;
         let mut rename = Renaming {
@@ -55,7 +55,7 @@ impl<'a> Renaming<'a> {
         left: &[Fact],
         right: &[Fact],
         injective: bool,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<bool, ValidationFailure> {
         let mut targets = BTreeSet::new();
         let mut sources = BTreeSet::new();
@@ -124,7 +124,7 @@ impl<'a> Renaming<'a> {
     }
     fn path(
         &self, a: &crate::observed::path_value::PathValue,
-        b: &crate::observed::path_value::PathValue, c: &mut Control,
+        b: &crate::observed::path_value::PathValue, c: &Control,
     ) -> Result<bool, ValidationFailure> {
         a.check(c)?;
         b.check(c)?;
@@ -188,7 +188,7 @@ impl<'a> Renaming<'a> {
         );
         Some(Json::Obj(fields))
     }
-    pub(in crate::observed::local_result) fn binding(&self, a: &Scalar, b: &Scalar, c: &mut Control) -> Result<bool, ValidationFailure> {
+    pub(in crate::observed::local_result) fn binding(&self, a: &Scalar, b: &Scalar, c: &Control) -> Result<bool, ValidationFailure> {
         c.checkpoint(crate::control::Checkpoint::Localize)?;
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             if a.ty() != b.ty() { return Ok(false); }
@@ -255,7 +255,7 @@ fn coordinates(
     rank: usize,
     values: &Matrix,
     cols: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Matrix>, ValidationFailure> {
     let mut result = vec![vec![Z::zero(); cols]; rank];
     for j in 0..cols {
@@ -316,7 +316,7 @@ fn levels(
     d: &Diagram,
     semantic: bool,
     count: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Level>, ValidationFailure> {
     let states = if semantic { &d.semantic } else { &d.equation };
     let mut tuples = d.patches.iter().map(|i| vec![*i]).collect::<Vec<_>>();
@@ -361,7 +361,7 @@ fn cochains(
     b: &[Level],
     contexts: &[usize],
     coefficients: &[Matrix],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Matrix>, ValidationFailure> {
     let mut maps = vec![];
     for (a, b) in a.iter().zip(b) {
@@ -393,7 +393,7 @@ pub(in crate::observed::local_result) fn between(
     left: NodeRef,
     right: NodeRef,
     along: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Maps>, ValidationFailure> {
     let ls = field(g, left, "system")?;
     let rs = field(g, right, "system")?;
@@ -649,13 +649,13 @@ mod tests {
         let list=|items|Scalar::List{element:ty.clone(),items};
         let map=|pairs|Scalar::Map{domain:ty.clone(),codomain:ty.clone(),pairs};
         let data=|name:&str,args|Scalar::Data{family:"R.Packet".into(),constructor:name.into(),args};
-        let mut c=Control::unlimited();
+        let c=Control::unlimited();
         for (a,b) in [
             (set(vec![subject("a"),subject("b")]),set(vec![subject("y"),subject("z")])),
             (map(vec![(subject("a"),subject("b")),(subject("b"),subject("a"))]),map(vec![(subject("y"),subject("z")),(subject("z"),subject("y"))])),
             (data("Wrap",vec![list(vec![subject("a"),subject("b"),subject("a")])]),data("Wrap",vec![list(vec![subject("z"),subject("y"),subject("z")])])),
             (Scalar::Option{element:ty.clone(),value:None},Scalar::Option{element:ty.clone(),value:None}),
-        ] { assert!(rename.binding(&a,&b,&mut c).unwrap()); }
+        ] { assert!(rename.binding(&a,&b,&c).unwrap()); }
         for (a,b) in [
             (list(vec![subject("a"),subject("b")]),list(vec![subject("y"),subject("z")])),
             (set(vec![subject("a"),subject("b")]),set(vec![subject("z")])),
@@ -663,8 +663,8 @@ mod tests {
             (data("Wrap",vec![subject("a")]),data("Other",vec![subject("z")])),
             (Scalar::Option{element:ty.clone(),value:None},Scalar::Option{element:ty.clone(),value:Some(Box::new(subject("z")))}),
             (Scalar::Tuple(vec![subject("a"),Scalar::Z(2.into())]),Scalar::Tuple(vec![subject("z"),Scalar::Z(3.into())])),
-        ] { assert!(!rename.binding(&a,&b,&mut c).unwrap()); }
-        let mut stopped=Control::new(|_|Some(Signal::Int));
-        assert!(matches!(rename.binding(&subject("a"),&subject("z"),&mut stopped),Err(ValidationFailure::Stop(_))));
+        ] { assert!(!rename.binding(&a,&b,&c).unwrap()); }
+        let stopped=Control::new(|_|Some(Signal::Int));
+        assert!(matches!(rename.binding(&subject("a"),&subject("z"),&stopped),Err(ValidationFailure::Stop(_))));
     }
 }

@@ -56,10 +56,9 @@ fn refs(value: &Json, found: &mut Vec<String>) {
     }
 }
 fn run(input: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvaluation {
-    let result =
-        evaluate_observed_bytes(input.clone(), asks, &mut quiet()).unwrap_or_else(|error| {
-            panic!("{:?}", error.wire().map(|wire| f(&wire, "issues").clone()))
-        });
+    let result = evaluate_observed_bytes(input.clone(), asks, &quiet()).unwrap_or_else(|error| {
+        panic!("{:?}", error.wire().map(|wire| f(&wire, "issues").clone()))
+    });
     assert_eq!(result.prepared().inputs().sources(), &input);
     let wire = result.wire();
     for (index, node) in arr(f(&wire, "nodes")).iter().enumerate() {
@@ -87,7 +86,7 @@ fn identity_path_endpoints_are_consumed_as_original_refs_in_request_order() {
         let result = evaluate_observed_bytes(
             input.clone(),
             &[&take, "p=evaluate(Walk.id,x=@v/a)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete");
@@ -392,7 +391,7 @@ fn path_projection_rejects_private_fields_unindexed_words_and_ref_encodings_stat
         let error = evaluate_observed_bytes(
             fixture::internal("normal", "r1"),
             &[&take, "p=evaluate(Walk.step,e=@v/e)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap_err();
         let wire = error.wire().unwrap();

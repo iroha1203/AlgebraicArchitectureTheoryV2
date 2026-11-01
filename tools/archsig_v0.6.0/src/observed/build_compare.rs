@@ -4,7 +4,7 @@ use super::{
     observable_layout::Reading, result::*, value_equality,
 };
 use crate::control::{Checkpoint, Control};
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;
     Ok(())
 }
@@ -24,7 +24,7 @@ fn evaluation(
     g: &Graph,
     left: NodeRef,
     right: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<bool>, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(c)?;
@@ -106,7 +106,7 @@ fn residual(
     g: &Graph,
     left: NodeRef,
     right: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<bool>, ValidationFailure> {
     tick(c)?;
     let (Some(Payload::Construction(l)), Some(Payload::Construction(r))) =
@@ -199,7 +199,7 @@ pub(super) fn compare(
     env: &Environment<'_>,
     g: &Graph,
     plan: &Plan,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Comparison>, ValidationFailure> {
     plan.boundary.recheck(env, g, plan.boundary.start(), c)?;
     let objects = plan.objects.as_ref().ok_or("build互換性に全対象族がない")?;
@@ -243,7 +243,7 @@ pub(super) fn compare(
                 continue;
             }
             let numeric_family = |index: NodeRef,
-                                  c: &mut Control|
+                                  c: &Control|
              -> Result<
                 Option<super::environment::numeric_law_function::Family>,
                 ValidationFailure,

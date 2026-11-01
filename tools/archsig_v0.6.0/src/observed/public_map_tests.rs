@@ -13,7 +13,7 @@ fn inputs(map: &str) -> InputSources {
 }
 fn example(map: &str) -> ObservedEvaluation {
     let result =
-        evaluate_observed_bytes(inputs(map), &[MAP_ASK], &mut Control::unlimited()).unwrap();
+        evaluate_observed_bytes(inputs(map), &[MAP_ASK], &Control::unlimited()).unwrap();
     assert_ne!(result.status(), "error", "{:?}", result.issues);
     rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     result
@@ -86,13 +86,13 @@ fn native_map_stops_latch_without_discarding_checked_maps_or_resuming_computatio
     ] {
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut probe = Control::new(move |p| {
+        let probe = Control::new(move |p| {
             if p == point {
                 seen.set(seen.get() + 1);
             }
             None
         });
-        let original = evaluate_observed_bytes(inputs(A_BYTES), &[MAP_ASK], &mut probe).unwrap();
+        let original = evaluate_observed_bytes(inputs(A_BYTES), &[MAP_ASK], &probe).unwrap();
         assert_eq!(original.status(), "complete");
         let total = count.get();
         assert!(total > 0);
@@ -100,14 +100,14 @@ fn native_map_stops_latch_without_discarding_checked_maps_or_resuming_computatio
         for at in [1, (total / 2).max(1), total] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut control = Control::new(move |p| {
+            let control = Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1);
                 }
                 (seen.get() >= at).then_some(crate::result::Signal::Int)
             });
             let result =
-                evaluate_observed_bytes(inputs(A_BYTES), &[MAP_ASK], &mut control).unwrap();
+                evaluate_observed_bytes(inputs(A_BYTES), &[MAP_ASK], &control).unwrap();
             assert_eq!(
                 result.status(),
                 "interrupted",

@@ -39,7 +39,7 @@ fn stop_at(target: Checkpoint) -> Control {
 
 #[test]
 fn checked_bundle_preserves_original_bytes_identities_and_shared_definitions() {
-    let inputs = check_inputs(sources(), &mut Control::unlimited()).unwrap();
+    let inputs = check_inputs(sources(), &Control::unlimited()).unwrap();
     assert_eq!(inputs.sources().law().bytes(), LAW);
     assert_eq!(inputs.definitions(), inputs.law().definitions());
     assert_eq!(
@@ -73,7 +73,7 @@ fn input_id_collisions_and_reserved_ids_are_rejected() {
         src.law().clone(),
         src.archmap().clone(),
     );
-    let failure = check_inputs(src, &mut Control::unlimited()).unwrap_err();
+    let failure = check_inputs(src, &Control::unlimited()).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert!(failure.declarations().is_empty());
 }
@@ -91,7 +91,7 @@ fn invalid_or_unsupported_law_keeps_declaration_and_vocabulary_tables_empty() {
         ),
     ] {
         let src = InputSources::from_bytes(vec![DEFINITIONS.to_vec()], law, MAP.to_vec());
-        let failure = check_inputs(src, &mut Control::unlimited()).unwrap_err();
+        let failure = check_inputs(src, &Control::unlimited()).unwrap_err();
         assert_eq!(failure.status(), status);
         let wire = failure.wire();
         for key in [
@@ -108,9 +108,9 @@ fn invalid_or_unsupported_law_keeps_declaration_and_vocabulary_tables_empty() {
 
 #[test]
 fn invalid_archmap_preserves_all_checked_declarations_and_vocabularies() {
-    let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
+    let checked = check_inputs(sources(), &Control::unlimited()).unwrap();
     let src = InputSources::from_bytes(vec![DEFINITIONS.to_vec()], LAW.to_vec(), b"bad".to_vec());
-    let failure = check_inputs(src, &mut Control::unlimited()).unwrap_err();
+    let failure = check_inputs(src, &Control::unlimited()).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert!(!failure.declarations().is_empty());
     assert!(!failure.primitives().is_empty());
@@ -127,7 +127,7 @@ fn invalid_archmap_preserves_all_checked_declarations_and_vocabularies() {
 
 #[test]
 fn cancellation_inside_each_checker_obeys_declaration_stage_rules() {
-    let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
+    let checked = check_inputs(sources(), &Control::unlimited()).unwrap();
     let metadata = checked.metadata_wire();
     for (point, retained) in [
         (Checkpoint::BeforeDefinitions, false),
@@ -138,7 +138,7 @@ fn cancellation_inside_each_checker_obeys_declaration_stage_rules() {
         (Checkpoint::ArchMapIteration, true),
         (Checkpoint::AfterArchMap, true),
     ] {
-        let failure = check_inputs(sources(), &mut stop_at(point)).unwrap_err();
+        let failure = check_inputs(sources(), &stop_at(point)).unwrap_err();
         assert_eq!(failure.status(), InputStatus::Interrupted, "{point:?}");
         assert_eq!(!failure.declarations().is_empty(), retained, "{point:?}");
         assert_eq!(!failure.vocabularies().is_empty(), retained, "{point:?}");
@@ -161,24 +161,24 @@ fn cancellation_after_multiple_iterations_stops_inside_each_checker() {
     ] {
         let total = Rc::new(Cell::new(0usize));
         let measured = total.clone();
-        let mut counting = Control::new(move |current| {
+        let counting = Control::new(move |current| {
             if current == point {
                 measured.set(measured.get() + 1);
             }
             None
         });
-        check_inputs(sources(), &mut counting).unwrap();
+        check_inputs(sources(), &counting).unwrap();
         assert!(total.get() > 2, "{point:?}");
         let stop_after = total.get() / 2;
         let seen = Rc::new(Cell::new(0usize));
         let probe_seen = seen.clone();
-        let mut control = Control::new(move |current| {
+        let control = Control::new(move |current| {
             if current == point {
                 probe_seen.set(probe_seen.get() + 1);
             }
             (probe_seen.get() == stop_after).then_some(Signal::Term)
         });
-        let failure = check_inputs(sources(), &mut control).unwrap_err();
+        let failure = check_inputs(sources(), &control).unwrap_err();
         assert_eq!(seen.get(), stop_after);
         assert_eq!(failure.status(), InputStatus::Interrupted);
         assert_eq!(control.stop_reason(), Some(Signal::Term));
@@ -195,15 +195,14 @@ fn from_checked_accepts_matching_tables_and_rejects_mixed_definition_identity() 
     let definitions = check_definitions(&[("definition0", DEFINITIONS)]).unwrap();
     let law = check_law(LAW, &definitions).unwrap();
     let map = check_archmap(MAP, &definitions).unwrap();
-    CheckedInputs::from_checked(sources(), definitions, law, map, &mut Control::unlimited())
-        .unwrap();
+    CheckedInputs::from_checked(sources(), definitions, law, map, &Control::unlimited()).unwrap();
 
     let mut definitions = check_definitions(&[("definition0", DEFINITIONS)]).unwrap();
     let law = check_law(LAW, &definitions).unwrap();
     let map = check_archmap(MAP, &definitions).unwrap();
     definitions = changed_definitions();
     let failure =
-        CheckedInputs::from_checked(sources(), definitions, law, map, &mut Control::unlimited())
+        CheckedInputs::from_checked(sources(), definitions, law, map, &Control::unlimited())
             .unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert!(failure.declarations().is_empty());
@@ -215,12 +214,12 @@ fn from_checked_accepts_matching_tables_and_rejects_mixed_definition_identity() 
 fn cloned_controls_share_stop_and_never_resume_after_cancellation() {
     let calls = Rc::new(Cell::new(0));
     let calls_probe = calls.clone();
-    let mut control = Control::new(move |_| {
+    let control = Control::new(move |_| {
         let n = calls_probe.get() + 1;
         calls_probe.set(n);
         (n >= 2).then_some(Signal::Term)
     });
-    let mut helper = control.clone();
+    let helper = control.clone();
     control.checkpoint(Checkpoint::Resolve).unwrap();
     let stopped = helper.checkpoint(Checkpoint::FiniteIteration).unwrap_err();
     assert_eq!(stopped, Signal::Term);

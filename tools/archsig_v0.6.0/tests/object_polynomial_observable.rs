@@ -29,7 +29,7 @@ fn inputs_with(body: &str, map: &str) -> Arc<CheckedInputs> {
                 law.into_bytes(),
                 map.replace("@DIGEST@", digest).into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     )
@@ -38,7 +38,7 @@ fn inputs(body: &str) -> Arc<CheckedInputs> {
     inputs_with(body, fixture::A)
 }
 fn run(i: Arc<CheckedInputs>) -> O {
-    object_polynomial_observable(i, "Selected", "v", "root", 0, &mut quiet()).unwrap()
+    object_polynomial_observable(i, "Selected", "v", "root", 0, &quiet()).unwrap()
 }
 fn terms(v: &V, block: usize) -> Vec<(Vec<usize>, String)> {
     v.blocks()[block]
@@ -115,12 +115,9 @@ fn shared_factors_and_typed_product_coordinates_keep_original_equations_and_idea
             true,
         ),
     ] {
-        let nu = r.at(index, root, R::Nu, &mut quiet()).unwrap().unwrap();
+        let nu = r.at(index, root, R::Nu, &quiet()).unwrap().unwrap();
         assert_eq!(terms(&nu, z), expected_nu);
-        let residual = r
-            .at(index, root, R::Residual, &mut quiet())
-            .unwrap()
-            .unwrap();
+        let residual = r.at(index, root, R::Residual, &quiet()).unwrap().unwrap();
         assert_eq!(
             terms(&residual, z),
             if holds {
@@ -129,7 +126,7 @@ fn shared_factors_and_typed_product_coordinates_keep_original_equations_and_idea
                 vec![(vec![], epsilon.into())]
             }
         );
-        assert_eq!(r.holds_at(index, root, &mut quiet()).unwrap(), Some(holds));
+        assert_eq!(r.holds_at(index, root, &quiet()).unwrap(), Some(holds));
         assert_eq!(r.base().occurrences()[index].component_holds, Some(holds));
         for b in 0..4 {
             if b != z {
@@ -144,10 +141,7 @@ fn shared_factors_and_typed_product_coordinates_keep_original_equations_and_idea
         ("fiveCase", p5, "\"4\""),
     ] {
         let index = find(&r, name);
-        let value = r
-            .at(index, root, R::Residual, &mut quiet())
-            .unwrap()
-            .unwrap();
+        let value = r.at(index, root, R::Residual, &quiet()).unwrap().unwrap();
         assert_eq!(terms(&value, factor), [(vec![], coefficient.into())]);
         for b in 0..4 {
             if b != factor {
@@ -155,10 +149,10 @@ fn shared_factors_and_typed_product_coordinates_keep_original_equations_and_idea
             }
         }
     }
-    let nu = r.at(stays, root, R::Nu, &mut quiet()).unwrap().unwrap();
-    assert!(!r.is_zero(&nu, &mut quiet()).unwrap());
-    assert_eq!(r.holds_at(stays, root, &mut quiet()).unwrap(), Some(true));
-    r.recheck(i, &mut quiet()).unwrap();
+    let nu = r.at(stays, root, R::Nu, &quiet()).unwrap().unwrap();
+    assert!(!r.is_zero(&nu, &quiet()).unwrap());
+    assert_eq!(r.holds_at(stays, root, &quiet()).unwrap(), Some(true));
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn coordinate_placement_is_not_the_product_unit_and_arithmetic_is_componentwise() {
@@ -167,75 +161,66 @@ fn coordinate_placement_is_not_the_product_unit_and_arithmetic_is_componentwise(
     let z = r.factors().iter().position(|f| f.ty == Type::Z).unwrap();
     let q = r.factors().iter().position(|f| f.ty == Type::Q).unwrap();
     let e = r
-        .at(find(&r, "one"), root, R::Epsilon, &mut quiet())
+        .at(find(&r, "one"), root, R::Epsilon, &quiet())
         .unwrap()
         .unwrap();
     let f = r
-        .at(find(&r, "rational"), root, R::Epsilon, &mut quiet())
+        .at(find(&r, "rational"), root, R::Epsilon, &quiet())
         .unwrap()
         .unwrap();
-    let zero = r.zero(&mut quiet()).unwrap();
-    let unit = r.one(&mut quiet()).unwrap();
-    assert!(!r.equal(&e, &unit, &mut quiet()).unwrap());
+    let zero = r.zero(&quiet()).unwrap();
+    let unit = r.one(&quiet()).unwrap();
+    assert!(!r.equal(&e, &unit, &quiet()).unwrap());
     assert_eq!(terms(&e, z), [(vec![], "\"1\"".into())]);
     assert!(terms(&e, q).is_empty());
     assert_eq!(terms(&unit, z), [(vec![], "\"1\"".into())]);
     assert_eq!(terms(&unit, q), [(vec![], "[\"1\",\"1\"]".into())]);
-    let sum = r.add(&e, &f, &mut quiet()).unwrap();
+    let sum = r.add(&e, &f, &quiet()).unwrap();
     assert_eq!(terms(&sum, z), [(vec![], "\"1\"".into())]);
     assert_eq!(terms(&sum, q), [(vec![], "[\"1\",\"6\"]".into())]);
     assert!(
-        r.is_zero(&r.mul(&e, &f, &mut quiet()).unwrap(), &mut quiet())
+        r.is_zero(&r.mul(&e, &f, &quiet()).unwrap(), &quiet())
             .unwrap()
     );
     assert!(
-        r.equal(
-            &r.mul(&sum, &unit, &mut quiet()).unwrap(),
-            &sum,
-            &mut quiet()
-        )
-        .unwrap()
-    );
-    assert!(
-        r.equal(&r.sub(&sum, &f, &mut quiet()).unwrap(), &e, &mut quiet())
+        r.equal(&r.mul(&sum, &unit, &quiet()).unwrap(), &sum, &quiet())
             .unwrap()
     );
     assert!(
-        r.equal(
-            &r.add(&sum, &zero, &mut quiet()).unwrap(),
-            &sum,
-            &mut quiet()
-        )
-        .unwrap()
+        r.equal(&r.sub(&sum, &f, &quiet()).unwrap(), &e, &quiet())
+            .unwrap()
     );
     assert!(
-        r.is_zero(&r.sub(&sum, &sum, &mut quiet()).unwrap(), &mut quiet())
+        r.equal(&r.add(&sum, &zero, &quiet()).unwrap(), &sum, &quiet())
+            .unwrap()
+    );
+    assert!(
+        r.is_zero(&r.sub(&sum, &sum, &quiet()).unwrap(), &quiet())
             .unwrap()
     );
     let lhs = r
-        .mul(&sum, &r.add(&e, &f, &mut quiet()).unwrap(), &mut quiet())
+        .mul(&sum, &r.add(&e, &f, &quiet()).unwrap(), &quiet())
         .unwrap();
     let rhs = r
         .add(
-            &r.mul(&sum, &e, &mut quiet()).unwrap(),
-            &r.mul(&sum, &f, &mut quiet()).unwrap(),
-            &mut quiet(),
+            &r.mul(&sum, &e, &quiet()).unwrap(),
+            &r.mul(&sum, &f, &quiet()).unwrap(),
+            &quiet(),
         )
         .unwrap();
-    assert!(r.equal(&lhs, &rhs, &mut quiet()).unwrap());
+    assert!(r.equal(&lhs, &rhs, &quiet()).unwrap());
 }
 #[test]
 fn all_other_atoms_are_zero_and_a_component_still_uses_the_base_root_atom() {
     let i = inputs("law required part(c:Part):c.quantity=0;");
-    let r =
-        object_polynomial_observable(i.clone(), "Selected", "v", "root", 1, &mut quiet()).unwrap();
+    let r = object_polynomial_observable(i.clone(), "Selected", "v", "root", 1, &quiet()).unwrap();
     let root = r.root_atom().unwrap();
     assert_eq!(r.global_context()[root].subject, "root");
     assert_eq!(r.coordinates().len(), 1);
     assert!(
         !r.is_zero(
-            &r.at(0, root, R::Residual, &mut quiet()).unwrap().unwrap(),
-            &mut quiet()
+            &r.at(0, root, R::Residual, &quiet()).unwrap().unwrap(),
+            &quiet()
         )
         .unwrap()
     );
@@ -244,14 +229,14 @@ fn all_other_atoms_are_zero_and_a_component_still_uses_the_base_root_atom() {
         if atom != root {
             found_part |= fact.subject == "p" && fact.field.is_none();
             for kind in [R::Nu, R::Epsilon, R::Residual] {
-                let value = r.at(0, atom, kind, &mut quiet()).unwrap().unwrap();
-                assert!(r.is_zero(&value, &mut quiet()).unwrap());
+                let value = r.at(0, atom, kind, &quiet()).unwrap().unwrap();
+                assert!(r.is_zero(&value, &quiet()).unwrap());
             }
-            assert_eq!(r.holds_at(0, atom, &mut quiet()).unwrap(), Some(true));
+            assert_eq!(r.holds_at(0, atom, &quiet()).unwrap(), Some(true));
         }
     }
     assert!(found_part);
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn empty_product_is_the_one_element_ring_without_fabricated_coordinates() {
@@ -262,19 +247,15 @@ fn empty_product_is_the_one_element_ring_without_fabricated_coordinates() {
     assert!(r.factors().is_empty());
     assert!(r.coordinates().is_empty());
     assert!(r.root_atom().is_some());
-    let zero = r.zero(&mut quiet()).unwrap();
-    let one = r.one(&mut quiet()).unwrap();
+    let zero = r.zero(&quiet()).unwrap();
+    let one = r.one(&quiet()).unwrap();
     assert!(zero.blocks().is_empty());
-    assert!(r.equal(&zero, &one, &mut quiet()).unwrap());
+    assert!(r.equal(&zero, &one, &quiet()).unwrap());
     assert!(
-        r.equal(
-            &r.mul(&one, &one, &mut quiet()).unwrap(),
-            &zero,
-            &mut quiet()
-        )
-        .unwrap()
+        r.equal(&r.mul(&one, &one, &quiet()).unwrap(), &zero, &quiet())
+            .unwrap()
     );
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn a_missing_residual_is_unknown_at_root_and_zero_at_other_atoms() {
@@ -288,10 +269,10 @@ fn a_missing_residual_is_unknown_at_root_and_zero_at_other_atoms() {
     let r = run(i.clone());
     let root = r.root_atom().unwrap();
     assert_eq!(r.status(), S::Undetermined);
-    assert!(r.at(0, root, R::Residual, &mut quiet()).unwrap().is_none());
-    assert!(r.at(0, root, R::Epsilon, &mut quiet()).unwrap().is_none());
-    assert_eq!(r.holds_at(0, root, &mut quiet()).unwrap(), None);
-    let nu = r.at(0, root, R::Nu, &mut quiet()).unwrap().unwrap();
+    assert!(r.at(0, root, R::Residual, &quiet()).unwrap().is_none());
+    assert!(r.at(0, root, R::Epsilon, &quiet()).unwrap().is_none());
+    assert_eq!(r.holds_at(0, root, &quiet()).unwrap(), None);
+    let nu = r.at(0, root, R::Nu, &quiet()).unwrap().unwrap();
     assert_eq!(
         terms(&nu, 0),
         [(vec![], "\"-1\"".into()), (vec![0], "\"1\"".into())]
@@ -301,30 +282,30 @@ fn a_missing_residual_is_unknown_at_root_and_zero_at_other_atoms() {
         if atom != root {
             assert!(
                 r.is_zero(
-                    &r.at(0, atom, R::Residual, &mut quiet()).unwrap().unwrap(),
-                    &mut quiet()
+                    &r.at(0, atom, R::Residual, &quiet()).unwrap().unwrap(),
+                    &quiet()
                 )
                 .unwrap()
             );
         }
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn invalid_indices_and_values_from_another_construction_are_rejected() {
     let i = four_inputs();
     let a = run(i.clone());
     let b = run(i);
-    let zero = a.zero(&mut quiet()).unwrap();
-    let foreign = b.zero(&mut quiet()).unwrap();
+    let zero = a.zero(&quiet()).unwrap();
+    let foreign = b.zero(&quiet()).unwrap();
     for error in [
-        a.add(&zero, &foreign, &mut quiet()).unwrap_err(),
-        a.mul(&foreign, &zero, &mut quiet()).unwrap_err(),
-        a.equal(&foreign, &zero, &mut quiet()).unwrap_err(),
-        a.is_zero(&foreign, &mut quiet()).unwrap_err(),
-        a.at(999, a.root_atom().unwrap(), R::Nu, &mut quiet())
+        a.add(&zero, &foreign, &quiet()).unwrap_err(),
+        a.mul(&foreign, &zero, &quiet()).unwrap_err(),
+        a.equal(&foreign, &zero, &quiet()).unwrap_err(),
+        a.is_zero(&foreign, &quiet()).unwrap_err(),
+        a.at(999, a.root_atom().unwrap(), R::Nu, &quiet())
             .unwrap_err(),
-        a.at(0, 999, R::Residual, &mut quiet()).unwrap_err(),
+        a.at(0, 999, R::Residual, &quiet()).unwrap_err(),
     ] {
         assert!(matches!(error, ConstructionFailure::InvalidSelection(_)));
     }
@@ -340,30 +321,27 @@ fn false_guard_has_zero_conditional_coordinate_without_changing_the_nonzero_raw_
     let off = find(&r, "off");
     let on = find(&r, "on");
     assert_eq!(
-        terms(
-            &r.at(off, root, R::Epsilon, &mut quiet()).unwrap().unwrap(),
-            0
-        ),
+        terms(&r.at(off, root, R::Epsilon, &quiet()).unwrap().unwrap(), 0),
         [(vec![], "\"2\"".into())]
     );
     assert!(
         r.is_zero(
-            &r.at(off, root, R::Residual, &mut quiet()).unwrap().unwrap(),
-            &mut quiet()
+            &r.at(off, root, R::Residual, &quiet()).unwrap().unwrap(),
+            &quiet()
         )
         .unwrap()
     );
-    assert_eq!(r.holds_at(off, root, &mut quiet()).unwrap(), Some(true));
+    assert_eq!(r.holds_at(off, root, &quiet()).unwrap(), Some(true));
     let original = &r.base().occurrences()[off];
     assert!(original.component_holds.is_none());
     assert!(original.evaluated_nu.is_none());
     assert_eq!(
-        terms(&r.at(off, root, R::Nu, &mut quiet()).unwrap().unwrap(), 0),
+        terms(&r.at(off, root, R::Nu, &quiet()).unwrap().unwrap(), 0),
         [(vec![0], "\"1\"".into())]
     );
-    assert_eq!(r.holds_at(on, root, &mut quiet()).unwrap(), Some(false));
+    assert_eq!(r.holds_at(on, root, &quiet()).unwrap(), Some(false));
     assert_eq!(r.factors()[0].required_generators, [on]);
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn finite_parameter_rows_and_nested_tuple_components_share_factors_and_keep_individual_zeroes() {
@@ -388,10 +366,7 @@ fn finite_parameter_rows_and_nested_tuple_components_share_factors_and_keep_indi
     for (index, coordinate) in r.coordinates().iter().enumerate() {
         paths.push(coordinate.component.clone());
         rows.insert(coordinate.row);
-        let value = r
-            .at(index, root, R::Residual, &mut quiet())
-            .unwrap()
-            .unwrap();
+        let value = r.at(index, root, R::Residual, &quiet()).unwrap().unwrap();
         let factor = match coordinate.component.as_slice() {
             [0, 0] => {
                 z_values.push(terms(&value, z));
@@ -413,7 +388,7 @@ fn finite_parameter_rows_and_nested_tuple_components_share_factors_and_keep_indi
                 assert!(terms(&value, other).is_empty());
             }
         }
-        holds += usize::from(r.holds_at(index, root, &mut quiet()).unwrap() == Some(true));
+        holds += usize::from(r.holds_at(index, root, &quiet()).unwrap() == Some(true));
     }
     paths.sort();
     assert_eq!(
@@ -432,7 +407,7 @@ fn finite_parameter_rows_and_nested_tuple_components_share_factors_and_keep_indi
     assert_eq!(z_values, [vec![], vec![(vec![], "\"1\"".into())]]);
     assert_eq!(holds, 1);
     assert_eq!(r.factors()[z].symbols.len(), 1);
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn unknown_parameter_family_and_unsupported_predicate_are_not_a_ready_empty_product() {
@@ -458,7 +433,7 @@ fn unknown_parameter_family_and_unsupported_predicate_are_not_a_ready_empty_prod
             .iter()
             .any(|v| !v.family().missing().is_empty())
     );
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
     let i = inputs("law required predicate(c:Part):c.quantity>0;");
     let r = run(i.clone());
     assert_eq!(r.status(), S::UnsupportedAlgorithm);
@@ -466,10 +441,10 @@ fn unknown_parameter_family_and_unsupported_predicate_are_not_a_ready_empty_prod
     assert_eq!(r.coordinates()[0].status, S::UnsupportedAlgorithm);
     assert!(r.coordinates()[0].factor.is_none());
     assert_eq!(
-        r.holds_at(0, r.root_atom().unwrap(), &mut quiet()).unwrap(),
+        r.holds_at(0, r.root_atom().unwrap(), &quiet()).unwrap(),
         None
     );
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn an_unexecuted_match_body_keeps_missing_support_and_no_root_value() {
@@ -490,7 +465,7 @@ fn an_unexecuted_match_body_keeps_missing_support_and_no_root_value() {
     assert_eq!(q.conditional_holds, None);
     assert!(r.factors()[0].symbols[0].value.is_none());
     assert!(r.factors()[0].symbols[0].readings[0].fact.atom.is_none());
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn current_inputs_provenance_and_invalid_object_are_checked_again() {
@@ -501,13 +476,10 @@ fn current_inputs_provenance_and_invalid_object_are_checked_again() {
         inputs("law required amount(c:Part):c.quantity=1;"),
         inputs_with(body, &fixture::A.replace("fixture-r1", "fixture-other")),
     ] {
-        assert!(matches!(
-            r.recheck(changed, &mut quiet()),
-            Err(F::Original(_))
-        ));
+        assert!(matches!(r.recheck(changed, &quiet()), Err(F::Original(_))));
     }
     assert!(matches!(
-        object_polynomial_observable(i, "Selected", "v", "root", 999, &mut quiet()),
+        object_polynomial_observable(i, "Selected", "v", "root", 999, &quiet()),
         Err(F::Original(_))
     ));
 }
@@ -521,15 +493,14 @@ fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_
     for recheck in [false, true] {
         let history = Rc::new(RefCell::new(vec![]));
         let h = history.clone();
-        let mut traced = Control::new(move |p| {
+        let traced = Control::new(move |p| {
             h.borrow_mut().push(p);
             None
         });
         if recheck {
-            baseline.recheck(i.clone(), &mut traced).unwrap();
+            baseline.recheck(i.clone(), &traced).unwrap();
         } else {
-            object_polynomial_observable(i.clone(), "Selected", "v", "root", 0, &mut traced)
-                .unwrap();
+            object_polynomial_observable(i.clone(), "Selected", "v", "root", 0, &traced).unwrap();
         }
         for at in [C::PolynomialObservable, C::PolynomialObservableCoordinate] {
             let count = history.borrow().iter().filter(|&&p| p == at).count();
@@ -540,7 +511,7 @@ fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_
                     let h = hits.clone();
                     let probes = Rc::new(RefCell::new(0));
                     let p = probes.clone();
-                    let mut c = Control::new(move |point| {
+                    let c = Control::new(move |point| {
                         *p.borrow_mut() += 1;
                         if point == at {
                             *h.borrow_mut() += 1;
@@ -548,9 +519,9 @@ fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_
                         (point == at && *h.borrow() == nth).then_some(signal)
                     });
                     let failure = if recheck {
-                        baseline.recheck(i.clone(), &mut c).unwrap_err()
+                        baseline.recheck(i.clone(), &c).unwrap_err()
                     } else {
-                        object_polynomial_observable(i.clone(), "Selected", "v", "root", 0, &mut c)
+                        object_polynomial_observable(i.clone(), "Selected", "v", "root", 0, &c)
                             .unwrap_err()
                     };
                     let F::Reading { cause, partial } = failure else {
@@ -593,7 +564,7 @@ fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_
                     }
                     let before = *probes.borrow();
                     assert_eq!(
-                        partial.zero(&mut c).unwrap_err(),
+                        partial.zero(&c).unwrap_err(),
                         ConstructionFailure::Stopped(signal)
                     );
                     assert_eq!(*probes.borrow(), before);

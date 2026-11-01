@@ -10,7 +10,7 @@ use super::{
 use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, types::Type};
 use std::sync::Arc;
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::EquationPresentation)?;
     Ok(())
 }
@@ -207,7 +207,7 @@ impl Part {
 /// 原始FactPointerの全欄を可逆に保持する。順序番号をAtomのidentityにしない。
 pub(super) fn carrier(
     a: &ArchitectureWitness,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Scalar>, ValidationFailure> {
     let mut values = vec![];
     for f in a.construction().universe() {
@@ -255,7 +255,7 @@ impl Dependencies {
         positions: &[Fact],
         expressions: &[NodeRef],
         request: &super::request::Request,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Vec<Reason>, ValidationFailure> {
         let env = super::environment::Environment::new(inputs, c)?;
         let mut missing = vec![];
@@ -297,7 +297,7 @@ impl Dependencies {
 pub(super) fn dependencies(
     inputs: &crate::input::CheckedInputs,
     positions: &[Fact],
-    c: &mut Control,
+    c: &Control,
     mut retain: impl FnMut(Scalar) -> Result<NodeRef, ValidationFailure>,
 ) -> Result<Dependencies, ValidationFailure> {
     let mut subjects = std::collections::BTreeMap::new();

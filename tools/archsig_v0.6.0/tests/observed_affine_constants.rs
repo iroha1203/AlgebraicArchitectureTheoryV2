@@ -111,8 +111,7 @@ fn fixture(
         vocabulary_json("Affine", &format!("[{root},{sample}]"), "[]")
     ));
     let checked =
-        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
-            .unwrap();
+        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &quiet()).unwrap();
     let digest = &checked.vocabularies()["Affine"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading Calc {{ use vocabulary Affine version "1" digest "{digest}"; {script} }}"#
@@ -177,15 +176,14 @@ fn simple(script: &str) -> InputSources {
     fixture(script, false, false, false, false)
 }
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut quiet())
-        .unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
-    let evaluated =
-        evaluate_observed_bytes(inputs.clone(), asks, &mut quiet()).unwrap_or_else(|e| {
-            if let Some(wire) = e.wire() {
-                panic!("評価: {:?}", f(&wire, "issues"));
-            }
-            panic!("評価: {e:?}");
-        });
+    let checked =
+        check_inputs(inputs.clone(), &quiet()).unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
+    let evaluated = evaluate_observed_bytes(inputs.clone(), asks, &quiet()).unwrap_or_else(|e| {
+        if let Some(wire) = e.wire() {
+            panic!("評価: {:?}", f(&wire, "issues"));
+        }
+        panic!("評価: {e:?}");
+    });
     assert_eq!(evaluated.prepared().inputs().sources(), &inputs);
     assert_eq!(
         evaluated.prepared().inputs().sources().archmap().bytes(),
@@ -948,7 +946,7 @@ fn known_nonlinear_values_and_bool_short_circuits_keep_original_support() {
 #[test]
 fn affine_z_and_q_are_not_implicitly_coerced() {
     let inputs = simple("view wrong(s:Sample): Q = s.z-s.z;");
-    let failure = check_inputs(inputs, &mut quiet()).unwrap_err();
+    let failure = check_inputs(inputs, &quiet()).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert!(
         failure
@@ -1372,13 +1370,13 @@ fn provenance_relocation_preserves_affine_judgments_and_returns_new_origins() {
 fn counted(inputs: &InputSources, asks: &[&str]) -> (Json, usize) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut control = Control::new(move |p| {
+    let control = Control::new(move |p| {
         if p == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
         None
     });
-    let wire = evaluate_observed_bytes(inputs.clone(), asks, &mut control)
+    let wire = evaluate_observed_bytes(inputs.clone(), asks, &control)
         .unwrap()
         .wire();
     (wire, count.get())
@@ -1402,7 +1400,7 @@ view later(s:Sample): Unit = unit;
         "current=evaluate(Calc.current,s=@v/item)",
         "later=evaluate(Calc.later,s=@v/item)",
     ];
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
     let (prior, prior_count) = counted(&inputs, &asks[..3]);
     let (baseline, baseline_count) = counted(&inputs, &asks[..4]);
     audit(&prior, &checked);
@@ -1423,7 +1421,7 @@ view later(s:Sample): Unit = unit;
             let probes = Rc::new(Cell::new(0));
             let frozen = Rc::new(Cell::new(None));
             let (e, p, s) = (expressions.clone(), probes.clone(), frozen.clone());
-            let mut control = Control::new(move |point| {
+            let control = Control::new(move |point| {
                 p.set(p.get() + 1);
                 if point == Checkpoint::Expression {
                     e.set(e.get() + 1);
@@ -1434,7 +1432,7 @@ view later(s:Sample): Unit = unit;
                 }
                 None
             });
-            let wire = evaluate_observed_bytes(inputs.clone(), &asks, &mut control)
+            let wire = evaluate_observed_bytes(inputs.clone(), &asks, &control)
                 .unwrap()
                 .wire();
             assert_eq!(f(&wire, "status"), &Json::str("interrupted"));

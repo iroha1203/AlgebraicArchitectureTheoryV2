@@ -43,7 +43,7 @@ fn observed_closed_term_uses_declared_argument_order_and_original_body() {
     let r = evaluate_observed_bytes(
         sources("r1"),
         &["a=evaluate(Terms.applied,s=@v/s)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -61,7 +61,7 @@ fn inline_closed_terms_keep_exact_rationals_zero_arguments_and_booleans() {
             "p=check(Terms.falseTerm)",
             "f=evaluate(Terms.fp)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let w = r.wire();
@@ -89,7 +89,7 @@ fn closed_term_values_survive_views_let_and_primitive_containers() {
             "a=evaluate(Terms.viaTuple,s=@v/s)",
             "b=evaluate(Terms.chosen,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let w = r.wire();
@@ -117,7 +117,7 @@ fn closed_term_uses_original_constructor_and_pattern_resolution() {
             "a=evaluate(Terms.matched,s=@v/s)",
             "b=evaluate(Terms.zeroConstructor,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let w = r.wire();
@@ -129,7 +129,7 @@ fn closed_term_body_evaluates_finite_quantification_and_containers() {
     let r = evaluate_observed_bytes(
         sources("r1"),
         &["q=evaluate(Terms.finite)", "c=evaluate(Terms.containers)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let w = r.wire();
@@ -227,14 +227,14 @@ fn audit_inputs(r: &archsig::observed::ObservedEvaluation, revision: &str) {
 #[test]
 fn closed_term_missing_callee_and_argument_preserve_the_original_slots() {
     let s = sources("r1");
-    let before = archsig::input::check_inputs(s.clone(), &mut quiet()).unwrap();
+    let before = archsig::input::check_inputs(s.clone(), &quiet()).unwrap();
     let r = evaluate_observed_bytes(
         s,
         &[
             "f=evaluate(Terms.absent,s=@v/s)",
             "h=evaluate(Terms.unknown,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial");
@@ -281,8 +281,8 @@ fn closed_term_provenance_pair_preserves_results_and_the_current_source() {
         "f=evaluate(Terms.read,s=@v/s)",
         "m=evaluate(Terms.matched,s=@v/s)",
     ];
-    let a = evaluate_observed_bytes(sources("r1"), &asks, &mut quiet()).unwrap();
-    let b = evaluate_observed_bytes(sources("r2"), &asks, &mut quiet()).unwrap();
+    let a = evaluate_observed_bytes(sources("r1"), &asks, &quiet()).unwrap();
+    let b = evaluate_observed_bytes(sources("r2"), &asks, &quiet()).unwrap();
     let (aw, bw) = (a.wire(), b.wire());
     assert_eq!(get(&aw, "answers"), get(&bw, "answers"));
     for id in ["a", "f", "m"] {
@@ -348,8 +348,7 @@ fn unselected_term_captures_and_invalid_observed_bodies_are_rejected_before_eval
             law.into_bytes(),
             terms::archmap(digest, "r1").into_bytes(),
         );
-        let e =
-            evaluate_observed_bytes(bad, &["a=evaluate(Terms.seed)"], &mut quiet()).unwrap_err();
+        let e = evaluate_observed_bytes(bad, &["a=evaluate(Terms.seed)"], &quiet()).unwrap_err();
         let w = e.wire().unwrap();
         assert_eq!(get(&w, "status"), &Json::str("invalid"));
         assert!(
@@ -369,14 +368,14 @@ fn unselected_term_captures_and_invalid_observed_bodies_are_rejected_before_eval
         invalid.into_bytes(),
     );
     assert!(
-        evaluate_observed_bytes(bad, &["a=evaluate(Terms.seed)"], &mut quiet())
+        evaluate_observed_bytes(bad, &["a=evaluate(Terms.seed)"], &quiet())
             .unwrap_err()
             .wire()
             .is_some()
     );
     assert_eq!(
         result_value(
-            &evaluate_observed_bytes(good, &["a=evaluate(Terms.seed)"], &mut quiet())
+            &evaluate_observed_bytes(good, &["a=evaluate(Terms.seed)"], &quiet())
                 .unwrap()
                 .wire(),
             "a"
@@ -394,7 +393,7 @@ fn closed_terms_return_closed_functions_and_preserve_typed_term_arguments() {
             "f=evaluate(Terms.termArgument,s=@v/s)",
             "r=evaluate(Terms.read,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let w = r.wire();
@@ -442,7 +441,7 @@ fn closed_term_unknown_condition_keeps_identical_callee_and_containers() {
             "p=evaluate(Terms.packed,s=@v/s)",
             "d=evaluate(Terms.differing,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial");
@@ -491,7 +490,7 @@ fn closed_term_boolean_short_circuit_skips_only_unneeded_comparisons() {
             "o=evaluate(Terms.o)",
             "i=evaluate(Terms.i)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -502,7 +501,7 @@ fn closed_term_boolean_short_circuit_skips_only_unneeded_comparisons() {
     let needed = evaluate_observed_bytes(
         term_branch_sources(script, false),
         &["n=evaluate(Terms.needed)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(result_value(&needed.wire(), "n"), &Json::Bool(true));
@@ -532,7 +531,7 @@ fn closed_term_finite_quantifiers_keep_decisive_values_before_unsupported_later_
             "en=evaluate(Terms.anyEmpty)",
             "c=check(Terms.falseAll)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -555,8 +554,7 @@ fn closed_term_finite_quantifiers_keep_decisive_values_before_unsupported_later_
     for declaration in ["allNeeded", "anyNeeded"] {
         let ask = format!("n=evaluate(Terms.{declaration})");
         let needed =
-            evaluate_observed_bytes(term_branch_sources(script, false), &[&ask], &mut quiet())
-                .unwrap();
+            evaluate_observed_bytes(term_branch_sources(script, false), &[&ask], &quiet()).unwrap();
         assert_eq!(result_value(&needed.wire(), "n"), &Json::Bool(true));
     }
 }

@@ -76,12 +76,10 @@ fn later_internal_failure_delivers_only_the_validated_prefix_and_no_empty_error_
                     "fail=evaluate(CountCheck.amount,s=@v/s)",
                     "later=evaluate(CountCheck.amount,s=@v/s)",
                 ]);
-                let mut control = Control::unlimited();
-                let prepared = prepare_observed(sources, &asks, &mut control).unwrap();
+                let control = Control::unlimited();
+                let prepared = prepare_observed(sources, &asks, &control).unwrap();
                 let evaluation = crate::observed::evaluate_observed_with_rejected_answer(
-                    prepared,
-                    &mut control,
-                    "fail",
+                    prepared, &control, "fail",
                 )
                 .unwrap();
                 assert_eq!(evaluation.status(), "error");

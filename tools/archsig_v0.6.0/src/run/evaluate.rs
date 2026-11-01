@@ -35,7 +35,7 @@ pub fn run_requests(
     io: &mut dyn Io,
     signals: &mut dyn Signals,
     args: &RunArgs,
-    control: &mut Control,
+    control: &Control,
 ) -> Outcome {
     if let Err(error) = super::args::validate_run(args) {
         return super::usage_outcome(io, signals, error);
@@ -47,7 +47,7 @@ pub(super) fn run_requests_validated(
     io: &mut dyn Io,
     signals: &mut dyn Signals,
     args: &RunArgs,
-    control: &mut Control,
+    control: &Control,
 ) -> Outcome {
     let map_path = args.inputs.archmap.as_ref().expect("検査済みrunのArchMap");
     let mut issues = Vec::new();

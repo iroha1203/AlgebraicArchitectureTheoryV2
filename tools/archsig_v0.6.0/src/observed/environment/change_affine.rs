@@ -422,7 +422,7 @@ fn parameter_coefficient_forms(
             env.state.context.get().unwrap_or_default(),
             &values,
             &parameters,
-            &mut env.control.clone(),
+            &env.control.clone(),
         )
         .map_err(|cause| match cause {
             crate::construction::ConstructionFailure::Stopped(stop) => {
@@ -900,7 +900,7 @@ pub(in crate::observed) fn compute(
     let mut updated = Environment::with_primitive_valuation(
         env.indexes.inputs,
         &assignments,
-        &mut env.control.clone(),
+        &env.control.clone(),
     )?;
     updated.indexes.object = env.object_domain();
     updated.indexes.affine_valuation = updates;
@@ -973,7 +973,7 @@ fn apply(matrix: &Matrix, point: &[Z], c: &Control) -> Result<Vec<Z>, Validation
             }
             let mut value = Z::zero();
             for (a, b) in row.iter().zip(point) {
-                c.clone().checkpoint(Checkpoint::PrimitiveValuation)?;
+                c.checkpoint(Checkpoint::PrimitiveValuation)?;
                 value += a * b;
             }
             Ok(value)
@@ -996,7 +996,7 @@ fn compose(
                 return Err("整数写像の列数が違う".into());
             }
             for j in 0..cols {
-                c.clone().checkpoint(Checkpoint::PrimitiveValuation)?;
+                c.checkpoint(Checkpoint::PrimitiveValuation)?;
                 result[i][j] += a * &right[k][j];
             }
         }
@@ -1015,7 +1015,7 @@ pub(in crate::observed) fn state_equations(
     let mut state = Environment::with_primitive_valuation(
         env.indexes.inputs,
         &assignments,
-        &mut env.control.clone(),
+        &env.control.clone(),
     )?;
     state.indexes.object = env.object_domain();
     for slot in slots {

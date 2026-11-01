@@ -15,7 +15,7 @@ use crate::control::quiet;
 fn prepared(inputs: Arc<CheckedInputs>, root: &str) -> PreparedObserved {
     let ask = format!("b=build(Selected,on=@v/{root})");
     let requests =
-        resolve_native_for_test(inputs.law(), inputs.archmap(), &[&ask], &mut quiet()).unwrap();
+        resolve_native_for_test(inputs.law(), inputs.archmap(), &[&ask], &quiet()).unwrap();
     PreparedObserved {
         inputs,
         requests,
@@ -23,7 +23,7 @@ fn prepared(inputs: Arc<CheckedInputs>, root: &str) -> PreparedObserved {
     }
 }
 fn start(p: &PreparedObserved, finite: bool) -> (Graph, Arc<Layout>) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -31,20 +31,20 @@ fn start(p: &PreparedObserved, finite: bool) -> (Graph, Arc<Layout>) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let table = Arc::new(
-        law_table::retain(&env, &mut g, p.shared_inputs(), a.reference, &mut quiet())
+        law_table::retain(&env, &mut g, p.shared_inputs(), a.reference, &quiet())
             .unwrap()
             .unwrap(),
     );
     let layout = if finite {
-        observable_layout::retain_finite(&env, &mut g, table, p.shared_inputs(), &mut quiet())
+        observable_layout::retain_finite(&env, &mut g, table, p.shared_inputs(), &quiet())
             .unwrap()
             .unwrap()
     } else {
-        observable_layout::retain(&env, &g, table, &mut quiet()).unwrap()
+        observable_layout::retain(&env, &g, table, &quiet()).unwrap()
     };
     (g, Arc::new(layout))
 }
@@ -63,7 +63,7 @@ fn copy(g: &Graph, c: &Control) -> Graph {
     p
 }
 fn replay(p: &PreparedObserved, g: &Graph) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut prefix = copy(g, &quiet());
     prefix.nodes.clear();
     prefix.contexts.clear();
@@ -93,11 +93,9 @@ fn finite_family_keeps_all_original_rows_presentations_and_refuted_laws() {
         "root",
     );
     let (mut g, l) = start(&p, true);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let old = g.nodes.len();
-    let r = retain(&env, &mut g, l.clone(), &mut quiet())
-        .unwrap()
-        .unwrap();
+    let r = retain(&env, &mut g, l.clone(), &quiet()).unwrap().unwrap();
     assert_eq!(r, NodeRef(old));
     assert_eq!(g.nodes.len(), old + 1);
     let d = data(&g, r);
@@ -209,10 +207,8 @@ fn finite_parameter_coordinates_keep_actual_bindings_and_symbolic_whole_scope() 
         "root",
     );
     let (mut g, l) = start(&p, true);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let r = retain(&env, &mut g, l.clone(), &mut quiet())
-        .unwrap()
-        .unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let r = retain(&env, &mut g, l.clone(), &quiet()).unwrap().unwrap();
     let d = data(&g, r);
     assert_eq!(d.output.indices.len(), 2);
     assert_eq!(d.output.coordinates.len(), 4);
@@ -270,10 +266,8 @@ fn polynomial_family_preserves_integer_ring_and_actual_epsilon_even_when_refuted
     );
     let (mut g, l) = start(&p, false);
     assert!(l.data.complete);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let r = retain(&env, &mut g, l.clone(), &mut quiet())
-        .unwrap()
-        .unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let r = retain(&env, &mut g, l.clone(), &quiet()).unwrap().unwrap();
     let d = data(&g, r);
     assert_eq!(d.output.indices.len(), 2);
     assert_eq!(d.output.objects.len(), 1);
@@ -325,8 +319,8 @@ fn polynomial_family_preserves_integer_ring_and_actual_epsilon_even_when_refuted
 fn empty_family_keeps_all_objects_and_empty_block_product() {
     let p = prepared(fixture::inputs(false, ""), "root");
     let (mut g, l) = start(&p, true);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let r = retain(&env, &mut g, l, &mut quiet()).unwrap().unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let r = retain(&env, &mut g, l, &quiet()).unwrap().unwrap();
     let d = data(&g, r);
     assert_eq!(d.output.objects.len(), 3);
     assert!(
@@ -350,9 +344,9 @@ fn missing_and_unfinished_presentations_do_not_publish_a_completed_family() {
         let p = prepared(inputs, "root");
         let (mut g, l) = start(&p, finite);
         assert!(!l.data.complete);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let old = copy(&g, &quiet());
-        assert!(retain(&env, &mut g, l, &mut quiet()).unwrap().is_none());
+        assert!(retain(&env, &mut g, l, &quiet()).unwrap().is_none());
         assert_eq!(g.nodes, old.nodes);
         assert_eq!(g.contexts, old.contexts);
         assert_eq!(g.active, old.active);
@@ -374,7 +368,7 @@ fn interrupt_keeps_the_completed_graph_prefix_and_original_request_context() {
     let (initial, l) = start(&p, true);
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if matches!(
             point,
             Checkpoint::EquationPresentation | Checkpoint::NativeResultNode
@@ -383,9 +377,9 @@ fn interrupt_keeps_the_completed_graph_prefix_and_original_request_context() {
         }
         None
     });
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut full = copy(&initial, &c);
-    let r = retain(&env, &mut full, l.clone(), &mut c).unwrap().unwrap();
+    let r = retain(&env, &mut full, l.clone(), &c).unwrap().unwrap();
     assert_eq!(r.0, initial.nodes.len());
     let total = count.get();
     assert!(total > 4);
@@ -393,7 +387,7 @@ fn interrupt_keeps_the_completed_graph_prefix_and_original_request_context() {
     for at in [total / 2, total] {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if matches!(
                 point,
                 Checkpoint::EquationPresentation | Checkpoint::NativeResultNode
@@ -404,9 +398,9 @@ fn interrupt_keeps_the_completed_graph_prefix_and_original_request_context() {
             stop.then_some(crate::result::Signal::Int)
         });
         let mut g = copy(&initial, &c);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         assert!(matches!(
-            retain(&env, &mut g, l.clone(), &mut c),
+            retain(&env, &mut g, l.clone(), &c),
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.active, initial.active);
@@ -451,17 +445,15 @@ fn tuple_integer_rational_components_keep_distinct_factors_and_original_field_sl
                 law.into_bytes(),
                 map.into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
     let p = prepared(inputs, "r2");
     let (mut g, l) = start(&p, false);
     assert!(l.data.complete);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let r = retain(&env, &mut g, l.clone(), &mut quiet())
-        .unwrap()
-        .unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let r = retain(&env, &mut g, l.clone(), &quiet()).unwrap().unwrap();
     let d = data(&g, r);
     assert_eq!(d.output.indices.len(), 1);
     assert_eq!(d.output.objects.len(), 1);
@@ -513,10 +505,8 @@ fn family_recheck_rejects_equal_architecture_clones_and_altered_requests_or_cont
         "root",
     );
     let (mut g, l) = start(&p, true);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let r = retain(&env, &mut g, l.clone(), &mut quiet())
-        .unwrap()
-        .unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let r = retain(&env, &mut g, l.clone(), &quiet()).unwrap().unwrap();
     let n = g.get(r).unwrap();
     let mut forged = n.clone();
     let Some(Payload::Construction(value)) = &mut forged.payload else {
@@ -536,7 +526,7 @@ fn family_recheck_rejects_equal_architecture_clones_and_altered_requests_or_cont
     let mut changed = copy(&g, &quiet());
     changed.active.request = 1;
     let old = changed.nodes.len();
-    assert!(retain(&env, &mut changed, l, &mut quiet()).is_err());
+    assert!(retain(&env, &mut changed, l, &quiet()).is_err());
     assert_eq!(changed.nodes.len(), old);
     assert!(env.recheck_node(&g, n, r.0 + 1).is_err());
     replay(&p, &g);

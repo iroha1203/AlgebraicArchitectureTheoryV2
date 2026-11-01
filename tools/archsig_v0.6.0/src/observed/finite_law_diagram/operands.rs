@@ -7,7 +7,7 @@ struct Builder<'a> {
     original: &'a Original,
     parts: &'a mut Vec<Part>,
     base: usize,
-    control: &'a mut Control,
+    control: &'a Control,
 }
 impl Builder<'_> {
     fn ty(&mut self, expression: usize) -> Result<Type, ValidationFailure> {
@@ -202,7 +202,7 @@ pub(super) fn append(
     components: &[(usize, Option<Vec<usize>>)],
     parts: &mut Vec<Part>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<(NodeRef, NodeRef)>, ValidationFailure> {
     let mut pairs = std::collections::BTreeMap::new();
     for original in originals {

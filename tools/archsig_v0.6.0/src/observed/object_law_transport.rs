@@ -149,7 +149,7 @@ pub struct ObjectLawTransportPartial {
     outcome: Option<LawTransportOutcome>,
 }
 
-fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectLawTransport)
         .map_err(Into::into)
 }
@@ -184,7 +184,7 @@ fn truth_at(
     e: &ObservedEvaluation,
     reference: NodeRef,
     explicit_guard: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<LawTruth, ConstructionFailure> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         let node = e
@@ -267,10 +267,7 @@ fn truth_at(
         })
     })
 }
-fn reading(
-    e: &ObjectEvaluation,
-    c: &mut Control,
-) -> Result<LawBooleanReading, ConstructionFailure> {
+fn reading(e: &ObjectEvaluation, c: &Control) -> Result<LawBooleanReading, ConstructionFailure> {
     let mut r = LawBooleanReading {
         required: required(e.instance())?,
         application: LawApplication::Guard(None),
@@ -319,7 +316,7 @@ pub(super) fn native_case_reading(
     e: &ObjectEvaluation,
     reference: NodeRef,
     explicit_guard: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<LawBooleanReading, ConstructionFailure> {
     let ObjectEvaluationOutcome::Evaluated(graph) = e.outcome() else {
         return reading(e, c);
@@ -339,7 +336,7 @@ pub fn object_law_transport(
     declarations: &DeclarationCorrespondence,
     object: usize,
     instance: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<ObjectLawTransport, ObjectLawTransportFailure> {
     tick(c)?;
     declarations.recheck(&inputs, c)?;
@@ -362,7 +359,7 @@ fn checked_transport(
     declarations: &DeclarationCorrespondence,
     object: usize,
     instance: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<ObjectLawTransport, ObjectLawTransportFailure> {
     let objects =
         configuration_transport(&inputs, declarations.operation().map(), c).map_err(|failure| {
@@ -654,7 +651,7 @@ impl ObjectLawTransport {
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ObjectLawTransportFailure> {
         tick(c)?;
         let r = object_law_transport(inputs, &self.declarations, self.object, self.instance, c)?;
@@ -776,25 +773,17 @@ mod tests {
                     expand(law),
                     expand(archmap),
                 ),
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap(),
         );
-        let m = correspondence(
-            &i,
-            "v",
-            "m",
-            "Before",
-            Some("After"),
-            &mut Control::unlimited(),
-        )
-        .unwrap();
-        let d =
-            declaration_correspondence(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+        let m =
+            correspondence(&i, "v", "m", "Before", Some("After"), &Control::unlimited()).unwrap();
+        let d = declaration_correspondence(&i, m.map().unwrap(), &Control::unlimited()).unwrap();
         let p = object_reading_instances(
             &i,
-            &construct(&i, "Before", "v", "a", &mut Control::unlimited()).unwrap(),
-            &mut Control::unlimited(),
+            &construct(&i, "Before", "v", "a", &Control::unlimited()).unwrap(),
+            &Control::unlimited(),
         )
         .unwrap();
         let o = p
@@ -810,7 +799,7 @@ mod tests {
                     && r.bindings()[0].subject().subject == "p"
             })
             .unwrap();
-        let r = object_law_transport(Arc::clone(&i), &d, o, n, &mut Control::unlimited()).unwrap();
+        let r = object_law_transport(Arc::clone(&i), &d, o, n, &Control::unlimited()).unwrap();
         (i, r)
     }
 
@@ -873,7 +862,7 @@ mod tests {
                     (Scalar::Bool(_), Scalar::Bool(_))
                 ));
             }
-            result.recheck(inputs, &mut Control::unlimited()).unwrap();
+            result.recheck(inputs, &Control::unlimited()).unwrap();
         }
         let law = include_str!("../../tests/fixtures/object-law-transport.law")
             .replace(
@@ -892,7 +881,7 @@ mod tests {
         let example = family.example.as_ref().unwrap();
         assert_eq!(example.left, Scalar::Q(0.into(), 1.into()));
         assert_eq!(example.right, Scalar::Q(1.into(), 1.into()));
-        result.recheck(inputs, &mut Control::unlimited()).unwrap();
+        result.recheck(inputs, &Control::unlimited()).unwrap();
     }
 
     #[test]
@@ -933,7 +922,7 @@ mod tests {
             &inputs.sources().law().bytes()[span.0..span.1],
             b"c.count = 2"
         );
-        result.recheck(inputs, &mut Control::unlimited()).unwrap();
+        result.recheck(inputs, &Control::unlimited()).unwrap();
     }
 
     #[test]
@@ -954,7 +943,7 @@ mod tests {
                 &LawTransportOutcome::Refuted(LawConditionFailure::Holds)
             );
             result
-                .recheck(inputs.clone(), &mut Control::unlimited())
+                .recheck(inputs.clone(), &Control::unlimited())
                 .unwrap();
             match mode {
                 0 => result.outcome = LawTransportOutcome::Preserved,
@@ -973,7 +962,7 @@ mod tests {
                 }
             }
             assert!(
-                result.recheck(inputs, &mut Control::unlimited()).is_err(),
+                result.recheck(inputs, &Control::unlimited()).is_err(),
                 "mode={mode}"
             );
         }
@@ -1008,10 +997,7 @@ mod tests {
                         .clear();
                 }
             }
-            assert!(
-                r.recheck(i, &mut Control::unlimited()).is_err(),
-                "mode={mode}"
-            );
+            assert!(r.recheck(i, &Control::unlimited()).is_err(), "mode={mode}");
         }
     }
 
@@ -1056,10 +1042,10 @@ mod tests {
                 );
             }
             result
-                .recheck(inputs.clone(), &mut Control::unlimited())
+                .recheck(inputs.clone(), &Control::unlimited())
                 .unwrap();
             result.numeric_family.as_mut().unwrap().equivalent = Some(!preserved);
-            assert!(result.recheck(inputs, &mut Control::unlimited()).is_err());
+            assert!(result.recheck(inputs, &Control::unlimited()).is_err());
         }
     }
 
@@ -1107,7 +1093,7 @@ mod tests {
                     assert!(family.example.is_some());
                 }
                 result
-                    .recheck(inputs.clone(), &mut Control::unlimited())
+                    .recheck(inputs.clone(), &Control::unlimited())
                     .unwrap();
                 if !equivalent {
                     result
@@ -1118,7 +1104,7 @@ mod tests {
                         .as_mut()
                         .unwrap()
                         .left = Scalar::Z(42.into());
-                    assert!(result.recheck(inputs, &mut Control::unlimited()).is_err());
+                    assert!(result.recheck(inputs, &Control::unlimited()).is_err());
                 }
             }
         }
@@ -1164,11 +1150,11 @@ mod tests {
                     assert_ne!(point.left, point.right);
                 }
                 result
-                    .recheck(inputs.clone(), &mut Control::unlimited())
+                    .recheck(inputs.clone(), &Control::unlimited())
                     .unwrap();
                 result.numeric_family.as_mut().unwrap().value_equal =
                     Some(value_equal != Some(true));
-                assert!(result.recheck(inputs, &mut Control::unlimited()).is_err());
+                assert!(result.recheck(inputs, &Control::unlimited()).is_err());
             }
         }
     }

@@ -94,20 +94,19 @@ fn assert_stopped(
 fn deep_schema_and_multiple_qnames_stop_from_bytes_before_tables_or_requests_are_published() {
     let source = sources(&definition(8));
     for point in [Checkpoint::DefinitionSchema, Checkpoint::LawName] {
-        let (mut complete, total) = probe(point, None);
+        let (complete, total) = probe(point, None);
         let prepared =
-            prepare_observed(source.clone(), &["v=evaluate(R.value)"], &mut complete).unwrap();
+            prepare_observed(source.clone(), &["v=evaluate(R.value)"], &complete).unwrap();
         assert_eq!(prepared.requests().evaluation_order(), &[0]);
         assert!(total.get() > 4, "{point:?}");
         let expected = Signal::Term;
         for at in [1, total.get() / 2, total.get()] {
             let (mut control, count) = probe(point, Some(at));
-            let failure = check_inputs(source.clone(), &mut control).unwrap_err();
+            let failure = check_inputs(source.clone(), &control).unwrap_err();
             assert_stopped(failure, &expected, &mut control, &count, at);
             let (mut control, count) = probe(point, Some(at));
             let PrepareFailure::Inputs(failure) =
-                prepare_observed(source.clone(), &["v=evaluate(R.value)"], &mut control)
-                    .unwrap_err()
+                prepare_observed(source.clone(), &["v=evaluate(R.value)"], &control).unwrap_err()
             else {
                 panic!("入力検査内の停止")
             };
@@ -123,15 +122,14 @@ fn unlimited_control_preserves_public_definition_and_law_results() {
         let ordinary = check_definitions(&[("definition0", text.as_bytes())]).unwrap();
         let controlled = check_definitions_controlled(
             &[("definition0", text.as_bytes())],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert_eq!(ordinary, controlled);
         let source = sources(&text);
         let ordinary_law = check_law(source.law().bytes(), &ordinary).unwrap();
         let controlled_law =
-            check_law_controlled(source.law().bytes(), &controlled, &mut Control::unlimited())
-                .unwrap();
+            check_law_controlled(source.law().bytes(), &controlled, &Control::unlimited()).unwrap();
         assert_eq!(ordinary_law.model_digest(), controlled_law.model_digest());
         assert_eq!(ordinary_law.infos(), controlled_law.infos());
     }

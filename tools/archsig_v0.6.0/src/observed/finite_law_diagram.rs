@@ -29,7 +29,7 @@ use std::sync::Arc;
 
 mod operands;
 
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::FiniteLawFunction)?;
     Ok(())
 }
@@ -500,7 +500,7 @@ fn function(
     ring: NodeRef,
     values: &[num_bigint::BigInt],
     points: &[usize],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let mut elements = vec![];
     if points.len() != values.len() {
@@ -520,7 +520,7 @@ fn function(
         },
     )
 }
-fn value_key(value: &Scalar, c: &mut Control) -> Result<String, ValidationFailure> {
+fn value_key(value: &Scalar, c: &Control) -> Result<String, ValidationFailure> {
     super::data::input_json(value, c)?
         .canonical_controlled::<crate::control::CheckFailure<Box<crate::issue::Issue>>>(
             c,
@@ -535,11 +535,8 @@ fn value_key(value: &Scalar, c: &mut Control) -> Result<String, ValidationFailur
 }
 // JSONのarray順ではなく、元型のSet/Mapの意味に沿って再帰的に並べる。
 // 元のDの値・所属条件は保ち、公開する値の表示順だけを変える。
-pub(super) fn canonical_value(
-    value: &Scalar,
-    c: &mut Control,
-) -> Result<Scalar, ValidationFailure> {
-    fn visit(value: &mut Scalar, c: &mut Control) -> Result<(), ValidationFailure> {
+pub(super) fn canonical_value(value: &Scalar, c: &Control) -> Result<Scalar, ValidationFailure> {
+    fn visit(value: &mut Scalar, c: &Control) -> Result<(), ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(c)?;
             match value {
@@ -599,7 +596,7 @@ fn original_rows(
     columns: &[usize],
     parts: &mut Vec<Part>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Original>, ValidationFailure> {
     let mut originals = Vec::new();
     for &column in columns {
@@ -714,7 +711,7 @@ fn basis(
     f: &AutomaticLawValuations,
     base: usize,
     parts: &mut Vec<Part>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Basis, ValidationFailure> {
     tick(c)?;
     // 元の所属条件を満たすDは変えず、原始値のencodingだけをRefへ表す。
@@ -810,7 +807,7 @@ fn object_plan(
     base: usize,
     parts: &mut Vec<Part>,
     shared: &Basis,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Diagram, ValidationFailure> {
     tick(c)?;
     let p = f
@@ -897,7 +894,7 @@ fn append_readings(
     parts: &mut Vec<Part>,
     out: &mut Diagram,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     let (base_support, base_scope) = native::metadata(&ConstructionValue {
         witness: Witness::Architecture(architecture.clone()),
@@ -951,7 +948,7 @@ fn append_presentation(
     parts: &mut Vec<Part>,
     out: &mut Diagram,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     use super::equation_presentation_node::{self as common, Coordinate, Part as E};
     let mut observed = vec![];
@@ -1079,7 +1076,7 @@ fn metadata(
     inputs: &CheckedInputs,
     a: &Arc<ArchitectureWitness>,
     f: &AutomaticLawValuations,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     let value = ConstructionValue {
         witness: Witness::Architecture(a.clone()),
@@ -1125,7 +1122,7 @@ impl Source {
         reference: NodeRef,
         object: usize,
         base: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<Self>, ValidationFailure> {
         Self::compute_plan(inputs, architecture, reference, object, base, false, c)
     }
@@ -1136,7 +1133,7 @@ impl Source {
         object: usize,
         base: usize,
         all_objects: bool,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<Self>, ValidationFailure> {
         if all_objects && object != 0 {
             return Err("共有有限Lawの先頭がbase対象でない".into());
@@ -1218,7 +1215,7 @@ impl Source {
         inputs: &CheckedInputs,
         architecture: &Arc<ArchitectureWitness>,
         object: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         tick(c)?;
         if !Arc::ptr_eq(architecture, &self.architecture)
@@ -1260,7 +1257,7 @@ pub(super) fn retain(
     inputs: Arc<CheckedInputs>,
     architecture: NodeRef,
     object: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Diagram>, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((
         graph,
@@ -1290,7 +1287,7 @@ impl FamilyPlan {
         env: &Environment<'_>,
         graph: &Graph,
         reference: NodeRef,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Arc<ArchitectureWitness>, ValidationFailure> {
         tick(c)?;
         if self.0.reference != reference || self.0.object != 0 || self.0.owned_outputs.is_none() {
@@ -1305,7 +1302,7 @@ pub(super) fn retain_layout_plan(
     graph: &mut Graph,
     inputs: Arc<CheckedInputs>,
     reference: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<FamilyPlan>, ValidationFailure> {
     Ok(retain_source(graph, inputs, reference, 0, true, c)?.map(FamilyPlan))
 }
@@ -1314,7 +1311,7 @@ pub(super) fn retain_family(
     graph: &mut Graph,
     inputs: Arc<CheckedInputs>,
     architecture: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Vec<Diagram>>, ValidationFailure> {
     let Some(source) = retain_source(graph, inputs, architecture, 0, true, c)? else {
         return Ok(None);
@@ -1337,7 +1334,7 @@ fn retain_source(
     architecture: NodeRef,
     object: usize,
     all_objects: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Arc<Source>>, ValidationFailure> {
     tick(c)?;
     if graph.active != graph.context_at(architecture.0) {
@@ -1453,7 +1450,7 @@ impl Environment<'_> {
         let D::FiniteLaw(data) = &value.data else {
             return Ok(());
         };
-        tick(&mut self.control.clone())?;
+        tick(&self.control.clone())?;
         let Witness::Architecture(a) = &value.witness else {
             return Err("有限Law導出の元Architectureがない".into());
         };
@@ -1480,7 +1477,7 @@ impl Environment<'_> {
             self.indexes.inputs,
             a,
             data.source.object,
-            &mut self.control.clone(),
+            &self.control.clone(),
         )?;
         self.results.remember(data.source.clone());
         Ok(())
@@ -1501,7 +1498,7 @@ impl super::result_kind::ResultKind for Data {
         Arc<CheckedInputs>,
         NodeRef,
         usize,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = Option<Diagram>;
     fn compute_and_retain<'a, 'input: 'a>(

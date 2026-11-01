@@ -46,7 +46,7 @@ fn batch_map() -> Vec<u8> {
         .into_bytes()
 }
 fn run(asks: &[&str]) -> Json {
-    evaluate_observed_bytes(sources(DEFINITIONS, LAW, &batch_map()), asks, &mut quiet())
+    evaluate_observed_bytes(sources(DEFINITIONS, LAW, &batch_map()), asks, &quiet())
         .unwrap()
         .wire()
 }
@@ -263,7 +263,7 @@ fn assert_known_answers(wire: &Json) {
 
     // FactPointer を、同じ元 bytes の検査済み Atom とその JSON Pointer へ戻す。
     let map = batch_map();
-    let checked = check_inputs(sources(DEFINITIONS, LAW, &map), &mut quiet()).unwrap();
+    let checked = check_inputs(sources(DEFINITIONS, LAW, &map), &quiet()).unwrap();
     assert_eq!(checked.sources().archmap().bytes(), map);
     let snapshot = &checked.archmap().snapshots()[0];
     assert_eq!(snapshot.id, "v");
@@ -392,13 +392,13 @@ type Trace = Rc<RefCell<Vec<Checkpoint>>>;
 fn recorded_run(asks: &[&str], stop_index: Option<usize>) -> (Json, Trace, Control) {
     let seen = Rc::new(RefCell::new(Vec::new()));
     let capture = seen.clone();
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         let mut trace = capture.borrow_mut();
         let stop = stop_index.is_some_and(|at| trace.len() >= at);
         trace.push(point);
         stop.then_some(Signal::Term)
     });
-    let wire = evaluate_observed_bytes(sources(DEFINITIONS, LAW, &batch_map()), asks, &mut control)
+    let wire = evaluate_observed_bytes(sources(DEFINITIONS, LAW, &batch_map()), asks, &control)
         .unwrap()
         .wire();
     (wire, seen, control)
@@ -427,7 +427,7 @@ fn stop_preserves_established_value_and_refuted_counterexample() {
         .unwrap()
         .0;
     assert!(stop_index > 0 && stop_index + 1 < normal_trace.borrow().len());
-    let (low, low_trace, mut low_control) = recorded_run(&ASKS, Some(stop_index));
+    let (low, low_trace, low_control) = recorded_run(&ASKS, Some(stop_index));
     assert_eq!(field(&low, "status"), &Json::str("interrupted"));
     assert_eq!(field(&normal, "status"), &Json::str("partial"));
     assert_eq!(
@@ -501,7 +501,7 @@ fn stop_preserves_established_value_and_refuted_counterexample() {
 
 #[test]
 fn byte_entry_rejections_keep_stage_metadata_and_original_input_identity() {
-    let normal = evaluate_observed_bytes(sources(DEFINITIONS, LAW, MAP), &ASKS[..2], &mut quiet())
+    let normal = evaluate_observed_bytes(sources(DEFINITIONS, LAW, MAP), &ASKS[..2], &quiet())
         .unwrap()
         .wire();
     assert_eq!(field(&normal, "status"), &Json::str("complete"));
@@ -553,7 +553,7 @@ fn byte_entry_rejections_keep_stage_metadata_and_original_input_identity() {
                 },
             );
             let failure =
-                evaluate_observed_bytes(sources(definitions, law, map), &ASKS[..2], &mut quiet())
+                evaluate_observed_bytes(sources(definitions, law, map), &ASKS[..2], &quiet())
                     .unwrap_err();
             assert!(matches!(
                 &failure,
@@ -643,7 +643,7 @@ fn byte_entry_rejections_keep_stage_metadata_and_original_input_identity() {
     let failure = evaluate_observed_bytes(
         sources(DEFINITIONS, LAW, MAP),
         &["unbound=evaluate(CountCheck.amount)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_err();
     let EvaluationFailure::Prepare(PrepareFailure::Requests {

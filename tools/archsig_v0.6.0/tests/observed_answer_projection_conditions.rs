@@ -59,7 +59,7 @@ fn projection_conditions_keep_dynamic_failures_as_typed_refutations_and_continue
             "seed=evaluate(Applications.abSeed)",
             "prior=check(Applications.abPrior)",
         ];
-        let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &mut quiet())
+        let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &quiet())
             .unwrap_or_else(|e| panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))));
         assert_eq!(r.status(), "partial", "{:?}", f(&r.wire(), "issues"));
         let w = r.wire();
@@ -83,7 +83,7 @@ fn projection_conditions_keep_dynamic_failures_as_typed_refutations_and_continue
             "seed=evaluate(Applications.abSeed)",
         ],
     ] {
-        let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &mut quiet())
+        let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &quiet())
             .unwrap_or_else(|e| panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))));
         assert_eq!(r.status(), "partial");
         let w = r.wire();
@@ -105,7 +105,7 @@ fn projection_conditions_keep_dynamic_failures_as_typed_refutations_and_continue
             "raw=evaluate(Trees.raw,s=@v/sample)",
         ],
     ] {
-        let r = evaluate_observed_bytes(fixture::tree_input(false, "r1"), &asks, &mut quiet())
+        let r = evaluate_observed_bytes(fixture::tree_input(false, "r1"), &asks, &quiet())
             .unwrap_or_else(|e| panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))));
         assert_eq!(r.status(), "partial");
         let w = r.wire();
@@ -125,7 +125,7 @@ fn projection_conditions_propagate_direct_ids_original_reasons_and_evidence_thro
         "seed=evaluate(Applications.abSeed)",
         "prior=check(Applications.abPrior)",
     ];
-    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet())
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))));
     assert_eq!(r.status(), "partial", "{:?}", f(&r.wire(), "issues"));
     let w = r.wire();
@@ -174,7 +174,7 @@ fn projection_conditions_preserve_valid_none_empty_zero_false_and_original_produ
         "zero=evaluate(Applications.abIdentity,x=$packed.value[8].some)",
         "boolean=evaluate(Applications.abBool,x=$packed.value[3])",
     ];
-    let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &mut quiet())
+    let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))));
     assert_eq!(r.status(), "complete");
     let w = r.wire();
@@ -201,8 +201,8 @@ fn projection_conditions_keep_root_support_scope_original_inputs_dag_and_current
     for revision in ["r1", "r2"] {
         let input = fixture::input("known", revision);
         let original = input.clone();
-        let checked = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
-        let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
+        let checked = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+        let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
         assert_eq!(r.status(), "partial");
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(r.prepared().inputs().definitions(), checked.definitions());
@@ -222,7 +222,7 @@ fn projection_conditions_keep_root_support_scope_original_inputs_dag_and_current
         assert_eq!(f(&condition, "scope"), f(node(&w, root), "scope"));
         assert!(!arr(f(&condition, "support")).is_empty());
         let producer =
-            evaluate_observed_bytes(fixture::input("known", revision), &[asks[1]], &mut quiet())
+            evaluate_observed_bytes(fixture::input("known", revision), &[asks[1]], &quiet())
                 .unwrap();
         assert_eq!(
             node(&w, root),
@@ -328,7 +328,7 @@ fn projection_conditions_keep_missing_unsupported_and_blocked_environment_source
             "seed=evaluate(Applications.abSeed)",
             "prior=check(Applications.abPrior)",
         ];
-        let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet())
+        let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet())
             .unwrap_or_else(|e| match e {
                 archsig::observed::EvaluationFailure::NotImplemented { feature, .. } => {
                     panic!("unexpected NotImplemented: {feature}")
@@ -394,7 +394,7 @@ fn projection_conditions_keep_missing_unsupported_and_blocked_environment_source
         "empty=evaluate(Applications.apEmpty)",
         "seed=evaluate(Applications.abSeed)",
     ];
-    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet()).unwrap();
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet()).unwrap();
     assert_eq!(r.status(), "partial");
     let w = r.wire();
     let a = answer(&w, "take");

@@ -147,7 +147,7 @@ pub fn check_definition_term_body(
         params,
         ret,
         body,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
 }
 
@@ -157,7 +157,7 @@ pub fn check_definition_term_body_inner<E: InputError>(
     params: &[(String, Type)],
     ret: &Type,
     body: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<TermBody, E> {
     if !definitions.vocabularies.contains_key(namespace) {
         return Err(Box::new(Issue::law(
@@ -230,7 +230,7 @@ pub fn check_reading_term_body<E: InputError>(
     params: &[(String, Type)],
     ret: &Type,
     body: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<TermBody, E> {
     let point = Checkpoint::ArchMapTerm;
     let tokens = lexer::lex_inner::<E>(raw_law, usize::MAX, control, point)?;
@@ -303,13 +303,13 @@ pub struct LawFailure {
 
 /// 字句列の正規化(Law 仕様 §1)。`{semantics, tokens}` の canonical JSON。
 pub fn model_canonical(tokens: &[lexer::Token]) -> String {
-    model_canonical_inner::<Box<Issue>>(tokens, &mut Control::unlimited())
+    model_canonical_inner::<Box<Issue>>(tokens, &Control::unlimited())
         .expect("通常の正規化は中断しない")
 }
 
 fn model_canonical_inner<E: InputError>(
     tokens: &[lexer::Token],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<String, E> {
     E::checkpoint(control, Checkpoint::LawCanonical)?;
     let mut toks = Vec::with_capacity(tokens.len());
@@ -329,13 +329,13 @@ fn model_canonical_inner<E: InputError>(
 }
 
 pub fn model_digest(tokens: &[lexer::Token]) -> String {
-    model_digest_inner::<Box<Issue>>(tokens, &mut Control::unlimited())
+    model_digest_inner::<Box<Issue>>(tokens, &Control::unlimited())
         .expect("通常の digest 計算は中断しない")
 }
 
 fn model_digest_inner<E: InputError>(
     tokens: &[lexer::Token],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<String, E> {
     let canonical = model_canonical_inner::<E>(tokens, control)?;
     E::checkpoint(control, Checkpoint::LawCanonical)?;
@@ -347,7 +347,7 @@ fn model_digest_inner<E: InputError>(
 /// Law を検査する。深い入れ子でも呼出し側のスタックを使い切らないよう、再帰は stacker を通す。
 #[allow(clippy::result_large_err)]
 pub fn check_law(bytes: &[u8], definitions: &CheckedDefinitions) -> Result<CheckedLaw, LawFailure> {
-    check_law_inner::<Box<Issue>>(bytes, definitions, &mut Control::unlimited()).map_err(
+    check_law_inner::<Box<Issue>>(bytes, definitions, &Control::unlimited()).map_err(
         |(issue, bytes_digest, model_digest)| LawFailure {
             issue: *issue,
             bytes_digest,
@@ -359,7 +359,7 @@ pub fn check_law(bytes: &[u8], definitions: &CheckedDefinitions) -> Result<Check
 pub fn check_law_controlled(
     bytes: &[u8],
     definitions: &CheckedDefinitions,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<CheckedLaw, CheckFailure<LawFailure>> {
     control
         .checkpoint(Checkpoint::BeforeLaw)
@@ -378,7 +378,7 @@ pub fn check_law_controlled(
 fn check_law_inner<E: InputError>(
     bytes: &[u8],
     definitions: &CheckedDefinitions,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<CheckedLaw, (E, String, Option<String>)> {
     let result = check_law_processing::<E>(bytes, definitions, control);
     // The final sample also covers version and parser error exits; cancellation takes priority.
@@ -392,7 +392,7 @@ fn check_law_inner<E: InputError>(
 fn check_law_processing<E: InputError>(
     bytes: &[u8],
     definitions: &CheckedDefinitions,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<CheckedLaw, (E, String, Option<String>)> {
     #[cfg(test)]
     entry_control_tests::BYTES_DIGEST_STARTS.with(|count| count.set(count.get() + 1));
@@ -494,10 +494,10 @@ fn resolve_names<E: InputError>(
     definitions: &CheckedDefinitions,
     declarations: &BTreeMap<String, Declaration>,
     infos: &[DeclarationInfo],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<BTreeMap<String, crate::names::QualifiedName>, E> {
     let mut names = BTreeMap::new();
-    let mut remember = |name: String, control: &mut Control| -> Result<(), E> {
+    let mut remember = |name: String, control: &Control| -> Result<(), E> {
         E::checkpoint(control, Checkpoint::LawIteration)?;
         names.entry(name.clone()).or_insert_with(|| name.into());
         E::checkpoint(control, Checkpoint::LawIteration)
@@ -554,7 +554,7 @@ mod entry_control_tests {
         .unwrap();
         let samples = Rc::new(Cell::new(0));
         let observed = samples.clone();
-        let mut control = Control::new(move |_| {
+        let control = Control::new(move |_| {
             observed.set(observed.get() + 1);
             None
         });
@@ -562,7 +562,7 @@ mod entry_control_tests {
             &definitions,
             &law.declarations,
             &law.infos,
-            &mut control,
+            &control,
         )
         .unwrap();
         assert_eq!(names, law.resolved_names);
@@ -570,7 +570,7 @@ mod entry_control_tests {
         for stop_at in 1..=samples.get() {
             let count = Rc::new(Cell::new(0));
             let observed = count.clone();
-            let mut control = Control::new(move |_| {
+            let control = Control::new(move |_| {
                 observed.set(observed.get() + 1);
                 (observed.get() == stop_at).then_some(Signal::Int)
             });
@@ -578,7 +578,7 @@ mod entry_control_tests {
                 &definitions,
                 &law.declarations,
                 &law.infos,
-                &mut control,
+                &control,
             );
             assert!(matches!(result, Err(CheckFailure::Stopped(_))));
             assert_eq!(count.get(), stop_at);
@@ -589,12 +589,12 @@ mod entry_control_tests {
     fn stopped_entry_does_not_start_bytes_digest() {
         BYTES_DIGEST_STARTS.with(|count| count.set(0));
         for latched in [false, true] {
-            let mut control = Control::new(|_| Some(Signal::Int));
+            let control = Control::new(|_| Some(Signal::Int));
             if latched {
                 control.checkpoint(Checkpoint::InputBundle).unwrap_err();
             }
-            let failure = check_law_controlled(b"bad", &CheckedDefinitions::empty(), &mut control)
-                .unwrap_err();
+            let failure =
+                check_law_controlled(b"bad", &CheckedDefinitions::empty(), &control).unwrap_err();
             let CheckFailure::Stopped(reason) = failure else {
                 panic!("entry stop must precede input checking");
             };
@@ -611,13 +611,13 @@ mod entry_control_tests {
         BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 1));
         let first = Rc::new(Cell::new(None));
         let observed = first.clone();
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if observed.get().is_none() {
                 observed.set(Some(point));
             }
             None
         });
-        let controlled = check_law_controlled(b"bad", &definitions, &mut control).unwrap_err();
+        let controlled = check_law_controlled(b"bad", &definitions, &control).unwrap_err();
         let CheckFailure::Input(controlled) = controlled else {
             panic!("live control must preserve the input error");
         };

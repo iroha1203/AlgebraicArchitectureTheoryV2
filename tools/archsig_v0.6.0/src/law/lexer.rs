@@ -41,17 +41,12 @@ pub fn lex(bytes: &[u8]) -> Result<Vec<Token>, Box<Issue>> {
 
 /// 先頭から `max` 個までの字句。header の版を、残りの字句より先に読むために使う。
 pub fn lex_up_to(bytes: &[u8], max: usize) -> Result<Vec<Token>, Box<Issue>> {
-    lex_inner(
-        bytes,
-        max,
-        &mut Control::unlimited(),
-        Checkpoint::LawIteration,
-    )
+    lex_inner(bytes, max, &Control::unlimited(), Checkpoint::LawIteration)
 }
 pub(super) fn lex_inner<E: InputError>(
     bytes: &[u8],
     max: usize,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
 ) -> Result<Vec<Token>, E> {
     let result = (|| {
@@ -148,7 +143,7 @@ pub(super) fn lex_inner<E: InputError>(
 fn lex_string<E: InputError>(
     text: &str,
     start: usize,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
 ) -> Result<(String, usize), E> {
     let src = text.as_bytes();
@@ -265,14 +260,14 @@ mod interruption_tests {
     fn pending_cancel_after_leading_zero_detection_is_sampled_before_return() {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut control = Control::new(move |_| {
+        let control = Control::new(move |_| {
             seen.set(seen.get() + 1);
             (seen.get() >= 5).then_some(Signal::Term)
         });
         let failure = lex_inner::<CheckFailure<Box<Issue>>>(
             b"01",
             usize::MAX,
-            &mut control,
+            &control,
             Checkpoint::LawIteration,
         )
         .unwrap_err();
@@ -291,7 +286,7 @@ mod interruption_tests {
         ] {
             let seen = Rc::new(Cell::new(0));
             let count = seen.clone();
-            let mut baseline = Control::new(move |_| {
+            let baseline = Control::new(move |_| {
                 count.set(count.get() + 1);
                 None
             });
@@ -299,14 +294,14 @@ mod interruption_tests {
                 lex_inner::<CheckFailure<Box<Issue>>>(
                     bytes,
                     usize::MAX,
-                    &mut baseline,
+                    &baseline,
                     Checkpoint::LawIteration
                 ),
                 Err(CheckFailure::Input(_))
             ));
             let total = seen.get();
             let mut n = 0;
-            let mut control = Control::new(move |_| {
+            let control = Control::new(move |_| {
                 n += 1;
                 (n >= total).then_some(Signal::Int)
             });
@@ -314,7 +309,7 @@ mod interruption_tests {
                 lex_inner::<CheckFailure<Box<Issue>>>(
                     bytes,
                     usize::MAX,
-                    &mut control,
+                    &control,
                     Checkpoint::LawIteration
                 ),
                 Err(CheckFailure::Stopped(Signal::Int))

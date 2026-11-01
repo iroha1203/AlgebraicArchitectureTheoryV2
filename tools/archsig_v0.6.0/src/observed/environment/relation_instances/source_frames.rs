@@ -7,11 +7,7 @@ impl Environment<'_> {
         graph: &Graph,
         witness: &crate::observed::public_compare::CompareWitness,
     ) -> Result<(), ValidationFailure> {
-        crate::observed::public_compare::relations::recheck(
-            graph,
-            witness,
-            &mut self.control.clone(),
-        )
+        crate::observed::public_compare::relations::recheck(graph, witness, &self.control.clone())
     }
 
     pub(in crate::observed) fn recheck_relation_source(
@@ -33,7 +29,7 @@ impl Environment<'_> {
         }
         family
             .table
-            .recheck(self.indexes.inputs, &mut self.control.clone())
+            .recheck(self.indexes.inputs, &self.control.clone())
             .map_err(|f| f.cause)?;
         self.tick()?;
         self.results.remember(family.clone());

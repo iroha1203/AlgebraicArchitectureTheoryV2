@@ -43,7 +43,7 @@ pub fn offsets(
         let p = probes.clone();
         let frozen = Rc::new(Cell::new(None));
         let f = frozen.clone();
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             p.set(p.get() + 1);
             if point == Checkpoint::Expression {
                 e.set(e.get() + 1);
@@ -54,7 +54,7 @@ pub fn offsets(
             }
             None
         });
-        let result = evaluate_observed_bytes(input.clone(), asks, &mut control).unwrap();
+        let result = evaluate_observed_bytes(input.clone(), asks, &control).unwrap();
         assert_eq!(result.status(), "interrupted");
         assert_eq!(expressions.get(), at);
         assert_eq!(Some(probes.get()), frozen.get());

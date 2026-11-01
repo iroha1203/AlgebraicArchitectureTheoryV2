@@ -30,7 +30,7 @@ fn example(missing: bool, body: &str) -> ObservedEvaluation {
     evaluate_observed_bytes(
         sources(missing, body),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -39,12 +39,9 @@ fn replay(
     nodes: &[Node],
     contexts: &[crate::observed::call::Context],
 ) -> Result<Graph, ValidationFailure> {
-    let mut c = quiet();
-    let env = Environment::with_requests(
-        e.prepared.inputs(),
-        e.prepared.requests().requests(),
-        &mut c,
-    )?;
+    let c = quiet();
+    let env =
+        Environment::with_requests(e.prepared.inputs(), e.prepared.requests().requests(), &c)?;
     let mut g = Graph::new(&c);
     g.requests = e.prepared.requests().requests().to_vec();
     g.frames = e.frames.clone();
@@ -101,7 +98,7 @@ fn finite_native_diagram_keeps_wire_values_original_nu_epsilon_and_ideal_generat
     let mut g = graph(&e);
     let a = architecture(&g, "a");
     let start = g.nodes.len();
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(property(&g, d.domain, "kind"), Json::str("finite"));
@@ -199,13 +196,13 @@ fn finite_diagram_keeps_target_root_and_owned_object_identity_separate() {
     let mut g = graph(&e);
     let a = architecture(&g, "a");
     let b = architecture(&g, "b");
-    let source = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let source = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
-    let target = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet())
+    let target = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet())
         .unwrap()
         .unwrap();
-    let owned = retain(&mut g, e.prepared.shared_inputs(), a, 1, &mut quiet())
+    let owned = retain(&mut g, e.prepared.shared_inputs(), a, 1, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(coordinates(&g, source.nu[1]), ["0", "1"]);
@@ -227,10 +224,10 @@ fn missing_observation_omits_evaluation_and_epsilon_without_pruning_symbolic_dom
     let e = example(true, BODY);
     let mut g = graph(&e);
     let b = architecture(&g, "b");
-    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet())
         .unwrap()
         .unwrap();
-    let environment = Environment::new(e.prepared.inputs(), &mut quiet()).unwrap();
+    let environment = Environment::new(e.prepared.inputs(), &quiet()).unwrap();
     assert!(matches!(
         environment
             .indexes
@@ -261,7 +258,7 @@ fn empty_law_keeps_unit_assignment_domain_and_empty_required_generators() {
     let e = example(false, "");
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     assert!(d.nu.is_empty() && d.epsilon.is_empty() && d.witnesses.is_empty());
@@ -288,17 +285,17 @@ fn diagram_recheck_rejects_plan_values_generators_scope_provenance_and_consumer_
     let mut g = graph(&e);
     let a = architecture(&g, "a");
     let b = architecture(&g, "b");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     let source = data(&g, d.ring).source.clone();
     let a = source.architecture.clone();
     source
-        .recheck(e.prepared.inputs(), &a, 0, &mut quiet())
+        .recheck(e.prepared.inputs(), &a, 0, &quiet())
         .unwrap();
     assert!(
         source
-            .recheck(e.prepared.inputs(), &a, 1, &mut quiet())
+            .recheck(e.prepared.inputs(), &a, 1, &quiet())
             .is_err()
     );
     let Some(Payload::Construction(v)) = &g.get(b).unwrap().payload else {
@@ -309,48 +306,48 @@ fn diagram_recheck_rejects_plan_values_generators_scope_provenance_and_consumer_
     };
     assert!(
         source
-            .recheck(e.prepared.inputs(), other, 0, &mut quiet())
+            .recheck(e.prepared.inputs(), other, 0, &quiet())
             .is_err()
     );
     let other = example(true, BODY);
     assert!(
         source
-            .recheck(other.prepared.inputs(), &a, 0, &mut quiet())
+            .recheck(other.prepared.inputs(), &a, 0, &quiet())
             .is_err()
     );
     let mut changed = (*source).clone();
     changed.parts.swap(0, 1);
     assert!(
         changed
-            .recheck(e.prepared.inputs(), &a, 0, &mut quiet())
+            .recheck(e.prepared.inputs(), &a, 0, &quiet())
             .is_err()
     );
     let mut changed = (*source).clone();
     changed.support.clear();
     assert!(
         changed
-            .recheck(e.prepared.inputs(), &a, 0, &mut quiet())
+            .recheck(e.prepared.inputs(), &a, 0, &quiet())
             .is_err()
     );
     let mut changed = (*source).clone();
     changed.scope.assignments = false;
     assert!(
         changed
-            .recheck(e.prepared.inputs(), &a, 0, &mut quiet())
+            .recheck(e.prepared.inputs(), &a, 0, &quiet())
             .is_err()
     );
     let mut changed = (*source).clone();
     changed.outputs.nu.reverse();
     assert!(
         changed
-            .recheck(e.prepared.inputs(), &a, 0, &mut quiet())
+            .recheck(e.prepared.inputs(), &a, 0, &quiet())
             .is_err()
     );
     let mut changed = (*source).clone();
     changed.outputs.points.reverse();
     assert!(
         changed
-            .recheck(e.prepared.inputs(), &a, 0, &mut quiet())
+            .recheck(e.prepared.inputs(), &a, 0, &quiet())
             .is_err()
     );
     let mut changed = (*source).clone();
@@ -360,7 +357,7 @@ fn diagram_recheck_rejects_plan_values_generators_scope_provenance_and_consumer_
     }
     assert!(
         changed
-            .recheck(e.prepared.inputs(), &a, 0, &mut quiet())
+            .recheck(e.prepared.inputs(), &a, 0, &quiet())
             .is_err()
     );
     for change in 0..5 {
@@ -399,12 +396,12 @@ fn tuple_domain_preserves_fp_bool_leaf_values_and_evaluation_basis_order() {
             "law required zero(c:Part):c.quantity=(0,false);",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     let Part::Domain { ty, elements } = data(&g, d.domain).part() else {
@@ -456,14 +453,14 @@ fn outside_finite_range_and_wrong_producer_never_append_a_completed_diagram() {
     let e = evaluate_observed_bytes(
         custom_sources(&definition, MAP, BODY),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
     let before = g.nodes.len();
     assert!(
-        retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
             .unwrap()
             .is_none()
     );
@@ -473,19 +470,10 @@ fn outside_finite_range_and_wrong_producer_never_append_a_completed_diagram() {
     let a = architecture(&g, "a");
     let before = g.nodes.len();
     g.active.request = usize::MAX;
-    assert!(retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).is_err());
+    assert!(retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).is_err());
     assert_eq!(g.nodes.len(), before);
     g.active.request = 0;
-    assert!(
-        retain(
-            &mut g,
-            e.prepared.shared_inputs(),
-            a,
-            usize::MAX,
-            &mut quiet()
-        )
-        .is_err()
-    );
+    assert!(retain(&mut g, e.prepared.shared_inputs(), a, usize::MAX, &quiet()).is_err());
     assert_eq!(g.nodes.len(), before);
 }
 fn stopping(signal: crate::result::Signal, at: usize) -> Control {
@@ -505,13 +493,13 @@ fn signal_stops_keep_unfinished_plan_private_and_preserve_completed_prefix_nodes
     let before = g.nodes.len();
     let count = std::rc::Rc::new(std::cell::Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::FiniteLawFunction {
             seen.set(seen.get() + 1);
         }
         None
     });
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut c)
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &c)
         .unwrap()
         .unwrap();
     let source = data(&g, d.ring).source.clone();
@@ -527,7 +515,7 @@ fn signal_stops_keep_unfinished_plan_private_and_preserve_completed_prefix_nodes
                     e.prepared.shared_inputs(),
                     a,
                     0,
-                    &mut stopping(signal, at)
+                    &stopping(signal, at)
                 ),
                 Err(ValidationFailure::Stop(_))
             ));
@@ -542,7 +530,7 @@ fn signal_stops_keep_unfinished_plan_private_and_preserve_completed_prefix_nodes
                 e.prepared.inputs(),
                 &source.architecture,
                 0,
-                &mut stopping(signal, 1)
+                &stopping(signal, 1)
             ),
             Err(ValidationFailure::Stop(_))
         ));
@@ -570,7 +558,7 @@ fn reading_identity_and_cached_validation_cannot_be_exchanged_between_authentic_
             "x=map(Finite.Migration,on=@v/m,reading=Chosen)",
             "y=map(Finite.Migration,on=@v/m,reading=Other)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
@@ -580,11 +568,11 @@ fn reading_identity_and_cached_validation_cannot_be_exchanged_between_authentic_
     let a = choose(&g, "Chosen");
     let b = choose(&g, "Other");
     g.active = g.context_at(a.0);
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     g.active = g.context_at(b.0);
-    let other = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet())
+    let other = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet())
         .unwrap()
         .unwrap();
     assert!(g.nodes[d.ring.0].scope.readings.contains("Chosen"));
@@ -595,16 +583,12 @@ fn reading_identity_and_cached_validation_cannot_be_exchanged_between_authentic_
     let second = &data(&g, other.ring).source;
     assert!(
         source
-            .recheck(e.prepared.inputs(), &second.architecture, 0, &mut quiet())
+            .recheck(e.prepared.inputs(), &second.architecture, 0, &quiet())
             .is_err()
     );
-    let mut c = quiet();
-    let env = Environment::with_requests(
-        e.prepared.inputs(),
-        e.prepared.requests().requests(),
-        &mut c,
-    )
-    .unwrap();
+    let c = quiet();
+    let env = Environment::with_requests(e.prepared.inputs(), e.prepared.requests().requests(), &c)
+        .unwrap();
     let Some(Payload::Construction(first)) = &g.get(d.ring).unwrap().payload else {
         panic!("first")
     };
@@ -622,13 +606,9 @@ fn reading_identity_and_cached_validation_cannot_be_exchanged_between_authentic_
     env.recheck_finite_law_diagram(&g, first).unwrap();
     let stop = std::rc::Rc::new(std::cell::Cell::new(false));
     let flag = stop.clone();
-    let mut c = Control::new(move |_| flag.get().then_some(crate::result::Signal::Int));
-    let env = Environment::with_requests(
-        e.prepared.inputs(),
-        e.prepared.requests().requests(),
-        &mut c,
-    )
-    .unwrap();
+    let c = Control::new(move |_| flag.get().then_some(crate::result::Signal::Int));
+    let env = Environment::with_requests(e.prepared.inputs(), e.prepared.requests().requests(), &c)
+        .unwrap();
     env.recheck_finite_law_diagram(&g, first).unwrap();
     stop.set(true);
     assert!(matches!(
@@ -652,7 +632,7 @@ fn owned_reference_domain_keeps_original_membership_conditions_with_primitive_va
             "law required reflexive(c:Part):c.link=c.link;",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
@@ -664,14 +644,14 @@ fn owned_reference_domain_keeps_original_membership_conditions_with_primitive_va
         panic!("origin")
     };
     let full =
-        finite_automatic_law_family(e.prepared.inputs(), origin.readings(), &mut quiet()).unwrap();
+        finite_automatic_law_family(e.prepared.inputs(), origin.readings(), &quiet()).unwrap();
     let f = full.family().unwrap();
     assert!(f.is_complete());
     assert!(f.types().iter().any(|t| matches!(t, Type::Owned(..))));
     let original_types = f.types().to_vec();
     let positions = f.positions().to_vec();
     let expected = f.domain().to_vec();
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     let Part::Domain { ty, elements } = data(&g, d.domain).part() else {
@@ -686,7 +666,7 @@ fn owned_reference_domain_keeps_original_membership_conditions_with_primitive_va
     assert_eq!(ty, &expected_type);
     assert_eq!(elements.len(), expected.len());
     assert!(elements.len() > 1);
-    let env = Environment::new(e.prepared.inputs(), &mut quiet()).unwrap();
+    let env = Environment::new(e.prepared.inputs(), &quiet()).unwrap();
     for (reference, index) in elements.iter().zip(&d.points) {
         let point = &expected[*index];
         let raw = match point.as_slice() {
@@ -752,7 +732,7 @@ fn parameter_columns_and_equal_functions_keep_every_original_index_and_required_
     );
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(d.nu.len(), 4);
@@ -809,12 +789,12 @@ fn fp11_public_domain_permutation_also_orders_nu_epsilon_and_evaluation_basis() 
     let e = evaluate_observed_bytes(
         custom_sources(&definition, &map, "law required two(c:Part):c.quantity=2;"),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     let Part::Domain { elements, .. } = data(&g, d.domain).part() else {
@@ -870,12 +850,12 @@ fn set_fp5_domain_uses_recursive_canonical_values_and_keeps_point_evaluation() {
             "law required reflexive(c:Part):c.quantity=c.quantity;",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     let Part::Domain { elements, .. } = data(&g, d.domain).part() else {
@@ -963,21 +943,18 @@ fn nested_primitive_containers_canonicalize_sets_and_maps_but_preserve_sequences
         },
     ]);
     let original = value.wire().canonical();
-    let normalized = canonical_value(&value, &mut quiet()).unwrap();
+    let normalized = canonical_value(&value, &quiet()).unwrap();
     assert_eq!(normalized.ty(), value.ty());
     assert_eq!(
         normalized.wire().canonical(),
         r#"[[["10","3"],["2"]],{"some":["10","3"]},{"args":[["10","3"]],"tag":"Pack"},[[["v","a"],["v","b"]],[["v","b"],["v","a"]]]]"#
     );
     assert_eq!(value.wire().canonical(), original);
-    assert_eq!(
-        canonical_value(&normalized, &mut quiet()).unwrap(),
-        normalized
-    );
+    assert_eq!(canonical_value(&normalized, &quiet()).unwrap(), normalized);
     for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, 5, 10] {
             assert!(matches!(
-                canonical_value(&value, &mut stopping(signal, at)),
+                canonical_value(&value, &stopping(signal, at)),
                 Err(ValidationFailure::Stop(_))
             ));
             assert_eq!(value.wire().canonical(), original);
@@ -991,7 +968,7 @@ fn full_parameter_rows_keep_original_roles_sources_and_all_four_scalar_assignmen
     let e = example(false, body);
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(d.originals.len(), 4);
@@ -1093,7 +1070,7 @@ fn source_locations_keep_whole_let_match_and_guard_occurrences() {
         let raw = std::str::from_utf8(e.prepared.inputs().sources().law().bytes()).unwrap();
         let mut g = graph(&e);
         let a = architecture(&g, "a");
-        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
             .unwrap()
             .unwrap();
         assert_eq!(d.originals.len(), 1);
@@ -1131,7 +1108,7 @@ fn original_source_rows_survive_missing_observation_and_preserve_unconditional_o
     let e = example(true, BODY);
     let mut g = graph(&e);
     let b = architecture(&g, "b");
-    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(d.originals.len(), 2);
@@ -1169,7 +1146,7 @@ fn full_law_rows_reject_original_column_bindings_role_expression_and_output_tamp
     );
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     let source = data(&g, d.ring).source.clone();
@@ -1247,7 +1224,7 @@ fn full_law_rows_reject_original_column_bindings_role_expression_and_output_tamp
         }
         assert!(
             changed
-                .recheck(e.prepared.inputs(), &source.architecture, 0, &mut quiet())
+                .recheck(e.prepared.inputs(), &source.architecture, 0, &quiet())
                 .is_err(),
             "mode {mode}"
         );
@@ -1260,7 +1237,7 @@ fn empty_law_family_keeps_no_fabricated_original_source_rows() {
     let e = example(false, "");
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     assert!(d.originals.is_empty());
@@ -1323,7 +1300,7 @@ fn direct_equation_operands_keep_original_types_locations_and_coordinate_order()
     let raw = std::str::from_utf8(e.prepared.inputs().sources().law().bytes()).unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(d.operands.len(), 2);
@@ -1385,7 +1362,7 @@ fn lexical_operand_substitution_closes_nested_let_match_and_keeps_discarded_read
         let raw = std::str::from_utf8(e.prepared.inputs().sources().law().bytes()).unwrap();
         let mut g = graph(&e);
         let a = architecture(&g, "a");
-        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
             .unwrap()
             .unwrap();
         let (left, right) = d.operands[0];
@@ -1460,12 +1437,12 @@ fn tuple_operand_components_project_closed_sources_with_matching_types_and_value
             "law required pair(c:Part):let t=c.quantity in t=(0,true);",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(d.operands.len(), 2);
@@ -1505,7 +1482,7 @@ fn general_boolean_conditions_keep_the_body_and_fixed_unit_equality_truth() {
     );
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(d.operands.len(), 2);
@@ -1548,12 +1525,12 @@ fn operand_plans_reject_free_parameter_substitution_type_projection_and_output_c
             "law required pair(c:Part):let t=c.quantity in t=(0,true);",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     let source = data(&g, d.ring).source.clone();
@@ -1598,7 +1575,7 @@ fn operand_plans_reject_free_parameter_substitution_type_projection_and_output_c
         }
         assert!(
             changed
-                .recheck(e.prepared.inputs(), &source.architecture, 0, &mut quiet())
+                .recheck(e.prepared.inputs(), &source.architecture, 0, &quiet())
                 .is_err(),
             "mode {mode}"
         );
@@ -1613,20 +1590,20 @@ fn all_four_stops_inside_operand_construction_leave_original_graph_and_source_un
     );
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     let source = data(&g, d.ring).source.clone();
     let full = finite_automatic_law_family(
         e.prepared.inputs(),
         source.architecture.readings(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let f = full.family().unwrap();
     let count = std::rc::Rc::new(std::cell::Cell::new(0));
     let seen = count.clone();
-    let mut control = Control::new(move |p| {
+    let control = Control::new(move |p| {
         if p == Checkpoint::FiniteLawFunction {
             seen.set(seen.get() + 1);
         }
@@ -1641,7 +1618,7 @@ fn all_four_stops_inside_operand_construction_leave_original_graph_and_source_un
         &d.components,
         &mut parts,
         source.base,
-        &mut control,
+        &control,
     )
     .unwrap();
     let total = count.get();
@@ -1659,7 +1636,7 @@ fn all_four_stops_inside_operand_construction_leave_original_graph_and_source_un
                     &d.components,
                     &mut parts,
                     source.base,
-                    &mut stopping(signal, at)
+                    &stopping(signal, at)
                 ),
                 Err(ValidationFailure::Stop(_))
             ));
@@ -1676,7 +1653,7 @@ fn missing_operand_values_keep_closed_source_expressions_without_fabricated_scal
     let raw = std::str::from_utf8(e.prepared.inputs().sources().law().bytes()).unwrap();
     let mut g = graph(&e);
     let b = architecture(&g, "b");
-    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet())
         .unwrap()
         .unwrap();
     assert!(d.evaluation.is_none() && d.epsilon.iter().all(Option::is_none));
@@ -1718,7 +1695,7 @@ fn finite_equation_presentation_connects_original_rows_operands_ideals_and_full_
     let e = example(false, BODY);
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     let ctx = d.context.unwrap();
@@ -1812,7 +1789,7 @@ fn finite_presentation_does_not_invent_evaluation_and_rejects_context_and_coordi
     let e = example(true, BODY);
     let mut g = graph(&e);
     let a = architecture(&g, "b");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
     let r = d.presentation.unwrap();
@@ -1913,15 +1890,9 @@ fn context_and_presentation_node_stops_keep_exact_finished_prefixes_for_all_four
     let mut complete = graph(&e);
     let a = architecture(&complete, "a");
     let before = complete.nodes.len();
-    let d = retain(
-        &mut complete,
-        e.prepared.shared_inputs(),
-        a,
-        0,
-        &mut quiet(),
-    )
-    .unwrap()
-    .unwrap();
+    let d = retain(&mut complete, e.prepared.shared_inputs(), a, 0, &quiet())
+        .unwrap()
+        .unwrap();
     let context = d.context.unwrap();
     let presentation = d.presentation.unwrap();
     for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
@@ -1932,7 +1903,7 @@ fn context_and_presentation_node_stops_keep_exact_finished_prefixes_for_all_four
         ] {
             let seen = std::rc::Rc::new(std::cell::Cell::new(0));
             let count = seen.clone();
-            let mut control = Control::new(move |point| {
+            let control = Control::new(move |point| {
                 if point == Checkpoint::NativeResultNode {
                     count.set(count.get() + 1);
                 }
@@ -1951,7 +1922,7 @@ fn context_and_presentation_node_stops_keep_exact_finished_prefixes_for_all_four
             g.requests = old.requests;
             g.checked_answers = old.checked_answers;
             assert!(matches!(
-                retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut control),
+                retain(&mut g, e.prepared.shared_inputs(), a, 0, &control),
                 Err(ValidationFailure::Stop(_))
             ));
             assert!(control.stop_reason().is_some());
@@ -2016,7 +1987,7 @@ fn missing_self_equality_keeps_fiber_constant_without_presenting_an_observed_eps
     );
     let mut g = graph(&e);
     let b = architecture(&g, "b");
-    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet())
         .unwrap()
         .unwrap();
     assert!(d.evaluation.is_none());
@@ -2073,7 +2044,7 @@ fn an_unrelated_missing_finite_row_does_not_erase_an_observed_constant_row() {
         );
         let mut g = graph(&e);
         let b = architecture(&g, "b");
-        let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet())
+        let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet())
             .unwrap()
             .unwrap();
         let Part::Equation(E::Presentation {
@@ -2111,7 +2082,7 @@ fn a_false_finite_guard_does_not_turn_missing_operands_into_observations() {
         );
         let mut g = graph(&e);
         let b = architecture(&g, "b");
-        let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet())
+        let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet())
             .unwrap()
             .unwrap();
         assert!(d.epsilon.iter().all(Option::is_some));

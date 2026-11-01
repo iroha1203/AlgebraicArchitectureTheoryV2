@@ -31,12 +31,12 @@ mod tests {
             map,
             "change choose(c:Part,b:Bool)=c with {flag=b};law required valid(c:Part):c.flag;",
         );
-        let mut control = Control::unlimited();
+        let control = Control::unlimited();
         let requests = resolve_native_for_test(
             inputs.law(),
             inputs.archmap(),
             &["s=solve(Selected.valid,on=@v/root,using=Selected.choose)"],
-            &mut control,
+            &control,
         )
         .unwrap();
         let request = &requests.requests()[0];
@@ -50,12 +50,12 @@ mod tests {
                 field: None,
                 atom: None,
             },
-            &mut control,
+            &control,
         )
         .unwrap();
-        let environment = Environment::new(&inputs, &mut control).unwrap();
+        let environment = Environment::new(&inputs, &control).unwrap();
         let graph = Graph::new(&control);
-        match search(&environment, &graph, &witness, request, &mut control) {
+        match search(&environment, &graph, &witness, request, &control) {
             Ok(s) => s,
             Err(e) => panic!("{:?}", e.cause),
         }
@@ -120,13 +120,13 @@ mod tests {
             &map,
             "change choose(c:Part,b:Bool) when not c.flag=c with {flag=b};law required valid(c:Part):c.flag;",
         );
-        let mut c = quiet();
-        let env = Environment::new(&inputs, &mut c).unwrap();
+        let c = quiet();
+        let env = Environment::new(&inputs, &c).unwrap();
         let requests = resolve_native_for_test(
             inputs.law(),
             inputs.archmap(),
             &["s=solve(Selected.valid,on=@v/root,using=Selected.choose)"],
-            &mut c,
+            &c,
         )
         .unwrap();
         let witness = ArchitectureWitness::compute(
@@ -139,7 +139,7 @@ mod tests {
                 field: None,
                 atom: None,
             },
-            &mut c,
+            &c,
         )
         .unwrap();
         let p = Scalar::Subject {
@@ -172,9 +172,9 @@ mod tests {
                 },
             ),
         ];
-        let mut case = Environment::with_primitive_valuation(&inputs, &valuation, &mut c).unwrap();
+        let mut case = Environment::with_primitive_valuation(&inputs, &valuation, &c).unwrap();
         case.indexes.object = Some(Arc::new(
-            ObjectDomain::from_readings(&inputs, witness.readings(), 0, &mut c).unwrap(),
+            ObjectDomain::from_readings(&inputs, witness.readings(), 0, &c).unwrap(),
         ));
         let change = &inputs.law().declarations()["Selected.choose"];
         let candidate = change_evaluation::candidate(
@@ -205,10 +205,10 @@ mod tests {
             complete: true,
             valuation,
         };
-        verify_point(&env, &witness, &search, 0, &mut c).unwrap();
+        verify_point(&env, &witness, &search, 0, &c).unwrap();
         let mut lost = search;
         lost.valuation.clear();
-        assert!(verify_point(&env, &witness, &lost, 0, &mut c).is_err());
+        assert!(verify_point(&env, &witness, &lost, 0, &c).is_err());
     }
     use crate::control::quiet;
 }
@@ -297,7 +297,7 @@ pub(in crate::observed) fn search(
     graph: &Graph,
     witness: &ArchitectureWitness,
     request: &Request,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Search, SearchFailure> {
     search_with_completions(original, graph, witness, request, &[], control)
 }
@@ -308,7 +308,7 @@ pub(in crate::observed) fn search_with_completions(
     witness: &ArchitectureWitness,
     request: &Request,
     completions: &[(Fact, Scalar)],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Search, SearchFailure> {
     let mut result = Search {
         linear: None,
@@ -608,7 +608,7 @@ pub(in crate::observed) fn verify_point(
     witness: &Arc<ArchitectureWitness>,
     search: &Search,
     point: usize,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(), ValidationFailure> {
     control.checkpoint(Checkpoint::ChangeWitness)?;
     let mut environment =

@@ -104,8 +104,8 @@ fn known_projection_errors_yield_to_cancellation() {
         ),
     ] {
         let asks = [bad, producer];
-        let (mut baseline, total, _) = probe(None);
-        let normal = prepare_observed(sources(), &asks, &mut baseline).unwrap_err();
+        let (baseline, total, _) = probe(None);
+        let normal = prepare_observed(sources(), &asks, &baseline).unwrap_err();
         let PrepareFailure::Requests {
             failure: ResolveFailure::Invalid { issues, .. },
             ..
@@ -121,8 +121,8 @@ fn known_projection_errors_yield_to_cancellation() {
         if bad.ends_with("value.some)") {
             assert_eq!(total.get(), 4, "review counterexample point");
         }
-        let (mut control, count, reason) = probe(Some(total.get()));
-        let failure = prepare_observed(sources(), &asks, &mut control).unwrap_err();
+        let (control, count, reason) = probe(Some(total.get()));
+        let failure = prepare_observed(sources(), &asks, &control).unwrap_err();
         let wire_value = failure.wire().unwrap();
         let Json::Obj(wire) = &wire_value else {
             panic!("object");
@@ -147,8 +147,8 @@ fn known_projection_errors_yield_to_cancellation() {
             "latched stop does not resume the probe"
         );
         // Before the first projection step no invalid result has been established.
-        let (mut control, count, reason) = probe(Some(1));
-        let failure = prepare_observed(sources(), &asks, &mut control).unwrap_err();
+        let (control, count, reason) = probe(Some(1));
+        let failure = prepare_observed(sources(), &asks, &control).unwrap_err();
         assert!(
             matches!(failure, PrepareFailure::Requests { failure: ResolveFailure::Interrupted { reason: actual }, .. } if actual == reason)
         );
@@ -158,7 +158,7 @@ fn known_projection_errors_yield_to_cancellation() {
 
 #[test]
 fn early_projection_errors_yield_to_cancellation_at_the_final_checkpoint() {
-    let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
+    let checked = check_inputs(sources(), &Control::unlimited()).unwrap();
     for (ty, path, message) in [
         (
             ProjectionType::Law(Type::Data("W.Absent".into())),
@@ -181,14 +181,14 @@ fn early_projection_errors_yield_to_cancellation_at_the_final_checkpoint() {
             "no type candidate exposes this projection",
         ),
     ] {
-        let (mut baseline, total, _) = probe(None);
+        let (baseline, total, _) = probe(None);
         assert_eq!(
-            resolve_projection_controlled(checked.law(), ty.clone(), &path, &mut baseline),
+            resolve_projection_controlled(checked.law(), ty.clone(), &path, &baseline),
             Err(ProjectionFailure::Invalid(message.into()))
         );
-        let (mut control, count, reason) = probe(Some(total.get()));
+        let (control, count, reason) = probe(Some(total.get()));
         assert_eq!(
-            resolve_projection_controlled(checked.law(), ty.clone(), &path, &mut control),
+            resolve_projection_controlled(checked.law(), ty.clone(), &path, &control),
             Err(ProjectionFailure::Interrupted(reason))
         );
         assert_eq!(count.get(), total.get());
@@ -198,24 +198,24 @@ fn early_projection_errors_yield_to_cancellation_at_the_final_checkpoint() {
 
 #[test]
 fn final_dynamic_rejection_yields_to_cancellation_at_every_checkpoint() {
-    let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
+    let checked = check_inputs(sources(), &Control::unlimited()).unwrap();
     let initial = ProjectionType::Dynamic(vec![
         ProjectionType::Law(Type::Bool),
         ProjectionType::Law(Type::Z),
     ]);
     let path = [ProjectionStep::Field("some".into())];
     let invalid = ProjectionFailure::Invalid("no type candidate exposes this projection".into());
-    let (mut baseline, total, _) = probe(None);
+    let (baseline, total, _) = probe(None);
     assert_eq!(
-        resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut baseline),
+        resolve_projection_controlled(checked.law(), initial.clone(), &path, &baseline),
         Err(invalid.clone())
     );
     // Last candidate post = 10, last iteration post = 11, whole project post = 12.
     assert_eq!(total.get(), 12);
     for at in 1..=total.get() {
-        let (mut control, count, reason) = probe(Some(at));
+        let (control, count, reason) = probe(Some(at));
         assert_eq!(
-            resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut control),
+            resolve_projection_controlled(checked.law(), initial.clone(), &path, &control),
             Err(ProjectionFailure::Interrupted(reason))
         );
         assert_eq!(control.stop_reason(), Some(reason));
@@ -252,20 +252,20 @@ fn a_rejected_constructor_cannot_hide_untried_or_accepted_candidates() {
         "choice=evaluate(R.choice)",
     ];
     for empty_first in [true, false] {
-        let (mut baseline, total, _) = probe(None);
+        let (baseline, total, _) = probe(None);
         let normal = prepare_observed(
             sources_with_empty_constructor(Some(empty_first)),
             &asks,
-            &mut baseline,
+            &baseline,
         )
         .unwrap();
         assert_eq!(normal.requests().requests()[0].id, "ok");
         for at in 1..=total.get() {
-            let (mut control, count, reason) = probe(Some(at));
+            let (control, count, reason) = probe(Some(at));
             let failure = prepare_observed(
                 sources_with_empty_constructor(Some(empty_first)),
                 &asks,
-                &mut control,
+                &control,
             )
             .unwrap_err();
             assert!(matches!(
@@ -282,8 +282,8 @@ fn a_rejected_constructor_cannot_hide_untried_or_accepted_candidates() {
 }
 
 fn assert_exhausted_projection_from_bytes(asks: &[&str], message: &str, known_posts: usize) {
-    let (mut baseline, total, _) = probe(None);
-    let normal = prepare_observed(sources(), asks, &mut baseline).unwrap_err();
+    let (baseline, total, _) = probe(None);
+    let normal = prepare_observed(sources(), asks, &baseline).unwrap_err();
     let PrepareFailure::Requests {
         failure: ResolveFailure::Invalid { issues, .. },
         ..
@@ -298,8 +298,8 @@ fn assert_exhausted_projection_from_bytes(asks: &[&str], message: &str, known_po
     assert_eq!(issues[0].message, message);
     assert!(total.get() >= known_posts);
     for at in 1..=total.get() {
-        let (mut control, count, reason) = probe(Some(at));
-        let failure = prepare_observed(sources(), asks, &mut control).unwrap_err();
+        let (control, count, reason) = probe(Some(at));
+        let failure = prepare_observed(sources(), asks, &control).unwrap_err();
         let Json::Obj(ref wire) = failure.wire().unwrap() else {
             panic!("object");
         };
@@ -322,7 +322,7 @@ fn assert_exhausted_projection_from_bytes(asks: &[&str], message: &str, known_po
 
 #[test]
 fn dynamic_candidate_rejection_never_establishes_global_invalidity() {
-    let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
+    let checked = check_inputs(sources(), &Control::unlimited()).unwrap();
     let rejected = ProjectionType::Dynamic(vec![
         ProjectionType::Law(Type::Bool),
         ProjectionType::Law(Type::Z),
@@ -347,15 +347,15 @@ fn dynamic_candidate_rejection_never_establishes_global_invalidity() {
     ] {
         let initial = ProjectionType::Dynamic(candidates);
         let path = [ProjectionStep::Field("some".into())];
-        let (mut baseline, total, _) = probe(None);
+        let (baseline, total, _) = probe(None);
         let normal =
-            resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut baseline)
+            resolve_projection_controlled(checked.law(), initial.clone(), &path, &baseline)
                 .unwrap();
         assert_eq!(normal.ty, ProjectionType::Law(Type::Z));
         for at in 1..=total.get() {
-            let (mut control, count, reason) = probe(Some(at));
+            let (control, count, reason) = probe(Some(at));
             assert_eq!(
-                resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut control),
+                resolve_projection_controlled(checked.law(), initial.clone(), &path, &control),
                 Err(ProjectionFailure::Interrupted(reason))
             );
             assert_eq!(count.get(), at);
@@ -366,8 +366,8 @@ fn dynamic_candidate_rejection_never_establishes_global_invalidity() {
 }
 
 fn assert_binding_priority(asks: &[&str], at: usize) {
-    let (mut control, count, reason) = probe(Some(at));
-    let failure = prepare_observed(sources(), asks, &mut control).unwrap_err();
+    let (control, count, reason) = probe(Some(at));
+    let failure = prepare_observed(sources(), asks, &control).unwrap_err();
     let wire_value = failure.wire().unwrap();
     let Json::Obj(wire) = &wire_value else {
         panic!("object");
@@ -391,8 +391,8 @@ fn single_binding_mismatch_yields_to_cancellation_at_every_projection_checkpoint
         "number=evaluate(R.accept,x=$pair.value[0],y=$pair.value[1])",
         "pair=evaluate(R.pair)",
     ];
-    let (mut baseline, total, _) = probe(None);
-    let normal = prepare_observed(sources(), &asks, &mut baseline).unwrap_err();
+    let (baseline, total, _) = probe(None);
+    let normal = prepare_observed(sources(), &asks, &baseline).unwrap_err();
     assert!(
         matches!(normal, PrepareFailure::Requests { failure: ResolveFailure::Invalid { issues, .. }, .. } if issues[0].code == RequestIssueCode::Type)
     );
@@ -410,8 +410,8 @@ fn dynamic_binding_rejection_is_known_only_after_all_candidates_mismatch() {
         "bad=evaluate(R.echo,s=$choice.value[0])",
         "choice=evaluate(R.choice)",
     ];
-    let (mut baseline, total, _) = probe(None);
-    let normal = prepare_observed(sources(), &asks, &mut baseline).unwrap_err();
+    let (baseline, total, _) = probe(None);
+    let normal = prepare_observed(sources(), &asks, &baseline).unwrap_err();
     assert!(
         matches!(normal, PrepareFailure::Requests { failure: ResolveFailure::Invalid { issues, .. }, .. } if issues[0].code == RequestIssueCode::Type)
     );
@@ -428,8 +428,8 @@ fn binding_candidate_mismatch_cannot_hide_a_stop_before_a_compatible_candidate()
         "ok=evaluate(R.accept_option,x=$choice.value[0])",
         "choice=evaluate(R.choice)",
     ];
-    let (mut baseline, total, _) = probe(None);
-    let prepared = prepare_observed(sources(), &asks, &mut baseline).unwrap();
+    let (baseline, total, _) = probe(None);
+    let prepared = prepare_observed(sources(), &asks, &baseline).unwrap();
     assert_eq!(prepared.requests().requests()[0].id, "ok");
     assert!(prepared.requests().requests()[0].constraints[0].dynamic);
     // Dynamic candidates are Option<Z>, List<Z>; the stack checks List first.
@@ -471,17 +471,11 @@ fn every_type_mismatch_shape_yields_to_cancellation() {
         (Term(vec![Bool], Box::new(Z)), Term(vec![Z], Box::new(Z))),
     ] {
         let actual = ProjectionType::Law(left);
-        let (mut baseline, total, _) = probe(None);
-        assert_eq!(
-            can_bind_controlled(&actual, &right, &mut baseline),
-            Ok(false)
-        );
+        let (baseline, total, _) = probe(None);
+        assert_eq!(can_bind_controlled(&actual, &right, &baseline), Ok(false));
         for at in 1..=total.get() {
-            let (mut control, count, reason) = probe(Some(at));
-            assert_eq!(
-                can_bind_controlled(&actual, &right, &mut control),
-                Err(reason)
-            );
+            let (control, count, reason) = probe(Some(at));
+            assert_eq!(can_bind_controlled(&actual, &right, &control), Err(reason));
             assert_eq!(count.get(), at);
             assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
             assert_eq!(count.get(), at);
@@ -491,15 +485,12 @@ fn every_type_mismatch_shape_yields_to_cancellation() {
     // check; a successful comparison must still stop at every sample.
     let actual = ProjectionType::Law(Owned("W.A".into(), "p".into()));
     let expected = Owned("W.A".into(), "q".into());
-    let (mut baseline, total, _) = probe(None);
-    assert_eq!(
-        can_bind_controlled(&actual, &expected, &mut baseline),
-        Ok(true)
-    );
+    let (baseline, total, _) = probe(None);
+    assert_eq!(can_bind_controlled(&actual, &expected, &baseline), Ok(true));
     for at in 1..=total.get() {
-        let (mut control, count, reason) = probe(Some(at));
+        let (control, count, reason) = probe(Some(at));
         assert_eq!(
-            can_bind_controlled(&actual, &expected, &mut control),
+            can_bind_controlled(&actual, &expected, &control),
             Err(reason)
         );
         assert_eq!(count.get(), at);

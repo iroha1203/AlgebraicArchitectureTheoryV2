@@ -17,12 +17,12 @@ fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
 #[test]
 fn map_application_legal_owned_key_outside_actual_table_has_condition_failure() {
     let input = fixture::owned("known");
-    let checked = check_inputs(input.clone(), &mut quiet());
+    let checked = check_inputs(input.clone(), &quiet());
     assert!(checked.is_ok(), "input should pass static checking");
     let outcome = evaluate_observed_bytes(
         input,
         &["a=evaluate(Applications.apply,m=@v/m,x=@v/r)"],
-        &mut quiet(),
+        &quiet(),
     );
     let Ok(r) = outcome else {
         panic!("legal application should return a typed result")
@@ -40,7 +40,7 @@ fn map_application_known_plain_table_returns_the_original_image() {
     let r = evaluate_observed_bytes(
         fixture::plain("r1"),
         &["a=evaluate(Maps.apply,s=@v/s,x=@v/a)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -278,8 +278,8 @@ fn map_application_owned_valid_images_lexical_call_and_tuple_callee_keep_actual_
         for (key, image) in [("p", "r"), ("q", "s")] {
             let ask = format!("a=evaluate(Applications.{name},m=@v/m,x=@v/{key})");
             let input = fixture::owned("known");
-            let before = check_inputs(input.clone(), &mut quiet()).unwrap();
-            let r = evaluate_observed_bytes(input, &[&ask], &mut quiet()).unwrap();
+            let before = check_inputs(input.clone(), &quiet()).unwrap();
+            let r = evaluate_observed_bytes(input, &[&ask], &quiet()).unwrap();
             assert_eq!(r.status(), "complete");
             assert_eq!(
                 result_value(
@@ -316,7 +316,7 @@ fn map_application_plain_if_view_and_composition_keep_each_occurrence() {
         ("apply", "b", "a"),
     ] {
         let ask = format!("a=evaluate(Maps.{name},s=@v/s,x=@v/{key})");
-        let r = evaluate_observed_bytes(fixture::plain("r1"), &[&ask], &mut quiet()).unwrap();
+        let r = evaluate_observed_bytes(fixture::plain("r1"), &[&ask], &quiet()).unwrap();
         assert_eq!(r.status(), "complete");
         assert_eq!(
             result_value(
@@ -334,7 +334,7 @@ fn map_application_generated_finite_functions_use_real_binder_and_complete_domai
     let r = evaluate_observed_bytes(
         fixture::plain("r1"),
         &["a=evaluate(Maps.generated,x=@v/a)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -351,11 +351,11 @@ fn map_application_generated_finite_functions_use_real_binder_and_complete_domai
 #[test]
 fn map_application_empty_owned_table_has_real_refuted_domain_condition() {
     let input = fixture::owned("empty");
-    assert!(check_inputs(input.clone(), &mut quiet()).is_ok());
+    assert!(check_inputs(input.clone(), &quiet()).is_ok());
     let r = evaluate_observed_bytes(
         input,
         &["a=evaluate(Applications.apply,m=@v/m,x=@v/p)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_condition(&r, &[], "p");
@@ -365,7 +365,7 @@ fn map_application_condition_failure_retains_original_operands_and_checked_count
     let r = evaluate_observed_bytes(
         fixture::owned("known"),
         &["a=evaluate(Applications.apply,m=@v/m,x=@v/r)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_condition(&r, &["p", "q"], "r");
@@ -384,7 +384,7 @@ fn map_application_missing_tables_keep_missing_slot_and_never_make_a_condition_f
             "Maps.Sample.missing",
         ),
     ] {
-        let r = evaluate_observed_bytes(input, &[ask], &mut quiet()).unwrap();
+        let r = evaluate_observed_bytes(input, &[ask], &quiet()).unwrap();
         assert_eq!(r.status(), "partial");
         let w = r.wire();
         let a = answer(&w, "a");
@@ -400,8 +400,8 @@ fn map_application_missing_tables_keep_missing_slot_and_never_make_a_condition_f
 #[test]
 fn map_application_provenance_only_changes_return_current_sources() {
     let asks = ["a=evaluate(Maps.apply,s=@v/s,x=@v/a)"];
-    let a = evaluate_observed_bytes(fixture::plain("r1"), &asks, &mut quiet()).unwrap();
-    let b = evaluate_observed_bytes(fixture::plain("r2"), &asks, &mut quiet()).unwrap();
+    let a = evaluate_observed_bytes(fixture::plain("r1"), &asks, &quiet()).unwrap();
+    let b = evaluate_observed_bytes(fixture::plain("r2"), &asks, &quiet()).unwrap();
     assert_eq!(get(&a.wire(), "answers"), get(&b.wire(), "answers"));
     assert_ne!(
         a.prepared().inputs().sources().archmap().bytes(),
@@ -419,7 +419,7 @@ fn map_application_missing_reference_argument_retains_its_original_slot() {
     let r = evaluate_observed_bytes(
         input,
         &["a=evaluate(Applications.from_edge,m=@v/m,e=@v/e)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial");
@@ -437,7 +437,7 @@ fn map_application_condition_is_not_a_refuted_law_and_keeps_original_row_context
         "c=check(Applications.holds,m=@v/m,x=@v/r)",
         "c=check(Applications.parameter,a=@v/A,b=@v/B,x=@v/r)",
     ] {
-        let r = evaluate_observed_bytes(fixture::owned("known"), &[ask], &mut quiet()).unwrap();
+        let r = evaluate_observed_bytes(fixture::owned("known"), &[ask], &quiet()).unwrap();
         assert_eq!(r.status(), "partial");
         let w = r.wire();
         let a = answer(&w, "c");
@@ -463,10 +463,10 @@ fn map_application_condition_is_not_a_refuted_law_and_keeps_original_row_context
 #[test]
 fn map_application_condition_provenance_pair_keeps_the_same_math_and_current_origin() {
     let asks = ["a=evaluate(Applications.apply,m=@v/m,x=@v/r)"];
-    let a = evaluate_observed_bytes(fixture::owned_revision("known", "r1"), &asks, &mut quiet())
-        .unwrap();
-    let b = evaluate_observed_bytes(fixture::owned_revision("known", "r2"), &asks, &mut quiet())
-        .unwrap();
+    let a =
+        evaluate_observed_bytes(fixture::owned_revision("known", "r1"), &asks, &quiet()).unwrap();
+    let b =
+        evaluate_observed_bytes(fixture::owned_revision("known", "r2"), &asks, &quiet()).unwrap();
     assert_eq!(get(&a.wire(), "answers"), get(&b.wire(), "answers"));
     assert_ne!(
         a.prepared().inputs().sources().archmap().bytes(),
@@ -483,7 +483,7 @@ fn map_application_distinct_endpoint_types_and_cross_snapshot_images_are_preserv
     let r = evaluate_observed_bytes(
         fixture::distinct(),
         &["a=evaluate(Maps.generated,x=@v/a)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");

@@ -26,7 +26,7 @@ use crate::{
     input::CheckedInputs,
 };
 use std::sync::Arc;
-fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectLawCompatibility)
         .map_err(Into::into)
 }
@@ -174,7 +174,7 @@ impl ObjectLawCompatibility {
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ObjectLawCompatibilityFailure> {
         let root = self.readings.construction().root();
         let expected = object_law_compatibility(
@@ -285,7 +285,7 @@ fn record(
     index: usize,
     point: LawCompatibilityPoint,
     last: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     if matches!(point.outcome, LawCompatibilityOutcome::Refuted(_)) && r.outcome.is_none() {
         r.outcome = Some(point.outcome.clone());
@@ -307,7 +307,7 @@ fn record(
 fn same_arguments(
     a: &[FiniteTransportValue],
     b: &[FiniteTransportValue],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     if a.len() != b.len() {
         return Ok(false);
@@ -362,7 +362,7 @@ fn point(
 fn compare(
     r: &mut ObjectLawCompatibility,
     index: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     tick(c)?;
     let comparison = &r.comparisons[index];
@@ -496,7 +496,7 @@ pub fn object_law_compatibility(
     reading: &str,
     snapshot: &str,
     root: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<ObjectLawCompatibility, ObjectLawCompatibilityFailure> {
     tick(c)?;
     let profiles = construct_profiles(&inputs, reading, snapshot, root, c)?;
@@ -627,7 +627,7 @@ pub fn object_law_compatibility(
 fn same_family(
     a: &LawReadingFamily,
     b: &LawReadingFamily,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     tick(c)?;
     if a.complete != b.complete
@@ -676,7 +676,7 @@ fn same_family(
 fn same(
     a: &ObjectLawCompatibility,
     b: &ObjectLawCompatibility,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     tick(c)?;
     if a.inputs.sources() != b.inputs.sources()
@@ -760,20 +760,20 @@ mod tests {
                     law.into_bytes(),
                     fixture::A.replace("@DIGEST@", digest).into_bytes(),
                 ),
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap(),
         )
     }
     fn evaluate(
         i: Arc<CheckedInputs>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<ObjectLawCompatibility, ObjectLawCompatibilityFailure> {
         object_law_compatibility(i, "Selected", "v", "root", c)
     }
     fn example() -> (Arc<CheckedInputs>, ObjectLawCompatibility) {
         let i = inputs("law required family(c:Part,b:Bool):b;");
-        let r = evaluate(Arc::clone(&i), &mut Control::unlimited()).unwrap();
+        let r = evaluate(Arc::clone(&i), &Control::unlimited()).unwrap();
         (i, r)
     }
     fn stop(point: Checkpoint, at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>) {
@@ -790,7 +790,7 @@ mod tests {
     #[test]
     fn recheck_rejects_native_domains_rows_original_dag_and_every_comparison_mutation() {
         let other = inputs("law optional family(c:Part,b:Bool):true;");
-        let other = evaluate(other, &mut Control::unlimited()).unwrap();
+        let other = evaluate(other, &Control::unlimited()).unwrap();
         let other_reading = other.evaluations[0].family.rows[0].reading.clone();
         for mode in 0..34 {
             let (i, mut r) = example();
@@ -856,10 +856,7 @@ mod tests {
                     e.nodes[0].scope.snapshots.insert("foreign".into());
                 }
             }
-            assert!(
-                r.recheck(i, &mut Control::unlimited()).is_err(),
-                "mode={mode}"
-            );
+            assert!(r.recheck(i, &Control::unlimited()).is_err(), "mode={mode}");
         }
     }
     #[test]
@@ -872,19 +869,19 @@ mod tests {
         ] {
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut c = Control::new(move |p| {
+            let c = Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1)
                 };
                 None
             });
-            let full = evaluate(Arc::clone(&i), &mut c).unwrap();
+            let full = evaluate(Arc::clone(&i), &c).unwrap();
             let total = count.get();
             assert!(total > 0);
             for at in [1, total.div_ceil(2), total] {
                 for signal in [Signal::Int, Signal::Term] {
-                    let (mut c, n) = stop(point, at, signal);
-                    let f = evaluate(Arc::clone(&i), &mut c).unwrap_err();
+                    let (c, n) = stop(point, at, signal);
+                    let f = evaluate(Arc::clone(&i), &c).unwrap_err();
                     assert!(c.stop_reason().is_some());
                     if let Some(p) = f.partial() {
                         assert!(p.evaluations.len() <= full.evaluations.len());
@@ -894,7 +891,7 @@ mod tests {
                                 same_evaluation_controlled(
                                     Some(&a.evaluation),
                                     Some(&b.evaluation),
-                                    &mut Control::unlimited()
+                                    &Control::unlimited()
                                 )
                                 .unwrap()
                             );
@@ -918,7 +915,7 @@ mod tests {
                         }
                     }
                     let before = n.get();
-                    assert!(evaluate(Arc::clone(&i), &mut c).is_err());
+                    assert!(evaluate(Arc::clone(&i), &c).is_err());
                     assert_eq!(n.get(), before);
                 }
             }
@@ -929,25 +926,25 @@ mod tests {
         let (i, r) = example();
         let count = Rc::new(Cell::new(0_usize));
         let seen = Rc::clone(&count);
-        let mut c = Control::new(move |p| {
+        let c = Control::new(move |p| {
             if p == Checkpoint::ObjectLawCompatibility {
                 seen.set(seen.get() + 1)
             };
             None
         });
-        evaluate(Arc::clone(&i), &mut c).unwrap();
-        let (mut c, n) = stop(
+        evaluate(Arc::clone(&i), &c).unwrap();
+        let (c, n) = stop(
             Checkpoint::ObjectLawCompatibility,
             count.get() + 1,
             Signal::Term,
         );
-        let f = r.recheck(Arc::clone(&i), &mut c).unwrap_err();
+        let f = r.recheck(Arc::clone(&i), &c).unwrap_err();
         let p = f.partial().unwrap();
         assert!(p.is_complete());
         assert_eq!(p.outcome(), Some(&LawCompatibilityOutcome::Compatible));
-        p.recheck(i, &mut Control::unlimited()).unwrap();
+        p.recheck(i, &Control::unlimited()).unwrap();
         let before = n.get();
-        assert!(tick(&mut c).is_err());
+        assert!(tick(&c).is_err());
         assert_eq!(before, n.get());
     }
     #[test]
@@ -955,8 +952,8 @@ mod tests {
         let i = inputs(
             "law required family(c:Part,b:Bool):if (forall a:Root . false) then b else not b;",
         );
-        let (mut c, n) = stop(Checkpoint::ObjectLawCompatibilityPoint, 1, Signal::Int);
-        let f = evaluate(i, &mut c).unwrap_err();
+        let (c, n) = stop(Checkpoint::ObjectLawCompatibilityPoint, 1, Signal::Int);
+        let f = evaluate(i, &c).unwrap_err();
         let r = f.partial().unwrap();
         assert!(!r.complete);
         assert_eq!(
@@ -972,7 +969,7 @@ mod tests {
         assert_eq!(p.source.body(), Some(true));
         assert_eq!(p.target.body(), Some(false));
         assert_eq!(n.get(), 1);
-        assert!(tick(&mut c).is_err());
+        assert!(tick(&c).is_err());
         assert_eq!(n.get(), 1);
     }
 }

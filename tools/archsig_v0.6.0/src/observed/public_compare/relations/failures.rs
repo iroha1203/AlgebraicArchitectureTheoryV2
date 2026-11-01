@@ -17,7 +17,7 @@ pub(super) fn calculate(
     left: NodeRef,
     right: NodeRef,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Calculated, ValidationFailure> {
     let table = model.relations.as_ref().ok_or("元relation表がない")?;
     let mut reasons = missing_reasons(table, rows, sources, request)?;

@@ -48,7 +48,7 @@ fn run(
     status: &str,
 ) -> Json {
     let input = fixture::input(script, number, omitted, revision);
-    let r = evaluate_observed_bytes(input.clone(), asks, &mut Control::unlimited()).unwrap();
+    let r = evaluate_observed_bytes(input.clone(), asks, &Control::unlimited()).unwrap();
     let w = r.wire();
     assert_eq!(r.status(), status, "{:?}", f(&w, "issues"));
     assert_eq!(r.prepared().inputs().sources(), &input);
@@ -362,7 +362,7 @@ fn finite_subexpressions_preserve_current_observation_provenance() {
             &Json::Bool(true)
         );
         let input = fixture::input(script, "Z", &[], revision);
-        let checked = archsig::input::check_inputs(input, &mut Control::unlimited()).unwrap();
+        let checked = archsig::input::check_inputs(input, &Control::unlimited()).unwrap();
         let map = checked.archmap();
         let slot = map
             .snapshots()

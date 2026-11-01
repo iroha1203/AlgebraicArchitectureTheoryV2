@@ -106,9 +106,9 @@ reading Calc {{
     )
 }
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
     (
-        evaluate_observed_bytes(inputs, asks, &mut quiet())
+        evaluate_observed_bytes(inputs, asks, &quiet())
             .unwrap()
             .wire(),
         checked,
@@ -976,13 +976,13 @@ fn injected_stop_inside_numeric_operation_keeps_prior_values_reason_and_unstarte
     let unknown = "unknown=evaluate(Calc.unknown,s=@v/sample)";
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut baseline = Control::new(move |point| {
+    let baseline = Control::new(move |point| {
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
         None
     });
-    let prior = evaluate_observed_bytes(fixture(&["f"], body), &[seed, unknown], &mut baseline)
+    let prior = evaluate_observed_bytes(fixture(&["f"], body), &[seed, unknown], &baseline)
         .unwrap()
         .wire();
     // Stop after the next expression has entered its first operand.
@@ -991,7 +991,7 @@ fn injected_stop_inside_numeric_operation_keeps_prior_values_reason_and_unstarte
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (seen, calls, stopped) = (expressions.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         calls.set(calls.get() + 1);
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
@@ -1010,7 +1010,7 @@ fn injected_stop_inside_numeric_operation_keeps_prior_values_reason_and_unstarte
             "current=evaluate(Calc.current,s=@v/sample)",
             "later=evaluate(Calc.later,s=@v/sample)",
         ],
-        &mut c,
+        &c,
     )
     .unwrap()
     .wire();

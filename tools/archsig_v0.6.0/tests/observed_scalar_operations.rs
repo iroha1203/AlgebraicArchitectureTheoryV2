@@ -169,9 +169,9 @@ reading Calc {{
     )
 }
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
     (
-        evaluate_observed_bytes(inputs, asks, &mut quiet())
+        evaluate_observed_bytes(inputs, asks, &quiet())
             .unwrap()
             .wire(),
         checked,
@@ -903,7 +903,7 @@ fn cancellation_inside_boolean_operator_keeps_prior_integer_and_original_reason(
     let seed = "seed=evaluate(Calc.add,s=@v/sample)";
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut baseline = Control::new(move |point| {
+    let baseline = Control::new(move |point| {
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
@@ -912,7 +912,7 @@ fn cancellation_inside_boolean_operator_keeps_prior_integer_and_original_reason(
     evaluate_observed_bytes(
         fixture(Some("2"), Some("3"), None, Some(false)),
         &[seed],
-        &mut baseline,
+        &baseline,
     )
     .unwrap();
     let target = count.get() + 3;
@@ -920,7 +920,7 @@ fn cancellation_inside_boolean_operator_keeps_prior_integer_and_original_reason(
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (seen, calls, stopped) = (expressions.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         calls.set(calls.get() + 1);
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
@@ -938,7 +938,7 @@ fn cancellation_inside_boolean_operator_keeps_prior_integer_and_original_reason(
             "current=check(Calc.both_law,s=@v/sample)",
             "later=check(Calc.equal,s=@v/sample)",
         ],
-        &mut c,
+        &c,
     )
     .unwrap()
     .wire();

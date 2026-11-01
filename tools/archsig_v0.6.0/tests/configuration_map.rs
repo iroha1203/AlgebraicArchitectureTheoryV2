@@ -20,7 +20,7 @@ const A: &str = include_str!("fixtures/reservations.archmap.json");
 fn inputs(map: &str) -> CheckedInputs {
     check_inputs(
         InputSources::from_bytes(vec![D.to_vec()], L.to_vec(), map.as_bytes().to_vec()),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
@@ -39,7 +39,7 @@ fn reference_inputs(map: &str) -> CheckedInputs {
             law.into_bytes(),
             map.replace("@DIGEST@", digest).into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
@@ -101,7 +101,7 @@ fn graph_inputs_with_edit(
             law.into_bytes(),
             map.into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
@@ -150,7 +150,7 @@ fn bridge_inputs(rename_root_field: bool) -> CheckedInputs {
             law.into_bytes(),
             map.into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
@@ -204,7 +204,7 @@ fn reservations_has_the_independently_expected_total_action_without_quantity_equ
         "m",
         "Reservations",
         None,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(result.reading(), "Reservations");
@@ -254,13 +254,11 @@ fn reservations_has_the_independently_expected_total_action_without_quantity_equ
     );
     assert_eq!(candidate.reading(), "Reservations");
     assert_eq!(candidate.to_reading(), "Reservations");
-    candidate
-        .recheck(&inputs, &mut Control::unlimited())
-        .unwrap();
+    candidate.recheck(&inputs, &Control::unlimited()).unwrap();
     result
         .map()
         .unwrap()
-        .recheck(&inputs, &mut Control::unlimited())
+        .recheck(&inputs, &Control::unlimited())
         .unwrap();
     result
         .recheck(
@@ -269,7 +267,7 @@ fn reservations_has_the_independently_expected_total_action_without_quantity_equ
             "m",
             "Reservations",
             Some("Reservations"),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
 }
@@ -289,15 +287,8 @@ fn noninjective_sets_use_the_image_set_while_lists_retain_duplicates() {
                 r#"[["v","r"]]"#
             },
         );
-        let result = correspondence(
-            &inputs,
-            "v",
-            "m",
-            "GraphRead",
-            None,
-            &mut Control::unlimited(),
-        )
-        .unwrap();
+        let result =
+            correspondence(&inputs, "v", "m", "GraphRead", None, &Control::unlimited()).unwrap();
         assert!(result.missing().is_empty());
         assert!(
             result.counterexamples().is_empty(),
@@ -334,7 +325,7 @@ fn noninjective_sets_use_the_image_set_while_lists_retain_duplicates() {
                     .contains(&(c.image(a).unwrap().clone(), c.image(b).unwrap().clone()))
             );
         }
-        map.recheck(&inputs, &mut Control::unlimited()).unwrap();
+        map.recheck(&inputs, &Control::unlimited()).unwrap();
     }
     let inputs = graph_inputs(
         true,
@@ -344,15 +335,8 @@ fn noninjective_sets_use_the_image_set_while_lists_retain_duplicates() {
         r#"[["v","p"],["v","q"]]"#,
         r#"[["v","r"]]"#,
     );
-    let result = correspondence(
-        &inputs,
-        "v",
-        "m",
-        "GraphRead",
-        None,
-        &mut Control::unlimited(),
-    )
-    .unwrap();
+    let result =
+        correspondence(&inputs, "v", "m", "GraphRead", None, &Control::unlimited()).unwrap();
     assert!(result.candidate().is_some());
     assert!(result.map().is_none());
     assert!(matches!(
@@ -409,15 +393,8 @@ fn missing_correspondence_keeps_fixed_list_and_set_violations_without_inventing_
         ),
     ] {
         let inputs = graph_inputs(false, false, links_a, links_b, members_a, members_b);
-        let result = correspondence(
-            &inputs,
-            "v",
-            "m",
-            "GraphRead",
-            None,
-            &mut Control::unlimited(),
-        )
-        .unwrap();
+        let result =
+            correspondence(&inputs, "v", "m", "GraphRead", None, &Control::unlimited()).unwrap();
         assert!(result.candidate().is_none());
         assert!(result.map().is_none());
         assert_eq!(
@@ -440,14 +417,7 @@ fn missing_correspondence_keeps_fixed_list_and_set_violations_without_inventing_
             ),
         }
         result
-            .recheck(
-                &inputs,
-                "v",
-                "m",
-                "GraphRead",
-                None,
-                &mut Control::unlimited(),
-            )
+            .recheck(&inputs, "v", "m", "GraphRead", None, &Control::unlimited())
             .unwrap();
     }
 }
@@ -504,7 +474,7 @@ fn empty_root_values_cannot_bypass_reference_type_transport() {
                     law.into_bytes(),
                     map.into_bytes(),
                 ),
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap();
             let result = correspondence(
@@ -513,7 +483,7 @@ fn empty_root_values_cannot_bypass_reference_type_transport() {
                 "m",
                 "LeftRead",
                 Some("RightRead"),
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap();
             assert!(result.map().is_some());
@@ -536,29 +506,16 @@ fn shared_missing_correspondence_is_checked_across_fields_and_with_its_owner_dom
                         &format!(r#"[[["v","p"],["v","{p_to}"]],[["v","q"],["v","{q_to}"]]]"#),
                     )
                 });
-                let result = correspondence(
-                    &inputs,
-                    "v",
-                    "m",
-                    "GraphRead",
-                    None,
-                    &mut Control::unlimited(),
-                )
-                .unwrap();
+                let result =
+                    correspondence(&inputs, "v", "m", "GraphRead", None, &Control::unlimited())
+                        .unwrap();
                 assert!(result.map().is_none());
                 assert!(!result.counterexamples().is_empty());
             }
         }
         let inputs = graph_inputs(false, false, p, links_b, p, members_b);
-        let result = correspondence(
-            &inputs,
-            "v",
-            "m",
-            "GraphRead",
-            None,
-            &mut Control::unlimited(),
-        )
-        .unwrap();
+        let result =
+            correspondence(&inputs, "v", "m", "GraphRead", None, &Control::unlimited()).unwrap();
         assert!(result.candidate().is_none());
         assert!(result.map().is_none());
         assert_eq!(result.missing().len(), 1);
@@ -579,26 +536,12 @@ fn shared_missing_correspondence_is_checked_across_fields_and_with_its_owner_dom
             BTreeSet::from(["Graph.Root.links", "Graph.Root.members"])
         );
         result
-            .recheck(
-                &inputs,
-                "v",
-                "m",
-                "GraphRead",
-                None,
-                &mut Control::unlimited(),
-            )
+            .recheck(&inputs, "v", "m", "GraphRead", None, &Control::unlimited())
             .unwrap();
     }
     let inputs = graph_inputs(false, false, p, r, p, r);
-    let result = correspondence(
-        &inputs,
-        "v",
-        "m",
-        "GraphRead",
-        None,
-        &mut Control::unlimited(),
-    )
-    .unwrap();
+    let result =
+        correspondence(&inputs, "v", "m", "GraphRead", None, &Control::unlimited()).unwrap();
     assert!(result.counterexamples().is_empty());
     assert!(result.map().is_none());
     assert_eq!(result.missing().len(), 1);
@@ -614,15 +557,8 @@ fn unobserved_owners_keep_only_consistent_whole_input_mapping_completions() {
                 .collect::<Vec<_>>()
                 .join("\n")
         });
-        let result = correspondence(
-            &inputs,
-            "v",
-            "m",
-            "GraphRead",
-            None,
-            &mut Control::unlimited(),
-        )
-        .unwrap();
+        let result =
+            correspondence(&inputs, "v", "m", "GraphRead", None, &Control::unlimited()).unwrap();
         assert!(
             result.counterexamples().is_empty(),
             "{:?}",
@@ -632,14 +568,7 @@ fn unobserved_owners_keep_only_consistent_whole_input_mapping_completions() {
         assert!(result.candidate().is_none());
         assert!(result.map().is_none());
         result
-            .recheck(
-                &inputs,
-                "v",
-                "m",
-                "GraphRead",
-                None,
-                &mut Control::unlimited(),
-            )
+            .recheck(&inputs, "v", "m", "GraphRead", None, &Control::unlimited())
             .unwrap();
     }
 }
@@ -654,13 +583,13 @@ fn typed_mapping_completion_stops_latch_the_shared_control() {
     });
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         if point == Checkpoint::Completion {
             seen.set(seen.get() + 1);
         }
         None
     });
-    let original = correspondence(&inputs, "v", "m", "GraphRead", None, &mut control).unwrap();
+    let original = correspondence(&inputs, "v", "m", "GraphRead", None, &control).unwrap();
     let total = count.get();
     assert!(total > 20);
     assert!(original.counterexamples().is_empty());
@@ -668,14 +597,14 @@ fn typed_mapping_completion_stops_latch_the_shared_control() {
         for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut control = Control::new(move |point| {
+            let control = Control::new(move |point| {
                 if point == Checkpoint::Completion {
                     seen.set(seen.get() + 1);
                 }
                 (seen.get() >= at).then_some(signal)
             });
             let failure =
-                correspondence(&inputs, "v", "m", "GraphRead", None, &mut control).unwrap_err();
+                correspondence(&inputs, "v", "m", "GraphRead", None, &control).unwrap_err();
             assert_eq!(
                 failure,
                 ConstructionFailure::Stopped(control.stop_reason().unwrap())
@@ -683,7 +612,7 @@ fn typed_mapping_completion_stops_latch_the_shared_control() {
             assert_eq!(count.get(), at);
             assert_eq!(
                 original
-                    .recheck(&inputs, "v", "m", "GraphRead", None, &mut control)
+                    .recheck(&inputs, "v", "m", "GraphRead", None, &control)
                     .unwrap_err(),
                 failure
             );
@@ -700,7 +629,7 @@ fn missing_arrow_table_retains_endpoint_refutation_for_every_valid_image() {
         "m",
         "Reservations",
         None,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert!(result.candidate().is_none());
@@ -723,7 +652,7 @@ fn missing_arrow_table_retains_endpoint_refutation_for_every_valid_image() {
             "m",
             "Reservations",
             None,
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
 }
@@ -765,7 +694,7 @@ fn endpoint_failure_keeps_the_candidate_and_original_reference_and_relation_coun
         "m",
         "Reservations",
         None,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert!(result.candidate().is_some());
@@ -808,7 +737,7 @@ fn missing_endpoints_tables_and_target_atoms_never_become_complete_maps() {
             "m",
             "Reservations",
             None,
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert!(result.candidate().is_none(), "{id}");
@@ -829,7 +758,7 @@ fn completed_counterexamples_survive_an_unrelated_missing_target_quantity() {
         "m",
         "Reservations",
         None,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert!(result.candidate().is_none());
@@ -869,7 +798,7 @@ fn self_correspondence_keeps_its_action_outside_the_source_family() {
         "m",
         "Reservations",
         None,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert!(result.map().is_some());
@@ -892,7 +821,7 @@ fn reference_containers_are_checked_beyond_the_same_family_relation_and_action_t
         "m",
         "Reservations",
         None,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert!(good.map().is_some());
@@ -936,7 +865,7 @@ fn reference_containers_are_checked_beyond_the_same_family_relation_and_action_t
         "m",
         "Reservations",
         None,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(
@@ -952,13 +881,11 @@ fn reference_containers_are_checked_beyond_the_same_family_relation_and_action_t
     assert!(failed.map().is_none());
     good.candidate()
         .unwrap()
-        .recheck(&current, &mut Control::unlimited())
+        .recheck(&current, &Control::unlimited())
         .unwrap();
     assert!(
         matches!(
-            good.map()
-                .unwrap()
-                .recheck(&current, &mut Control::unlimited()),
+            good.map().unwrap().recheck(&current, &Control::unlimited()),
             Err(ConstructionFailure::Inconsistent(_))
         ),
         "同じ作用表を保存証明として採用しない"
@@ -977,7 +904,7 @@ fn reference_containers_are_checked_beyond_the_same_family_relation_and_action_t
             "m",
             "Reservations",
             None,
-            &mut Control::unlimited()
+            &Control::unlimited()
         ),
         Err(ConstructionFailure::Inconsistent(_))
     ));
@@ -992,7 +919,7 @@ fn map_and_set_enumeration_order_is_ignored_while_reference_structure_is_checked
         "m",
         "Reservations",
         None,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let reordered = map
@@ -1023,7 +950,7 @@ fn map_and_set_enumeration_order_is_ignored_while_reference_structure_is_checked
             "m",
             "Reservations",
             None,
-            &mut Control::unlimited()
+            &Control::unlimited()
         )
         .unwrap(),
         "Map/Setの列挙順では変えない"
@@ -1067,7 +994,7 @@ fn map_and_set_enumeration_order_is_ignored_while_reference_structure_is_checked
             "m",
             "Reservations",
             None,
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert!(result.candidate().is_some());
@@ -1087,14 +1014,7 @@ fn different_readings_and_explicit_alignment_transport_the_actual_fields() {
     let inputs = bridge_inputs(false);
     assert!(
         matches!(
-            correspondence(
-                &inputs,
-                "v",
-                "m",
-                "LeftRead",
-                None,
-                &mut Control::unlimited()
-            ),
+            correspondence(&inputs, "v", "m", "LeftRead", None, &Control::unlimited()),
             Err(ConstructionFailure::InvalidSelection(_))
         ),
         "終域の読みをcorrespondence namespaceから推測しない"
@@ -1106,7 +1026,7 @@ fn different_readings_and_explicit_alignment_transport_the_actual_fields() {
             "m",
             "RightRead",
             Some("LeftRead"),
-            &mut Control::unlimited()
+            &Control::unlimited()
         ),
         Err(ConstructionFailure::InvalidSelection(_))
     ));
@@ -1116,7 +1036,7 @@ fn different_readings_and_explicit_alignment_transport_the_actual_fields() {
         "m",
         "LeftRead",
         Some("RightRead"),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(result.reading(), "LeftRead");
@@ -1147,7 +1067,7 @@ fn an_absent_target_declaration_is_a_failed_rule_rather_than_a_missing_observati
         "m",
         "LeftRead",
         Some("RightRead"),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert!(result.candidate().is_none());
@@ -1179,7 +1099,7 @@ fn reading_and_correspondence_selections_are_explicit() {
         ("m", "Reservations", Some("missing")),
     ] {
         assert!(
-            matches!(correspondence(&inputs,"v",id,reading,to_reading,&mut Control::unlimited()),Err(ConstructionFailure::InvalidSelection(ref message)) if !message.is_empty())
+            matches!(correspondence(&inputs,"v",id,reading,to_reading,&Control::unlimited()),Err(ConstructionFailure::InvalidSelection(ref message)) if !message.is_empty())
         );
     }
 }
@@ -1192,7 +1112,7 @@ fn current_mapping_changes_are_rechecked_and_all_fixed_stops_latch() {
         "m",
         "Reservations",
         None,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let current = self::inputs(&bad_endpoints());
@@ -1203,33 +1123,33 @@ fn current_mapping_changes_are_rechecked_and_all_fixed_stops_latch() {
             "m",
             "Reservations",
             None,
-            &mut Control::unlimited()
+            &Control::unlimited()
         ),
         Err(ConstructionFailure::Inconsistent(_))
     ));
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut control = Control::new(move |p| {
+    let control = Control::new(move |p| {
         if p == Checkpoint::ConfigurationMap {
             seen.set(seen.get() + 1);
         }
         None
     });
-    correspondence(&inputs, "v", "m", "Reservations", None, &mut control).unwrap();
+    correspondence(&inputs, "v", "m", "Reservations", None, &control).unwrap();
     let total = count.get();
     assert!(total > 20);
     for at in [1, total / 2, total] {
         for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut control = Control::new(move |p| {
+            let control = Control::new(move |p| {
                 if p == Checkpoint::ConfigurationMap {
                     seen.set(seen.get() + 1);
                 }
                 (seen.get() >= at).then_some(signal)
             });
             let failure =
-                correspondence(&inputs, "v", "m", "Reservations", None, &mut control).unwrap_err();
+                correspondence(&inputs, "v", "m", "Reservations", None, &control).unwrap_err();
             assert_eq!(
                 failure,
                 ConstructionFailure::Stopped(control.stop_reason().unwrap())
@@ -1237,7 +1157,7 @@ fn current_mapping_changes_are_rechecked_and_all_fixed_stops_latch() {
             assert_eq!(count.get(), at);
             assert_eq!(
                 original
-                    .recheck(&inputs, "v", "m", "Reservations", None, &mut control)
+                    .recheck(&inputs, "v", "m", "Reservations", None, &control)
                     .unwrap_err(),
                 failure
             );
@@ -1252,14 +1172,13 @@ fn completed_relation_counterexamples_survive_stopping_inside_the_preservation_s
     let input = inputs(&bad_endpoints());
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut normal = Control::new(move |p| {
+    let normal = Control::new(move |p| {
         if p == Checkpoint::ConfigurationMap {
             seen.set(seen.get() + 1);
         }
         None
     });
-    let result =
-        correspondence_retained(&input, "v", "m", "Reservations", None, &mut normal).unwrap();
+    let result = correspondence_retained(&input, "v", "m", "Reservations", None, &normal).unwrap();
     let candidate = result.candidate().unwrap();
     let source = candidate.source_configuration();
     let expected = result
@@ -1278,14 +1197,14 @@ fn completed_relation_counterexamples_survive_stopping_inside_the_preservation_s
     for signal in [Signal::Int, Signal::Term] {
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut control = Control::new(move |p| {
+        let control = Control::new(move |p| {
             if p == Checkpoint::ConfigurationMap {
                 seen.set(seen.get() + 1);
             }
             (seen.get() >= at).then_some(signal)
         });
-        let failure = correspondence_retained(&input, "v", "m", "Reservations", None, &mut control)
-            .unwrap_err();
+        let failure =
+            correspondence_retained(&input, "v", "m", "Reservations", None, &control).unwrap_err();
         assert!(matches!(failure.cause(), ConstructionFailure::Stopped(_)));
         assert!(
             failure
@@ -1318,18 +1237,11 @@ fn native_reference_counterexamples_retain_their_completion_quantification() {
         let (d, l, a) = map_scope::fixture(entries, source);
         let input = check_inputs(
             InputSources::from_bytes(vec![d], l, a),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
-        let result = correspondence(
-            &input,
-            "v",
-            "m",
-            "GraphRead",
-            None,
-            &mut Control::unlimited(),
-        )
-        .unwrap();
+        let result =
+            correspondence(&input, "v", "m", "GraphRead", None, &Control::unlimited()).unwrap();
         assert!(matches!(
             result.counterexamples(),
             [Counterexample::ReferenceStructure { .. }]
@@ -1337,14 +1249,7 @@ fn native_reference_counterexamples_retain_their_completion_quantification() {
         assert_eq!(result.counterexample_uses_completions(0), Some(expected));
         assert_eq!(result.counterexample_uses_completions(1), None);
         result
-            .recheck(
-                &input,
-                "v",
-                "m",
-                "GraphRead",
-                None,
-                &mut Control::unlimited(),
-            )
+            .recheck(&input, "v", "m", "GraphRead", None, &Control::unlimited())
             .unwrap();
     }
 }

@@ -22,7 +22,7 @@ fn prepared_with_definition(law: &str, map: &str, definition: &[u8]) -> Prepared
                 law.replace("@PROFILE_DIGEST@", digest).into_bytes(),
                 map.replace("@PROFILE_DIGEST@", digest).into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
@@ -30,7 +30,7 @@ fn prepared_with_definition(law: &str, map: &str, definition: &[u8]) -> Prepared
         inputs.law(),
         inputs.archmap(),
         &["b=build(ProfileRead,on=@v/A)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -40,7 +40,7 @@ fn prepared_with_definition(law: &str, map: &str, definition: &[u8]) -> Prepared
     }
 }
 fn start(p: &PreparedObserved) -> (Graph, super::super::object_component_diagram::Diagram) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -48,14 +48,14 @@ fn start(p: &PreparedObserved) -> (Graph, super::super::object_component_diagram
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let objects = crate::observed::object_component_diagram::retain(
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -76,7 +76,7 @@ fn copy(g: &Graph, c: &Control) -> Graph {
     p
 }
 fn replay(p: &PreparedObserved, g: &Graph) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut prefix = copy(g, &quiet());
     prefix.nodes.clear();
     prefix.contexts.clear();
@@ -98,8 +98,8 @@ fn data(g: &Graph, r: NodeRef) -> &Data {
 }
 fn complete(p: &PreparedObserved) -> (Graph, Diagram) {
     let (mut g, o) = start(p);
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
-    let diagram = retain(&env, &mut g, o.base, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
+    let diagram = retain(&env, &mut g, o.base, &quiet()).unwrap();
     (g, diagram)
 }
 #[test]
@@ -539,7 +539,7 @@ fn private_axis_and_graph_mutations_cannot_drop_reorder_or_borrow_another_axis()
                     s.output = x.output.clone();
                 }
             }
-            let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+            let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
             assert!(
                 fresh
                     .recheck_node(&bad, bad.get(target).unwrap(), target.0)
@@ -549,7 +549,7 @@ fn private_axis_and_graph_mutations_cannot_drop_reorder_or_borrow_another_axis()
         }
     }
     let foreign = prepared(&law, &MAP.replace("\"value\":\"2\"", "\"value\":\"3\""));
-    let env = Environment::with_prepared(&foreign, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&foreign, &quiet()).unwrap();
     assert!(
         env.recheck_node(&g, g.get(a.signature).unwrap(), a.signature.0)
             .is_err()
@@ -566,12 +566,12 @@ fn later_request_consumes_original_axes_but_cannot_rebind_or_regenerate_them() {
             "b=build(ProfileRead,on=@v/A)",
             "later=build(ProfileRead,on=@v/B)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let d = retain(&env, &mut g, o.base, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let d = retain(&env, &mut g, o.base, &quiet()).unwrap();
     g.active.request = 1;
     assert!(
         crate::observed::architecture_result::build(
@@ -579,19 +579,19 @@ fn later_request_consumes_original_axes_but_cannot_rebind_or_regenerate_them() {
             &env,
             &mut g,
             &p.requests().requests()[1],
-            &mut quiet()
+            &quiet()
         )
         .unwrap()
         .complete
     );
-    let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
     for a in &d.axes {
         for r in [a.invariant, a.signature] {
             assert!(fresh.recheck_node(&g, g.get(r).unwrap(), r.0).is_ok());
         }
     }
     let before = copy(&g, &quiet());
-    assert!(retain(&env, &mut g, o.base, &mut quiet()).is_err());
+    assert!(retain(&env, &mut g, o.base, &quiet()).is_err());
     assert_eq!(g.nodes, before.nodes);
     assert_eq!(g.contexts, before.contexts);
     assert_eq!(g.active, before.active);
@@ -604,7 +604,7 @@ fn later_request_consumes_original_axes_but_cannot_rebind_or_regenerate_them() {
             2 => bad.contexts[r.0].frame = Some(0),
             _ => unreachable!(),
         }
-        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
         assert!(
             fresh.recheck_node(&bad, bad.get(r).unwrap(), r.0).is_err(),
             "mode{mode}"
@@ -616,15 +616,15 @@ fn four_stops_keep_only_completed_evaluations_invariants_and_axes_as_exact_prefi
     use std::{cell::Cell, rc::Rc};
     let p = prepared(LAW, MAP);
     let (initial, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut control = Control::new(move |_| {
+    let control = Control::new(move |_| {
         seen.set(seen.get() + 1);
         None
     });
     let mut full = copy(&initial, &control);
-    let d = retain(&env, &mut full, o.base, &mut control).unwrap();
+    let d = retain(&env, &mut full, o.base, &control).unwrap();
     assert_eq!(d.axes.len(), 2);
     let total = count.get();
     assert!(total > 20);
@@ -641,14 +641,14 @@ fn four_stops_keep_only_completed_evaluations_invariants_and_axes_as_exact_prefi
         ] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let mut control = Control::new(move |_| {
+            let control = Control::new(move |_| {
                 seen.set(seen.get() + 1);
                 (seen.get() >= at).then_some(signal)
             });
             let mut g = copy(&initial, &control);
             assert!(
                 matches!(
-                    retain(&env, &mut g, o.base, &mut control),
+                    retain(&env, &mut g, o.base, &control),
                     Err(ValidationFailure::Stop(_))
                 ),
                 "{signal:?}/at{at}"
@@ -708,7 +708,7 @@ fn external_prepared(extra: &str) -> PreparedObserved {
                     "../../../tests/fixtures/object-view-transport.archmap.json"
                 )),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
@@ -716,7 +716,7 @@ fn external_prepared(extra: &str) -> PreparedObserved {
         inputs.law(),
         inputs.archmap(),
         &["b=build(Before,on=@v/a)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {

@@ -13,7 +13,7 @@ fn prepared(body: &str) -> PreparedObserved {
         inputs.law(),
         inputs.archmap(),
         &["b=build(Selected,on=@v/root)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -23,7 +23,7 @@ fn prepared(body: &str) -> PreparedObserved {
     }
 }
 fn replay(p: &PreparedObserved, source: &Graph) -> Result<(), ValidationFailure> {
-    let env = Environment::with_prepared(p, &mut quiet())?;
+    let env = Environment::with_prepared(p, &quiet())?;
     let mut g = Graph::new(&quiet());
     g.requests = source.requests.clone();
     g.frames = source.frames.clone();
@@ -42,7 +42,7 @@ fn replay(p: &PreparedObserved, source: &Graph) -> Result<(), ValidationFailure>
 #[test]
 fn native_law_propositions_keep_actual_truth_and_refutation_in_each_object() {
     let p = prepared("law required zero(c:Part):c.quantity=0;");
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -50,14 +50,14 @@ fn native_law_propositions_keep_actual_truth_and_refutation_in_each_object() {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let objects = crate::observed::object_component_diagram::retain(
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -65,7 +65,7 @@ fn native_law_propositions_keep_actual_truth_and_refutation_in_each_object() {
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut templates = 0;
@@ -82,7 +82,7 @@ fn native_law_propositions_keep_actual_truth_and_refutation_in_each_object() {
                 &mut g,
                 o.reference,
                 objects.architectures[object],
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap();
             assert_eq!(reading.origin, o.reference);
@@ -132,7 +132,7 @@ fn native_law_propositions_keep_actual_truth_and_refutation_in_each_object() {
 #[test]
 fn native_false_guard_proposition_keeps_unread_body_and_conditional_truth() {
     let p = prepared("law required inactive(c:Part) when false:c.quantity=0;");
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -140,14 +140,14 @@ fn native_false_guard_proposition_keeps_unread_body_and_conditional_truth() {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let objects = crate::observed::object_component_diagram::retain(
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -155,7 +155,7 @@ fn native_false_guard_proposition_keeps_unread_body_and_conditional_truth() {
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut runs = 0;
@@ -166,7 +166,7 @@ fn native_false_guard_proposition_keeps_unread_body_and_conditional_truth() {
                 &mut g,
                 r.instance,
                 objects.architectures[object],
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap();
             if let Some(answer) = reading.answer {
@@ -201,7 +201,7 @@ fn from_inputs(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
         inputs.law(),
         inputs.archmap(),
         &["b=build(Selected,on=@v/root)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -211,7 +211,7 @@ fn from_inputs(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
     }
 }
 fn start(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -219,21 +219,21 @@ fn start(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let objects = crate::observed::object_component_diagram::retain(
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
     (g, a.reference, objects.architectures)
 }
 fn rows(p: &PreparedObserved, g: &mut Graph, a: NodeRef) -> Vec<Vec<NodeRef>> {
-    crate::observed::polynomial_law_diagram::retain_family(g, p.shared_inputs(), a, &mut quiet())
+    crate::observed::polynomial_law_diagram::retain_family(g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .into_iter()
         .map(|d| d.readings.iter().map(|r| r.instance).collect())
@@ -280,15 +280,11 @@ fn native_finite_propositions_keep_all_boolean_rows_and_their_counterexamples() 
         "law required bit(c:Part,b:Bool):(c.quantity=0)=b;",
     ));
     let (mut g, a, objects) = start(&p);
-    let ds = crate::observed::finite_law_diagram::retain_family(
-        &mut g,
-        p.shared_inputs(),
-        a,
-        &mut quiet(),
-    )
-    .unwrap()
-    .unwrap();
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let ds =
+        crate::observed::finite_law_diagram::retain_family(&mut g, p.shared_inputs(), a, &quiet())
+            .unwrap()
+            .unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut count = 0;
     for (object, d) in ds.iter().enumerate() {
         assert_eq!(d.originals.len(), 4);
@@ -299,7 +295,7 @@ fn native_finite_propositions_keep_all_boolean_rows_and_their_counterexamples() 
                 panic!("bit")
             };
             let expected = (person == "p") == *bit;
-            let got = check(&env, &mut g, r.row, objects[object], &mut quiet()).unwrap();
+            let got = check(&env, &mut g, r.row, objects[object], &quiet()).unwrap();
             if let Some(answer) = got.answer {
                 assert_eq!(
                     answer.status,
@@ -345,12 +341,12 @@ fn native_unknown_guard_and_body_propositions_keep_missing_without_invented_evid
         let p = from_inputs(fixture::inputs(true, false, body));
         let (mut g, a, objects) = start(&p);
         let rs = rows(&p, &mut g, a);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut count = 0;
         for (object, rs) in rs.iter().enumerate() {
             for r in rs {
                 let person = who(&g, *r);
-                let got = check(&env, &mut g, *r, objects[object], &mut quiet()).unwrap();
+                let got = check(&env, &mut g, *r, objects[object], &quiet()).unwrap();
                 if let Some(answer) = got.answer {
                     if person == "q" {
                         assert_eq!(answer.status, Decision::Undetermined);
@@ -397,12 +393,12 @@ fn native_tuple_proposition_evidence_preserves_both_original_typed_operands() {
     ));
     let (mut g, a, objects) = start(&p);
     let rs = rows(&p, &mut g, a);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut count = 0;
     for (object, rs) in rs.iter().enumerate() {
         for r in rs {
             let person = who(&g, *r);
-            let got = check(&env, &mut g, *r, objects[object], &mut quiet()).unwrap();
+            let got = check(&env, &mut g, *r, objects[object], &quiet()).unwrap();
             if let Some(answer) = got.answer {
                 assert_eq!(
                     answer.status,
@@ -459,12 +455,12 @@ fn native_propositions_use_actual_object_quantification_and_original_helpers() {
         let p = prepared(&format!("{extra}law required tested(c:Part):{body};"));
         let (mut g, a, objects) = start(&p);
         let rs = rows(&p, &mut g, a);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut count = 0;
         let objects_checked = if by_object { rs.len() } else { 1 };
         for (object, rs) in rs.iter().enumerate().take(objects_checked) {
             for r in rs {
-                let got = check(&env, &mut g, *r, objects[object], &mut quiet())
+                let got = check(&env, &mut g, *r, objects[object], &quiet())
                     .unwrap_or_else(|e| panic!("{body} object {object}: {e:?}"));
                 if let Some(answer) = got.answer {
                     assert_eq!(
@@ -503,9 +499,9 @@ fn native_propositions_reject_forged_truth_evidence_role_binding_and_environment
     let p = prepared("law required zero(c:Part):c.quantity=0;");
     let (mut g, a, objects) = start(&p);
     let rs = rows(&p, &mut g, a);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let q = *rs[0].iter().find(|r| who(&g, **r) == "q").unwrap();
-    let answer = check(&env, &mut g, q, objects[0], &mut quiet())
+    let answer = check(&env, &mut g, q, objects[0], &quiet())
         .unwrap()
         .answer
         .unwrap();
@@ -543,10 +539,10 @@ fn native_unbounded_parameter_uses_universal_proposition_without_finite_samples(
         &mut g,
         p.shared_inputs(),
         a,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     for (object, d) in ds.iter().enumerate().take(2) {
         assert!(d.unavailable.is_none());
         for o in &d.originals {
@@ -556,7 +552,7 @@ fn native_unbounded_parameter_uses_universal_proposition_without_finite_samples(
                     .any(|(n, t)| n == "k" && t == &parameter_type)
             );
             let before = g.nodes.len();
-            let r = check(&env, &mut g, o.reference, objects[object], &mut quiet()).unwrap();
+            let r = check(&env, &mut g, o.reference, objects[object], &quiet()).unwrap();
             if frames::origin(&g, o.reference).unwrap().unwrap().outside {
                 assert!(r.answer.is_none() && r.instance.is_none());
                 assert_eq!(g.nodes.len(), before);
@@ -598,15 +594,15 @@ fn native_law_proposition_interrupt_keeps_completed_evidence_and_exact_prefix() 
     let root = *rs[0].iter().find(|r| who(&initial, **r) == "q").unwrap();
     let seen = Rc::new(Cell::new(0));
     let counter = seen.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::FiniteIteration {
             counter.set(counter.get() + 1)
         }
         None
     });
     let mut complete = copy_graph(&initial, &c);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let whole = check(&env, &mut complete, root, objects[0], &mut c).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let whole = check(&env, &mut complete, root, objects[0], &c).unwrap();
     assert_eq!(whole.answer.unwrap().status, Decision::Refuted);
     let total = seen.get();
     assert!(total > 50);
@@ -615,7 +611,7 @@ fn native_law_proposition_interrupt_keeps_completed_evidence_and_exact_prefix() 
     for at in [2 * total / 3, total - 5, total] {
         let seen = Rc::new(Cell::new(0));
         let counter = seen.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::FiniteIteration {
                 counter.set(counter.get() + 1)
             }
@@ -623,10 +619,10 @@ fn native_law_proposition_interrupt_keeps_completed_evidence_and_exact_prefix() 
             stop.then_some(crate::result::Signal::Int)
         });
         let mut g = copy_graph(&initial, &c);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         assert!(
             matches!(
-                check(&env, &mut g, root, objects[0], &mut c),
+                check(&env, &mut g, root, objects[0], &c),
                 Err(ValidationFailure::Stop(_))
             ),
             "point {at}"
@@ -656,11 +652,11 @@ fn native_guarded_numeric_quantifiers_keep_guard_body_and_conditional_judgments(
     ));
     let (mut g, a, objects) = start(&p);
     let rs = rows(&p, &mut g, a);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut count = 0;
     for r in &rs[0] {
         let person = who(&g, *r);
-        let answer = check(&env, &mut g, *r, objects[0], &mut quiet())
+        let answer = check(&env, &mut g, *r, objects[0], &quiet())
             .unwrap_or_else(|e| panic!("{person}: {e:?}"))
             .answer
             .unwrap();
@@ -706,12 +702,12 @@ fn native_false_guard_body_source_never_becomes_a_regular_or_universal_evaluatio
         ));
         let (mut g, a, objects) = start(&p);
         let rs = rows(&p, &mut g, a);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut count = 0;
         for (object, rs) in rs.iter().enumerate() {
             for r in rs {
                 let before = g.nodes.len();
-                let result = check(&env, &mut g, *r, objects[object], &mut quiet()).unwrap();
+                let result = check(&env, &mut g, *r, objects[object], &quiet()).unwrap();
                 if let Some(answer) = result.answer {
                     assert_eq!(answer.status, Decision::Established);
                     assert!(answer.reasons.is_empty());
@@ -766,7 +762,7 @@ fn native_false_guard_body_source_never_becomes_a_regular_or_universal_evaluatio
                         crate::observed::evaluate::instance_expression(
                             &env,
                             &mut active,
-                            &mut quiet(),
+                            &quiet(),
                             &request,
                             declaration,
                             result.instance.unwrap(),
@@ -792,12 +788,12 @@ fn native_self_equality_proposition_keeps_unobserved_operands_and_normalization(
     ));
     let (mut g, a, objects) = start(&p);
     let rs = rows(&p, &mut g, a);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut count = 0;
     for (object, rs) in rs.iter().enumerate() {
         for r in rs {
             let person = who(&g, *r);
-            let result = check(&env, &mut g, *r, objects[object], &mut quiet()).unwrap();
+            let result = check(&env, &mut g, *r, objects[object], &quiet()).unwrap();
             if let Some(answer) = result.answer {
                 assert_eq!(answer.status, Decision::Established);
                 if person == "q" {
@@ -834,14 +830,14 @@ fn native_law_proposition_roles_and_original_declarations_are_preserved() {
     );
     let (mut g, a, objects) = start(&p);
     let rs = rows(&p, &mut g, a);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut count = 0;
     for (object, rs) in rs.iter().enumerate() {
         for r in rs {
             let person = who(&g, *r);
             let origin = frames::origin(&g, *r).unwrap().unwrap();
             let optional = origin.declaration.ends_with(".nonnegative");
-            let result = check(&env, &mut g, *r, objects[object], &mut quiet()).unwrap();
+            let result = check(&env, &mut g, *r, objects[object], &quiet()).unwrap();
             if let Some(answer) = result.answer {
                 assert_eq!(
                     answer.status,

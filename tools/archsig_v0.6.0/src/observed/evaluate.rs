@@ -38,7 +38,7 @@ mod universal;
 pub fn evaluate_observed_bytes(
     sources: InputSources,
     texts: &[&str],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ObservedEvaluation, EvaluationFailure> {
     let prepared = prepare_observed(sources, texts, control).map_err(EvaluationFailure::Prepare)?;
     evaluate_observed(prepared, control)
@@ -95,7 +95,7 @@ pub(in crate::observed) struct RelationSide {
 pub(in crate::observed) fn instance_expression<'a>(
     environment: &'a Environment<'a>,
     graph: &mut Graph,
-    control: &mut Control,
+    control: &Control,
     request: &'a Request,
     declaration: &'a Declaration,
     instance: usize,
@@ -165,7 +165,7 @@ pub(in crate::observed) fn instance_expression<'a>(
 pub(in crate::observed) fn instance_law<'a>(
     environment: &'a Environment<'a>,
     graph: &mut Graph,
-    control: &mut Control,
+    control: &Control,
     request: &'a Request,
     declaration: &'a Declaration,
     instance: usize,
@@ -245,7 +245,7 @@ pub(in crate::observed) fn instance_law<'a>(
 pub(in crate::observed) fn relation_side<'a>(
     environment: &'a Environment<'a>,
     graph: &mut Graph,
-    control: &mut Control,
+    control: &Control,
     request: &'a Request,
     declaration: &'a Declaration,
     instance: usize,
@@ -275,7 +275,7 @@ struct SourceHandle {
 struct Evaluator<'a, 'b> {
     environment: &'a Environment<'a>,
     graph: &'b mut Graph,
-    control: &'b mut Control,
+    control: &'b Control,
     request: &'a Request,
     declaration: &'a Declaration,
     bindings: Vec<Binding>,
@@ -2886,7 +2886,7 @@ impl Evaluator<'_, '_> {
 
 pub fn evaluate_observed(
     prepared: PreparedObserved,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ObservedEvaluation, EvaluationFailure> {
     evaluate_observed_with_validator(prepared, control, |environment, graph, request, answer| {
         environment.validate_answer(graph, request, answer)
@@ -2895,7 +2895,7 @@ pub fn evaluate_observed(
 
 fn evaluate_observed_with_validator(
     prepared: PreparedObserved,
-    control: &mut Control,
+    control: &Control,
     mut validate_answer: impl FnMut(
         &Environment<'_>,
         &Graph,
@@ -3378,7 +3378,7 @@ fn evaluate_observed_with_validator(
 #[doc(hidden)]
 pub fn evaluate_observed_with_rejected_answer(
     prepared: PreparedObserved,
-    control: &mut Control,
+    control: &Control,
     rejected: &str,
 ) -> Result<ObservedEvaluation, EvaluationFailure> {
     evaluate_observed_with_validator(prepared, control, |env, graph, request, answer| {
@@ -3539,8 +3539,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
     }
 
     fn affine_private_example(body: &str, asks: &[&str]) -> ObservedEvaluation {
-        let result =
-            evaluate_observed_bytes(affine_private_fixture(body), asks, &mut quiet()).unwrap();
+        let result = evaluate_observed_bytes(affine_private_fixture(body), asks, &quiet()).unwrap();
         assert_ne!(result.status(), "error", "{:?}", result.issues);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
         result
@@ -3711,7 +3710,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             "current=evaluate(Calc.current,s=@v/sample)",
             "later=evaluate(Calc.later)",
         ];
-        let normal = evaluate_observed_bytes(sources.clone(), &asks, &mut quiet()).unwrap();
+        let normal = evaluate_observed_bytes(sources.clone(), &asks, &quiet()).unwrap();
         assert_eq!(normal.status(), "partial");
         assert_eq!(normal.answers[0].status, Decision::Established);
         assert_eq!(normal.answers[1].status, Decision::Refuted);
@@ -3737,7 +3736,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             count.set(count.get() + 1);
             if arm.replace(false) {
                 assert_eq!(point, Checkpoint::FiniteIteration);
@@ -3747,10 +3746,10 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 None
             }
         });
-        let prepared = prepare_observed(sources, &asks, &mut control).unwrap();
+        let prepared = prepare_observed(sources, &asks, &control).unwrap();
         let stopped = evaluate_observed_with_validator(
             prepared,
-            &mut control,
+            &control,
             |environment, graph, request, answer| {
                 environment.validate_answer(graph, request, answer)?;
                 if request.id == "current" {
@@ -3925,7 +3924,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             "current=evaluate(Calc.current,s=@v/sample)",
             "later=evaluate(Calc.later)",
         ];
-        let normal = evaluate_observed_bytes(sources.clone(), &asks, &mut quiet()).unwrap();
+        let normal = evaluate_observed_bytes(sources.clone(), &asks, &quiet()).unwrap();
         assert_eq!(normal.status(), "partial");
         assert_eq!(normal.answers[0].status, Decision::Established);
         assert_eq!(normal.answers[1].status, Decision::Refuted);
@@ -3947,7 +3946,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             count.set(count.get() + 1);
             if arm.replace(false) {
                 assert_eq!(point, Checkpoint::FiniteIteration);
@@ -3957,10 +3956,10 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 None
             }
         });
-        let prepared = prepare_observed(sources, &asks, &mut control).unwrap();
+        let prepared = prepare_observed(sources, &asks, &control).unwrap();
         let stopped = evaluate_observed_with_validator(
             prepared,
-            &mut control,
+            &control,
             |environment, graph, request, answer| {
                 environment.validate_answer(graph, request, answer)?;
                 if request.id == "current" {
@@ -4022,7 +4021,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
 
     #[test]
     fn answer_identity_failure_reaches_driver_and_preserves_prior_results() {
-        fn prepare(control: &mut Control) -> PreparedObserved {
+        fn prepare(control: &Control) -> PreparedObserved {
             let law = include_str!("../../tests/fixtures/counter.law").replace(
                 "view amount(s: State): Z = s.count;",
                 "view amount(s: State): Z = s.count;\n  view later(s: State): Z = s.count + 137;",
@@ -4046,9 +4045,9 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             .unwrap()
         }
 
-        let mut normal_control = Control::unlimited();
-        let normal_prepared = prepare(&mut normal_control);
-        let normal = evaluate_observed(normal_prepared, &mut normal_control).unwrap();
+        let normal_control = Control::unlimited();
+        let normal_prepared = prepare(&normal_control);
+        let normal = evaluate_observed(normal_prepared, &normal_control).unwrap();
         assert_eq!(normal.status(), "complete");
         assert!(normal.issues.is_empty());
         assert_eq!(normal.answers[2].status, Decision::Established);
@@ -4062,8 +4061,8 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             &Scalar::Z(149.into())
         );
 
-        let mut control = Control::unlimited();
-        let prepared = prepare(&mut control);
+        let control = Control::unlimited();
+        let prepared = prepare(&control);
         let Signature::View { body: later, .. } =
             &prepared.inputs().law().declarations()["CountCheck.later"].signature
         else {
@@ -4074,7 +4073,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         let mut original_failure = None;
         let result = evaluate_observed_with_validator(
             prepared,
-            &mut control,
+            &control,
             |environment, graph, request, answer| {
                 validated.push(request.id.clone());
                 environment.validate_answer(graph, request, answer)?;
@@ -4269,7 +4268,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 "same=evaluate(CountCheck.same,s=@v/s)",
                 "sameBool=evaluate(CountCheck.sameBool,s=@v/s)",
             ],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap()
     }
@@ -4302,8 +4301,8 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 result.status(),
                 if missing { "partial" } else { "complete" }
             );
-            let mut control = Control::unlimited();
-            let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+            let control = Control::unlimited();
+            let environment = Environment::new(result.prepared.inputs(), &control).unwrap();
             let mut graph = Graph::new(&control);
             graph.nodes = result.nodes.clone().into();
             graph.requests = result.prepared.requests().requests().to_vec();
@@ -4532,7 +4531,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 "a=check(CountAudit.bounded,s=@v/s)",
                 "b=check(CountCheck.nonnegative,s=@v/s)",
             ],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap()
     }
@@ -4617,7 +4616,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 "s=check(CountAudit.bounded,s=@v/s)",
                 "t=check(CountAudit.bounded,s=@v/t)",
             ],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap()
     }
@@ -4695,11 +4694,11 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         result: &ObservedEvaluation,
         nodes: &[Node],
     ) -> Result<Graph, ValidationFailure> {
-        let mut control = Control::unlimited();
+        let control = Control::unlimited();
         let environment = Environment::with_requests(
             result.prepared.inputs(),
             result.prepared.requests().requests(),
-            &mut control,
+            &control,
         )
         .map_err(ValidationFailure::from)?;
         let mut graph = Graph::new(&control);
@@ -4724,8 +4723,8 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         assert_eq!(result.status(), "complete");
         let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
             .expect("改変前の全nodeは元順の入力照合とGraph検査を通る");
-        let mut control = Control::unlimited();
-        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        let control = Control::unlimited();
+        let environment = Environment::new(result.prepared.inputs(), &control).unwrap();
         let requests = result.prepared.requests().requests();
         for (request, answer) in requests.iter().zip(&result.answers) {
             environment
@@ -4773,7 +4772,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         assert_eq!(guarded.status(), "complete");
         let graph = rebuild_for_origin_and_support_recheck(&guarded, &guarded.nodes)
             .expect("二つの明示束縛もともに有効な入力と導出である");
-        let environment = Environment::new(guarded.prepared.inputs(), &mut control).unwrap();
+        let environment = Environment::new(guarded.prepared.inputs(), &control).unwrap();
         let requests = guarded.prepared.requests().requests();
         for (request, answer) in requests.iter().zip(&guarded.answers) {
             environment
@@ -4940,7 +4939,7 @@ reading Follow {{
         {{"id":"x","origin":"model","subjects":[{{"id":"u","type":"Counter.State","origin":"model"}}],
           "atoms":[{{"id":"count-u","subject":"u","field":"Counter.State.count","value":"7","origin":"model"}}]}}]}}"#
         );
-        let mut control = Control::unlimited();
+        let control = Control::unlimited();
         let result = evaluate_observed_bytes(
             InputSources::from_bytes(
                 vec![definitions.as_bytes().to_vec()],
@@ -4948,7 +4947,7 @@ reading Follow {{
                 map.into_bytes(),
             ),
             &["n=evaluate(Follow.amount,s=@v/s)"],
-            &mut control,
+            &control,
         )
         .expect("各snapshot内のmodeを一致させた三入力は有効");
         assert_eq!(result.status(), "complete");
@@ -5001,7 +5000,7 @@ reading Follow {{
                 && f.atom.as_deref() == Some(atom)
                 && f.field.as_deref() == Some(field)));
         }
-        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        let environment = Environment::new(result.prepared.inputs(), &control).unwrap();
         environment
             .validate_answer(&graph, &result.prepared.requests().requests()[0], answer)
             .expect("Scalar leafと式全体のScopeが異なる正常Answerも総合検査を通る");
@@ -5042,7 +5041,7 @@ reading R {{
       "origins":[{{"id":"model","mode":"specification","method":"二つの対象を提示する。","locations":[],"note":"Bool条件と値の小さい仕様モデル。"}}],
       "snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"s","type":"Signal.Cell","origin":"model"}},{{"id":"t","type":"Signal.Cell","origin":"model"}}],"atoms":[{atoms}]}}]}}"#
         );
-        let mut control = Control::unlimited();
+        let control = Control::unlimited();
         evaluate_observed_bytes(
             InputSources::from_bytes(
                 vec![definitions.as_bytes().to_vec()],
@@ -5056,7 +5055,7 @@ reading R {{
                 "s=check(R.condition,item=@v/s)",
                 "t=check(R.condition,item=@v/t)",
             ],
-            &mut control,
+            &control,
         )
         .unwrap()
     }
@@ -5229,8 +5228,8 @@ reading R {{
                 "補完で真偽が異なるLawへ確定値を補えない"
             );
         }
-        let mut control = Control::unlimited();
-        let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
+        let control = Control::unlimited();
+        let environment = Environment::new(result.prepared.inputs(), &control).unwrap();
         environment
             .validate_answer(
                 &graph,
@@ -5296,7 +5295,7 @@ reading R {{
                 "件数と条件を提示する仕様モデル。",
             )
             .replace("\"atoms\": [", &format!("\"atoms\": [{additions},"));
-        let mut control = Control::unlimited();
+        let control = Control::unlimited();
         evaluate_observed_bytes(
             InputSources::from_bytes(
                 vec![definitions.into_bytes()],
@@ -5315,7 +5314,7 @@ reading R {{
                 "imp_value=evaluate(CountCheck.consequence,s=@v/s)",
                 "computed=check(CountCheck.computed,s=@v/s)",
             ],
-            &mut control,
+            &control,
         )
         .unwrap()
     }
@@ -5370,7 +5369,7 @@ reading R {{
         let result = evaluate_observed_bytes(
             numeric_recheck_fixture(&[], "law required every(b: Bool): b or not b;"),
             &["family=check(Calc.every)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete", "{:?}", result.issues);
@@ -5399,7 +5398,7 @@ reading R {{
         evaluate_observed_bytes(
             numeric_recheck_fixture(if missing { &["p"] } else { &[] }, body),
             asks,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap()
     }
@@ -5496,7 +5495,7 @@ reading R {{
                 "skipped=check(Calc.skipped,s=@v/sample)",
                 "sets=check(Calc.sets)",
             ],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete", "{:?}", result.issues);
@@ -5727,8 +5726,8 @@ reading R {{
             "current=check(Calc.current)",
             "later=evaluate(Calc.seed)",
         ];
-        let mut normal_control = quiet();
-        let prepared = prepare_observed(sources.clone(), &asks, &mut normal_control).unwrap();
+        let normal_control = quiet();
+        let prepared = prepare_observed(sources.clone(), &asks, &normal_control).unwrap();
         let target = prepared.inputs().law().declarations()["Calc.current"].span;
         let context = super::super::call::Context {
             request: 3,
@@ -5741,7 +5740,7 @@ reading R {{
         let observed = progress.clone();
         let normal = evaluate_observed_with_validator(
             prepared,
-            &mut normal_control,
+            &normal_control,
             |environment, graph, request, answer| {
                 environment.validate_answer(graph, request, answer)?;
                 if request.id == "hole" {
@@ -5789,7 +5788,7 @@ reading R {{
             let probes = Rc::new(Cell::new(0));
             let frozen = Rc::new(Cell::new(None));
             let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-            let mut control = Control::new(move |checkpoint| {
+            let control = Control::new(move |checkpoint| {
                 count.set(count.get() + 1);
                 if arm.replace(false) {
                     assert_eq!(checkpoint, Checkpoint::FiniteIteration);
@@ -5799,12 +5798,12 @@ reading R {{
                     None
                 }
             });
-            let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
+            let prepared = prepare_observed(sources.clone(), &asks, &control).unwrap();
             let seen = Rc::new(RefCell::new(Vec::new()));
             let observed = seen.clone();
             let stopped = evaluate_observed_with_validator(
                 prepared,
-                &mut control,
+                &control,
                 |environment, graph, request, answer| {
                     environment.validate_answer(graph, request, answer)?;
                     if request.id == "hole" {
@@ -5973,7 +5972,7 @@ reading Calc {{
                 "teq=check(Calc.equal_t,s=@v/sample)",
                 "again=evaluate(Calc.q,s=@v/sample)",
             ],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap()
     }
@@ -6097,7 +6096,7 @@ reading Calc {{
                 "dependent=evaluate(Calc.dependent,s=@v/sample)",
                 "conditional=evaluate(Calc.conditional,s=@v/sample)",
             ],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert_eq!(result.status(), "partial");
@@ -6171,7 +6170,7 @@ reading Calc {{
                 "view token_case(s: Sample): Q = let q = rat(5,7) in q + // q\n s.q;",
             ),
             &["token=evaluate(Calc.token_case,s=@v/sample)"],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete");
@@ -6261,7 +6260,7 @@ reading Calc {{
                 "view dependent(s: Sample): Q = let x = s.q in x + 1;",
             ),
             &["dependent=evaluate(Calc.dependent,s=@v/sample)"],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert_eq!(result.status(), "partial");
@@ -6310,7 +6309,7 @@ reading Calc {{
         let mut result = evaluate_observed_bytes(
             numeric_recheck_fixture(&[], "view one(): Z = 1; view zero(): Z = one();"),
             &["v=evaluate(Calc.zero)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete");
@@ -6348,7 +6347,7 @@ reading Calc {{
                 "unknown=evaluate(Calc.unknown,s=@v/sample)",
                 "constant=evaluate(Calc.constant,s=@v/sample)",
             ],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap()
     }
@@ -6446,7 +6445,7 @@ reading Calc {{
         let normal = evaluate_observed_bytes(
             inputs(false),
             &["v=evaluate(Calc.caller,s=@v/sample,t=@v/other)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(normal.status(), "complete");
@@ -6458,7 +6457,7 @@ reading Calc {{
         let partial = evaluate_observed_bytes(
             sources,
             &["v=evaluate(Calc.caller,s=@v/sample,t=@v/other)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(partial.status(), "partial", "{:?}", partial.issues);
@@ -6508,7 +6507,7 @@ reading Calc {{
             include_bytes!("../../tests/fixtures/counter.law").to_vec(),
             include_bytes!("../../tests/fixtures/counter.archmap.json").to_vec(),
         );
-        let mut control = quiet();
+        let control = quiet();
         let prepared = prepare_observed(
             sources,
             &[
@@ -6516,12 +6515,12 @@ reading Calc {{
                 "fail=check(CountAudit.bounded,s=@v/s)",
                 "last=check(CountCheck.nonnegative,s=@v/s)",
             ],
-            &mut control,
+            &control,
         )
         .unwrap();
         let error = evaluate_observed_with_validator(
             prepared,
-            &mut control,
+            &control,
             |environment, graph, request, answer| {
                 if request.id == "fail" {
                     Err(ValidationFailure::UnsupportedExpression {
@@ -6569,7 +6568,7 @@ reading Calc {{
 "#,
             ),
             &["v=evaluate(Calc.caller,s=@v/sample)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(normal.status(), "complete");
@@ -6581,7 +6580,7 @@ reading Calc {{
         );
         let finite = evaluate_observed_bytes(
             numeric_recheck_fixture(&[], "view quantify(): Bool = forall item: Bool. item; view caller(): Bool = quantify();"),
-            &["v=evaluate(Calc.caller)"], &mut quiet(),
+            &["v=evaluate(Calc.caller)"], &quiet(),
         ).unwrap();
         assert_eq!(finite.status(), "complete", "{:?}", finite.issues);
         assert_eq!(
@@ -6597,12 +6596,9 @@ reading Calc {{
 "#,
         );
         let law = sources.law().bytes().to_vec();
-        let quantified = evaluate_observed_bytes(
-            sources,
-            &["v=evaluate(Calc.caller,s=@v/sample)"],
-            &mut quiet(),
-        )
-        .unwrap();
+        let quantified =
+            evaluate_observed_bytes(sources, &["v=evaluate(Calc.caller,s=@v/sample)"], &quiet())
+                .unwrap();
         assert_eq!(quantified.status(), "complete", "{:?}", quantified.issues);
         assert_eq!(
             data_scalar_at(&quantified, quantified.answers[0].outputs["value"].0),
@@ -6737,12 +6733,9 @@ reading Calc {{
 "#,
         );
         let law = sources.law().bytes().to_vec();
-        let quantified = evaluate_observed_bytes(
-            sources,
-            &["v=evaluate(Calc.caller,s=@v/sample)"],
-            &mut quiet(),
-        )
-        .unwrap();
+        let quantified =
+            evaluate_observed_bytes(sources, &["v=evaluate(Calc.caller,s=@v/sample)"], &quiet())
+                .unwrap();
         assert_eq!(quantified.status(), "partial");
         assert_eq!(quantified.answers[0].status, Decision::Undetermined);
         assert!(!quantified.answers[0].outputs.contains_key("value"));
@@ -6789,12 +6782,12 @@ reading Calc {{
         assert_ne!(definition, original_definition);
         let old = crate::definition::check_definitions_controlled(
             &[("definition0", original_definition.as_bytes())],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let new = crate::definition::check_definitions_controlled(
             &[("definition0", definition.as_bytes())],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let (old_digest, new_digest) = (
@@ -6815,7 +6808,7 @@ reading Calc {{
                 map.into_bytes(),
             ),
             &["v=evaluate(Calc.caller,s=@v/sample)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete");
@@ -6864,7 +6857,7 @@ reading Calc {{
  {"kind":"entity","name":"Owners.Second","meaning":"第二の対象。","parameters":[],"fields":[{"name":"b","type":"Q","meaning":"第二の値。"}],"alignments":[]}]}]}"#;
         let checked = crate::definition::check_definitions_controlled(
             &[("definition0", definitions.as_bytes())],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let digest = &checked.vocabularies()["Owners"].digest;
@@ -6890,7 +6883,7 @@ reading Calc {{
                 map.into_bytes(),
             ),
             &["v=evaluate(Calc.caller,x=@v/first,y=@v/second)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(
@@ -6930,8 +6923,8 @@ reading Calc {{
             "current=evaluate(Calc.current,s=@v/sample)",
             "later=evaluate(Calc.later,s=@v/sample)",
         ];
-        let mut baseline_control = quiet();
-        let prepared = prepare_observed(sources.clone(), &asks, &mut baseline_control).unwrap();
+        let baseline_control = quiet();
+        let prepared = prepare_observed(sources.clone(), &asks, &baseline_control).unwrap();
         let Signature::View { body, .. } =
             &prepared.inputs().law().declarations()["Calc.retain"].signature
         else {
@@ -6942,7 +6935,7 @@ reading Calc {{
             &sources.law().bytes()[parameter_span.0..parameter_span.1],
             b"x"
         );
-        let normal = evaluate_observed(prepared, &mut baseline_control).unwrap();
+        let normal = evaluate_observed(prepared, &baseline_control).unwrap();
         assert_eq!(normal.status(), "partial");
         let Json::Obj(ref normal_wire) = normal.wire() else {
             unreachable!()
@@ -6995,7 +6988,7 @@ reading Calc {{
         let frozen = Rc::new(Cell::new(None));
         let seen = Rc::new(RefCell::new(Vec::new()));
         let (probe_armed, probe_count, at_stop) = (armed.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             probe_count.set(probe_count.get() + 1);
             if probe_armed.replace(false) {
                 assert_eq!(point, Checkpoint::FiniteIteration);
@@ -7007,10 +7000,10 @@ reading Calc {{
             }
             None
         });
-        let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
+        let prepared = prepare_observed(sources.clone(), &asks, &control).unwrap();
         let result = evaluate_observed_with_validator(
             prepared,
-            &mut control,
+            &control,
             |environment, graph, request, answer| {
                 // 元のvalidatorを通した先行欠測Answerの後に、同じEnvironmentを観測する。
                 environment.validate_answer(graph, request, answer)?;
@@ -7123,12 +7116,12 @@ reading Calc {{
             .replace(r#""fields":["#, r#""fields":[{"name":"packet","type":["Data","Numeric.Packet"],"meaning":"観測した組。"},"#);
         let checked = crate::definition::check_definitions_controlled(
             &[("definition0", definitions.as_bytes())],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let previous = crate::definition::check_definitions_controlled(
             &[("definition0", original.definitions()[0].bytes())],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let old_digest = &previous.vocabularies()["Numeric"].digest;
@@ -7149,7 +7142,7 @@ reading Calc {{
                 map.into_bytes(),
             ),
             requests,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap()
     }
@@ -7369,7 +7362,7 @@ reading Calc {{
  view maybe(s: Sample): Option<Q> = some(s.q);
  view total(s: Sample): Q = sum(list<Q>[s.q]);
  view empty(): (Z,Q,Fp(5),(Z,Q,Fp(5))) = (sum(list<Z>[]),sum(set<Q>{}),sum(list<Fp(5)>[]),sum(list<(Z,Q,Fp(5))>[]));
-"#),requests,&mut quiet()).unwrap()
+"#),requests,&quiet()).unwrap()
     }
     #[test]
     fn primitive_containers_recheck_sequence_type_and_option_tags_at_scalar_prefix() {
@@ -7549,8 +7542,8 @@ reading Calc {{
                 "current=evaluate(Calc.current,s=@v/sample)",
                 "later=evaluate(Calc.later,s=@v/sample)",
             ];
-            let mut control = quiet();
-            let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
+            let control = quiet();
+            let prepared = prepare_observed(sources.clone(), &asks, &control).unwrap();
             let Signature::View {
                 body: expression, ..
             } = &prepared.inputs().law().declarations()["Calc.current"].signature
@@ -7573,7 +7566,7 @@ reading Calc {{
                     progress.borrow_mut().push(index);
                 }
             });
-            let normal = evaluate_observed(prepared, &mut control);
+            let normal = evaluate_observed(prepared, &control);
             data::clear_iteration_observer();
             let normal = normal.unwrap();
             assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
@@ -7608,7 +7601,7 @@ reading Calc {{
             let probes = Rc::new(Cell::new(0));
             let frozen = Rc::new(Cell::new(None));
             let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-            let mut control = Control::new(move |point| {
+            let control = Control::new(move |point| {
                 count.set(count.get() + 1);
                 if arm.replace(false) {
                     assert_eq!(point, Checkpoint::FiniteIteration);
@@ -7618,12 +7611,12 @@ reading Calc {{
                     None
                 }
             });
-            let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
+            let prepared = prepare_observed(sources.clone(), &asks, &control).unwrap();
             let seen = Rc::new(RefCell::new(Vec::new()));
             let observed = seen.clone();
             let result = evaluate_observed_with_validator(
                 prepared,
-                &mut control,
+                &control,
                 |environment, graph, request, answer| {
                     environment.validate_answer(graph, request, answer)?;
                     if request.id == "missing" {
@@ -7697,7 +7690,7 @@ reading Calc {{
 "#,
             ),
             requests,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap()
     }
@@ -7828,18 +7821,15 @@ reading Calc {{
                 "view normal(): Set<Z> = set {{ x+1 | x in list<Z>[1] }}; view deferred(): Set<List<Map<Sample,Sample>>> = {body};"
             ),
         );
-        let normal = evaluate_observed_bytes(
-            sources.clone(),
-            &["value=evaluate(Calc.normal)"],
-            &mut quiet(),
-        )
-        .unwrap();
+        let normal =
+            evaluate_observed_bytes(sources.clone(), &["value=evaluate(Calc.normal)"], &quiet())
+                .unwrap();
         assert_eq!(normal.status(), "complete");
         // Keep the original regression test identity; known Map container values are now supported.
         let result = evaluate_observed_bytes(
             sources.clone(),
             &["value=evaluate(Calc.deferred)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete");
@@ -7869,7 +7859,7 @@ reading Calc {{
                 "view capture(): Set<Z> = let y=10 in set { x+y | x in list<Z>[1,2] };",
             ),
             &["value=evaluate(Calc.capture)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete", "{:?}", result.issues);
@@ -7934,7 +7924,7 @@ reading Calc {{
                 "nested=evaluate(Calc.nested_capture)",
                 "pattern=evaluate(Calc.pattern_capture,s=@v/sample)",
             ],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete", "{:?}", result.issues);
@@ -8025,7 +8015,7 @@ reading Calc {{
         )
     }
     fn plain_ref_example(asks: &[&str]) -> ObservedEvaluation {
-        evaluate_observed_bytes(plain_ref_fixture(), asks, &mut quiet()).unwrap()
+        evaluate_observed_bytes(plain_ref_fixture(), asks, &quiet()).unwrap()
     }
     #[test]
     fn plain_ref_owned_type_syntax_stays_distinct_from_plain_roster() {
@@ -8052,7 +8042,7 @@ reading Calc {{
         let normal = evaluate_observed_bytes(
             sources.clone(),
             &["normal=evaluate(Calc.plain,root=@v/root)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(normal.status(), "complete", "{:?}", normal.issues);
@@ -8078,7 +8068,7 @@ reading Calc {{
             ),
         ] {
             let ask = format!("bad=evaluate(Calc.{name},root=@v/root)");
-            let result = evaluate_observed_bytes(sources.clone(), &[&ask], &mut quiet()).unwrap();
+            let result = evaluate_observed_bytes(sources.clone(), &[&ask], &quiet()).unwrap();
             owned_type_private_completed_missing(&result, &law, original);
         }
     }
@@ -8197,7 +8187,7 @@ reading Calc {{
         )
     }
     fn type_quantifier_example(requests: &[&str]) -> ObservedEvaluation {
-        evaluate_observed_bytes(type_quantifier_fixture(), requests, &mut quiet()).unwrap()
+        evaluate_observed_bytes(type_quantifier_fixture(), requests, &quiet()).unwrap()
     }
     #[test]
     fn type_quantifier_exhaustion_rechecks_coverage_binder_body_and_evidence() {
@@ -8307,7 +8297,7 @@ reading Calc {{
         )
     }
     fn in_quantifier_example(requests: &[&str]) -> ObservedEvaluation {
-        evaluate_observed_bytes(in_quantifier_fixture(), requests, &mut quiet()).unwrap()
+        evaluate_observed_bytes(in_quantifier_fixture(), requests, &quiet()).unwrap()
     }
     fn in_domain(result: &ObservedEvaluation, request: usize) -> usize {
         result
@@ -8441,7 +8431,7 @@ reading Calc {{
     }
     fn finite_completion_example(body: &str, asks: &[&str]) -> ObservedEvaluation {
         let result =
-            evaluate_observed_bytes(finite_completion_fixture(body, false), asks, &mut quiet())
+            evaluate_observed_bytes(finite_completion_fixture(body, false), asks, &quiet())
                 .unwrap();
         assert_ne!(result.status(), "error", "{:?}", result.issues);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
@@ -8970,8 +8960,8 @@ reading Calc {{
             ask,
             "later=evaluate(Calc.seed)",
         ];
-        let mut quiet = quiet();
-        let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
+        let quiet = quiet();
+        let prepared = prepare_observed(inputs.clone(), &asks, &quiet).unwrap();
         let declaration = &prepared.inputs().law().declarations()["Calc.current"];
         let target = declaration.span;
         let body_id = match &declaration.signature {
@@ -8983,7 +8973,7 @@ reading Calc {{
         let observed = progress.clone();
         let normal = evaluate_observed_with_validator(
             prepared,
-            &mut quiet,
+            &quiet,
             |environment, graph, request, answer| {
                 environment.validate_answer(graph, request, answer)?;
                 if request.id == "hole" {
@@ -9083,7 +9073,7 @@ reading Calc {{
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(move |checkpoint| {
+        let control = Control::new(move |checkpoint| {
             count.set(count.get() + 1);
             if arm.replace(false) {
                 assert_eq!(checkpoint, Checkpoint::FiniteIteration);
@@ -9093,12 +9083,12 @@ reading Calc {{
                 None
             }
         });
-        let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
+        let prepared = prepare_observed(inputs, &asks, &control).unwrap();
         let seen = Rc::new(RefCell::new(Vec::new()));
         let observed = seen.clone();
         let stopped = evaluate_observed_with_validator(
             prepared,
-            &mut control,
+            &control,
             |environment, graph, request, answer| {
                 environment.validate_answer(graph, request, answer)?;
                 if request.id == "hole" {
@@ -9233,8 +9223,7 @@ reading Calc {{
     }
     fn fp_completion_example(body: &str, asks: &[&str]) -> ObservedEvaluation {
         let result =
-            evaluate_observed_bytes(fp_completion_fixture(body, false), asks, &mut quiet())
-                .unwrap();
+            evaluate_observed_bytes(fp_completion_fixture(body, false), asks, &quiet()).unwrap();
         assert_ne!(result.status(), "error", "{:?}", result.issues);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
         result
@@ -9555,8 +9544,8 @@ reading Calc {{
             "current=evaluate(Calc.current,s=@v/sample)",
             "later=evaluate(Calc.seed)",
         ];
-        let mut quiet = quiet();
-        let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
+        let quiet = quiet();
+        let prepared = prepare_observed(inputs.clone(), &asks, &quiet).unwrap();
         let declaration = &prepared.inputs().law().declarations()["Calc.current"];
         let target = declaration.span;
         let body_id = match &declaration.signature {
@@ -9568,7 +9557,7 @@ reading Calc {{
         let observed = progress.clone();
         let normal = evaluate_observed_with_validator(
             prepared,
-            &mut quiet,
+            &quiet,
             |environment, graph, request, answer| {
                 environment.validate_answer(graph, request, answer)?;
                 if request.id == "hole" {
@@ -9601,7 +9590,7 @@ reading Calc {{
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(move |checkpoint| {
+        let control = Control::new(move |checkpoint| {
             count.set(count.get() + 1);
             if arm.replace(false) {
                 assert_eq!(checkpoint, Checkpoint::FiniteIteration);
@@ -9611,12 +9600,12 @@ reading Calc {{
                 None
             }
         });
-        let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
+        let prepared = prepare_observed(inputs, &asks, &control).unwrap();
         let seen = Rc::new(RefCell::new(Vec::new()));
         let observed = seen.clone();
         let stopped = evaluate_observed_with_validator(
             prepared,
-            &mut control,
+            &control,
             |environment, graph, request, answer| {
                 environment.validate_answer(graph, request, answer)?;
                 if request.id == "hole" {
@@ -9701,8 +9690,7 @@ reading Calc {{
     }
     fn completion_private_example(body: &str, asks: &[&str]) -> ObservedEvaluation {
         let result =
-            evaluate_observed_bytes(numeric_recheck_fixture(&["p"], body), asks, &mut quiet())
-                .unwrap();
+            evaluate_observed_bytes(numeric_recheck_fixture(&["p"], body), asks, &quiet()).unwrap();
         assert_ne!(result.status(), "error", "{:?}", result.issues);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
         result
@@ -9895,8 +9883,8 @@ reading Calc {{
         ];
         {
             let inputs = numeric_recheck_fixture(&["p", "q"], body);
-            let mut quiet = quiet();
-            let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
+            let quiet = quiet();
+            let prepared = prepare_observed(inputs.clone(), &asks, &quiet).unwrap();
             let target = prepared.inputs().law().declarations()["Calc.current"].span;
             let Signature::View {
                 body: current_body, ..
@@ -9909,7 +9897,7 @@ reading Calc {{
             let observed = progress.clone();
             let normal = evaluate_observed_with_validator(
                 prepared,
-                &mut quiet,
+                &quiet,
                 |environment, graph, request, answer| {
                     environment.validate_answer(graph, request, answer)?;
                     if request.id == "hole" {
@@ -9938,7 +9926,7 @@ reading Calc {{
             let probes = Rc::new(Cell::new(0));
             let frozen = Rc::new(Cell::new(None));
             let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-            let mut control = Control::new(move |checkpoint| {
+            let control = Control::new(move |checkpoint| {
                 count.set(count.get() + 1);
                 if arm.replace(false) {
                     assert_eq!(checkpoint, Checkpoint::FiniteIteration);
@@ -9948,12 +9936,12 @@ reading Calc {{
                     None
                 }
             });
-            let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
+            let prepared = prepare_observed(inputs, &asks, &control).unwrap();
             let seen = Rc::new(RefCell::new(Vec::new()));
             let observed = seen.clone();
             let stopped = evaluate_observed_with_validator(
                 prepared,
-                &mut control,
+                &control,
                 |environment, graph, request, answer| {
                     environment.validate_answer(graph, request, answer)?;
                     if request.id == "hole" {
@@ -10056,8 +10044,8 @@ reading Calc {{
                 current.as_str(),
                 "later=evaluate(Calc.later)",
             ];
-            let mut normal_control = quiet();
-            let prepared = prepare_observed(sources.clone(), &asks, &mut normal_control).unwrap();
+            let normal_control = quiet();
+            let prepared = prepare_observed(sources.clone(), &asks, &normal_control).unwrap();
             let Signature::View { body, .. } =
                 &prepared.inputs().law().declarations()[&format!("Calc.{view}")].signature
             else {
@@ -10075,7 +10063,7 @@ reading Calc {{
             let progress_clone = progress.clone();
             let normal = evaluate_observed_with_validator(
                 prepared,
-                &mut normal_control,
+                &normal_control,
                 |environment, graph, request, answer| {
                     environment.validate_answer(graph, request, answer)?;
                     if request.id == "hole" {
@@ -10114,7 +10102,7 @@ reading Calc {{
             let probes = Rc::new(Cell::new(0));
             let frozen = Rc::new(Cell::new(None));
             let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-            let mut control = Control::new(move |checkpoint| {
+            let control = Control::new(move |checkpoint| {
                 count.set(count.get() + 1);
                 if arm.replace(false) {
                     assert_eq!(checkpoint, Checkpoint::FiniteIteration);
@@ -10124,12 +10112,12 @@ reading Calc {{
                     None
                 }
             });
-            let prepared = prepare_observed(sources, &asks, &mut control).unwrap();
+            let prepared = prepare_observed(sources, &asks, &control).unwrap();
             let seen = Rc::new(RefCell::new(Vec::new()));
             let observed = seen.clone();
             let stopped = evaluate_observed_with_validator(
                 prepared,
-                &mut control,
+                &control,
                 |environment, graph, request, answer| {
                     environment.validate_answer(graph, request, answer)?;
                     if request.id == "hole" {

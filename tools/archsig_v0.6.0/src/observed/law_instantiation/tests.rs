@@ -14,7 +14,7 @@ fn prepared(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
         inputs.law(),
         inputs.archmap(),
         &["b=build(Selected,on=@v/root)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -24,7 +24,7 @@ fn prepared(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
     }
 }
 fn start(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -32,21 +32,21 @@ fn start(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let objects = crate::observed::object_component_diagram::retain(
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
     (g, a.reference, objects.architectures)
 }
 fn replay(p: &PreparedObserved, source: &Graph) -> Result<(), ValidationFailure> {
-    let env = Environment::with_prepared(p, &mut quiet())?;
+    let env = Environment::with_prepared(p, &quiet())?;
     let mut g = Graph::new(&quiet());
     g.requests = source.requests.clone();
     g.frames = source.frames.clone();
@@ -97,7 +97,7 @@ fn poly(
         &mut g,
         p.shared_inputs(),
         a,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     (g, objects, ds)
@@ -139,7 +139,7 @@ fn polynomial_complete_bindings_specialize_every_outside_template_and_keep_unrea
         false,
         "law optional bit(c:Part,b:Bool) when b:c.quantity=0;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, objects, ds) = poly(&p);
     let pairs = candidates(&g, &ds);
     assert_eq!(pairs.len(), 4);
@@ -150,7 +150,7 @@ fn polynomial_complete_bindings_specialize_every_outside_template_and_keep_unrea
         assert_eq!(t.bindings.len(), 1);
         assert_eq!(b.bindings.len(), 2);
         let before = g.nodes.len();
-        let row = instantiate(&env, &mut g, base, template, objects[object], &mut quiet()).unwrap();
+        let row = instantiate(&env, &mut g, base, template, objects[object], &quiet()).unwrap();
         assert_eq!(g.nodes.len(), before + 1);
         let d = native(&g, row);
         assert_eq!(
@@ -174,15 +174,10 @@ fn polynomial_complete_bindings_specialize_every_outside_template_and_keep_unrea
         assert_eq!(inst.bindings, b.bindings);
         assert_eq!(inst.body, b.body);
         assert_eq!(inst.guard, b.guard);
-        let answer = crate::observed::law_inapplicable::check(
-            &env,
-            &mut g,
-            row,
-            objects[object],
-            &mut quiet(),
-        )
-        .unwrap()
-        .unwrap();
+        let answer =
+            crate::observed::law_inapplicable::check(&env, &mut g, row, objects[object], &quiet())
+                .unwrap()
+                .unwrap();
         assert_eq!(answer.status, Decision::Established);
         assert_eq!(g.nodes.len(), before + 4);
         assert!(
@@ -208,7 +203,7 @@ fn polynomial_complete_bindings_specialize_every_outside_template_and_keep_unrea
         assert!(!body.contains_key("residual"));
         values.push((object, g.scalar(b.bindings[1].value).unwrap().clone()));
         assert!(
-            frames::prepare_instance(&env, &mut g, row, objects[object], &mut quiet())
+            frames::prepare_instance(&env, &mut g, row, objects[object], &quiet())
                 .unwrap()
                 .is_none()
         );
@@ -232,19 +227,18 @@ fn closed_finite_scalar_products_roles_and_guards_keep_original_specialization()
         "law required bit(c:Part,b:Fp(2)):c.quantity=0;",
     ] {
         let p = prepared(fixture::inputs(true, false, body));
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let (mut g, objects, ds) = poly(&p);
         let pairs = candidates(&g, &ds);
         assert!(!pairs.is_empty(), "{body}");
         for (base, template, object) in pairs {
-            let row =
-                instantiate(&env, &mut g, base, template, objects[object], &mut quiet()).unwrap();
+            let row = instantiate(&env, &mut g, base, template, objects[object], &quiet()).unwrap();
             let answer = crate::observed::law_inapplicable::check(
                 &env,
                 &mut g,
                 row,
                 objects[object],
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap()
             .unwrap();
@@ -259,16 +253,12 @@ fn finite_native_rows_use_scalar_identity_across_separately_retained_objects() {
         true,
         "law optional bit(c:Part,b:Bool) when b:c.quantity=0;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, a, objects) = start(&p);
-    let ds = crate::observed::finite_law_diagram::retain_family(
-        &mut g,
-        p.shared_inputs(),
-        a,
-        &mut quiet(),
-    )
-    .unwrap()
-    .unwrap();
+    let ds =
+        crate::observed::finite_law_diagram::retain_family(&mut g, p.shared_inputs(), a, &quiet())
+            .unwrap()
+            .unwrap();
     let mut count = 0;
     for (object, d) in ds.iter().enumerate().skip(1) {
         for target in &d.originals {
@@ -289,22 +279,15 @@ fn finite_native_rows_use_scalar_identity_across_separately_retained_objects() {
                 })
                 .unwrap()
                 .row;
-            let row = instantiate(
-                &env,
-                &mut g,
-                base,
-                target.row,
-                objects[object],
-                &mut quiet(),
-            )
-            .unwrap();
+            let row =
+                instantiate(&env, &mut g, base, target.row, objects[object], &quiet()).unwrap();
             assert!(
                 crate::observed::law_inapplicable::check(
                     &env,
                     &mut g,
                     row,
                     objects[object],
-                    &mut quiet()
+                    &quiet()
                 )
                 .unwrap()
                 .is_some()
@@ -331,8 +314,8 @@ fn first() -> (PreparedObserved, Graph, Vec<NodeRef>, NodeRef, NodeRef) {
 #[test]
 fn self_and_future_dependencies_are_rejected_before_recursive_recheck() {
     let (p, mut g, objects, base, target) = first();
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let row = instantiate(&env, &mut g, base, target, objects[1], &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let row = instantiate(&env, &mut g, base, target, objects[1], &quiet()).unwrap();
     for mode in 0..6 {
         let mut bad = copy_graph(&g, &quiet());
         let Some(Payload::Construction(v)) = &mut bad.nodes[row.0].payload else {
@@ -364,7 +347,7 @@ fn unbound_integer_specialization_preserves_the_original_symbolic_family() {
         false,
         "law required unbounded(c:Part,k:Z):c.quantity=k;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, objects, ds) = poly(&p);
     assert!(ds.iter().all(|d| d.unavailable.is_none()));
     assert!(
@@ -391,7 +374,7 @@ fn unbound_integer_specialization_preserves_the_original_symbolic_family() {
                 base.reference,
                 target.reference,
                 objects[1],
-                &mut quiet(),
+                &quiet(),
             );
             assert_eq!(result.is_ok(), valid);
             if let Ok(row) = result {
@@ -420,13 +403,13 @@ fn unbound_integer_specialization_preserves_the_original_symbolic_family() {
 fn interrupt_retains_only_the_completed_specialization_prefix() {
     use std::{cell::Cell, rc::Rc};
     let (p, initial, objects, base, target) = first();
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut complete = copy_graph(&initial, &quiet());
-    instantiate(&env, &mut complete, base, target, objects[1], &mut quiet()).unwrap();
+    instantiate(&env, &mut complete, base, target, objects[1], &quiet()).unwrap();
     for at in [2, 3] {
         let seen = Rc::new(Cell::new(0));
         let counter = seen.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::ObjectEvaluation {
                 counter.set(counter.get() + 1)
             }
@@ -435,7 +418,7 @@ fn interrupt_retains_only_the_completed_specialization_prefix() {
         });
         let mut g = copy_graph(&initial, &c);
         assert!(matches!(
-            instantiate(&env, &mut g, base, target, objects[1], &mut c),
+            instantiate(&env, &mut g, base, target, objects[1], &c),
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.active, initial.active);

@@ -17,7 +17,7 @@ fn a<'a>(w: &'a Json, id: &str) -> &'a Json {
         .unwrap()
 }
 fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
-    match evaluate_observed_bytes(fixture::input(false, false, "r1"), asks, &mut quiet()) {
+    match evaluate_observed_bytes(fixture::input(false, false, "r1"), asks, &quiet()) {
         Ok(r) => r,
         Err(e) => panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))),
     }
@@ -322,7 +322,7 @@ fn fixed_owned_binding_rejects_cross_snapshot_and_preserves_producer_quantifiers
             "owner=evaluate(Reservations.adOwner,a=@w/A)",
             "child=evaluate(Reservations.obChild,p=@v/p)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial");
@@ -400,7 +400,7 @@ fn fixed_owned_unprovided_and_inapplicable_values_keep_original_reasons() {
                 child_producer,
                 "empty=evaluate(Reservations.obEmpty)",
             ],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(r.status(), "partial");
@@ -447,7 +447,7 @@ fn fixed_owned_binding_keeps_static_invalidity() {
                 "typed=evaluate(Reservations.obTyped,a=@v/B,p=@v/r)",
                 "child=evaluate(Reservations.obChild,p=@v/p)",
             ],
-            &mut quiet(),
+            &quiet(),
         );
         let w = match r {
             Ok(r) => r.wire(),
@@ -480,8 +480,8 @@ fn fixed_owned_binding_preserves_three_inputs_dag_owner_atoms_and_current_proven
     ];
     let input = fixture::input(false, false, "r1");
     let original = input.clone();
-    let before = check_inputs(input.clone(), &mut quiet()).unwrap();
-    let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
+    let before = check_inputs(input.clone(), &quiet()).unwrap();
+    let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
     assert_eq!(r.status(), "complete");
     let checked = r.prepared().inputs();
     assert_eq!(checked.sources(), &original);
@@ -553,7 +553,7 @@ fn fixed_owned_binding_preserves_three_inputs_dag_owner_atoms_and_current_proven
     }
     assert!(owner_atoms > 0);
     let moved =
-        evaluate_observed_bytes(fixture::input(false, false, "r2"), &asks, &mut quiet()).unwrap();
+        evaluate_observed_bytes(fixture::input(false, false, "r2"), &asks, &quiet()).unwrap();
     let mw = moved.wire();
     assert_eq!(f(&w, "nodes"), f(&mw, "nodes"));
     assert_eq!(f(&w, "answers"), f(&mw, "answers"));
@@ -622,7 +622,7 @@ fn fixed_owned_binding_unknown_membership_keeps_missing_and_direct_dependency_ch
         ];
         let input = fixture::completion_input("ambiguous", "r1");
         let original = input.clone();
-        let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
+        let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
         assert_eq!(r.status(), "partial");
         assert_eq!(r.prepared().inputs().sources(), &original);
         let w = r.wire();
@@ -711,7 +711,7 @@ fn fixed_owned_binding_completed_membership_uses_roster_and_known_map_constraint
         ];
         let input = fixture::completion_input(mode, "r1");
         let original = input.clone();
-        let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
+        let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
         let w = r.wire();
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(
@@ -769,12 +769,8 @@ fn fixed_owned_binding_completed_map_keeps_full_domain_and_original_map_referenc
         "take=evaluate(Reservations.obMapUse,a=@v/A,b=@v/B,x=$table.value)",
         "table=evaluate(Reservations.obTable,m=@v/m)",
     ];
-    let r = evaluate_observed_bytes(
-        fixture::completion_input("forceA", "r1"),
-        &asks,
-        &mut quiet(),
-    )
-    .unwrap();
+    let r = evaluate_observed_bytes(fixture::completion_input("forceA", "r1"), &asks, &quiet())
+        .unwrap();
     let w = r.wire();
     assert_eq!(r.status(), "complete", "{:?}", f(&w, "issues"));
     assert_eq!(f(a(&w, "take"), "status"), &Json::str("established"));
@@ -825,14 +821,14 @@ fn fixed_owned_binding_completion_keeps_current_provenance_three_inputs_and_prio
         for revision in ["r1", "r2"] {
             let input = fixture::completion_input(mode, revision);
             let original = input.clone();
-            let checked = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+            let checked = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
             let r = evaluate_observed_bytes(
                 input,
                 &[
                     "take=check(Reservations.obEq,a=@v/A,p=$child.value)",
                     "child=evaluate(Reservations.obChild,p=@v/p)",
                 ],
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap();
             assert_eq!(r.prepared().inputs().sources(), &original);

@@ -20,7 +20,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn run_input(i: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvaluation {
-    let r = evaluate_observed_bytes(i, asks, &mut Control::unlimited())
+    let r = evaluate_observed_bytes(i, asks, &Control::unlimited())
         .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", get(&r.wire(), "issues"));
     r
@@ -306,8 +306,8 @@ fn owned_map_calls_keep_original_inputs_facts_and_current_provenance() {
     for revision in ["r1", "r2"] {
         let input = fixture::input("known", revision);
         let original = input.clone();
-        let before = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
-        let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
+        let before = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+        let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(r.prepared().inputs().definitions(), before.definitions());
         assert_eq!(

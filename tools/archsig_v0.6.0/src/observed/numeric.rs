@@ -13,7 +13,6 @@ use num_traits::{One, Signed, Zero};
 
 fn tick(control: &Control) -> Result<(), ValidationFailure> {
     control
-        .clone()
         .checkpoint(Checkpoint::FiniteIteration)
         .map_err(ValidationFailure::Stop)
 }

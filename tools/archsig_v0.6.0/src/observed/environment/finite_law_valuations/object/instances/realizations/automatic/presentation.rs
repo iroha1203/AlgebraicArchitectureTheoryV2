@@ -48,7 +48,7 @@ pub(in crate::observed) struct FiniteObjectLawPresentation<'a> {
     equations: Vec<FiniteObjectEquation>,
     required_zero: Vec<usize>,
 }
-fn checkpoint(c: &mut Control) -> Result<(), ValidationFailure> {
+fn checkpoint(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::FiniteLawFunction)?;
     Ok(())
 }
@@ -60,7 +60,7 @@ fn ring_failure(failure: crate::construction::ConstructionFailure) -> Validation
 }
 fn components(
     ty: Option<&Type>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<(Option<Vec<usize>>, Type)>, ValidationFailure> {
     let Some(ty) = ty else {
         return Ok(vec![(None, Type::Bool)]);
@@ -87,7 +87,7 @@ impl AutomaticLawValuations {
         &'a self,
         inputs: &'a CheckedInputs,
         object: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<FiniteObjectLawPresentation<'a>>, ValidationFailure> {
         checkpoint(c)?;
         let selected = self
@@ -200,7 +200,7 @@ impl FiniteObjectLawPresentation<'_> {
         expected_object: usize,
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         checkpoint(c)?;
         if !std::ptr::eq(self.family, expected_family) || self.object != expected_object {

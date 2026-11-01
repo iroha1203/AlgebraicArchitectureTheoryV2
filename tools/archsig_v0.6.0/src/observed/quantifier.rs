@@ -103,14 +103,14 @@ fn restore_owned_type(
     control: &Control,
 ) -> Result<Type, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        control.checkpoint(Checkpoint::FiniteIteration)?;
         let ty = match (original, erased) {
             (TypeAst::Named { name, index, span }, Type::Ref(entity) | Type::Data(entity)) => {
                 let mut resolved = None;
                 for info in law.infos() {
-                    control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+                    control.checkpoint(Checkpoint::FiniteIteration)?;
                     for (at, target) in &info.references {
-                        control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+                        control.checkpoint(Checkpoint::FiniteIteration)?;
                         if *at == name.span()
                             && resolved
                                 .replace(target.clone())
@@ -205,14 +205,14 @@ fn restore_owned_type(
         if ty.erase() != *erased {
             return Err("元Owned型の復元と消去後binder型が違う".into());
         }
-        control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        control.checkpoint(Checkpoint::FiniteIteration)?;
         Ok(ty)
     })
 }
 pub(super) fn has_owner(original: &TypeAst, control: &Control) -> Result<bool, ValidationFailure> {
     let mut pending = vec![original];
     while let Some(ty) = pending.pop() {
-        control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        control.checkpoint(Checkpoint::FiniteIteration)?;
         match ty {
             TypeAst::Named { index: Some(_), .. } => return Ok(true),
             TypeAst::Tuple(types, _) => pending.extend(types),
@@ -226,7 +226,7 @@ pub(super) fn has_owner(original: &TypeAst, control: &Control) -> Result<bool, V
             }
             _ => {}
         }
-        control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        control.checkpoint(Checkpoint::FiniteIteration)?;
     }
     Ok(false)
 }
@@ -254,13 +254,13 @@ pub(super) fn reduce(
     let decisive = kind == QuantKind::Exists;
     let mut result = Some(!decisive);
     for value in values {
-        control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        control.checkpoint(Checkpoint::FiniteIteration)?;
         if *value == Some(decisive) {
             result = Some(decisive)
         } else if value.is_none() && result != Some(decisive) {
             result = None;
         }
-        control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        control.checkpoint(Checkpoint::FiniteIteration)?;
     }
     Ok(result)
 }

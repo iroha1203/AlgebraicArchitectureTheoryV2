@@ -162,8 +162,7 @@ fn fixture(
         )
     ));
     let checked =
-        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
-            .unwrap();
+        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &quiet()).unwrap();
     let digest = &checked.vocabularies()["T"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";reading Inspect {{use vocabulary T version "1" digest "{digest}";{script}}}"#
@@ -465,8 +464,8 @@ fn audit(w: &Json, checked: &CheckedInputs) {
     }
 }
 fn run(inputs: InputSources, asks: &[&str]) -> ObservedEvaluation {
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
-    let result = evaluate_observed_bytes(inputs, asks, &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
+    let result = evaluate_observed_bytes(inputs, asks, &quiet()).unwrap();
     unchanged(&checked, result.prepared().inputs());
     audit(&result.wire(), result.prepared().inputs());
     result
@@ -1184,7 +1183,7 @@ fn owned_type_empty_domain_does_not_skip_static_body_rejection() {
     let err = evaluate_observed_bytes(
         inputs.clone(),
         &["out=evaluate(Inspect.test,a=@v/Z)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_err();
     let w = err.wire().unwrap();

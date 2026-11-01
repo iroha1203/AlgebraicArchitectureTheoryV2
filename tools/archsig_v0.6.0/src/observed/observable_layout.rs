@@ -108,7 +108,7 @@ pub(super) struct Checked<'a> {
     data: &'a Data,
     atoms: &'a [Fact],
 }
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::EquationPresentation)?;
     Ok(())
 }
@@ -119,7 +119,7 @@ fn check_refs(
     support: &mut Vec<Fact>,
     scope: &mut Scope,
     reasons: &mut Vec<Reason>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     for r in rs {
         tick(c)?;
@@ -156,7 +156,7 @@ fn compute_polynomial(
     env: &Environment<'_>,
     g: &Graph,
     table: &Table,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Data, ValidationFailure> {
     tick(c)?;
     table.recheck(env, g, c)?;
@@ -348,7 +348,7 @@ fn compute(
     g: &Graph,
     table: &Table,
     plan: &Plan,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Data, ValidationFailure> {
     match plan {
         Plan::Polynomial => compute_polynomial(env, g, table, c),
@@ -364,7 +364,7 @@ impl Layout {
         &self,
         env: &Environment<'_>,
         g: &Graph,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         if self.data != compute(env, g, &self.table, &self.plan, c)? {
             return Err("Observableのfactor/全座標/由来/支持/Scope/完成状態が元計画と違う".into());
@@ -375,7 +375,7 @@ impl Layout {
         &'a self,
         env: &Environment<'_>,
         g: &'a Graph,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Checked<'a>, ValidationFailure> {
         self.recheck(env, g, c)?;
         let Some(Payload::Construction(v)) = &g.get(self.data.universe)?.payload else {
@@ -402,7 +402,7 @@ impl Checked<'_> {
         reading: Reading,
         factor: usize,
         atom: &Fact,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Placed, ValidationFailure> {
         tick(c)?;
         let ring = *self
@@ -436,7 +436,7 @@ pub(super) fn retain(
     env: &Environment<'_>,
     g: &Graph,
     table: Arc<Table>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Layout, ValidationFailure> {
     let data = compute_polynomial(env, g, &table, c)?;
     tick(c)?;
@@ -454,7 +454,7 @@ pub(super) fn retain_finite(
     g: &mut Graph,
     table: Arc<Table>,
     inputs: Arc<CheckedInputs>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Layout>, ValidationFailure> {
     tick(c)?;
     table.recheck(env, g, c)?;

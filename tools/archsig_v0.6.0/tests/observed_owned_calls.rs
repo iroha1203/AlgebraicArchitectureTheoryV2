@@ -25,7 +25,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
-    evaluate_observed_bytes(fixture::input(false, true, "r1"), asks, &mut quiet()).unwrap()
+    evaluate_observed_bytes(fixture::input(false, true, "r1"), asks, &quiet()).unwrap()
 }
 #[test]
 fn owned_view_call_parameters_and_returns_preserve_original_owner_facts() {
@@ -105,7 +105,7 @@ fn unknown_owner_is_not_silently_accepted_at_a_view_call_boundary() {
     let r = evaluate_observed_bytes(
         fixture::input(true, false, "r1"),
         &["x=evaluate(Reservations.parameter,a=@v/A,s=@v/p)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let w = r.wire();
@@ -173,8 +173,8 @@ fn owned_call_provenance_pair_and_fixed_evidence_keys_preserve_current_sources()
     for revision in ["r1", "r2"] {
         let input = fixture::input(false, true, revision);
         let original = input.clone();
-        let before = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
-        let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
+        let before = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+        let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(r.prepared().inputs().definitions(), before.definitions());
         assert_eq!(
@@ -302,7 +302,7 @@ fn equal_owner_cross_snapshot_calls_keep_the_actual_failed_snapshot_condition() 
             "affine=check(Reservations.affineCall,a=@w/A,s=@v/p)",
             "affineReturn=check(Reservations.affineReturn,a=@w/A,s=@v/p)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let w = r.wire();
@@ -400,7 +400,7 @@ fn failed_call_field_projection_preserves_original_condition_and_batch_answers()
             "ordinary=evaluate(Reservations.fieldDirect,a=@v/A,s=@v/p)",
             "later=evaluate(Reservations.seed)",
         ],
-        &mut quiet(),
+        &quiet(),
     );
     let r = match result {
         Ok(r) => r,

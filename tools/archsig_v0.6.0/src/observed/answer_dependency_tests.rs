@@ -12,7 +12,7 @@ const ASK: &[&str] = &[
     "later=evaluate(Applications.abSeed)",
 ];
 fn result() -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), ASK, &mut quiet()).unwrap();
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), ASK, &quiet()).unwrap();
     assert_eq!(r.status(), "partial", "{:?}", r.issues);
     r
 }
@@ -39,7 +39,7 @@ fn dependency_answer_rechecks_ids_status_outputs_scope_and_each_original_reason(
     let e = Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut altered = answer.clone();
@@ -64,7 +64,7 @@ fn dependency_stop() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -73,8 +73,8 @@ fn dependency_stop() {
             None
         }
     });
-    let prepared = prepare_observed(fixture::input("stop", "r1"), ASK, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+    let prepared = prepare_observed(fixture::input("stop", "r1"), ASK, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "opaque" {
             let (a, s) = (armed.clone(), seen.clone());

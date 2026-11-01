@@ -16,7 +16,7 @@ fn path_answer_projection_actual_walk_stop_keeps_verified_prefix_and_independent
         "later=evaluate(Walk.seed)",
     ];
     let normal =
-        evaluate_observed_bytes(fixture::composed(false, "r1"), &asks, &mut quiet()).unwrap();
+        evaluate_observed_bytes(fixture::composed(false, "r1"), &asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     let Signature::View { params, .. } =
         &normal.prepared.inputs().law().declarations()["Walk.keep_node"].signature
@@ -30,7 +30,7 @@ fn path_answer_projection_actual_walk_stop_keeps_verified_prefix_and_independent
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(move |_| {
+    let control = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -39,10 +39,10 @@ fn path_answer_projection_actual_walk_stop_keeps_verified_prefix_and_independent
             None
         }
     });
-    let prepared = prepare_observed(fixture::composed(false, "r1"), &asks, &mut control).unwrap();
+    let prepared = prepare_observed(fixture::composed(false, "r1"), &asks, &control).unwrap();
     let stopped = evaluate_observed_with_validator(
         prepared,
-        &mut control,
+        &control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
             if request.id == "p" {

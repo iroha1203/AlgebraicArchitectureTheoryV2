@@ -93,7 +93,7 @@ fn integer_quantities_do_not_make_finite_path_endpoints_infinite() {
         "Walk.exact".into(),
         vec![("e".into(), reference("Paths.Hop", "e"))],
     )];
-    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    let r = finite_law_family_valuations(&i, &selected, &quiet()).unwrap();
     assert_eq!(r.state(), &FiniteLawState::Ready);
     assert!(r.domain_complete());
     assert_eq!(r.domain().len(), 9);
@@ -131,7 +131,7 @@ fn integer_quantities_do_not_make_finite_path_endpoints_infinite() {
         r.required_zero(),
         Some((0..9).collect::<Vec<_>>().as_slice())
     );
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
     assert_eq!(i.sources(), &bytes);
 }
 
@@ -165,7 +165,7 @@ fn both_path_routes_keep_quantity_atoms_but_trace_only_structural_values() {
         } else {
             fact("Paths.Node", "p", "mark")
         };
-        let normal = Environment::new(&i, &mut quiet()).unwrap();
+        let normal = Environment::new(&i, &quiet()).unwrap();
         let (before, reads) = trace(&normal, map_case);
         assert!(before.value.is_some());
         assert!(!reads.contains(&position));
@@ -193,7 +193,7 @@ fn both_path_routes_keep_quantity_atoms_but_trace_only_structural_values() {
         let candidate = Environment::with_primitive_valuation(
             &i,
             &[(position.clone(), Scalar::Z((-999).into()))],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let (after, reads) = trace(&candidate, map_case);
@@ -227,7 +227,7 @@ fn a_direct_quantity_read_remains_a_nonfinite_original_position() {
                 vec![("n".into(), reference("Paths.Node", "p"))],
             ),
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(
@@ -239,7 +239,7 @@ fn a_direct_quantity_read_remains_a_nonfinite_original_position() {
     );
     assert!(!r.domain_complete());
     assert!(r.columns().iter().all(|c| c.rows().is_empty()));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn an_empty_option_still_tracks_its_possible_reference_shape() {
@@ -252,7 +252,7 @@ fn an_empty_option_still_tracks_its_possible_reference_shape() {
         vec![],
         "",
     );
-    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    let normal = Environment::new(&i, &quiet()).unwrap();
     let (out, reads) = trace(&normal, false);
     assert!(out.value.is_some());
     for n in ["p", "q"] {
@@ -267,7 +267,7 @@ fn an_empty_option_still_tracks_its_possible_reference_shape() {
                 value: Some(Box::new(reference("Paths.Node", "p"))),
             },
         )],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let (out, reads) = trace(&e, false);
@@ -319,7 +319,7 @@ fn recursive_data_uses_all_constructors_for_value_dependency() {
             vec![recursive_definition(has_reference)],
             "",
         );
-        let normal = Environment::new(&i, &mut quiet()).unwrap();
+        let normal = Environment::new(&i, &quiet()).unwrap();
         let (out, reads) = trace(&normal, false);
         assert!(out.value.is_some());
         for n in ["p", "q"] {
@@ -335,12 +335,12 @@ fn recursive_data_uses_all_constructors_for_value_dependency() {
                     "Walk.exact".into(),
                     vec![("e".into(), reference("Paths.Hop", "e"))],
                 )],
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap();
             assert!(r.is_complete());
             assert_eq!(r.domain().len(), 9);
-            r.recheck(&i, &mut quiet()).unwrap();
+            r.recheck(&i, &quiet()).unwrap();
         }
     }
 }
@@ -362,7 +362,7 @@ fn a_quantity_in_a_mixed_slot_does_not_erase_the_whole_slot_dependency() {
         vec![],
         "",
     );
-    let e = Environment::new(&i, &mut quiet()).unwrap();
+    let e = Environment::new(&i, &quiet()).unwrap();
     let (out, reads) = trace(&e, false);
     assert!(out.value.is_some());
     assert!(reads.contains(&fact("Paths.Node", "p", "mark")));
@@ -372,7 +372,7 @@ fn a_quantity_in_a_mixed_slot_does_not_erase_the_whole_slot_dependency() {
             "Walk.exact".into(),
             vec![("e".into(), reference("Paths.Hop", "e"))],
         )],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(

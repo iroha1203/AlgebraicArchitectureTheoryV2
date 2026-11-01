@@ -21,13 +21,13 @@ fn sources(law: &str) -> InputSources {
 fn steps(law: &str) -> usize {
     let seen = Rc::new(Cell::new(0));
     let probe = seen.clone();
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         if point == Checkpoint::LawCanonical {
             probe.set(probe.get() + 1);
         }
         None
     });
-    check_inputs(sources(law), &mut control).unwrap();
+    check_inputs(sources(law), &control).unwrap();
     seen.get()
 }
 
@@ -70,15 +70,15 @@ fn exercise() {
     // and the final checkpoint follows the model hash.
     assert!(total > 4 * tokens);
     for at in [1, 2 * tokens, total / 2, total] {
-        let mut control = stop(at);
-        let failure = check_inputs(sources(LAW), &mut control).unwrap_err();
+        let control = stop(at);
+        let failure = check_inputs(sources(LAW), &control).unwrap_err();
         assert_stopped(&failure, &control);
 
-        let mut control = stop(at);
+        let control = stop(at);
         let failure = prepare_observed(
             sources(LAW),
             &["a=evaluate(CountCheck.amount,s=@v/s)"],
-            &mut control,
+            &control,
         )
         .unwrap_err();
         let PrepareFailure::Inputs(failure) = failure else {
@@ -98,7 +98,7 @@ fn law_canonical_preserves_token_order_unicode_escaping_and_digest() {
     prepare_observed(
         sources(LAW),
         &["a=evaluate(CountCheck.amount,s=@v/s)"],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(
@@ -128,7 +128,7 @@ fn law_canonical_preserves_token_order_unicode_escaping_and_digest() {
         LAW.replace("version \"1\"", r#"version "\u0031""#),
         expanded,
     ] {
-        let checked = check_inputs(sources(&text), &mut Control::unlimited()).unwrap();
+        let checked = check_inputs(sources(&text), &Control::unlimited()).unwrap();
         let tokens = lexer::lex(text.as_bytes()).unwrap();
         let expected = Json::obj([
             ("semantics", Json::str(law::SEMANTICS)),

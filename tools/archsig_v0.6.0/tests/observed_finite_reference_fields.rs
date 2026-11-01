@@ -64,8 +64,8 @@ fn value<'a>(j: &'a Json, id: &str) -> &'a Json {
 }
 fn run(i: InputSources, asks: &[&str]) -> Json {
     let checked =
-        check_inputs(i.clone(), &mut quiet()).unwrap_or_else(|e| panic!("input {:?}", e.issues()));
-    let r = evaluate_observed_bytes(i.clone(), asks, &mut quiet())
+        check_inputs(i.clone(), &quiet()).unwrap_or_else(|e| panic!("input {:?}", e.issues()));
+    let r = evaluate_observed_bytes(i.clone(), asks, &quiet())
         .unwrap_or_else(|e| panic!("evaluate {e:?}"));
     assert_ne!(r.status(), "error", "{:?}", r.wire());
     assert_eq!(r.prepared().inputs().sources(), &i);
@@ -251,7 +251,7 @@ fn assignments(j: &Json, id: &str) -> BTreeSet<String> {
 #[test]
 fn finite_owned_field_completions_keep_shared_values_independent_slots_and_exact_type() {
     let input = fixture::input(false, false, false);
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(input.clone(), &quiet()).unwrap();
     let original = checked.archmap().snapshots()[0]
         .subjects
         .iter()
@@ -457,7 +457,7 @@ fn finite_owned_fields_share_unknown_owner_constraints_and_keep_current_snapshot
 #[test]
 fn finite_owned_field_values_keep_known_map_totality_and_raw_missing_slots() {
     let input = fixture::map_constrained();
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(input.clone(), &quiet()).unwrap();
     let holder = &checked.archmap().snapshots()[0]
         .subjects
         .iter()

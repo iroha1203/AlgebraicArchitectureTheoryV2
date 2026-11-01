@@ -18,7 +18,7 @@ pub(in crate::observed) fn kind(request: &Request) -> Result<&str, ResolveFailur
 pub(super) fn resolve(
     raw: RawRequest,
     text: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Request, ResolveFailure> {
     let mut arguments = Vec::new();
     let mut dependencies = BTreeSet::new();
@@ -103,7 +103,7 @@ pub(super) fn constraints(
     requests: &[Request],
     names: &BTreeMap<String, usize>,
     request: &Request,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<BindingConstraint>, ResolveFailure> {
     let mode = kind(request)?;
     if mode == "value" {
@@ -222,7 +222,7 @@ fn value_constraints(
     requests: &[Request],
     names: &BTreeMap<String, usize>,
     request: &Request,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<BindingConstraint>, ResolveFailure> {
     let to = &request
         .arguments
@@ -302,7 +302,7 @@ fn value_constraints(
 }
 fn value_types(
     projection: &ProjectionType,
-    control: &mut Control,
+    control: &Control,
     out: &mut Vec<Type>,
 ) -> Result<(), ResolveFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
@@ -352,7 +352,7 @@ fn diagnostic_coefficient(
     requests: &[Request],
     names: &BTreeMap<String, usize>,
     diagnose: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Type>, ResolveFailure> {
     phase(c, Checkpoint::RequestBinding)?;
     let Selector::Answer { id, .. } = &diagnose.head else {
@@ -395,7 +395,7 @@ fn diagnostic_constraints(
     requests: &[Request],
     names: &BTreeMap<String, usize>,
     r: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<BindingConstraint>, ResolveFailure> {
     let to = &r
         .arguments

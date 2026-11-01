@@ -631,7 +631,7 @@ fn parameter(
     instance: usize,
     index: usize,
     source: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     c.checkpoint(Checkpoint::FiniteIteration)?;
     let scalar = family(w)?
@@ -699,7 +699,7 @@ pub(in crate::observed) fn domains(
     env: &Environment<'_>,
     graph: &mut Graph,
     w: &Arc<CompareWitness>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Domains, ValidationFailure> {
     let f = family(w)?;
     let mut result = Domains {
@@ -874,7 +874,7 @@ pub(in crate::observed) fn prepare_sources(
     request: &Request,
     left: NodeRef,
     right: NodeRef,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(Arc<CompareWitness>, Domains), ValidationFailure> {
     let path = relations::operand_path(graph, left)?;
     let table = super::super::environment::relation_instances::relation_instances(

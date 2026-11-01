@@ -6,8 +6,8 @@ mod fixture {
 }
 use crate::control::quiet;
 fn reading(inputs: &CheckedInputs) -> ObjectReadingInstances {
-    let c = construct(inputs, "Selected", "v", "root", &mut quiet()).unwrap();
-    object_reading_instances(inputs, &c, &mut quiet()).unwrap()
+    let c = construct(inputs, "Selected", "v", "root", &quiet()).unwrap();
+    object_reading_instances(inputs, &c, &quiet()).unwrap()
 }
 fn object(r: &ObjectReadingInstances, name: &str) -> usize {
     r.objects()
@@ -19,7 +19,7 @@ fn input(body: &str) -> Arc<CheckedInputs> {
     fixture::with_body(fixture::MAP, body)
 }
 fn family(i: &CheckedInputs, r: &ObjectReadingInstances, name: &str) -> ObjectLawInstances {
-    finite_object_law_instances(i, r, object(r, name), &mut quiet()).unwrap()
+    finite_object_law_instances(i, r, object(r, name), &quiet()).unwrap()
 }
 fn entry<'a>(f: &'a ObjectLawInstances, law: &str, subject: &str) -> &'a InstanceParameters {
     f.entries()
@@ -104,7 +104,7 @@ fn all_law_instances_and_the_whole_parameter_product_keep_their_original_identit
             );
         }
     }
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn partial_object_retains_inapplicable_instances_without_inventing_parameter_rows() {
@@ -120,7 +120,7 @@ fn partial_object_retains_inapplicable_instances_without_inventing_parameter_row
     assert!(q.rows.is_empty());
     assert!(q.domains.is_empty());
     assert!(f.is_complete());
-    f.recheck_on_object(&i, &r, object(&r, "p"), &mut quiet())
+    f.recheck_on_object(&i, &r, object(&r, "p"), &quiet())
         .unwrap();
 }
 #[test]
@@ -178,7 +178,7 @@ fn infinite_parameter_keeps_its_original_type_and_does_not_become_an_empty_finit
     let q = entry(&f, "infinite", "q");
     assert_eq!(q.state, ParameterFamilyState::NotApplicable);
     assert_eq!(q.source.parameters()[1].ty, Type::Z);
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn composite_reference_leaves_keep_other_root_subjects_in_their_full_typed_domain() {
@@ -219,7 +219,7 @@ fn composite_owned_parameters_use_the_original_fixed_owner_fiber() {
             .iter()
             .any(|f| f.subject == "q" && f.field.as_deref() == Some("Pattern.Part.owner"))
     );
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
     // 部分対象pはroot参照rを含まず、この宣言のinstanceは非適用。
     let partial = family(&i, &r, "p");
     assert!(
@@ -255,7 +255,7 @@ fn unknown_membership_and_missing_parameter_fibers_are_retained_without_rows() {
     assert!(
         matches!(&entry(&f,"owned","q").application,InstanceApplication::Applicable{conditions} if conditions.len()==1)
     );
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn source_object_and_every_coordinate_are_rebuilt_for_recheck() {
@@ -263,7 +263,7 @@ fn source_object_and_every_coordinate_are_rebuilt_for_recheck() {
     let r = reading(&i);
     let f = family(&i, &r, "p");
     assert!(
-        f.recheck_on_object(&i, &r, object(&r, "q"), &mut quiet())
+        f.recheck_on_object(&i, &r, object(&r, "q"), &quiet())
             .is_err()
     );
     for mutation in 0..10 {
@@ -281,14 +281,11 @@ fn source_object_and_every_coordinate_are_rebuilt_for_recheck() {
             8 => e.state = ParameterFamilyState::NotApplicable,
             _ => bad.complete = false,
         }
-        assert!(
-            bad.recheck(&i, &mut quiet()).is_err(),
-            "mutation {mutation}"
-        );
+        assert!(bad.recheck(&i, &quiet()).is_err(), "mutation {mutation}");
     }
     let changed = fixture::with_body(&(fixture::MAP.to_string() + " "), GRID);
-    assert!(f.recheck(&changed, &mut quiet()).is_err());
-    assert!(finite_object_law_instances(&i, &r, usize::MAX, &mut quiet()).is_err());
+    assert!(f.recheck(&changed, &quiet()).is_err());
+    assert!(finite_object_law_instances(&i, &r, usize::MAX, &quiet()).is_err());
 }
 #[test]
 fn fixed_stops_keep_finished_rows_without_completing_the_instance() {
@@ -298,13 +295,13 @@ fn fixed_stops_keep_finished_rows_without_completing_the_instance() {
     let r = reading(&i);
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::FiniteLawEvaluation {
             seen.set(seen.get() + 1);
         }
         (seen.get() >= 2).then_some(Signal::Term)
     });
-    let error = finite_object_law_instances(&i, &r, object(&r, "p"), &mut c).unwrap_err();
+    let error = finite_object_law_instances(&i, &r, object(&r, "p"), &c).unwrap_err();
     assert!(matches!(error.cause, ValidationFailure::Stop(_)));
     let partial = error.partial.unwrap();
     assert!(!partial.is_complete());
@@ -316,7 +313,7 @@ fn fixed_stops_keep_finished_rows_without_completing_the_instance() {
     assert_eq!(partial.entries[0].state, ParameterFamilyState::Pending);
     assert_eq!(partial.entries[0].rows.len(), 1);
     assert_eq!(partial.entries[0].domains.len(), 2);
-    assert!(partial.recheck(&i, &mut quiet()).is_err());
+    assert!(partial.recheck(&i, &quiet()).is_err());
 }
 #[test]
 fn domain_cancellation_retains_only_finished_parameter_domains() {
@@ -326,13 +323,13 @@ fn domain_cancellation_retains_only_finished_parameter_domains() {
     let r = reading(&i);
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::FiniteLawDomain {
             seen.set(seen.get() + 1);
         }
         (seen.get() >= 2).then_some(Signal::Int)
     });
-    let error = finite_object_law_instances(&i, &r, object(&r, "p"), &mut c).unwrap_err();
+    let error = finite_object_law_instances(&i, &r, object(&r, "p"), &c).unwrap_err();
     let partial = error.partial.unwrap();
     assert!(!partial.is_complete());
     assert_eq!(partial.entries[0].domains.len(), 1);
@@ -352,8 +349,7 @@ fn all_finite_bindings_feed_the_existing_object_law_evaluator_without_using_a_sa
         .map(|row| (e.source.declaration().name.clone(), row.bindings.clone()))
         .collect::<Vec<_>>();
     let evaluated =
-        finite_object_law_family_valuations(&i, &r, object(&r, "p"), &selected, &mut quiet())
-            .unwrap();
+        finite_object_law_family_valuations(&i, &r, object(&r, "p"), &selected, &quiet()).unwrap();
     assert!(evaluated.is_complete());
     assert_eq!(evaluated.domain().len(), 2);
     assert_eq!(evaluated.columns().len(), 4);
@@ -361,7 +357,7 @@ fn all_finite_bindings_feed_the_existing_object_law_evaluator_without_using_a_sa
     for (column, expected) in [[0, 1], [0, 1], [1, 0], [1, 0]].iter().enumerate() {
         assert_eq!(
             evaluated
-                .integer_function(column, None, &mut quiet())
+                .integer_function(column, None, &quiet())
                 .unwrap()
                 .values(),
             expected
@@ -372,7 +368,7 @@ fn all_finite_bindings_feed_the_existing_object_law_evaluator_without_using_a_sa
         );
     }
     evaluated
-        .recheck_on_object(&i, &r, object(&r, "p"), &mut quiet())
+        .recheck_on_object(&i, &r, object(&r, "p"), &quiet())
         .unwrap();
 }
 
@@ -396,7 +392,7 @@ fn conditional_object_without_scalar_parameters_does_not_acquire_a_ground_row() 
         entry(&f, "ground", "p").state,
         ParameterFamilyState::NotApplicable
     );
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn data_option_and_tuple_parameters_use_every_typed_value_in_their_product() {
@@ -422,7 +418,7 @@ fn data_option_and_tuple_parameters_use_every_typed_value_in_their_product() {
         );
     }
     assert_eq!(e.scope.quantifiers.len(), 3);
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn an_empty_factor_makes_a_composite_domain_empty_even_with_an_infinite_factor() {
@@ -466,7 +462,7 @@ fn separate_infinite_and_empty_parameters_have_an_empty_complete_product_in_eith
         assert!(e.rows.is_empty());
         assert!(f.is_complete());
         assert_eq!(e.scope.quantifiers.len(), 2);
-        f.recheck(&i, &mut quiet()).unwrap();
+        f.recheck(&i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -491,7 +487,7 @@ fn an_independent_empty_factor_keeps_unknown_fiber_and_application_evidence_with
     assert!(
         matches!(&entry(&f,"empty","q").application,InstanceApplication::Applicable{conditions} if conditions.len()==1)
     );
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn a_fiber_with_no_known_members_and_missing_owners_is_not_a_known_empty_factor() {
@@ -500,8 +496,8 @@ fn a_fiber_with_no_known_members_and_missing_owners_is_not_a_known_empty_factor(
         &map,
         "law required unknown(c:Root,x:Map<Root,Part[c]>,n:Z):false;",
     );
-    let construction = construct(&i, "Selected", "v", "r2", &mut quiet()).unwrap();
-    let r = object_reading_instances(&i, &construction, &mut quiet()).unwrap();
+    let construction = construct(&i, "Selected", "v", "r2", &quiet()).unwrap();
+    let r = object_reading_instances(&i, &construction, &quiet()).unwrap();
     let f = family(&i, &r, "r2");
     let e = entry(&f, "unknown", "r2");
     assert_eq!(e.state, ParameterFamilyState::Undetermined);
@@ -510,7 +506,7 @@ fn a_fiber_with_no_known_members_and_missing_owners_is_not_a_known_empty_factor(
     assert_eq!(e.domains[0].values.as_deref(), Some([].as_slice()));
     assert!(e.domains[0].missing.iter().any(|p| p.subject == "q"));
     assert_eq!(e.domains[1].values, None);
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }
 
 fn mixed_missing_input(extra: &str) -> Arc<CheckedInputs> {
@@ -557,7 +553,7 @@ fn nonfinite_composite_parameters_keep_owner_missing_support_and_scope() {
     assert_eq!(e.state, ParameterFamilyState::Undetermined);
     assert!(e.rows.is_empty());
     assert!(!f.is_complete());
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
     for mutation in 0..3 {
         let mut bad = f.clone();
         let d = &mut bad.entries[0].domains[0];
@@ -566,7 +562,7 @@ fn nonfinite_composite_parameters_keep_owner_missing_support_and_scope() {
             1 => d.support.clear(),
             _ => d.scope.completions = false,
         };
-        assert!(bad.recheck(&i, &mut quiet()).is_err());
+        assert!(bad.recheck(&i, &quiet()).is_err());
     }
 }
 #[test]
@@ -581,7 +577,7 @@ fn a_separate_empty_factor_keeps_nonfinite_composite_missing_evidence() {
     assert!(f.is_complete());
     assert_eq!(e.domains[1].values.as_deref(), Some([].as_slice()));
     assert!(e.domains[1].missing.is_empty());
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn nonfinite_composite_parameters_keep_the_known_reference_roster_without_missing_facts() {
@@ -602,7 +598,7 @@ fn nonfinite_composite_parameters_keep_the_known_reference_roster_without_missin
                 .any(|p| p.subject == name && p.field.is_none())
         );
     }
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn a_completed_empty_composite_keeps_the_original_enumerators_independent_empty_proof() {
@@ -621,5 +617,5 @@ fn a_completed_empty_composite_keeps_the_original_enumerators_independent_empty_
     assert!(!d.scope.completions);
     assert!(e.rows.is_empty());
     assert!(f.is_complete());
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }

@@ -8,7 +8,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -30,7 +30,7 @@ fn example(mode: usize) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         fixture::input(mode == 8 || mode == 9, false, mode == 4 || mode == 6, false),
         &[&first, &target, "later=evaluate(Inspect.seed)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.answers);
@@ -90,7 +90,7 @@ fn map_field_coverage_stop_never_promotes_unfinished_whole() {
         "current=evaluate(Inspect.same,h=@v/h)",
         "later=evaluate(Inspect.seed)",
     ];
-    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), &asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
@@ -102,7 +102,7 @@ fn map_field_coverage_stop_never_promotes_unfinished_whole() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -111,8 +111,8 @@ fn map_field_coverage_stop_never_promotes_unfinished_whole() {
             None
         }
     });
-    let prepared = prepare_observed(input, &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, q, answer| {
+    let prepared = prepare_observed(input, &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, q, answer| {
         e.validate_answer(g, q, answer)?;
         if q.id == "hole" {
             let (a, s) = (armed.clone(), seen.clone());
@@ -240,7 +240,7 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
                     &input.archmap().snapshots(),
                     &input.law().definitions(),
                     &[pin(field, value)],
-                    &mut quiet()
+                    &quiet()
                 ),
                 Err(CheckFailure::Input(_))
             ),
@@ -252,7 +252,7 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
             &input.archmap().snapshots(),
             &input.law().definitions(),
             &[pin("table", kx.clone()), pin("table", kx.clone())],
-            &mut quiet()
+            &quiet()
         ),
         Err(CheckFailure::Input(_))
     ));
@@ -269,7 +269,7 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
         ]),
     ] {
         assert!(
-            matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots(),&input.law().definitions(),&[pin("table",bad)],&mut quiet()),Err(CheckFailure::Input(issue)) if issue.code==crate::issue::Code::InconsistentObservation)
+            matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots(),&input.law().definitions(),&[pin("table",bad)],&quiet()),Err(CheckFailure::Input(issue)) if issue.code==crate::issue::Code::InconsistentObservation)
         );
     }
     for good in [kx, fixture::table("v", "k", "y")] {
@@ -277,7 +277,7 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
             &input.archmap().snapshots(),
             &input.law().definitions(),
             &[pin("table", good)],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
     }
@@ -287,10 +287,10 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
         &input.archmap().snapshots(),
         &input.law().definitions(),
         &[pin("table", Json::Arr(vec![]))],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(
-        matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots(),&input.law().definitions(),&[pin("table",Json::Arr(vec![])),pin("owner",fixture::reference("v","A"))],&mut quiet()),Err(CheckFailure::Input(issue)) if issue.code==crate::issue::Code::InconsistentObservation)
+        matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots(),&input.law().definitions(),&[pin("table",Json::Arr(vec![])),pin("owner",fixture::reference("v","A"))],&quiet()),Err(CheckFailure::Input(issue)) if issue.code==crate::issue::Code::InconsistentObservation)
     );
 }

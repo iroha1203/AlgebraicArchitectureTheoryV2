@@ -63,7 +63,7 @@ impl Program {
         lexical: &[(ExprId, Lexical)],
         callees: &[(ExprId, Callee)],
         fields: &[(ExprId, QualifiedName)],
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Self, E> {
         let mut program = Self::default();
         let mut bindings = BTreeMap::new();
@@ -227,7 +227,7 @@ mod tests {
             .collect::<Vec<_>>();
         let samples = Rc::new(Cell::new(0));
         let observed = samples.clone();
-        let mut control = Control::new(move |_| {
+        let control = Control::new(move |_| {
             observed.set(observed.get() + 1);
             None
         });
@@ -242,14 +242,14 @@ mod tests {
                 .map(|(id, target)| (*id, target.clone()))
                 .collect::<Vec<_>>(),
             &fields,
-            &mut control,
+            &control,
         )
         .unwrap();
         assert!(samples.get() > law.program.nodes.len());
         for stop in 1..=samples.get() {
             let count = Rc::new(Cell::new(0));
             let observed = count.clone();
-            let mut control = Control::new(move |_| {
+            let control = Control::new(move |_| {
                 observed.set(observed.get() + 1);
                 (observed.get() == stop).then_some(Signal::Term)
             });
@@ -264,7 +264,7 @@ mod tests {
                     .map(|(id, target)| (*id, target.clone()))
                     .collect::<Vec<_>>(),
                 &fields,
-                &mut control,
+                &control,
             );
             assert!(matches!(result, Err(CheckFailure::Stopped(_))));
             assert_eq!(count.get(), stop);

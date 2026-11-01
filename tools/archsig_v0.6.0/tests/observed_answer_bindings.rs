@@ -22,7 +22,7 @@ fn output<'a>(w: &'a Json, id: &str) -> &'a Json {
     node(w, get(get(answer(w, id), "outputs"), "value"))
 }
 fn run(asks: &[&str]) -> Json {
-    let r = evaluate_observed_bytes(fixture::input("r1"), asks, &mut Control::unlimited())
+    let r = evaluate_observed_bytes(fixture::input("r1"), asks, &Control::unlimited())
         .unwrap_or_else(|e| panic!("{e:?}: {:?}", e.wire()));
     assert_eq!(r.status(), "complete", "{:?}", r.wire());
     r.wire()
@@ -185,8 +185,8 @@ fn answer_finite_data_output_remains_original_tree_for_structural_recursion() {
         "copy=evaluate(Trees.copy,t=$tree.evaluation.value)",
         "tree=evaluate(Trees.raw,s=@v/sample)",
     ];
-    let r = evaluate_observed_bytes(fixture::tree_input("r1"), &asks, &mut Control::unlimited())
-        .unwrap();
+    let r =
+        evaluate_observed_bytes(fixture::tree_input("r1"), &asks, &Control::unlimited()).unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.wire());
     let w = r.wire();
     assert_eq!(get(output(&w, "n"), "type"), &Json::str("Z"));
@@ -235,7 +235,7 @@ fn answer_binding_static_errors_and_unprovided_outputs_do_not_become_values() {
             "bad=evaluate(Applications.abDouble,x=$first.evaluation.parts)",
         ],
     ] {
-        let e = evaluate_observed_bytes(fixture::input("r1"), &asks, &mut Control::unlimited())
+        let e = evaluate_observed_bytes(fixture::input("r1"), &asks, &Control::unlimited())
             .unwrap_err();
         assert!(
             matches!(e, archsig::observed::EvaluationFailure::Prepare(_)),
@@ -259,7 +259,7 @@ fn answer_binding_static_errors_and_unprovided_outputs_do_not_become_values() {
         let r = evaluate_observed_bytes(
             fixture::input_mode("stop", "r1"),
             &asks,
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert_eq!(r.status(), "partial");
@@ -287,9 +287,9 @@ fn answer_known_binding_keeps_input_tables_and_current_provenance() {
     for revision in ["r1", "r2"] {
         let i = fixture::input(revision);
         let original = i.clone();
-        let mut c = Control::unlimited();
-        let checked = archsig::input::check_inputs(i.clone(), &mut c).unwrap();
-        let r = evaluate_observed_bytes(i, &asks, &mut c).unwrap();
+        let c = Control::unlimited();
+        let checked = archsig::input::check_inputs(i.clone(), &c).unwrap();
+        let r = evaluate_observed_bytes(i, &asks, &c).unwrap();
         assert_eq!(r.status(), "complete");
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(r.prepared().inputs().definitions(), checked.definitions());

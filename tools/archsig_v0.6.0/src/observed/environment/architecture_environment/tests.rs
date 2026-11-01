@@ -8,8 +8,8 @@ mod fixture {
 }
 use crate::control::quiet;
 fn replay(result: &ObservedEvaluation, nodes: &[Node]) -> Result<(), ValidationFailure> {
-    let mut c = quiet();
-    let environment = Environment::with_prepared(result.prepared(), &mut c)?;
+    let c = quiet();
+    let environment = Environment::with_prepared(result.prepared(), &c)?;
     let mut graph = Graph::new(&c);
     graph.requests = result.prepared().requests().requests().to_vec();
     graph.checked_answers = result.answers.iter().cloned().enumerate().collect();
@@ -50,13 +50,13 @@ fn architecture_environment_stops_retain_independent_value_and_refutation_and_fr
     let count = Rc::new(Cell::new(0));
     let observed = count.clone();
     let a = armed.clone();
-    let mut normal = Control::new(move |p| {
+    let normal = Control::new(move |p| {
         if a.get() && p == phase {
             observed.set(observed.get() + 1)
         }
         None
     });
-    let result = evaluate_observed_bytes(fixture::input("", None), &qs, &mut normal).unwrap();
+    let result = evaluate_observed_bytes(fixture::input("", None), &qs, &normal).unwrap();
     crate::observed::data::clear_iteration_observer();
     assert_eq!(result.status(), "complete");
     let total = count.get();
@@ -72,7 +72,7 @@ fn architecture_environment_stops_retain_independent_value_and_refutation_and_fr
         let count = Rc::new(Cell::new(0));
         let observed = count.clone();
         let a = armed.clone();
-        let mut c = Control::new(move |p| {
+        let c = Control::new(move |p| {
             if a.get() && p == phase {
                 observed.set(observed.get() + 1);
             }
@@ -81,7 +81,7 @@ fn architecture_environment_stops_retain_independent_value_and_refutation_and_fr
             }
             Some(crate::result::Signal::Int)
         });
-        let result = evaluate_observed_bytes(fixture::input("", None), &qs, &mut c).unwrap();
+        let result = evaluate_observed_bytes(fixture::input("", None), &qs, &c).unwrap();
         crate::observed::data::clear_iteration_observer();
         assert!(c.stop_reason().is_some(), "{phase:?} {at}");
         assert_eq!(result.answers[1].status, Decision::Established);
@@ -103,7 +103,7 @@ fn architecture_environment_stops_retain_independent_value_and_refutation_and_fr
 
 #[test]
 fn architecture_on_resolution_stops_are_latched_before_evaluation() {
-    let inputs = crate::input::check_inputs(fixture::input("", None), &mut quiet()).unwrap();
+    let inputs = crate::input::check_inputs(fixture::input("", None), &quiet()).unwrap();
     let qs = [
         fixture::MAP,
         "v=evaluate(Reservations.no,on=$m.candidate.source)",
@@ -111,7 +111,7 @@ fn architecture_on_resolution_stops_are_latched_before_evaluation() {
     for phase in [Checkpoint::RequestBinding, Checkpoint::Projection] {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut normal = Control::new(move |p| {
+        let normal = Control::new(move |p| {
             if p == phase {
                 seen.set(seen.get() + 1);
             }
@@ -121,7 +121,7 @@ fn architecture_on_resolution_stops_are_latched_before_evaluation() {
             inputs.law(),
             inputs.archmap(),
             &qs,
-            &mut normal,
+            &normal,
         )
         .unwrap();
         let total = count.get();
@@ -130,7 +130,7 @@ fn architecture_on_resolution_stops_are_latched_before_evaluation() {
             for signal in [Signal::Int, Signal::Term] {
                 let count = Rc::new(Cell::new(0));
                 let seen = count.clone();
-                let mut c = Control::new(move |p| {
+                let c = Control::new(move |p| {
                     if p == phase {
                         seen.set(seen.get() + 1);
                     }
@@ -140,7 +140,7 @@ fn architecture_on_resolution_stops_are_latched_before_evaluation() {
                     inputs.law(),
                     inputs.archmap(),
                     &qs,
-                    &mut c,
+                    &c,
                 );
                 assert!(
                     matches!(
@@ -159,7 +159,7 @@ fn architecture_on_resolution_stops_are_latched_before_evaluation() {
 
 #[test]
 fn unbound_owner_templates_recheck_the_actual_row_producers() {
-    let mut c = quiet();
+    let c = quiet();
     let result = evaluate_observed_bytes(
         fixture::input(
             "law required nestedOwner(x:System):forall s:State[x] . s.free+s.held=2;",
@@ -170,7 +170,7 @@ fn unbound_owner_templates_recheck_the_actual_row_producers() {
             "a=check(Reservations.nestedOwner,on=$m.candidate.source)",
             "b=check(Reservations.nestedOwner,on=$m.candidate.target)",
         ],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert_eq!(result.status(), "complete", "{:?}", result.issues);
@@ -227,12 +227,12 @@ fn owned_graph_with_map(
             fixture::MAP,
             "keep=evaluate(Reservations.no,on=$m.candidate.source)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(result.status(), "complete", "{:?}", result.issues);
-    let mut c = quiet();
-    let env = Environment::with_prepared(result.prepared(), &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(result.prepared(), &c).unwrap();
     let mut graph = Graph::new(&c);
     graph.requests = result.prepared().requests().requests().to_vec();
     graph.checked_answers = result.answers.iter().cloned().enumerate().collect();
@@ -252,7 +252,7 @@ fn owned_graph_with_map(
         &mut graph,
         result.prepared.shared_inputs(),
         root,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -314,7 +314,7 @@ fn state_values(
 #[test]
 fn native_owned_environments_keep_the_containing_root_reading_and_exact_subject_domains() {
     let (result, graph, d, root) = owned_graph();
-    let env = Environment::with_prepared(result.prepared(), &mut quiet()).unwrap();
+    let env = Environment::with_prepared(result.prepared(), &quiet()).unwrap();
     assert_eq!(d.architectures.len(), 3);
     for (index, (reference, expected, subject)) in [
         (root, vec!["p", "q"], "A"),
@@ -379,7 +379,7 @@ fn native_owned_environments_keep_the_containing_root_reading_and_exact_subject_
 #[test]
 fn nested_environment_selection_restores_owned_context_and_rejects_changed_producer_request() {
     let (result, mut graph, d, root) = owned_graph();
-    let env = Environment::with_prepared(result.prepared(), &mut quiet()).unwrap();
+    let env = Environment::with_prepared(result.prepared(), &quiet()).unwrap();
     let owned = d.architectures[1];
     let selected = env.select_architecture(&graph, owned).unwrap().unwrap();
     env.state.architecture.replace(Some(selected));
@@ -418,14 +418,14 @@ fn owned_environment_rejects_false_type_origin_edges_inputs_and_future_reference
                 value.data = foreign.data.clone();
             }
         }
-        let env = Environment::with_prepared(result.prepared(), &mut quiet()).unwrap();
+        let env = Environment::with_prepared(result.prepared(), &quiet()).unwrap();
         let reference = if mode == 2 { d.objects[1] } else { owned };
         assert!(
             env.select_architecture(&changed, reference).is_err(),
             "mode {mode}"
         );
     }
-    let env = Environment::with_prepared(result.prepared(), &mut quiet()).unwrap();
+    let env = Environment::with_prepared(result.prepared(), &quiet()).unwrap();
     assert!(
         env.select_architecture(&graph, d.objects[1])
             .unwrap()
@@ -443,10 +443,10 @@ fn owned_environment_rejects_false_type_origin_edges_inputs_and_future_reference
             fixture::MAP,
             "keep=evaluate(Reservations.no,on=$m.candidate.source)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
-    let env = Environment::with_prepared(&prepared, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&prepared, &quiet()).unwrap();
     assert!(env.select_architecture(&graph, owned).is_err());
 }
 #[test]
@@ -456,10 +456,10 @@ fn both_signal_owned_environment_stops_restore_the_previous_context_and_preserve
     for signal in [Signal::Int, Signal::Term] {
         let armed = Rc::new(Cell::new(false));
         let a = armed.clone();
-        let mut c = Control::new(move |phase| {
+        let c = Control::new(move |phase| {
             (a.get() && phase == Checkpoint::ObjectEvaluation).then_some(signal)
         });
-        let env = Environment::with_prepared(result.prepared(), &mut c).unwrap();
+        let env = Environment::with_prepared(result.prepared(), &c).unwrap();
         let base = env.select_architecture(&graph, root).unwrap().unwrap();
         env.state.architecture.replace(Some(base));
         armed.set(true);
@@ -496,7 +496,7 @@ fn equal_field_values_keep_distinct_owned_environment_subjects() {
         }
     });
     let (result, graph, d, _) = owned_graph_with_map(Some(&map));
-    let env = Environment::with_prepared(result.prepared(), &mut quiet()).unwrap();
+    let env = Environment::with_prepared(result.prepared(), &quiet()).unwrap();
     for name in ["Reservations.State.free", "Reservations.State.held"] {
         let (left, right) = (
             env.indexes.field(&env.state, "v", "p", name).unwrap(),

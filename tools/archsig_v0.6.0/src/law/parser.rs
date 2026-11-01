@@ -47,9 +47,9 @@ impl<E: InputError> Parser<E> {
     /// Cover every Result exit (including `?` inside an iteration) before its caller
     /// can start another operation or retry a speculative candidate.
     fn checked<T>(&mut self, parse: impl FnOnce(&mut Self) -> PResult<T, E>) -> PResult<T, E> {
-        E::checkpoint(&mut self.control, self.point)?;
+        E::checkpoint(&self.control, self.point)?;
         let result = parse(self);
-        E::finish(result, &mut self.control, self.point)
+        E::finish(result, &self.control, self.point)
     }
 
     // ---- 字句の参照 ----
@@ -166,20 +166,20 @@ impl<E: InputError> Parser<E> {
         } else {
             self.point
         };
-        E::checkpoint(&mut self.control, point)?;
+        E::checkpoint(&self.control, point)?;
         let first = self.ident();
-        let mut parts = vec![E::finish(first, &mut self.control, point)?];
+        let mut parts = vec![E::finish(first, &self.control, point)?];
         while self.is_sym(".")
             && self
                 .peek_at(1)
                 .is_some_and(|t| t.kind == TokenKind::Name && !is_reserved(&t.text))
         {
-            E::checkpoint(&mut self.control, point)?;
+            E::checkpoint(&self.control, point)?;
             self.pos += 1;
             let next = self.ident();
-            parts.push(E::finish(next, &mut self.control, point)?);
+            parts.push(E::finish(next, &self.control, point)?);
         }
-        E::checkpoint(&mut self.control, point)?;
+        E::checkpoint(&self.control, point)?;
         Ok(QName { parts })
     }
 
@@ -217,13 +217,13 @@ impl<E: InputError> Parser<E> {
         self.checked(|parser| {
             let mut readings = Vec::new();
             loop {
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
                 readings.push(parser.reading()?);
                 if parser.peek().is_none() {
                     return Ok(readings);
                 }
 
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
             }
         })
     }
@@ -238,7 +238,7 @@ impl<E: InputError> Parser<E> {
             let mut vocabularies = Vec::new();
             let mut decls = Vec::new();
             while !parser.is_sym("}") {
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
                 if parser.eat_kw("use") {
                     let use_start = parser.toks[parser.pos - 1].span.0;
                     if parser.eat_kw("vocabulary") {
@@ -288,7 +288,7 @@ impl<E: InputError> Parser<E> {
                     decls.push(parser.decl()?);
                 }
 
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
             }
             parser.expect_sym("}")?;
             Ok(Reading {
@@ -367,11 +367,11 @@ impl<E: InputError> Parser<E> {
                     parser.expect_kw("reads")?;
                     let mut reads = vec![parser.parse_expr(Flags::default())?];
                     while parser.is_sym(",") {
-                        E::checkpoint(&mut parser.control, parser.point)?;
+                        E::checkpoint(&parser.control, parser.point)?;
                         parser.pos += 1;
                         reads.push(parser.parse_expr(Flags::default())?);
 
-                        E::checkpoint(&mut parser.control, parser.point)?;
+                        E::checkpoint(&parser.control, parser.point)?;
                     }
                     parser.expect_sym(";")?;
                     (
@@ -446,10 +446,10 @@ impl<E: InputError> Parser<E> {
             let mut eqs = Vec::new();
             let mut end = None;
             for i in parser.pos..parser.limit {
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
                 let t = &parser.toks[i];
                 if t.kind != TokenKind::Sym {
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                     continue;
                 }
                 match t.text.as_str() {
@@ -457,7 +457,7 @@ impl<E: InputError> Parser<E> {
                     ")" | "]" | "}" => {
                         depth -= 1;
                         if depth < 0 {
-                            E::checkpoint(&mut parser.control, parser.point)?;
+                            E::checkpoint(&parser.control, parser.point)?;
                             break;
                         }
                     }
@@ -465,13 +465,13 @@ impl<E: InputError> Parser<E> {
                     ";" if depth == 0 => {
                         end = Some(i);
 
-                        E::checkpoint(&mut parser.control, parser.point)?;
+                        E::checkpoint(&parser.control, parser.point)?;
                         break;
                     }
                     _ => {}
                 }
 
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
             }
             let Some(end) = end else {
                 return parser.err("expected `=` and body after change guard");
@@ -479,7 +479,7 @@ impl<E: InputError> Parser<E> {
             // 最上位の `=` を後ろから順に試し、guard と body がどちらも読める位置で区切る。
             let mut first_error = None;
             for (candidate_index, &eq) in eqs.iter().rev().enumerate() {
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
                 parser.pos = start;
                 let parsed = parser
                     .parse_until(eq, |p| p.parse_expr(Flags::default()))
@@ -508,7 +508,7 @@ impl<E: InputError> Parser<E> {
                     }
                 }
 
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
             }
             parser.pos = start;
             Err(first_error.unwrap_or_else(|| {
@@ -547,7 +547,7 @@ impl<E: InputError> Parser<E> {
             let mut fields = Vec::new();
             if !parser.is_sym(")") {
                 loop {
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                     let name = parser.ident()?;
                     parser.expect_sym(":")?;
                     fields.push(Field {
@@ -555,11 +555,11 @@ impl<E: InputError> Parser<E> {
                         ty: parser.ty()?,
                     });
                     if !parser.eat_sym(",") {
-                        E::checkpoint(&mut parser.control, parser.point)?;
+                        E::checkpoint(&parser.control, parser.point)?;
                         break;
                     }
 
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                 }
             }
             parser.expect_sym(")")?;
@@ -642,14 +642,14 @@ impl<E: InputError> Parser<E> {
                         let mut args = Vec::new();
                         if !parser.is_sym(")") {
                             loop {
-                                E::checkpoint(&mut parser.control, parser.point)?;
+                                E::checkpoint(&parser.control, parser.point)?;
                                 args.push(parser.ty()?);
                                 if !parser.eat_sym(",") {
-                                    E::checkpoint(&mut parser.control, parser.point)?;
+                                    E::checkpoint(&parser.control, parser.point)?;
                                     break;
                                 }
 
-                                E::checkpoint(&mut parser.control, parser.point)?;
+                                E::checkpoint(&parser.control, parser.point)?;
                             }
                         }
                         parser.expect_sym(")")?;
@@ -673,11 +673,11 @@ impl<E: InputError> Parser<E> {
             if parser.eat_sym("(") {
                 let mut items = vec![parser.ty()?];
                 while parser.is_sym(",") {
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                     parser.pos += 1;
                     items.push(parser.ty()?);
 
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                 }
                 parser.expect_sym(")")?;
                 if items.len() < 2 {
@@ -769,18 +769,18 @@ impl<E: InputError> Parser<E> {
                 parser.expect_sym("{")?;
                 let mut arms = Vec::new();
                 loop {
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                     let pattern = parser.pattern()?;
                     parser.expect_sym("=>")?;
                     let body = parser.parse_expr(Flags::default())?;
                     parser.expect_sym(";")?;
                     arms.push(Arm { pattern, body });
                     if parser.is_sym("}") {
-                        E::checkpoint(&mut parser.control, parser.point)?;
+                        E::checkpoint(&parser.control, parser.point)?;
                         break;
                     }
 
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                 }
                 parser.expect_sym("}")?;
                 return Ok(parser.push(
@@ -819,10 +819,10 @@ impl<E: InputError> Parser<E> {
             let mut depth = 0isize;
             let mut dots = Vec::new();
             for i in from..limit {
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
                 let t = &parser.toks[i];
                 if t.kind != TokenKind::Sym {
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                     continue;
                 }
                 match t.text.as_str() {
@@ -830,26 +830,26 @@ impl<E: InputError> Parser<E> {
                     ")" | "]" | "}" => {
                         depth -= 1;
                         if depth < 0 {
-                            E::checkpoint(&mut parser.control, parser.point)?;
+                            E::checkpoint(&parser.control, parser.point)?;
                             break;
                         }
                     }
                     ";" if depth == 0 => {
-                        E::checkpoint(&mut parser.control, parser.point)?;
+                        E::checkpoint(&parser.control, parser.point)?;
                         break;
                     }
                     "." if depth == 0 => dots.push(i),
                     _ => {}
                 }
 
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
             }
             let mut candidates = Vec::new();
             let mut end = None;
             let mut first_error = None;
             let candidate_count = dots.len();
             for (candidate_index, c) in dots.into_iter().enumerate() {
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
                 let domain = if typed {
                     parser.parse_type_at(from, c).map(QuantDomain::Type)
                 } else {
@@ -873,7 +873,7 @@ impl<E: InputError> Parser<E> {
                             break;
                         }
 
-                        E::checkpoint(&mut parser.control, parser.point)?;
+                        E::checkpoint(&parser.control, parser.point)?;
                         continue;
                     }
                 };
@@ -893,17 +893,17 @@ impl<E: InputError> Parser<E> {
                     }
                 }
 
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
             }
             // 本体が最も遠くまで読める候補だけを残す。手前で終わる本体は、続く字句を読めなかった。
             let mut selected = Vec::new();
             for (domain, body, candidate_end) in candidates {
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
                 if Some(candidate_end) == end {
                     selected.push((domain, body));
                 }
 
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
             }
             let mut candidates = selected;
             let Some(end) = end else {
@@ -983,9 +983,9 @@ impl<E: InputError> Parser<E> {
                 let mut lhs = parser.unary(flags)?;
                 let mut compared = false;
                 while let Some((op, prec)) = parser.binop(flags) {
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                     if prec < min_prec {
-                        E::checkpoint(&mut parser.control, parser.point)?;
+                        E::checkpoint(&parser.control, parser.point)?;
                         break;
                     }
                     if prec == 3 && compared {
@@ -1001,7 +1001,7 @@ impl<E: InputError> Parser<E> {
                     lhs = parser.push(ExprKind::Binary { op, lhs, rhs }, span);
                     compared = prec == 3;
 
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                 }
                 Ok(lhs)
             })
@@ -1031,7 +1031,7 @@ impl<E: InputError> Parser<E> {
         self.checked(|parser| {
             let mut base = parser.primary(flags)?;
             loop {
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
                 if parser.is_sym(".") {
                     let dot_tok = parser.pos;
                     match parser.peek_at(1) {
@@ -1063,7 +1063,7 @@ impl<E: InputError> Parser<E> {
                             base = parser.push(ExprKind::Field { base, name }, span);
                         }
                         _ => {
-                            E::checkpoint(&mut parser.control, parser.point)?;
+                            E::checkpoint(&parser.control, parser.point)?;
                             break;
                         }
                     }
@@ -1072,40 +1072,40 @@ impl<E: InputError> Parser<E> {
                     let mut args = Vec::new();
                     if !parser.is_sym(")") {
                         loop {
-                            E::checkpoint(&mut parser.control, parser.point)?;
+                            E::checkpoint(&parser.control, parser.point)?;
                             args.push(parser.parse_expr(Flags::default())?);
                             if !parser.eat_sym(",") {
-                                E::checkpoint(&mut parser.control, parser.point)?;
+                                E::checkpoint(&parser.control, parser.point)?;
                                 break;
                             }
 
-                            E::checkpoint(&mut parser.control, parser.point)?;
+                            E::checkpoint(&parser.control, parser.point)?;
                         }
                     }
                     parser.expect_sym(")")?;
                     let span = (parser.exprs[base].span.0, parser.prev_end());
                     base = parser.push(ExprKind::Call { callee: base, args }, span);
                 } else {
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                     break;
                 }
 
-                E::checkpoint(&mut parser.control, parser.point)?;
+                E::checkpoint(&parser.control, parser.point)?;
             }
             if parser.eat_kw("with") {
                 parser.expect_sym("{")?;
                 let mut updates = Vec::new();
                 loop {
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                     let name = parser.ident()?;
                     parser.expect_sym("=")?;
                     updates.push((name, parser.parse_expr(Flags::default())?));
                     if !parser.eat_sym(",") {
-                        E::checkpoint(&mut parser.control, parser.point)?;
+                        E::checkpoint(&parser.control, parser.point)?;
                         break;
                     }
 
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                 }
                 parser.expect_sym("}")?;
                 let span = (parser.exprs[base].span.0, parser.prev_end());
@@ -1137,14 +1137,14 @@ impl<E: InputError> Parser<E> {
                     if parser.eat_sym(",") {
                         let mut items = vec![first];
                         loop {
-                            E::checkpoint(&mut parser.control, parser.point)?;
+                            E::checkpoint(&parser.control, parser.point)?;
                             items.push(parser.parse_expr(Flags::default())?);
                             if !parser.eat_sym(",") {
-                                E::checkpoint(&mut parser.control, parser.point)?;
+                                E::checkpoint(&parser.control, parser.point)?;
                                 break;
                             }
 
-                            E::checkpoint(&mut parser.control, parser.point)?;
+                            E::checkpoint(&parser.control, parser.point)?;
                         }
                         parser.expect_sym(")")?;
                         return Ok(parser.push(ExprKind::Tuple(items), (start, parser.prev_end())));
@@ -1259,14 +1259,14 @@ impl<E: InputError> Parser<E> {
             let mut items = Vec::new();
             if !parser.is_sym(close) {
                 loop {
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                     items.push(parser.parse_expr(Flags::default())?);
                     if !parser.eat_sym(",") {
-                        E::checkpoint(&mut parser.control, parser.point)?;
+                        E::checkpoint(&parser.control, parser.point)?;
                         break;
                     }
 
-                    E::checkpoint(&mut parser.control, parser.point)?;
+                    E::checkpoint(&parser.control, parser.point)?;
                 }
             }
             parser.expect_sym(close)?;
@@ -1286,11 +1286,11 @@ impl<E: InputError> Parser<E> {
                 if parser.eat_sym("(") {
                     let mut args = vec![parser.pattern()?];
                     while parser.is_sym(",") {
-                        E::checkpoint(&mut parser.control, parser.point)?;
+                        E::checkpoint(&parser.control, parser.point)?;
                         parser.pos += 1;
                         args.push(parser.pattern()?);
 
-                        E::checkpoint(&mut parser.control, parser.point)?;
+                        E::checkpoint(&parser.control, parser.point)?;
                     }
                     parser.expect_sym(")")?;
                     let span = (name.span().0, parser.prev_end());
@@ -1483,7 +1483,7 @@ pub(super) mod candidate_priority_tests {
         }
     }
     impl InputError for Failure {
-        fn checkpoint(control: &mut Control, point: Checkpoint) -> Result<(), Self> {
+        fn checkpoint(control: &Control, point: Checkpoint) -> Result<(), Self> {
             <CheckFailure<Box<Issue>> as InputError>::checkpoint(control, point).map_err(Self)
         }
         fn map_issue(self, map: impl FnOnce(Box<Issue>) -> Box<Issue>) -> Self {

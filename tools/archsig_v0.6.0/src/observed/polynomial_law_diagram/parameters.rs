@@ -30,7 +30,7 @@ fn difference(
     ty: &Type,
     lhs: NodeRef,
     rhs: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     push(
         parts,
@@ -51,7 +51,7 @@ fn difference(
 pub(super) fn sources(
     inputs: &CheckedInputs,
     a: &ArchitectureWitness,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Vec<(usize, ParameterEquation)>>, ValidationFailure> {
     let mut equations = vec![];
     let mut symbolic = false;
@@ -146,7 +146,7 @@ pub(super) fn plans(
     equations: &[(usize, ParameterEquation)],
     parts: &mut Vec<Part>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Diagram>, ValidationFailure> {
     use super::super::equation_presentation_node::{self as common, Coordinate as C, Part as E};
     let shared = family::basis_from_rings(
@@ -652,7 +652,7 @@ fn parameter_polynomial(
     shared: &[family::Basis],
     parts: &mut Vec<Part>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let constant = family::polynomial(
         parts,
@@ -762,7 +762,7 @@ fn guarded_residual(
     epsilon: NodeRef,
     ty: &Type,
     indicators: &mut Vec<(Type, NodeRef)>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let Some(index) = epsilon.0.checked_sub(base) else {
         return Err("条件付きεが計画外".into());

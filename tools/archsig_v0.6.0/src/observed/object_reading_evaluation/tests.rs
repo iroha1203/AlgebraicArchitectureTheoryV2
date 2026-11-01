@@ -18,7 +18,7 @@ fn prepared(law: &str, map: &str) -> PreparedObserved {
                 law.replace("@PROFILE_DIGEST@", digest).into_bytes(),
                 map.replace("@PROFILE_DIGEST@", digest).into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
@@ -26,7 +26,7 @@ fn prepared(law: &str, map: &str) -> PreparedObserved {
         inputs.law(),
         inputs.archmap(),
         &["b=build(ProfileRead,on=@v/A)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -36,7 +36,7 @@ fn prepared(law: &str, map: &str) -> PreparedObserved {
     }
 }
 fn start(p: &PreparedObserved) -> (Graph, super::super::object_component_diagram::Diagram) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -44,14 +44,14 @@ fn start(p: &PreparedObserved) -> (Graph, super::super::object_component_diagram
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let objects = crate::observed::object_component_diagram::retain(
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -72,7 +72,7 @@ fn copy(g: &Graph, c: &Control) -> Graph {
     p
 }
 fn replay(p: &PreparedObserved, g: &Graph) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut prefix = copy(g, &quiet());
     prefix.nodes.clear();
     prefix.contexts.clear();
@@ -87,14 +87,14 @@ fn replay(p: &PreparedObserved, g: &Graph) {
 fn closed_views_keep_actual_body_types_values_and_original_object_identity() {
     let p = prepared(LAW, MAP);
     let (mut g, objects) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut amounts = vec![];
     let mut roots = vec![];
     let mut outside = 0;
     for r in &objects.readings {
         let (_, o) = origin(&g, r.expression).unwrap();
         let caller = g.active;
-        match evaluate(&env, &mut g, r.expression, &mut quiet()).unwrap() {
+        match evaluate(&env, &mut g, r.expression, &quiet()).unwrap() {
             Outcome::Body { instance, side } => {
                 assert_eq!(g.instances[instance].source, r.expression);
                 assert_eq!(g.context_at(side.evaluation.0).instance, Some(instance));
@@ -173,10 +173,10 @@ fn helpers_preserve_compound_results_bindings_and_original_field_support() {
     let law=LAW.replace("view root(r: Root): Bool = true;","view helper(p:Part,n:Z):Z=amount(p)+n; view packed(p:Part):(Option<Part>,Z)=(some(p),helper(p,3));");
     let p = prepared(&law, MAP);
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     for object in 0..2 {
         let r = selected(&g, &o, object, ".packed");
-        let Outcome::Body { side, .. } = evaluate(&env, &mut g, r, &mut quiet()).unwrap() else {
+        let Outcome::Body { side, .. } = evaluate(&env, &mut g, r, &quiet()).unwrap() else {
             panic!()
         };
         assert_eq!(
@@ -213,10 +213,10 @@ fn missing_body_value_keeps_its_actual_evaluation_and_missing_reason() {
         .join("\n");
     let p = prepared(LAW, &map);
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     for object in 0..2 {
         let r = selected(&g, &o, object, ".amount");
-        let Outcome::Body { side, .. } = evaluate(&env, &mut g, r, &mut quiet()).unwrap() else {
+        let Outcome::Body { side, .. } = evaluate(&env, &mut g, r, &quiet()).unwrap() else {
             panic!()
         };
         assert!(side.value.is_none());
@@ -243,12 +243,11 @@ fn unbound_parameters_keep_the_whole_expression_without_sampling_or_new_nodes() 
     );
     let p = prepared(&law, MAP);
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     for object in 0..2 {
         let r = selected(&g, &o, object, ".shift");
         let before = copy(&g, &quiet());
-        let Outcome::Parameters(parameters) = evaluate(&env, &mut g, r, &mut quiet()).unwrap()
-        else {
+        let Outcome::Parameters(parameters) = evaluate(&env, &mut g, r, &quiet()).unwrap() else {
             panic!()
         };
         assert_eq!(
@@ -282,15 +281,14 @@ fn a_later_request_consumes_old_frames_and_body_results_but_cannot_create_them()
             "b=build(ProfileRead,on=@v/A)",
             "later=build(ProfileRead,on=@v/B)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let expression = selected(&g, &o, 1, ".amount");
     let old = g.nodes.len();
-    let Outcome::Body { side, .. } = evaluate(&env, &mut g, expression, &mut quiet()).unwrap()
-    else {
+    let Outcome::Body { side, .. } = evaluate(&env, &mut g, expression, &quiet()).unwrap() else {
         panic!()
     };
     let end = g.nodes.len();
@@ -300,18 +298,18 @@ fn a_later_request_consumes_old_frames_and_body_results_but_cannot_create_them()
         &env,
         &mut g,
         &p.requests().requests()[1],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(later.complete);
     let before = copy(&g, &quiet());
     for at in old..end {
-        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
         let checked = fresh.recheck_node(&g, g.get(NodeRef(at)).unwrap(), at);
         assert!(checked.is_ok(), "node {at}: {checked:?}");
     }
     assert_eq!(g.scalar(side.value.unwrap()).unwrap(), &Scalar::Z(2.into()));
-    assert!(evaluate(&env, &mut g, expression, &mut quiet()).is_err());
+    assert!(evaluate(&env, &mut g, expression, &quiet()).is_err());
     assert_eq!(g.nodes, before.nodes);
     assert_eq!(g.contexts, before.contexts);
     assert_eq!(g.instances, before.instances);
@@ -323,7 +321,7 @@ fn a_later_request_consumes_old_frames_and_body_results_but_cannot_create_them()
         } else {
             bad.contexts[side.evaluation.0].request = 1
         };
-        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
         assert!(
             fresh
                 .recheck_node(&bad, bad.get(side.evaluation).unwrap(), side.evaluation.0)
@@ -335,11 +333,10 @@ fn a_later_request_consumes_old_frames_and_body_results_but_cannot_create_them()
 fn frame_payload_edges_metadata_and_actual_instance_cannot_be_rebound() {
     let p = prepared(LAW, MAP);
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let expression = selected(&g, &o, 0, ".amount");
     let base = g.nodes.len();
-    let Outcome::Body { instance, side } =
-        evaluate(&env, &mut g, expression, &mut quiet()).unwrap()
+    let Outcome::Body { instance, side } = evaluate(&env, &mut g, expression, &quiet()).unwrap()
     else {
         panic!()
     };
@@ -411,7 +408,7 @@ fn frame_payload_edges_metadata_and_actual_instance_cannot_be_rebound() {
             3 => record.caller.frame = Some(usize::MAX),
             _ => record.caller.request = 1,
         };
-        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
         assert!(
             fresh
                 .recheck_node(&bad, bad.get(side.evaluation).unwrap(), side.evaluation.0)
@@ -420,7 +417,7 @@ fn frame_payload_edges_metadata_and_actual_instance_cannot_be_rebound() {
         );
     }
     let p2 = prepared(LAW, &MAP.replace("\"value\":\"2\"", "\"value\":\"8\""));
-    let foreign = Environment::with_prepared(&p2, &mut quiet()).unwrap();
+    let foreign = Environment::with_prepared(&p2, &quiet()).unwrap();
     assert!(
         foreign
             .recheck_node(&g, g.get(side.evaluation).unwrap(), side.evaluation.0)
@@ -428,7 +425,7 @@ fn frame_payload_edges_metadata_and_actual_instance_cannot_be_rebound() {
     );
     let before = copy(&g, &quiet());
     for bad in [o.base, NodeRef(usize::MAX)] {
-        assert!(evaluate(&env, &mut g, bad, &mut quiet()).is_err());
+        assert!(evaluate(&env, &mut g, bad, &quiet()).is_err());
         assert_eq!(g.nodes, before.nodes);
         assert_eq!(g.instances, before.instances);
     }
@@ -443,12 +440,12 @@ fn four_stops_keep_finished_frames_instances_and_body_prefix_and_restore_context
     let p = prepared(LAW, MAP);
     let (initial, o) = start(&p);
     let expression = selected(&initial, &o, 0, ".amount");
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
     let native_points = Rc::new(RefCell::new(Vec::new()));
     let points = native_points.clone();
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         seen.set(seen.get() + 1);
         if point == Checkpoint::NativeResultNode {
             points.borrow_mut().push(seen.get());
@@ -457,7 +454,7 @@ fn four_stops_keep_finished_frames_instances_and_body_prefix_and_restore_context
     });
     let mut full = copy(&initial, &control);
     assert!(matches!(
-        evaluate(&env, &mut full, expression, &mut control).unwrap(),
+        evaluate(&env, &mut full, expression, &control).unwrap(),
         Outcome::Body { .. }
     ));
     let total = count.get();
@@ -470,12 +467,12 @@ fn four_stops_keep_finished_frames_instances_and_body_prefix_and_restore_context
         for at in [1, frame_point, total / 2, total - 2, total - 1, total] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let mut control = Control::new(move |_| {
+            let control = Control::new(move |_| {
                 seen.set(seen.get() + 1);
                 (seen.get() >= at).then_some(signal)
             });
             let mut g = copy(&initial, &control);
-            let result = evaluate(&env, &mut g, expression, &mut control);
+            let result = evaluate(&env, &mut g, expression, &control);
             assert!(
                 matches!(result, Err(ValidationFailure::Stop(_))),
                 "{signal:?}, at {at}: {result:?}"
@@ -534,7 +531,7 @@ fn unresolved_external_membership_does_not_execute_the_constant_body() {
                     "../../../tests/fixtures/object-view-transport.archmap.json"
                 )),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
@@ -542,7 +539,7 @@ fn unresolved_external_membership_does_not_execute_the_constant_body() {
         inputs.law(),
         inputs.archmap(),
         &["b=build(Before,on=@v/a)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let p = PreparedObserved {
@@ -551,7 +548,7 @@ fn unresolved_external_membership_does_not_execute_the_constant_body() {
         object: None,
     };
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut count = 0;
     for reading in &o.readings {
         let (_, source) = origin(&g, reading.expression).unwrap();
@@ -560,7 +557,7 @@ fn unresolved_external_membership_does_not_execute_the_constant_body() {
         {
             let before = copy(&g, &quiet());
             let Outcome::Conditional(conditions) =
-                evaluate(&env, &mut g, reading.expression, &mut quiet()).unwrap()
+                evaluate(&env, &mut g, reading.expression, &quiet()).unwrap()
             else {
                 panic!()
             };
@@ -589,7 +586,7 @@ fn unknown_ownership_retains_the_pending_architecture_and_never_fakes_a_view_sou
         .collect::<Vec<_>>()
         .join("\n");
     let p = prepared(LAW, &map);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -597,7 +594,7 @@ fn unknown_ownership_retains_the_pending_architecture_and_never_fakes_a_view_sou
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(!a.complete);
@@ -607,11 +604,11 @@ fn unknown_ownership_retains_the_pending_architecture_and_never_fakes_a_view_sou
             &mut g,
             p.shared_inputs(),
             a.reference,
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
-    assert!(evaluate(&env, &mut g, a.reference, &mut quiet()).is_err());
+    assert!(evaluate(&env, &mut g, a.reference, &quiet()).is_err());
     assert_eq!(g.nodes, before.nodes);
     assert_eq!(g.contexts, before.contexts);
     assert_eq!(g.instances, before.instances);
@@ -631,10 +628,10 @@ fn paths_inside_compound_return_values_keep_the_actual_typed_nodes() {
     let law=LAW.replace("view root(r: Root): Bool = true;","view route(p:Part):Path<Part,Part> = identity(p); view nested(p:Part):Option<List<Path<Part,Part>>> = some(list<Path<Part,Part>>[route(p)]);");
     let p = prepared(&law, MAP);
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     for object in 0..2 {
         let expression = selected(&g, &o, object, ".nested");
-        let Outcome::Body { side, .. } = evaluate(&env, &mut g, expression, &mut quiet()).unwrap()
+        let Outcome::Body { side, .. } = evaluate(&env, &mut g, expression, &quiet()).unwrap()
         else {
             panic!()
         };

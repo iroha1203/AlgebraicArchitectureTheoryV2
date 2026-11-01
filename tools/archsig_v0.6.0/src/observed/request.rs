@@ -324,7 +324,7 @@ pub fn resolve_observed_requests(
     map: &CheckedArchMap,
     texts: &[&str],
 ) -> Result<ResolvedRequests, ResolveFailure> {
-    resolve_observed_requests_controlled(law, map, texts, &mut Control::unlimited())
+    resolve_observed_requests_controlled(law, map, texts, &Control::unlimited())
 }
 
 /// 入力検査と同じ中断制御で、構文・束縛・公開射影・循環を意味計算前に検査する。
@@ -332,7 +332,7 @@ pub fn resolve_observed_requests_controlled(
     law: &CheckedLaw,
     map: &CheckedArchMap,
     texts: &[&str],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ResolvedRequests, ResolveFailure> {
     let result = resolve_inner(law, map, texts, control, None)
         .and_then(|resolved| available(resolved, control));
@@ -344,7 +344,7 @@ pub(super) fn resolve_object_view_requests(
     law: &CheckedLaw,
     map: &CheckedArchMap,
     texts: &[&str],
-    control: &mut Control,
+    control: &Control,
     instance: &crate::construction::readings::ObjectInstance,
 ) -> Result<ResolvedRequests, ResolveFailure> {
     let result = resolve_inner(law, map, texts, control, Some(instance))
@@ -357,7 +357,7 @@ pub(super) fn resolve_native_for_test(
     law: &CheckedLaw,
     map: &CheckedArchMap,
     texts: &[&str],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ResolvedRequests, ResolveFailure> {
     resolve_inner(law, map, texts, control, None)
 }
@@ -366,7 +366,7 @@ fn resolve_inner(
     law: &CheckedLaw,
     map: &CheckedArchMap,
     texts: &[&str],
-    control: &mut Control,
+    control: &Control,
     object_view: Option<&crate::construction::readings::ObjectInstance>,
 ) -> Result<ResolvedRequests, ResolveFailure> {
     let mut requests = Vec::new();
@@ -918,7 +918,7 @@ fn resolve_inner(
                 control,
                 (&req.id, "on"),
             )?;
-            fn architecture(ty: &ProjectionType, c: &mut Control) -> Result<bool, ResolveFailure> {
+            fn architecture(ty: &ProjectionType, c: &Control) -> Result<bool, ResolveFailure> {
                 phase(c, Checkpoint::RequestBinding)?;
                 match ty {
                     ProjectionType::Architecture | ProjectionType::ArchitectureRoot(_) => Ok(true),
@@ -997,7 +997,7 @@ fn resolve_inner(
 // 構文・依存・型の検査後に評価器の対応を判定する。未実装を不正入力へ変えない。
 fn available(
     resolved: ResolvedRequests,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ResolvedRequests, ResolveFailure> {
     for _request in &resolved.requests {
         phase(control, Checkpoint::RequestDependency)?;
@@ -1008,19 +1008,19 @@ fn available(
 fn stopped(reason: Signal) -> ResolveFailure {
     ResolveFailure::Interrupted { reason }
 }
-fn phase(control: &mut Control, point: Checkpoint) -> Result<(), ResolveFailure> {
+fn phase(control: &Control, point: Checkpoint) -> Result<(), ResolveFailure> {
     control.checkpoint(point).map_err(stopped)
 }
 /// Cancellation observed at the final checkpoint takes priority over the result.
 fn finish_request<T>(
     result: Result<T, ResolveFailure>,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
 ) -> Result<T, ResolveFailure> {
     phase(control, point)?;
     result
 }
-fn checkpoint(control: &mut Control) -> Result<(), ResolveFailure> {
+fn checkpoint(control: &Control) -> Result<(), ResolveFailure> {
     phase(control, Checkpoint::Resolve)
 }
 fn problem(code: RequestIssueCode, request: &str, argument: &str, message: &str) -> RequestIssue {
@@ -1043,7 +1043,7 @@ fn invalid(issue: RequestIssue) -> ResolveFailure {
 fn checked_find_map<'a, T, R>(
     items: &'a [T],
     mut predicate: impl FnMut(&T) -> bool,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
     finish: impl FnOnce(Option<&'a T>) -> Result<R, ResolveFailure>,
 ) -> Result<R, ResolveFailure> {
@@ -1061,7 +1061,7 @@ fn checked_find_map<'a, T, R>(
 fn checked_find<'a, T>(
     items: &'a [T],
     predicate: impl FnMut(&T) -> bool,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
 ) -> Result<Option<&'a T>, ResolveFailure> {
     checked_find_map(items, predicate, control, point, Ok)
@@ -1069,7 +1069,7 @@ fn checked_find<'a, T>(
 fn checked_require<'a, T>(
     items: &'a [T],
     predicate: impl FnMut(&T) -> bool,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
     missing: impl FnOnce() -> ResolveFailure,
 ) -> Result<&'a T, ResolveFailure> {
@@ -1081,7 +1081,7 @@ fn checked_require<'a, T>(
 fn declaration(
     law: &CheckedLaw,
     name: &str,
-    control: &mut Control,
+    control: &Control,
     request: &str,
 ) -> Result<String, ResolveFailure> {
     let missing = || {
@@ -1130,7 +1130,7 @@ fn binding_constraints(
     names: &BTreeMap<String, usize>,
     req: &Request,
     params: &[Param],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<BindingConstraint>, ResolveFailure> {
     let mut constraints = Vec::new();
     let expected_owners = owner_bindings(req, control)?;
@@ -1244,7 +1244,7 @@ fn subject<'a>(
     map: &'a CheckedArchMap,
     snapshot: &str,
     id: &str,
-    control: &mut Control,
+    control: &Control,
     context: (&str, &str),
 ) -> Result<&'a Subject, ResolveFailure> {
     let missing = || {
@@ -1276,7 +1276,7 @@ fn selector_type(
     requests: &[Request],
     names: &BTreeMap<String, usize>,
     selector: &Selector,
-    control: &mut Control,
+    control: &Control,
     context: (&str, &str),
 ) -> Result<(ProjectionPlan, BTreeMap<String, Selector>), ResolveFailure> {
     let (request, argument) = context;
@@ -1428,7 +1428,7 @@ fn selector_type(
 /// 添字の scope は Request ごとに独立。wire に追加する値入力ではなく、既存束縛の索引。
 fn owner_bindings(
     request: &Request,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<BTreeMap<String, Selector>, ResolveFailure> {
     let mut bindings = BTreeMap::new();
     for argument in &request.arguments {
@@ -1442,7 +1442,7 @@ fn owner_bindings(
     Ok(bindings)
 }
 
-fn clone_selector(selector: &Selector, control: &mut Control) -> Result<Selector, ResolveFailure> {
+fn clone_selector(selector: &Selector, control: &Control) -> Result<Selector, ResolveFailure> {
     phase(control, Checkpoint::RequestBinding)?;
     let selector = match selector {
         Selector::Degree { value } => Selector::Degree { value: *value },
@@ -1478,7 +1478,7 @@ fn projection_owner_check(
     actual_owners: &BTreeMap<String, Selector>,
     expected: &Type,
     expected_owners: &BTreeMap<String, Selector>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<bool>, ResolveFailure> {
     let mut candidates = vec![actual];
     while let Some(candidate) = candidates.pop() {
@@ -1511,7 +1511,7 @@ fn projection_owner_check(
 
 fn finish_owner_check(
     relation: Option<bool>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<bool>, ResolveFailure> {
     phase(control, Checkpoint::RequestBinding)?;
     Ok(relation)
@@ -1522,7 +1522,7 @@ fn type_owner_check(
     actual_owners: &BTreeMap<String, Selector>,
     expected: &Type,
     expected_owners: &BTreeMap<String, Selector>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<bool>, ResolveFailure> {
     let mut pending = vec![(actual, expected)];
     let mut dynamic = false;
@@ -1570,7 +1570,7 @@ fn type_owner_check(
 fn owner_selector_relation(
     actual: Option<&Selector>,
     expected: Option<&Selector>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<bool>, ResolveFailure> {
     phase(control, Checkpoint::RequestBinding)?;
     match (actual, expected) {
@@ -1601,7 +1601,7 @@ fn owner_selector_relation(
     }
 }
 
-fn contains_owned(expected: &Type, control: &mut Control) -> Result<bool, ResolveFailure> {
+fn contains_owned(expected: &Type, control: &Control) -> Result<bool, ResolveFailure> {
     let mut pending = vec![expected];
     while let Some(ty) = pending.pop() {
         phase(control, Checkpoint::RequestBinding)?;
@@ -1638,7 +1638,7 @@ fn owner_check(
     value: &Selector,
     expected: &Type,
     owner: Option<&Selector>,
-    control: &mut Control,
+    control: &Control,
     request: &str,
     argument: &str,
 ) -> Result<bool, ResolveFailure> {
@@ -1734,7 +1734,7 @@ fn cycle_failure(requests: &[Request], cyclic: &[usize]) -> ResolveFailure {
 fn order(
     requests: &[Request],
     names: &BTreeMap<String, usize>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(Vec<usize>, Vec<usize>), ResolveFailure> {
     phase(control, Checkpoint::RequestDependency)?;
     let mut deps = Vec::new();
@@ -1850,7 +1850,7 @@ impl<'a> Parser<'a> {
         }
     }
     fn tick(&mut self) -> Result<(), ResolveFailure> {
-        phase(&mut self.control, Checkpoint::RequestSyntax)
+        phase(&self.control, Checkpoint::RequestSyntax)
     }
     fn error(&mut self, message: &str) -> ResolveFailure {
         let failure = invalid(problem(
@@ -1859,8 +1859,7 @@ impl<'a> Parser<'a> {
             self.src,
             message,
         ));
-        finish_request::<()>(Err(failure), &mut self.control, Checkpoint::RequestSyntax)
-            .unwrap_err()
+        finish_request::<()>(Err(failure), &self.control, Checkpoint::RequestSyntax).unwrap_err()
     }
 
     fn ws(&mut self) -> Result<(), ResolveFailure> {
@@ -1901,7 +1900,7 @@ impl<'a> Parser<'a> {
                 "invalid request separator",
             )))
         };
-        finish_request(result, &mut self.control, Checkpoint::RequestSyntax)
+        finish_request(result, &self.control, Checkpoint::RequestSyntax)
     }
     fn name(&mut self, id: bool) -> Result<String, ResolveFailure> {
         self.tick()?;
@@ -2071,7 +2070,7 @@ impl<'a> Parser<'a> {
             } else {
                 Ok(())
             };
-            finish_request(result, &mut self.control, Checkpoint::RequestSyntax)?;
+            finish_request(result, &self.control, Checkpoint::RequestSyntax)?;
             self.expect(b'=')?;
             let value = if kind == "diagnose" && key == "degree" {
                 Selector::Degree {
@@ -2151,22 +2150,22 @@ mod required_predicate_priority_tests {
     fn required_lookup_and_find_stop_at_candidate_checkpoints() {
         for at in [3, 5] {
             // pre 1, candidate 1 pre/post 2/3, candidate 2 pre/post 4/5.
-            let mut control = probe(Checkpoint::RequestBinding, at);
+            let control = probe(Checkpoint::RequestBinding, at);
             let error = checked_require(
                 &[1, 2],
                 |value| *value == 3,
-                &mut control,
+                &control,
                 Checkpoint::RequestBinding,
                 || invalid(problem(RequestIssueCode::Reference, "a", "x", "missing")),
             )
             .unwrap_err();
             assert!(matches!(error, ResolveFailure::Interrupted { .. }));
-            let mut control = probe(Checkpoint::RequestBinding, at);
+            let control = probe(Checkpoint::RequestBinding, at);
             assert!(matches!(
                 checked_find(
                     &[1, 2],
                     |value| *value == 3,
-                    &mut control,
+                    &control,
                     Checkpoint::RequestBinding
                 ),
                 Err(ResolveFailure::Interrupted { .. })

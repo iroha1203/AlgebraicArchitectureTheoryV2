@@ -46,7 +46,7 @@ pub(super) fn compute(
     g: &Graph,
     table: &Table,
     plan: &finite_law_diagram::FamilyPlan,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Data, ValidationFailure> {
     tick(c)?;
     table.recheck(env, g, c)?;

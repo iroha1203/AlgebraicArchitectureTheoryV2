@@ -33,7 +33,7 @@ fn differential(
     from: &Level,
     to: &Level,
     semantic: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Matrix, ValidationFailure> {
     let mut d = vec![vec![Z::zero(); from.rank]; to.rank];
     for (i, tuple) in to.tuples.iter().enumerate() {
@@ -74,7 +74,7 @@ pub(in crate::observed::local_result) fn diagnose(
     witness: Arc<ArchitectureWitness>,
     diagram: &Diagram,
     degree: u64,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ValidationFailure> {
     let semantic = request.arguments.iter().any(|a| {
         a.name == "side" && matches!(&a.value,Selector::Enum { value } if value == "semantic")
@@ -557,7 +557,7 @@ fn gluing(
     states: &[linear::Fiber],
     level: &Level,
     witness: &ArchitectureWitness,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let mut equations = vec![];
     let mut rhs = vec![];

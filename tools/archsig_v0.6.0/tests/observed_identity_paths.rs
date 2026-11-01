@@ -87,9 +87,9 @@ fn refs(j: &Json, out: &mut Vec<String>) {
 }
 fn run(moved: bool, asks: &[&str]) -> Json {
     let inputs = fixture::input(moved);
-    let checked = check_inputs(inputs.clone(), &mut quiet())
-        .unwrap_or_else(|e| panic!("input {:?}", e.issues()));
-    let result = evaluate_observed_bytes(inputs.clone(), asks, &mut quiet()).unwrap();
+    let checked =
+        check_inputs(inputs.clone(), &quiet()).unwrap_or_else(|e| panic!("input {:?}", e.issues()));
+    let result = evaluate_observed_bytes(inputs.clone(), asks, &quiet()).unwrap();
     assert_eq!(result.status(), "complete", "{:?}", result.wire());
     assert_eq!(result.prepared().inputs().sources(), &inputs);
     assert_eq!(
@@ -270,7 +270,7 @@ fn identity_math_equality_uses_endpoints_and_identity_action_across_readings() {
             "nested=evaluate(Other.nested,x=@v/a,y=@v/a)",
             "different=evaluate(Other.different_term,x=@v/a)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -331,7 +331,7 @@ fn direct_identity_comparisons_and_membership_keep_result_types_and_law_judgment
     ]);
     expected.push(("empty".into(), true));
     let request_text = asks.iter().map(String::as_str).collect::<Vec<_>>();
-    let r = evaluate_observed_bytes(inputs.clone(), &request_text, &mut quiet()).unwrap();
+    let r = evaluate_observed_bytes(inputs.clone(), &request_text, &quiet()).unwrap();
     assert_eq!(r.status(), "complete");
     assert_eq!(r.prepared().inputs().sources(), &inputs);
     let j = r.wire();

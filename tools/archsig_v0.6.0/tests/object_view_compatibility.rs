@@ -26,13 +26,13 @@ fn inputs(body: &str, map: &str) -> Arc<CheckedInputs> {
                 law.into_bytes(),
                 map.replace("@DIGEST@", digest).into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap_or_else(|f| panic!("{:?}", f.issues())),
     )
 }
 fn run(i: Arc<CheckedInputs>) -> ObjectViewCompatibility {
-    object_view_compatibility(i, "Selected", "v", "root", &mut quiet()).unwrap()
+    object_view_compatibility(i, "Selected", "v", "root", &quiet()).unwrap()
 }
 fn second_part(map: &str) -> String {
     map.replace("{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"}","{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"},{\"id\":\"r\",\"type\":\"Pattern.Part\",\"origin\":\"model\"}")
@@ -71,7 +71,7 @@ fn equal_patterns_keep_distinct_objects_and_compare_every_ground_view() {
         assert_eq!(p.source().unwrap().wire(), expected);
         assert_eq!(p.target().unwrap().wire(), expected);
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn the_same_pattern_rejects_application_and_contextual_value_disagreement() {
@@ -105,7 +105,7 @@ fn the_same_pattern_rejects_application_and_contextual_value_disagreement() {
                 ObjectEvaluationOutcome::NotApplicable
             ));
         }
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -141,7 +141,7 @@ fn finite_parameters_compare_all_six_assignments_and_keep_a_partial_refutation()
         assert_eq!(point.target().unwrap().wire(), Json::Arr(values));
         assert_eq!(point.outcome(), &Outcome::Compatible);
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
     let i = inputs(
         "view family(c:Part,b:Bool):Bool=if b then (forall a:Root . false) else false;",
         A,
@@ -152,7 +152,7 @@ fn finite_parameters_compare_all_six_assignments_and_keep_a_partial_refutation()
     assert_eq!(points[0].outcome(), &Outcome::Compatible);
     assert_eq!(points[1].outcome(), &Outcome::Refuted(Failed::Value));
     assert_eq!(r.outcome(), Some(&Outcome::Refuted(Failed::Value)));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn different_patterns_do_not_impose_equal_values_on_distinct_parts() {
@@ -163,7 +163,7 @@ fn different_patterns_do_not_impose_equal_values_on_distinct_parts() {
     assert_eq!(r.evaluations().len(), 6);
     assert!(r.comparisons().is_empty());
     assert_eq!(r.outcome(), Some(&Outcome::Compatible));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn unknown_values_stay_unknown_even_without_a_pair_to_compare() {
@@ -174,7 +174,7 @@ fn unknown_values_stay_unknown_even_without_a_pair_to_compare() {
     assert!(r.comparisons().is_empty());
     assert_eq!(r.outcome(), Some(&Outcome::Undetermined));
     assert_eq!(r.evaluations().len(), 6);
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn empty_families_and_the_single_empty_list_are_distinct_known_domains() {
@@ -190,7 +190,7 @@ fn empty_families_and_the_single_empty_list_are_distinct_known_domains() {
             assert!(f.is_complete());
             assert_eq!(f.rows().len(), rows);
         }
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -203,9 +203,9 @@ fn current_input_bytes_body_and_unused_provenance_are_rechecked() {
         inputs(body, &A.replace("\"value\":\"2\"", "\"value\":\"9\"")),
         inputs(body, &A.replace("fixture-r1", "fixture-r2")),
     ] {
-        assert!(r.recheck(changed, &mut quiet()).is_err());
+        assert!(r.recheck(changed, &quiet()).is_err());
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -217,12 +217,12 @@ fn conditional_membership_and_known_conflicts_keep_their_separate_evidence() {
     assert!(!r.profiles().is_complete());
     assert_eq!(r.outcome(), Some(&Outcome::Undetermined));
     assert!(r.evaluations().iter().any(|e|matches!(e.evaluation().outcome(),ObjectEvaluationOutcome::Conditional(conditions) if conditions.iter().any(|c|c.slot().subject=="t" && c.slot().field.as_deref()==Some("Pattern.Part.owner")))));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
     let i = inputs("view family(c:Root,x:Option<Part[c]>):Bool=false;", &map);
     let r = run(Arc::clone(&i));
     assert_eq!(r.outcome(), Some(&Outcome::Undetermined));
     assert!(r.evaluations().iter().any(|e|matches!(e.evaluation().outcome(),ObjectEvaluationOutcome::FiniteView(f) if f.missing().iter().any(|slot|slot.subject=="t" && slot.field.as_deref()==Some("Pattern.Part.owner")))));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
     let map=A.replace("{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"}","{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"},{\"id\":\"x\",\"type\":\"Pattern.External\",\"origin\":\"model\"}");
     let i = inputs(
         "view atRoot(a:Root):Bool=true; view missing(c:Part,x:External):Z=x.quantity;",
@@ -238,14 +238,14 @@ fn conditional_membership_and_known_conflicts_keep_their_separate_evidence() {
     );
     assert_eq!(r.comparisons()[1].outcome(), Some(&Outcome::Undetermined));
     assert_eq!(r.outcome(), Some(&Outcome::Refuted(Failed::Applicability)));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
 fn unsupported_parameter_evaluation_is_preserved_as_an_execution_failure() {
     use archsig::observed::object_evaluate::ObjectEvaluationFailure;
     let i = inputs("view family(c:Part,n:Z):Z=n+c.quantity;", A);
-    let f = object_view_compatibility(i, "Selected", "v", "root", &mut quiet()).unwrap_err();
+    let f = object_view_compatibility(i, "Selected", "v", "root", &quiet()).unwrap_err();
     assert!(matches!(
         f.cause(),
         ObjectEvaluationFailure::NotImplemented { .. }
@@ -283,7 +283,7 @@ fn external_helpers_are_called_from_the_original_view_without_becoming_extra_axe
         Json::str("11")
     );
     assert_eq!(r.outcome(), Some(&Outcome::Compatible));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 fn check_contextual_terms(body: &str, rows: usize) {
@@ -301,7 +301,7 @@ fn check_contextual_terms(body: &str, rows: usize) {
         assert_eq!(point.outcome(), &Outcome::Compatible);
     }
     assert_eq!(r.outcome(), Some(&Outcome::Compatible));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn ground_boolean_terms_use_function_extensional_equality_instead_of_program_identity() {
@@ -344,7 +344,7 @@ fn unequal_term_functions_keep_a_real_value_counterexample() {
     assert!(point.source().is_some() && point.target().is_some());
     assert_eq!(point.outcome(), &Outcome::Refuted(Failed::Value));
     assert_eq!(r.outcome(), Some(&Outcome::Refuted(Failed::Value)));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -367,7 +367,7 @@ fn nonlinear_unbounded_terms_are_unsupported_instead_of_refuted_or_missing() {
         Some(&Outcome::UnsupportedAlgorithm)
     );
     assert_eq!(r.outcome(), Some(&Outcome::UnsupportedAlgorithm));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -450,6 +450,6 @@ fn path_and_nested_path_comparison_values_have_safe_original_node_representation
                 assert_eq!(check_path(&wire, nodes), 1);
             }
         }
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }

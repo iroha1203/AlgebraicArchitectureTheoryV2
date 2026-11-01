@@ -53,9 +53,9 @@ fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
 }
 fn original_status(subject: &str, wanted: &str) -> ObservedEvaluation {
     let sources = small(false);
-    let before = check_inputs(sources.clone(), &mut quiet()).unwrap();
+    let before = check_inputs(sources.clone(), &quiet()).unwrap();
     let query = format!("a=check(Engine.preserves,c=@engine/{subject})");
-    let r = evaluate_observed_bytes(sources, &[&query], &mut quiet()).unwrap();
+    let r = evaluate_observed_bytes(sources, &[&query], &quiet()).unwrap();
     assert_eq!(
         r.prepared().inputs().metadata_wire(),
         before.metadata_wire()
@@ -372,7 +372,7 @@ fn engine_generated_ir_and_recursive_views_keep_original_parts_and_facts() {
         "source=evaluate(Engine.sourceAt,c=@engine/subtract)",
         "target=evaluate(Engine.irAt,c=@engine/subtract)",
     ];
-    let r = evaluate_observed_bytes(inputs(true, false, Some("r1")), &asks, &mut quiet()).unwrap();
+    let r = evaluate_observed_bytes(inputs(true, false, Some("r1")), &asks, &quiet()).unwrap();
     assert_eq!(r.status(), "complete");
     audit(&r, Some("r1"));
     let w = r.wire();
@@ -412,7 +412,7 @@ fn engine_operator_missing_keeps_subject_source_and_differing_completions_undete
     let r = evaluate_observed_bytes(
         small(true),
         &["a=check(Engine.preserves,c=@engine/add)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial");
@@ -463,11 +463,11 @@ fn unchanged(before: &archsig::input::CheckedInputs, after: &archsig::input::Che
 #[test]
 fn engine_generated_add_ir_preserves_input_bytes_and_all_three_checked_tables() {
     let src = inputs(true, false, Some("r1"));
-    let before = check_inputs(src.clone(), &mut quiet()).unwrap();
+    let before = check_inputs(src.clone(), &quiet()).unwrap();
     let r = evaluate_observed_bytes(
         src,
         &["ir=evaluate(Engine.generated,c=@engine/add)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -497,13 +497,9 @@ fn engine_unknown_source_tree_keeps_missing_and_is_never_a_finite_type_sample() 
         engine::LAW.to_vec(),
         map,
     );
-    let before = check_inputs(src.clone(), &mut quiet()).unwrap();
-    let r = evaluate_observed_bytes(
-        src,
-        &["a=check(Engine.preserves,c=@engine/add)"],
-        &mut quiet(),
-    )
-    .unwrap();
+    let before = check_inputs(src.clone(), &quiet()).unwrap();
+    let r = evaluate_observed_bytes(src, &["a=check(Engine.preserves,c=@engine/add)"], &quiet())
+        .unwrap();
     assert_eq!(r.status(), "partial");
     unchanged(&before, r.prepared().inputs());
     audit(&r, None);
@@ -535,7 +531,7 @@ fn engine_universal_match_tracks_selected_comparison_and_qualified_zero_construc
             "add=check(Engine.matched,c=@engine/add)",
             "subtract=check(Engine.matched,c=@engine/subtract)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");

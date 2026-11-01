@@ -12,7 +12,7 @@ fn example() -> ObservedEvaluation {
             "target=evaluate(Walk.maybe_value,x=@v/a)",
             "nested=evaluate(Walk.nested,x=@v/b)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(result.status(), "complete");
@@ -23,7 +23,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -96,7 +96,7 @@ fn direct_path_equality_recheck_rejects_wrong_bool_and_swapped_operand_producers
     let r = evaluate_observed_bytes(
         fixture::cross_reading(),
         &["same=evaluate(Other.equal_path,x=@v/a,y=@v/a)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -225,7 +225,7 @@ fn stop() {
         "later=evaluate(Walk.seed)",
     ];
     let inputs = fixture::input(false);
-    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &mut quiet()).unwrap();
+    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     let expected = crate::result::Signal::Term;
@@ -234,7 +234,7 @@ fn stop() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -243,8 +243,8 @@ fn stop() {
             None
         }
     });
-    let prepared = prepare_observed(inputs, &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, q, answer| {
+    let prepared = prepare_observed(inputs, &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, q, answer| {
         e.validate_answer(g, q, answer)?;
         if q.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());

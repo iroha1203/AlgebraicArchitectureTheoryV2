@@ -14,7 +14,7 @@ fn owned_call_missing_source_stop_keeps_verified_prefix_and_probe_freeze() {
         "later=evaluate(Reservations.seed)",
     ];
     let inputs = fixture::input(true, "r1");
-    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &mut quiet()).unwrap();
+    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     let expected = crate::result::Signal::Term;
@@ -23,7 +23,7 @@ fn owned_call_missing_source_stop_keeps_verified_prefix_and_probe_freeze() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -32,8 +32,8 @@ fn owned_call_missing_source_stop_keeps_verified_prefix_and_probe_freeze() {
             None
         }
     });
-    let prepared = prepare_observed(inputs, &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, q, answer| {
+    let prepared = prepare_observed(inputs, &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, q, answer| {
         e.validate_answer(g, q, answer)?;
         if q.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());
@@ -109,7 +109,7 @@ fn owned_call_skipped_branch_rejects_changed_selector_and_lost_missing() {
     let r = evaluate_observed_bytes(
         fixture::missing_reference_input(),
         &["x=evaluate(Reservations.pcSkipIf,a=@v/B,e=@v/e)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");

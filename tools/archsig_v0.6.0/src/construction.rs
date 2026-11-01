@@ -178,7 +178,7 @@ impl ConfigurationConstruction {
         reading: &str,
         snapshot: &str,
         root: &str,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         let expected = if self.owner_resolution.is_none() {
             construct(inputs, reading, snapshot, root, control)?
@@ -204,7 +204,7 @@ impl From<Signal> for ConstructionFailure {
         Self::Stopped(reason)
     }
 }
-fn tick(control: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(control: &Control) -> Result<(), ConstructionFailure> {
     control
         .checkpoint(Checkpoint::Configuration)
         .map_err(Into::into)
@@ -225,7 +225,7 @@ fn slot(subject: &Subject, field: &crate::names::QualifiedName) -> FactPointer {
 }
 fn canonical_facts(
     items: BTreeSet<FactPointer>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<FactPointer>, ConstructionFailure> {
     let mut keyed = Vec::new();
     for item in items {
@@ -238,7 +238,7 @@ fn canonical_facts(
 }
 fn canonical_pairs(
     items: BTreeSet<(FactPointer, FactPointer)>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<(FactPointer, FactPointer)>, ConstructionFailure> {
     let mut keyed = Vec::new();
     for (a, b) in items {
@@ -252,14 +252,14 @@ fn canonical_pairs(
 fn namespaces(
     inputs: &CheckedInputs,
     reading: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<BTreeSet<String>, ConstructionFailure> {
     reading_namespaces(inputs.law(), reading, control)
 }
 pub(crate) fn reading_namespaces(
     law: &crate::law::CheckedLaw,
     reading: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<BTreeSet<String>, ConstructionFailure> {
     let mut selected = None;
     for info in law.infos() {
@@ -302,7 +302,7 @@ fn visible(inputs: &CheckedInputs, ty: &str, namespaces: &BTreeSet<String>) -> b
 fn has_reference(
     inputs: &CheckedInputs,
     ty: &Type,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<bool, ConstructionFailure> {
     let mut pending = vec![ty];
     let mut seen = BTreeSet::new();
@@ -339,7 +339,7 @@ fn has_reference(
 }
 fn references<'a>(
     value: &'a Value,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<(&'a str, &'a str)>, ConstructionFailure> {
     let mut pending = vec![value];
     let mut result = Vec::new();
@@ -369,7 +369,7 @@ fn configuration(
     subjects: &[&Subject],
     index: &BTreeMap<(&str, &str), &Subject>,
     blocking: BTreeSet<FactPointer>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ConfigurationCandidate, ConstructionFailure> {
     configuration_with_owners(inputs, subjects, index, blocking, &[], control)
 }
@@ -379,7 +379,7 @@ fn configuration_with_owners(
     index: &BTreeMap<(&str, &str), &Subject>,
     mut blocking: BTreeSet<FactPointer>,
     owners: &[(FactPointer, FactPointer)],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ConfigurationCandidate, ConstructionFailure> {
     let mut family = BTreeSet::new();
     let mut relations = BTreeSet::new();
@@ -453,7 +453,7 @@ pub fn construct(
     reading: &str,
     snapshot: &str,
     root: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ConfigurationConstruction, ConstructionFailure> {
     construct_with_owners(inputs, reading, snapshot, root, &[], control)
 }
@@ -464,7 +464,7 @@ pub(crate) fn construct_resolving_owners(
     reading: &str,
     snapshot: &str,
     root: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ConfigurationConstruction, ConstructionFailure> {
     let observed = construct(inputs, reading, snapshot, root, control)?;
     let fields = observed
@@ -522,7 +522,7 @@ fn construct_with_owners(
     snapshot: &str,
     root: &str,
     owners: &[(FactPointer, FactPointer)],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ConfigurationConstruction, ConstructionFailure> {
     tick(control)?;
     let namespaces = namespaces(inputs, reading, control)?;
@@ -729,14 +729,14 @@ mod tests {
                 law.into_bytes(),
                 map.into_bytes(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap()
     }
     #[test]
     fn recheck_rejects_forged_families_relations_slots_universe_components_and_conditions() {
         let inputs = inputs(false);
-        let original = construct(&inputs, "MeshRead", "v", "A", &mut Control::unlimited()).unwrap();
+        let original = construct(&inputs, "MeshRead", "v", "A", &Control::unlimited()).unwrap();
         for kind in [
             "family",
             "requirements",
@@ -781,24 +781,23 @@ mod tests {
             }
             assert!(
                 matches!(
-                    forged.recheck(&inputs, "MeshRead", "v", "A", &mut Control::unlimited()),
+                    forged.recheck(&inputs, "MeshRead", "v", "A", &Control::unlimited()),
                     Err(ConstructionFailure::Inconsistent(_))
                 ),
                 "{kind}"
             );
         }
         assert!(matches!(
-            original.recheck(&inputs, "MeshRead", "v", "B", &mut Control::unlimited()),
+            original.recheck(&inputs, "MeshRead", "v", "B", &Control::unlimited()),
             Err(ConstructionFailure::Inconsistent(_))
         ));
         let missing = self::inputs(true);
-        let mut forged =
-            construct(&missing, "MeshRead", "v", "A", &mut Control::unlimited()).unwrap();
+        let mut forged = construct(&missing, "MeshRead", "v", "A", &Control::unlimited()).unwrap();
         assert!(forged.base.configuration().is_none());
         forged.base.blocking_slots.clear();
         assert!(
             matches!(
-                forged.recheck(&missing, "MeshRead", "v", "A", &mut Control::unlimited()),
+                forged.recheck(&missing, "MeshRead", "v", "A", &Control::unlimited()),
                 Err(ConstructionFailure::Inconsistent(_))
             ),
             "未観測の構成条件を消せない"

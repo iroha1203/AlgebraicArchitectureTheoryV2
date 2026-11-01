@@ -13,7 +13,7 @@ fn evaluated_counter() -> (ObservedEvaluation, NodeRef) {
     let result = evaluate_observed_bytes(
         sources,
         &["c=check(CountAudit.bounded,s=@v/s)"],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let example = result.answers[0]

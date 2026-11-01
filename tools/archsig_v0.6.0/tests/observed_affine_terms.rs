@@ -52,7 +52,7 @@ fn affine_terms_compare_original_integer_rational_tuple_and_mixed_domains() {
             "p=check(Terms.equality,s=@v/s)",
             "c=check(Terms.unequal,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", get(&r.wire(), "issues"));
@@ -75,7 +75,7 @@ fn affine_terms_reapply_coefficient_counterexamples_and_keep_tuple_and_finite_bo
             "s=evaluate(Terms.aggregation)",
             "f=evaluate(Terms.finiteBody)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", get(&r.wire(), "issues"));
@@ -96,7 +96,7 @@ fn affine_term_application_keeps_original_missing_slots_and_cancels_only_shared_
             "q=evaluate(Terms.qcancel,s=@v/s)",
             "t=evaluate(Terms.tupleCancel,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial");
@@ -134,7 +134,7 @@ fn affine_term_application_connects_implicit_and_explicit_original_universal_par
             "p=check(Terms.universal,s=@v/s)",
             "q=evaluate(Terms.explicit,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", get(&r.wire(), "issues"));
@@ -154,7 +154,7 @@ fn nonlinear_terms_keep_typed_algorithm_obligations_and_exact_concrete_or_finite
             "f=evaluate(Terms.finiteNonlinear)",
             "u=check(Terms.outside,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial");
@@ -293,9 +293,9 @@ fn audit_current_sources(r: &archsig::observed::ObservedEvaluation, revision: &s
 #[test]
 fn affine_term_missing_callee_keeps_original_slots_without_a_default_program() {
     let src = sources();
-    let before = archsig::input::check_inputs(src.clone(), &mut quiet()).unwrap();
-    let r = evaluate_observed_bytes(src, &["m=evaluate(Terms.needMissing,s=@v/s)"], &mut quiet())
-        .unwrap();
+    let before = archsig::input::check_inputs(src.clone(), &quiet()).unwrap();
+    let r =
+        evaluate_observed_bytes(src, &["m=evaluate(Terms.needMissing,s=@v/s)"], &quiet()).unwrap();
     assert_eq!(r.status(), "partial");
     let w = r.wire();
     let a = answer(&w, "m");
@@ -334,7 +334,7 @@ fn affine_term_application_keeps_view_let_and_finite_completion_contexts() {
             "l=evaluate(Terms.letCancel,s=@v/s)",
             "c=evaluate(Terms.affineStable,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", get(&r.wire(), "issues"));
@@ -366,7 +366,7 @@ fn affine_tuple_comparison_handles_known_and_symbolic_output_representations() {
             "c=evaluate(Terms.tupleKnownLet)",
             "n=evaluate(Terms.tupleKnownNested)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", get(&r.wire(), "issues"));
@@ -388,7 +388,7 @@ fn affine_tuple_actuals_preserve_let_view_arithmetic_projection_and_universal_co
             "c=evaluate(Terms.viaTupleChoice,s=@v/s)",
             "d=evaluate(Terms.tupleDifference,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", get(&r.wire(), "issues"));
@@ -428,7 +428,7 @@ fn nonlinear_tuple_term_application_keeps_algorithm_and_original_missing_reasons
             "t=evaluate(Terms.tupleOutside,s=@v/s)",
             "n=evaluate(Terms.tupleNestedOutside,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial", "{:?}", get(&r.wire(), "issues"));
@@ -482,7 +482,7 @@ fn affine_term_comparison_retains_normal_forms_and_reapplied_original_points() {
             "q=evaluate(Terms.qCoefficient)",
             "t=evaluate(Terms.tupleSameNormal)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -593,7 +593,7 @@ fn affine_term_evidence_uses_the_fixed_result_two_keys_and_typed_prior_refs() {
             "d=check(Terms.unequal,s=@v/s)",
             "q=evaluate(Terms.qCoefficient)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -663,7 +663,7 @@ fn affine_term_tuple_outer_comparisons_preserve_each_missing_component() {
             "o=evaluate(Terms.tupleOffset,s=@v/s)",
             "l=check(Terms.tupleEqLaw,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", get(&r.wire(), "issues"));
@@ -686,7 +686,7 @@ fn affine_term_single_missing_tuple_slot_keeps_paths_and_whole_slot_completions(
             "c=evaluate(Terms.tupleComponentsIndependent,s=@v/s)",
             "v=check(Terms.tupleSlotVary,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial", "{:?}", get(&r.wire(), "issues"));
@@ -762,7 +762,7 @@ fn partial_nonlinear_term_comparison_keeps_a_typed_algorithm_reason_instead_of_i
             "f=evaluate(Terms.partialNonlinearFinite)",
             "l=evaluate(Terms.partialNonlinearList)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial", "{:?}", get(&r.wire(), "issues"));
@@ -806,7 +806,7 @@ fn canceled_missing_tuple_keeps_whole_typed_values_in_another_slots_universal_co
     let r = evaluate_observed_bytes(
         sources(),
         &["x=check(Terms.canceledTupleWithMissing,s=@v/s)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial", "{:?}", get(&r.wire(), "issues"));

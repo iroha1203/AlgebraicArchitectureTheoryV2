@@ -8,7 +8,7 @@ impl<'a> Environment<'a> {
     pub(in crate::observed) fn with_primitive_valuation(
         inputs: &'a CheckedInputs,
         assignments: &[(Fact, Scalar)],
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Self, ValidationFailure> {
         Self::try_primitive_valuation(inputs, assignments, control)?
             .ok_or_else(|| "候補代入が原始型・所属・Map全域性を満たさない".into())
@@ -18,7 +18,7 @@ impl<'a> Environment<'a> {
     pub(in crate::observed) fn try_primitive_valuation(
         inputs: &'a CheckedInputs,
         assignments: &[(Fact, Scalar)],
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Option<Self>, ValidationFailure> {
         Self::primitive_valuation_checked(inputs, assignments, control, true)
     }
@@ -28,7 +28,7 @@ impl<'a> Environment<'a> {
     pub(super) fn primitive_dependency_probe(
         inputs: &'a CheckedInputs,
         assignments: &[(Fact, Scalar)],
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Self, ValidationFailure> {
         Self::primitive_valuation_checked(inputs, assignments, control, false)?
             .ok_or_else(|| "依存発見用の型付き候補が失われた".into())
@@ -37,7 +37,7 @@ impl<'a> Environment<'a> {
     fn primitive_valuation_checked(
         inputs: &'a CheckedInputs,
         assignments: &[(Fact, Scalar)],
-        control: &mut Control,
+        control: &Control,
         constraints: bool,
     ) -> Result<Option<Self>, ValidationFailure> {
         let mut environment = Self::new(inputs, control)?;
@@ -143,7 +143,7 @@ impl<'a> Environment<'a> {
 // Graphの保存状態比較は変更せず、原始値の往復だけでTermのsource位置を除く。
 fn same_primitive_value(a: &Scalar, b: &Scalar, c: &Control) -> Result<bool, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        c.clone().checkpoint(Checkpoint::PrimitiveValuation)?;
+        c.checkpoint(Checkpoint::PrimitiveValuation)?;
         fn items(a: &[Scalar], b: &[Scalar], c: &Control) -> Result<bool, ValidationFailure> {
             if a.len() != b.len() {
                 return Ok(false);

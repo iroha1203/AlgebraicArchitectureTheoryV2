@@ -37,9 +37,8 @@ fn sources(missing_owner: bool, body: &str) -> InputSources {
     )
 }
 fn prepared(input: InputSources, asks: &[&str]) -> PreparedObserved {
-    let inputs = Arc::new(check_inputs(input, &mut quiet()).unwrap());
-    let requests =
-        resolve_native_for_test(inputs.law(), inputs.archmap(), asks, &mut quiet()).unwrap();
+    let inputs = Arc::new(check_inputs(input, &quiet()).unwrap());
+    let requests = resolve_native_for_test(inputs.law(), inputs.archmap(), asks, &quiet()).unwrap();
     PreparedObserved {
         inputs,
         requests,
@@ -56,8 +55,8 @@ fn replay(
     original: &Graph,
     nodes: &[Node],
 ) -> Result<Graph, ValidationFailure> {
-    let mut c = quiet();
-    let env = Environment::with_prepared(p, &mut c)?;
+    let c = quiet();
+    let env = Environment::with_prepared(p, &c)?;
     let mut g = empty(p, &c);
     g.requests = original.requests.clone();
     g.checked_answers = original.checked_answers.clone();
@@ -82,15 +81,15 @@ fn value(g: &Graph, r: NodeRef) -> &ConstructionValue {
 #[test]
 fn build_request_keeps_original_architecture_law_occurrences_and_all_object_readings() {
     let p = prepared(sources(false, BODY), &["b=build(R,on=@v/A)"]);
-    let mut c = quiet();
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(&p, &c).unwrap();
     let mut g = empty(&p, &c);
     let a = build(
         p.shared_inputs(),
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert!(a.complete);
@@ -199,7 +198,7 @@ fn build_request_keeps_original_architecture_law_occurrences_and_all_object_read
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut c,
+        &c,
     )
     .unwrap()
     .unwrap();
@@ -244,15 +243,15 @@ fn build_request_keeps_original_architecture_law_occurrences_and_all_object_read
 #[test]
 fn missing_membership_keeps_partial_architecture_and_never_completes_the_object_family() {
     let p = prepared(sources(true, BODY), &["b=build(R,on=@v/A)"]);
-    let mut c = quiet();
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(&p, &c).unwrap();
     let mut g = empty(&p, &c);
     let a = build(
         p.shared_inputs(),
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert!(!a.complete);
@@ -271,7 +270,7 @@ fn missing_membership_keeps_partial_architecture_and_never_completes_the_object_
             &mut g,
             p.shared_inputs(),
             a.reference,
-            &mut c
+            &c
         )
         .is_err()
     );
@@ -283,15 +282,15 @@ fn build_origin_rejects_modified_root_reading_request_inputs_edges_support_and_s
         sources(false, BODY),
         &["b=build(R,on=@v/A)", "other=build(R,on=@v/B)"],
     );
-    let mut c = quiet();
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(&p, &c).unwrap();
     let mut g = empty(&p, &c);
     let a = build(
         p.shared_inputs(),
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut c,
+        &c,
     )
     .unwrap();
     replay(&p, &g, &g.nodes).unwrap();
@@ -351,7 +350,7 @@ fn build_origin_rejects_modified_root_reading_request_inputs_edges_support_and_s
             &env,
             &mut g,
             &p.requests().requests()[1],
-            &mut c
+            &c
         )
         .is_err()
     );
@@ -367,11 +366,11 @@ fn root_handles_keep_actual_producer_references_and_build_request_identity() {
     let previous = crate::observed::evaluate_observed_bytes(
         reservations::input("", None),
         &[reservations::MAP],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
-    let mut c = quiet();
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(&p, &c).unwrap();
     let mut g = empty(&p, &c);
     g.checked_answers = previous.answers.iter().cloned().enumerate().collect();
     g.frames = previous.frames.clone();
@@ -401,7 +400,7 @@ fn root_handles_keep_actual_producer_references_and_build_request_identity() {
         &env,
         &mut g,
         &p.requests().requests()[1],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert_eq!(a.root, expected);
@@ -421,7 +420,7 @@ fn root_handles_keep_actual_producer_references_and_build_request_identity() {
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut c,
+        &c,
     )
     .unwrap()
     .unwrap();
@@ -444,33 +443,33 @@ fn root_handles_keep_actual_producer_references_and_build_request_identity() {
 #[test]
 fn four_stops_preserve_every_finished_native_prefix() {
     let p = prepared(sources(false, BODY), &["b=build(R,on=@v/A)"]);
-    let mut normal = quiet();
-    let env = Environment::with_prepared(&p, &mut normal).unwrap();
+    let normal = quiet();
+    let env = Environment::with_prepared(&p, &normal).unwrap();
     let mut graph = empty(&p, &normal);
     build(
         p.shared_inputs(),
         &env,
         &mut graph,
         &p.requests().requests()[0],
-        &mut normal,
+        &normal,
     )
     .unwrap();
     let total = Rc::new(Cell::new(0));
     let count = total.clone();
-    let mut c = Control::new(move |phase| {
+    let c = Control::new(move |phase| {
         if phase == Checkpoint::NativeResultNode {
             count.set(count.get() + 1)
         }
         None
     });
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let env = Environment::with_prepared(&p, &c).unwrap();
     let mut g = empty(&p, &c);
     build(
         p.shared_inputs(),
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert!(total.get() > 2);
@@ -478,13 +477,13 @@ fn four_stops_preserve_every_finished_native_prefix() {
         for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
             let reached = Rc::new(Cell::new(0));
             let count = reached.clone();
-            let mut c = Control::new(move |phase| {
+            let c = Control::new(move |phase| {
                 if phase == Checkpoint::NativeResultNode {
                     count.set(count.get() + 1)
                 }
                 (count.get() >= at).then_some(signal)
             });
-            let env = Environment::with_prepared(&p, &mut c).unwrap();
+            let env = Environment::with_prepared(&p, &c).unwrap();
             let mut g = empty(&p, &c);
             assert!(matches!(
                 build(
@@ -492,7 +491,7 @@ fn four_stops_preserve_every_finished_native_prefix() {
                     &env,
                     &mut g,
                     &p.requests().requests()[0],
-                    &mut c
+                    &c
                 ),
                 Err(ValidationFailure::Stop(_))
             ));
@@ -519,11 +518,11 @@ fn view_root_and_tuple_projection_are_rechecked_from_the_actual_original_handle(
         let previous = crate::observed::evaluate_observed_bytes(
             reservations::input(extra, None),
             &[producer],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
-        let mut c = quiet();
-        let env = Environment::with_prepared(&p, &mut c).unwrap();
+        let c = quiet();
+        let env = Environment::with_prepared(&p, &c).unwrap();
         let mut g = empty(&p, &c);
         g.checked_answers = previous.answers.iter().cloned().enumerate().collect();
         g.frames = previous.frames.clone();
@@ -549,7 +548,7 @@ fn view_root_and_tuple_projection_are_rechecked_from_the_actual_original_handle(
             &env,
             &mut g,
             &p.requests().requests()[1],
-            &mut c,
+            &c,
         )
         .unwrap();
         assert!(a.complete);
@@ -604,15 +603,15 @@ fn equal_configurations_in_different_readings_keep_distinct_architecture_produce
             "c=build(Alternative,on=@v/A)",
         ],
     );
-    let mut c = quiet();
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(&p, &c).unwrap();
     let mut g = empty(&p, &c);
     let a = build(
         p.shared_inputs(),
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut c,
+        &c,
     )
     .unwrap();
     g.active.request = 1;
@@ -621,7 +620,7 @@ fn equal_configurations_in_different_readings_keep_distinct_architecture_produce
         &env,
         &mut g,
         &p.requests().requests()[1],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert!(a.complete && b.complete);
@@ -651,7 +650,7 @@ fn equal_configurations_in_different_readings_keep_distinct_architecture_produce
         &mut g,
         p.shared_inputs(),
         b.reference,
-        &mut c,
+        &c,
     )
     .unwrap()
     .unwrap();
@@ -679,20 +678,20 @@ fn stopped_second_build_keeps_the_previous_request_producer_unchanged() {
         let a = armed.clone();
         let reached = Rc::new(Cell::new(0));
         let count = reached.clone();
-        let mut c = Control::new(move |phase| {
+        let c = Control::new(move |phase| {
             if a.get() && phase == Checkpoint::NativeResultNode {
                 count.set(count.get() + 1)
             }
             (count.get() != 0).then_some(signal)
         });
-        let env = Environment::with_prepared(&p, &mut c).unwrap();
+        let env = Environment::with_prepared(&p, &c).unwrap();
         let mut g = empty(&p, &c);
         let first = build(
             p.shared_inputs(),
             &env,
             &mut g,
             &p.requests().requests()[0],
-            &mut c,
+            &c,
         )
         .unwrap();
         assert!(first.complete);
@@ -705,7 +704,7 @@ fn stopped_second_build_keeps_the_previous_request_producer_unchanged() {
                 &env,
                 &mut g,
                 &p.requests().requests()[1],
-                &mut c
+                &c
             ),
             Err(ValidationFailure::Stop(_))
         ));
@@ -719,8 +718,8 @@ fn stopped_second_build_keeps_the_previous_request_producer_unchanged() {
 #[test]
 fn build_generation_rejects_foreign_request_context_and_invalid_root_selectors_before_append() {
     let p = prepared(sources(false, BODY), &["b=build(R,on=@v/A)"]);
-    let mut c = quiet();
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(&p, &c).unwrap();
     let mut g = empty(&p, &c);
     for mode in 0..7 {
         let mut request = p.requests().requests()[0].clone();
@@ -757,7 +756,7 @@ fn build_generation_rejects_foreign_request_context_and_invalid_root_selectors_b
         );
         g.requests[0] = request.clone();
         assert!(
-            build(p.shared_inputs(), &env, &mut g, &request, &mut c).is_err(),
+            build(p.shared_inputs(), &env, &mut g, &request, &c).is_err(),
             "foreign request mode {mode}"
         );
         assert!(g.nodes.is_empty());
@@ -770,7 +769,7 @@ fn build_generation_rejects_foreign_request_context_and_invalid_root_selectors_b
             &env,
             &mut g,
             &p.requests().requests()[0],
-            &mut c
+            &c
         )
         .is_err()
     );
@@ -833,12 +832,12 @@ fn missing_membership_with_direct_and_projected_root_handles_keeps_partial_archi
         let previous = crate::observed::evaluate_observed_bytes(
             reservations::input(extra, Some(&map)),
             &[producer],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(previous.status(), "complete");
-        let mut c = quiet();
-        let env = Environment::with_prepared(&p, &mut c).unwrap();
+        let c = quiet();
+        let env = Environment::with_prepared(&p, &c).unwrap();
         let mut g = prior_roots(&p, &previous, &env, &c);
         let before = g.nodes.clone();
         g.active = crate::observed::call::Context {
@@ -853,7 +852,7 @@ fn missing_membership_with_direct_and_projected_root_handles_keeps_partial_archi
             &env,
             &mut g,
             &p.requests().requests()[1],
-            &mut c,
+            &c,
         )
         .expect("合法なroot Handleと欠測は部分構成へ保持する");
         assert!(!a.complete);
@@ -899,7 +898,7 @@ fn missing_membership_with_direct_and_projected_root_handles_keeps_partial_archi
                 &mut g,
                 p.shared_inputs(),
                 a.reference,
-                &mut c
+                &c
             )
             .is_err()
         );
@@ -952,11 +951,11 @@ fn partial_root_handle_exception_rejects_aliases_foreign_parts_and_raw_root_subs
     let previous = crate::observed::evaluate_observed_bytes(
         reservations::input("", Some(&map)),
         &producers,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
-    let mut c = quiet();
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(&p, &c).unwrap();
     let mut g = prior_roots(&p, &previous, &env, &c);
     g.active = crate::observed::call::Context {
         request: 2,
@@ -970,7 +969,7 @@ fn partial_root_handle_exception_rejects_aliases_foreign_parts_and_raw_root_subs
         &env,
         &mut g,
         &p.requests().requests()[2],
-        &mut c,
+        &c,
     )
     .unwrap();
     g.active.request = 3;
@@ -979,7 +978,7 @@ fn partial_root_handle_exception_rejects_aliases_foreign_parts_and_raw_root_subs
         &env,
         &mut g,
         &p.requests().requests()[3],
-        &mut c,
+        &c,
     )
     .unwrap();
     g.active.request = 4;
@@ -988,7 +987,7 @@ fn partial_root_handle_exception_rejects_aliases_foreign_parts_and_raw_root_subs
         &env,
         &mut g,
         &p.requests().requests()[4],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert!(!a.complete && !other.complete && !raw.complete);

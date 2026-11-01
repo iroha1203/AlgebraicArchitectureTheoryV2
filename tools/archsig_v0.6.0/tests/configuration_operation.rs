@@ -15,7 +15,7 @@ const A: &str = include_str!("fixtures/configuration-operation.archmap.json");
 fn inputs(map: &str) -> CheckedInputs {
     check_inputs(
         InputSources::from_bytes(vec![D.to_vec()], L.to_vec(), map.as_bytes().to_vec()),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
@@ -35,22 +35,13 @@ fn fact(id: &str, field: Option<&str>) -> FactPointer {
     }
 }
 fn arrow(i: &CheckedInputs, id: &str) -> ConfigurationOperation {
-    let r = internal_arrow(
-        i,
-        "Reservations",
-        "v",
-        "A",
-        "v",
-        id,
-        &mut Control::unlimited(),
-    )
-    .unwrap();
-    ConfigurationOperation::from_map(i, r.map().unwrap(), &mut Control::unlimited()).unwrap()
+    let r = internal_arrow(i, "Reservations", "v", "A", "v", id, &Control::unlimited()).unwrap();
+    ConfigurationOperation::from_map(i, r.map().unwrap(), &Control::unlimited()).unwrap()
 }
 fn migration(i: &CheckedInputs, id: &str) -> ConfigurationOperation {
-    let r = correspondence(i, "v", id, "Reservations", None, &mut Control::unlimited()).unwrap();
+    let r = correspondence(i, "v", id, "Reservations", None, &Control::unlimited()).unwrap();
     assert!(r.counterexamples().is_empty(), "{:?}", r.counterexamples());
-    ConfigurationOperation::from_map(i, r.map().unwrap(), &mut Control::unlimited()).unwrap()
+    ConfigurationOperation::from_map(i, r.map().unwrap(), &Control::unlimited()).unwrap()
 }
 fn ident(i: &CheckedInputs, root: &str, part: Option<&str>) -> ConfigurationOperation {
     identity(
@@ -59,7 +50,7 @@ fn ident(i: &CheckedInputs, root: &str, part: Option<&str>) -> ConfigurationOper
         "v",
         root,
         part.map(|p| ("v", p)),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap()
     .operation()
@@ -108,7 +99,7 @@ fn base_and_component_identities_fix_every_universe_atom_and_keep_typed_objects(
         assert!(op.map().candidate().subject().is_none());
         assert!(op.map().candidate().correspondence().is_none());
         assert!(matches!(op.derivation(),[OperationStep::Identity{object}]if object==&op.source()));
-        op.recheck(&i, &mut Control::unlimited()).unwrap();
+        op.recheck(&i, &Control::unlimited()).unwrap();
     }
     assert_ne!(
         ident(&i, "A", None).source(),
@@ -134,9 +125,9 @@ fn self_correspondence_is_not_the_empty_word_identity_on_the_whole_universe() {
         id.map().candidate().image(&fact("B", None)),
         Some(&fact("B", None))
     );
-    assert!(!z.word_equal(&i, &id, &mut Control::unlimited()).unwrap());
+    assert!(!z.word_equal(&i, &id, &Control::unlimited()).unwrap());
     let diff = z
-        .action_difference(&i, &id, &mut Control::unlimited())
+        .action_difference(&i, &id, &Control::unlimited())
         .unwrap()
         .unwrap();
     assert_ne!(diff.left(), diff.right());
@@ -151,9 +142,9 @@ fn same_action_different_generators_remain_different_words() {
         (migration(&i, "m"), migration(&i, "mm")),
     ] {
         assert_ne!(a.word(), b.word());
-        assert!(!a.word_equal(&i, &b, &mut Control::unlimited()).unwrap());
+        assert!(!a.word_equal(&i, &b, &Control::unlimited()).unwrap());
         assert!(
-            a.action_difference(&i, &b, &mut Control::unlimited())
+            a.action_difference(&i, &b, &Control::unlimited())
                 .unwrap()
                 .is_none()
         );
@@ -168,8 +159,8 @@ fn composition_uses_g_after_f_on_all_atoms_without_resetting_the_complement() {
     let i = inputs(A);
     let e = arrow(&i, "e");
     let h = arrow(&i, "h");
-    let eh = e.compose(&i, &h, &mut Control::unlimited()).unwrap();
-    let he = h.compose(&i, &e, &mut Control::unlimited()).unwrap();
+    let eh = e.compose(&i, &h, &Control::unlimited()).unwrap();
+    let he = h.compose(&i, &e, &Control::unlimited()).unwrap();
     assert_eq!(eh.word(), &[fact("e", None), fact("h", None)]);
     assert_eq!(he.word(), &[fact("h", None), fact("e", None)]);
     assert_eq!(eh.source().subject(), &fact("p", None));
@@ -191,7 +182,7 @@ fn composition_uses_g_after_f_on_all_atoms_without_resetting_the_complement() {
         assert_eq!(he.map().candidate().image(f), Some(&expected_he), "{f:?}");
     }
     let diff = ident(&i, "A", Some("p"))
-        .action_difference(&i, &eh, &mut Control::unlimited())
+        .action_difference(&i, &eh, &Control::unlimited())
         .unwrap()
         .unwrap();
     assert_eq!(diff.fact(), &fact("q", Some("free")));
@@ -202,7 +193,7 @@ fn composition_uses_g_after_f_on_all_atoms_without_resetting_the_complement() {
         Some(OperationStep::Compose { first: 0, then: 1 })
     ));
     assert!(eh.map().candidate().subject().is_none());
-    eh.map().recheck(&i, &mut Control::unlimited()).unwrap();
+    eh.map().recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn correspondence_composition_and_self_map_keep_distinct_named_words() {
@@ -210,11 +201,11 @@ fn correspondence_composition_and_self_map_keep_distinct_named_words() {
     let m = migration(&i, "m");
     let n = migration(&i, "n");
     let z = migration(&i, "z");
-    let mn = m.compose(&i, &n, &mut Control::unlimited()).unwrap();
+    let mn = m.compose(&i, &n, &Control::unlimited()).unwrap();
     assert_eq!(mn.word(), &[fact("m", None), fact("n", None)]);
-    assert!(!mn.word_equal(&i, &z, &mut Control::unlimited()).unwrap());
+    assert!(!mn.word_equal(&i, &z, &Control::unlimited()).unwrap());
     assert!(
-        mn.action_difference(&i, &z, &mut Control::unlimited())
+        mn.action_difference(&i, &z, &Control::unlimited())
             .unwrap()
             .is_none()
     );
@@ -236,39 +227,36 @@ fn identities_are_removed_and_association_is_flattened_without_erasing_generator
     let idp = ident(&i, "A", Some("p"));
     let idq = ident(&i, "A", Some("q"));
     for op in [
-        idp.compose(&i, &e, &mut Control::unlimited()).unwrap(),
-        e.compose(&i, &idq, &mut Control::unlimited()).unwrap(),
+        idp.compose(&i, &e, &Control::unlimited()).unwrap(),
+        e.compose(&i, &idq, &Control::unlimited()).unwrap(),
     ] {
-        assert!(op.word_equal(&i, &e, &mut Control::unlimited()).unwrap());
+        assert!(op.word_equal(&i, &e, &Control::unlimited()).unwrap());
         assert!(
-            op.action_difference(&i, &e, &mut Control::unlimited())
+            op.action_difference(&i, &e, &Control::unlimited())
                 .unwrap()
                 .is_none()
         );
         assert_eq!(op.derivation().len(), 3);
     }
     let left = e
-        .compose(&i, &h, &mut Control::unlimited())
+        .compose(&i, &h, &Control::unlimited())
         .unwrap()
-        .compose(&i, &e, &mut Control::unlimited())
+        .compose(&i, &e, &Control::unlimited())
         .unwrap();
     let right = e
         .compose(
             &i,
-            &h.compose(&i, &e, &mut Control::unlimited()).unwrap(),
-            &mut Control::unlimited(),
+            &h.compose(&i, &e, &Control::unlimited()).unwrap(),
+            &Control::unlimited(),
         )
         .unwrap();
     assert_eq!(
         left.word(),
         &[fact("e", None), fact("h", None), fact("e", None)]
     );
+    assert!(left.word_equal(&i, &right, &Control::unlimited()).unwrap());
     assert!(
-        left.word_equal(&i, &right, &mut Control::unlimited())
-            .unwrap()
-    );
-    assert!(
-        left.action_difference(&i, &right, &mut Control::unlimited())
+        left.action_difference(&i, &right, &Control::unlimited())
             .unwrap()
             .is_none()
     );
@@ -283,18 +271,10 @@ fn endpoint_reading_and_operation_layers_are_checked() {
     let i = inputs(A);
     let e = arrow(&i, "e");
     let m = migration(&i, "m");
-    let alternate = internal_arrow(
-        &i,
-        "Alternative",
-        "v",
-        "A",
-        "v",
-        "h",
-        &mut Control::unlimited(),
-    )
-    .unwrap();
     let alternate =
-        ConfigurationOperation::from_map(&i, alternate.map().unwrap(), &mut Control::unlimited())
+        internal_arrow(&i, "Alternative", "v", "A", "v", "h", &Control::unlimited()).unwrap();
+    let alternate =
+        ConfigurationOperation::from_map(&i, alternate.map().unwrap(), &Control::unlimited())
             .unwrap();
     for (first, then) in [
         (&e, &e),
@@ -303,12 +283,12 @@ fn endpoint_reading_and_operation_layers_are_checked() {
         (&m, &ident(&i, "A", None)),
     ] {
         assert!(
-            matches!(first.compose(&i,then,&mut Control::unlimited()),Err(ConstructionFailure::InvalidSelection(ref message))if !message.is_empty())
+            matches!(first.compose(&i,then,&Control::unlimited()),Err(ConstructionFailure::InvalidSelection(ref message))if !message.is_empty())
         );
     }
     for other in [ident(&i, "A", None), arrow(&i, "h"), alternate] {
         assert!(matches!(
-            e.action_difference(&i, &other, &mut Control::unlimited()),
+            e.action_difference(&i, &other, &Control::unlimited()),
             Err(ConstructionFailure::InvalidSelection(_))
         ));
     }
@@ -323,14 +303,14 @@ fn identity_keeps_missing_structure_and_rejects_invalid_object_selection() {
             "v",
             "A",
             component,
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let mut missing = fact("p", Some("owner"));
         missing.atom = None;
         assert!(r.missing().contains(&missing));
         assert!(r.operation().is_none());
-        r.recheck(&i, &mut Control::unlimited()).unwrap();
+        r.recheck(&i, &Control::unlimited()).unwrap();
     }
     let i = inputs(&remove(A, "p-free"));
     assert!(
@@ -340,7 +320,7 @@ fn identity_keeps_missing_structure_and_rejects_invalid_object_selection() {
             "v",
             "A",
             Some(("v", "p")),
-            &mut Control::unlimited()
+            &Control::unlimited()
         )
         .unwrap()
         .operation()
@@ -355,7 +335,7 @@ fn identity_keeps_missing_structure_and_rejects_invalid_object_selection() {
         ("Reservations", "B", Some(("v", "p"))),
     ] {
         assert!(matches!(
-            identity(&i, reading, "v", root, component, &mut Control::unlimited()),
+            identity(&i, reading, "v", root, component, &Control::unlimited()),
             Err(ConstructionFailure::InvalidSelection(_))
         ));
     }
@@ -365,41 +345,39 @@ fn current_input_recheck_rejects_changed_maps_and_retains_structural_quantity_in
     let i = inputs(A);
     let e = arrow(&i, "e");
     let h = arrow(&i, "h");
-    let both = e.compose(&i, &h, &mut Control::unlimited()).unwrap();
+    let both = e.compose(&i, &h, &Control::unlimited()).unwrap();
     let changed = inputs(&edit(A, "e-to", r#"["v","q"]"#, r#"["v","p"]"#));
-    assert!(e.recheck(&changed, &mut Control::unlimited()).is_err());
-    assert!(both.recheck(&changed, &mut Control::unlimited()).is_err());
-    assert!(
-        ConfigurationOperation::from_map(&changed, e.map(), &mut Control::unlimited()).is_err()
-    );
+    assert!(e.recheck(&changed, &Control::unlimited()).is_err());
+    assert!(both.recheck(&changed, &Control::unlimited()).is_err());
+    assert!(ConfigurationOperation::from_map(&changed, e.map(), &Control::unlimited()).is_err());
     let quantity = inputs(&edit(A, "p-free", r#""2""#, r#""99""#));
-    e.recheck(&quantity, &mut Control::unlimited()).unwrap();
-    both.recheck(&quantity, &mut Control::unlimited()).unwrap();
+    e.recheck(&quantity, &Control::unlimited()).unwrap();
+    both.recheck(&quantity, &Control::unlimited()).unwrap();
     let missing = inputs(&remove(A, "q-free"));
-    assert!(both.recheck(&missing, &mut Control::unlimited()).is_err());
+    assert!(both.recheck(&missing, &Control::unlimited()).is_err());
 }
 #[test]
 fn repeated_composition_has_a_flat_finite_derivation_and_preserves_order() {
     let i = inputs(A);
     let e = arrow(&i, "e");
     let h = arrow(&i, "h");
-    let mut op = e.compose(&i, &h, &mut Control::unlimited()).unwrap();
+    let mut op = e.compose(&i, &h, &Control::unlimited()).unwrap();
     for _ in 0..3 {
-        op = op.compose(&i, &op, &mut Control::unlimited()).unwrap();
+        op = op.compose(&i, &op, &Control::unlimited()).unwrap();
     }
     assert_eq!(op.word().len(), 16);
     assert_eq!(op.derivation().len(), 31);
     for pair in op.word().chunks_exact(2) {
         assert_eq!(pair, &[fact("e", None), fact("h", None)]);
     }
-    op.recheck(&i, &mut Control::unlimited()).unwrap();
+    op.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn every_fixed_operation_stop_latches_without_new_probes() {
     let i = inputs(A);
     let e = arrow(&i, "e");
     let h = arrow(&i, "h");
-    let original = e.compose(&i, &h, &mut Control::unlimited()).unwrap();
+    let original = e.compose(&i, &h, &Control::unlimited()).unwrap();
     let run = |kind, control: &mut Control| -> Result<(), ConstructionFailure> {
         match kind {
             0 => identity(&i, "Reservations", "v", "A", None, control).map(|_| ()),
@@ -441,10 +419,10 @@ fn every_fixed_operation_stop_latches_without_new_probes() {
                     "{kind}/{at}/{signal:?}"
                 );
                 assert_eq!(count.get(), at);
-                assert_eq!(original.recheck(&i, &mut control).unwrap_err(), failure);
+                assert_eq!(original.recheck(&i, &control).unwrap_err(), failure);
                 assert_eq!(count.get(), at);
                 assert_eq!(
-                    identity(&i, "Reservations", "v", "A", None, &mut control).unwrap_err(),
+                    identity(&i, "Reservations", "v", "A", None, &control).unwrap_err(),
                     failure
                 );
                 assert_eq!(count.get(), at);
@@ -463,14 +441,14 @@ fn retained_composition_keeps_only_completed_operations_at_fixed_stops() {
     for (kind, (first, then)) in [(&e, &h), (&m, &n)].into_iter().enumerate() {
         let operations = Rc::new(Cell::new(0usize));
         let seen = operations.clone();
-        let mut counting = Control::new(move |point| {
+        let counting = Control::new(move |point| {
             if point == Checkpoint::ConfigurationOperation {
                 seen.set(seen.get() + 1);
             }
             None
         });
-        let normal = first.compose_retained(&i, then, &mut counting).unwrap();
-        let legacy = first.compose(&i, then, &mut Control::unlimited()).unwrap();
+        let normal = first.compose_retained(&i, then, &counting).unwrap();
+        let legacy = first.compose(&i, then, &Control::unlimited()).unwrap();
         assert_eq!(normal, legacy);
         let total = operations.get();
         assert!(total > 5);
@@ -480,14 +458,14 @@ fn retained_composition_keeps_only_completed_operations_at_fixed_stops() {
                 let operations = Rc::new(Cell::new(0usize));
                 let calls = probes.clone();
                 let seen = operations.clone();
-                let mut control = Control::new(move |point| {
+                let control = Control::new(move |point| {
                     calls.set(calls.get() + 1);
                     if point == Checkpoint::ConfigurationOperation {
                         seen.set(seen.get() + 1);
                     }
                     (seen.get() >= at).then_some(signal)
                 });
-                let failure = first.compose_retained(&i, then, &mut control).unwrap_err();
+                let failure = first.compose_retained(&i, then, &control).unwrap_err();
                 let stop = ConstructionFailure::Stopped(control.stop_reason().unwrap());
                 assert_eq!(failure.cause(), &stop, "{at}/{signal:?}");
                 assert_eq!(operations.get(), at);
@@ -495,7 +473,7 @@ fn retained_composition_keeps_only_completed_operations_at_fixed_stops() {
                 if at == total {
                     let retained = failure.partial().expect("最後の確認では操作が完成済み");
                     assert_eq!(retained, &normal);
-                    retained.recheck(&i, &mut Control::unlimited()).unwrap();
+                    retained.recheck(&i, &Control::unlimited()).unwrap();
                     let candidate = retained.map().candidate();
                     let names = if kind == 0 { ["e", "h"] } else { ["m", "n"] };
                     assert_eq!(retained.word(), &names.map(|name| fact(name, None)));
@@ -514,14 +492,14 @@ fn retained_composition_keeps_only_completed_operations_at_fixed_stops() {
                         };
                         assert_eq!(candidate.image(atom), Some(&expected), "{kind}/{atom:?}");
                     }
-                    assert_eq!(retained.recheck(&i, &mut control).unwrap_err(), stop);
+                    assert_eq!(retained.recheck(&i, &control).unwrap_err(), stop);
                 } else {
                     assert!(
                         failure.partial().is_none(),
                         "{at}/{signal:?}: 未完成操作を保持した"
                     );
                 }
-                assert_eq!(first.compose(&i, then, &mut control).unwrap_err(), stop);
+                assert_eq!(first.compose(&i, then, &control).unwrap_err(), stop);
                 assert_eq!(probes.get(), frozen, "停止後に新しいprobeを実行した");
                 assert_eq!(operations.get(), at);
             }
@@ -535,18 +513,10 @@ fn retained_composition_rejects_changed_inputs_and_incompatible_endpoints_withou
     let e = arrow(&i, "e");
     let h = arrow(&i, "h");
     let m = migration(&i, "m");
-    let alternate = internal_arrow(
-        &i,
-        "Alternative",
-        "v",
-        "A",
-        "v",
-        "h",
-        &mut Control::unlimited(),
-    )
-    .unwrap();
     let alternate =
-        ConfigurationOperation::from_map(&i, alternate.map().unwrap(), &mut Control::unlimited())
+        internal_arrow(&i, "Alternative", "v", "A", "v", "h", &Control::unlimited()).unwrap();
+    let alternate =
+        ConfigurationOperation::from_map(&i, alternate.map().unwrap(), &Control::unlimited())
             .unwrap();
     for (first, then) in [
         (&e, &e),
@@ -555,29 +525,27 @@ fn retained_composition_rejects_changed_inputs_and_incompatible_endpoints_withou
         (&m, &ident(&i, "A", None)),
     ] {
         let failure = first
-            .compose_retained(&i, then, &mut Control::unlimited())
+            .compose_retained(&i, then, &Control::unlimited())
             .unwrap_err();
         assert!(
             matches!(failure.cause(), ConstructionFailure::InvalidSelection(message) if !message.is_empty())
         );
         assert!(failure.partial().is_none());
         assert_eq!(
-            &first
-                .compose(&i, then, &mut Control::unlimited())
-                .unwrap_err(),
+            &first.compose(&i, then, &Control::unlimited()).unwrap_err(),
             failure.cause()
         );
     }
     let changed = inputs(&edit(A, "e-to", "[\"v\",\"q\"]", "[\"v\",\"p\"]"));
     for (first, then) in [(&e, &h), (&h, &e)] {
         let failure = first
-            .compose_retained(&changed, then, &mut Control::unlimited())
+            .compose_retained(&changed, then, &Control::unlimited())
             .unwrap_err();
         assert!(!matches!(failure.cause(), ConstructionFailure::Stopped(_)));
         assert!(failure.partial().is_none());
         assert_eq!(
             &first
-                .compose(&changed, then, &mut Control::unlimited())
+                .compose(&changed, then, &Control::unlimited())
                 .unwrap_err(),
             failure.cause()
         );

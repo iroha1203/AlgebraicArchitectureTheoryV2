@@ -42,7 +42,7 @@ fn map_ty() -> Json {
     Json::Arr(vec![Json::str("Map"), state_ty(), state_ty()])
 }
 fn run(ask: &str) -> archsig::observed::ObservedEvaluation {
-    let outcome = evaluate_observed_bytes(fixture::input(false, false, "r1"), &[ask], &mut quiet());
+    let outcome = evaluate_observed_bytes(fixture::input(false, false, "r1"), &[ask], &quiet());
     match outcome {
         Ok(r) => r,
         Err(e) => panic!("evaluation failed: {:?}", e.wire()),
@@ -411,12 +411,12 @@ fn owned_compound_map_wrappers_keep_all_elements_and_empty_map_boundaries() {
 #[test]
 fn owned_compound_cross_snapshot_prefix_keeps_missing_fields_and_original_inputs() {
     let input = fixture::input(false, true, "r1");
-    let checked = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
     let before = format!("{:?}", checked.archmap());
     let r = evaluate_observed_bytes(
         input,
         &["c=check(Reservations.maps,a=@w/A,b=@v/B)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -471,7 +471,7 @@ fn owned_compound_unknown_membership_completes_each_consistent_fiber() {
         };
         let input = fixture::input(true, false, "r1");
         let original = input.clone();
-        let r = evaluate_observed_bytes(input, &[&ask], &mut quiet()).unwrap();
+        let r = evaluate_observed_bytes(input, &[&ask], &quiet()).unwrap();
         assert_eq!(r.status(), "complete");
         assert_eq!(r.prepared().inputs().sources(), &original);
         completion_evidence::original_owner_is_missing(&r, "v");
@@ -616,13 +616,13 @@ fn owned_compound_provenance_changes_keep_answers_and_current_sources() {
     let a = evaluate_observed_bytes(
         fixture::input(false, false, "r1"),
         &["c=check(Reservations.maps,a=@v/A,b=@v/B)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let b = evaluate_observed_bytes(
         fixture::input(false, false, "r2"),
         &["c=check(Reservations.maps,a=@v/A,b=@v/B)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(get(&a.wire(), "answers"), get(&b.wire(), "answers"));

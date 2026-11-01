@@ -23,7 +23,7 @@ fn saved_context(g: &Graph, r: NodeRef) -> Result<super::call::Context, Validati
         .copied()
         .ok_or_else(|| "述語不変量の保存Contextがない".into())
 }
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;
     Ok(())
 }
@@ -87,11 +87,7 @@ fn components(
     }
     Ok((a, r, objects))
 }
-fn earlier_table_references(
-    t: &Table,
-    base: usize,
-    c: &mut Control,
-) -> Result<(), ValidationFailure> {
+fn earlier_table_references(t: &Table, base: usize, c: &Control) -> Result<(), ValidationFailure> {
     let references = [t.architecture, t.component_source()]
         .into_iter()
         .chain(t.indices.iter().copied())
@@ -113,7 +109,7 @@ fn earlier_table_references(
 fn metadata(
     g: &Graph,
     arguments: &[NodeRef],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Fact>, Scope, Vec<Reason>), ValidationFailure> {
     let mut support = vec![];
     let mut scope = Scope::default();
@@ -197,7 +193,7 @@ fn compute(
     component: NodeRef,
     objects: &Objects,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Part>, Vec<Invariant>), ValidationFailure> {
     tick(c)?;
     let ds = t.diagrams()?;
@@ -473,7 +469,7 @@ pub(super) fn retain(
     env: &Environment<'_>,
     g: &mut Graph,
     t: Arc<Table>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Invariant>, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, t, c))
 }
@@ -511,9 +507,9 @@ impl Environment<'_> {
         };
         d.position(at)?;
         d.context(g)?;
-        let mut c = self.control.clone();
-        earlier_table_references(&d.source.table, d.source.base, &mut c)?;
-        d.source.table.recheck(self, g, &mut c)?;
+        let c = self.control.clone();
+        earlier_table_references(&d.source.table, d.source.base, &c)?;
+        d.source.table.recheck(self, g, &c)?;
         let (a, components, objects) = components(g, &d.source.table)?;
         if !Arc::ptr_eq(&a, &d.source.architecture)
             || components != d.source.components
@@ -529,7 +525,7 @@ impl Environment<'_> {
             components,
             &objects,
             d.source.base,
-            &mut c,
+            &c,
         )?;
         if parts != d.source.parts || outputs != d.source.outputs {
             return Err("述語不変量の元全Law/全域評価/metadataが違う".into());
@@ -543,7 +539,7 @@ impl super::result_kind::ResultKind for Data {
         &'a Environment<'input>,
         &'a mut Graph,
         Arc<Table>,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = Vec<Invariant>;
     fn compute_and_retain<'a, 'input: 'a>(

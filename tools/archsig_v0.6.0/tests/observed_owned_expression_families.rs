@@ -131,8 +131,7 @@ fn fixture(
         vocabulary_json("Owned", &format!("[{root},{state},{hop},{movement}]"), "[]")
     ));
     let checked =
-        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
-            .unwrap();
+        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &quiet()).unwrap();
     let digest = &checked.vocabularies()["Owned"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading Inspect {{ use vocabulary Owned version "1" digest "{digest}"; {script} }}"#
@@ -705,8 +704,8 @@ fn audit_in_domains(wire: &Json, checked: &CheckedInputs) {
     }
 }
 fn run(inputs: InputSources, asks: &[&str]) -> ObservedEvaluation {
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
-    let result = evaluate_observed_bytes(inputs, asks, &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
+    let result = evaluate_observed_bytes(inputs, asks, &quiet()).unwrap();
     unchanged(&checked, result.prepared().inputs());
     audit(&result.wire(), result.prepared().inputs());
     result
@@ -950,7 +949,7 @@ fn owned_empty_family_still_rejects_invalid_body_at_original_span() {
     let failure = evaluate_observed_bytes(
         inputs.clone(),
         &["bad=evaluate(Inspect.invalid,a=@v/Z)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_err();
     let w = failure.wire().unwrap();

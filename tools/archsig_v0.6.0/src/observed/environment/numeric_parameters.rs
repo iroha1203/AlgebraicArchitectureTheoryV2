@@ -38,7 +38,7 @@ pub(in crate::observed) fn axes(
     };
     let mut out = vec![];
     for index in 0..width {
-        c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        c.checkpoint(Checkpoint::FiniteIteration)?;
         out.push(affine::Parameter {
             binder: p.span,
             context,
@@ -60,7 +60,7 @@ pub(in crate::observed) fn restore<T>(
     tuple: &impl Fn(Vec<T>) -> T,
 ) -> Result<T, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        c.checkpoint(Checkpoint::FiniteIteration)?;
         match ty {
             Type::Tuple(items) => {
                 let mut parts = vec![];
@@ -82,7 +82,7 @@ pub(in crate::observed) fn substitute_value(
 ) -> Result<Option<Scalar>, ValidationFailure> {
     use super::super::term::affine::Value;
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        c.checkpoint(Checkpoint::FiniteIteration)?;
         match value {
             Value::Known(value) => Ok(Some(value.clone())),
             Value::Number(form) => affine::substitute_parameters(form, assignment, c)?.value(c),
@@ -192,7 +192,7 @@ pub(in crate::observed) fn point_value(
     let mut offset = 0;
     let mut found = false;
     for p in params {
-        c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        c.checkpoint(Checkpoint::FiniteIteration)?;
         if p == parameter {
             found = true;
             break;

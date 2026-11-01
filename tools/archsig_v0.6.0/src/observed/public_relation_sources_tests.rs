@@ -75,7 +75,7 @@ fn inputs_mode(extra: &str, missing: bool) -> InputSources {
 fn setup(extra: &str) -> (PreparedObserved, Graph, NodeRef, NodeRef) {
     let sources = inputs(extra);
     let old =
-        evaluate_observed_bytes(sources.clone(), &[E, ALIAS], &mut Control::unlimited()).unwrap();
+        evaluate_observed_bytes(sources.clone(), &[E, ALIAS], &Control::unlimited()).unwrap();
     assert_eq!(old.status(), "complete", "{:?}", old.issues);
     let mut graph = rebuild_for_origin_and_support_recheck(&old, &old.nodes).unwrap();
     let prepared = crate::observed::prepare_observed(
@@ -85,7 +85,7 @@ fn setup(extra: &str) -> (PreparedObserved, Graph, NodeRef, NodeRef) {
             ALIAS,
             "rel=compare($e.value,to=$alias.value,kind=relation)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     graph.requests = prepared.requests().requests().to_vec();
@@ -101,8 +101,8 @@ fn setup(extra: &str) -> (PreparedObserved, Graph, NodeRef, NodeRef) {
     )
 }
 fn check_graph(prepared: &PreparedObserved, graph: &Graph) {
-    let mut control = Control::unlimited();
-    let env = Environment::with_prepared(prepared, &mut control).unwrap();
+    let control = Control::unlimited();
+    let env = Environment::with_prepared(prepared, &control).unwrap();
     let mut rebuilt = Graph::new(&control);
     rebuilt.requests = graph.requests.clone();
     rebuilt.checked_answers = graph.checked_answers.clone();
@@ -122,8 +122,8 @@ fn check_graph(prepared: &PreparedObserved, graph: &Graph) {
 fn a_nonfinite_parameter_domain_is_not_published_as_empty_finite_exhaustion() {
     let (prepared, mut graph, left, right) =
         setup("relation unbounded(n:Z,e:Hop):path(e)=path(e);");
-    let mut control = Control::unlimited();
-    let env = Environment::with_prepared(&prepared, &mut control).unwrap();
+    let control = Control::unlimited();
+    let env = Environment::with_prepared(&prepared, &control).unwrap();
     let (w, domains) = relation_sources::prepare_sources(
         &prepared,
         &env,
@@ -131,7 +131,7 @@ fn a_nonfinite_parameter_domain_is_not_published_as_empty_finite_exhaustion() {
         &prepared.requests().requests()[2],
         left,
         right,
-        &mut control,
+        &control,
     )
     .unwrap();
     assert_eq!(
@@ -153,8 +153,8 @@ fn helper_and_let_occurrences_keep_their_original_relation_bindings() {
     let (prepared, mut graph, left, right) = setup(
         "relation wrapped_relation(e:Hop,flag:Bool) when flag or not flag:lexical(e)=(let p=step(e) in p);",
     );
-    let mut control = Control::unlimited();
-    let env = Environment::with_prepared(&prepared, &mut control).unwrap();
+    let control = Control::unlimited();
+    let env = Environment::with_prepared(&prepared, &control).unwrap();
     let request = &prepared.requests().requests()[2];
     let (w, domains) = relation_sources::prepare_sources(
         &prepared,
@@ -163,7 +163,7 @@ fn helper_and_let_occurrences_keep_their_original_relation_bindings() {
         request,
         left,
         right,
-        &mut control,
+        &control,
     )
     .unwrap();
     let table = &w.relation_family.as_ref().unwrap().table;
@@ -185,7 +185,7 @@ fn helper_and_let_occurrences_keep_their_original_relation_bindings() {
         let value = super::super::relation_side(
             &env,
             &mut graph,
-            &mut control,
+            &control,
             request,
             declaration,
             domains.instances[row].unwrap(),
@@ -202,8 +202,8 @@ fn helper_and_let_occurrences_keep_their_original_relation_bindings() {
 fn an_inactive_guard_cannot_publish_a_body_value() {
     let (prepared, mut graph, left, right) =
         setup("relation inactive(e:Hop) when false:path(e)=path(e);");
-    let mut control = Control::unlimited();
-    let env = Environment::with_prepared(&prepared, &mut control).unwrap();
+    let control = Control::unlimited();
+    let env = Environment::with_prepared(&prepared, &control).unwrap();
     let request = &prepared.requests().requests()[2];
     let (w, domains) = relation_sources::prepare_sources(
         &prepared,
@@ -212,7 +212,7 @@ fn an_inactive_guard_cannot_publish_a_body_value() {
         request,
         left,
         right,
-        &mut control,
+        &control,
     )
     .unwrap();
     let table = &w.relation_family.as_ref().unwrap().table;
@@ -224,7 +224,7 @@ fn an_inactive_guard_cannot_publish_a_body_value() {
     let value = super::super::relation_side(
         &env,
         &mut graph,
-        &mut control,
+        &control,
         request,
         declaration,
         instance,
@@ -240,7 +240,7 @@ fn an_inactive_guard_cannot_publish_a_body_value() {
         super::super::relation_side(
             &env,
             &mut graph,
-            &mut control,
+            &control,
             request,
             declaration,
             instance,
@@ -254,7 +254,7 @@ fn an_inactive_guard_cannot_publish_a_body_value() {
 const ALIAS_RELATION: &str = "relation aliasing(e:Hop,f:Hop) when source(path(e))=source(path(f)) and target(path(e))=target(path(f)):path(e)=path(f);";
 // 完了した評価は evaluate_observed の validate_answer が回答から辿れる全nodeを検査済みなので、ここでは再検査しない。
 fn public(sources: InputSources, queries: &[&str]) -> ObservedEvaluation {
-    let result = evaluate_observed_bytes(sources, queries, &mut Control::unlimited()).unwrap();
+    let result = evaluate_observed_bytes(sources, queries, &Control::unlimited()).unwrap();
     assert_eq!(result.status(), "complete", "{:?}", result.issues);
     result
 }
@@ -335,7 +335,7 @@ fn public_relation_uses_original_rules_and_retains_a_closed_word_certificate() {
     assert!(matches!(data.as_ref(), Data::Normalization { steps, .. } if !steps.is_empty()));
     // 証拠の再検査の代表: word の値と比較命題の判断を改竄すると核が拒否する。
     let graph = rebuild_for_origin_and_support_recheck(&with, &with.nodes).unwrap();
-    let env = Environment::with_prepared(with.prepared(), &mut Control::unlimited()).unwrap();
+    let env = Environment::with_prepared(with.prepared(), &Control::unlimited()).unwrap();
     let word = graph.nodes.iter().position(|node| matches!(&node.payload, Some(Payload::Construction(value)) if matches!(&value.data, D::Comparison(Part::RelationDerived { data, .. }) if matches!(data.as_ref(), Data::Value { value: Scalar::Tuple(values), .. } if values.len() == 4)))).unwrap();
     let mut forged = graph.nodes[word].clone();
     let Some(Payload::Construction(value)) = &mut forged.payload else {
@@ -369,7 +369,7 @@ fn an_unknown_guard_stays_undetermined_and_needed_keeps_its_original_slot() {
             "compared=compare($e.value,to=$alias.value,kind=relation)",
             "observe=needed($compared)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert!(
@@ -421,7 +421,7 @@ fn an_invalid_relation_refutes_constructibility_instead_of_congruence_membership
             ALIAS,
             "compared=compare($e.value,to=$alias.value,kind=relation)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let answer = &result.answers[2];
@@ -468,7 +468,7 @@ fn a_noncomposable_relation_body_retains_the_original_path_failure() {
             ALIAS,
             "compared=compare($e.value,to=$alias.value,kind=relation)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(
@@ -514,7 +514,7 @@ fn known_failure_with_an_independent_nonfinite_relation(invalid: &str, expected:
             ALIAS,
             "compared=compare($e.value,to=$alias.value,kind=relation)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let answer = &result.answers[2];
@@ -569,7 +569,7 @@ fn partial_domain_keeps_known_failure(outside: bool, body: &str, construction: &
             &two,
             "compared=compare($one.value,to=$two.value,kind=relation)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(result.answers[0].status, Decision::Established);
@@ -646,7 +646,7 @@ fn actual_endpoint_and_reading_mismatches_are_comparison_conditions() {
             fixture::F,
             "compared=compare($e.value,to=$f.value,kind=relation)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let reading = evaluate_observed_bytes(
@@ -656,7 +656,7 @@ fn actual_endpoint_and_reading_mismatches_are_comparison_conditions() {
             "two=evaluate(Alternative.common,e=@v/e)",
             "compared=compare($one.value,to=$two.value,kind=relation)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     for result in [endpoint, reading] {
@@ -697,23 +697,23 @@ fn public_relation_stops_keep_prior_values_and_only_finished_sealed_comparisons(
     ];
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut probe = Control::new(move |point| {
+    let probe = Control::new(move |point| {
         if point == Checkpoint::NativeResultNode {
             seen.set(seen.get() + 1);
         }
         None
     });
-    let normal = evaluate_observed_bytes(inputs(script), &qs, &mut probe).unwrap();
+    let normal = evaluate_observed_bytes(inputs(script), &qs, &probe).unwrap();
     assert_eq!(normal.answers[2].status, Decision::Refuted);
     let total = count.get();
     assert!(total > 4);
     // 停止の種類は共通の停止処理を通るので time 停止だけを、停止位置は未完と完了直後の2点を見る。
     for at in [1, total - 3] {
-        let (mut control, _) = stopping(at, Checkpoint::NativeResultNode);
+        let (control, _) = stopping(at, Checkpoint::NativeResultNode);
         let prepared =
-            crate::observed::prepare_observed(inputs(script), &qs, &mut Control::unlimited())
+            crate::observed::prepare_observed(inputs(script), &qs, &Control::unlimited())
                 .unwrap();
-        let result = evaluate_observed(prepared, &mut control).unwrap();
+        let result = evaluate_observed(prepared, &control).unwrap();
         assert_eq!(result.status(), "interrupted");
         assert_eq!(result.answers[..2], normal.answers[..2]);
         assert_eq!(result.answers[2].outputs.contains_key("comparison"), at > 1);
@@ -755,7 +755,7 @@ fn relation_kind_is_a_fixed_keyword_while_identifiers_and_private_projections_st
         ],
     ] {
         assert!(
-            crate::observed::prepare_observed(inputs(""), &asks, &mut Control::unlimited())
+            crate::observed::prepare_observed(inputs(""), &asks, &Control::unlimited())
                 .is_err()
         );
     }
@@ -772,7 +772,7 @@ fn a_relation_with_matching_endpoints_still_checks_every_actual_action_image() {
             "direct=evaluate(Walk.step,e=@v/different)",
             "compared=compare($c.operation,to=$direct.value,kind=relation)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(
@@ -830,7 +830,7 @@ fn the_missing_guard_can_change_the_actual_relation_decision_in_both_completions
                 ALIAS,
                 "compared=compare($e.value,to=$alias.value,kind=relation)",
             ],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete", "{:?}", result.issues);

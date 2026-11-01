@@ -21,7 +21,7 @@ use crate::{
     input::CheckedInputs,
 };
 use std::sync::Arc;
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ConfigurationProfile)?;
     Ok(())
 }
@@ -149,7 +149,7 @@ fn original(
     inputs: &CheckedInputs,
     reference: NodeRef,
     components: Option<NodeRef>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<
     Option<(
         Arc<ArchitectureWitness>,
@@ -240,7 +240,7 @@ fn compute(
     objects: &Objects,
     universe: NodeRef,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<(ConfigurationProfiles, Vec<Output>, Diagram)>, ValidationFailure> {
     tick(c)?;
     let root = a.construction().root();
@@ -370,7 +370,7 @@ pub(super) fn retain(
     inputs: Arc<CheckedInputs>,
     reference: NodeRef,
     components: Option<NodeRef>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Diagram>, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((
         env, g, inputs, reference, components, c,
@@ -417,14 +417,14 @@ impl Environment<'_> {
         let Witness::Architecture(a) = &value.witness else {
             return Err("query patternのconsumerが別種".into());
         };
-        let mut c = self.control.clone();
+        let c = self.control.clone();
         let Some((owner, components, objects, universe, support, scope)) = original(
             self,
             g,
             self.indexes.inputs,
             data.source.reference,
             Some(data.source.components),
-            &mut c,
+            &c,
         )?
         else {
             return Err("query patternの元対象が未完成".into());
@@ -454,7 +454,7 @@ impl Environment<'_> {
             &objects,
             universe,
             data.source.base,
-            &mut c,
+            &c,
         )?
         else {
             return Err("query patternの元全表が未完成".into());
@@ -466,7 +466,7 @@ impl Environment<'_> {
             return Err("query patternが元の全query/対象identity/対応と違う".into());
         }
         self.results.remember(data.source.clone());
-        tick(&mut c)
+        tick(&c)
     }
 }
 
@@ -477,7 +477,7 @@ impl super::result_kind::ResultKind for Data {
         Arc<CheckedInputs>,
         NodeRef,
         Option<NodeRef>,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = Option<Diagram>;
     fn compute_and_retain<'a, 'input: 'a>(

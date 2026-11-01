@@ -331,7 +331,7 @@ fn rational_repair_stop_after_first_witness_keeps_existence_without_object() {
     );
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::ChangeWitness {
             count.set(count.get() + 1);
         }
@@ -348,7 +348,7 @@ fn rational_repair_stop_after_first_witness_keeps_existence_without_object() {
             "r=repair(Pair.pinned,using=Pair.choose,on=@v/s,s=@v/s)",
             "later=check(Pair.pinned,s=@v/s)",
         ],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert_eq!(seen.get(), 2);
@@ -444,9 +444,9 @@ fn rational_missing_conditions_keep_source_binding_and_needed_field() {
         let law = std::str::from_utf8(sources.law().bytes())
             .unwrap()
             .to_owned();
-        let mut control = Control::unlimited();
-        let prepared = prepare_observed(sources, &MISSING_ASKS, &mut control).unwrap();
-        let result = evaluate_observed(prepared, &mut control).unwrap();
+        let control = Control::unlimited();
+        let prepared = prepare_observed(sources, &MISSING_ASKS, &control).unwrap();
+        let result = evaluate_observed(prepared, &control).unwrap();
         assert_eq!(result.status(), "partial", "{guard}");
         let internal = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
         let answer = &arr(get(&internal, "answers"))[0];
@@ -1644,12 +1644,12 @@ fn quotient_inconsistent_rational_law_guard_has_empty_applicability() {
         let sources = input_sources(&format!(
             "change choose(s:State,a:Q,b:Q)=s with{{x=a,y=b}};law required total(s:State):s.x+s.y=1;law optional inactive(s:State) when {guard}:s.y=s.y;"
         ));
-        let mut control = Control::unlimited();
+        let control = Control::unlimited();
         let ask = format!("q=quotient(Pair.x,on={domain},s=@v/s,law=Pair.inactive)");
         let evaluated = evaluate_observed_bytes(
             sources,
             &["s=solve(Pair.total,on=@v/s,using=Pair.choose)", &ask],
-            &mut control,
+            &control,
         );
         assert!(
             evaluated.is_ok(),
@@ -1671,7 +1671,7 @@ fn quotient_inconsistent_rational_law_guard_has_empty_applicability() {
 
 fn conditional_internal(body: &str, asks: &[&str]) -> JNode {
     use archsig::{control::Control, observed::evaluate::evaluate_observed_bytes};
-    let result = evaluate_observed_bytes(input_sources(body), asks, &mut Control::unlimited());
+    let result = evaluate_observed_bytes(input_sources(body), asks, &Control::unlimited());
     let Ok(result) = result else {
         panic!("conditional quotient must complete")
     };
@@ -1888,7 +1888,7 @@ fn quotient_variable_guard_missing_is_not_empty_and_empty_skips_missing_body() {
                 "q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.active)",
                 "n=needed($q)",
             ],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         );
         let Ok(result) = result else {
             panic!("missing and empty must remain separate")
@@ -1959,7 +1959,7 @@ fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
     for signal in [Signal::Int, Signal::Term] {
         let hit = Rc::new(Cell::new(false));
         let seen = hit.clone();
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if point == Checkpoint::QuotientGuardedInstance {
                 seen.set(true);
                 Some(signal)
@@ -1977,7 +1977,7 @@ fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
                 "q=quotient(Pair.x,on=$s.domain,s=@v/s,law=Pair.active)",
                 "later=evaluate(Pair.x,s=@v/s)",
             ],
-            &mut control,
+            &control,
         );
         let Ok(result) = evaluated else {
             panic!("guarded quotient stop must preserve completed solve")
@@ -2059,7 +2059,7 @@ fn rational_unknown_guard_keeps_its_own_source_bindings_and_free_parameter() {
     let evaluated = archsig::observed::evaluate_observed_bytes(
         sources,
         &["s=solve(Pair.total,on=@v/s,using=Pair.choose,c=@v/s)"],
-        &mut archsig::control::Control::unlimited(),
+        &archsig::control::Control::unlimited(),
     )
     .unwrap();
     assert_eq!(evaluated.status(), "partial");

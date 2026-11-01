@@ -40,7 +40,7 @@ impl Environment<'_> {
             self.indexes.inputs.law(),
             initial,
             path,
-            &mut self.control.clone(),
+            &self.control.clone(),
         ) {
             Ok(_) => {}
             Err(ProjectionFailure::Interrupted(stop)) => return Err(stop.into()),

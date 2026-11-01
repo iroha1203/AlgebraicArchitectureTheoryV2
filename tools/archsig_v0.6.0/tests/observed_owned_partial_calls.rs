@@ -21,7 +21,7 @@ fn partial_owned_tuple_checks_members_beside_unbound_numbers() {
             "good=check(Reservations.pcGood,a=@v/A,p=@v/p)",
             "bad=check(Reservations.pcGood,a=@v/B,p=@v/p)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     let w = r.wire();
@@ -43,7 +43,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input(false, "r1"), asks, &mut quiet())
+    let r = evaluate_observed_bytes(fixture::input(false, "r1"), asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", get(&r.wire(), "issues"));
     r
@@ -249,7 +249,7 @@ fn partial_owned_numeric_missing_keeps_same_slot_correlation_and_known_members()
     let absent = evaluate_observed_bytes(
         missing_input.clone(),
         &["absent=evaluate(Reservations.pcUnknown,a=@v/A,e=@v/e,q=@v/q)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(absent.prepared().inputs().sources(), &missing_input);
@@ -324,7 +324,7 @@ fn partial_owned_known_mismatch_after_or_before_unknown_member_keeps_the_same_co
             "after=evaluate(Reservations.pcMixed,a=@v/B,e=@v/e,p=@v/p,q=@v/q)",
             "before=evaluate(Reservations.pcMixedReverse,a=@v/B,e=@v/e,p=@v/p,q=@v/q)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial");
@@ -367,7 +367,7 @@ fn partial_owned_blocked_inner_numeric_call_cannot_be_discarded_by_tuple_boundar
     let r = evaluate_observed_bytes(
         fixture::missing_reference_input(),
         &["wrapped=evaluate(Reservations.pcUnknownNumeric,a=@v/B,e=@v/e,p=@v/r)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let w = r.wire();
@@ -448,7 +448,7 @@ fn partial_owned_pending_conditions_survive_plain_calls_lexical_forms_and_quanti
             "quantified=evaluate(Reservations.pcPendingQuant,a=@v/B,e=@v/e)",
             "later=evaluate(Reservations.seed)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     let w = r.wire();
@@ -493,7 +493,7 @@ fn partial_owned_pending_conditions_in_unselected_branches_allow_the_selected_re
             "branch=evaluate(Reservations.pcSkipIf,a=@v/B,e=@v/e)",
             "boolean=evaluate(Reservations.pcSkipOr,a=@v/B,e=@v/e)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     let w = r.wire();
@@ -547,7 +547,7 @@ fn partial_owned_pending_numeric_condition_keeps_independent_known_mismatch() {
     let r = evaluate_observed_bytes(
         fixture::missing_reference_input(),
         &["bad=evaluate(Reservations.pcUnknownNumeric,a=@v/B,e=@v/e,p=@v/p)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     let w = r.wire();
@@ -590,7 +590,7 @@ fn partial_owned_false_implies_pending_right_keeps_true_value_and_missing() {
             "conjunction=evaluate(Reservations.pcSkipAnd,a=@v/B,e=@v/e)",
             "needed=evaluate(Reservations.pcTrueImplies,a=@v/B,e=@v/e)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     let w = r.wire();
@@ -633,7 +633,7 @@ fn partial_owned_pending_components_keep_mismatch_across_order_list_returns_and_
     let r = evaluate_observed_bytes(
         fixture::missing_reference_input(),
         &["universalbad=check(Reservations.pcPendingUniversal,a=@v/B,e=@v/e,p=@v/p)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     let w = r.wire();

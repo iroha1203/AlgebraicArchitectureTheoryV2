@@ -248,7 +248,7 @@ fn decision(v: Option<bool>) -> Decision {
 }
 impl Calculator<'_> {
     fn tick(&self) -> Result<(), ValidationFailure> {
-        self.c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        self.c.checkpoint(Checkpoint::FiniteIteration)?;
         Ok(())
     }
     fn add(&mut self, data: Data) -> Result<NodeRef, ValidationFailure> {

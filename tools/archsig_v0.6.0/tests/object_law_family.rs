@@ -45,7 +45,7 @@ fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
                 expand(law),
                 expand(map),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap_or_else(|f| panic!("{:?}", f.issues())),
     )
@@ -53,7 +53,7 @@ fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
 fn run(i: Arc<CheckedInputs>, object: &str, view: &str, subject: &str) -> ObjectLawTransport {
     let d = declarations(&i);
     let (o, r) = indices(&i, object, view, subject);
-    object_law_transport(i, &d, o, r, &mut quiet()).unwrap()
+    object_law_transport(i, &d, o, r, &quiet()).unwrap()
 }
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("{j:?}") };
@@ -86,7 +86,7 @@ fn finite_type_domains_and_every_product_row_are_preserved() {
         assert_eq!(family.rows().len(), count, "{name}");
         for p in family.parameters() {
             assert!(p.bijection().is_some());
-            p.recheck(&i, &mut quiet()).unwrap();
+            p.recheck(&i, &quiet()).unwrap();
         }
         for row in family.rows() {
             assert_eq!(row.outcome(), &Outcome::Preserved);
@@ -110,7 +110,7 @@ fn finite_type_domains_and_every_product_row_are_preserved() {
         }
         // 全体の再検査は行の積を持つ product で代表する。
         if name == "product" {
-            r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+            r.recheck(Arc::clone(&i), &quiet()).unwrap();
         }
     }
 }
@@ -149,8 +149,8 @@ fn equal_forall_refutations_do_not_establish_pointwise_equivalence() {
                 &Json::str("refuted")
             );
         }
-        r.operation().recheck(&i, &mut quiet()).unwrap();
-        r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+        r.operation().recheck(&i, &quiet()).unwrap();
+        r.recheck(Arc::clone(&i), &quiet()).unwrap();
     }
 }
 
@@ -288,7 +288,7 @@ fn completion_conditionals_require_agreement_for_true_false_and_unknown_cases() 
         assert_eq!(row.target().conditional(), Some(true));
         assert_eq!(row.source_evaluations().len(), 2);
     }
-    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    r.recheck(Arc::clone(&i), &quiet()).unwrap();
 }
 
 #[test]
@@ -303,7 +303,7 @@ fn outside_objects_and_conditional_membership_remain_distinct_for_every_paramete
         assert!(row.source_evaluations().is_empty());
         assert!(row.target_evaluations().is_empty());
     }
-    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    r.recheck(Arc::clone(&i), &quiet()).unwrap();
     let r = run(Arc::clone(&i), "p", "conditional", "p");
     assert_eq!(r.outcome(), &Outcome::Undetermined);
     assert_eq!(r.family().unwrap().rows().len(), 2);
@@ -318,7 +318,7 @@ fn outside_objects_and_conditional_membership_remain_distinct_for_every_paramete
         ));
         assert_eq!(row.source().body(), None);
     }
-    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    r.recheck(Arc::clone(&i), &quiet()).unwrap();
 }
 
 #[test]
@@ -354,7 +354,7 @@ fn reference_parameter_domains_use_the_actual_permutation_and_keep_failures() {
             .iter()
             .any(|(a, b)| a.contains("\"r\"") && b.contains("\"q\""))
     );
-    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    r.recheck(Arc::clone(&i), &quiet()).unwrap();
     let collision = edit(
         A,
         "m-entries",
@@ -370,8 +370,8 @@ fn reference_parameter_domains_use_the_actual_permutation_and_keep_failures() {
     assert!(r.family().unwrap().parameters()[0].bijection().is_none());
     assert!(!r.family().unwrap().parameters()[0].failures().is_empty());
     assert!(r.source().is_none());
-    r.operation().recheck(&i, &mut quiet()).unwrap();
-    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    r.operation().recheck(&i, &quiet()).unwrap();
+    r.recheck(Arc::clone(&i), &quiet()).unwrap();
 }
 
 #[test]
@@ -386,15 +386,12 @@ fn current_body_guard_quantity_mapping_and_parameter_domain_are_rechecked() {
             "law required boolean(c: Left.Child, b: Unit): true;",
         ),
     ] {
-        assert!(r.recheck(inputs(&law, A), &mut quiet()).is_err());
+        assert!(r.recheck(inputs(&law, A), &quiet()).is_err());
     }
     let r = run(Arc::clone(&i), "p", "field", "p");
     assert!(
-        r.recheck(
-            inputs(L, &edit(A, "p-count", "\"2\"", "\"12\"")),
-            &mut quiet()
-        )
-        .is_err()
+        r.recheck(inputs(L, &edit(A, "p-count", "\"2\"", "\"12\"")), &quiet())
+            .is_err()
     );
     let r = run(Arc::clone(&i), "p", "references", "p");
     let map = edit(
@@ -403,7 +400,7 @@ fn current_body_guard_quantity_mapping_and_parameter_domain_are_rechecked() {
         "[[[\"v\",\"p\"],[\"v\",\"q\"]],[[\"v\",\"r\"],[\"v\",\"s\"]]]",
         "[[[\"v\",\"p\"],[\"v\",\"s\"]],[[\"v\",\"r\"],[\"v\",\"q\"]]]",
     );
-    assert!(r.recheck(inputs(L, &map), &mut quiet()).is_err());
+    assert!(r.recheck(inputs(L, &map), &quiet()).is_err());
 }
 
 #[test]
@@ -420,7 +417,7 @@ fn fixed_family_stops_keep_completed_evaluations_and_rows_without_a_family_decis
         &d,
         o,
         n,
-        &mut Control::new(move |p| {
+        &Control::new(move |p| {
             if p == Checkpoint::ObjectLawFamily {
                 seen.set(seen.get() + 1);
             }
@@ -437,7 +434,7 @@ fn fixed_family_stops_keep_completed_evaluations_and_rows_without_a_family_decis
     for at in [count / 2, count] {
         let hits = Rc::new(Cell::new(0));
         let seen = hits.clone();
-        let mut c = Control::new(move |p| {
+        let c = Control::new(move |p| {
             if p == Checkpoint::ObjectLawFamily {
                 seen.set(seen.get() + 1);
             }
@@ -449,14 +446,14 @@ fn fixed_family_stops_keep_completed_evaluations_and_rows_without_a_family_decis
             operation,
             partial: Some(p),
             ..
-        } = object_law_transport(Arc::clone(&i), &d, o, n, &mut c).unwrap_err()
+        } = object_law_transport(Arc::clone(&i), &d, o, n, &c).unwrap_err()
         else {
             panic!()
         };
         assert_eq!(reason, c.stop_reason().unwrap());
         assert_eq!(hits.get(), at);
         assert!(p.outcome().is_none());
-        operation.recheck(&i, &mut quiet()).unwrap();
+        operation.recheck(&i, &quiet()).unwrap();
         if at == count {
             assert_eq!(p.family().unwrap().rows(), normal.family().unwrap().rows());
             for (current, original) in [
@@ -474,7 +471,7 @@ fn fixed_family_stops_keep_completed_evaluations_and_rows_without_a_family_decis
         }
         let before = hits.get();
         assert!(matches!(
-            object_law_transport(Arc::clone(&i), &d, o, n, &mut c),
+            object_law_transport(Arc::clone(&i), &d, o, n, &c),
             Err(Error::Construction(ConstructionFailure::Stopped(_)))
         ));
         assert_eq!(hits.get(), before);
@@ -482,7 +479,7 @@ fn fixed_family_stops_keep_completed_evaluations_and_rows_without_a_family_decis
     let hits = Rc::new(Cell::new(0));
     let seen = hits.clone();
     let last = whole_hits.get();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::ObjectLawTransport {
             seen.set(seen.get() + 1);
         }
@@ -491,7 +488,7 @@ fn fixed_family_stops_keep_completed_evaluations_and_rows_without_a_family_decis
     });
     let Error::Stopped {
         partial: Some(p), ..
-    } = object_law_transport(Arc::clone(&i), &d, o, n, &mut c).unwrap_err()
+    } = object_law_transport(Arc::clone(&i), &d, o, n, &c).unwrap_err()
     else {
         panic!()
     };

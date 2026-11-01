@@ -44,15 +44,15 @@ fn cancellation_reaches_inside_a_single_law_expression_after_syntax_checking() {
     let definitions = common::definitions_ok(&[common::EMPTY_DEFINITION]);
     let short = common::reading("view value(x: Z): Z = x;");
     let long = common::reading(&format!("view value(x: Z): Z = {};", repeated_sum()));
-    let (mut baseline, small_steps) = counting(Checkpoint::LawSemantics);
-    check_law_controlled(short.as_bytes(), &definitions, &mut baseline).unwrap();
-    let (mut complete, full_steps) = counting(Checkpoint::LawSemantics);
-    check_law_controlled(long.as_bytes(), &definitions, &mut complete).unwrap();
+    let (baseline, small_steps) = counting(Checkpoint::LawSemantics);
+    check_law_controlled(short.as_bytes(), &definitions, &baseline).unwrap();
+    let (complete, full_steps) = counting(Checkpoint::LawSemantics);
+    check_law_controlled(long.as_bytes(), &definitions, &complete).unwrap();
     // 両入力は同じ一宣言。短い本体の検査全体より遅い境界でも、長い本体内へ到達する。
     let stop_after = small_steps.get() + 3;
     assert!(full_steps.get() > stop_after + 10);
-    let (mut control, seen) = cancelled(Checkpoint::LawSemantics, stop_after);
-    let failure = check_law_controlled(long.as_bytes(), &definitions, &mut control).unwrap_err();
+    let (control, seen) = cancelled(Checkpoint::LawSemantics, stop_after);
+    let failure = check_law_controlled(long.as_bytes(), &definitions, &control).unwrap_err();
     assert!(matches!(failure, CheckFailure::Stopped(Signal::Term)));
     assert_eq!(seen.get(), stop_after);
 }
@@ -61,13 +61,13 @@ fn cancellation_reaches_inside_a_single_law_expression_after_syntax_checking() {
 fn speculative_quantifier_type_checking_never_swallows_a_stop() {
     let definitions = common::definitions_ok(&[common::EMPTY_DEFINITION]);
     let law = common::reading("law optional quantified(): forall x: Z . exists y: Z . x = y;");
-    let (mut baseline, count) = counting(Checkpoint::LawSemantics);
-    check_law_controlled(law.as_bytes(), &definitions, &mut baseline).unwrap();
+    let (baseline, count) = counting(Checkpoint::LawSemantics);
+    check_law_controlled(law.as_bytes(), &definitions, &baseline).unwrap();
     assert!(count.get() > 10);
     // 候補を試し直す経路も含め、小さい入力の全境界へそれぞれ取消を注入する。
     for stop_after in 1..=count.get() {
-        let (mut control, seen) = cancelled(Checkpoint::LawSemantics, stop_after);
-        let failure = check_law_controlled(law.as_bytes(), &definitions, &mut control).unwrap_err();
+        let (control, seen) = cancelled(Checkpoint::LawSemantics, stop_after);
+        let failure = check_law_controlled(law.as_bytes(), &definitions, &control).unwrap_err();
         assert!(
             matches!(failure, CheckFailure::Stopped(Signal::Term)),
             "{stop_after}: {failure:?}"
@@ -91,8 +91,8 @@ fn cancellation_inside_cycle_dfs_stays_distinct_from_a_cycle_input_error() {
         Code::Cycle
     );
     // 空のview graphの終端、reading DFSの根、nodeに続くedgeを停止点にする。
-    let (mut control, seen) = cancelled(Checkpoint::LawCycle, 4);
-    let failure = check_law_controlled(law.as_bytes(), &definitions, &mut control).unwrap_err();
+    let (control, seen) = cancelled(Checkpoint::LawCycle, 4);
+    let failure = check_law_controlled(law.as_bytes(), &definitions, &control).unwrap_err();
     assert!(matches!(failure, CheckFailure::Stopped(Signal::Term)));
     assert_eq!(seen.get(), 4);
 }
@@ -122,14 +122,13 @@ fn term_input(body: &str) -> (archsig::definition::CheckedDefinitions, String) {
 #[test]
 fn archmap_term_lexer_parser_and_late_type_check_share_the_control() {
     let (definitions, map) = term_input(&repeated_sum());
-    let (mut baseline, total) = counting(Checkpoint::ArchMapTerm);
-    check_archmap_controlled(map.as_bytes(), &definitions, &mut baseline).unwrap();
+    let (baseline, total) = counting(Checkpoint::ArchMapTerm);
+    check_archmap_controlled(map.as_bytes(), &definitions, &baseline).unwrap();
     assert!(total.get() > 50);
     // 前半の字句/構文検査と、返却直前の2境界より前の式検査の両方へ注入する。
     for stop_after in [total.get() / 2, total.get() - 4] {
-        let (mut control, seen) = cancelled(Checkpoint::ArchMapTerm, stop_after);
-        let failure =
-            check_archmap_controlled(map.as_bytes(), &definitions, &mut control).unwrap_err();
+        let (control, seen) = cancelled(Checkpoint::ArchMapTerm, stop_after);
+        let failure = check_archmap_controlled(map.as_bytes(), &definitions, &control).unwrap_err();
         assert!(
             matches!(failure, CheckFailure::Stopped(Signal::Term)),
             "{stop_after}: {failure:?}"

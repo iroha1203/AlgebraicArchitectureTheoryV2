@@ -82,17 +82,17 @@ fn stopped(failure: InputFailure, expected: Signal, count: &Cell<usize>, at: usi
 #[test]
 fn definition_manifest_and_model_canonicalization_stop_from_bytes_at_internal_boundaries() {
     let source = sources(&definition(3, true, "quote\" slash\\ newline\n雪"));
-    let (mut control, total) = probe(None);
-    prepare_observed(source.clone(), &["v=evaluate(R.value)"], &mut control).unwrap();
+    let (control, total) = probe(None);
+    prepare_observed(source.clone(), &["v=evaluate(R.value)"], &control).unwrap();
     assert!(total.get() > 20);
     let expected = Signal::Term;
     for at in [1, total.get() / 2, total.get()] {
-        let (mut control, count) = probe(Some(at));
-        let failure = check_inputs(source.clone(), &mut control).unwrap_err();
+        let (control, count) = probe(Some(at));
+        let failure = check_inputs(source.clone(), &control).unwrap_err();
         stopped(failure, expected, &count, at);
-        let (mut control, count) = probe(Some(at));
+        let (control, count) = probe(Some(at));
         let PrepareFailure::Inputs(failure) =
-            prepare_observed(source.clone(), &["v=evaluate(R.value)"], &mut control).unwrap_err()
+            prepare_observed(source.clone(), &["v=evaluate(R.value)"], &control).unwrap_err()
         else {
             panic!("definition stage")
         };
@@ -101,13 +101,12 @@ fn definition_manifest_and_model_canonicalization_stop_from_bytes_at_internal_bo
 }
 
 #[test]
-fn normalization_visits_nested_types_each_field_and_escaped_string_character() {
+fn normalization_visits_nested_types_each_field_and_escaped_string_chunk() {
     let count = |fields, nested, meaning| {
         let text = definition(fields, nested, meaning);
-        let (mut control, total) = probe(None);
+        let (control, total) = probe(None);
         let controlled =
-            check_definitions_controlled(&[("definition0", text.as_bytes())], &mut control)
-                .unwrap();
+            check_definitions_controlled(&[("definition0", text.as_bytes())], &control).unwrap();
         let ordinary = check_definitions(&[("definition0", text.as_bytes())]).unwrap();
         assert_eq!(ordinary, controlled);
         assert_eq!(
@@ -130,10 +129,9 @@ fn normalization_visits_nested_types_each_field_and_escaped_string_character() {
         "nested type components: {scalar}/{nested}"
     );
     assert!(fields > nested + 20, "field conversion: {nested}/{fields}");
-    assert!(
-        escaped > fields + 20,
-        "string scalar traversal: {fields}/{escaped}"
-    );
+    assert_eq!(escaped, fields, "短い文字列は同じ区切り数で確認する");
+    let long = count(3, true, &"x\"\\\n雪".repeat(300));
+    assert!(long > escaped + 20, "string chunks: {escaped}/{long}");
 }
 
 #[test]
@@ -155,15 +153,15 @@ fn definition_errors_keep_their_stage_and_cannot_hide_final_canonical_stop() {
             source.law().bytes().to_vec(),
             source.archmap().bytes().to_vec(),
         );
-        let (mut control, total) = probe(None);
-        let failure = check_inputs(source.clone(), &mut control).unwrap_err();
+        let (control, total) = probe(None);
+        let failure = check_inputs(source.clone(), &control).unwrap_err();
         assert_eq!(failure.status(), status);
         assert!(failure.primitives().is_empty());
         assert!(failure.declarations().is_empty());
         assert!(failure.vocabularies().is_empty());
         assert_eq!(total.get(), 3, "byte digest before/after and error exit");
-        let (mut control, count) = probe(Some(total.get()));
-        let failure = check_inputs(source.clone(), &mut control).unwrap_err();
+        let (control, count) = probe(Some(total.get()));
+        let failure = check_inputs(source.clone(), &control).unwrap_err();
         stopped(failure, Signal::Term, &count, total.get());
     }
 }

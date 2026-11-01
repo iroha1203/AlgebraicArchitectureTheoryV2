@@ -13,7 +13,7 @@ use crate::observed::{
 use crate::types::Type;
 use std::collections::BTreeMap;
 
-fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectLawFamily)
         .map_err(Into::into)
 }
@@ -83,7 +83,7 @@ fn unsupported(r: &ObjectLawTransport) -> ObjectLawTransportFailure {
 pub(super) fn prepare(
     inputs: &CheckedInputs,
     r: &mut ObjectLawTransport,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ObjectLawTransportFailure> {
     let source = r.instance().clone();
     let target = r
@@ -146,7 +146,7 @@ pub(super) fn compare(
         _ => LawTransportOutcome::Undetermined,
     }
 }
-fn coordinates(lengths: &[usize], c: &mut Control) -> Result<Vec<Vec<usize>>, ConstructionFailure> {
+fn coordinates(lengths: &[usize], c: &Control) -> Result<Vec<Vec<usize>>, ConstructionFailure> {
     let mut rows = vec![vec![]];
     for &length in lengths {
         let mut next = Vec::new();
@@ -176,7 +176,7 @@ fn collect(
     params: &[crate::law::model::Param],
     domains: &[&[FiniteTransportValue]],
     keys: &[Vec<usize>],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Rows, ConstructionFailure> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         tick(c)?;
@@ -272,7 +272,7 @@ fn root_rows(
     e: &ObjectEvaluation,
     domains: &[&[FiniteTransportValue]],
     keys: &[Vec<usize>],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Rows>, ConstructionFailure> {
     let ObjectEvaluationOutcome::Evaluated(evaluation) = e.outcome() else {
         return Ok(None);
@@ -299,7 +299,7 @@ impl LawReadingFamily {
         &self,
         e: &ObjectEvaluation,
         row: Option<usize>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Vec<NodeRef>, ConstructionFailure> {
         if row.is_none() {
             if self
@@ -421,7 +421,7 @@ impl LawReadingFamily {
 /// 全称Boolだけでは非定数関数の一様性を判断しない。
 pub(in crate::observed) fn constant_numeric_family(
     e: &ObjectEvaluation,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<(NodeRef, NodeRef, Scalar)>, ConstructionFailure> {
     use crate::law::{
         ast::{BinOp, ExprKind},
@@ -636,7 +636,7 @@ fn consensus(values: impl Iterator<Item = Option<bool>>) -> Option<bool> {
 fn row_reading(
     e: &ObjectEvaluation,
     refs: &[NodeRef],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<LawBooleanReading, ConstructionFailure> {
     let ObjectEvaluationOutcome::Evaluated(evaluation) = e.outcome() else {
         return reading(e, c);
@@ -664,7 +664,7 @@ fn row_reading(
 }
 pub(super) fn compare_rows(
     r: &mut ObjectLawTransport,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     let family = r
         .family
@@ -829,7 +829,7 @@ fn finite_outside_rows(
     inputs: &CheckedInputs,
     e: &ObjectEvaluation,
     result: &mut LawReadingFamily,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ObjectEvaluationFailure> {
     for p in e.instance().parameters() {
         tick(c)?;
@@ -895,7 +895,7 @@ pub(in crate::observed) fn read_native_family(
     inputs: &CheckedInputs,
     e: &ObjectEvaluation,
     result: &mut LawReadingFamily,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ObjectEvaluationFailure> {
     tick(c)?;
     if e.instance().declaration().kind != "law" {
@@ -1040,10 +1040,7 @@ mod tests {
                 5 => f.rows[0].source_evaluations.clear(),
                 _ => f.rows[0].target_evaluations[0] = NodeRef(usize::MAX),
             }
-            assert!(
-                r.recheck(i, &mut Control::unlimited()).is_err(),
-                "mode={mode}"
-            );
+            assert!(r.recheck(i, &Control::unlimited()).is_err(), "mode={mode}");
         }
     }
 }

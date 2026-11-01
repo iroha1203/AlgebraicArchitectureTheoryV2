@@ -28,9 +28,9 @@ fn answer<'a>(j: &'a Json, id: &str) -> &'a Json {
 }
 // Law適用の集約は、通常の元式Evaluationと異なりLawInstanceを第一引数に持つ。
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut quiet())
-        .unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
-    let evaluated = evaluate_observed_bytes(inputs.clone(), asks, &mut quiet())
+    let checked =
+        check_inputs(inputs.clone(), &quiet()).unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
+    let evaluated = evaluate_observed_bytes(inputs.clone(), asks, &quiet())
         .unwrap_or_else(|e| panic!("評価: {e:?}"));
     assert_eq!(
         evaluated.prepared().inputs().sources().archmap().bytes(),
@@ -353,8 +353,7 @@ fn fixture(script: &str, p: u32, g: u32, slots: &[Slot], peer: bool, moved: bool
         vocabulary_json("FiniteFields", &format!("[{root},{sample}]"), "[]")
     ));
     let checked =
-        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
-            .unwrap();
+        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &quiet()).unwrap();
     let digest = &checked.vocabularies()["FiniteFields"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading Calc {{ use vocabulary FiniteFields version "1" digest "{digest}"; {script} }}"#
@@ -1187,16 +1186,16 @@ view later(s:Sample): Unit = unit;
         "current=evaluate(Calc.current,s=@v/item)",
         "later=evaluate(Calc.later,s=@v/item)",
     ];
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(input.clone(), &quiet()).unwrap();
     let prior_count = Rc::new(Cell::new(0));
     let n = prior_count.clone();
-    let mut control = Control::new(move |p| {
+    let control = Control::new(move |p| {
         if p == Checkpoint::Expression {
             n.set(n.get() + 1);
         }
         None
     });
-    let prior = evaluate_observed_bytes(input.clone(), &asks[..3], &mut control)
+    let prior = evaluate_observed_bytes(input.clone(), &asks[..3], &control)
         .unwrap()
         .wire();
     audit(&prior, &checked);
@@ -1210,13 +1209,13 @@ view later(s:Sample): Unit = unit;
     missing_fields(&prior, "other_missing", &[missing_z.clone()]);
     let baseline_count = Rc::new(Cell::new(0));
     let n = baseline_count.clone();
-    let mut control = Control::new(move |p| {
+    let control = Control::new(move |p| {
         if p == Checkpoint::Expression {
             n.set(n.get() + 1);
         }
         None
     });
-    let baseline = evaluate_observed_bytes(input.clone(), &asks[..4], &mut control)
+    let baseline = evaluate_observed_bytes(input.clone(), &asks[..4], &control)
         .unwrap()
         .wire();
     audit(&baseline, &checked);
@@ -1249,7 +1248,7 @@ view later(s:Sample): Unit = unit;
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (e, p, s) = (expressions.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             p.set(p.get() + 1);
             if point == Checkpoint::Expression {
                 e.set(e.get() + 1);
@@ -1260,7 +1259,7 @@ view later(s:Sample): Unit = unit;
             }
             None
         });
-        let wire = evaluate_observed_bytes(input.clone(), &asks, &mut control)
+        let wire = evaluate_observed_bytes(input.clone(), &asks, &control)
             .unwrap()
             .wire();
         assert_eq!(f(&wire, "status"), &Json::str("interrupted"));

@@ -42,7 +42,7 @@ impl From<Signal> for Failure {
         Self::Stopped(signal)
     }
 }
-fn tick(c: &mut Control) -> Result<(), Failure> {
+fn tick(c: &Control) -> Result<(), Failure> {
     c.checkpoint(Checkpoint::FiniteIteration)?;
     Ok(())
 }
@@ -53,7 +53,7 @@ fn kernel(message: &str) -> Failure {
 pub(crate) fn determined_owners(
     inputs: &CheckedInputs,
     fields: &[Fact],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<DeterminedOwners>, Failure> {
     if fields.is_empty()
         || fields.iter().any(|field| {
@@ -303,14 +303,14 @@ mod tests {
             (example(false, true, true), false, 2),
             (fixture::constrained(true), true, 1),
         ] {
-            let inputs = check_inputs(sources, &mut Control::unlimited()).unwrap();
+            let inputs = check_inputs(sources, &Control::unlimited()).unwrap();
             let fields = fields(&inputs);
             assert_eq!(fields.len(), count);
-            let new = determined_owners(&inputs, &fields, &mut Control::unlimited()).unwrap();
+            let new = determined_owners(&inputs, &fields, &Control::unlimited()).unwrap();
             let old = crate::observed::owner_completion_legacy::determined_owners(
                 &inputs,
                 &fields,
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap();
             assert_eq!(new.is_some(), unique);
@@ -334,26 +334,26 @@ mod tests {
     #[test]
     fn every_owner_completion_checkpoint_propagates_both_signals() {
         use std::{cell::Cell, rc::Rc};
-        let inputs = check_inputs(example(true, true, false), &mut Control::unlimited()).unwrap();
+        let inputs = check_inputs(example(true, true, false), &Control::unlimited()).unwrap();
         let fields = fields(&inputs);
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut control = Control::new(move |_| {
+        let control = Control::new(move |_| {
             seen.set(seen.get() + 1);
             None
         });
-        determined_owners(&inputs, &fields, &mut control).unwrap();
+        determined_owners(&inputs, &fields, &control).unwrap();
         assert!(count.get() > fields.len());
         for stop in 1..=count.get() {
             for signal in [Signal::Int, Signal::Term] {
                 let count = Rc::new(Cell::new(0));
                 let seen = count.clone();
-                let mut control = Control::new(move |_| {
+                let control = Control::new(move |_| {
                     seen.set(seen.get() + 1);
                     (seen.get() == stop).then_some(signal)
                 });
                 assert!(
-                    matches!(determined_owners(&inputs, &fields, &mut control), Err(Failure::Stopped(found)) if found == signal)
+                    matches!(determined_owners(&inputs, &fields, &control), Err(Failure::Stopped(found)) if found == signal)
                 );
                 assert_eq!(count.get(), stop);
             }

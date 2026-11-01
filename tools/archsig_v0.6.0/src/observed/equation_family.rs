@@ -12,7 +12,7 @@ use super::{
 use crate::canonical::Json;
 use crate::control::{Checkpoint, Control};
 use std::sync::Arc;
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::EquationPresentation)?;
     Ok(())
 }
@@ -128,7 +128,7 @@ impl PartialEq for Data {
     }
 }
 impl Eq for Data {}
-fn output(layout: &Layout, c: &mut Control) -> Result<Option<Output>, ValidationFailure> {
+fn output(layout: &Layout, c: &Control) -> Result<Option<Output>, ValidationFailure> {
     tick(c)?;
     if !layout.data.complete {
         return Ok(None);
@@ -212,7 +212,7 @@ pub(super) fn retain(
     env: &Environment<'_>,
     g: &mut Graph,
     layout: Arc<Layout>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<NodeRef>, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, layout, c))
 }
@@ -261,12 +261,12 @@ impl Environment<'_> {
         if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
             return Err("EquationFamilyのconsumerが元Architectureと違う".into());
         }
-        let mut c = self.control.clone();
-        data.source.layout.recheck(self, g, &mut c)?;
-        if output(&data.source.layout, &mut c)?.as_ref() != Some(&data.source.output) {
+        let c = self.control.clone();
+        data.source.layout.recheck(self, g, &c)?;
+        if output(&data.source.layout, &c)?.as_ref() != Some(&data.source.output) {
             return Err("EquationFamilyの全添字/対象/座標が元計画と違う".into());
         }
-        tick(&mut c)
+        tick(&c)
     }
 }
 
@@ -275,7 +275,7 @@ impl super::result_kind::ResultKind for Data {
         &'a Environment<'input>,
         &'a mut Graph,
         Arc<Layout>,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = Option<NodeRef>;
     fn compute_and_retain<'a, 'input: 'a>(

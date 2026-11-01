@@ -12,7 +12,7 @@ fn example() -> ObservedEvaluation {
             "prior=check(MapCall.prior)",
             "target=evaluate(MapCall.typeEvery,a=@v/A,b=@v/B)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(matches!(r.status(), "complete" | "partial"));
@@ -23,7 +23,7 @@ fn env(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -107,7 +107,7 @@ fn owned_type_missing_cancel_keeps_verified_prefix_and_probe_freeze() {
         "later=evaluate(MapCall.seed)",
     ];
     let inputs = fixture::input("plain", "r1");
-    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &mut quiet()).unwrap();
+    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
@@ -115,7 +115,7 @@ fn owned_type_missing_cancel_keeps_verified_prefix_and_probe_freeze() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -124,8 +124,8 @@ fn owned_type_missing_cancel_keeps_verified_prefix_and_probe_freeze() {
             None
         }
     });
-    let prepared = prepare_observed(inputs, &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, q, a| {
+    let prepared = prepare_observed(inputs, &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, q, a| {
         e.validate_answer(g, q, a)?;
         if q.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());

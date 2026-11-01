@@ -249,12 +249,12 @@ fn cycles_report_each_member_and_keep_the_graph_without_marking_downstream() {
 fn request_resolution_uses_the_same_latched_interrupt_control() {
     let (law, map) = inputs();
     let mut calls = 0;
-    let mut control = Control::new(move |_| {
+    let control = Control::new(move |_| {
         calls += 1;
         (calls >= 2).then_some(Signal::Term)
     });
     let error =
-        resolve_observed_requests_controlled(&law, &map, &["a=check(R.positive)"], &mut control)
+        resolve_observed_requests_controlled(&law, &map, &["a=check(R.positive)"], &control)
             .unwrap_err();
     assert!(matches!(
         error,

@@ -9,18 +9,14 @@ use num_integer::Integer;
 use num_traits::{One, Signed, ToPrimitive, Zero};
 
 pub fn is_prime(n: &BigUint) -> bool {
-    is_prime_controlled::<Box<Issue>>(
-        n,
-        &mut Control::unlimited(),
-        Checkpoint::DefinitionSemantics,
-    )
-    .expect("通常の素数性検査は中断しない")
+    is_prime_controlled::<Box<Issue>>(n, &Control::unlimited(), Checkpoint::DefinitionSemantics)
+        .expect("通常の素数性検査は中断しない")
 }
 
 /// 型検査と同じ制御で、crate 所有の反復と原始演算の前後を確認する。
 pub fn is_prime_controlled<E: InputError>(
     n: &BigUint,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
 ) -> Result<bool, E> {
     E::checkpoint(control, point)?;
@@ -49,7 +45,7 @@ pub fn is_prime_controlled<E: InputError>(
 /// false は素数性全体の棄却が完了した場合だけ渡す。取消は判定より優先する。
 fn finish_decision<E: InputError>(
     prime: bool,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
 ) -> Result<bool, E> {
     E::checkpoint(control, point).map(|()| prime)
@@ -57,7 +53,7 @@ fn finish_decision<E: InputError>(
 
 fn strong_fermat_base2<E: InputError>(
     n: &BigUint,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
 ) -> Result<bool, E> {
     E::checkpoint(control, point)?;
@@ -93,7 +89,7 @@ fn strong_fermat_base2<E: InputError>(
 fn jacobi<E: InputError>(
     a: &BigInt,
     n: &BigInt,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
 ) -> Result<i32, E> {
     E::checkpoint(control, point)?;
@@ -134,7 +130,7 @@ fn jacobi<E: InputError>(
 
 fn strong_lucas<E: InputError>(
     n: &BigUint,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
 ) -> Result<bool, E> {
     E::checkpoint(control, point)?;
@@ -249,7 +245,7 @@ mod controlled_tests {
         (control, visits)
     }
 
-    fn accepted_stage(stage: usize, control: &mut Control) -> Result<bool, Failure> {
+    fn accepted_stage(stage: usize, control: &Control) -> Result<bool, Failure> {
         match stage {
             0 => is_prime_controlled::<Failure>(&101u32.into(), control, POINT),
             1 => strong_fermat_base2::<Failure>(&101u32.into(), control, POINT),
@@ -269,8 +265,7 @@ mod controlled_tests {
             let expected = n >= 2 && !(2..n).any(|factor| n % factor == 0);
             assert_eq!(is_prime(&n.into()), expected, "{n}");
             assert_eq!(
-                is_prime_controlled::<Failure>(&n.into(), &mut Control::unlimited(), POINT,)
-                    .unwrap(),
+                is_prime_controlled::<Failure>(&n.into(), &Control::unlimited(), POINT,).unwrap(),
                 expected,
                 "{n}",
             );
@@ -283,12 +278,12 @@ mod controlled_tests {
         // nested loops, Selfridge search and Lucas bits. 127 additionally
         // traverses Lucas's final squaring loop (127 + 1 has seven factors 2).
         for stage in 0..5 {
-            let (mut baseline, total) = probe(usize::MAX);
-            assert!(accepted_stage(stage, &mut baseline).unwrap());
+            let (baseline, total) = probe(usize::MAX);
+            assert!(accepted_stage(stage, &baseline).unwrap());
             assert!(total.get() > 2, "stage {stage}");
             for at in 1..=total.get() {
-                let (mut control, seen) = probe(at);
-                let error = accepted_stage(stage, &mut control).unwrap_err();
+                let (control, seen) = probe(at);
+                let error = accepted_stage(stage, &control).unwrap_err();
                 assert_eq!(seen.get(), at, "stage {stage} at {at}");
                 assert!(matches!(error, Failure::Stopped(Signal::Int)));
                 assert_eq!(control.stop_reason(), Some(Signal::Int));
@@ -296,7 +291,7 @@ mod controlled_tests {
         }
     }
 
-    fn rejected_stage(stage: usize, control: &mut Control) -> Result<bool, Failure> {
+    fn rejected_stage(stage: usize, control: &Control) -> Result<bool, Failure> {
         match stage {
             0 => is_prime_controlled::<Failure>(&49u32.into(), control, POINT),
             1 => strong_fermat_base2::<Failure>(&65u32.into(), control, POINT),
@@ -314,20 +309,17 @@ mod controlled_tests {
         // Distinct terminal rejections: divisor, Fermat exhaustion, square,
         // Jacobi zero, final Lucas bit, and final Lucas squaring.
         for stage in 0..7 {
-            let (mut baseline, total) = probe(usize::MAX);
-            assert!(
-                !rejected_stage(stage, &mut baseline).unwrap(),
-                "stage {stage}"
-            );
-            let (mut control, seen) = probe(total.get());
-            let result = rejected_stage(stage, &mut control);
+            let (baseline, total) = probe(usize::MAX);
+            assert!(!rejected_stage(stage, &baseline).unwrap(), "stage {stage}");
+            let (control, seen) = probe(total.get());
+            let result = rejected_stage(stage, &control);
             assert_eq!(seen.get(), total.get());
             assert!(matches!(result, Err(Failure::Stopped(Signal::Int))));
             assert_eq!(control.stop_reason(), Some(Signal::Int));
             // An unexamined stage never inherits a later composite answer.
-            let (mut control, _) = probe(1);
+            let (control, _) = probe(1);
             assert!(matches!(
-                rejected_stage(stage, &mut control),
+                rejected_stage(stage, &control),
                 Err(Failure::Stopped(_))
             ));
         }
@@ -335,22 +327,22 @@ mod controlled_tests {
 
     #[test]
     fn jacobi_zero_equal_to_the_modulus_does_not_become_a_composite_answer() {
-        let (mut baseline, total) = probe(usize::MAX);
+        let (baseline, total) = probe(usize::MAX);
         assert_eq!(
-            jacobi::<Failure>(&5.into(), &5.into(), &mut baseline, POINT).unwrap(),
+            jacobi::<Failure>(&5.into(), &5.into(), &baseline, POINT).unwrap(),
             0
         );
-        let (mut control, _) = probe(total.get());
-        let result = jacobi::<Failure>(&5.into(), &5.into(), &mut control, POINT);
+        let (control, _) = probe(total.get());
+        let result = jacobi::<Failure>(&5.into(), &5.into(), &control, POINT);
         assert!(matches!(result, Err(Failure::Stopped(Signal::Int))));
         // A genuinely composite Selfridge result passing its zero through
         // the enclosing loop still reports a stop observed on the way.
-        let (mut baseline, total) = probe(usize::MAX);
-        assert!(!strong_lucas::<Failure>(&35u32.into(), &mut baseline, POINT).unwrap());
+        let (baseline, total) = probe(usize::MAX);
+        assert!(!strong_lucas::<Failure>(&35u32.into(), &baseline, POINT).unwrap());
         for at in total.get() - 1..=total.get() {
-            let (mut control, _) = probe(at);
+            let (control, _) = probe(at);
             assert!(matches!(
-                strong_lucas::<Failure>(&35u32.into(), &mut control, POINT),
+                strong_lucas::<Failure>(&35u32.into(), &control, POINT),
                 Err(Failure::Stopped(Signal::Int))
             ));
             assert_eq!(control.stop_reason(), Some(Signal::Int));

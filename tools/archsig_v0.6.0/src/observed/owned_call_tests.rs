@@ -6,7 +6,7 @@ fn owned_call_result(asks: &[&str]) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         owned_call_fixture::input(false, true, "r1"),
         asks,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.issues);
@@ -57,7 +57,7 @@ fn owned_call_stop_in_batch() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -67,8 +67,8 @@ fn owned_call_stop_in_batch() {
         }
     });
     let prepared =
-        prepare_observed(owned_call_fixture::input(false, true, "r1"), &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+        prepare_observed(owned_call_fixture::input(false, true, "r1"), &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());
@@ -157,7 +157,7 @@ fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-        let mut c = Control::new(move |_| {
+        let c = Control::new(move |_| {
             p.set(p.get() + 1);
             if a.replace(false) {
                 assert!(f.replace(Some(p.get())).is_none());
@@ -167,7 +167,7 @@ fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {
             }
         });
         let prepared =
-            prepare_observed(owned_call_fixture::input(false, true, "r1"), &asks, &mut c).unwrap();
+            prepare_observed(owned_call_fixture::input(false, true, "r1"), &asks, &c).unwrap();
         let (a, s) = (armed.clone(), seen.clone());
         data::observe_iterations(move |span, ctx, operation, _| {
             let at = match stage {
@@ -188,7 +188,7 @@ fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {
                 a.set(true);
             }
         });
-        let stopped = evaluate_observed(prepared, &mut c);
+        let stopped = evaluate_observed(prepared, &c);
         data::clear_iteration_observer();
         let stopped = stopped.unwrap();
         assert!(seen.get());
@@ -290,7 +290,7 @@ fn owned_snapshot_condition_rechecks_actual_text_values_facts_and_prefixes() {
             "r=evaluate(Reservations.returned,a=@w/A,s=@v/p)",
             "a=check(Reservations.affineCall,a=@w/A,s=@v/p)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial", "{:?}", r.issues);
@@ -323,7 +323,7 @@ fn owned_failed_fields_recheck_original_children_reasons_type_scope_and_value_ab
         "ignored=check(Reservations.ignoredAffine,a=@v/B,s=@v/p)",
     ]);
     assert_eq!(r.status(), "partial");
-    let e = Environment::new(r.prepared.inputs(), &mut quiet()).unwrap();
+    let e = Environment::new(r.prepared.inputs(), &quiet()).unwrap();
     let bytes = r.prepared.inputs().sources().law().bytes();
     let law = r.prepared.inputs().law();
     let mut fields = vec![];

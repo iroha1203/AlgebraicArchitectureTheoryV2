@@ -8,7 +8,7 @@ fn completed_with_structure_only_owner(structure_only: bool) -> ObservedEvaluati
     let result = evaluate_observed_bytes(
         owner_sources(structure_only),
         &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(result.status(), "partial");
@@ -25,11 +25,11 @@ mod owner_delivery_sources {
 }
 use owner_delivery_sources::owner_sources;
 fn rebuild(result: &ObservedEvaluation, nodes: &[Node]) -> Result<Graph, ValidationFailure> {
-    let mut c = quiet();
+    let c = quiet();
     let env = Environment::with_requests(
         result.prepared.inputs(),
         result.prepared.requests().requests(),
-        &mut c,
+        &c,
     )
     .map_err(ValidationFailure::from)?;
     let mut g = Graph::new(&c);
@@ -126,12 +126,12 @@ fn finite_owner_partial_result_keeps_later_validation_failure_internal() {
             "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
             "fail=repair(Selected.valid,on=@v/root,using=Selected.choose)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let failed = crate::observed::evaluate::evaluate_observed_with_rejected_answer(
         prepared,
-        &mut quiet(),
+        &quiet(),
         "fail",
     )
     .unwrap();
@@ -231,11 +231,11 @@ fn finite_owner_completion_same_assignment_does_not_determine_configuration() {
                 sources.law().bytes().to_vec(),
                 map.into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         constructions.push(
-            crate::construction::construct(&inputs, "Selected", "v", "root", &mut quiet()).unwrap(),
+            crate::construction::construct(&inputs, "Selected", "v", "root", &quiet()).unwrap(),
         );
     }
     let contains_q = |construction: &crate::construction::ConfigurationConstruction| {
@@ -289,18 +289,13 @@ fn finite_owner_completion_constructs_single_root_repair_without_observing_owner
             "again=repair(Selected.valid,on=$r.object,using=Selected.choose)",
             "applied=check(Selected.valid,on=$again.object,c=@v/q)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .expect("全整合owner補完が同じ修復を構成する");
     let graph = rebuild(&result, &result.nodes).expect("完成した全依存を再検査");
-    let observed = crate::construction::construct(
-        result.prepared.inputs(),
-        "Selected",
-        "v",
-        "root",
-        &mut quiet(),
-    )
-    .unwrap();
+    let observed =
+        crate::construction::construct(result.prepared.inputs(), "Selected", "v", "root", &quiet())
+            .unwrap();
     assert!(
         observed.base().configuration().is_none(),
         "通常の入力専用constructorは欠測を保持する"
@@ -341,13 +336,13 @@ fn finite_owner_completion_constructs_single_root_repair_without_observing_owner
             sources.law().bytes().to_vec(),
             changed_map.into_bytes(),
         ),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(
         witness
             .construction()
-            .recheck(&changed, "Selected", "v", "root", &mut quiet())
+            .recheck(&changed, "Selected", "v", "root", &quiet())
             .is_err(),
         "別のowner補完を追加した現在入力では確定構成を再利用できない"
     );
@@ -415,13 +410,13 @@ fn finite_owner_completion_stop_before_owner_agreement_publishes_no_repair() {
     let prepared = crate::observed::prepare_observed(
         single_root_sources(),
         &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
-    let mut control = Control::new(|point| {
+    let control = Control::new(|point| {
         (point == Checkpoint::Completion).then_some(crate::result::Signal::Term)
     });
-    let result = crate::observed::evaluate_observed(prepared, &mut control).unwrap();
+    let result = crate::observed::evaluate_observed(prepared, &control).unwrap();
     assert_eq!(result.answers[0].status, Decision::Undetermined);
     assert!(result.answers[0].outputs.is_empty());
     assert!(

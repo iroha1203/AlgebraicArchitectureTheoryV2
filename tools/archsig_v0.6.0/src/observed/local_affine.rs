@@ -48,7 +48,7 @@ fn analyze(
     g: &Graph,
     witness: &ArchitectureWitness,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
     pending: &mut change_affine::Pending,
     missing_domain: &mut bool,
 ) -> Result<Model, ValidationFailure> {
@@ -296,7 +296,7 @@ fn fibers(
     let mut equation = vec![];
     let mut semantic = vec![];
     for (support, reading) in supports.iter().zip(readings) {
-        c.clone().checkpoint(crate::control::Checkpoint::Localize)?;
+        c.checkpoint(crate::control::Checkpoint::Localize)?;
         let positions = model
             .action
             .slots
@@ -379,7 +379,7 @@ pub(super) fn compute(
     original: &ConstructionValue,
     base: usize,
     witness: Arc<ArchitectureWitness>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ValidationFailure> {
     let assignments = match &original.data {
         D::Change(d) => d.overrides(g)?,
@@ -1151,7 +1151,7 @@ fn emit_system(
     restriction_refs: Vec<NodeRef>,
     adequacy: NodeRef,
     mut diagram: Diagram,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ValidationFailure> {
     let contexts = &diagram.contexts;
     let mut conditions = vec![];

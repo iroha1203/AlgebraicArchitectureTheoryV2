@@ -41,13 +41,13 @@ fn input(fields: &[(&str, &str)], extra: &str, atoms: &[(&str, &str)]) -> InputS
 fn count(sources: InputSources, point: Checkpoint) -> usize {
     let seen = Rc::new(Cell::new(0));
     let counter = seen.clone();
-    let mut control = Control::new(move |current| {
+    let control = Control::new(move |current| {
         if current == point {
             counter.set(counter.get() + 1);
         }
         None
     });
-    let _ = check_inputs(sources, &mut control);
+    let _ = check_inputs(sources, &control);
     seen.get()
 }
 
@@ -62,8 +62,8 @@ fn stop(point: Checkpoint, at: usize) -> Control {
 }
 
 fn interrupted(sources: InputSources, point: Checkpoint, at: usize) {
-    let mut control = stop(point, at);
-    let failure = check_inputs(sources, &mut control).unwrap_err();
+    let control = stop(point, at);
+    let failure = check_inputs(sources, &control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Interrupted);
     assert!(!failure.primitives().is_empty());
     assert!(!failure.declarations().is_empty());
@@ -78,7 +78,7 @@ fn interrupted(sources: InputSources, point: Checkpoint, at: usize) {
 }
 
 fn invalid(sources: InputSources, code: &str, pointer: &str) {
-    let failure = check_inputs(sources, &mut Control::unlimited()).unwrap_err();
+    let failure = check_inputs(sources, &Control::unlimited()).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert_eq!(failure.issues().len(), 1);
     let Json::Obj(issue) = &failure.issues()[0] else {
@@ -106,7 +106,7 @@ fn model_digest_nested_values_and_string_escaping_are_interruptible() {
             )],
         )
     };
-    check_inputs(make(), &mut Control::unlimited()).unwrap();
+    check_inputs(make(), &Control::unlimited()).unwrap();
     let total = count(make(), Checkpoint::ArchMapCanonical);
     assert!(total > 80);
     for at in [1, total / 2, total] {
@@ -148,7 +148,7 @@ fn map_key_duplicate_comparison_is_controlled_inside_the_key() {
         "",
         &[("value", r#"[[["s","root"],["s","root"]]]"#)],
     );
-    check_inputs(single, &mut Control::unlimited()).unwrap();
+    check_inputs(single, &Control::unlimited()).unwrap();
     invalid(make(), "duplicate_key", "/snapshots/0/atoms/0/value/1/0");
     let total = count(make(), Checkpoint::ArchMapCanonical);
     assert!(total > 20);
@@ -170,7 +170,7 @@ fn required_namespace_type_recursion_adds_internal_schema_boundaries() {
             &[],
         )
     };
-    check_inputs(nested(), &mut Control::unlimited()).unwrap();
+    check_inputs(nested(), &Control::unlimited()).unwrap();
     let at = count(flat(), Checkpoint::ArchMapSchema) + 1;
     assert!(count(nested(), Checkpoint::ArchMapSchema) > at + 4);
     interrupted(nested(), Checkpoint::ArchMapSchema, at);
@@ -206,7 +206,7 @@ fn missing_field_slots_and_late_field_lookup_add_per_field_boundaries() {
             &[(field, "true")],
         )
     };
-    check_inputs(known("d"), &mut Control::unlimited()).unwrap();
+    check_inputs(known("d"), &Control::unlimited()).unwrap();
     // 同じ定義・slot 数で照合対象だけを替え、候補3個分の前後確認を区別する。
     assert_eq!(
         count(known("d"), Checkpoint::ArchMapSchema),
@@ -243,7 +243,7 @@ fn unknown_constructor_checks_each_candidate_and_post_error_boundary() {
         "syntax",
         "/snapshots/0/atoms/0/value/tag",
     );
-    check_inputs(make(4, "Case3"), &mut Control::unlimited()).unwrap();
+    check_inputs(make(4, "Case3"), &Control::unlimited()).unwrap();
     // 定義は同一。最初/最後の既知 tag の差は constructor 探索3候補分だけ。
     assert_eq!(
         count(make(4, "Case3"), Checkpoint::ArchMapSchema),

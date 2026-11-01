@@ -39,11 +39,10 @@ fn request_issues(failure: &PrepareFailure) -> Vec<Json> {
     issues.iter().map(|issue| issue.wire()).collect()
 }
 fn assert_request_priority(law: &str, ask: &str, point: Checkpoint, at: usize) {
-    let normal =
-        prepare_observed(sources(law, MAP), &[ask], &mut Control::unlimited()).unwrap_err();
+    let normal = prepare_observed(sources(law, MAP), &[ask], &Control::unlimited()).unwrap_err();
     assert!(!request_issues(&normal).is_empty());
-    let (mut control, visits) = probe(point, at);
-    let failure = prepare_observed(sources(law, MAP), &[ask], &mut control).unwrap_err();
+    let (control, visits) = probe(point, at);
+    let failure = prepare_observed(sources(law, MAP), &[ask], &control).unwrap_err();
     assert_eq!(visits.get(), at, "{ask}");
     assert!(matches!(
         failure,
@@ -59,9 +58,9 @@ fn assert_request_priority(law: &str, ask: &str, point: Checkpoint, at: usize) {
 fn required_delimiter_mismatch_yields_to_cancellation_at_the_first_false_post_from_bytes() {
     // 11は拒否確定前、12は '=' の不一致を確定した直後のcheckpoint。
     assert_request_priority(LAW, "a!", Checkpoint::RequestSyntax, 12);
-    let (mut control, _) = probe(Checkpoint::RequestSyntax, 11);
+    let (control, _) = probe(Checkpoint::RequestSyntax, 11);
     assert!(matches!(
-        prepare_observed(sources(LAW, MAP), &["a!"], &mut control),
+        prepare_observed(sources(LAW, MAP), &["a!"], &control),
         Err(PrepareFailure::Requests {
             failure: ResolveFailure::Interrupted { .. },
             ..
@@ -88,8 +87,8 @@ fn required_declaration_and_binding_searches_yield_to_cancellation_from_bytes() 
         (LAW, "a=evaluate(CountCheck.amount,s=@v/absent)"),
         (LAW, "a=evaluate(CountCheck.amount)"),
     ] {
-        let (mut baseline, total) = probe(Checkpoint::RequestBinding, usize::MAX);
-        prepare_observed(sources(law, MAP), &[ask], &mut baseline).unwrap_err();
+        let (baseline, total) = probe(Checkpoint::RequestBinding, usize::MAX);
+        prepare_observed(sources(law, MAP), &[ask], &baseline).unwrap_err();
         assert_request_priority(law, ask, Checkpoint::RequestBinding, total.get());
     }
 }
@@ -105,9 +104,9 @@ fn optional_selector_mismatches_and_untried_search_candidates_still_interrupt() 
         // The first short-name candidate is CountAudit.bounded, before CountCheck.amount.
         ("a=evaluate(amount,s=@v/s)", Checkpoint::RequestBinding, 6),
     ] {
-        let (mut control, visits) = probe(point, at);
+        let (control, visits) = probe(point, at);
         assert!(matches!(
-            prepare_observed(sources(LAW, MAP), &[ask], &mut control),
+            prepare_observed(sources(LAW, MAP), &[ask], &control),
             Err(PrepareFailure::Requests {
                 failure: ResolveFailure::Interrupted { .. },
                 ..
@@ -150,16 +149,16 @@ fn required_archmap_schema_rejections_keep_original_locations_after_the_first_fa
     ];
     for (map, trailing_posts) in cases {
         assert_ne!(map, MAP, "fixture mutation");
-        let (mut baseline, total) = probe(Checkpoint::ArchMapSchema, usize::MAX);
-        let normal = check_inputs(sources(LAW, &map), &mut baseline).unwrap_err();
+        let (baseline, total) = probe(Checkpoint::ArchMapSchema, usize::MAX);
+        let normal = check_inputs(sources(LAW, &map), &baseline).unwrap_err();
         assert!(matches!(
             normal.status(),
             InputStatus::Invalid | InputStatus::Unsupported
         ));
         // Start at the actual invalid-character/final-candidate post, before outer wrappers.
         for at in total.get() - trailing_posts..=total.get() {
-            let (mut control, visits) = probe(Checkpoint::ArchMapSchema, at);
-            let failure = check_inputs(sources(LAW, &map), &mut control).unwrap_err();
+            let (control, visits) = probe(Checkpoint::ArchMapSchema, at);
+            let failure = check_inputs(sources(LAW, &map), &control).unwrap_err();
             assert_eq!(visits.get(), at);
             assert!(!failure.declarations().is_empty());
             assert!(!failure.vocabularies().is_empty());

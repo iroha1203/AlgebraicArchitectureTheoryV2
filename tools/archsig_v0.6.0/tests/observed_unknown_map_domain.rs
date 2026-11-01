@@ -16,8 +16,8 @@ fn node<'a>(j: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn run(input: InputSources, asks: &[&str]) -> Json {
-    let checked = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
-    let result = evaluate_observed_bytes(input.clone(), asks, &mut quiet()).unwrap();
+    let checked = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+    let result = evaluate_observed_bytes(input.clone(), asks, &quiet()).unwrap();
     assert_eq!(result.prepared().inputs().sources(), &input);
     assert_eq!(
         result.prepared().inputs().definitions(),
@@ -292,7 +292,7 @@ fn unknown_owner_map_provenance_pair_preserves_math_and_current_sources() {
     let mut wires = vec![];
     for revision in ["r1", "r2"] {
         let input = fixture::input("varying", revision);
-        let checked = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+        let checked = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
         assert_eq!(checked.archmap().sources()[0].revision, revision);
         let w = run(input, &["x=evaluate(MapCall.call,a=@v/A,h=@v/h)"]);
         domains(&w, &["A", "B"]);

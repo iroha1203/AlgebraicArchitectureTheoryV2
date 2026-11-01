@@ -169,7 +169,6 @@ fn evaluate_inner(
     loop {
         environment
             .control
-            .clone()
             .checkpoint(Checkpoint::PrimitiveValuation)?;
         match &environment.indexes.inputs.law().exprs()[current].kind {
             ExprKind::Group(inner) => current = *inner,
@@ -393,7 +392,6 @@ pub(in crate::observed) fn candidates(
         for point in domain.values {
             environment
                 .control
-                .clone()
                 .checkpoint(Checkpoint::PrimitiveValuation)?;
             let Scalar::Tuple(parameters) = &point else {
                 return Err("change parameterの直積がTupleでない".into());
@@ -554,7 +552,7 @@ pub(in crate::observed) fn solution_row(
     let Some(mut updated) = Environment::try_primitive_valuation(
         environment.indexes.inputs,
         &assignments,
-        &mut environment.control.clone(),
+        &environment.control.clone(),
     )?
     else {
         row.member = Some(false);
@@ -565,7 +563,6 @@ pub(in crate::observed) fn solution_row(
     for (name, bindings) in requirements {
         environment
             .control
-            .clone()
             .checkpoint(Checkpoint::PrimitiveValuation)?;
         let declaration = environment
             .indexes
@@ -654,7 +651,7 @@ mod tests {
                 &map,
                 "view accept(r:Root,x:Part[r]):Bool=true;change bad(c:Part)=let ignored=accept(c.owner,c.link) in c with {flag=true};",
             );
-            let environment = Environment::new(&inputs, &mut quiet()).unwrap();
+            let environment = Environment::new(&inputs, &quiet()).unwrap();
             let update = evaluate(
                 &environment,
                 &inputs.law().declarations()["Selected.bad"],
@@ -688,7 +685,7 @@ mod tests {
             "change swap(c:Part)=c with {quantity=c.other,other=c.quantity};",
         );
         let before = inputs.sources().clone();
-        let environment = Environment::new(&inputs, &mut quiet()).unwrap();
+        let environment = Environment::new(&inputs, &quiet()).unwrap();
         let update = evaluate(
             &environment,
             &inputs.law().declarations()["Selected.swap"],
@@ -723,7 +720,7 @@ mod tests {
             fixture::MAP,
             "change choose(c:Part,b:Bool) when b= c.flag = let n=c.other in if b then c with {quantity=n} else c with {quantity=c.quantity};",
         );
-        let environment = Environment::new(&inputs, &mut quiet()).unwrap();
+        let environment = Environment::new(&inputs, &quiet()).unwrap();
         for (b, state) in [(true, State::Ready), (false, State::Excluded)] {
             let mut bs = bindings();
             bs.push(("b".into(), Scalar::Bool(b)));
@@ -751,7 +748,7 @@ mod tests {
     fn missing_update_value_is_not_an_empty_completed_update() {
         let inputs =
             fixture::with_body(fixture::MAP, "change keep(c:Part)=c with {third=c.third};");
-        let environment = Environment::new(&inputs, &mut quiet()).unwrap();
+        let environment = Environment::new(&inputs, &quiet()).unwrap();
         let update = evaluate(
             &environment,
             &inputs.law().declarations()["Selected.keep"],
@@ -773,7 +770,7 @@ mod tests {
             fixture::MAP,
             "change zero(c:Part,b:Bool)=c with {quantity=0};",
         );
-        let environment = Environment::new(&inputs, &mut quiet()).unwrap();
+        let environment = Environment::new(&inputs, &quiet()).unwrap();
         let subjects = vec![
             bindings()[0].1.clone(),
             Scalar::Subject {
@@ -828,7 +825,7 @@ mod tests {
         ] {
             let inputs = fixture::with_body(fixture::MAP, body);
             let before = inputs.sources().clone();
-            let environment = Environment::new(&inputs, &mut quiet()).unwrap();
+            let environment = Environment::new(&inputs, &quiet()).unwrap();
             let table = candidates(
                 &environment,
                 &inputs.law().declarations()["Selected.choose"],

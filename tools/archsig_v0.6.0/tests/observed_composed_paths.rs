@@ -22,7 +22,7 @@ fn value<'a>(w: &'a Json, id: &str) -> &'a Json {
 }
 fn run(missing: bool, asks: &[&str]) -> Json {
     let input = fixture::input(missing, "r1");
-    let r = evaluate_observed_bytes(input.clone(), asks, &mut Control::unlimited()).unwrap();
+    let r = evaluate_observed_bytes(input.clone(), asks, &Control::unlimited()).unwrap();
     assert_eq!(r.prepared().inputs().sources(), &input);
     assert!(
         matches!(r.status(), "complete" | "partial"),
@@ -180,13 +180,13 @@ fn then_provenance_pair_preserves_math_and_current_checked_input_tables() {
     let mut outputs = Vec::new();
     for revision in ["r1", "r2"] {
         let input = fixture::input(false, revision);
-        let mut c = Control::unlimited();
-        let checked = archsig::input::check_inputs(input.clone(), &mut c).unwrap();
+        let c = Control::unlimited();
+        let checked = archsig::input::check_inputs(input.clone(), &c).unwrap();
         assert_eq!(checked.archmap().sources()[0].revision, revision);
         let r = evaluate_observed_bytes(
             input.clone(),
             &["x=evaluate(Walk.join,e=@v/e,f=@v/next)"],
-            &mut c,
+            &c,
         )
         .unwrap();
         assert_eq!(r.status(), "complete");

@@ -58,7 +58,7 @@ pub(in crate::observed) fn map(
     target: NodeRef,
     matrix: &Matrix,
     cols: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let mut columns = vec![];
     let mut args = vec![source, target];
@@ -88,7 +88,7 @@ pub(in crate::observed) fn vector(
     b: &mut Builder<'_>,
     module: NodeRef,
     items: &[Z],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let mut coordinates = vec![];
     for x in items {
@@ -126,7 +126,7 @@ pub(super) fn build(
     b: &mut Builder<'_>,
     linear: &Linear,
     requirements: &[NodeRef],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Parts, ValidationFailure> {
     let n = linear.fiber.right.len();
     let ring = b.push(
@@ -250,7 +250,7 @@ pub(in crate::observed) fn smith(
     rhs_values: &[Z],
     fiber: &crate::observed::integer_fiber::Fiber,
     dependencies: &[NodeRef],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(NodeRef, NodeRef), ValidationFailure> {
     let n = fiber.right.len();
     let m = matrix.len();

@@ -15,7 +15,7 @@ fn prepared(missing: bool) -> PreparedObserved {
         inputs.law(),
         inputs.archmap(),
         &["b=build(Selected,on=@v/root)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -52,18 +52,18 @@ fn universal_numeric_build_laws_preserve_parameter_functions() {
         let p = single_part(&format!(
             "law required reflexive(c:Part,n:{parameter_type}):{expression};"
         ));
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = graph(&p);
         let plan = prepare(
             &env,
             &mut g,
             p.shared_inputs(),
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let table = plan.laws.as_ref().unwrap();
-        let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet())
+        let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &quiet())
             .unwrap()
             .unwrap();
         assert_eq!(circuits.len(), 1);
@@ -154,7 +154,7 @@ fn single_part(body: &str) -> PreparedObserved {
                 sources.law().bytes().to_vec(),
                 map.into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
@@ -162,7 +162,7 @@ fn single_part(body: &str) -> PreparedObserved {
         inputs.law(),
         inputs.archmap(),
         &["b=build(Selected,on=@v/root)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -190,18 +190,18 @@ fn identical_patterns_compare_all_readings_and_reject_different_applicability() 
         ("", true),
     ] {
         let p = single_part(body);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = graph(&p);
         let plan = prepare(
             &env,
             &mut g,
             p.shared_inputs(),
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let comparisons =
-            crate::observed::build_compare::compare(&env, &g, &plan, &mut quiet()).unwrap();
+            crate::observed::build_compare::compare(&env, &g, &plan, &quiet()).unwrap();
         assert_eq!(comparisons.len(), 1, "{body}");
         assert_eq!(comparisons[0].equal, Some(expected), "{body}");
     }
@@ -210,17 +210,17 @@ fn identical_patterns_compare_all_readings_and_reject_different_applicability() 
 #[test]
 fn closed_circuits_use_the_actual_component_residual_and_keep_reject_cases() {
     let p = prepared(false);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = graph(&p);
     let plan = prepare(
         &env,
         &mut g,
         p.shared_inputs(),
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
-    let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet())
+    let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(circuits.len(), 2);
@@ -245,18 +245,18 @@ fn closed_circuits_use_the_actual_component_residual_and_keep_reject_cases() {
         }
     }
     let p = prepared(true);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = graph(&p);
     let plan = prepare(
         &env,
         &mut g,
         p.shared_inputs(),
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(
-        crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet())
+        crate::observed::build_circuit_plan::closed(&env, &g, &plan, &quiet())
             .unwrap()
             .is_none()
     );
@@ -265,14 +265,14 @@ fn closed_circuits_use_the_actual_component_residual_and_keep_reject_cases() {
 #[test]
 fn native_build_answer_contains_rechecked_algebra_and_component_circuits() {
     let p = prepared(false);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = graph(&p);
     let answer = crate::observed::build_result::evaluate(
         &p,
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(answer.status, Decision::Established);
@@ -312,7 +312,7 @@ fn finite_parameter_circuits_keep_every_bound_law_row() {
                 law.into_bytes(),
                 map.into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
@@ -320,7 +320,7 @@ fn finite_parameter_circuits_keep_every_bound_law_row() {
         inputs.law(),
         inputs.archmap(),
         &["b=build(Selected,on=@v/root)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let p = PreparedObserved {
@@ -328,14 +328,14 @@ fn finite_parameter_circuits_keep_every_bound_law_row() {
         requests,
         object: None,
     };
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = graph(&p);
     let answer = crate::observed::build_result::evaluate(
         &p,
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(answer.status, Decision::Established);
@@ -352,14 +352,14 @@ fn finite_parameter_circuits_keep_every_bound_law_row() {
 #[test]
 fn refuted_extension_keeps_the_object_and_names_the_actual_condition() {
     let p = single_part("view amount(c:Root):Z=0;law required zero(c:Part):c.quantity=0;");
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = graph(&p);
     let answer = crate::observed::build_result::evaluate(
         &p,
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(answer.status, Decision::Refuted);
@@ -385,7 +385,7 @@ fn interrupt_keeps_a_completed_object_without_publishing_unfinished_algebra() {
     for at in [1, 6] {
         let mut armed = false;
         let mut seen = 0;
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             armed |= point == Checkpoint::ObjectLawCircuits;
             if armed && point == Checkpoint::NativeResultNode {
                 seen += 1;
@@ -394,7 +394,7 @@ fn interrupt_keeps_a_completed_object_without_publishing_unfinished_algebra() {
             stop.then_some(crate::result::Signal::Int)
         });
         let p = prepared(false);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = Graph::new(&control);
         g.requests = p.requests().requests().to_vec();
         let answer = crate::observed::build_result::evaluate(
@@ -402,7 +402,7 @@ fn interrupt_keeps_a_completed_object_without_publishing_unfinished_algebra() {
             &env,
             &mut g,
             &p.requests().requests()[0],
-            &mut control,
+            &control,
         )
         .unwrap();
         assert!(control.stop_reason().is_some());
@@ -418,14 +418,14 @@ fn interrupt_keeps_a_completed_object_without_publishing_unfinished_algebra() {
 #[test]
 fn one_build_uses_the_same_native_objects_laws_patterns_equations_and_invariants() {
     let p = prepared(false);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = graph(&p);
     let plan = prepare(
         &env,
         &mut g,
         p.shared_inputs(),
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(plan.architecture.complete);
@@ -464,12 +464,12 @@ fn one_build_uses_the_same_native_objects_laws_patterns_equations_and_invariants
     assert_eq!(plan.boundary.start(), g.nodes.len());
     assert!(plan.boundary.inputs().contains(&objects.base));
     assert!(
-        crate::observed::build_compare::compare(&env, &g, &plan, &mut quiet())
+        crate::observed::build_compare::compare(&env, &g, &plan, &quiet())
             .unwrap()
             .is_empty()
     ); // この入力の全3対象は完全patternがそれぞれ異なる。
     plan.boundary
-        .recheck(&env, &g, g.nodes.len(), &mut quiet())
+        .recheck(&env, &g, g.nodes.len(), &quiet())
         .unwrap();
     assert!(env.state.architecture_ref().is_none());
 }
@@ -477,14 +477,14 @@ fn one_build_uses_the_same_native_objects_laws_patterns_equations_and_invariants
 #[test]
 fn source_validation_rejects_context_reference_order_and_original_node_changes_together() {
     let p = prepared(false);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = graph(&p);
     let plan = prepare(
         &env,
         &mut g,
         p.shared_inputs(),
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let original_contexts = g.contexts.clone();
@@ -505,20 +505,13 @@ fn source_validation_rejects_context_reference_order_and_original_node_changes_t
             7 => g.contexts[plan.architecture.reference.0].request += 1,
             _ => unreachable!(),
         }
-        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
         let result = if matches!(mode, 4 | 5) {
             let mut inputs = boundary.inputs().to_vec();
             inputs.push(NodeRef(g.nodes.len() + usize::from(mode == 5)));
-            Boundary::capture(
-                &fresh,
-                &g,
-                plan.architecture.reference,
-                inputs,
-                &mut quiet(),
-            )
-            .map(|_| ())
+            Boundary::capture(&fresh, &g, plan.architecture.reference, inputs, &quiet()).map(|_| ())
         } else {
-            boundary.recheck(&fresh, &g, g.nodes.len(), &mut quiet())
+            boundary.recheck(&fresh, &g, g.nodes.len(), &quiet())
         };
         assert!(
             matches!(result, Err(ValidationFailure::Internal(_))),
@@ -529,7 +522,7 @@ fn source_validation_rejects_context_reference_order_and_original_node_changes_t
         g.nodes[reference.0] = original;
     }
     plan.boundary
-        .recheck(&env, &g, g.nodes.len(), &mut quiet())
+        .recheck(&env, &g, g.nodes.len(), &quiet())
         .unwrap();
 }
 
@@ -537,18 +530,18 @@ fn source_validation_rejects_context_reference_order_and_original_node_changes_t
 fn outside_polynomial_keeps_the_original_symbolic_difference_without_an_evaluated_epsilon() {
     use crate::observed::observable_layout::{Placed, Reading, Source};
     let p = prepared(false);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = graph(&p);
     let plan = prepare(
         &env,
         &mut g,
         p.shared_inputs(),
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let layout = plan.polynomial.as_ref().unwrap();
-    let checked = layout.checked(&env, &g, &mut quiet()).unwrap();
+    let checked = layout.checked(&env, &g, &quiet()).unwrap();
     assert!(checked.is_complete());
     // 部分対象pで、qのquantity=0は対象外。元の差はx_qであり零でない。
     let Source::Polynomial(q) = &layout.data.objects[1].coordinates[1].source else {
@@ -579,19 +572,12 @@ fn outside_polynomial_keeps_the_original_symbolic_difference_without_an_evaluate
     assert!(powers.iter().any(|p| *p == crate::canonical::Json::Nat(1)));
     assert!(matches!(
         checked
-            .at(1, 1, Reading::Epsilon, 0, &layout.data.anchor, &mut quiet())
+            .at(1, 1, Reading::Epsilon, 0, &layout.data.anchor, &quiet())
             .unwrap(),
         Placed::Uncomputed { .. }
     ));
     let Placed::Value { reference, .. } = checked
-        .at(
-            1,
-            1,
-            Reading::Residual,
-            0,
-            &layout.data.anchor,
-            &mut quiet(),
-        )
+        .at(1, 1, Reading::Residual, 0, &layout.data.anchor, &quiet())
         .unwrap()
     else {
         panic!()
@@ -603,7 +589,7 @@ fn outside_polynomial_keeps_the_original_symbolic_difference_without_an_evaluate
         panic!()
     };
     assert_eq!(w["terms"], crate::canonical::Json::Arr(vec![]));
-    let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut prefix = Graph::new(&quiet());
     prefix.requests = g.requests.clone();
     prefix.frames = g.frames.clone();
@@ -622,14 +608,14 @@ fn outside_polynomial_keeps_the_original_symbolic_difference_without_an_evaluate
 #[test]
 fn checked_build_rejects_changed_existing_instance_and_accepts_restoration() {
     let p = prepared(false);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = graph(&p);
     let plan = prepare(
         &env,
         &mut g,
         p.shared_inputs(),
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let equation = plan.equations.unwrap();
@@ -642,7 +628,7 @@ fn checked_build_rejects_changed_existing_instance_and_accepts_restoration() {
         env.recheck_node(&g, g.get(equation).unwrap(), equation.0)
             .is_err()
     );
-    let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
     assert!(
         fresh
             .recheck_node(&g, g.get(equation).unwrap(), equation.0)
@@ -659,21 +645,21 @@ fn numeric_guarded_zero_body_keeps_the_complete_zero_equation_family() {
         let p = single_part(&format!(
             "law required reflexive(c:Part,n:{ty}) when n={zero}: n-n={zero};"
         ));
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = graph(&p);
         let plan = prepare(
             &env,
             &mut g,
             p.shared_inputs(),
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert!(
             plan.equations.is_some(),
             "the guarded residual is zero for every argument"
         );
-        let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet())
+        let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &quiet())
             .unwrap()
             .unwrap();
         assert_eq!(circuits.len(), 1);
@@ -685,7 +671,7 @@ fn numeric_guarded_zero_body_keeps_the_complete_zero_equation_family() {
             &mut g,
             plan,
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(answer.status, Decision::Established);
@@ -703,14 +689,14 @@ fn affine_guard_fibers_keep_raw_equations_separate_from_zero_residuals() {
         let p = single_part(&format!(
             "law required reflexive(c:Part,n:{ty}) when {guard}: {body};"
         ));
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = graph(&p);
         let plan = prepare(
             &env,
             &mut g,
             p.shared_inputs(),
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let layout = plan.polynomial.as_ref().unwrap();
@@ -766,7 +752,7 @@ fn affine_guard_fibers_keep_raw_equations_separate_from_zero_residuals() {
                         plan.architecture.witness.readings(),
                         q.position.instance,
                         &[],
-                        &mut quiet(),
+                        &quiet(),
                     )
                     .unwrap()
                     .unwrap();
@@ -787,7 +773,7 @@ fn affine_guard_fibers_keep_raw_equations_separate_from_zero_residuals() {
                     source
                         .difference
                         .constant
-                        .evaluate(&[], &mut quiet())
+                        .evaluate(&[], &quiet())
                         .unwrap()
                         .unwrap()
                         .scalar(),
@@ -796,7 +782,7 @@ fn affine_guard_fibers_keep_raw_equations_separate_from_zero_residuals() {
                 assert_eq!(
                     source.difference.parameters[0]
                         .1
-                        .evaluate(&[], &mut quiet())
+                        .evaluate(&[], &quiet())
                         .unwrap()
                         .unwrap()
                         .scalar(),
@@ -805,7 +791,7 @@ fn affine_guard_fibers_keep_raw_equations_separate_from_zero_residuals() {
             }
         }
         assert!(checked > 0);
-        let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet())
+        let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &quiet())
             .unwrap()
             .unwrap();
         assert!(!circuits[0].cases.is_empty());
@@ -820,7 +806,7 @@ fn affine_guard_fibers_keep_raw_equations_separate_from_zero_residuals() {
             &mut g,
             plan,
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(answer.status, Decision::Established);
@@ -835,14 +821,14 @@ fn guarded_circuit_when_keeps_the_original_application_expression() {
         let p = single_part(&format!(
             "law required reflexive(c:Part,n:Z) when {guard_text}: {body};"
         ));
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = graph(&p);
         let plan = prepare(
             &env,
             &mut g,
             p.shared_inputs(),
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let answer = crate::observed::build_result::retain_plan(
@@ -850,7 +836,7 @@ fn guarded_circuit_when_keeps_the_original_application_expression() {
             &mut g,
             plan,
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(answer.status, Decision::Established);
@@ -924,14 +910,14 @@ fn guarded_numeric_residuals_use_typed_boolean_maps_and_keep_raw_equations() {
             let p = single_part(&format!(
                 "law required reflexive(c:Part,n:{ty}) when n=0:{body};"
             ));
-            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+            let env = Environment::with_prepared(&p, &quiet()).unwrap();
             let mut g = graph(&p);
             let plan = prepare(
                 &env,
                 &mut g,
                 p.shared_inputs(),
                 &p.requests().requests()[0],
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap();
             let layout = plan.polynomial.as_ref().unwrap();
@@ -974,7 +960,7 @@ fn guarded_numeric_residuals_use_typed_boolean_maps_and_keep_raw_equations() {
                         panic!()
                     };
                     assert!(data.guarded_parameter_family());
-                    assert!(data.parameter_difference(&mut quiet()).unwrap().is_none());
+                    assert!(data.parameter_difference(&quiet()).unwrap().is_none());
                     for r in [nu, epsilon, residual] {
                         env.recheck_node(&g, g.get(r).unwrap(), r.0).unwrap();
                     }
@@ -1043,17 +1029,16 @@ fn guarded_numeric_residuals_use_typed_boolean_maps_and_keep_raw_equations() {
                         assert_eq!(g.scalar(reference(to)).unwrap(), &expected);
                     }
                     let source=crate::observed::object_equation_presentation::parameter_source_on_guard_fiber(
-                        &p.shared_inputs(),plan.architecture.witness.readings(),q.position.instance,&[],&mut quiet()
+                        &p.shared_inputs(),plan.architecture.witness.readings(),q.position.instance,&[],&quiet()
                     ).unwrap().unwrap();
                     assert!(source.guard.dynamic());
                     assert!(!source.guard.zero_at(q.position.object, &quiet()).unwrap());
                 }
             }
             assert!(checked > 0);
-            let circuits =
-                crate::observed::build_circuit_plan::closed(&env, &g, &plan, &mut quiet())
-                    .unwrap()
-                    .unwrap();
+            let circuits = crate::observed::build_circuit_plan::closed(&env, &g, &plan, &quiet())
+                .unwrap()
+                .unwrap();
             assert!(
                 circuits
                     .iter()
@@ -1072,14 +1057,14 @@ fn guarded_numeric_families_keep_existing_finite_parameter_bindings() {
     };
     let p =
         single_part("law required reflexive(c:Part,n:Z,b:Bool) when if b then n=0 else false:n=1;");
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut g = graph(&p);
     let plan = prepare(
         &env,
         &mut g,
         p.shared_inputs(),
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let layout = plan.polynomial.as_ref().unwrap();
@@ -1150,7 +1135,7 @@ fn guarded_numeric_families_keep_existing_finite_parameter_bindings() {
             [position, position],
             &names,
             [&source, &target],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(family.applicable, Some(source_value));
@@ -1169,7 +1154,7 @@ fn guarded_numeric_families_keep_existing_finite_parameter_bindings() {
         &mut g,
         plan,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(answer.status, Decision::Established);
@@ -1192,7 +1177,7 @@ fn affine_guard_missing_coefficient_keeps_observation_reason_and_constructed_obj
             inputs.law(),
             inputs.archmap(),
             &["b=build(Selected,on=@v/root)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let p = PreparedObserved {
@@ -1200,14 +1185,14 @@ fn affine_guard_missing_coefficient_keeps_observation_reason_and_constructed_obj
             requests,
             object: None,
         };
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = graph(&p);
         let plan = prepare(
             &env,
             &mut g,
             p.shared_inputs(),
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let answer = crate::observed::build_result::retain_plan(
@@ -1215,7 +1200,7 @@ fn affine_guard_missing_coefficient_keeps_observation_reason_and_constructed_obj
             &mut g,
             plan,
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(answer.status, Decision::Undetermined);
@@ -1254,14 +1239,14 @@ fn nonlinear_guard_keeps_the_original_algorithm_reason_and_partial_object() {
         let p = single_part(&format!(
             "law required guarded(c:Part,n:{ty}) when {guard}:1=0;"
         ));
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = graph(&p);
         let plan = prepare(
             &env,
             &mut g,
             p.shared_inputs(),
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let answer = crate::observed::build_result::retain_plan(
@@ -1269,7 +1254,7 @@ fn nonlinear_guard_keeps_the_original_algorithm_reason_and_partial_object() {
             &mut g,
             plan,
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(answer.status, Decision::Undetermined, "{ty}: {guard}");
@@ -1295,14 +1280,14 @@ fn cancelled_polynomial_guard_uses_the_required_affine_algorithm() {
         let p = single_part(&format!(
             "law required guarded(c:Part,n:Z) when {guard}:0=0;"
         ));
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = graph(&p);
         let plan = prepare(
             &env,
             &mut g,
             p.shared_inputs(),
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let answer = crate::observed::build_result::retain_plan(
@@ -1310,7 +1295,7 @@ fn cancelled_polynomial_guard_uses_the_required_affine_algorithm() {
             &mut g,
             plan,
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(answer.status, status, "{guard}");
@@ -1339,14 +1324,14 @@ fn wrapped_nonlinear_numeric_guards_keep_their_original_algorithm_reason() {
         let p = single_part(&format!(
             "{helper} law required guarded(c:Part,n:Z) when {guard}:1=0;"
         ));
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = graph(&p);
         let plan = prepare(
             &env,
             &mut g,
             p.shared_inputs(),
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let answer = crate::observed::build_result::retain_plan(
@@ -1354,7 +1339,7 @@ fn wrapped_nonlinear_numeric_guards_keep_their_original_algorithm_reason() {
             &mut g,
             plan,
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(answer.status, Decision::Undetermined, "{guard}");
@@ -1392,7 +1377,7 @@ fn selected_nonlinear_guards_do_not_require_unselected_missing_observations() {
             inputs.law(),
             inputs.archmap(),
             &["b=build(Selected,on=@v/root)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let p = PreparedObserved {
@@ -1400,14 +1385,14 @@ fn selected_nonlinear_guards_do_not_require_unselected_missing_observations() {
             requests,
             object: None,
         };
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = graph(&p);
         let plan = prepare(
             &env,
             &mut g,
             p.shared_inputs(),
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let answer = crate::observed::build_result::retain_plan(
@@ -1415,7 +1400,7 @@ fn selected_nonlinear_guards_do_not_require_unselected_missing_observations() {
             &mut g,
             plan,
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(answer.status, Decision::Undetermined, "{guard}");
@@ -1452,14 +1437,14 @@ fn unsupported_numeric_guard_conditions_keep_typed_reasons_and_partial_objects()
         let p = single_part(&format!(
             "law required guarded(c:Part,n:{ty}) when {guard}:1=0;"
         ));
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = graph(&p);
         let plan = prepare(
             &env,
             &mut g,
             p.shared_inputs(),
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let answer = crate::observed::build_result::retain_plan(
@@ -1467,7 +1452,7 @@ fn unsupported_numeric_guard_conditions_keep_typed_reasons_and_partial_objects()
             &mut g,
             plan,
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(answer.status, Decision::Undetermined, "{guard}");
@@ -1498,14 +1483,14 @@ fn numeric_guard_boundary_simplifications_keep_affine_and_constant_conditions() 
         let p = single_part(&format!(
             "law required guarded(c:Part,n:Z) when {guard}:{body};"
         ));
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = graph(&p);
         let plan = prepare(
             &env,
             &mut g,
             p.shared_inputs(),
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let answer = crate::observed::build_result::retain_plan(
@@ -1513,7 +1498,7 @@ fn numeric_guard_boundary_simplifications_keep_affine_and_constant_conditions() 
             &mut g,
             plan,
             &p.requests().requests()[0],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(answer.status, Decision::Established, "{guard}");

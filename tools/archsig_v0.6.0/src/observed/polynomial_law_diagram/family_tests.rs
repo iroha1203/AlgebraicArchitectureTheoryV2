@@ -8,13 +8,8 @@ use crate::control::quiet;
 fn prepared(missing: bool, tuple: bool, body: &str, root: &str) -> PreparedObserved {
     let inputs = fixture::inputs(missing, tuple, body);
     let ask = format!("b=build(Selected,on=@v/{root})");
-    let requests = resolve_native_for_test(
-        inputs.law(),
-        inputs.archmap(),
-        &[ask.as_str()],
-        &mut quiet(),
-    )
-    .unwrap();
+    let requests =
+        resolve_native_for_test(inputs.law(), inputs.archmap(), &[ask.as_str()], &quiet()).unwrap();
     PreparedObserved {
         inputs,
         requests,
@@ -22,8 +17,8 @@ fn prepared(missing: bool, tuple: bool, body: &str, root: &str) -> PreparedObser
     }
 }
 fn built(p: &PreparedObserved) -> (Graph, NodeRef) {
-    let mut c = quiet();
-    let env = Environment::with_prepared(p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(p, &c).unwrap();
     let mut g = Graph::new(&c);
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -31,7 +26,7 @@ fn built(p: &PreparedObserved) -> (Graph, NodeRef) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert!(a.complete, "{:?}", a.reasons);
@@ -42,8 +37,8 @@ fn replay(
     original: &Graph,
     nodes: &[Node],
 ) -> Result<Graph, ValidationFailure> {
-    let mut c = quiet();
-    let env = Environment::with_prepared(p, &mut c)?;
+    let c = quiet();
+    let env = Environment::with_prepared(p, &c)?;
     let mut g = Graph::new(&c);
     g.requests = original.requests.clone();
     g.checked_answers = original.checked_answers.clone();
@@ -93,34 +88,34 @@ fn shared_table_plan_reuses_its_verified_immutable_polynomial_source() {
     let (mut g, a) = built(&p);
     let configurations = Rc::new(Cell::new(0usize));
     let hits = configurations.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::Configuration {
             hits.set(hits.get() + 1);
         }
         None
     });
-    let plan = retain_table_plan(&mut g, p.shared_inputs(), a, &mut c).unwrap();
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let plan = retain_table_plan(&mut g, p.shared_inputs(), a, &c).unwrap();
+    let env = Environment::with_prepared(&p, &c).unwrap();
     configurations.set(0);
-    plan.recheck(&env, &g, a, &mut c).unwrap();
+    plan.recheck(&env, &g, a, &c).unwrap();
     assert!(configurations.get() > 0, "最初の消費は元計画を再構成する");
     configurations.set(0);
-    plan.recheck(&env, &g, a, &mut c).unwrap();
+    plan.recheck(&env, &g, a, &c).unwrap();
     assert_eq!(
         configurations.get(),
         0,
         "同じ不変計画の再構成を繰り返さない"
     );
-    assert!(plan.recheck(&env, &g, NodeRef(usize::MAX), &mut c).is_err());
+    assert!(plan.recheck(&env, &g, NodeRef(usize::MAX), &c).is_err());
 }
 #[test]
 fn verified_table_plan_does_not_authorize_modified_sources_or_foreign_inputs() {
     let p = prepared(false, false, BODY, "root");
     let (mut g, a) = built(&p);
-    let mut c = quiet();
-    let plan = retain_table_plan(&mut g, p.shared_inputs(), a, &mut c).unwrap();
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
-    plan.recheck(&env, &g, a, &mut c).unwrap();
+    let c = quiet();
+    let plan = retain_table_plan(&mut g, p.shared_inputs(), a, &c).unwrap();
+    let env = Environment::with_prepared(&p, &c).unwrap();
+    plan.recheck(&env, &g, a, &c).unwrap();
     for mutation in 0..3 {
         let mut forged = plan.clone();
         let source = Arc::make_mut(&mut forged.0);
@@ -132,30 +127,30 @@ fn verified_table_plan_does_not_authorize_modified_sources_or_foreign_inputs() {
             _ => source.base += 1,
         }
         assert!(
-            forged.recheck(&env, &g, a, &mut c).is_err(),
+            forged.recheck(&env, &g, a, &c).is_err(),
             "mutation {mutation}"
         );
     }
     let foreign = prepared(true, false, BODY, "root");
-    let foreign_env = Environment::with_prepared(&foreign, &mut c).unwrap();
-    assert!(plan.recheck(&foreign_env, &g, a, &mut c).is_err());
-    plan.recheck(&env, &g, a, &mut c).unwrap();
+    let foreign_env = Environment::with_prepared(&foreign, &c).unwrap();
+    assert!(plan.recheck(&foreign_env, &g, a, &c).is_err());
+    plan.recheck(&env, &g, a, &c).unwrap();
 }
 #[test]
 fn stopped_shared_table_plan_recheck_does_not_cache_a_partial_verification() {
     use std::{cell::Cell, rc::Rc};
     let p = prepared(false, false, BODY, "root");
     let (mut g, a) = built(&p);
-    let plan = retain_table_plan(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let plan = retain_table_plan(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     let armed = Rc::new(Cell::new(false));
     let arm = armed.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         (arm.get() && point == Checkpoint::Configuration).then_some(crate::result::Signal::Int)
     });
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let env = Environment::with_prepared(&p, &c).unwrap();
     armed.set(true);
     assert!(matches!(
-        plan.recheck(&env, &g, a, &mut c),
+        plan.recheck(&env, &g, a, &c),
         Err(ValidationFailure::Stop(_))
     ));
     assert!(
@@ -196,7 +191,7 @@ fn guards_do_not_choose_a_numeric_parameter_value(guards: &[&str]) {
             panic!("architecture witness")
         };
         assert!(
-            parameters::sources(&p.shared_inputs(), a, &mut quiet())
+            parameters::sources(&p.shared_inputs(), a, &quiet())
                 .unwrap()
                 .is_none()
         );
@@ -218,8 +213,7 @@ fn inactive_missing_parameter_products_omit_evaluation_without_inventing_values(
         let Witness::Architecture(architecture) = &value.witness else {
             panic!("architecture witness")
         };
-        let equations =
-            parameters::sources(&p.shared_inputs(), architecture, &mut quiet()).unwrap();
+        let equations = parameters::sources(&p.shared_inputs(), architecture, &quiet()).unwrap();
         if guard == "true" {
             assert!(equations.is_some());
             continue;
@@ -230,7 +224,7 @@ fn inactive_missing_parameter_products_omit_evaluation_without_inventing_values(
                 .iter()
                 .any(|(_, e)| e.ring.symbols.iter().any(|s| s.value.is_none()))
         );
-        let diagrams = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+        let diagrams = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
         for diagram in diagrams {
             assert_eq!(diagram.evaluations, [None]);
             for coordinate in diagram.coordinates {
@@ -257,7 +251,7 @@ fn active_missing_parameter_products_keep_symbolic_equations_and_missing_reasons
         "root",
     );
     let (mut g, a) = built(&p);
-    let diagrams = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let diagrams = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     let mut pending = false;
     for diagram in diagrams {
         assert_eq!(diagram.evaluations, [None]);
@@ -300,7 +294,7 @@ fn inactive_parameter_families_keep_original_difference_without_required_generat
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     assert!(!ds[0].coordinates.is_empty());
     for q in &ds[0].coordinates {
         assert_eq!(q.guard, EquationGuard::AlwaysFalse);
@@ -332,7 +326,7 @@ fn cancelled_observation_families_share_constant_polynomial_and_residual() {
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     for coordinate in &ds[0].coordinates {
         let nu = coordinate.nu.unwrap();
         assert_eq!(coordinate.epsilon, Some(nu));
@@ -346,19 +340,15 @@ fn cancelled_observation_families_share_constant_polynomial_and_residual() {
         assert_eq!(terms.len(), 1);
         assert!(terms[0].1.iter().all(|power| *power == 0));
         let (_, family) = data(&g, nu)
-            .parameter_difference(&mut quiet())
+            .parameter_difference(&quiet())
             .unwrap()
             .unwrap();
         assert_eq!(family.parameters.len(), 1);
         assert_eq!(
             family.parameters[0].1,
-            EquationPolynomial::constant(Scalar::Z(1.into()), &mut quiet()).unwrap()
+            EquationPolynomial::constant(Scalar::Z(1.into()), &quiet()).unwrap()
         );
-        let value = family
-            .constant
-            .evaluate(&[], &mut quiet())
-            .unwrap()
-            .unwrap();
+        let value = family.constant.evaluate(&[], &quiet()).unwrap().unwrap();
         assert_eq!(value.scalar(), &Scalar::Z((-1).into()));
     }
     replay(&p, &g, &g.nodes).unwrap();
@@ -379,12 +369,12 @@ fn cancelled_observation_families_share_constant_polynomial_and_residual() {
             map.replace(r#""value":"1""#, r#""value":"0""#).into_bytes(),
         ),
     );
-    p.inputs = Arc::new(crate::input::check_inputs(inputs, &mut quiet()).unwrap());
+    p.inputs = Arc::new(crate::input::check_inputs(inputs, &quiet()).unwrap());
     p.requests = resolve_native_for_test(
         p.inputs.law(),
         p.inputs.archmap(),
         &["b=build(Selected,on=@v/root)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let (g, a) = built(&p);
@@ -394,7 +384,7 @@ fn cancelled_observation_families_share_constant_polynomial_and_residual() {
     let Witness::Architecture(a) = &value.witness else {
         panic!("architecture witness")
     };
-    let equations = parameters::sources(&p.shared_inputs(), a, &mut quiet())
+    let equations = parameters::sources(&p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     assert!(equations.iter().any(|(_, source)| {
@@ -490,7 +480,7 @@ fn parameter_polynomials_keep_free_observation_variables() {
             "root",
         );
         let (mut g, a) = built(&p);
-        let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+        let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
         for coordinate in &ds[0].coordinates {
             let Part::Polynomial { terms, .. } = data(&g, coordinate.nu.unwrap()).part() else {
                 panic!("polynomial")
@@ -530,11 +520,11 @@ fn parameter_polynomials_keep_free_observation_variables() {
 fn parameter_polynomials_are_typed_families_and_reject_changed_domains() {
     let p = prepared(false, false, "law required zero(c:Part,n:Z):n=0;", "root");
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     let nu = ds[0].coordinates[0].nu.unwrap();
     let d = data(&g, nu);
     assert!(d.polynomial().is_none());
-    let (ring, family) = d.parameter_difference(&mut quiet()).unwrap().unwrap();
+    let (ring, family) = d.parameter_difference(&quiet()).unwrap().unwrap();
     assert_eq!(Some(ring), ds[0].coordinates[0].ring);
     assert_eq!(family.parameters.len(), 1);
     let original = d.source.clone();
@@ -555,12 +545,12 @@ fn parameter_polynomials_are_typed_families_and_reject_changed_domains() {
         }
         assert!(
             source
-                .recheck(&p.inputs, &original.architecture, &mut quiet())
+                .recheck(&p.inputs, &original.architecture, &quiet())
                 .is_err()
         );
     }
     original
-        .recheck(&p.inputs, &original.architecture, &mut quiet())
+        .recheck(&p.inputs, &original.architecture, &quiet())
         .unwrap();
     replay(&p, &g, &g.nodes).unwrap();
 }
@@ -569,7 +559,7 @@ fn shared_polynomial_family_maps_distinct_local_symbols_into_the_same_z_ring() {
     let p = prepared(false, false, BODY, "root");
     let (mut g, a) = built(&p);
     let before = g.nodes.len();
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     assert_eq!(ds.len(), 3);
     let source = &data(&g, ds[0].rings[0]).source;
     assert_eq!(source.owned_outputs.as_ref().unwrap().len(), 2);
@@ -709,7 +699,7 @@ fn shared_polynomial_tuple_components_keep_z_and_q_separate_across_all_objects()
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     assert_eq!(ds.len(), 3);
     assert_eq!(ds[0].rings.len(), 2);
     assert_ne!(ds[0].rings[0], ds[0].rings[1]);
@@ -768,7 +758,7 @@ fn shared_polynomial_tuple_components_keep_z_and_q_separate_across_all_objects()
 fn missing_shared_slot_omits_global_evaluation_but_keeps_known_original_epsilon() {
     let p = prepared(true, false, BODY, "root");
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     assert_eq!(ds.len(), 3);
     for d in &ds {
         assert_eq!(d.rings, ds[0].rings);
@@ -835,7 +825,7 @@ fn empty_shared_polynomial_family_preserves_base_and_owned_objects_without_rings
     for (root, count) in [("root", 3), ("r2", 1)] {
         let p = prepared(false, false, "", root);
         let (mut g, a) = built(&p);
-        let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+        let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
         assert_eq!(ds.len(), count);
         for d in &ds {
             assert!(
@@ -862,7 +852,7 @@ fn finite_parameter_rows_and_symbolic_numeric_families_are_preserved() {
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     for d in &ds {
         assert_eq!(d.coordinates.len(), 4);
         assert_eq!(d.rings, ds[0].rings);
@@ -911,7 +901,7 @@ fn finite_parameter_rows_and_symbolic_numeric_families_are_preserved() {
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     assert_eq!(ds.len(), 3);
     for d in &ds {
         assert!(d.unavailable.is_none());
@@ -927,7 +917,7 @@ fn finite_parameter_rows_and_symbolic_numeric_families_are_preserved() {
             } else {
                 assert!(
                     data(&g, q.epsilon.unwrap())
-                        .parameter_difference(&mut quiet())
+                        .parameter_difference(&quiet())
                         .unwrap()
                         .is_some()
                 );
@@ -963,14 +953,14 @@ fn shared_polynomial_interrupt_keeps_exact_finished_basis_and_object_prefixes() 
     let (initial, a) = built(&p);
     let before = initial.nodes.len();
     let mut complete = prefix(&initial, &quiet());
-    let ds = retain_family(&mut complete, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut complete, p.shared_inputs(), a, &quiet()).unwrap();
     for at in [
         2 * (ds[1].context.unwrap().0 - before + 1),
         2 * (ds[2].context.unwrap().0 - before + 1),
     ] {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::NativeResultNode {
                 count.set(count.get() + 1);
             }
@@ -979,7 +969,7 @@ fn shared_polynomial_interrupt_keeps_exact_finished_basis_and_object_prefixes() 
         });
         let mut g = prefix(&initial, &c);
         assert!(matches!(
-            retain_family(&mut g, p.shared_inputs(), a, &mut c),
+            retain_family(&mut g, p.shared_inputs(), a, &c),
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.nodes.len(), before + at.div_ceil(2));
@@ -1024,26 +1014,26 @@ fn shared_polynomial_family_rejects_foreign_root_request_input_and_cached_witnes
         p.inputs().law(),
         p.inputs().archmap(),
         &["b=build(Selected,on=@v/root)", "c=build(Selected,on=@v/r2)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let (mut g, a) = built(&p);
-    let mut c = quiet();
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(&p, &c).unwrap();
     g.active.request = 1;
     let before = g.nodes.len();
-    assert!(retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).is_err());
+    assert!(retain_family(&mut g, p.shared_inputs(), a, &quiet()).is_err());
     assert_eq!(g.nodes.len(), before);
     let other = crate::observed::architecture_result::build(
         p.shared_inputs(),
         &env,
         &mut g,
         &p.requests().requests()[1],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert!(other.complete);
-    let second = retain_family(&mut g, p.shared_inputs(), other.reference, &mut quiet()).unwrap();
+    let second = retain_family(&mut g, p.shared_inputs(), other.reference, &quiet()).unwrap();
     assert_eq!(second.len(), 1);
     assert_eq!(
         data(&g, second[0].context.unwrap())
@@ -1055,7 +1045,7 @@ fn shared_polynomial_family_rejects_foreign_root_request_input_and_cached_witnes
         "r2"
     );
     g.active.request = 0;
-    let first = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let first = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     let Some(Payload::Construction(value)) = &g.nodes[first[0].context.unwrap().0].payload else {
         panic!("native")
     };
@@ -1070,23 +1060,19 @@ fn shared_polynomial_family_rejects_foreign_root_request_input_and_cached_witnes
     assert!(env.recheck_polynomial_law_diagram(&g, &foreign).is_err());
     let missing = prepared(true, false, BODY, "root");
     let before = g.nodes.len();
-    assert!(retain_family(&mut g, missing.shared_inputs(), a, &mut quiet()).is_err());
+    assert!(retain_family(&mut g, missing.shared_inputs(), a, &quiet()).is_err());
     assert_eq!(g.nodes.len(), before);
-    let objects = crate::observed::object_component_diagram::retain(
-        &mut g,
-        p.shared_inputs(),
-        a,
-        &mut quiet(),
-    )
-    .unwrap()
-    .unwrap();
+    let objects =
+        crate::observed::object_component_diagram::retain(&mut g, p.shared_inputs(), a, &quiet())
+            .unwrap()
+            .unwrap();
     let before = g.nodes.len();
     assert!(
         retain_family(
             &mut g,
             p.shared_inputs(),
             objects.architectures[1],
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
@@ -1103,7 +1089,7 @@ fn boolean_cases_bind_finite_values_without_sampling_numeric_parameters() {
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     {
         let diagram = &ds[0];
         assert_eq!(diagram.originals.len(), 4);
@@ -1165,7 +1151,7 @@ fn boolean_case_products_cover_joint_guards_and_keep_inactive_ideals_empty() {
             "root",
         );
         let (mut g, a) = built(&p);
-        let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+        let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
         let diagram = &ds[0];
         assert_eq!(diagram.originals.len(), 8);
         assert_eq!(
@@ -1204,7 +1190,7 @@ fn cancelled_numeric_axes_keep_boolean_cases_and_the_original_quantifiers() {
             "root",
         );
         let (mut g, a) = built(&p);
-        let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+        let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
         let diagram = &ds[0];
         assert_eq!(diagram.originals.len(), 4);
         assert_eq!(diagram.coordinates.len(), 4);
@@ -1247,7 +1233,7 @@ fn finite_field_and_boolean_cases_keep_their_types_and_numeric_quantifiers() {
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     let diagram = &ds[0];
     assert_eq!(diagram.originals.len(), 12);
     assert_eq!(diagram.coordinates.len(), 12);
@@ -1300,7 +1286,7 @@ fn finite_tuple_cases_preserve_nested_values_and_numeric_quantifiers() {
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     let diagram = &ds[0];
     assert_eq!(diagram.originals.len(), 24);
     assert_eq!(diagram.coordinates.len(), 24);
@@ -1363,7 +1349,7 @@ fn finite_aggregates_keep_typed_cases_and_numeric_axes() {
             "root",
         );
         let (mut g, a) = built(&p);
-        let diagrams = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+        let diagrams = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
         let diagram = &diagrams[0];
         assert_eq!(diagram.coordinates.len(), 8);
         for (index, coordinate) in diagram.coordinates.iter().enumerate() {
@@ -1404,7 +1390,7 @@ fn finite_aggregate_guards_keep_the_free_numeric_parameter() {
         let Witness::Architecture(a) = &value.witness else {
             panic!("architecture witness")
         };
-        let equations = parameters::sources(&p.shared_inputs(), a, &mut quiet())
+        let equations = parameters::sources(&p.shared_inputs(), a, &quiet())
             .unwrap()
             .unwrap_or_else(|| panic!("{rhs}"));
         assert!(!equations.is_empty(), "{rhs}");
@@ -1461,7 +1447,7 @@ fn finite_predicates_and_short_circuits_keep_numeric_axes() {
             "root",
         );
         let (mut g, a) = built(&p);
-        let diagrams = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+        let diagrams = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
         let diagram = &diagrams[0];
         assert_eq!(diagram.coordinates.len(), 2 * active.len(), "{guard}");
         for (index, coordinate) in diagram.coordinates.iter().enumerate() {
@@ -1490,7 +1476,7 @@ fn finite_set_cases_keep_all_subsets_and_numeric_axes() {
         "root",
     );
     let (mut g, a) = built(&p);
-    let diagrams = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let diagrams = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     let diagram = &diagrams[0];
     assert_eq!(diagram.originals.len(), 8);
     assert_eq!(diagram.coordinates.len(), 8);
@@ -1549,7 +1535,7 @@ fn infinite_components_are_not_finite_case_samples() {
             panic!("architecture witness")
         };
         assert!(
-            parameters::sources(&p.shared_inputs(), a, &mut quiet())
+            parameters::sources(&p.shared_inputs(), a, &quiet())
                 .unwrap()
                 .is_none()
         );
@@ -1592,7 +1578,7 @@ fn infinite_data_is_not_a_finite_case_sample() {
                     law.into_bytes(),
                     map.into_bytes(),
                 ),
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap(),
         );
@@ -1600,7 +1586,7 @@ fn infinite_data_is_not_a_finite_case_sample() {
             p.inputs.law(),
             p.inputs.archmap(),
             &["b=build(Selected,on=@v/root)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let (g, a) = built(&p);
@@ -1611,7 +1597,7 @@ fn infinite_data_is_not_a_finite_case_sample() {
             panic!("architecture witness")
         };
         assert!(
-            parameters::sources(&p.shared_inputs(), a, &mut quiet())
+            parameters::sources(&p.shared_inputs(), a, &quiet())
                 .unwrap()
                 .is_none()
         );

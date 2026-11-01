@@ -28,8 +28,7 @@ fn invalid(f: ValidationFailure) -> ObjectEvaluationFailure {
     .into()
 }
 fn tick(c: &Control) -> Result<(), ObjectEvaluationFailure> {
-    c.clone()
-        .checkpoint(Checkpoint::ObjectViewFamily)
+    c.checkpoint(Checkpoint::ObjectViewFamily)
         .map_err(ConstructionFailure::from)?;
     Ok(())
 }
@@ -126,7 +125,7 @@ impl FiniteObjectView {
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ObjectEvaluationFailure> {
         self.readings.recheck(&inputs, c)?;
         let expected = evaluate_finite_view(inputs, &self.readings, self.object, self.instance, c)?;
@@ -164,12 +163,12 @@ pub(super) fn same_family_checked(
     b: &FiniteObjectView,
     c: &Control,
 ) -> Result<bool, ValidationFailure> {
-    c.clone().checkpoint(Checkpoint::ObjectViewFamily)?;
+    c.checkpoint(Checkpoint::ObjectViewFamily)?;
     if a.domains.len() != b.domains.len() || a.rows.len() != b.rows.len() {
         return Ok(false);
     }
     for (a, b) in a.domains.iter().zip(&b.domains) {
-        c.clone().checkpoint(Checkpoint::ObjectViewFamily)?;
+        c.checkpoint(Checkpoint::ObjectViewFamily)?;
         if a.parameter != b.parameter
             || a.values != b.values
             || a.scope != b.scope
@@ -180,12 +179,12 @@ pub(super) fn same_family_checked(
         }
     }
     for (a, b) in a.rows.iter().zip(&b.rows) {
-        c.clone().checkpoint(Checkpoint::ObjectViewFamilyRow)?;
+        c.checkpoint(Checkpoint::ObjectViewFamilyRow)?;
         if a.arguments != b.arguments || !same_result(&a.evaluation, &b.evaluation) {
             return Ok(false);
         }
     }
-    c.clone().checkpoint(Checkpoint::ObjectViewFamily)?;
+    c.checkpoint(Checkpoint::ObjectViewFamily)?;
     Ok(a.inputs.sources() == b.inputs.sources()
         && a.readings == b.readings
         && a.object == b.object
@@ -279,7 +278,7 @@ impl FiniteViewAssignment {
         );
         let mut support = Vec::new();
         for parameter in self.instance.parameters() {
-            c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+            c.checkpoint(Checkpoint::FiniteIteration)?;
             let Some((domain, missing)) = env.object_view_domain(parameter, &self.instance)? else {
                 return Err("有限view行の型が有限全域でない".into());
             };
@@ -291,7 +290,7 @@ impl FiniteViewAssignment {
             let mut next = Vec::new();
             for row in rows {
                 for value in &domain.values {
-                    c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+                    c.checkpoint(Checkpoint::FiniteIteration)?;
                     let mut r = row.clone();
                     r.push(value.clone());
                     next.push(r)
@@ -311,7 +310,7 @@ pub(super) fn evaluate_finite_view(
     readings: &ObjectReadingInstances,
     object: usize,
     instance: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteObjectView, ObjectEvaluationFailure> {
     let selected = readings
         .objects()
@@ -503,7 +502,7 @@ mod tests {
                         .replace("@INSTANCES_DIGEST@", digest)
                         .into_bytes(),
                 ),
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap(),
         )
@@ -512,14 +511,14 @@ mod tests {
     fn finite_view_parameters_are_full_typed_functions_and_keep_each_original_evaluation() {
         let i =
             fixture("view family(c:Part,b:Bool,k:Bool):(Z,Bool)=(if b then c.quantity else 0,k);");
-        let construction = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let readings = object_reading_instances(&i, &construction, &mut quiet()).unwrap();
+        let construction = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let readings = object_reading_instances(&i, &construction, &quiet()).unwrap();
         let n = readings
             .instances()
             .iter()
             .position(|n| n.bindings().iter().any(|b| b.subject().subject == "p"))
             .unwrap();
-        let e = evaluate_object_instance(Arc::clone(&i), &readings, 0, n, &mut quiet()).unwrap();
+        let e = evaluate_object_instance(Arc::clone(&i), &readings, 0, n, &quiet()).unwrap();
         let ObjectEvaluationOutcome::FiniteView(f) = e.outcome() else {
             panic!("finite view")
         };
@@ -554,13 +553,13 @@ mod tests {
             );
             assert_eq!(row.evaluation().prepared().inputs().sources(), i.sources());
         }
-        f.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+        f.recheck(Arc::clone(&i), &quiet()).unwrap();
         // 公開evaluateは元どおり全parameterの束縛を要求する。
         assert!(
             super::super::prepare_shared_observed(
                 i,
                 &["a=evaluate(Selected.family,c=@v/p)"],
-                &mut quiet()
+                &quiet()
             )
             .is_err()
         );
@@ -577,8 +576,8 @@ mod domain_tests {
         let i = fixture(
             "view matrix(c:Part,tag:Choice,bits:Set<Bool>,maybe:Option<Bool>):(Choice,Set<Bool>,Option<Bool>)=(tag,bits,maybe); view empty(c:Part,e:(Empty,Bool)):Bool=false;",
         );
-        let construction = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &construction, &mut quiet()).unwrap();
+        let construction = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &construction, &quiet()).unwrap();
         for (name, count, sizes) in [
             ("Selected.matrix", 36, vec![3, 4, 3]),
             ("Selected.empty", 0, vec![0]),
@@ -591,7 +590,7 @@ mod domain_tests {
                         && n.bindings().iter().any(|b| b.subject().subject == "p")
                 })
                 .unwrap();
-            let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
+            let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &quiet()).unwrap();
             assert!(f.is_complete());
             assert_eq!(f.rows().len(), count);
             assert_eq!(
@@ -614,21 +613,21 @@ mod domain_tests {
                     row.arguments().iter().map(|v| v.wire()).collect::<Vec<_>>()
                 );
             }
-            f.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+            f.recheck(Arc::clone(&i), &quiet()).unwrap();
         }
     }
     #[test]
     fn current_inputs_reject_missing_reordered_forged_rows_and_native_assignments() {
         let i = fixture("view family(c:Part,b:Bool):Bool=b;");
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
         let n = p
             .instances()
             .iter()
             .position(|n| n.bindings().iter().any(|b| b.subject().subject == "p"))
             .unwrap();
         for kind in 0..8 {
-            let mut f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
+            let mut f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &quiet()).unwrap();
             match kind {
                 0 => {
                     f.rows.pop();
@@ -658,10 +657,7 @@ mod domain_tests {
                 }
                 _ => f.rows[0].evaluation.answers[0].scope.readings.clear(),
             }
-            assert!(
-                f.recheck(Arc::clone(&i), &mut quiet()).is_err(),
-                "kind={kind}"
-            );
+            assert!(f.recheck(Arc::clone(&i), &quiet()).is_err(), "kind={kind}");
         }
     }
 }
@@ -676,8 +672,8 @@ mod missing_tests {
         let i = fixture(
             "view mystery(c:Part,b:Bool):Bool=if b then c.flag else true; view stable(c:Part,b:Bool):Bool=(c.flag or not c.flag) and (b or not b);",
         );
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
         for (name, states) in [
             ("Selected.mystery", ["complete", "partial"]),
             ("Selected.stable", ["complete", "complete"]),
@@ -690,7 +686,7 @@ mod missing_tests {
                         && n.bindings().iter().any(|b| b.subject().subject == "p")
                 })
                 .unwrap();
-            let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
+            let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &quiet()).unwrap();
             assert!(f.is_complete());
             assert_eq!(f.rows().len(), 2);
             for (row, state) in f.rows().iter().zip(states) {
@@ -701,7 +697,7 @@ mod missing_tests {
                     row.evaluation().issues
                 );
             }
-            f.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+            f.recheck(Arc::clone(&i), &quiet()).unwrap();
         }
     }
 }
@@ -717,8 +713,8 @@ mod stop_tests {
         let i = fixture(
             "view family(c:Part,xs:List<Empty>,b:Bool,k:Bool):(Z,Bool)=(if b then c.quantity else 0,k);",
         );
-        let cc = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &cc, &mut quiet()).unwrap();
+        let cc = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &cc, &quiet()).unwrap();
         let n = p
             .instances()
             .iter()
@@ -732,26 +728,26 @@ mod stop_tests {
         ] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let mut c = Control::new(move |p| {
+            let c = Control::new(move |p| {
                 if p == phase {
                     seen.set(seen.get() + 1)
                 }
                 None
             });
-            let full = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut c).unwrap();
+            let full = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &c).unwrap();
             let total = count.get();
             assert!(total > 1);
             for at in [1, total / 2, total] {
                 for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
                     let count = Rc::new(Cell::new(0));
                     let seen = count.clone();
-                    let mut c = Control::new(move |p| {
+                    let c = Control::new(move |p| {
                         if p == phase {
                             seen.set(seen.get() + 1)
                         }
                         (seen.get() >= at).then_some(signal)
                     });
-                    let Err(error) = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut c) else {
+                    let Err(error) = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &c) else {
                         panic!("fixed stop")
                     };
                     assert!(c.stop_reason().is_some());
@@ -784,8 +780,8 @@ mod producer_tests {
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
     fn replay(e: &ObservedEvaluation, nodes: &[Node]) -> Result<(), ValidationFailure> {
-        let mut c = quiet();
-        let env = Environment::with_prepared(e.prepared(), &mut c)?;
+        let c = quiet();
+        let env = Environment::with_prepared(e.prepared(), &c)?;
         let mut g = Graph::new(&c);
         g.requests = e.prepared().requests().requests().to_vec();
         g.checked_answers = e.answers.iter().cloned().enumerate().collect();
@@ -807,14 +803,14 @@ mod producer_tests {
     #[test]
     fn native_parameter_producers_are_rechecked_even_when_their_scalar_values_agree() {
         let i = fixture("view family(c:Part,b:Bool,k:Bool):(Bool,Bool)=(b,k);");
-        let cc = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &cc, &mut quiet()).unwrap();
+        let cc = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &cc, &quiet()).unwrap();
         let n = p
             .instances()
             .iter()
             .position(|n| n.bindings().iter().any(|b| b.subject().subject == "p"))
             .unwrap();
-        let f = evaluate_finite_view(i, &p, 0, n, &mut quiet()).unwrap();
+        let f = evaluate_finite_view(i, &p, 0, n, &quiet()).unwrap();
         let e = &f.rows()[0].evaluation;
         replay(e, &e.nodes).unwrap();
         let parameters = e.prepared.object.as_ref().unwrap().instance.parameters();
@@ -873,14 +869,14 @@ mod owner_tests {
         let i = fixture(
             "view owned(a:Root,z:(Part[a],Bool)):Bool=true; view plain(a:Root,z:(Part,Bool)):Bool=true;",
         );
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
         let n = p
             .instances()
             .iter()
             .position(|n| n.declaration().name == "Selected.owned")
             .unwrap();
-        let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
+        let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &quiet()).unwrap();
         assert!(f.is_complete());
         assert_eq!(f.rows().len(), 4);
         for row in f.rows() {
@@ -897,7 +893,7 @@ mod owner_tests {
             .iter()
             .position(|n| n.declaration().name == "Selected.plain")
             .unwrap();
-        let f = evaluate_finite_view(i, &p, 0, n, &mut quiet()).unwrap();
+        let f = evaluate_finite_view(i, &p, 0, n, &quiet()).unwrap();
         assert_eq!(f.rows().len(), 6);
         assert!(f.rows().iter().any(|row|matches!(&row.arguments[0].value, Scalar::Tuple(values) if matches!(&values[0],Scalar::Subject {subject,..} if subject=="q"))));
     }
@@ -921,7 +917,7 @@ mod owner_missing_tests {
                     i.sources().law().bytes().to_vec(),
                     map.into_bytes(),
                 ),
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap(),
         )
@@ -938,14 +934,14 @@ mod owner_missing_tests {
             .collect::<Vec<_>>()
             .join("\n");
         let i = changed(&initial, missing);
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
         let n = p
             .instances()
             .iter()
             .position(|n| n.declaration().name == "Selected.owned")
             .unwrap();
-        let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
+        let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &quiet()).unwrap();
         assert!(!f.is_complete());
         assert_eq!(f.rows().len(), 0);
         assert_eq!(f.domains()[0].values().len(), 2);
@@ -956,20 +952,20 @@ mod owner_missing_tests {
             Some("Instances.Part.owner")
         );
         assert!(!f.domains()[0].is_complete());
-        f.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+        f.recheck(Arc::clone(&i), &quiet()).unwrap();
         let table = super::super::object_evaluation_table::evaluate_object_table(
             Arc::clone(&i),
             &p,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert!(table.is_complete());
         assert!(table.rows().iter().any(|row|matches!(row.evaluation().outcome(),super::super::object_evaluate::ObjectEvaluationOutcome::FiniteView(f) if !f.is_complete() && !f.missing().is_empty())));
-        table.recheck(i, &mut quiet()).unwrap();
+        table.recheck(i, &quiet()).unwrap();
         let map=map.replace("\"atoms\":[",r#""atoms":[{"id":"u-owner","subject":"u","field":"Instances.Member.owner","value":["v","h"],"origin":"model"},"#);
         let i = changed(&initial, map);
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
         for (owner, count) in [("g", 0), ("h", 2)] {
             let n = p
                 .instances()
@@ -984,7 +980,7 @@ mod owner_missing_tests {
                             .any(|b| b.parameter().name == "a" && b.subject().subject == owner)
                 })
                 .unwrap();
-            let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
+            let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &quiet()).unwrap();
             assert!(f.is_complete());
             assert!(f.missing().is_empty());
             assert_eq!(f.rows().len(), count);
@@ -994,7 +990,7 @@ mod owner_missing_tests {
                 };
                 assert!(matches!(&v[0],Scalar::Subject {subject,..} if subject=="u"));
             }
-            f.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+            f.recheck(Arc::clone(&i), &quiet()).unwrap();
         }
     }
     #[test]
@@ -1010,14 +1006,14 @@ mod owner_missing_tests {
             .unwrap()
             .replace("\"atoms\":[", &format!("\"atoms\":[{atoms}"));
         let i = changed(&i, map);
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
         let n = p
             .instances()
             .iter()
             .position(|n| n.declaration().name == "Selected.route")
             .unwrap();
-        let f = evaluate_finite_view(i, &p, 0, n, &mut quiet()).unwrap();
+        let f = evaluate_finite_view(i, &p, 0, n, &quiet()).unwrap();
         assert_eq!(f.rows().len(), 2);
         for (index, row) in f.rows().iter().enumerate() {
             assert_eq!(
@@ -1058,8 +1054,8 @@ mod recheck_regression_tests {
         let i = fixture(
             "view sets(c:Part,bits:Set<Bool>):(Bool,Set<Bool>)=(true,bits); view maps(c:Part,m:Map<Part,Part>):Map<Part,Part> = m;",
         );
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
         for name in ["Selected.sets", "Selected.maps"] {
             let n = p
                 .instances()
@@ -1069,9 +1065,9 @@ mod recheck_regression_tests {
                         && n.bindings().iter().any(|b| b.subject().subject == "p")
                 })
                 .unwrap();
-            let mut f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
-            let expected = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
-            f.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+            let mut f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &quiet()).unwrap();
+            let expected = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &quiet()).unwrap();
+            f.recheck(Arc::clone(&i), &quiet()).unwrap();
             let mut changed = false;
             for row in &mut f.rows {
                 let output = row.evaluation.answers[0].outputs["value"].0;
@@ -1104,15 +1100,15 @@ mod recheck_regression_tests {
                 !same_family_checked(&f, &expected, &quiet()).unwrap(),
                 "{name}"
             );
-            assert!(f.recheck(Arc::clone(&i), &mut quiet()).is_err(), "{name}");
+            assert!(f.recheck(Arc::clone(&i), &quiet()).is_err(), "{name}");
         }
     }
 
     #[test]
     fn empty_families_cannot_be_rechecked_as_an_inapplicable_object() {
         let i = fixture("view empty(c:Part,e:(Empty,Bool)):Bool=false;");
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
         let n = p
             .instances()
             .iter()
@@ -1128,24 +1124,24 @@ mod recheck_regression_tests {
                 )
             })
             .unwrap();
-        let normal = evaluate_object_instance(Arc::clone(&i), &p, wrong, n, &mut quiet()).unwrap();
+        let normal = evaluate_object_instance(Arc::clone(&i), &p, wrong, n, &quiet()).unwrap();
         assert!(matches!(
             normal.outcome(),
             ObjectEvaluationOutcome::NotApplicable
         ));
-        let mut f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
+        let mut f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &quiet()).unwrap();
         assert!(f.is_complete());
         assert!(f.rows().is_empty());
         f.object = wrong;
-        assert!(f.recheck(i, &mut quiet()).is_err());
+        assert!(f.recheck(i, &quiet()).is_err());
     }
 
     #[test]
     fn recheck_comparison_stops_keep_current_input_completed_rows_and_latch_probe() {
         let i =
             fixture("view family(c:Part,b:Bool,k:Bool):(Z,Bool)=(if b then c.quantity else 0,k);");
-        let construction = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &construction, &mut quiet()).unwrap();
+        let construction = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &construction, &quiet()).unwrap();
         let n = p
             .instances()
             .iter()
@@ -1157,16 +1153,16 @@ mod recheck_regression_tests {
         ] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let mut c = Control::new(move |point| {
+            let c = Control::new(move |point| {
                 if point == phase {
                     seen.set(seen.get() + 1);
                 }
                 None
             });
-            let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut c).unwrap();
+            let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &c).unwrap();
             let before_comparison = count.get();
             count.set(0);
-            f.recheck(Arc::clone(&i), &mut c).unwrap();
+            f.recheck(Arc::clone(&i), &c).unwrap();
             let total = count.get();
             assert!(total > before_comparison);
             for at in [
@@ -1177,13 +1173,13 @@ mod recheck_regression_tests {
                 for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
                     let count = Rc::new(Cell::new(0));
                     let seen = count.clone();
-                    let mut c = Control::new(move |point| {
+                    let c = Control::new(move |point| {
                         if point == phase {
                             seen.set(seen.get() + 1);
                         }
                         (seen.get() >= at).then_some(signal)
                     });
-                    let error = f.recheck(Arc::clone(&i), &mut c).unwrap_err();
+                    let error = f.recheck(Arc::clone(&i), &c).unwrap_err();
                     let ObjectEvaluationFailure::FiniteView { cause, partial } = error else {
                         panic!(
                             "comparison stop must keep current input rows: phase={phase:?} at={at} signal={signal:?}"
@@ -1213,15 +1209,15 @@ mod empty_list_tests {
     #[test]
     fn empty_element_lists_are_singleton_domains_and_complete_the_table() {
         let inputs = fixture("view family(c:Part,x:List<Empty>):Bool=true;");
-        let construction = construct(&inputs, "Selected", "v", "A", &mut quiet()).unwrap();
-        let readings = object_reading_instances(&inputs, &construction, &mut quiet()).unwrap();
+        let construction = construct(&inputs, "Selected", "v", "A", &quiet()).unwrap();
+        let readings = object_reading_instances(&inputs, &construction, &quiet()).unwrap();
         let instance = readings
             .instances()
             .iter()
             .position(|i| i.bindings().iter().any(|b| b.subject().subject == "p"))
             .unwrap();
         let family =
-            match evaluate_finite_view(Arc::clone(&inputs), &readings, 0, instance, &mut quiet()) {
+            match evaluate_finite_view(Arc::clone(&inputs), &readings, 0, instance, &quiet()) {
                 Ok(family) => family,
                 Err(_) => panic!("List<Empty> has exactly one value, the empty list"),
             };
@@ -1240,15 +1236,15 @@ mod empty_list_tests {
             evaluation.nodes[evaluation.answers[0].outputs["value"].0].payload,
             Some(super::super::result::Payload::Scalar(Scalar::Bool(true)))
         ));
-        family.recheck(Arc::clone(&inputs), &mut quiet()).unwrap();
+        family.recheck(Arc::clone(&inputs), &quiet()).unwrap();
         let table = super::super::object_evaluation_table::evaluate_object_table(
             Arc::clone(&inputs),
             &readings,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert!(table.is_complete());
-        table.recheck(inputs, &mut quiet()).unwrap();
+        table.recheck(inputs, &quiet()).unwrap();
     }
 }
 
@@ -1279,7 +1275,7 @@ mod empty_list_composite_tests {
                     law.replace(old, new).into_bytes(),
                     map.replace(old, new).into_bytes(),
                 ),
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap(),
         )
@@ -1294,14 +1290,14 @@ mod empty_list_composite_tests {
             "view nested(c:Part,a:Option<List<Empty>>,s:Set<List<Empty>>,d:ListBox):(Option<List<Empty>>,Set<List<Empty>>,ListBox)=(a,s,d);",
             String::from_utf8(initial.sources().archmap().bytes().to_vec()).unwrap(),
         );
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
         let n = p
             .instances()
             .iter()
             .position(|n| n.bindings().iter().any(|b| b.subject().subject == "p"))
             .unwrap();
-        let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
+        let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &quiet()).unwrap();
         assert!(f.is_complete());
         assert_eq!(
             f.domains()
@@ -1361,14 +1357,14 @@ mod empty_list_composite_tests {
                 )))
             );
         }
-        f.recheck(i, &mut quiet()).unwrap();
+        f.recheck(i, &quiet()).unwrap();
     }
     #[test]
     fn list_owner_domains_keep_missing_owners_and_distinguish_empty_from_nonempty_fibers() {
         let initial = fixture("view owner(c:Part,a:Group,x:List<Member[a]>):Bool=true;");
         let map = String::from_utf8(initial.sources().archmap().bytes().to_vec()).unwrap();
-        let c = construct(&initial, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&initial, &c, &mut quiet()).unwrap();
+        let c = construct(&initial, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&initial, &c, &quiet()).unwrap();
         let pick = |p: &ObjectReadingInstances, owner: &str| {
             p.instances()
                 .iter()
@@ -1382,8 +1378,7 @@ mod empty_list_composite_tests {
                 })
                 .unwrap()
         };
-        let f =
-            evaluate_finite_view(Arc::clone(&initial), &p, 0, pick(&p, "g"), &mut quiet()).unwrap();
+        let f = evaluate_finite_view(Arc::clone(&initial), &p, 0, pick(&p, "g"), &quiet()).unwrap();
         assert!(!f.is_complete());
         assert!(f.rows().is_empty());
         assert_eq!(f.domains()[0].values().len(), 1);
@@ -1393,7 +1388,7 @@ mod empty_list_composite_tests {
             f.missing()[0].field.as_deref(),
             Some("Instances.Member.owner")
         );
-        f.recheck(Arc::clone(&initial), &mut quiet()).unwrap();
+        f.recheck(Arc::clone(&initial), &quiet()).unwrap();
         let map = map.replace("\"atoms\":[",r#""atoms":[{"id":"u-owner","subject":"u","field":"Instances.Member.owner","value":["v","h"],"origin":"model"},"#);
         let i = altered(
             &initial,
@@ -1401,18 +1396,18 @@ mod empty_list_composite_tests {
             "",
             map,
         );
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
-        let f = evaluate_finite_view(Arc::clone(&i), &p, 0, pick(&p, "g"), &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
+        let f = evaluate_finite_view(Arc::clone(&i), &p, 0, pick(&p, "g"), &quiet()).unwrap();
         assert!(f.is_complete());
         assert!(f.missing().is_empty());
         assert_eq!(f.rows().len(), 1);
         assert!(
             matches!(&f.rows()[0].arguments[0].value,Scalar::List{items,..} if items.is_empty())
         );
-        f.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+        f.recheck(Arc::clone(&i), &quiet()).unwrap();
         assert!(matches!(
-            evaluate_finite_view(i, &p, 0, pick(&p, "h"), &mut quiet()),
+            evaluate_finite_view(i, &p, 0, pick(&p, "h"), &quiet()),
             Err(ObjectEvaluationFailure::NotImplemented { .. })
         ));
     }
@@ -1421,8 +1416,8 @@ mod empty_list_composite_tests {
         let i = fixture(
             "view many(c:Part,x:List<Bool>):Bool=true; view nested(c:Part,x:List<List<Empty>>):Bool=true;",
         );
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
         for name in ["Selected.many", "Selected.nested"] {
             let n = p
                 .instances()
@@ -1434,7 +1429,7 @@ mod empty_list_composite_tests {
                 .unwrap();
             assert!(
                 matches!(
-                    evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()),
+                    evaluate_finite_view(Arc::clone(&i), &p, 0, n, &quiet()),
                     Err(ObjectEvaluationFailure::NotImplemented { .. })
                 ),
                 "{name}"
@@ -1446,8 +1441,8 @@ mod empty_list_composite_tests {
         let i = fixture(
             "view left(c:Part,x:(Empty,Z)):Bool=true; view right(c:Part,x:(Z,Empty)):Bool=true; view listValue(c:Part,x:List<(Z,Empty)>):Bool=true;",
         );
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
         for (name, count) in [
             ("Selected.left", 0),
             ("Selected.right", 0),
@@ -1461,7 +1456,7 @@ mod empty_list_composite_tests {
                         && n.bindings().iter().any(|b| b.subject().subject == "p")
                 })
                 .unwrap();
-            let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
+            let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &quiet()).unwrap();
             assert!(f.is_complete());
             assert_eq!(f.domains()[0].values().len(), count);
             assert_eq!(f.rows().len(), count);
@@ -1470,16 +1465,16 @@ mod empty_list_composite_tests {
                     matches!(&f.rows()[0].arguments[0].value,Scalar::List{items,..} if items.is_empty())
                 );
             }
-            f.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+            f.recheck(Arc::clone(&i), &quiet()).unwrap();
         }
         let table = super::super::object_evaluation_table::evaluate_object_table(
             Arc::clone(&i),
             &p,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert!(table.is_complete());
-        table.recheck(i, &mut quiet()).unwrap();
+        table.recheck(i, &quiet()).unwrap();
     }
 }
 
@@ -1502,8 +1497,8 @@ mod recursive_empty_product_tests {
             "view dead(c:Part,d:(Dead,Dead)):Bool=true; view live(c:Part,d:Live):Bool=true;",
             String::from_utf8(initial.sources().archmap().bytes().to_vec()).unwrap(),
         );
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
         let pick = |name: &str| {
             p.instances()
                 .iter()
@@ -1513,8 +1508,8 @@ mod recursive_empty_product_tests {
                 })
                 .unwrap()
         };
-        let f = evaluate_finite_view(Arc::clone(&i), &p, 0, pick("Selected.dead"), &mut quiet())
-            .unwrap();
+        let f =
+            evaluate_finite_view(Arc::clone(&i), &p, 0, pick("Selected.dead"), &quiet()).unwrap();
         assert!(f.is_complete());
         assert_eq!(f.rows().len(), 1);
         let done = Scalar::Data {
@@ -1526,9 +1521,9 @@ mod recursive_empty_product_tests {
             f.rows()[0].arguments[0].value,
             Scalar::Tuple(vec![done.clone(), done])
         );
-        f.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+        f.recheck(Arc::clone(&i), &quiet()).unwrap();
         assert!(matches!(
-            evaluate_finite_view(i, &p, 0, pick("Selected.live"), &mut quiet()),
+            evaluate_finite_view(i, &p, 0, pick("Selected.live"), &quiet()),
             Err(ObjectEvaluationFailure::NotImplemented { .. })
         ));
     }
@@ -1544,8 +1539,8 @@ mod empty_product_missing_tests {
         let i = fixture(
             "view zeroLast(c:Part,a:Group,x:(List<Member[a]>,Empty)):Bool=true; view zeroFirst(c:Part,a:Group,x:(Empty,List<Member[a]>)):Bool=true; view listOfZero(c:Part,a:Group,x:List<(List<Member[a]>,Empty)>):Bool=true; view setOfZero(c:Part,a:Group,x:Set<(List<Member[a]>,Empty)>):Bool=true; view optionOfZero(c:Part,a:Group,x:Option<(List<Member[a]>,Empty)>):Bool=true; view mapOfZero(c:Part,a:Group,x:Map<Empty,Member[a]>):Bool=true;",
         );
-        let c = construct(&i, "Selected", "v", "A", &mut quiet()).unwrap();
-        let p = object_reading_instances(&i, &c, &mut quiet()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &quiet()).unwrap();
+        let p = object_reading_instances(&i, &c, &quiet()).unwrap();
         for (name, count) in [
             ("Selected.zeroLast", 0),
             ("Selected.zeroFirst", 0),
@@ -1567,21 +1562,21 @@ mod empty_product_missing_tests {
                             .any(|b| b.parameter().name == "a" && b.subject().subject == "g")
                 })
                 .unwrap();
-            let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut quiet()).unwrap();
+            let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &quiet()).unwrap();
             assert!(f.is_complete(), "{name}");
             assert!(f.missing().is_empty(), "{name}");
             assert!(f.domains()[0].is_complete());
             assert_eq!(f.domains()[0].values().len(), count);
             assert_eq!(f.rows().len(), count);
-            f.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+            f.recheck(Arc::clone(&i), &quiet()).unwrap();
         }
         let table = super::super::object_evaluation_table::evaluate_object_table(
             Arc::clone(&i),
             &p,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert!(table.is_complete());
-        table.recheck(i, &mut quiet()).unwrap();
+        table.recheck(i, &quiet()).unwrap();
     }
 }

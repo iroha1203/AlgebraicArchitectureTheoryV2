@@ -6,7 +6,7 @@ use super::{
 };
 use crate::control::{Checkpoint, Control};
 use crate::{construction::readings::InstanceApplication, issue::Location, types::Type};
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;
     Ok(())
 }
@@ -369,7 +369,7 @@ pub(super) fn evaluate(
     env: &Environment<'_>,
     g: &mut Graph,
     expression: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Outcome, ValidationFailure> {
     tick(c)?;
     if g.active != g.context_at(expression.0) {

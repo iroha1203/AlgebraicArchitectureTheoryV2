@@ -259,7 +259,7 @@ fn compute(
     architecture: &Architecture,
     base: usize,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
     env.validation_graph_session(g, || compute_inner(env, g, architecture, base, request, c))
 }
@@ -269,7 +269,7 @@ fn compute_inner(
     architecture: &Architecture,
     base: usize,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
     if !architecture.complete {
         if let Some(result) =
@@ -401,7 +401,7 @@ pub(super) fn render_search(
     architecture: &Architecture,
     base: usize,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
     search: change_search::Search,
 ) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
     let candidates = search.candidates.as_ref().ok_or("有限候補表がない")?;
@@ -1151,7 +1151,7 @@ pub(super) fn evaluate(
     env: &Environment<'_>,
     g: &mut Graph,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Answer, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((prepared, env, g, request, c))
 }
@@ -1198,21 +1198,15 @@ impl Environment<'_> {
         {
             return Err("changeの位置・既出参照が違う".into());
         }
-        let mut c = self.control.clone();
-        d.source.boundary.recheck(self, g, at, &mut c)?;
+        let c = self.control.clone();
+        d.source.boundary.recheck(self, g, at, &c)?;
         if self.change_source_checked(&d.source) {
             return Ok(());
         }
         let origin = Witness::Architecture(d.source.architecture.witness.clone());
         let request = origin.request();
-        let (parts, answer, verification) = compute(
-            self,
-            g,
-            &d.source.architecture,
-            d.source.base,
-            request,
-            &mut c,
-        )?;
+        let (parts, answer, verification) =
+            compute(self, g, &d.source.architecture, d.source.base, request, &c)?;
         if let Some(search) = verification {
             for point in 0..search
                 .candidates
@@ -1224,7 +1218,7 @@ impl Environment<'_> {
                     &d.source.architecture.witness,
                     &search,
                     point,
-                    &mut c,
+                    &c,
                 )?;
             }
         }
@@ -1307,7 +1301,7 @@ pub(super) fn candidate_input(
     env: &Environment<'_>,
     g: &Graph,
     reference: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<CandidateInput, ValidationFailure> {
     let node = g.get(reference)?;
     let Some(Payload::Construction(v)) = &node.payload else {
@@ -1399,7 +1393,7 @@ impl super::result_kind::ResultKind for Data {
         &'a Environment<'input>,
         &'a mut Graph,
         &'a Request,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = Answer;
     fn compute_and_retain<'a, 'input: 'a>(

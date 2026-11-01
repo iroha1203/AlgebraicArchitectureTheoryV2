@@ -1098,7 +1098,7 @@ impl ArchitectureWitness {
         request: &Request,
         reading: &str,
         root: &Fact,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Arc<Self>, ConstructionFailure> {
         let mut finite_change = false;
         if matches!(
@@ -1249,7 +1249,7 @@ impl MapWitness {
         request: &Request,
         subject: Fact,
         universe: Option<&ArchitectureWitness>,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(Arc<Self>, Option<Signal>), ConstructionFailure> {
         let universe = match universe {
             Some(a) if a.inputs.sources() == inputs.sources() => a.construction.universe().to_vec(),

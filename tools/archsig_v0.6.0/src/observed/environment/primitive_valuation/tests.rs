@@ -72,7 +72,7 @@ fn known_candidates_share_positions_and_reuse_original_helpers_without_changing_
         let e = Environment::with_primitive_valuation(
             &i,
             &[(slot("p", "quantity"), fp("2", n))],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         // (n+1)+n=1 in Fp(2), using the same original slot twice.
@@ -81,7 +81,7 @@ fn known_candidates_share_positions_and_reuse_original_helpers_without_changing_
         assert!(v.scope.assignments);
         assert_eq!(v.support, vec![slot("p", "quantity")]);
     }
-    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    let normal = Environment::new(&i, &quiet()).unwrap();
     let v = expression(&normal, "selected", false);
     assert_eq!(v.known_value, Some(fp("2", 0)));
     assert!(!v.scope.assignments);
@@ -95,7 +95,7 @@ fn distinct_candidate_caches_and_repeated_reads_keep_their_own_values() {
         let e = Environment::with_primitive_valuation(
             &i,
             &[(slot("p", "quantity"), fp("2", n))],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         for _ in 0..3 {
@@ -113,7 +113,7 @@ fn candidate_boolean_changes_original_if_and_guard_without_becoming_law_evidence
         let e = Environment::with_primitive_valuation(
             &i,
             &[(slot("p", "flag"), Scalar::Bool(flag))],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(
@@ -144,9 +144,8 @@ fn candidate_reference_selects_the_original_target_field_and_its_own_candidate()
         subject: "q".into(),
         entity: "Pattern.Part".into(),
     };
-    let e =
-        Environment::with_primitive_valuation(&i, &[(slot("p", "link"), q.clone())], &mut quiet())
-            .unwrap();
+    let e = Environment::with_primitive_valuation(&i, &[(slot("p", "link"), q.clone())], &quiet())
+        .unwrap();
     let v = expression(&e, "through", false);
     assert_eq!(v.known_value, Some(fp("2", 1)));
     assert!(v.support.contains(&slot("p", "link")));
@@ -159,7 +158,7 @@ fn candidate_reference_selects_the_original_target_field_and_its_own_candidate()
     let e = Environment::with_primitive_valuation(
         &i,
         &[(slot("p", "link"), q), (slot("q", "quantity"), fp("2", 0))],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let v = expression(&e, "through", false);
@@ -169,25 +168,19 @@ fn candidate_reference_selects_the_original_target_field_and_its_own_candidate()
 #[test]
 fn missing_candidate_is_explicit_and_an_unassigned_missing_field_stays_unknown() {
     let i = fixture::inputs();
-    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    let normal = Environment::new(&i, &quiet()).unwrap();
     assert!(expression(&normal, "missing", false).known_value.is_none());
-    let e = Environment::with_primitive_valuation(
-        &i,
-        &[(slot("p", "third"), fp("3", 2))],
-        &mut quiet(),
-    )
-    .unwrap();
+    let e =
+        Environment::with_primitive_valuation(&i, &[(slot("p", "third"), fp("3", 2))], &quiet())
+            .unwrap();
     let v = expression(&e, "missing", false);
     assert_eq!(v.known_value, Some(fp("3", 2)));
     assert_eq!(v.support, vec![slot("p", "third")]);
     assert!(v.scope.assignments);
     assert!(!v.scope.completions);
-    let e = Environment::with_primitive_valuation(
-        &i,
-        &[(slot("p", "quantity"), fp("2", 1))],
-        &mut quiet(),
-    )
-    .unwrap();
+    let e =
+        Environment::with_primitive_valuation(&i, &[(slot("p", "quantity"), fp("2", 1))], &quiet())
+            .unwrap();
     assert!(expression(&e, "missing", false).known_value.is_none());
     assert!(expression(&normal, "missing", false).known_value.is_none());
 }
@@ -210,7 +203,7 @@ fn tuple_and_data_candidates_use_original_projection_and_match() {
                 },
             ),
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(expression(&e, "pair", false).known_value, Some(fp("2", 1)));
@@ -245,7 +238,7 @@ fn candidate_positions_reject_duplicates_unknown_slots_and_observation_atoms() {
         vec![(field, fp("2", 0))],
         vec![(none, fp("2", 0))],
     ] {
-        assert!(Environment::with_primitive_valuation(&i, &values, &mut quiet()).is_err());
+        assert!(Environment::with_primitive_valuation(&i, &values, &quiet()).is_err());
     }
 }
 #[test]
@@ -296,7 +289,7 @@ fn candidate_values_reject_wrong_types_noncanonical_numbers_references_and_compo
         ),
     ];
     for pair in bad {
-        assert!(Environment::with_primitive_valuation(&i, &[pair], &mut quiet()).is_err());
+        assert!(Environment::with_primitive_valuation(&i, &[pair], &quiet()).is_err());
     }
 }
 
@@ -315,7 +308,7 @@ fn rational_candidates_keep_exact_normal_forms_and_reject_invalid_denominators()
             (slot("p", "ratio"), ratio.clone()),
             (slot("p", "integer"), integer.clone()),
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(expression(&e, "ratio", false).known_value, Some(ratio));
@@ -325,7 +318,7 @@ fn rational_candidates_keep_exact_normal_forms_and_reject_invalid_denominators()
             Environment::with_primitive_valuation(
                 &i,
                 &[(slot("p", "ratio"), Scalar::Q(n.into(), d.into()))],
-                &mut quiet()
+                &quiet()
             )
             .is_err()
         );
@@ -339,20 +332,20 @@ fn candidate_environment_cannot_validate_observation_graph_nodes() {
     let r = crate::observed::evaluate_observed_bytes(
         i.sources().clone(),
         &["ans=evaluate(Selected.selected,c=@v/p)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
     let original = Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let candidate = Environment::with_primitive_valuation(
         r.prepared.inputs(),
         &[(slot("p", "quantity"), fp("2", 1))],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(candidate.state.completion_values.borrow().is_empty());
@@ -414,8 +407,8 @@ fn fixed_stops_reject_unfinished_valuations_and_values_and_freeze_probes() {
         (Checkpoint::Completion, false),
         (Checkpoint::FiniteIteration, true),
     ] {
-        let (mut c, count, stage) = stopping(point, usize::MAX, None, evaluate_only);
-        let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+        let (c, count, stage) = stopping(point, usize::MAX, None, evaluate_only);
+        let e = Environment::with_primitive_valuation(&i, &values, &c).unwrap();
         stage.set(true);
         let full = try_expression(&e, "selected", false).unwrap();
         assert_eq!(full.known_value, Some(fp("2", 1)));
@@ -423,15 +416,15 @@ fn fixed_stops_reject_unfinished_valuations_and_values_and_freeze_probes() {
         assert!(last > 1);
         for at in [1, last] {
             for kind in [Signal::Int, Signal::Term] {
-                let (mut c, count, stage) = stopping(point, at, Some(kind), evaluate_only);
+                let (c, count, stage) = stopping(point, at, Some(kind), evaluate_only);
                 let failure = if evaluate_only {
-                    let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+                    let e = Environment::with_primitive_valuation(&i, &values, &c).unwrap();
                     stage.set(true);
                     try_expression(&e, "selected", false)
                         .err()
                         .expect("候補式の途中値を成功にしない")
                 } else {
-                    Environment::with_primitive_valuation(&i, &values, &mut c)
+                    Environment::with_primitive_valuation(&i, &values, &c)
                         .err()
                         .expect("未完成環境を返さない")
                 };
@@ -486,7 +479,7 @@ fn owner_candidates_move_known_members_and_replace_observation_support_in_family
     let e = Environment::with_primitive_valuation(
         &i,
         &[(slot("p", "owner"), subject_value("r2", "Root"))],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     for (owner, expected) in [("root", vec!["q"]), ("r2", vec!["p"])] {
@@ -498,7 +491,7 @@ fn owner_candidates_move_known_members_and_replace_observation_support_in_family
         assert!(!v.support.iter().any(|f| f.atom.as_deref() == Some("op")));
         assert!(v.support.iter().any(|f| f.atom.as_deref() == Some("oq")));
     }
-    let original = Environment::new(&i, &mut quiet()).unwrap();
+    let original = Environment::new(&i, &quiet()).unwrap();
     assert_eq!(members(&family(&original, "root").unwrap()), ["p", "q"]);
     assert!(members(&family(&original, "r2").unwrap()).is_empty());
 }
@@ -506,12 +499,12 @@ fn owner_candidates_move_known_members_and_replace_observation_support_in_family
 fn owner_candidate_resolves_a_missing_family_member_without_creating_an_observation() {
     let map=fixture::MAP.replace(r#"{"id":"op","subject":"p","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},"#, "");
     let i = fixture::with_map(&map);
-    let original = Environment::new(&i, &mut quiet()).unwrap();
+    let original = Environment::new(&i, &quiet()).unwrap();
     assert!(family(&original, "root").unwrap().known_value.is_none());
     let e = Environment::with_primitive_valuation(
         &i,
         &[(slot("p", "owner"), subject_value("r2", "Root"))],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(members(&family(&e, "root").unwrap()), ["q"]);
@@ -537,7 +530,7 @@ fn map_candidates_require_total_keys_including_nested_and_candidate_owned_domain
     let i = fixture::inputs();
     for v in [table("Part", &[]), table("Part", &[("p", "p")])] {
         assert!(
-            Environment::with_primitive_valuation(&i, &[(slot("p", "table"), v)], &mut quiet())
+            Environment::with_primitive_valuation(&i, &[(slot("p", "table"), v)], &quiet())
                 .is_err(),
             "登録Partの欠落keyを受理しない"
         );
@@ -549,7 +542,7 @@ fn map_candidates_require_total_keys_including_nested_and_candidate_owned_domain
                 slot("p", "nested"),
                 Scalar::Tuple(vec![Scalar::Unit, table("Part", &[])])
             )],
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
@@ -557,7 +550,7 @@ fn map_candidates_require_total_keys_including_nested_and_candidate_owned_domain
         Environment::with_primitive_valuation(
             &i,
             &[(slot("p", "table"), table("Part", &[("p", "q"), ("q", "p")]))],
-            &mut quiet()
+            &quiet()
         )
         .is_ok()
     );
@@ -565,7 +558,7 @@ fn map_candidates_require_total_keys_including_nested_and_candidate_owned_domain
         Environment::with_primitive_valuation(
             &i,
             &[(slot("p", "emptytable"), table("Vacant", &[]))],
-            &mut quiet()
+            &quiet()
         )
         .is_ok()
     );
@@ -577,7 +570,7 @@ fn map_candidates_require_total_keys_including_nested_and_candidate_owned_domain
                 owner.clone(),
                 (slot("p", "ownedtable"), table("Part", &[("p", "p")]))
             ],
-            &mut quiet()
+            &quiet()
         )
         .is_ok()
     );
@@ -591,7 +584,7 @@ fn map_candidates_require_total_keys_including_nested_and_candidate_owned_domain
                     table("Part", &[("p", "p"), ("q", "q")])
                 )
             ],
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
@@ -600,7 +593,7 @@ fn map_candidates_require_total_keys_including_nested_and_candidate_owned_domain
     let end = map.rfind("]}]}").unwrap();
     map.insert_str(end, atom);
     let known = fixture::with_map(&map);
-    assert!(Environment::with_primitive_valuation(&known, &[owner.clone()], &mut quiet()).is_err());
+    assert!(Environment::with_primitive_valuation(&known, &[owner.clone()], &quiet()).is_err());
     assert!(
         Environment::with_primitive_valuation(
             &known,
@@ -608,7 +601,7 @@ fn map_candidates_require_total_keys_including_nested_and_candidate_owned_domain
                 owner,
                 (slot("p", "ownedtable"), table("Part", &[("p", "p")]))
             ],
-            &mut quiet()
+            &quiet()
         )
         .is_ok()
     );
@@ -631,7 +624,7 @@ fn ordinary_completion_keeps_rejecting_known_slot_replacements() {
             &i.archmap().snapshots(),
             i.definitions(),
             &[pin],
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
@@ -651,7 +644,7 @@ fn ordinary_completion_keeps_rejecting_known_slot_replacements() {
             &missing.archmap().snapshots(),
             missing.definitions(),
             &[pin],
-            &mut quiet()
+            &quiet()
         )
         .is_ok()
     );
@@ -660,17 +653,16 @@ fn ordinary_completion_keeps_rejecting_known_slot_replacements() {
 fn fixed_owner_family_stops_keep_candidates_out_of_observation_evidence() {
     let i = fixture::inputs();
     let values = [(slot("p", "owner"), subject_value("r2", "Root"))];
-    let (mut c, count, active) = stopping(Checkpoint::FiniteIteration, usize::MAX, None, true);
-    let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+    let (c, count, active) = stopping(Checkpoint::FiniteIteration, usize::MAX, None, true);
+    let e = Environment::with_primitive_valuation(&i, &values, &c).unwrap();
     active.set(true);
     assert_eq!(members(&family(&e, "root").unwrap()), ["q"]);
     let last = count.get();
     assert!(last > 1);
     for at in [1, last] {
         for kind in [Signal::Int, Signal::Term] {
-            let (mut c, count, active) =
-                stopping(Checkpoint::FiniteIteration, at, Some(kind), true);
-            let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+            let (c, count, active) = stopping(Checkpoint::FiniteIteration, at, Some(kind), true);
+            let e = Environment::with_primitive_valuation(&i, &values, &c).unwrap();
             active.set(true);
             let error = family(&e, "root").err().expect("族の途中値を返さない");
             let expected = kind;
@@ -714,7 +706,7 @@ fn candidate_owner_controls_owned_helper_arguments_and_returns_for_known_and_mis
         let e = Environment::with_primitive_valuation(
             &i,
             &[(slot("p", "owner"), subject_value("r2", "Root"))],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         for name in ["argument", "returned"] {
@@ -743,7 +735,7 @@ fn candidate_owner_controls_owned_helper_arguments_and_returns_for_known_and_mis
                     .any(|f| f.atom.as_deref() == Some("op"))
             );
         }
-        let original = Environment::new(&i, &mut quiet()).unwrap();
+        let original = Environment::new(&i, &quiet()).unwrap();
         let old = owned_helper(&original, "argument", "root").unwrap();
         assert_eq!(old.condition_pending, missing);
         assert_eq!(
@@ -762,8 +754,8 @@ fn fixed_owned_helper_stops_reject_unfinished_argument_and_return_checks() {
     let i = fixture::inputs();
     let values = [(slot("p", "owner"), subject_value("r2", "Root"))];
     for name in ["argument", "returned"] {
-        let (mut c, count, active) = stopping(Checkpoint::FiniteIteration, usize::MAX, None, true);
-        let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+        let (c, count, active) = stopping(Checkpoint::FiniteIteration, usize::MAX, None, true);
+        let e = Environment::with_primitive_valuation(&i, &values, &c).unwrap();
         active.set(true);
         let full = owned_helper(&e, name, "r2").unwrap();
         assert!(full.known_value.is_some() && !full.condition_failed && !full.condition_pending);
@@ -771,9 +763,9 @@ fn fixed_owned_helper_stops_reject_unfinished_argument_and_return_checks() {
         assert!(last > 1);
         for at in [1, last] {
             for kind in [Signal::Int, Signal::Term] {
-                let (mut c, count, active) =
+                let (c, count, active) =
                     stopping(Checkpoint::FiniteIteration, at, Some(kind), true);
-                let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+                let e = Environment::with_primitive_valuation(&i, &values, &c).unwrap();
                 active.set(true);
                 let error = owned_helper(&e, name, "r2")
                     .err()
@@ -820,7 +812,7 @@ fn finite_empty_list_candidates_from_the_existing_domain_reach_original_fields()
         let e = Environment::with_primitive_valuation(
             &i,
             &[(slot("p", "empty"), domain.values[0].clone())],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let v = expression(&e, "empty", false);
@@ -828,7 +820,7 @@ fn finite_empty_list_candidates_from_the_existing_domain_reach_original_fields()
         assert!(v.scope.assignments);
         assert_eq!(v.support, vec![slot("p", "empty")]);
         assert_eq!(i.sources(), &original);
-        let normal = expression(&Environment::new(&i, &mut quiet()).unwrap(), "empty", false);
+        let normal = expression(&Environment::new(&i, &quiet()).unwrap(), "empty", false);
         if known {
             assert_eq!(normal.known_value, Some(domain.values[0].clone()));
             assert!(
@@ -872,7 +864,7 @@ fn text_lists_and_nested_candidates_preserve_contents_order_and_observation_sepa
             (slot("p", "bundle"), bundle.clone()),
             (slot("p", "packet"), packet.clone()),
         ];
-        let e = Environment::with_primitive_valuation(input, &values, &mut quiet()).unwrap();
+        let e = Environment::with_primitive_valuation(input, &values, &quiet()).unwrap();
         for (name, expected) in [
             ("sequence", &list),
             ("text", &text),
@@ -885,7 +877,7 @@ fn text_lists_and_nested_candidates_preserve_contents_order_and_observation_sepa
             assert_eq!(v.support, vec![slot("p", name)]);
         }
     }
-    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    let normal = Environment::new(&i, &quiet()).unwrap();
     assert_eq!(
         expression(&normal, "text", false).known_value,
         Some(Scalar::Text("old".into()))
@@ -917,7 +909,7 @@ fn text_lists_and_nested_candidates_preserve_contents_order_and_observation_sepa
             "sequence"
         };
         assert!(
-            Environment::with_primitive_valuation(&i, &[(slot("p", field), invalid)], &mut quiet())
+            Environment::with_primitive_valuation(&i, &[(slot("p", field), invalid)], &quiet())
                 .is_err()
         );
     }
@@ -927,13 +919,13 @@ fn text_lists_and_nested_candidates_preserve_contents_order_and_observation_sepa
 fn checked_term_candidates_reapply_the_original_body_and_reject_forged_metadata() {
     let map = fixture::MAP.replace("\"atoms\":[", "\"atoms\":[{\"id\":\"program-p\",\"subject\":\"p\",\"field\":\"Pattern.Part.program\",\"value\":{\"params\":[\"n\"],\"body\":\"n+1\"},\"origin\":\"model\"},");
     let donor = fixture::with_map(&map);
-    let normal = Environment::new(&donor, &mut quiet()).unwrap();
+    let normal = Environment::new(&donor, &quiet()).unwrap();
     let candidate = expression(&normal, "program", false).known_value.unwrap();
     for i in [fixture::inputs(), donor.clone()] {
         let e = Environment::with_primitive_valuation(
             &i,
             &[(slot("p", "program"), candidate.clone())],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let v = expression(&e, "applied", false);
@@ -949,7 +941,7 @@ fn checked_term_candidates_reapply_the_original_body_and_reject_forged_metadata(
             Environment::with_primitive_valuation(
                 &i,
                 &[(slot("p", "program"), Scalar::Term(Box::new(changed)))],
-                &mut quiet()
+                &quiet()
             )
             .is_err()
         );
@@ -959,7 +951,7 @@ fn checked_term_candidates_reapply_the_original_body_and_reject_forged_metadata(
             Environment::with_primitive_valuation(
                 &i,
                 &[(slot("p", "program"), Scalar::Term(Box::new(changed)))],
-                &mut quiet()
+                &quiet()
             )
             .is_err()
         );
@@ -1001,18 +993,18 @@ fn composite_candidate_encoding_stops_without_returning_an_environment() {
         Checkpoint::ArchMapSchema,
         Checkpoint::FiniteIteration,
     ] {
-        let (mut c, count, _) = stopping(point, usize::MAX, None, false);
-        let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+        let (c, count, _) = stopping(point, usize::MAX, None, false);
+        let e = Environment::with_primitive_valuation(&i, &values, &c).unwrap();
         assert!(expression(&e, "packet", false).known_value.is_some());
         // Count constructor checkpoints only, before any expression is evaluated.
-        let (mut c, count_constructor, _) = stopping(point, usize::MAX, None, false);
-        Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+        let (c, count_constructor, _) = stopping(point, usize::MAX, None, false);
+        Environment::with_primitive_valuation(&i, &values, &c).unwrap();
         let last = count_constructor.get();
         assert!(last > 1 && count.get() >= last);
         for at in [1, last] {
             for kind in [Signal::Int, Signal::Term] {
-                let (mut c, count, _) = stopping(point, at, Some(kind), false);
-                let error = Environment::with_primitive_valuation(&i, &values, &mut c)
+                let (c, count, _) = stopping(point, at, Some(kind), false);
+                let error = Environment::with_primitive_valuation(&i, &values, &c)
                     .err()
                     .expect("入れ子候補の途中環境を返さない");
                 let expected = kind;
@@ -1028,12 +1020,12 @@ fn composite_candidate_encoding_stops_without_returning_an_environment() {
 #[test]
 fn original_law_term_candidates_ignore_source_positions_and_keep_program_identity() {
     let i = fixture::inputs();
-    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    let normal = Environment::new(&i, &quiet()).unwrap();
     let candidate = expression(&normal, "literal", false).known_value.unwrap();
     let e = Environment::with_primitive_valuation(
         &i,
         &[(slot("p", "program"), candidate.clone())],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(
@@ -1056,7 +1048,7 @@ fn original_law_term_candidates_ignore_source_positions_and_keep_program_identit
     let forged = Scalar::Term(Box::new(forged));
     data::check(&forged, i.law(), &quiet()).unwrap();
     assert!(
-        Environment::with_primitive_valuation(&i, &[(slot("p", "program"), forged)], &mut quiet())
+        Environment::with_primitive_valuation(&i, &[(slot("p", "program"), forged)], &quiet())
             .is_err()
     );
 }
@@ -1064,7 +1056,7 @@ fn original_law_term_candidates_ignore_source_positions_and_keep_program_identit
 #[test]
 fn original_complex_and_nested_term_candidates_recheck_resolved_constructors_and_branches() {
     let i = fixture::inputs();
-    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    let normal = Environment::new(&i, &quiet()).unwrap();
     let a = expression(&normal, "literal", false).known_value.unwrap();
     let b = expression(&normal, "complex", false).known_value.unwrap();
     let list = Scalar::List {
@@ -1077,7 +1069,7 @@ fn original_complex_and_nested_term_candidates_recheck_resolved_constructors_and
             (slot("p", "program"), b),
             (slot("p", "programs"), list.clone()),
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(
@@ -1116,29 +1108,25 @@ fn original_complex_and_nested_term_candidates_recheck_resolved_constructors_and
     assert!(!t.references.is_empty());
     t.references[0].1 = "Pattern.Token.Other".into();
     assert!(
-        Environment::with_primitive_valuation(
-            &i,
-            &[(slot("p", "programs"), invalid)],
-            &mut quiet()
-        )
-        .is_err()
+        Environment::with_primitive_valuation(&i, &[(slot("p", "programs"), invalid)], &quiet())
+            .is_err()
     );
 }
 
 #[test]
 fn original_term_candidate_program_recheck_stops_and_freezes_the_probe() {
     let i = fixture::inputs();
-    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    let normal = Environment::new(&i, &quiet()).unwrap();
     let candidate = expression(&normal, "complex", false).known_value.unwrap();
     let values = [(slot("p", "program"), candidate)];
-    let (mut c, count, _) = stopping(Checkpoint::Expression, usize::MAX, None, false);
-    Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
+    let (c, count, _) = stopping(Checkpoint::Expression, usize::MAX, None, false);
+    Environment::with_primitive_valuation(&i, &values, &c).unwrap();
     let last = count.get();
     assert!(last > 1);
     for at in [1, last] {
         for kind in [Signal::Int, Signal::Term] {
-            let (mut c, count, _) = stopping(Checkpoint::Expression, at, Some(kind), false);
-            let error = Environment::with_primitive_valuation(&i, &values, &mut c)
+            let (c, count, _) = stopping(Checkpoint::Expression, at, Some(kind), false);
+            let error = Environment::with_primitive_valuation(&i, &values, &c)
                 .err()
                 .expect("元Termの再検査途中を成功にしない");
             let expected = kind;
@@ -1153,7 +1141,7 @@ fn original_term_candidate_program_recheck_stops_and_freezes_the_probe() {
 #[test]
 fn moved_constructor_name_span_rejects_a_different_executable_candidate() {
     let i = fixture::inputs();
-    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    let normal = Environment::new(&i, &quiet()).unwrap();
     let v = expression(&normal, "complex", false).known_value.unwrap();
     let Scalar::Term(t) = &v else { panic!() };
     let mut t = (**t).clone();
@@ -1183,12 +1171,8 @@ fn moved_constructor_name_span_rejects_a_different_executable_candidate() {
     };
     assert!(t.apply(&[fp("2", 0)], i.law(), &quiet()).is_err());
     assert!(
-        Environment::with_primitive_valuation(
-            &i,
-            &[(slot("p", "program"), candidate)],
-            &mut quiet()
-        )
-        .is_err(),
+        Environment::with_primitive_valuation(&i, &[(slot("p", "program"), candidate)], &quiet())
+            .is_err(),
         "実行先が変わるconstructor参照位置の改変を拒否する"
     );
 }

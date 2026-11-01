@@ -19,7 +19,7 @@ use crate::{
     input::CheckedInputs,
 };
 use std::sync::Arc;
-fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectLawCircuitTransport)
         .map_err(Into::into)
 }
@@ -101,7 +101,7 @@ impl ObjectLawCircuitTransport {
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ObjectLawCircuitTransportFailure> {
         self.base
             .recheck(inputs.clone(), c)
@@ -170,7 +170,7 @@ fn indices(
     all: &ObjectLawCircuits,
     object: &crate::construction::maps::ObjectIdentity,
     instance: &crate::construction::readings::ObjectInstance,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<usize>, ConstructionFailure> {
     let readings = all.base().base().readings();
     let o = readings
@@ -200,7 +200,7 @@ fn indices(
 fn pick<'a>(
     circuit: &'a LawCircuit,
     bindings: &[(String, FiniteTransportValue)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Option<usize>, &'a LawCircuitPoint), ConstructionFailure> {
     if let Some(p) = &circuit.uniform {
         return Ok((None, p));
@@ -218,7 +218,7 @@ fn pick<'a>(
 fn accepts(
     code: Option<&LawCircuitDetector>,
     bindings: &[(String, FiniteTransportValue)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<bool>, ConstructionFailure> {
     match code {
         None => Ok(None),
@@ -242,7 +242,7 @@ fn point(
     ti: usize,
     sb: Vec<(String, FiniteTransportValue)>,
     tb: Vec<(String, FiniteTransportValue)>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     tick(c)?;
     let source = &out
@@ -300,7 +300,7 @@ fn point(
 fn populate(
     out: &mut ObjectLawCircuitTransport,
     inputs: Arc<CheckedInputs>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), LawCircuitTransportFailureCause> {
     tick(c)?;
     let s = out.base.source_readings().construction();
@@ -418,7 +418,7 @@ fn populate(
     tick(c)?;
     Ok(())
 }
-fn finish(out: &mut ObjectLawCircuitTransport, c: &mut Control) -> Result<(), ConstructionFailure> {
+fn finish(out: &mut ObjectLawCircuitTransport, c: &Control) -> Result<(), ConstructionFailure> {
     if !matches!(out.outcome, LawCircuitTransportOutcome::Refuted(_)) {
         let mut known = true;
         for point in &out.points {
@@ -439,7 +439,7 @@ fn finish(out: &mut ObjectLawCircuitTransport, c: &mut Control) -> Result<(), Co
 fn same(
     a: &ObjectLawCircuitTransport,
     b: &ObjectLawCircuitTransport,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     tick(c)?;
     if a.position != b.position
@@ -490,7 +490,7 @@ pub fn object_law_circuit_transport(
     declarations: &DeclarationCorrespondence,
     object: usize,
     instance: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<ObjectLawCircuitTransport, ObjectLawCircuitTransportFailure> {
     let base = object_law_transport(inputs.clone(), declarations, object, instance, c)
         .map_err(ObjectLawCircuitTransportFailure::Original)?;

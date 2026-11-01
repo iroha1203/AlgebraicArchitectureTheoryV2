@@ -44,7 +44,7 @@ impl NumericValueMap {
     pub fn apply(
         &self,
         value: &Value,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<NumericTransportValue, ConstructionFailure> {
         tick(control)?;
         let value = numeric::from_input(value, &self.ty, control)
@@ -58,14 +58,14 @@ impl NumericValueMap {
     pub fn apply_value(
         &self,
         value: &NumericTransportValue,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<NumericTransportValue, ConstructionFailure> {
         self.apply_scalar(&value.value, control)
     }
     pub(super) fn apply_scalar(
         &self,
         value: &Scalar,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<NumericTransportValue, ConstructionFailure> {
         tick(control)?;
         if value.ty() != self.ty {
@@ -123,7 +123,7 @@ impl NumericValueTransport {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         tick(control)?;
         if self
@@ -142,7 +142,7 @@ impl NumericValueTransport {
         tick(control)
     }
 }
-fn tick(control: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(control: &Control) -> Result<(), ConstructionFailure> {
     control
         .checkpoint(Checkpoint::NumericValueTransport)
         .map_err(Into::into)
@@ -164,7 +164,7 @@ pub fn numeric_declaration_value_transport(
     declarations: &DeclarationCorrespondence,
     declaration: &str,
     position: DeclarationValuePosition,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<NumericValueTransport, ConstructionFailure> {
     tick(control)?;
     declarations.recheck(inputs, control)?;
@@ -232,7 +232,7 @@ mod tests {
                     "../../tests/fixtures/reference-type.archmap.json"
                 )),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let c = correspondence(
@@ -241,17 +241,17 @@ mod tests {
             "m",
             "Before",
             Some("After"),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
-        let d = declaration_correspondence(&inputs, c.map().unwrap(), &mut Control::unlimited())
-            .unwrap();
+        let d =
+            declaration_correspondence(&inputs, c.map().unwrap(), &Control::unlimited()).unwrap();
         let r = numeric_declaration_value_transport(
             &inputs,
             &d,
             "Before.axes",
             DeclarationValuePosition::Parameter(1),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         (inputs, r)
@@ -283,13 +283,10 @@ mod tests {
         m.position = DeclarationValuePosition::Return;
         variants.push(m);
         for m in &variants {
-            assert!(
-                m.recheck(&inputs, &mut Control::unlimited()).is_err(),
-                "{m:?}"
-            );
+            assert!(m.recheck(&inputs, &Control::unlimited()).is_err(), "{m:?}");
         }
         assert_eq!(variants.len(), 7);
-        r.recheck(&inputs, &mut Control::unlimited()).unwrap();
+        r.recheck(&inputs, &Control::unlimited()).unwrap();
     }
     #[test]
     fn numeric_kernel_rejects_forged_noncanonical_typed_values() {
@@ -299,7 +296,7 @@ mod tests {
             &r.declarations,
             "Before.axes",
             DeclarationValuePosition::Parameter(2),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         for value in [
@@ -309,7 +306,7 @@ mod tests {
         ] {
             assert!(matches!(
                 q.inverse
-                    .apply_value(&NumericTransportValue { value }, &mut Control::unlimited()),
+                    .apply_value(&NumericTransportValue { value }, &Control::unlimited()),
                 Err(ConstructionFailure::InvalidSelection(_))
             ));
         }

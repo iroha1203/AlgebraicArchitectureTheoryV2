@@ -27,9 +27,9 @@ fn answer<'a>(j: &'a Json, id: &str) -> &'a Json {
 }
 // Law適用の集約は、通常の元式Evaluationと異なりLawInstanceを第一引数に持つ。
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut quiet())
-        .unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
-    let wire = evaluate_observed_bytes(inputs, asks, &mut quiet())
+    let checked =
+        check_inputs(inputs.clone(), &quiet()).unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
+    let wire = evaluate_observed_bytes(inputs, asks, &quiet())
         .unwrap_or_else(|e| panic!("評価: {e:?}"))
         .wire();
     audit(&wire, &checked);
@@ -351,8 +351,7 @@ fn fixture(script: &str) -> InputSources {
         )
     ));
     let checked =
-        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
-            .unwrap();
+        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &quiet()).unwrap();
     let digest = &checked.vocabularies()["FiniteTypes"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
@@ -939,7 +938,7 @@ view recursive(): Bool = forall unused:Tree . true;
 view infinite_payload(): Bool = forall unused:Infinite . true;
 "#;
     let input = fixture(script);
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(input.clone(), &quiet()).unwrap();
     for name in [
         "integers",
         "rationals",
@@ -961,7 +960,7 @@ view infinite_payload(): Bool = forall unused:Infinite . true;
             "rationals" => Some("Q"),
             _ => None,
         } {
-            let wire = evaluate_observed_bytes(input.clone(), &[&ask], &mut quiet())
+            let wire = evaluate_observed_bytes(input.clone(), &[&ask], &quiet())
                 .unwrap()
                 .wire();
             output(&wire, "a", &Json::str("Bool"), Json::Bool(true));
@@ -1117,7 +1116,7 @@ view infinite_payload(): Bool = forall unused:Infinite . true;
             }
             continue;
         }
-        let wire = evaluate_observed_bytes(input.clone(), &[&ask], &mut quiet())
+        let wire = evaluate_observed_bytes(input.clone(), &[&ask], &quiet())
             .unwrap()
             .wire();
         audit(&wire, &checked);
@@ -1164,7 +1163,7 @@ view current(): Bool = forall b:Bool . true;
 view later(s: Sample): Z = s.zero+9;
 "#,
     );
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(input.clone(), &quiet()).unwrap();
     let asks = [
         "seed=evaluate(Calc.seed,s=@v/sample)",
         "absent=evaluate(Calc.absent,s=@v/sample)",
@@ -1174,13 +1173,13 @@ view later(s: Sample): Z = s.zero+9;
     ];
     let count = Rc::new(Cell::new(0));
     let c = count.clone();
-    let mut prior_control = Control::new(move |point| {
+    let prior_control = Control::new(move |point| {
         if point == Checkpoint::Expression {
             c.set(c.get() + 1);
         }
         None
     });
-    let prior = evaluate_observed_bytes(input.clone(), &asks[..3], &mut prior_control)
+    let prior = evaluate_observed_bytes(input.clone(), &asks[..3], &prior_control)
         .unwrap()
         .wire();
     audit(&prior, &checked);
@@ -1189,13 +1188,13 @@ view later(s: Sample): Z = s.zero+9;
     check_claim(&prior, "rejected", "refuted");
     let total = Rc::new(Cell::new(0));
     let c = total.clone();
-    let mut baseline_control = Control::new(move |point| {
+    let baseline_control = Control::new(move |point| {
         if point == Checkpoint::Expression {
             c.set(c.get() + 1);
         }
         None
     });
-    let baseline = evaluate_observed_bytes(input.clone(), &asks[..4], &mut baseline_control)
+    let baseline = evaluate_observed_bytes(input.clone(), &asks[..4], &baseline_control)
         .unwrap()
         .wire();
     audit(&baseline, &checked);
@@ -1219,7 +1218,7 @@ view later(s: Sample): Z = s.zero+9;
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (e, p, s) = (expressions.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             p.set(p.get() + 1);
             if point == Checkpoint::Expression {
                 e.set(e.get() + 1);
@@ -1230,7 +1229,7 @@ view later(s: Sample): Z = s.zero+9;
             }
             None
         });
-        let wire = evaluate_observed_bytes(input.clone(), &asks, &mut control)
+        let wire = evaluate_observed_bytes(input.clone(), &asks, &control)
             .unwrap()
             .wire();
         assert_eq!(f(&wire, "status"), &Json::str("interrupted"));

@@ -3,7 +3,7 @@ use super::*;
 use crate::construction::ConstructionFailure;
 use num_traits::{One, Zero};
 
-fn step(c: &mut Control) -> Result<(), ValidationFailure> {
+fn step(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::FiniteLawFunction)?;
     Ok(())
 }
@@ -21,7 +21,7 @@ pub(in crate::observed) struct FiniteLawObjectEvaluation<'a> {
 impl AutomaticLawValuations {
     pub(in crate::observed) fn object_evaluation(
         &self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<FiniteLawObjectEvaluation<'_>>, ValidationFailure> {
         step(c)?;
         if !self.is_complete() || !self.domain_complete() {
@@ -55,7 +55,7 @@ impl FiniteLawObjectEvaluation<'_> {
     pub(in crate::observed) fn basis_images(&self) -> &[BigInt] {
         &self.basis_images
     }
-    fn check(&self, c: &mut Control) -> Result<(), ValidationFailure> {
+    fn check(&self, c: &Control) -> Result<(), ValidationFailure> {
         step(c)?;
         if !self.family.is_complete()
             || !self.family.domain_complete()
@@ -88,7 +88,7 @@ impl FiniteLawObjectEvaluation<'_> {
     pub(in crate::observed) fn apply(
         &self,
         function: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<BigInt, ValidationFailure> {
         self.check(c)?;
         self.family
@@ -106,7 +106,7 @@ impl FiniteLawObjectEvaluation<'_> {
     pub(in crate::observed) fn constant_image(
         &self,
         function: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ValidationFailure> {
         let value = self.apply(function, c)?;
         self.family
@@ -120,7 +120,7 @@ impl FiniteLawObjectEvaluation<'_> {
         family: &AutomaticLawValuations,
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         step(c)?;
         if !std::ptr::eq(self.family, family) {

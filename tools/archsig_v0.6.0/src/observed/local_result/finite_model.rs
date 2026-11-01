@@ -38,7 +38,7 @@ fn empty_support() -> geometry::Support {
 fn add_subject(
     support: &mut geometry::Support,
     value: &Scalar,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     let mut pending = vec![value];
     while let Some(value) = pending.pop() {
@@ -67,7 +67,7 @@ pub(super) fn analyze(
     g: &Graph,
     witness: &ArchitectureWitness,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Option<Model>, Vec<Fact>), ValidationFailure> {
     let reading = witness.construction().reading();
     let explicit = env

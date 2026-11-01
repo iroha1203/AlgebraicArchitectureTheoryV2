@@ -47,7 +47,7 @@ pub(super) fn base_scope(
     scope.readings.insert(declaration.reading.clone());
     Ok(scope)
 }
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;
     Ok(())
 }
@@ -441,7 +441,7 @@ pub(super) fn prepare_instance(
     graph: &mut Graph,
     origin: NodeRef,
     architecture: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<(Origin, usize)>, ValidationFailure> {
     tick(c)?;
     env.recheck_law_evaluation_inputs(graph, origin, architecture)?;
@@ -496,7 +496,7 @@ pub(super) fn evaluate(
     graph: &mut Graph,
     origin: NodeRef,
     architecture: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Evaluations, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((
         env,
@@ -533,7 +533,7 @@ impl super::result_kind::ResultKind for Data {
         &'a mut Graph,
         NodeRef,
         NodeRef,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = Evaluations;
     fn compute_and_retain<'a, 'input: 'a>(

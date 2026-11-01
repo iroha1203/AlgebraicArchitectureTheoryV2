@@ -14,7 +14,7 @@ use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
 
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::NativeResultNode)?;
     Ok(())
 }
@@ -234,7 +234,7 @@ fn compute(
     plan: &Plan,
     base: usize,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Part>, Answer), ValidationFailure> {
     env.validation_graph_session(g, || compute_inner(env, g, plan, base, request, c))
 }
@@ -245,7 +245,7 @@ fn compute_inner(
     plan: &Plan,
     base: usize,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Part>, Answer), ValidationFailure> {
     tick(c)?;
     let mut b = Builder {
@@ -714,7 +714,7 @@ pub(super) fn evaluate(
     env: &Environment<'_>,
     g: &mut Graph,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Answer, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((prepared, env, g, request, c))
 }
@@ -723,7 +723,7 @@ fn evaluate_inner(
     env: &Environment<'_>,
     g: &mut Graph,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Answer, ValidationFailure> {
     if let Some(answer) = super::public_map::unavailable(env, g, request)? {
         return Ok(answer);
@@ -737,7 +737,7 @@ pub(super) fn retain_plan(
     g: &mut Graph,
     plan: Plan,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Answer, ValidationFailure> {
     let base = g.nodes.len();
     let (parts, answer) = compute(env, g, &plan, base, request, c)?;
@@ -834,14 +834,14 @@ impl Environment<'_> {
             return Ok(());
         };
         d.position(at)?;
-        let mut c = self.control.clone();
-        d.source.plan.boundary.recheck(self, g, at, &mut c)?;
+        let c = self.control.clone();
+        d.source.plan.boundary.recheck(self, g, at, &c)?;
         if self.build_source_checked(&d.source) {
             return Ok(());
         }
         let producer = g.context_at(d.source.plan.architecture.reference.0).request;
         let request = g.requests.get(producer).ok_or("buildの元Requestがない")?;
-        let (parts, answer) = compute(self, g, &d.source.plan, d.source.base, request, &mut c)?;
+        let (parts, answer) = compute(self, g, &d.source.plan, d.source.base, request, &c)?;
         if parts != d.source.parts || answer != d.source.answer {
             return Err("buildの全構成が元計画の再検査と違う".into());
         }
@@ -909,7 +909,7 @@ impl super::result_kind::ResultKind for Data {
         &'a Environment<'input>,
         &'a mut Graph,
         &'a Request,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = Answer;
     fn compute_and_retain<'a, 'input: 'a>(

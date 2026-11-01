@@ -20,7 +20,7 @@ pub fn conditional_inputs(choice: Option<&str>, body: &str) -> Arc<CheckedInputs
                 law.into_bytes(),
                 map.replace("@DIGEST@", digest).into_bytes(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap(),
     )

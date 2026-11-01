@@ -15,7 +15,7 @@ use crate::{
     types::Type,
 };
 use std::sync::Arc;
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectViewFamily)?;
     Ok(())
 }
@@ -41,7 +41,7 @@ fn parameters(
     env: &Environment<'_>,
     g: &Graph,
     expression: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Arc<ArchitectureWitness>, ViewOrigin, Vec<Parameter>), ValidationFailure> {
     let (a, o) = reading::origin(g, expression)?;
     if o.parameters.is_empty() {
@@ -92,7 +92,7 @@ pub(super) fn parameter_readings(
     env: &Environment<'_>,
     g: &Graph,
     expression: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Parameter>, ValidationFailure> {
     Ok(parameters(env, g, expression, c)?.2)
 }
@@ -273,7 +273,7 @@ impl Data {
         &self,
         env: &Environment<'_>,
         g: &Graph,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         let (a, o, ps) = parameters(env, g, self.source.origin.expression, c)?;
         if !Arc::ptr_eq(&a, &self.source.architecture)
@@ -299,7 +299,7 @@ fn push(
     parts: &mut Vec<Part>,
     base: usize,
     p: Part,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     tick(c)?;
     let at = base
@@ -312,7 +312,7 @@ fn value(
     parts: &mut Vec<Part>,
     base: usize,
     v: &Scalar,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(c)?;
@@ -361,7 +361,7 @@ fn build_source(
     o: ViewOrigin,
     ps: Vec<Parameter>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ValidationFailure> {
     let mut parts = vec![];
     let mut domains = vec![];
@@ -770,7 +770,7 @@ pub(super) fn evaluate(
     env: &Environment<'_>,
     g: &mut Graph,
     expression: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Outcome, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, expression, c))
 }
@@ -786,7 +786,7 @@ impl Environment<'_> {
             return Ok(());
         };
         d.position(at)?;
-        d.recheck(self, g, &mut self.control.clone())?;
+        d.recheck(self, g, &self.control.clone())?;
         for r in d.arguments() {
             self.tick()?;
             if r.0 >= at {
@@ -799,12 +799,7 @@ impl Environment<'_> {
 }
 
 impl super::result_kind::ResultKind for Data {
-    type Input<'a, 'input: 'a> = (
-        &'a Environment<'input>,
-        &'a mut Graph,
-        NodeRef,
-        &'a mut Control,
-    );
+    type Input<'a, 'input: 'a> = (&'a Environment<'input>, &'a mut Graph, NodeRef, &'a Control);
     type Output = Outcome;
     fn compute_and_retain<'a, 'input: 'a>(
         input: Self::Input<'a, 'input>,

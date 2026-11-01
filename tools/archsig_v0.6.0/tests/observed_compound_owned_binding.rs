@@ -23,7 +23,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn run_input(i: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvaluation {
-    let r = evaluate_observed_bytes(i, asks, &mut quiet())
+    let r = evaluate_observed_bytes(i, asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().map(|w| f(&w, "issues").clone())));
     assert_ne!(r.status(), "error", "{:?}", f(&r.wire(), "issues"));
     r
@@ -350,7 +350,7 @@ fn fixed_compound_owned_static_invalid_unprovided_unknown_and_cross_snapshot_rem
                 "option=evaluate(Applications.cbOption,p=@v/p)",
                 "list=evaluate(Applications.cbList,p=@v/p,q=@v/q)",
             ],
-            &mut quiet(),
+            &quiet(),
         );
         let w = match r {
             Ok(r) => r.wire(),
@@ -461,7 +461,7 @@ fn fixed_compound_owned_map_keeps_three_inputs_dag_roster_support_and_current_pr
     // p.freeを欠測にして補完Scopeを実際に発生させる。
     let i = fixture::input("stop", "r1");
     let original = i.clone();
-    let before = check_inputs(i.clone(), &mut quiet()).unwrap();
+    let before = check_inputs(i.clone(), &quiet()).unwrap();
     let r = run_input(i, &asks);
     let w = r.wire();
     assert_eq!(r.status(), "complete");

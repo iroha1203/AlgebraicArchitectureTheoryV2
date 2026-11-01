@@ -198,7 +198,7 @@ impl ConfigurationTransport {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         if self
             != &configuration_transport(inputs, self.operation.map(), control)
@@ -211,7 +211,7 @@ impl ConfigurationTransport {
         tick(control)
     }
 }
-fn tick(control: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(control: &Control) -> Result<(), ConstructionFailure> {
     control
         .checkpoint(Checkpoint::ConfigurationTransport)
         .map_err(Into::into)
@@ -226,7 +226,7 @@ fn image<'a>(
 }
 fn objects<'a>(
     construction: &'a ConfigurationConstruction,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<(&'a FactPointer, &'a Configuration)>, ConstructionFailure> {
     tick(control)?;
     let base = construction
@@ -249,7 +249,7 @@ fn naturality(
     map: &MapCandidate,
     source: &MapCandidate,
     target: &MapCandidate,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Naturality, ConstructionFailure> {
     if map.universe() != source.universe() || map.universe() != target.universe() {
         return Err(ConstructionFailure::Inconsistent(
@@ -299,7 +299,7 @@ fn naturality(
 pub fn configuration_transport(
     inputs: &CheckedInputs,
     map: &ConfigurationMap,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ConfigurationTransport, ConfigurationTransportFailure> {
     tick(control)?;
     if !matches!(map.candidate.origin, MapOrigin::Correspondence(_)) {
@@ -512,7 +512,7 @@ mod tests {
                     .replace("@DIGEST@", digest)
                     .into_bytes(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap()
     }
@@ -523,7 +523,7 @@ mod tests {
                 include_bytes!("../../../tests/fixtures/configuration-operation.law").to_vec(),
                 map.as_bytes().to_vec(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap()
     }
@@ -531,17 +531,9 @@ mod tests {
     fn current_input_rejects_forged_object_generator_and_naturality_rows() {
         let a = include_str!("../../../tests/fixtures/object-configuration-map.archmap.json");
         let i = inputs(a);
-        let m = correspondence(
-            &i,
-            "v",
-            "m",
-            "Reservations",
-            None,
-            &mut Control::unlimited(),
-        )
-        .unwrap();
+        let m = correspondence(&i, "v", "m", "Reservations", None, &Control::unlimited()).unwrap();
         let original =
-            configuration_transport(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+            configuration_transport(&i, m.map().unwrap(), &Control::unlimited()).unwrap();
         for kind in 0..11 {
             let mut forged = original.clone();
             match kind {
@@ -587,36 +579,26 @@ mod tests {
                     forged.target = forged.source.clone();
                 }
             }
-            assert!(
-                forged.recheck(&i, &mut Control::unlimited()).is_err(),
-                "{kind}"
-            );
+            assert!(forged.recheck(&i, &Control::unlimited()).is_err(), "{kind}");
         }
         let bad = inputs(&a.replace(r#"[["v","u"],["v","w"]]"#, r#"[["v","u"],["v","r"]]"#));
-        let m = correspondence(
-            &bad,
-            "v",
-            "m",
-            "Reservations",
-            None,
-            &mut Control::unlimited(),
-        )
-        .unwrap();
+        let m =
+            correspondence(&bad, "v", "m", "Reservations", None, &Control::unlimited()).unwrap();
         let mut forged =
-            configuration_transport(&bad, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+            configuration_transport(&bad, m.map().unwrap(), &Control::unlimited()).unwrap();
         assert!(matches!(
             forged.generators[0].naturality,
             Some(Naturality::Refuted { .. })
         ));
         forged.generators[0].naturality = Some(Naturality::Preserved);
-        assert!(forged.recheck(&bad, &mut Control::unlimited()).is_err());
+        assert!(forged.recheck(&bad, &Control::unlimited()).is_err());
     }
     #[test]
     fn recheck_rejects_erased_condition_failures_and_fabricated_targets() {
         let i = cross_kind_inputs();
-        let m = correspondence(&i, "v", "m", "Read", None, &mut Control::unlimited()).unwrap();
+        let m = correspondence(&i, "v", "m", "Read", None, &Control::unlimited()).unwrap();
         let original =
-            configuration_transport(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+            configuration_transport(&i, m.map().unwrap(), &Control::unlimited()).unwrap();
         assert!(original.objects[2].condition_failure.is_some());
         assert!(original.generators[0].condition_failure.is_some());
         for kind in 0..5 {
@@ -647,10 +629,7 @@ mod tests {
                         });
                 }
             }
-            assert!(
-                forged.recheck(&i, &mut Control::unlimited()).is_err(),
-                "{kind}"
-            );
+            assert!(forged.recheck(&i, &Control::unlimited()).is_err(), "{kind}");
         }
     }
 }

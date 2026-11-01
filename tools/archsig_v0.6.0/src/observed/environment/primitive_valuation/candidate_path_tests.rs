@@ -13,7 +13,7 @@ mod map_fixture {
 }
 use crate::control::quiet;
 fn checked(s: crate::input::InputSources) -> Arc<CheckedInputs> {
-    Arc::new(crate::input::check_inputs(s, &mut quiet()).unwrap())
+    Arc::new(crate::input::check_inputs(s, &quiet()).unwrap())
 }
 fn fact(namespace: &str, subject: &str, field: &str) -> Fact {
     Fact {
@@ -91,13 +91,13 @@ fn map(ty: &str, rows: &[(&str, &str)]) -> Scalar {
 fn candidate_internal_path_keeps_original_carrier_word_and_exact_complement() {
     let i = checked(arrow_fixture::input("normal", "candidate"));
     let bytes = i.sources().clone();
-    let normal = Environment::new(&i, &mut quiet()).unwrap();
+    let normal = Environment::new(&i, &quiet()).unwrap();
     let before = arrow(&normal).unwrap();
     let assignments = vec![
         (fact("Paths.Node", "p", "mark"), Scalar::Z(123.into())),
         (fact("Paths.Node", "q", "mark"), Scalar::Z((-9).into())),
     ];
-    let e = Environment::with_primitive_valuation(&i, &assignments, &mut quiet()).unwrap();
+    let e = Environment::with_primitive_valuation(&i, &assignments, &quiet()).unwrap();
     let out = arrow(&e).unwrap();
     assert!(out.failure.is_none());
     assert!(out.missing.is_empty());
@@ -148,7 +148,7 @@ fn changed_target_reference_refutes_original_preserved_action() {
             fact("Paths.Node", "q", "link"),
             reference("Paths.Node", "p"),
         )],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let out = arrow(&e).unwrap();
@@ -158,7 +158,7 @@ fn changed_target_reference_refutes_original_preserved_action() {
     assert!(out.scope.assignments);
     assert!(out.support.contains(&fact("Paths.Node", "q", "link")));
     assert!(
-        arrow(&Environment::new(&i, &mut quiet()).unwrap())
+        arrow(&Environment::new(&i, &quiet()).unwrap())
             .unwrap()
             .value
             .is_some()
@@ -168,7 +168,7 @@ fn changed_target_reference_refutes_original_preserved_action() {
 fn candidate_reference_can_restore_original_refutation_and_candidate_caches_are_separate() {
     let i = checked(arrow_fixture::input("mismatch", "candidate"));
     assert!(
-        arrow(&Environment::new(&i, &mut quiet()).unwrap())
+        arrow(&Environment::new(&i, &quiet()).unwrap())
             .unwrap()
             .failure
             .is_some()
@@ -180,7 +180,7 @@ fn candidate_reference_can_restore_original_refutation_and_candidate_caches_are_
                 fact("Paths.Node", "q", "link"),
                 reference("Paths.Node", target),
             )],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         for _ in 0..2 {
@@ -197,7 +197,7 @@ fn candidate_list_reference_order_and_duplicates_are_rechecked() {
         let e = Environment::with_primitive_valuation(
             &i,
             &[(fact("Paths.Node", "q", "links"), list(&values))],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let out = arrow(&e).unwrap();
@@ -211,14 +211,14 @@ fn changed_arrow_endpoint_builds_the_actual_new_action() {
     let e = Environment::with_primitive_valuation(
         &i,
         &[(fact("Paths.Hop", "e", "to"), reference("Paths.Node", "r"))],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let out = arrow(&e).unwrap();
     assert!(out.failure.is_none());
     assert_eq!(path(&out).target(), reference("Paths.Node", "r"));
     assert_eq!(subject_image(path(&out), "v", "p").subject, "r");
-    let baseline = arrow(&Environment::new(&i, &mut quiet()).unwrap()).unwrap();
+    let baseline = arrow(&Environment::new(&i, &quiet()).unwrap()).unwrap();
     assert_eq!(path(&baseline).target(), reference("Paths.Node", "q"));
     assert!(
         !validation_identity::scalar(
@@ -236,7 +236,7 @@ fn candidate_quantity_does_not_create_a_missing_target_atom() {
     let e = Environment::with_primitive_valuation(
         &i,
         &[(position.clone(), Scalar::Z(7.into()))],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let out = arrow(&e).unwrap();
@@ -272,7 +272,7 @@ fn candidate_correspondence_rebuilds_tables_roots_and_full_universe_action() {
             map("Reservations.Reserve", &[("e", "e")]),
         ),
     ];
-    let e = Environment::with_primitive_valuation(&i, &assignments, &mut quiet()).unwrap();
+    let e = Environment::with_primitive_valuation(&i, &assignments, &quiet()).unwrap();
     let out = correspondence(&e).unwrap();
     assert!(out.failure.is_none());
     assert!(out.missing.is_empty());
@@ -285,7 +285,7 @@ fn candidate_correspondence_rebuilds_tables_roots_and_full_universe_action() {
         path(&out).step.as_ref().unwrap().generator,
         reference("Reservations.Migration", "m")
     );
-    let before = correspondence(&Environment::new(&i, &mut quiet()).unwrap()).unwrap();
+    let before = correspondence(&Environment::new(&i, &quiet()).unwrap()).unwrap();
     assert_eq!(
         path(&out).step.as_ref().unwrap().carrier,
         path(&before).step.as_ref().unwrap().carrier
@@ -309,7 +309,7 @@ fn candidate_correspondence_table_refutes_endpoint_preservation() {
             fact("Reservations.Migration", "m", "states"),
             map("Reservations.State", &[("p", "s"), ("q", "r")]),
         )],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let out = correspondence(&e).unwrap();
@@ -317,7 +317,7 @@ fn candidate_correspondence_table_refutes_endpoint_preservation() {
     assert!(out.failure.is_some());
     assert!(out.missing.is_empty());
     assert!(
-        correspondence(&Environment::new(&i, &mut quiet()).unwrap())
+        correspondence(&Environment::new(&i, &quiet()).unwrap())
             .unwrap()
             .value
             .is_some()
@@ -330,7 +330,7 @@ fn candidate_correspondence_does_not_create_missing_target_field_atom() {
     let e = Environment::with_primitive_valuation(
         &i,
         &[(position.clone(), Scalar::Z(2.into()))],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let out = correspondence(&e).unwrap();
@@ -348,7 +348,7 @@ fn bad_candidate_type_and_incomplete_correspondence_map_are_not_path_refutations
                 fact("Reservations.Migration", "m", "to"),
                 Scalar::Z(0.into())
             )],
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
@@ -359,7 +359,7 @@ fn bad_candidate_type_and_incomplete_correspondence_map_are_not_path_refutations
                 fact("Reservations.Migration", "m", "states"),
                 map("Reservations.State", &[("p", "r")])
             )],
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
@@ -389,10 +389,9 @@ fn candidate_paths_reconstruct_from_same_inputs_and_freeze_each_fixed_stop() {
             } else {
                 arrow
             };
-        let original = calculate(
-            &Environment::with_primitive_valuation(&i, &assignments, &mut quiet()).unwrap(),
-        )
-        .unwrap();
+        let original =
+            calculate(&Environment::with_primitive_valuation(&i, &assignments, &quiet()).unwrap())
+                .unwrap();
         let control = |at: usize, signal: Signal| {
             let active = Rc::new(Cell::new(false));
             let enabled = active.clone();
@@ -413,16 +412,16 @@ fn candidate_paths_reconstruct_from_same_inputs_and_freeze_each_fixed_stop() {
                 calls,
             )
         };
-        let (mut c, active, visits, _) = control(usize::MAX, Signal::Int);
-        let e = Environment::with_primitive_valuation(&i, &assignments, &mut c).unwrap();
+        let (c, active, visits, _) = control(usize::MAX, Signal::Int);
+        let e = Environment::with_primitive_valuation(&i, &assignments, &c).unwrap();
         active.set(true);
         calculate(&e).unwrap();
         let total = visits.get();
         assert!(total > 3);
         for at in [1, total / 2, total] {
             for signal in [Signal::Int, Signal::Term] {
-                let (mut c, active, _, calls) = control(at, signal);
-                let e = Environment::with_primitive_valuation(&i, &assignments, &mut c).unwrap();
+                let (c, active, _, calls) = control(at, signal);
+                let e = Environment::with_primitive_valuation(&i, &assignments, &c).unwrap();
                 active.set(true);
                 let error = match calculate(&e) {
                     Err(e) => e,
@@ -433,7 +432,7 @@ fn candidate_paths_reconstruct_from_same_inputs_and_freeze_each_fixed_stop() {
                 assert_eq!(c.checkpoint(Checkpoint::FiniteIteration), Err(signal));
                 assert_eq!(before, calls.get());
                 let rebuilt = calculate(
-                    &Environment::with_primitive_valuation(&i, &assignments, &mut quiet()).unwrap(),
+                    &Environment::with_primitive_valuation(&i, &assignments, &quiet()).unwrap(),
                 )
                 .unwrap();
                 assert!(
@@ -538,7 +537,7 @@ fn finite_path_law_evaluates_all_seventy_two_original_primitive_assignments() {
             "Walk.exact".into(),
             vec![("e".into(), reference("Paths.Hop", "e"))],
         )],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(r.is_complete());
@@ -592,10 +591,10 @@ fn finite_path_law_evaluates_all_seventy_two_original_primitive_assignments() {
         BTreeMap::from([("p".into(), 24), ("q".into(), 24), ("r".into(), 24)])
     );
     assert_eq!(sources, targets);
-    let q = r.required_quotient(&mut quiet()).unwrap();
+    let q = r.required_quotient(&quiet()).unwrap();
     assert_eq!(q.points().len(), 72);
-    q.recheck(&i, &mut quiet()).unwrap();
-    r.recheck(&i, &mut quiet()).unwrap();
+    q.recheck(&i, &quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
     assert_eq!(i.sources(), &bytes);
 }
 

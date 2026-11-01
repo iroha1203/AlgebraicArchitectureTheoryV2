@@ -28,7 +28,7 @@ fn updates(
     inputs: &crate::input::CheckedInputs,
     declaration: &crate::law::model::Declaration,
     mut id: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Updates, ValidationFailure> {
     while let ExprKind::Group(inner) = inputs.law().exprs()[id].kind {
         tick(c)?;
@@ -216,7 +216,7 @@ fn point(
     checks: &mut [field::Comparison],
     origins: &[NodeRef],
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     let bindings = [0, 1].map(|side| {
         std::iter::once((params[side][0].name.clone(), subjects[side].clone()))
@@ -364,7 +364,7 @@ pub(super) fn retain(
     candidate: &construction::DeclarationCandidate,
     dependencies: &[NodeRef],
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Output, ValidationFailure> {
     let pair = candidate.pair().ok_or("changeの対応署名がない")?;
     let declarations = [

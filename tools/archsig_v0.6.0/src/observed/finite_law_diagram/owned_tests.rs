@@ -30,7 +30,7 @@ fn example(missing: bool, body: &str) -> ObservedEvaluation {
     evaluate_observed_bytes(
         sources(missing, body),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -39,12 +39,9 @@ fn replay(
     nodes: &[Node],
     contexts: &[crate::observed::call::Context],
 ) -> Result<Graph, ValidationFailure> {
-    let mut c = quiet();
-    let env = Environment::with_requests(
-        e.prepared.inputs(),
-        e.prepared.requests().requests(),
-        &mut c,
-    )?;
+    let c = quiet();
+    let env =
+        Environment::with_requests(e.prepared.inputs(), e.prepared.requests().requests(), &c)?;
     let mut g = Graph::new(&c);
     g.requests = e.prepared.requests().requests().to_vec();
     g.frames = e.frames.clone();
@@ -98,7 +95,7 @@ fn coordinates(g: &Graph, r: NodeRef) -> Vec<String> {
 use crate::observed::object_component_diagram as objects;
 fn family(e: &ObservedEvaluation, g: &mut Graph, name: &str) -> objects::Diagram {
     let a = architecture(g, name);
-    objects::retain(g, e.prepared.shared_inputs(), a, &mut quiet())
+    objects::retain(g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap()
 }
@@ -117,7 +114,7 @@ fn actual_owned_architectures_keep_containing_roots_and_distinct_observed_evalua
         e.prepared.shared_inputs(),
         fa.architectures[1],
         1,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -126,7 +123,7 @@ fn actual_owned_architectures_keep_containing_roots_and_distinct_observed_evalua
         e.prepared.shared_inputs(),
         fb.architectures[1],
         1,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -180,7 +177,7 @@ fn base_and_owned_consumers_keep_identity_even_when_their_finite_values_agree() 
         e.prepared.shared_inputs(),
         f.architectures[0],
         0,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -189,7 +186,7 @@ fn base_and_owned_consumers_keep_identity_even_when_their_finite_values_agree() 
         e.prepared.shared_inputs(),
         f.architectures[1],
         1,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -198,7 +195,7 @@ fn base_and_owned_consumers_keep_identity_even_when_their_finite_values_agree() 
         e.prepared.shared_inputs(),
         f.architectures[0],
         1,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -244,7 +241,7 @@ fn owned_consumer_rejects_wrong_index_component_configuration_and_subject_withou
                 e.prepared.shared_inputs(),
                 consumer,
                 index,
-                &mut quiet()
+                &quiet()
             )
             .is_err(),
             "{consumer:?}/{index}"
@@ -263,7 +260,7 @@ fn owned_missing_observation_keeps_symbolic_domain_originals_and_omits_evaluatio
         e.prepared.shared_inputs(),
         f.architectures[1],
         1,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -301,7 +298,7 @@ fn owned_law_preserves_full_parameter_columns_original_operands_and_generators()
         e.prepared.shared_inputs(),
         f.architectures[1],
         1,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -358,14 +355,14 @@ fn cached_owned_source_rejects_changed_consumer_index_origin_and_node_metadata()
         e.prepared.shared_inputs(),
         fa.architectures[1],
         1,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
     let n = g.nodes[d.ring.0].clone();
     let source = data(&g, d.ring).source.clone();
-    let mut c = quiet();
-    let env = Environment::new(e.prepared.inputs(), &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::new(e.prepared.inputs(), &c).unwrap();
     let Some(Payload::Construction(value)) = &n.payload else {
         panic!("native")
     };
@@ -430,8 +427,8 @@ fn cached_owned_source_rejects_changed_consumer_index_origin_and_node_metadata()
     v.witness = other.witness.clone();
     assert!(env.recheck_finite_law_diagram(&changed, value).is_err());
     let other = example(true, BODY);
-    let mut c = quiet();
-    let other_env = Environment::new(other.prepared.inputs(), &mut c).unwrap();
+    let c = quiet();
+    let other_env = Environment::new(other.prepared.inputs(), &c).unwrap();
     assert!(other_env.recheck_finite_law_diagram(&g, value).is_err());
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
@@ -453,14 +450,14 @@ fn signal_stops_on_owned_law_preserve_the_original_family_and_validate_finished_
     let before = initial.nodes.len();
     let count = std::rc::Rc::new(std::cell::Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::FiniteLawFunction {
             seen.set(seen.get() + 1);
         }
         None
     });
     let mut g = replay(&e, &initial.nodes, &initial.contexts).unwrap();
-    retain(&mut g, e.prepared.shared_inputs(), owned, 1, &mut c)
+    retain(&mut g, e.prepared.shared_inputs(), owned, 1, &c)
         .unwrap()
         .unwrap();
     let total = count.get();
@@ -475,7 +472,7 @@ fn signal_stops_on_owned_law_preserve_the_original_family_and_validate_finished_
                     e.prepared.shared_inputs(),
                     owned,
                     1,
-                    &mut stopping(signal, at)
+                    &stopping(signal, at)
                 ),
                 Err(ValidationFailure::Stop(_))
             ));
@@ -506,7 +503,7 @@ fn two_owned_consumers_share_original_domain_but_keep_their_own_applicability() 
     let e = evaluate_observed_bytes(
         custom_sources(DEFINITION, &map, BODY),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
@@ -519,7 +516,7 @@ fn two_owned_consumers_share_original_domain_but_keep_their_own_applicability() 
             e.prepared.shared_inputs(),
             f.architectures[index],
             index,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap()
         .unwrap();
@@ -559,7 +556,7 @@ fn two_owned_consumers_share_original_domain_but_keep_their_own_applicability() 
                 e.prepared.shared_inputs(),
                 f.architectures[1],
                 index,
-                &mut quiet()
+                &quiet()
             )
             .is_err()
         );
@@ -576,7 +573,7 @@ fn two_owned_consumers_share_original_domain_but_keep_their_own_applicability() 
     changed.reference = f.architectures[2];
     v.source = Arc::new(changed);
     assert!(
-        Environment::new(e.prepared.inputs(), &mut quiet())
+        Environment::new(e.prepared.inputs(), &quiet())
             .unwrap()
             .recheck_finite_law_diagram(&g, &forged)
             .is_err()
@@ -590,14 +587,14 @@ fn cache_hit_still_checks_the_actual_owned_architecture_node_and_root_request() 
     let mut g = graph(&e);
     let f = family(&e, &mut g, "a");
     let owned = f.architectures[1];
-    let d = retain(&mut g, e.prepared.shared_inputs(), owned, 1, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), owned, 1, &quiet())
         .unwrap()
         .unwrap();
     let Some(Payload::Construction(value)) = &g.nodes[d.ring.0].payload else {
         panic!("native")
     };
-    let mut c = quiet();
-    let env = Environment::new(e.prepared.inputs(), &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::new(e.prepared.inputs(), &c).unwrap();
     env.recheck_finite_law_diagram(&g, value).unwrap();
     for mode in 0..5 {
         let mut changed = replay(&e, &g.nodes, &g.contexts).unwrap();
@@ -641,7 +638,7 @@ fn actual_owned_consumers_preserve_reading_identity_and_reject_foreign_cached_wi
             "x=map(Finite.Migration,on=@v/m,reading=Chosen)",
             "y=map(Finite.Migration,on=@v/m,reading=Other)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
@@ -649,7 +646,7 @@ fn actual_owned_consumers_preserve_reading_identity_and_reject_foreign_cached_wi
     for name in ["Chosen", "Other"] {
         let root=NodeRef(g.nodes.iter().position(|n|matches!(&n.payload,Some(Payload::Construction(v)) if matches!((&v.witness,&v.data),(Witness::Architecture(a),D::Architecture{..}) if a.construction().root().subject=="a"&&a.construction().reading()==name))).unwrap());
         g.active = g.context_at(root.0);
-        let f = objects::retain(&mut g, e.prepared.shared_inputs(), root, &mut quiet())
+        let f = objects::retain(&mut g, e.prepared.shared_inputs(), root, &quiet())
             .unwrap()
             .unwrap();
         let d = retain(
@@ -657,7 +654,7 @@ fn actual_owned_consumers_preserve_reading_identity_and_reject_foreign_cached_wi
             e.prepared.shared_inputs(),
             f.architectures[1],
             1,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap()
         .unwrap();
@@ -677,8 +674,8 @@ fn actual_owned_consumers_preserve_reading_identity_and_reject_foreign_cached_wi
     let Some(Payload::Construction(value)) = &g.nodes[first.ring.0].payload else {
         panic!("native")
     };
-    let mut c = quiet();
-    let env = Environment::new(e.prepared.inputs(), &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::new(e.prepared.inputs(), &c).unwrap();
     env.recheck_finite_law_diagram(&g, value).unwrap();
     let mut foreign = (**value).clone();
     foreign.witness = Witness::Architecture(data(&g, results[1].ring).source.architecture.clone());

@@ -27,7 +27,7 @@ use std::sync::Arc;
 fn bad(s: &str) -> ConstructionFailure {
     ConstructionFailure::Inconsistent(s.into())
 }
-fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectLawResiduals)
         .map_err(Into::into)
 }
@@ -69,7 +69,7 @@ pub(in crate::observed) fn predicate_call(
 pub(in crate::observed) fn predicate_equation(
     inputs: &CheckedInputs,
     mut id: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<usize>, ConstructionFailure> {
     loop {
         tick(c)?;
@@ -221,7 +221,7 @@ impl ObjectLawResiduals {
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ObjectLawResidualsFailure> {
         self.base
             .recheck(Arc::clone(&inputs), c)
@@ -266,7 +266,7 @@ pub(super) fn binding_match_body(
     inputs: &CheckedInputs,
     scrutinee: usize,
     arms: &[crate::law::ast::Arm],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<usize>, ConstructionFailure> {
     let [arm] = arms else { return Ok(None) };
     match &arm.pattern {
@@ -289,7 +289,7 @@ fn numeric_terms(
     expression: usize,
     explicit_guard: bool,
     terms: &mut Vec<LawNumericShape>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         tick(c)?;
@@ -338,7 +338,7 @@ fn numeric_terms(
 fn shape(
     inputs: &CheckedInputs,
     name: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<LawNumericShape, ConstructionFailure> {
     tick(c)?;
     let Signature::Law { body, guard, .. } = inputs
@@ -414,7 +414,7 @@ fn flatten(
     g: &ObservedEvaluation,
     r: NodeRef,
     out: &mut Vec<NodeRef>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         tick(c)?;
@@ -449,7 +449,7 @@ fn flatten(
 fn scalar(
     g: &ObservedEvaluation,
     mut r: Option<NodeRef>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Scalar>, ConstructionFailure> {
     while let Some(at) = r {
         tick(c)?;
@@ -476,7 +476,7 @@ pub(in crate::observed) fn observed_epsilon(
     shape: &LawNumericShape,
     row: Option<usize>,
     component: &[usize],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<NumericTransportValue>, ConstructionFailure> {
     if row.is_none()
         && component.is_empty()
@@ -523,7 +523,7 @@ fn leaves(
     ty: &Type,
     path: &mut Vec<usize>,
     out: &mut Vec<(Vec<usize>, Type)>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         tick(c)?;
@@ -545,7 +545,7 @@ fn component(
     value: Option<&Scalar>,
     path: &[usize],
     ty: &Type,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<NumericTransportValue>, ConstructionFailure> {
     let Some(mut v) = value else { return Ok(None) };
     for &i in path {
@@ -565,7 +565,7 @@ fn read_case(
     shape: &LawNumericShape,
     inputs: &CheckedInputs,
     g: Option<&ObservedEvaluation>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     tick(c)?;
     if let LawNumericShape::Conjunction { terms, .. } = shape {
@@ -721,7 +721,7 @@ fn extract(
     result: &mut ObjectLawResiduals,
     index: usize,
     inputs: &CheckedInputs,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     let src = &result.base.evaluations()[index];
     let shape = shape(inputs, &src.evaluation().instance().declaration().name, c)?;
@@ -800,7 +800,7 @@ fn extract(
             if case_index + 1 == case_count {
                 dest.complete = true;
             }
-            c.checkpoint(Checkpoint::ObjectLawResidualCase)?;
+            c.checkpoint(Checkpoint::Work)?;
         }
         dest.complete = true;
         tick(c)?;
@@ -848,7 +848,7 @@ fn extract(
                 component.residual = Some(NumericTransportValue::observed(value));
             }
             row.complete = true;
-            c.checkpoint(Checkpoint::ObjectLawResidualCase)?;
+            c.checkpoint(Checkpoint::Work)?;
         }
     }
     out.complete = src.family().is_complete();
@@ -878,7 +878,7 @@ fn combine<'a>(values: impl Iterator<Item = &'a LawResidualOutcome>) -> LawResid
 fn known(
     row: &LawResidualRow,
     i: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<NumericTransportValue>, ConstructionFailure> {
     if !row.complete || row.cases.is_empty() {
         return Ok(None);
@@ -929,7 +929,7 @@ fn point(
     ai: Option<usize>,
     bi: Option<usize>,
     args: Vec<FiniteTransportValue>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     result.comparisons[index].points.push(LawResidualPoint {
         arguments: args,
@@ -989,7 +989,7 @@ fn point(
 fn calculate(
     result: &mut ObjectLawResiduals,
     inputs: &CheckedInputs,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     for i in 0..result.base.evaluations().len() {
         extract(result, i, inputs, c)?;
@@ -1064,7 +1064,7 @@ fn calculate(
     }
     tick(c)
 }
-fn finish_all(result: &mut ObjectLawResiduals, c: &mut Control) -> Result<(), ConstructionFailure> {
+fn finish_all(result: &mut ObjectLawResiduals, c: &Control) -> Result<(), ConstructionFailure> {
     let mut outcome = combine(result.comparisons.iter().filter_map(|v| v.outcome.as_ref()));
     // 比較対が空でも未実現/欠測を全域の読取り成功にはしない。
     for e in &result.evaluations {
@@ -1100,7 +1100,7 @@ pub fn object_law_residuals(
     reading: &str,
     snapshot: &str,
     root: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<ObjectLawResiduals, ObjectLawResidualsFailure> {
     let base = object_law_compatibility(Arc::clone(&inputs), reading, snapshot, root, c)
         .map_err(ObjectLawResidualsFailure::Original)?;
@@ -1122,7 +1122,7 @@ pub fn object_law_residuals(
 fn same(
     a: &ObjectLawResiduals,
     b: &ObjectLawResiduals,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     tick(c)?;
     if a.complete != b.complete
@@ -1135,7 +1135,7 @@ fn same(
     fn rows(
         a: &LawResidualRow,
         b: &LawResidualRow,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<bool, ConstructionFailure> {
         tick(c)?;
         if a.complete != b.complete || a.cases.len() != b.cases.len() {

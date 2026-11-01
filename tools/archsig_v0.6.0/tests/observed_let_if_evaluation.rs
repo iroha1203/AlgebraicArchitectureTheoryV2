@@ -115,9 +115,9 @@ reading Calc {{
     )
 }
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut quiet())
+    let checked = check_inputs(inputs.clone(), &quiet())
         .unwrap_or_else(|failure| panic!("入力検査: {:?}", failure.issues()));
-    let result = evaluate_observed_bytes(inputs, asks, &mut quiet())
+    let result = evaluate_observed_bytes(inputs, asks, &quiet())
         .unwrap_or_else(|failure| {
             if let Some(wire) = failure.wire() {
                 panic!("観測評価: {:?}", f(&wire, "issues"));
@@ -1005,7 +1005,7 @@ fn static_checks_reject_self_reference_duplicate_names_and_unselected_ill_typed_
         "view bad(s: Sample): Q = if true then s.q else s.p;",
         "view bad(s: Sample): Q = if false then s.q+s.p else s.q;",
     ] {
-        let failure = check_inputs(fixture(&[], body), &mut quiet()).unwrap_err();
+        let failure = check_inputs(fixture(&[], body), &quiet()).unwrap_err();
         let wire = failure.wire();
         assert_eq!(f(&wire, "status"), &Json::str("invalid"), "{body}");
         assert_eq!(arr(f(&wire, "issues")).len(), 1);
@@ -1029,13 +1029,13 @@ fn injected_stop_inside_let_if_keeps_prior_values_missing_reason_and_unstarted_r
     let unknown = "unknown=evaluate(Calc.unknown,s=@v/sample)";
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut baseline = Control::new(move |point| {
+    let baseline = Control::new(move |point| {
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
         None
     });
-    let prior = evaluate_observed_bytes(fixture(&["p"], body), &[seed, unknown], &mut baseline)
+    let prior = evaluate_observed_bytes(fixture(&["p"], body), &[seed, unknown], &baseline)
         .unwrap()
         .wire();
     let target_count = count.get() + 3;
@@ -1043,7 +1043,7 @@ fn injected_stop_inside_let_if_keeps_prior_values_missing_reason_and_unstarted_r
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (seen, calls, stopped) = (expressions.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         calls.set(calls.get() + 1);
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
@@ -1062,7 +1062,7 @@ fn injected_stop_inside_let_if_keeps_prior_values_missing_reason_and_unstarted_r
             "current=evaluate(Calc.current,s=@v/sample)",
             "later=evaluate(Calc.later,s=@v/sample)",
         ],
-        &mut c,
+        &c,
     )
     .unwrap()
     .wire();
@@ -1126,7 +1126,7 @@ fn bool_completions_resolve_lexical_reference_fields_and_keep_other_missing() {
         ),
     ] {
         let inputs = fixture(&["p"], body);
-        check_inputs(inputs.clone(), &mut quiet())
+        check_inputs(inputs.clone(), &quiet())
             .unwrap_or_else(|failure| panic!("入力検査: {:?}", failure.issues()));
         let (wire, checked) = run(inputs, &[ask]);
         assert_eq!(f(&wire, "status"), &Json::str("partial"));

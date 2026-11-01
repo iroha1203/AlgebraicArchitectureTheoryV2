@@ -48,7 +48,7 @@ pub fn check_archmap(
     bytes: &[u8],
     definitions: &CheckedDefinitions,
 ) -> Result<CheckedArchMap, ArchMapFailure> {
-    check_archmap_inner::<Box<Issue>>(bytes, definitions, &mut Control::unlimited()).map_err(
+    check_archmap_inner::<Box<Issue>>(bytes, definitions, &Control::unlimited()).map_err(
         |(issue, bytes_digest)| ArchMapFailure {
             issue: *issue,
             bytes_digest,
@@ -59,7 +59,7 @@ pub fn check_archmap(
 pub fn check_archmap_controlled(
     bytes: &[u8],
     definitions: &CheckedDefinitions,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<CheckedArchMap, CheckFailure<ArchMapFailure>> {
     control
         .checkpoint(Checkpoint::BeforeArchMap)
@@ -77,7 +77,7 @@ pub fn check_archmap_controlled(
 fn check_archmap_inner<E: InputError>(
     bytes: &[u8],
     definitions: &CheckedDefinitions,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<CheckedArchMap, (E, String)> {
     #[cfg(test)]
     entry_control_tests::BYTES_DIGEST_STARTS.with(|count| count.set(count.get() + 1));
@@ -113,13 +113,12 @@ mod entry_control_tests {
     fn stopped_entry_does_not_start_bytes_digest() {
         BYTES_DIGEST_STARTS.with(|count| count.set(0));
         for latched in [false, true] {
-            let mut control = Control::new(|_| Some(Signal::Int));
+            let control = Control::new(|_| Some(Signal::Int));
             if latched {
                 control.checkpoint(Checkpoint::InputBundle).unwrap_err();
             }
-            let failure =
-                check_archmap_controlled(b"bad", &CheckedDefinitions::empty(), &mut control)
-                    .unwrap_err();
+            let failure = check_archmap_controlled(b"bad", &CheckedDefinitions::empty(), &control)
+                .unwrap_err();
             let CheckFailure::Stopped(reason) = failure else {
                 panic!("entry stop must precede input checking");
             };
@@ -136,13 +135,13 @@ mod entry_control_tests {
         BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 1));
         let first = Rc::new(Cell::new(None));
         let observed = first.clone();
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if observed.get().is_none() {
                 observed.set(Some(point));
             }
             None
         });
-        let controlled = check_archmap_controlled(b"bad", &definitions, &mut control).unwrap_err();
+        let controlled = check_archmap_controlled(b"bad", &definitions, &control).unwrap_err();
         let CheckFailure::Input(controlled) = controlled else {
             panic!("live control must preserve the input error");
         };
@@ -156,7 +155,7 @@ mod entry_control_tests {
 fn required_namespaces<E: InputError>(
     definitions: &CheckedDefinitions,
     types: &BTreeSet<String>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<BTreeSet<String>, E> {
     let point = Checkpoint::ArchMapSchema;
     E::checkpoint(control, point)?;
@@ -232,7 +231,7 @@ fn required_namespaces<E: InputError>(
 fn check_document<E: InputError>(
     raw: RawDocument,
     definitions: &CheckedDefinitions,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<CheckedArchMap, E> {
     E::checkpoint(control, Checkpoint::ArchMapSchema)?;
     let result = check_document_inner::<E>(raw, definitions, control);
@@ -242,7 +241,7 @@ fn check_document<E: InputError>(
 fn check_document_inner<E: InputError>(
     raw: RawDocument,
     definitions: &CheckedDefinitions,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<CheckedArchMap, E> {
     // 由来の参照と mode。
     let mut sources: HashMap<&str, &Source> = HashMap::new();

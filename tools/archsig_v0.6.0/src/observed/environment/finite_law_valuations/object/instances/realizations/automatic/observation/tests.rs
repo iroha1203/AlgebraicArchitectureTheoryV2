@@ -13,11 +13,11 @@ fn missing_q() -> String {
     fixture::MAP.replace(r#",{"id":"xq","subject":"q","field":"Pattern.Part.quantity","value":"1","origin":"model"}"#,"")
 }
 fn reading(i: &CheckedInputs) -> ObjectReadingInstances {
-    let base = construct(i, "Selected", "v", "root", &mut quiet()).unwrap();
-    object_reading_instances(i, &base, &mut quiet()).unwrap()
+    let base = construct(i, "Selected", "v", "root", &quiet()).unwrap();
+    object_reading_instances(i, &base, &quiet()).unwrap()
 }
 fn run(i: &CheckedInputs, a: &ObjectReadingInstances) -> FiniteAutomaticLawFamily {
-    finite_automatic_law_family(i, a, &mut quiet()).unwrap()
+    finite_automatic_law_family(i, a, &quiet()).unwrap()
 }
 fn object(a: &ObjectReadingInstances, name: &str) -> usize {
     a.objects()
@@ -44,8 +44,8 @@ fn partial_observations_determine_only_functions_constant_on_the_full_compatible
     let f = result.family().unwrap();
     assert_eq!(f.domain().len(), 4);
     assert_eq!(f.observed_point(), None);
-    assert!(f.object_evaluation(&mut quiet()).unwrap().is_none());
-    let observation = f.observation(&i, &mut quiet()).unwrap().unwrap();
+    assert!(f.object_evaluation(&quiet()).unwrap().is_none());
+    let observation = f.observation(&i, &quiet()).unwrap().unwrap();
     assert_eq!(observation.points(), [0, 1]);
     assert_eq!(observation.known().len(), 1);
     let (coordinate, fact, value) = &observation.known()[0];
@@ -55,37 +55,32 @@ fn partial_observations_determine_only_functions_constant_on_the_full_compatible
     assert_eq!(fact.atom.as_deref(), Some("xp"));
     assert!(matches!(value,Scalar::Fp{modulus,value} if modulus=="2"&&value==&0.into()));
     let p = f
-        .integer_function(column(f, "p"), Some(&[]), &mut quiet())
+        .integer_function(column(f, "p"), Some(&[]), &quiet())
         .unwrap();
     let q = f
-        .integer_function(column(f, "q"), Some(&[]), &mut quiet())
+        .integer_function(column(f, "q"), Some(&[]), &quiet())
         .unwrap();
     assert_eq!(p.values(), &[0.into(), 0.into(), 1.into(), 1.into()]);
     assert_eq!(q.values(), &[0.into(), 1.into(), 0.into(), 1.into()]);
     assert_eq!(
-        observation.evaluate(&p, &mut quiet()).unwrap(),
+        observation.evaluate(&p, &quiet()).unwrap(),
         ObservedInteger::Determined(0.into())
     );
     assert_eq!(
-        observation.evaluate(&q, &mut quiet()).unwrap(),
+        observation.evaluate(&q, &quiet()).unwrap(),
         ObservedInteger::Varying { left: 0, right: 1 }
     );
     assert_eq!(
         observation
-            .constant_image(&p, &mut quiet())
+            .constant_image(&p, &quiet())
             .unwrap()
             .unwrap()
             .values(),
         &[0.into(), 0.into(), 0.into(), 0.into()]
     );
-    assert!(
-        observation
-            .constant_image(&q, &mut quiet())
-            .unwrap()
-            .is_none()
-    );
-    observation.recheck(f, &i, &a, &mut quiet()).unwrap();
-    assert!(f.object_evaluation(&mut quiet()).unwrap().is_none());
+    assert!(observation.constant_image(&q, &quiet()).unwrap().is_none());
+    observation.recheck(f, &i, &a, &quiet()).unwrap();
+    assert!(f.object_evaluation(&quiet()).unwrap().is_none());
 }
 #[test]
 fn arbitrary_negative_and_large_integers_are_read_without_bool_or_finite_characteristic_conversion()
@@ -94,42 +89,42 @@ fn arbitrary_negative_and_large_integers_are_read_without_bool_or_finite_charact
     let a = reading(&i);
     let result = run(&i, &a);
     let f = result.family().unwrap();
-    let observation = f.observation(&i, &mut quiet()).unwrap().unwrap();
-    let ring = f.integer_ring(&mut quiet()).unwrap();
+    let observation = f.observation(&i, &quiet()).unwrap().unwrap();
+    let ring = f.integer_ring(&quiet()).unwrap();
     let huge = BigInt::parse_bytes(b"1361129467683753853853498429727072845827", 10).unwrap();
     let same = ring
-        .computed(vec![-&huge, -&huge, 5.into(), 7.into()], &mut quiet())
+        .computed(vec![-&huge, -&huge, 5.into(), 7.into()], &quiet())
         .unwrap();
     let different = ring
-        .computed(vec![-&huge, huge.clone(), 5.into(), 7.into()], &mut quiet())
+        .computed(vec![-&huge, huge.clone(), 5.into(), 7.into()], &quiet())
         .unwrap();
     assert_eq!(
-        observation.evaluate(&same, &mut quiet()).unwrap(),
+        observation.evaluate(&same, &quiet()).unwrap(),
         ObservedInteger::Determined(-&huge)
     );
     assert_eq!(
         observation
-            .constant_image(&same, &mut quiet())
+            .constant_image(&same, &quiet())
             .unwrap()
             .unwrap()
             .values(),
         vec![-&huge; 4]
     );
     assert_eq!(
-        observation.evaluate(&different, &mut quiet()).unwrap(),
+        observation.evaluate(&different, &quiet()).unwrap(),
         ObservedInteger::Varying { left: 0, right: 1 }
     );
     for op in [
-        ring.add(&same, &same, &mut quiet()).unwrap(),
-        ring.mul(&same, &ring.one(&mut quiet()).unwrap(), &mut quiet())
+        ring.add(&same, &same, &quiet()).unwrap(),
+        ring.mul(&same, &ring.one(&quiet()).unwrap(), &quiet())
             .unwrap(),
     ] {
         assert!(matches!(
-            observation.evaluate(&op, &mut quiet()).unwrap(),
+            observation.evaluate(&op, &quiet()).unwrap(),
             ObservedInteger::Determined(_)
         ));
     }
-    observation.recheck(f, &i, &a, &mut quiet()).unwrap();
+    observation.recheck(f, &i, &a, &quiet()).unwrap();
 }
 #[test]
 fn no_known_coordinates_keep_every_candidate_and_only_unanimous_values() {
@@ -138,24 +133,24 @@ fn no_known_coordinates_keep_every_candidate_and_only_unanimous_values() {
     let a = reading(&i);
     let result = run(&i, &a);
     let f = result.family().unwrap();
-    let observation = f.observation(&i, &mut quiet()).unwrap().unwrap();
+    let observation = f.observation(&i, &quiet()).unwrap().unwrap();
     assert!(observation.known().is_empty());
     assert_eq!(observation.points(), [0, 1, 2, 3]);
-    let ring = f.integer_ring(&mut quiet()).unwrap();
-    let value = ring.constant((-17).into(), &mut quiet()).unwrap();
+    let ring = f.integer_ring(&quiet()).unwrap();
+    let value = ring.constant((-17).into(), &quiet()).unwrap();
     assert_eq!(
-        observation.evaluate(&value, &mut quiet()).unwrap(),
+        observation.evaluate(&value, &quiet()).unwrap(),
         ObservedInteger::Determined((-17).into())
     );
     let varied = ring
-        .computed(vec![0.into(), 0.into(), 0.into(), 1.into()], &mut quiet())
+        .computed(vec![0.into(), 0.into(), 0.into(), 1.into()], &quiet())
         .unwrap();
     assert_eq!(
-        observation.evaluate(&varied, &mut quiet()).unwrap(),
+        observation.evaluate(&varied, &quiet()).unwrap(),
         ObservedInteger::Varying { left: 0, right: 3 }
     );
-    assert!(f.object_evaluation(&mut quiet()).unwrap().is_none());
-    observation.recheck(f, &i, &a, &mut quiet()).unwrap();
+    assert!(f.object_evaluation(&quiet()).unwrap().is_none());
+    observation.recheck(f, &i, &a, &quiet()).unwrap();
 }
 #[test]
 fn fully_known_fibers_agree_with_the_existing_ring_map_for_all_basis_values_and_integers() {
@@ -163,37 +158,34 @@ fn fully_known_fibers_agree_with_the_existing_ring_map_for_all_basis_values_and_
     let a = reading(&i);
     let result = run(&i, &a);
     let f = result.family().unwrap();
-    let observation = f.observation(&i, &mut quiet()).unwrap().unwrap();
+    let observation = f.observation(&i, &quiet()).unwrap().unwrap();
     assert_eq!(observation.points(), [1]);
     assert_eq!(observation.known().len(), 2);
-    let evaluation = f.object_evaluation(&mut quiet()).unwrap().unwrap();
-    let ring = f.integer_ring(&mut quiet()).unwrap();
+    let evaluation = f.object_evaluation(&quiet()).unwrap().unwrap();
+    let ring = f.integer_ring(&quiet()).unwrap();
     let mut functions = vec![
-        ring.computed(
-            vec![(-2).into(), 3.into(), 5.into(), 7.into()],
-            &mut quiet(),
-        )
-        .unwrap(),
+        ring.computed(vec![(-2).into(), 3.into(), 5.into(), 7.into()], &quiet())
+            .unwrap(),
     ];
     for p in 0..4 {
-        functions.push(ring.basis(p, &mut quiet()).unwrap());
+        functions.push(ring.basis(p, &quiet()).unwrap());
     }
     for function in functions {
-        let expected = evaluation.apply(&function, &mut quiet()).unwrap();
+        let expected = evaluation.apply(&function, &quiet()).unwrap();
         assert_eq!(
-            observation.evaluate(&function, &mut quiet()).unwrap(),
+            observation.evaluate(&function, &quiet()).unwrap(),
             ObservedInteger::Determined(expected.clone())
         );
         assert_eq!(
             observation
-                .constant_image(&function, &mut quiet())
+                .constant_image(&function, &quiet())
                 .unwrap()
                 .unwrap()
                 .values(),
             vec![expected; 4]
         );
     }
-    observation.recheck(f, &i, &a, &mut quiet()).unwrap();
+    observation.recheck(f, &i, &a, &quiet()).unwrap();
 }
 #[test]
 fn known_tuple_fields_constrain_whole_original_values_and_preserve_missing_field_identity() {
@@ -201,7 +193,7 @@ fn known_tuple_fields_constrain_whole_original_values_and_preserve_missing_field
     let a = reading(&i);
     let result = run(&i, &a);
     let f = result.family().unwrap();
-    let observation = f.observation(&i, &mut quiet()).unwrap().unwrap();
+    let observation = f.observation(&i, &quiet()).unwrap().unwrap();
     assert_eq!(f.domain().len(), 16);
     assert_eq!(observation.points(), [4, 5, 6, 7]);
     assert_eq!(observation.known().len(), 1);
@@ -212,21 +204,19 @@ fn known_tuple_fields_constrain_whole_original_values_and_preserve_missing_field
     let p = column(f, "p");
     let q = column(f, "q");
     for (component, expected) in [(0, 0), (1, 1)] {
-        let function = f
-            .integer_function(p, Some(&[component]), &mut quiet())
-            .unwrap();
+        let function = f.integer_function(p, Some(&[component]), &quiet()).unwrap();
         assert_eq!(
-            observation.evaluate(&function, &mut quiet()).unwrap(),
+            observation.evaluate(&function, &quiet()).unwrap(),
             ObservedInteger::Determined(expected.into())
         );
     }
-    let function = f.integer_function(q, Some(&[0]), &mut quiet()).unwrap();
+    let function = f.integer_function(q, Some(&[0]), &quiet()).unwrap();
     assert_eq!(
-        observation.evaluate(&function, &mut quiet()).unwrap(),
+        observation.evaluate(&function, &quiet()).unwrap(),
         ObservedInteger::Varying { left: 4, right: 6 }
     );
     assert_eq!(f.positions()[1].atom, None);
-    observation.recheck(f, &i, &a, &mut quiet()).unwrap();
+    observation.recheck(f, &i, &a, &quiet()).unwrap();
 }
 #[test]
 fn object_presentations_keep_known_independent_components_and_leave_dependent_ones_unknown() {
@@ -236,7 +226,7 @@ fn object_presentations_keep_known_independent_components_and_leave_dependent_on
     let f = result.family().unwrap();
     for name in ["root", "p", "q"] {
         let o = object(&a, name);
-        let presentation = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+        let presentation = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
         assert_eq!(presentation.observation().points(), [0, 1]);
         assert_eq!(presentation.evaluated(), name == "p");
         for equation in presentation.equations() {
@@ -255,11 +245,11 @@ fn object_presentations_keep_known_independent_components_and_leave_dependent_on
                 );
             }
         }
-        presentation.recheck(f, o, &i, &a, &mut quiet()).unwrap();
+        presentation.recheck(f, o, &i, &a, &quiet()).unwrap();
     }
     assert_eq!(f.required_zero(), Some([0].as_slice()));
-    assert!(f.object_evaluation(&mut quiet()).unwrap().is_none());
-    let environment = Environment::new(&i, &mut quiet()).unwrap();
+    assert!(f.object_evaluation(&quiet()).unwrap().is_none());
+    let environment = Environment::new(&i, &quiet()).unwrap();
     let field = environment
         .indexes
         .field(&environment.state, "v", "q", "Pattern.Part.quantity")
@@ -276,24 +266,24 @@ fn a_proved_constant_indicator_does_not_turn_the_unknown_operand_into_an_observa
     let result = run(&i, &a);
     let f = result.family().unwrap();
     let o = object(&a, "root");
-    let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+    let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
     assert!(p.evaluated());
     assert_eq!(p.observation().points(), [0, 1]);
     assert_eq!(p.observation().known().len(), 1);
     assert!(p.equations().iter().all(|q| q.epsilon() == Some(&0.into())));
-    assert!(f.object_evaluation(&mut quiet()).unwrap().is_none());
+    assert!(f.object_evaluation(&quiet()).unwrap().is_none());
     assert!(
         f.positions()
             .iter()
             .any(|p| p.subject == "q" && p.atom.is_none())
     );
-    let environment = Environment::new(&i, &mut quiet()).unwrap();
+    let environment = Environment::new(&i, &quiet()).unwrap();
     let field = environment
         .indexes
         .field(&environment.state, "v", "q", "Pattern.Part.quantity")
         .unwrap();
     assert!(matches!(field.slot, Slot::Missing));
-    p.recheck(f, o, &i, &a, &mut quiet()).unwrap();
+    p.recheck(f, o, &i, &a, &quiet()).unwrap();
 }
 #[test]
 fn empty_fibers_never_prove_values_and_the_forged_source_is_rejected_by_full_rechecking() {
@@ -303,21 +293,21 @@ fn empty_fibers_never_prove_values_and_the_forged_source_is_rejected_by_full_rec
     let mut result = run(&i, &a);
     let f = result.family.as_mut().unwrap();
     f.value.domain.clear();
-    let observation = f.observation(&i, &mut quiet()).unwrap().unwrap();
+    let observation = f.observation(&i, &quiet()).unwrap().unwrap();
     assert!(observation.points().is_empty());
-    let ring = f.integer_ring(&mut quiet()).unwrap();
-    let empty = ring.computed(vec![], &mut quiet()).unwrap();
+    let ring = f.integer_ring(&quiet()).unwrap();
+    let empty = ring.computed(vec![], &quiet()).unwrap();
     assert_eq!(
-        observation.evaluate(&empty, &mut quiet()).unwrap(),
+        observation.evaluate(&empty, &quiet()).unwrap(),
         ObservedInteger::Empty
     );
     assert!(
         observation
-            .constant_image(&empty, &mut quiet())
+            .constant_image(&empty, &quiet())
             .unwrap()
             .is_none()
     );
-    assert!(observation.recheck(f, &i, &a, &mut quiet()).is_err());
+    assert!(observation.recheck(f, &i, &a, &quiet()).is_err());
 }
 #[test]
 fn fiber_constraints_points_sources_and_foreign_functions_cannot_be_substituted() {
@@ -328,10 +318,10 @@ fn fiber_constraints_points_sources_and_foreign_functions_cannot_be_substituted(
     let other = run(&i, &a);
     let foreign = other.family().unwrap();
     let function = f
-        .integer_function(column(f, "p"), Some(&[]), &mut quiet())
+        .integer_function(column(f, "p"), Some(&[]), &quiet())
         .unwrap();
     for mode in 0..9 {
-        let mut observation = f.observation(&i, &mut quiet()).unwrap().unwrap();
+        let mut observation = f.observation(&i, &quiet()).unwrap().unwrap();
         match mode {
             0 => observation.points.clear(),
             1 => observation.points.reverse(),
@@ -344,30 +334,30 @@ fn fiber_constraints_points_sources_and_foreign_functions_cannot_be_substituted(
             _ => observation.family = foreign,
         };
         assert!(
-            observation.recheck(f, &i, &a, &mut quiet()).is_err(),
+            observation.recheck(f, &i, &a, &quiet()).is_err(),
             "mode {mode}"
         );
         assert!(
-            observation.evaluate(&function, &mut quiet()).is_err(),
+            observation.evaluate(&function, &quiet()).is_err(),
             "mode {mode}"
         );
     }
-    let observation = f.observation(&i, &mut quiet()).unwrap().unwrap();
+    let observation = f.observation(&i, &quiet()).unwrap().unwrap();
     let bad = foreign
-        .integer_function(column(foreign, "p"), Some(&[]), &mut quiet())
+        .integer_function(column(foreign, "p"), Some(&[]), &quiet())
         .unwrap();
-    assert!(observation.evaluate(&bad, &mut quiet()).is_err());
-    assert!(observation.constant_image(&bad, &mut quiet()).is_err());
+    assert!(observation.evaluate(&bad, &quiet()).is_err());
+    assert!(observation.constant_image(&bad, &quiet()).is_err());
     let mut short = function.clone();
     short.values.pop();
-    assert!(observation.evaluate(&short, &mut quiet()).is_err());
+    assert!(observation.evaluate(&short, &quiet()).is_err());
     let changed = fixture::with_body(fixture::MAP, "law required zero(c:Part):c.quantity=0;");
-    assert!(f.observation(&changed, &mut quiet()).is_err());
-    assert!(observation.recheck(f, &changed, &a, &mut quiet()).is_err());
-    let base = construct(&i, "Selected", "v", "r2", &mut quiet()).unwrap();
-    let wrong = object_reading_instances(&i, &base, &mut quiet()).unwrap();
-    assert!(observation.recheck(f, &i, &wrong, &mut quiet()).is_err());
-    observation.recheck(f, &i, &a, &mut quiet()).unwrap();
+    assert!(f.observation(&changed, &quiet()).is_err());
+    assert!(observation.recheck(f, &changed, &a, &quiet()).is_err());
+    let base = construct(&i, "Selected", "v", "r2", &quiet()).unwrap();
+    let wrong = object_reading_instances(&i, &base, &quiet()).unwrap();
+    assert!(observation.recheck(f, &i, &wrong, &quiet()).is_err());
+    observation.recheck(f, &i, &a, &quiet()).unwrap();
 }
 fn stopping(signal: Signal, at: usize) -> Control {
     let seen = Rc::new(Cell::new(0));
@@ -385,33 +375,33 @@ fn cancellation_stops_preserve_unfinished_observation_value_and_presentation_bou
     let a = reading(&i);
     let result = run(&i, &a);
     let f = result.family().unwrap();
-    let observation = f.observation(&i, &mut quiet()).unwrap().unwrap();
+    let observation = f.observation(&i, &quiet()).unwrap().unwrap();
     let function = f
-        .integer_function(column(f, "p"), Some(&[]), &mut quiet())
+        .integer_function(column(f, "p"), Some(&[]), &quiet())
         .unwrap();
     for signal in [Signal::Int, Signal::Term] {
         for at in [1, 5, 11] {
             assert!(matches!(
-                f.observation(&i, &mut stopping(signal, at)),
+                f.observation(&i, &stopping(signal, at)),
                 Err(ValidationFailure::Stop(_))
             ));
         }
         assert!(matches!(
-            observation.evaluate(&function, &mut stopping(signal, 8)),
+            observation.evaluate(&function, &stopping(signal, 8)),
             Err(ValidationFailure::Stop(_))
         ));
         assert!(matches!(
-            observation.constant_image(&function, &mut stopping(signal, 8)),
+            observation.constant_image(&function, &stopping(signal, 8)),
             Err(ValidationFailure::Stop(_))
         ));
         assert!(matches!(
-            observation.recheck(f, &i, &a, &mut stopping(signal, 1)),
+            observation.recheck(f, &i, &a, &stopping(signal, 1)),
             Err(ValidationFailure::Stop(_))
         ));
         assert!(matches!(
-            f.object_presentation(&i, 0, &mut stopping(signal, 8)),
+            f.object_presentation(&i, 0, &stopping(signal, 8)),
             Err(ValidationFailure::Stop(_))
         ));
     }
-    observation.recheck(f, &i, &a, &mut quiet()).unwrap();
+    observation.recheck(f, &i, &a, &quiet()).unwrap();
 }

@@ -86,7 +86,7 @@ fn from_checked_rejects_valid_law_or_archmap_from_different_input_bytes() {
         let sources =
             InputSources::from_bytes(vec![DEFINITIONS.to_vec()], LAW.to_vec(), MAP.to_vec());
         let failure =
-            CheckedInputs::from_checked(sources, definitions, law, map, &mut Control::unlimited())
+            CheckedInputs::from_checked(sources, definitions, law, map, &Control::unlimited())
                 .unwrap_err();
         assert_eq!(failure.status(), InputStatus::Invalid);
         assert_eq!(failure.declarations().is_empty(), change_law);

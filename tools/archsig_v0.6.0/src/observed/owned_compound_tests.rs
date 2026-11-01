@@ -3,9 +3,9 @@ mod compound_fixture {
     include!("../../tests/common/owned_compound_family.rs");
 }
 fn compound_result(asks: &[&str]) -> ObservedEvaluation {
-    let mut c = quiet();
-    let p = prepare_observed(compound_fixture::input(false, false, "r1"), asks, &mut c).unwrap();
-    evaluate_observed(p, &mut c).unwrap()
+    let c = quiet();
+    let p = prepare_observed(compound_fixture::input(false, false, "r1"), asks, &c).unwrap();
+    evaluate_observed(p, &c).unwrap()
 }
 fn compound_domain(r: &ObservedEvaluation) -> usize {
     r.nodes
@@ -99,7 +99,7 @@ fn owned_compound_enumeration_cancel_keeps_verified_prefix_and_prior_refutation(
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(move |_| {
+    let control = Control::new(move |_| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert!(freeze.replace(Some(count.get())).is_none());
@@ -111,13 +111,13 @@ fn owned_compound_enumeration_cancel_keeps_verified_prefix_and_prior_refutation(
     let prepared = prepare_observed(
         compound_fixture::input(false, false, "r1"),
         &asks,
-        &mut control,
+        &control,
     )
     .unwrap();
     let law = prepared.inputs().sources().law().bytes().to_vec();
     let stopped = evaluate_observed_with_validator(
         prepared,
-        &mut control,
+        &control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
             if request.id == "prior" {

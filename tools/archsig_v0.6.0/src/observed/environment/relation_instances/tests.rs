@@ -41,7 +41,7 @@ fn with_script(
             law.into_bytes(),
             original.archmap().bytes().to_vec(),
         ),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -70,7 +70,7 @@ const PAIRS: &str = "relation same(e:Hop,f:Hop):path(e)=path(f);";
 fn all_sixteen_relation_pairs_keep_names_and_check_actual_endpoints_and_action() {
     let i = inputs("normal", PAIRS);
     let bytes = i.sources().clone();
-    let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Walk", &quiet()).unwrap();
     assert!(r.enumeration_complete());
     assert!(!r.conditions_verified());
     assert_eq!(r.instances.len(), 16);
@@ -123,7 +123,7 @@ fn all_sixteen_relation_pairs_keep_names_and_check_actual_endpoints_and_action()
     }
     assert_eq!(pairs.len(), 16);
     assert_eq!(r.declarations[0].name, "Walk.same");
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
     assert_eq!(i.sources(), &bytes);
 }
 #[test]
@@ -132,7 +132,7 @@ fn finite_bool_parameters_and_false_guards_keep_all_instances() {
         "normal",
         "relation selected(b:Bool,e:Hop) when b:path(e)=path(e);",
     );
-    let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Walk", &quiet()).unwrap();
     assert!(r.conditions_verified());
     assert_eq!(r.instances.len(), 8);
     assert_eq!(r.established().count(), 4);
@@ -162,7 +162,7 @@ fn a_correspondence_self_word_can_differ_from_global_identity_on_the_same_endpoi
         "relation identity_candidate(m:Migration):path(m)=identity(source(path(m)));",
         "",
     );
-    let r = relation_instances(&i, "Reservations", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Reservations", &quiet()).unwrap();
     assert!(r.enumeration_complete());
     assert_eq!(r.instances.len(), 3);
     assert_eq!(r.established().count(), 0);
@@ -191,7 +191,7 @@ fn a_correspondence_self_word_can_differ_from_global_identity_on_the_same_endpoi
         "self"
     );
     assert!(path(&row.right).step.is_none());
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn missing_guard_values_are_pending_with_the_original_slot() {
@@ -199,7 +199,7 @@ fn missing_guard_values_are_pending_with_the_original_slot() {
         "missing_source",
         "relation guarded(n:Node) when n.mark>0:identity(n)=identity(n);",
     );
-    let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Walk", &quiet()).unwrap();
     assert_eq!(r.instances.len(), 4);
     let row = r
         .instances
@@ -221,7 +221,7 @@ fn missing_endpoint_and_missing_quantity_target_atom_are_not_false_relations() {
         ("missing_tag", slot("Paths.Node", "q", "mark"), 2),
     ] {
         let i = inputs(mode, "relation keep(e:Hop):path(e)=path(e);");
-        let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+        let r = relation_instances(&i, "Walk", &quiet()).unwrap();
         assert!(r.enumeration_complete());
         assert_eq!(r.instances.len(), 4);
         assert!(!r.conditions_verified());
@@ -244,7 +244,7 @@ fn finite_owned_map_domains_use_the_actual_prefix_owner() {
         "normal",
         "relation table(a:Root,f:Map<Node[a],Node[a]>,n:Node[a]):identity(f(n))=identity(f(n));",
     );
-    let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Walk", &quiet()).unwrap();
     assert!(r.conditions_verified());
     assert!(r.pending_domains.is_empty());
     assert_eq!(r.instances.len(), 82);
@@ -272,7 +272,7 @@ fn finite_owned_map_domains_use_the_actual_prefix_owner() {
         by_snapshot,
         BTreeMap::from([("v".into(), 81), ("w".into(), 1)])
     );
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn unknown_ownership_retains_unfinished_domains_instead_of_an_empty_presentation() {
@@ -283,7 +283,7 @@ fn unknown_ownership_retains_unfinished_domains_instead_of_an_empty_presentation
         "relation owned(a:System,s:State[a]):identity(s)=identity(s);",
         "",
     );
-    let r = relation_instances(&i, "Reservations", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Reservations", &quiet()).unwrap();
     assert!(!r.enumeration_complete());
     assert!(!r.conditions_verified());
     assert_eq!(r.pending_domains.len(), 2);
@@ -301,18 +301,18 @@ fn empty_types_and_nonfinite_parameter_domains_preserve_different_claims() {
             "normal",
             &format!("relation empty({params}):identity(u)=identity(u);"),
         );
-        let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+        let r = relation_instances(&i, "Walk", &quiet()).unwrap();
         assert!(r.conditions_verified());
         assert_eq!(r.declarations.len(), 1);
         assert!(r.instances.is_empty());
         assert!(r.outside_finite.is_empty());
-        r.recheck(&i, &mut quiet()).unwrap();
+        r.recheck(&i, &quiet()).unwrap();
     }
     let i = inputs(
         "normal",
         "relation nonfinite(z:Z,n:Node):identity(n)=identity(n);",
     );
-    let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Walk", &quiet()).unwrap();
     assert!(!r.enumeration_complete());
     assert!(!r.conditions_verified());
     assert_eq!(
@@ -324,7 +324,7 @@ fn empty_types_and_nonfinite_parameter_domains_preserve_different_claims() {
         }]
     );
     assert!(r.instances.is_empty());
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn reading_scopes_do_not_merge_same_named_relations() {
@@ -342,8 +342,8 @@ fn reading_scopes_do_not_merge_same_named_relations() {
             "reading Other{{use vocabulary Paths version \"1\" digest \"{digest}\";relation same(e:Hop) when false:path(e)=identity(source(path(e)));}}"
         ),
     );
-    let a = relation_instances(&i, "Walk", &mut quiet()).unwrap();
-    let b = relation_instances(&i, "Other", &mut quiet()).unwrap();
+    let a = relation_instances(&i, "Walk", &quiet()).unwrap();
+    let b = relation_instances(&i, "Other", &quiet()).unwrap();
     assert_eq!(a.established().count(), 4);
     assert_eq!(b.established().count(), 0);
     assert_eq!(a.declarations[0].name, "Walk.same");
@@ -357,7 +357,7 @@ fn reading_scopes_do_not_merge_same_named_relations() {
 #[test]
 fn current_inputs_reject_forged_relation_metadata_values_and_decisions() {
     let i = inputs("normal", "relation same(e:Hop):path(e)=path(e);");
-    let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Walk", &quiet()).unwrap();
     for mode in 0..13 {
         let mut forged = r.clone();
         match mode {
@@ -389,7 +389,7 @@ fn current_inputs_reject_forged_relation_metadata_values_and_decisions() {
                     .push(params[0].clone());
             }
         }
-        assert!(forged.recheck(&i, &mut quiet()).is_err(), "{mode}");
+        assert!(forged.recheck(&i, &quiet()).is_err(), "{mode}");
     }
     let mut sources = i.sources().clone();
     sources = InputSources::from_bytes(
@@ -404,22 +404,22 @@ fn current_inputs_reject_forged_relation_metadata_values_and_decisions() {
             .bytes()
             .to_vec(),
     );
-    let other = check_inputs(sources, &mut quiet()).unwrap();
-    assert!(r.recheck(&other, &mut quiet()).is_err());
+    let other = check_inputs(sources, &quiet()).unwrap();
+    assert!(r.recheck(&other, &quiet()).is_err());
 }
 #[test]
 fn stops_never_certify_unfinished_relation_instances_and_completed_tables_recheck() {
     let i = inputs("normal", PAIRS);
-    let completed = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let completed = relation_instances(&i, "Walk", &quiet()).unwrap();
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(move |cp| {
+    let c = Control::new(move |cp| {
         if cp == Checkpoint::FiniteIteration {
             seen.set(seen.get() + 1);
         }
         None
     });
-    relation_instances(&i, "Walk", &mut c).unwrap();
+    relation_instances(&i, "Walk", &c).unwrap();
     let total = count.get();
     assert!(total > 10);
     for at in [1, total / 2, total] {
@@ -428,14 +428,14 @@ fn stops_never_certify_unfinished_relation_instances_and_completed_tables_rechec
             let calls = Rc::new(Cell::new(0));
             let seen = count.clone();
             let samples = calls.clone();
-            let mut c = Control::new(move |cp| {
+            let c = Control::new(move |cp| {
                 samples.set(samples.get() + 1);
                 if cp == Checkpoint::FiniteIteration {
                     seen.set(seen.get() + 1);
                 }
                 (seen.get() >= at).then_some(signal)
             });
-            let error = match relation_instances(&i, "Walk", &mut c) {
+            let error = match relation_instances(&i, "Walk", &c) {
                 Err(error) => error,
                 Ok(_) => panic!("停止しなかった"),
             };
@@ -445,7 +445,7 @@ fn stops_never_certify_unfinished_relation_instances_and_completed_tables_rechec
             let frozen = calls.get();
             assert!(c.checkpoint(Checkpoint::FiniteIteration).is_err());
             assert_eq!(calls.get(), frozen);
-            completed.recheck(&i, &mut quiet()).unwrap();
+            completed.recheck(&i, &quiet()).unwrap();
         }
     }
 }
@@ -455,7 +455,7 @@ fn false_guards_do_not_require_unread_missing_path_operands() {
         "missing_to",
         "relation inactive(e:Hop) when false:path(e)=identity(source(path(e)));",
     );
-    let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Walk", &quiet()).unwrap();
     assert!(r.conditions_verified());
     assert_eq!(r.instances.len(), 4);
     assert!(
@@ -470,16 +470,16 @@ fn false_guards_do_not_require_unread_missing_path_operands() {
 #[test]
 fn empty_reading_is_verified_but_unknown_reading_is_an_error() {
     let i = inputs("normal", "");
-    let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Walk", &quiet()).unwrap();
     assert!(r.conditions_verified());
     assert!(r.declarations.is_empty());
     assert!(r.instances.is_empty());
-    assert!(relation_instances(&i, "Unknown", &mut quiet()).is_err());
+    assert!(relation_instances(&i, "Unknown", &quiet()).is_err());
 }
 #[test]
 fn a_failed_path_construction_is_not_a_refuted_equality_of_two_paths() {
     let i = inputs("mismatch", "relation keep(e:Hop):path(e)=path(e);");
-    let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Walk", &quiet()).unwrap();
     let row = r
         .instances
         .iter()
@@ -498,7 +498,7 @@ fn reference_bindings_keep_origin_scope_even_when_the_guard_does_not_read_them()
         "normal",
         "relation inactive(n:Node) when false:identity(n)=identity(n);",
     );
-    let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Walk", &quiet()).unwrap();
     assert!(r.conditions_verified());
     assert_eq!(r.instances.len(), 4);
     for row in &r.instances {
@@ -531,7 +531,7 @@ fn reference_bindings_keep_origin_scope_even_when_the_guard_does_not_read_them()
 #[test]
 fn reconstructed_relations_reject_forged_actions_differences_domains_and_expression_ids() {
     let i = inputs("normal", "relation same(e:Hop):path(e)=path(e);");
-    let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Walk", &quiet()).unwrap();
     for mode in 0..5 {
         let mut forged = r.clone();
         match mode {
@@ -577,7 +577,7 @@ fn reconstructed_relations_reject_forged_actions_differences_domains_and_express
                 missing: vec![slot("Paths.Hop", "e", "to")],
             }),
         }
-        assert!(forged.recheck(&i, &mut quiet()).is_err(), "{mode}");
+        assert!(forged.recheck(&i, &quiet()).is_err(), "{mode}");
     }
 }
 
@@ -598,7 +598,7 @@ fn shared_guard_view_keeps_missing_for_every_relation() {
                 "{helper}relation first(n:Node) when {guard}:identity(n)=identity(n);relation second(n:Node) when {guard}:identity(n)=identity(n);"
             ),
         );
-        let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+        let r = relation_instances(&i, "Walk", &quiet()).unwrap();
         for row in r
             .instances
             .iter()
@@ -622,7 +622,7 @@ fn shared_guard_view_keeps_missing_for_every_relation() {
             );
             assert_eq!(subject(&row.bindings[0].1), "p");
         }
-        r.recheck(&i, &mut quiet()).unwrap();
+        r.recheck(&i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -631,7 +631,7 @@ fn shared_guard_view_keeps_missing_across_unused_relation_bindings() {
         "missing_source",
         "view mark(n:Node):Z=n.mark;relation guarded(b:Bool,n:Node) when mark(n)>0:identity(n)=identity(n);",
     );
-    let r = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_instances(&i, "Walk", &quiet()).unwrap();
     let pending: Vec<_> = r
         .instances
         .iter()
@@ -648,7 +648,7 @@ fn shared_guard_view_keeps_missing_across_unused_relation_bindings() {
         bindings.insert(b);
     }
     assert_eq!(bindings, BTreeSet::from([false, true]));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 
 #[test]
@@ -657,7 +657,7 @@ fn cached_guard_replays_only_its_own_missing_after_an_untraced_initial_call() {
         "missing_source",
         "view mark(n:Node):Z=n.mark;relation guarded(n:Node) when mark(n)>0:identity(n)=identity(n);",
     );
-    let rows = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let rows = relation_instances(&i, "Walk", &quiet()).unwrap();
     let source = rows
         .instances
         .iter()
@@ -670,7 +670,7 @@ fn cached_guard_replays_only_its_own_missing_after_an_untraced_initial_call() {
     else {
         panic!()
     };
-    let e = Environment::new(&i, &mut quiet()).unwrap();
+    let e = Environment::new(&i, &quiet()).unwrap();
     let variables = source
         .bindings
         .iter()
@@ -706,10 +706,10 @@ fn numeric_transport_families_recheck_symbols_and_keep_finite_queries_separate()
         "normal",
         "relation same(n:Z,e:Hop,q:Q) when (n-n=0) and (q-q=rat(0,1)):path(e)=path(e);",
     );
-    let finite = relation_instances(&i, "Walk", &mut quiet()).unwrap();
+    let finite = relation_instances(&i, "Walk", &quiet()).unwrap();
     assert!(finite.instances.is_empty());
     assert!(!finite.outside_finite.is_empty());
-    let family = relation_transport_instances(&i, "Walk", &mut quiet()).unwrap();
+    let family = relation_transport_instances(&i, "Walk", &quiet()).unwrap();
     assert_eq!(family.instances.len(), 4);
     assert!(family.conditions_verified());
     for row in &family.instances {
@@ -724,13 +724,13 @@ fn numeric_transport_families_recheck_symbols_and_keep_finite_queries_separate()
         );
         assert!(row.guard_checked && row.left_checked && row.right_checked);
     }
-    family.recheck(&i, &mut quiet()).unwrap();
+    family.recheck(&i, &quiet()).unwrap();
     let mut forged = family.clone();
     forged.numeric_families = false;
-    assert!(forged.recheck(&i, &mut quiet()).is_err());
+    assert!(forged.recheck(&i, &quiet()).is_err());
     let mut forged = family.clone();
     forged.instances[0].numeric_parameters[0].span.0 += 1;
-    assert!(forged.recheck(&i, &mut quiet()).is_err());
+    assert!(forged.recheck(&i, &quiet()).is_err());
 }
 
 #[test]
@@ -739,7 +739,7 @@ fn numeric_transport_families_keep_missing_guard_slots() {
         "missing_source",
         "relation guarded(k:Z,n:Node,q:Q) when (k-k=0) and (n.mark>0):identity(n)=identity(n);",
     );
-    let r = relation_transport_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_transport_instances(&i, "Walk", &quiet()).unwrap();
     assert_eq!(r.instances.len(), 4);
     let row = r
         .instances
@@ -752,7 +752,7 @@ fn numeric_transport_families_keep_missing_guard_slots() {
     assert!(row.missing.contains(&slot("Paths.Node", "p", "mark")));
     assert!(row.left.is_none() && row.right.is_none());
     assert!(!r.conditions_verified());
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 
 #[test]
@@ -785,7 +785,7 @@ fn integer_relation_domains_use_every_kernel_direction_and_recheck_original_coor
             "normal",
             &format!("relation keep(n:Z,e:Hop,m:Z,extra:Z) when {guard}:({body})=path(e);"),
         );
-        let r = relation_transport_instances(&i, "Walk", &mut quiet()).unwrap();
+        let r = relation_transport_instances(&i, "Walk", &quiet()).unwrap();
         assert_eq!(r.instances.len(), 4);
         for row in &r.instances {
             assert_eq!(row.state, state, "{guard}: {body}");
@@ -801,14 +801,14 @@ fn integer_relation_domains_use_every_kernel_direction_and_recheck_original_coor
                 }
             }
         }
-        r.recheck(&i, &mut quiet()).unwrap();
+        r.recheck(&i, &quiet()).unwrap();
         let mut forged = r.clone();
         let Scalar::Z(rhs) = &mut forged.instances[0].numeric_domain.as_mut().unwrap().rhs[0]
         else {
             panic!("integer relation equation expected")
         };
         *rhs += 1;
-        assert!(forged.recheck(&i, &mut quiet()).is_err());
+        assert!(forged.recheck(&i, &quiet()).is_err());
     }
 }
 
@@ -824,7 +824,7 @@ fn local_conditional_missing_cache_is_separate_from_full_evaluation_records() {
     else {
         panic!()
     };
-    let e = Environment::new(&i, &mut quiet()).unwrap();
+    let e = Environment::new(&i, &quiet()).unwrap();
     let subject = Scalar::Subject {
         snapshot: "v".into(),
         subject: "p".into(),
@@ -904,7 +904,7 @@ fn numeric_tuple_relations_keep_independent_axes_and_original_parameters() {
                     "relation keep(pair:({ty},{ty}),e:Hop,last:{ty}) when {guard}:({body})=path(e);"
                 ),
             );
-            let r = relation_transport_instances(&i, "Walk", &mut quiet()).unwrap();
+            let r = relation_transport_instances(&i, "Walk", &quiet()).unwrap();
             assert_eq!(r.instances.len(), 4);
             assert!(r.outside_finite.is_empty());
             for row in &r.instances {
@@ -922,17 +922,17 @@ fn numeric_tuple_relations_keep_independent_axes_and_original_parameters() {
                     assert_eq!(domain.kernel.len(), 3);
                 }
             }
-            r.recheck(&i, &mut quiet()).unwrap();
+            r.recheck(&i, &quiet()).unwrap();
             let mut forged = r.clone();
             forged.instances[0].numeric_parameters[0].ty = Type::Tuple(vec![Type::Z, Type::Q]);
-            assert!(forged.recheck(&i, &mut quiet()).is_err());
+            assert!(forged.recheck(&i, &quiet()).is_err());
         }
     }
     let i = inputs(
         "normal",
         "relation keep(pair:((Z,Z),Z),e:Hop):path(e)=path(e);",
     );
-    let r = relation_transport_instances(&i, "Walk", &mut quiet()).unwrap();
+    let r = relation_transport_instances(&i, "Walk", &quiet()).unwrap();
     assert_eq!(r.instances.len(), 4);
     assert!(r.outside_finite.is_empty());
     assert!(
@@ -940,13 +940,13 @@ fn numeric_tuple_relations_keep_independent_axes_and_original_parameters() {
             .iter()
             .all(|row| row.state == RelationState::Established)
     );
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
     for ty in ["(Z,Q)", "(Z,Bool)"] {
         let i = inputs(
             "normal",
             &format!("relation keep(pair:{ty},e:Hop):path(e)=path(e);"),
         );
-        let r = relation_transport_instances(&i, "Walk", &mut quiet()).unwrap();
+        let r = relation_transport_instances(&i, "Walk", &quiet()).unwrap();
         assert!(!r.outside_finite.is_empty());
         assert!(!r.conditions_verified());
     }

@@ -6,7 +6,7 @@ use super::{
 };
 use crate::control::{Checkpoint, Control};
 
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::NativeResultNode)?;
     Ok(())
 }
@@ -35,7 +35,7 @@ impl Boundary {
         g: &Graph,
         architecture: NodeRef,
         inputs: Vec<NodeRef>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Self, ValidationFailure> {
         tick(c)?;
         let producer = saved_context(g, architecture)?;
@@ -67,7 +67,7 @@ impl Boundary {
         env: &Environment<'_>,
         g: &Graph,
         at: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         // この不変Graph借用内では全参照を同じ検査sessionで確認できる。
         // 参照ごとの全Graph snapshot複製を避け、出口で一度だけ保存する。

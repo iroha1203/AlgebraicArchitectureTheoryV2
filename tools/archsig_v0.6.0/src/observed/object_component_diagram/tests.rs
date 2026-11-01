@@ -22,7 +22,7 @@ fn example(body: &str) -> ObservedEvaluation {
     evaluate_observed_bytes(
         custom_sources(DEFINITION, MAP, body),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -31,12 +31,9 @@ fn replay(
     nodes: &[Node],
     contexts: &[crate::observed::call::Context],
 ) -> Result<Graph, ValidationFailure> {
-    let mut c = quiet();
-    let env = Environment::with_requests(
-        e.prepared.inputs(),
-        e.prepared.requests().requests(),
-        &mut c,
-    )?;
+    let c = quiet();
+    let env =
+        Environment::with_requests(e.prepared.inputs(), e.prepared.requests().requests(), &c)?;
     let mut g = Graph::new(&c);
     g.requests = e.prepared.requests().requests().to_vec();
     g.frames = e.frames.clone();
@@ -79,7 +76,7 @@ fn base_and_owned_keep_equal_configurations_as_distinct_objects_and_applicable_l
     let mut g = graph(&e);
     let a = architecture(&g, "a");
     let start = g.nodes.len();
-    let result = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+    let result = retain(&mut g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(result.objects.len(), 2);
@@ -176,7 +173,7 @@ fn extended(map: &str) -> ObservedEvaluation {
             &format!("{BODY}law optional hop(h:Hop):true;"),
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -202,7 +199,7 @@ fn owned_subjects_keep_external_existence_relations_and_exclude_arrows_and_forei
     let e = extended(EXTENDED_MAP);
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let result = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+    let result = retain(&mut g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(result.objects.len(), 3);
@@ -326,7 +323,7 @@ fn missing_quantity_retains_original_requirements_without_fabricating_values_or_
     let e = extended(&map);
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let result = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+    let result = retain(&mut g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     let c = family_configuration(&g, result.architectures[1]);
@@ -388,14 +385,14 @@ fn unknown_owner_or_reference_never_promotes_a_conditional_configuration() {
                 NodeRef(index),
                 &[],
                 before,
-                &mut quiet()
+                &quiet()
             )
             .unwrap()
             .is_none()
         );
         assert_eq!(g.nodes.len(), before);
         let pending=g.nodes.iter().enumerate().find_map(|(i,n)|{let Some(Payload::Construction(v))=&n.payload else{return None};matches!((&v.witness,&v.data),(Witness::Architecture(w),D::Pending{ty:T::Architecture,..})if Arc::ptr_eq(w,&a)).then_some(NodeRef(i))}).unwrap();
-        assert!(retain(&mut g, e.prepared.shared_inputs(), pending, &mut quiet()).is_err());
+        assert!(retain(&mut g, e.prepared.shared_inputs(), pending, &quiet()).is_err());
         assert_eq!(g.nodes.len(), before);
         replay(&e, &g.nodes, &g.contexts).unwrap();
     }
@@ -412,12 +409,12 @@ fn a_root_without_owned_entities_keeps_exactly_its_base_component() {
     let e = evaluate_observed_bytes(
         custom_sources(DEFINITION, &map, BODY),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(d.objects, [d.base]);
@@ -439,7 +436,7 @@ fn object_plans_reject_kind_subject_configuration_law_order_scope_and_output_for
     let e = extended(EXTENDED_MAP);
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     let source = data(&g, d.base).source.clone();
@@ -486,7 +483,7 @@ fn object_plans_reject_kind_subject_configuration_law_order_scope_and_output_for
         }
         assert!(
             changed
-                .recheck(&g, e.prepared.inputs(), &source.architecture, &mut quiet())
+                .recheck(&g, e.prepared.inputs(), &source.architecture, &quiet())
                 .is_err(),
             "mode {mode}"
         );
@@ -498,16 +495,16 @@ fn current_inputs_consumers_positions_and_cached_root_requests_are_rechecked() {
     let e = example(BODY);
     let mut g = graph(&e);
     let (a, b) = (architecture(&g, "a"), architecture(&g, "b"));
-    let da = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+    let da = retain(&mut g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
-    let db = retain(&mut g, e.prepared.shared_inputs(), b, &mut quiet())
+    let db = retain(&mut g, e.prepared.shared_inputs(), b, &quiet())
         .unwrap()
         .unwrap();
     let env = Environment::with_requests(
         e.prepared.inputs(),
         e.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     for object in [da.base, db.base] {
@@ -553,7 +550,7 @@ fn current_inputs_consumers_positions_and_cached_root_requests_are_rechecked() {
     let other = Environment::with_requests(
         e2.prepared.inputs(),
         e.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(other.recheck_node(&g, &original, da.objects[1].0).is_err());
@@ -576,7 +573,7 @@ fn signal_stops_do_not_return_an_unfinished_family_and_every_finished_prefix_rep
     let e = example(BODY);
     let count = std::rc::Rc::new(std::cell::Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::ObjectInstances {
             seen.set(seen.get() + 1)
         }
@@ -585,7 +582,7 @@ fn signal_stops_do_not_return_an_unfinished_family_and_every_finished_prefix_rep
     let mut complete = graph(&e);
     let a = architecture(&complete, "a");
     let start = complete.nodes.len();
-    retain(&mut complete, e.prepared.shared_inputs(), a, &mut c)
+    retain(&mut complete, e.prepared.shared_inputs(), a, &c)
         .unwrap()
         .unwrap();
     let total = count.get();
@@ -598,12 +595,7 @@ fn signal_stops_do_not_return_an_unfinished_family_and_every_finished_prefix_rep
             let before = g.nodes.clone();
             assert!(
                 matches!(
-                    retain(
-                        &mut g,
-                        e.prepared.shared_inputs(),
-                        a,
-                        &mut stopping(signal, at)
-                    ),
+                    retain(&mut g, e.prepared.shared_inputs(), a, &stopping(signal, at)),
                     Err(ValidationFailure::Stop(_))
                 ),
                 "{signal:?} at {at}/{total}"
@@ -622,13 +614,13 @@ fn unbounded_scalar_parameters_and_the_whole_original_body_stay_symbolic() {
     let e = evaluate_observed_bytes(
         custom_sources(&definition, MAP, body),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
     let before = g.nodes.clone();
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     let Part::Architecture { laws, .. } = data(&g, d.architectures[1]).part() else {
@@ -680,7 +672,7 @@ fn an_equal_configuration_from_another_reading_keeps_a_distinct_origin_and_cache
             "m=map(Finite.Migration,on=@v/m,reading=Chosen)",
             "n=map(Finite.Migration,on=@v/m,reading=Other)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
@@ -689,11 +681,11 @@ fn an_equal_configuration_from_another_reading_keeps_a_distinct_origin_and_cache
     };
     let (a, b) = (find("Chosen"), find("Other"));
     g.active = g.context_at(a.0);
-    let da = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+    let da = retain(&mut g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     g.active = g.context_at(b.0);
-    let db = retain(&mut g, e.prepared.shared_inputs(), b, &mut quiet())
+    let db = retain(&mut g, e.prepared.shared_inputs(), b, &quiet())
         .unwrap()
         .unwrap();
     let sa = data(&g, da.base).source.clone();
@@ -713,7 +705,7 @@ fn an_equal_configuration_from_another_reading_keeps_a_distinct_origin_and_cache
     );
     g.active = g.context_at(a.0);
     assert!(
-        sa.recheck(&g, e.prepared.inputs(), &sb.architecture, &mut quiet())
+        sa.recheck(&g, e.prepared.inputs(), &sb.architecture, &quiet())
             .is_err()
     );
     replay(&e, &g.nodes, &g.contexts).unwrap();
@@ -726,7 +718,7 @@ fn all_objects_keep_original_law_and_view_reading_expressions_bindings_types_and
     );
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(d.objects.len(), 2);
@@ -811,13 +803,13 @@ fn missing_and_outside_readings_remain_expressions_without_fabricating_none_true
             "view quantity(c:Part):Fp(2)=c.quantity;view marker(a:Root):Bool=true;law required root(a:Root):true;",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
     let before = g.nodes.len();
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(d.readings.len(), 6);
@@ -889,7 +881,7 @@ fn symbolic_reading_quantifiers_and_all_source_fields_and_output_links_are_reche
     let e = example("law required symbolic(c:Part,k:Z):c.quantity=0;");
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(d.readings.len(), 2);
@@ -953,7 +945,7 @@ fn symbolic_reading_quantifiers_and_all_source_fields_and_output_links_are_reche
         }
         assert!(
             changed
-                .recheck(&g, e.prepared.inputs(), &source.architecture, &mut quiet())
+                .recheck(&g, e.prepared.inputs(), &source.architecture, &quiet())
                 .is_err(),
             "mode {mode}"
         );
@@ -973,12 +965,12 @@ fn reading_parameter_domains_preserve_external_snapshot_subject_support_and_scop
             "view roots(c:Part,x:(Root,Bool)):Bool=true;",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(d.readings.len(), 2);
@@ -998,7 +990,7 @@ fn reading_parameter_domains_preserve_external_snapshot_subject_support_and_scop
     changed.support.retain(|f| f.snapshot != "w");
     assert!(
         changed
-            .recheck(&g, e.prepared.inputs(), &source.architecture, &mut quiet())
+            .recheck(&g, e.prepared.inputs(), &source.architecture, &quiet())
             .is_err()
     );
     let mut nodes = g.nodes.clone();
@@ -1019,13 +1011,13 @@ fn a_finished_object_producer_rechecks_from_another_request_without_allowing_for
             "m=map(Finite.Migration,on=@v/m,reading=Chosen)",
             "idle=evaluate(Chosen.no)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
     g.active = g.context_at(a.0);
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet())
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     g.active = *e.contexts.last().unwrap();
@@ -1033,13 +1025,13 @@ fn a_finished_object_producer_rechecks_from_another_request_without_allowing_for
     let env = Environment::with_requests(
         e.prepared.inputs(),
         e.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let old = g.get(d.architectures[1]).unwrap().clone();
     let checked = env.recheck_node(&g, &old, d.architectures[1].0);
     assert!(checked.is_ok(), "{checked:?}");
     let before = g.nodes.clone();
-    assert!(retain(&mut g, e.prepared.shared_inputs(), a, &mut quiet()).is_err());
+    assert!(retain(&mut g, e.prepared.shared_inputs(), a, &quiet()).is_err());
     assert_eq!(g.nodes, before);
 }

@@ -26,7 +26,7 @@ fn evaluate(
     name: &str,
 ) -> FiniteLawFamilyValuations {
     let selected = vec![(object(a, name), instance(a, "all", "p"), bindings("p"))];
-    finite_instance_law_family_valuations(i, a, &selected, &mut quiet()).unwrap()
+    finite_instance_law_family_valuations(i, a, &selected, &quiet()).unwrap()
 }
 #[test]
 fn plain_target_quantification_uses_each_conditional_owner_and_both_body_values() {
@@ -55,18 +55,18 @@ fn plain_target_quantification_uses_each_conditional_owner_and_both_body_values(
     }
     assert_eq!(f.required_zero(), Some(zero.as_slice()));
     assert_eq!(zero, [0, 1, 2]);
-    let ring = f.integer_ring(&mut quiet()).unwrap();
+    let ring = f.integer_ring(&quiet()).unwrap();
     assert_eq!(ring.dimension(), 8);
-    let quotient = f.required_quotient(&mut quiet()).unwrap();
+    let quotient = f.required_quotient(&quiet()).unwrap();
     assert_eq!(quotient.points(), &[0, 1, 2]);
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn native_observation_stays_undetermined_without_a_primitive_or_completion_assignment() {
     let i = fixture::with_body(&missing_map(), ALL);
     let a = readings(&i);
-    let selected = Selection::compute(&i, &a, object(&a, "root"), &mut quiet()).unwrap();
-    let mut e = Environment::new(&i, &mut quiet()).unwrap();
+    let selected = Selection::compute(&i, &a, object(&a, "root"), &quiet()).unwrap();
+    let mut e = Environment::new(&i, &quiet()).unwrap();
     e.indexes.object = Some(Arc::clone(&selected.domain));
     *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
     let p = probe_mode(
@@ -93,9 +93,9 @@ fn native_observation_stays_undetermined_without_a_primitive_or_completion_assig
 fn existing_completion_assignments_still_include_and_exclude_the_conditional_member() {
     let i = fixture::with_body(&missing_map(), ALL);
     let a = readings(&i);
-    let selected = Selection::compute(&i, &a, object(&a, "root"), &mut quiet()).unwrap();
+    let selected = Selection::compute(&i, &a, object(&a, "root"), &quiet()).unwrap();
     for (target, indicator) in [("root", 1u8), ("r2", 0)] {
-        let mut e = Environment::new(&i, &mut quiet()).unwrap();
+        let mut e = Environment::new(&i, &quiet()).unwrap();
         e.indexes.object = Some(Arc::clone(&selected.domain));
         // この内部probeはGraph証拠を生成しない。既存補完の値読取りを対照する。
         *e.state.completion_values.borrow_mut() = vec![(owner(), NodeRef(0), root_value(target))];
@@ -116,10 +116,9 @@ fn existing_completion_assignments_still_include_and_exclude_the_conditional_mem
 fn primitive_valuation_has_the_same_precedence_as_other_primitive_reads() {
     let i = fixture::with_body(&missing_map(), ALL);
     let a = readings(&i);
-    let selected = Selection::compute(&i, &a, object(&a, "root"), &mut quiet()).unwrap();
-    let mut e =
-        Environment::with_primitive_valuation(&i, &[(owner(), root_value("r2"))], &mut quiet())
-            .unwrap();
+    let selected = Selection::compute(&i, &a, object(&a, "root"), &quiet()).unwrap();
+    let mut e = Environment::with_primitive_valuation(&i, &[(owner(), root_value("r2"))], &quiet())
+        .unwrap();
     e.indexes.object = Some(Arc::clone(&selected.domain));
     *e.state.completion_values.borrow_mut() = vec![(owner(), NodeRef(0), root_value("root"))];
     let p = probe_mode(
@@ -149,7 +148,7 @@ fn a_partial_object_does_not_gain_another_subjects_membership_dependency() {
     assert_eq!(f.domain().len(), 2);
     assert_eq!(indicators(&f, 0), ["0", "1"]);
     assert!(f.column_reference_domain_conditions(0).unwrap().is_empty());
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn a_false_guard_does_not_read_the_unused_conditional_body_domain() {
@@ -181,7 +180,7 @@ fn a_compound_reference_domain_keeps_the_full_roster_without_local_membership_ax
     assert!(f.positions().is_empty());
     assert_eq!(f.domain(), [vec![]]);
     assert_eq!(indicators(&f, 0), ["0"]);
-    let native = Environment::new(&i, &mut quiet()).unwrap();
+    let native = Environment::new(&i, &quiet()).unwrap();
     let ty = Type::Option(Box::new(Type::Ref("Pattern.Part".into())));
     let values = native.finite_values(&ty, &mut |_, _| {}).unwrap();
     assert_eq!(values.values.len(), 3);
@@ -200,7 +199,7 @@ fn a_nonfinite_active_body_keeps_its_original_position_and_type() {
         matches!(f.state(),FiniteLawState::OutsideFinite {position,ty:Type::Z} if position.subject=="p" && position.field.as_deref()==Some("Pattern.Part.integer"))
     );
     assert!(f.positions().contains(&owner()));
-    assert!(f.integer_ring(&mut quiet()).is_err());
+    assert!(f.integer_ring(&quiet()).is_err());
 }
 #[test]
 fn membership_support_scope_and_every_domain_coordinate_are_rechecked() {
@@ -217,17 +216,14 @@ fn membership_support_scope_and_every_domain_coordinate_are_rechecked() {
             4 => bad.columns[0].rows[0].point = 1,
             _ => bad.positions.swap(0, 1),
         }
-        assert!(
-            bad.recheck(&i, &mut quiet()).is_err(),
-            "mutation {mutation}"
-        );
+        assert!(bad.recheck(&i, &quiet()).is_err(), "mutation {mutation}");
     }
     assert!(
         f.recheck_on_instances(
             &i,
             &a,
             &[(object(&a, "p"), instance(&a, "all", "p"))],
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
@@ -241,13 +237,13 @@ fn a_stop_keeps_one_finished_row_and_no_completed_function_or_quotient() {
     let selected = vec![(object(&a, "root"), instance(&a, "all", "p"), bindings("p"))];
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::FiniteLawEvaluation {
             seen.set(seen.get() + 1);
         }
         (seen.get() >= 3).then_some(Signal::Term)
     });
-    let error = finite_instance_law_family_valuations(&i, &a, &selected, &mut c)
+    let error = finite_instance_law_family_valuations(&i, &a, &selected, &c)
         .err()
         .unwrap();
     assert!(matches!(error.cause, ValidationFailure::Stop(_)));
@@ -257,8 +253,8 @@ fn a_stop_keeps_one_finished_row_and_no_completed_function_or_quotient() {
     assert_eq!(partial.columns()[0].rows().len(), 1);
     assert_eq!(partial.columns()[0].rows()[0].indicator, Some(0.into()));
     assert!(partial.columns()[0].rows()[0].support.contains(&owner()));
-    assert!(partial.integer_function(0, None, &mut quiet()).is_err());
-    assert!(partial.required_quotient(&mut quiet()).is_err());
+    assert!(partial.integer_function(0, None, &quiet()).is_err());
+    assert!(partial.required_quotient(&quiet()).is_err());
 }
 #[test]
 fn an_explicit_external_owner_keeps_its_whole_fiber_outside_the_partial_object() {
@@ -281,8 +277,8 @@ fn an_explicit_external_owner_keeps_its_whole_fiber_outside_the_partial_object()
             ("r".into(), root_value("r2")),
         ],
     )];
-    let f = finite_object_law_family_valuations(&i, &a, object(&a, "p"), &selected, &mut quiet())
-        .unwrap();
+    let f =
+        finite_object_law_family_valuations(&i, &a, object(&a, "p"), &selected, &quiet()).unwrap();
     assert!(f.is_complete());
     assert_eq!(f.positions().len(), 4);
     assert_eq!(f.domain().len(), 16);
@@ -309,7 +305,7 @@ fn an_explicit_external_owner_keeps_its_whole_fiber_outside_the_partial_object()
             Some(u8::from(violation).into())
         );
     }
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn a_same_root_owned_quantifier_is_intersected_with_the_partial_object() {
@@ -332,8 +328,8 @@ fn a_same_root_owned_quantifier_is_intersected_with_the_partial_object() {
             ("r".into(), root_value("root")),
         ],
     )];
-    let f = finite_object_law_family_valuations(&i, &a, object(&a, "p"), &selected, &mut quiet())
-        .unwrap();
+    let f =
+        finite_object_law_family_valuations(&i, &a, object(&a, "p"), &selected, &quiet()).unwrap();
     assert!(f.is_complete());
     assert!(
         f.positions()
@@ -363,7 +359,7 @@ fn a_same_root_owned_quantifier_is_intersected_with_the_partial_object() {
             Some(u8::from(violation).into())
         );
     }
-    f.recheck(&i, &mut quiet()).unwrap();
+    f.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn a_different_reference_type_does_not_read_part_membership_conditions() {

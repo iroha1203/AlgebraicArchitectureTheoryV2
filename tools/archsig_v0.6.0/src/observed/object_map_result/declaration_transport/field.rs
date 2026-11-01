@@ -26,7 +26,7 @@ pub(super) fn compare_expression(
     origins: [NodeRef; 2],
     dependencies: &[NodeRef],
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Comparison, ValidationFailure> {
     let Signature::Local {
         params: source_params,

@@ -7,7 +7,7 @@ struct Builder<'a> {
     original: &'a Original,
     parts: &'a mut Vec<Part>,
     base: usize,
-    control: &'a mut Control,
+    control: &'a Control,
 }
 impl Builder<'_> {
     fn ty(&mut self, expression: usize) -> Result<Type, ValidationFailure> {
@@ -246,7 +246,7 @@ impl Builder<'_> {
         Ok(value)
     }
 }
-fn erased(ty: &Type, c: &mut Control) -> Result<Type, ValidationFailure> {
+fn erased(ty: &Type, c: &Control) -> Result<Type, ValidationFailure> {
     ty.erase_controlled::<crate::control::CheckFailure<Box<crate::issue::Issue>>>(
         c,
         Checkpoint::EquationPresentation,
@@ -264,7 +264,7 @@ fn original(
     row: Option<usize>,
     parts: &mut Vec<Part>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Original, ValidationFailure> {
     original_bound(readings, inputs, actual, instance, row, &[], parts, base, c)
 }
@@ -277,7 +277,7 @@ fn original_bound(
     finite: &[(String, Scalar)],
     parts: &mut Vec<Part>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Original, ValidationFailure> {
     tick(c)?;
     let original = readings
@@ -466,7 +466,7 @@ pub(super) fn append(
     inputs: &CheckedInputs,
     parts: &mut Vec<Part>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Original>, Vec<(NodeRef, NodeRef, NodeRef)>), ValidationFailure> {
     let mut originals = vec![];
     // Noneは元の記号的instance。空parameter域を具体rowとして埋めない。
@@ -598,7 +598,7 @@ pub(super) fn symbolic(
     readings: &crate::construction::readings::ObjectReadingInstances,
     parts: &mut Vec<Part>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Original>, ValidationFailure> {
     let mut result = vec![];
     for (instance, row) in readings.instances().iter().enumerate() {
@@ -622,7 +622,7 @@ pub(super) fn symbolic_bound(
     )],
     parts: &mut Vec<Part>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Original>, ValidationFailure> {
     let mut result = vec![];
     for (instance, equation) in equations {

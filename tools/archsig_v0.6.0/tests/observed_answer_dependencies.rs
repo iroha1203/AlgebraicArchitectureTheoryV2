@@ -15,12 +15,8 @@ fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
         .unwrap()
 }
 fn run(asks: &[&str]) -> Json {
-    let r = evaluate_observed_bytes(
-        fixture::input("stop", "r1"),
-        asks,
-        &mut Control::unlimited(),
-    )
-    .unwrap_or_else(|e| panic!("{:?}", e.wire()));
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), asks, &Control::unlimited())
+        .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_eq!(r.status(), "partial", "{:?}", r.wire());
     r.wire()
 }
@@ -110,12 +106,8 @@ fn unavailable_multiple_inputs_keep_each_direct_dependency_and_original_details(
         "later=check(Applications.abRequire,x=$both.value)",
     ];
     // 最後のZ→Bool束縛は、graph生成前の静的不正として拒否する。
-    let error = evaluate_observed_bytes(
-        fixture::input("stop", "r1"),
-        &asks,
-        &mut Control::unlimited(),
-    )
-    .unwrap_err();
+    let error = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &Control::unlimited())
+        .unwrap_err();
     let invalid = error.wire().unwrap();
     assert_eq!(f(&invalid, "status"), &Json::str("invalid"));
     assert!(arr(f(&invalid, "nodes")).is_empty());
@@ -212,9 +204,9 @@ fn unavailable_answers_keep_inputs_and_current_provenance_without_changing_judgm
     for revision in ["r1", "r2"] {
         let input = fixture::input("stop", revision);
         let original = input.clone();
-        let mut c = Control::unlimited();
-        let checked = archsig::input::check_inputs(input.clone(), &mut c).unwrap();
-        let r = evaluate_observed_bytes(input, &asks, &mut c).unwrap();
+        let c = Control::unlimited();
+        let checked = archsig::input::check_inputs(input.clone(), &c).unwrap();
+        let r = evaluate_observed_bytes(input, &asks, &c).unwrap();
         assert_eq!(r.status(), "partial");
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(r.prepared().inputs().definitions(), checked.definitions());

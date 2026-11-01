@@ -64,8 +64,8 @@ fn value<'a>(j: &'a Json, id: &str) -> &'a Json {
 }
 fn run(i: InputSources, asks: &[&str]) -> Json {
     let checked =
-        check_inputs(i.clone(), &mut quiet()).unwrap_or_else(|e| panic!("input {:?}", e.issues()));
-    let r = evaluate_observed_bytes(i.clone(), asks, &mut quiet())
+        check_inputs(i.clone(), &quiet()).unwrap_or_else(|e| panic!("input {:?}", e.issues()));
+    let r = evaluate_observed_bytes(i.clone(), asks, &quiet())
         .unwrap_or_else(|e| panic!("evaluate {e:?}"));
     assert_ne!(r.status(), "error", "{:?}", r.wire());
     assert_eq!(r.prepared().inputs().sources(), &i);
@@ -329,7 +329,7 @@ fn missing_reference_mixed_bool_completion_keeps_slot_types_and_known_counterexa
 #[test]
 fn missing_reference_no_consistent_extension_is_rejected_at_original_map_location() {
     let i = fixture::constrained(false);
-    let before = check_inputs(i.clone(), &mut quiet()).unwrap();
+    let before = check_inputs(i.clone(), &quiet()).unwrap();
     let map = String::from_utf8(i.archmap().bytes().to_vec()).unwrap();
     let old = "[[[\"v\", \"p\"], [\"v\", \"r\"]], [[\"v\", \"q\"], [\"v\", \"s\"]]]";
     assert_eq!(map.matches(old).count(), 1);
@@ -339,7 +339,7 @@ fn missing_reference_no_consistent_extension_is_rejected_at_original_map_locatio
         i.law().bytes().to_vec(),
         map.into_bytes(),
     );
-    let err = check_inputs(invalid, &mut quiet()).unwrap_err();
+    let err = check_inputs(invalid, &quiet()).unwrap_err();
     assert_eq!(err.status().wire(), "invalid");
     let issues = err.issues();
     assert!(

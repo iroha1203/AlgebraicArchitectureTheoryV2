@@ -17,7 +17,7 @@ fn prepared(inputs: Arc<CheckedInputs>) -> PreparedObserved {
         inputs.law(),
         inputs.archmap(),
         &["b=build(Selected,on=@v/root)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -27,7 +27,7 @@ fn prepared(inputs: Arc<CheckedInputs>) -> PreparedObserved {
     }
 }
 fn start(p: &PreparedObserved) -> (Graph, Arc<Table>) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = super::super::architecture_result::build(
@@ -35,11 +35,11 @@ fn start(p: &PreparedObserved) -> (Graph, Arc<Table>) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let table =
-        super::super::law_table::retain(&env, &mut g, p.shared_inputs(), a.reference, &mut quiet())
+        super::super::law_table::retain(&env, &mut g, p.shared_inputs(), a.reference, &quiet())
             .unwrap()
             .unwrap();
     (g, Arc::new(table))
@@ -59,7 +59,7 @@ fn copy(g: &Graph, c: &Control) -> Graph {
     p
 }
 fn replay(p: &PreparedObserved, g: &Graph) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut prefix = copy(g, &quiet());
     prefix.nodes.clear();
     prefix.contexts.clear();
@@ -72,8 +72,8 @@ fn replay(p: &PreparedObserved, g: &Graph) {
 fn sample(missing: bool, body: &str) -> (PreparedObserved, Graph, Layout) {
     let p = prepared(fixture::inputs(missing, body));
     let (mut g, t) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let l = retain_finite(&env, &mut g, t, p.shared_inputs(), &mut quiet())
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let l = retain_finite(&env, &mut g, t, p.shared_inputs(), &quiet())
         .unwrap()
         .unwrap();
     (p, g, l)
@@ -121,8 +121,8 @@ const LAWS: &str = "law required zero(c:Part):c.quantity=0;law optional one(c:Pa
 #[test]
 fn every_finite_column_uses_the_real_shared_z_to_d_function_and_whole_law_judgment() {
     let (p, g, l) = sample(false, LAWS);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let checked = l.checked(&env, &g, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let checked = l.checked(&env, &g, &quiet()).unwrap();
     assert!(checked.is_complete());
     assert_eq!(l.data.factors.len(), 1);
     assert_eq!(l.data.indices.len(), 4);
@@ -177,7 +177,7 @@ fn every_finite_column_uses_the_real_shared_z_to_d_function_and_whole_law_judgme
             );
             for atom in checked.atoms {
                 let got = checked
-                    .at(object, i, Reading::Residual, 0, atom, &mut quiet())
+                    .at(object, i, Reading::Residual, 0, atom, &quiet())
                     .unwrap();
                 assert_eq!(
                     got,
@@ -195,17 +195,10 @@ fn every_finite_column_uses_the_real_shared_z_to_d_function_and_whole_law_judgme
             }
             assert_eq!(
                 checked
-                    .at(object, i, Reading::Epsilon, 0, &l.data.anchor, &mut quiet())
+                    .at(object, i, Reading::Epsilon, 0, &l.data.anchor, &quiet())
                     .unwrap(),
                 checked
-                    .at(
-                        object,
-                        i,
-                        Reading::Residual,
-                        0,
-                        &l.data.anchor,
-                        &mut quiet()
-                    )
+                    .at(object, i, Reading::Residual, 0, &l.data.anchor, &quiet())
                     .unwrap()
             );
         }
@@ -218,8 +211,8 @@ fn finite_value_parameters_keep_every_binding_guard_row_and_quantified_global_in
         false,
         "law optional bit(c:Part,b:Bool) when b:c.quantity=0;",
     );
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let checked = l.checked(&env, &g, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let checked = l.checked(&env, &g, &quiet()).unwrap();
     assert!(checked.is_complete());
     assert_eq!(l.data.indices.len(), 2);
     assert!(
@@ -273,8 +266,8 @@ fn finite_indicator_includes_the_guard_and_does_not_claim_to_be_the_polynomial_d
         false,
         "law required guarded(c:Part) when c.quantity=0:c.quantity=1;",
     );
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let checked = l.checked(&env, &g, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let checked = l.checked(&env, &g, &quiet()).unwrap();
     assert!(checked.is_complete());
     for (object, row) in l.data.objects.iter().enumerate() {
         for q in &row.coordinates {
@@ -310,8 +303,8 @@ fn finite_indicator_includes_the_guard_and_does_not_claim_to_be_the_polynomial_d
 #[test]
 fn missing_observations_keep_uncomputed_indicator_values_and_original_reasons() {
     let (p, g, l) = sample(true, LAWS);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let checked = l.checked(&env, &g, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let checked = l.checked(&env, &g, &quiet()).unwrap();
     assert!(!checked.is_complete());
     assert_eq!(l.data.objects.len(), 3);
     let mut unknown = 0;
@@ -325,14 +318,7 @@ fn missing_observations_keep_uncomputed_indicator_values_and_original_reasons() 
                 assert!(f.epsilon.is_none());
                 assert_eq!(
                     checked
-                        .at(
-                            object,
-                            i,
-                            Reading::Residual,
-                            0,
-                            &l.data.anchor,
-                            &mut quiet()
-                        )
+                        .at(object, i, Reading::Residual, 0, &l.data.anchor, &quiet())
                         .unwrap(),
                     Placed::Uncomputed {
                         ring: l.data.factors[0]
@@ -362,9 +348,9 @@ fn an_unavailable_finite_plan_does_not_change_the_table_or_create_a_completed_la
     let before = g.nodes.clone();
     let contexts = g.contexts.clone();
     let active = g.active;
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     assert!(
-        retain_finite(&env, &mut g, t, p.shared_inputs(), &mut quiet())
+        retain_finite(&env, &mut g, t, p.shared_inputs(), &quiet())
             .unwrap()
             .is_none()
     );
@@ -379,15 +365,15 @@ fn an_empty_law_family_keeps_the_empty_block_product_and_all_objects_without_a_f
     let p = prepared(fixture::inputs(false, ""));
     let (mut g, t) = start(&p);
     let before = g.nodes.clone();
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let l = retain_finite(&env, &mut g, t, p.shared_inputs(), &mut quiet())
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let l = retain_finite(&env, &mut g, t, p.shared_inputs(), &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(g.nodes, before);
     assert!(l.data.factors.is_empty() && l.data.indices.is_empty());
     assert_eq!(l.data.objects.len(), 3);
     assert!(l.data.objects.iter().all(|o| o.coordinates.is_empty()));
-    assert!(l.checked(&env, &g, &mut quiet()).unwrap().is_complete());
+    assert!(l.checked(&env, &g, &quiet()).unwrap().is_complete());
     replay(&p, &g);
 }
 #[test]
@@ -400,15 +386,15 @@ fn finite_construction_interrupt_keeps_the_exact_finished_node_prefix_and_reques
     let (initial, t) = start(&p);
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::NativeResultNode {
             count.set(count.get() + 1)
         }
         None
     });
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut full = copy(&initial, &c);
-    retain_finite(&env, &mut full, t.clone(), p.shared_inputs(), &mut c)
+    retain_finite(&env, &mut full, t.clone(), p.shared_inputs(), &c)
         .unwrap()
         .unwrap();
     let total = seen.get();
@@ -421,7 +407,7 @@ fn finite_construction_interrupt_keeps_the_exact_finished_node_prefix_and_reques
         let count = seen.clone();
         let probes = Rc::new(Cell::new(0));
         let samples = probes.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             samples.set(samples.get() + 1);
             if point == Checkpoint::NativeResultNode {
                 count.set(count.get() + 1)
@@ -429,11 +415,11 @@ fn finite_construction_interrupt_keeps_the_exact_finished_node_prefix_and_reques
             let stop = count.get() >= at;
             stop.then_some(crate::result::Signal::Int)
         });
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut g = copy(&initial, &c);
         let expected = crate::result::Signal::Int;
         assert!(matches!(
-            retain_finite(&env, &mut g, t.clone(), p.shared_inputs(), &mut c),
+            retain_finite(&env, &mut g, t.clone(), p.shared_inputs(), &c),
             Err(ValidationFailure::Stop(reason)) if reason == expected
         ));
         assert_eq!(seen.get(), at);
@@ -488,17 +474,17 @@ fn boolean_fields_use_the_finite_indicator_with_original_boolean_operands() {
                 law.into_bytes(),
                 map.into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
     let p = prepared(inputs);
     let (mut g, t) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let l = retain_finite(&env, &mut g, t, p.shared_inputs(), &mut quiet())
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let l = retain_finite(&env, &mut g, t, p.shared_inputs(), &quiet())
         .unwrap()
         .unwrap();
-    assert!(l.checked(&env, &g, &mut quiet()).unwrap().is_complete());
+    assert!(l.checked(&env, &g, &quiet()).unwrap().is_complete());
     assert_eq!(l.data.factors.len(), 1);
     assert_eq!(l.data.indices.len(), 2);
     for (object, row) in l.data.objects.iter().enumerate() {

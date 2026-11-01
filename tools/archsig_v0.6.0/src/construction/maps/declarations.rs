@@ -76,7 +76,7 @@ impl DeclarationCorrespondence {
         &self,
         inputs: &CheckedInputs,
         source: &str,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Option<String>, ConstructionFailure> {
         let raw = self
             .operation
@@ -133,7 +133,7 @@ impl DeclarationCorrespondence {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         if self != &declaration_correspondence(inputs, self.operation.map(), control)? {
             return Err(ConstructionFailure::Inconsistent(
@@ -143,7 +143,7 @@ impl DeclarationCorrespondence {
         tick(control)
     }
 }
-fn tick(control: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(control: &Control) -> Result<(), ConstructionFailure> {
     control
         .checkpoint(Checkpoint::DeclarationCorrespondence)
         .map_err(Into::into)
@@ -152,7 +152,7 @@ pub(crate) fn moved_type(
     ty: &Type,
     mu: &BTreeMap<String, String>,
     alpha: &BTreeMap<String, String>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Type, ConstructionFailure> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         tick(control)?;
@@ -196,7 +196,7 @@ pub(crate) fn moved_type(
 fn metadata(
     inputs: &CheckedInputs,
     name: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<DeclarationInfo, ConstructionFailure> {
     for info in inputs.law().infos() {
         tick(control)?;
@@ -212,7 +212,7 @@ fn metadata(
 pub fn declaration_correspondence(
     inputs: &CheckedInputs,
     map: &ConfigurationMap,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<DeclarationCorrespondence, ConstructionFailure> {
     tick(control)?;
     let MapOrigin::Correspondence(raw) = &map.candidate.origin else {
@@ -403,7 +403,7 @@ mod tests {
             Type::Unit,
         ]);
         assert_eq!(
-            moved_type(&source, &mu, &alpha, &mut Control::unlimited()).unwrap(),
+            moved_type(&source, &mu, &alpha, &Control::unlimited()).unwrap(),
             expected
         );
     }
@@ -435,21 +435,14 @@ mod tests {
                     .into_bytes(),
                 map.into_bytes(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap()
     }
     fn build(i: &CheckedInputs) -> DeclarationCorrespondence {
-        let m = correspondence(
-            i,
-            "v",
-            "m",
-            "Before",
-            Some("After"),
-            &mut Control::unlimited(),
-        )
-        .unwrap();
-        declaration_correspondence(i, m.map().unwrap(), &mut Control::unlimited()).unwrap()
+        let m =
+            correspondence(i, "v", "m", "Before", Some("After"), &Control::unlimited()).unwrap();
+        declaration_correspondence(i, m.map().unwrap(), &Control::unlimited()).unwrap()
     }
     #[test]
     fn recheck_rejects_forged_types_metadata_names_parameters_pairs_and_conditions() {
@@ -504,10 +497,7 @@ mod tests {
                     forged.candidates[amount].source.dependencies.clear();
                 }
             }
-            assert!(
-                forged.recheck(&i, &mut Control::unlimited()).is_err(),
-                "{kind}"
-            );
+            assert!(forged.recheck(&i, &Control::unlimited()).is_err(), "{kind}");
         }
         let bad = inputs(&law.replace(
             "view owned(x: Root, y: Root, k: Child[x])",
@@ -517,6 +507,6 @@ mod tests {
         assert!(forged.candidates[owner].pair.is_none());
         forged.candidates[owner].failures.clear();
         forged.candidates[owner].pair = original.candidates[owner].pair.clone();
-        assert!(forged.recheck(&bad, &mut Control::unlimited()).is_err());
+        assert!(forged.recheck(&bad, &Control::unlimited()).is_err());
     }
 }

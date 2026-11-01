@@ -11,7 +11,7 @@ fn prepared(body: &str) -> PreparedObserved {
         inputs.law(),
         inputs.archmap(),
         &["b=build(Selected,on=@v/root)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -21,8 +21,8 @@ fn prepared(body: &str) -> PreparedObserved {
     }
 }
 fn initial(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
-    let mut c = quiet();
-    let env = Environment::with_prepared(p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(p, &c).unwrap();
     let mut g = Graph::new(&c);
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -30,7 +30,7 @@ fn initial(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert!(a.complete);
@@ -38,7 +38,7 @@ fn initial(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut c,
+        &c,
     )
     .unwrap()
     .unwrap();
@@ -52,10 +52,10 @@ fn native_polynomial_law_rows_use_the_regular_evaluator_and_each_object_environm
         &mut g,
         p.shared_inputs(),
         a,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut completed = 0;
     for (object, d) in ds.iter().enumerate() {
         for reading in &d.readings {
@@ -65,14 +65,7 @@ fn native_polynomial_law_rows_use_the_regular_evaluator_and_each_object_environm
                 _ => panic!("subject"),
             };
             let applied = object == 0 || (object == 1 && who == "p") || (object == 2 && who == "q");
-            let e = evaluate(
-                &env,
-                &mut g,
-                reading.instance,
-                objects[object],
-                &mut quiet(),
-            )
-            .unwrap();
+            let e = evaluate(&env, &mut g, reading.instance, objects[object], &quiet()).unwrap();
             assert_eq!(e.body.is_some(), applied);
             assert_eq!(e.instance.is_some(), applied);
             if let Some(body) = e.body {
@@ -109,7 +102,7 @@ fn inputs_prepared(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved
         inputs.law(),
         inputs.archmap(),
         &["b=build(Selected,on=@v/root)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -123,7 +116,7 @@ fn replay(
     source: &Graph,
     nodes: &[Node],
 ) -> Result<Graph, ValidationFailure> {
-    let env = Environment::with_prepared(p, &mut quiet())?;
+    let env = Environment::with_prepared(p, &quiet())?;
     let mut g = Graph::new(&quiet());
     g.requests = source.requests.clone();
     g.checked_answers = source.checked_answers.clone();
@@ -146,7 +139,7 @@ fn truth(g: &Graph, r: NodeRef) -> Option<bool> {
     g.boolean(*value).unwrap()
 }
 fn polynomial_origins(g: &mut Graph, p: &PreparedObserved, a: NodeRef) -> Vec<Vec<NodeRef>> {
-    crate::observed::polynomial_law_diagram::retain_family(g, p.shared_inputs(), a, &mut quiet())
+    crate::observed::polynomial_law_diagram::retain_family(g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .into_iter()
         .map(|d| d.readings.iter().map(|r| r.instance).collect())
@@ -159,15 +152,11 @@ fn native_finite_rows_keep_all_bool_bindings_in_regular_expression_evaluations()
         "law required bit(c:Part,b:Bool):(c.quantity=0)=b;",
     ));
     let (mut g, a, objects) = initial(&p);
-    let ds = crate::observed::finite_law_diagram::retain_family(
-        &mut g,
-        p.shared_inputs(),
-        a,
-        &mut quiet(),
-    )
-    .unwrap()
-    .unwrap();
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let ds =
+        crate::observed::finite_law_diagram::retain_family(&mut g, p.shared_inputs(), a, &quiet())
+            .unwrap()
+            .unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut count = 0;
     for (object, d) in ds.iter().enumerate() {
         assert_eq!(d.originals.len(), 4);
@@ -182,7 +171,7 @@ fn native_finite_rows_keep_all_bool_bindings_in_regular_expression_evaluations()
             };
             let bit = *bit;
             let applies = object == 0 || (object == 1 && who == "p") || (object == 2 && who == "q");
-            let e = evaluate(&env, &mut g, o.row, objects[object], &mut quiet()).unwrap();
+            let e = evaluate(&env, &mut g, o.row, objects[object], &quiet()).unwrap();
             assert_eq!(e.body.is_some(), applies);
             if let Some(body) = e.body {
                 assert_eq!(truth(&g, body), Some((who == "p") == bit));
@@ -202,12 +191,12 @@ fn native_false_guard_keeps_guard_evaluation_and_never_evaluates_missing_body() 
     ));
     let (mut g, a, objects) = initial(&p);
     let rows = polynomial_origins(&mut g, &p, a);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let before = g.nodes.len();
     let mut guards = 0;
     for (object, rs) in rows.iter().enumerate() {
         for r in rs {
-            let e = evaluate(&env, &mut g, *r, objects[object], &mut quiet()).unwrap();
+            let e = evaluate(&env, &mut g, *r, objects[object], &quiet()).unwrap();
             assert!(e.body.is_none());
             if let Some(guard) = e.guard {
                 assert_eq!(truth(&g, guard), Some(false));
@@ -234,7 +223,7 @@ fn native_missing_guard_and_body_keep_unknown_values_and_actual_missing_location
     ));
     let (mut g, a, objects) = initial(&p);
     let rows = polynomial_origins(&mut g, &p, a);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut missing = 0;
     for (object, rs) in rows.iter().enumerate() {
         for r in rs {
@@ -243,7 +232,7 @@ fn native_missing_guard_and_body_keep_unknown_values_and_actual_missing_location
                 panic!("subject")
             };
             let who = subject.clone();
-            let e = evaluate(&env, &mut g, *r, objects[object], &mut quiet()).unwrap();
+            let e = evaluate(&env, &mut g, *r, objects[object], &quiet()).unwrap();
             if let Some(body) = e.body {
                 if who == "q" {
                     assert_eq!(truth(&g, body), None);
@@ -273,7 +262,7 @@ fn native_tuple_body_preserves_both_typed_operand_evaluations_and_source_occurre
     ));
     let (mut g, a, objects) = initial(&p);
     let rows = polynomial_origins(&mut g, &p, a);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut count = 0;
     for (object, rs) in rows.iter().enumerate() {
         for r in rs {
@@ -282,7 +271,7 @@ fn native_tuple_body_preserves_both_typed_operand_evaluations_and_source_occurre
                 panic!("subject")
             };
             let who = subject.clone();
-            let e = evaluate(&env, &mut g, *r, objects[object], &mut quiet()).unwrap();
+            let e = evaluate(&env, &mut g, *r, objects[object], &quiet()).unwrap();
             if let Some(body) = e.body {
                 assert_eq!(truth(&g, body), Some(who == "p"));
                 let Some(Payload::Evaluation {
@@ -327,10 +316,10 @@ fn native_term_path_and_unbounded_quantifiers_keep_original_domains_and_instance
         let p = prepared(&format!("law required quantified(c:Part):{body};"));
         let (mut g, a, objects) = initial(&p);
         let rows = polynomial_origins(&mut g, &p, a);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut count = 0;
         for r in &rows[0] {
-            let e = evaluate(&env, &mut g, *r, objects[0], &mut quiet()).unwrap();
+            let e = evaluate(&env, &mut g, *r, objects[0], &quiet()).unwrap();
             let b = e.body.unwrap();
             assert_eq!(truth(&g, b), Some(expected));
             assert!(
@@ -354,8 +343,8 @@ fn native_law_frames_reject_parameter_domain_context_and_origin_forgery() {
     );
     let (mut g, a, objects) = initial(&p);
     let rows = polynomial_origins(&mut g, &p, a);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let e = evaluate(&env, &mut g, rows[0][0], objects[0], &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let e = evaluate(&env, &mut g, rows[0][0], objects[0], &quiet()).unwrap();
     let index = e.instance.unwrap();
     let record = g.instances[index].clone();
     let (_, member) = frame_value(&g, record.member).unwrap();
@@ -378,7 +367,7 @@ fn native_law_frames_reject_parameter_domain_context_and_origin_forgery() {
     let mut bad = prefix_graph(&g, &quiet());
     bad.instances[index].source = rows[0][1];
     assert!(replay(&p, &bad, &bad.nodes).is_err(), "record mutation");
-    assert!(evaluate(&env, &mut g, rows[1][0], objects[0], &mut quiet()).is_err());
+    assert!(evaluate(&env, &mut g, rows[1][0], objects[0], &quiet()).is_err());
     replay(&p, &g, &g.nodes).unwrap();
 }
 fn prefix_graph(g: &Graph, c: &Control) -> Graph {
@@ -403,8 +392,8 @@ fn native_guard_order_and_false_guard_cannot_be_bypassed_by_direct_body_evaluati
         ));
         let (mut g, a, objects) = initial(&p);
         let rows = polynomial_origins(&mut g, &p, a);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-        let e = evaluate(&env, &mut g, rows[0][0], objects[0], &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
+        let e = evaluate(&env, &mut g, rows[0][0], objects[0], &quiet()).unwrap();
         let index = e.instance.unwrap();
         let row = origin(&g, e.origin).unwrap().unwrap();
         let request = g.requests[0].clone();
@@ -415,7 +404,7 @@ fn native_guard_order_and_false_guard_cannot_be_bypassed_by_direct_body_evaluati
                 super::super::evaluate::instance_expression(
                     &env,
                     &mut g,
-                    &mut quiet(),
+                    &quiet(),
                     &request,
                     decl,
                     index,
@@ -434,7 +423,7 @@ fn native_guard_order_and_false_guard_cannot_be_bypassed_by_direct_body_evaluati
                 super::super::evaluate::instance_expression(
                     &env,
                     &mut early,
-                    &mut quiet(),
+                    &quiet(),
                     &request,
                     decl,
                     index,
@@ -452,7 +441,7 @@ fn native_named_view_calls_use_the_same_instance_object_and_original_call_frames
     let p = prepared("view plus(c:Part):Z=c.quantity+1;law required chosen(c:Part):plus(c)=1;");
     let (mut g, a, objects) = initial(&p);
     let rows = polynomial_origins(&mut g, &p, a);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut count = 0;
     for (object, rs) in rows.iter().enumerate() {
         for r in rs {
@@ -461,7 +450,7 @@ fn native_named_view_calls_use_the_same_instance_object_and_original_call_frames
                 panic!()
             };
             let who = subject.clone();
-            let e = evaluate(&env, &mut g, *r, objects[object], &mut quiet()).unwrap();
+            let e = evaluate(&env, &mut g, *r, objects[object], &quiet()).unwrap();
             if let Some(body) = e.body {
                 assert_eq!(truth(&g, body), Some(who == "p"));
                 assert!(
@@ -491,10 +480,10 @@ fn native_unanchored_helpers_stay_out_of_axes_and_symbolic_parameters_keep_their
         &mut g,
         p.shared_inputs(),
         a,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     for (object, d) in ds.iter().enumerate() {
         assert!(d.unavailable.is_none());
         for o in &d.originals {
@@ -502,7 +491,7 @@ fn native_unanchored_helpers_stay_out_of_axes_and_symbolic_parameters_keep_their
             assert!(o.row.is_none(), "無限域を有限の代入行にしない");
             let applies = origin(&g, o.reference).unwrap().unwrap().ready;
             let before = g.nodes.len();
-            let e = evaluate(&env, &mut g, o.reference, objects[object], &mut quiet()).unwrap();
+            let e = evaluate(&env, &mut g, o.reference, objects[object], &quiet()).unwrap();
             assert_eq!(e.instance.is_some(), applies);
             assert_eq!(e.body.is_some(), applies);
             assert!(e.guard.is_none());
@@ -521,11 +510,11 @@ fn native_numeric_law_frames_evaluate_the_requested_guard_and_body() {
         ));
         let (mut g, a, objects) = initial(&p);
         let rows = polynomial_origins(&mut g, &p, a);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let mut checked = 0;
         for (object, rows) in rows.iter().enumerate() {
             for row in rows {
-                let e = evaluate(&env, &mut g, *row, objects[object], &mut quiet()).unwrap();
+                let e = evaluate(&env, &mut g, *row, objects[object], &quiet()).unwrap();
                 if let Some(actual) = e.guard {
                     assert_eq!(truth(&g, actual), Some(guard != "false"));
                     assert_eq!(e.body.is_some(), guard != "false");
@@ -547,18 +536,18 @@ fn native_law_expression_interrupt_keeps_exact_completed_dag_prefix_and_restore_
     let p = prepared("law required zero(c:Part):c.quantity=0;");
     let (mut initial, a, objects) = initial(&p);
     let rows = polynomial_origins(&mut initial, &p, a);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let root = rows[0][0];
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut probe = Control::new(move |point| {
+    let probe = Control::new(move |point| {
         if point == Checkpoint::Expression {
             count.set(count.get() + 1)
         }
         None
     });
     let mut complete = prefix_graph(&initial, &probe);
-    evaluate(&env, &mut complete, root, objects[0], &mut probe).unwrap();
+    evaluate(&env, &mut complete, root, objects[0], &probe).unwrap();
     let total = seen.get();
     assert!(total >= 3);
     let mut retained_evaluation = false;
@@ -566,7 +555,7 @@ fn native_law_expression_interrupt_keeps_exact_completed_dag_prefix_and_restore_
     for at in 1..=total {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::Expression {
                 count.set(count.get() + 1)
             }
@@ -575,7 +564,7 @@ fn native_law_expression_interrupt_keeps_exact_completed_dag_prefix_and_restore_
         });
         let mut g = prefix_graph(&initial, &c);
         assert!(matches!(
-            evaluate(&env, &mut g, root, objects[0], &mut c),
+            evaluate(&env, &mut g, root, objects[0], &c),
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.active, initial.active);
@@ -626,11 +615,11 @@ fn native_reference_quantifiers_use_each_objects_actual_domain_even_for_identica
     let p = prepared("law required all(c:Part):forall x:Part.x.quantity=0;");
     let (mut g, a, objects) = initial(&p);
     let rows = polynomial_origins(&mut g, &p, a);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut evaluated = 0;
     for (object, rs) in rows.iter().enumerate() {
         for r in rs {
-            let e = evaluate(&env, &mut g, *r, objects[object], &mut quiet()).unwrap();
+            let e = evaluate(&env, &mut g, *r, objects[object], &quiet()).unwrap();
             if let Some(body) = e.body {
                 assert_eq!(truth(&g, body), Some(object == 1));
                 let q = g.nodes[body.0]

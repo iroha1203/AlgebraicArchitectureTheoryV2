@@ -11,8 +11,8 @@ fn input(body: &str) -> Arc<CheckedInputs> {
     fixture::with_body(&map, body)
 }
 fn readings(inputs: &CheckedInputs, root: &str) -> ObjectReadingInstances {
-    let configuration = construct(inputs, "Selected", "v", root, &mut quiet()).unwrap();
-    object_reading_instances(inputs, &configuration, &mut quiet()).unwrap()
+    let configuration = construct(inputs, "Selected", "v", root, &quiet()).unwrap();
+    object_reading_instances(inputs, &configuration, &quiet()).unwrap()
 }
 fn index(readings: &ObjectReadingInstances, name: &str) -> usize {
     readings
@@ -43,7 +43,7 @@ fn names(r: &FiniteLawFamilyValuations) -> Vec<&str> {
     r.positions().iter().map(|f| f.subject.as_str()).collect()
 }
 fn indicators(r: &FiniteLawFamilyValuations, column: usize) -> Vec<String> {
-    r.integer_function(column, None, &mut quiet())
+    r.integer_function(column, None, &quiet())
         .unwrap()
         .values()
         .iter()
@@ -63,7 +63,7 @@ fn base_owned_and_other_root_use_distinct_shared_domains_and_integer_functions()
         &a,
         index(&a, "root"),
         &selected(&["all", "copy"]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let part = finite_object_law_family_valuations(
@@ -71,7 +71,7 @@ fn base_owned_and_other_root_use_distinct_shared_domains_and_integer_functions()
         &a,
         index(&a, "p"),
         &selected(&["all", "copy"]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let other = finite_object_law_family_valuations(
@@ -79,7 +79,7 @@ fn base_owned_and_other_root_use_distinct_shared_domains_and_integer_functions()
         &b,
         index(&b, "r2"),
         &selected(&["all", "copy"]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(names(&base), ["p", "q"]);
@@ -99,7 +99,7 @@ fn base_owned_and_other_root_use_distinct_shared_domains_and_integer_functions()
         assert!(r.columns()[0].required());
         assert!(!r.columns()[1].required());
         assert_eq!(r.columns()[0].bindings(), selected(&["all"])[0].1);
-        r.recheck(&inputs, &mut quiet()).unwrap();
+        r.recheck(&inputs, &quiet()).unwrap();
     }
     assert_eq!(base.observed_point(), Some(1));
     assert_eq!(part.observed_point(), Some(0));
@@ -108,11 +108,11 @@ fn base_owned_and_other_root_use_distinct_shared_domains_and_integer_functions()
         base.object_identity(),
         Some(a.objects()[index(&a, "root")].identity())
     );
-    part.recheck_on_object(&inputs, &a, index(&a, "p"), &mut quiet())
+    part.recheck_on_object(&inputs, &a, index(&a, "p"), &quiet())
         .unwrap();
     assert!(
         other
-            .recheck_on_object(&inputs, &a, index(&a, "p"), &mut quiet())
+            .recheck_on_object(&inputs, &a, index(&a, "p"), &quiet())
             .is_err()
     );
     assert_eq!(inputs.sources(), &original);
@@ -122,7 +122,7 @@ fn base_owned_and_other_root_use_distinct_shared_domains_and_integer_functions()
 fn ordinary_global_entry_still_reads_all_roots() {
     let inputs = input(ALL);
     let global =
-        finite_law_family_valuations(&inputs, &selected(&["all", "copy"]), &mut quiet()).unwrap();
+        finite_law_family_valuations(&inputs, &selected(&["all", "copy"]), &quiet()).unwrap();
     assert_eq!(global.object_identity(), None);
     assert_eq!(names(&global), ["p", "q", "r"]);
     assert_eq!(global.domain().len(), 8);
@@ -131,7 +131,7 @@ fn ordinary_global_entry_still_reads_all_roots() {
         ["0", "1", "1", "1", "1", "1", "1", "1"]
     );
     assert_eq!(global.observed_point(), Some(3));
-    global.recheck(&inputs, &mut quiet()).unwrap();
+    global.recheck(&inputs, &quiet()).unwrap();
 }
 
 #[test]
@@ -142,13 +142,13 @@ fn fixed_external_reference_is_not_removed_by_the_local_quantifier_domain() {
         "Selected.external".into(),
         vec![("c".into(), reference("p")), ("ext".into(), reference("r"))],
     )];
-    let r = finite_object_law_family_valuations(&inputs, &a, index(&a, "p"), &choice, &mut quiet())
+    let r = finite_object_law_family_valuations(&inputs, &a, index(&a, "p"), &choice, &quiet())
         .unwrap();
     assert_eq!(names(&r), ["r"]);
     assert_eq!(indicators(&r, 0), ["0", "1"]);
     assert_eq!(r.observed_point(), Some(1));
     assert_eq!(r.columns()[0].bindings(), choice[0].1);
-    r.recheck_on_object(&inputs, &a, index(&a, "p"), &mut quiet())
+    r.recheck_on_object(&inputs, &a, index(&a, "p"), &quiet())
         .unwrap();
 }
 
@@ -162,13 +162,13 @@ fn composite_reference_leaves_keep_their_full_typed_domain() {
         &a,
         index(&a, "p"),
         &selected(&["all"]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(names(&r), ["p", "q", "r"]);
     assert_eq!(r.domain().len(), 8);
     assert_eq!(indicators(&r, 0), ["0", "1", "1", "1", "1", "1", "1", "1"]);
-    r.recheck(&inputs, &mut quiet()).unwrap();
+    r.recheck(&inputs, &quiet()).unwrap();
 }
 
 #[test]
@@ -180,7 +180,7 @@ fn equal_numeric_results_cannot_be_consumed_as_another_object_or_global_family()
         &a,
         index(&a, "p"),
         &selected(&["constant"]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let q = finite_object_law_family_valuations(
@@ -188,29 +188,28 @@ fn equal_numeric_results_cannot_be_consumed_as_another_object_or_global_family()
         &a,
         index(&a, "q"),
         &selected(&["constant"]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(indicators(&r, 0), indicators(&q, 0));
     assert_ne!(r.object_identity(), q.object_identity());
     assert!(
-        r.recheck_on_object(&inputs, &a, index(&a, "q"), &mut quiet())
+        r.recheck_on_object(&inputs, &a, index(&a, "q"), &quiet())
             .is_err()
     );
-    let global =
-        finite_law_family_valuations(&inputs, &selected(&["constant"]), &mut quiet()).unwrap();
+    let global = finite_law_family_valuations(&inputs, &selected(&["constant"]), &quiet()).unwrap();
     assert!(
         global
-            .recheck_on_object(&inputs, &a, index(&a, "p"), &mut quiet())
+            .recheck_on_object(&inputs, &a, index(&a, "p"), &quiet())
             .is_err()
     );
     assert!(
-        r.integer_ring(&mut quiet())
+        r.integer_ring(&quiet())
             .unwrap()
             .add(
-                &r.integer_function(0, None, &mut quiet()).unwrap(),
-                &q.integer_function(0, None, &mut quiet()).unwrap(),
-                &mut quiet()
+                &r.integer_function(0, None, &quiet()).unwrap(),
+                &q.integer_function(0, None, &quiet()).unwrap(),
+                &quiet()
             )
             .is_err()
     );
@@ -224,7 +223,7 @@ fn recheck_rejects_forged_object_domain_rows_support_and_current_input_origin() 
     let q = index(&a, "q");
     for mode in 0..6 {
         let mut r =
-            finite_object_law_family_valuations(&inputs, &a, p, &selected(&["all"]), &mut quiet())
+            finite_object_law_family_valuations(&inputs, &a, p, &selected(&["all"]), &quiet())
                 .unwrap();
         match mode {
             0 => {
@@ -238,19 +237,19 @@ fn recheck_rejects_forged_object_domain_rows_support_and_current_input_origin() 
             _ => r.required_zero = Some(vec![1]),
         }
         assert!(
-            r.recheck_on_object(&inputs, &a, p, &mut quiet()).is_err(),
+            r.recheck_on_object(&inputs, &a, p, &quiet()).is_err(),
             "mode={mode}"
         );
     }
-    let r = finite_object_law_family_valuations(&inputs, &a, p, &selected(&["all"]), &mut quiet())
-        .unwrap();
+    let r =
+        finite_object_law_family_valuations(&inputs, &a, p, &selected(&["all"]), &quiet()).unwrap();
     let changed = fixture::with_body(
         &String::from_utf8(inputs.sources().archmap().bytes().to_vec())
             .unwrap()
             .replace("内部候補試験。", "改訂された由来。"),
         ALL,
     );
-    assert!(r.recheck(&changed, &mut quiet()).is_err());
+    assert!(r.recheck(&changed, &quiet()).is_err());
 }
 
 #[test]
@@ -262,7 +261,7 @@ fn missing_observed_value_keeps_a_complete_domain_without_an_observed_point() {
         &a,
         index(&a, "p"),
         &selected(&["zero"]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.observed_point(), None);
@@ -281,14 +280,14 @@ fn fixed_stops_keep_completed_rows_and_their_object_origin_without_total_functio
     let root = index(&a, "root");
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::FiniteLawEvaluation {
             count.set(count.get() + 1);
         }
         (count.get() >= 3).then_some(Signal::Term)
     });
     let err =
-        finite_object_law_family_valuations(&inputs, &a, root, &selected(&["all", "copy"]), &mut c)
+        finite_object_law_family_valuations(&inputs, &a, root, &selected(&["all", "copy"]), &c)
             .err()
             .expect("固定停止");
     assert!(matches!(err.cause, ValidationFailure::Stop(_)));
@@ -299,8 +298,8 @@ fn fixed_stops_keep_completed_rows_and_their_object_origin_without_total_functio
     );
     assert!(!partial.is_complete());
     assert!(!partial.columns()[0].rows().is_empty());
-    assert!(partial.integer_function(0, None, &mut quiet()).is_err());
-    assert!(partial.required_quotient(&mut quiet()).is_err());
+    assert!(partial.integer_function(0, None, &quiet()).is_err());
+    assert!(partial.required_quotient(&quiet()).is_err());
 }
 
 #[test]
@@ -313,33 +312,32 @@ fn shared_required_ideal_and_projection_use_the_object_family_without_changing_e
         ("Selected.zero".into(), vec![("c".into(), reference("q"))]),
         ("Selected.other".into(), vec![("c".into(), reference("p"))]),
     ];
-    let r =
-        finite_object_law_family_valuations(&inputs, &a, index(&a, "root"), &choices, &mut quiet())
-            .unwrap();
+    let r = finite_object_law_family_valuations(&inputs, &a, index(&a, "root"), &choices, &quiet())
+        .unwrap();
     assert_eq!(names(&r), ["p", "q"]);
     assert_eq!(indicators(&r, 0), ["0", "0", "1", "1"]);
     assert_eq!(indicators(&r, 1), ["0", "1", "0", "1"]);
     assert_eq!(indicators(&r, 2), ["1", "1", "0", "0"]);
-    let quotient = r.required_quotient(&mut quiet()).unwrap();
+    let quotient = r.required_quotient(&quiet()).unwrap();
     assert_eq!(quotient.points(), [0]);
-    let first = r.integer_function(0, None, &mut quiet()).unwrap();
-    let optional = r.integer_function(2, None, &mut quiet()).unwrap();
+    let first = r.integer_function(0, None, &quiet()).unwrap();
+    let optional = r.integer_function(2, None, &quiet()).unwrap();
     assert_eq!(
-        quotient.project(&first, &mut quiet()).unwrap().values(),
+        quotient.project(&first, &quiet()).unwrap().values(),
         &[BigInt::from(0)]
     );
     assert_eq!(
-        quotient.project(&optional, &mut quiet()).unwrap().values(),
+        quotient.project(&optional, &quiet()).unwrap().values(),
         &[BigInt::from(1)]
     );
     assert_eq!(indicators(&r, 0), ["0", "0", "1", "1"]);
     assert_eq!(r.observed_point(), Some(1));
     assert_eq!(r.columns()[1].rows()[1].indicator, Some(1.into()));
-    let membership = quotient.ideal_membership(&first, &mut quiet()).unwrap();
+    let membership = quotient.ideal_membership(&first, &quiet()).unwrap();
     quotient
-        .recheck_membership(&inputs, &first, &membership, &mut quiet())
+        .recheck_membership(&inputs, &first, &membership, &quiet())
         .unwrap();
-    quotient.recheck(&inputs, &mut quiet()).unwrap();
+    quotient.recheck(&inputs, &quiet()).unwrap();
 }
 
 #[test]
@@ -351,7 +349,7 @@ fn a_nonfinite_field_keeps_its_original_position_and_type_without_a_total_functi
         &a,
         index(&a, "p"),
         &selected(&["integer"]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(
@@ -359,9 +357,9 @@ fn a_nonfinite_field_keeps_its_original_position_and_type_without_a_total_functi
     );
     assert!(!r.domain_complete());
     assert!(!r.is_complete());
-    assert!(r.integer_ring(&mut quiet()).is_err());
-    assert!(r.required_quotient(&mut quiet()).is_err());
-    r.recheck(&inputs, &mut quiet()).unwrap();
+    assert!(r.integer_ring(&quiet()).is_err());
+    assert!(r.required_quotient(&quiet()).is_err());
+    r.recheck(&inputs, &quiet()).unwrap();
 }
 
 #[test]
@@ -373,7 +371,7 @@ fn finite_body_membership_is_exhausted_without_turning_missing_observation_into_
         &a,
         index(&a, "root"),
         &selected(&["all"]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(r.is_complete());
@@ -393,9 +391,9 @@ fn finite_body_membership_is_exhausted_without_turning_missing_observation_into_
             && f.field.as_deref() == Some("Pattern.Part.owner")
             && f.atom.is_none()));
     }
-    assert_eq!(r.integer_ring(&mut quiet()).unwrap().dimension(), 8);
-    assert!(r.required_quotient(&mut quiet()).is_ok());
-    r.recheck(&inputs, &mut quiet()).unwrap();
+    assert_eq!(r.integer_ring(&quiet()).unwrap().dimension(), 8);
+    assert!(r.required_quotient(&quiet()).is_ok());
+    r.recheck(&inputs, &quiet()).unwrap();
 }
 
 #[test]
@@ -404,16 +402,16 @@ fn stopping_before_domain_completion_retains_the_object_but_never_constructs_its
     let inputs = input(ALL);
     let a = readings(&inputs, "root");
     let p = index(&a, "p");
-    let mut c = Control::new(|point| (point == Checkpoint::FiniteLawDomain).then_some(Signal::Int));
-    let err = finite_object_law_family_valuations(&inputs, &a, p, &selected(&["all"]), &mut c)
+    let c = Control::new(|point| (point == Checkpoint::FiniteLawDomain).then_some(Signal::Int));
+    let err = finite_object_law_family_valuations(&inputs, &a, p, &selected(&["all"]), &c)
         .err()
         .unwrap();
     assert!(matches!(err.cause, ValidationFailure::Stop(_)));
     let r = err.partial.unwrap();
     assert_eq!(r.object_identity(), Some(a.objects()[p].identity()));
     assert!(!r.domain_complete());
-    assert!(r.integer_ring(&mut quiet()).is_err());
-    assert!(r.required_quotient(&mut quiet()).is_err());
+    assert!(r.integer_ring(&quiet()).is_err());
+    assert!(r.required_quotient(&quiet()).is_err());
 }
 
 #[test]
@@ -425,7 +423,7 @@ fn a_known_empty_reference_domain_has_the_one_assignment_and_zero_indicator() {
         &empty,
         index(&empty, "r2"),
         &selected(&["all"]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(r.is_complete());
@@ -434,7 +432,7 @@ fn a_known_empty_reference_domain_has_the_one_assignment_and_zero_indicator() {
     assert_eq!(indicators(&r, 0), ["0"]);
     assert_eq!(r.observed_point(), Some(0));
     assert!(r.reference_domain_conditions().is_empty());
-    r.recheck(&inputs, &mut quiet()).unwrap();
+    r.recheck(&inputs, &quiet()).unwrap();
 }
 
 #[test]
@@ -442,9 +440,8 @@ fn a_conditionally_owned_object_keeps_its_owner_position_without_an_unconditiona
     let inputs=fixture::with_body(&fixture::MAP.replace(r#"{"id":"op","subject":"p","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"},"#,""),"law required constant(c:Part):true;");
     let a = readings(&inputs, "root");
     let p = index(&a, "p");
-    let r =
-        finite_object_law_family_valuations(&inputs, &a, p, &selected(&["constant"]), &mut quiet())
-            .unwrap();
+    let r = finite_object_law_family_valuations(&inputs, &a, p, &selected(&["constant"]), &quiet())
+        .unwrap();
     assert!(matches!(r.state(), FiniteLawState::Undetermined { .. }));
     assert!(!r.domain_complete());
     assert!(
@@ -452,15 +449,15 @@ fn a_conditionally_owned_object_keeps_its_owner_position_without_an_unconditiona
             .iter()
             .any(|f| f.subject == "p" && f.field.as_deref() == Some("Pattern.Part.owner"))
     );
-    assert!(r.integer_ring(&mut quiet()).is_err());
-    assert!(r.integer_function(0, None, &mut quiet()).is_err());
-    assert!(r.required_quotient(&mut quiet()).is_err());
-    r.recheck_on_object(&inputs, &a, p, &mut quiet()).unwrap();
+    assert!(r.integer_ring(&quiet()).is_err());
+    assert!(r.integer_function(0, None, &quiet()).is_err());
+    assert!(r.required_quotient(&quiet()).is_err());
+    r.recheck_on_object(&inputs, &a, p, &quiet()).unwrap();
     let bad = vec![(
         "Selected.constant".into(),
         vec![("missing".into(), reference("p"))],
     )];
-    assert!(finite_object_law_family_valuations(&inputs, &a, p, &bad, &mut quiet()).is_err());
+    assert!(finite_object_law_family_valuations(&inputs, &a, p, &bad, &quiet()).is_err());
 }
 
 #[test]
@@ -472,7 +469,7 @@ fn tuple_components_keep_their_original_types_and_separate_integer_indicators() 
         &a,
         index(&a, "p"),
         &selected(&["pair"]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.domain().len(), 4);
@@ -480,7 +477,7 @@ fn tuple_components_keep_their_original_types_and_separate_integer_indicators() 
     assert_eq!(r.required_zero(), Some([1].as_slice()));
     assert_eq!(r.observed_point(), Some(1));
     for (path, expected) in [(vec![0], vec![0, 0, 1, 1]), (vec![1], vec![1, 0, 1, 0])] {
-        let value = r.integer_function(0, Some(&path), &mut quiet()).unwrap();
+        let value = r.integer_function(0, Some(&path), &quiet()).unwrap();
         assert_eq!(
             value.values(),
             expected.into_iter().map(BigInt::from).collect::<Vec<_>>()
@@ -490,7 +487,7 @@ fn tuple_components_keep_their_original_types_and_separate_integer_indicators() 
         r.columns()[0].rows()[0].operands.as_ref().unwrap().0,
         Type::Tuple(vec![Type::Fp("2".into()), Type::Bool])
     );
-    r.recheck(&inputs, &mut quiet()).unwrap();
+    r.recheck(&inputs, &quiet()).unwrap();
 }
 
 #[test]
@@ -511,16 +508,15 @@ fn foreign_reading_and_out_of_range_object_selection_are_rejected() {
         law.into_bytes(),
         original.sources().archmap().bytes().to_vec(),
     );
-    let inputs = crate::input::check_inputs(sources, &mut quiet()).unwrap();
+    let inputs = crate::input::check_inputs(sources, &quiet()).unwrap();
     let a = readings(&inputs, "root");
     let choices = vec![(
         "Foreign.constant".into(),
         vec![("c".into(), reference("p"))],
     )];
-    let err =
-        finite_object_law_family_valuations(&inputs, &a, index(&a, "p"), &choices, &mut quiet())
-            .err()
-            .unwrap();
+    let err = finite_object_law_family_valuations(&inputs, &a, index(&a, "p"), &choices, &quiet())
+        .err()
+        .unwrap();
     assert!(
         matches!(err.cause,ValidationFailure::Internal(message) if message.contains("reading"))
     );
@@ -530,7 +526,7 @@ fn foreign_reading_and_out_of_range_object_selection_are_rejected() {
             &a,
             usize::MAX,
             &selected(&["constant"]),
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
@@ -545,7 +541,7 @@ fn unread_membership_missing_does_not_block_a_constant_law_on_a_known_root() {
         &a,
         index(&a, "root"),
         &selected(&["constant"]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(!r.reference_domain_conditions().is_empty());
@@ -558,7 +554,7 @@ fn unread_membership_missing_does_not_block_a_constant_law_on_a_known_root() {
             .iter()
             .all(|row| !row.scope.completions)
     );
-    r.recheck(&inputs, &mut quiet()).unwrap();
+    r.recheck(&inputs, &quiet()).unwrap();
 }
 
 fn owner_choice(owner: &str) -> Vec<(String, Vec<(String, Scalar)>)> {
@@ -586,10 +582,9 @@ fn explicit_external_owner_quantification_keeps_its_family() {
     let a = readings(&inputs, "root");
     let choice = owner_choice("r2");
     let original = inputs.sources().clone();
-    let global = finite_law_family_valuations(&inputs, &choice, &mut quiet()).unwrap();
-    let local =
-        finite_object_law_family_valuations(&inputs, &a, index(&a, "p"), &choice, &mut quiet())
-            .unwrap();
+    let global = finite_law_family_valuations(&inputs, &choice, &quiet()).unwrap();
+    let local = finite_object_law_family_valuations(&inputs, &a, index(&a, "p"), &choice, &quiet())
+        .unwrap();
     // owner位置も原始候補の軸。観測したr.owner=r2とr.quantity=1で原式は偽。
     assert_eq!(observed_indicator(&global), "1");
     assert_eq!(observed_indicator(&local), "1");
@@ -604,7 +599,7 @@ fn explicit_external_owner_quantification_keeps_its_family() {
     assert_eq!(indicators(&local, 0), indicators(&global, 0));
     assert_eq!(local.columns()[0].bindings(), choice[0].1);
     local
-        .recheck_on_object(&inputs, &a, index(&a, "p"), &mut quiet())
+        .recheck_on_object(&inputs, &a, index(&a, "p"), &quiet())
         .unwrap();
     assert_eq!(inputs.sources(), &original);
 }
@@ -613,10 +608,9 @@ fn explicit_same_root_owner_quantification_remains_local() {
     let inputs = input("law required external(c:Part,ext:Root):forall x:Part[ext] . x.quantity=0;");
     let a = readings(&inputs, "root");
     let choice = owner_choice("root");
-    let global = finite_law_family_valuations(&inputs, &choice, &mut quiet()).unwrap();
-    let local =
-        finite_object_law_family_valuations(&inputs, &a, index(&a, "p"), &choice, &mut quiet())
-            .unwrap();
+    let global = finite_law_family_valuations(&inputs, &choice, &quiet()).unwrap();
+    let local = finite_object_law_family_valuations(&inputs, &a, index(&a, "p"), &choice, &quiet())
+        .unwrap();
     // root族のq.quantity=1でglobalは偽、部分対象pではp.quantity=0で真。
     assert_eq!(observed_indicator(&global), "1");
     assert_eq!(observed_indicator(&local), "0");
@@ -639,7 +633,7 @@ fn explicit_same_root_owner_quantification_remains_local() {
             .any(|p| p.subject == "r" && p.field.as_deref() == Some("Pattern.Part.quantity"))
     );
     local
-        .recheck_on_object(&inputs, &a, index(&a, "p"), &mut quiet())
+        .recheck_on_object(&inputs, &a, index(&a, "p"), &quiet())
         .unwrap();
 }
 
@@ -655,10 +649,10 @@ fn missing_external_owner_keeps_finite_candidates_without_an_observed_point() {
         &a,
         index(&a, "p"),
         &owner_choice("r2"),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
-    let global = finite_law_family_valuations(&inputs, &owner_choice("r2"), &mut quiet()).unwrap();
+    let global = finite_law_family_valuations(&inputs, &owner_choice("r2"), &quiet()).unwrap();
     // 三subjectのowner二候補とquantity二候補で64点。未観測ownerは観測点へ埋めない。
     assert!(local.is_complete());
     assert!(local.domain_complete());
@@ -680,6 +674,6 @@ fn missing_external_owner_keeps_finite_candidates_without_an_observed_point() {
     assert_eq!(local.domain(), global.domain());
     assert_eq!(indicators(&local, 0), indicators(&global, 0));
     local
-        .recheck_on_object(&inputs, &a, index(&a, "p"), &mut quiet())
+        .recheck_on_object(&inputs, &a, index(&a, "p"), &quiet())
         .unwrap();
 }

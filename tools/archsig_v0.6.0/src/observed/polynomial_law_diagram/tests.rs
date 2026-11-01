@@ -30,7 +30,7 @@ fn example(missing: bool, body: &str) -> ObservedEvaluation {
     evaluate_observed_bytes(
         sources(missing, body),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -39,12 +39,9 @@ fn replay(
     nodes: &[Node],
     contexts: &[crate::observed::call::Context],
 ) -> Result<Graph, ValidationFailure> {
-    let mut c = quiet();
-    let env = Environment::with_requests(
-        e.prepared.inputs(),
-        e.prepared.requests().requests(),
-        &mut c,
-    )?;
+    let c = quiet();
+    let env =
+        Environment::with_requests(e.prepared.inputs(), e.prepared.requests().requests(), &c)?;
     let mut g = Graph::new(&c);
     g.requests = e.prepared.requests().requests().to_vec();
     g.frames = e.frames.clone();
@@ -92,7 +89,7 @@ fn z_polynomial_diagram_keeps_shared_symbols_raw_epsilon_ideals_and_evaluation_i
     let e = example(false, BODY);
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     assert_eq!(d.rings.len(), 1);
     assert_eq!(d.coordinates.len(), 2);
     assert_eq!(d.status, EquationPresentationStatus::Ready);
@@ -170,7 +167,7 @@ fn missing_symbol_keeps_polynomials_but_never_fabricates_epsilon_or_total_evalua
     let e = example(true, BODY);
     let mut g = graph(&e);
     let b = architecture(&g, "b");
-    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet()).unwrap();
     assert_eq!(d.rings.len(), 1);
     assert!(d.evaluations[0].is_none());
     assert_eq!(d.status, EquationPresentationStatus::Undetermined);
@@ -209,10 +206,10 @@ fn q_and_fp_keep_their_original_coefficient_rings_and_exact_constant_encoding() 
         let map = MAP
             .replace(r#""value":"0""#, &format!("\"value\":{zero}"))
             .replace(r#""value":"1""#, &format!("\"value\":{one}"));
-        let e=evaluate_observed_bytes(custom_sources(&definition,&map,"law required twice(c:Part):c.quantity+c.quantity=0;law optional one(c:Part):c.quantity=1;"),&["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],&mut quiet()).unwrap();
+        let e=evaluate_observed_bytes(custom_sources(&definition,&map,"law required twice(c:Part):c.quantity+c.quantity=0;law optional one(c:Part):c.quantity=1;"),&["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],&quiet()).unwrap();
         let mut g = graph(&e);
         let a = architecture(&g, "a");
-        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
         assert_eq!(d.rings.len(), 1);
         assert_eq!(d.domains.len(), 1);
         let domain_type = if ty == "Q" {
@@ -267,7 +264,7 @@ fn two_owned_example(body: &str) -> ObservedEvaluation {
     evaluate_observed_bytes(
         custom_sources(DEFINITION, &map, body),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -276,7 +273,7 @@ fn dense_powers_sort_by_powers_and_keep_all_shared_positions_and_aggregated_coef
     let e = two_owned_example("law required addition(c:Part,d:Part):c.quantity+d.quantity=0;");
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     assert_eq!(d.rings.len(), 1);
     assert_eq!(d.coordinates.len(), 4);
     let Part::Ring { variables, .. } = data(&g, d.rings[0]).part() else {
@@ -330,12 +327,12 @@ fn tuple_components_keep_separate_z_q_rings_and_original_component_positions() {
             "law required pair(c:Part):c.quantity=(0,0);",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     assert_eq!(d.rings.len(), 2);
     assert_eq!(d.coordinates.len(), 2);
     for (q, expected) in d.coordinates.iter().zip([Type::Z, Type::Q]) {
@@ -360,7 +357,7 @@ fn false_and_state_dependent_guards_keep_nonzero_raw_epsilon_separate_from_zero_
     );
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     assert_eq!(d.status, EquationPresentationStatus::UnsupportedAlgorithm);
     for q in &d.coordinates {
         match q.guard {
@@ -390,7 +387,7 @@ fn owned_architecture_keeps_containing_root_and_outside_object_residual_without_
         &mut g,
         e.prepared.shared_inputs(),
         a,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -401,7 +398,7 @@ fn owned_architecture_keeps_containing_root_and_outside_object_residual_without_
             e.prepared.shared_inputs(),
             objects.architectures[index],
             index,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(d.coordinates.len(), 2);
@@ -444,7 +441,7 @@ fn zero_cancellation_keeps_the_original_symbol_support_and_zero_polynomial_encod
     );
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     assert_eq!(d.coordinates.len(), 1);
     assert!(terms(&g, d.coordinates[0].nu.unwrap()).is_empty());
     let Part::Ring { variables, .. } = data(&g, d.rings[0]).part() else {
@@ -465,7 +462,7 @@ fn recheck_rejects_changed_coefficients_powers_symbols_ideals_maps_and_coordinat
     let e = example(false, BODY);
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     let source = data(&g, d.rings[0]).source.clone();
     let poly = d.coordinates[0].nu.unwrap().0 - source.base;
     let Part::Polynomial { terms, .. } = &source.parts[poly] else {
@@ -523,7 +520,7 @@ fn recheck_rejects_changed_coefficients_powers_symbols_ideals_maps_and_coordinat
         }
         assert!(
             changed
-                .recheck(e.prepared.inputs(), &source.architecture, &mut quiet())
+                .recheck(e.prepared.inputs(), &source.architecture, &quiet())
                 .is_err(),
             "mode {mode}"
         );
@@ -536,14 +533,14 @@ fn cached_native_validation_rejects_foreign_consumer_input_witness_request_and_n
     let mut g = graph(&e);
     let a = architecture(&g, "a");
     let b = architecture(&g, "b");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     let source = data(&g, d.rings[0]).source.clone();
     let n = &g.nodes[d.rings[0].0];
     let Some(Payload::Construction(value)) = &n.payload else {
         panic!("native")
     };
-    let mut c = quiet();
-    let env = Environment::new(e.prepared.inputs(), &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::new(e.prepared.inputs(), &c).unwrap();
     env.recheck_polynomial_law_diagram(&g, value).unwrap();
     env.recheck_polynomial_law_diagram(&g, value).unwrap();
     assert_eq!(
@@ -619,13 +616,13 @@ fn signal_stops_propagate_through_the_kernel_and_keep_only_complete_native_prefi
     let before = complete.nodes.len();
     let seen = std::rc::Rc::new(std::cell::Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::EquationPresentation {
             count.set(count.get() + 1);
         }
         None
     });
-    retain(&mut complete, e.prepared.shared_inputs(), a, 0, &mut c).unwrap();
+    retain(&mut complete, e.prepared.shared_inputs(), a, 0, &c).unwrap();
     let total = seen.get();
     assert!(total > 20);
     let mut nonempty = false;
@@ -639,7 +636,7 @@ fn signal_stops_propagate_through_the_kernel_and_keep_only_complete_native_prefi
                         e.prepared.shared_inputs(),
                         a,
                         0,
-                        &mut stopping(signal, at)
+                        &stopping(signal, at)
                     ),
                     Err(ValidationFailure::Stop(_))
                 ),
@@ -674,7 +671,7 @@ fn identical_polynomial_values_from_different_readings_keep_separate_origins_and
             "x=map(Finite.Migration,on=@v/m,reading=Chosen)",
             "y=map(Finite.Migration,on=@v/m,reading=Other)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
@@ -682,7 +679,7 @@ fn identical_polynomial_values_from_different_readings_keep_separate_origins_and
     for name in ["Chosen", "Other"] {
         let root=NodeRef(g.nodes.iter().position(|n|matches!(&n.payload,Some(Payload::Construction(v)) if matches!((&v.witness,&v.data),(Witness::Architecture(a),D::Architecture{..}) if a.construction().root().subject=="a"&&a.construction().reading()==name))).unwrap());
         g.active = g.context_at(root.0);
-        let d = retain(&mut g, e.prepared.shared_inputs(), root, 0, &mut quiet()).unwrap();
+        let d = retain(&mut g, e.prepared.shared_inputs(), root, 0, &quiet()).unwrap();
         assert!(g.nodes[d.rings[0].0].scope.readings.contains(name));
         assert_eq!(
             data(&g, d.rings[0])
@@ -694,8 +691,8 @@ fn identical_polynomial_values_from_different_readings_keep_separate_origins_and
         );
         results.push(d);
     }
-    let mut c = quiet();
-    let env = Environment::new(e.prepared.inputs(), &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::new(e.prepared.inputs(), &c).unwrap();
     for d in &results {
         let Some(Payload::Construction(v)) = &g.nodes[d.rings[0].0].payload else {
             panic!("native")
@@ -724,7 +721,7 @@ fn empty_families_and_nonnumeric_polynomial_status_do_not_fabricate_zero_coordin
         let mut g = graph(&e);
         let a = architecture(&g, "a");
         let before = g.nodes.len();
-        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
         assert!(d.rings.is_empty());
         assert!(d.domains.is_empty());
         assert!(d.evaluations.is_empty());
@@ -807,7 +804,7 @@ fn wrong_object_indices_and_nonarchitecture_consumers_fail_before_appending_nati
         &mut g,
         e.prepared.shared_inputs(),
         a,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -828,7 +825,7 @@ fn wrong_object_indices_and_nonarchitecture_consumers_fail_before_appending_nati
             e.prepared.shared_inputs(),
             reference,
             index,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap_err();
         assert!(
@@ -871,7 +868,7 @@ fn assignment_domains_keep_all_variable_types_and_zero_variable_unit_without_obs
         };
         let mut g = graph(&e);
         let a = architecture(&g, "a");
-        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
         assert_eq!(d.rings.len(), 1);
         assert_eq!(d.domains.len(), 1);
         let domain = d.domains[0];
@@ -911,7 +908,7 @@ fn missing_observation_keeps_full_assignment_type_without_total_evaluation() {
     let e = example(true, BODY);
     let mut g = graph(&e);
     let b = architecture(&g, "b");
-    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet()).unwrap();
     assert_eq!(d.status, EquationPresentationStatus::Undetermined);
     assert_eq!(d.domains.len(), 1);
     assert_eq!(
@@ -935,12 +932,12 @@ fn assignment_domain_type_ring_reference_and_output_alignment_changes_are_reject
             "law required split(c:Part):c.quantity=(0,0);",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     assert_eq!((d.domains.len(), d.rings.len()), (2, 2));
     let source = data(&g, d.domains[0]).source.clone();
     for ((domain, ring), ty) in d.domains.iter().zip(&d.rings).zip([Type::Z, Type::Q]) {
@@ -975,7 +972,7 @@ fn assignment_domain_type_ring_reference_and_output_alignment_changes_are_reject
         }
         assert!(
             changed
-                .recheck(e.prepared.inputs(), &source.architecture, &mut quiet())
+                .recheck(e.prepared.inputs(), &source.architecture, &quiet())
                 .is_err(),
             "mode {mode}"
         );
@@ -1002,7 +999,7 @@ fn polynomial_presentations_preserve_shared_ring_raw_epsilon_and_original_compon
     );
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     assert_eq!(d.presentations.len(), 1);
     let r = d.presentations[0].unwrap();
     let Part::Equation(E::Presentation {
@@ -1081,7 +1078,7 @@ fn missing_polynomial_values_keep_formal_presentation_without_fabricating_epsilo
     let e = example(true, BODY);
     let mut g = graph(&e);
     let b = architecture(&g, "b");
-    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet()).unwrap();
     let r = d.presentations[0].unwrap();
     let Part::Equation(E::Presentation {
         coordinates,
@@ -1156,7 +1153,7 @@ fn context_keeps_general_condition_and_discarded_reference_reads_outside_numeric
         let e = example(false, body);
         let mut g = graph(&e);
         let a = architecture(&g, "a");
-        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
         let Part::Equation(E::Context { dependencies, .. }) = data(&g, d.context.unwrap()).part()
         else {
             panic!("context")
@@ -1197,12 +1194,12 @@ fn context_keeps_bool_guard_reads_without_turning_them_into_numeric_variables() 
             "law required gated(c:Part) when c.enabled:c.quantity=0;",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     let Part::Equation(E::Context { dependencies, .. }) = data(&g, d.context.unwrap()).part()
     else {
         panic!("context")
@@ -1238,12 +1235,12 @@ fn finite_missing_completions_keep_one_formal_coordinate_and_never_supply_actual
         let e = evaluate_observed_bytes(
             custom_sources(&definition, &map, BODY),
             &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let mut g = graph(&e);
         let b = architecture(&g, "b");
-        let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+        let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet()).unwrap();
         assert_eq!(d.coordinates.len(), if missing { 4 } else { 2 });
         if missing {
             for instance in [0, 1] {
@@ -1326,12 +1323,12 @@ fn missing_bool_completions_keep_original_cases_and_do_not_promote_branch_values
         let e = evaluate_observed_bytes(
             custom_sources(&definition, &map, body),
             &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let mut g = graph(&e);
         let b = architecture(&g, "b");
-        let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+        let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet()).unwrap();
         assert_eq!(d.coordinates.len(), 2);
         assert_eq!(
             d.coordinates.iter().map(|q| q.case).collect::<Vec<_>>(),
@@ -1407,12 +1404,12 @@ fn a_missing_parameter_row_does_not_erase_another_rows_observed_epsilon() {
             "law required choose(c:Part,b:Bool):0=(if b then c.quantity else 0);",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let b = architecture(&g, "b");
-    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet()).unwrap();
     let p = d.presentations[0].unwrap();
     let Part::Equation(E::Presentation {
         coordinates,
@@ -1449,12 +1446,12 @@ fn global_equation_context_keeps_same_subject_ids_in_different_snapshots_and_the
     let e = evaluate_observed_bytes(
         custom_sources(DEFINITION, &map, BODY),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     let ctx = d.context.unwrap();
     let Part::Equation(E::Context { carrier, .. }) = data(&g, ctx).part() else {
         panic!("context");
@@ -1480,7 +1477,7 @@ fn source_only_unimplemented_parameter_keeps_original_scope_without_fake_context
     let e = example(false, "law required parameter(c:Part,k:Z):c.quantity=k;");
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     assert_eq!(d.status, EquationPresentationStatus::Undetermined);
     assert!(d.unavailable.as_ref().unwrap().feature.contains("未実装"));
     assert!(d.context.is_none());
@@ -1504,7 +1501,7 @@ fn finite_parameter_rows_are_distinct_presentation_instances_without_requantifyi
     );
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     let r = d.presentations[0].unwrap();
     let Part::Equation(E::Presentation {
         instances,
@@ -1557,7 +1554,7 @@ fn polynomial_presentation_recheck_rejects_derived_coordinate_ring_ideal_and_con
     let e = example(false, BODY);
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     let r = d.presentations[0].unwrap();
     for kind in 0..8 {
         let at = if kind < 2 { d.context.unwrap() } else { r };
@@ -1624,12 +1621,12 @@ fn progressive_missing_match_discovery_keeps_observed_roots_separate_from_cases(
             "law required linked(c:Part):match c.enabled { ignored => c.quantity=0; };",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let b = architecture(&g, "b");
-    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet()).unwrap();
     assert!(!d.coordinates.is_empty());
     assert_eq!(d.status, EquationPresentationStatus::Undetermined);
     let core = data(&g, d.context.unwrap()).source.core.as_ref().unwrap();
@@ -1660,16 +1657,16 @@ fn native_law_expression_frames_reject_corrupted_original_body_and_guard_ids_wit
     let e = example(false, "law required zero(c:Part) when true:c.quantity=0;");
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let diagram = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let diagram = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     let origin = diagram.readings[0].instance;
     let env = Environment::with_requests(
         e.prepared.inputs(),
         e.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let evaluated =
-        crate::observed::law_evaluation::evaluate(&env, &mut g, origin, a, &mut quiet()).unwrap();
+        crate::observed::law_evaluation::evaluate(&env, &mut g, origin, a, &quiet()).unwrap();
     let index = evaluated.instance.unwrap();
     let body = evaluated.body.unwrap();
     let Some(Payload::Evaluation { expression, .. }) = &g.nodes[body.0].payload else {

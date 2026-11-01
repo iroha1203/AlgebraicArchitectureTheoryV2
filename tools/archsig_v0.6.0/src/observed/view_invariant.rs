@@ -14,7 +14,7 @@ use super::{
 use crate::control::{Checkpoint, Control};
 use crate::{canonical::Json, types::Type};
 use std::sync::Arc;
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectViewFamily)?;
     Ok(())
 }
@@ -62,7 +62,7 @@ fn original(
     env: &Environment<'_>,
     g: &Graph,
     components: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Arc<ArchitectureWitness>, Objects), ValidationFailure> {
     tick(c)?;
     let n = g.get(components)?;
@@ -88,7 +88,7 @@ fn expressions(
     a: &Arc<ArchitectureWitness>,
     objects: &Objects,
     instance: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<NodeRef>, ValidationFailure> {
     let row = a
         .readings()
@@ -130,7 +130,7 @@ fn compute(
     components: NodeRef,
     instance: usize,
     evaluations: &[NodeRef],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Output, ValidationFailure> {
     let rs = expressions(g, a, objects, instance, c)?;
     if evaluations.len() != rs.len() {
@@ -334,7 +334,7 @@ pub(super) fn retain(
     env: &Environment<'_>,
     g: &mut Graph,
     components: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Diagram, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, components, c))
 }
@@ -378,13 +378,13 @@ impl Environment<'_> {
             return Ok(());
         };
         d.position(at)?;
-        let mut c = self.control.clone();
-        let (a, objects) = original(self, g, d.source.components, &mut c)?;
+        let c = self.control.clone();
+        let (a, objects) = original(self, g, d.source.components, &c)?;
         if !Arc::ptr_eq(&a, &d.source.architecture) || objects != d.source.objects {
             return Err("関数不変量の元入力/全対象が違う".into());
         }
         for r in d.arguments() {
-            tick(&mut c)?;
+            tick(&c)?;
             self.recheck_node(g, g.get(r)?, r.0)?;
         }
         if compute(
@@ -394,7 +394,7 @@ impl Environment<'_> {
             d.source.components,
             d.source.instance,
             &d.source.evaluations,
-            &mut c,
+            &c,
         )? != d.output
         {
             return Err("関数不変量の元instance/全域評価/支持が違う".into());
@@ -404,12 +404,7 @@ impl Environment<'_> {
 }
 
 impl super::result_kind::ResultKind for Data {
-    type Input<'a, 'input: 'a> = (
-        &'a Environment<'input>,
-        &'a mut Graph,
-        NodeRef,
-        &'a mut Control,
-    );
+    type Input<'a, 'input: 'a> = (&'a Environment<'input>, &'a mut Graph, NodeRef, &'a Control);
     type Output = Diagram;
     fn compute_and_retain<'a, 'input: 'a>(
         input: Self::Input<'a, 'input>,

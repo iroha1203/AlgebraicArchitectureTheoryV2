@@ -18,7 +18,7 @@ impl AutomaticLawValuations {
         &self,
         inputs: &CheckedInputs,
         column: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<ObservedLawReading, ValidationFailure> {
         tick(c)?;
         if &self.value.sources != inputs.sources() {

@@ -47,7 +47,7 @@ pub(in crate::observed::local_result) fn affine_map(
     matrix: &Matrix,
     cols: usize,
     offset: &[Z],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let map = wire::map(b, source_module, target_module, matrix, cols, c)?;
     let offset = wire::vector(b, target_module, offset, c)?;
@@ -76,7 +76,7 @@ pub(in crate::observed::local_result) fn solutions(
     rhs: &[Option<Z>],
     laws: &[NodeRef],
     equation: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(NodeRef, NodeRef, NodeRef, linear::Fiber), ValidationFailure> {
     let known_rhs = rhs.iter().cloned().collect::<Option<Vec<_>>>();
     let homogeneous = vec![Z::zero(); matrix.len()];
@@ -169,7 +169,7 @@ pub(super) fn build(
     reading: &linear::Reading,
     equation_state: &linear::Fiber,
     semantic: &linear::Fiber,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<State, ValidationFailure> {
     let mut selected = vec![];
     for i in 0..model.supports.len() {
@@ -515,7 +515,7 @@ fn fiber_action(
     parameters: NodeRef, states: NodeRef, map: NodeRef,
     parameter_module: NodeRef, ambient: NodeRef, kernel: NodeRef,
     fiber: &linear::Fiber, action: &Matrix, effective: NodeRef,
-    image: &linear::Fiber, solutions: NodeRef, c: &mut Control,
+    image: &linear::Fiber, solutions: NodeRef, c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let differences = integer_fiber::multiply(action, &fiber.basis, fiber.rank, c)?;
     let coordinates = linear::coordinates(&image.basis, image.rank, &differences, fiber.rank, c)?;

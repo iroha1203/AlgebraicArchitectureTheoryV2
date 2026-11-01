@@ -737,8 +737,8 @@ fn run_case(
     left: Option<&str>,
     uri: Option<&str>,
 ) -> ObservedEvaluation {
-    let checked = check_inputs(sources(law, map), &mut quiet()).unwrap();
-    let result = evaluate_observed_bytes(sources(law, map), &[ASK], &mut quiet()).unwrap();
+    let checked = check_inputs(sources(law, map), &quiet()).unwrap();
+    let result = evaluate_observed_bytes(sources(law, map), &[ASK], &quiet()).unwrap();
     unchanged(&checked, result.prepared().inputs(), law, map);
     assert_case(&result, decision, left, uri);
     result
@@ -747,9 +747,9 @@ fn run_case(
 #[test]
 fn reservations_original_bytes_establish_conserved_and_keep_checked_tables() {
     let bytes = run_case(LAW, MAP, "established", Some("2"), None);
-    let checked = check_inputs(sources(LAW, MAP), &mut quiet()).unwrap();
-    let prepared = prepare_checked_observed(checked, &[ASK], &mut quiet()).unwrap();
-    let from_checked = evaluate_observed(prepared, &mut quiet()).unwrap();
+    let checked = check_inputs(sources(LAW, MAP), &quiet()).unwrap();
+    let prepared = prepare_checked_observed(checked, &[ASK], &quiet()).unwrap();
+    let from_checked = evaluate_observed(prepared, &quiet()).unwrap();
     assert_eq!(bytes.wire(), from_checked.wire());
 }
 

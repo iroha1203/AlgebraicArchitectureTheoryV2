@@ -11,7 +11,7 @@ use archsig::{
 use cli::*;
 use std::path::{Path, PathBuf};
 fn internal(asks: &[&str]) -> JNode {
-    let r = evaluate_observed_bytes(fixture::input(), asks, &mut quiet())
+    let r = evaluate_observed_bytes(fixture::input(), asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     parse(r.wire().canonical().as_bytes()).unwrap()
 }
@@ -92,7 +92,7 @@ fn ready_priority_backward_references_and_answer_order_match_internal_and_cli() 
         "seed=evaluate(R.seed)",
         "copy=evaluate(R.plus,x=$first.value)",
     ];
-    let p = prepare_observed(fixture::input(), &ts, &mut quiet()).unwrap();
+    let p = prepare_observed(fixture::input(), &ts, &quiet()).unwrap();
     assert_eq!(p.requests().evaluation_order(), &[1, 2, 3, 0, 4]);
     let d = files("request-order");
     let r = asks(&d, &ts);
@@ -132,7 +132,7 @@ fn partial_binding_quantifies_every_remaining_root_and_keeps_explicit_and_defaul
         "partial=check(R.same,a=@v/A)",
         "full=check(R.same,a=@v/A,b=@v/A)",
     ];
-    let p = prepare_observed(fixture::input(), &ts, &mut quiet()).unwrap();
+    let p = prepare_observed(fixture::input(), &ts, &quiet()).unwrap();
     let rs = p.requests().requests();
     assert_eq!(rs[0].arguments.len(), 1);
     assert_eq!(rs[0].arguments[0].origin, ArgumentOrigin::Explicit);
@@ -268,7 +268,7 @@ fn static_duplicates_unknown_names_types_owners_indices_and_private_fields_are_u
         (C::MissingBinding, vec!["a=evaluate(R.plus)"]),
     ];
     for (i, (code, ts)) in cases.into_iter().enumerate() {
-        let failure = prepare_observed(fixture::input(), &ts, &mut quiet()).unwrap_err();
+        let failure = prepare_observed(fixture::input(), &ts, &quiet()).unwrap_err();
         let PrepareFailure::Requests {
             failure: ResolveFailure::Invalid { issues, .. },
             ..
@@ -301,7 +301,7 @@ fn multiple_cycles_preserve_the_whole_internal_graph_and_report_only_cyclic_memb
         "tail=evaluate(R.plus,x=$a.value)",
         "free=evaluate(R.first)",
     ];
-    let failure = evaluate_observed_bytes(fixture::input(), &ts, &mut quiet()).unwrap_err();
+    let failure = evaluate_observed_bytes(fixture::input(), &ts, &quiet()).unwrap_err();
     let w = parse(failure.wire().unwrap().canonical().as_bytes()).unwrap();
     assert_eq!(
         ids(&w, "requests"),
@@ -397,7 +397,7 @@ fn dynamic_projection_failures_keep_original_condition_and_block_each_later_cons
             "known=evaluate(R.first)",
             "prior=check(R.prior)",
         ];
-        let p = prepare_observed(fixture::input(), &ts, &mut quiet()).unwrap();
+        let p = prepare_observed(fixture::input(), &ts, &quiet()).unwrap();
         assert!(
             p.requests().requests()[1]
                 .constraints

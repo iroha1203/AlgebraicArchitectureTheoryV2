@@ -148,7 +148,7 @@ impl PrepareFailure {
 pub fn prepare_observed(
     sources: InputSources,
     texts: &[&str],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<PreparedObserved, PrepareFailure> {
     let inputs = check_inputs(sources, control)
         .map_err(|failure| PrepareFailure::Inputs(Box::new(failure)))?;
@@ -159,7 +159,7 @@ pub fn prepare_observed(
 pub fn prepare_checked_observed(
     inputs: CheckedInputs,
     texts: &[&str],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<PreparedObserved, PrepareFailure> {
     prepare_shared_observed(Arc::new(inputs), texts, control)
 }
@@ -168,7 +168,7 @@ pub fn prepare_checked_observed(
 pub fn prepare_shared_observed(
     inputs: Arc<CheckedInputs>,
     texts: &[&str],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<PreparedObserved, PrepareFailure> {
     match resolve_observed_requests_controlled(inputs.law(), inputs.archmap(), texts, control) {
         Ok(requests) => Ok(PreparedObserved {

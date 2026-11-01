@@ -21,7 +21,7 @@ fn bundle(d: &[u8], l: &str, a: &str, namespace: &str, placeholder: &str) -> Che
             l.replace(placeholder, digest).into_bytes(),
             a.replace(placeholder, digest).into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
@@ -29,7 +29,7 @@ fn inputs(a: &str) -> CheckedInputs {
     bundle(D, L, a, "Profile", "@PROFILE_DIGEST@")
 }
 fn profiles(i: &CheckedInputs) -> ConfigurationProfiles {
-    construct_profiles(i, "ProfileRead", "v", "A", &mut Control::unlimited()).unwrap()
+    construct_profiles(i, "ProfileRead", "v", "A", &Control::unlimited()).unwrap()
 }
 fn fact(id: &str, field: Option<&str>) -> FactPointer {
     let ty = match id {
@@ -147,7 +147,7 @@ fn complete_queries_match_independent_universe_family_and_ordered_relations() {
     assert_eq!(part.domain().known(), [fact("p", None)]);
     assert!(base.domain().is_complete());
     assert!(part.domain().is_complete());
-    p.recheck(&i, &mut Control::unlimited()).unwrap();
+    p.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn applicability_uses_ownership_and_does_not_follow_bare_references_in_family() {
@@ -158,7 +158,7 @@ fn applicability_uses_ownership_and_does_not_follow_bare_references_in_family() 
         "Mesh",
         "@MESH_DIGEST@",
     );
-    let p = construct_profiles(&i, "MeshRead", "v", "A", &mut Control::unlimited()).unwrap();
+    let p = construct_profiles(&i, "MeshRead", "v", "A", &Control::unlimited()).unwrap();
     let base = &p.profiles()[0];
     let ids: Vec<_> = base
         .domain()
@@ -216,7 +216,7 @@ fn unknown_entity_membership_retains_condition_and_fragments_without_complete_pa
             .family()
             .contains(&fact("p", Some("owner")))
     );
-    p.recheck(&i, &mut Control::unlimited()).unwrap();
+    p.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn unknown_arrow_membership_and_reference_leave_other_known_patterns_available() {
@@ -225,7 +225,7 @@ fn unknown_arrow_membership_and_reference_leave_other_known_patterns_available()
     let a = include_str!("fixtures/internal-arrow.archmap.json");
     for id in ["e-owner", "p-links"] {
         let i = bundle(d, l, &remove(a, id), "Flow", "@FLOW_DIGEST@");
-        let p = construct_profiles(&i, "FlowRead", "v", "A", &mut Control::unlimited()).unwrap();
+        let p = construct_profiles(&i, "FlowRead", "v", "A", &Control::unlimited()).unwrap();
         assert!(!p.is_complete());
         assert!(p.classes().is_none());
         assert!(p.profiles()[0].pattern().is_none());
@@ -263,7 +263,7 @@ fn unknown_arrow_membership_and_reference_leave_other_known_patterns_available()
             );
             assert_eq!(p.known_classes(), [vec![2]]);
         }
-        p.recheck(&i, &mut Control::unlimited()).unwrap();
+        p.recheck(&i, &Control::unlimited()).unwrap();
     }
 }
 #[test]
@@ -290,16 +290,16 @@ fn recheck_observes_geometry_and_whole_universe_without_claiming_quantity_equali
     let i = inputs(A);
     let p = profiles(&i);
     let quantity = inputs(&A.replace("\"value\":\"2\"", "\"value\":\"8\""));
-    p.recheck(&quantity, &mut Control::unlimited()).unwrap();
+    p.recheck(&quantity, &Control::unlimited()).unwrap();
     let missing = inputs(&remove(A, "x-quantity"));
     assert!(matches!(
-        p.recheck(&missing, &mut Control::unlimited()),
+        p.recheck(&missing, &Control::unlimited()),
         Err(ConstructionFailure::Inconsistent(_))
     ));
     let owner = inputs(&A.replace("\"value\":[\"v\",\"A\"]", "\"value\":[\"v\",\"B\"]"));
-    assert!(p.recheck(&owner, &mut Control::unlimited()).is_err());
+    assert!(p.recheck(&owner, &Control::unlimited()).is_err());
     let alternative =
-        construct_profiles(&i, "Alternative", "v", "A", &mut Control::unlimited()).unwrap();
+        construct_profiles(&i, "Alternative", "v", "A", &Control::unlimited()).unwrap();
     assert_ne!(p.profiles()[0].object(), alternative.profiles()[0].object());
     assert_eq!(
         p.profiles()[0].pattern(),
@@ -333,7 +333,7 @@ fn invalid_selections_return_concrete_errors() {
         ("ProfileRead", "v", "p"),
     ] {
         assert!(
-            matches!(construct_profiles(&i,reading,snapshot,root,&mut Control::unlimited()),Err(ConstructionFailure::InvalidSelection(message))if !message.is_empty())
+            matches!(construct_profiles(&i,reading,snapshot,root,&Control::unlimited()),Err(ConstructionFailure::InvalidSelection(message))if !message.is_empty())
         );
     }
 }
@@ -343,32 +343,32 @@ fn every_fixed_profile_stop_rejects_unfinished_results_and_latches() {
     let original = profiles(&i);
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::ConfigurationProfile {
             seen.set(seen.get() + 1);
         }
         None
     });
-    construct_profiles(&i, "ProfileRead", "v", "A", &mut c).unwrap();
+    construct_profiles(&i, "ProfileRead", "v", "A", &c).unwrap();
     let total = count.get();
     assert!(total > 210);
     for at in [1, total / 2, total] {
         for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut c = Control::new(move |p| {
+            let c = Control::new(move |p| {
                 if p == Checkpoint::ConfigurationProfile {
                     seen.set(seen.get() + 1);
                 }
                 (seen.get() >= at).then_some(signal)
             });
-            let failure = construct_profiles(&i, "ProfileRead", "v", "A", &mut c).unwrap_err();
+            let failure = construct_profiles(&i, "ProfileRead", "v", "A", &c).unwrap_err();
             assert_eq!(
                 failure,
                 ConstructionFailure::Stopped(c.stop_reason().unwrap())
             );
             assert_eq!(count.get(), at);
-            assert_eq!(original.recheck(&i, &mut c).unwrap_err(), failure);
+            assert_eq!(original.recheck(&i, &c).unwrap_err(), failure);
             assert_eq!(count.get(), at);
         }
     }

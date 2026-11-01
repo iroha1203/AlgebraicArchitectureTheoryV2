@@ -75,9 +75,9 @@ fn part(evaluation: &Json) -> &Json {
 }
 
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut quiet())
-        .unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
-    let wire = evaluate_observed_bytes(inputs, asks, &mut quiet())
+    let checked =
+        check_inputs(inputs.clone(), &quiet()).unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
+    let wire = evaluate_observed_bytes(inputs, asks, &quiet())
         .unwrap_or_else(|e| panic!("評価: {e:?}"))
         .wire();
     audit(&wire, &checked);
@@ -205,8 +205,7 @@ fn fixture(script: &str, known_flag: Option<bool>, reverse: bool, moved: bool) -
         )
     ));
     let checked =
-        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
-            .unwrap();
+        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &quiet()).unwrap();
     let digest = &checked.vocabularies()["Roster"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
@@ -1312,7 +1311,7 @@ view unbounded_list(): Bool = forall unused:List<E> . true;
             "d=evaluate(Calc.owned_tuple,root=@v/root)",
         ),
     ] {
-        let result = evaluate_observed_bytes(input.clone(), &[ask], &mut quiet()).unwrap();
+        let result = evaluate_observed_bytes(input.clone(), &[ask], &quiet()).unwrap();
         let wire = result.wire();
         audit(&wire, result.prepared().inputs());
         assert_eq!(f(&wire, "status"), &Json::str("complete"));
@@ -1380,7 +1379,7 @@ view unbounded_list(): Bool = forall unused:List<E> . true;
     let result = evaluate_observed_bytes(
         input.clone(),
         &["d=evaluate(Calc.unbounded_list)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let wire = result.wire();
@@ -1414,7 +1413,7 @@ view later(s: E): Unit = unit;
         false,
         false,
     );
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(input.clone(), &quiet()).unwrap();
     let asks = [
         "seed=evaluate(Calc.seed,s=@v/item)",
         "absent=evaluate(Calc.absent,s=@v/item)",
@@ -1424,13 +1423,13 @@ view later(s: E): Unit = unit;
     ];
     let count = Rc::new(Cell::new(0));
     let c = count.clone();
-    let mut prior_control = Control::new(move |point| {
+    let prior_control = Control::new(move |point| {
         if point == Checkpoint::Expression {
             c.set(c.get() + 1);
         }
         None
     });
-    let prior = evaluate_observed_bytes(input.clone(), &asks[..3], &mut prior_control)
+    let prior = evaluate_observed_bytes(input.clone(), &asks[..3], &prior_control)
         .unwrap()
         .wire();
     audit(&prior, &checked);
@@ -1439,13 +1438,13 @@ view later(s: E): Unit = unit;
     check_claim(&prior, "rejected", "refuted");
     let total = Rc::new(Cell::new(0));
     let c = total.clone();
-    let mut baseline_control = Control::new(move |point| {
+    let baseline_control = Control::new(move |point| {
         if point == Checkpoint::Expression {
             c.set(c.get() + 1);
         }
         None
     });
-    let baseline = evaluate_observed_bytes(input.clone(), &asks[..4], &mut baseline_control)
+    let baseline = evaluate_observed_bytes(input.clone(), &asks[..4], &baseline_control)
         .unwrap()
         .wire();
     audit(&baseline, &checked);
@@ -1470,7 +1469,7 @@ view later(s: E): Unit = unit;
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (e, p, s) = (expressions.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             p.set(p.get() + 1);
             if point == Checkpoint::Expression {
                 e.set(e.get() + 1);
@@ -1481,7 +1480,7 @@ view later(s: E): Unit = unit;
             }
             None
         });
-        let wire = evaluate_observed_bytes(input.clone(), &asks, &mut control)
+        let wire = evaluate_observed_bytes(input.clone(), &asks, &control)
             .unwrap()
             .wire();
         assert_eq!(f(&wire, "status"), &Json::str("interrupted"));

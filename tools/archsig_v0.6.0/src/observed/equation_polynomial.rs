@@ -8,7 +8,7 @@ use crate::control::{Checkpoint, Control};
 use crate::{construction::ConstructionFailure, law::ast::BinOp, types::Type};
 use std::collections::BTreeMap;
 
-pub(super) fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
+pub(super) fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::EquationPresentation)
         .map_err(Into::into)
 }
@@ -31,7 +31,7 @@ pub struct EquationPolynomial {
     pub terms: Vec<EquationMonomial>,
 }
 impl EquationPolynomial {
-    pub(super) fn constant(s: Scalar, c: &mut Control) -> Result<Self, ConstructionFailure> {
+    pub(super) fn constant(s: Scalar, c: &Control) -> Result<Self, ConstructionFailure> {
         tick(c)?;
         let zero = numeric::zero(&s.ty(), c).map_err(invalid)?;
         Ok(Self {
@@ -49,7 +49,7 @@ impl EquationPolynomial {
     pub(super) fn variable(
         ty: &Type,
         index: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Self, ConstructionFailure> {
         tick(c)?;
         Ok(Self {
@@ -66,7 +66,7 @@ impl EquationPolynomial {
         &self,
         op: BinOp,
         rhs: &Self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Self, ConstructionFailure> {
         tick(c)?;
         if self.ty != rhs.ty {
@@ -77,7 +77,7 @@ impl EquationPolynomial {
         let zero = numeric::zero(&self.ty, c).map_err(invalid)?;
         let mut terms = BTreeMap::<Vec<usize>, Scalar>::new();
         let mut add =
-            |vars: Vec<usize>, s: Scalar, c: &mut Control| -> Result<(), ConstructionFailure> {
+            |vars: Vec<usize>, s: Scalar, c: &Control| -> Result<(), ConstructionFailure> {
                 tick(c)?;
                 let old = terms.remove(&vars).unwrap_or_else(|| zero.clone());
                 let sum = numeric::binary(BinOp::Add, &old, &s, c).map_err(invalid)?;
@@ -149,7 +149,7 @@ impl EquationPolynomial {
     pub(super) fn evaluate(
         &self,
         values: &[Option<NumericTransportValue>],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<NumericTransportValue>, ConstructionFailure> {
         let mut result = numeric::zero(&self.ty, c).map_err(invalid)?;
         for term in &self.terms {

@@ -13,7 +13,7 @@ use crate::{
     types::Type,
 };
 use std::sync::Arc;
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;
     Ok(())
 }
@@ -365,7 +365,7 @@ pub(super) fn evaluate(
     env: &Environment<'_>,
     g: &mut Graph,
     expression: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Outcome, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, expression, c))
 }
@@ -390,12 +390,7 @@ impl Environment<'_> {
 }
 
 impl super::result_kind::ResultKind for Data {
-    type Input<'a, 'input: 'a> = (
-        &'a Environment<'input>,
-        &'a mut Graph,
-        NodeRef,
-        &'a mut Control,
-    );
+    type Input<'a, 'input: 'a> = (&'a Environment<'input>, &'a mut Graph, NodeRef, &'a Control);
     type Output = Outcome;
     fn compute_and_retain<'a, 'input: 'a>(
         input: Self::Input<'a, 'input>,

@@ -126,8 +126,7 @@ fn fixture(script: &str, missing_bool: bool, moved: bool) -> InputSources {
         vocabulary_json("Universal", &format!("[{root},{sample}]"), "[]")
     ));
     let checked =
-        check_definitions_controlled(&[("definition0", definition.as_bytes())], &mut quiet())
-            .unwrap();
+        check_definitions_controlled(&[("definition0", definition.as_bytes())], &quiet()).unwrap();
     let digest = &checked.vocabularies()["Universal"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading Calc {{ use vocabulary Universal version "1" digest "{digest}"; {script} }}"#
@@ -174,15 +173,14 @@ fn run_parameter_types(
     asks: &[&str],
     declared_parameters: bool,
 ) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut quiet())
-        .unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
-    let evaluated =
-        evaluate_observed_bytes(inputs.clone(), asks, &mut quiet()).unwrap_or_else(|e| {
-            if let Some(wire) = e.wire() {
-                panic!("評価: {:?}", f(&wire, "issues"));
-            }
-            panic!("評価: {e:?}");
-        });
+    let checked =
+        check_inputs(inputs.clone(), &quiet()).unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
+    let evaluated = evaluate_observed_bytes(inputs.clone(), asks, &quiet()).unwrap_or_else(|e| {
+        if let Some(wire) = e.wire() {
+            panic!("評価: {:?}", f(&wire, "issues"));
+        }
+        panic!("評価: {e:?}");
+    });
     let after = evaluated.prepared().inputs();
     assert_eq!(after.sources(), &inputs);
     assert_eq!(

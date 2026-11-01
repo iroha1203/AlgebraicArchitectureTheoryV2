@@ -6,7 +6,7 @@ use std::collections::BTreeSet;
 
 pub(super) fn check<E: InputError>(
     defs: &mut CheckedDefinitions,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(), E> {
     let mut done = BTreeSet::new();
     for n in defs.vocabularies.keys() {
@@ -76,7 +76,7 @@ fn dag<E: InputError>(
     defs: &CheckedDefinitions,
     active: &mut BTreeSet<String>,
     done: &mut BTreeSet<String>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(), E> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         dag_inner::<E>(n, defs, active, done, control)
@@ -87,7 +87,7 @@ fn dag_inner<E: InputError>(
     defs: &CheckedDefinitions,
     active: &mut BTreeSet<String>,
     done: &mut BTreeSet<String>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(), E> {
     E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     if done.contains(n) {

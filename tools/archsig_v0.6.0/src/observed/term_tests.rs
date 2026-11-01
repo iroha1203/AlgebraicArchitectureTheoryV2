@@ -15,9 +15,9 @@ fn term_private_inputs(revision: &str) -> InputSources {
     )
 }
 fn term_private_result(asks: &[&str]) -> ObservedEvaluation {
-    let mut c = quiet();
-    let p = prepare_observed(term_private_inputs("r1"), asks, &mut c).unwrap();
-    evaluate_observed(p, &mut c).unwrap()
+    let c = quiet();
+    let p = prepare_observed(term_private_inputs("r1"), asks, &c).unwrap();
+    evaluate_observed(p, &c).unwrap()
 }
 #[test]
 fn closed_term_rechecks_body_parameters_hidden_ast_types_support_and_scope() {
@@ -136,7 +136,7 @@ fn closed_term_body_cancel_keeps_prior_value_refutation_and_verified_prefix() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             f.set(Some(p.get()));
@@ -145,8 +145,8 @@ fn closed_term_body_cancel_keeps_prior_value_refutation_and_verified_prefix() {
             None
         }
     });
-    let prepared = prepare_observed(term_private_inputs("r1"), &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+    let prepared = prepare_observed(term_private_inputs("r1"), &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());

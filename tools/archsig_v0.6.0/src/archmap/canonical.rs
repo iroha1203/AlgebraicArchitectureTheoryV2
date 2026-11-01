@@ -11,13 +11,13 @@ use std::collections::BTreeMap;
 
 /// 集合表を ID・namespace 名順へ、Set・Map の値を canonical 値順へ並べた ArchMap。
 pub fn model_json(a: &CheckedArchMap) -> Json {
-    model_json_controlled::<Box<Issue>>(a, &mut Control::unlimited())
+    model_json_controlled::<Box<Issue>>(a, &Control::unlimited())
         .expect("unlimited ArchMap canonicalization")
 }
 
 pub(crate) fn model_json_controlled<E: InputError>(
     a: &CheckedArchMap,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Json, E> {
     let point = Checkpoint::ArchMapCanonical;
     E::checkpoint(control, point)?;

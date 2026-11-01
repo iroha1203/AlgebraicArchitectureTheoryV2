@@ -396,7 +396,7 @@ fn compute_inner(
     let mut updated = Environment::with_primitive_valuation(
         env.indexes.inputs,
         &env.fixed_values(),
-        &mut env.control.clone(),
+        &env.control.clone(),
     )?;
     updated.indexes.object = env.object_domain();
     updated.indexes.affine_valuation = updates;
@@ -443,7 +443,7 @@ pub(in crate::observed) fn state_equations(
     let mut state = Environment::with_primitive_valuation(
         env.indexes.inputs,
         &env.fixed_values(),
-        &mut env.control.clone(),
+        &env.control.clone(),
     )?;
     state.indexes.object = env.object_domain();
     for slot in slots {

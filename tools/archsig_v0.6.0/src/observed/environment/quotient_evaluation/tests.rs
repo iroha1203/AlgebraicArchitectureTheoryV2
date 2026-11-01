@@ -6,7 +6,7 @@ mod fixture {
 }
 use crate::control::quiet;
 fn inputs(extra: &str) -> crate::input::CheckedInputs {
-    check_inputs(fixture::sources(extra, ""), &mut quiet()).unwrap()
+    check_inputs(fixture::sources(extra, ""), &quiet()).unwrap()
 }
 fn data(name: &str, args: Vec<Scalar>) -> Scalar {
     let (family, _) = name.rsplit_once('.').unwrap();
@@ -26,7 +26,7 @@ fn finite_data_gate_visits_every_constructor_and_keeps_cycle_state_local() {
 "#,
     );
     for name in ["Pair.Token", "Pair.Other", "Pair.Packet", "Pair.Tree"] {
-        assert!(exact_type(&Type::Data(name.into()), i.law(), &mut quiet()).unwrap());
+        assert!(exact_type(&Type::Data(name.into()), i.law(), &quiet()).unwrap());
     }
     for name in ["Pair.Bad", "Pair.BadMap", "Pair.BadTerm"] {
         let bad = Type::Data(name.into());
@@ -36,7 +36,7 @@ fn finite_data_gate_visits_every_constructor_and_keeps_cycle_state_local() {
             Type::Tuple(vec![Type::Data("Pair.Tree".into()), bad.clone()]),
             Type::Tuple(vec![bad, Type::Data("Pair.Tree".into())]),
         ] {
-            assert!(!exact_type(&ty, i.law(), &mut quiet()).unwrap(), "{ty:?}");
+            assert!(!exact_type(&ty, i.law(), &quiet()).unwrap(), "{ty:?}");
         }
     }
     for ty in [
@@ -46,10 +46,10 @@ fn finite_data_gate_visits_every_constructor_and_keeps_cycle_state_local() {
         Type::Map(Box::new(Type::Bool), Box::new(Type::Bool)),
         Type::Term(vec![Type::Bool], Box::new(Type::Bool)),
     ] {
-        assert!(!exact_type(&Type::List(Box::new(ty)), i.law(), &mut quiet()).unwrap());
+        assert!(!exact_type(&Type::List(Box::new(ty)), i.law(), &quiet()).unwrap());
     }
-    assert!(exact_type(&Type::Data("Pair.Tree".into()), i.law(), &mut quiet()).unwrap());
-    assert!(exact_type(&Type::Data("Pair.Unknown".into()), i.law(), &mut quiet()).is_err());
+    assert!(exact_type(&Type::Data("Pair.Tree".into()), i.law(), &quiet()).unwrap());
+    assert!(exact_type(&Type::Data("Pair.Unknown".into()), i.law(), &quiet()).is_err());
 }
 #[test]
 fn finite_data_values_validate_names_arity_payload_and_family_before_equality() {
@@ -121,7 +121,7 @@ fn finite_data_type_and_payload_traversals_keep_exact_stop_reasons() {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
             let target = if type_walk { 8 } else { 3 };
-            let mut c = Control::new(move |point| {
+            let c = Control::new(move |point| {
                 if point
                     == if type_walk {
                         Checkpoint::PrimitiveValuation
@@ -134,7 +134,7 @@ fn finite_data_type_and_payload_traversals_keep_exact_stop_reasons() {
                 (seen.get() == target).then_some(signal)
             });
             let result = if type_walk {
-                exact_type(&Type::Data("Pair.Tree".into()), i.law(), &mut c)
+                exact_type(&Type::Data("Pair.Tree".into()), i.law(), &c)
             } else {
                 data::equal(&tree, &tree, &c)
             };
@@ -148,7 +148,7 @@ fn finite_data_type_and_payload_traversals_keep_exact_stop_reasons() {
 fn quantified_observation_requires_recorded_complete_finite_bindings() {
     let i = check_inputs(
         fixture::sources("", "law optional finite(s:State):forall b:Bool . b;"),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let Signature::Law { body, .. } = i.law().declarations()["Pair.finite"].signature else {
@@ -164,21 +164,21 @@ fn quantified_observation_requires_recorded_complete_finite_bindings() {
         finite_bindings: None,
     }];
     assert!(
-        observation(i.law(), body, Some(0), &nodes, &mut quiet())
+        observation(i.law(), body, Some(0), &nodes, &quiet())
             .unwrap()
             .1
             .is_none()
     );
     nodes[0].finite_bindings = Some(vec![Scalar::Bool(false), Scalar::Bool(true)]);
     assert!(
-        observation(i.law(), body, Some(0), &nodes, &mut quiet())
+        observation(i.law(), body, Some(0), &nodes, &quiet())
             .unwrap()
             .1
             .is_none()
     );
     nodes[0].finite_bindings = Some(vec![]);
     assert!(
-        matches!(observation(i.law(),body,Some(0),&nodes,&mut quiet()).unwrap().1,Some(Scalar::Set { ref items,.. }) if items.is_empty())
+        matches!(observation(i.law(),body,Some(0),&nodes,&quiet()).unwrap().1,Some(Scalar::Set { ref items,.. }) if items.is_empty())
     );
 }
 
@@ -189,7 +189,7 @@ fn match_observation_rejects_wrong_pattern_binding_and_extra_arm_capture() {
             "",
             "law optional matched(s:State):match Token.Left(true) {Left(v)=>v=v;_=>true;};",
         ),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let Signature::Law { body, .. } = i.law().declarations()["Pair.matched"].signature else {
@@ -232,14 +232,14 @@ fn match_observation_rejects_wrong_pattern_binding_and_extra_arm_capture() {
         node(body, Scalar::Bool(true), vec![0, 3], vec![]),
     ];
     assert!(
-        observation(i.law(), body, Some(4), &nodes, &mut quiet())
+        observation(i.law(), body, Some(4), &nodes, &quiet())
             .unwrap()
             .1
             .is_none()
     );
     nodes[3].bindings[0].1 = Scalar::Bool(true);
     assert!(
-        observation(i.law(), body, Some(4), &nodes, &mut quiet())
+        observation(i.law(), body, Some(4), &nodes, &quiet())
             .unwrap()
             .1
             .is_some()
@@ -247,7 +247,7 @@ fn match_observation_rejects_wrong_pattern_binding_and_extra_arm_capture() {
     nodes.push(node(arms[1].body, Scalar::Bool(true), vec![], vec![]));
     nodes[4].children.push(5);
     assert!(
-        observation(i.law(), body, Some(4), &nodes, &mut quiet())
+        observation(i.law(), body, Some(4), &nodes, &quiet())
             .unwrap()
             .1
             .is_none()

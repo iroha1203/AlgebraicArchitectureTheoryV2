@@ -13,7 +13,7 @@ use crate::control::quiet;
 fn prepared(inputs: Arc<CheckedInputs>, root: &str) -> PreparedObserved {
     let ask = format!("b=build(Selected,on=@v/{root})");
     let requests =
-        resolve_native_for_test(inputs.law(), inputs.archmap(), &[&ask], &mut quiet()).unwrap();
+        resolve_native_for_test(inputs.law(), inputs.archmap(), &[&ask], &quiet()).unwrap();
     PreparedObserved {
         inputs,
         requests,
@@ -21,7 +21,7 @@ fn prepared(inputs: Arc<CheckedInputs>, root: &str) -> PreparedObserved {
     }
 }
 fn start(p: &PreparedObserved) -> (Graph, NodeRef) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = super::super::architecture_result::build(
@@ -29,7 +29,7 @@ fn start(p: &PreparedObserved) -> (Graph, NodeRef) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     (g, a.reference)
@@ -49,7 +49,7 @@ fn copy_graph(g: &Graph, c: &Control) -> Graph {
     p
 }
 fn replay(p: &PreparedObserved, g: &Graph) -> Result<(), ValidationFailure> {
-    let env = Environment::with_prepared(p, &mut quiet())?;
+    let env = Environment::with_prepared(p, &quiet())?;
     let mut prefix = Graph::new(&quiet());
     prefix.requests = g.requests.clone();
     prefix.frames = g.frames.clone();
@@ -67,8 +67,8 @@ fn replay(p: &PreparedObserved, g: &Graph) -> Result<(), ValidationFailure> {
 }
 fn table(p: &PreparedObserved) -> (Graph, Arc<Table>) {
     let (mut g, a) = start(p);
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
-    let t = crate::observed::law_table::retain(&env, &mut g, p.shared_inputs(), a, &mut quiet())
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
+    let t = crate::observed::law_table::retain(&env, &mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     (g, Arc::new(t))
@@ -115,8 +115,8 @@ fn original_roles_instances_all_objects_and_conditional_boolean_values_are_prese
         "root",
     );
     let (mut g, t) = table(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let out = retain(&env, &mut g, t.clone(), &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let out = retain(&env, &mut g, t.clone(), &quiet()).unwrap();
     assert_eq!(out.len(), 6);
     assert_eq!(out[0].instance, 2);
     assert!(out.iter().any(|i| i.instance >= 6));
@@ -187,8 +187,8 @@ fn parameter_function_keeps_all_guarded_rows_and_suppresses_the_forall_aggregate
         "root",
     );
     let (mut g, t) = table(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let out = retain(&env, &mut g, t.clone(), &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let out = retain(&env, &mut g, t.clone(), &quiet()).unwrap();
     assert_eq!(out.len(), 2);
     for inv in &out {
         assert_eq!(
@@ -258,8 +258,8 @@ fn missing_quantity_and_false_guard_keep_the_actual_slots_and_vacuous_truth_dist
         "root",
     );
     let (mut g, t) = table(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let out = retain(&env, &mut g, t.clone(), &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let out = retain(&env, &mut g, t.clone(), &quiet()).unwrap();
     assert_eq!(out.len(), 4);
     let mut missing = 0;
     for inv in &out {
@@ -306,12 +306,12 @@ fn a_later_build_reads_saved_predicates_without_regenerating_or_rebinding_them()
             "b=build(Selected,on=@v/root)",
             "later=build(Selected,on=@v/r2)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let (mut g, t) = table(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let out = retain(&env, &mut g, t.clone(), &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let out = retain(&env, &mut g, t.clone(), &quiet()).unwrap();
     g.active.request = 1;
     assert!(
         crate::observed::architecture_result::build(
@@ -319,19 +319,19 @@ fn a_later_build_reads_saved_predicates_without_regenerating_or_rebinding_them()
             &env,
             &mut g,
             &p.requests().requests()[1],
-            &mut quiet()
+            &quiet()
         )
         .unwrap()
         .complete
     );
-    let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
     for inv in &out {
         for r in inv.evaluations.iter().copied().chain([inv.invariant]) {
             assert!(fresh.recheck_node(&g, g.get(r).unwrap(), r.0).is_ok());
         }
     }
     let before = copy_graph(&g, &quiet());
-    assert!(retain(&env, &mut g, t.clone(), &mut quiet()).is_err());
+    assert!(retain(&env, &mut g, t.clone(), &quiet()).is_err());
     assert_eq!(g.nodes, before.nodes);
     assert_eq!(g.contexts, before.contexts);
     assert_eq!(g.instances, before.instances);
@@ -345,7 +345,7 @@ fn a_later_build_reads_saved_predicates_without_regenerating_or_rebinding_them()
             2 => bad.contexts[r.0].frame = Some(0),
             _ => unreachable!(),
         };
-        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
         assert!(
             fresh.recheck_node(&bad, bad.get(r).unwrap(), r.0).is_err(),
             "mode{mode}"
@@ -367,12 +367,12 @@ fn interrupt_stops_keep_exact_completed_predicate_evaluation_and_invariant_prefi
         "root",
     );
     let (initial, t) = table(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
     let native = Rc::new(RefCell::new(vec![]));
     let points = native.clone();
-    let mut c = Control::new(move |checkpoint| {
+    let c = Control::new(move |checkpoint| {
         seen.set(seen.get() + 1);
         if checkpoint == Checkpoint::NativeResultNode {
             points.borrow_mut().push(seen.get());
@@ -380,7 +380,7 @@ fn interrupt_stops_keep_exact_completed_predicate_evaluation_and_invariant_prefi
         None
     });
     let mut full = copy_graph(&initial, &c);
-    let out = retain(&env, &mut full, t.clone(), &mut c).unwrap();
+    let out = retain(&env, &mut full, t.clone(), &c).unwrap();
     assert_eq!(out.len(), 4);
     let total = count.get();
     assert!(total > 20);
@@ -390,13 +390,13 @@ fn interrupt_stops_keep_exact_completed_predicate_evaluation_and_invariant_prefi
     for at in [early, total / 2] {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut c = Control::new(move |_| {
+        let c = Control::new(move |_| {
             seen.set(seen.get() + 1);
             (seen.get() >= at).then_some(crate::result::Signal::Int)
         });
         let mut g = copy_graph(&initial, &c);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-        let result = retain(&env, &mut g, t.clone(), &mut c);
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
+        let result = retain(&env, &mut g, t.clone(), &c);
         assert!(
             matches!(result, Err(ValidationFailure::Stop(_))),
             "at{at}: {result:?}"
@@ -433,8 +433,8 @@ fn saved_table_self_and_later_references_fail_before_recursive_or_interrupted_va
         "root",
     );
     let (mut g, t) = table(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let out = retain(&env, &mut g, t.clone(), &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let out = retain(&env, &mut g, t.clone(), &quiet()).unwrap();
     let first = out[0].evaluations[0];
     let last = out.last().unwrap();
     for (target, mode) in [
@@ -465,11 +465,11 @@ fn saved_table_self_and_later_references_fail_before_recursive_or_interrupted_va
         }
         let calls = Rc::new(Cell::new(0));
         let seen = calls.clone();
-        let mut control = Control::new(move |_| {
+        let control = Control::new(move |_| {
             seen.set(seen.get() + 1);
             (seen.get() >= 10_000).then_some(crate::result::Signal::Int)
         });
-        let fresh = Environment::with_prepared(&p, &mut control).unwrap();
+        let fresh = Environment::with_prepared(&p, &control).unwrap();
         let result = fresh.recheck_node(&bad, bad.get(target).unwrap(), target.0);
         assert!(
             matches!(result, Err(ValidationFailure::Internal(_))),
@@ -484,9 +484,9 @@ fn saved_table_self_and_later_references_fail_before_recursive_or_interrupted_va
         let mut t = (*t).clone();
         t.objects[0].evaluations[0] = r;
         let before = copy_graph(&g, &quiet());
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         assert!(matches!(
-            retain(&env, &mut g, Arc::new(t), &mut quiet()),
+            retain(&env, &mut g, Arc::new(t), &quiet()),
             Err(ValidationFailure::Internal(_))
         ));
         assert_eq!(g.nodes, before.nodes);

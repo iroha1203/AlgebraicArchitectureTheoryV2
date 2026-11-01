@@ -21,7 +21,7 @@ fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
         .unwrap()
 }
 fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input(false, false, "r1"), asks, &mut quiet());
+    let r = evaluate_observed_bytes(fixture::input(false, false, "r1"), asks, &quiet());
     match r {
         Ok(r) => r,
         Err(e) => {
@@ -224,7 +224,7 @@ fn answer_owner_empty_and_multiple_snapshot_fibers_preserve_declared_domains() {
             "take=check(Reservations.adOwned,a=$owner.value)",
             "owner=evaluate(Reservations.adOwner,a=@w/A)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let w = r.wire();
@@ -298,7 +298,7 @@ fn answer_owner_failed_and_unprovided_bindings_keep_conditions_original_reasons_
                 "opaque=evaluate(Reservations.adOpaque)",
                 "emptyOwners=evaluate(Reservations.adEmpty)",
             ],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let w = r.wire();
@@ -378,8 +378,8 @@ fn answer_owner_families_keep_inputs_original_dag_support_and_current_provenance
     ];
     let input = fixture::input(false, false, "r1");
     let original = input.clone();
-    let before = check_inputs(input.clone(), &mut quiet()).unwrap();
-    let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
+    let before = check_inputs(input.clone(), &quiet()).unwrap();
+    let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
     assert_eq!(r.status(), "complete");
     let checked = r.prepared().inputs();
     assert_eq!(checked.sources(), &original);
@@ -449,7 +449,7 @@ fn answer_owner_families_keep_inputs_original_dag_support_and_current_provenance
     let producer_nodes = arr(f(&pw, "nodes"));
     assert_eq!(&arr(f(&w, "nodes"))[..producer_nodes.len()], producer_nodes);
     let moved =
-        evaluate_observed_bytes(fixture::input(false, false, "r2"), &asks, &mut quiet()).unwrap();
+        evaluate_observed_bytes(fixture::input(false, false, "r2"), &asks, &quiet()).unwrap();
     let mw = moved.wire();
     assert_eq!(f(&w, "nodes"), f(&mw, "nodes"));
     assert_eq!(f(&w, "answers"), f(&mw, "answers"));
@@ -481,7 +481,7 @@ fn answer_owner_families_still_reject_static_invalid_bindings_before_nodes() {
                 "flag=evaluate(Reservations.adFlag)",
                 "owners=evaluate(Reservations.adOwners,a=@v/A,b=@v/B)",
             ],
-            &mut quiet(),
+            &quiet(),
         );
         let wire = match outcome {
             Ok(r) => r.wire(),
@@ -510,7 +510,7 @@ fn answer_owner_fixed_owned_constraints_are_checked_before_finite_family_evaluat
                 "owners=evaluate(Reservations.adOwners,a=@v/A,b=@v/B)",
             ];
             let prepared =
-                prepare_observed(fixture::input(false, false, "r1"), &asks, &mut quiet()).unwrap();
+                prepare_observed(fixture::input(false, false, "r1"), &asks, &quiet()).unwrap();
             assert!(
                 prepared.requests().requests()[0]
                     .constraints

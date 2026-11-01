@@ -53,8 +53,7 @@ fn fixture(omitted: &[&str], helpers: &str, caller: &str) -> InputSources {
       {"name":"t","type":["Tuple","Z","Q",["Fp","5"]],"meaning":"数値Tuple。"},
       {"name":"p","type":"Bool","meaning":"条件。"}],"alignments":[]}]}]}"#;
     let checked =
-        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
-            .unwrap();
+        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &quiet()).unwrap();
     let digest = &checked.vocabularies()["Calls"].digest;
     // 実在するreading Hよりも、Calcのuse Helpers as Hを優先して解決する。
     let law = format!(
@@ -85,9 +84,9 @@ reading Calc {{ use vocabulary Calls version "1" digest "{digest}"; use Helpers 
     )
 }
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut quiet())
+    let checked = check_inputs(inputs.clone(), &quiet())
         .unwrap_or_else(|e| panic!("入力検査: {:?}", e.issues()));
-    let result = evaluate_observed_bytes(inputs, asks, &mut quiet())
+    let result = evaluate_observed_bytes(inputs, asks, &quiet())
         .unwrap_or_else(|e| panic!("観測評価: {e:?}"))
         .wire();
     assert_ne!(
@@ -954,7 +953,7 @@ fn invalid_callee_and_argument_types_are_rejected_from_bytes_at_original_locatio
         let inputs = fixture(&[], helpers, caller);
         let law = inputs.law().bytes().to_vec();
         let failure =
-            evaluate_observed_bytes(inputs, &["v=evaluate(Calc.good,s=@v/sample)"], &mut quiet())
+            evaluate_observed_bytes(inputs, &["v=evaluate(Calc.good,s=@v/sample)"], &quiet())
                 .unwrap_err();
         let wire = failure.wire().expect("静的不正は型付きinvalidを返す");
         assert_eq!(f(&wire, "status"), &Json::str("invalid"), "{caller}");
@@ -993,15 +992,15 @@ fn checkpoint_cancellations_keep_public_answers_and_verified_prefixes() {
     ];
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut baseline = Control::new(move |point| {
+    let baseline = Control::new(move |point| {
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
         None
     });
     let inputs = fixture(&["p"], helpers, caller);
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
-    let prior = evaluate_observed_bytes(inputs.clone(), &asks[..2], &mut baseline)
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
+    let prior = evaluate_observed_bytes(inputs.clone(), &asks[..2], &baseline)
         .unwrap()
         .wire();
     output(&prior, "seed", &Json::str("Z"), Json::str("4"));
@@ -1014,7 +1013,7 @@ fn checkpoint_cancellations_keep_public_answers_and_verified_prefixes() {
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (expressions, calls, stop) = (expression_count.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             calls.set(calls.get() + 1);
             if point == Checkpoint::Expression {
                 expressions.set(expressions.get() + 1);
@@ -1025,7 +1024,7 @@ fn checkpoint_cancellations_keep_public_answers_and_verified_prefixes() {
             }
             None
         });
-        let result = evaluate_observed_bytes(inputs.clone(), &asks, &mut control)
+        let result = evaluate_observed_bytes(inputs.clone(), &asks, &control)
             .unwrap()
             .wire();
         assert_eq!(
@@ -1173,7 +1172,7 @@ fn owned_callee_parameters_use_membership_evidence_and_respect_map_constraints()
     let direct_failure = evaluate_observed_bytes(
         sources(original_map),
         &["bad=evaluate(Reservations.owned,system=@v/A,s=@v/r)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_err();
     let direct_invalid = direct_failure
@@ -1279,7 +1278,7 @@ fn owned_callee_parameters_use_membership_evidence_and_respect_map_constraints()
             return_span,
         ),
     ] {
-        let result = evaluate_observed_bytes(sources(map), &[ask], &mut quiet()).unwrap();
+        let result = evaluate_observed_bytes(sources(map), &[ask], &quiet()).unwrap();
         let wire = result.wire();
         if label == "same owner named call" {
             assert_eq!(result.status(), "complete");

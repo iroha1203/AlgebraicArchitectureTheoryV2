@@ -135,7 +135,7 @@ impl MapCandidate {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         let (candidate, _) = self.recompute(inputs, control)?;
         if candidate.as_ref() != Some(self) {
@@ -148,7 +148,7 @@ impl MapCandidate {
     fn recompute(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(Option<MapCandidate>, Option<ConfigurationMap>), ConstructionFailure> {
         match &self.origin {
             MapOrigin::Derived(origin) => {
@@ -205,7 +205,7 @@ impl ConfigurationMap {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         let (_, map) = self.candidate.recompute(inputs, control)?;
         if map.as_ref() != Some(self) {
@@ -326,7 +326,7 @@ impl CorrespondenceResult {
         subject: &str,
         reading: &str,
         to_reading: Option<&str>,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         if self != &correspondence(inputs, snapshot, subject, reading, to_reading, control)? {
             return Err(ConstructionFailure::Inconsistent(
@@ -336,7 +336,7 @@ impl CorrespondenceResult {
         check(control)
     }
 }
-fn check(control: &mut Control) -> Result<(), ConstructionFailure> {
+fn check(control: &Control) -> Result<(), ConstructionFailure> {
     control
         .checkpoint(Checkpoint::ConfigurationMap)
         .map_err(Into::into)
@@ -344,7 +344,7 @@ fn check(control: &mut Control) -> Result<(), ConstructionFailure> {
 fn field<'a>(
     subject: &'a Subject,
     name: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<&'a Field>, ConstructionFailure> {
     for f in &subject.fields {
         check(control)?;
@@ -358,7 +358,7 @@ fn subject<'a>(
     inputs: &'a CheckedInputs,
     snapshot: &str,
     id: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<&'a Subject, ConstructionFailure> {
     for s in inputs.archmap().snapshots() {
         check(control)?;
@@ -388,7 +388,7 @@ fn endpoint(
     holder: &Subject,
     name: &str,
     missing: &mut BTreeSet<FactPointer>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<SubjectKey>, ConstructionFailure> {
     let f = field(holder, name, control)?
         .ok_or_else(|| ConstructionFailure::Inconsistent(format!("原始候補の{name} slotがない")))?;
@@ -405,7 +405,7 @@ fn endpoint(
 fn reference_shape(
     value: &Value,
     moved: &BTreeMap<SubjectKey, SubjectKey>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<String>, ConstructionFailure> {
     enum Work<'a> {
         Visit(&'a Value),
@@ -501,7 +501,7 @@ fn reference_violation(
     target: &Value,
     moved: &BTreeMap<SubjectKey, SubjectKey>,
     unknown: &BTreeSet<SubjectKey>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<bool, ConstructionFailure> {
     reference_constraints_violation(&[(source, target)], moved, unknown, control)
 }
@@ -509,7 +509,7 @@ fn reference_constraints_violation(
     fields: &[(&Value, &Value)],
     moved: &BTreeMap<SubjectKey, SubjectKey>,
     unknown: &BTreeSet<SubjectKey>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<bool, ConstructionFailure> {
     let mut variables = BTreeSet::new();
     let mut target_shapes = Vec::new();
@@ -525,7 +525,7 @@ fn reference_constraints_violation(
         target_shapes.push(reference_shape(target, &BTreeMap::new(), control)?);
     }
     let matches = |trial: &BTreeMap<SubjectKey, SubjectKey>,
-                   control: &mut Control|
+                   control: &Control|
      -> Result<bool, ConstructionFailure> {
         for ((source, _), shape) in fields.iter().zip(&target_shapes) {
             check(control)?;
@@ -667,7 +667,7 @@ fn typed_reference_constraints_violation(
     fields: &[(&Value, &Value)],
     unresolved_fields: &[FactPointer],
     field_map: &BTreeMap<&str, &str>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<bool, ConstructionFailure> {
     if reference_constraints_violation(fields, moved, unknown, control)? {
         return Ok(true);
@@ -902,7 +902,7 @@ fn preservation_counterexamples(
     target_config: &Configuration,
     target_complete: bool,
     action: &BTreeMap<FactPointer, FactPointer>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<Counterexample>, ConstructionFailure> {
     let mut counterexamples = Vec::new();
     append_preservation_counterexamples(
@@ -921,7 +921,7 @@ fn append_preservation_counterexamples(
     target_complete: bool,
     action: &BTreeMap<FactPointer, FactPointer>,
     counterexamples: &mut Vec<Counterexample>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(), ConstructionFailure> {
     let target_family: BTreeSet<_> = target_config.family().iter().collect();
     let target_relations: BTreeSet<_> = target_config.relations().iter().collect();
@@ -977,7 +977,7 @@ pub fn correspondence(
     id: &str,
     reading: &str,
     to_reading: Option<&str>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<CorrespondenceResult, ConstructionFailure> {
     correspondence_retained(inputs, snapshot, id, reading, to_reading, control)
         .map_err(|failure| failure.cause)
@@ -989,7 +989,7 @@ pub fn correspondence_retained(
     id: &str,
     reading: &str,
     to_reading: Option<&str>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<CorrespondenceResult, CorrespondenceFailure> {
     check(control)?;
     let holder = subject(inputs, snapshot, id, control)?;
@@ -1346,7 +1346,7 @@ mod tests {
                 &target,
                 &moved,
                 &BTreeSet::new(),
-                &mut Control::unlimited()
+                &Control::unlimited()
             )
             .unwrap()
         );
@@ -1360,7 +1360,7 @@ mod tests {
                 &target,
                 &moved,
                 &BTreeSet::new(),
-                &mut Control::unlimited()
+                &Control::unlimited()
             )
             .unwrap()
         );
@@ -1379,7 +1379,7 @@ mod tests {
                 &target,
                 &BTreeMap::new(),
                 &unknown,
-                &mut Control::unlimited()
+                &Control::unlimited()
             )
             .unwrap()
         );
@@ -1414,7 +1414,7 @@ mod tests {
                 include_bytes!("../../tests/fixtures/reservations.law").to_vec(),
                 map.into_bytes(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap_or_else(|f| panic!("{:?}", f.issues()))
     }
@@ -1427,7 +1427,7 @@ mod tests {
             "m",
             "Reservations",
             None,
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         original
@@ -1437,7 +1437,7 @@ mod tests {
                 "m",
                 "Reservations",
                 None,
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap();
         for kind in [
@@ -1467,7 +1467,7 @@ mod tests {
                         "m",
                         "Reservations",
                         None,
-                        &mut Control::unlimited()
+                        &Control::unlimited()
                     ),
                     Err(ConstructionFailure::Inconsistent(_))
                 ),
@@ -1475,15 +1475,8 @@ mod tests {
             );
         }
         let bad = self::inputs(true, false);
-        let mut forged = correspondence(
-            &bad,
-            "v",
-            "m",
-            "Reservations",
-            None,
-            &mut Control::unlimited(),
-        )
-        .unwrap();
+        let mut forged =
+            correspondence(&bad, "v", "m", "Reservations", None, &Control::unlimited()).unwrap();
         assert!(!forged.counterexamples.is_empty());
         assert!(forged.map.is_none());
         forged.counterexamples.clear();
@@ -1492,14 +1485,7 @@ mod tests {
         });
         assert!(
             matches!(
-                forged.recheck(
-                    &bad,
-                    "v",
-                    "m",
-                    "Reservations",
-                    None,
-                    &mut Control::unlimited()
-                ),
+                forged.recheck(&bad, "v", "m", "Reservations", None, &Control::unlimited()),
                 Err(ConstructionFailure::Inconsistent(_))
             ),
             "反例を消して検査済みmapを偽造できない"
@@ -1511,7 +1497,7 @@ mod tests {
             "m",
             "Reservations",
             None,
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert!(!forged.missing.is_empty());
@@ -1526,7 +1512,7 @@ mod tests {
                     "m",
                     "Reservations",
                     None,
-                    &mut Control::unlimited()
+                    &Control::unlimited()
                 ),
                 Err(ConstructionFailure::Inconsistent(_))
             ),

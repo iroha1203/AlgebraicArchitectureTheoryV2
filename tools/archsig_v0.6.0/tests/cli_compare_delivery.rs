@@ -130,11 +130,11 @@ fn comparison_request_resolution_stops_notify_without_starting_output_case(kind:
             &format!("comparison-resolver-stop-{kind}-{}", signal.wire()),
             kind,
         );
-        let mut control =
+        let control =
             Control::new(move |point| (point == Checkpoint::RequestBinding).then_some(signal));
         let mut io = Files::default();
         let mut signals = Finalize::default();
-        let outcome = run_requests(&mut io, &mut signals, &args, &mut control);
+        let outcome = run_requests(&mut io, &mut signals, &args, &control);
         assert_eq!(outcome.status, Status::Interrupted);
         assert_eq!(
             outcome.exit_code,
@@ -168,7 +168,7 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
     let value = kind != 0;
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut probe = Control::new(move |p| {
+    let probe = Control::new(move |p| {
         if p == Checkpoint::NativeResultNode {
             seen.set(seen.get() + 1);
         }
@@ -189,7 +189,7 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
         } else {
             &ASKS
         },
-        &mut probe,
+        &probe,
     )
     .unwrap();
     assert_eq!(original.status(), "complete");
@@ -216,7 +216,7 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
         );
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut control = Control::new(move |p| {
+        let control = Control::new(move |p| {
             if p == Checkpoint::NativeResultNode {
                 seen.set(seen.get() + 1);
             }
@@ -224,7 +224,7 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
         });
         let mut io = Files::default();
         let mut signals = Finalize::default();
-        let outcome = run_requests(&mut io, &mut signals, &args, &mut control);
+        let outcome = run_requests(&mut io, &mut signals, &args, &control);
         let code = match signal {
             Signal::Int => 130,
             Signal::Term => 143,
@@ -301,7 +301,7 @@ fn comparison_write_failures_remove_only_this_runs_temporary_directory_case(kind
             ..Files::default()
         };
         let mut signals = Finalize::default();
-        let outcome = run_requests(&mut io, &mut signals, &args, &mut Control::unlimited());
+        let outcome = run_requests(&mut io, &mut signals, &args, &Control::unlimited());
         assert_eq!(outcome.status, Status::Error);
         assert_eq!(outcome.exit_code, 74);
         assert!(outcome.result.is_none());

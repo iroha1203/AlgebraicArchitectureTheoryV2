@@ -93,11 +93,11 @@ impl Io for Files {
 fn map_request_resolution_stops_notify_without_starting_output() {
     for signal in [Signal::Int, Signal::Term] {
         let (dir, args) = setup(&format!("map-resolver-stop-{}", signal.wire()));
-        let mut control =
+        let control =
             Control::new(move |point| (point == Checkpoint::RequestBinding).then_some(signal));
         let mut io = Files::default();
         let mut signals = Finalize::default();
-        let outcome = run_requests(&mut io, &mut signals, &args, &mut control);
+        let outcome = run_requests(&mut io, &mut signals, &args, &control);
         assert_eq!(outcome.status, Status::Interrupted);
         assert_eq!(
             outcome.exit_code,
@@ -121,7 +121,7 @@ fn map_request_resolution_stops_notify_without_starting_output() {
 fn map_late_stops_publish_only_checked_values_with_consistent_status_and_exit() {
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut probe = Control::new(move |p| {
+    let probe = Control::new(move |p| {
         if p == Checkpoint::NativeResultNode {
             seen.set(seen.get() + 1);
         }
@@ -130,7 +130,7 @@ fn map_late_stops_publish_only_checked_values_with_consistent_status_and_exit() 
     let original = evaluate_observed_bytes(
         InputSources::from_bytes(vec![D.to_vec()], L.to_vec(), A.to_vec()),
         &[ASK],
-        &mut probe,
+        &probe,
     )
     .unwrap();
     assert_eq!(original.status(), "complete");
@@ -140,7 +140,7 @@ fn map_late_stops_publish_only_checked_values_with_consistent_status_and_exit() 
         let (dir, args) = setup(&format!("map-late-stop-{}", signal.wire()));
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut control = Control::new(move |p| {
+        let control = Control::new(move |p| {
             if p == Checkpoint::NativeResultNode {
                 seen.set(seen.get() + 1);
             }
@@ -148,7 +148,7 @@ fn map_late_stops_publish_only_checked_values_with_consistent_status_and_exit() 
         });
         let mut io = Files::default();
         let mut signals = Finalize::default();
-        let outcome = run_requests(&mut io, &mut signals, &args, &mut control);
+        let outcome = run_requests(&mut io, &mut signals, &args, &control);
         let code = match signal {
             Signal::Int => 130,
             Signal::Term => 143,
@@ -197,7 +197,7 @@ fn map_write_failures_remove_only_this_runs_temporary_directory() {
             ..Files::default()
         };
         let mut signals = Finalize::default();
-        let outcome = run_requests(&mut io, &mut signals, &args, &mut Control::unlimited());
+        let outcome = run_requests(&mut io, &mut signals, &args, &Control::unlimited());
         assert_eq!(outcome.status, Status::Error);
         assert_eq!(outcome.exit_code, 74);
         assert!(outcome.result.is_none());

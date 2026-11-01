@@ -45,7 +45,7 @@ fn quotient_maps(
     node: &Json,
     native: &[Node],
     into: &mut BTreeSet<String>,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
 ) -> Result<(), Signal> {
     let Json::Obj(fields) = node else {
@@ -266,7 +266,7 @@ fn remove_proof_refs(value: &mut Json, proofs: &BTreeSet<String>) -> bool {
 pub(super) fn compact(
     result: &mut Json,
     native: &[Node],
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
 ) -> Result<(), Signal> {
     clean_reasons(result);

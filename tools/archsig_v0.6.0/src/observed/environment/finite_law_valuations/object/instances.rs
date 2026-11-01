@@ -76,7 +76,7 @@ impl ObjectLawInstances {
     pub(in crate::observed) fn recheck(
         &self,
         inputs: &CheckedInputs,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         if inputs.sources() != &self.sources {
             return Err("Law instance添字族の元三入力が違う".into());
@@ -104,7 +104,7 @@ impl ObjectLawInstances {
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
         object: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         let selected = Selection::compute(inputs, readings, object, c)?;
         if selected != self.selection {
@@ -113,14 +113,14 @@ impl ObjectLawInstances {
         self.recheck(inputs, c)
     }
 }
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::FiniteLawSelection)
         .map_err(Into::into)
 }
 fn populate(
     inputs: &CheckedInputs,
     result: &mut ObjectLawInstances,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     let env = Environment::new(inputs, c)?;
     populate_with_environment(inputs, result, c, &env)
@@ -128,7 +128,7 @@ fn populate(
 fn populate_with_environment(
     inputs: &CheckedInputs,
     result: &mut ObjectLawInstances,
-    c: &mut Control,
+    c: &Control,
     env: &Environment<'_>,
 ) -> Result<(), ValidationFailure> {
     for (index, original) in result.selection.readings.instances().iter().enumerate() {
@@ -315,7 +315,7 @@ pub(in crate::observed) fn finite_object_law_instances(
     inputs: &CheckedInputs,
     readings: &ObjectReadingInstances,
     object: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<ObjectLawInstances, InstanceFamilyFailure> {
     let selection =
         Selection::compute(inputs, readings, object, c).map_err(|cause| InstanceFamilyFailure {

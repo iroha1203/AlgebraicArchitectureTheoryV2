@@ -14,7 +14,7 @@ fn prepared(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
         inputs.law(),
         inputs.archmap(),
         &["b=build(Selected,on=@v/root)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -24,7 +24,7 @@ fn prepared(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
     }
 }
 fn start(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -32,21 +32,21 @@ fn start(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let objects = crate::observed::object_component_diagram::retain(
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
     (g, a.reference, objects.architectures)
 }
 fn replay(p: &PreparedObserved, source: &Graph) -> Result<(), ValidationFailure> {
-    let env = Environment::with_prepared(p, &mut quiet())?;
+    let env = Environment::with_prepared(p, &quiet())?;
     let mut g = Graph::new(&quiet());
     g.requests = source.requests.clone();
     g.frames = source.frames.clone();
@@ -131,13 +131,13 @@ fn polynomial_outside_law_keeps_original_rows_roles_and_unread_body_in_every_obj
         false,
         "law required zero(c:Part):c.quantity=0;law optional one(c:Part):c.quantity=1;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, a, objects) = start(&p);
     let ds = crate::observed::polynomial_law_diagram::retain_family(
         &mut g,
         p.shared_inputs(),
         a,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut templates = 0;
@@ -146,7 +146,7 @@ fn polynomial_outside_law_keeps_original_rows_roles_and_unread_body_in_every_obj
         for o in &d.originals {
             let row = frames::origin(&g, o.reference).unwrap().unwrap();
             let before = g.nodes.len();
-            let answer = check(&env, &mut g, o.reference, objects[object], &mut quiet()).unwrap();
+            let answer = check(&env, &mut g, o.reference, objects[object], &quiet()).unwrap();
             assert_eq!(answer.is_some(), row.outside);
             if let Some(answer) = answer {
                 assert!(!row.ready);
@@ -176,22 +176,18 @@ fn finite_outside_law_preserves_missing_body_without_changing_inside_evaluation(
         true,
         "law required zero(c:Part):c.quantity=0;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, a, objects) = start(&p);
-    let ds = crate::observed::finite_law_diagram::retain_family(
-        &mut g,
-        p.shared_inputs(),
-        a,
-        &mut quiet(),
-    )
-    .unwrap()
-    .unwrap();
+    let ds =
+        crate::observed::finite_law_diagram::retain_family(&mut g, p.shared_inputs(), a, &quiet())
+            .unwrap()
+            .unwrap();
     let mut count = 0;
     for (object, d) in ds.iter().enumerate() {
         for o in &d.originals {
             let row = frames::origin(&g, o.row).unwrap().unwrap();
             let before = g.nodes.len();
-            let answer = check(&env, &mut g, o.row, objects[object], &mut quiet()).unwrap();
+            let answer = check(&env, &mut g, o.row, objects[object], &quiet()).unwrap();
             assert_eq!(answer.is_some(), row.outside);
             if let Some(answer) = answer {
                 assert_outside(&g, &answer, o.row, objects[object]);
@@ -205,7 +201,7 @@ fn finite_outside_law_preserves_missing_body_without_changing_inside_evaluation(
                         &mut g,
                         o.row,
                         objects[object],
-                        &mut quiet(),
+                        &quiet(),
                     )
                     .unwrap()
                     .answer
@@ -249,7 +245,7 @@ fn outside(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>, NodeRef, Node
         &mut g,
         p.shared_inputs(),
         a,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let origin = ds[1]
@@ -273,10 +269,10 @@ fn outside_law_rejects_inside_origin_other_object_truth_scope_binding_and_reques
         false,
         "law required zero(c:Part):c.quantity=0;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, origin, objects, _, inside) = outside(&p);
-    assert!(check(&env, &mut g, origin, objects[2], &mut quiet()).is_err());
-    let a = check(&env, &mut g, origin, objects[1], &mut quiet())
+    assert!(check(&env, &mut g, origin, objects[2], &quiet()).is_err());
+    let a = check(&env, &mut g, origin, objects[1], &quiet())
         .unwrap()
         .unwrap();
     let e = a.outputs["evaluation"];
@@ -340,10 +336,10 @@ fn outside_law_keeps_false_unknown_guard_and_unbounded_body_unread() {
             false,
             &format!("law required tested(c:Part) when {guard}:forall k:Z.k=0;"),
         ));
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let (mut g, origin, objects, _, _) = outside(&p);
         let before = g.nodes.len();
-        let a = check(&env, &mut g, origin, objects[1], &mut quiet())
+        let a = check(&env, &mut g, origin, objects[1], &quiet())
             .unwrap()
             .unwrap();
         assert_outside(&g, &a, origin, objects[1]);
@@ -362,21 +358,17 @@ fn finite_outside_law_keeps_every_boolean_binding_and_guard_independently() {
         true,
         "law optional bit(c:Part,b:Bool) when b:c.quantity=0;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, a, objects) = start(&p);
-    let ds = crate::observed::finite_law_diagram::retain_family(
-        &mut g,
-        p.shared_inputs(),
-        a,
-        &mut quiet(),
-    )
-    .unwrap()
-    .unwrap();
+    let ds =
+        crate::observed::finite_law_diagram::retain_family(&mut g, p.shared_inputs(), a, &quiet())
+            .unwrap()
+            .unwrap();
     let mut values = vec![];
     for (i, d) in ds.iter().enumerate() {
         for o in &d.originals {
             let row = frames::origin(&g, o.row).unwrap().unwrap();
-            let answer = check(&env, &mut g, o.row, objects[i], &mut quiet()).unwrap();
+            let answer = check(&env, &mut g, o.row, objects[i], &quiet()).unwrap();
             assert_eq!(answer.is_some(), row.outside);
             if let Some(answer) = answer {
                 assert_outside(&g, &answer, o.row, objects[i]);
@@ -406,16 +398,16 @@ fn outside_law_interrupt_keeps_exact_completed_prefix_and_final_proposition() {
     let (initial, origin, objects, _, _) = outside(&p);
     let seen = Rc::new(Cell::new(0));
     let counter = seen.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::ObjectEvaluation {
             counter.set(counter.get() + 1)
         }
         None
     });
     let mut complete = copy_graph(&initial, &c);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     assert!(
-        check(&env, &mut complete, origin, objects[1], &mut c)
+        check(&env, &mut complete, origin, objects[1], &c)
             .unwrap()
             .is_some()
     );
@@ -425,7 +417,7 @@ fn outside_law_interrupt_keeps_exact_completed_prefix_and_final_proposition() {
     for at in 1..=total {
         let seen = Rc::new(Cell::new(0));
         let counter = seen.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::ObjectEvaluation {
                 counter.set(counter.get() + 1)
             }
@@ -433,9 +425,9 @@ fn outside_law_interrupt_keeps_exact_completed_prefix_and_final_proposition() {
             stop.then_some(crate::result::Signal::Int)
         });
         let mut g = copy_graph(&initial, &c);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         assert!(matches!(
-            check(&env, &mut g, origin, objects[1], &mut c),
+            check(&env, &mut g, origin, objects[1], &c),
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.active, initial.active);
@@ -456,9 +448,9 @@ fn outside_law_self_and_future_refs_fail_before_recursive_recheck() {
         false,
         "law required zero(c:Part):c.quantity=0;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, origin, objects, _, _) = outside(&p);
-    let answer = check(&env, &mut g, origin, objects[1], &mut quiet())
+    let answer = check(&env, &mut g, origin, objects[1], &quiet())
         .unwrap()
         .unwrap();
     let e = answer.outputs["evaluation"];
@@ -468,7 +460,7 @@ fn outside_law_self_and_future_refs_fail_before_recursive_recheck() {
         let arm = armed.clone();
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if arm.get() && point == Checkpoint::FiniteIteration {
                 count.set(count.get() + 1)
             }
@@ -489,7 +481,7 @@ fn outside_law_self_and_future_refs_fail_before_recursive_recheck() {
         };
         let args = d.arguments();
         bad.nodes[e.0].arguments = args;
-        let env = Environment::with_prepared(&p, &mut control).unwrap();
+        let env = Environment::with_prepared(&p, &control).unwrap();
         armed.set(true);
         let result = env.recheck_node(&bad, &bad.nodes[e.0], e.0);
         results.push(result);
@@ -509,13 +501,13 @@ fn unbound_integer_parameter_keeps_its_quantifier_in_outside_propositions() {
         false,
         "law required unbounded(c:Part,k:Z):c.quantity=k;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, a, objects) = start(&p);
     let ds = crate::observed::polynomial_law_diagram::retain_family(
         &mut g,
         p.shared_inputs(),
         a,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut original_count = 0;
@@ -529,7 +521,7 @@ fn unbound_integer_parameter_keeps_its_quantifier_in_outside_propositions() {
                 .unwrap()
                 .outside;
             let before = g.nodes.len();
-            let answer = check(&env, &mut g, o.reference, objects[object], &mut quiet()).unwrap();
+            let answer = check(&env, &mut g, o.reference, objects[object], &quiet()).unwrap();
             assert_eq!(answer.is_some(), outside);
             if let Some(answer) = answer {
                 assert_outside(&g, &answer, o.reference, objects[object]);

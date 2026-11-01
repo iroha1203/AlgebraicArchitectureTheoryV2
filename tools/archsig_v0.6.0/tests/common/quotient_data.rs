@@ -167,7 +167,7 @@ fn finite_data_quotient_preserves_nested_values_and_law_binding_order() {
                 "good=quotient(Pair.shape,on=$s.domain,s=@v/s,law=Pair.held)",
                 "bad=quotient(Pair.shape,on=$s.domain,s=@v/s,law=Pair.hidden)",
             ],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();

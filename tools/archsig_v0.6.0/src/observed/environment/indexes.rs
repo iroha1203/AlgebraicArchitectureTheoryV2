@@ -101,7 +101,7 @@ impl<'a> InputIndexes<'a> {
 }
 
 impl<'a> InputIndexes<'a> {
-    pub fn new(inputs: &'a CheckedInputs, control: &mut Control) -> Result<Self, Signal> {
+    pub fn new(inputs: &'a CheckedInputs, control: &Control) -> Result<Self, Signal> {
         let mut subjects = BTreeMap::new();
         let mut fields = BTreeMap::new();
         let mut atoms = BTreeMap::new();
@@ -187,14 +187,14 @@ impl InputIndexes<'_> {
         let mut family = crate::observed::finite::Enumeration::default();
         for (index, snapshot) in self.inputs.archmap().snapshots().iter().enumerate() {
             observer(index);
-            control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+            control.checkpoint(Checkpoint::FiniteIteration)?;
             family.scope.snapshots.insert(snapshot.id.clone());
             family
                 .scope
                 .modes
                 .insert(self.origin_mode(&snapshot.origin)?.into());
             for subject in &snapshot.subjects {
-                control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+                control.checkpoint(Checkpoint::FiniteIteration)?;
                 if subject.ty == entity {
                     family.values.push(Scalar::Subject {
                         snapshot: snapshot.id.clone(),
@@ -212,9 +212,9 @@ impl InputIndexes<'_> {
                         atom: None,
                     });
                 }
-                control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+                control.checkpoint(Checkpoint::FiniteIteration)?;
             }
-            control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+            control.checkpoint(Checkpoint::FiniteIteration)?;
         }
         Ok(family)
     }

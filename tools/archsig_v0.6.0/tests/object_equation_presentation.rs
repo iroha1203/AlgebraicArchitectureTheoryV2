@@ -27,7 +27,7 @@ fn inputs_with(definition: &str, body: &str, map: &str) -> Arc<CheckedInputs> {
                 law.into_bytes(),
                 map.replace("@DIGEST@", digest).into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap_or_else(|f| panic!("{:?}", f.issues())),
     )
@@ -36,7 +36,7 @@ fn inputs(body: &str) -> Arc<CheckedInputs> {
     inputs_with(fixture::D, body, fixture::A)
 }
 fn run(i: Arc<CheckedInputs>) -> EquationPresentation {
-    object_equation_presentation(i, "Selected", "v", "root", 0, &mut quiet())
+    object_equation_presentation(i, "Selected", "v", "root", 0, &quiet())
         .unwrap_or_else(|f| panic!("{f:?}"))
 }
 fn terms(p: &EquationPolynomial) -> Vec<(Vec<usize>, String)> {
@@ -117,7 +117,7 @@ fn required_equations_share_x_and_keep_x_and_x_minus_one_without_quotienting() {
     let mut expected = vec![find("Selected.zero"), find("Selected.one")];
     expected.sort();
     assert_eq!(actual, expected);
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn products_negation_aliases_and_helper_calls_normalize_original_derivations() {
@@ -141,7 +141,7 @@ fn products_negation_aliases_and_helper_calls_normalize_original_derivations() {
             .iter()
             .any(|s| terms(&s.polynomial) == vec![(vec![0, 0], "\"1\"".into())])
     );
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn equal_values_in_distinct_subject_slots_are_distinct_shared_symbols() {
@@ -159,7 +159,7 @@ fn equal_values_in_distinct_subject_slots_are_distinct_shared_symbols() {
             .iter()
             .all(|q| q.component_holds == Some(true))
     );
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn nested_tuple_components_and_projection_keep_z_q_fp_rings_separate() {
@@ -184,7 +184,7 @@ fn nested_tuple_components_and_projection_keep_z_q_fp_rings_separate() {
     assert_eq!(q[1].ty, Type::Q);
     assert_eq!(q[2].ty, Type::Fp("5".into()));
     assert!(r.rings().iter().all(|v| v.required_generators.is_empty()));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn all_finite_parameter_rows_share_primitive_symbols_and_keep_concrete_coefficients() {
@@ -206,7 +206,7 @@ fn all_finite_parameter_rows_share_primitive_symbols_and_keep_concrete_coefficie
         assert_eq!(q.component_holds, Some(holds));
         assert_eq!(q.status, S::Ready);
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn missing_integer_slot_keeps_symbolic_nu_but_no_epsilon_or_total_substitution() {
@@ -239,7 +239,7 @@ fn missing_integer_slot_keeps_symbolic_nu_but_no_epsilon_or_total_substitution()
     assert!(q.component_holds.is_none());
     assert_eq!(r.rings()[0].required_generators, [0]);
     assert!(r.rings()[0].symbols[0].readings[0].fact.atom.is_none());
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn pure_false_and_state_dependent_guards_never_enter_required_ideal() {
@@ -269,7 +269,7 @@ fn pure_false_and_state_dependent_guards_never_enter_required_ideal() {
     assert!(dynamic.nu.is_some());
     assert_eq!(number(&dynamic.epsilon), Some("\"2\"".into()));
     assert_eq!(r.status(), S::UnsupportedAlgorithm);
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn state_dependent_piecewise_expression_is_not_its_observed_constant() {
@@ -284,13 +284,12 @@ fn state_dependent_piecewise_expression_is_not_its_observed_constant() {
         assert!(q.nu.is_none());
     }
     assert!(r.rings().iter().all(|r| r.required_generators.is_empty()));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn outside_selected_object_keeps_finite_rows_and_symbolic_equation_without_body_evaluation() {
     let i = inputs("law required onlyRoot(a:Root,b:Bool):2=1;");
-    let r =
-        object_equation_presentation(i.clone(), "Selected", "v", "root", 1, &mut quiet()).unwrap();
+    let r = object_equation_presentation(i.clone(), "Selected", "v", "root", 1, &quiet()).unwrap();
     assert_eq!(r.object(), 1);
     assert!(r.is_complete());
     assert_eq!(r.status(), S::Ready);
@@ -321,7 +320,7 @@ fn outside_selected_object_keeps_finite_rows_and_symbolic_equation_without_body_
             .iter()
             .all(|ring| ring.required_generators.is_empty())
     );
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn empty_law_and_empty_parameter_domains_do_not_invent_occurrences() {
@@ -335,7 +334,7 @@ fn empty_law_and_empty_parameter_domains_do_not_invent_occurrences() {
         assert_eq!(r.status(), S::Ready);
         assert!(r.occurrences().is_empty());
         assert!(r.rings().is_empty());
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -343,9 +342,9 @@ fn changed_current_input_and_invalid_object_are_rejected() {
     let i = inputs("law required amount(c:Part):c.quantity=0;");
     let r = run(i.clone());
     let changed = inputs("law required amount(c:Part):c.quantity=1;");
-    assert!(r.recheck(changed, &mut quiet()).is_err());
+    assert!(r.recheck(changed, &quiet()).is_err());
     assert!(matches!(
-        object_equation_presentation(i, "Selected", "v", "root", 2, &mut quiet()),
+        object_equation_presentation(i, "Selected", "v", "root", 2, &quiet()),
         Err(EquationPresentationFailure::Selection(_))
     ));
 }
@@ -359,11 +358,11 @@ fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_com
     let baseline = run(i.clone());
     let history = Rc::new(RefCell::new(Vec::new()));
     let h = history.clone();
-    let mut traced = Control::new(move |p| {
+    let traced = Control::new(move |p| {
         h.borrow_mut().push(p);
         None
     });
-    object_equation_presentation(i.clone(), "Selected", "v", "root", 0, &mut traced).unwrap();
+    object_equation_presentation(i.clone(), "Selected", "v", "root", 0, &traced).unwrap();
     for at in [C::EquationPresentation, C::EquationPresentationRow] {
         let count = history.borrow().iter().filter(|p| **p == at).count();
         assert!(count > 0);
@@ -373,7 +372,7 @@ fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_com
             let probes = Rc::new(RefCell::new(0));
             let p = probes.clone();
             let expected = Signal::Int;
-            let mut c = Control::new(move |point| {
+            let c = Control::new(move |point| {
                 *p.borrow_mut() += 1;
                 if point == at {
                     *h.borrow_mut() += 1;
@@ -384,7 +383,7 @@ fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_com
                     None
                 }
             });
-            let f = object_equation_presentation(i.clone(), "Selected", "v", "root", 0, &mut c)
+            let f = object_equation_presentation(i.clone(), "Selected", "v", "root", 0, &c)
                 .unwrap_err();
             let EquationPresentationFailure::Reading {
                 cause: ConstructionFailure::Stopped(reason),
@@ -460,7 +459,7 @@ fn primitive_q_and_fp_coefficients_use_the_declared_rings_and_normalize_exactly(
         );
         assert_eq!(number(&q.epsilon), Some(epsilon.into()));
         assert_eq!(q.evaluated_nu, q.epsilon);
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -492,7 +491,7 @@ fn primitive_tuple_positions_are_shared_separately_even_with_equal_values() {
             .iter()
             .all(|q| q.component_holds == Some(false))
     );
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn finite_fp_parameter_domain_keeps_all_five_coefficients_in_one_shared_ring() {
@@ -520,7 +519,7 @@ fn finite_fp_parameter_domain_keeps_all_five_coefficients_in_one_shared_ring() {
         assert_eq!(number(&q.epsilon), Some(format!("\"{}\"", (4 + n) % 5)));
         assert_eq!(q.component_holds, Some(n == 1));
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn changed_provenance_keeps_slot_identity_but_is_rejected_as_stale_evidence() {
@@ -535,7 +534,7 @@ fn changed_provenance_keeps_slot_identity_but_is_rejected_as_stale_evidence() {
     let fresh = run(changed.clone());
     assert_eq!(r.rings(), fresh.rings());
     assert_eq!(r.occurrences(), fresh.occurrences());
-    assert!(r.recheck(changed, &mut quiet()).is_err());
+    assert!(r.recheck(changed, &quiet()).is_err());
     assert_eq!(
         r.base().base().readings().construction(),
         fresh.base().base().readings().construction()
@@ -564,7 +563,7 @@ fn missing_boolean_guard_cases_are_not_global_true_required_generators() {
         assert_eq!(q.status, S::UnsupportedAlgorithm);
     }
     assert_eq!(r.status(), S::UnsupportedAlgorithm);
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn two_distinct_symbols_commute_and_cancel_with_original_support_retained() {
@@ -593,7 +592,7 @@ fn two_distinct_symbols_commute_and_cancel_with_original_support_retained() {
             .flat_map(|q| &q.steps)
             .any(|s| terms(&s.polynomial) == vec![(vec![0, 1], "\"1\"".into())])
     );
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 fn two_subjects() -> String {
     fixture::A.replace("{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"}","{\"id\":\"p\",\"type\":\"Pattern.Part\",\"origin\":\"model\"},{\"id\":\"q\",\"type\":\"Pattern.Part\",\"origin\":\"model\"}")
@@ -653,7 +652,7 @@ fn state_dependent_reference_base_is_not_observed_slot_even_through_alias_helper
         if index > 0 {
             continue;
         }
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
         let changed = inputs_with(
             fixture::D,
             law,
@@ -688,7 +687,7 @@ fn fixed_reference_binders_helpers_and_primitive_chains_keep_polynomial_fields()
         assert_eq!(r.rings()[0].symbols[0].slot.subject, "p");
         assert_eq!(terms(q.nu.as_ref().unwrap()), [(vec![0], "\"1\"".into())]);
         assert_eq!(number(&q.epsilon), Some("\"2\"".into()));
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -715,7 +714,7 @@ fn unused_bindings_arguments_and_projected_positions_keep_full_shared_support() 
                 .any(|v| v.position == q.position && v.row == q.row && v.case == q.case)
         );
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn missing_unused_support_remains_unknown_even_when_the_constant_equation_holds() {
@@ -741,7 +740,7 @@ fn missing_unused_support_remains_unknown_even_when_the_constant_equation_holds(
     assert_eq!(q.component_holds, Some(true));
     assert_eq!(number(&q.epsilon), Some("\"0\"".into()));
     assert_eq!(q.status, S::Undetermined);
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn nonnumeric_false_guard_and_outside_object_are_not_applicable() {
@@ -752,16 +751,15 @@ fn nonnumeric_false_guard_and_outside_object_are_not_applicable() {
     assert_eq!(r.occurrences()[0].guard, G::AlwaysFalse);
     assert!(r.occurrences()[0].nu.is_none());
     assert!(r.rings().is_empty());
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
     let i = inputs("law required rootOnly(a:Root):false;");
-    let r =
-        object_equation_presentation(i.clone(), "Selected", "v", "root", 1, &mut quiet()).unwrap();
+    let r = object_equation_presentation(i.clone(), "Selected", "v", "root", 1, &quiet()).unwrap();
     assert_eq!(r.status(), S::Ready);
     assert_eq!(r.occurrences()[0].status, S::NotApplicable);
     assert_eq!(r.occurrences()[0].guard, G::OutsideObject);
     assert!(r.occurrences()[0].nu.is_none());
     assert!(r.rings().is_empty());
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn unused_state_dependent_reference_keeps_each_reading_without_symbolizing_its_value() {
@@ -817,7 +815,7 @@ fn unused_state_dependent_reference_keeps_each_reading_without_symbolizing_its_v
                 assert_eq!(number(&q.epsilon), Some("\"0\"".into()));
             }
             if index == 0 {
-                r.recheck(i, &mut quiet()).unwrap();
+                r.recheck(i, &quiet()).unwrap();
             }
         }
         // 数値条件で直接使う場合は state_dependent_reference_base が確かめる。
@@ -839,7 +837,7 @@ fn unused_state_dependent_reference_keeps_each_reading_without_symbolizing_its_v
                 assert!(q.nu.is_none());
             }
         }
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 
@@ -876,7 +874,7 @@ fn missing_reference_completion_is_not_a_fixed_polynomial_slot() {
             std::collections::BTreeSet::from(["\"2\"".into(), "\"3\"".into()])
         );
         if index == 0 {
-            r.recheck(i, &mut quiet()).unwrap();
+            r.recheck(i, &quiet()).unwrap();
         }
     }
 }
@@ -937,7 +935,7 @@ fn logical_and_normalized_numeric_guard_constants_keep_required_ideals_and_suppo
         assert_eq!(q.component_holds, truth.then_some(false));
         assert_eq!(number(&q.evaluated_nu), truth.then(|| "\"2\"".into()));
         assert_eq!(terms(q.nu.as_ref().unwrap()), [(vec![0], "\"1\"".into())]);
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -985,7 +983,7 @@ fn current_guard_truth_and_distinct_slots_do_not_prove_a_global_constant() {
         assert_eq!(r.rings()[0].required_generators, expected);
         // 再検査は正規化で恒真になる最後の guard だけで確かめる。
         if guard == "c.quantity+1=d.quantity+1" {
-            r.recheck(i, &mut quiet()).unwrap();
+            r.recheck(i, &quiet()).unwrap();
         }
     }
 }
@@ -1055,7 +1053,7 @@ fn missing_boolean_guard_constants_keep_each_completion_and_original_support() {
             };
             assert!(missing_fact(&nodes[q.evaluation.unwrap()]));
         }
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -1088,7 +1086,7 @@ fn rational_and_prime_field_guard_normalization_uses_the_original_coefficient_ri
         let (_, q) = find(G::AlwaysFalse);
         assert_eq!(q.status, S::NotApplicable);
         assert_eq!(number(&q.epsilon), Some(epsilon.into()));
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 
@@ -1116,7 +1114,7 @@ fn missing_integer_guard_cancellation_proves_truth_without_inventing_an_observat
     assert!(r.rings()[0].evaluation_images.is_none());
     assert!(r.rings()[0].symbols[0].value.is_none());
     assert!(r.rings()[0].symbols[0].readings[0].fact.atom.is_none());
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 fn missing_owner_map() -> String {
@@ -1151,7 +1149,7 @@ fn unknown_finite_parameter_domain_is_not_a_completed_empty_equation_family() {
                 .iter()
                 .any(|f| f.subject == "p" && f.field.as_deref() == Some("Pattern.Part.owner"))
     }));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn unknown_parameter_family_keeps_complete_counterexample_without_marking_final_row_complete() {
@@ -1171,14 +1169,14 @@ fn unknown_parameter_family_keeps_complete_counterexample_without_marking_final_
     assert_eq!(number(&q.epsilon), Some("\"1\"".into()));
     assert_eq!(r.rings()[0].required_generators, [0]);
     assert!(r.base().evaluations().iter().any(|e| !e.complete));
-    r.recheck(i.clone(), &mut quiet()).unwrap();
+    r.recheck(i.clone(), &quiet()).unwrap();
     for recheck in [false, true] {
-        let mut control =
+        let control =
             Control::new(|p| (p == Checkpoint::EquationPresentationRow).then_some(Signal::Int));
         let failure = if recheck {
-            r.recheck(i.clone(), &mut control).unwrap_err()
+            r.recheck(i.clone(), &control).unwrap_err()
         } else {
-            object_equation_presentation(i.clone(), "Selected", "v", "root", 0, &mut control)
+            object_equation_presentation(i.clone(), "Selected", "v", "root", 0, &control)
                 .unwrap_err()
         };
         let EquationPresentationFailure::Reading { cause, partial } = failure else {
@@ -1225,7 +1223,7 @@ fn match_bindings_keep_original_field_polynomials_through_helpers_and_projection
         assert_eq!(r.rings()[0].symbols[0].slot.field, "Pattern.Part.quantity");
         assert!(!r.rings()[0].symbols[0].readings.is_empty());
         assert!(q.steps.len() > 1);
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -1244,7 +1242,7 @@ fn match_bindings_prove_guard_constants_without_discarding_primitive_support() {
         assert_eq!(r.rings()[0].required_generators, [0]);
         assert_eq!(r.rings()[0].symbols.len(), 1);
         assert_eq!(number(&r.occurrences()[0].epsilon), Some("\"2\"".into()));
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 
@@ -1266,7 +1264,7 @@ fn constructor_selection_from_a_primitive_field_is_not_its_observed_branch_polyn
         assert_eq!(number(&q.epsilon), Some(epsilon.into()));
         assert!(r.rings()[0].required_generators.is_empty());
         assert!(q.evaluation.is_some());
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 
@@ -1298,7 +1296,7 @@ fn unobserved_outer_match_keeps_its_slot_without_executing_a_missing_body() {
     assert!(r.rings()[0].symbols[0].readings[0].fact.atom.is_none());
     assert!(r.rings()[0].evaluation_images.is_none());
     assert!(r.rings()[0].required_generators.is_empty());
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -1364,7 +1362,7 @@ fn inactive_prime_field_equations_keep_symbolic_arithmetic_without_evaluating_mi
                 (!missing).then(|| format!("\"{value}\""))
             );
             assert!(ring.symbols[0].readings.is_empty());
-            r.recheck(i, &mut quiet()).unwrap();
+            r.recheck(i, &quiet()).unwrap();
         }
     }
 }

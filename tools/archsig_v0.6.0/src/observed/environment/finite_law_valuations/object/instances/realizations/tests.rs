@@ -6,8 +6,8 @@ mod fixture {
 }
 use crate::control::quiet;
 fn reading(i: &CheckedInputs, root: &str) -> ObjectReadingInstances {
-    let construction = construct(i, "Selected", "v", root, &mut quiet()).unwrap();
-    object_reading_instances(i, &construction, &mut quiet()).unwrap()
+    let construction = construct(i, "Selected", "v", root, &quiet()).unwrap();
+    object_reading_instances(i, &construction, &quiet()).unwrap()
 }
 fn object(r: &ObjectReadingInstances, name: &str) -> usize {
     r.objects()
@@ -28,7 +28,7 @@ fn entry<'a>(f: &'a ObjectLawInstances, law: &str, subject: &str) -> &'a Instanc
         .unwrap()
 }
 fn result(i: &CheckedInputs, r: &ObjectReadingInstances) -> FiniteParameterRealizations {
-    finite_parameter_realizations(i, r, &mut quiet()).unwrap()
+    finite_parameter_realizations(i, r, &quiet()).unwrap()
 }
 fn root_members(f: &FiniteParameterRealizations, point: usize) -> usize {
     f.domain[point]
@@ -111,9 +111,9 @@ fn every_primitive_owner_assignment_has_its_actual_parameter_fiber() {
         }
     }
     f.rows[3].objects[root]
-        .recheck_on_object(&i, &r, root, &mut quiet())
+        .recheck_on_object(&i, &r, root, &quiet())
         .unwrap();
-    f.recheck(&i, &r, &mut quiet()).unwrap();
+    f.recheck(&i, &r, &quiet()).unwrap();
 }
 #[test]
 fn missing_observation_does_not_drop_parameters_that_exist_in_other_assignments() {
@@ -154,14 +154,14 @@ fn missing_observation_does_not_drop_parameters_that_exist_in_other_assignments(
             && p.field.as_deref() == Some("Pattern.Part.owner")
             && p.atom.is_none()));
     }
-    let observed = finite_object_law_instances(&i, &r, root, &mut quiet()).unwrap();
+    let observed = finite_object_law_instances(&i, &r, root, &quiet()).unwrap();
     assert!(!observed.is_complete());
     assert_eq!(entry(&observed, "owned", "q").application_value, None);
     assert_eq!(
         entry(&observed, "owned", "q").state,
         ParameterFamilyState::Undetermined
     );
-    f.recheck(&i, &r, &mut quiet()).unwrap();
+    f.recheck(&i, &r, &quiet()).unwrap();
 }
 #[test]
 fn map_parameter_is_total_on_each_actual_owned_domain() {
@@ -283,7 +283,7 @@ fn infinite_parameter_keeps_type_and_does_not_become_completed_empty_product() {
     assert_eq!(e.domains[0].values.as_ref().unwrap().len(), 2);
     assert_eq!(e.domains[2].values.as_ref().unwrap().len(), 2);
     assert!(e.rows.is_empty());
-    f.recheck(&i, &r, &mut quiet()).unwrap();
+    f.recheck(&i, &r, &quiet()).unwrap();
 }
 #[test]
 fn known_empty_parameter_annihilates_nonfinite_factor_without_erasing_it() {
@@ -323,8 +323,8 @@ fn empty_law_set_keeps_all_objects_and_the_single_empty_assignment() {
             .iter()
             .all(|o| o.entries().is_empty() && o.is_complete())
     );
-    f.recheck(&i, &r, &mut quiet()).unwrap();
-    assert!(f.recheck(&i, &reading(&i, "r2"), &mut quiet()).is_err());
+    f.recheck(&i, &r, &quiet()).unwrap();
+    assert!(f.recheck(&i, &reading(&i, "r2"), &quiet()).is_err());
 }
 #[test]
 fn every_domain_row_application_and_source_is_rebuilt_before_reuse() {
@@ -361,13 +361,13 @@ fn every_domain_row_application_and_source_is_rebuilt_before_reuse() {
             _ => bad.domain_complete = false,
         }
         assert!(
-            bad.recheck(&i, &r, &mut quiet()).is_err(),
+            bad.recheck(&i, &r, &quiet()).is_err(),
             "mutation {mutation}"
         );
     }
     let changed = fixture::with_body(&(fixture::MAP.to_string() + " "), OWNED);
-    assert!(f.recheck(&changed, &r, &mut quiet()).is_err());
-    assert!(f.recheck(&i, &reading(&i, "r2"), &mut quiet()).is_err());
+    assert!(f.recheck(&changed, &r, &quiet()).is_err());
+    assert!(f.recheck(&i, &reading(&i, "r2"), &quiet()).is_err());
 }
 #[test]
 fn set_parameter_contains_every_subset_of_the_current_fiber() {
@@ -438,7 +438,7 @@ fn mixed_infinite_and_dependent_domains_keep_each_point_metadata() {
             && p.atom.is_none()));
         assert!(e.rows.is_empty());
     }
-    f.recheck(&i, &r, &mut quiet()).unwrap();
+    f.recheck(&i, &r, &quiet()).unwrap();
 }
 #[test]
 fn fixed_stops_publish_only_finished_points_and_keep_the_original_readings() {
@@ -448,13 +448,13 @@ fn fixed_stops_publish_only_finished_points_and_keep_the_original_readings() {
     let r = reading(&i, "root");
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(move |p| {
-        if p == Checkpoint::FiniteLawRequired {
+    let c = Control::new(move |p| {
+        if p == Checkpoint::Work {
             seen.set(seen.get() + 1);
         }
         (seen.get() >= 1).then_some(Signal::Term)
     });
-    let error = finite_parameter_realizations(&i, &r, &mut c).unwrap_err();
+    let error = finite_parameter_realizations(&i, &r, &c).unwrap_err();
     assert!(matches!(error.cause, ValidationFailure::Stop(_)));
     let partial = error.partial.unwrap();
     assert_eq!(partial.readings(), &r);
@@ -471,15 +471,15 @@ fn fixed_stops_publish_only_finished_points_and_keep_the_original_readings() {
             .iter()
             .all(ObjectLawInstances::is_complete)
     );
-    assert!(partial.recheck(&i, &r, &mut quiet()).is_err());
+    assert!(partial.recheck(&i, &r, &quiet()).is_err());
 }
 #[test]
 fn domain_interrupt_keeps_source_and_never_claims_a_finished_empty_domain() {
     use crate::result::Signal;
     let i = fixture::with_body(fixture::MAP, OWNED);
     let r = reading(&i, "root");
-    let mut c = Control::new(|p| (p == Checkpoint::FiniteLawDomain).then_some(Signal::Int));
-    let error = finite_parameter_realizations(&i, &r, &mut c).unwrap_err();
+    let c = Control::new(|p| (p == Checkpoint::FiniteLawDomain).then_some(Signal::Int));
+    let error = finite_parameter_realizations(&i, &r, &c).unwrap_err();
     assert!(matches!(error.cause, ValidationFailure::Stop(_)));
     let partial = error.partial.unwrap();
     assert_eq!(partial.readings(), &r);
@@ -487,7 +487,7 @@ fn domain_interrupt_keeps_source_and_never_claims_a_finished_empty_domain() {
     assert!(!partial.domain_complete);
     assert!(!partial.is_complete());
     assert!(partial.rows.is_empty());
-    assert!(partial.recheck(&i, &r, &mut quiet()).is_err());
+    assert!(partial.recheck(&i, &r, &quiet()).is_err());
 }
 #[test]
 fn fixed_owned_reference_binder_is_rechecked_even_when_original_conditions_were_empty() {
@@ -583,6 +583,6 @@ fn owned_binder_alone_discovers_owner_axes_without_a_dependent_value_parameter()
                 }
             }
         }
-        f.recheck(&i, &r, &mut quiet()).unwrap();
+        f.recheck(&i, &r, &quiet()).unwrap();
     }
 }

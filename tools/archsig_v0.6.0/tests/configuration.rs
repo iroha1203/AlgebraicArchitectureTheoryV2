@@ -19,8 +19,7 @@ fn sources(map: &str) -> InputSources {
     )
 }
 fn checked(map: &str) -> CheckedInputs {
-    check_inputs(sources(map), &mut Control::unlimited())
-        .unwrap_or_else(|f| panic!("{:?}", f.issues()))
+    check_inputs(sources(map), &Control::unlimited()).unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
 fn fact(subject: &str, field: Option<&str>, atom: bool) -> FactPointer {
     let ty = match subject {
@@ -70,7 +69,7 @@ fn primary_fields() -> Vec<(&'static str, &'static str)> {
 #[test]
 fn base_and_owned_components_match_independent_exact_families_relations_and_slots() {
     let inputs = checked(A);
-    let result = construct(&inputs, "MeshRead", "v", "A", &mut Control::unlimited()).unwrap();
+    let result = construct(&inputs, "MeshRead", "v", "A", &Control::unlimited()).unwrap();
     assert_eq!(result.reading(), "MeshRead");
     assert_eq!(result.root(), &fact("A", None, false));
     let base = result.base().configuration().unwrap();
@@ -156,14 +155,14 @@ fn base_and_owned_components_match_independent_exact_families_relations_and_slot
         "同値の数量でsubject identityを潰さない"
     );
     result
-        .recheck(&inputs, "MeshRead", "v", "A", &mut Control::unlimited())
+        .recheck(&inputs, "MeshRead", "v", "A", &Control::unlimited())
         .unwrap();
 }
 #[test]
 fn universe_is_canonical_and_keeps_all_known_positions_and_snapshot_identity() {
     let map=A.replace("  ]}]", "  ]},{\"id\":\"w\",\"origin\":\"model\",\"subjects\":[{\"id\":\"x\",\"type\":\"Mesh.External\",\"origin\":\"model\"}],\"atoms\":[{\"id\":\"x-quantity\",\"subject\":\"x\",\"field\":\"Mesh.External.quantity\",\"value\":\"9\",\"origin\":\"model\"}] }]");
     let inputs = checked(&map);
-    let result = construct(&inputs, "MeshRead", "v", "A", &mut Control::unlimited()).unwrap();
+    let result = construct(&inputs, "MeshRead", "v", "A", &Control::unlimited()).unwrap();
     let mut expected: Vec<_> = ["A", "B", "p", "q", "r", "e", "x", "y", "z"]
         .iter()
         .map(|s| fact(s, None, false))
@@ -219,7 +218,7 @@ fn universe_is_canonical_and_keeps_all_known_positions_and_snapshot_identity() {
 #[test]
 fn missing_quantities_are_requirements_and_missing_membership_or_references_block_completion() {
     let inputs = checked(&remove(A, "p-quantity"));
-    let result = construct(&inputs, "MeshRead", "v", "A", &mut Control::unlimited()).unwrap();
+    let result = construct(&inputs, "MeshRead", "v", "A", &Control::unlimited()).unwrap();
     assert!(result.base().configuration().is_some());
     assert!(
         result
@@ -239,7 +238,7 @@ fn missing_quantities_are_requirements_and_missing_membership_or_references_bloc
         &remove(&remove(A, "p-owner"), "e-from"),
         "A-tagged",
     ));
-    let result = construct(&inputs, "MeshRead", "v", "A", &mut Control::unlimited()).unwrap();
+    let result = construct(&inputs, "MeshRead", "v", "A", &Control::unlimited()).unwrap();
     assert!(result.base().configuration().is_none());
     assert_eq!(
         set(result.base().blocking_slots()),
@@ -258,7 +257,7 @@ fn missing_quantities_are_requirements_and_missing_membership_or_references_bloc
     assert!(!result.universe().contains(&fact("p", Some("owner"), true)));
     let inputs = checked(&remove(A, "A-choice"));
     assert!(
-        construct(&inputs, "MeshRead", "v", "A", &mut Control::unlimited())
+        construct(&inputs, "MeshRead", "v", "A", &Control::unlimited())
             .unwrap()
             .base()
             .configuration()
@@ -269,7 +268,7 @@ fn missing_quantities_are_requirements_and_missing_membership_or_references_bloc
 fn ownership_uses_the_full_root_reference_across_snapshots() {
     let map=remove(A,"A-mapping").replace("  ]}]", "  ]},{\"id\":\"w\",\"origin\":\"model\",\"subjects\":[{\"id\":\"p\",\"type\":\"Mesh.Node\",\"origin\":\"model\"}],\"atoms\":[{\"id\":\"p-owner\",\"subject\":\"p\",\"field\":\"Mesh.Node.owner\",\"value\":[\"v\",\"A\"],\"origin\":\"model\"},{\"id\":\"p-quantity\",\"subject\":\"p\",\"field\":\"Mesh.Node.quantity\",\"value\":\"0\",\"origin\":\"model\"}]}]");
     let inputs = checked(&map);
-    let result = construct(&inputs, "MeshRead", "v", "A", &mut Control::unlimited()).unwrap();
+    let result = construct(&inputs, "MeshRead", "v", "A", &Control::unlimited()).unwrap();
     let mut wp = fact("p", None, false);
     wp.snapshot = "w".into();
     assert!(result.base().known().family().contains(&wp));
@@ -297,7 +296,7 @@ fn explicit_none_and_container_order_remain_primitive_values() {
         .collect::<Vec<_>>()
         .join("\n");
     let inputs = checked(&map);
-    let result = construct(&inputs, "MeshRead", "v", "A", &mut Control::unlimited()).unwrap();
+    let result = construct(&inputs, "MeshRead", "v", "A", &Control::unlimited()).unwrap();
     let base = result.base().configuration().unwrap();
     assert!(base.family().contains(&fact("A", Some("choice"), true)));
     assert!(
@@ -333,7 +332,7 @@ fn invalid_reading_root_and_owned_root_selections_are_explicit() {
         ("MeshRead", "v", "e"),
     ] {
         let failure =
-            construct(&inputs, reading, snapshot, root, &mut Control::unlimited()).unwrap_err();
+            construct(&inputs, reading, snapshot, root, &Control::unlimited()).unwrap_err();
         assert!(
             matches!(failure,ConstructionFailure::InvalidSelection(ref message) if !message.is_empty())
         );
@@ -346,16 +345,16 @@ fn reading_definition_closure_excludes_unused_definitions_and_includes_transitiv
     const CA: &[u8] = include_bytes!("fixtures/counter.archmap.json");
     let baseline = check_inputs(
         InputSources::from_bytes(vec![CD.to_vec()], CL.to_vec(), CA.to_vec()),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let extended = check_inputs(
         InputSources::from_bytes(vec![CD.to_vec(), D.to_vec()], CL.to_vec(), CA.to_vec()),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    let a = construct(&baseline, "CountCheck", "v", "s", &mut Control::unlimited()).unwrap();
-    let b = construct(&extended, "CountCheck", "v", "s", &mut Control::unlimited()).unwrap();
+    let a = construct(&baseline, "CountCheck", "v", "s", &Control::unlimited()).unwrap();
+    let b = construct(&extended, "CountCheck", "v", "s", &Control::unlimited()).unwrap();
     assert_eq!(a, b, "未使用別定義を登録しても構成は増えない");
     assert_eq!(
         a.base().configuration().unwrap().wire().canonical(),
@@ -369,11 +368,11 @@ fn reading_definition_closure_excludes_unused_definitions_and_includes_transitiv
     );
     let isolated = check_inputs(
         InputSources::from_bytes(vec![CD.to_vec(), D.to_vec()], law.into_bytes(), CA.to_vec()),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert!(matches!(
-        construct(&isolated, "Select", "v", "s", &mut Control::unlimited()),
+        construct(&isolated, "Select", "v", "s", &Control::unlimited()),
         Err(ConstructionFailure::InvalidSelection(_))
     ));
     let counter_digest = &definitions.vocabularies()["Counter"].digest;
@@ -393,17 +392,17 @@ fn reading_definition_closure_excludes_unused_definitions_and_includes_transitiv
             law.into_bytes(),
             CA.to_vec(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    let d = construct(&dependent, "Select", "v", "s", &mut Control::unlimited()).unwrap();
+    let d = construct(&dependent, "Select", "v", "s", &Control::unlimited()).unwrap();
     assert_eq!(d.base(), a.base());
     assert_eq!(d.universe(), a.universe());
 }
 #[test]
 fn recheck_uses_the_current_input_reference_graph() {
     let inputs = checked(A);
-    let original = construct(&inputs, "MeshRead", "v", "A", &mut Control::unlimited()).unwrap();
+    let original = construct(&inputs, "MeshRead", "v", "A", &Control::unlimited()).unwrap();
     let map = A
         .lines()
         .map(|line| {
@@ -417,10 +416,10 @@ fn recheck_uses_the_current_input_reference_graph() {
         .join("\n");
     let current = checked(&map);
     assert!(matches!(
-        original.recheck(&current, "MeshRead", "v", "A", &mut Control::unlimited()),
+        original.recheck(&current, "MeshRead", "v", "A", &Control::unlimited()),
         Err(ConstructionFailure::Inconsistent(_))
     ));
-    let fresh = construct(&current, "MeshRead", "v", "A", &mut Control::unlimited()).unwrap();
+    let fresh = construct(&current, "MeshRead", "v", "A", &Control::unlimited()).unwrap();
     assert!(
         fresh
             .base()
@@ -429,7 +428,7 @@ fn recheck_uses_the_current_input_reference_graph() {
             .contains(&(fact("A", Some("links"), true), fact("z", None, false)))
     );
     fresh
-        .recheck(&current, "MeshRead", "v", "A", &mut Control::unlimited())
+        .recheck(&current, "MeshRead", "v", "A", &Control::unlimited())
         .unwrap();
 }
 #[test]
@@ -437,30 +436,30 @@ fn every_fixed_stop_rejects_unfinished_construction_and_latches_without_new_prob
     let inputs = checked(A);
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut control = Control::new(move |p| {
+    let control = Control::new(move |p| {
         assert_eq!(p, Checkpoint::Configuration);
         seen.set(seen.get() + 1);
         None
     });
-    construct(&inputs, "MeshRead", "v", "A", &mut control).unwrap();
+    construct(&inputs, "MeshRead", "v", "A", &control).unwrap();
     let total = count.get();
     assert!(total > 20);
     for at in [1, total / 2, total] {
         for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut control = Control::new(move |_| {
+            let control = Control::new(move |_| {
                 seen.set(seen.get() + 1);
                 (seen.get() >= at).then_some(signal)
             });
-            let failure = construct(&inputs, "MeshRead", "v", "A", &mut control).unwrap_err();
+            let failure = construct(&inputs, "MeshRead", "v", "A", &control).unwrap_err();
             assert_eq!(
                 failure,
                 ConstructionFailure::Stopped(control.stop_reason().unwrap())
             );
             assert_eq!(count.get(), at);
             assert_eq!(
-                construct(&inputs, "MeshRead", "v", "A", &mut control).unwrap_err(),
+                construct(&inputs, "MeshRead", "v", "A", &control).unwrap_err(),
                 failure
             );
             assert_eq!(count.get(), at, "停止後probeなし");

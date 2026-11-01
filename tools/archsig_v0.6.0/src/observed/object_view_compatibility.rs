@@ -27,7 +27,7 @@ use crate::{
 };
 use std::sync::Arc;
 
-fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectViewCompatibility)
         .map_err(Into::into)
 }
@@ -188,7 +188,7 @@ impl ObjectViewCompatibility {
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ObjectViewCompatibilityFailure> {
         let root = self.readings.construction().root();
         let expected = object_view_compatibility(
@@ -332,7 +332,7 @@ fn scalar(
     }))
 }
 
-fn known(e: &ObjectEvaluation, c: &mut Control) -> Result<bool, ConstructionFailure> {
+fn known(e: &ObjectEvaluation, c: &Control) -> Result<bool, ConstructionFailure> {
     tick(c)?;
     match e.outcome() {
         ObjectEvaluationOutcome::NotApplicable => Ok(true),
@@ -355,7 +355,7 @@ fn known(e: &ObjectEvaluation, c: &mut Control) -> Result<bool, ConstructionFail
 fn same_values(
     a: &[FiniteViewValue],
     b: &[FiniteViewValue],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     if a.len() != b.len() {
         return Ok(false);
@@ -375,7 +375,7 @@ fn compare_point(
     index: usize,
     mut point: ViewCompatibilityPoint,
     last: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     let mut finished = false;
     let checked = match (&point.source, &point.target) {
@@ -408,7 +408,7 @@ fn compare_point(
 fn compare(
     r: &mut ObjectViewCompatibility,
     index: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     tick(c)?;
     let comparison = &r.comparisons[index];
@@ -535,7 +535,7 @@ pub fn object_view_compatibility(
     reading: &str,
     snapshot: &str,
     root: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<ObjectViewCompatibility, ObjectViewCompatibilityFailure> {
     tick(c)?;
     let profiles = construct_profiles(&inputs, reading, snapshot, root, c)?;
@@ -665,7 +665,7 @@ pub fn object_view_compatibility(
 fn same(
     a: &ObjectViewCompatibility,
     b: &ObjectViewCompatibility,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     tick(c)?;
     if a.inputs.sources() != b.inputs.sources()
@@ -752,7 +752,7 @@ mod tests {
                     law.into_bytes(),
                     fixture::A.replace("@DIGEST@", digest).into_bytes(),
                 ),
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap(),
         )
@@ -764,7 +764,7 @@ mod tests {
             "Selected",
             "v",
             "root",
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         (i, r)
@@ -827,10 +827,7 @@ mod tests {
                     e.nodes[value.0].scope.snapshots.insert("foreign".into());
                 }
             }
-            assert!(
-                r.recheck(i, &mut Control::unlimited()).is_err(),
-                "mode={mode}"
-            );
+            assert!(r.recheck(i, &Control::unlimited()).is_err(), "mode={mode}");
         }
     }
     #[test]
@@ -843,21 +840,21 @@ mod tests {
         ] {
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut c = Control::new(move |p| {
+            let c = Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1)
                 };
                 None
             });
             let full =
-                object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &mut c).unwrap();
+                object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &c).unwrap();
             let total = count.get();
             assert!(total > 0);
             for at in [1, total.div_ceil(2), total] {
                 for signal in [Signal::Int, Signal::Term] {
-                    let (mut c, n) = stop(point, at, signal);
+                    let (c, n) = stop(point, at, signal);
                     let failure =
-                        object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &mut c)
+                        object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &c)
                             .unwrap_err();
                     assert!(c.stop_reason().is_some());
                     if point == Checkpoint::ObjectViewFamilyRow {
@@ -883,7 +880,7 @@ mod tests {
                                 same_evaluation_controlled(
                                     Some(&a.evaluation),
                                     Some(&b.evaluation),
-                                    &mut Control::unlimited()
+                                    &Control::unlimited()
                                 )
                                 .unwrap()
                             );
@@ -901,7 +898,7 @@ mod tests {
                     }
                     let before = n.get();
                     assert!(
-                        object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &mut c)
+                        object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &c)
                             .is_err()
                     );
                     assert_eq!(n.get(), before);
@@ -918,7 +915,7 @@ mod tests {
                 "Selected",
                 "v",
                 "root",
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap();
             partial.complete = false;
@@ -928,18 +925,18 @@ mod tests {
             let point = full.comparisons[0].points[index].clone();
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut measure = Control::new(move |p| {
+            let measure = Control::new(move |p| {
                 if p == Checkpoint::FiniteIteration {
                     seen.set(seen.get() + 1);
                 }
                 None
             });
             let mut measured = example().1;
-            compare_point(&mut measured, 0, point.clone(), false, &mut measure).unwrap();
+            compare_point(&mut measured, 0, point.clone(), false, &measure).unwrap();
             let total = count.get();
             assert!(total > 0);
-            let (mut c, n) = stop(Checkpoint::FiniteIteration, total, Signal::Int);
-            let result = compare_point(&mut partial, 0, point, index == 1, &mut c);
+            let (c, n) = stop(Checkpoint::FiniteIteration, total, Signal::Int);
+            let result = compare_point(&mut partial, 0, point, index == 1, &c);
             assert!(matches!(result, Err(ConstructionFailure::Stopped(_))));
             assert_eq!(n.get(), total);
             assert_eq!(partial.comparisons[0].points.len(), index + 1);
@@ -964,7 +961,7 @@ mod tests {
             "Selected",
             "v",
             "root",
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert_eq!(r.outcome(), Some(&ViewCompatibilityOutcome::Compatible));
@@ -974,7 +971,7 @@ mod tests {
             p.target.as_ref().unwrap().wire()
         );
         p.source = p.target.clone();
-        assert!(r.recheck(i, &mut Control::unlimited()).is_err());
+        assert!(r.recheck(i, &Control::unlimited()).is_err());
     }
     #[test]
     fn final_nested_term_comparison_stop_retains_a_completed_mathematical_result() {
@@ -994,7 +991,7 @@ mod tests {
                 "Selected",
                 "v",
                 "root",
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap();
             let point = r.comparisons[0].points[0].clone();
@@ -1029,9 +1026,9 @@ mod tests {
                 r.comparisons[0].outcome = None;
                 r.complete = false;
                 r.outcome = None;
-                let (mut c, n) = stop(Checkpoint::FiniteIteration, at, signal);
+                let (c, n) = stop(Checkpoint::FiniteIteration, at, signal);
                 assert!(matches!(
-                    compare_point(&mut r, 0, point.clone(), true, &mut c),
+                    compare_point(&mut r, 0, point.clone(), true, &c),
                     Err(ConstructionFailure::Stopped(_))
                 ));
                 assert_eq!(n.get(), at);
@@ -1083,19 +1080,19 @@ mod tests {
                 "Selected",
                 "v",
                 "root",
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap();
             let point = r.comparisons[0].points[0].clone();
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut c = Control::new(move |p| {
+            let c = Control::new(move |p| {
                 if p == Checkpoint::FiniteIteration {
                     seen.set(seen.get() + 1);
                 }
                 None
             });
-            compare_point(&mut r, 0, point.clone(), true, &mut c).unwrap();
+            compare_point(&mut r, 0, point.clone(), true, &c).unwrap();
             let at = count.get()
                 - if body.contains(":Z") || body.contains(":Q") {
                     2
@@ -1107,9 +1104,9 @@ mod tests {
                 r.comparisons[0].outcome = None;
                 r.complete = false;
                 r.outcome = None;
-                let (mut c, n) = stop(Checkpoint::FiniteIteration, at, signal);
+                let (c, n) = stop(Checkpoint::FiniteIteration, at, signal);
                 assert!(matches!(
-                    compare_point(&mut r, 0, point.clone(), true, &mut c),
+                    compare_point(&mut r, 0, point.clone(), true, &c),
                     Err(ConstructionFailure::Stopped(_))
                 ));
                 assert_eq!(n.get(), at);
@@ -1117,7 +1114,7 @@ mod tests {
                 assert_eq!(r.outcome(), Some(&outcome), "{body}");
                 assert!(r.is_complete());
                 let before = n.get();
-                assert!(tick(&mut c).is_err());
+                assert!(tick(&c).is_err());
                 assert_eq!(n.get(), before);
             }
         }
@@ -1131,7 +1128,7 @@ mod tests {
                 "Selected",
                 "v",
                 "root",
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap();
             let value = r.comparisons[0].points[0].source.as_mut().unwrap();
@@ -1145,10 +1142,7 @@ mod tests {
                     path.reading = "foreign".into();
                 }
             }
-            assert!(
-                r.recheck(i, &mut Control::unlimited()).is_err(),
-                "mode={mode}"
-            );
+            assert!(r.recheck(i, &Control::unlimited()).is_err(), "mode={mode}");
         }
     }
     #[test]
@@ -1156,25 +1150,25 @@ mod tests {
         let (i, r) = example();
         let count = Rc::new(Cell::new(0_usize));
         let seen = Rc::clone(&count);
-        let mut c = Control::new(move |p| {
+        let c = Control::new(move |p| {
             if p == Checkpoint::ObjectViewCompatibility {
                 seen.set(seen.get() + 1)
             };
             None
         });
-        object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &mut c).unwrap();
-        let (mut c, n) = stop(
+        object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &c).unwrap();
+        let (c, n) = stop(
             Checkpoint::ObjectViewCompatibility,
             count.get() + 1,
             Signal::Term,
         );
-        let f = r.recheck(Arc::clone(&i), &mut c).unwrap_err();
+        let f = r.recheck(Arc::clone(&i), &c).unwrap_err();
         let p = f.partial().unwrap();
         assert!(p.is_complete());
         assert_eq!(p.outcome(), Some(&ViewCompatibilityOutcome::Compatible));
-        p.recheck(i, &mut Control::unlimited()).unwrap();
+        p.recheck(i, &Control::unlimited()).unwrap();
         let before = n.get();
-        assert!(tick(&mut c).is_err());
+        assert!(tick(&c).is_err());
         assert_eq!(before, n.get());
     }
 
@@ -1182,8 +1176,8 @@ mod tests {
     fn a_completed_counterexample_remains_a_refutation_during_later_cancellation() {
         let i =
             inputs("view family(c:Part,b:Bool):Bool=if b then false else (forall a:Root . false);");
-        let (mut c, n) = stop(Checkpoint::ObjectViewCompatibilityPoint, 1, Signal::Int);
-        let failure = object_view_compatibility(i, "Selected", "v", "root", &mut c).unwrap_err();
+        let (c, n) = stop(Checkpoint::ObjectViewCompatibilityPoint, 1, Signal::Int);
+        let failure = object_view_compatibility(i, "Selected", "v", "root", &c).unwrap_err();
         let r = failure.partial().unwrap();
         assert!(!r.is_complete());
         assert_eq!(
@@ -1205,7 +1199,7 @@ mod tests {
             crate::canonical::Json::Bool(true)
         );
         assert_eq!(n.get(), 1);
-        assert!(tick(&mut c).is_err());
+        assert!(tick(&c).is_err());
         assert_eq!(n.get(), 1);
     }
 }

@@ -22,7 +22,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
 }
 fn run_input(i: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvaluation {
     let original = i.clone();
-    let r = evaluate_observed_bytes(i, asks, &mut Control::unlimited())
+    let r = evaluate_observed_bytes(i, asks, &Control::unlimited())
         .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", get(&r.wire(), "issues"));
     assert_eq!(r.prepared().inputs().sources(), &original);

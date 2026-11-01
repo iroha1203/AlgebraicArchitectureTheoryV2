@@ -1,7 +1,7 @@
 //! 検査結果の再利用用の保存状態比較。Lawの外延等値とは別の判定である。
 use super::*;
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
-    c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+    c.checkpoint(Checkpoint::FiniteIteration)?;
     Ok(())
 }
 pub(super) fn scope(a: &Scope, b: &Scope) -> bool {

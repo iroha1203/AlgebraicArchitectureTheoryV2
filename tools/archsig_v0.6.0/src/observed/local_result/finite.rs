@@ -9,7 +9,7 @@ pub(super) fn compute(
     original: &ConstructionValue,
     base: usize,
     witness: Arc<ArchitectureWitness>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ValidationFailure> {
     let assignments = match &original.data {
         D::Change(d) => d.overrides(g)?,
@@ -107,7 +107,7 @@ pub(super) fn diagnose(
     finite: &geometry::Finite,
     laws: &[NodeRef],
     degree: u64,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ValidationFailure> {
     let side = request
         .arguments

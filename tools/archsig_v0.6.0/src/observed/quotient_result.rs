@@ -140,7 +140,7 @@ fn compute(
     g: &Graph,
     request: &Request,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ValidationFailure> {
     env.validation_graph_session(g, || {
         let on = &request
@@ -531,7 +531,7 @@ pub(super) fn evaluate(
     env: &Environment<'_>,
     g: &mut Graph,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Answer, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((_prepared, env, g, request, c))
 }
@@ -587,7 +587,7 @@ impl Environment<'_> {
                 g,
                 &d.source.request,
                 d.source.base,
-                &mut self.control.clone(),
+                &self.control.clone(),
             )
         })?;
         if rebuilt.parts != d.source.parts
@@ -662,7 +662,7 @@ impl super::result_kind::ResultKind for Data {
         &'a Environment<'input>,
         &'a mut Graph,
         &'a Request,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = Answer;
     fn compute_and_retain<'a, 'input: 'a>(

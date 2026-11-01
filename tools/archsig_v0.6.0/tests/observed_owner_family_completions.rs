@@ -64,8 +64,8 @@ fn value<'a>(j: &'a Json, id: &str) -> &'a Json {
 }
 fn run(i: InputSources, asks: &[&str]) -> Json {
     let checked =
-        check_inputs(i.clone(), &mut quiet()).unwrap_or_else(|e| panic!("input {:?}", e.issues()));
-    let r = evaluate_observed_bytes(i.clone(), asks, &mut quiet())
+        check_inputs(i.clone(), &quiet()).unwrap_or_else(|e| panic!("input {:?}", e.issues()));
+    let r = evaluate_observed_bytes(i.clone(), asks, &quiet())
         .unwrap_or_else(|e| panic!("evaluate {e:?}"));
     assert_ne!(r.status(), "error", "{:?}", r.wire());
     assert_eq!(r.prepared().inputs().sources(), &i);
@@ -346,7 +346,7 @@ fn unknown_owner_cross_snapshot_membership_and_current_provenance_are_preserved(
 #[test]
 fn unknown_owner_family_uses_known_map_constraints_and_keeps_the_raw_missing_slot() {
     let i = fixture::constrained();
-    let checked = check_inputs(i.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(i.clone(), &quiet()).unwrap();
     let p = checked.archmap().snapshots()[0]
         .subjects
         .iter()

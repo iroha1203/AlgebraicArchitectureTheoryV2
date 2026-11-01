@@ -24,7 +24,7 @@ fn reservations_private_example(body: &str, asks: &[&str], missing: bool) -> Obs
     let result = evaluate_observed_bytes(
         reservations_private_fixture(body, missing),
         asks,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_ne!(result.status(), "error", "{:?}", result.issues);
@@ -284,15 +284,15 @@ fn reservations_chain_prepare_cancel_retains_completed_source_prefix() {
         "later=evaluate(Reservations.seed)",
     ];
     let inputs = reservations_private_fixture(body, true);
-    let mut quiet = quiet();
-    let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
+    let quiet = quiet();
+    let prepared = prepare_observed(inputs.clone(), &asks, &quiet).unwrap();
     let Signature::View { body, .. } =
         &prepared.inputs().law().declarations()["Reservations.current"].signature
     else {
         unreachable!()
     };
     let target = prepared.inputs().law().exprs()[*body].span;
-    let normal = evaluate_observed(prepared, &mut quiet).unwrap();
+    let normal = evaluate_observed(prepared, &quiet).unwrap();
     assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     assert!(!normal.answers[1].evidence.is_empty());
@@ -311,7 +311,7 @@ fn reservations_chain_prepare_cancel_retains_completed_source_prefix() {
     let frozen = Rc::new(Cell::new(None));
     let seen = Rc::new(Cell::new(false));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(move |checkpoint| {
+    let control = Control::new(move |checkpoint| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert_eq!(checkpoint, Checkpoint::FiniteIteration);
@@ -321,10 +321,10 @@ fn reservations_chain_prepare_cancel_retains_completed_source_prefix() {
             None
         }
     });
-    let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
+    let prepared = prepare_observed(inputs, &asks, &control).unwrap();
     let stopped = evaluate_observed_with_validator(
         prepared,
-        &mut control,
+        &control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
             if request.id == "hole" {

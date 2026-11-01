@@ -162,9 +162,7 @@ impl Environment<'_> {
             // 同じ対象域の所属を決める既知ownerを、除外された候補も含めて保持する。
             // 部分対象ではそのsubjectを選んだownerだけが根拠となる。
             for subject in self.indexes.subjects.values() {
-                self.control
-                    .clone()
-                    .checkpoint(Checkpoint::ObjectEvaluation)?;
+                self.control.checkpoint(Checkpoint::ObjectEvaluation)?;
                 if !object.membership_subject(subject) {
                     continue;
                 }
@@ -184,9 +182,7 @@ impl Environment<'_> {
                     continue;
                 }
                 for field in &subject.fields {
-                    self.control
-                        .clone()
-                        .checkpoint(Checkpoint::ObjectEvaluation)?;
+                    self.control.checkpoint(Checkpoint::ObjectEvaluation)?;
                     if !field.name.is_owner() {
                         continue;
                     }

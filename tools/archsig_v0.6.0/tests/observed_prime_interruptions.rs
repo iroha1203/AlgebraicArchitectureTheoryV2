@@ -96,8 +96,8 @@ fn negative_baseline(in_law: bool) -> (Issue, usize) {
         issue
     };
     assert_eq!(issue.code, Code::Syntax);
-    let (mut baseline, total) = probe(in_law, usize::MAX);
-    let failure = check_inputs(source, &mut baseline).unwrap_err();
+    let (baseline, total) = probe(in_law, usize::MAX);
+    let failure = check_inputs(source, &baseline).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert_eq!(
         failure.issues(),
@@ -119,8 +119,8 @@ fn fp_internal_iteration_stops_from_bytes_keep_empty_definition_and_law_stages()
         // the small-prime loop. These later visits are inside that loop,
         // before the outer type-checking exits of the successful Fp type.
         for at in [negative_total, negative_total + 4, negative_total + 8] {
-            let (mut control, seen) = probe(in_law, at);
-            let failure = check_inputs(sources(in_law, "101"), &mut control).unwrap_err();
+            let (control, seen) = probe(in_law, at);
+            let failure = check_inputs(sources(in_law, "101"), &control).unwrap_err();
             assert_eq!(seen.get(), at, "in_law {in_law} at {at}");
             assert_eq!(failure.status(), InputStatus::Interrupted);
             empty_stage(&failure);
@@ -139,16 +139,16 @@ fn completed_composite_checks_yield_to_a_stop_at_terminal_checks() {
         // follow the primality function's final (divisor-detected) sample.
         let primality_post = total - if in_law { 2 } else { 1 };
         for at in primality_post..=total {
-            let (mut control, _) = probe(in_law, at);
-            let failure = check_inputs(sources(in_law, "49"), &mut control).unwrap_err();
+            let (control, _) = probe(in_law, at);
+            let failure = check_inputs(sources(in_law, "49"), &control).unwrap_err();
             empty_stage(&failure);
             let reason = control.stop_reason().expect("terminal stop");
             assert_eq!(failure.status(), InputStatus::Interrupted);
             assert_eq!(failure.issues(), [reason.issue()]);
         }
         // The previous pre-iteration sample precedes finding divisor 7.
-        let (mut control, _) = probe(in_law, primality_post - 1);
-        let failure = check_inputs(sources(in_law, "49"), &mut control).unwrap_err();
+        let (control, _) = probe(in_law, primality_post - 1);
+        let failure = check_inputs(sources(in_law, "49"), &control).unwrap_err();
         assert_eq!(failure.status(), InputStatus::Interrupted);
         empty_stage(&failure);
     }
@@ -159,16 +159,12 @@ fn unlimited_fp_controls_preserve_the_checked_definition_and_law_tables() {
     let source = sources(false, "101");
     let files = [("definition0", source.definitions()[0].bytes())];
     let ordinary = check_definitions(&files).unwrap();
-    let controlled = check_definitions_controlled(&files, &mut Control::unlimited()).unwrap();
+    let controlled = check_definitions_controlled(&files, &Control::unlimited()).unwrap();
     assert_eq!(ordinary, controlled);
     let law_source = sources(true, "101");
     let ordinary = check_law(law_source.law().bytes(), &ordinary).unwrap();
-    let controlled = check_law_controlled(
-        law_source.law().bytes(),
-        &controlled,
-        &mut Control::unlimited(),
-    )
-    .unwrap();
+    let controlled =
+        check_law_controlled(law_source.law().bytes(), &controlled, &Control::unlimited()).unwrap();
     assert_eq!(ordinary.bytes_digest(), controlled.bytes_digest());
     assert_eq!(ordinary.model_digest(), controlled.model_digest());
     assert_eq!(ordinary.infos(), controlled.infos());

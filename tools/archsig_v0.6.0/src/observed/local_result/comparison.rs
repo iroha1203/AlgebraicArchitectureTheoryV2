@@ -94,7 +94,7 @@ fn identity_pairs(
     g: &Graph,
     source: NodeRef,
     target: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<(NodeRef, NodeRef)>, ValidationFailure> {
     let left = elements(g, source)?;
     if source == target {
@@ -128,7 +128,7 @@ pub(super) fn compute(
     left: NodeRef,
     base: usize,
     witness: Arc<ArchitectureWitness>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ValidationFailure> {
     let argument = |name| {
         request
