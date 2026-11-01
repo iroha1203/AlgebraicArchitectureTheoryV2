@@ -8,7 +8,7 @@ use archsig::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::common::helpers::{data, object};
+use crate::common::helpers::{data, obj};
 use crate::common::quiet;
 fn sources(missing: bool, extra: &str, revision: &str) -> InputSources {
     let checked = check_definitions(&[("definition0", tree::DEFINITIONS.as_bytes())]).unwrap();
@@ -32,7 +32,7 @@ fn text(j: &Json) -> &str {
     x
 }
 fn get<'a>(j: &'a Json, name: &str) -> &'a Json {
-    &object(j)[name]
+    &obj(j)[name]
 }
 fn answer<'a>(wire: &'a Json, id: &str) -> &'a Json {
     array(get(wire, "answers"))
@@ -84,14 +84,14 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
         assert!(rs.iter().all(|r| seen.contains(r.as_str())), "{n:?}");
         assert!(seen.insert(text(get(n, "id"))));
         if get(n, "type") != &Json::str("Proposition") {
-            assert!(!object(n).contains_key("judgment"));
+            assert!(!obj(n).contains_key("judgment"));
         }
-        if let Some(v) = object(n).get("value") {
+        if let Some(v) = obj(n).get("value") {
             let mut rs = vec![];
             refs(v, &mut rs);
             for r in rs {
                 assert_eq!(get(nodes[r.as_str()], "state"), &Json::str("value"));
-                assert!(!object(nodes[r.as_str()]).contains_key("partial"));
+                assert!(!obj(nodes[r.as_str()]).contains_key("partial"));
             }
         }
         for fact in array(get(n, "support")) {
@@ -99,7 +99,7 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
             assert_eq!(get(fact, "subject"), &Json::str("sample"));
             let map = result.prepared().inputs().archmap();
             let subject = &map.snapshots()[0].subjects[0];
-            let origin = if let Some(field) = object(fact).get("field") {
+            let origin = if let Some(field) = obj(fact).get("field") {
                 let slot = &subject
                     .fields
                     .iter()
@@ -199,8 +199,8 @@ fn recursive_tree_known_branch_calls_compute_from_original_bytes() {
         .values()
         .filter(|n| {
             get(n, "type") == &Json::str("Evaluation")
-                && object(n).get("value").is_some_and(|v| {
-                    object(v).get("expression").is_some_and(|r| {
+                && obj(n).get("value").is_some_and(|v| {
+                    obj(v).get("expression").is_some_and(|r| {
                         let e = ns[text(get(r, "node"))];
                         let loc = get(get(e, "value"), "location");
                         get(loc, "span")
@@ -295,7 +295,7 @@ fn recursive_tree_missing_preserves_original_slot_without_inventing_a_tree() {
     assert_eq!(get(&wire, "status"), &Json::str("partial"));
     let a = answer(&wire, "a");
     assert_eq!(get(a, "status"), &Json::str("undetermined"));
-    assert!(!object(get(a, "outputs")).contains_key("value"));
+    assert!(!obj(get(a, "outputs")).contains_key("value"));
     assert_eq!(
         get(get(a, "scope"), "domain"),
         &Json::str("all_completions")
@@ -317,7 +317,7 @@ fn recursive_tree_missing_preserves_original_slot_without_inventing_a_tree() {
     assert!(
         !array(get(&wire, "nodes"))
             .iter()
-            .any(|n| get(n, "type") == &tree_type() && object(n).contains_key("value"))
+            .any(|n| get(n, "type") == &tree_type() && obj(n).contains_key("value"))
     );
 }
 
@@ -423,7 +423,7 @@ fn recursive_tree_infinite_domains_keep_typed_results_and_invalid_self_calls_are
                 assert_eq!(get(get(claim, "judgment"), "status"), get(a, "status"));
             }
             if !decided {
-                assert!(!object(get(a, "outputs")).contains_key("value"));
+                assert!(!obj(get(a, "outputs")).contains_key("value"));
                 let reason = array(get(a, "reasons"))
                     .iter()
                     .find(|r| get(r, "code") == &Json::str("unsupported_algorithm"))

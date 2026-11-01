@@ -1,18 +1,18 @@
 use crate::common::correspondence_paths as fixture;
-use crate::common::helpers::array;
+use crate::common::helpers::arr;
 use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(o) = j else { panic!() };
     &o[k]
 }
 fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
-    array(f(w, "nodes"))
+    arr(f(w, "nodes"))
         .iter()
         .find(|n| f(n, "id") == f(r, "node"))
         .unwrap()
 }
 fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
-    array(f(w, "answers"))
+    arr(f(w, "answers"))
         .iter()
         .find(|a| f(a, "id") == &Json::str(id))
         .unwrap()
@@ -44,9 +44,9 @@ fn correspondence_path_keeps_original_generator_endpoints_option_and_nested_refs
         ],
     );
     let p = value(&w, "x");
-    assert_eq!(array(f(p, "generators")).len(), 1);
+    assert_eq!(arr(f(p, "generators")).len(), 1);
     assert_eq!(
-        f(node(&w, &array(f(p, "generators"))[0]), "value"),
+        f(node(&w, &arr(f(p, "generators"))[0]), "value"),
         &Json::Arr(vec![Json::str("v"), Json::str("m")])
     );
     for (k, id) in [("source", "A"), ("target", "B")] {
@@ -65,16 +65,16 @@ fn correspondence_path_keeps_original_generator_endpoints_option_and_nested_refs
     );
     let option_path = f(node(&w, f(value(&w, "maybe"), "some")), "value");
     assert_eq!(
-        f(node(&w, &array(f(option_path, "generators"))[0]), "value"),
-        f(node(&w, &array(f(p, "generators"))[0]), "value")
+        f(node(&w, &arr(f(option_path, "generators"))[0]), "value"),
+        f(node(&w, &arr(f(p, "generators"))[0]), "value")
     );
-    let list = array(f(node(&w, f(value(&w, "nested"), "some")), "value"));
+    let list = arr(f(node(&w, f(value(&w, "nested"), "some")), "value"));
     assert_eq!(list.len(), 2);
     for (i, item) in list.iter().enumerate() {
-        let tuple = array(f(node(&w, item), "value"));
+        let tuple = arr(f(node(&w, item), "value"));
         assert_eq!(f(node(&w, &tuple[0]), "value"), &Json::Bool(i == 0));
         assert_eq!(
-            array(f(f(node(&w, &tuple[1]), "value"), "generators")).len(),
+            arr(f(f(node(&w, &tuple[1]), "value"), "generators")).len(),
             1
         );
     }
@@ -101,7 +101,7 @@ fn correspondence_full_action_distinguishes_self_from_identity_and_equal_words()
     ] {
         assert_eq!(value(&w, id), &Json::Bool(want));
     }
-    assert_eq!(array(f(value(&w, "joined"), "generators")).len(), 2);
+    assert_eq!(arr(f(value(&w, "joined"), "generators")).len(), 2);
 }
 #[test]
 fn correspondence_invalid_then_keeps_typed_condition_and_transitive_dependency() {
@@ -118,12 +118,12 @@ fn correspondence_invalid_then_keeps_typed_condition_and_transitive_dependency()
     let a = answer(&w, "bad");
     assert_eq!(f(a, "status"), &Json::str("undetermined"));
     assert!(matches!(f(a,"outputs"),Json::Obj(o)if !o.contains_key("value")));
-    let reason = array(f(a, "reasons"))
+    let reason = arr(f(a, "reasons"))
         .iter()
         .find(|r| f(r, "code") == &Json::str("condition_failed"))
         .unwrap();
     let condition = node(&w, f(f(reason, "details"), "condition"));
-    let operands = array(f(f(condition, "value"), "operands"));
+    let operands = arr(f(f(condition, "value"), "operands"));
     assert_eq!(operands.len(), 2);
     for (r, name) in operands.iter().zip(["B", "A"]) {
         let n = node(&w, r);
@@ -137,7 +137,7 @@ fn correspondence_invalid_then_keeps_typed_condition_and_transitive_dependency()
         );
     }
     assert!(
-        array(f(answer(&w, "used"), "reasons"))
+        arr(f(answer(&w, "used"), "reasons"))
             .iter()
             .any(|r| f(r, "code") == &Json::str("dependency_blocked"))
     );
@@ -159,12 +159,12 @@ fn correspondence_arrow_endpoint_structure_failure_keeps_original_condition() {
     );
     assert_eq!(f(answer(&w, "bad"), "status"), &Json::str("undetermined"));
     assert!(
-        array(f(answer(&w, "bad"), "reasons"))
+        arr(f(answer(&w, "bad"), "reasons"))
             .iter()
             .any(|r| f(r, "code") == &Json::str("condition_failed"))
     );
     assert!(
-        array(f(answer(&w, "used"), "reasons"))
+        arr(f(answer(&w, "used"), "reasons"))
             .iter()
             .any(|r| f(r, "code") == &Json::str("dependency_blocked"))
     );
@@ -215,7 +215,7 @@ fn correspondence_missing_owner_is_forced_by_map_and_subject_is_retained() {
     let w = run("missing_owner", &["x=evaluate(Reservations.step,m=@v/m)"]);
     assert_eq!(f(answer(&w, "x"), "status"), &Json::str("established"));
     assert!(format!("{:?}", f(answer(&w, "x"), "reasons")).contains("Reservations.State.owner"));
-    assert_eq!(array(f(value(&w, "x"), "generators")).len(), 1);
+    assert_eq!(arr(f(value(&w, "x"), "generators")).len(), 1);
 }
 #[test]
 fn correspondence_missing_target_atom_is_not_created_by_completion() {
@@ -288,9 +288,9 @@ fn correspondence_alignment_transports_reference_containers_set_collision_and_un
     let w = r.wire();
     assert_eq!(value(&w, "left"), &Json::Bool(true));
     assert_eq!(value(&w, "right"), &Json::Bool(true));
-    assert_eq!(array(f(value(&w, "x"), "generators")).len(), 1);
+    assert_eq!(arr(f(value(&w, "x"), "generators")).len(), 1);
     assert_eq!(
-        array(f(
+        arr(f(
             f(node(&w, f(value(&w, "maybe"), "some")), "value"),
             "generators"
         ))

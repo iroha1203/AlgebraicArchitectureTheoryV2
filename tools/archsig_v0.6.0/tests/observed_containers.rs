@@ -1,77 +1,27 @@
 //! AC4原始containerの小さい三入力fixture。型、原始encoding、全元子、支持と停止prefixを確認する。
 use crate::common;
-use crate::common::helpers::{arr, data, numbers, obj, q, reached, refs, source, text, ty};
+use crate::common::helpers::{
+    aggregate_instance, arr, data, declared_body, evaluation_span, expression, f, index, numbers,
+    obj, part, q, reached, refs, source, span, target, text, ty, val,
+};
 use crate::common::quiet;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control},
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
-    law::{ast::ExprKind, model::Signature},
+    law::ast::ExprKind,
     observed::evaluate_observed_bytes,
     result::Signal,
 };
-use std::{
-    cell::Cell,
-    collections::{BTreeMap, BTreeSet},
-    rc::Rc,
-};
-fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
-    &obj(j)[key]
-}
-fn val(j: &Json) -> &Json {
-    assert_eq!(f(j, "state"), &Json::str("value"));
-    f(j, "value")
-}
-fn index(j: &Json) -> BTreeMap<&str, &Json> {
-    arr(f(j, "nodes"))
-        .iter()
-        .map(|n| (text(f(n, "id")), n))
-        .collect()
-}
-fn target<'a>(ns: &BTreeMap<&str, &'a Json>, reference: &Json, ty: &Json) -> &'a Json {
-    assert_eq!(obj(reference).len(), 1);
-    let node = ns[text(f(reference, "node"))];
-    assert_eq!(f(node, "type"), ty);
-    node
-}
+use std::{cell::Cell, collections::BTreeSet, rc::Rc};
 fn answer<'a>(j: &'a Json, id: &str) -> &'a Json {
     arr(f(j, "answers"))
         .iter()
         .find(|a| text(f(a, "id")) == id)
         .unwrap()
 }
-fn span(location: &Json) -> (usize, usize) {
-    assert_eq!(f(location, "input"), &Json::str("law"));
-    let a = arr(f(location, "span"));
-    let nat = |j: &Json| {
-        let Json::Nat(n) = j else { panic!("Nat") };
-        *n as usize
-    };
-    (nat(&a[0]), nat(&a[1]))
-}
-fn expression<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> &'a Json {
-    target(
-        ns,
-        f(val(evaluation), "expression"),
-        &Json::str("Expression"),
-    )
-}
-fn evaluation_span(ns: &BTreeMap<&str, &Json>, evaluation: &Json) -> (usize, usize) {
-    span(f(val(expression(ns, evaluation)), "location"))
-}
 // Law適用の集約は、通常の元式Evaluationと異なりLawInstanceを第一引数に持つ。
-fn aggregate_instance<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> Option<&'a Json> {
-    let first = arr(f(evaluation, "arguments")).first()?;
-    let node = ns[text(f(first, "node"))];
-    (f(node, "type") == &Json::str("LawInstance")).then_some(node)
-}
-fn part(evaluation: &Json) -> &Json {
-    let parts = arr(f(val(evaluation), "parts"));
-    assert_eq!(parts.len(), 1);
-    &parts[0]
-}
-
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
     let checked = check_inputs(inputs.clone(), &mut quiet())
         .unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
@@ -223,12 +173,6 @@ fn root<'a>(wire: &'a Json, id: &str) -> &'a Json {
         f(f(answer(wire, id), "outputs"), "evaluation"),
         &Json::str("Evaluation"),
     )
-}
-fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
-    let Signature::View { body, .. } = &checked.law().declarations()[name].signature else {
-        panic!("view")
-    };
-    *body
 }
 fn assert_missing(wire: &Json, id: &str, field: &str, checked: &CheckedInputs) {
     let a = answer(wire, id);

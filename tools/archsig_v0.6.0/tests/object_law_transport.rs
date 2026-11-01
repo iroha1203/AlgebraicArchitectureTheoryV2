@@ -2,7 +2,7 @@ use archsig::{
     canonical::Json,
     construction::{
         ConstructionFailure, construct,
-        maps::{DeclarationCorrespondence, correspondence, declaration_correspondence},
+        maps::{correspondence, declaration_correspondence},
         readings::object_reading_instances,
     },
     control::{Checkpoint, Control},
@@ -20,7 +20,7 @@ use std::{cell::Cell, rc::Rc, sync::Arc};
 const D: &[u8] = include_bytes!("fixtures/object-law-transport.atoms.json");
 const L: &str = include_str!("fixtures/object-law-transport.law");
 const A: &str = include_str!("fixtures/object-view-transport.archmap.json");
-use crate::common::helpers::{edit, remove, stop_at};
+use crate::common::helpers::{declarations, edit, indices, remove, stop_at};
 use crate::common::quiet;
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
@@ -52,31 +52,6 @@ fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
             &mut quiet(),
         )
         .unwrap_or_else(|f| panic!("{:?}", f.issues())),
-    )
-}
-fn declarations(i: &CheckedInputs) -> DeclarationCorrespondence {
-    let r = correspondence(i, "v", "m", "Before", Some("After"), &mut quiet()).unwrap();
-    assert!(r.missing().is_empty(), "{:?}", r.missing());
-    assert!(r.counterexamples().is_empty(), "{:?}", r.counterexamples());
-    declaration_correspondence(i, r.map().unwrap(), &mut quiet()).unwrap()
-}
-fn indices(i: &CheckedInputs, object: &str, view: &str, subject: &str) -> (usize, usize) {
-    let c = construct(i, "Before", "v", "a", &mut quiet()).unwrap();
-    let p = object_reading_instances(i, &c, &mut quiet()).unwrap();
-    (
-        p.objects()
-            .iter()
-            .position(|o| o.identity().subject().subject == object)
-            .unwrap(),
-        p.instances()
-            .iter()
-            .position(|r| {
-                r.declaration().name == format!("Before.{view}")
-                    && r.bindings()
-                        .iter()
-                        .any(|b| b.parameter().name == "c" && b.subject().subject == subject)
-            })
-            .unwrap(),
     )
 }
 fn run(i: Arc<CheckedInputs>, object: &str, view: &str, subject: &str) -> ObjectLawTransport {

@@ -1,6 +1,6 @@
 //! 元参照族から生成した有限Map型全域の三入力接続。
 use crate::common::finite_map as maps;
-use crate::common::helpers::object;
+use crate::common::helpers::obj;
 use crate::common::quiet;
 use archsig::{
     canonical::Json,
@@ -31,7 +31,7 @@ fn text(j: &Json) -> &str {
     x
 }
 fn get<'a>(j: &'a Json, name: &str) -> &'a Json {
-    &object(j)[name]
+    &obj(j)[name]
 }
 fn answer<'a>(wire: &'a Json, id: &str) -> &'a Json {
     array(get(wire, "answers"))
@@ -69,9 +69,9 @@ fn domain<'a>(w: &'a Json, ty: &Json) -> &'a Json {
         .iter()
         .filter(|n| {
             get(n, "type") == &Json::str("Domain")
-                && object(n)
+                && obj(n)
                     .get("value")
-                    .is_some_and(|v| object(v).get("type") == Some(ty))
+                    .is_some_and(|v| obj(v).get("type") == Some(ty))
         })
         .collect();
     assert_eq!(ds.len(), 1);
@@ -194,9 +194,9 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
         assert!(rs.iter().all(|r| seen.contains(r)));
         assert!(seen.insert(text(get(n, "id")).to_string()));
         if get(n, "type") != &Json::str("Proposition") {
-            assert!(!object(n).contains_key("judgment"));
+            assert!(!obj(n).contains_key("judgment"));
         }
-        if let Some(v) = object(n).get("value") {
+        if let Some(v) = obj(n).get("value") {
             let mut rs = vec![];
             refs(v, &mut rs);
             for r in rs {
@@ -205,7 +205,7 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
                     .find(|n| get(n, "id") == &Json::str(r.clone()))
                     .unwrap();
                 assert_eq!(get(target, "state"), &Json::str("value"));
-                assert!(!object(target).contains_key("partial"));
+                assert!(!obj(target).contains_key("partial"));
             }
         }
         for fact in array(get(n, "support")) {
@@ -219,7 +219,7 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
                 .iter()
                 .find(|s| s.id == text(get(fact, "subject")))
                 .unwrap();
-            let origin = if let Some(field) = object(fact).get("field") {
+            let origin = if let Some(field) = obj(fact).get("field") {
                 let f = subject
                     .fields
                     .iter()
@@ -244,9 +244,9 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
             }
         }
         if get(n, "type") == &Json::str("Domain")
-            && object(n)
+            && obj(n)
                 .get("value")
-                .is_some_and(|v| object(v).get("kind") == Some(&Json::str("finite")))
+                .is_some_and(|v| obj(v).get("kind") == Some(&Json::str("finite")))
         {
             let payload = get(n, "value");
             for member in array(get(payload, "elements")) {
@@ -256,9 +256,9 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
             }
         }
         if get(n, "type") == &Json::str("Evidence")
-            && object(n)
+            && obj(n)
                 .get("value")
-                .is_some_and(|v| object(v).get("kind") == Some(&Json::str("finite_exhaustion")))
+                .is_some_and(|v| obj(v).get("kind") == Some(&Json::str("finite_exhaustion")))
         {
             let data = get(get(n, "value"), "data");
             let instances = array(get(data, "instances"));
@@ -269,7 +269,7 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
         }
     }
     for a in array(get(&w, "answers")) {
-        if let Some(claim) = object(a).get("claim") {
+        if let Some(claim) = obj(a).get("claim") {
             let claim = node(&w, claim);
             assert_eq!(get(claim, "type"), &Json::str("Proposition"));
             assert_eq!(get(get(claim, "judgment"), "status"), get(a, "status"));
@@ -327,7 +327,7 @@ fn finite_map_option_tuple_and_set_domains_keep_every_concrete_member() {
         let mut signatures = BTreeSet::new();
         for m in &ms {
             let signature = if name == "option_domain" {
-                if let Some(value) = object(m).get("some") {
+                if let Some(value) = obj(m).get("some") {
                     assert!(oracle.contains(&value.canonical()));
                     format!("some:{}", value.canonical())
                 } else {
@@ -372,8 +372,8 @@ fn finite_map_unbound_law_parameter_has_all_rows_and_real_counterexample() {
             .iter()
             .filter(|n| {
                 get(n, "type") == &Json::str("LawInstance")
-                    && object(n).get("value").is_some_and(|v| {
-                        object(v).get("name") == Some(&Json::str(format!("Maps.{name}")))
+                    && obj(n).get("value").is_some_and(|v| {
+                        obj(v).get("name") == Some(&Json::str(format!("Maps.{name}")))
                             && !array(get(v, "bindings")).is_empty()
                     })
             })
@@ -646,7 +646,7 @@ fn nonfinite_owned_map_unbound_parameters_keep_original_typed_domains_and_claims
             if decided {
                 assert!(array(get(a, "reasons")).is_empty());
             } else {
-                assert!(!object(get(a, "outputs")).contains_key("value"));
+                assert!(!obj(get(a, "outputs")).contains_key("value"));
                 let reason = array(get(a, "reasons"))
                     .iter()
                     .find(|r| get(r, "code") == &Json::str("unsupported_algorithm"))

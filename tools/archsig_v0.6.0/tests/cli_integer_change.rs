@@ -1,5 +1,6 @@
 //! 整数全解、元Assignmentの非一意・一意、修復後の通常評価。
 use crate::common::cli;
+use crate::common::helpers::execute;
 use crate::common::object_view_compatibility_data as local_fixture;
 use archsig::{definition, json::JNode};
 use cli::*;
@@ -20,23 +21,6 @@ fn input(name: &str, change: &str) -> std::path::PathBuf {
         std::fs::write(dir.join(name), content).unwrap();
     }
     dir
-}
-fn execute(dir: &std::path::Path, out: &str, asks: &[&str]) -> Run {
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        out,
-    ];
-    for ask in asks {
-        args.extend(["--ask", *ask]);
-    }
-    run(dir, &args)
 }
 fn node<'a>(result: &'a JNode, reference: &JNode) -> &'a JNode {
     arr(get(result, "nodes"))

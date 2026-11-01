@@ -356,9 +356,7 @@ fn run_argument_and_input_failures_never_create_failure_files() {
     let dir = inputs("run-read-error", Some("2"), L);
     std::fs::remove_file(dir.join("l.law")).unwrap();
     // 入力の path は呼出し cwd 基準のまま返す。cwd はプロセスの性質なので実バイナリで確かめる。
-    let r = without_file_changes(&dir, || {
-        requests_with(&dir, &ASKS, run_binary)
-    });
+    let r = without_file_changes(&dir, || requests_with(&dir, &ASKS, run_binary));
     let receipt = notified(&dir, &r, "error", 74);
     assert_eq!(
         s(get(

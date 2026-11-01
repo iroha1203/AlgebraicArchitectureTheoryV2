@@ -42,23 +42,6 @@ fn input(name: &str, body: &str) -> std::path::PathBuf {
     write_inputs(name, input_sources(body))
 }
 
-fn execute(dir: &std::path::Path, out: &str, asks: &[&str]) -> Run {
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        out,
-    ];
-    for ask in asks {
-        args.extend(["--ask", *ask]);
-    }
-    run(dir, &args)
-}
 #[test]
 fn universal_rational_law_repairs_exact_fraction() {
     let dir = input("universal-rational-repair",
@@ -777,6 +760,7 @@ fn rational_local_system_keeps_exact_equation_and_semantic_fibers() {
     assert!(!has(get(&arr(get(&j,"answers"))[4],"outputs"),"class"));
 }
 use crate::common::three_edge as rational_triangle_source;
+use crate::common::helpers::execute;
 fn rational_triangle(name:&str,gamma:Option<i64>)->std::path::PathBuf {
     let original=rational_triangle_source::input(gamma);
     let before=std::str::from_utf8(original.definitions()[0].bytes()).unwrap();

@@ -1,18 +1,18 @@
 use crate::common::composed_paths as fixture;
-use crate::common::helpers::array;
+use crate::common::helpers::arr;
 use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(o) = j else { panic!() };
     &o[k]
 }
 fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
-    array(f(w, "nodes"))
+    arr(f(w, "nodes"))
         .iter()
         .find(|n| f(n, "id") == f(r, "node"))
         .unwrap()
 }
 fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
-    array(f(w, "answers"))
+    arr(f(w, "answers"))
         .iter()
         .find(|a| f(a, "id") == &Json::str(id))
         .unwrap()
@@ -36,7 +36,7 @@ fn then_keeps_two_named_generators_in_order_and_actual_distinct_endpoints() {
     let w = run(false, &["x=evaluate(Walk.join,e=@v/e,f=@v/next)"]);
     assert_eq!(f(answer(&w, "x"), "status"), &Json::str("established"));
     let p = value(&w, "x");
-    let word = array(f(p, "generators"));
+    let word = arr(f(p, "generators"));
     assert_eq!(word.len(), 2);
     for (r, name) in word.iter().zip(["e", "next"]) {
         assert_eq!(
@@ -76,7 +76,7 @@ fn then_units_association_and_different_words_compare_full_action() {
         assert_eq!(f(answer(&w, id), "status"), &Json::str("established"));
         assert_eq!(value(&w, id), &Json::Bool(v));
     }
-    let word = array(f(value(&w, "word"), "generators"));
+    let word = arr(f(value(&w, "word"), "generators"));
     assert_eq!(word.len(), 3);
     for (r, name) in word.iter().zip(["self", "e", "next"]) {
         assert_eq!(
@@ -84,7 +84,7 @@ fn then_units_association_and_different_words_compare_full_action() {
             &Json::Arr(vec![Json::str("v"), Json::str(name)])
         );
     }
-    assert!(array(f(value(&w, "empty"), "generators")).is_empty());
+    assert!(arr(f(value(&w, "empty"), "generators")).is_empty());
 }
 #[test]
 fn then_invalid_actual_endpoint_keeps_typed_counterexample_prior_values_and_dependency_blocked() {
@@ -101,12 +101,12 @@ fn then_invalid_actual_endpoint_keeps_typed_counterexample_prior_values_and_depe
     let a = answer(&w, "bad");
     assert_eq!(f(a, "status"), &Json::str("undetermined"));
     assert!(matches!(f(a,"outputs"),Json::Obj(o)if !o.contains_key("value")));
-    let reason = array(f(a, "reasons"))
+    let reason = arr(f(a, "reasons"))
         .iter()
         .find(|r| f(r, "code") == &Json::str("condition_failed"))
         .unwrap();
     let condition = node(&w, f(f(reason, "details"), "condition"));
-    let operands = array(f(f(condition, "value"), "operands"));
+    let operands = arr(f(f(condition, "value"), "operands"));
     assert_eq!(operands.len(), 2);
     for (r, name) in operands.iter().zip(["q", "p"]) {
         let n = node(&w, r);
@@ -120,7 +120,7 @@ fn then_invalid_actual_endpoint_keeps_typed_counterexample_prior_values_and_depe
         );
     }
     assert!(
-        array(f(answer(&w, "used"), "reasons"))
+        arr(f(answer(&w, "used"), "reasons"))
             .iter()
             .any(|r| f(r, "code") == &Json::str("dependency_blocked"))
     );
@@ -139,13 +139,13 @@ fn then_option_list_tuple_lexical_calls_and_endpoints_use_real_prior_refs() {
         ],
     );
     let list = node(&w, f(value(&w, "nested"), "some"));
-    let rows = array(f(list, "value"));
+    let rows = arr(f(list, "value"));
     assert_eq!(rows.len(), 2);
     for row in rows {
         let row = node(&w, row);
-        let fields = array(f(row, "value"));
+        let fields = arr(f(row, "value"));
         let path = node(&w, &fields[1]);
-        assert_eq!(array(f(f(path, "value"), "generators")).len(), 2);
+        assert_eq!(arr(f(f(path, "value"), "generators")).len(), 2);
     }
     for (id, name) in [("first", "p"), ("last", "r")] {
         assert_eq!(
@@ -167,7 +167,7 @@ fn then_unknown_endpoint_keeps_original_shared_completion_for_right_unit() {
     assert_eq!(value(&w, "same"), &Json::Bool(true));
     for id in ["path", "same"] {
         assert!(
-            array(f(answer(&w, id), "reasons"))
+            arr(f(answer(&w, id), "reasons"))
                 .iter()
                 .any(|r| f(r, "code") == &Json::str("missing_observation")
                     && f(r, "missing").canonical().contains("Paths.Hop.to"))
@@ -217,10 +217,10 @@ fn then_value_can_be_bound_to_later_view_without_erasing_word_or_dependencies() 
     );
     for id in ["x", "used"] {
         assert_eq!(f(answer(&w, id), "status"), &Json::str("established"));
-        assert_eq!(array(f(value(&w, id), "generators")).len(), 2);
+        assert_eq!(arr(f(value(&w, id), "generators")).len(), 2);
     }
     assert_eq!(
-        array(f(&w, "answers"))
+        arr(f(&w, "answers"))
             .iter()
             .map(|a| f(a, "id"))
             .collect::<Vec<_>>(),

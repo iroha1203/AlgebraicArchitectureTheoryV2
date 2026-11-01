@@ -1,11 +1,19 @@
-//! 複数の統合テストで一字一句同じだった補助関数。
+//! 複数の統合テストで共有する、結果の JSON を読む補助と入力・制御の補助。
 
+use super::cli::*;
+use super::quiet;
 use archsig::canonical::Json;
+use archsig::construction::maps::{
+    DeclarationCorrespondence, correspondence, declaration_correspondence,
+};
+use archsig::construction::{construct, readings::object_reading_instances};
 use archsig::control::{Checkpoint, Control};
 use archsig::input::CheckedInputs;
+use archsig::law::model::Signature;
 use archsig::result::Signal;
 use std::cell::Cell;
 use std::collections::{BTreeMap, BTreeSet};
+use std::path::Path;
 use std::rc::Rc;
 
 pub fn add(a: &str, subject: &str, ty: &str) -> String {
@@ -22,11 +30,6 @@ pub fn arr(j: &Json) -> &[Json] {
         panic!("array: {j:?}")
     };
     v
-}
-
-pub fn array(j: &Json) -> &[Json] {
-    let Json::Arr(a) = j else { panic!() };
-    a
 }
 
 pub fn data(tag: &str, args: Vec<Json>) -> Json {
@@ -104,13 +107,6 @@ pub fn obj(j: &Json) -> &BTreeMap<String, Json> {
         panic!("object: {j:?}")
     };
     v
-}
-
-pub fn object(j: &Json) -> &BTreeMap<String, Json> {
-    let Json::Obj(x) = j else {
-        panic!("object: {j:?}")
-    };
-    x
 }
 
 pub fn probe(point: Checkpoint, at: usize) -> (Control, Rc<Cell<usize>>) {
@@ -215,4 +211,201 @@ pub fn txt(j: &Json) -> &str {
 
 pub fn ty(kind: &str, item: Json) -> Json {
     Json::Arr(vec![Json::str(kind), item])
+}
+
+pub fn aggregate_instance<'a>(
+    ns: &BTreeMap<&str, &'a Json>,
+    evaluation: &Json,
+) -> Option<&'a Json> {
+    let first = arr(f(evaluation, "arguments")).first()?;
+    let node = ns[text(f(first, "node"))];
+    (f(node, "type") == &Json::str("LawInstance")).then_some(node)
+}
+
+pub fn asks(dir: &Path, qs: &[&str]) -> Run {
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--law",
+        "l.law",
+        "--archmap",
+        "a.json",
+        "--out",
+        "out",
+    ];
+    for q in qs {
+        args.extend(["--ask", q]);
+    }
+    run(dir, &args)
+}
+
+pub fn at(ns: &BTreeMap<&str, &Json>, evaluation: &Json) -> (usize, usize) {
+    span(f(val(expression(ns, evaluation)), "location"))
+}
+
+pub fn children<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> Vec<&'a Json> {
+    arr(f(part(evaluation), "children"))
+        .iter()
+        .map(|r| target(ns, r, &Json::str("Evaluation")))
+        .collect()
+}
+
+pub fn evaluation_span(ns: &BTreeMap<&str, &Json>, evaluation: &Json) -> (usize, usize) {
+    span(f(val(expression(ns, evaluation)), "location"))
+}
+
+pub fn evaluations_at<'a>(wire: &'a Json, at: (usize, usize)) -> Vec<&'a Json> {
+    let ns = index(wire);
+    arr(f(wire, "nodes"))
+        .iter()
+        .filter(|n| {
+            f(n, "type") == &Json::str("Evaluation")
+                && aggregate_instance(&ns, n).is_none()
+                && evaluation_span(&ns, n) == at
+        })
+        .collect()
+}
+
+pub fn evidence<'a>(ns: &BTreeMap<&str, &'a Json>, root: &Json, kind: &str) -> Vec<&'a Json> {
+    reached(ns, &[root])
+        .iter()
+        .map(|id| ns[id.as_str()])
+        .filter(|n| f(n, "type") == &Json::str("Evidence") && f(val(n), "kind") == &Json::str(kind))
+        .collect()
+}
+
+pub fn execute(dir: &std::path::Path, out: &str, asks: &[&str]) -> Run {
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--archmap",
+        "a.json",
+        "--law",
+        "l.law",
+        "--out",
+        out,
+    ];
+    for ask in asks {
+        args.extend(["--ask", *ask]);
+    }
+    run(dir, &args)
+}
+
+pub fn expression<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> &'a Json {
+    target(
+        ns,
+        f(val(evaluation), "expression"),
+        &Json::str("Expression"),
+    )
+}
+
+pub fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
+    &obj(j)[key]
+}
+
+pub fn index(j: &Json) -> BTreeMap<&str, &Json> {
+    arr(f(j, "nodes"))
+        .iter()
+        .map(|n| (text(f(n, "id")), n))
+        .collect()
+}
+
+pub fn live<'a>(ns: &BTreeMap<&str, &'a Json>, root: &'a Json) -> Vec<&'a Json> {
+    let mut todo = vec![root];
+    let mut seen = BTreeSet::new();
+    let mut result = vec![];
+    while let Some(e) = todo.pop() {
+        assert_eq!(f(e, "type"), &Json::str("Evaluation"));
+        if seen.insert(text(f(e, "id"))) {
+            result.push(e);
+            for p in arr(f(val(e), "parts")) {
+                for child in arr(f(p, "children")) {
+                    todo.push(target(ns, child, &Json::str("Evaluation")));
+                }
+            }
+        }
+    }
+    result
+}
+
+pub fn original_body_source<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> &'a Json {
+    let source = if let Some(instance) = aggregate_instance(ns, evaluation) {
+        target(ns, f(val(instance), "body"), &Json::str("Expression"))
+    } else {
+        expression(ns, evaluation)
+    };
+    assert_eq!(f(val(source), "kind"), &Json::str("source"));
+    source
+}
+
+pub fn part(evaluation: &Json) -> &Json {
+    let parts = arr(f(val(evaluation), "parts"));
+    assert_eq!(parts.len(), 1);
+    &parts[0]
+}
+
+pub fn root_domain<'a>(ns: &BTreeMap<&str, &'a Json>, root: &Json) -> &'a Json {
+    let args = arr(f(root, "arguments"));
+    assert_eq!(&args[0], f(val(root), "expression"));
+    let domain = target(ns, &args[1], &Json::str("Domain"));
+    assert_eq!(arr(f(domain, "arguments")).first(), Some(&args[0]));
+    domain
+}
+
+pub fn span(location: &Json) -> (usize, usize) {
+    assert_eq!(f(location, "input"), &Json::str("law"));
+    let a = arr(f(location, "span"));
+    let nat = |j: &Json| {
+        let Json::Nat(n) = j else { panic!("Nat") };
+        *n as usize
+    };
+    (nat(&a[0]), nat(&a[1]))
+}
+
+pub fn target<'a>(ns: &BTreeMap<&str, &'a Json>, reference: &Json, ty: &Json) -> &'a Json {
+    assert_eq!(obj(reference).len(), 1);
+    let node = ns[text(f(reference, "node"))];
+    assert_eq!(f(node, "type"), ty);
+    node
+}
+
+pub fn val(j: &Json) -> &Json {
+    assert_eq!(f(j, "state"), &Json::str("value"));
+    f(j, "value")
+}
+
+pub fn declarations(i: &CheckedInputs) -> DeclarationCorrespondence {
+    let r = correspondence(i, "v", "m", "Before", Some("After"), &mut quiet()).unwrap();
+    assert!(r.missing().is_empty(), "{:?}", r.missing());
+    assert!(r.counterexamples().is_empty(), "{:?}", r.counterexamples());
+    declaration_correspondence(i, r.map().unwrap(), &mut quiet()).unwrap()
+}
+
+pub fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
+    let Signature::View { body, .. } = &checked.law().declarations()[name].signature else {
+        panic!("view")
+    };
+    *body
+}
+
+pub fn indices(i: &CheckedInputs, object: &str, view: &str, subject: &str) -> (usize, usize) {
+    let c = construct(i, "Before", "v", "a", &mut quiet()).unwrap();
+    let p = object_reading_instances(i, &c, &mut quiet()).unwrap();
+    (
+        p.objects()
+            .iter()
+            .position(|o| o.identity().subject().subject == object)
+            .unwrap(),
+        p.instances()
+            .iter()
+            .position(|r| {
+                r.declaration().name == format!("Before.{view}")
+                    && r.bindings()
+                        .iter()
+                        .any(|b| b.parameter().name == "c" && b.subject().subject == subject)
+            })
+            .unwrap(),
+    )
 }

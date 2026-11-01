@@ -1,7 +1,7 @@
 //! 全snapshotのplain参照族を独立三入力から評価し、型・支持・由来・有限域と停止prefixを確認する。
 use crate::common;
 use crate::common::helpers::{
-    arr, data, member_key, obj, reached, reference, refs, source, text, ty,
+    arr, data, declared_body, member_key, obj, reached, reference, refs, source, text, ty,
 };
 use crate::common::quiet;
 use archsig::{
@@ -9,10 +9,7 @@ use archsig::{
     control::{Checkpoint, Control},
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
-    law::{
-        ast::{ExprKind, QuantDomain, QuantSplit},
-        model::Signature,
-    },
+    law::ast::{ExprKind, QuantDomain, QuantSplit},
     observed::evaluate_observed_bytes,
     result::Signal,
 };
@@ -112,13 +109,6 @@ fn root<'a>(wire: &'a Json, id: &str) -> &'a Json {
         &Json::str("Evaluation"),
     )
 }
-fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
-    let Signature::View { body, .. } = &checked.law().declarations()[name].signature else {
-        panic!("view")
-    };
-    *body
-}
-
 fn children<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> Vec<&'a Json> {
     arr(f(part(evaluation), "children"))
         .iter()

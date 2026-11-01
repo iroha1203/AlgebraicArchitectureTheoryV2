@@ -3,6 +3,7 @@ use crate::common::cli;
 use archsig::{definition, json::JNode};
 use cli::*;
 use crate::common;
+use crate::common::helpers::execute;
 const D: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Fixed","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Fixed.State","meaning":"固定状態。","parameters":[],"fields":[{"name":"flag","type":"Bool","meaning":"観測値。"}],"alignments":[]}]}]}"#;
 fn input(name: &str, value: Option<bool>) -> std::path::PathBuf {
     let definitions = definition::check_definitions(&[("d", D.as_bytes())]).unwrap();
@@ -23,23 +24,6 @@ fn input(name: &str, value: Option<bool>) -> std::path::PathBuf {
         std::fs::write(dir.join(name), value).unwrap();
     }
     dir
-}
-fn execute(dir: &std::path::Path, out: &str, asks: &[&str]) -> Run {
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--archmap",
-        "a.json",
-        "--law",
-        "l.law",
-        "--out",
-        out,
-    ];
-    for ask in asks {
-        args.extend(["--ask", *ask]);
-    }
-    run(dir, &args)
 }
 fn node<'a>(r: &'a JNode, reference: &JNode) -> &'a JNode {
     arr(get(r, "nodes"))

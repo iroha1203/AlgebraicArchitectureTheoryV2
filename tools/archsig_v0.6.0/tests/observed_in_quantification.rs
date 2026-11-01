@@ -1,81 +1,28 @@
 //! 明示In量化を独立三入力から評価し、有限域・原出現・欠測・証拠と停止prefixを確認する。
 use crate::common;
 use crate::common::expression_stops;
-use crate::common::helpers::{arr, numbers, obj, reached, refs, source, text, ty};
+use crate::common::helpers::{
+    aggregate_instance, arr, children, declared_body, evaluation_span, evaluations_at, evidence,
+    expression, f, index, numbers, obj, part, reached, refs, source, span, target, text, ty, val,
+};
 use crate::common::quiet;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control},
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
-    law::{
-        ast::{ExprKind, QuantDomain, QuantSplit},
-        model::Signature,
-    },
+    law::ast::{ExprKind, QuantDomain, QuantSplit},
     observed::evaluate_observed_bytes,
     result::Signal,
 };
-use std::{
-    cell::Cell,
-    collections::{BTreeMap, BTreeSet},
-    rc::Rc,
-};
-fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
-    &obj(j)[key]
-}
-fn val(j: &Json) -> &Json {
-    assert_eq!(f(j, "state"), &Json::str("value"));
-    f(j, "value")
-}
-fn index(j: &Json) -> BTreeMap<&str, &Json> {
-    arr(f(j, "nodes"))
-        .iter()
-        .map(|n| (text(f(n, "id")), n))
-        .collect()
-}
-fn target<'a>(ns: &BTreeMap<&str, &'a Json>, reference: &Json, ty: &Json) -> &'a Json {
-    assert_eq!(obj(reference).len(), 1);
-    let node = ns[text(f(reference, "node"))];
-    assert_eq!(f(node, "type"), ty);
-    node
-}
+use std::{cell::Cell, collections::BTreeSet, rc::Rc};
 fn answer<'a>(j: &'a Json, id: &str) -> &'a Json {
     arr(f(j, "answers"))
         .iter()
         .find(|a| text(f(a, "id")) == id)
         .unwrap()
 }
-fn span(location: &Json) -> (usize, usize) {
-    assert_eq!(f(location, "input"), &Json::str("law"));
-    let a = arr(f(location, "span"));
-    let nat = |j: &Json| {
-        let Json::Nat(n) = j else { panic!("Nat") };
-        *n as usize
-    };
-    (nat(&a[0]), nat(&a[1]))
-}
-fn expression<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> &'a Json {
-    target(
-        ns,
-        f(val(evaluation), "expression"),
-        &Json::str("Expression"),
-    )
-}
-fn evaluation_span(ns: &BTreeMap<&str, &Json>, evaluation: &Json) -> (usize, usize) {
-    span(f(val(expression(ns, evaluation)), "location"))
-}
 // Law適用の集約は、通常の元式Evaluationと異なりLawInstanceを第一引数に持つ。
-fn aggregate_instance<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> Option<&'a Json> {
-    let first = arr(f(evaluation, "arguments")).first()?;
-    let node = ns[text(f(first, "node"))];
-    (f(node, "type") == &Json::str("LawInstance")).then_some(node)
-}
-fn part(evaluation: &Json) -> &Json {
-    let parts = arr(f(val(evaluation), "parts"));
-    assert_eq!(parts.len(), 1);
-    &parts[0]
-}
-
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
     let checked = check_inputs(inputs.clone(), &mut quiet())
         .unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
@@ -263,13 +210,6 @@ fn root<'a>(wire: &'a Json, id: &str) -> &'a Json {
         &Json::str("Evaluation"),
     )
 }
-fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
-    let Signature::View { body, .. } = &checked.law().declarations()[name].signature else {
-        panic!("view")
-    };
-    *body
-}
-
 fn reference(subject: &str) -> Json {
     Json::Arr(vec![Json::str("v"), Json::str(subject)])
 }
@@ -339,30 +279,6 @@ reading Calc {{ use vocabulary Quantification version "1" digest "{digest}"; {sc
         law.into_bytes(),
         map.into_bytes(),
     )
-}
-fn children<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> Vec<&'a Json> {
-    arr(f(part(evaluation), "children"))
-        .iter()
-        .map(|r| target(ns, r, &Json::str("Evaluation")))
-        .collect()
-}
-fn evaluations_at<'a>(wire: &'a Json, at: (usize, usize)) -> Vec<&'a Json> {
-    let ns = index(wire);
-    arr(f(wire, "nodes"))
-        .iter()
-        .filter(|n| {
-            f(n, "type") == &Json::str("Evaluation")
-                && aggregate_instance(&ns, n).is_none()
-                && evaluation_span(&ns, n) == at
-        })
-        .collect()
-}
-fn evidence<'a>(ns: &BTreeMap<&str, &'a Json>, root: &Json, kind: &str) -> Vec<&'a Json> {
-    reached(ns, &[root])
-        .iter()
-        .map(|id| ns[id.as_str()])
-        .filter(|n| f(n, "type") == &Json::str("Evidence") && f(val(n), "kind") == &Json::str(kind))
-        .collect()
 }
 fn quantifier_domain<'a>(
     wire: &'a Json,

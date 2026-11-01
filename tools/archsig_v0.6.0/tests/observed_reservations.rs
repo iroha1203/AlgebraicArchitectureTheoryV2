@@ -16,7 +16,7 @@ const LAW: &[u8] = include_bytes!("fixtures/reservations.law");
 const MAP: &[u8] = include_bytes!("fixtures/reservations.archmap.json");
 const ASK: &str = "c=check(Reservations.conserved,e=@v/e)";
 
-use crate::common::helpers::{arr, obj, text};
+use crate::common::helpers::{arr, f, obj, text, val};
 use crate::common::quiet;
 fn sources(law: &[u8], map: &[u8]) -> InputSources {
     InputSources::from_bytes(vec![DEFINITIONS.to_vec()], law.to_vec(), map.to_vec())
@@ -42,9 +42,6 @@ fn q_free(value: Option<&str>) -> Vec<u8> {
     )
     .into_bytes()
 }
-fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
-    &obj(j)[key]
-}
 fn input_at<'a>(mut node: &'a JNode, pointer: &str) -> &'a JNode {
     for token in pointer.strip_prefix('/').unwrap().split('/') {
         node = match &node.value {
@@ -61,10 +58,6 @@ fn primitive_input(node: &JNode) -> Json {
         JValue::Arr(items) => Json::Arr(items.iter().map(primitive_input).collect()),
         _ => panic!("この原fixtureの支持は整数か参照"),
     }
-}
-fn val(j: &Json) -> &Json {
-    assert_eq!(f(j, "state"), &Json::str("value"));
-    f(j, "value")
 }
 fn index(wire: &Json) -> BTreeMap<&str, &Json> {
     arr(f(wire, "nodes"))

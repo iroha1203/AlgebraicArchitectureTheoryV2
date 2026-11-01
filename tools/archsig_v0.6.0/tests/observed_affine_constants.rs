@@ -17,26 +17,13 @@ use std::{
     rc::Rc,
 };
 
-use crate::common::helpers::{arr, fact, obj, q, text};
+use crate::common::helpers::{arr, at, expression, f, fact, live, obj, q, span, target, text, val};
 use crate::common::quiet;
-fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
-    &obj(j)[key]
-}
-fn val(j: &Json) -> &Json {
-    assert_eq!(f(j, "state"), &Json::str("value"));
-    f(j, "value")
-}
 fn index(wire: &Json) -> BTreeMap<&str, &Json> {
     arr(f(wire, "nodes"))
         .iter()
         .map(|n| (text(f(n, "id")), n))
         .collect()
-}
-fn target<'a>(ns: &BTreeMap<&str, &'a Json>, reference: &Json, ty: &Json) -> &'a Json {
-    assert_eq!(obj(reference).len(), 1);
-    let node = ns[text(f(reference, "node"))];
-    assert_eq!(f(node, "type"), ty);
-    node
 }
 fn reference(node: &Json) -> Json {
     Json::obj([("node", f(node, "id").clone())])
@@ -70,44 +57,8 @@ fn refs(j: &Json, out: &mut Vec<String>) {
         _ => {}
     }
 }
-fn span(location: &Json) -> (usize, usize) {
-    assert_eq!(f(location, "input"), &Json::str("law"));
-    let a = arr(f(location, "span"));
-    let nat = |j: &Json| {
-        let Json::Nat(n) = j else { panic!("Nat") };
-        *n as usize
-    };
-    (nat(&a[0]), nat(&a[1]))
-}
-fn expression<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> &'a Json {
-    target(
-        ns,
-        f(val(evaluation), "expression"),
-        &Json::str("Expression"),
-    )
-}
-fn at(ns: &BTreeMap<&str, &Json>, evaluation: &Json) -> (usize, usize) {
-    span(f(val(expression(ns, evaluation)), "location"))
-}
 fn source(checked: &CheckedInputs, at: (usize, usize)) -> &[u8] {
     &checked.sources().law().bytes()[at.0..at.1]
-}
-fn live<'a>(ns: &BTreeMap<&str, &'a Json>, root: &'a Json) -> Vec<&'a Json> {
-    let mut todo = vec![root];
-    let mut seen = BTreeSet::new();
-    let mut result = vec![];
-    while let Some(e) = todo.pop() {
-        assert_eq!(f(e, "type"), &Json::str("Evaluation"));
-        if seen.insert(text(f(e, "id"))) {
-            result.push(e);
-            for p in arr(f(val(e), "parts")) {
-                for child in arr(f(p, "children")) {
-                    todo.push(target(ns, child, &Json::str("Evaluation")));
-                }
-            }
-        }
-    }
-    result
 }
 fn evaluations_at<'a>(wire: &'a Json, at_span: (usize, usize)) -> Vec<&'a Json> {
     let ns = index(wire);

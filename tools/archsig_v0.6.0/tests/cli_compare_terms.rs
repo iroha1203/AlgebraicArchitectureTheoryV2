@@ -1,8 +1,9 @@
 //! 閉じたTermの公開等値を独立三入力から確認する。
 use crate::common;
+use crate::common::helpers::asks;
 use crate::common::public_term_compare as fixture;
 use common::cli::*;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 fn inputs(name: &str) -> PathBuf {
     setup(name, "", false)
 }
@@ -17,23 +18,6 @@ fn setup(name: &str, extra: &str, missing: bool) -> PathBuf {
         std::fs::write(dir.join(name), bytes).unwrap();
     }
     dir
-}
-fn asks(dir: &Path, qs: &[&str]) -> Run {
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--law",
-        "l.law",
-        "--archmap",
-        "a.json",
-        "--out",
-        "out",
-    ];
-    for q in qs {
-        args.extend(["--ask", q]);
-    }
-    run(dir, &args)
 }
 fn answer<'a>(j: &'a archsig::json::JNode, id: &str) -> &'a archsig::json::JNode {
     arr(get(j, "answers"))

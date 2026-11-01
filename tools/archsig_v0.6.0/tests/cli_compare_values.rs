@@ -18,23 +18,6 @@ fn inputs(name: &str) -> PathBuf {
     }
     dir
 }
-fn asks(dir: &Path, qs: &[&str]) -> Run {
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--law",
-        "l.law",
-        "--archmap",
-        "a.json",
-        "--out",
-        "out",
-    ];
-    for q in qs {
-        args.extend(["--ask", q]);
-    }
-    run(dir, &args)
-}
 fn answer<'a>(j: &'a JNode, id: &str) -> &'a JNode {
     arr(get(j, "answers"))
         .iter()
@@ -383,6 +366,7 @@ fn false_bool_value_comparison_alone_is_successful_and_argument_order_is_canonic
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
+use crate::common::helpers::asks;
 use crate::common::public_path_compose as paths;
 #[test]
 fn value_comparison_rejects_paths_instead_of_equating_their_display_or_action() {

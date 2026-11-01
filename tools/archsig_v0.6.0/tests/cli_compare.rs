@@ -1,5 +1,6 @@
 //! 公開word/action比較を独立した原始入力と明示期待値で検査する。
 use crate::common;
+use crate::common::helpers::asks;
 use crate::common::public_path_compose as fixture;
 use archsig::json::JNode;
 use common::cli::*;
@@ -11,23 +12,6 @@ fn inputs(name: &str) -> PathBuf {
     std::fs::write(dir.join("l.law"), input.law().bytes()).unwrap();
     std::fs::write(dir.join("a.json"), input.archmap().bytes()).unwrap();
     dir
-}
-fn asks(dir: &Path, qs: &[&str]) -> Run {
-    let mut args = vec![
-        "run",
-        "--atom-definition",
-        "d.json",
-        "--law",
-        "l.law",
-        "--archmap",
-        "a.json",
-        "--out",
-        "out",
-    ];
-    for q in qs {
-        args.extend(["--ask", q]);
-    }
-    run(dir, &args)
 }
 fn answer<'a>(j: &'a JNode, id: &str) -> &'a JNode {
     arr(get(j, "answers"))

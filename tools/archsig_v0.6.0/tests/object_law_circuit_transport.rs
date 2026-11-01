@@ -1,9 +1,5 @@
 use archsig::{
-    construction::{
-        ConstructionFailure, construct,
-        maps::{DeclarationCorrespondence, correspondence, declaration_correspondence},
-        readings::object_reading_instances,
-    },
+    construction::ConstructionFailure,
     control::Control,
     input::{CheckedInputs, InputSources, check_inputs},
     observed::{
@@ -18,6 +14,7 @@ use archsig::{
 use std::sync::Arc;
 const D: &[u8] = include_bytes!("fixtures/object-law-family.atoms.json");
 const A: &str = include_str!("fixtures/object-view-transport.archmap.json");
+use crate::common::helpers::{declarations, indices};
 use crate::common::quiet;
 fn checked_inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
@@ -51,32 +48,6 @@ fn checked_inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
         .unwrap_or_else(|f| panic!("{:?}", f.issues())),
     )
 }
-fn declarations(i: &CheckedInputs) -> DeclarationCorrespondence {
-    let r = correspondence(i, "v", "m", "Before", Some("After"), &mut quiet()).unwrap();
-    assert!(r.missing().is_empty(), "{:?}", r.missing());
-    assert!(r.counterexamples().is_empty(), "{:?}", r.counterexamples());
-    declaration_correspondence(i, r.map().unwrap(), &mut quiet()).unwrap()
-}
-fn indices(i: &CheckedInputs, object: &str, view: &str, subject: &str) -> (usize, usize) {
-    let c = construct(i, "Before", "v", "a", &mut quiet()).unwrap();
-    let p = object_reading_instances(i, &c, &mut quiet()).unwrap();
-    (
-        p.objects()
-            .iter()
-            .position(|o| o.identity().subject().subject == object)
-            .unwrap(),
-        p.instances()
-            .iter()
-            .position(|r| {
-                r.declaration().name == format!("Before.{view}")
-                    && r.bindings()
-                        .iter()
-                        .any(|b| b.parameter().name == "c" && b.subject().subject == subject)
-            })
-            .unwrap(),
-    )
-}
-
 fn inputs(left: &str, right: &str, map: &str) -> Arc<CheckedInputs> {
     let uses = "use vocabulary Left version \"1\" digest \"@LEFT_DIGEST@\";use vocabulary Right version \"1\" digest \"@RIGHT_DIGEST@\";use vocabulary Bridge version \"1\" digest \"@BRIDGE_DIGEST@\";";
     checked_inputs(
