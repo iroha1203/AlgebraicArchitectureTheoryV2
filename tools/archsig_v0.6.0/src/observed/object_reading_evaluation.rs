@@ -365,82 +365,136 @@ pub(super) fn evaluate(
     expression: NodeRef,
     c: &mut Control,
 ) -> Result<Outcome, ValidationFailure> {
-    tick(c)?;
-    if g.active != g.context_at(expression.0) {
-        return Err("view body生成が元Request Contextでない".into());
-    }
-    env.recheck_node(g, g.get(expression)?, expression.0)?;
-    let (a, o) = origin(g, expression)?;
-    env.recheck_node(g, g.get(o.architecture)?, o.architecture.0)?;
-    match &o.application {
-        InstanceApplication::NotApplicable => return Ok(Outcome::NotApplicable),
-        InstanceApplication::Applicable { conditions } if !conditions.is_empty() => {
-            return Ok(Outcome::Conditional(conditions.clone()));
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, expression, c,))
+}
+
+impl Environment<'_> {
+    pub(super) fn recheck_object_reading_frame(
+        &self,
+        g: &Graph,
+        v: &ConstructionValue,
+        at: usize,
+    ) -> Result<(), ValidationFailure> {
+        let D::ObjectReadingFrame(d) = &v.data else {
+            return Ok(());
+        };
+        d.position(at)?;
+        for r in d.arguments() {
+            self.tick()?;
+            self.validate_at(g, g.get(r)?, r.0)?;
         }
-        _ => (),
-    };
-    if !o.parameters.is_empty() && !numeric_parameters(&o) {
-        return Ok(Outcome::Parameters(o.parameters.clone()));
+        Ok(())
     }
-    let (support, scope) = metadata(g, &o)?;
-    // このframeは固定済みの対象束縛だけを運ぶ。残る数値軸は式評価のTypeDomainで保持する。
-    let source = Arc::new(Source {
-        architecture: a,
-        origin: o.clone(),
-        base: g.nodes.len(),
-        support,
-        scope,
-    });
-    let mut bindings = vec![];
-    for (position, b) in o.bindings.iter().enumerate() {
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a Environment<'input>,
+        &'a mut Graph,
+        NodeRef,
+        &'a mut Control,
+    );
+    type Output = Outcome;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (env, g, expression, c) = input;
         tick(c)?;
-        let value = g.scalar(b.value)?.clone();
-        bindings.push(put(g, source.clone(), Kind::Parameter { position, value })?)
+        if g.active != g.context_at(expression.0) {
+            return Err("view body生成が元Request Contextでない".into());
+        }
+        env.recheck_node(g, g.get(expression)?, expression.0)?;
+        let (a, o) = origin(g, expression)?;
+        env.recheck_node(g, g.get(o.architecture)?, o.architecture.0)?;
+        match &o.application {
+            InstanceApplication::NotApplicable => return Ok(Outcome::NotApplicable),
+            InstanceApplication::Applicable { conditions } if !conditions.is_empty() => {
+                return Ok(Outcome::Conditional(conditions.clone()));
+            }
+            _ => (),
+        };
+        if !o.parameters.is_empty() && !numeric_parameters(&o) {
+            return Ok(Outcome::Parameters(o.parameters.clone()));
+        }
+        let (support, scope) = metadata(g, &o)?;
+        // このframeは固定済みの対象束縛だけを運ぶ。残る数値軸は式評価のTypeDomainで保持する。
+        let source = Arc::new(Source {
+            architecture: a,
+            origin: o.clone(),
+            base: g.nodes.len(),
+            support,
+            scope,
+        });
+        let mut bindings = vec![];
+        for (position, b) in o.bindings.iter().enumerate() {
+            tick(c)?;
+            let value = g.scalar(b.value)?.clone();
+            bindings.push(put(g, source.clone(), Kind::Parameter { position, value })?)
+        }
+        tick(c)?;
+        let member = put(
+            g,
+            source.clone(),
+            Kind::Member {
+                bindings,
+                value: Scalar::Unit,
+            },
+        )?;
+        tick(c)?;
+        let domain = put(g, source, Kind::Domain { member })?;
+        let index = g.instances.len();
+        g.instances.push(super::call::Instance {
+            caller: g.active,
+            source: expression,
+            domain,
+            member,
+        });
+        let request = g
+            .requests
+            .get(g.active.request)
+            .ok_or("元view Requestがない")?
+            .clone();
+        let declaration = env
+            .indexes
+            .inputs
+            .law()
+            .declarations
+            .get(&o.declaration)
+            .ok_or("元view宣言がない")?;
+        let side =
+            super::evaluate::instance_expression(env, g, c, &request, declaration, index, o.body)?;
+        let Type::Option(body_type) = &o.returns else {
+            return Err("元view読取りの型がOptionでない".into());
+        };
+        if g.get(side.expression)?.ty != NodeType::Expression((**body_type).clone())
+            || g.get(side.evaluation)?.ty != NodeType::Evaluation((**body_type).clone())
+        {
+            return Err("view bodyの元の戻り型が違う".into());
+        }
+        tick(c)?;
+        Ok(Outcome::Body {
+            instance: index,
+            side,
+        })
     }
-    tick(c)?;
-    let member = put(
-        g,
-        source.clone(),
-        Kind::Member {
-            bindings,
-            value: Scalar::Unit,
-        },
-    )?;
-    tick(c)?;
-    let domain = put(g, source, Kind::Domain { member })?;
-    let index = g.instances.len();
-    g.instances.push(super::call::Instance {
-        caller: g.active,
-        source: expression,
-        domain,
-        member,
-    });
-    let request = g
-        .requests
-        .get(g.active.request)
-        .ok_or("元view Requestがない")?
-        .clone();
-    let declaration = env
-        .indexes.inputs
-        .law()
-        .declarations
-        .get(&o.declaration)
-        .ok_or("元view宣言がない")?;
-    let side =
-        super::evaluate::instance_expression(env, g, c, &request, declaration, index, o.body)?;
-    let Type::Option(body_type) = &o.returns else {
-        return Err("元view読取りの型がOptionでない".into());
-    };
-    if g.get(side.expression)?.ty != NodeType::Expression((**body_type).clone())
-        || g.get(side.evaluation)?.ty != NodeType::Evaluation((**body_type).clone())
-    {
-        return Err("view bodyの元の戻り型が違う".into());
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, value, self)
     }
-    tick(c)?;
-    Ok(Outcome::Body {
-        instance: index,
-        side,
-    })
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        env.recheck_object_reading_frame(graph, value, limit)?;
+        Ok(())
+    }
 }
 #[cfg(test)]
 mod tests;

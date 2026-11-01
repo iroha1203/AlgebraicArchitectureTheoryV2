@@ -514,7 +514,7 @@ fn current_inputs_consumers_positions_and_cached_root_requests_are_rechecked() {
         let n = g.get(object).unwrap().clone();
         env.recheck_node(&g, &n, object.0).unwrap();
     }
-    assert_eq!(env.results.verified_object_components.borrow().len(), 2);
+    assert_eq!(env.results.verified::<std::sync::Arc<crate::observed::object_component_diagram::Source>>().len(), 2);
     let original = g.get(da.objects[1]).unwrap().clone();
     let mut changed = original.clone();
     let Some(Payload::Construction(v)) = &mut changed.payload else {

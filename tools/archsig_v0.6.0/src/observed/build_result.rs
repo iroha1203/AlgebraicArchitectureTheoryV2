@@ -674,31 +674,7 @@ pub(super) fn evaluate(
     request: &Request,
     c: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
-    match evaluate_inner(prepared, env, g, request, c) {
-        Err(ValidationFailure::Stop(stop)) => {
-            let mut outputs = BTreeMap::new();
-            let mut scope = Scope::default();
-            for (index, node) in g.nodes.iter().enumerate() {
-                if let Some(Payload::Construction(v)) = &node.payload
-                    && v.witness.request() == request
-                    && matches!(v.data, D::Architecture { .. })
-                {
-                    outputs.insert("object".into(), NodeRef(index));
-                    scope.merge(&node.scope);
-                }
-            }
-            Ok(Answer {
-                id: request.id.clone(),
-                status: Decision::Undetermined,
-                outputs,
-                claim: None,
-                evidence: vec![],
-                reasons: vec![Reason::stopped(&request.id, stop)],
-                scope,
-            })
-        }
-        other => other,
-    }
+    <Data as super::result_kind::ResultKind>::compute_and_retain((prepared, env, g, request, c,))
 }
 fn evaluate_inner(
     prepared: &PreparedObserved,
@@ -879,4 +855,63 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
         return Err("buildの構成反証と元理由が違う".into());
     }
     validate_node(g, node, v, d)
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a PreparedObserved,
+        &'a Environment<'input>,
+        &'a mut Graph,
+        &'a Request,
+        &'a mut Control,
+    );
+    type Output = Answer;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (prepared, env, g, request, c) = input;
+        match evaluate_inner(prepared, env, g, request, c) {
+            Err(ValidationFailure::Stop(stop)) => {
+                let mut outputs = BTreeMap::new();
+                let mut scope = Scope::default();
+                for (index, node) in g.nodes.iter().enumerate() {
+                    if let Some(Payload::Construction(v)) = &node.payload
+                        && v.witness.request() == request
+                        && matches!(v.data, D::Architecture { .. })
+                    {
+                        outputs.insert("object".into(), NodeRef(index));
+                        scope.merge(&node.scope);
+                    }
+                }
+                Ok(Answer {
+                    id: request.id.clone(),
+                    status: Decision::Undetermined,
+                    outputs,
+                    claim: None,
+                    evidence: vec![],
+                    reasons: vec![Reason::stopped(&request.id, stop)],
+                    scope,
+                })
+            }
+            other => other,
+        }
+    }
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, value, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        env.recheck_build(graph, value, limit)?;
+        Ok(())
+    }
 }

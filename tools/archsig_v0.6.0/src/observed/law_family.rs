@@ -696,150 +696,193 @@ pub(super) fn check(
     architecture: NodeRef,
     c: &mut Control,
 ) -> Result<Option<Answer>, ValidationFailure> {
-    tick(c)?;
-    if g.active != g.context_at(template.0) {
-        return Err("元Law族の生成が元Request Contextでない".into());
-    }
-    env.recheck_law_evaluation_inputs(g, template, architecture)?;
-    let Some(p) = plan(g, template, architecture)? else {
-        return Ok(None);
-    };
-    let keys = coordinates(g, &p)?;
-    if !p.target_rows.is_empty() && p.target_rows.len() != keys.len() {
-        return Err("元Law族の対象全row数が違う".into());
-    }
-    let d = Data {
-        template,
-        architecture,
-        parameters: p.parameters.iter().map(|p| p.reference).collect(),
-        kind: Kind::Domain { members: vec![] },
-        wire: Json::Arr(vec![]),
-        support: vec![],
-        scope: Scope::default(),
-        reasons: vec![],
-        evidence: vec![],
-        judgment: None,
-    };
-    let mut members = vec![];
-    for (position, values) in keys.iter().enumerate() {
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, template, architecture, c,))
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a Environment<'input>,
+        &'a mut Graph,
+        NodeRef,
+        NodeRef,
+        &'a mut Control,
+    );
+    type Output = Option<Answer>;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (env, g, template, architecture, c) = input;
         tick(c)?;
-        let vs = values
-            .iter()
-            .map(|r| g.scalar(*r).cloned())
-            .collect::<Result<Vec<_>, _>>()?;
-        let scalar = if vs.len() == 1 {
-            vs[0].clone()
-        } else {
-            Scalar::Tuple(vs)
+        if g.active != g.context_at(template.0) {
+            return Err("元Law族の生成が元Request Contextでない".into());
+        }
+        env.recheck_law_evaluation_inputs(g, template, architecture)?;
+        let Some(p) = plan(g, template, architecture)? else {
+            return Ok(None);
         };
-        let wire = g.scalar_wire(&scalar, values)?;
-        members.push(put(
-            env,
-            g,
-            &d,
-            Kind::Member {
-                position,
-                values: values.clone(),
-                scalar,
-                wire,
-            },
-        )?);
-    }
-    tick(c)?;
-    let product = put(env, g, &d, Kind::Domain { members })?;
-    let mut rs = vec![];
-    for (position, (key, base)) in keys.iter().zip(&p.base_rows).enumerate() {
-        tick(c)?;
-        let law = if let Some(target) = p.target_rows.get(position) {
-            let row = frames::origin(g, *target)?.ok_or("元Law族の対象rowがない")?;
-            matching(g, &p, key, &row.bindings)?;
-            *target
-        } else {
-            super::law_instantiation::instantiate(env, g, *base, template, architecture, c)?
+        let keys = coordinates(g, &p)?;
+        if !p.target_rows.is_empty() && p.target_rows.len() != keys.len() {
+            return Err("元Law族の対象全row数が違う".into());
+        }
+        let d = Data {
+            template,
+            architecture,
+            parameters: p.parameters.iter().map(|p| p.reference).collect(),
+            kind: Kind::Domain { members: vec![] },
+            wire: Json::Arr(vec![]),
+            support: vec![],
+            scope: Scope::default(),
+            reasons: vec![],
+            evidence: vec![],
+            judgment: None,
         };
-        let answer = if frames::origin(g, law)?
-            .ok_or("元Law族の実rowがない")?
-            .outside
-        {
-            super::law_inapplicable::check(env, g, law, architecture, c)?
-                .ok_or("元Law族の非適用行評価がない")?
-        } else {
-            super::law_proposition::check(env, g, law, architecture, c)?
-                .answer
-                .ok_or("元Law族の実行が未完成")?
-        };
-        rs.push(Row {
-            law,
-            evaluation: *answer
-                .outputs
-                .get("evaluation")
-                .ok_or("元Law族の行Evaluationがない")?,
-            proposition: answer.claim.ok_or("元Law族の行判断がない")?,
-        });
-    }
-    tick(c)?;
-    let a = rows(g, &d, &p, &keys, product, &rs)?;
-    let value = a
-        .value
-        .map(|b| {
-            put(
+        let mut members = vec![];
+        for (position, values) in keys.iter().enumerate() {
+            tick(c)?;
+            let vs = values
+                .iter()
+                .map(|r| g.scalar(*r).cloned())
+                .collect::<Result<Vec<_>, _>>()?;
+            let scalar = if vs.len() == 1 {
+                vs[0].clone()
+            } else {
+                Scalar::Tuple(vs)
+            };
+            let wire = g.scalar_wire(&scalar, values)?;
+            members.push(put(
                 env,
                 g,
                 &d,
-                Kind::Value {
-                    domain: product,
-                    rows: rs.clone(),
-                    scalar: Scalar::Bool(b),
+                Kind::Member {
+                    position,
+                    values: values.clone(),
+                    scalar,
+                    wire,
                 },
-            )
-        })
-        .transpose()?;
-    tick(c)?;
-    let evaluation = put(
-        env,
-        g,
-        &d,
-        Kind::Evaluation {
-            domain: product,
-            rows: rs,
-            value,
-        },
-    )?;
-    let mut evidence = a.evidence;
-    if a.value == Some(true) {
+            )?);
+        }
         tick(c)?;
-        evidence.push(put(env, g, &d, Kind::Exhaustion { evaluation })?)
+        let product = put(env, g, &d, Kind::Domain { members })?;
+        let mut rs = vec![];
+        for (position, (key, base)) in keys.iter().zip(&p.base_rows).enumerate() {
+            tick(c)?;
+            let law = if let Some(target) = p.target_rows.get(position) {
+                let row = frames::origin(g, *target)?.ok_or("元Law族の対象rowがない")?;
+                matching(g, &p, key, &row.bindings)?;
+                *target
+            } else {
+                super::law_instantiation::instantiate(env, g, *base, template, architecture, c)?
+            };
+            let answer = if frames::origin(g, law)?
+                .ok_or("元Law族の実rowがない")?
+                .outside
+            {
+                super::law_inapplicable::check(env, g, law, architecture, c)?
+                    .ok_or("元Law族の非適用行評価がない")?
+            } else {
+                super::law_proposition::check(env, g, law, architecture, c)?
+                    .answer
+                    .ok_or("元Law族の実行が未完成")?
+            };
+            rs.push(Row {
+                law,
+                evaluation: *answer
+                    .outputs
+                    .get("evaluation")
+                    .ok_or("元Law族の行Evaluationがない")?,
+                proposition: answer.claim.ok_or("元Law族の行判断がない")?,
+            });
+        }
+        tick(c)?;
+        let a = rows(g, &d, &p, &keys, product, &rs)?;
+        let value = a
+            .value
+            .map(|b| {
+                put(
+                    env,
+                    g,
+                    &d,
+                    Kind::Value {
+                        domain: product,
+                        rows: rs.clone(),
+                        scalar: Scalar::Bool(b),
+                    },
+                )
+            })
+            .transpose()?;
+        tick(c)?;
+        let evaluation = put(
+            env,
+            g,
+            &d,
+            Kind::Evaluation {
+                domain: product,
+                rows: rs,
+                value,
+            },
+        )?;
+        let mut evidence = a.evidence;
+        if a.value == Some(true) {
+            tick(c)?;
+            evidence.push(put(env, g, &d, Kind::Exhaustion { evaluation })?)
+        }
+        tick(c)?;
+        let proposition = put(
+            env,
+            g,
+            &d,
+            Kind::Proposition {
+                evaluation,
+                evidence,
+            },
+        )?;
+        tick(c)?;
+        let n = g.get(proposition)?;
+        let judgment = n.judgment.as_ref().ok_or("元Law族の判断がない")?;
+        Ok(Some(Answer {
+            id: g
+                .requests
+                .get(g.active.request)
+                .ok_or("元Law族のRequestがない")?
+                .id
+                .clone(),
+            status: judgment.status,
+            outputs: BTreeMap::from([
+                ("evaluation".into(), evaluation),
+                ("proposition".into(), proposition),
+            ]),
+            claim: Some(proposition),
+            evidence: n.evidence.clone(),
+            reasons: n.reasons.clone(),
+            scope: n.scope.clone(),
+        }))
     }
-    tick(c)?;
-    let proposition = put(
-        env,
-        g,
-        &d,
-        Kind::Proposition {
-            evaluation,
-            evidence,
-        },
-    )?;
-    tick(c)?;
-    let n = g.get(proposition)?;
-    let judgment = n.judgment.as_ref().ok_or("元Law族の判断がない")?;
-    Ok(Some(Answer {
-        id: g
-            .requests
-            .get(g.active.request)
-            .ok_or("元Law族のRequestがない")?
-            .id
-            .clone(),
-        status: judgment.status,
-        outputs: BTreeMap::from([
-            ("evaluation".into(), evaluation),
-            ("proposition".into(), proposition),
-        ]),
-        claim: Some(proposition),
-        evidence: n.evidence.clone(),
-        reasons: n.reasons.clone(),
-        scope: n.scope.clone(),
-    }))
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, value, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        if let super::construction_result::ConstructionData::LawFamily(data) = &value.data {
+            data.position(limit)?;
+            graph.expect(data.template, &NodeType::LawInstance)?;
+            graph.expect(
+                data.architecture,
+                &NodeType::Construction(super::construction_result::ConstructionType::Architecture),
+            )?;
+            env.recheck_law_evaluation_inputs(graph, data.template, data.architecture)?;
+        }
+        Ok(())
+    }
 }
 #[cfg(test)]
 mod tests;

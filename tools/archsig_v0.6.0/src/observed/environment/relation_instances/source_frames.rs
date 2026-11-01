@@ -16,8 +16,7 @@ impl Environment<'_> {
             data::check(value, self.indexes.inputs.law(), &self.control)?;
         }
         if self
-            .results.verified_relation_families
-            .borrow()
+            .results.verified::<std::sync::Arc<crate::observed::public_compare::relation_sources::Family>>()
             .iter()
             .any(|known| std::sync::Arc::ptr_eq(known, family))
         {
@@ -28,9 +27,7 @@ impl Environment<'_> {
             .recheck(self.indexes.inputs, &mut self.control.clone())
             .map_err(|f| f.cause)?;
         self.tick()?;
-        self.results.verified_relation_families
-            .borrow_mut()
-            .push(family.clone());
+        self.results.remember(family.clone());
         Ok(())
     }
     pub(in crate::observed::environment) fn instance_source_declaration(

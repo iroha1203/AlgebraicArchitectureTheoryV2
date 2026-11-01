@@ -336,84 +336,7 @@ pub(super) fn retain(
     components: NodeRef,
     c: &mut Control,
 ) -> Result<Diagram, ValidationFailure> {
-    tick(c)?;
-    if g.active != g.context_at(components.0) {
-        return Err("関数不変量の生成が元Request Contextでない".into());
-    }
-    let (a, objects) = original(env, g, components, c)?;
-    let mut diagram = Diagram {
-        axes: vec![],
-        pending: vec![],
-    };
-    for (instance, row) in a.readings().instances().iter().enumerate() {
-        tick(c)?;
-        if row.declaration().kind != "view" {
-            continue;
-        }
-        let rs = expressions(g, &a, &objects, instance, c)?;
-        let (_, o) = reading::origin(g, rs[0])?;
-        // 全対象の元式は同じparameter域を共有する。保留なら評価の生成前に返す。
-        if !o.parameters.is_empty() && !reading::numeric_parameters(&o) {
-            let parameters = view_family::parameter_readings(env, g, rs[0], c)?;
-            if view_family::pending_parameters(&parameters) {
-                diagram.pending.push(Pending {
-                    instance,
-                    expressions: rs,
-                    parameters,
-                });
-                continue;
-            }
-        }
-        let mut evaluations = vec![];
-        for expression in rs {
-            tick(c)?;
-            let evaluation = if o.parameters.is_empty() || reading::numeric_parameters(&o) {
-                let whole::Outcome::Evaluation { evaluation, .. } =
-                    whole::evaluate(env, g, expression, c)?
-                else {
-                    return Err("閉じた関数不変量に残parameterがある".into());
-                };
-                evaluation
-            } else {
-                let view_family::Outcome::Family(f) = view_family::evaluate(env, g, expression, c)?
-                else {
-                    return Err("有限関数不変量の全域が生成途中で変わった".into());
-                };
-                f.evaluation
-            };
-            evaluations.push(evaluation);
-        }
-        let output = compute(g, &a, &objects, components, instance, &evaluations, c)?;
-        let source = Arc::new(Source {
-            architecture: a.clone(),
-            components,
-            objects: objects.clone(),
-            instance,
-            evaluations,
-            base: g.nodes.len(),
-            output: output.clone(),
-        });
-        let invariant = NodeRef(source.base);
-        for axis in [false, true] {
-            tick(c)?;
-            let data = Data {
-                source: source.clone(),
-                axis,
-                output: output.clone(),
-            };
-            data.position(g.nodes.len())?;
-            let node = data.node();
-            env.validate(g, &node)?;
-            g.push(node)?;
-        }
-        diagram.axes.push(Axis {
-            instance,
-            invariant,
-            signature: NodeRef(source.base + 1),
-        });
-    }
-    tick(c)?;
-    Ok(diagram)
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, g, components, c,))
 }
 pub(super) fn validate_node(
     g: &Graph,
@@ -476,6 +399,118 @@ impl Environment<'_> {
         {
             return Err("関数不変量の元instance/全域評価/支持が違う".into());
         }
+        Ok(())
+    }
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a Environment<'input>,
+        &'a mut Graph,
+        NodeRef,
+        &'a mut Control,
+    );
+    type Output = Diagram;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (env, g, components, c) = input;
+        tick(c)?;
+        if g.active != g.context_at(components.0) {
+            return Err("関数不変量の生成が元Request Contextでない".into());
+        }
+        let (a, objects) = original(env, g, components, c)?;
+        let mut diagram = Diagram {
+            axes: vec![],
+            pending: vec![],
+        };
+        for (instance, row) in a.readings().instances().iter().enumerate() {
+            tick(c)?;
+            if row.declaration().kind != "view" {
+                continue;
+            }
+            let rs = expressions(g, &a, &objects, instance, c)?;
+            let (_, o) = reading::origin(g, rs[0])?;
+            // 全対象の元式は同じparameter域を共有する。保留なら評価の生成前に返す。
+            if !o.parameters.is_empty() && !reading::numeric_parameters(&o) {
+                let parameters = view_family::parameter_readings(env, g, rs[0], c)?;
+                if view_family::pending_parameters(&parameters) {
+                    diagram.pending.push(Pending {
+                        instance,
+                        expressions: rs,
+                        parameters,
+                    });
+                    continue;
+                }
+            }
+            let mut evaluations = vec![];
+            for expression in rs {
+                tick(c)?;
+                let evaluation = if o.parameters.is_empty() || reading::numeric_parameters(&o) {
+                    let whole::Outcome::Evaluation { evaluation, .. } =
+                        whole::evaluate(env, g, expression, c)?
+                    else {
+                        return Err("閉じた関数不変量に残parameterがある".into());
+                    };
+                    evaluation
+                } else {
+                    let view_family::Outcome::Family(f) =
+                        view_family::evaluate(env, g, expression, c)?
+                    else {
+                        return Err("有限関数不変量の全域が生成途中で変わった".into());
+                    };
+                    f.evaluation
+                };
+                evaluations.push(evaluation);
+            }
+            let output = compute(g, &a, &objects, components, instance, &evaluations, c)?;
+            let source = Arc::new(Source {
+                architecture: a.clone(),
+                components,
+                objects: objects.clone(),
+                instance,
+                evaluations,
+                base: g.nodes.len(),
+                output: output.clone(),
+            });
+            let invariant = NodeRef(source.base);
+            for axis in [false, true] {
+                tick(c)?;
+                let data = Data {
+                    source: source.clone(),
+                    axis,
+                    output: output.clone(),
+                };
+                data.position(g.nodes.len())?;
+                let node = data.node();
+                env.validate(g, &node)?;
+                g.push(node)?;
+            }
+            diagram.axes.push(Axis {
+                instance,
+                invariant,
+                signature: NodeRef(source.base + 1),
+            });
+        }
+        tick(c)?;
+        Ok(diagram)
+    }
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, value, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        env.recheck_view_invariant(graph, value, limit)?;
         Ok(())
     }
 }

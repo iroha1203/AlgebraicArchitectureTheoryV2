@@ -258,63 +258,107 @@ pub(super) fn check(
     architecture: NodeRef,
     c: &mut Control,
 ) -> Result<Option<Answer>, ValidationFailure> {
-    tick(c)?;
-    env.recheck_law_evaluation_inputs(graph, origin, architecture)?;
-    let row = frames::origin(graph, origin)?.ok_or("対象外Lawの元行がない")?;
-    frames::check_architecture(graph, architecture, &row)?;
-    if graph.active != graph.context_at(origin.0) {
-        return Err("対象外Lawの元Request Contextが違う".into());
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, graph, origin, architecture, c,))
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a Environment<'input>,
+        &'a mut Graph,
+        NodeRef,
+        NodeRef,
+        &'a mut Control,
+    );
+    type Output = Option<Answer>;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (env, graph, origin, architecture, c) = input;
+        tick(c)?;
+        env.recheck_law_evaluation_inputs(graph, origin, architecture)?;
+        let row = frames::origin(graph, origin)?.ok_or("対象外Lawの元行がない")?;
+        frames::check_architecture(graph, architecture, &row)?;
+        if graph.active != graph.context_at(origin.0) {
+            return Err("対象外Lawの元Request Contextが違う".into());
+        }
+        if !row.outside {
+            return Ok(None);
+        }
+        let mut data = Data {
+            origin,
+            architecture,
+            body: original_body(graph, origin)?,
+            bindings: row.bindings.clone(),
+            location: Location::Law {
+                span: env
+                    .indexes
+                    .inputs
+                    .law()
+                    .exprs
+                    .get(row.body)
+                    .ok_or("対象外Lawの元式がない")?
+                    .span,
+            },
+            kind: Kind::Value(Scalar::Bool(true)),
+            support: vec![],
+            scope: Scope::default(),
+        };
+        let (_, support, scope) = expected(graph, &data)?;
+        data.support = support;
+        data.scope = scope;
+        tick(c)?;
+        let value = put(env, graph, row.architecture.clone(), data.clone())?;
+        tick(c)?;
+        data.kind = Kind::Evaluation { value };
+        let evaluation = put(env, graph, row.architecture.clone(), data.clone())?;
+        tick(c)?;
+        data.kind = Kind::Proposition { evaluation };
+        let proposition = put(env, graph, row.architecture, data.clone())?;
+        tick(c)?;
+        Ok(Some(Answer {
+            id: graph
+                .requests
+                .get(graph.active.request)
+                .ok_or("対象外Lawの元Requestがない")?
+                .id
+                .clone(),
+            status: Decision::Established,
+            outputs: BTreeMap::from([
+                ("evaluation".into(), evaluation),
+                ("proposition".into(), proposition),
+            ]),
+            claim: Some(proposition),
+            evidence: vec![],
+            reasons: vec![],
+            scope: data.scope,
+        }))
     }
-    if !row.outside {
-        return Ok(None);
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, value, self)
     }
-    let mut data = Data {
-        origin,
-        architecture,
-        body: original_body(graph, origin)?,
-        bindings: row.bindings.clone(),
-        location: Location::Law {
-            span: env
-                .indexes.inputs
-                .law()
-                .exprs
-                .get(row.body)
-                .ok_or("対象外Lawの元式がない")?
-                .span,
-        },
-        kind: Kind::Value(Scalar::Bool(true)),
-        support: vec![],
-        scope: Scope::default(),
-    };
-    let (_, support, scope) = expected(graph, &data)?;
-    data.support = support;
-    data.scope = scope;
-    tick(c)?;
-    let value = put(env, graph, row.architecture.clone(), data.clone())?;
-    tick(c)?;
-    data.kind = Kind::Evaluation { value };
-    let evaluation = put(env, graph, row.architecture.clone(), data.clone())?;
-    tick(c)?;
-    data.kind = Kind::Proposition { evaluation };
-    let proposition = put(env, graph, row.architecture, data.clone())?;
-    tick(c)?;
-    Ok(Some(Answer {
-        id: graph
-            .requests
-            .get(graph.active.request)
-            .ok_or("対象外Lawの元Requestがない")?
-            .id
-            .clone(),
-        status: Decision::Established,
-        outputs: BTreeMap::from([
-            ("evaluation".into(), evaluation),
-            ("proposition".into(), proposition),
-        ]),
-        claim: Some(proposition),
-        evidence: vec![],
-        reasons: vec![],
-        scope: data.scope,
-    }))
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        if let super::construction_result::ConstructionData::OutsideLaw(data) = &value.data {
+            data.position(limit)?;
+            graph.expect(data.origin, &NodeType::LawInstance)?;
+            graph.expect(
+                data.architecture,
+                &NodeType::Construction(super::construction_result::ConstructionType::Architecture),
+            )?;
+            env.recheck_law_evaluation_inputs(graph, data.origin, data.architecture)?;
+        }
+        Ok(())
+    }
 }
 #[cfg(test)]
 mod tests;

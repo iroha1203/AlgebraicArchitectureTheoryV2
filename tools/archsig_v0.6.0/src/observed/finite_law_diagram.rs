@@ -1260,10 +1260,7 @@ pub(super) fn retain(
     object: usize,
     c: &mut Control,
 ) -> Result<Option<Diagram>, ValidationFailure> {
-    Ok(
-        retain_source(graph, inputs, architecture, object, false, c)?
-            .map(|source| source.outputs.clone()),
-    )
+    <Data as super::result_kind::ResultKind>::compute_and_retain((graph, inputs, architecture, object, c,))
 }
 #[derive(Clone, Debug)]
 pub(super) struct FamilyPlan(Arc<Source>);
@@ -1464,8 +1461,7 @@ impl Environment<'_> {
         self.recheck_object_components(graph, consumer)?;
         // immutable Arcを保持し、別のreading/根の検査成功を再利用しない。
         if self
-            .results.verified_finite_law_diagrams
-            .borrow()
+            .results.verified::<std::sync::Arc<crate::observed::finite_law_diagram::Source>>()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
         {
@@ -1477,9 +1473,7 @@ impl Environment<'_> {
             data.source.object,
             &mut self.control.clone(),
         )?;
-        self.results.verified_finite_law_diagrams
-            .borrow_mut()
-            .push(data.source.clone());
+        self.results.remember(data.source.clone());
         Ok(())
     }
 }
@@ -1492,5 +1486,46 @@ mod owned_tests;
 #[cfg(test)]
 mod family_tests;
 
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a mut Graph,
+        Arc<CheckedInputs>,
+        NodeRef,
+        usize,
+        &'a mut Control,
+    );
+    type Output = Option<Diagram>;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (graph, inputs, architecture, object, c) = input;
+        Ok(
+            retain_source(graph, inputs, architecture, object, false, c)?
+                .map(|source| source.outputs.clone()),
+        )
+    }
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        _value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        if let super::construction_result::ConstructionData::FiniteLaw(data) = &value.data {
+            data.position(limit)?;
+        }
+        env.recheck_finite_law_diagram(graph, value)?;
+        Ok(())
+    }
+}
 #[cfg(test)]
 mod reading_tests;

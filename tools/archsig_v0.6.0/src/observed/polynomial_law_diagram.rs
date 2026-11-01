@@ -1722,9 +1722,7 @@ pub(super) fn retain(
     object: usize,
     c: &mut Control,
 ) -> Result<Diagram, ValidationFailure> {
-    Ok(retain_source(graph, inputs, reference, object, false, c)?
-        .outputs
-        .clone())
+    <Data as super::result_kind::ResultKind>::compute_and_retain((graph, inputs, reference, object, c,))
 }
 #[derive(Clone, Debug)]
 pub(super) struct FamilyPlan(Arc<Source>);
@@ -1759,15 +1757,12 @@ impl FamilyPlan {
         // 計画本体は元三入力と不変のArchitectureだけに依存する。
         // Graph上の元参照・Architecture同一性は、cache利用時も上で照合する。
         if !env
-            .results.verified_polynomial_law_diagrams
-            .borrow()
+            .results.verified::<std::sync::Arc<crate::observed::polynomial_law_diagram::Source>>()
             .iter()
             .any(|s| Arc::ptr_eq(s, &self.0))
         {
             self.0.recheck(env.indexes.inputs, a, c)?;
-            env.results.verified_polynomial_law_diagrams
-                .borrow_mut()
-                .push(self.0.clone());
+            env.results.remember(self.0.clone());
         }
         Ok(a.clone())
     }
@@ -1920,8 +1915,7 @@ impl Environment<'_> {
         };
         self.recheck_object_components(graph, consumer)?;
         if self
-            .results.verified_polynomial_law_diagrams
-            .borrow()
+            .results.verified::<std::sync::Arc<crate::observed::polynomial_law_diagram::Source>>()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
         {
@@ -1929,9 +1923,7 @@ impl Environment<'_> {
         }
         data.source
             .recheck(self.indexes.inputs, a, &mut self.control.clone())?;
-        self.results.verified_polynomial_law_diagrams
-            .borrow_mut()
-            .push(data.source.clone());
+        self.results.remember(data.source.clone());
         Ok(())
     }
 }
@@ -1942,5 +1934,45 @@ mod tests;
 #[cfg(test)]
 mod family_tests;
 
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a mut Graph,
+        Arc<CheckedInputs>,
+        NodeRef,
+        usize,
+        &'a mut Control,
+    );
+    type Output = Diagram;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (graph, inputs, reference, object, c) = input;
+        Ok(retain_source(graph, inputs, reference, object, false, c)?
+            .outputs
+            .clone())
+    }
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        _value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        if let super::construction_result::ConstructionData::PolynomialLaw(data) = &value.data {
+            data.position(limit)?;
+        }
+        env.recheck_polynomial_law_diagram(graph, value)?;
+        Ok(())
+    }
+}
 #[cfg(test)]
 mod reading_tests;

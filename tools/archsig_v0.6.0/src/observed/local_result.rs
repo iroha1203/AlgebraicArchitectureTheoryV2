@@ -1164,37 +1164,7 @@ pub(super) fn evaluate(
     request: &Request,
     c: &mut Control,
 ) -> Result<Answer, ValidationFailure> {
-    env.commit_projection_conditions(g, request)?;
-    if let Some(answer) = super::public_map::unavailable(env, g, request)? {
-        return Ok(answer);
-    }
-    for argument in &request.arguments {
-        if argument.name.starts_with("bind.") && matches!(argument.value, Selector::Answer { .. }) {
-            if let AnswerBinding::Projection(node) =
-                env.answer_binding(g, &argument.value, (0, 0))?
-            {
-                env.validate(g, &node)?;
-                g.push(node)?;
-            }
-        }
-    }
-    let source = Arc::new(compute(env, g, request, g.nodes.len(), c)?);
-    for (index, part) in source.parts.iter().enumerate() {
-        native::retain(
-            g,
-            ConstructionValue {
-                witness: Witness::Architecture(source.witness.clone()),
-                data: D::Local(Data {
-                    source: source.clone(),
-                    index,
-                }),
-            },
-            part.reasons.clone(),
-            part.evidence.clone(),
-            part.judgment.clone(),
-        )?;
-    }
-    Ok(source.answer.clone())
+    <Data as super::result_kind::ResultKind>::compute_and_retain((_prepared, env, g, request, c,))
 }
 pub(super) fn validate_node(
     g: &Graph,
@@ -1352,4 +1322,71 @@ pub(super) fn validate_origin(
         return Err("局所系が現在の入力・Requestに属さない".into());
     }
     Ok(())
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a PreparedObserved,
+        &'a Environment<'input>,
+        &'a mut Graph,
+        &'a Request,
+        &'a mut Control,
+    );
+    type Output = Answer;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (_prepared, env, g, request, c) = input;
+        env.commit_projection_conditions(g, request)?;
+        if let Some(answer) = super::public_map::unavailable(env, g, request)? {
+            return Ok(answer);
+        }
+        for argument in &request.arguments {
+            if argument.name.starts_with("bind.")
+                && matches!(argument.value, Selector::Answer { .. })
+            {
+                if let AnswerBinding::Projection(node) =
+                    env.answer_binding(g, &argument.value, (0, 0))?
+                {
+                    env.validate(g, &node)?;
+                    g.push(node)?;
+                }
+            }
+        }
+        let source = Arc::new(compute(env, g, request, g.nodes.len(), c)?);
+        for (index, part) in source.parts.iter().enumerate() {
+            native::retain(
+                g,
+                ConstructionValue {
+                    witness: Witness::Architecture(source.witness.clone()),
+                    data: D::Local(Data {
+                        source: source.clone(),
+                        index,
+                    }),
+                },
+                part.reasons.clone(),
+                part.evidence.clone(),
+                part.judgment.clone(),
+            )?;
+        }
+        Ok(source.answer.clone())
+    }
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, value, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        env.recheck_local(graph, value, limit)?;
+        Ok(())
+    }
 }

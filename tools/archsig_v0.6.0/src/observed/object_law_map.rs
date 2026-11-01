@@ -37,7 +37,7 @@ fn transport(
     if !std::ptr::eq(env.indexes.inputs, inputs.as_ref()) {
         return Err("Law保存cacheの元入力が違う".into());
     }
-    for entry in env.results.verified_law_transports.borrow().iter() {
+    for entry in env.results.verified::<crate::observed::object_law_map::KernelCacheEntry>().iter() {
         tick(c)?;
         if entry.object == object
             && entry.instance == instance
@@ -60,9 +60,7 @@ fn transport(
                 .unwrap_or_else(|| format!("Law保存検査: {e:?}").into())
         })?,
     );
-    env.results.verified_law_transports
-        .borrow_mut()
-        .push(KernelCacheEntry {
+    env.results.remember(KernelCacheEntry {
             declarations: declarations.clone(),
             object,
             instance,

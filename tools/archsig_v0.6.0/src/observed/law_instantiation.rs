@@ -165,32 +165,78 @@ pub(super) fn instantiate(
     architecture: NodeRef,
     c: &mut Control,
 ) -> Result<NodeRef, ValidationFailure> {
-    tick(c)?;
-    if graph.active != graph.context_at(base.0) {
-        return Err("元Law特殊化の生成が元Request Contextでない".into());
+    <Data as super::result_kind::ResultKind>::compute_and_retain((env, graph, base, template, architecture, c,))
+}
+
+impl super::result_kind::ResultKind for Data {
+    type Input<'a, 'input: 'a> = (
+        &'a Environment<'input>,
+        &'a mut Graph,
+        NodeRef,
+        NodeRef,
+        NodeRef,
+        &'a mut Control,
+    );
+    type Output = NodeRef;
+    fn compute_and_retain<'a, 'input: 'a>(
+        input: Self::Input<'a, 'input>,
+    ) -> Result<Self::Output, ValidationFailure> {
+        let (env, graph, base, template, architecture, c) = input;
+        tick(c)?;
+        if graph.active != graph.context_at(base.0) {
+            return Err("元Law特殊化の生成が元Request Contextでない".into());
+        }
+        env.recheck_law_evaluation_inputs(graph, base, architecture)?;
+        env.recheck_law_evaluation_inputs(graph, template, architecture)?;
+        let (row, d) = expected(graph, base, template, architecture)?;
+        tick(c)?;
+        let n = Node {
+            ty: d.ty(),
+            rule: Rule::Construction(d.construction()),
+            arguments: d.arguments.clone(),
+            support: d.support.clone(),
+            scope: d.scope.clone(),
+            evidence: vec![],
+            reasons: vec![],
+            judgment: None,
+            payload: Some(Payload::Construction(Box::new(ConstructionValue {
+                witness: Witness::Architecture(row.architecture),
+                data: D::LawInstantiation(d),
+            }))),
+        };
+        env.validate(graph, &n)?;
+        let r = graph.push(n)?;
+        tick(c)?;
+        Ok(r)
     }
-    env.recheck_law_evaluation_inputs(graph, base, architecture)?;
-    env.recheck_law_evaluation_inputs(graph, template, architecture)?;
-    let (row, d) = expected(graph, base, template, architecture)?;
-    tick(c)?;
-    let n = Node {
-        ty: d.ty(),
-        rule: Rule::Construction(d.construction()),
-        arguments: d.arguments.clone(),
-        support: d.support.clone(),
-        scope: d.scope.clone(),
-        evidence: vec![],
-        reasons: vec![],
-        judgment: None,
-        payload: Some(Payload::Construction(Box::new(ConstructionValue {
-            witness: Witness::Architecture(row.architecture),
-            data: D::LawInstantiation(d),
-        }))),
-    };
-    env.validate(graph, &n)?;
-    let r = graph.push(n)?;
-    tick(c)?;
-    Ok(r)
+    fn validate(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        value: &super::construction_result::ConstructionValue,
+    ) -> Result<(), ValidationFailure> {
+        validate_node(graph, node, value, self)
+    }
+    fn recheck(
+        &self,
+        env: &Environment<'_>,
+        graph: &Graph,
+        value: &super::construction_result::ConstructionValue,
+        limit: usize,
+    ) -> Result<(), ValidationFailure> {
+        if let super::construction_result::ConstructionData::LawInstantiation(data) = &value.data {
+            data.position(limit)?;
+            graph.expect(data.base, &NodeType::LawInstance)?;
+            graph.expect(data.template, &NodeType::LawInstance)?;
+            graph.expect(
+                data.architecture,
+                &NodeType::Construction(super::construction_result::ConstructionType::Architecture),
+            )?;
+            env.recheck_law_evaluation_inputs(graph, data.base, data.architecture)?;
+            env.recheck_law_evaluation_inputs(graph, data.template, data.architecture)?;
+        }
+        Ok(())
+    }
 }
 #[cfg(test)]
 mod tests;

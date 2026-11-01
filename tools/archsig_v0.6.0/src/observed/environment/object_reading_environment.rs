@@ -1,26 +1,10 @@
 //! 元view instanceの値と対象を通常Sourceの検査へ戻す。
 use super::*;
 use crate::observed::{
-    construction_result::{ConstructionData as D, ConstructionValue},
     object_reading_evaluation as reading,
 };
 impl Environment<'_> {
-    pub(super) fn recheck_object_reading_frame(
-        &self,
-        g: &Graph,
-        v: &ConstructionValue,
-        at: usize,
-    ) -> Result<(), ValidationFailure> {
-        let D::ObjectReadingFrame(d) = &v.data else {
-            return Ok(());
-        };
-        d.position(at)?;
-        for r in d.arguments() {
-            self.tick()?;
-            self.validate_at(g, g.get(r)?, r.0)?;
-        }
-        Ok(())
-    }
+
     pub(super) fn native_view_source_inputs(
         &self,
         g: &Graph,
@@ -147,26 +131,7 @@ impl Environment<'_> {
     }
 }
 impl Environment<'_> {
-    pub(super) fn recheck_view_family(
-        &self,
-        g: &Graph,
-        v: &ConstructionValue,
-        at: usize,
-    ) -> Result<(), ValidationFailure> {
-        let D::ViewFamily(d) = &v.data else {
-            return Ok(());
-        };
-        d.position(at)?;
-        d.recheck(self, g, &mut self.control.clone())?;
-        for r in d.arguments() {
-            self.tick()?;
-            if r.0 >= at {
-                return Err("有限view族の依存が既出でない".into());
-            }
-            self.validate_at(g, g.get(r)?, r.0)?;
-        }
-        Ok(())
-    }
+
     pub(super) fn validate_view_family_evaluation(
         &self,
         g: &Graph,
