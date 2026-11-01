@@ -6,7 +6,7 @@ mod output;
 mod reuse;
 pub use evaluate::{run_internal_outcome, run_requests};
 
-pub use args::parse_args;
+pub use args::{Checked, parse_args};
 
 use crate::archmap::check_archmap_controlled;
 use crate::canonical::{Json, sha256_digest};
@@ -15,7 +15,7 @@ use crate::definition::check_definitions_controlled;
 use crate::issue::Code;
 use crate::law::check_law_controlled;
 use crate::result::*;
-use output::{finalize, out_ok, usage_without_result};
+use output::{finalize, usage_without_result};
 use std::path::{Path, PathBuf};
 
 pub const VERSION_LINE: &str =
@@ -84,8 +84,8 @@ pub struct RunArgs {
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Command {
-    Check(CheckArgs),
-    Run(RunArgs),
+    Check(Checked<CheckArgs>),
+    Run(Checked<RunArgs>),
     Version,
 }
 
@@ -94,6 +94,7 @@ pub enum Command {
 pub struct UsageError {
     pub argument: String,
     pub message: String,
+    pub(super) prefix_argument: bool,
 }
 
 /// 実行の結果。stdout の receipt と終了コード。
@@ -140,15 +141,11 @@ fn read_input(path: &Path) -> std::io::Result<Vec<u8>> {
     std::fs::read(path)
 }
 
-pub fn usage_outcome(
-    _io: &mut dyn Io,
-    signals: &mut dyn Signals,
-    err: UsageError,
-) -> Outcome {
+pub fn usage_outcome(_io: &mut dyn Io, signals: &mut dyn Signals, err: UsageError) -> Outcome {
     usage_without_result(
         signals,
         ResultIssue::Usage {
-            message: if err.argument.is_empty() {
+            message: if !err.prefix_argument || err.argument.is_empty() {
                 err.message
             } else {
                 format!("{}: {}", err.argument, err.message)
@@ -159,11 +156,7 @@ pub fn usage_outcome(
 }
 
 /// 内部障害を stdout へ返す。失敗記録ファイルは生成しない。
-pub fn internal_outcome(
-    _io: &mut dyn Io,
-    signals: &mut dyn Signals,
-    _args: &CheckArgs,
-) -> Outcome {
+pub fn internal_outcome(_io: &mut dyn Io, signals: &mut dyn Signals, _args: &CheckArgs) -> Outcome {
     output::without_result(
         signals,
         Status::Error,
@@ -181,28 +174,19 @@ pub fn run_check(
     args: &CheckArgs,
     control: &mut Control,
 ) -> Outcome {
-    if args.atom_definitions.is_empty() {
-        return usage_outcome(
-            io,
-            signals,
-            UsageError {
-                argument: "--atom-definition".to_owned(),
-                message: "at least one --atom-definition is required".to_owned(),
-            },
-        );
+    if let Err(error) = args::validate_check(args) {
+        return usage_outcome(io, signals, error);
     }
-    let Some(out) = &args.out else {
-        return usage_without_result(signals, ResultIssue::Usage {
-            argument: "--out".into(), message: "check requires --out".into(),
-        });
-    };
-    if let Err(m) = out_ok(out) {
-        let issue = ResultIssue::Usage {
-            argument: "--out".to_owned(),
-            message: format!("--out {}: {m}", out.display()),
-        };
-        return usage_without_result(signals, issue);
-    }
+    run_check_validated(io, signals, args, control)
+}
+
+fn run_check_validated(
+    io: &mut dyn Io,
+    signals: &mut dyn Signals,
+    args: &CheckArgs,
+    control: &mut Control,
+) -> Outcome {
+    let out = args.out.as_ref().expect("検査済みcheckの出力先");
     // 開始時に明示された全入力を読み切る。検査中に再読しない。
     let mut issues = Vec::new();
     let definition_bytes: Vec<_> = args
@@ -357,4 +341,92 @@ fn stopped(signals: &mut dyn Signals, signal: Signal) -> Outcome {
         Status::Interrupted,
         vec![ResultIssue::Cancelled(signal)],
     )
+}
+
+/// 検査済みコマンドを実行し、内部障害をコマンド固有のreceiptへ変換する。
+/// Version は成果物を作らず None を返す。
+pub fn execute_command(
+    command: &Command,
+    io: &mut dyn Io,
+    signals: &mut dyn Signals,
+    control: &mut Control,
+) -> Option<Outcome> {
+    if matches!(command, Command::Version) {
+        return None;
+    }
+    let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match command {
+        Command::Check(args) => run_check_validated(io, signals, args, control),
+        Command::Run(args) => evaluate::run_requests_validated(io, signals, args, control),
+        Command::Version => unreachable!("versionは実行前に返す"),
+    }));
+    Some(outcome.unwrap_or_else(|_| match command {
+        Command::Check(args) => internal_outcome(io, signals, args),
+        Command::Run(_) => run_internal_outcome(signals),
+        Command::Version => unreachable!("versionは実行前に返す"),
+    }))
+}
+
+#[cfg(test)]
+mod command_tests {
+    use super::*;
+    use std::ffi::OsString;
+
+    struct NoSignals(usize);
+    impl Signals for NoSignals {
+        fn freeze(&mut self) -> Option<Signal> {
+            self.0 += 1;
+            None
+        }
+    }
+
+    #[test]
+    fn shared_execution_catches_panics_with_command_specific_receipts() {
+        let fixtures = Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures");
+        for kind in ["check", "run"] {
+            let out =
+                std::env::temp_dir().join(format!("archsig-6092-{}-{kind}", std::process::id()));
+            let mut args: Vec<OsString> = vec![
+                kind.into(),
+                "--atom-definition".into(),
+                fixtures.join("counter.atoms.json").into(),
+                "--law".into(),
+                fixtures.join("counter.law").into(),
+                "--archmap".into(),
+                fixtures.join("counter.archmap.json").into(),
+                "--out".into(),
+                out.clone().into(),
+            ];
+            if kind == "run" {
+                args.extend([
+                    "--ask".into(),
+                    "n=evaluate(CountCheck.amount,s=@v/s)".into(),
+                ]);
+            }
+            let command = parse_args(&args).unwrap();
+            let mut signals = NoSignals(0);
+            let mut control = Control::new(|_| panic!("injected computation failure"));
+            let outcome =
+                execute_command(&command, &mut FileIo, &mut signals, &mut control).unwrap();
+            assert_eq!(outcome.status, Status::Error);
+            assert_eq!(outcome.exit_code, 70);
+            let expected = if kind == "check" {
+                "internal failure during input validation"
+            } else {
+                "internal failure during computation"
+            };
+            assert_eq!(
+                outcome.issues,
+                vec![
+                    ResultIssue::Internal {
+                        operation: kind.into(),
+                        message: expected.into()
+                    }
+                    .wire()
+                ]
+            );
+            assert_eq!(signals.0, 1);
+            assert!(outcome.result.is_none());
+            assert!(!out.exists());
+        }
+    }
 }

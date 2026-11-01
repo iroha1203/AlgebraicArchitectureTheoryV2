@@ -2,7 +2,7 @@
 
 use archsig::result::Signal;
 use archsig::run::{
-    Command, FileIo, Outcome, Signals, VERSION_LINE, parse_args, run_check, usage_outcome,
+    FileIo, Outcome, Signals, VERSION_LINE, execute_command, parse_args, usage_outcome,
 };
 use std::io::Write;
 use std::sync::Arc;
@@ -134,28 +134,11 @@ fn execute(
 ) -> (Option<Outcome>, &'static str) {
     let mut io = FileIo;
     match parse_args(args) {
-        Ok(Command::Version) => (None, VERSION_LINE),
-        Ok(Command::Check(check)) => {
+        Ok(command) => {
             let mut control = signals.control();
-            let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                run_check(&mut io, &mut *signals, &check, &mut control)
-            }));
-            match outcome {
-                Ok(o) => (Some(o), ""),
-                Err(_) => (
-                    Some(archsig::run::internal_outcome(&mut io, &mut *signals, &check)),
-                    "",
-                ),
-            }
-        }
-        Ok(Command::Run(run)) => {
-            let mut control = signals.control();
-            let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                archsig::run::run_requests(&mut io, &mut *signals, &run, &mut control)
-            }));
             (
-                Some(outcome.unwrap_or_else(|_| archsig::run::run_internal_outcome(&mut *signals))),
-                "",
+                execute_command(&command, &mut io, signals, &mut control),
+                VERSION_LINE,
             )
         }
         Err(e) => (Some(usage_outcome(&mut io, signals, e)), ""),
@@ -437,7 +420,8 @@ mod tests {
                     kill(Pid::from_raw(child.0.id().try_into().unwrap()), signal).unwrap();
                     child.0.stdin.take().unwrap().write_all(b"x").unwrap();
                     let (status, timed_out) =
-                        test_watchdog::wait(&mut child.0, std::time::Duration::from_secs(30)).unwrap();
+                        test_watchdog::wait(&mut child.0, std::time::Duration::from_secs(30))
+                            .unwrap();
                     (status, timed_out, reader.join().unwrap())
                 });
                 assert!(!timed_out, "signal child did not exit");

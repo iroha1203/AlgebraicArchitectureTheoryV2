@@ -14,7 +14,11 @@ use crate::{
 };
 
 pub fn run_internal_outcome(signals: &mut dyn Signals) -> Outcome {
-    failure(signals, "run", "internal failure during computation".to_owned())
+    failure(
+        signals,
+        "run",
+        "internal failure during computation".to_owned(),
+    )
 }
 
 fn failure(signals: &mut dyn Signals, operation: &str, message: String) -> Outcome {
@@ -34,34 +38,19 @@ pub fn run_requests(
     args: &RunArgs,
     control: &mut Control,
 ) -> Outcome {
-    let usage = |argument: &str, message: String| ResultIssue::Usage {
-        argument: argument.to_owned(),
-        message,
-    };
-    if let Some(out) = &args.inputs.out
-        && let Err(message) = output::out_ok(out) {
-        return output::usage_without_result(
-            signals,
-            usage("--out", format!("--out {}: {message}", out.display())),
-        );
+    if let Err(error) = super::args::validate_run(args) {
+        return super::usage_outcome(io, signals, error);
     }
-    let Some(map_path) = &args.inputs.archmap else {
-        return output::usage_without_result(
-            signals,
-            usage("--archmap", "run requires --archmap".into()),
-        );
-    };
-    if args.inputs.atom_definitions.is_empty() || args.asks.is_empty() {
-        let argument = if args.inputs.atom_definitions.is_empty() {
-            "--atom-definition"
-        } else {
-            "--ask"
-        };
-        return output::usage_without_result(
-            signals,
-            usage(argument, format!("at least one {argument} is required")),
-        );
-    }
+    run_requests_validated(io, signals, args, control)
+}
+
+pub(super) fn run_requests_validated(
+    io: &mut dyn Io,
+    signals: &mut dyn Signals,
+    args: &RunArgs,
+    control: &mut Control,
+) -> Outcome {
+    let map_path = args.inputs.archmap.as_ref().expect("検査済みrunのArchMap");
     let mut issues = Vec::new();
     let definitions: Vec<_> = args
         .inputs
@@ -163,9 +152,7 @@ pub fn run_requests(
         }
     };
     let (rejected, reuse_stop) = candidate.verify(&evaluation, control);
-    deliver(
-        io, signals, args, evaluation, rejected, reuse_stop, control,
-    )
+    deliver(io, signals, args, evaluation, rejected, reuse_stop, control)
 }
 
 fn deliver(
@@ -208,9 +195,7 @@ fn deliver(
         let mut issues: Vec<_> = evaluation
             .issues
             .iter()
-            .filter(|issue| {
-                matches!(issue.kind, ReasonKind::Internal(_) | ReasonKind::Stop(_))
-            })
+            .filter(|issue| matches!(issue.kind, ReasonKind::Internal(_) | ReasonKind::Stop(_)))
             .map(|issue| {
                 let mut issue = issue.clone();
                 issue.dependencies.clear();
@@ -221,13 +206,7 @@ fn deliver(
         if let Some(reason) = reuse_stop {
             issues.push(reason.issue());
         }
-        return output::notify(
-            signals,
-            status,
-            code,
-            control.stop_reason(),
-            issues,
-        );
+        return output::notify(signals, status, code, control.stop_reason(), issues);
     }
     let frozen = signals.freeze();
     if let Some(signal) = control.stop_reason().or(frozen) {
@@ -240,11 +219,16 @@ fn deliver(
     output::sort_issues(&mut issues);
     let Some(out) = &args.inputs.out else {
         let mut summary = evaluation.summary_wire(status.wire(), code, &issues);
-        if !rejected.is_empty() && let Json::Obj(fields) = &mut summary {
+        if !rejected.is_empty()
+            && let Json::Obj(fields) = &mut summary
+        {
             fields.insert("warnings".into(), Json::Arr(rejected));
         }
         return Outcome {
-            status, exit_code: code, result: None, issues: Vec::new(),
+            status,
+            exit_code: code,
+            result: None,
+            issues: Vec::new(),
             summary: Some(summary),
         };
     };
@@ -290,9 +274,15 @@ fn deliver(
     if !rejected.is_empty() {
         document.insert("warnings".into(), Json::Arr(rejected));
     }
-    let Json::Arr(saved_issues) = document.get_mut("issues").unwrap() else { unreachable!() };
-    if let Some(reason) = reuse_stop { saved_issues.push(reason.issue()); }
-    if control.stop_reason().is_none() && let Some(signal) = frozen {
+    let Json::Arr(saved_issues) = document.get_mut("issues").unwrap() else {
+        unreachable!()
+    };
+    if let Some(reason) = reuse_stop {
+        saved_issues.push(reason.issue());
+    }
+    if control.stop_reason().is_none()
+        && let Some(signal) = frozen
+    {
         saved_issues.push(signal.issue());
     }
     let copies: Vec<_> = copies
