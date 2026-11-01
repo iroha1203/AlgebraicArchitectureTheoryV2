@@ -14,7 +14,7 @@ use std::{
 };
 
 fn control() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -925,11 +925,11 @@ fn memory_stop_inside_boolean_operator_keeps_prior_integer_and_original_reason()
     let seed = "seed=evaluate(Calc.add,s=@v/sample)";
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut baseline = Control::new(Limits::default(), move |point| {
+    let mut baseline = Control::new(move |point| {
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     evaluate_observed_bytes(
         fixture(Some("2"), Some("3"), None, Some(false)),
@@ -959,7 +959,7 @@ fn memory_stop_inside_boolean_operator_keeps_prior_integer_and_original_reason()
                     };
                 }
             }
-            Usage::default()
+            None
         },
     );
     let result = evaluate_observed_bytes(

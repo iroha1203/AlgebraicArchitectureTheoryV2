@@ -250,13 +250,10 @@ fn localize_budget_and_signal_stop_keep_the_prior_architecture() {
                             memory_mib: 2,
                             ..Usage::default()
                         },
-                        _ => Usage {
-                            signal: Some(archsig::result::Signal::Term),
-                            ..Usage::default()
-                        },
+                        _ => Some(archsig::result::Signal::Term),
                     }
                 } else {
-                    Usage::default()
+                    None
                 }
             },
         );
@@ -1943,12 +1940,12 @@ fn integer_local_empty_cover_degree_iteration_observes_budget() {
     let inputs=||InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),map.as_bytes().to_vec());
     let asks=["a=build(Coordinates,on=@triangle/root)","l=localize($a.object,using=Coordinates.move)"];
     let total=Rc::new(Cell::new(0usize));let count=total.clone();
-    let mut c=Control::new(Limits::default(),move |point|{if point==Checkpoint::Localize {count.set(count.get()+1);}Usage::default()});
+    let mut c=Control::new(move |point|{if point==Checkpoint::Localize {count.set(count.get()+1);}None});
     evaluate_observed_bytes(inputs(),&asks,&mut c).unwrap();
     let stop=total.get()+2;let mut count=0;
     let mut c=Control::new(Limits{time_ms:Some(1),memory_mib:None},move |point|{
         if point==Checkpoint::Localize {count+=1;}
-        if count>=stop {Usage{elapsed_ms:2,..Usage::default()}}else{Usage::default()}
+        if count>=stop {Usage{elapsed_ms:2,..Usage::default()}}else{None}
     });
     let result=evaluate_observed_bytes(inputs(),&[asks[0],asks[1],"d=diagnose($l.system,degree=20)"],&mut c).unwrap();
     let j=archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();

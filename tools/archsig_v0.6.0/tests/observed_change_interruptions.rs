@@ -21,11 +21,11 @@ fn sources(body: &str) -> InputSources {
 fn count(body: &str) -> usize {
     let seen = Rc::new(Cell::new(0));
     let probe = seen.clone();
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::LawChange {
             probe.set(probe.get() + 1);
         }
-        Usage::default()
+        None
     });
     let _ = check_inputs(sources(body), &mut control);
     seen.get()

@@ -34,10 +34,7 @@ fn array_len(value: &Json) -> usize {
 }
 
 fn stop_at(target: Checkpoint) -> Control {
-    Control::new(Limits::default(), move |point| Usage {
-        signal: (point == target).then_some(Signal::Int),
-        ..Usage::default()
-    })
+    Control::new(move |point| (point == target).then_some(Signal::Int))
 }
 
 #[test]
@@ -164,25 +161,22 @@ fn cancellation_after_multiple_iterations_stops_inside_each_checker() {
     ] {
         let total = Rc::new(Cell::new(0usize));
         let measured = total.clone();
-        let mut counting = Control::new(Limits::default(), move |current| {
+        let mut counting = Control::new(move |current| {
             if current == point {
                 measured.set(measured.get() + 1);
             }
-            Usage::default()
+            None
         });
         check_inputs(sources(), &mut counting).unwrap();
         assert!(total.get() > 2, "{point:?}");
         let stop_after = total.get() / 2;
         let seen = Rc::new(Cell::new(0usize));
         let probe_seen = seen.clone();
-        let mut control = Control::new(Limits::default(), move |current| {
+        let mut control = Control::new(move |current| {
             if current == point {
                 probe_seen.set(probe_seen.get() + 1);
             }
-            Usage {
-                signal: (probe_seen.get() == stop_after).then_some(Signal::Term),
-                ..Usage::default()
-            }
+            (probe_seen.get() == stop_after).then_some(Signal::Term)
         });
         let failure = check_inputs(sources(), &mut control).unwrap_err();
         assert_eq!(seen.get(), stop_after);

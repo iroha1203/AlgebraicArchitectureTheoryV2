@@ -3,7 +3,7 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    control::{Control, Limits, Usage},
+    control::Control,
     observed::evaluate_observed_bytes,
 };
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
@@ -57,7 +57,7 @@ fn run(
     let r = evaluate_observed_bytes(
         input.clone(),
         asks,
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap();
     let w = r.wire();
@@ -375,7 +375,7 @@ fn finite_subexpressions_preserve_current_observation_provenance() {
         let input = fixture::input(script, "Z", &[], revision);
         let checked = archsig::input::check_inputs(
             input,
-            &mut Control::new(Limits::default(), |_| Usage::default()),
+            &mut Control::unlimited(),
         )
         .unwrap();
         let map = checked.archmap();

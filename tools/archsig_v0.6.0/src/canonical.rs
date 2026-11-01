@@ -209,10 +209,10 @@ mod controlled_tests {
         let value = example();
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut control = Control::new(Limits::default(), move |point| {
+        let mut control = Control::new(move |point| {
             assert_eq!(point, Checkpoint::Expression);
             seen.set(seen.get() + 1);
-            Usage::default()
+            None
         });
         value
             .canonical_controlled::<Failure>(&mut control, Checkpoint::Expression)

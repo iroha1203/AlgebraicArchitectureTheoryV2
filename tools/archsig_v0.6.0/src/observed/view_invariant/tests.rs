@@ -9,7 +9,7 @@ const DEFINITION: &[u8] = include_bytes!("../../../tests/fixtures/configuration-
 const LAW: &str = include_str!("../../../tests/fixtures/configuration-profile.law");
 const MAP: &str = include_str!("../../../tests/fixtures/configuration-profile.archmap.json");
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(law: &str, map: &str) -> PreparedObserved {
     prepared_with_definition(law, map, DEFINITION)
@@ -571,9 +571,9 @@ fn four_stops_keep_only_completed_evaluations_invariants_and_axes_as_exact_prefi
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut control = Control::new(Limits::default(), move |_| {
+    let mut control = Control::new(move |_| {
         seen.set(seen.get() + 1);
-        Usage::default()
+        None
     });
     let mut full = copy(&initial, &control);
     let d = retain(&env, &mut full, o.base, &mut control).unwrap();

@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
+    control::Usage,
     input::{InputSources, check_inputs},
     observed::{PreparedObserved, architecture_result, request::resolve_native_for_test},
 };
@@ -9,7 +9,7 @@ const DEF: &[u8] = include_bytes!("../../../tests/fixtures/internal-arrow.atoms.
 const LAW: &str = include_str!("../../../tests/fixtures/internal-arrow.law");
 const MAP: &str = include_str!("../../../tests/fixtures/internal-arrow.archmap.json");
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(map: &str, asks: &[&str]) -> PreparedObserved {
     let defs = crate::definition::check_definitions(&[("definition0", DEF)]).unwrap();
@@ -373,11 +373,11 @@ fn interrupt_keeps_exact_completed_prefix_and_never_publish_unfinished_generator
     let measured_count = measured.clone();
     let armed_measurement = Rc::new(Cell::new(false));
     let active_measurement = armed_measurement.clone();
-    let mut measure = Control::new(Limits::default(), move |point| {
+    let mut measure = Control::new(move |point| {
         if active_measurement.get() && point == Checkpoint::NativeResultNode {
             measured_count.set(measured_count.get() + 1);
         }
-        Usage::default()
+        None
     });
     let mut normal = Graph::new(&measure);
     normal.requests = p.requests().requests().to_vec();
@@ -403,17 +403,14 @@ fn interrupt_keeps_exact_completed_prefix_and_never_publish_unfinished_generator
         let count = seen.clone();
         let armed = Rc::new(Cell::new(false));
         let active = armed.clone();
-        let mut c = Control::new(Limits::default(), move |point| {
+        let mut c = Control::new(move |point| {
             if active.get() && point == Checkpoint::NativeResultNode {
                 count.set(count.get() + 1);
             }
             if count.get() < at || (final_tick && point != Checkpoint::InternalArrow) {
-                return Usage::default();
+                return None;
             }
-            Usage {
-                signal: Some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            Some(crate::result::Signal::Int)
         });
         let mut g = Graph::new(&c);
         g.requests = p.requests().requests().to_vec();
@@ -607,10 +604,7 @@ fn kernel_and_planning_stops_leave_all_existing_objects_unchanged() {
         Checkpoint::InternalArrowRow,
         Checkpoint::ConfigurationOperation,
     ] {
-        let mut c = Control::new(Limits::default(), move |point| Usage {
-            signal: (point == checkpoint).then_some(crate::result::Signal::Int),
-            ..Usage::default()
-        });
+        let mut c = Control::new(move |point| (point == checkpoint).then_some(crate::result::Signal::Int));
         let mut g = empty(&p);
         let a = build(&p, &mut g);
         let o = family(&p, &mut g, &a);

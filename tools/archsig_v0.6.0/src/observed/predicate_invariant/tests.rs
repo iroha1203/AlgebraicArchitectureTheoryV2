@@ -13,7 +13,7 @@ mod finite_fixture {
     include!("../../../tests/common/finite_law_family_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(inputs: Arc<CheckedInputs>, root: &str) -> PreparedObserved {
     let ask = format!("b=build(Selected,on=@v/{root})");
@@ -377,12 +377,12 @@ fn interrupt_stops_keep_exact_completed_predicate_evaluation_and_invariant_prefi
     let seen = count.clone();
     let native = Rc::new(RefCell::new(vec![]));
     let points = native.clone();
-    let mut c = Control::new(Limits::default(), move |checkpoint| {
+    let mut c = Control::new(move |checkpoint| {
         seen.set(seen.get() + 1);
         if checkpoint == Checkpoint::NativeResultNode {
             points.borrow_mut().push(seen.get());
         }
-        Usage::default()
+        None
     });
     let mut full = copy_graph(&initial, &c);
     let out = retain(&env, &mut full, t.clone(), &mut c).unwrap();
@@ -395,12 +395,9 @@ fn interrupt_stops_keep_exact_completed_predicate_evaluation_and_invariant_prefi
     for at in [early, total / 2] {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut c = Control::new(Limits::default(), move |_| {
+        let mut c = Control::new(move |_| {
             seen.set(seen.get() + 1);
-            Usage {
-                signal: (seen.get() >= at).then_some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            (seen.get() >= at).then_some(crate::result::Signal::Int)
         });
         let mut g = copy_graph(&initial, &c);
         let env = Environment::with_prepared(&p, &mut quiet()).unwrap();

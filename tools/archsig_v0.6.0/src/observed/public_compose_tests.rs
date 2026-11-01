@@ -53,11 +53,11 @@ fn native_and_transfer_composition_stops_preserve_only_checked_operations() {
     ] {
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut probe = Control::new(Limits::default(), move |p| {
+        let mut probe = Control::new(move |p| {
             if p == point {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         let prepared = prepare_observed(sources(MAP), &ASKS, &mut Control::unlimited()).unwrap();
         let normal = evaluate_observed(prepared, &mut probe).unwrap();

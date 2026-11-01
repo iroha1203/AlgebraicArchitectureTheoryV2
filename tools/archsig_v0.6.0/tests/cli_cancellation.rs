@@ -81,12 +81,9 @@ fn cancellation_at_each_input_stage_stops_before_delivery() {
             let (dir, args) = inputs(&format!("cancel-{code}-{index}"), true);
             let trace = Rc::new(RefCell::new(Vec::new()));
             let observed = Rc::clone(&trace);
-            let mut control = Control::new(Limits::default(), move |current| {
+            let mut control = Control::new(move |current| {
                 observed.borrow_mut().push(current);
-                Usage {
-                    signal: (current == point).then_some(signal),
-                    ..Usage::default()
-                }
+                (current == point).then_some(signal)
             });
             let mut signals = Finalize::default();
             let outcome = run_check(
@@ -120,10 +117,7 @@ fn cancellation_at_each_input_stage_stops_before_delivery() {
 #[test]
 fn cancellation_without_archmap_also_has_no_artifact() {
     let (dir, args) = inputs("cancel-no-map", false);
-    let mut control = Control::new(Limits::default(), |point| Usage {
-        signal: (point == Checkpoint::LawSemantics).then_some(Signal::Term),
-        ..Usage::default()
-    });
+    let mut control = Control::new(|point| (point == Checkpoint::LawSemantics).then_some(Signal::Term));
     let mut signals = Finalize::default();
     let outcome = run_check(
         &mut NoOutput,
@@ -179,10 +173,7 @@ fn earlier_checkpoint_signal_is_not_replaced_at_finalize() {
         (Signal::Int, Signal::Term, 130),
     ] {
         let (dir, args) = inputs(&format!("signal-order-{code}"), true);
-        let mut control = Control::new(Limits::default(), move |point| Usage {
-            signal: (point == Checkpoint::LawSemantics).then_some(first),
-            ..Usage::default()
-        });
+        let mut control = Control::new(move |point| (point == Checkpoint::LawSemantics).then_some(first));
         let mut signals = Finalize {
             calls: 0,
             late: Some(later),

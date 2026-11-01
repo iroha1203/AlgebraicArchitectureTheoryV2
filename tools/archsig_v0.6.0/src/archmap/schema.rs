@@ -621,14 +621,11 @@ mod interruption_tests {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
         (
-            Control::new(Limits::default(), move |point| {
+            Control::new(move |point| {
                 if point == Checkpoint::ArchMapSchema {
                     seen.set(seen.get() + 1);
                 }
-                Usage {
-                    signal: at.filter(|at| *at == seen.get()).map(|_| Signal::Term),
-                    ..Usage::default()
-                }
+                at.filter(|at| *at == seen.get()).map(|_| Signal::Term)
             }),
             count,
         )

@@ -283,11 +283,11 @@ fn fixed_checkpoints_stop_construction_application_and_recheck_without_reentry()
             };
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            invoke(&mut Control::new(Limits::default(), move |p| {
+            invoke(&mut Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             }))
             .unwrap();
             let total = count.get();

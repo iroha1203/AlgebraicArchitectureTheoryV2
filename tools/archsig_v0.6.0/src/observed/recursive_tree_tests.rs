@@ -73,7 +73,6 @@ fn recursive_tree_rechecks_original_constructor_payload_support_and_scope() {
 }
 
 fn recursive_tree_private_stop(kind: usize, after_answer: bool) {
-    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Trees.prior)",
@@ -93,7 +92,7 @@ fn recursive_tree_private_stop(kind: usize, after_answer: bool) {
             assert!(freeze.replace(Some(count.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(recursive_tree_private_inputs(), &asks, &mut control).unwrap();

@@ -3,7 +3,7 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    control::{Control, Limits, Usage},
+    control::Control,
     observed::evaluate_observed_bytes,
 };
 fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
@@ -33,7 +33,7 @@ fn run(asks: &[&str]) -> Json {
     let r = evaluate_observed_bytes(
         fixture::input("r1"),
         asks,
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap_or_else(|e| panic!("{e:?}: {:?}", e.wire()));
     assert_eq!(r.status(), "complete", "{:?}", r.wire());
@@ -200,7 +200,7 @@ fn answer_finite_data_output_remains_original_tree_for_structural_recursion() {
     let r = evaluate_observed_bytes(
         fixture::tree_input("r1"),
         &asks,
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.wire());
@@ -254,7 +254,7 @@ fn answer_binding_static_errors_and_unprovided_outputs_do_not_become_values() {
         let e = evaluate_observed_bytes(
             fixture::input("r1"),
             &asks,
-            &mut Control::new(Limits::default(), |_| Usage::default()),
+            &mut Control::unlimited(),
         )
         .unwrap_err();
         assert!(
@@ -279,7 +279,7 @@ fn answer_binding_static_errors_and_unprovided_outputs_do_not_become_values() {
         let r = evaluate_observed_bytes(
             fixture::input_mode("stop", "r1"),
             &asks,
-            &mut Control::new(Limits::default(), |_| Usage::default()),
+            &mut Control::unlimited(),
         )
         .unwrap();
         assert_eq!(r.status(), "partial");
@@ -307,7 +307,7 @@ fn answer_known_binding_keeps_input_tables_and_current_provenance() {
     for revision in ["r1", "r2"] {
         let i = fixture::input(revision);
         let original = i.clone();
-        let mut c = Control::new(Limits::default(), |_| Usage::default());
+        let mut c = Control::unlimited();
         let checked = archsig::input::check_inputs(i.clone(), &mut c).unwrap();
         let r = evaluate_observed_bytes(i, &asks, &mut c).unwrap();
         assert_eq!(r.status(), "complete");

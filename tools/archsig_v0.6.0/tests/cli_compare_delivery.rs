@@ -189,11 +189,11 @@ fn comparison_late_stops_publish_only_checked_values_with_consistent_status_and_
     let value = kind != 0;
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut probe = Control::new(Limits::default(), move |p| {
+    let mut probe = Control::new(move |p| {
         if p == Checkpoint::NativeResultNode {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let original = evaluate_observed_bytes(
         if kind == 2 {

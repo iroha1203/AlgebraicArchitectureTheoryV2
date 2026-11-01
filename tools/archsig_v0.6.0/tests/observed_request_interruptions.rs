@@ -72,11 +72,11 @@ fn counting(point: Checkpoint) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
     (
-        Control::new(Limits::default(), move |current| {
+        Control::new(move |current| {
             if current == point {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         }),
         count,
     )

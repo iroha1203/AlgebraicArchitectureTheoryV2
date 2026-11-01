@@ -478,7 +478,7 @@ mod tests {
         input::{InputSources, check_inputs},
     };
     pub(super) fn quiet() -> Control {
-        Control::new(Limits::default(), |_| Usage::default())
+        Control::unlimited()
     }
     pub(super) fn fixture(extra: &str) -> Arc<CheckedInputs> {
         let d = include_str!("../../tests/fixtures/object-instances.atoms.json").replace("\"declarations\": [", r#""declarations": [
@@ -735,11 +735,11 @@ mod stop_tests {
         ] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let mut c = Control::new(Limits::default(), move |p| {
+            let mut c = Control::new(move |p| {
                 if p == phase {
                     seen.set(seen.get() + 1)
                 }
-                Usage::default()
+                None
             });
             let full = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut c).unwrap();
             let total = count.get();
@@ -758,7 +758,7 @@ mod stop_tests {
                                 seen.set(seen.get() + 1)
                             }
                             if seen.get() < at {
-                                return Usage::default();
+                                return None;
                             }
                             Usage {
                                 elapsed_ms: if mode == 0 { 1 } else { 0 },
@@ -1178,11 +1178,11 @@ mod recheck_regression_tests {
         ] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let mut c = Control::new(Limits::default(), move |point| {
+            let mut c = Control::new(move |point| {
                 if point == phase {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             });
             let f = evaluate_finite_view(Arc::clone(&i), &p, 0, n, &mut c).unwrap();
             let before_comparison = count.get();

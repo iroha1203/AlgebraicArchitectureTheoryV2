@@ -79,7 +79,7 @@ fn map_field_totality_owned_key_image_and_duplicate_rows_are_rechecked() {
     ));
 }
 fn stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::control::{Control, Usage};
+    use crate::control::Control;
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(true, false, false, false);
     let asks = [
@@ -108,7 +108,7 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
             assert!(f.replace(Some(p.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     if phase == "map_reader" || phase == "map_cover" {

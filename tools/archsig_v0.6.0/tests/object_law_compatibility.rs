@@ -1,5 +1,5 @@
 use archsig::{
-    control::{Control, Limits, Usage},
+    control::Control,
     input::{CheckedInputs, InputSources, check_inputs},
     observed::object_law_compatibility::{
         LawCompatibilityCondition as Failed, LawCompatibilityOutcome as Outcome,
@@ -10,7 +10,7 @@ use std::sync::Arc;
 #[path = "common/object_view_compatibility_data.rs"]
 mod fixture;
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(body: &str, map: &str) -> Arc<CheckedInputs> {
     inputs_with_definitions(fixture::D, body, map)

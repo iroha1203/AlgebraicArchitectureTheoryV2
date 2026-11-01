@@ -650,7 +650,7 @@ mod tests {
         let list=|items|Scalar::List{element:ty.clone(),items};
         let map=|pairs|Scalar::Map{domain:ty.clone(),codomain:ty.clone(),pairs};
         let data=|name:&str,args|Scalar::Data{family:"R.Packet".into(),constructor:name.into(),args};
-        let mut c=Control::new(Limits::default(), |_|Usage::default());
+        let mut c=Control::unlimited();
         for (a,b) in [
             (set(vec![subject("a"),subject("b")]),set(vec![subject("y"),subject("z")])),
             (map(vec![(subject("a"),subject("b")),(subject("b"),subject("a"))]),map(vec![(subject("y"),subject("z")),(subject("z"),subject("y"))])),

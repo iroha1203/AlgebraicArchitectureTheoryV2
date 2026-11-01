@@ -317,11 +317,11 @@ fn finite_value_stops_latch_across_enumeration_and_final_bijection_check() {
     ] {
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut c = Control::new(Limits::default(), move |p| {
+        let mut c = Control::new(move |p| {
             if p == point {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         finite_declaration_value_transport(&i, &d, "Before.axes", Position::Parameter(5), &mut c)
             .unwrap();

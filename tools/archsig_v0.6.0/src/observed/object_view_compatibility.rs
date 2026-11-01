@@ -863,11 +863,11 @@ mod tests {
         ] {
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut c = Control::new(Limits::default(), move |p| {
+            let mut c = Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1)
                 };
-                Usage::default()
+                None
             });
             let full =
                 object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &mut c).unwrap();
@@ -948,11 +948,11 @@ mod tests {
             let point = full.comparisons[0].points[index].clone();
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut measure = Control::new(Limits::default(), move |p| {
+            let mut measure = Control::new(move |p| {
                 if p == Checkpoint::FiniteIteration {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             });
             let mut measured = example().1;
             compare_point(&mut measured, 0, point.clone(), false, &mut measure).unwrap();
@@ -1020,11 +1020,11 @@ mod tests {
             let point = r.comparisons[0].points[0].clone();
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let c = Control::new(Limits::default(), move |p| {
+            let c = Control::new(move |p| {
                 if p == Checkpoint::FiniteIteration {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             });
             let mut published = None;
             value_equality::equal_retained(
@@ -1109,11 +1109,11 @@ mod tests {
             let point = r.comparisons[0].points[0].clone();
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut c = Control::new(Limits::default(), move |p| {
+            let mut c = Control::new(move |p| {
                 if p == Checkpoint::FiniteIteration {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             });
             compare_point(&mut r, 0, point.clone(), true, &mut c).unwrap();
             let at = count.get()
@@ -1176,11 +1176,11 @@ mod tests {
         let (i, r) = example();
         let count = Rc::new(Cell::new(0_usize));
         let seen = Rc::clone(&count);
-        let mut c = Control::new(Limits::default(), move |p| {
+        let mut c = Control::new(move |p| {
             if p == Checkpoint::ObjectViewCompatibility {
                 seen.set(seen.get() + 1)
             };
-            Usage::default()
+            None
         });
         object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &mut c).unwrap();
         let (mut c, n) = stop(Checkpoint::ObjectViewCompatibility, count.get() + 1, 3);

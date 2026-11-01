@@ -587,10 +587,7 @@ fn universal_private_stop_with_current(stage: usize, kind: usize, current: &str,
     let (limits, usage, expected) = match kind {
         0 => (
             Limits::default(),
-            Usage {
-                signal: Some(Signal::Term),
-                ..Usage::default()
-            },
+            Some(Signal::Term),
             StopReason::Cancelled(Signal::Term),
         ),
         1 => (
@@ -636,7 +633,7 @@ fn universal_private_stop_with_current(stage: usize, kind: usize, current: &str,
             assert!(freeze.replace(Some(count.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(sources, &asks, &mut control).unwrap();

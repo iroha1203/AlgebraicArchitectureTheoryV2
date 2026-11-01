@@ -255,7 +255,7 @@ fn stop(stage: &'static str, kind: usize) {
             assert!(f.replace(Some(p.get())).is_none());
             usage
         } else {
-            crate::control::Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(inputs, &asks, &mut c).unwrap();

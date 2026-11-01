@@ -2,7 +2,7 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    control::{Control, Limits, Usage},
+    control::Control,
     observed::evaluate_observed_bytes,
 };
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
@@ -26,7 +26,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn blocked(w: &Json, id: &str, producer: &str) -> Json {
     let a = answer(w, id);

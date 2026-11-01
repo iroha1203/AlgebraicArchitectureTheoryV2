@@ -380,11 +380,11 @@ fn source_only_unavailable_path_preserves_four_stops_without_returning_incomplet
     let before = complete.nodes.len();
     let seen = std::rc::Rc::new(std::cell::Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
+    let mut c = Control::new(move |p| {
         if p == Checkpoint::EquationPresentation {
             count.set(count.get() + 1);
         }
-        Usage::default()
+        None
     });
     retain(&mut complete, e.prepared.shared_inputs(), a, 0, &mut c).unwrap();
     let total = seen.get();

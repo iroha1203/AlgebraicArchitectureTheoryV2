@@ -22,7 +22,7 @@ pub(in crate::observed) struct Search {
 mod tests {
     use super::*;
     use crate::{
-        control::{Limits, Usage},
+        control::Usage,
         observed::request::resolve_native_for_test,
     };
     #[allow(dead_code)]
@@ -34,7 +34,7 @@ mod tests {
             map,
             "change choose(c:Part,b:Bool)=c with {flag=b};law required valid(c:Part):c.flag;",
         );
-        let mut control = Control::new(Limits::default(), |_| Usage::default());
+        let mut control = Control::unlimited();
         let requests = resolve_native_for_test(
             inputs.law(),
             inputs.archmap(),
@@ -214,7 +214,7 @@ mod tests {
         assert!(verify_point(&env, &witness, &lost, 0, &mut c).is_err());
     }
     fn quiet_for_valuation() -> Control {
-        Control::new(Limits::default(), |_| Usage::default())
+        Control::unlimited()
     }
 }
 pub(in crate::observed) struct SearchFailure {

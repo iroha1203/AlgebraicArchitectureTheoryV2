@@ -265,12 +265,9 @@ mod interruption_tests {
     fn pending_cancel_after_leading_zero_detection_is_sampled_before_return() {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut control = Control::new(Limits::default(), move |_| {
+        let mut control = Control::new(move |_| {
             seen.set(seen.get() + 1);
-            Usage {
-                signal: (seen.get() >= 5).then_some(Signal::Term),
-                ..Usage::default()
-            }
+            (seen.get() >= 5).then_some(Signal::Term)
         });
         let failure = lex_inner::<CheckFailure<Box<Issue>>>(
             b"01",
@@ -311,9 +308,9 @@ mod interruption_tests {
                 assert_eq!(expected.code, Code::Syntax);
                 let seen = Rc::new(Cell::new(0));
                 let count = seen.clone();
-                let mut baseline = Control::new(Limits::default(), move |_| {
+                let mut baseline = Control::new(move |_| {
                     count.set(count.get() + 1);
-                    Usage::default()
+                    None
                 });
                 let _ = lex_inner::<CheckFailure<Box<Issue>>>(
                     bytes,
@@ -363,9 +360,9 @@ mod interruption_tests {
         ] {
             let seen = Rc::new(Cell::new(0));
             let count = seen.clone();
-            let mut baseline = Control::new(Limits::default(), move |_| {
+            let mut baseline = Control::new(move |_| {
                 count.set(count.get() + 1);
-                Usage::default()
+                None
             });
             assert!(matches!(
                 lex_inner::<CheckFailure<Box<Issue>>>(
@@ -378,12 +375,9 @@ mod interruption_tests {
             ));
             let total = seen.get();
             let mut n = 0;
-            let mut control = Control::new(Limits::default(), move |_| {
+            let mut control = Control::new(move |_| {
                 n += 1;
-                Usage {
-                    signal: (n >= total).then_some(Signal::Int),
-                    ..Usage::default()
-                }
+                (n >= total).then_some(Signal::Int)
             });
             assert!(matches!(
                 lex_inner::<CheckFailure<Box<Issue>>>(

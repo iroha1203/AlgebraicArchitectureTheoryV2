@@ -230,7 +230,6 @@ fn owned_expression_family_unknown_owner_and_candidate_keep_missing_source_and_a
 }
 
 fn owned_private_phase_stop(phase: &'static str, kind: usize) {
-    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let body = format!(
         "view seed():Unit=unit; law required prior():false; view hole(s:State):Z=s.free; {OWNED_VIEW} law required walk(a:System):forall s in State[a] . s.held>=0;"
@@ -275,7 +274,7 @@ fn owned_private_phase_stop(phase: &'static str, kind: usize) {
             assert!(freeze.replace(Some(count.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();

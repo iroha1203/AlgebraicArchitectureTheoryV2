@@ -1,6 +1,6 @@
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control, Usage},
     input::InputSources,
     observed::evaluate_observed_bytes,
     result::Signal,
@@ -10,7 +10,7 @@ pub fn at_checkpoint(inputs: &InputSources, asks: &[&str], position: usize) -> J
     let seen = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(false));
     let (c, f) = (seen.clone(), frozen.clone());
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::Expression {
             c.set(c.get() + 1);
             if c.get() == position {
@@ -21,7 +21,7 @@ pub fn at_checkpoint(inputs: &InputSources, asks: &[&str], position: usize) -> J
                 };
             }
         }
-        Usage::default()
+        None
     });
     let result = evaluate_observed_bytes(inputs.clone(), asks, &mut control).unwrap();
     assert_eq!(result.status(), "interrupted");

@@ -16,7 +16,7 @@ mod reservations {
     include!("../../../tests/common/architecture_environment.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 const BODY: &str = "law required bound(p:Item) when p.quantity>=0:p.quantity=0;law optional root(a:Root):true;view amount(p:Item):Z=p.quantity;law optional symbolic(p:Item,z:Z):z=z;";
 fn sources(missing_owner: bool, body: &str) -> InputSources {
@@ -460,11 +460,11 @@ fn four_stops_preserve_every_finished_native_prefix() {
     .unwrap();
     let total = Rc::new(Cell::new(0));
     let count = total.clone();
-    let mut c = Control::new(Limits::default(), move |phase| {
+    let mut c = Control::new(move |phase| {
         if phase == Checkpoint::NativeResultNode {
             count.set(count.get() + 1)
         }
-        Usage::default()
+        None
     });
     let env = Environment::with_prepared(&p, &mut c).unwrap();
     let mut g = empty(&p, &c);
@@ -490,7 +490,7 @@ fn four_stops_preserve_every_finished_native_prefix() {
                     count.set(count.get() + 1)
                 }
                 if count.get() < at {
-                    return Usage::default();
+                    return None;
                 }
                 Usage {
                     elapsed_ms: if mode == 0 { 1 } else { 0 },
@@ -707,7 +707,7 @@ fn stopped_second_build_keeps_the_previous_request_producer_unchanged() {
                     count.set(count.get() + 1)
                 }
                 if count.get() == 0 {
-                    return Usage::default();
+                    return None;
                 }
                 Usage {
                     elapsed_ms: if mode == 0 { 1 } else { 0 },

@@ -22,7 +22,7 @@ const D: &[u8] = include_bytes!("fixtures/object-instances.atoms.json");
 const L: &str = include_str!("fixtures/object-evaluation-table.law");
 const A: &str = include_str!("fixtures/object-instances.archmap.json");
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let d = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();

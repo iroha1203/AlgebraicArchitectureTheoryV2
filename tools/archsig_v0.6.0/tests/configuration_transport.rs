@@ -356,11 +356,11 @@ fn every_fixed_transport_stop_latches_without_new_probes() {
         let map = r.operation().map();
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut c = Control::new(Limits::default(), move |p| {
+        let mut c = Control::new(move |p| {
             if p == Checkpoint::ConfigurationTransport {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         configuration_transport(&i, map, &mut c).unwrap();
         let total = count.get();
@@ -504,11 +504,11 @@ fn stopped_configuration_transport_retains_operation_tables_and_completed_rows()
         configuration_transport(
             &i,
             m.map().unwrap(),
-            &mut Control::new(Limits::default(), move |p| {
+            &mut Control::new(move |p| {
                 if p == Checkpoint::ConfigurationTransport {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             }),
         )
         .unwrap();

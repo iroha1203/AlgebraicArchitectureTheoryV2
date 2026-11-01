@@ -92,7 +92,6 @@ fn finite_map_domains_recheck_totality_membership_type_support_and_scope() {
     });
 }
 fn finite_map_private_stop(kind: usize, after_answer: bool) {
-    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Maps.prior)",
@@ -112,7 +111,7 @@ fn finite_map_private_stop(kind: usize, after_answer: bool) {
             assert!(freeze.replace(Some(count.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(finite_map_private_inputs(), &asks, &mut control).unwrap();

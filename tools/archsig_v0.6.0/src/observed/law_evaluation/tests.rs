@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
+    control::Usage,
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
 #[allow(dead_code)]
@@ -8,7 +8,7 @@ mod fixture {
     include!("../../../tests/common/polynomial_law_family_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(body: &str) -> PreparedObserved {
     let inputs = fixture::inputs(false, false, body);
@@ -550,11 +550,11 @@ fn native_law_expression_interrupt_keeps_exact_completed_dag_prefix_and_restore_
     let root = rows[0][0];
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut probe = Control::new(Limits::default(), move |point| {
+    let mut probe = Control::new(move |point| {
         if point == Checkpoint::Expression {
             count.set(count.get() + 1)
         }
-        Usage::default()
+        None
     });
     let mut complete = prefix_graph(&initial, &probe);
     evaluate(&env, &mut complete, root, objects[0], &mut probe).unwrap();
@@ -565,15 +565,12 @@ fn native_law_expression_interrupt_keeps_exact_completed_dag_prefix_and_restore_
     for at in 1..=total {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(Limits::default(), move |point| {
+        let mut c = Control::new(move |point| {
             if point == Checkpoint::Expression {
                 count.set(count.get() + 1)
             }
             let stop = count.get() >= at;
-            Usage {
-                signal: stop.then_some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            stop.then_some(crate::result::Signal::Int)
         });
         let mut g = prefix_graph(&initial, &c);
         assert!(matches!(

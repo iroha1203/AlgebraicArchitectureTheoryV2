@@ -58,7 +58,7 @@ fn result(sources: InputSources, asks: &[&str]) -> archsig::json::JNode {
     archsig::json::parse(evaluation.wire().canonical().as_bytes()).unwrap()
 }
 fn control() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn evidence(j: &archsig::json::JNode) -> &archsig::json::JNode {
     arr(get(j, "nodes"))
@@ -214,7 +214,7 @@ fn finite_owner_completion_stop_does_not_publish_incomplete_exhaustion() {
                         },
                     }
                 } else {
-                    Usage::default()
+                    None
                 }
             },
         );

@@ -87,11 +87,11 @@ fn native_map_stops_latch_without_discarding_checked_maps_or_resuming_computatio
     ] {
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut probe = Control::new(Limits::default(), move |p| {
+        let mut probe = Control::new(move |p| {
             if p == point {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         let original = evaluate_observed_bytes(inputs(A_BYTES), &[MAP_ASK], &mut probe).unwrap();
         assert_eq!(original.status(), "complete");

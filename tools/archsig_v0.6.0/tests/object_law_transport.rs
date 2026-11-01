@@ -21,7 +21,7 @@ const D: &[u8] = include_bytes!("fixtures/object-law-transport.atoms.json");
 const L: &str = include_str!("fixtures/object-law-transport.law");
 const A: &str = include_str!("fixtures/object-view-transport.archmap.json");
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
@@ -332,11 +332,11 @@ fn stopped_completion_reading_keeps_the_complete_source_dag_without_a_partial_gu
         &d,
         o,
         n,
-        &mut Control::new(Limits::default(), move |p| {
+        &mut Control::new(move |p| {
             if p == Checkpoint::ObjectLawTransport {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         }),
     )
     .unwrap();
@@ -549,11 +549,11 @@ fn stopping_inside_target_expression_keeps_completed_source_and_partial_target()
         &d,
         o,
         n,
-        &mut Control::new(Limits::default(), move |p| {
+        &mut Control::new(move |p| {
             if p == Checkpoint::ObjectLawTransport {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         }),
     )
     .unwrap();
@@ -633,11 +633,11 @@ fn fixed_transport_checkpoints_latch_time_memory_and_cancellation() {
             &d,
             o,
             n,
-            &mut Control::new(Limits::default(), move |p| {
+            &mut Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             }),
         )
         .unwrap();
@@ -720,11 +720,11 @@ fn stopped_law_transport_retains_completed_dags_truth_and_only_completed_decisio
             &d,
             o,
             n,
-            &mut Control::new(Limits::default(), move |p| {
+            &mut Control::new(move |p| {
                 if p == Checkpoint::ObjectLawTransport {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             }),
         )
         .unwrap();

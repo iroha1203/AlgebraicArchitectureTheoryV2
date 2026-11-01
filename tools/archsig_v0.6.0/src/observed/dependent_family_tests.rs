@@ -116,7 +116,6 @@ fn dependent_private_body_phase_stop(
     at: usize,
     kind: usize,
 ) {
-    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let body = format!(
         "view seed():Unit=unit; law required prior():false; view hole(c:Leaf):Bool=c.ok; {declaration}"
@@ -157,7 +156,7 @@ fn dependent_private_body_phase_stop(
             assert!(freeze.replace(Some(count.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();

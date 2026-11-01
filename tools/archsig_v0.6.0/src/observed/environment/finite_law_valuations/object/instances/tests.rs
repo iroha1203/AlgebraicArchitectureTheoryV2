@@ -8,7 +8,7 @@ mod fixture {
     include!("../../../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn reading(inputs: &CheckedInputs) -> ObjectReadingInstances {
     let c = construct(inputs, "Selected", "v", "root", &mut quiet()).unwrap();
@@ -344,14 +344,11 @@ fn domain_cancellation_retains_only_finished_parameter_domains() {
     let r = reading(&i);
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
+    let mut c = Control::new(move |p| {
         if p == Checkpoint::FiniteLawDomain {
             seen.set(seen.get() + 1);
         }
-        Usage {
-            signal: (seen.get() >= 2).then_some(Signal::Int),
-            ..Usage::default()
-        }
+        (seen.get() >= 2).then_some(Signal::Int)
     });
     let error = finite_object_law_instances(&i, &r, object(&r, "p"), &mut c).unwrap_err();
     let partial = error.partial.unwrap();

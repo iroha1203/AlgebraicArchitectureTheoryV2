@@ -10,7 +10,7 @@ mod fixture {
     include!("../../../tests/common/polynomial_law_family_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(inputs: Arc<CheckedInputs>, root: &str) -> PreparedObserved {
     let ask = format!("b=build(Selected,on=@v/{root})");
@@ -461,11 +461,11 @@ fn four_stops_do_not_return_a_layout_or_mutate_the_finished_graph() {
     let (p, g, t, l) = sample(false, false, "law required zero(r:Root):0=0;", "r2");
     let seen = Rc::new(Cell::new(0));
     let counter = seen.clone();
-    let mut c = Control::new(Limits::default(), move |point| {
+    let mut c = Control::new(move |point| {
         if point == Checkpoint::EquationPresentation {
             counter.set(counter.get() + 1)
         }
-        Usage::default()
+        None
     });
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let full = retain(&env, &g, t.clone(), &mut c).unwrap();

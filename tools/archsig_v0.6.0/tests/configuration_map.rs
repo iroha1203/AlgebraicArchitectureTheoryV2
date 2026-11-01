@@ -655,11 +655,11 @@ fn typed_mapping_completion_stops_latch_the_shared_control() {
     });
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::Completion {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let original = correspondence(&inputs, "v", "m", "GraphRead", None, &mut control).unwrap();
     let total = count.get();
@@ -1229,11 +1229,11 @@ fn current_mapping_changes_are_rechecked_and_all_fixed_stops_latch() {
     ));
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut control = Control::new(Limits::default(), move |p| {
+    let mut control = Control::new(move |p| {
         if p == Checkpoint::ConfigurationMap {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     correspondence(&inputs, "v", "m", "Reservations", None, &mut control).unwrap();
     let total = count.get();
@@ -1291,11 +1291,11 @@ fn completed_relation_counterexamples_survive_stopping_inside_the_preservation_s
     let input = inputs(&bad_endpoints());
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut normal = Control::new(Limits::default(), move |p| {
+    let mut normal = Control::new(move |p| {
         if p == Checkpoint::ConfigurationMap {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let result =
         correspondence_retained(&input, "v", "m", "Reservations", None, &mut normal).unwrap();

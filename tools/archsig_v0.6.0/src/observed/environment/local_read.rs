@@ -1658,7 +1658,7 @@ mod tests {
         include!("../../../tests/common/architecture_environment.rs");
     }
     fn quiet() -> Control {
-        Control::new(Limits::default(), |_| Usage::default())
+        Control::unlimited()
     }
     #[test]
     fn local_owner_missing_survives_the_first_free_state_stop() {
@@ -1711,7 +1711,7 @@ mod tests {
                 },
                 move |point| {
                     if point != Checkpoint::Localize {
-                        return Usage::default();
+                        return None;
                     }
                     match mode {
                         0 => Usage {
@@ -1722,10 +1722,7 @@ mod tests {
                             memory_mib: 2,
                             ..Usage::default()
                         },
-                        _ => Usage {
-                            signal: Some(crate::result::Signal::Term),
-                            ..Usage::default()
-                        },
+                        _ => Some(crate::result::Signal::Term),
                     }
                 },
             );

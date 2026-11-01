@@ -100,11 +100,11 @@ fn bundle_preparation_checks_every_digest_id_and_file_iteration() {
     let src = sources();
     let count = Rc::new(Cell::new(0));
     let measured = count.clone();
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::InputBundle {
             measured.set(measured.get() + 1);
         }
-        Usage::default()
+        None
     });
     let checked = check_inputs(src.clone(), &mut control).unwrap();
     assert_eq!(count.get(), 20); // 四 SHA、四 ID、二つの定義参照、それぞれ前後。
@@ -236,11 +236,11 @@ fn checked_table_comparison_stops_inside_elements_and_recursive_types() {
     let src = sources();
     let count = Rc::new(Cell::new(0));
     let measured = count.clone();
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::TableComparison {
             measured.set(measured.get() + 1);
         }
-        Usage::default()
+        None
     });
     let (definitions, law, map) = tables(&src);
     CheckedInputs::from_checked(src.clone(), definitions, law, map, &mut control).unwrap();
@@ -293,11 +293,11 @@ fn internal_comparison_mismatch_preserves_stage_and_budget_priority() {
         };
         let count = Rc::new(Cell::new(0));
         let measured = count.clone();
-        let mut control = Control::new(Limits::default(), move |point| {
+        let mut control = Control::new(move |point| {
             if point == Checkpoint::TableComparison {
                 measured.set(measured.get() + 1);
             }
-            Usage::default()
+            None
         });
         let (definitions, law, map) = changed();
         let plain = CheckedInputs::from_checked(src.clone(), definitions, law, map, &mut control)

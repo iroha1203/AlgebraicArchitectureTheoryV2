@@ -188,8 +188,8 @@ fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
             let stop=if case==6 {count.get()>=2 && point==Checkpoint::FiniteLawOperand} else {count.get()==2};
             if stop {match mode {
                 0=>Usage{elapsed_ms:2,..Usage::default()},1=>Usage{memory_mib:2,..Usage::default()},
-                _=>Usage{signal:Some(archsig::result::Signal::Term),..Usage::default()},
-            }}else{Usage::default()}
+                _=>Some(archsig::result::Signal::Term),
+            }}else{None}
         });
         let sources=InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
         let quotient=if case<3 {"q=quotient(Pair.last,on=$s.domain,s=@v/s)"} else {"q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.same)"};
@@ -598,7 +598,7 @@ fn finite_option_quotient_recurses_and_preserves_none_zero_and_binding_order() {
                 "good=quotient(Pair.tagged,on=$s.domain,s=@v/s,law=Pair.visible)",
                 "bad=quotient(Pair.tagged,on=$s.domain,s=@v/s,law=Pair.hidden)",
             ],
-            &mut Control::new(Limits::default(), |_| Usage::default()),
+            &mut Control::unlimited(),
         )
         .unwrap();
         let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
@@ -846,7 +846,7 @@ fn finite_container_quotient_uses_typed_recursive_equality() {
                 "good=quotient(Pair.shape,on=$s.domain,s=@v/s,law=Pair.self)",
                 "bad=quotient(Pair.shape,on=$s.domain,s=@v/s,law=Pair.hidden)",
             ],
-            &mut Control::new(Limits::default(), |_| Usage::default()),
+            &mut Control::unlimited(),
         )
         .unwrap();
         let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
@@ -965,7 +965,7 @@ fn finite_container_fiber_comparison_propagates_resource_and_signal_stops() {
                         },
                     }
                 } else {
-                    Usage::default()
+                    None
                 }
             },
         );

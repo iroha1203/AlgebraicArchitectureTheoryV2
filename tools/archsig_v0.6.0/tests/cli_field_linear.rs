@@ -342,13 +342,10 @@ fn rational_repair_stop_after_first_witness_keeps_existence_without_object() {
                             memory_mib: 2,
                             ..Usage::default()
                         },
-                        _ => Usage {
-                            signal: Some(archsig::result::Signal::Term),
-                            ..Usage::default()
-                        },
+                        _ => Some(archsig::result::Signal::Term),
                     }
                 } else {
-                    Usage::default()
+                    None
                 }
             },
         );
@@ -1293,17 +1290,11 @@ fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
             },
         ),
         (
-            Usage {
-                signal: Some(Signal::Int),
-                ..Usage::default()
-            },
+            Some(Signal::Int),
             StopReason::Cancelled(Signal::Int),
         ),
         (
-            Usage {
-                signal: Some(Signal::Term),
-                ..Usage::default()
-            },
+            Some(Signal::Term),
             StopReason::Cancelled(Signal::Term),
         ),
     ] {
@@ -1319,7 +1310,7 @@ fn guarded_quotient_stop_keeps_solve_and_propagates_the_original_reason() {
                     seen.set(true);
                     usage
                 } else {
-                    Usage::default()
+                    None
                 }
             },
         );

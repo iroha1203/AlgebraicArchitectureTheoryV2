@@ -427,11 +427,11 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
         let map = A.replace("\"value\": \"2\"", "\"value\": \"12\"");
         let count = Rc::new(Cell::new(0usize));
         let seen = Rc::clone(&count);
-        let mut probe = Control::new(Limits::default(), move |point| {
+        let mut probe = Control::new(move |point| {
             if point == Checkpoint::Expression {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         let first = [ASKS[0], ASKS[2]];
         evaluate_observed_bytes(
@@ -606,14 +606,14 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
     let count = Rc::clone(&seen);
     let before_evaluation = Rc::new(Cell::new(None));
     let split = Rc::clone(&before_evaluation);
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::Reuse {
             count.set(count.get() + 1);
         }
         if point == Checkpoint::Expression && split.get().is_none() {
             split.set(Some(count.get()));
         }
-        Usage::default()
+        None
     });
     let outcome = archsig::run::run_requests(
         &mut TestIo,

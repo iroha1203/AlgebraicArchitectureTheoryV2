@@ -8,7 +8,7 @@ mod fixture {
     include!("../../../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn readings(i: &CheckedInputs) -> ObjectReadingInstances {
     let c = construct(i, "Selected", "v", "root", &mut quiet()).unwrap();
@@ -613,10 +613,7 @@ fn interruption_before_d_keeps_original_instance_indices_and_conditions() {
     let i = fixture::with_body(&map, "law required zero(c:Part):c.quantity=0;");
     let a = readings(&i);
     let selected = vec![(object(&a, "q"), instance(&a, "zero", "q"), bindings("q"))];
-    let mut c = Control::new(Limits::default(), |p| Usage {
-        signal: (p == Checkpoint::FiniteLawDomain).then_some(Signal::Int),
-        ..Usage::default()
-    });
+    let mut c = Control::new(|p| (p == Checkpoint::FiniteLawDomain).then_some(Signal::Int));
     let failure = finite_instance_law_family_valuations(&i, &a, &selected, &mut c)
         .err()
         .unwrap();

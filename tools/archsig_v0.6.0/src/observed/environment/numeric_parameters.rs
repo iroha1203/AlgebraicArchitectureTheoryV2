@@ -223,12 +223,11 @@ pub(in crate::observed) fn point_value(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::control::{Limits, Usage};
 
     #[test]
     fn nested_numeric_point_preserves_shape_and_later_parameter_offsets() {
         for kind in [Type::Z, Type::Q] {
-            let c = Control::new(Limits::default(), |_| Usage::default());
+            let c = Control::unlimited();
             let nested = Type::Tuple(vec![
                 kind.clone(),
                 Type::Tuple(vec![

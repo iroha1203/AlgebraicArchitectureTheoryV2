@@ -14,7 +14,7 @@ use archsig::{
 use num_bigint::BigInt;
 use std::{cell::Cell, collections::BTreeSet, rc::Rc, sync::Arc};
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn run(i: Arc<CheckedInputs>) -> E {
     finite_polynomial_evaluation(i, "Selected", "v", "root", 0, &mut quiet()).unwrap()

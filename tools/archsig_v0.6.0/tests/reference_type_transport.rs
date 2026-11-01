@@ -391,11 +391,11 @@ fn fixed_reference_checkpoints_stop_before_returning_any_unfinished_bijection() 
     let d = declarations(&i);
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
+    let mut c = Control::new(move |p| {
         if p == Checkpoint::ReferenceTypeTransport {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     reference_type_transport(&i, &d, "Left.Child", &mut c).unwrap();
     let total = count.get();

@@ -292,7 +292,7 @@ fn owner_completion_domains_reject_missing_duplicate_and_unregistered_members() 
 }
 
 fn stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::control::{Control, Usage};
+    use crate::control::Control;
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(2, false, false, false);
     let asks = [
@@ -337,7 +337,7 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
             assert!(f.replace(Some(p.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(input, &asks, &mut control).unwrap();

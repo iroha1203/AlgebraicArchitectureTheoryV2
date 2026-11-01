@@ -438,11 +438,11 @@ fn every_fixed_declaration_stop_latches_without_new_probes() {
     let map = r.operation().map();
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
+    let mut c = Control::new(move |p| {
         if p == Checkpoint::DeclarationCorrespondence {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     declaration_correspondence(&i, map, &mut c).unwrap();
     let total = count.get();

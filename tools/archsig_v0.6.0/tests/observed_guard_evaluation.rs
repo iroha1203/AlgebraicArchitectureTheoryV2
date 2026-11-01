@@ -15,7 +15,7 @@ use std::{
 };
 
 fn control() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -817,11 +817,11 @@ fn stop_between_guard_body_and_law_completion(
     let prefix = "seed=evaluate(Inspect.value,item=@current/root)";
     let prefix_count = Rc::new(Cell::new(0));
     let seen = prefix_count.clone();
-    let mut baseline = Control::new(Limits::default(), move |point| {
+    let mut baseline = Control::new(move |point| {
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let prior = evaluate_observed_bytes(fixture(None, Some(true)), &[prefix], &mut baseline)
         .unwrap()
@@ -841,7 +841,7 @@ fn stop_between_guard_body_and_law_completion(
                 return stopped_usage;
             }
         }
-        Usage::default()
+        None
     });
     let result = evaluate_observed_bytes(
         fixture(None, Some(true)),
@@ -916,10 +916,7 @@ fn cancellation_after_guard_evaluation_preserves_prior_view_and_pending_law() {
     stop_between_guard_body_and_law_completion(
         2,
         Limits::default(),
-        Usage {
-            signal: Some(Signal::Term),
-            ..Usage::default()
-        },
+        Some(Signal::Term),
     );
 }
 

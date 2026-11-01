@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
+    control::Usage,
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
 #[allow(dead_code)]
@@ -12,7 +12,7 @@ mod finite_fixture {
     include!("../../../tests/common/finite_law_family_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(inputs: Arc<CheckedInputs>, root: &str) -> PreparedObserved {
     let ask = format!("b=build(Selected,on=@v/{root})");
@@ -420,11 +420,11 @@ fn interrupt_leaves_exact_completed_dag_prefix_and_no_completed_table() {
     let (initial, a) = start(&p);
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(Limits::default(), move |point| {
+    let mut c = Control::new(move |point| {
         if point == Checkpoint::ObjectEvaluation {
             count.set(count.get() + 1)
         }
-        Usage::default()
+        None
     });
     let mut full = copy_graph(&initial, &c);
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
@@ -439,15 +439,12 @@ fn interrupt_leaves_exact_completed_dag_prefix_and_no_completed_table() {
     for &at in &points {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(Limits::default(), move |point| {
+        let mut c = Control::new(move |point| {
             if point == Checkpoint::ObjectEvaluation {
                 count.set(count.get() + 1)
             }
             let stop = count.get() >= at;
-            Usage {
-                signal: stop.then_some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            stop.then_some(crate::result::Signal::Int)
         });
         let mut g = copy_graph(&initial, &c);
         let env = Environment::with_prepared(&p, &mut quiet()).unwrap();

@@ -3653,10 +3653,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         let (limits, usage, expected) = match kind {
             0 => (
                 Limits::default(),
-                Usage {
-                    signal: Some(Signal::Term),
-                    ..Usage::default()
-                },
+                Some(Signal::Term),
                 StopReason::Cancelled(Signal::Term),
             ),
             1 => (
@@ -3702,7 +3699,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 assert!(freeze.replace(Some(count.get())).is_none());
                 usage
             } else {
-                Usage::default()
+                None
             }
         });
         let prepared = prepare_observed(sources, &asks, &mut control).unwrap();
@@ -3955,10 +3952,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         let (limits, usage, expected) = match kind {
             0 => (
                 Limits::default(),
-                Usage {
-                    signal: Some(Signal::Term),
-                    ..Usage::default()
-                },
+                Some(Signal::Term),
                 StopReason::Cancelled(Signal::Term),
             ),
             1 => (
@@ -4004,7 +3998,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 assert!(freeze.replace(Some(count.get())).is_none());
                 usage
             } else {
-                Usage::default()
+                None
             }
         });
         let prepared = prepare_observed(sources, &asks, &mut control).unwrap();
@@ -4149,9 +4143,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             .unwrap()
         }
 
-        let mut normal_control = Control::new(crate::control::Limits::default(), |_| {
-            crate::control::Usage::default()
-        });
+        let mut normal_control = Control::unlimited();
         let normal_prepared = prepare(&mut normal_control);
         let normal = evaluate_observed(normal_prepared, &mut normal_control).unwrap();
         assert_eq!(normal.status(), "complete");
@@ -4167,9 +4159,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             &Scalar::Z(149.into())
         );
 
-        let mut control = Control::new(crate::control::Limits::default(), |_| {
-            crate::control::Usage::default()
-        });
+        let mut control = Control::unlimited();
         let prepared = prepare(&mut control);
         let Signature::View { body: later, .. } =
             &prepared.inputs().law().declarations["CountCheck.later"].signature
@@ -4795,9 +4785,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         result: &ObservedEvaluation,
         nodes: &[Node],
     ) -> Result<Graph, ValidationFailure> {
-        let mut control = Control::new(crate::control::Limits::default(), |_| {
-            crate::control::Usage::default()
-        });
+        let mut control = Control::unlimited();
         let environment = Environment::with_requests(
             result.prepared.inputs(),
             result.prepared.requests().requests(),
@@ -4826,9 +4814,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         assert_eq!(result.status(), "complete");
         let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
             .expect("改変前の全nodeは元順の入力照合とGraph検査を通る");
-        let mut control = Control::new(crate::control::Limits::default(), |_| {
-            crate::control::Usage::default()
-        });
+        let mut control = Control::unlimited();
         let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
         let requests = result.prepared.requests().requests();
         for (request, answer) in requests.iter().zip(&result.answers) {
@@ -5044,9 +5030,7 @@ reading Follow {{
         {{"id":"x","origin":"model","subjects":[{{"id":"u","type":"Counter.State","origin":"model"}}],
           "atoms":[{{"id":"count-u","subject":"u","field":"Counter.State.count","value":"7","origin":"model"}}]}}]}}"#
         );
-        let mut control = Control::new(crate::control::Limits::default(), |_| {
-            crate::control::Usage::default()
-        });
+        let mut control = Control::unlimited();
         let result = evaluate_observed_bytes(
             InputSources::from_bytes(
                 vec![definitions.as_bytes().to_vec()],
@@ -5148,9 +5132,7 @@ reading R {{
       "origins":[{{"id":"model","mode":"specification","method":"二つの対象を提示する。","locations":[],"note":"Bool条件と値の小さい仕様モデル。"}}],
       "snapshots":[{{"id":"v","origin":"model","subjects":[{{"id":"s","type":"Signal.Cell","origin":"model"}},{{"id":"t","type":"Signal.Cell","origin":"model"}}],"atoms":[{atoms}]}}]}}"#
         );
-        let mut control = Control::new(crate::control::Limits::default(), |_| {
-            crate::control::Usage::default()
-        });
+        let mut control = Control::unlimited();
         evaluate_observed_bytes(
             InputSources::from_bytes(
                 vec![definitions.as_bytes().to_vec()],
@@ -5337,9 +5319,7 @@ reading R {{
                 "補完で真偽が異なるLawへ確定値を補えない"
             );
         }
-        let mut control = Control::new(crate::control::Limits::default(), |_| {
-            crate::control::Usage::default()
-        });
+        let mut control = Control::unlimited();
         let environment = Environment::new(result.prepared.inputs(), &mut control).unwrap();
         environment
             .validate_answer(
@@ -5408,9 +5388,7 @@ reading R {{
                 "件数と条件を提示する仕様モデル。",
             )
             .replace("\"atoms\": [", &format!("\"atoms\": [{additions},"));
-        let mut control = Control::new(crate::control::Limits::default(), |_| {
-            crate::control::Usage::default()
-        });
+        let mut control = Control::unlimited();
         evaluate_observed_bytes(
             InputSources::from_bytes(
                 vec![definitions.into_bytes()],
@@ -5932,10 +5910,7 @@ reading R {{
                 ),
                 _ => (
                     Limits::default(),
-                    Usage {
-                        signal: Some(Signal::Term),
-                        ..Usage::default()
-                    },
+                    Some(Signal::Term),
                     StopReason::Cancelled(Signal::Term),
                 ),
             };
@@ -5950,7 +5925,7 @@ reading R {{
                     assert!(freeze.replace(Some(count.get())).is_none());
                     usage
                 } else {
-                    Usage::default()
+                    None
                 }
             });
             let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
@@ -6459,9 +6434,7 @@ reading Calc {{
         );
     }
     fn named_call_quiet() -> Control {
-        Control::new(crate::control::Limits::default(), |_| {
-            crate::control::Usage::default()
-        })
+        Control::unlimited()
     }
     #[test]
     fn named_calls_reject_out_of_range_request_at_root_source_prefix() {
@@ -7190,10 +7163,7 @@ reading Calc {{
                 ),
                 _ => (
                     Limits::default(),
-                    Usage {
-                        signal: Some(Signal::Term),
-                        ..Usage::default()
-                    },
+                    Some(Signal::Term),
                     StopReason::Cancelled(Signal::Term),
                 ),
             };
@@ -7213,7 +7183,7 @@ reading Calc {{
                     );
                     return usage;
                 }
-                Usage::default()
+                None
             });
             let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
             let result = evaluate_observed_with_validator(
@@ -7847,10 +7817,7 @@ reading Calc {{
                     ),
                     _ => (
                         Limits::default(),
-                        Usage {
-                            signal: Some(Signal::Term),
-                            ..Usage::default()
-                        },
+                        Some(Signal::Term),
                         StopReason::Cancelled(Signal::Term),
                     ),
                 };
@@ -7865,7 +7832,7 @@ reading Calc {{
                         assert!(freeze.replace(Some(count.get())).is_none());
                         usage
                     } else {
-                        Usage::default()
+                        None
                     }
                 });
                 let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
@@ -9362,10 +9329,7 @@ reading Calc {{
         let (limits, usage, expected) = match kind {
             0 => (
                 Limits::default(),
-                Usage {
-                    signal: Some(Signal::Term),
-                    ..Usage::default()
-                },
+                Some(Signal::Term),
                 StopReason::Cancelled(Signal::Term),
             ),
             1 => (
@@ -9410,7 +9374,7 @@ reading Calc {{
                 assert!(freeze.replace(Some(count.get())).is_none());
                 usage
             } else {
-                Usage::default()
+                None
             }
         });
         let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
@@ -10003,10 +9967,7 @@ reading Calc {{
         let (limits, usage, expected) = match kind {
             0 => (
                 Limits::default(),
-                Usage {
-                    signal: Some(Signal::Term),
-                    ..Usage::default()
-                },
+                Some(Signal::Term),
                 StopReason::Cancelled(Signal::Term),
             ),
             1 => (
@@ -10051,7 +10012,7 @@ reading Calc {{
                 assert!(freeze.replace(Some(count.get())).is_none());
                 usage
             } else {
-                Usage::default()
+                None
             }
         });
         let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
@@ -10417,10 +10378,7 @@ reading Calc {{
             let (limits, usage, expected) = match kind {
                 0 => (
                     Limits::default(),
-                    Usage {
-                        signal: Some(Signal::Term),
-                        ..Usage::default()
-                    },
+                    Some(Signal::Term),
                     StopReason::Cancelled(Signal::Term),
                 ),
                 1 => (
@@ -10465,7 +10423,7 @@ reading Calc {{
                     assert!(freeze.replace(Some(count.get())).is_none());
                     usage
                 } else {
-                    Usage::default()
+                    None
                 }
             });
             let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
@@ -10675,10 +10633,7 @@ reading Calc {{
             let (limits, usage, expected) = match stop {
                 0 => (
                     Limits::default(),
-                    Usage {
-                        signal: Some(Signal::Term),
-                        ..Usage::default()
-                    },
+                    Some(Signal::Term),
                     StopReason::Cancelled(Signal::Term),
                 ),
                 1 => (
@@ -10723,7 +10678,7 @@ reading Calc {{
                     assert!(freeze.replace(Some(count.get())).is_none());
                     usage
                 } else {
-                    Usage::default()
+                    None
                 }
             });
             let prepared = prepare_observed(sources, &asks, &mut control).unwrap();

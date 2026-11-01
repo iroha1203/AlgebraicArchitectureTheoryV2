@@ -3,7 +3,7 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    control::{Control, Limits, Usage},
+    control::Control,
     observed::evaluate_observed_bytes,
 };
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
@@ -44,13 +44,13 @@ fn run_revision(unknown: bool, revision: &str, asks: &[&str]) -> Json {
 fn run_input(inputs: archsig::input::InputSources, revision: &str, asks: &[&str]) -> Json {
     let checked = archsig::input::check_inputs(
         inputs.clone(),
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap();
     let result = evaluate_observed_bytes(
         inputs.clone(),
         asks,
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap();
     assert_eq!(result.prepared().inputs().sources(), &inputs);
@@ -203,7 +203,7 @@ fn unknown_owner_and_free_z_keep_membership_and_missing() {
     let result = evaluate_observed_bytes(
         inputs.clone(),
         &["x=check(Reservations.ocSomeGood,a=@v/A,p=@v/p)"],
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap();
     assert_eq!(result.prepared().inputs().sources(), &inputs);
@@ -323,7 +323,7 @@ fn two_unknown_owner_slots_keep_four_joint_assignments_and_numeric_axes() {
     let input = two_owner_input();
     let checked = archsig::input::check_inputs(
         input.clone(),
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap();
     let snapshot = checked
@@ -505,7 +505,7 @@ fn small_owned_map_missing_table_keeps_all_four_tables_and_original_conditions()
     let i = small_map_input("unknown_owner");
     archsig::input::check_inputs(
         i.clone(),
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap();
     let w = run_input(

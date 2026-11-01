@@ -26,7 +26,7 @@ const ASKS: [&str; 4] = [
 ];
 
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn sources(definitions: &[u8], law: &[u8], map: &[u8]) -> InputSources {
     InputSources::from_bytes(vec![definitions.to_vec()], law.to_vec(), map.to_vec())

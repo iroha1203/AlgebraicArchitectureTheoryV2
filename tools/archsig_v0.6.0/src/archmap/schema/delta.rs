@@ -316,7 +316,7 @@ pub(super) fn read_snapshots<'a, E: InputError>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::control::{CheckFailure, Limits, Usage};
+    use crate::control::CheckFailure;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 
@@ -329,14 +329,11 @@ mod tests {
         let run = |at: Option<usize>| {
             let seen = Rc::new(Cell::new(0));
             let count = seen.clone();
-            let mut control = Control::new(Limits::default(), move |point| {
+            let mut control = Control::new(move |point| {
                 if point == Checkpoint::ArchMapIteration {
                     count.set(count.get() + 1);
                 }
-                Usage {
-                    signal: at.filter(|n| *n == count.get()).map(|_| Signal::Term),
-                    ..Usage::default()
-                }
+                at.filter(|n| *n == count.get()).map(|_| Signal::Term)
             });
             let result =
                 read_snapshots::<CheckFailure<Box<Issue>>>(items, "/snapshots", &mut control);

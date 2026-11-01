@@ -3,7 +3,7 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    control::{Control, Limits, Usage},
+    control::Control,
     observed::evaluate_observed_bytes,
 };
 fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
@@ -21,7 +21,7 @@ fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
         .unwrap()
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 #[test]
 fn partial_owned_tuple_checks_members_beside_unbound_numbers() {

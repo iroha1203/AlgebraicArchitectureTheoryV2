@@ -1331,7 +1331,7 @@ mod tests {
     use crate::control::{Limits, Usage};
 
     fn control() -> Control {
-        Control::new(Limits::default(), |_| Usage::default())
+        Control::unlimited()
     }
 
     fn binder(kind: NumberType) -> Parameter {
@@ -1862,7 +1862,7 @@ mod tests {
                 move |_| {
                     probe_calls.set(probe_calls.get() + 1);
                     if !probe_ready.get() {
-                        return Usage::default();
+                        return None;
                     }
                     Usage {
                         signal: (mode == 0).then_some(Signal::Int),
@@ -1954,7 +1954,7 @@ mod tests {
                     move |_| {
                         probe_calls.set(probe_calls.get() + 1);
                         if !probe_ready.get() {
-                            return Usage::default();
+                            return None;
                         }
                         Usage {
                             signal: (mode == 0).then_some(Signal::Int),

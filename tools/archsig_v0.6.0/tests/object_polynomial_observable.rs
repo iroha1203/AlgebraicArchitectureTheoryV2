@@ -16,7 +16,7 @@ use std::sync::Arc;
 #[path = "common/object_view_compatibility_data.rs"]
 mod fixture;
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs_with(body: &str, map: &str) -> Arc<CheckedInputs> {
     let d =
@@ -524,9 +524,9 @@ fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_
     for recheck in [false, true] {
         let history = Rc::new(RefCell::new(vec![]));
         let h = history.clone();
-        let mut traced = Control::new(Limits::default(), move |p| {
+        let mut traced = Control::new(move |p| {
             h.borrow_mut().push(p);
-            Usage::default()
+            None
         });
         if recheck {
             baseline.recheck(i.clone(), &mut traced).unwrap();
@@ -578,7 +578,7 @@ fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_
                                     },
                                 }
                             } else {
-                                Usage::default()
+                                None
                             }
                         },
                     );

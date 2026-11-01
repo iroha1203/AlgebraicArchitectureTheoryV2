@@ -41,11 +41,11 @@ fn input(fields: &[(&str, &str)], extra: &str, atoms: &[(&str, &str)]) -> InputS
 fn count(sources: InputSources, point: Checkpoint) -> usize {
     let seen = Rc::new(Cell::new(0));
     let counter = seen.clone();
-    let mut control = Control::new(Limits::default(), move |current| {
+    let mut control = Control::new(move |current| {
         if current == point {
             counter.set(counter.get() + 1);
         }
-        Usage::default()
+        None
     });
     let _ = check_inputs(sources, &mut control);
     seen.get()

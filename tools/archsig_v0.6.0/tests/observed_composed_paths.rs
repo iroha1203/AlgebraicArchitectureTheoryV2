@@ -1,6 +1,6 @@
 use archsig::{
     canonical::Json,
-    control::{Control, Limits, Usage},
+    control::Control,
     observed::evaluate_observed_bytes,
 };
 #[path = "common/composed_paths.rs"]
@@ -34,7 +34,7 @@ fn run(missing: bool, asks: &[&str]) -> Json {
     let r = evaluate_observed_bytes(
         input.clone(),
         asks,
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap();
     assert_eq!(r.prepared().inputs().sources(), &input);
@@ -194,7 +194,7 @@ fn then_provenance_pair_preserves_math_and_current_checked_input_tables() {
     let mut outputs = Vec::new();
     for revision in ["r1", "r2"] {
         let input = fixture::input(false, revision);
-        let mut c = Control::new(Limits::default(), |_| Usage::default());
+        let mut c = Control::unlimited();
         let checked = archsig::input::check_inputs(input.clone(), &mut c).unwrap();
         assert_eq!(checked.archmap().sources()[0].revision, revision);
         let r = evaluate_observed_bytes(

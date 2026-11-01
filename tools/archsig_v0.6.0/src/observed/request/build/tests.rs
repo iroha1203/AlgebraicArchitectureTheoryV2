@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
+    control::Usage,
     input::check_inputs,
 };
 mod fixture {
@@ -9,7 +9,7 @@ mod fixture {
 }
 
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn resolved(asks: &[&str]) -> ResolvedRequests {
     let inputs = check_inputs(fixture::input(), &mut quiet()).unwrap();
@@ -195,10 +195,7 @@ fn build_binding_and_projection_checkpoints_obey_cancellation() {
         Checkpoint::RequestDependency,
         Checkpoint::Projection,
     ] {
-        let mut c = Control::new(Limits::default(), move |point| Usage {
-            signal: (point == target).then_some(Signal::Term),
-            ..Usage::default()
-        });
+        let mut c = Control::new(move |point| (point == target).then_some(Signal::Term));
         assert!(matches!(
             resolve_observed_requests_controlled(
                 inputs.law(),

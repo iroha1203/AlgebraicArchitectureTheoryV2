@@ -145,7 +145,6 @@ fn map_application_rechecks_condition_sets_counterexample_and_exact_failure_reas
     }
 }
 fn application_stop(kind: usize, phase: &'static str, at: usize, after_answer: bool) {
-    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Applications.prior)",
@@ -165,7 +164,7 @@ fn application_stop(kind: usize, phase: &'static str, at: usize, after_answer: b
             assert!(freeze.replace(Some(count.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared =

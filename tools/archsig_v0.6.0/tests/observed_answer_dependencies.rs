@@ -2,7 +2,7 @@
 mod fixture;
 use archsig::{
     canonical::Json,
-    control::{Control, Limits, Usage},
+    control::Control,
     observed::evaluate_observed_bytes,
 };
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
@@ -23,7 +23,7 @@ fn run(asks: &[&str]) -> Json {
     let r = evaluate_observed_bytes(
         fixture::input("stop", "r1"),
         asks,
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_eq!(r.status(), "partial", "{:?}", r.wire());
@@ -118,7 +118,7 @@ fn unavailable_multiple_inputs_keep_each_direct_dependency_and_original_details(
     let error = evaluate_observed_bytes(
         fixture::input("stop", "r1"),
         &asks,
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap_err();
     let invalid = error.wire().unwrap();
@@ -217,7 +217,7 @@ fn unavailable_answers_keep_inputs_and_current_provenance_without_changing_judgm
     for revision in ["r1", "r2"] {
         let input = fixture::input("stop", revision);
         let original = input.clone();
-        let mut c = Control::new(Limits::default(), |_| Usage::default());
+        let mut c = Control::unlimited();
         let checked = archsig::input::check_inputs(input.clone(), &mut c).unwrap();
         let r = evaluate_observed_bytes(input, &asks, &mut c).unwrap();
         assert_eq!(r.status(), "partial");

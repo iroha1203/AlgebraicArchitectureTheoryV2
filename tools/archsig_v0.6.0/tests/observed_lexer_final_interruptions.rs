@@ -22,11 +22,11 @@ fn byte_bundle_lexer_error_preserves_syntax_over_budget_and_samples_cancel() {
     for suffix in [b"01".as_slice(), b"?", &[0xff]] {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut baseline = Control::new(Limits::default(), move |point| {
+        let mut baseline = Control::new(move |point| {
             if point == Checkpoint::LawIteration {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         let expected = check_inputs(sources(suffix), &mut baseline).unwrap_err();
         assert_eq!(expected.status(), InputStatus::Invalid);

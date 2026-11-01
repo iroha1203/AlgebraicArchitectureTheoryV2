@@ -8,7 +8,7 @@ const DEFINITION: &[u8] = include_bytes!("../../../tests/fixtures/configuration-
 const LAW: &str = include_str!("../../../tests/fixtures/configuration-profile.law");
 const MAP: &str = include_str!("../../../tests/fixtures/configuration-profile.archmap.json");
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(law: &str, map: &str) -> PreparedObserved {
     let definitions = crate::definition::check_definitions(&[("definition0", DEFINITION)]).unwrap();
@@ -450,12 +450,12 @@ fn four_stops_keep_finished_frames_instances_and_body_prefix_and_restore_context
     let seen = count.clone();
     let native_points = Rc::new(RefCell::new(Vec::new()));
     let points = native_points.clone();
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         seen.set(seen.get() + 1);
         if point == Checkpoint::NativeResultNode {
             points.borrow_mut().push(seen.get());
         }
-        Usage::default()
+        None
     });
     let mut full = copy(&initial, &control);
     assert!(matches!(

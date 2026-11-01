@@ -104,11 +104,11 @@ fn completed_comparison_transfer_stops_keep_checked_decisions_and_evidence() {
         let qs = [E, second.as_str(), q];
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut probe = Control::new(Limits::default(), move |p| {
+        let mut probe = Control::new(move |p| {
             if p == Checkpoint::NativeResultNode {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         let prepared = prepare_observed(
             fixture::input(false, "compare-unit"),
@@ -158,11 +158,11 @@ fn operation_comparisons_keep_completed_native_decisions_at_the_final_checkpoint
     for action in [false, true] {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut probe = Control::new(Limits::default(), move |p| {
+        let mut probe = Control::new(move |p| {
             if p == Checkpoint::ConfigurationOperation {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         if action {
             assert!(op
@@ -249,11 +249,11 @@ fn ground_value_computation_stops_keep_only_complete_equalities_and_counterexamp
         };
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut probe = Control::new(Limits::default(), move |p| {
+        let mut probe = Control::new(move |p| {
             if p == Checkpoint::FiniteIteration {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         let a = crate::observed::public_compare::evaluate(
             &prepared,
@@ -298,11 +298,11 @@ fn ground_value_transfer_stops_keep_the_complete_original_evidence() {
         let q = format!("a=compare(@v/a,to={to},kind=value)");
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut probe = Control::new(Limits::default(), move |p| {
+        let mut probe = Control::new(move |p| {
             if p == Checkpoint::NativeResultNode {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         evaluate_observed_bytes(primitive::input(false, ""), &[q.as_str()], &mut probe).unwrap();
         let total = count.get();
@@ -338,11 +338,11 @@ fn nested_ground_equality_retains_only_the_finished_outer_result_before_the_fina
         let right = value(right);
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let probe = Control::new(Limits::default(), move |p| {
+        let probe = Control::new(move |p| {
             if p == Checkpoint::FiniteIteration {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         let mut completed_at = None;
         assert_eq!(
@@ -410,11 +410,11 @@ fn dynamic_value_type_condition_stops_never_publish_an_unchecked_comparison() {
     ];
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut probe = Control::new(Limits::default(), move |p| {
+    let mut probe = Control::new(move |p| {
         if p == Checkpoint::Projection {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let prepared=||prepare_observed(input(),&qs,&mut Control::unlimited()).unwrap();
     let normal = evaluate_observed(prepared(), &mut probe).unwrap();

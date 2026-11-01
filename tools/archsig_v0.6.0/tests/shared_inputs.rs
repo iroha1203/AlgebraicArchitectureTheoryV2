@@ -64,7 +64,7 @@ fn preparations_and_results_share_the_original_tables_without_input_checkpoints(
     let shared = checked("2");
     let checks = Rc::new(Cell::new(0));
     let seen = Rc::clone(&checks);
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if matches!(
             point,
             Checkpoint::InputBundle
@@ -74,7 +74,7 @@ fn preparations_and_results_share_the_original_tables_without_input_checkpoints(
         ) {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let first = prepare_shared_observed(
         Arc::clone(&shared),

@@ -875,12 +875,12 @@ mod interruption_tests {
     fn boundaries(run: impl Fn(&mut Control) -> Result<(), Failure>) -> usize {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut baseline = Control::new(Limits::default(), move |point| {
+        let mut baseline = Control::new(move |point| {
             if point != Checkpoint::DefinitionSchema {
-                return Usage::default();
+                return None;
             }
             seen.set(seen.get() + 1);
-            Usage::default()
+            None
         });
         let outcome = run(&mut baseline);
         assert!(!matches!(outcome, Err(CheckFailure::Stopped(_))));
@@ -900,7 +900,7 @@ mod interruption_tests {
                     },
                     move |point| {
                         if point != Checkpoint::DefinitionSchema {
-                            return Usage::default();
+                            return None;
                         }
                         visits += 1;
                         let stop = visits == at;

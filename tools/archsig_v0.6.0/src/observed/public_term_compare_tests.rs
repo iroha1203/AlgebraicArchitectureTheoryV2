@@ -90,11 +90,11 @@ fn finite_and_affine_comparison_calculation_stops_keep_only_completed_derivation
         let point = Checkpoint::FiniteIteration;
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut probe = Control::new(Limits::default(), move |p| {
+        let mut probe = Control::new(move |p| {
             if p == point {
                 seen.set(seen.get() + 1)
             }
-            Usage::default()
+            None
         });
         let normal = crate::observed::public_compare::evaluate(
             &prepared,

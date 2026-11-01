@@ -8,7 +8,7 @@ mod fixture {
     include!("../../../../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn reading(i: &CheckedInputs, root: &str) -> ObjectReadingInstances {
     let construction = construct(i, "Selected", "v", root, &mut quiet()).unwrap();
@@ -496,10 +496,7 @@ fn domain_interrupt_keeps_source_and_never_claims_a_finished_empty_domain() {
     use crate::result::Signal;
     let i = fixture::with_body(fixture::MAP, OWNED);
     let r = reading(&i, "root");
-    let mut c = Control::new(Limits::default(), |p| Usage {
-        signal: (p == Checkpoint::FiniteLawDomain).then_some(Signal::Int),
-        ..Usage::default()
-    });
+    let mut c = Control::new(|p| (p == Checkpoint::FiniteLawDomain).then_some(Signal::Int));
     let error = finite_parameter_realizations(&i, &r, &mut c).unwrap_err();
     assert!(matches!(error.cause, ValidationFailure::Stop(_)));
     let partial = error.partial.unwrap();

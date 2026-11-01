@@ -4,7 +4,7 @@ use crate::common;
 use archsig::{
     archmap::{Mode, Slot},
     canonical::{Json, sha256_digest},
-    control::{Control, Limits, Usage},
+    control::Control,
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::model::Signature,
@@ -18,7 +18,7 @@ const MIXED: &str =
     "law required chain(a: Root, b: Child[a], c: Leaf[a], flag: Bool) when true: c.ok or flag;";
 
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {

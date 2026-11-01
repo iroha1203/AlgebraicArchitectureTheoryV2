@@ -1,5 +1,5 @@
 use archsig::{
-    control::{Control, Limits, Usage},
+    control::Control,
     input::{CheckedInputs, InputSources, check_inputs},
     observed::object_law_circuits::{
         LawCircuitDetector as Detector, LawCircuitsCondition as Condition, ObjectLawCircuits,
@@ -10,7 +10,7 @@ use std::sync::Arc;
 #[path = "common/object_view_compatibility_data.rs"]
 mod fixture;
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(body: &str, map: &str) -> Arc<CheckedInputs> {
     inputs_with_definitions(fixture::D, body, map)
@@ -274,9 +274,9 @@ fn circuit_stops_preserve_prefix_final_completion_and_freeze_probes() {
     let baseline = run(i.clone());
     let history = Rc::new(RefCell::new(Vec::new()));
     let h = history.clone();
-    let mut traced = Control::new(Limits::default(), move |p| {
+    let mut traced = Control::new(move |p| {
         h.borrow_mut().push(p);
-        Usage::default()
+        None
     });
     object_law_circuits(i.clone(), "Selected", "v", "root", &mut traced).unwrap();
     let point = C::ObjectLawCircuit;
@@ -288,18 +288,15 @@ fn circuit_stops_preserve_prefix_final_completion_and_freeze_probes() {
         let probes = Rc::new(RefCell::new(0));
         let p = probes.clone();
         let expected = StopReason::Cancelled(Signal::Int);
-        let mut c = Control::new(Limits::default(), move |at| {
+        let mut c = Control::new(move |at| {
             *p.borrow_mut() += 1;
             if at == point {
                 *h.borrow_mut() += 1;
             }
             if at == point && *h.borrow() == nth {
-                Usage {
-                    signal: Some(Signal::Int),
-                    ..Usage::default()
-                }
+                Some(Signal::Int)
             } else {
-                Usage::default()
+                None
             }
         });
         let f = object_law_circuits(i.clone(), "Selected", "v", "root", &mut c).unwrap_err();

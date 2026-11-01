@@ -415,11 +415,11 @@ fn every_fixed_operation_stop_latches_without_new_probes() {
     for kind in 0..6 {
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut control = Control::new(Limits::default(), move |p| {
+        let mut control = Control::new(move |p| {
             if p == Checkpoint::ConfigurationOperation {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         run(kind, &mut control).unwrap();
         let total = count.get();
@@ -482,11 +482,11 @@ fn retained_composition_keeps_only_completed_operations_at_fixed_stops() {
     for (kind, (first, then)) in [(&e, &h), (&m, &n)].into_iter().enumerate() {
         let operations = Rc::new(Cell::new(0usize));
         let seen = operations.clone();
-        let mut counting = Control::new(Limits::default(), move |point| {
+        let mut counting = Control::new(move |point| {
             if point == Checkpoint::ConfigurationOperation {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         let normal = first.compose_retained(&i, then, &mut counting).unwrap();
         let legacy = first.compose(&i, then, &mut Control::unlimited()).unwrap();

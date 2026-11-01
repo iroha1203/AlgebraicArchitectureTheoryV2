@@ -343,11 +343,11 @@ fn every_fixed_profile_stop_rejects_unfinished_results_and_latches() {
     let original = profiles(&i);
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
+    let mut c = Control::new(move |p| {
         if p == Checkpoint::ConfigurationProfile {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     construct_profiles(&i, "ProfileRead", "v", "A", &mut c).unwrap();
     let total = count.get();

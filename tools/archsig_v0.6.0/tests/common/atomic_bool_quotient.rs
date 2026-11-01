@@ -11,7 +11,7 @@ fn bool_result(extra: &str, asks: &[&str]) -> JNode {
     let result = evaluate_observed_bytes(
         bool_fixture::sources("", extra),
         asks,
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap();
     archsig::json::parse(result.wire().canonical().as_bytes()).unwrap()
@@ -171,7 +171,7 @@ fn atomic_bool_guard_false_and_body_false_remain_different_and_unknown_guard_is_
                 "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
                 "q=quotient(Pair.fixed,on=$s.domain,s=@v/s,law=Pair.gated)",
             ],
-            &mut Control::new(Limits::default(), |_| Usage::default()),
+            &mut Control::unlimited(),
         )
         .unwrap();
         let result = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
@@ -245,7 +245,7 @@ fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
                         },
                     }
                 } else {
-                    Usage::default()
+                    None
                 }
             },
         );
@@ -328,7 +328,7 @@ fn compound_missing_reads_follow_selected_branch_and_short_circuit() {
                 "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
                 "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.test)",
             ],
-            &mut Control::new(Limits::default(), |_| Usage::default()),
+            &mut Control::unlimited(),
         )
         .unwrap();
         let result = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
@@ -450,7 +450,7 @@ fn compound_quantifier_empty_finite_and_symbolic_infinite_are_distinct() {
             "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
             "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.infinite)",
         ],
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     );
     assert!(
         matches!(result, Err(EvaluationFailure::NotImplemented { .. })),

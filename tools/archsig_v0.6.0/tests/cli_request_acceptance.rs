@@ -2,7 +2,7 @@ use crate::common::cli;
 #[path = "common/request_acceptance_data.rs"]
 mod fixture;
 use archsig::{
-    control::{Control, Limits, Usage},
+    control::Control,
     json::{JNode, JValue, parse},
     observed::{
         PrepareFailure, evaluate_observed_bytes, prepare_observed,
@@ -12,7 +12,7 @@ use archsig::{
 use cli::*;
 use std::path::{Path, PathBuf};
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn internal(asks: &[&str]) -> JNode {
     let r = evaluate_observed_bytes(fixture::input(), asks, &mut quiet())

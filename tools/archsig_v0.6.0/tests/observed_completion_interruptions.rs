@@ -51,11 +51,11 @@ fn entity(name: &str, fields: &str) -> String {
 fn count_completion(source: &InputSources, valid: bool) -> usize {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::Completion {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let result = check_inputs(source.clone(), &mut control);
     if valid {
@@ -156,14 +156,11 @@ fn assert_known_inconsistent(failure: InputFailure, pointer: &str, memory: bool)
 fn cancel_at(source: &InputSources, stop_after: usize) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::Completion {
             seen.set(seen.get() + 1);
         }
-        Usage {
-            signal: (seen.get() == stop_after).then_some(Signal::Term),
-            ..Usage::default()
-        }
+        (seen.get() == stop_after).then_some(Signal::Term)
     });
     let failure = check_inputs(source.clone(), &mut control).unwrap_err();
     assert_eq!(count.get(), stop_after);

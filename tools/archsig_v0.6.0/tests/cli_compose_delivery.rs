@@ -146,11 +146,11 @@ fn compose_request_resolution_stops_notify_without_starting_output() {
 fn compose_late_stops_publish_only_checked_values_with_consistent_status_and_exit() {
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut probe = Control::new(Limits::default(), move |p| {
+    let mut probe = Control::new(move |p| {
         if p == Checkpoint::NativeResultNode {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let original = evaluate_observed_bytes(
         InputSources::from_bytes(vec![D.to_vec()], L.to_vec(), A.to_vec()),

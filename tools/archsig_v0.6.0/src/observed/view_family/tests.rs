@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
+    control::Usage,
     input::InputSources,
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
@@ -9,7 +9,7 @@ const DEFINITION: &[u8] = include_bytes!("../../../tests/fixtures/configuration-
 const LAW: &str = include_str!("../../../tests/fixtures/configuration-profile.law");
 const MAP: &str = include_str!("../../../tests/fixtures/configuration-profile.archmap.json");
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(law: &str, map: &str) -> PreparedObserved {
     let definitions = crate::definition::check_definitions(&[("definition0", DEFINITION)]).unwrap();
@@ -668,12 +668,12 @@ fn interrupt_preserves_exact_completed_domain_row_and_evaluation_prefix() {
     let seen = count.clone();
     let native_points = Rc::new(RefCell::new(Vec::new()));
     let points = native_points.clone();
-    let mut control = Control::new(Limits::default(), move |p| {
+    let mut control = Control::new(move |p| {
         seen.set(seen.get() + 1);
         if p == Checkpoint::NativeResultNode {
             points.borrow_mut().push(seen.get());
         }
-        Usage::default()
+        None
     });
     let mut full = copy(&initial, &control);
     let Outcome::Family(f) = evaluate(&env, &mut full, expression, &mut control).unwrap() else {
@@ -689,13 +689,10 @@ fn interrupt_preserves_exact_completed_domain_row_and_evaluation_prefix() {
     for at in [early, total / 2, total] {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut control = Control::new(Limits::default(), move |_| {
+        let mut control = Control::new(move |_| {
             seen.set(seen.get() + 1);
             let hit = seen.get() >= at;
-            Usage {
-                signal: hit.then_some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            hit.then_some(crate::result::Signal::Int)
         });
         let mut g = copy(&initial, &control);
         let result = evaluate(&env, &mut g, expression, &mut control);

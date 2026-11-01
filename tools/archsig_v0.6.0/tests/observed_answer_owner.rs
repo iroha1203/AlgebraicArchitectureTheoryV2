@@ -267,11 +267,11 @@ fn owner_type_walk_stops_early_and_preserves_known_mismatch_with_late_budget() {
     ];
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut baseline = Control::new(Limits::default(), move |point| {
+    let mut baseline = Control::new(move |point| {
         if point == Checkpoint::RequestBinding {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     assert_owner_error(
         prepare_observed(sources(true), &asks, &mut baseline).unwrap_err(),

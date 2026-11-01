@@ -18,7 +18,7 @@ use std::{
 };
 
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -1443,11 +1443,11 @@ fn provenance_relocation_preserves_affine_judgments_and_returns_new_origins() {
 fn counted(inputs: &InputSources, asks: &[&str]) -> (Json, usize) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut control = Control::new(Limits::default(), move |p| {
+    let mut control = Control::new(move |p| {
         if p == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let wire = evaluate_observed_bytes(inputs.clone(), asks, &mut control)
         .unwrap()
@@ -1516,7 +1516,7 @@ view later(s:Sample): Unit = unit;
                             };
                         }
                     }
-                    Usage::default()
+                    None
                 },
             );
             let wire = evaluate_observed_bytes(inputs.clone(), &asks, &mut control)

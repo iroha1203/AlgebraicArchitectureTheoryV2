@@ -892,11 +892,11 @@ mod tests {
         ] {
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut c = Control::new(Limits::default(), move |p| {
+            let mut c = Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1)
                 };
-                Usage::default()
+                None
             });
             let full = evaluate(Arc::clone(&i), &mut c).unwrap();
             let total = count.get();
@@ -949,11 +949,11 @@ mod tests {
         let (i, r) = example();
         let count = Rc::new(Cell::new(0_usize));
         let seen = Rc::clone(&count);
-        let mut c = Control::new(Limits::default(), move |p| {
+        let mut c = Control::new(move |p| {
             if p == Checkpoint::ObjectLawCompatibility {
                 seen.set(seen.get() + 1)
             };
-            Usage::default()
+            None
         });
         evaluate(Arc::clone(&i), &mut c).unwrap();
         let (mut c, n) = stop(Checkpoint::ObjectLawCompatibility, count.get() + 1, 3);

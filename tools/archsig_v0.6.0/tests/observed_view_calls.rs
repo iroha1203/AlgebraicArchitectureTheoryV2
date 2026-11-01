@@ -15,7 +15,7 @@ use std::{
 };
 
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -1100,11 +1100,11 @@ fn checkpoint_cancellations_keep_public_answers_and_verified_prefixes() {
     ];
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut baseline = Control::new(Limits::default(), move |point| {
+    let mut baseline = Control::new(move |point| {
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let inputs = fixture(&["p"], helpers, caller);
     let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
@@ -1139,7 +1139,7 @@ fn checkpoint_cancellations_keep_public_answers_and_verified_prefixes() {
                         };
                     }
                 }
-                Usage::default()
+                None
             },
         );
         let result = evaluate_observed_bytes(inputs.clone(), &asks, &mut control)

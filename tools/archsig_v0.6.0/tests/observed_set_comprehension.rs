@@ -17,7 +17,7 @@ use std::{
     rc::Rc,
 };
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -1004,11 +1004,11 @@ view later(s: Sample): Z = s.zero+9;
     ];
     let total_count = Rc::new(Cell::new(0));
     let c = total_count.clone();
-    let mut baseline_control = Control::new(Limits::default(), move |point| {
+    let mut baseline_control = Control::new(move |point| {
         if point == Checkpoint::Expression {
             c.set(c.get() + 1);
         }
-        Usage::default()
+        None
     });
     let baseline_result =
         evaluate_observed_bytes(inputs.clone(), &asks, &mut baseline_control).unwrap();
@@ -1082,7 +1082,7 @@ view later(s: Sample): Z = s.zero+9;
                         };
                     }
                 }
-                Usage::default()
+                None
             },
         );
         let wire = evaluate_observed_bytes(inputs.clone(), &asks, &mut control)

@@ -3,7 +3,7 @@
 mod tree;
 use archsig::{
     canonical::Json,
-    control::{Control, Limits, Usage},
+    control::Control,
     definition::check_definitions,
     input::{InputSources, check_inputs},
     observed::evaluate_observed_bytes,
@@ -11,7 +11,7 @@ use archsig::{
 use std::collections::{BTreeMap, BTreeSet};
 
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn sources(missing: bool, extra: &str, revision: &str) -> InputSources {
     let checked = check_definitions(&[("definition0", tree::DEFINITIONS.as_bytes())]).unwrap();

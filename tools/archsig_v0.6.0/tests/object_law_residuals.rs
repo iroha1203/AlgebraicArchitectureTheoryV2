@@ -12,7 +12,7 @@ use std::sync::Arc;
 #[path = "common/object_view_compatibility_data.rs"]
 mod fixture;
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(body: &str, map: &str) -> Arc<CheckedInputs> {
     inputs_with_definitions(fixture::D, body, map)
@@ -397,9 +397,9 @@ fn residual_point_interrupt_keeps_refutation_and_final_completion() {
     );
     let history = Rc::new(RefCell::new(Vec::new()));
     let h = history.clone();
-    let mut traced = Control::new(Limits::default(), move |p| {
+    let mut traced = Control::new(move |p| {
         h.borrow_mut().push(p);
-        Usage::default()
+        None
     });
     object_law_residuals(i.clone(), "Selected", "v", "root", &mut traced).unwrap();
     let point = C::ObjectLawResidualPoint;
@@ -412,18 +412,15 @@ fn residual_point_interrupt_keeps_refutation_and_final_completion() {
         let hits0 = hits.clone();
         let probes = Rc::new(RefCell::new(0));
         let probes0 = probes.clone();
-        let mut c = Control::new(Limits::default(), move |p| {
+        let mut c = Control::new(move |p| {
             *probes0.borrow_mut() += 1;
             if p == point {
                 *hits0.borrow_mut() += 1;
             }
             if p == point && *hits0.borrow() == nth {
-                Usage {
-                    signal: Some(Signal::Int),
-                    ..Usage::default()
-                }
+                Some(Signal::Int)
             } else {
-                Usage::default()
+                None
             }
         });
         let f = object_law_residuals(i.clone(), "Selected", "v", "root", &mut c).unwrap_err();
@@ -453,11 +450,11 @@ fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes(
     let r = run(i.clone());
     let count = Rc::new(RefCell::new(0));
     let count0 = count.clone();
-    let mut trace = Control::new(Limits::default(), move |p| {
+    let mut trace = Control::new(move |p| {
         if p == C::ObjectLawResiduals {
             *count0.borrow_mut() += 1
         }
-        Usage::default()
+        None
     });
     r.recheck(i.clone(), &mut trace).unwrap();
     let nth = *count.borrow();
@@ -483,7 +480,7 @@ fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes(
                     *calls0.borrow_mut() += 1
                 }
                 if *calls0.borrow() != nth {
-                    return Usage::default();
+                    return None;
                 }
                 Usage {
                     elapsed_ms: if mode == 0 { 1 } else { 0 },

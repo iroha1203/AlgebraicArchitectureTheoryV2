@@ -16,7 +16,7 @@ mod map_fixture {
     include!("../../../../tests/common/correspondence_paths.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(mode: &str, script: &str) -> CheckedInputs {
     let original = arrow_fixture::input(mode, "relation");
@@ -414,11 +414,11 @@ fn stops_never_certify_unfinished_relation_instances_and_completed_tables_rechec
     let completed = relation_instances(&i, "Walk", &mut quiet()).unwrap();
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(Limits::default(), move |cp| {
+    let mut c = Control::new(move |cp| {
         if cp == Checkpoint::FiniteIteration {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     relation_instances(&i, "Walk", &mut c).unwrap();
     let total = count.get();

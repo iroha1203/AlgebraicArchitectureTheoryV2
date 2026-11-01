@@ -279,10 +279,7 @@ fn reservations_private_stop_usage(
     match kind {
         0 => (
             Limits::default(),
-            Usage {
-                signal: Some(crate::result::Signal::Term),
-                ..Usage::default()
-            },
+            Some(crate::result::Signal::Term),
             StopReason::Cancelled(crate::result::Signal::Term),
         ),
         1 => (
@@ -364,7 +361,7 @@ fn reservations_private_phase_stop(phase: &'static str, at: usize, kind: usize) 
             assert!(freeze.replace(Some(count.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();

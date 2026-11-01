@@ -15,7 +15,7 @@ use std::{
     rc::Rc,
 };
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -1037,11 +1037,11 @@ fn container_expression_stops_keep_element_preconstruction_and_completed_sum_pre
     ];
     let count = Rc::new(Cell::new(0));
     let c = count.clone();
-    let mut baseline = Control::new(Limits::default(), move |point| {
+    let mut baseline = Control::new(move |point| {
         if point == Checkpoint::Expression {
             c.set(c.get() + 1);
         }
-        Usage::default()
+        None
     });
     let prior = evaluate_observed_bytes(inputs.clone(), &prior_asks, &mut baseline)
         .unwrap()
@@ -1078,7 +1078,7 @@ fn container_expression_stops_keep_element_preconstruction_and_completed_sum_pre
                         };
                     }
                 }
-                Usage::default()
+                None
             },
         );
         let current = format!("current=evaluate(Calc.{name},s=@v/sample)");

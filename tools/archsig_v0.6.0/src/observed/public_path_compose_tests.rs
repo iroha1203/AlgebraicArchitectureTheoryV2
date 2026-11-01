@@ -175,9 +175,9 @@ fn retained_path_calculation_keeps_only_fully_checked_words_and_actions() {
     };
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let control = Control::new(Limits::default(), move |_| {
+    let control = Control::new(move |_| {
         seen.set(seen.get() + 1);
-        Usage::default()
+        None
     });
     let expected = path_compose::compose_retained(a, b, &a.reading, &control, |_, _| {})
         .ok()
@@ -201,11 +201,11 @@ fn retained_path_calculation_keeps_only_fully_checked_words_and_actions() {
 fn public_path_transfer_stops_keep_completed_values_and_verified_prefixes() {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut probe = Control::new(Limits::default(), move |p| {
+    let mut probe = Control::new(move |p| {
         if p == Checkpoint::NativeResultNode {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let prepared = prepare_observed(
         fixture::input(false, "unit-path"),
@@ -257,11 +257,11 @@ fn invisible_path_conditions_recheck_actual_refs_and_keep_refutations_at_transfe
     });
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut probe = Control::new(Limits::default(), move |p| {
+    let mut probe = Control::new(move |p| {
         if p == Checkpoint::NativeResultNode {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let prepared = prepare_observed(
         visibility_sources(),

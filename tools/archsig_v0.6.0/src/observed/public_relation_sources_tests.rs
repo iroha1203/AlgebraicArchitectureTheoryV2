@@ -697,11 +697,11 @@ fn public_relation_stops_keep_prior_values_and_only_finished_sealed_comparisons(
     ];
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut probe = Control::new(Limits::default(), move |point| {
+    let mut probe = Control::new(move |point| {
         if point == Checkpoint::NativeResultNode {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let normal = evaluate_observed_bytes(inputs(script), &qs, &mut probe).unwrap();
     assert_eq!(normal.answers[2].status, Decision::Refuted);

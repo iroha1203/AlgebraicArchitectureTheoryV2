@@ -425,11 +425,11 @@ fn fixed_instance_stops_latch_without_further_primitive_probes() {
     let c = r.construction();
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut control = Control::new(Limits::default(), move |p| {
+    let mut control = Control::new(move |p| {
         if p == Checkpoint::ObjectInstances {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     object_reading_instances(&i, c, &mut control).unwrap();
     let total = count.get();

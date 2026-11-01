@@ -10,7 +10,7 @@ mod fixture {
     include!("../../../../../../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn reading(i: &CheckedInputs) -> ObjectReadingInstances {
     let base = construct(i, "Selected", "v", "root", &mut quiet()).unwrap();
@@ -435,17 +435,14 @@ fn incomplete_or_unsupported_sources_retain_their_data_without_a_numeric_present
     let count = seen.clone();
     let stage = Rc::new(Cell::new(false));
     let started = stage.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
+    let mut c = Control::new(move |p| {
         if p == Checkpoint::FiniteLawAutomatic {
             started.set(true);
         }
         if started.get() && p == Checkpoint::FiniteLawEvaluation {
             count.set(count.get() + 1);
         }
-        Usage {
-            signal: (count.get() >= 3).then_some(Signal::Term),
-            ..Usage::default()
-        }
+        (count.get() >= 3).then_some(Signal::Term)
     });
     let error = finite_automatic_law_family(&i, &a, &mut c).err().unwrap();
     assert!(matches!(error.cause, ValidationFailure::Stop(_)));

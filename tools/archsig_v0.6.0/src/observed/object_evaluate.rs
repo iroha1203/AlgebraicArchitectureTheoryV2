@@ -365,9 +365,7 @@ mod tests {
     use super::*;
     use crate::construction::{construct, readings::object_reading_instances};
     fn quiet() -> Control {
-        Control::new(crate::control::Limits::default(), |_| {
-            crate::control::Usage::default()
-        })
+        Control::unlimited()
     }
     fn example(object: &str) -> ObservedEvaluation {
         let d = include_bytes!("../../tests/fixtures/object-instances.atoms.json");

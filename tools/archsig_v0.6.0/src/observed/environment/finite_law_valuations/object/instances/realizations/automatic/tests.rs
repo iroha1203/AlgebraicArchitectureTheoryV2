@@ -8,7 +8,7 @@ mod fixture {
     include!("../../../../../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn reading(i: &CheckedInputs, root: &str) -> ObjectReadingInstances {
     let c = construct(i, "Selected", "v", root, &mut quiet()).unwrap();
@@ -478,10 +478,7 @@ fn an_interrupt_before_automatic_column_selection_keeps_the_completed_source_pla
     use crate::result::Signal;
     let i = fixture::with_body(fixture::MAP, "law required zero(c:Part):c.quantity=0;");
     let a = reading(&i, "root");
-    let mut c = Control::new(Limits::default(), |p| Usage {
-        signal: (p == Checkpoint::FiniteLawAutomatic).then_some(Signal::Int),
-        ..Usage::default()
-    });
+    let mut c = Control::new(|p| (p == Checkpoint::FiniteLawAutomatic).then_some(Signal::Int));
     let error = finite_automatic_law_family(&i, &a, &mut c).err().unwrap();
     assert!(matches!(error.cause, ValidationFailure::Stop(_)));
     let partial = error.partial.unwrap();

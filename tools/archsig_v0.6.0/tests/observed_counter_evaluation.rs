@@ -26,7 +26,7 @@ const ASKS: [&str; 3] = [
 ];
 
 fn quiet_control() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn sources(law: &[u8], map: &[u8]) -> InputSources {
     InputSources::from_bytes(vec![DEFINITIONS.to_vec()], law.to_vec(), map.to_vec())
@@ -943,11 +943,11 @@ fn finite_law_quantification_and_answer_dependencies_keep_typed_results() {
 fn expression_count(asks: &[&str]) -> usize {
     let count = Rc::new(Cell::new(0));
     let capture = count.clone();
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::Expression {
             capture.set(capture.get() + 1);
         }
-        Usage::default()
+        None
     });
     evaluate_observed_bytes(sources(LAW, MAP), asks, &mut control).unwrap();
     count.get()
@@ -972,7 +972,7 @@ fn interrupted_at_expression(
                 return usage;
             }
         }
-        Usage::default()
+        None
     });
     let result = evaluate_observed_bytes(sources(LAW, MAP), asks, &mut control)
         .unwrap()
@@ -1019,10 +1019,7 @@ fn cancellation_before_the_first_expression_keeps_all_requests_undetermined() {
     interrupted_at_expression(
         &ASKS,
         1,
-        Usage {
-            signal: Some(Signal::Int),
-            ..Usage::default()
-        },
+        Some(Signal::Int),
         Limits::default(),
         false,
     );
@@ -1102,7 +1099,7 @@ fn missing_root_expression_finite_interval() -> (usize, usize) {
         at_post.clone(),
         at_start.clone(),
     );
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::FiniteIteration {
             seen_finite.set(seen_finite.get() + 1);
         }
@@ -1115,7 +1112,7 @@ fn missing_root_expression_finite_interval() -> (usize, usize) {
                 captured.set(Some(seen_finite.get()));
             }
         }
-        Usage::default()
+        None
     });
     let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
         .unwrap()
@@ -1165,7 +1162,7 @@ fn missing_scope_survives_at_finite(stop_at: usize, limits: Limits, usage: Usage
                 return usage;
             }
         }
-        Usage::default()
+        None
     });
     let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
         .unwrap()
@@ -1346,10 +1343,7 @@ fn missing_scope_survives_sigterm_before_root_expression_completes() {
     missing_scope_survives_finite_stop(
         0,
         Limits::default(),
-        Usage {
-            signal: Some(Signal::Term),
-            ..Usage::default()
-        },
+        Some(Signal::Term),
     );
 }
 
@@ -1815,7 +1809,7 @@ fn missing_finite_probe(stop_at: usize) -> Json {
                     };
                 }
             }
-            Usage::default()
+            None
         },
     );
     let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
@@ -1891,10 +1885,7 @@ fn missing_reason_survives_the_first_source_expression_post_stop() {
         ),
         (
             Limits::default(),
-            Usage {
-                signal: Some(Signal::Term),
-                ..Usage::default()
-            },
+            Some(Signal::Term),
         ),
     ] {
         let result = missing_scope_survives_at_finite(low, limits, usage);

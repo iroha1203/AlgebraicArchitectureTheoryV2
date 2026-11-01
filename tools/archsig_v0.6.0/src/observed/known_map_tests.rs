@@ -74,7 +74,6 @@ fn known_map_row_permutation_is_accepted_as_the_same_original_function() {
     rebuild_for_origin_and_support_recheck(&r, &nodes).unwrap();
 }
 fn known_map_private_stop(kind: usize, after_answer: bool) {
-    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Maps.prior)",
@@ -94,7 +93,7 @@ fn known_map_private_stop(kind: usize, after_answer: bool) {
             assert!(freeze.replace(Some(count.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(known_map_private_inputs(), &asks, &mut control).unwrap();

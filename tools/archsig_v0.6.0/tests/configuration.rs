@@ -437,10 +437,10 @@ fn every_fixed_stop_rejects_unfinished_construction_and_latches_without_new_prob
     let inputs = checked(A);
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut control = Control::new(Limits::default(), move |p| {
+    let mut control = Control::new(move |p| {
         assert_eq!(p, Checkpoint::Configuration);
         seen.set(seen.get() + 1);
-        Usage::default()
+        None
     });
     construct(&inputs, "MeshRead", "v", "A", &mut control).unwrap();
     let total = count.get();

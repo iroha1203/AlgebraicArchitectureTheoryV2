@@ -269,7 +269,7 @@ fn reference_completion_input_constraints_reject_unknown_duplicate_wrong_type_an
     }
 }
 fn stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::control::{Control, Usage};
+    use crate::control::Control;
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(fixture::SCRIPT, false, false);
     let asks = [
@@ -297,7 +297,7 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
             assert!(f.replace(Some(p.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(input, &asks, &mut control).unwrap();

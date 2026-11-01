@@ -22,7 +22,7 @@ const D: &[u8] = include_bytes!("fixtures/object-view-transport.atoms.json");
 const L: &str = include_str!("fixtures/object-view-transport.law");
 const A: &str = include_str!("fixtures/object-view-transport.archmap.json");
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     inputs_with_left(D, law, map)
@@ -388,11 +388,11 @@ fn fixed_transport_checkpoints_latch_time_memory_and_cancellation() {
             &d,
             o,
             n,
-            &mut Control::new(Limits::default(), move |p| {
+            &mut Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             }),
         )
         .unwrap();
@@ -475,11 +475,11 @@ fn stopped_transport_keeps_completed_evaluations_values_and_decisions_only() {
             &d,
             o,
             n,
-            &mut Control::new(Limits::default(), move |p| {
+            &mut Control::new(move |p| {
                 if p == Checkpoint::ObjectViewTransport {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             }),
         )
         .unwrap();

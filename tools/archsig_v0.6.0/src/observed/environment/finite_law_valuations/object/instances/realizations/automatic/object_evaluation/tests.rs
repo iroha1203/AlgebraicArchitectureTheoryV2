@@ -11,7 +11,7 @@ mod fixture {
     include!("../../../../../../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn reading(i: &CheckedInputs, root: &str) -> ObjectReadingInstances {
     let base = construct(i, "Selected", "v", root, &mut quiet()).unwrap();
@@ -490,17 +490,14 @@ fn unfinished_or_unsupported_law_families_are_preserved_without_a_completed_obje
     let count = seen.clone();
     let stage = Rc::new(Cell::new(false));
     let started = stage.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
+    let mut c = Control::new(move |p| {
         if p == Checkpoint::FiniteLawAutomatic {
             started.set(true);
         }
         if started.get() && p == Checkpoint::FiniteLawEvaluation {
             count.set(count.get() + 1);
         }
-        Usage {
-            signal: (count.get() >= 3).then_some(Signal::Term),
-            ..Usage::default()
-        }
+        (count.get() >= 3).then_some(Signal::Term)
     });
     let failure = finite_automatic_law_family(&i, &a, &mut c).err().unwrap();
     assert!(matches!(failure.cause, ValidationFailure::Stop(_)));

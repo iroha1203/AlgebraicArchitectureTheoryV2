@@ -791,9 +791,9 @@ fn integer_repair_stop_after_first_witness_keeps_existence_without_object() {
                 match mode {
                     0 => Usage {elapsed_ms: 2, ..Usage::default()},
                     1 => Usage {memory_mib: 2, ..Usage::default()},
-                    _ => Usage {signal: Some(archsig::result::Signal::Term), ..Usage::default()},
+                    _ => Some(archsig::result::Signal::Term),
                 }
-            } else { Usage::default() }
+            } else { None }
         });
         let source = InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],
             std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
@@ -1029,7 +1029,7 @@ fn integer_quotient_stop_keeps_solve_and_never_publishes_partial_image() {
         let seen=Rc::new(Cell::new(0));let count=seen.clone();
         let mut c=Control::new(Limits {time_ms:Some(1),memory_mib:Some(1)},move|point| {
             if point==Checkpoint::Quotient {count.set(count.get()+1);}
-            if count.get()==2 {match mode {0=>Usage {elapsed_ms:2,..Usage::default()},1=>Usage {memory_mib:2,..Usage::default()},_=>Usage {signal:Some(archsig::result::Signal::Term),..Usage::default()}}}else{Usage::default()}
+            if count.get()==2 {match mode {0=>Usage {elapsed_ms:2,..Usage::default()},1=>Usage {memory_mib:2,..Usage::default()},_=>Some(archsig::result::Signal::Term)}}else{None}
         });
         let sources=InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
         let result=evaluate_observed_bytes(sources,&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.first,on=$s.domain,s=@pair/s)"],&mut c).unwrap();
@@ -1119,7 +1119,7 @@ fn integer_law_descent_stop_during_counterexample_keeps_prior_solve() {
         let mut c=Control::new(Limits {time_ms:Some(1),memory_mib:Some(1)},move|point| {
             if point==Checkpoint::Quotient {active.set(true);}
             if active.get() && point==Checkpoint::FiniteLawOperand {stopped.set(true);}
-            if stopped.get() {match mode {0=>Usage {elapsed_ms:2,..Usage::default()},1=>Usage {memory_mib:2,..Usage::default()},_=>Usage {signal:Some(archsig::result::Signal::Term),..Usage::default()}}}else{Usage::default()}
+            if stopped.get() {match mode {0=>Usage {elapsed_ms:2,..Usage::default()},1=>Usage {memory_mib:2,..Usage::default()},_=>Some(archsig::result::Signal::Term)}}else{None}
         });
         let sources=InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
         let result=evaluate_observed_bytes(sources,&["s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)","q=quotient(Pair.combined,on=$s.domain,s=@pair/s,law=Pair.same)"],&mut c).unwrap();

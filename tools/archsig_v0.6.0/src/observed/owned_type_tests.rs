@@ -437,7 +437,6 @@ fn owned_type_quantification_missing_body_counterexample_and_checked_are_recheck
 }
 
 fn owned_type_private_phase_stop(phase: &'static str, kind: usize) {
-    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let body = "view seed():Unit=unit; law required prior():false; view hole(s:State):Z=s.free; view wrapped(a:System):Bool=forall bag:Option<Set<State[a]>> . true;";
     let current = "current=evaluate(Reservations.wrapped,a=@v/A)";
@@ -476,7 +475,7 @@ fn owned_type_private_phase_stop(phase: &'static str, kind: usize) {
             assert!(freeze.replace(Some(count.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();

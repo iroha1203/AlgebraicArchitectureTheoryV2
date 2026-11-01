@@ -5,7 +5,7 @@ mod fixture {
     include!("../../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn subject(name: &str) -> Scalar {
     Scalar::Subject {

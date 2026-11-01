@@ -170,7 +170,6 @@ fn owned_map_actual_domain_roster_stop_keeps_values_refutation_and_prefix() {
 
 #[test]
 fn missing_owned_map_uses_complete_original_fibers_before_candidate_tables() {
-    use crate::control::{Limits, Usage};
     use std::{cell::Cell, rc::Rc};
     let input = crate::input::check_inputs(
         owned_map_fixture::input("missing", "r1"),
@@ -179,14 +178,11 @@ fn missing_owned_map_uses_complete_original_fibers_before_candidate_tables() {
     .unwrap();
     let visits = Rc::new(Cell::new(0));
     let seen = visits.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
+    let mut c = Control::new(move |p| {
         if p == Checkpoint::FiniteIteration {
             seen.set(seen.get() + 1);
         }
-        Usage {
-            signal: (seen.get() >= 5000).then_some(crate::result::Signal::Int),
-            ..Usage::default()
-        }
+        (seen.get() >= 5000).then_some(crate::result::Signal::Int)
     });
     let env = Environment::with_requests(&input, &[], &mut c).unwrap();
     let roster = Environment::with_requests(&input, &[], &mut named_call_quiet())

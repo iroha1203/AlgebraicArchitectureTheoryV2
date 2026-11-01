@@ -1,13 +1,13 @@
 use super::*;
 use crate::{
     canonical::Json,
-    control::{Limits, Usage},
+    control::Limits,
     input::check_inputs,
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 const DEFINITIONS: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"namespace":"Loops","version":"1","semantics":"archsig/0.6.0","dependencies":[],"declarations":[{"kind":"entity","name":"Loops.Root","meaning":"所属対象。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Loops.Node","meaning":"操作の端点。","parameters":[{"name":"owner","type":["Ref","Loops.Root"],"meaning":"所属。"}],"fields":[{"name":"mark","type":"Z","meaning":"数量。"}],"alignments":[]},{"kind":"arrow","name":"Loops.Loop","meaning":"名前付き自己操作。","parameters":[{"name":"owner","type":["Ref","Loops.Root"],"meaning":"所属。"},{"name":"from","type":["Owned","Loops.Node","owner"],"meaning":"始点。"},{"name":"to","type":["Owned","Loops.Node","owner"],"meaning":"終点。"}],"fields":[{"name":"label","type":"Z","meaning":"関係の適用条件。"}],"alignments":[]},{"kind":"entity","name":"Loops.Unused","meaning":"空の参照型。","parameters":[],"fields":[],"alignments":[]}]}]}"#;
 fn reference(s: &str) -> Json {
@@ -402,22 +402,22 @@ fn interrupt_stops_keep_only_unfinished_components_and_freeze_the_probe() {
     let i = family();
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(Limits::default(), move |cp| {
+    let mut c = Control::new(move |cp| {
         if cp == Checkpoint::FiniteIteration {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let completed = congruence(&i, "Walk", &mut c).unwrap();
     let total = count.get();
     assert!(total > 20);
     let phase = Rc::new(Cell::new(0));
     let observed = phase.clone();
-    let mut before = Control::new(Limits::default(), move |cp| {
+    let mut before = Control::new(move |cp| {
         if cp == Checkpoint::FiniteIteration {
             observed.set(observed.get() + 1);
         }
-        Usage::default()
+        None
     });
     relation_instances(&i, "Walk", &mut before).unwrap();
     let middle = phase.get() + (total - phase.get()) / 2;
@@ -438,10 +438,7 @@ fn interrupt_stops_keep_only_unfinished_components_and_freeze_the_probe() {
                     seen.set(seen.get() + 1);
                 }
                 let stop = seen.get() >= at;
-                Usage {
-                    signal: stop.then_some(Signal::Int),
-                    ..Usage::default()
-                }
+                stop.then_some(Signal::Int)
             },
         );
         let failure = match congruence(&i, "Walk", &mut c) {

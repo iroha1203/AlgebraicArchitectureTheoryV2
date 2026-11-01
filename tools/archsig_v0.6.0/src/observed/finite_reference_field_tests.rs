@@ -406,7 +406,7 @@ fn finite_reference_field_internal_pins_validate_original_shapes_refs_and_missin
 }
 
 fn stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::control::{Checkpoint, Control, Usage};
+    use crate::control::{Checkpoint, Control};
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(false, false, false);
     let asks = [
@@ -447,7 +447,7 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
             assert!(f.replace(Some(p.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(input, &asks, &mut c).unwrap();

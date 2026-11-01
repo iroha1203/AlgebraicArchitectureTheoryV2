@@ -113,7 +113,7 @@ fn check_part(part: usize) {
                 }
             });
             // 数学的な結果投影を照合する。OS計測の配送はCLI testが所有する。
-            let mut display = Control::new(Limits::default(), |_| Usage::default());
+            let mut display = Control::unlimited();
             let result = result
                 .result_wire_controlled(&mut display, Checkpoint::Expression)
                 .unwrap();

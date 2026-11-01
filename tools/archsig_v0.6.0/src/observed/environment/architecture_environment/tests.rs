@@ -10,7 +10,7 @@ mod fixture {
     include!("../../../../tests/common/architecture_environment.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn replay(result: &ObservedEvaluation, nodes: &[Node]) -> Result<(), ValidationFailure> {
     let mut c = quiet();
@@ -55,11 +55,11 @@ fn architecture_environment_stops_retain_independent_value_and_refutation_and_fr
     let count = Rc::new(Cell::new(0));
     let observed = count.clone();
     let a = armed.clone();
-    let mut normal = Control::new(Limits::default(), move |p| {
+    let mut normal = Control::new(move |p| {
         if a.get() && p == phase {
             observed.set(observed.get() + 1)
         }
-        Usage::default()
+        None
     });
     let result = evaluate_observed_bytes(fixture::input("", None), &qs, &mut normal).unwrap();
     crate::observed::data::clear_iteration_observer();
@@ -77,17 +77,14 @@ fn architecture_environment_stops_retain_independent_value_and_refutation_and_fr
         let count = Rc::new(Cell::new(0));
         let observed = count.clone();
         let a = armed.clone();
-        let mut c = Control::new(Limits::default(), move |p| {
+        let mut c = Control::new(move |p| {
             if a.get() && p == phase {
                 observed.set(observed.get() + 1);
             }
             if observed.get() < at {
-                return Usage::default();
+                return None;
             }
-            Usage {
-                signal: Some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            Some(crate::result::Signal::Int)
         });
         let result = evaluate_observed_bytes(fixture::input("", None), &qs, &mut c).unwrap();
         crate::observed::data::clear_iteration_observer();
@@ -119,11 +116,11 @@ fn architecture_on_resolution_stops_are_latched_before_evaluation() {
     for phase in [Checkpoint::RequestBinding, Checkpoint::Projection] {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut normal = Control::new(Limits::default(), move |p| {
+        let mut normal = Control::new(move |p| {
             if p == phase {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         crate::observed::request::resolve_observed_requests_controlled(
             inputs.law(),
@@ -148,7 +145,7 @@ fn architecture_on_resolution_stops_are_latched_before_evaluation() {
                             seen.set(seen.get() + 1);
                         }
                         if seen.get() < at {
-                            return Usage::default();
+                            return None;
                         }
                         Usage {
                             elapsed_ms: if mode == 0 { 1 } else { 0 },
@@ -485,7 +482,7 @@ fn all_four_owned_environment_stops_restore_the_previous_context_and_preserve_pr
         };
         let mut c = Control::new(limits, move |phase| {
             if !a.get() || phase != Checkpoint::ObjectEvaluation {
-                return Usage::default();
+                return None;
             }
             Usage {
                 elapsed_ms: if mode == 0 { 1 } else { 0 },

@@ -20,7 +20,7 @@ const D: &[u8] = include_bytes!("fixtures/object-instances.atoms.json");
 const A: &str = include_str!("fixtures/object-instances.archmap.json");
 const L: &str = include_str!("fixtures/object-evaluation.law");
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let d = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
@@ -440,11 +440,11 @@ fn fixed_object_and_expression_stops_freeze_without_consuming_unfinished_evaluat
     for point in [Checkpoint::ObjectEvaluation, Checkpoint::Expression] {
         let count = Rc::new(Cell::new(0));
         let c = Rc::clone(&count);
-        let mut normal = Control::new(Limits::default(), move |at| {
+        let mut normal = Control::new(move |at| {
             if at == point {
                 c.set(c.get() + 1)
             }
-            Usage::default()
+            None
         });
         evaluate_object_instance(Arc::clone(&i), &p, o, r, &mut normal).unwrap();
         let total = count.get();
@@ -472,17 +472,11 @@ fn fixed_object_and_expression_stops_freeze_without_consuming_unfinished_evaluat
                                     memory_mib: 2,
                                     ..Usage::default()
                                 },
-                                2 => Usage {
-                                    signal: Some(Signal::Int),
-                                    ..Usage::default()
-                                },
-                                _ => Usage {
-                                    signal: Some(Signal::Term),
-                                    ..Usage::default()
-                                },
+                                2 => Some(Signal::Int),
+                                _ => Some(Signal::Term),
                             }
                         } else {
-                            Usage::default()
+                            None
                         }
                     },
                 );

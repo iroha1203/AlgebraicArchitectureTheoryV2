@@ -1,6 +1,6 @@
 use archsig::{
     canonical::Json,
-    control::{Control, Limits, Usage},
+    control::Control,
     observed::evaluate_observed_bytes,
 };
 #[path = "common/correspondence_paths.rs"]
@@ -34,7 +34,7 @@ fn run(mode: &str, asks: &[&str]) -> Json {
     let r = evaluate_observed_bytes(
         input.clone(),
         asks,
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap();
     assert_eq!(r.prepared().inputs().sources(), &input);

@@ -67,11 +67,11 @@ fn baseline(law: &str) -> (archsig::issue::Issue, usize) {
     );
     let total = Rc::new(Cell::new(0));
     let seen = total.clone();
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::LawCycle {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let failure = check_inputs(sources(law), &mut control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);

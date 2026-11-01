@@ -8,7 +8,7 @@ mod fixture {
     include!("../../../tests/common/polynomial_law_family_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(missing: bool, tuple: bool, body: &str, root: &str) -> PreparedObserved {
     let inputs = fixture::inputs(missing, tuple, body);
@@ -93,11 +93,11 @@ fn shared_table_plan_reuses_its_verified_immutable_polynomial_source() {
     let (mut g, a) = built(&p);
     let configurations = Rc::new(Cell::new(0usize));
     let hits = configurations.clone();
-    let mut c = Control::new(Limits::default(), move |point| {
+    let mut c = Control::new(move |point| {
         if point == Checkpoint::Configuration {
             hits.set(hits.get() + 1);
         }
-        Usage::default()
+        None
     });
     let plan = retain_table_plan(&mut g, p.shared_inputs(), a, &mut c).unwrap();
     let env = Environment::with_prepared(&p, &mut c).unwrap();
@@ -832,15 +832,12 @@ fn shared_polynomial_interrupt_keeps_exact_finished_basis_and_object_prefixes() 
     ] {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(Limits::default(), move |point| {
+        let mut c = Control::new(move |point| {
             if point == Checkpoint::NativeResultNode {
                 count.set(count.get() + 1);
             }
             let stop = count.get() >= at;
-            Usage {
-                signal: stop.then_some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            stop.then_some(crate::result::Signal::Int)
         });
         let mut g = prefix(&initial, &c);
         assert!(matches!(

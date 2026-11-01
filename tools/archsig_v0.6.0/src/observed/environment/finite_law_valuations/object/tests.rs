@@ -8,7 +8,7 @@ mod fixture {
     include!("../../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn input(body: &str) -> Arc<CheckedInputs> {
     let map = fixture::MAP.replace(r#""subjects":["#, r#""subjects":[{"id":"r","type":"Pattern.Part","origin":"model"},"#)
@@ -427,10 +427,7 @@ fn stopping_before_domain_completion_retains_the_object_but_never_constructs_its
     let inputs = input(ALL);
     let a = readings(&inputs, "root");
     let p = index(&a, "p");
-    let mut c = Control::new(Limits::default(), |point| Usage {
-        signal: (point == Checkpoint::FiniteLawDomain).then_some(Signal::Int),
-        ..Usage::default()
-    });
+    let mut c = Control::new(|point| (point == Checkpoint::FiniteLawDomain).then_some(Signal::Int));
     let err = finite_object_law_family_valuations(&inputs, &a, p, &selected(&["all"]), &mut c)
         .err()
         .unwrap();

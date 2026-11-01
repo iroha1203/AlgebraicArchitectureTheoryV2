@@ -14,7 +14,7 @@ use std::sync::Arc;
 #[path = "common/object_view_compatibility_data.rs"]
 mod fixture;
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs_with(definition: &str, body: &str, map: &str) -> Arc<CheckedInputs> {
     let d =
@@ -362,9 +362,9 @@ fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_com
     let baseline = run(i.clone());
     let history = Rc::new(RefCell::new(Vec::new()));
     let h = history.clone();
-    let mut traced = Control::new(Limits::default(), move |p| {
+    let mut traced = Control::new(move |p| {
         h.borrow_mut().push(p);
-        Usage::default()
+        None
     });
     object_equation_presentation(i.clone(), "Selected", "v", "root", 0, &mut traced).unwrap();
     for at in [C::EquationPresentation, C::EquationPresentationRow] {
@@ -376,18 +376,15 @@ fn fixed_stops_keep_completed_polynomials_original_counterexamples_and_final_com
             let probes = Rc::new(RefCell::new(0));
             let p = probes.clone();
             let expected = StopReason::Cancelled(Signal::Int);
-            let mut c = Control::new(Limits::default(), move |point| {
+            let mut c = Control::new(move |point| {
                 *p.borrow_mut() += 1;
                 if point == at {
                     *h.borrow_mut() += 1;
                 }
                 if point == at && *h.borrow() == nth {
-                    Usage {
-                        signal: Some(Signal::Int),
-                        ..Usage::default()
-                    }
+                    Some(Signal::Int)
                 } else {
-                    Usage::default()
+                    None
                 }
             });
             let f = object_equation_presentation(i.clone(), "Selected", "v", "root", 0, &mut c)

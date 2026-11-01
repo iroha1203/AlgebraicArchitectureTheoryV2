@@ -15,7 +15,7 @@ use std::{
     rc::Rc,
 };
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -1332,11 +1332,11 @@ view later(s:Sample): Unit = unit;
     let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
     let prior_count = Rc::new(Cell::new(0));
     let n = prior_count.clone();
-    let mut control = Control::new(Limits::default(), move |p| {
+    let mut control = Control::new(move |p| {
         if p == Checkpoint::Expression {
             n.set(n.get() + 1);
         }
-        Usage::default()
+        None
     });
     let prior = evaluate_observed_bytes(input.clone(), &asks[..3], &mut control)
         .unwrap()
@@ -1352,11 +1352,11 @@ view later(s:Sample): Unit = unit;
     missing_fields(&prior, "other_missing", &[missing_z.clone()]);
     let baseline_count = Rc::new(Cell::new(0));
     let n = baseline_count.clone();
-    let mut control = Control::new(Limits::default(), move |p| {
+    let mut control = Control::new(move |p| {
         if p == Checkpoint::Expression {
             n.set(n.get() + 1);
         }
-        Usage::default()
+        None
     });
     let baseline = evaluate_observed_bytes(input.clone(), &asks[..4], &mut control)
         .unwrap()
@@ -1409,7 +1409,7 @@ view later(s:Sample): Unit = unit;
                         };
                     }
                 }
-                Usage::default()
+                None
             },
         );
         let wire = evaluate_observed_bytes(input.clone(), &asks, &mut control)

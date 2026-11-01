@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
+    control::Usage,
     input::CheckedInputs,
     observed::{PreparedObserved, law_table, observable_layout, request::resolve_native_for_test},
 };
@@ -13,7 +13,7 @@ mod polynomial_fixture {
     include!("../../../tests/common/polynomial_law_family_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(inputs: Arc<CheckedInputs>, root: &str) -> PreparedObserved {
     let ask = format!("b=build(Selected,on=@v/{root})");
@@ -377,14 +377,14 @@ fn interrupt_keeps_the_completed_graph_prefix_and_original_request_context() {
     let (initial, l) = start(&p, true);
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(Limits::default(), move |point| {
+    let mut c = Control::new(move |point| {
         if matches!(
             point,
             Checkpoint::EquationPresentation | Checkpoint::NativeResultNode
         ) {
             seen.set(seen.get() + 1)
         }
-        Usage::default()
+        None
     });
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let mut full = copy(&initial, &c);
@@ -396,7 +396,7 @@ fn interrupt_keeps_the_completed_graph_prefix_and_original_request_context() {
     for at in [total / 2, total] {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(Limits::default(), move |point| {
+        let mut c = Control::new(move |point| {
             if matches!(
                 point,
                 Checkpoint::EquationPresentation | Checkpoint::NativeResultNode
@@ -404,10 +404,7 @@ fn interrupt_keeps_the_completed_graph_prefix_and_original_request_context() {
                 count.set(count.get() + 1)
             }
             let stop = count.get() >= at;
-            Usage {
-                signal: stop.then_some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            stop.then_some(crate::result::Signal::Int)
         });
         let mut g = copy(&initial, &c);
         let env = Environment::with_prepared(&p, &mut quiet()).unwrap();

@@ -8,7 +8,7 @@ mod fixture {
     include!("../../../../tests/common/object_view_compatibility_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn completed() -> ObservedEvaluation {
     completed_with_structure_only_owner(false)

@@ -1,7 +1,7 @@
 use super::*;
 use crate::control::{Limits, Usage};
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn node(value: i32) -> Node {
     Node {

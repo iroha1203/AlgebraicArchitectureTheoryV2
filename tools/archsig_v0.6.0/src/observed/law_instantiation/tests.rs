@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
+    control::Usage,
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
 #[allow(dead_code)]
@@ -12,7 +12,7 @@ mod finite_fixture {
     include!("../../../tests/common/finite_law_reading_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
     let requests = resolve_native_for_test(
@@ -407,15 +407,12 @@ fn interrupt_retains_only_the_completed_specialization_prefix() {
     for at in [2, 3] {
         let seen = Rc::new(Cell::new(0));
         let counter = seen.clone();
-        let mut c = Control::new(Limits::default(), move |point| {
+        let mut c = Control::new(move |point| {
             if point == Checkpoint::ObjectEvaluation {
                 counter.set(counter.get() + 1)
             }
             let stop = counter.get() >= at;
-            Usage {
-                signal: stop.then_some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            stop.then_some(crate::result::Signal::Int)
         });
         let mut g = copy_graph(&initial, &c);
         assert!(matches!(

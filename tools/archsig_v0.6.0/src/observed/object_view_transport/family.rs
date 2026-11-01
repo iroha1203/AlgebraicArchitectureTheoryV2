@@ -959,11 +959,11 @@ mod tests {
         ] {
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut c = Control::new(Limits::default(), move |p| {
+            let mut c = Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             });
             let normal = object_view_transport(
                 Arc::clone(&i),
@@ -1036,14 +1036,14 @@ mod tests {
         let seen = Rc::clone(&count);
         let boundaries = Rc::new(RefCell::new(vec![]));
         let record = Rc::clone(&boundaries);
-        let mut c = Control::new(Limits::default(), move |point| {
+        let mut c = Control::new(move |point| {
             if point == Checkpoint::FiniteIteration {
                 seen.set(seen.get() + 1);
             }
             if point == Checkpoint::ObjectViewTransportFamilyRow {
                 record.borrow_mut().push(seen.get());
             }
-            Usage::default()
+            None
         });
         object_view_transport(
             Arc::clone(&i),
@@ -1097,11 +1097,11 @@ mod tests {
         let (i, r) = example();
         let count = Rc::new(Cell::new(0_usize));
         let seen = Rc::clone(&count);
-        let mut c = Control::new(Limits::default(), move |point| {
+        let mut c = Control::new(move |point| {
             if point == Checkpoint::ObjectViewTransportFamily {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         object_view_transport(
             Arc::clone(&i),

@@ -507,11 +507,11 @@ fn all_fixed_internal_arrow_stops_latch_the_shared_control() {
     let original = internal_arrows(&i, "FlowRead", "v", "A", &mut Control::unlimited()).unwrap();
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut control = Control::new(Limits::default(), move |p| {
+    let mut control = Control::new(move |p| {
         if p == Checkpoint::InternalArrow {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     internal_arrows(&i, "FlowRead", "v", "A", &mut control).unwrap();
     let total = count.get();

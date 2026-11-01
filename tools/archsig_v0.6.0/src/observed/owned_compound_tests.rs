@@ -85,7 +85,6 @@ fn owned_compound_domains_recheck_original_fibers_members_types_support_and_scop
     });
 }
 fn compound_stop(kind: usize, after_answer: bool) {
-    use crate::control::Usage;
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Reservations.prior)",
@@ -105,7 +104,7 @@ fn compound_stop(kind: usize, after_answer: bool) {
             assert!(freeze.replace(Some(count.get())).is_none());
             usage
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(

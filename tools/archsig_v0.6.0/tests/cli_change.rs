@@ -23,9 +23,7 @@ fn input() -> std::sync::Arc<archsig::input::CheckedInputs> {
     std::sync::Arc::new(
         archsig::input::check_inputs(
             sources,
-            &mut archsig::control::Control::new(archsig::control::Limits::default(), |_| {
-                archsig::control::Usage::default()
-            }),
+            &mut archsig::control::Control::unlimited(),
         )
         .unwrap(),
     )
@@ -392,9 +390,7 @@ fn finite_owner_solution_and_unimplemented_change_have_distinct_outcomes() {
             map.into_bytes(),
         );
         let mut control =
-            archsig::control::Control::new(archsig::control::Limits::default(), |_| {
-                archsig::control::Usage::default()
-            });
+            archsig::control::Control::unlimited();
         let prepared = observed::prepare_observed(
             sources,
             &["s=solve(Selected.valid,on=@v/root,using=Selected.choose)"],
@@ -583,9 +579,7 @@ fn finite_owner_completion_produces_a_solution_judgment_instead_of_not_implement
         original.sources().law().bytes().to_vec(),
         missing.into_bytes(),
     );
-    let mut control = archsig::control::Control::new(archsig::control::Limits::default(), |_| {
-        archsig::control::Usage::default()
-    });
+    let mut control = archsig::control::Control::unlimited();
     let prepared = observed::prepare_observed(
         sources,
         &["s=solve(Selected.valid,on=@v/root,using=Selected.choose)"],

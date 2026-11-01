@@ -8,7 +8,7 @@ mod fixture {
     include!("../../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn input(body: &str) -> Arc<CheckedInputs> {
     let map = fixture::MAP.replace(r#""subjects":["#, r#""subjects":[{"id":"r","type":"Pattern.Part","origin":"model"},"#)
@@ -478,10 +478,7 @@ fn interruption_before_domain_completion_preserves_column_origins_without_a_ring
     let i = input(ALL);
     let a = readings(&i, "root");
     let selected = choices(&a, &[("p", "all", "p"), ("q", "all", "q")]);
-    let mut c = Control::new(Limits::default(), |point| Usage {
-        signal: (point == Checkpoint::FiniteLawDomain).then_some(Signal::Int),
-        ..Usage::default()
-    });
+    let mut c = Control::new(|point| (point == Checkpoint::FiniteLawDomain).then_some(Signal::Int));
     let failure = finite_multi_object_law_family_valuations(&i, &a, &selected, &mut c)
         .err()
         .unwrap();

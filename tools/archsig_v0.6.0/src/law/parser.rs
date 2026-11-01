@@ -1338,10 +1338,10 @@ mod qname_interruption_tests {
             let tokens = super::super::lexer::lex(text.as_bytes()).unwrap();
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let control = Control::new(Limits::default(), move |point| {
+            let control = Control::new(move |point| {
                 assert_eq!(point, Checkpoint::LawName);
                 seen.set(seen.get() + 1);
-                Usage::default()
+                None
             });
             let mut parser =
                 Parser::<CheckFailure<Box<Issue>>>::with_error(tokens.clone(), text.len(), control);
@@ -1405,13 +1405,10 @@ mod qname_interruption_tests {
         assert_eq!(ordinary.qname().unwrap_err().code, Code::Syntax);
         for at in [1, 2] {
             let mut visits = 0;
-            let control = Control::new(Limits::default(), move |point| {
+            let control = Control::new(move |point| {
                 assert_eq!(point, Checkpoint::LawName);
                 visits += 1;
-                Usage {
-                    signal: (visits == at).then_some(Signal::Term),
-                    ..Usage::default()
-                }
+                (visits == at).then_some(Signal::Term)
             });
             let mut controlled =
                 Parser::<CheckFailure<Box<Issue>>>::with_error(tokens.clone(), 1, control);
@@ -1454,11 +1451,11 @@ mod qname_interruption_tests {
         ] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let control = Control::new(Limits::default(), move |point| {
+            let control = Control::new(move |point| {
                 if point == Checkpoint::LawIteration {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             });
             assert_eq!(run(text, operation, control).is_ok(), valid, "{text}");
             let total = count.get();

@@ -8,7 +8,7 @@ const DEFINITION: &[u8] = include_bytes!("../../../tests/fixtures/configuration-
 const LAW: &str = include_str!("../../../tests/fixtures/configuration-profile.law");
 const MAP: &str = include_str!("../../../tests/fixtures/configuration-profile.archmap.json");
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(map: &str) -> Arc<CheckedInputs> {
     let defs = crate::definition::check_definitions(&[("definition0", DEFINITION)]).unwrap();
@@ -581,14 +581,14 @@ fn four_stops_keep_complete_pattern_nodes_and_the_exact_original_context_prefix(
     let (initial, a, o) = start(&p);
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(Limits::default(), move |point| {
+    let mut c = Control::new(move |point| {
         if matches!(
             point,
             Checkpoint::ConfigurationProfile | Checkpoint::NativeResultNode
         ) {
             count.set(count.get() + 1)
         }
-        Usage::default()
+        None
     });
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let mut full = copy(&initial, &c);

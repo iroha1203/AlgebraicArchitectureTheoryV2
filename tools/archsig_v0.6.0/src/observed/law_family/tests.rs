@@ -1,6 +1,6 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
+    control::Usage,
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
 #[allow(dead_code)]
@@ -23,7 +23,7 @@ mod fixture {
                     law.into_bytes(),
                     MAP.replace("@DIGEST@", digest).into_bytes(),
                 ),
-                &mut Control::new(Limits::default(), |_| Usage::default()),
+                &mut Control::unlimited(),
             )
             .unwrap(),
         )
@@ -34,7 +34,7 @@ mod finite_fixture {
     include!("../../../tests/common/finite_law_reading_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
     let requests = resolve_native_for_test(
@@ -544,11 +544,11 @@ fn whole_family_interrupt_keeps_completed_prefix_and_restore_request_context() {
     let template=ds[1].originals.iter().find(|o|o.row.is_none()&&matches!(initial.scalar(o.bindings[0].value).unwrap(),Scalar::Subject{subject,..} if subject=="q")).unwrap().reference;
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(Limits::default(), move |point| {
+    let mut c = Control::new(move |point| {
         if point == Checkpoint::ObjectEvaluation {
             count.set(count.get() + 1)
         }
-        Usage::default()
+        None
     });
     let mut full = copy_graph(&initial, &c);
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
@@ -561,15 +561,12 @@ fn whole_family_interrupt_keeps_completed_prefix_and_restore_request_context() {
     for at in [total / 2, total] {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(Limits::default(), move |point| {
+        let mut c = Control::new(move |point| {
             if point == Checkpoint::ObjectEvaluation {
                 count.set(count.get() + 1)
             }
             let stop = count.get() >= at;
-            Usage {
-                signal: stop.then_some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            stop.then_some(crate::result::Signal::Int)
         });
         let mut g = copy_graph(&initial, &c);
         let env = Environment::with_prepared(&p, &mut quiet()).unwrap();

@@ -8,7 +8,7 @@ mod fixture {
     include!("../../../../tests/common/finite_data_quotient.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(extra: &str) -> crate::input::CheckedInputs {
     check_inputs(fixture::sources(extra, ""), &mut quiet()).unwrap()
@@ -158,7 +158,7 @@ fn finite_data_type_and_payload_traversals_keep_exact_stop_reasons() {
                             },
                         }
                     } else {
-                        Usage::default()
+                        None
                     }
                 },
             );

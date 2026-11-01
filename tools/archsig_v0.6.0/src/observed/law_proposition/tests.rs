@@ -1,7 +1,7 @@
 use super::*;
 use crate::types::Type;
 use crate::{
-    control::{Limits, Usage},
+    control::Usage,
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
 use std::sync::Arc;
@@ -10,7 +10,7 @@ mod fixture {
     include!("../../../tests/common/polynomial_law_family_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(body: &str) -> PreparedObserved {
     let inputs = fixture::inputs(false, false, body);
@@ -599,11 +599,11 @@ fn native_law_proposition_interrupt_keeps_completed_evidence_and_exact_prefix() 
     let root = *rs[0].iter().find(|r| who(&initial, **r) == "q").unwrap();
     let seen = Rc::new(Cell::new(0));
     let counter = seen.clone();
-    let mut c = Control::new(Limits::default(), move |point| {
+    let mut c = Control::new(move |point| {
         if point == Checkpoint::FiniteIteration {
             counter.set(counter.get() + 1)
         }
-        Usage::default()
+        None
     });
     let mut complete = copy_graph(&initial, &c);
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
@@ -616,15 +616,12 @@ fn native_law_proposition_interrupt_keeps_completed_evidence_and_exact_prefix() 
     for at in [2 * total / 3, total - 5, total] {
         let seen = Rc::new(Cell::new(0));
         let counter = seen.clone();
-        let mut c = Control::new(Limits::default(), move |point| {
+        let mut c = Control::new(move |point| {
             if point == Checkpoint::FiniteIteration {
                 counter.set(counter.get() + 1)
             }
             let stop = counter.get() >= at;
-            Usage {
-                signal: stop.then_some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            stop.then_some(crate::result::Signal::Int)
         });
         let mut g = copy_graph(&initial, &c);
         let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
