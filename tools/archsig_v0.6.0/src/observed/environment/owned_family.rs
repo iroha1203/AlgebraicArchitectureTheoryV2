@@ -333,7 +333,7 @@ impl Environment<'_> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<Option<Vec<Fact>>, ValidationFailure> {
-        let Some(&id) = self.expressions.get(&span) else {
+        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         if !matches!(self.inputs.law().exprs[id].kind, ExprKind::Family { .. }) {
@@ -472,8 +472,7 @@ impl Environment<'_> {
         else {
             return Err("Family Scalarに元Law出現がない".into());
         };
-        let id = *self
-            .expressions
+        let id = *self.inputs.law().program.expressions
             .get(span)
             .ok_or("Family Scalarの元ASTがない")?;
         let [source, owner_evaluation] = node.arguments.as_slice() else {
@@ -527,7 +526,7 @@ impl Environment<'_> {
             return Ok(false);
         };
         let span = *span;
-        let Some(&id) = self.expressions.get(&span) else {
+        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
             return Ok(false);
         };
         if !matches!(&self.inputs.law().exprs[id].kind, ExprKind::Family { .. }) {

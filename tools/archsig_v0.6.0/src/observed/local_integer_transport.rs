@@ -640,6 +640,7 @@ mod tests {
         let subject=|s:&str| Scalar::Subject {snapshot:"v".into(),subject:s.into(),entity:"R.Item".into()};
         let law = crate::law::CheckedLaw {
             resolved_names: Default::default(),
+            program: Default::default(),
             bytes_digest: String::new(), model_digest: String::new(), declarations: BTreeMap::new(),
             exprs: vec![], expr_types: vec![], quantifier_types: vec![], infos: vec![],
             definitions: crate::definition::CheckedDefinitions::empty(),

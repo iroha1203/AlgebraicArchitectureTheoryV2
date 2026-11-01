@@ -20,6 +20,7 @@ pub struct Binding {
     pub name: String,
     pub ty: Type,
     pub origin: Origin,
+    pub source: super::ir::BindingSource,
     pub span: Span,
 }
 
@@ -55,18 +56,16 @@ struct PatternCover {
     plain: bool,
 }
 
-enum Callee {
-    View(String),
-    Ctor(String, usize),
-    Builtin(&'static str),
-    Value(Type),
-}
+use super::ir::Callee;
 
 struct Checkpoint {
     refs: usize,
     view_edges: usize,
     reading_edges: usize,
     vars: usize,
+    lexical: usize,
+    callees: usize,
+    fields: usize,
 }
 
 const RED_ZONE: usize = 128 * 1024;
@@ -112,6 +111,9 @@ impl<E: InputError> Checker<'_, E> {
             view_edges: self.view_edges.len(),
             reading_edges: self.reading_edges.len(),
             vars: env.vars.len(),
+            lexical: self.lexical.len(),
+            callees: self.callees.len(),
+            fields: self.resolved_fields.len(),
         }
     }
 
@@ -120,13 +122,16 @@ impl<E: InputError> Checker<'_, E> {
         self.view_edges.truncate(cp.view_edges);
         self.reading_edges.truncate(cp.reading_edges);
         env.vars.truncate(cp.vars);
+        self.lexical.truncate(cp.lexical);
+        self.callees.truncate(cp.callees);
+        self.resolved_fields.truncate(cp.fields);
     }
 
     fn span(&self, id: ExprId) -> Span {
         self.parser.exprs[id].span
     }
 
-    pub fn bind(&mut self, env: &mut Env, id: &Ident, ty: Type, origin: Origin) -> CResult<(), E> {
+    pub fn bind(&mut self, env: &mut Env, id: &Ident, ty: Type, origin: Origin, source: super::ir::BindingSource) -> CResult<(), E> {
         check_binding_name::<E>(id)?;
         if !matches!(self.lookup(env, &id.name)?, Lookup::Missing) {
             return duplicate(
@@ -138,6 +143,7 @@ impl<E: InputError> Checker<'_, E> {
             name: id.name.clone(),
             ty: self.erase_type(&ty)?,
             origin,
+            source,
             span: id.span,
         });
         Ok(())
@@ -353,7 +359,7 @@ impl<E: InputError> Checker<'_, E> {
             ExprKind::Let { name, value, body } => {
                 let t = self.check(value, None, env, ctx)?;
                 let mark = env.vars.len();
-                self.bind(env, &name, t, Origin::Other)?;
+                self.bind(env, &name, t, Origin::Other, super::ir::BindingSource::Plain)?;
                 let out = self.check(body, expected, env, ctx)?;
                 env.vars.truncate(mark);
                 Ok(out)
@@ -369,10 +375,15 @@ impl<E: InputError> Checker<'_, E> {
                 self.check_quant(id, &var, &split, span, env, ctx)?;
                 Ok(Type::Bool)
             }
-            ExprKind::Dotted(parts) => self.check_dotted(&parts, expected, env, ctx),
+            ExprKind::Dotted(parts) => self.check_dotted(id, &parts, expected, env, ctx),
             ExprKind::Field { base, name } => {
                 let t = self.check(base, None, env, ctx)?;
-                self.project_field(&t, &name, ctx)
+                let result = self.project_field(&t, &name, ctx)?;
+                let Some(owner) = t.ref_target() else {
+                    return syntax(name.span, format!("field `{}` must be read from a reference value", name.name));
+                };
+                self.resolved_fields.push((id, full(owner, &[&name.name]).into()));
+                Ok(result)
             }
             ExprKind::Index {
                 base,
@@ -430,7 +441,7 @@ impl<E: InputError> Checker<'_, E> {
                     );
                 };
                 let mark = env.vars.len();
-                self.bind(env, &var, e, Origin::Other)?;
+                self.bind(env, &var, e, Origin::Other, super::ir::BindingSource::Iteration)?;
                 if let Some(f) = filter {
                     self.check_bool(f, env, ctx)?;
                 }
@@ -557,6 +568,7 @@ impl<E: InputError> Checker<'_, E> {
 
     fn check_dotted(
         &mut self,
+        id: ExprId,
         parts: &[Ident],
         expected: Option<&Type>,
         env: &mut Env,
@@ -566,10 +578,22 @@ impl<E: InputError> Checker<'_, E> {
         match self.lookup(env, &head.name)? {
             Lookup::Found(b) => {
                 let mut t = b.ty.clone();
+                let mut lexical = super::ir::Lexical {
+                    source: b.source, name: b.name.clone(), ty: t.clone(), projections: vec![],
+                };
                 for p in &parts[1..] {
                     self.cooperate()?;
+                    let owner = t.ref_target().map(str::to_owned);
                     t = self.project_field(&t, p, ctx)?;
+                    // project_field has established the reference owner and field.
+                    let Some(owner) = owner else {
+                        return syntax(p.span, format!("field `{}` must be read from a reference value", p.name));
+                    };
+                    lexical.projections.push(super::ir::Projection {
+                        name: full(&owner, &[&p.name]).into(), span: p.span, ty: t.clone(),
+                    });
                 }
+                self.lexical.push((id, lexical));
                 return Ok(t);
             }
             Lookup::Captured => {
@@ -787,6 +811,7 @@ impl<E: InputError> Checker<'_, E> {
         ctx: &Ctx,
     ) -> CResult<Type, E> {
         let (target, name_span) = self.resolve_callee(callee, expected, env, ctx)?;
+        self.callees.push((callee, target.clone()));
         match target {
             Callee::Ctor(data, index) => self.ctor_value(&data, index, name_span, args, env, ctx),
             Callee::View(view) => {
@@ -1002,7 +1027,7 @@ impl<E: InputError> Checker<'_, E> {
             for p in params {
                 self.cooperate()?;
                 let t = self.resolve_type_in(&p.ty, env, &term_ctx)?;
-                self.bind(env, &p.name, t.clone(), Origin::Other)?;
+                self.bind(env, &p.name, t.clone(), Origin::Other, super::ir::BindingSource::Plain)?;
                 types.push(t);
             }
             let ret_expected = match expected.map(|ty| self.erase_type(ty)).transpose()?.as_ref() {
@@ -1153,7 +1178,7 @@ impl<E: InputError> Checker<'_, E> {
                 } else {
                     Origin::Other
                 };
-                self.bind(env, id, ty.clone(), origin)?;
+                self.bind(env, id, ty.clone(), origin, super::ir::BindingSource::Pattern)?;
                 Ok(None)
             }
             Pattern::Ctor { name, args, .. } => {
@@ -1307,7 +1332,7 @@ impl<E: InputError> Checker<'_, E> {
             QuantDomain::Type(t) => self.resolve_type_in(t, env, ctx)?,
         };
         let mark = env.vars.len();
-        self.bind(env, var, elem.clone(), Origin::Other)?;
+        self.bind(env, var, elem.clone(), Origin::Other, if matches!(domain, QuantDomain::Type(_)) {super::ir::BindingSource::TypeQuantifier} else {super::ir::BindingSource::Iteration})?;
         self.check_bool(body, env, ctx)?;
         env.vars.truncate(mark);
         self.quantifier_types.resize(self.parser.exprs.len(), None);

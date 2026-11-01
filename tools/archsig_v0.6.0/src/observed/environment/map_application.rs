@@ -24,7 +24,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.expressions.get(&span) else {
+        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         let law = self.inputs.law();

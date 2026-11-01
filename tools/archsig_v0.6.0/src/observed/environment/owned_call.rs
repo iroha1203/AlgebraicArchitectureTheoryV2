@@ -252,8 +252,7 @@ impl Environment<'_> {
             self.inputs
                 .law()
                 .expr_type(
-                    *self
-                        .expressions
+                    *self.inputs.law().program.expressions
                         .get(&self.expression_span(graph, source)?)
                         .ok_or("部分引数の元式がない")?,
                 )
@@ -270,8 +269,7 @@ impl Environment<'_> {
         children: &[NodeRef],
     ) -> Result<Vec<super::super::result::Reason>, ValidationFailure> {
         let span = self.expression_span(graph, source)?;
-        let kind = self
-            .expressions
+        let kind = self.inputs.law().program.expressions
             .get(&span)
             .map(|id| &self.inputs.law().exprs[*id].kind);
         let mut required = vec![true; children.len()];
@@ -690,7 +688,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.expressions.get(&span) else {
+        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         if !self.owns_call(id)? {
@@ -794,7 +792,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.expressions.get(&span) else {
+        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         let Some(declaration) = self.named_view(id)? else {
@@ -1096,7 +1094,7 @@ impl Environment<'_> {
             return Ok(false);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.expressions.get(&span) else {
+        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
             return Ok(false);
         };
         let Some(declaration) = self.named_view(id)? else {

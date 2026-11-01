@@ -372,8 +372,7 @@ impl Environment<'_> {
                 continue;
             }
             let span = self.expression_span(graph, frame.source)?;
-            let id = *self
-                .expressions
+            let id = *self.inputs.law().program.expressions
                 .get(&span)
                 .ok_or("局所全称callの元ASTがない")?;
             if self.named_view(id)?.is_none() || graph.context_at(frame.source.0) != frame.caller {
@@ -499,8 +498,7 @@ impl Environment<'_> {
         else {
             return Err("局所型Domainのheaderが元Sourceでない".into());
         };
-        let id = *self
-            .expressions
+        let id = *self.inputs.law().program.expressions
             .get(span)
             .ok_or("局所型Domainの元量化がない")?;
         let ExprKind::Quant {
@@ -709,8 +707,7 @@ impl Environment<'_> {
         let (bindings, mut variables, base) =
             self.with_universal_graph(graph, original, || self.frame_arguments(graph, index))?;
         let frame = graph.frames.get(index).ok_or("全域補完の元frameがない")?;
-        let call = *self
-            .expressions
+        let call = *self.inputs.law().program.expressions
             .get(&self.expression_span(graph, frame.source)?)
             .ok_or("全域補完の元callがない")?;
         let declaration = self.named_view(call)?.ok_or("全域補完の元viewがない")?;
@@ -2196,8 +2193,7 @@ impl Environment<'_> {
         let result = (|| {
             let raw = self.universal_raw_body(graph, template)?;
             let span = self.expression_span(graph, raw)?;
-            let id = *self
-                .expressions
+            let id = *self.inputs.law().program.expressions
                 .get(&span)
                 .ok_or("全域templateの元ASTがない")?;
             let request = graph

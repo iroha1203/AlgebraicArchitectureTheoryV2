@@ -16,7 +16,7 @@ impl Environment<'_> {
         limit: usize,
     ) -> Result<Option<Condition>, ValidationFailure> {
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.expressions.get(&span) else {
+        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         if !self.is_path(id)? {
@@ -104,7 +104,7 @@ impl Environment<'_> {
                 Ok(false)
             };
         };
-        let Some(&id) = self.expressions.get(span) else {
+        let Some(&id) = self.inputs.law().program.expressions.get(span) else {
             return if path_payload {
                 Err("Path条件の元式がない".into())
             } else {

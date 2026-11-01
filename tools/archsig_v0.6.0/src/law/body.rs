@@ -117,7 +117,7 @@ impl<E: InputError> Checker<'_, E> {
                 span: p.span,
                 tok: 0,
             };
-            self.bind(&mut env, &id, p.ty.clone(), Origin::Param(i))?;
+            self.bind(&mut env, &id, p.ty.clone(), Origin::Param(i), super::ir::BindingSource::Plain)?;
         }
         Ok(env)
     }
@@ -327,7 +327,7 @@ impl<E: InputError> Checker<'_, E> {
             } => {
                 let t = self.check(value, None, env, ctx)?;
                 let mark = env.vars.len();
-                self.bind(env, &name, t, Origin::Other)?;
+                self.bind(env, &name, t, Origin::Other, super::ir::BindingSource::Plain)?;
                 let r = self.check_change_body(inner, params, env, ctx)?;
                 env.vars.truncate(mark);
                 Some(r)
