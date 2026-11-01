@@ -622,7 +622,10 @@ fn normalization<'a>(
         Json::str(numeric_type)
     );
     for (operand, expr) in operands.iter().zip([*lhs, *rhs]) {
-        assert_eq!(evaluation_span(&ns, operand), checked.law().exprs()[expr].span);
+        assert_eq!(
+            evaluation_span(&ns, operand),
+            checked.law().exprs()[expr].span
+        );
         assert!(
             !obj(val(operand)).contains_key("value"),
             "元左右の未知値をScalarへ捏造しない"
@@ -1274,9 +1277,13 @@ fn finite_wholes(wire: &Json, checked: &CheckedInputs, field: &str, expected: &[
             "各caseでwholeを先に判断する"
         );
         let case_nodes = live(&ns, case);
-        assert!(case_nodes.iter().any(|e| source(checked, evaluation_span(&ns, e))
-            == format!("s.{field}").as_bytes()
-            && !obj(val(e)).contains_key("value")));
+        assert!(
+            case_nodes
+                .iter()
+                .any(|e| source(checked, evaluation_span(&ns, e))
+                    == format!("s.{field}").as_bytes()
+                    && !obj(val(e)).contains_key("value"))
+        );
         let mut normalized = 0;
         for equality in case_nodes {
             let bytes = source(checked, evaluation_span(&ns, equality));

@@ -587,7 +587,10 @@ fn affine_scalar(
         let scalar = target(&ns, f(val(n), "value"), &Json::str(ty));
         assert_eq!(val(scalar), &expected);
         assert_eq!(f(f(scalar, "rule"), "kind"), &Json::str("law"));
-        assert_eq!(span(f(f(scalar, "rule"), "location")), evaluation_span(&ns, n));
+        assert_eq!(
+            span(f(f(scalar, "rule"), "location")),
+            evaluation_span(&ns, n)
+        );
         let part = arr(f(val(n), "parts"))
             .iter()
             .find(|p| span(f(p, "location")) == evaluation_span(&ns, n))
@@ -928,11 +931,11 @@ fn known_nonlinear_values_and_bool_short_circuits_keep_original_support() {
             &Json::str("finite_model")
         );
     }
-    assert!(
-        live(&ns, root(&wire, "flag"))
-            .iter()
-            .any(|e| source(&checked, evaluation_span(&ns, e)) == b"s.z" && !obj(val(e)).contains_key("value"))
-    );
+    assert!(live(&ns, root(&wire, "flag")).iter().any(|e| source(
+        &checked,
+        evaluation_span(&ns, e)
+    ) == b"s.z"
+        && !obj(val(e)).contains_key("value")));
     for (id, name) in [
         ("z", "Calc.integer"),
         ("q", "Calc.rational"),
@@ -1080,7 +1083,10 @@ fn unknown_view_argument_can_cancel_inside_the_called_body() {
     assert_eq!(children.len(), 2);
     assert!(!obj(val(children[0])).contains_key("value"));
     assert_eq!(source(&checked, evaluation_span(&ns, children[0])), b"s.z");
-    assert_eq!(source(&checked, evaluation_span(&ns, children[1])), b"hz-hz");
+    assert_eq!(
+        source(&checked, evaluation_span(&ns, children[1])),
+        b"hz-hz"
+    );
     for name_use in call_children(&ns, children[1]) {
         assert_eq!(call_children(&ns, name_use), vec![children[0]]);
         assert!(
