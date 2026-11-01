@@ -63,8 +63,8 @@ impl<'a> Environment<'a> {
             {
                 return Err("候補代入の位置が重複・fieldなし・観測Atom付きである".into());
             }
-            let subject = environment.subject(&position.snapshot, &position.subject)?;
-            let field = environment.field(
+            let subject = environment.indexes.subject(&position.snapshot, &position.subject)?;
+            let field = environment.indexes.field(&environment.state,
                 &position.snapshot,
                 &position.subject,
                 position.field.as_deref().ok_or("候補代入のfieldがない")?,
@@ -130,8 +130,8 @@ impl<'a> Environment<'a> {
                 }
             }
         }
-        environment.primitive_valuation = Some(values);
-        environment.primitive_input_valuation = Some(original_values);
+        environment.indexes.primitive_valuation = Some(values);
+        environment.indexes.primitive_input_valuation = Some(original_values);
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
         Ok(Some(environment))
     }

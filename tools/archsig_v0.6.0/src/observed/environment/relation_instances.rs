@@ -151,11 +151,11 @@ fn known(
                 subject,
                 entity,
             } => {
-                let actual = e.subject(snapshot, subject)?;
+                let actual = e.indexes.subject(snapshot, subject)?;
                 if actual.ty != *entity {
                     return Err("relationの参照束縛と原始型が違う".into());
                 }
-                scope.merge(&e.scope(actual, reading, None)?);
+                scope.merge(&e.indexes.scope(actual, reading, None)?);
                 support.extend(e.subject_support(part)?);
             }
             Scalar::Tuple(items)
@@ -488,10 +488,10 @@ fn row(
     numeric_families: bool,
     numeric_domain: Option<&change_affine::NumericGuard>,
 ) -> Result<RelationInstance, ValidationFailure> {
-    *e.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
+    *e.state.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
     let result = row_value(e, d, bindings, numeric_families, numeric_domain);
     let missing = e
-        .missing_slot_reads
+        .state.missing_slot_reads
         .borrow_mut()
         .take()
         .ok_or("relationの不足位置読取りがない")?;
@@ -512,9 +512,9 @@ fn domain(
 ) -> Result<Option<super::super::finite::FiniteDomain>, ValidationFailure> {
     super::super::finite::values_if_finite_with_owned(
         &p.ty,
-        e.inputs.law(),
+        e.indexes.inputs.law(),
         &e.control,
-        &mut |entity| e.reference_roster(entity, &mut |_| {}),
+        &mut |entity| e.indexes.reference_roster(&e.control, entity, &mut |_| {}),
         &mut |entity, name| {
             let value = bindings
                 .iter()

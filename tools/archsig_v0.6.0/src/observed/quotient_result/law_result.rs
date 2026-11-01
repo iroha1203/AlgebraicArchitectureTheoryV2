@@ -23,7 +23,7 @@ fn evaluation(
 ) -> Result<NodeRef, ValidationFailure> {
     let source = change_result::source_expression(b, env, expression, bindings, &[])?;
     let ty = env
-        .inputs
+        .indexes.inputs
         .law()
         .expr_type(expression)
         .ok_or("商のLaw式型がない")?
@@ -34,7 +34,7 @@ fn evaluation(
         (
             "location".into(),
             crate::result::location_wire(&Location::Law {
-                span: env.inputs.law().exprs[expression].span,
+                span: env.indexes.inputs.law().exprs[expression].span,
             }),
         ),
         ("children".into(), refs(children)),
@@ -85,7 +85,7 @@ pub(super) fn family_type(
     name: &str,
     ty: &Type,
 ) -> Result<Type, ValidationFailure> {
-    let Signature::Law { params, .. } = &env.inputs.law().declarations[name].signature else {
+    let Signature::Law { params, .. } = &env.indexes.inputs.law().declarations[name].signature else {
         return Err("Lawがない".into());
     };
     Ok(Type::Set(Box::new(Type::Tuple(vec![
@@ -113,7 +113,7 @@ pub(super) fn row(
     arguments.extend([input.architecture, dependency]);
     let mut overrides = vec![];
     for (fact, scalar) in &candidate.assignments {
-        let subject = env.subject(&fact.snapshot, &fact.subject)?;
+        let subject = env.indexes.subject(&fact.snapshot, &fact.subject)?;
         let subject = change_result::value(
             b,
             &Scalar::Subject {
@@ -147,7 +147,7 @@ pub(super) fn row(
         None,
         None,
     )?;
-    let Signature::Law { body, guard, .. } = &env.inputs.law().declarations[name].signature else {
+    let Signature::Law { body, guard, .. } = &env.indexes.inputs.law().declarations[name].signature else {
         return Err("Lawがない".into());
     };
     let mut evaluations = vec![];
@@ -224,7 +224,7 @@ pub(super) fn row(
                     (
                         "location",
                         crate::result::location_wire(&Location::Law {
-                            span: env.inputs.law().exprs[*guard].span,
+                            span: env.indexes.inputs.law().exprs[*guard].span,
                         }),
                     ),
                     ("value", guard_value.wire()),

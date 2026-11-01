@@ -1088,7 +1088,7 @@ fn metadata(
     let env = Environment::new(inputs, c)?;
     for position in f.positions() {
         tick(c)?;
-        let field = env.field(
+        let field = env.indexes.field(&env.state,
             &position.snapshot,
             &position.subject,
             position.field.as_deref().ok_or("有限Lawの元fieldがない")?,
@@ -1292,7 +1292,7 @@ impl FamilyPlan {
             return Err("有限配置の元Architecture/全対象計画が違う".into());
         }
         let a = native::architecture_origin(graph, reference, 0)?;
-        self.0.recheck(env.inputs, a, 0, c)?;
+        self.0.recheck(env.indexes.inputs, a, 0, c)?;
         Ok(a.clone())
     }
 }
@@ -1464,7 +1464,7 @@ impl Environment<'_> {
         self.recheck_object_components(graph, consumer)?;
         // immutable Arcを保持し、別のreading/根の検査成功を再利用しない。
         if self
-            .verified_finite_law_diagrams
+            .results.verified_finite_law_diagrams
             .borrow()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
@@ -1472,12 +1472,12 @@ impl Environment<'_> {
             return Ok(());
         }
         data.source.recheck(
-            self.inputs,
+            self.indexes.inputs,
             a,
             data.source.object,
             &mut self.control.clone(),
         )?;
-        self.verified_finite_law_diagrams
+        self.results.verified_finite_law_diagrams
             .borrow_mut()
             .push(data.source.clone());
         Ok(())

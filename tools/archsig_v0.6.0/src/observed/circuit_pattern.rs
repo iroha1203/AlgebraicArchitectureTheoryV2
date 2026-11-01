@@ -162,7 +162,7 @@ fn original(
     ValidationFailure,
 > {
     tick(c)?;
-    if inputs.sources() != env.inputs.sources() {
+    if inputs.sources() != env.indexes.inputs.sources() {
         return Err("query patternの三入力が検査環境と違う".into());
     }
     let node = g.get(reference)?;
@@ -467,7 +467,7 @@ impl Environment<'_> {
         let Some((owner, components, objects, universe, support, scope)) = original(
             self,
             g,
-            self.inputs,
+            self.indexes.inputs,
             data.source.reference,
             Some(data.source.components),
             &mut c,
@@ -482,12 +482,12 @@ impl Environment<'_> {
             || universe != data.source.universe
             || support != data.source.support
             || scope != data.source.scope
-            || self.inputs.sources() != data.source.inputs.sources()
+            || self.indexes.inputs.sources() != data.source.inputs.sources()
         {
             return Err("query patternの元入力/全対象/共通U/metadataが違う".into());
         }
         if self
-            .verified_circuit_patterns
+            .results.verified_circuit_patterns
             .borrow()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
@@ -511,7 +511,7 @@ impl Environment<'_> {
         {
             return Err("query patternが元の全query/対象identity/対応と違う".into());
         }
-        self.verified_circuit_patterns
+        self.results.verified_circuit_patterns
             .borrow_mut()
             .push(data.source.clone());
         tick(&mut c)

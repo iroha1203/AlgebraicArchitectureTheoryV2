@@ -384,7 +384,7 @@ pub(super) fn validate_origin(
 ) -> Result<(), ValidationFailure> {
     if request.kind != QuestionKind::Compose
         || &c.request != request
-        || c.inputs.sources() != environment.inputs.sources()
+        || c.inputs.sources() != environment.indexes.inputs.sources()
         || selected(environment, graph, request, "head")? != c.left
         || selected(environment, graph, request, "then")? != c.right
     {

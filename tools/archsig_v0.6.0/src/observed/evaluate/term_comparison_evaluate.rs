@@ -45,7 +45,7 @@ impl Evaluator<'_, '_> {
             return Ok(vec![]);
         };
         let (a, b) = (a.clone(), b.clone());
-        let law = self.environment.inputs.law();
+        let law = self.environment.indexes.inputs.law();
         let mut infinite = false;
         for (_, t) in &a.params {
             if !super::super::finite::completion_supported(t, law, self.control)? {

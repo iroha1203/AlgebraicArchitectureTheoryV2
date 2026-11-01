@@ -34,10 +34,10 @@ fn transport(
     instance: usize,
     c: &mut Control,
 ) -> Result<Arc<object_law_transport::ObjectLawTransport>, ValidationFailure> {
-    if !std::ptr::eq(env.inputs, inputs.as_ref()) {
+    if !std::ptr::eq(env.indexes.inputs, inputs.as_ref()) {
         return Err("Law保存cacheの元入力が違う".into());
     }
-    for entry in env.verified_law_transports.borrow().iter() {
+    for entry in env.results.verified_law_transports.borrow().iter() {
         tick(c)?;
         if entry.object == object
             && entry.instance == instance
@@ -60,7 +60,7 @@ fn transport(
                 .unwrap_or_else(|| format!("Law保存検査: {e:?}").into())
         })?,
     );
-    env.verified_law_transports
+    env.results.verified_law_transports
         .borrow_mut()
         .push(KernelCacheEntry {
             declarations: declarations.clone(),

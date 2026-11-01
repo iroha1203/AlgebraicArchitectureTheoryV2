@@ -1404,7 +1404,7 @@ fn metadata(
     for ring in core.into_iter().flat_map(|core| core.rings()) {
         for symbol in &ring.symbols {
             tick(c)?;
-            let slot = env.field(
+            let slot = env.indexes.field(&env.state,
                 &symbol.slot.snapshot,
                 &symbol.slot.subject,
                 &symbol.slot.field,
@@ -1759,13 +1759,13 @@ impl FamilyPlan {
         // 計画本体は元三入力と不変のArchitectureだけに依存する。
         // Graph上の元参照・Architecture同一性は、cache利用時も上で照合する。
         if !env
-            .verified_polynomial_law_diagrams
+            .results.verified_polynomial_law_diagrams
             .borrow()
             .iter()
             .any(|s| Arc::ptr_eq(s, &self.0))
         {
-            self.0.recheck(env.inputs, a, c)?;
-            env.verified_polynomial_law_diagrams
+            self.0.recheck(env.indexes.inputs, a, c)?;
+            env.results.verified_polynomial_law_diagrams
                 .borrow_mut()
                 .push(self.0.clone());
         }
@@ -1920,7 +1920,7 @@ impl Environment<'_> {
         };
         self.recheck_object_components(graph, consumer)?;
         if self
-            .verified_polynomial_law_diagrams
+            .results.verified_polynomial_law_diagrams
             .borrow()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
@@ -1928,8 +1928,8 @@ impl Environment<'_> {
             return Ok(());
         }
         data.source
-            .recheck(self.inputs, a, &mut self.control.clone())?;
-        self.verified_polynomial_law_diagrams
+            .recheck(self.indexes.inputs, a, &mut self.control.clone())?;
+        self.results.verified_polynomial_law_diagrams
             .borrow_mut()
             .push(data.source.clone());
         Ok(())

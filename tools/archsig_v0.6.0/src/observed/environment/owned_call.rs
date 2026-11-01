@@ -193,7 +193,7 @@ impl Environment<'_> {
                 if operation == "dependent_subject" {
                     data::observe_actual(
                         _span,
-                        self.context.get().unwrap_or_default(),
+                        self.state.context.get().unwrap_or_default(),
                         "owned_call_map_domain_roster",
                         index,
                     );
@@ -211,7 +211,7 @@ impl Environment<'_> {
             #[cfg(test)]
             data::observe_actual(
                 _span,
-                self.context.get().unwrap_or_default(),
+                self.state.context.get().unwrap_or_default(),
                 "owned_call_map_domain_missing",
                 checks.missing.len(),
             );
@@ -249,10 +249,10 @@ impl Environment<'_> {
         Ok(Self::owned_source_argument(
             &analysis.known_value,
             analysis.symbolic.as_deref(),
-            self.inputs
+            self.indexes.inputs
                 .law()
                 .expr_type(
-                    *self.inputs.law().program.expressions
+                    *self.indexes.inputs.law().program.expressions
                         .get(&self.expression_span(graph, source)?)
                         .ok_or("部分引数の元式がない")?,
                 )
@@ -269,9 +269,9 @@ impl Environment<'_> {
         children: &[NodeRef],
     ) -> Result<Vec<super::super::result::Reason>, ValidationFailure> {
         let span = self.expression_span(graph, source)?;
-        let kind = self.inputs.law().program.expressions
+        let kind = self.indexes.inputs.law().program.expressions
             .get(&span)
-            .map(|id| &self.inputs.law().exprs[*id].kind);
+            .map(|id| &self.indexes.inputs.law().exprs[*id].kind);
         let mut required = vec![true; children.len()];
         match kind {
             Some(ExprKind::If { .. }) if children.len() == 3 => {
@@ -375,7 +375,7 @@ impl Environment<'_> {
             return Err("Owned callの参照型が元署名と違う".into());
         }
         let root = match &self
-            .inputs
+            .indexes.inputs
             .law()
             .definitions
             .declarations
@@ -400,13 +400,13 @@ impl Environment<'_> {
         else {
             return Err("Owned callのownerが参照でない".into());
         };
-        let subject_input = self.subject(snapshot, subject)?;
+        let subject_input = self.indexes.subject(snapshot, subject)?;
         checks
             .scope
-            .merge(&self.scope(subject_input, reading, None)?);
+            .merge(&self.indexes.scope(subject_input, reading, None)?);
         checks
             .scope
-            .merge(&self.scope(self.subject(os, oi)?, reading, None)?);
+            .merge(&self.indexes.scope(self.indexes.subject(os, oi)?, reading, None)?);
         checks.support.extend([
             Fact {
                 snapshot: snapshot.clone(),
@@ -429,7 +429,7 @@ impl Environment<'_> {
             atom: None,
         };
         if let Some(actual) = self
-            .primitive_valuation
+            .indexes.primitive_valuation
             .as_ref()
             .and_then(|values| values.get(&position))
         {
@@ -441,12 +441,12 @@ impl Environment<'_> {
             else {
                 return Err("候補ownerがRefでない".into());
             };
-            if actual_root != root || self.subject(actual_snapshot, actual_subject)?.ty != *root {
+            if actual_root != root || self.indexes.subject(actual_snapshot, actual_subject)?.ty != *root {
                 return Err("候補owner型が元署名と違う".into());
             }
             checks.scope.assignments = true;
-            checks.scope.merge(&self.scope(
-                self.subject(actual_snapshot, actual_subject)?,
+            checks.scope.merge(&self.indexes.scope(
+                self.indexes.subject(actual_snapshot, actual_subject)?,
                 reading,
                 None,
             )?);
@@ -474,7 +474,7 @@ impl Environment<'_> {
             atom,
             origin,
             ..
-        } = &self.field(snapshot, subject, &field)?.slot
+        } = &self.indexes.field(&self.state, snapshot, subject, &field)?.slot
         else {
             checks.scope.completions = true;
             let fact = Fact {
@@ -487,7 +487,7 @@ impl Environment<'_> {
                 .and_then(|values| values.get(&fact))
                 .cloned()
                 .or_else(|| {
-                    self.completion_values
+                    self.state.completion_values
                         .borrow()
                         .iter()
                         .find(|(f, _, _)| f == &fact)
@@ -502,11 +502,11 @@ impl Environment<'_> {
                 else {
                     return Err("補完ownerがRefでない".into());
                 };
-                if entity != root || self.subject(actual_snapshot, actual_subject)?.ty != *root {
+                if entity != root || self.indexes.subject(actual_snapshot, actual_subject)?.ty != *root {
                     return Err("補完owner型が元署名と違う".into());
                 }
-                checks.scope.merge(&self.scope(
-                    self.subject(actual_snapshot, actual_subject)?,
+                checks.scope.merge(&self.indexes.scope(
+                    self.indexes.subject(actual_snapshot, actual_subject)?,
                     reading,
                     None,
                 )?);
@@ -532,7 +532,7 @@ impl Environment<'_> {
         };
         checks
             .scope
-            .merge(&self.scope(subject_input, reading, Some(origin))?);
+            .merge(&self.indexes.scope(subject_input, reading, Some(origin))?);
         checks.support.push(Fact {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
@@ -544,8 +544,8 @@ impl Environment<'_> {
             subject: actual_subject.clone(),
             entity: root.clone(),
         };
-        checks.scope.merge(&self.scope(
-            self.subject(actual_snapshot, actual_subject)?,
+        checks.scope.merge(&self.indexes.scope(
+            self.indexes.subject(actual_snapshot, actual_subject)?,
             reading,
             None,
         )?);
@@ -563,7 +563,7 @@ impl Environment<'_> {
         #[cfg(test)]
         data::observe_actual(
             _span,
-            self.context.get().unwrap_or_default(),
+            self.state.context.get().unwrap_or_default(),
             "owned_call_constraint",
             0,
         );
@@ -655,12 +655,12 @@ impl Environment<'_> {
             return self.owned_call_checks(declaration, arguments, returned, span);
         }
         self.validation_graph_session(graph, || {
-            let previous_context = self.context.scoped(Some(graph.active));
-            let previous_cutoff = self.cutoff.scoped(graph.nodes.len());
-            let previous_completion = self.completion_values.scoped(Vec::new());
+            let previous_context = self.state.context.scoped(Some(graph.active));
+            let previous_cutoff = self.state.cutoff.scoped(graph.nodes.len());
+            let previous_completion = self.state.completion_values.scoped(Vec::new());
             let result = (|| {
                 if let Some(case) = graph.active.case {
-                    *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                    *self.state.completion_values.borrow_mut() = self.completion_values(graph, case)?;
                 }
                 #[cfg(test)]
                 data::observe_actual(span, graph.active, "owned_call_case", 0);
@@ -688,17 +688,17 @@ impl Environment<'_> {
             return Ok(None);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         if !self.owns_call(id)? {
             return Ok(None);
         }
-        let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
+        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
             return Err("所属slotの元式がcallでない".into());
         };
         let bindings = self.expression_bindings(graph, source)?;
-        let limit = self.cutoff.get().min(graph.nodes.len());
+        let limit = self.state.cutoff.get().min(graph.nodes.len());
         let mut children = None;
         for (index, node) in graph.nodes.iter().enumerate().take(limit) {
             self.tick()?;
@@ -744,7 +744,7 @@ impl Environment<'_> {
             0,
         );
         self.tick()?;
-        let previous = self.completion_values.scoped(Vec::new());
+        let previous = self.state.completion_values.scoped(Vec::new());
         let result = self
             .owned_call_checks(declaration, &arguments, returned.as_ref(), span)
             .map(|checks| {
@@ -792,7 +792,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         let Some(declaration) = self.named_view(id)? else {
@@ -801,7 +801,7 @@ impl Environment<'_> {
         let Signature::View { params, body, .. } = &declaration.signature else {
             unreachable!()
         };
-        let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
+        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
             unreachable!()
         };
         if args.len() != params.len()
@@ -1094,7 +1094,7 @@ impl Environment<'_> {
             return Ok(false);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
             return Ok(false);
         };
         let Some(declaration) = self.named_view(id)? else {
@@ -1137,7 +1137,7 @@ impl Environment<'_> {
             || node.arguments != expected
             || node.ty
                 != NodeType::Evaluation(
-                    self.inputs
+                    self.indexes.inputs
                         .law()
                         .expr_type(id)
                         .ok_or("Owned callの元型がない")?

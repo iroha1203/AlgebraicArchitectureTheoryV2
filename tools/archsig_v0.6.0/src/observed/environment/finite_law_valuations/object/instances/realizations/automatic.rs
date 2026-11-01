@@ -85,10 +85,10 @@ pub(super) fn discover_law_reads(
     let mut failure = None;
     for (selection, object) in selections.iter().zip(objects) {
         tick(c)?;
-        if e.object.as_deref() != Some(selection.domain.as_ref()) {
-            e.scoped_values.borrow_mut().clear();
+        if e.indexes.object.as_deref() != Some(selection.domain.as_ref()) {
+            e.results.scoped_values.borrow_mut().clear();
         }
-        e.object = Some(Arc::clone(&selection.domain));
+        e.indexes.object = Some(Arc::clone(&selection.domain));
         for entry in object.entries() {
             let declaration = inputs
                 .law()
@@ -336,10 +336,10 @@ impl AutomaticLawValuations {
             return Err("有限Lawの実評価と元三入力が違う".into());
         }
         let mut e = Environment::new(inputs, c)?;
-        *e.primitive_reads.borrow_mut() = Some(BTreeSet::new());
+        *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
         self.value.select_column_object(&mut e, column)?;
         let reads = || -> Result<Vec<Fact>, ValidationFailure> {
-            let tracked = e.primitive_reads.borrow();
+            let tracked = e.state.primitive_reads.borrow();
             let mut positions = vec![];
             for position in tracked.as_ref().ok_or("有限Law実評価の読取り記録がない")?
             {

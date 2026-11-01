@@ -10,7 +10,7 @@ impl Evaluator<'_, '_> {
         else {
             return Err(Failure::Internal("Path端点が原始参照でない".into()));
         };
-        let s = self.environment.subject(snapshot, subject)?;
+        let s = self.environment.indexes.subject(snapshot, subject)?;
         if &s.ty != entity {
             return Err(Failure::Internal("Path端点の原始型が違う".into()));
         }
@@ -21,7 +21,7 @@ impl Evaluator<'_, '_> {
                 span: None,
             },
         };
-        let scope = self.environment.scope(s, reading, None)?;
+        let scope = self.environment.indexes.scope(s, reading, None)?;
         let support = vec![Fact {
             snapshot: snapshot.clone(),
             subject: subject.clone(),

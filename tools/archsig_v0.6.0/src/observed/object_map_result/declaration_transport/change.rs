@@ -325,7 +325,7 @@ fn point(
             );
             continue;
         };
-        let equal = super::super::super::value_equality::equal(lv, rv, env.inputs.law(), c)?;
+        let equal = super::super::super::value_equality::equal(lv, rv, env.indexes.inputs.law(), c)?;
         if equal.is_none() {
             pending(
                 &mut checks[i + 1],

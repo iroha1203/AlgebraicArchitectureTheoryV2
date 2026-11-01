@@ -129,7 +129,7 @@ impl Environment<'_> {
             .universal_template_with_guard(
                 graph,
                 plan,
-                self.inputs.law().exprs[guard].span,
+                self.indexes.inputs.law().exprs[guard].span,
                 bindings,
                 Some(&mut forms),
             )?
@@ -161,7 +161,7 @@ impl Environment<'_> {
             crate::observed::law_evaluation::instance_inputs(
                 graph,
                 index,
-                self.cutoff.get().min(graph.nodes.len()),
+                self.state.cutoff.get().min(graph.nodes.len()),
             )?
         } else {
             None
@@ -172,7 +172,7 @@ impl Environment<'_> {
             }
             (native.origin.architecture, native.origin.declaration)
         } else {
-            let Some(reference) = self.architecture_ref() else {
+            let Some(reference) = self.state.architecture_ref() else {
                 return Ok(None);
             };
             let request = graph
@@ -184,7 +184,7 @@ impl Environment<'_> {
             }
             let name = request.declaration().ok_or("欠測係数の元宣言がない")?;
             let declaration = self
-                .inputs
+                .indexes.inputs
                 .law()
                 .declarations
                 .get(name)
@@ -234,7 +234,7 @@ impl Environment<'_> {
                     Type::Unit | Type::Bool | Type::Fp(_) | Type::Tuple(_) | Type::Option(_) | Type::Data(_) | Type::Set(_)
                 ) || !crate::observed::finite::completion_supported(
                     &parameter.ty,
-                    self.inputs.law(),
+                    self.indexes.inputs.law(),
                     &mut self.control.clone(),
                 )? {
                     return Ok(None);
@@ -247,7 +247,7 @@ impl Environment<'_> {
             }
             let source =
                 crate::observed::object_equation_presentation::parameter_source_difference_bound(
-                    self.inputs,
+                    self.indexes.inputs,
                     instance,
                     &finite,
                     &mut self.control.clone(),
@@ -268,7 +268,7 @@ impl Environment<'_> {
         &self,
         parameter: &UniversalParameter,
     ) -> Result<QuantKind, ValidationFailure> {
-        for expression in &self.inputs.law().exprs {
+        for expression in &self.indexes.inputs.law().exprs {
             self.tick()?;
             if let ExprKind::Quant { kind, var, .. } = &expression.kind
                 && var.span == parameter.binder
@@ -327,11 +327,11 @@ impl Environment<'_> {
     }
     pub(super) fn universal_call_context(&self, id: usize) -> Option<super::super::call::Context> {
         let caller = self
-            .scoped_context
+            .state.scoped_context
             .get()
-            .or(self.context.get())
+            .or(self.state.context.get())
             .unwrap_or_default();
-        self.universal_context
+        self.state.universal_context
             .borrow()
             .as_ref()
             .and_then(|context| {
@@ -359,7 +359,7 @@ impl Environment<'_> {
             calls: Vec::new(),
             iterations: Vec::new(),
         };
-        let cutoff = self.cutoff.get().min(graph.nodes.len());
+        let cutoff = self.state.cutoff.get().min(graph.nodes.len());
         for (index, frame) in graph.frames.iter().enumerate() {
             self.tick()?;
             if frame.source.0 >= cutoff
@@ -372,7 +372,7 @@ impl Environment<'_> {
                 continue;
             }
             let span = self.expression_span(graph, frame.source)?;
-            let id = *self.inputs.law().program.expressions
+            let id = *self.indexes.inputs.law().program.expressions
                 .get(&span)
                 .ok_or("局所全称callの元ASTがない")?;
             if self.named_view(id)?.is_none() || graph.context_at(frame.source.0) != frame.caller {
@@ -467,7 +467,7 @@ impl Environment<'_> {
             // 各実反復Contextに属するため、親へ移さない。
             let inherited = self.lexical_context(*span)?.iter().any(|(_, binding)| {
                 match binding {
-                    LexicalOrigin::Universal(id) => matches!(&self.inputs.law().exprs[*id].kind, ExprKind::Quant { var, .. } if var.span == binder),
+                    LexicalOrigin::Universal(id) => matches!(&self.indexes.inputs.law().exprs[*id].kind, ExprKind::Quant { var, .. } if var.span == binder),
                     _ => false,
                 }
             });
@@ -498,7 +498,7 @@ impl Environment<'_> {
         else {
             return Err("局所型Domainのheaderが元Sourceでない".into());
         };
-        let id = *self.inputs.law().program.expressions
+        let id = *self.indexes.inputs.law().program.expressions
             .get(span)
             .ok_or("局所型Domainの元量化がない")?;
         let ExprKind::Quant {
@@ -509,11 +509,11 @@ impl Environment<'_> {
                     ..
                 },
             ..
-        } = &self.inputs.law().exprs[id].kind
+        } = &self.indexes.inputs.law().exprs[id].kind
         else {
             return Err("局所型Domainの元構文が型全称でない".into());
         };
-        let ty = self.inputs.law().quantifier_types[id]
+        let ty = self.indexes.inputs.law().quantifier_types[id]
             .as_ref()
             .ok_or("局所全称型がない")?;
         if !self.universal_symbolic_type(ty)? {
@@ -597,7 +597,7 @@ impl Environment<'_> {
                 let LexicalOrigin::Universal(id) = binding else {
                     continue;
                 };
-                let ExprKind::Quant { var, .. } = &self.inputs.law().exprs[id].kind else {
+                let ExprKind::Quant { var, .. } = &self.indexes.inputs.law().exprs[id].kind else {
                     unreachable!()
                 };
                 let binder_context = self.universal_binder_context(&registry, var.span, context)?;
@@ -642,11 +642,11 @@ impl Environment<'_> {
                     ..
                 },
             ..
-        } = &self.inputs.law().exprs[id].kind
+        } = &self.indexes.inputs.law().exprs[id].kind
         else {
             return Ok(None);
         };
-        let ty = self.inputs.law().quantifier_types[id]
+        let ty = self.indexes.inputs.law().quantifier_types[id]
             .as_ref()
             .ok_or("局所型がない")?;
         if !self.universal_symbolic_type(ty)? {
@@ -682,7 +682,7 @@ impl Environment<'_> {
         Ok(self
             .universal_source_analysis(
                 graph,
-                self.inputs.law().exprs[id].span,
+                self.indexes.inputs.law().exprs[id].span,
                 bindings,
                 plan,
                 domains,
@@ -697,7 +697,7 @@ impl Environment<'_> {
         graph: &Graph,
         index: usize,
     ) -> Result<Option<FrameInputs>, ValidationFailure> {
-        let active = self.universal_context.borrow().clone();
+        let active = self.state.universal_context.borrow().clone();
         let Some(mut original) = active.filter(|context| !context.completions.is_empty()) else {
             return Ok(None);
         };
@@ -707,23 +707,23 @@ impl Environment<'_> {
         let (bindings, mut variables, base) =
             self.with_universal_graph(graph, original, || self.frame_arguments(graph, index))?;
         let frame = graph.frames.get(index).ok_or("全域補完の元frameがない")?;
-        let call = *self.inputs.law().program.expressions
+        let call = *self.indexes.inputs.law().program.expressions
             .get(&self.expression_span(graph, frame.source)?)
             .ok_or("全域補完の元callがない")?;
         let declaration = self.named_view(call)?.ok_or("全域補完の元viewがない")?;
         let Signature::View { params, .. } = &declaration.signature else {
             unreachable!()
         };
-        let ExprKind::Call { args, .. } = &self.inputs.law().exprs[call].kind else {
+        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[call].kind else {
             unreachable!()
         };
-        let previous = self.context.scoped(Some(frame.caller));
+        let previous = self.state.context.scoped(Some(frame.caller));
         let result = (|| {
             for ((parameter, arg), reference) in params.iter().zip(args).zip(&frame.arguments) {
                 self.tick()?;
                 let (_, actual, _) = self.evaluation(graph, *reference)?;
                 let analysis =
-                    self.analyze_source(graph, self.inputs.law().exprs[*arg].span, actual)?;
+                    self.analyze_source(graph, self.indexes.inputs.law().exprs[*arg].span, actual)?;
                 let mut scope = analysis.scope;
                 scope.merge(&base);
                 variables.insert(
@@ -751,7 +751,7 @@ impl Environment<'_> {
         result
     }
     fn universal_completions(&self, template: NodeRef) -> Vec<(Fact, Scalar)> {
-        self.universal_context
+        self.state.universal_context
             .borrow()
             .as_ref()
             .filter(|context| context.template == Some(template))
@@ -764,7 +764,7 @@ impl Environment<'_> {
         ty: &Type,
     ) -> Result<Option<Scalar>, ValidationFailure> {
         self.tick()?;
-        let context = self.universal_context.borrow();
+        let context = self.state.universal_context.borrow();
         let Some((_, value)) = context.as_ref().and_then(|context| {
             context
                 .completions
@@ -794,7 +794,7 @@ impl Environment<'_> {
             if fact.atom.is_some() || values[..index].iter().any(|(previous, _)| previous == fact) {
                 return Err("全域補完Factが観測済み・重複である".into());
             }
-            let field = self.field(
+            let field = self.indexes.field(&self.state,
                 &fact.snapshot,
                 &fact.subject,
                 fact.field.as_deref().ok_or("全域数値補完にfieldがない")?,
@@ -871,23 +871,23 @@ impl Environment<'_> {
                     body,
                 },
             ..
-        } = &self.inputs.law().exprs[id].kind
+        } = &self.indexes.inputs.law().exprs[id].kind
         else {
             return Ok(None);
         };
-        let ty = self.inputs.law().quantifier_types[id]
+        let ty = self.indexes.inputs.law().quantifier_types[id]
             .as_ref()
             .ok_or("全域binder型がない")?;
         if !self.universal_symbolic_type(ty)? {
             return Ok(None);
         }
-        if self.universal_context.borrow().is_none() {
+        if self.state.universal_context.borrow().is_none() {
             // 未展開callの静的bodyは実Contextをまだ持たない。
             // validationのcallerや既定request 0をcalleeの出現として記録しない。
-            let actual_context = self.scoped_context.get();
+            let actual_context = self.state.scoped_context.get();
             let context = actual_context.unwrap_or_default();
             let mut plan = UniversalPlan {
-                template_span: self.inputs.law().exprs[id].span,
+                template_span: self.indexes.inputs.law().exprs[id].span,
                 body: id,
                 guard: None,
                 parameters: Vec::new(),
@@ -906,7 +906,7 @@ impl Environment<'_> {
                 },
                 || {
                     let mut scope = base.clone();
-                    self.universal_extend_scope(&mut scope, self.inputs.law().exprs[id].span)?;
+                    self.universal_extend_scope(&mut scope, self.indexes.inputs.law().exprs[id].span)?;
                     let mut local = self.copy_variables(variables)?;
                     for parameter in &plan.parameters {
                         local.insert(
@@ -975,7 +975,7 @@ impl Environment<'_> {
             );
         }
         let active = self
-            .universal_context
+            .state.universal_context
             .borrow()
             .clone()
             .ok_or("全域分析contextがない")?;
@@ -992,7 +992,7 @@ impl Environment<'_> {
         );
         let mut value = self.scoped_ast(*body, &local, base, reading)?;
         if number(ty).is_none() {
-            let ExprKind::Quant { kind, .. } = self.inputs.law().exprs[id].kind else {
+            let ExprKind::Quant { kind, .. } = self.indexes.inputs.law().exprs[id].kind else {
                 unreachable!()
             };
             value.known_value =
@@ -1015,20 +1015,20 @@ impl Environment<'_> {
             var,
             split: QuantSplit::Fixed { body, .. },
             ..
-        } = &self.inputs.law().exprs[id].kind
+        } = &self.indexes.inputs.law().exprs[id].kind
         else {
             unreachable!()
         };
-        let ty = self.inputs.law().quantifier_types[id]
+        let ty = self.indexes.inputs.law().quantifier_types[id]
             .as_ref()
             .ok_or("局所全称型がない")?;
         let mut context = self
-            .universal_context
+            .state.universal_context
             .borrow()
             .clone()
             .ok_or("局所全称のcaller Planがない")?;
-        let actual = self.scoped_context.get();
-        let origin = actual.or(self.context.get()).unwrap_or_default();
+        let actual = self.state.scoped_context.get();
+        let origin = actual.or(self.state.context.get()).unwrap_or_default();
         let axis = context
             .local_axes
             .iter()
@@ -1110,7 +1110,7 @@ impl Environment<'_> {
         ty: &Type,
         base: &Scope,
     ) -> Result<SourceValue, ValidationFailure> {
-        let active = self.universal_context.borrow();
+        let active = self.state.universal_context.borrow();
         let context = active
             .as_ref()
             .ok_or_else(|| ValidationFailure::UnsupportedExpression {
@@ -1120,9 +1120,9 @@ impl Environment<'_> {
         let origin = self.universal_binder_context(
             context,
             binder,
-            self.scoped_context
+            self.state.scoped_context
                 .get()
-                .or(self.context.get())
+                .or(self.state.context.get())
                 .unwrap_or_default(),
         )?;
         // 全域Planは消去型を持つ。元署名のOwned添字を含む型も、
@@ -1200,7 +1200,7 @@ impl Environment<'_> {
         scope: &mut Scope,
         span: (usize, usize),
     ) -> Result<(), ValidationFailure> {
-        if let Some(context) = self.universal_context.borrow().as_ref() {
+        if let Some(context) = self.state.universal_context.borrow().as_ref() {
             scope.assignments = true;
             for (index, parameter) in context.plan.parameters.iter().enumerate() {
                 self.tick()?;
@@ -1214,9 +1214,9 @@ impl Environment<'_> {
                 });
             }
             let origin = self
-                .scoped_context
+                .state.scoped_context
                 .get()
-                .or(self.context.get())
+                .or(self.state.context.get())
                 .unwrap_or_default();
             let lexical = self.lexical_context(span)?;
             for axis in &context.local_axes {
@@ -1224,7 +1224,7 @@ impl Environment<'_> {
                 let binder_context =
                     self.universal_binder_context(context, axis.parameter.binder, origin)?;
                 let enclosed = lexical.iter().any(|(_, binding)| match binding {
-                    LexicalOrigin::Universal(id) => matches!(&self.inputs.law().exprs[*id].kind, ExprKind::Quant { var, .. } if var.span == axis.parameter.binder),
+                    LexicalOrigin::Universal(id) => matches!(&self.indexes.inputs.law().exprs[*id].kind, ExprKind::Quant { var, .. } if var.span == axis.parameter.binder),
                     _ => false,
                 });
                 if axis.parameter.context != binder_context || !enclosed {
@@ -1249,10 +1249,10 @@ impl Environment<'_> {
         bindings: &[Binding],
     ) -> Result<Option<UniversalPlan>, ValidationFailure> {
         let native = if let Some(index) = self.current_context(graph).instance {
-            crate::observed::law_evaluation::instance_inputs(graph, index, self.cutoff.get().min(graph.nodes.len()))?
+            crate::observed::law_evaluation::instance_inputs(graph, index, self.state.cutoff.get().min(graph.nodes.len()))?
         } else { None };
         let view = if let Some(index) = self.current_context(graph).instance {
-            crate::observed::object_reading_evaluation::instance_inputs(graph, index, self.cutoff.get().min(graph.nodes.len()))?
+            crate::observed::object_reading_evaluation::instance_inputs(graph, index, self.state.cutoff.get().min(graph.nodes.len()))?
         } else { None };
         let name = if let Some(inputs) = &native {
             inputs.origin.declaration.as_str()
@@ -1264,7 +1264,7 @@ impl Environment<'_> {
             return Ok(None);
         };
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(name)
@@ -1295,7 +1295,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         let mut plan = UniversalPlan {
-            template_span: self.inputs.law().exprs[body].span,
+            template_span: self.indexes.inputs.law().exprs[body].span,
             body,
             guard,
             parameters,
@@ -1313,7 +1313,7 @@ impl Environment<'_> {
         _bindings: &[Binding],
     ) -> Result<Option<UniversalPlan>, ValidationFailure> {
         let mut plan = UniversalPlan {
-            template_span: self.inputs.law().exprs[id].span,
+            template_span: self.indexes.inputs.law().exprs[id].span,
             body: id,
             guard: None,
             parameters: Vec::new(),
@@ -1323,7 +1323,7 @@ impl Environment<'_> {
         if let Some(request) = graph.requests.get(self.current_context(graph).request)
             && request.kind == QuestionKind::Check
             && let Some(declaration) = self
-                .inputs
+                .indexes.inputs
                 .law()
                 .declarations
                 .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -1333,7 +1333,7 @@ impl Environment<'_> {
             // 有限族の実rowは、通常の適用wrapperがguardを先に評価する。
             // 内側bodyの全称評価へ同じguardを取り込み直さない。
             plan.guard = match guard {
-                Some(g) if self.finite_family_guard_source(graph,self.inputs.law().exprs[*g].span)? => None,
+                Some(g) if self.finite_family_guard_source(graph,self.indexes.inputs.law().exprs[*g].span)? => None,
                 _ => *guard,
             };
         }
@@ -1353,7 +1353,7 @@ impl Environment<'_> {
     ) -> Result<(), ValidationFailure> {
         loop {
             self.tick()?;
-            let expression = &self.inputs.law().exprs[plan.body];
+            let expression = &self.indexes.inputs.law().exprs[plan.body];
             let ExprKind::Quant {
                 var,
                 split:
@@ -1367,7 +1367,7 @@ impl Environment<'_> {
                 break;
             };
             let ty = self
-                .inputs
+                .indexes.inputs
                 .law()
                 .quantifier_types
                 .get(plan.body)
@@ -1399,8 +1399,8 @@ impl Environment<'_> {
         context: AnalysisContext,
         run: impl FnOnce() -> Result<T, E>,
     ) -> Result<T, E> {
-        self.validation_session(|| {
-            let old = self.universal_context.scoped(Some(context));
+        self.state.validation_session(&self.results, || {
+            let old = self.state.universal_context.scoped(Some(context));
             let result = run();
             old.restore();
             result
@@ -1412,7 +1412,7 @@ impl Environment<'_> {
         ty: &Type,
     ) -> Result<bool, ValidationFailure> {
         Ok(number(ty).is_some()
-            || !super::super::finite::supported(ty, self.inputs.law(), &self.control)?)
+            || !super::super::finite::supported(ty, self.indexes.inputs.law(), &self.control)?)
     }
     fn universal_opaque_constant(
         &self,
@@ -1437,7 +1437,7 @@ impl Environment<'_> {
         &self,
         id: usize,
     ) -> Result<bool, ValidationFailure> {
-        Ok(match &self.inputs.law().exprs[id].kind {
+        Ok(match &self.indexes.inputs.law().exprs[id].kind {
             ExprKind::SetComp { .. } => true,
             ExprKind::Quant {
                 split:
@@ -1448,7 +1448,7 @@ impl Environment<'_> {
                 ..
             } => true,
             ExprKind::Quant { .. } => !self.universal_symbolic_type(
-                self.inputs.law().quantifier_types[id]
+                self.indexes.inputs.law().quantifier_types[id]
                     .as_ref()
                     .ok_or("量化元型がない")?,
             )?,
@@ -1524,7 +1524,7 @@ impl Environment<'_> {
             self.universal_source_with_context(graph, span, bindings)?
         };
         let mut parameters = Vec::new();
-        let law = self.inputs.law();
+        let law = self.indexes.inputs.law();
         let declaration = law
             .declarations
             .values()
@@ -1576,14 +1576,14 @@ impl Environment<'_> {
         self.validation_graph_session(graph, || {
             self.tick()?;
             let context = self.current_context(graph);
-            let cutoff = self.cutoff.get().min(graph.nodes.len());
+            let cutoff = self.state.cutoff.get().min(graph.nodes.len());
             let active = self
-                .universal_context
+                .state.universal_context
                 .borrow()
                 .clone()
                 .ok_or("全域sourceの分析Contextがない")?;
             let cached = self
-                .cache
+                .results.cache
                 .borrow()
                 .universal_sources
                 .iter()
@@ -1597,7 +1597,7 @@ impl Environment<'_> {
             }
             let value = self.universal_uncached_source(graph, span, bindings)?;
             self.tick()?;
-            self.cache.borrow_mut().universal_sources.push((
+            self.results.cache.borrow_mut().universal_sources.push((
                 context,
                 cutoff,
                 span,
@@ -1624,17 +1624,17 @@ impl Environment<'_> {
         forms: Option<&mut Option<Vec<affine::Form>>>,
     ) -> Result<SourceAnalysis, ValidationFailure> {
         let context = self.current_context(graph);
-        let previous = self.scoped_context.scoped(Some(context));
-        let previous_completion = self.completion_values.scoped(Vec::new());
+        let previous = self.state.scoped_context.scoped(Some(context));
+        let previous_completion = self.state.completion_values.scoped(Vec::new());
         let result = (|| {
             if let Some(case) = context.case {
-                *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                *self.state.completion_values.borrow_mut() = self.completion_values(graph, case)?;
             }
             let mut analysis = self.analyze_source_with_guard(graph, span, bindings, forms)?;
             // 同じslotの相関を既存族で消去できた場合だけ元bodyの値を確定する。
             // 元の読取り・欠測・Scopeは保持し、観測値は補わない。
             let plan = self
-                .universal_context
+                .state.universal_context
                 .borrow()
                 .as_ref()
                 .map(|c| c.plan.clone());
@@ -1642,7 +1642,7 @@ impl Environment<'_> {
                 && !analysis.condition_failed
                 && !analysis.condition_pending
                 && let Some(plan) = plan
-                && span == self.inputs.law().exprs[plan.body].span
+                && span == self.indexes.inputs.law().exprs[plan.body].span
                 && let Some(source) = self.universal_parameter_equation(graph, &plan, bindings)?
                 && source.ring.symbols.iter().any(|s| s.value.is_none())
                 && source.difference.parameters.is_empty()
@@ -1696,7 +1696,7 @@ impl Environment<'_> {
         domains: &[NodeRef],
         bindings: &[Binding],
     ) -> Result<UniversalAnalysis, ValidationFailure> {
-        let previous = self.context.scoped(Some(graph.context_at(template.0)));
+        let previous = self.state.context.scoped(Some(graph.context_at(template.0)));
         let result = (|| {
             let plan = self.universal_plan_at(graph, template, bindings)?;
             self.universal_check_domains(graph, template, domains, &plan)?;
@@ -1716,7 +1716,7 @@ impl Environment<'_> {
                         .map(|guard| {
                             self.universal_source_with_guard(
                                 graph,
-                                self.inputs.law().exprs[guard].span,
+                                self.indexes.inputs.law().exprs[guard].span,
                                 bindings,
                                 Some(&mut guard_forms),
                             )
@@ -1748,7 +1748,7 @@ impl Environment<'_> {
                     }
                     let mut analysis = self.universal_uncached_source(
                         graph,
-                        self.inputs.law().exprs[plan.body].span,
+                        self.indexes.inputs.law().exprs[plan.body].span,
                         bindings,
                     )?;
                     let predicate = analysis.comparison.as_ref();
@@ -1782,7 +1782,7 @@ impl Environment<'_> {
                     };
                     let comparison_expression = predicate.map(|predicate| predicate.expression);
                     let comparison = comparison_expression.and_then(|id| {
-                        match self.inputs.law().exprs[id].kind {
+                        match self.indexes.inputs.law().exprs[id].kind {
                             ExprKind::Binary { lhs, rhs, .. } => Some((lhs, rhs)),
                             _ => None,
                         }
@@ -1944,7 +1944,7 @@ impl Environment<'_> {
             }
         }
         let span = self.expression_span(graph, original)?;
-        let old_context = self.context.scoped(Some(graph.context_at(original.0)));
+        let old_context = self.state.context.scoped(Some(graph.context_at(original.0)));
         let result = self.with_universal_graph(
             graph,
             self.universal_graph_context(graph, &plan, template, domains, Vec::new())?,
@@ -2022,7 +2022,7 @@ impl Environment<'_> {
     ) -> Result<(), ValidationFailure> {
         let span = self.expression_span(graph, original)?;
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .values()
@@ -2067,7 +2067,7 @@ impl Environment<'_> {
         };
         let span = self.expression_span(graph, original)?;
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .values()
@@ -2077,7 +2077,7 @@ impl Environment<'_> {
             Signature::Law { params, .. } | Signature::View { params, .. } => params,
             _ => return Err("具体反例の元署名が違う".into()),
         };
-        let previous = self.context.scoped(Some(graph.context_at(original.0)));
+        let previous = self.state.context.scoped(Some(graph.context_at(original.0)));
         let result = self.with_universal_graph(
             graph,
             self.universal_graph_context(graph, &plan, template, domains, Vec::new())?,
@@ -2136,7 +2136,7 @@ impl Environment<'_> {
                                 if local == name {
                                     match origin {
                                         LexicalOrigin::Universal(id) => {
-                                            match &self.inputs.law().exprs[*id].kind {
+                                            match &self.indexes.inputs.law().exprs[*id].kind {
                                                 ExprKind::Quant { var, .. } => Some(var.span),
                                                 _ => None,
                                             }
@@ -2189,11 +2189,11 @@ impl Environment<'_> {
         template: NodeRef,
         bindings: &[Binding],
     ) -> Result<UniversalPlan, ValidationFailure> {
-        let previous = self.context.scoped(Some(graph.context_at(template.0)));
+        let previous = self.state.context.scoped(Some(graph.context_at(template.0)));
         let result = (|| {
             let raw = self.universal_raw_body(graph, template)?;
             let span = self.expression_span(graph, raw)?;
-            let id = *self.inputs.law().program.expressions
+            let id = *self.indexes.inputs.law().program.expressions
                 .get(&span)
                 .ok_or("全域templateの元ASTがない")?;
             let request = graph

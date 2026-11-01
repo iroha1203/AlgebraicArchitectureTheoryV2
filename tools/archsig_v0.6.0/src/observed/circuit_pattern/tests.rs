@@ -615,7 +615,7 @@ fn four_stops_keep_complete_pattern_nodes_and_the_exact_original_context_prefix(
                 Err(ValidationFailure::Stop(_))
             ));
             assert_eq!(g.active, initial.active);
-            assert!(env.architecture_ref().is_none());
+            assert!(env.state.architecture_ref().is_none());
             assert!(g.nodes.len() <= full.nodes.len());
             for (i, n) in g.nodes.iter().enumerate() {
                 assert_eq!(

@@ -487,7 +487,7 @@ fn four_stops_keep_finished_frames_instances_and_body_prefix_and_restore_context
                     full.nodes[i].wire(i, &full.nodes[..i])
                 );
             }
-            assert!(env.architecture_ref().is_none());
+            assert!(env.state.architecture_ref().is_none());
             assert_eq!(g.contexts, &full.contexts[..g.contexts.len()]);
             assert_eq!(g.instances, &full.instances[..g.instances.len()]);
             frame_prefix |= g.nodes.len() > initial.nodes.len() && g.instances.is_empty();

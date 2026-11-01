@@ -60,7 +60,7 @@ fn analyze(
             _ => None,
         })
         .ok_or("整数局所changeがない")?;
-    let change = &env.inputs.law().declarations[name];
+    let change = &env.indexes.inputs.law().declarations[name];
     let Signature::Change { params, body, .. } = &change.signature else {
         return Err("整数局所changeの署名がない".into());
     };
@@ -96,7 +96,7 @@ fn analyze(
         error
     })?;
     let mut requirements = vec![];
-    for law in env.inputs.law().declarations.values().filter(|d| {
+    for law in env.indexes.inputs.law().declarations.values().filter(|d| {
         d.reading == reading
             && request.declaration().map_or(
                 matches!(
@@ -151,7 +151,7 @@ fn analyze(
     let mut supports = vec![];
     let mut scope = Scope::default();
     for (name, bindings) in &requirements {
-        let declaration = &env.inputs.law().declarations[name];
+        let declaration = &env.indexes.inputs.law().declarations[name];
         let Signature::Law { body, guard, params, .. } = &declaration.signature else {
             return Err("整数局所Lawでない".into());
         };
@@ -389,7 +389,7 @@ pub(super) fn compute(
     .into_iter()
     .map(|(f, _, v)| (f, v))
     .collect::<Vec<_>>();
-    let mut fixed = Environment::try_primitive_valuation(env.inputs, &assignments, c)?
+    let mut fixed = Environment::try_primitive_valuation(env.indexes.inputs, &assignments, c)?
         .ok_or("整数局所系の元代入が不適合")?;
     fixed.select_local_object(&witness, c)?;
     let mut pending = change_affine::Pending::default();
@@ -476,7 +476,7 @@ pub(super) fn compute(
         let mut laws = vec![];
         let mut expressions = vec![];
         for (name, bindings) in &model.requirements {
-            let declaration = &env.inputs.law().declarations[name];
+            let declaration = &env.indexes.inputs.law().declarations[name];
             let Signature::Law {
                 body, guard, role, ref params,
             } = declaration.signature
@@ -540,7 +540,7 @@ pub(super) fn compute(
             );
         }
         if expressions.is_empty() {
-            let declaration = &env.inputs.law().declarations[&model.change];
+            let declaration = &env.indexes.inputs.law().declarations[&model.change];
             let Signature::Change { body, params, .. } = &declaration.signature else {
                 return Err("change署名がない".into());
             };
@@ -556,7 +556,7 @@ pub(super) fn compute(
             )?);
         }
         let locals = env
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .values()
@@ -573,7 +573,7 @@ pub(super) fn compute(
             for support in &mut supports {
                 support.visible = support.positions.clone();
                 for slot in &support.positions {
-                    let subject = fixed.subject(&slot.snapshot, &slot.subject)?;
+                    let subject = fixed.indexes.subject(&slot.snapshot, &slot.subject)?;
                     let value = Scalar::Subject {
                         snapshot: slot.snapshot.clone(),
                         subject: slot.subject.clone(),
@@ -591,7 +591,7 @@ pub(super) fn compute(
                 if supports.iter().any(|s| s.positions.contains(slot)) {
                     continue;
                 }
-                let subject = fixed.subject(&slot.snapshot, &slot.subject)?;
+                let subject = fixed.indexes.subject(&slot.snapshot, &slot.subject)?;
                 let value = Scalar::Subject {
                     snapshot: slot.snapshot.clone(),
                     subject: slot.subject.clone(),

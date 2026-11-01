@@ -410,7 +410,7 @@ fn interrupt_keeps_the_completed_graph_prefix_and_original_request_context() {
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.active, initial.active);
-        assert!(env.architecture_ref().is_none());
+        assert!(env.state.architecture_ref().is_none());
         assert!(g.nodes.len() <= full.nodes.len());
         for (i, n) in g.nodes.iter().enumerate() {
             assert_eq!(

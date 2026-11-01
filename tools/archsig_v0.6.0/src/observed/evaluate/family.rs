@@ -23,7 +23,7 @@ impl Evaluator<'_, '_> {
         parameters: &[Param],
         scope: &Scope,
     ) -> Result<NodeRef, Failure> {
-        let span = self.environment.inputs.law().exprs[id].span;
+        let span = self.environment.indexes.inputs.law().exprs[id].span;
         self.push(Node {
             ty: NodeType::Expression(Type::Bool),
             payload: Some(Payload::Expression {
@@ -387,12 +387,12 @@ impl Evaluator<'_, '_> {
         let evaluation = self.push_law_evaluation(Node {
             ty: NodeType::Evaluation(Type::Bool),
             payload: Some(Payload::Evaluation {
-                environment: self.environment.architecture_ref(),
+                environment: self.environment.state.architecture_ref(),
                 expression: source,
                 bindings: fixed_bindings,
                 parts: vec![Part {
                     location: Location::Law {
-                        span: self.environment.inputs.law().exprs[body].span,
+                        span: self.environment.indexes.inputs.law().exprs[body].span,
                     },
                     value: scalar,
                     residual: None,
@@ -471,7 +471,7 @@ impl Evaluator<'_, '_> {
         guard: &Evaluated,
     ) -> Result<Answer, Failure> {
         let body = self.source(
-            self.environment.inputs.law().exprs[body_id].span,
+            self.environment.indexes.inputs.law().exprs[body_id].span,
             Type::Bool,
         )?;
         let instance = self.push(Node {
@@ -510,13 +510,13 @@ impl Evaluator<'_, '_> {
         let evaluation = self.push_law_evaluation(Node {
             ty: NodeType::Evaluation(Type::Bool),
             payload: Some(Payload::Evaluation {
-                environment: self.environment.architecture_ref(),
+                environment: self.environment.state.architecture_ref(),
                 expression: body.expression,
                 bindings: self.bindings.clone(),
                 parts: vec![
                     Part {
                         location: Location::Law {
-                            span: self.environment.inputs.law().exprs[guard_id].span,
+                            span: self.environment.indexes.inputs.law().exprs[guard_id].span,
                         },
                         value: guard.value,
                         residual: guard.residual,
@@ -524,7 +524,7 @@ impl Evaluator<'_, '_> {
                     },
                     Part {
                         location: Location::Law {
-                            span: self.environment.inputs.law().exprs[body_id].span,
+                            span: self.environment.indexes.inputs.law().exprs[body_id].span,
                         },
                         value: None,
                         residual: None,

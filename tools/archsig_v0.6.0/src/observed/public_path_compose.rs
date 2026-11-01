@@ -305,7 +305,7 @@ pub(super) fn validate_origin(
 ) -> Result<(), ValidationFailure> {
     if r.kind != QuestionKind::Compose
         || r != &w.request
-        || env.inputs.sources() != w.inputs.sources()
+        || env.indexes.inputs.sources() != w.inputs.sources()
         || !origin_ref(env, graph, selector(r, "head")?, w.left)?
         || !origin_ref(env, graph, selector(r, "then")?, w.right)?
     {

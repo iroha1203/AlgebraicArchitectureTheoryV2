@@ -19,7 +19,7 @@ pub(super) fn compute(
     .into_iter()
     .map(|(f, _, v)| (f, v))
     .collect::<Vec<_>>();
-    let mut fixed = Environment::try_primitive_valuation(env.inputs, &assignments, c)?
+    let mut fixed = Environment::try_primitive_valuation(env.indexes.inputs, &assignments, c)?
         .ok_or("有限局所系の元Architectureが不適合")?;
     fixed.select_local_object(&witness, c)?;
     let (model, missing) = finite_model::analyze(env, &fixed, g, &witness, request, c)?;
@@ -32,7 +32,7 @@ pub(super) fn compute(
                 _ => None,
             })
             .ok_or("欠測した局所change名がない")?;
-        let declaration = &env.inputs.law().declarations[using];
+        let declaration = &env.indexes.inputs.law().declarations[using];
         let Signature::Change { params, body, .. } = &declaration.signature else {
             return Err("局所changeの署名がない".into());
         };

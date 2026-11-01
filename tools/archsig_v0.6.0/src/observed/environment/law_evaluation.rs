@@ -36,10 +36,10 @@ impl Environment<'_> {
         // guardが全域で真、または正確な適用fiberと型付き残差の全域表示を持つ
         // 場合に、その本文を構成できる。後者はguardの真偽を確定しない。固定Architectureの読取りはこの全域計算の
         // 入力であり、未観測値や一つのparameter代入を真として補完しない。
-        if let Some(inputs) = frames::instance_inputs(graph, index, self.cutoff.get().min(graph.nodes.len()))?
+        if let Some(inputs) = frames::instance_inputs(graph, index, self.state.cutoff.get().min(graph.nodes.len()))?
             && let Some(guard) = inputs.origin.guard
         {
-            let law = self.inputs.law();
+            let law = self.indexes.inputs.law();
             let body = law.exprs.get(inputs.origin.body).ok_or("元Law body式がない")?.span;
             let guard_span = law.exprs.get(guard).ok_or("元Law guard式がない")?.span;
             if body.0 <= span.0 && span.1 <= body.1 {
@@ -61,7 +61,7 @@ impl Environment<'_> {
             }
         }
         let (allowed, guard) =
-            frames::body_guard(graph, index, span, self.cutoff.get().min(graph.nodes.len()))?;
+            frames::body_guard(graph, index, span, self.state.cutoff.get().min(graph.nodes.len()))?;
         if let Some(guard) = guard {
             self.validate_at(graph, graph.get(guard)?, guard.0)?;
             let Some(Payload::Evaluation { value, .. }) = &graph.get(guard)?.payload else {
@@ -78,7 +78,7 @@ impl Environment<'_> {
     ) -> Result<(), ValidationFailure> {
         if let Some(index) = self.current_context(graph).instance {
             let span = self
-                .inputs
+                .indexes.inputs
                 .law()
                 .exprs
                 .get(expression)
@@ -98,7 +98,7 @@ impl Environment<'_> {
         bindings: &[Binding],
     ) -> Result<Option<SourceAnalysis>, ValidationFailure> {
         let Some(inputs) =
-            frames::instance_inputs(graph, index, self.cutoff.get().min(graph.nodes.len()))?
+            frames::instance_inputs(graph, index, self.state.cutoff.get().min(graph.nodes.len()))?
         else {
             return Ok(None);
         };
@@ -109,7 +109,7 @@ impl Environment<'_> {
             || inputs.bindings != bindings
             || inputs.origin.body_allowed
             || self
-                .inputs
+                .indexes.inputs
                 .law()
                 .exprs
                 .get(inputs.origin.body)
@@ -126,12 +126,12 @@ impl Environment<'_> {
             // 全域templateのSourceは実guard評価より先に保持される。元guardを
             // 全parameter上で再計算し、falseの場合だけ値のないbodyを保持する。
             let guard = self.universal_template_source_analysis(graph, &plan,
-                self.inputs.law().exprs[guard].span, bindings)?;
+                self.indexes.inputs.law().exprs[guard].span, bindings)?;
             guard.analysis.known_value == Some(Scalar::Bool(false))
         } else { false };
         if !universal_false {
             let (allowed, guard) =
-                frames::body_guard(graph, index, span, self.cutoff.get().min(graph.nodes.len()))?;
+                frames::body_guard(graph, index, span, self.state.cutoff.get().min(graph.nodes.len()))?;
             let guard = guard.ok_or("未評価bodyの前に実guardがない")?;
             self.validate_at(graph, graph.get(guard)?, guard.0)?;
             let Some(Payload::Evaluation { value, .. }) = &graph.get(guard)?.payload else {
@@ -142,7 +142,7 @@ impl Environment<'_> {
             }
         }
         let mut scope = inputs.origin.scope;
-        scope.merge(&self.architecture_scope());
+        scope.merge(&self.state.architecture_scope());
         Ok(Some(SourceAnalysis {
             condition_failed: false,
             condition_pending: false,
@@ -179,7 +179,7 @@ impl Environment<'_> {
         index: usize,
     ) -> Result<Option<FrameInputs>, ValidationFailure> {
         self.tick()?;
-        let limit = self.cutoff.get().min(graph.nodes.len());
+        let limit = self.state.cutoff.get().min(graph.nodes.len());
         let Some(inputs) = frames::instance_inputs(graph, index, limit)? else {
             return Ok(None);
         };
@@ -216,7 +216,7 @@ impl Environment<'_> {
                 },
             );
         }
-        let declaration = self.inputs.law().declarations.get(&inputs.origin.declaration)
+        let declaration = self.indexes.inputs.law().declarations.get(&inputs.origin.declaration)
             .ok_or("元Lawの宣言がない")?;
         if let crate::law::model::Signature::Law { params, .. } = &declaration.signature {
             for parameter in params {

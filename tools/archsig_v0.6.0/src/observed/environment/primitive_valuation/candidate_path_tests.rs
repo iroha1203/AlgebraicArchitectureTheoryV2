@@ -39,13 +39,13 @@ fn body(i: &CheckedInputs, name: &str) -> usize {
 fn arrow(
     e: &Environment<'_>,
 ) -> Result<super::super::internal_path::PathResult, ValidationFailure> {
-    e.internal_path(body(e.inputs, "Walk.step"), &[reference("Paths.Hop", "e")])
+    e.internal_path(body(e.indexes.inputs, "Walk.step"), &[reference("Paths.Hop", "e")])
 }
 fn correspondence(
     e: &Environment<'_>,
 ) -> Result<super::super::internal_path::PathResult, ValidationFailure> {
     e.internal_path(
-        body(e.inputs, "Reservations.step"),
+        body(e.indexes.inputs, "Reservations.step"),
         &[reference("Reservations.Migration", "m")],
     )
 }

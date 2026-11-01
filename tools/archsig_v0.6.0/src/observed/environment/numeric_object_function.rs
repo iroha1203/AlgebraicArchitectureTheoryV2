@@ -173,10 +173,10 @@ fn expression_inner(
         ));
     }
     let mut env = Environment::new(inputs, c).map_err(ConstructionFailure::from)?;
-    env.object = Some(Arc::new(
+    env.indexes.object = Some(Arc::new(
         ObjectDomain::from_readings(inputs, readings, position.object, c).map_err(invalid)?,
     ));
-    env.object_instance = Some(row);
+    env.indexes.object_instance = Some(row);
     let mut bindings = fixed_bindings(row, c).map_err(invalid)?;
     for (name, value) in assignments {
         c.checkpoint(Checkpoint::ObjectViewTransportFamily)

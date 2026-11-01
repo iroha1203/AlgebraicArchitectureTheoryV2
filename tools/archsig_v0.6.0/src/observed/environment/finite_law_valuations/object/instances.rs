@@ -163,10 +163,10 @@ fn populate_with_environment(
         fixed.extend(original.bindings().iter().map(|b| b.subject()));
         for position in fixed {
             tick(c)?;
-            let subject = env.subject(&position.snapshot, &position.subject)?;
+            let subject = env.indexes.subject(&position.snapshot, &position.subject)?;
             entry
                 .scope
-                .merge(&env.scope(subject, result.selection.identity().reading(), None)?);
+                .merge(&env.indexes.scope(subject, result.selection.identity().reading(), None)?);
             entry.support.push(position.clone());
         }
         entry.support.sort();
@@ -274,7 +274,7 @@ fn populate_with_environment(
                     original.bindings().iter().find(|b| b.parameter() == p)
                 {
                     let f = binding.subject();
-                    let subject = env.subject(&f.snapshot, &f.subject)?;
+                    let subject = env.indexes.subject(&f.snapshot, &f.subject)?;
                     Scalar::Subject {
                         snapshot: f.snapshot.clone(),
                         subject: f.subject.clone(),

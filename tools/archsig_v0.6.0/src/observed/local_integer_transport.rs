@@ -77,8 +77,8 @@ impl<'a> Renaming<'a> {
                 return Ok(false);
             }
             if let Some(name) = &source.field {
-                let sf = env.field(&source.snapshot, &source.subject, name)?;
-                let tf = env.field(&image.snapshot, &image.subject, name)?;
+                let sf = env.indexes.field(&env.state, &source.snapshot, &source.subject, name)?;
+                let tf = env.indexes.field(&env.state, &image.snapshot, &image.subject, name)?;
                 let (Slot::Known { value: x, .. }, Slot::Known { value: y, .. }) =
                     (&sf.slot, &tf.slot)
                 else {
@@ -418,7 +418,7 @@ pub(in crate::observed::local_result) fn between(
     {
         return Ok(None);
     }
-    let Some(rename) = Renaming::operation(g, env.inputs.law(), along, c)? else {
+    let Some(rename) = Renaming::operation(g, env.indexes.inputs.law(), along, c)? else {
         return Ok(None);
     };
     if !rename.positions(env, &l.fixed_positions, &r.fixed_positions, true, c)? {

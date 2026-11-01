@@ -197,13 +197,13 @@ pub(super) fn source_expression(
     parameters: &[(String, Type)],
 ) -> Result<NodeRef, ValidationFailure> {
     let ast = environment
-        .inputs
+        .indexes.inputs
         .law()
         .exprs
         .get(expression)
         .ok_or("changeの元式がない")?;
     let ty = environment
-        .inputs
+        .indexes.inputs
         .law()
         .expr_type(expression)
         .ok_or("changeの元式型がない")?
@@ -386,7 +386,7 @@ pub(super) fn render_search(
             }
         })
         .ok_or("change名がない")?;
-    let declaration = &env.inputs.law().declarations[change_name];
+    let declaration = &env.indexes.inputs.law().declarations[change_name];
     let Signature::Change { params, guard, .. } = &declaration.signature else {
         return Err("change署名がない".into());
     };
@@ -410,7 +410,7 @@ pub(super) fn render_search(
     let mut requirements = vec![];
     for (name, bindings) in &search.requirements {
         c.checkpoint(Checkpoint::PrimitiveValuation)?;
-        let law = &env.inputs.law().declarations[name];
+        let law = &env.indexes.inputs.law().declarations[name];
         let Signature::Law {
             role, body, guard, params: law_params,
         } = &law.signature
@@ -572,7 +572,7 @@ pub(super) fn render_search(
     let mut state_types = vec![];
     let mut state_args = vec![architecture.reference];
     for slot in slots {
-        let subject = env.subject(&slot.snapshot, &slot.subject)?;
+        let subject = env.indexes.subject(&slot.snapshot, &slot.subject)?;
         let r = value(
             &mut b,
             &Scalar::Subject {
@@ -583,7 +583,7 @@ pub(super) fn render_search(
         )?;
         state_args.push(r);
         let field = slot.field.as_ref().ok_or("更新slotのfieldがない")?;
-        state_types.push(env.field(&slot.snapshot, &slot.subject, field)?.ty.erase());
+        state_types.push(env.indexes.field(&env.state, &slot.snapshot, &slot.subject, field)?.ty.erase());
         slot_values.push(Json::obj([
             ("subject", r.wire()),
             ("field", Json::str(field)),
@@ -880,7 +880,7 @@ pub(super) fn render_search(
             conditions.push(member);
             assignment = Some(parameters);
             for (fact, scalar) in &row.update.values {
-                let subject = env.subject(&fact.snapshot, &fact.subject)?;
+                let subject = env.indexes.subject(&fact.snapshot, &fact.subject)?;
                 let subject = value(
                     &mut b,
                     &Scalar::Subject {
@@ -1063,7 +1063,7 @@ pub(super) fn evaluate(
     let mut architecture =
         architecture_result::build(prepared.shared_inputs(), env, g, request, c)?;
     let producer = architecture.reference;
-    if let Some(reference) = env.architecture_ref() {
+    if let Some(reference) = env.state.architecture_ref() {
         architecture.reference = reference;
     }
     let boundary = Boundary::capture(env, g, producer, vec![architecture.reference], c)?;
@@ -1265,7 +1265,7 @@ pub(super) fn candidate_input(env: &Environment<'_>, g: &Graph, reference: NodeR
     let request=origin.request();
     env.with_request_context(g,request,|| {
         let _selected=env.enter_architecture(g)?;
-        let assignments=env.architecture_values();
+        let assignments=env.state.architecture_values();
         let search=change_search::search(env,g,&d.source.architecture.witness,request,c).map_err(|f|f.cause)?;
         Ok(CandidateInput {architecture:d.source.architecture.reference,witness:d.source.architecture.witness.clone(),assignments,search,
             domain_type:d.projection_type().ok_or("商の候補域の公開型がない")?})

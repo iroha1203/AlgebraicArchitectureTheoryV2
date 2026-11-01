@@ -69,7 +69,7 @@ impl Environment<'_> {
     ) -> Result<Vec<Reason>, ValidationFailure> {
         let mut reasons = graph.get(body)?.reasons.clone();
         if let Some(guard) = plan.guard {
-            let span = self.inputs.law().exprs[guard].span;
+            let span = self.indexes.inputs.law().exprs[guard].span;
             let mut producer = None;
             for (index, node) in graph.nodes.iter().enumerate().take(limit).rev() {
                 self.tick()?;
@@ -200,7 +200,7 @@ impl Environment<'_> {
             }
             for fact in &reason.missing {
                 self.tick()?;
-                let field = self.field(
+                let field = self.indexes.field(&self.state,
                     &fact.snapshot,
                     &fact.subject,
                     fact.field.as_deref().ok_or("数値補完理由に元fieldがない")?,
@@ -217,7 +217,7 @@ impl Environment<'_> {
         let mut expected = Vec::new();
         for (fact, source) in fields {
             self.tick()?;
-            let field = self.field(
+            let field = self.indexes.field(&self.state,
                 &fact.snapshot,
                 &fact.subject,
                 fact.field.as_deref().ok_or("数値補完fieldがない")?,
@@ -653,11 +653,11 @@ impl Environment<'_> {
                 return Err("全域比較producerの元part数が違う".into());
             }
             let span = self.expression_span(graph, *expression)?;
-            let id = *self.inputs.law().program.expressions
+            let id = *self.indexes.inputs.law().program.expressions
                 .get(&span)
                 .ok_or("全域比較producerの元ASTがない")?;
             let children = &parts[0].children;
-            current = match &self.inputs.law().exprs[id].kind {
+            current = match &self.indexes.inputs.law().exprs[id].kind {
                 ExprKind::Binary { op: BinOp::Eq, .. } if children.len() == 2 => {
                     return Ok((*expression, children[0], children[1]));
                 }
@@ -697,7 +697,7 @@ impl Environment<'_> {
                 return Err("全域反例の元body producerがEvaluationでない".into());
             };
             let span = self.expression_span(graph, *expression)?;
-            let id = *self.inputs.law().program.expressions
+            let id = *self.indexes.inputs.law().program.expressions
                 .get(&span)
                 .ok_or("全域反例の元body ASTがない")?;
             if id == plan.body {
@@ -708,7 +708,7 @@ impl Environment<'_> {
                 }
                 return Ok(*expression);
             }
-            if !matches!(self.inputs.law().exprs[id].kind, ExprKind::Quant { .. })
+            if !matches!(self.indexes.inputs.law().exprs[id].kind, ExprKind::Quant { .. })
                 || parts.len() != 1
                 || parts[0].children.len() != 1
             {
@@ -733,7 +733,7 @@ impl Environment<'_> {
             return Ok(());
         }
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -772,7 +772,7 @@ impl Environment<'_> {
             let Selector::Subject { snapshot, subject } = &selected.value else {
                 return Err("全域固定selectorがsubjectでない".into());
             };
-            let original = self.subject(snapshot, subject)?;
+            let original = self.indexes.subject(snapshot, subject)?;
             if binding.name != parameter.name
                 || binding.ty != parameter.ty.erase()
                 || graph.scalar(binding.value)?
@@ -836,7 +836,7 @@ impl Environment<'_> {
         if analysis.guard_value == Some(false) {
             let guard = plan.guard.ok_or("全域false guardに元guardがない")?;
             if steps.len() != 1
-                || self.expression_span(graph, steps[0])? != self.inputs.law().exprs[guard].span
+                || self.expression_span(graph, steps[0])? != self.indexes.inputs.law().exprs[guard].span
             {
                 return Err("全域非適用の固定logic stepsが違う".into());
             }
@@ -909,7 +909,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         let (span, _) = self.universal_source_fields(graph, header)?;
-        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         let (_, fixed) = self.universal_source_fields(graph, template)?;
@@ -1059,7 +1059,7 @@ impl Environment<'_> {
             .requests
             .get(self.current_context(graph).request)
             .ok_or("全域含意元Requestがない")?;
-        let body_id = *self.inputs.law().program.expressions
+        let body_id = *self.indexes.inputs.law().program.expressions
             .get(&body_span)
             .ok_or("全域含意元body ASTがない")?;
         let plan = self
@@ -1084,7 +1084,7 @@ impl Environment<'_> {
             .universal_template_source_analysis(
                 graph,
                 &plan,
-                self.inputs.law().exprs[guard].span,
+                self.indexes.inputs.law().exprs[guard].span,
                 bindings,
             )?
             .analysis;
@@ -1103,7 +1103,7 @@ impl Environment<'_> {
             None
         };
         if let Some(guard_source) = guard_source
-            && (self.expression_span(graph, guard_source)? != self.inputs.law().exprs[guard].span
+            && (self.expression_span(graph, guard_source)? != self.indexes.inputs.law().exprs[guard].span
                 || self.universal_source_fields(graph, guard_source)?.1 != bindings)
         {
             return Err("全域含意の元guardが違う".into());
@@ -1161,7 +1161,7 @@ impl Environment<'_> {
         let (plan, domains, analysis) = self.universal_reanalysis(graph, template, limit)?;
         let (lhs, rhs) = analysis.comparison.ok_or("全域差に元比較がない")?;
         let ty = self
-            .inputs
+            .indexes.inputs
             .law()
             .expr_type(lhs)
             .ok_or("全域差元数値型がない")?
@@ -1181,7 +1181,7 @@ impl Environment<'_> {
         if children != [left_producer, right_producer]
             || analysis
                 .comparison_expression
-                .is_none_or(|id| self.inputs.law().exprs[id].span != comparison_span)
+                .is_none_or(|id| self.indexes.inputs.law().exprs[id].span != comparison_span)
         {
             return Err("全域差が最終比較の実producerを消費していない".into());
         }
@@ -1602,7 +1602,7 @@ impl Environment<'_> {
         let comparison = analysis
             .comparison_expression
             .ok_or("全域差評価の元Eqがない")?;
-        let span = self.inputs.law().exprs[comparison].span;
+        let span = self.indexes.inputs.law().exprs[comparison].span;
         let normal_form = analysis
             .difference
             .as_ref()
@@ -1676,7 +1676,7 @@ impl Environment<'_> {
             let part = &parts[0];
             if part.location
                 != (Location::Law {
-                    span: self.inputs.law().exprs[guard].span,
+                    span: self.indexes.inputs.law().exprs[guard].span,
                 })
                 || part.children.len() != 1
                 || part.residual.is_some()
@@ -2286,7 +2286,7 @@ impl Environment<'_> {
             let comparison_span = self.expression_span(graph, comparison_source)?;
             if analysis
                 .comparison_expression
-                .is_none_or(|id| self.inputs.law().exprs[id].span != comparison_span)
+                .is_none_or(|id| self.indexes.inputs.law().exprs[id].span != comparison_span)
             {
                 return Err("全域具体反例の元最終比較producerが違う".into());
             }
@@ -2398,7 +2398,7 @@ impl Environment<'_> {
         let declaration_name=self.current_context(graph).instance
             .map(|index|self.instance_source_declaration(graph,index)).transpose()?.flatten()
             .or_else(||request.declaration().map(str::to_owned)).ok_or("全域LawInstanceの元宣言名がない")?;
-        let declaration=self.inputs.law().declarations.get(&declaration_name)
+        let declaration=self.indexes.inputs.law().declarations.get(&declaration_name)
             .ok_or("全域LawInstance元宣言がない")?;
         let Signature::Law {
             body: original,
@@ -2421,11 +2421,11 @@ impl Environment<'_> {
                 != (Location::Law {
                     span: declaration.span,
                 })
-            || self.expression_span(graph, body)? != self.inputs.law().exprs[*original].span
+            || self.expression_span(graph, body)? != self.indexes.inputs.law().exprs[*original].span
             || guard
                 .map(|guard| self.expression_span(graph, guard))
                 .transpose()?
-                != original_guard.map(|guard| self.inputs.law().exprs[guard].span)
+                != original_guard.map(|guard| self.indexes.inputs.law().exprs[guard].span)
             || node.arguments
                 != std::iter::once(evaluation)
                     .chain(bindings.iter().map(|binding| binding.value))
@@ -2482,7 +2482,7 @@ impl Environment<'_> {
         {
             return Err("全域命題の元Law・Scope・理由・判断が違う".into());
         }
-        let (plan, _, analysis) = self.universal_reanalysis(graph, template, self.cutoff.get())?;
+        let (plan, _, analysis) = self.universal_reanalysis(graph, template, self.state.cutoff.get())?;
         let pair = analysis.value.is_none()
             && (plan.guard.is_none() || analysis.guard_value == Some(true))
             && analysis
@@ -2566,7 +2566,7 @@ impl Environment<'_> {
                 location: Location::Law { span },
                 ..
             }) = &graph.get(source)?.payload
-            && self.inputs.law().program.expressions
+            && self.indexes.inputs.law().program.expressions
                 .get(span)
                 .map(|id| self.universal_finite_syntax(*id))
                 .transpose()?
@@ -2721,7 +2721,7 @@ impl Environment<'_> {
             return Err("全域値Answerの判断・証拠が違う".into());
         }
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -2760,7 +2760,7 @@ impl Environment<'_> {
             let Selector::Subject { snapshot, subject } = &argument.value else {
                 return Err("全域Answer固定selectorがsubjectでない".into());
             };
-            let original = self.subject(snapshot, subject)?;
+            let original = self.indexes.subject(snapshot, subject)?;
             if graph.scalar(binding.value)?
                 != &(Scalar::Subject {
                     snapshot: snapshot.clone(),
@@ -2781,10 +2781,10 @@ impl Environment<'_> {
         span: (usize, usize),
     ) -> Result<bool, ValidationFailure> {
         let enclosed = |span: (usize, usize)| -> Result<bool, ValidationFailure> {
-            for (id, expression) in self.inputs.law().exprs.iter().enumerate() {
+            for (id, expression) in self.indexes.inputs.law().exprs.iter().enumerate() {
                 self.tick()?;
-                if self.inputs.law().program.expressions.get(&expression.span) == Some(&id)
-                    && self.inputs.law().expr_type(id).is_some()
+                if self.indexes.inputs.law().program.expressions.get(&expression.span) == Some(&id)
+                    && self.indexes.inputs.law().expr_type(id).is_some()
                     && self.universal_finite_syntax(id)?
                     && expression.span.0 <= span.0
                     && span.1 <= expression.span.1
@@ -2811,7 +2811,7 @@ impl Environment<'_> {
                 .get(index)
                 .ok_or("有限全域の元call frameがない")?;
             if frame.caller.frame.is_some_and(|parent| parent >= index)
-                || frame.source.0 >= self.cutoff.get().min(graph.nodes.len())
+                || frame.source.0 >= self.state.cutoff.get().min(graph.nodes.len())
             {
                 return Err("有限全域の元callが先行しない".into());
             }
@@ -2946,7 +2946,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         let ExprKind::Quant {
@@ -2956,11 +2956,11 @@ impl Environment<'_> {
                     ..
                 },
             ..
-        } = &self.inputs.law().exprs[id].kind
+        } = &self.indexes.inputs.law().exprs[id].kind
         else {
             return Ok(None);
         };
-        let ty = self.inputs.law().quantifier_types[id]
+        let ty = self.indexes.inputs.law().quantifier_types[id]
             .as_ref()
             .ok_or("無限型量化の元型がない")?;
         if number(ty).is_some() || !self.universal_symbolic_type(ty)? {
@@ -3063,7 +3063,7 @@ impl Environment<'_> {
             ));
         };
         if self.finite_family_guard_source(graph,*span)? {return Ok(false)}
-        let Some(&id) = self.inputs.law().program.expressions.get(span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(span) else {
             return Ok(false);
         };
         let Some(request) = self.universal_source_request(graph, *span, bindings)? else {
@@ -3072,7 +3072,7 @@ impl Environment<'_> {
         if self.universal_finite_template(graph, request, *span, bindings)? {
             return Ok(false);
         }
-        if let Some(declaration) = request.declaration().and_then(|name| self.inputs.law().declarations.get(name))
+        if let Some(declaration) = request.declaration().and_then(|name| self.indexes.inputs.law().declarations.get(name))
             && let Signature::Law { body, .. } = &declaration.signature
             && self
                 .universal_quantifier_plan(graph, *body, bindings)?
@@ -3080,7 +3080,7 @@ impl Environment<'_> {
                     plan.template_span == *span
                         || plan
                             .guard
-                            .is_some_and(|guard| self.inputs.law().exprs[guard].span == *span)
+                            .is_some_and(|guard| self.indexes.inputs.law().exprs[guard].span == *span)
                 })
         {
             return Ok(true);
@@ -3091,7 +3091,7 @@ impl Environment<'_> {
                 plan.template_span == *span
                     || plan
                         .guard
-                        .is_some_and(|guard| self.inputs.law().exprs[guard].span == *span)
+                        .is_some_and(|guard| self.indexes.inputs.law().exprs[guard].span == *span)
             })
         {
             return Ok(true);
@@ -3130,7 +3130,7 @@ impl Environment<'_> {
             return Ok(false);
         }
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -3144,8 +3144,8 @@ impl Environment<'_> {
         else {
             return Ok(false);
         };
-        if self.inputs.law().exprs[*body].span != span
-            && guard.map(|guard| self.inputs.law().exprs[guard].span) != Some(span)
+        if self.indexes.inputs.law().exprs[*body].span != span
+            && guard.map(|guard| self.indexes.inputs.law().exprs[guard].span) != Some(span)
         {
             return Ok(false);
         }
@@ -3168,14 +3168,14 @@ impl Environment<'_> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<bool, ValidationFailure> {
-        if let Some(&id) = self.inputs.law().program.expressions.get(&span)
+        if let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span)
             && self
                 .universal_quantifier_plan(graph, id, bindings)?
                 .is_some()
         {
             return Ok(true);
         }
-        for declaration in self.inputs.law().declarations.values() {
+        for declaration in self.indexes.inputs.law().declarations.values() {
             self.tick()?;
             if !(declaration.span.0 <= span.0 && span.1 <= declaration.span.1) {
                 continue;
@@ -3189,8 +3189,8 @@ impl Environment<'_> {
             else {
                 return Ok(false);
             };
-            let guard_span = guard.map(|guard| self.inputs.law().exprs[guard].span);
-            if self.inputs.law().exprs[*body].span != span && guard_span != Some(span) {
+            let guard_span = guard.map(|guard| self.indexes.inputs.law().exprs[guard].span);
+            if self.indexes.inputs.law().exprs[*body].span != span && guard_span != Some(span) {
                 return Ok(false);
             }
             let mut unbound = false;
@@ -3362,8 +3362,8 @@ impl Environment<'_> {
         if node.arguments != expected || *parameters != analyzed.parameters {
             return Err("全域Sourceの元引数・自由parameter順が違う".into());
         }
-        let ty = if let Some(id) = self.inputs.law().program.expressions.get(span) {
-            self.inputs
+        let ty = if let Some(id) = self.indexes.inputs.law().program.expressions.get(span) {
+            self.indexes.inputs
                 .law()
                 .expr_type(*id)
                 .cloned()
@@ -3398,7 +3398,7 @@ impl Environment<'_> {
         source: NodeRef,
         bindings: &[Binding],
     ) -> Result<SourceAnalysis, ValidationFailure> {
-        let previous = self.context.scoped(Some(graph.context_at(evaluation.0)));
+        let previous = self.state.context.scoped(Some(graph.context_at(evaluation.0)));
         let result = (|| {
             let span = self.expression_span(graph, source)?;
             if let Some(template) = self.universal_source_root(graph, source)? {
@@ -3451,12 +3451,12 @@ impl Environment<'_> {
         if self.universal_finite_template(graph, request, span, bindings)? {
             return Ok(None);
         }
-        let id = self.inputs.law().program.expressions.get(&span).copied();
+        let id = self.indexes.inputs.law().program.expressions.get(&span).copied();
         let matches_source = |plan: &UniversalPlan| {
             plan.template_span == span
                 || plan
                     .guard
-                    .is_some_and(|guard| self.inputs.law().exprs[guard].span == span)
+                    .is_some_and(|guard| self.indexes.inputs.law().exprs[guard].span == span)
         };
         let mut plan = self
             .universal_family_plan(graph, request, bindings)?
@@ -3466,7 +3466,7 @@ impl Environment<'_> {
                 .transpose()?
                 .flatten());
         if plan.is_none()
-            && let Some(declaration) = request.declaration().and_then(|name| self.inputs.law().declarations.get(name))
+            && let Some(declaration) = request.declaration().and_then(|name| self.indexes.inputs.law().declarations.get(name))
             && let Signature::Law { body, .. } = &declaration.signature
         {
             plan = self
@@ -3484,7 +3484,7 @@ impl Environment<'_> {
                     .map(|index| self.instance_source_declaration(graph, index)).transpose()?.flatten()
                     .ok_or("全域Sourceの元要求・relation宣言がない")?,
             };
-            let declaration = self.inputs.law().declarations.get(&name).ok_or("全域Source元宣言がない")?;
+            let declaration = self.indexes.inputs.law().declarations.get(&name).ok_or("全域Source元宣言がない")?;
             if !(declaration.span.0 <= span.0 && span.1 <= declaration.span.1) {
                 return Err("全域Sourceの元ASTが別Request宣言に属す".into());
             }
@@ -3527,7 +3527,7 @@ impl Environment<'_> {
             self.recheck_evaluation(graph, child)?;
             return Ok(());
         }
-        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
             let name = self.name_token(span)?;
             let expected = if let Some((argument, _)) =
                 self.iteration_argument(graph, span, name, bindings)?
@@ -3552,7 +3552,7 @@ impl Environment<'_> {
             }
             return Ok(());
         };
-        let law = self.inputs.law();
+        let law = self.indexes.inputs.law();
         let ids = match &law.exprs[id].kind {
             ExprKind::Int(_) | ExprKind::Bool(_) => vec![],
             ExprKind::Field { base, .. }
@@ -3715,9 +3715,9 @@ impl Environment<'_> {
         source: NodeRef,
     ) -> Result<Option<SourceAnalysis>, ValidationFailure> {
         self.validation_graph_session(graph, || {
-            let previous = self.context.scoped(Some(graph.context_at(source.0)));
-            let previous_cutoff = self.cutoff.scoped(source.0);
-            let previous_universal = self.universal_context.scoped(None);
+            let previous = self.state.context.scoped(Some(graph.context_at(source.0)));
+            let previous_cutoff = self.state.cutoff.scoped(source.0);
+            let previous_universal = self.state.universal_context.scoped(None);
             let result = self.universal_missing_source_analysis_in_context(graph, source);
             previous_universal.restore();
             previous_cutoff.restore();
@@ -3754,10 +3754,10 @@ impl Environment<'_> {
             && count > 1
         {
             self.dotted_prefixes(id)?[count - 1].1.clone()
-        } else if let Some(&id) = self.inputs.law().program.expressions.get(span)
-            && matches!(&self.inputs.law().exprs[id].kind, ExprKind::Field { .. })
+        } else if let Some(&id) = self.indexes.inputs.law().program.expressions.get(span)
+            && matches!(&self.indexes.inputs.law().exprs[id].kind, ExprKind::Field { .. })
         {
-            self.inputs
+            self.indexes.inputs
                 .law()
                 .expr_type(id)
                 .cloned()
@@ -3805,7 +3805,7 @@ impl Environment<'_> {
         reference: NodeRef,
     ) -> Result<bool, ValidationFailure> {
         self.validation_graph_session(graph, || {
-            let previous = self.context.scoped(Some(graph.context_at(reference.0)));
+            let previous = self.state.context.scoped(Some(graph.context_at(reference.0)));
             let result = self.universal_internal_root_evaluation_in_context(graph, reference);
             previous.restore();
             result

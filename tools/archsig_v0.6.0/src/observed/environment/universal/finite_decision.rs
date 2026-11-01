@@ -10,7 +10,7 @@ impl Environment<'_> {
     ) -> Result<Option<NodeRef>, ValidationFailure> {
         let mut found = None;
         let context = self.current_context(graph);
-        for (index, node) in graph.nodes.iter().enumerate().take(self.cutoff.get()) {
+        for (index, node) in graph.nodes.iter().enumerate().take(self.state.cutoff.get()) {
             self.tick()?;
             if graph.context_at(index) != context {
                 continue;
@@ -47,7 +47,7 @@ impl Environment<'_> {
     ) -> Result<Option<(bool, NodeRef)>, ValidationFailure> {
         if !self.universal_finite_syntax(plan.body)?
             || !matches!(
-                self.inputs.law().exprs[plan.body].kind,
+                self.indexes.inputs.law().exprs[plan.body].kind,
                 ExprKind::Quant { .. }
             )
         {
@@ -56,7 +56,7 @@ impl Environment<'_> {
         let Some(evaluation) = self.universal_completed_pointwise(
             graph,
             template,
-            self.inputs.law().exprs[plan.body].span,
+            self.indexes.inputs.law().exprs[plan.body].span,
             bindings,
         )?
         else {
@@ -70,7 +70,7 @@ impl Environment<'_> {
         else {
             unreachable!()
         };
-        let spec = quantifier::spec(self.inputs.law(), plan.body, &self.control)?;
+        let spec = quantifier::spec(self.indexes.inputs.law(), plan.body, &self.control)?;
         let has_domain = node.scope.quantifiers.iter().any(|q| {
             q.occurrence == spec.span
                 && q.context == Some(self.current_context(graph))

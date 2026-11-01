@@ -59,10 +59,10 @@ impl Environment<'_> {
         let missing = RefCell::new(Vec::new());
         let enumeration = super::super::finite::values_with_owned(
             &spec.domain_type,
-            self.inputs.law(),
+            self.indexes.inputs.law(),
             &self.control,
             &mut |entity| {
-                self.reference_roster(entity, &mut |i| observer.borrow_mut()("ref_roster", i))
+                self.indexes.reference_roster(&self.control, entity, &mut |i| observer.borrow_mut()("ref_roster", i))
             },
             &mut |entity, name| {
                 let leaf = spec
@@ -120,7 +120,7 @@ impl Environment<'_> {
                     if snapshot != &root.snapshot || subject != &root.subject)
             })
         });
-        if self.architecture_ref().is_none() && !external_owner {
+        if self.state.architecture_ref().is_none() && !external_owner {
             self.restrict_object_domain(&spec.domain_type, &mut domain)?;
         }
         if !domain.missing.is_empty() {
@@ -139,7 +139,7 @@ impl Environment<'_> {
         {
             // 所属条件だけが読むfieldも、同じ原始Dの依存位置へ入れる。
             for slot in object.conditional_positions(ty, &self.control)? {
-                self.field(
+                self.indexes.field(&self.state,
                     &slot.snapshot,
                     &slot.subject,
                     slot.field.as_deref().ok_or("対象所属条件のfieldがない")?,
@@ -152,12 +152,12 @@ impl Environment<'_> {
                 &mut domain.support,
                 &mut domain.scope,
                 &self.control,
-                &self.completion_values.borrow(),
-                self.primitive_valuation.as_ref(),
+                &self.state.completion_values.borrow(),
+                self.indexes.primitive_valuation.as_ref(),
             )?;
             // 同じ対象域の所属を決める既知ownerを、除外された候補も含めて保持する。
             // 部分対象ではそのsubjectを選んだownerだけが根拠となる。
-            for subject in self.subjects.values() {
+            for subject in self.indexes.subjects.values() {
                 self.control
                     .clone()
                     .checkpoint(Checkpoint::ObjectEvaluation)?;
@@ -166,7 +166,7 @@ impl Environment<'_> {
                 }
                 use crate::definition::PrimitiveSignature;
                 if !matches!(
-                    self.inputs
+                    self.indexes.inputs
                         .definitions()
                         .declarations
                         .get(subject.ty.as_str())
@@ -186,7 +186,7 @@ impl Environment<'_> {
                         continue;
                     }
                     if let Slot::Known { atom, origin, .. } = &field.slot {
-                        domain.scope.merge(&self.scope(
+                        domain.scope.merge(&self.indexes.scope(
                             subject,
                             object.identity.reading(),
                             Some(origin),
@@ -217,7 +217,7 @@ impl Environment<'_> {
         let mut missing = Vec::new();
         for leaf in &spec.owners {
             self.tick()?;
-            let bytes = self.inputs.sources().law().bytes();
+            let bytes = self.indexes.inputs.sources().law().bytes();
             if !(leaf.type_span.0 <= leaf.span.0 && leaf.span.1 <= leaf.type_span.1)
                 || bytes.get(leaf.span.0..leaf.span.1) != Some(leaf.name.as_bytes())
             {
@@ -248,7 +248,7 @@ impl Environment<'_> {
                         binder,
                     } => {
                         let ExprKind::Match { scrutinee, .. } =
-                            self.inputs.law().exprs[matching].kind
+                            self.indexes.inputs.law().exprs[matching].kind
                         else {
                             return Err("元pattern添字のASTが違う".into());
                         };
@@ -258,7 +258,7 @@ impl Environment<'_> {
                             .2
                             .ok_or("未知patternからownerを束縛した")?;
                         if data::select(
-                            self.inputs.law(),
+                            self.indexes.inputs.law(),
                             matching,
                             Some(graph.scalar(value)?),
                             &self.control,
@@ -337,7 +337,7 @@ impl Environment<'_> {
                     node.support.clone(),
                 )
             };
-            if producer.0 >= self.cutoff.get().min(graph.nodes.len()) {
+            if producer.0 >= self.state.cutoff.get().min(graph.nodes.len()) {
                 return Err("元Owned添字producerが既出でない".into());
             }
             if known
@@ -378,13 +378,13 @@ impl Environment<'_> {
         bindings: &[Binding],
         observer: &mut dyn FnMut(&'static str, usize),
     ) -> Result<TypeDomain, ValidationFailure> {
-        let spec = quantifier::spec(self.inputs.law(), id, &self.control)?;
+        let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
         if spec.domain.is_some() {
             return Err("In量化をOwned型域として列挙した".into());
         }
         let (owners, variables, missing) = self.owned_type_producers(graph, &spec, bindings)?;
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .values()
@@ -411,16 +411,16 @@ impl Environment<'_> {
             return self.owned_type_domain(graph, id, bindings, observer);
         }
         self.validation_graph_session(graph, || {
-            let previous_context = self.context.scoped(Some(graph.active));
-            let previous_cutoff = self.cutoff.scoped(graph.nodes.len());
-            let previous_completion = self.completion_values.scoped(Vec::new());
+            let previous_context = self.state.context.scoped(Some(graph.active));
+            let previous_cutoff = self.state.cutoff.scoped(graph.nodes.len());
+            let previous_completion = self.state.completion_values.scoped(Vec::new());
             let result = (|| {
                 if let Some(case) = graph.active.case {
-                    *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
+                    *self.state.completion_values.borrow_mut() = self.completion_values(graph, case)?;
                 }
                 #[cfg(test)]
                 data::observe_actual(
-                    self.inputs.law().exprs[id].span,
+                    self.indexes.inputs.law().exprs[id].span,
                     graph.active,
                     "owned_type_case",
                     0,
@@ -442,7 +442,7 @@ impl Environment<'_> {
         source: NodeRef,
     ) -> Result<Option<(Vec<Fact>, (usize, usize))>, ValidationFailure> {
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
         let ExprKind::Quant {
@@ -452,7 +452,7 @@ impl Environment<'_> {
                     ..
                 },
             ..
-        } = &self.inputs.law().exprs[id].kind
+        } = &self.indexes.inputs.law().exprs[id].kind
         else {
             return Ok(None);
         };
@@ -460,7 +460,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         let bindings = self.expression_bindings(graph, source)?;
-        let previous = self.completion_values.scoped(Vec::new());
+        let previous = self.state.completion_values.scoped(Vec::new());
         let result = (|| {
             let domain = self.owned_type_domain(graph, id, bindings, &mut |_, _| {})?;
             #[cfg(test)]
@@ -492,14 +492,14 @@ impl Environment<'_> {
                     ..
                 },
             ..
-        } = &self.inputs.law().exprs[id].kind
+        } = &self.indexes.inputs.law().exprs[id].kind
         else {
             return Ok(vec![]);
         };
         if !quantifier::has_owner(original, &self.control)? {
             return Ok(vec![]);
         }
-        let spec = quantifier::spec(self.inputs.law(), id, &self.control)?;
+        let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
         Ok(self.owned_type_producers(graph, &spec, bindings)?.0)
     }
 
@@ -521,7 +521,7 @@ impl Environment<'_> {
         else {
             return Ok(false);
         };
-        let spec = quantifier::spec(self.inputs.law(), id, &self.control)?;
+        let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
         let domain = self.owned_type_domain(graph, id, bindings, &mut |_, _| {})?;
         if domain.values.is_some() {
             return Ok(false);

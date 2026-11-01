@@ -62,8 +62,7 @@ fn subject<'a>(
     environment: &'a Environment<'_>,
     fact: &Fact,
 ) -> Result<&'a crate::archmap::Subject, ValidationFailure> {
-    environment
-        .subject(&fact.snapshot, &fact.subject)
+    environment.indexes.subject(&fact.snapshot, &fact.subject)
         .map_err(Into::into)
 }
 pub(super) fn selected(
@@ -109,7 +108,7 @@ pub(super) fn selected(
         field: None,
         atom: None,
     };
-    let original = environment.subject(&fact.snapshot, &fact.subject)?;
+    let original = environment.indexes.subject(&fact.snapshot, &fact.subject)?;
     let Selector::Declaration { name } = &request.head else {
         return Err("mapのheadが宣言でない".into());
     };
@@ -163,7 +162,7 @@ pub(super) fn validate_origin(
     }
     if request.kind != QuestionKind::Map
         || value.witness.request() != request
-        || value.witness.inputs().sources() != environment.inputs.sources()
+        || value.witness.inputs().sources() != environment.indexes.inputs.sources()
     {
         return Err("native構成が現在の三入力・map要求に属さない".into());
     }
@@ -343,7 +342,7 @@ pub(super) fn unavailable(
     if let Some(name) = request.declaration() {
         scope.readings.insert(
             environment
-                .inputs
+                .indexes.inputs
                 .law()
                 .declarations
                 .get(name)

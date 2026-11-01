@@ -21,7 +21,7 @@ impl Environment<'_> {
         }
         self.tick()?;
         let originals = self
-            .original_requests
+            .indexes.original_requests
             .ok_or("依存停止の元Request列がない")?;
         let mut current = None;
         for (index, original) in originals.iter().enumerate() {
@@ -32,7 +32,7 @@ impl Environment<'_> {
         }
         let current = current.ok_or("依存停止のRequestが元入力にない")?;
         let declaration = self
-            .inputs
+            .indexes.inputs
             .law()
             .declarations
             .get(request.declaration().ok_or("元要求に宣言がない")?)
@@ -149,7 +149,7 @@ impl Environment<'_> {
         // 未観測ownerを通常値の所属確認へ渡さず、元slotを保持して依存を止める。
         for parameter in params {
             self.tick()?;
-            let previous = self.context.scoped(Some(super::super::call::Context {
+            let previous = self.state.context.scoped(Some(super::super::call::Context {
                 request: current,
                 frame: None,
                 iteration: None,

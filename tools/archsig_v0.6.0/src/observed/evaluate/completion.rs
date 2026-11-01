@@ -116,12 +116,12 @@ impl Evaluator<'_, '_> {
                 .map(|p| (p.name.clone(), p.ty.erase()))
                 .collect();
             let location = Location::Law {
-                span: self.environment.inputs.law().exprs[body].span,
+                span: self.environment.indexes.inputs.law().exprs[body].span,
             };
             let seed = self.push(Node {
                 ty: NodeType::Expression(
                     self.environment
-                        .inputs
+                        .indexes.inputs
                         .law()
                         .expr_type(body)
                         .ok_or_else(|| Failure::Internal("補完元型がない".into()))?
@@ -314,7 +314,7 @@ impl Evaluator<'_, '_> {
                 .collect::<Result<Vec<_>, _>>()?;
             let outcome = value_equality::all_cases(
                 &scalar_values,
-                self.environment.inputs.law(),
+                self.environment.indexes.inputs.law(),
                 self.control,
             )?;
             if outcome.unsupported {
@@ -322,7 +322,7 @@ impl Evaluator<'_, '_> {
                     crate::observed::environment::completion::value_comparison_reason(
                         self.request,
                         self.environment
-                            .inputs
+                            .indexes.inputs
                             .law()
                             .expr_type(body)
                             .ok_or_else(|| Failure::Internal("補完元型がない".into()))?,
@@ -412,14 +412,14 @@ impl Evaluator<'_, '_> {
             let evaluation = self.push_law_evaluation(Node {
                 ty: NodeType::Evaluation(
                     self.environment
-                        .inputs
+                        .indexes.inputs
                         .law()
                         .expr_type(body)
                         .unwrap()
                         .clone(),
                 ),
                 payload: Some(Payload::Evaluation {
-                    environment: self.environment.architecture_ref(),
+                    environment: self.environment.state.architecture_ref(),
                     expression: seed,
                     bindings: fixed.clone(),
                     parts: vec![Part {
@@ -469,7 +469,7 @@ impl Evaluator<'_, '_> {
                             ty: NodeType::Expression(Type::Bool),
                             payload: Some(Payload::CompletionSeed {
                                 location: Location::Law {
-                                    span: self.environment.inputs.law().exprs[id].span,
+                                    span: self.environment.indexes.inputs.law().exprs[id].span,
                                 },
                                 parameters: unbound.clone(),
                                 bindings: fixed.clone(),
@@ -480,7 +480,7 @@ impl Evaluator<'_, '_> {
                             rule: Rule::Input {
                                 kind: "law",
                                 location: Location::Law {
-                                    span: self.environment.inputs.law().exprs[id].span,
+                                    span: self.environment.indexes.inputs.law().exprs[id].span,
                                 },
                             },
                             arguments: fixed

@@ -472,7 +472,7 @@ fn one_build_uses_the_same_native_objects_laws_patterns_equations_and_invariants
     plan.boundary
         .recheck(&env, &g, g.nodes.len(), &mut quiet())
         .unwrap();
-    assert!(env.architecture_ref().is_none());
+    assert!(env.state.architecture_ref().is_none());
 }
 
 #[test]

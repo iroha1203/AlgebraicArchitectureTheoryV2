@@ -45,7 +45,7 @@ pub(in crate::observed) struct Pending {
 fn unsupported(env: &Environment<'_>, id: usize, feature: &str) -> ValidationFailure {
     ValidationFailure::UnsupportedExpression {
         location: Location::Law {
-            span: env.inputs.law().exprs[id].span,
+            span: env.indexes.inputs.law().exprs[id].span,
         },
         feature: feature.into(),
     }
@@ -85,7 +85,7 @@ pub(super) fn law_variables(
                 Type::Z => NumberType::Z, Type::Q => NumberType::Q,
                 _ => return Err("未束縛の局所Law引数がZ/Qでない".into()),
             };
-            let parameter = Parameter { binder: p.span, name: p.name.clone(), context: env.context.get().unwrap_or_default(), kind };
+            let parameter = Parameter { binder: p.span, name: p.name.clone(), context: env.state.context.get().unwrap_or_default(), kind };
             let mut v = value(env, numeric::zero(&kind.ty(), &env.control)?)?;
             v.known_value = None;
             v.scalar_scope = None;
@@ -149,7 +149,7 @@ pub(super) fn affine_guard_forms(
             )?
             .map(|form| vec![form]));
         }
-        match &env.inputs.law().exprs[id].kind {
+        match &env.indexes.inputs.law().exprs[id].kind {
             ExprKind::Group(body) => affine_guard_forms(env, *body, vars, base, reading),
             ExprKind::Let { name, value, body } => {
                 let value = env.scoped_ast(*value, vars, base, reading)?;
@@ -214,12 +214,12 @@ pub(super) fn numeric_condition(
     }
     loop {
         env.tick()?;
-        match &env.inputs.law().exprs[id].kind {
+        match &env.indexes.inputs.law().exprs[id].kind {
             ExprKind::Group(body) | ExprKind::Let { body, .. } => id = *body,
             ExprKind::Binary { lhs, rhs, .. } => {
                 return Ok([lhs, rhs]
                     .iter()
-                    .all(|id| matches!(env.inputs.law().expr_type(**id), Some(Type::Z | Type::Q))));
+                    .all(|id| matches!(env.indexes.inputs.law().expr_type(**id), Some(Type::Z | Type::Q))));
             }
             _ => return Ok(false),
         }
@@ -259,7 +259,7 @@ fn equations(
             }
             return Ok(());
         }
-        match &env.inputs.law().exprs[id].kind {
+        match &env.indexes.inputs.law().exprs[id].kind {
             ExprKind::Group(body) => equations(env, *body, vars, reading, axes, matrix, rhs, missing),
             ExprKind::Let { name, value, body } => {
                 let mut vars = vars.clone();
@@ -331,10 +331,10 @@ fn parameter_coefficient_forms(
     }
     let Some((ring, families, local_parameters)) =
         crate::observed::object_equation_presentation::parameter_differences_with_bindings(
-            env.inputs,
+            env.indexes.inputs,
             id,
             &Type::Z,
-            env.context.get().unwrap_or_default(),
+            env.state.context.get().unwrap_or_default(),
             &values,
             &parameters,
             &mut env.control.clone(),
@@ -366,7 +366,7 @@ fn parameter_coefficient_forms(
         if !slot.component.is_empty() {
             return Ok(None);
         }
-        let subject = env.subject(&slot.snapshot, &slot.subject)?;
+        let subject = env.indexes.subject(&slot.snapshot, &slot.subject)?;
         if slot.field.owner() != Some(subject.ty.as_str()) {
             return Err("係数のfieldが元subject型と違う".into());
         }
@@ -383,7 +383,7 @@ fn parameter_coefficient_forms(
             &slot.field,
             &Scope::default(),
             reading,
-            env.inputs.law().exprs[id].span,
+            env.indexes.inputs.law().exprs[id].span,
         )?;
         usable(env, id, &source)?;
         let Some(form) = source.affine else {
@@ -488,7 +488,7 @@ fn collect_updates(
     let mut current = body;
     loop {
         env.tick()?;
-        match &env.inputs.law().exprs[current].kind {
+        match &env.indexes.inputs.law().exprs[current].kind {
             ExprKind::Group(inner) => current = *inner,
             ExprKind::Let { name, value, body } => {
                 let v = env.scoped_ast(*value, vars, &Scope::default(), reading)?;
@@ -548,7 +548,7 @@ fn collect_updates(
                     missing.scope.merge(&v.scope);
                     usable(env, *id, &v)?;
                     let form = v.affine.ok_or_else(|| {
-                        if matches!(env.inputs.law().expr_type(*id), Some(Type::Z | Type::Q)) {
+                        if matches!(env.indexes.inputs.law().expr_type(*id), Some(Type::Z | Type::Q)) {
                             missing.unsupported = Some("nonlinear_numeric_change");
                         }
                         unsupported(env, *id, "数値changeの更新式がアフィンでない")
@@ -761,7 +761,7 @@ pub(in crate::observed) fn compute(
         None
     };
     let assignments = env
-        .primitive_valuation
+        .indexes.primitive_valuation
         .as_ref()
         .map(|v| {
             v.iter()
@@ -770,9 +770,9 @@ pub(in crate::observed) fn compute(
         })
         .unwrap_or_default();
     let mut updated =
-        Environment::with_primitive_valuation(env.inputs, &assignments, &mut env.control.clone())?;
-    updated.object = env.object_domain();
-    updated.affine_valuation = updates;
+        Environment::with_primitive_valuation(env.indexes.inputs, &assignments, &mut env.control.clone())?;
+    updated.indexes.object = env.object_domain();
+    updated.indexes.affine_valuation = updates;
     let (mut matrix, rhs) =
         requirement_equations(&updated, Axes::Parameters(&axes), requirements, missing)?;
     let mut rhs = rhs
@@ -881,14 +881,14 @@ pub(in crate::observed) fn state_equations(
     missing: &mut Pending,
 ) -> Result<(Matrix, Vec<Option<Z>>), ValidationFailure> {
     let assignments = env.fixed_values();
-    let mut state = Environment::with_primitive_valuation(env.inputs, &assignments, &mut env.control.clone())?;
-    state.object = env.object_domain();
+    let mut state = Environment::with_primitive_valuation(env.indexes.inputs, &assignments, &mut env.control.clone())?;
+    state.indexes.object = env.object_domain();
     for slot in slots {
         env.tick()?;
-        if env.field(&slot.snapshot, &slot.subject, slot.field.as_ref().ok_or("自由位置にfieldがない")?)?.ty.erase() != Type::Z {
+        if env.indexes.field(&env.state, &slot.snapshot, &slot.subject, slot.field.as_ref().ok_or("自由位置にfieldがない")?)?.ty.erase() != Type::Z {
             return Err("整数局所状態の自由位置がZでない".into());
         }
-        state.affine_valuation.insert(slot.clone(), Form::state(slot, &env.control)?);
+        state.indexes.affine_valuation.insert(slot.clone(), Form::state(slot, &env.control)?);
     }
     requirement_equations(&state, Axes::State(slots), requirements, missing)
 }
@@ -899,7 +899,7 @@ fn requirement_equations(
     let mut matrix = vec![];
     let mut rhs = vec![];
     for (name, bindings) in requirements {
-        let law = &env.inputs.law().declarations[name];
+        let law = &env.indexes.inputs.law().declarations[name];
         let Signature::Law {
             body,
             guard,
@@ -1055,11 +1055,11 @@ pub(super) fn capture_missing<T>(
     env: &Environment<'_>,
     operation: impl FnOnce() -> T,
 ) -> Result<(T, Vec<Fact>), ValidationFailure> {
-    let outer = env.missing_slot_reads.scoped(Some(BTreeSet::new()));
+    let outer = env.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
     let result = operation();
     let reads = outer.restore()
         .ok_or("数値式の不足位置収集がない")?;
-    if let Some(outer) = env.missing_slot_reads.borrow_mut().as_mut() {
+    if let Some(outer) = env.state.missing_slot_reads.borrow_mut().as_mut() {
         outer.extend(reads.iter().cloned());
     }
     Ok((
@@ -1067,10 +1067,10 @@ pub(super) fn capture_missing<T>(
         reads
             .into_iter()
             .filter(|fact| {
-                !env.primitive_valuation
+                !env.indexes.primitive_valuation
                     .as_ref()
                     .is_some_and(|values| values.contains_key(fact))
-                    && !env.affine_valuation.contains_key(fact)
+                    && !env.indexes.affine_valuation.contains_key(fact)
             })
             .collect(),
     ))

@@ -173,7 +173,7 @@ mod tests {
             ),
         ];
         let mut case = Environment::with_primitive_valuation(&inputs, &valuation, &mut c).unwrap();
-        case.object = Some(Arc::new(
+        case.indexes.object = Some(Arc::new(
             ObjectDomain::from_readings(&inputs, witness.readings(), 0, &mut c).unwrap(),
         ));
         let change = &inputs.law().declarations["Selected.choose"];
@@ -224,7 +224,7 @@ pub(in crate::observed) fn domain(
 ) -> Result<Option<Vec<Scalar>>, ValidationFailure> {
     if !super::super::finite::supported(
         &ty.erase(),
-        environment.inputs.law(),
+        environment.indexes.inputs.law(),
         &environment.control,
     )? {
         return Err(ValidationFailure::UnsupportedExpression {
@@ -238,7 +238,7 @@ pub(in crate::observed) fn domain(
     // 明示された外部ownerの族を消す。ownerを持たないroot型も全登録族を使う。
     let directly_owned = match ty {
         Type::Ref(entity) => environment
-            .inputs
+            .indexes.inputs
             .definitions()
             .declarations
             .get(entity)
@@ -260,7 +260,7 @@ pub(in crate::observed) fn domain(
             &mut Scope::default(),
             &environment.control,
             &[],
-            environment.primitive_valuation.as_ref(),
+            environment.indexes.primitive_valuation.as_ref(),
         )?;
     }
     Ok(values)
@@ -272,7 +272,7 @@ pub(in crate::observed) fn selector(
 ) -> Result<Scalar, ValidationFailure> {
     Ok(match value {
         Selector::Subject { snapshot, subject } => {
-            let original = environment.subject(snapshot, subject)?;
+            let original = environment.indexes.subject(snapshot, subject)?;
             Scalar::Subject {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
@@ -320,21 +320,21 @@ pub(in crate::observed) fn search_with_completions(
         missing: vec![],
         complete: false,
         valuation: original
-            .architecture_values()
+            .state.architecture_values()
             .into_iter()
             .chain(witness.construction().resolved_owners().iter().map(|(field, owner)| {
-                let subject = original.subject(&owner.snapshot, &owner.subject).expect("検査済みowner参照");
+                let subject = original.indexes.subject(&owner.snapshot, &owner.subject).expect("検査済みowner参照");
                 (field.clone(), Scalar::Subject { snapshot: owner.snapshot.clone(), subject: owner.subject.clone(), entity: subject.ty.to_string() })
             }))
             .chain(completions.iter().cloned())
             .collect(),
     };
     let computed = (|| -> Result<(), ValidationFailure> {
-        let inputs = original.inputs;
+        let inputs = original.indexes.inputs;
         let mut environment =
             Environment::try_primitive_valuation(inputs, &result.valuation, control)?
                 .ok_or("元修復Architectureの代入が不適合")?;
-        environment.object = Some(Arc::new(ObjectDomain::from_readings(
+        environment.indexes.object = Some(Arc::new(ObjectDomain::from_readings(
             inputs,
             witness.readings(),
             0,
@@ -534,10 +534,10 @@ pub(in crate::observed) fn verify_point(
 ) -> Result<(), ValidationFailure> {
     control.checkpoint(Checkpoint::ChangeWitness)?;
     let mut environment =
-        Environment::try_primitive_valuation(original.inputs, &search.valuation, control)?
+        Environment::try_primitive_valuation(original.indexes.inputs, &search.valuation, control)?
             .ok_or("元修復Architectureの代入が不適合")?;
-    environment.object = Some(Arc::new(ObjectDomain::from_readings(
-        original.inputs,
+    environment.indexes.object = Some(Arc::new(ObjectDomain::from_readings(
+        original.indexes.inputs,
         witness.readings(),
         0,
         control,
@@ -556,7 +556,7 @@ pub(in crate::observed) fn verify_point(
         .ok_or("再代入の元changeがない")?;
     let rebuilt = change_evaluation::candidate(
         &environment,
-        &original.inputs.law().declarations[change],
+        &original.indexes.inputs.law().declarations[change],
         &candidates.subjects,
         &candidate.parameters,
     )?;

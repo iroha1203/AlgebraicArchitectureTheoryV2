@@ -32,10 +32,10 @@ fn transport(
     instance: usize,
     c: &mut Control,
 ) -> Result<Arc<ObjectViewTransport>, ValidationFailure> {
-    if !std::ptr::eq(env.inputs, inputs.as_ref()) {
+    if !std::ptr::eq(env.indexes.inputs, inputs.as_ref()) {
         return Err("view保存cacheの元入力が違う".into());
     }
-    for e in env.verified_view_transports.borrow().iter() {
+    for e in env.results.verified_view_transports.borrow().iter() {
         tick(c)?;
         if e.object == object && e.instance == instance && e.declarations == *d {
             return Ok(e.result.clone());
@@ -49,7 +49,7 @@ fn transport(
                     .unwrap_or_else(|| format!("view保存検査: {e:?}").into())
             })?,
     );
-    env.verified_view_transports
+    env.results.verified_view_transports
         .borrow_mut()
         .push(KernelCacheEntry {
             declarations: d.clone(),

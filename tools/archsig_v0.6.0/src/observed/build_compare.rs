@@ -80,7 +80,7 @@ fn evaluation(
             return Ok(Some(false));
         }
         if let (Some(lv), Some(rv)) = (lv, rv) {
-            return value_equality::equal(g.scalar(lv)?, g.scalar(rv)?, env.inputs.law(), c);
+            return value_equality::equal(g.scalar(lv)?, g.scalar(rv)?, env.indexes.inputs.law(), c);
         }
         if !l.reasons.is_empty() || !r.reasons.is_empty() {
             return Ok(None);
@@ -154,7 +154,7 @@ fn residual(
                 values.push(value_equality::equal(
                     g.scalar(*l)?,
                     g.scalar(*r)?,
-                    env.inputs.law(),
+                    env.indexes.inputs.law(),
                     c,
                 )?);
             }
@@ -174,7 +174,7 @@ fn residual(
                 values.push(value_equality::equal(
                     g.scalar(l)?,
                     g.scalar(r)?,
-                    env.inputs.law(),
+                    env.indexes.inputs.law(),
                     c,
                 )?);
             }
@@ -295,7 +295,7 @@ pub(super) fn compare(
                     let source_bound = finite(a)?;
                     let target_bound = finite(b)?;
                     let family = super::environment::numeric_law_function::compare_bound(
-                        env.inputs,
+                        env.indexes.inputs,
                         [readings, readings],
                         [left, right],
                         &names,

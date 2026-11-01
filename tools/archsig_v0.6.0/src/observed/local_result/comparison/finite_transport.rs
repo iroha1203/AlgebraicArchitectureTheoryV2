@@ -360,7 +360,7 @@ pub(super) fn between(
     if !(endpoints || same_object) || op.source().reading() != op.target().reading() {
         return Ok(None);
     }
-    let Some(rename) = Renaming::operation(g, env.inputs.law(), along, c)? else {
+    let Some(rename) = Renaming::operation(g, env.indexes.inputs.law(), along, c)? else {
         return Ok(None);
     };
     if !rename.positions(env, &l.fixed_positions, &r.fixed_positions, false, c)? {

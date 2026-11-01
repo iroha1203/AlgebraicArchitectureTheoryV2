@@ -142,14 +142,14 @@ fn trace(
     super::super::super::internal_path::PathResult,
     BTreeSet<Fact>,
 ) {
-    *e.primitive_reads.borrow_mut() = Some(BTreeSet::new());
+    *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
     let result = if map_case {
         correspondence(e)
     } else {
         arrow(e)
     }
     .unwrap();
-    let reads = e.primitive_reads.borrow_mut().take().unwrap();
+    let reads = e.state.primitive_reads.borrow_mut().take().unwrap();
     (result, reads)
 }
 #[test]

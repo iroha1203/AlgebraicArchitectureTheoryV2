@@ -636,7 +636,7 @@ fn validate_bindings(
         if value.ty() != p.ty.erase() {
             return Err("有限Lawの束縛型が元parameterと違う".into());
         }
-        data::check(value, e.inputs.law(), &e.control)?;
+        data::check(value, e.indexes.inputs.law(), &e.control)?;
         validate_binding_value(e, decl, &p.ty, value)?;
         result.push((p.name.clone(), value.clone()));
     }
@@ -663,7 +663,7 @@ fn validate_binding_value(
                     entity,
                 },
             ) => {
-                if e.subject(snapshot, subject)?.ty != *entity {
+                if e.indexes.subject(snapshot, subject)?.ty != *entity {
                     return Err("有限Lawの参照束縛が登録型と違う".into());
                 }
             }
@@ -681,7 +681,7 @@ fn validate_binding_value(
                     constructor, args, ..
                 },
             ) => {
-                let ctor = data::constructor(e.inputs.law(), family, constructor, &e.control)?;
+                let ctor = data::constructor(e.indexes.inputs.law(), family, constructor, &e.control)?;
                 pending.extend(ctor.arguments.iter().zip(args));
             }
             (Type::Map(from, to), Scalar::Map { pairs, .. }) => {
@@ -692,7 +692,7 @@ fn validate_binding_value(
                         tick(&e.control)?;
                         keys.push(key.clone());
                     }
-                    for subject in e.subjects.values().filter(|s| s.ty == *entity) {
+                    for subject in e.indexes.subjects.values().filter(|s| s.ty == *entity) {
                         tick(&e.control)?;
                         expected.push(Scalar::Subject {
                             snapshot: subject.snapshot.clone(),
@@ -726,12 +726,12 @@ fn validate_binding_term(
     // 閉じた値は、選択Law以外のreadingや原始fieldからも来る。
     // 現在入力のscopeで本文を再検査し、保持した全実行情報と一致するものを要求する。
     let mut readings = BTreeSet::new();
-    for d in e.inputs.law().declarations.values() {
+    for d in e.indexes.inputs.law().declarations.values() {
         tick(&e.control)?;
         readings.insert(d.reading.clone());
     }
     let scopes = readings.into_iter().map(|n| (false, n)).chain(
-        e.inputs
+        e.indexes.inputs
             .definitions()
             .vocabularies
             .keys()
@@ -742,7 +742,7 @@ fn validate_binding_term(
         tick(&e.control)?;
         let checked = if definition {
             crate::law::check_definition_term_body_inner::<CheckFailure<Box<crate::issue::Issue>>>(
-                e.inputs.definitions(),
+                e.indexes.inputs.definitions(),
                 &name,
                 &term.params,
                 &term.returns,
@@ -751,8 +751,8 @@ fn validate_binding_term(
             )
         } else {
             crate::law::check_reading_term_body::<CheckFailure<Box<crate::issue::Issue>>>(
-                e.inputs.sources().law().bytes(),
-                e.inputs.definitions(),
+                e.indexes.inputs.sources().law().bytes(),
+                e.indexes.inputs.definitions(),
                 &name,
                 &term.params,
                 &term.returns,
@@ -788,12 +788,12 @@ fn validate_binding_path(
     decl: &Declaration,
     path: &crate::observed::path_value::PathValue,
 ) -> Result<(), ValidationFailure> {
-    let source = e.subject(&path.snapshot, &path.subject)?;
+    let source = e.indexes.subject(&path.snapshot, &path.subject)?;
     if source.ty != path.entity {
         return Err("有限LawのPath束縛の端点型が違う".into());
     }
     if !e
-        .inputs
+        .indexes.inputs
         .law()
         .declarations
         .values()
@@ -850,8 +850,8 @@ fn type_dependencies(
         tick(&e.control)?;
         match &ty {
             Type::Owned(entity, name) => {
-                let holder = e.subject(&position.snapshot, &position.subject)?;
-                let field = e.field(
+                let holder = e.indexes.subject(&position.snapshot, &position.subject)?;
+                let field = e.indexes.field(&e.state,
                     &holder.snapshot,
                     &holder.id,
                     &format!("{}.{}", holder.ty, name),
@@ -862,9 +862,9 @@ fn type_dependencies(
                     field: Some(field.name.clone()),
                     atom: None,
                 });
-                for s in e.subjects.values().filter(|s| s.ty == *entity) {
+                for s in e.indexes.subjects.values().filter(|s| s.ty == *entity) {
                     tick(&e.control)?;
-                    let field = e.field(&s.snapshot, &s.id, &format!("{}.owner", s.ty))?;
+                    let field = e.indexes.field(&e.state, &s.snapshot, &s.id, &format!("{}.owner", s.ty))?;
                     found.insert(Fact {
                         snapshot: s.snapshot.clone(),
                         subject: s.id.clone(),
@@ -877,7 +877,7 @@ fn type_dependencies(
             Type::List(t) | Type::Set(t) | Type::Option(t) => pending.push((**t).clone()),
             Type::Map(a, b) => pending.extend([(**a).clone(), (**b).clone()]),
             Type::Data(family) if data_seen.insert(family.clone()) => {
-                for ctor in data::constructors(e.inputs.law(), &family)? {
+                for ctor in data::constructors(e.indexes.inputs.law(), &family)? {
                     pending.extend(ctor.arguments.iter().cloned());
                 }
             }
@@ -894,7 +894,7 @@ fn domains(
     let mut product = vec![vec![]];
     for position in positions {
         tick(&e.control)?;
-        let field = e.field(
+        let field = e.indexes.field(&e.state,
             &position.snapshot,
             &position.subject,
             position
@@ -904,11 +904,11 @@ fn domains(
         )?;
         let domain = finite::field_candidates_if_finite(
             &field.ty.erase(),
-            e.inputs.law(),
+            e.indexes.inputs.law(),
             &e.control,
             &mut |entity| {
                 let mut out = finite::Enumeration::default();
-                for s in e.subjects.values().filter(|s| s.ty == entity) {
+                for s in e.indexes.subjects.values().filter(|s| s.ty == entity) {
                     tick(&e.control)?;
                     out.values.push(Scalar::Subject {
                         snapshot: s.snapshot.clone(),
@@ -990,7 +990,7 @@ fn components(
         } else {
             let equal = match (&left, &right) {
                 (Some(a), Some(b)) => {
-                    crate::observed::value_equality::equal(a, b, e.inputs.law(), &e.control)?
+                    crate::observed::value_equality::equal(a, b, e.indexes.inputs.law(), &e.control)?
                 }
                 _ => None,
             };
@@ -1051,14 +1051,14 @@ fn operands(
     scope: &Scope,
     reading: &str,
 ) -> Result<Option<(Type, Option<Scalar>, Option<Scalar>)>, ValidationFailure> {
-    let Some(eq) = equation(e.inputs, body, &mut e.control.clone())? else {
+    let Some(eq) = equation(e.indexes.inputs, body, &mut e.control.clone())? else {
         return Ok(None);
     };
-    let ExprKind::Binary { lhs, rhs, .. } = e.inputs.law().exprs[eq].kind else {
+    let ExprKind::Binary { lhs, rhs, .. } = e.indexes.inputs.law().exprs[eq].kind else {
         return Err("元等式の出現が違う".into());
     };
     let ty = e
-        .inputs
+        .indexes.inputs
         .law()
         .expr_type(lhs)
         .ok_or("元等式の型がない")?
@@ -1067,7 +1067,7 @@ fn operands(
     let mut id = body;
     while id != eq {
         e.control.clone().checkpoint(Checkpoint::FiniteLawOperand)?;
-        match &e.inputs.law().exprs[id].kind {
+        match &e.indexes.inputs.law().exprs[id].kind {
             ExprKind::Group(child) => id = *child,
             ExprKind::Let { name, value, body } => {
                 let rhs = e.scoped_ast(*value, &local, scope, reading)?;
@@ -1079,13 +1079,13 @@ fn operands(
             ExprKind::Match { scrutinee, arms } => {
                 let input = e.scoped_ast(*scrutinee, &local, scope, reading)?;
                 let Some(arm) =
-                    data::select(e.inputs.law(), id, input.known_value.as_ref(), &e.control)?
+                    data::select(e.indexes.inputs.law(), id, input.known_value.as_ref(), &e.control)?
                 else {
                     return Ok(Some((ty, None, None)));
                 };
                 let input_value = input.known_value.as_ref().ok_or("元matchの値がない")?;
                 for (name, value) in
-                    data::bindings(e.inputs.law(), id, arm, input_value, &e.control)?
+                    data::bindings(e.indexes.inputs.law(), id, arm, input_value, &e.control)?
                 {
                     let mut bound = source(value);
                     bound.scope = input.scope.clone();
@@ -1267,7 +1267,7 @@ fn probe_local_mode(
     row.operands = operands(e, *body, &vars, &scope, &decl.reading)?;
     if let Some((_, a, b)) = &row.operands {
         for value in a.iter().chain(b) {
-            data::check(value, e.inputs.law(), &e.control)?;
+            data::check(value, e.indexes.inputs.law(), &e.control)?;
         }
     }
     for v in g.iter().chain(std::iter::once(&b)) {
@@ -1324,7 +1324,7 @@ fn local_universal_truth(
         let v = e.scoped_ast(id, vars, scope, reading)?;
         if v.condition_failed || v.condition_pending { return Ok(None); }
         if let Some(Scalar::Bool(value)) = v.known_value { return Ok(Some(value)); }
-        match &e.inputs.law().exprs[id].kind {
+        match &e.indexes.inputs.law().exprs[id].kind {
             ExprKind::Group(body) => local_universal_truth(e,*body,vars,scope,reading,parameters),
             ExprKind::Let { name, value, body } => {
                 let mut vars = vars.clone();
@@ -1384,7 +1384,7 @@ fn populate_family(
         loop {
             let mut expanded = positions.clone();
             for p in &positions {
-                let f = template.field(
+                let f = template.indexes.field(&template.state,
                     &p.snapshot,
                     &p.subject,
                     p.field.as_deref().ok_or("有限Law fieldがない")?,
@@ -1401,7 +1401,7 @@ fn populate_family(
             // 個々の位置を再走査して、列挙できない元位置・型を保持する。
             for p in &r.positions {
                 if domains(&template, std::slice::from_ref(p))?.is_none() {
-                    let f = template.field(
+                    let f = template.indexes.field(&template.state,
                         &p.snapshot,
                         &p.subject,
                         p.field.as_deref().ok_or("finite fieldがない")?,
@@ -1428,7 +1428,7 @@ fn populate_family(
                 .zip(candidate.iter().cloned())
                 .collect::<Vec<_>>();
             let mut e = r.in_object(Environment::primitive_dependency_probe(inputs, &values, c)?);
-            *e.primitive_reads.borrow_mut() = Some(BTreeSet::new());
+            *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
             let mut candidate_admissible = true;
             let mut candidate_blocked = false;
             let mut candidate_failure = None;
@@ -1450,7 +1450,7 @@ fn populate_family(
                     }
                 }
             }
-            if let Some(reads) = e.primitive_reads.borrow().as_ref() {
+            if let Some(reads) = e.state.primitive_reads.borrow().as_ref() {
                 discovered.extend(reads.iter().cloned());
             }
             // 全Lawの読取りを先に集める。新位置を含むpassの判定は捨てる。
@@ -1506,7 +1506,7 @@ fn populate_family(
     let mut all_known = true;
     for p in &r.positions {
         tick(c)?;
-        let f = template.field(
+        let f = template.indexes.field(&template.state,
             &p.snapshot,
             &p.subject,
             p.field.as_deref().ok_or("元fieldがない")?,

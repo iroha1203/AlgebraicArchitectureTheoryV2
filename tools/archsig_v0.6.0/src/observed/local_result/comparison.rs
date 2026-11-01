@@ -144,7 +144,7 @@ pub(super) fn compute(
     let data = local(g, left_system)?;
     let system = data.source.system.as_ref().ok_or("固定局所系がない")?;
     let operation = public_compose::op(g, along)?;
-    operation.recheck(env.inputs, c).map_err(|e| match e {
+    operation.recheck(env.indexes.inputs, c).map_err(|e| match e {
         crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
         e => ValidationFailure::Internal(format!("診断比較のOperation: {e:?}")),
     })?;

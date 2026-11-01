@@ -172,7 +172,7 @@ impl Evaluator<'_, '_> {
             let evaluation = self.push(Node {
                 ty: NodeType::Evaluation(Type::Bool),
                 payload: Some(Payload::Evaluation {
-                    environment: self.environment.architecture_ref(),
+                    environment: self.environment.state.architecture_ref(),
                     expression: anchor,
                     bindings: self.bindings.clone(),
                     parts: vec![Part {
@@ -298,7 +298,7 @@ impl Evaluator<'_, '_> {
         self.push(Node {
             ty: NodeType::Evaluation(ty.clone()),
             payload: Some(Payload::Evaluation {
-                environment: self.environment.architecture_ref(),
+                environment: self.environment.state.architecture_ref(),
                 expression,
                 bindings: bindings.to_vec(),
                 parts: vec![Part {
@@ -533,7 +533,7 @@ impl Evaluator<'_, '_> {
         let Some(guard) = plan.guard else {
             return Ok((body, body, None));
         };
-        let guard_span = self.environment.inputs.law().exprs[guard].span;
+        let guard_span = self.environment.indexes.inputs.law().exprs[guard].span;
         let (guard, guard_analysis) = self.universal_raw_source(plan, guard_span, Type::Bool)?;
         let Some(Payload::Expression { parameters, .. }) = &self.graph.get(body)?.payload else {
             unreachable!()
@@ -581,7 +581,7 @@ impl Evaluator<'_, '_> {
     }
 
     pub(super) fn universal_expression_evaluation(&mut self, plan: UniversalPlan, expression: usize) -> Result<Evaluated, Failure> {
-        let ty = self.environment.inputs.law().expr_type(plan.body)
+        let ty = self.environment.indexes.inputs.law().expr_type(plan.body)
             .ok_or_else(|| Failure::Internal("全域式の戻り型がない".into()))?.clone();
         let template = if plan.guard.is_some() {
             self.universal_template(&plan)?.0
@@ -641,7 +641,7 @@ impl Evaluator<'_, '_> {
         } else {
             let id = self
                 .environment
-                .inputs
+                .indexes.inputs
                 .law()
                 .exprs
                 .iter()
@@ -718,7 +718,7 @@ impl Evaluator<'_, '_> {
                         )
                     })
                     .transpose()?;
-                let span = self.environment.inputs.law().exprs[id].span;
+                let span = self.environment.indexes.inputs.law().exprs[id].span;
                 let mut reasons = left.reasons.clone();
                 reasons.extend(right.reasons.iter().cloned());
                 sort_reasons(&mut reasons);
@@ -726,7 +726,7 @@ impl Evaluator<'_, '_> {
                     self.push(Node {
                         ty: NodeType::Evaluation(ty),
                         payload: Some(Payload::Evaluation {
-                            environment: self.environment.architecture_ref(),
+                            environment: self.environment.state.architecture_ref(),
                             expression: difference,
                             bindings: self.bindings.clone(),
                             parts: vec![Part {
@@ -807,7 +807,7 @@ impl Evaluator<'_, '_> {
                 .as_ref()
                 .and_then(|body| body.comparison.as_ref())
                 .ok_or_else(|| Failure::Internal("全域共通反例の元比較がない".into()))?;
-            let original_span = self.environment.inputs.law().exprs[plan.body].span;
+            let original_span = self.environment.indexes.inputs.law().exprs[plan.body].span;
             let original=self.graph.nodes.iter().enumerate().find_map(|(index,node)| {
                 (self.graph.context_at(index)==self.graph.active && node.arguments.first()==Some(&template)
                     && matches!(&node.payload,Some(Payload::Expression {location:Location::Law{span},..}) if *span==original_span)).then_some(NodeRef(index))
@@ -899,7 +899,7 @@ impl Evaluator<'_, '_> {
         if let Some(guard) = &guard {
             parts.push(Part {
                 location: Location::Law {
-                    span: self.environment.inputs.law().exprs[plan.guard.unwrap()].span,
+                    span: self.environment.indexes.inputs.law().exprs[plan.guard.unwrap()].span,
                 },
                 value: guard.evaluated.value,
                 residual: None,
@@ -921,7 +921,7 @@ impl Evaluator<'_, '_> {
         let evaluation = self.push(Node {
             ty: NodeType::Evaluation(Type::Bool),
             payload: Some(Payload::Evaluation {
-                environment: self.environment.architecture_ref(),
+                environment: self.environment.state.architecture_ref(),
                 expression: template,
                 bindings: self.bindings.clone(),
                 parts,
@@ -1262,7 +1262,7 @@ impl Evaluator<'_, '_> {
         let evaluation = self.push(Node {
             ty: NodeType::Evaluation(ty),
             payload: Some(Payload::Evaluation {
-                environment: self.environment.architecture_ref(),
+                environment: self.environment.state.architecture_ref(),
                 expression,
                 bindings: self.bindings.clone(),
                 parts: vec![Part {
@@ -1328,10 +1328,10 @@ impl Evaluator<'_, '_> {
         id: usize,
     ) -> Result<SymbolicEvaluation, Failure> {
         self.tick(Checkpoint::Expression)?;
-        let expr = self.environment.inputs.law().exprs[id].clone();
+        let expr = self.environment.indexes.inputs.law().exprs[id].clone();
         let ty = self
             .environment
-            .inputs
+            .indexes.inputs
             .law()
             .expr_type(id)
             .ok_or_else(|| Failure::Internal("全域元式の型がない".into()))?
@@ -1381,7 +1381,7 @@ impl Evaluator<'_, '_> {
         let children = match &expr.kind {
             ExprKind::Int(_) | ExprKind::Bool(_) => vec![],
             ExprKind::Dotted(_)
-                if data::expression(self.environment.inputs.law(), id, self.control)?.is_some() =>
+                if data::expression(self.environment.indexes.inputs.law(), id, self.control)?.is_some() =>
             {
                 vec![]
             }

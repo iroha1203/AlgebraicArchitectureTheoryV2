@@ -161,7 +161,7 @@ fn unknown_binding_match_retains_typed_uncomputed_operands_then_enumerates_all_v
         "law required eq(c:Part):match c.third{n=>n=0;};",
     );
     let e = Environment::new(&i, &mut quiet()).unwrap();
-    *e.primitive_reads.borrow_mut() = Some(BTreeSet::new());
+    *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
     let decl = &i.law().declarations["Selected.eq"];
     let bindings = vec![("c".into(), subject("p"))];
     let p = probe(&e, decl, &bindings, 0).unwrap();
@@ -174,7 +174,7 @@ fn unknown_binding_match_retains_typed_uncomputed_operands_then_enumerates_all_v
     assert_eq!(cs[0].right, None);
     assert_eq!(cs[0].indicator, None);
     assert!(
-        e.primitive_reads
+        e.state.primitive_reads
             .borrow()
             .as_ref()
             .unwrap()
@@ -235,7 +235,7 @@ fn pending_owned_condition_in_unused_let_does_not_certify_equal_components() {
         "view accept(r:Root,c:Part[r]):Bool=true;law required eq(r:Root,c:Part):let unused=accept(r,c) in c.pair=(0,true);",
     );
     let e = Environment::new(&i, &mut quiet()).unwrap();
-    *e.primitive_reads.borrow_mut() = Some(BTreeSet::new());
+    *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
     let bindings = vec![("r".into(), subject("r2")), ("c".into(), subject("p"))];
     let p = probe(&e, &i.law().declarations["Selected.eq"], &bindings, 0).unwrap();
     assert!(p.admissible);
@@ -248,7 +248,7 @@ fn pending_owned_condition_in_unused_let_does_not_certify_equal_components() {
     assert!(cs.iter().all(|c| c.equal == Some(true)));
     assert!(cs.iter().all(|c| c.indicator.is_none()));
     assert!(
-        e.primitive_reads
+        e.state.primitive_reads
             .borrow()
             .as_ref()
             .unwrap()

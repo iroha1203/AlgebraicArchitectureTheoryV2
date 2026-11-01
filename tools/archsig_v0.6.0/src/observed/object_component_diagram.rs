@@ -940,7 +940,7 @@ impl Environment<'_> {
             return Err("対象族のconsumerが元Architectureと違う".into());
         }
         if self
-            .verified_object_components
+            .results.verified_object_components
             .borrow()
             .iter()
             .any(|s| Arc::ptr_eq(s, &data.source))
@@ -948,8 +948,8 @@ impl Environment<'_> {
             return Ok(());
         }
         data.source
-            .recheck(graph, self.inputs, a, &mut self.control.clone())?;
-        self.verified_object_components
+            .recheck(graph, self.indexes.inputs, a, &mut self.control.clone())?;
+        self.results.verified_object_components
             .borrow_mut()
             .push(data.source.clone());
         Ok(())

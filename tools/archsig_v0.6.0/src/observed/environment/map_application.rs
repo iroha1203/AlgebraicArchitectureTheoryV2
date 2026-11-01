@@ -24,10 +24,10 @@ impl Environment<'_> {
             return Ok(None);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
             return Ok(None);
         };
-        let law = self.inputs.law();
+        let law = self.indexes.inputs.law();
         let ExprKind::Call { callee, args } = &law.exprs[id].kind else {
             return Ok(None);
         };
@@ -85,7 +85,7 @@ impl Environment<'_> {
         let Scalar::Map { domain, pairs, .. } = &values[0] else {
             return Err("Map条件の実calleeがMap値でない".into());
         };
-        if data::map_apply(&values[0], &values[1], self.inputs.law(), &self.control)?.is_some() {
+        if data::map_apply(&values[0], &values[1], self.indexes.inputs.law(), &self.control)?.is_some() {
             return Ok(None);
         }
         let mut keys = Vec::new();

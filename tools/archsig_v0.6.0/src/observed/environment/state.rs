@@ -44,6 +44,77 @@ impl<C: ScopedReplace<T>, T> Drop for StateGuard<'_, C, T> {
     }
 }
 
+// 評価の入れ子に応じてguardで切り替える状態。
+use super::*;
+pub(crate) struct EvaluationState {
+    pub(super) architecture: RefCell<Option<architecture_environment::ArchitectureContext>>,
+    pub(super) context: Cell<Option<crate::observed::call::Context>>,
+    pub(super) completion_values: RefCell<CompletionValues>,
+    pub(super) value_read: Cell<bool>,
+    pub(super) primitive_reads: RefCell<Option<BTreeSet<Fact>>>,
+    pub(super) missing_slot_reads: RefCell<Option<BTreeSet<Fact>>>,
+    pub(super) evaluation_capture: RefCell<Option<quotient_evaluation::EvaluationCapture>>,
+    pub(super) scoped_context: Cell<Option<crate::observed::call::Context>>,
+    pub(super) validation_depth: Cell<usize>,
+    pub(super) cutoff: Cell<usize>,
+    pub(super) answer_rechecks: RefCell<BTreeSet<usize>>,
+    pub(super) universal_context: RefCell<Option<universal::AnalysisContext>>,
+    #[cfg(test)]
+    pub(super) optional_name_context: Cell<Option<crate::observed::call::Context>>,
+    #[cfg(test)]
+    pub(super) name_token_observer: RefCell<Option<NameTokenObserver>>,
+}
+
+impl EvaluationState {
+    pub(super) fn validation_session<T, E>(
+        &self,
+        results: &ResultStore,
+        run: impl FnOnce() -> Result<T, E>,
+    ) -> Result<T, E> {
+        // Source/Frame の再分析と Evaluation の再検査は相互再入する。
+        // Source・pattern・実引数復元の局所値を確保する前に十分な余白を取る。
+        stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
+            let depth = self.validation_depth.get();
+            if depth == 0 {
+                *results.cache.borrow_mut() = ValidationCache::default();
+                results.validation_snapshot.replace(None);
+            }
+            let depth_guard = self.validation_depth.scoped(depth + 1);
+            let result = run();
+            depth_guard.restore();
+            // Graphのprefixを確認できないroot解析では、成功も失敗も必ず破棄する。
+            if depth == 0 {
+                *results.cache.borrow_mut() = ValidationCache::default();
+                results.validation_snapshot.replace(None);
+            }
+            result
+        })
+    }
+}
+
+impl Default for EvaluationState {
+    fn default() -> Self {
+        Self {
+            architecture: RefCell::new(None),
+            context: Cell::new(None),
+            completion_values: RefCell::new(Vec::new()),
+            value_read: Cell::new(false),
+            primitive_reads: RefCell::new(None),
+            missing_slot_reads: RefCell::new(None),
+            evaluation_capture: RefCell::new(None),
+            scoped_context: Cell::new(None),
+            validation_depth: Cell::new(0),
+            cutoff: Cell::new(usize::MAX),
+            answer_rechecks: RefCell::new(BTreeSet::new()),
+            universal_context: RefCell::new(None),
+            #[cfg(test)]
+            optional_name_context: Cell::new(None),
+            #[cfg(test)]
+            name_token_observer: RefCell::new(None),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -114,15 +185,16 @@ mod tests {
             env.local_point(declaration, &[])
         }));
         assert!(failure.is_err());
-        assert!(env.missing_slot_reads.borrow().is_none());
-        assert!(env.evaluation_capture.borrow().is_none());
+        assert!(env.state.missing_slot_reads.borrow().is_none());
+        assert!(env.state.evaluation_capture.borrow().is_none());
         armed.set(false);
         let failure = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            env.validation_session(|| -> Result<(), ValidationFailure> {
-                panic!("injected validation panic")
-            })
+            env.state
+                .validation_session(&env.results, || -> Result<(), ValidationFailure> {
+                    panic!("injected validation panic")
+                })
         }));
         assert!(failure.is_err());
-        assert_eq!(env.validation_depth.get(), 0);
+        assert_eq!(env.state.validation_depth.get(), 0);
     }
 }

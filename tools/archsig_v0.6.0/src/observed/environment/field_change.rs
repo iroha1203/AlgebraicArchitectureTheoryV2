@@ -24,7 +24,7 @@ pub(in crate::observed) struct Linear {
 fn unsupported(env: &Environment<'_>, id: usize, feature: &str) -> ValidationFailure {
     ValidationFailure::UnsupportedExpression {
         location: Location::Law {
-            span: env.inputs.law().exprs[id].span,
+            span: env.indexes.inputs.law().exprs[id].span,
         },
         feature: feature.into(),
     }
@@ -108,7 +108,7 @@ fn equations(
             }
             return Ok(());
         }
-        match &env.inputs.law().exprs[id].kind {
+        match &env.indexes.inputs.law().exprs[id].kind {
             ExprKind::Group(body) => {
                 equations(env, *body, vars, reading, axes, matrix, rhs, missing)
             }
@@ -295,7 +295,7 @@ fn compute_inner(
         let mut current = *body;
         loop {
             env.tick()?;
-            match &env.inputs.law().exprs[current].kind {
+            match &env.indexes.inputs.law().exprs[current].kind {
                 ExprKind::Group(inner) => current = *inner,
                 ExprKind::Let { name, value, body } => {
                     let v = env.scoped_ast(*value, &vars, &Scope::default(), &change.reading)?;
@@ -341,7 +341,7 @@ fn compute_inner(
                         let v = env.scoped_ast(*id, &vars, &Scope::default(), &change.reading)?;
                         usable(env, *id, &v)?;
                         let form = v.affine.ok_or_else(|| {
-                            if matches!(env.inputs.law().expr_type(*id), Some(Type::Q)) {
+                            if matches!(env.indexes.inputs.law().expr_type(*id), Some(Type::Q)) {
                                 missing.unsupported=Some("nonlinear_numeric_change");
                             }
                             unsupported(env, *id, "有理changeの更新式がQアフィンでない")
@@ -394,12 +394,12 @@ fn compute_inner(
     )?;
     let candidates_empty = guard_fiber.particular.is_none();
     let mut updated = Environment::with_primitive_valuation(
-        env.inputs,
+        env.indexes.inputs,
         &env.fixed_values(),
         &mut env.control.clone(),
     )?;
-    updated.object = env.object_domain();
-    updated.affine_valuation = updates;
+    updated.indexes.object = env.object_domain();
+    updated.indexes.affine_valuation = updates;
     let (matrix, rhs) = if candidates_empty {
         (vec![], vec![])
     } else {
@@ -441,15 +441,14 @@ pub(in crate::observed) fn state_equations(
     missing: &mut Pending,
 ) -> Result<(Matrix, Vec<Option<Scalar>>), ValidationFailure> {
     let mut state = Environment::with_primitive_valuation(
-        env.inputs,
+        env.indexes.inputs,
         &env.fixed_values(),
         &mut env.control.clone(),
     )?;
-    state.object = env.object_domain();
+    state.indexes.object = env.object_domain();
     for slot in slots {
         env.tick()?;
-        if env
-            .field(
+        if env.indexes.field(&env.state,
                 &slot.snapshot,
                 &slot.subject,
                 slot.field.as_ref().ok_or("自由位置にfieldがない")?,
@@ -460,7 +459,7 @@ pub(in crate::observed) fn state_equations(
         {
             return Err("有理局所状態の自由位置がQでない".into());
         }
-        state.affine_valuation.insert(
+        state.indexes.affine_valuation.insert(
             slot.clone(),
             Form::typed_state(&Type::Q, slot, &env.control)?,
         );
@@ -478,7 +477,7 @@ fn requirement_equations(
     let mut matrix = vec![];
     let mut rhs = vec![];
     for (name, bindings) in requirements {
-        let law = &env.inputs.law().declarations[name];
+        let law = &env.indexes.inputs.law().declarations[name];
         let Signature::Law {
             body,
             guard,

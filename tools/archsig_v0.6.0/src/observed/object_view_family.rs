@@ -252,7 +252,7 @@ impl FiniteViewAssignment {
         p: &Param,
         c: &Control,
     ) -> Result<Option<(Scalar, Scope, Vec<Fact>)>, ValidationFailure> {
-        let inputs = env.inputs;
+        let inputs = env.indexes.inputs;
         if inputs.sources() != self.inputs.sources()
             || request != &self.request
             || request.declaration() != Some(self.instance.declaration().name.as_str())

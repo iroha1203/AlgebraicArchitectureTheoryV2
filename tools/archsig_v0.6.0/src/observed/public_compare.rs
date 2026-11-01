@@ -238,7 +238,7 @@ fn subject_node(env: &Environment<'_>, s: &Selector) -> Result<Node, ValidationF
     let Selector::Subject { snapshot, subject } = s else {
         return Err("比較のsubjectでない".into());
     };
-    let source = env.subject(snapshot, subject)?;
+    let source = env.indexes.subject(snapshot, subject)?;
     let scalar = Scalar::Subject {
         snapshot: snapshot.clone(),
         subject: subject.clone(),
@@ -261,7 +261,7 @@ fn subject_node(env: &Environment<'_>, s: &Selector) -> Result<Node, ValidationF
             field: None,
             atom: None,
         }],
-        scope: env.subject_scope(source)?,
+        scope: env.indexes.subject_scope(source)?,
         evidence: vec![],
         judgment: None,
         reasons: vec![],
@@ -345,7 +345,7 @@ pub(super) fn validate_origin(
     let kind = super::request::comparison::kind(r).map_err(|error|ValidationFailure::Internal(format!("元比較kind: {error:?}")))?;
     if kind != w.kind || r.kind != QuestionKind::Compare
         || r != &w.request
-        || env.inputs.sources() != w.inputs.sources()
+        || env.indexes.inputs.sources() != w.inputs.sources()
         || !origin_ref(env, graph, selector(r, "head")?, w.left)?
         || !origin_ref(env, graph, selector(r, "to")?, w.right)?
     {

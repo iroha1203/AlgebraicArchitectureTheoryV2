@@ -27,7 +27,7 @@ impl Environment<'_> {
         index: usize,
     ) -> Result<Option<FrameInputs>, ValidationFailure> {
         self.tick()?;
-        let Some(i) = reading::instance_inputs(g, index, self.cutoff.get().min(g.nodes.len()))?
+        let Some(i) = reading::instance_inputs(g, index, self.state.cutoff.get().min(g.nodes.len()))?
         else {
             return Ok(None);
         };
@@ -67,7 +67,7 @@ impl Environment<'_> {
                 },
             );
         }
-        let declaration = self.inputs.law().declarations.get(&i.origin.declaration)
+        let declaration = self.indexes.inputs.law().declarations.get(&i.origin.declaration)
             .ok_or("元viewの宣言がない")?;
         if let crate::law::model::Signature::View { params, .. } = &declaration.signature {
             for parameter in params {
@@ -110,7 +110,7 @@ impl Environment<'_> {
             .get(context.request)
             .ok_or("view全体評価の元Requestがない")?;
         if self
-            .original_requests
+            .indexes.original_requests
             .is_none_or(|rs| rs.get(context.request) != Some(request))
         {
             return Err("view全体評価の元Requestが現在の入力と違う".into());
@@ -193,7 +193,7 @@ impl Environment<'_> {
             .get(context.request)
             .ok_or("全view族の元Requestがない")?;
         if self
-            .original_requests
+            .indexes.original_requests
             .is_none_or(|ps| ps.get(context.request) != Some(request))
         {
             return Err("全view族の元Requestが現在の入力と違う".into());

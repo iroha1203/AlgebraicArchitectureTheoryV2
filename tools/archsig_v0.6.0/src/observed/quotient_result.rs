@@ -148,7 +148,7 @@ fn compute(
         }
         let table = quotient_evaluation::compute(env, g, &input, request, c)?;
         let declaration =
-            &env.inputs.law().declarations[request.declaration().ok_or("商のviewがない")?];
+            &env.indexes.inputs.law().declarations[request.declaration().ok_or("商のviewがない")?];
         let Signature::View { body, .. } = &declaration.signature else {
             return Err("商のviewが違う".into());
         };
@@ -183,7 +183,7 @@ fn compute(
         expression_part.scope.merge(&table.scope);
         expression_part.scope.readings.insert(declaration.reading.clone());
         let law_expression = if let Some((name, _)) = &table.law {
-            let Signature::Law {params, body, ..} = &env.inputs.law().declarations[name].signature else {unreachable!()};
+            let Signature::Law {params, body, ..} = &env.indexes.inputs.law().declarations[name].signature else {unreachable!()};
             let selected = bindings.iter().filter(|(name,_)|params.iter().any(|p| &p.name==name)).cloned().collect::<Vec<_>>();
             let parameters = params.iter().filter(|p|!selected.iter().any(|(n,_)|n==&p.name)).map(|p|(p.name.clone(),p.ty.clone())).collect::<Vec<_>>();
             let law_expression=change_result::source_expression(&mut b,env,*body,&selected,&parameters)?;
@@ -202,7 +202,7 @@ fn compute(
                     .law
                     .as_ref()
                     .map(|(name, _)| Location::Law {
-                        span: env.inputs.law().declarations[name].span,
+                        span: env.indexes.inputs.law().declarations[name].span,
                     })
                     .or(Some(Location::Law {
                         span: declaration.span,
@@ -570,7 +570,7 @@ pub(super) fn validate_origin(
     };
     if &d.source.request != request
         || !Arc::ptr_eq(w, &d.source.witness)
-        || v.witness.inputs().sources() != env.inputs.sources()
+        || v.witness.inputs().sources() != env.indexes.inputs.sources()
     {
         return Err("商が現在の入力・Requestに属さない".into());
     }

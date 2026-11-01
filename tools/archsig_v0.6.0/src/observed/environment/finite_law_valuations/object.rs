@@ -89,7 +89,7 @@ impl Selection {
 }
 impl FiniteLawFamilyValuations {
     pub(super) fn in_object<'a>(&self, mut environment: Environment<'a>) -> Environment<'a> {
-        environment.object = self.object.as_ref().map(|o| Arc::clone(&o.domain));
+        environment.indexes.object = self.object.as_ref().map(|o| Arc::clone(&o.domain));
         environment
     }
     /// 単一対象入口のidentity。列ごとの対象はcolumn_object_identityで読む。
@@ -168,10 +168,10 @@ impl FiniteLawFamilyValuations {
         };
         // Graphを読まない元ASTの評価でも、対象域は分析Contextの一部。
         // 対象を替えた列へ、同じ式・束縛の既存値を持ち越さない。
-        if environment.object.as_deref() != selection.map(|object| object.domain.as_ref()) {
-            environment.scoped_values.borrow_mut().clear();
+        if environment.indexes.object.as_deref() != selection.map(|object| object.domain.as_ref()) {
+            environment.results.scoped_values.borrow_mut().clear();
         }
-        environment.object = selection.map(|object| Arc::clone(&object.domain));
+        environment.indexes.object = selection.map(|object| Arc::clone(&object.domain));
         Ok(())
     }
     pub(in crate::observed) fn column_object_identity(
