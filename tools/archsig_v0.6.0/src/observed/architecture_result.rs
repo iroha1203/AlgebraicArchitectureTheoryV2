@@ -290,7 +290,7 @@ fn request_reading<'a>(inputs: &'a CheckedInputs, request: &'a Request) -> Resul
     let Selector::Declaration { name }=&request.head else { return Err("Architectureの元headが宣言でない".into()); };
     match request.kind {
         QuestionKind::Build=>Ok(name),
-        QuestionKind::Solve|QuestionKind::Repair=>inputs.law().declarations.get(name)
+        QuestionKind::Solve|QuestionKind::Repair=>inputs.law().declarations().get(name)
             .map(|d| d.reading.as_str()).ok_or_else(|| "変更対象の元Lawがない".into()),
         _=>Err("Architectureの元要求が対象構成でない".into()),
     }
@@ -339,7 +339,7 @@ fn selected_root_reference(graph:&Graph,r:NodeRef,request:&Request)->Result<Node
         if let Some(Payload::Construction(v))=&graph.get(r)?.payload {
             if graph.get(r)?.ty==NodeType::Construction(T::Architecture) {
                 let law=request.declaration().ok_or("changeのLawがない")?;
-                let reading=&v.witness.inputs().law().declarations[law].reading;
+                let reading=&v.witness.inputs().law().declarations()[law].reading;
                 if let Witness::Architecture(w)=&v.witness {if w.construction().reading()!=reading {return Err("changeと元Architectureのreadingが違う".into());}}
                 if let Some((root,1))=v.project(&[P::Field("root".into())]) {return Ok(root);}
             }
@@ -397,7 +397,7 @@ pub(super) fn selected_build(
     let declaration = environment
         .indexes.inputs
         .definitions()
-        .declarations
+        .declarations()
         .get(subject.ty.as_str())
         .ok_or("buildのroot型がない")?;
     let visible = crate::construction::reading_namespaces(

@@ -75,8 +75,8 @@ pub(super) fn constructors<'a>(
     family: &str,
 ) -> Result<&'a [Constructor], ValidationFailure> {
     match &law
-        .definitions
-        .declarations
+        .definitions()
+        .declarations()
         .get(family)
         .ok_or("Data定義がない")?
         .signature
@@ -174,10 +174,10 @@ pub(super) fn resolved(
     control: &Control,
 ) -> Result<Option<crate::names::QualifiedName>, ValidationFailure> {
     let mut found = None;
-    for target in law.program.references.get(&span).into_iter().flatten() {
+    for target in law.program().references.get(&span).into_iter().flatten() {
         tick(control)?;
         if let Some(family) = target.owner()
-            && matches!(law.definitions.declarations.get(family).map(|d| &d.signature),
+            && matches!(law.definitions().declarations().get(family).map(|d| &d.signature),
                 Some(PrimitiveSignature::Data { .. })) {
             constructor(law, family, target, control)?;
             if found.as_ref().is_some_and(|previous| previous != target) {
@@ -194,18 +194,18 @@ pub(super) fn expression(
     id: usize,
     control: &Control,
 ) -> Result<Option<(crate::names::QualifiedName, Vec<usize>)>, ValidationFailure> {
-    let (target, args) = match &law.program.nodes[id].kind {
+    let (target, args) = match &law.program().nodes[id].kind {
         ExprKind::Call { callee, args } => {
-            let Some(crate::law::ir::Callee::Ctor(family, index)) = law.program.callees.get(callee) else {
+            let Some(crate::law::ir::Callee::Ctor(family, index)) = law.program().callees.get(callee) else {
                 return Ok(None);
             };
             let ctor = constructors(law, family)?.get(*index).ok_or("constructor元indexがない")?;
             let full = format!("{family}.{}", ctor.name);
-            let target = law.resolved_names.get(&full).ok_or("constructor検査済み名がない")?.clone();
+            let target = law.resolved_names().get(&full).ok_or("constructor検査済み名がない")?.clone();
             (target, args.clone())
         }
         ExprKind::Dotted(_) => {
-            let Some(target) = resolved(law, law.program.nodes[id].span, control)? else {
+            let Some(target) = resolved(law, law.program().nodes[id].span, control)? else {
                 return Ok(None);
             };
             (target, vec![])
@@ -572,7 +572,7 @@ pub(super) fn select(
     value: Option<&Scalar>,
     control: &Control,
 ) -> Result<Option<usize>, ValidationFailure> {
-    let ExprKind::Match { arms, .. } = &law.exprs[id].kind else {
+    let ExprKind::Match { arms, .. } = &law.exprs()[id].kind else {
         return Err("選択元がmatchでない".into());
     };
     let Some(value) = value else {
@@ -661,7 +661,7 @@ pub(super) fn bindings(
     value: &Scalar,
     control: &Control,
 ) -> Result<BTreeMap<String, Scalar>, ValidationFailure> {
-    let ExprKind::Match { scrutinee, arms } = &law.exprs[id].kind else {
+    let ExprKind::Match { scrutinee, arms } = &law.exprs()[id].kind else {
         return Err("binder元がmatchでない".into());
     };
     let mut result = BTreeMap::new();

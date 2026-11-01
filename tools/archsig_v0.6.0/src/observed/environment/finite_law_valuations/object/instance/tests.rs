@@ -154,7 +154,7 @@ fn foreign_inputs() -> Arc<CheckedInputs> {
     let definitions=String::from_utf8(base.sources().definitions()[0].bytes().to_vec()).unwrap().replacen(r#""declarations":["#,r#""declarations":[{"kind":"entity","name":"Pattern.ForeignRoot","meaning":"外部の根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Pattern.ForeignPart","meaning":"外部の部分。","parameters":[{"name":"owner","type":["Ref","Pattern.ForeignRoot"],"meaning":"所属。"}],"fields":[],"alignments":[]},"#,1);
     let checked =
         crate::definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Pattern"].digest;
+    let digest = &checked.vocabularies()["Pattern"].digest;
     let map=fixture::MAP.replace(r#""subjects":["#,r#""subjects":[{"id":"f1","type":"Pattern.ForeignRoot","origin":"model"},{"id":"f2","type":"Pattern.ForeignRoot","origin":"model"},{"id":"s","type":"Pattern.ForeignPart","origin":"model"},"#).replace(r#""atoms":["#,r#""atoms":[{"id":"os","subject":"s","field":"Pattern.ForeignPart.owner","value":["v","f1"],"origin":"model"},"#).replace("@DIGEST@",digest);
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";law required first(c:Part,r:ForeignRoot,x:Option<ForeignPart[r]>):false;law optional second(c:Part,r:ForeignRoot,x:Option<ForeignPart[r]>):false;}}"

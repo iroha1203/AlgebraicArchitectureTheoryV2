@@ -129,27 +129,27 @@ fn named_call_actual_stages_keep_argument_callee_and_caller_prefixes() {
     );
     let law = normal.prepared.inputs().law();
     let Signature::View { body: caller, .. } =
-        &law.declarations["Reservations.plainCaller"].signature
+        &law.declarations()["Reservations.plainCaller"].signature
     else {
         panic!("caller")
     };
-    let ExprKind::Let { value: call, .. } = &law.exprs[*caller].kind else {
+    let ExprKind::Let { value: call, .. } = &law.exprs()[*caller].kind else {
         panic!("let")
     };
-    let ExprKind::Call { args, .. } = &law.exprs[*call].kind else {
+    let ExprKind::Call { args, .. } = &law.exprs()[*call].kind else {
         panic!("call")
     };
-    let call_span = law.exprs[*call].span;
-    let caller_span = law.exprs[*caller].span;
-    let arg_span = law.exprs[args[0]].span;
-    let Signature::View { body, .. } = &law.declarations["Reservations.plainAdd"].signature else {
+    let call_span = law.exprs()[*call].span;
+    let caller_span = law.exprs()[*caller].span;
+    let arg_span = law.exprs()[args[0]].span;
+    let Signature::View { body, .. } = &law.declarations()["Reservations.plainAdd"].signature else {
         panic!("callee")
     };
-    let ExprKind::Binary { lhs, .. } = &law.exprs[*body].kind else {
+    let ExprKind::Binary { lhs, .. } = &law.exprs()[*body].kind else {
         panic!("body")
     };
-    let body_span = law.exprs[*body].span;
-    let inner_span = law.exprs[*lhs].span;
+    let body_span = law.exprs()[*body].span;
+    let inner_span = law.exprs()[*lhs].span;
     for stage in 0..3 {
         let expected = crate::result::Signal::Term;
         let armed = Rc::new(Cell::new(false));
@@ -359,7 +359,7 @@ fn owned_failed_fields_recheck_original_children_reasons_type_scope_and_value_ab
         }
         // 失敗した内側の呼出しは値を出さず、元の条件の失敗を残す。
         if (8..=11).contains(&request)
-            && let Some(id) = law.exprs.iter().position(|e| e.span == *span)
+            && let Some(id) = law.exprs().iter().position(|e| e.span == *span)
             && let Some(d) = e.named_view(id).unwrap()
             && [
                 "Reservations.ignore",

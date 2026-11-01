@@ -1,0 +1,22 @@
+[package]
+name = "archsig-computation"
+version = "0.6.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "../../src/computation_lib.rs"
+
+[dependencies]
+archsig-common = { path = "../common" }
+archsig-input = { path = "../input" }
+num-bigint = "0.4"
+num-integer = "0.1"
+num-traits = "0.2"
+stacker = "0.1"
+
+[dev-dependencies]
+archsig-common = { path = "../common", features = ["test-support"] }
+
+[features]
+test-support = ["archsig-common/test-support"]

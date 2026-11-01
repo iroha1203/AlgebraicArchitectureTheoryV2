@@ -9,7 +9,6 @@ use crate::{
     observed::{
         EvaluationFailure, ObservedEvaluation, PrepareFailure, evaluate_observed, prepare_observed,
         request::ResolveFailure,
-        result::{Decision, ReasonKind},
     },
 };
 
@@ -167,42 +166,24 @@ fn deliver(
     let (mut status, mut code) = match evaluation.status() {
         "complete" => (
             Status::Complete,
-            u8::from(
-                evaluation
-                    .answers
-                    .iter()
-                    .any(|a| a.status == Decision::Refuted),
-            ),
+            u8::from(evaluation.has_refuted_answer()),
         ),
         "partial" => (Status::Partial, 2),
         "interrupted" => (Status::Interrupted, 75),
         _ => (Status::Error, 70),
     };
-    let mut issues: Vec<Json> = evaluation.issues.iter().map(|i| i.wire()).collect();
+    let mut issues: Vec<Json> = evaluation.issues_wire();
     if let Some(reason) = &reuse_stop {
         status = Status::Interrupted;
         code = 75;
         issues.push(reason.issue());
     }
-    let internal = evaluation
-        .issues
-        .iter()
-        .any(|issue| matches!(issue.kind, ReasonKind::Internal(_)));
-    if ((internal || status == Status::Error) && evaluation.nodes.is_empty())
-        || (status == Status::Interrupted && evaluation.nodes.is_empty())
+    let internal = evaluation.has_internal_issue();
+    if ((internal || status == Status::Error) && !evaluation.has_nodes())
+        || (status == Status::Interrupted && !evaluation.has_nodes())
     {
         // 保存しない計算の参照や未決理由は通知へ持ち出さず、停止原因だけを返す。
-        let mut issues: Vec<_> = evaluation
-            .issues
-            .iter()
-            .filter(|issue| matches!(issue.kind, ReasonKind::Internal(_) | ReasonKind::Stop(_)))
-            .map(|issue| {
-                let mut issue = issue.clone();
-                issue.dependencies.clear();
-                issue.missing.clear();
-                issue.wire()
-            })
-            .collect();
+        let mut issues = evaluation.failure_notifications();
         if let Some(reason) = reuse_stop {
             issues.push(reason.issue());
         }

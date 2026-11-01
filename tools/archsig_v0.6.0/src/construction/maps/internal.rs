@@ -209,7 +209,7 @@ fn internal_arrow_checked(
     )?;
     let signature = inputs
         .definitions()
-        .declarations
+        .declarations()
         .get(holder.ty.as_str())
         .ok_or_else(|| ConstructionFailure::Inconsistent("arrowの元定義がない".into()))?;
     let PrimitiveSignature::Arrow { owner, .. } = &signature.signature else {
@@ -241,7 +241,7 @@ fn internal_arrow_checked(
     let from = endpoint(holder, "from", &mut missing, control)?;
     let to = endpoint(holder, "to", &mut missing, control)?;
     let mut index = BTreeMap::new();
-    for snapshot in &inputs.archmap().snapshots {
+    for snapshot in inputs.archmap().snapshots() {
         tick(control)?;
         for subject in &snapshot.subjects {
             tick(control)?;
@@ -417,7 +417,7 @@ pub fn internal_arrows(
         let root = subject(inputs, root_snapshot, root_id, control)?;
         let namespaces = namespaces(inputs, reading, control)?;
         let mut arrows = Vec::new();
-        for snapshot in &inputs.archmap().snapshots {
+        for snapshot in inputs.archmap().snapshots() {
             tick(control)?;
             for holder in &snapshot.subjects {
                 tick(control)?;
@@ -426,7 +426,7 @@ pub fn internal_arrows(
                 }
                 let Some(PrimitiveSignature::Arrow { owner, .. }) = inputs
                     .definitions()
-                    .declarations
+                    .declarations()
                     .get(holder.ty.as_str())
                     .map(|d| &d.signature)
                 else {
@@ -482,7 +482,7 @@ mod tests {
     fn inputs() -> CheckedInputs {
         let d = include_bytes!("../../../tests/fixtures/internal-arrow.atoms.json");
         let checked = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
-        let digest = &checked.vocabularies["Flow"].digest;
+        let digest = &checked.vocabularies()["Flow"].digest;
         check_inputs(
             InputSources::from_bytes(
                 vec![d.to_vec()],

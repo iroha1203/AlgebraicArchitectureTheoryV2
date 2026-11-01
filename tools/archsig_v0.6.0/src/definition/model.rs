@@ -193,7 +193,7 @@ pub struct DefinitionIdentity {
 /// `check_definitions` で検査した共通定義。公開の参照から内容を読み取れる。
 ///
 /// ```
-/// use archsig::definition::check_definitions;
+/// use archsig_input::definition::check_definitions;
 /// let checked = check_definitions(&[]).unwrap();
 /// assert!(checked.declarations().is_empty());
 /// assert!(checked.vocabularies().is_empty());
@@ -203,7 +203,7 @@ pub struct DefinitionIdentity {
 /// 構築と更新は検査を通す。
 ///
 /// ```compile_fail,E0451
-/// use archsig::definition::CheckedDefinitions;
+/// use archsig_input::definition::CheckedDefinitions;
 /// let forged = CheckedDefinitions {
 ///     declarations: Default::default(),
 ///     vocabularies: Default::default(),
@@ -212,22 +212,22 @@ pub struct DefinitionIdentity {
 /// ```
 ///
 /// ```compile_fail,E0599
-/// use archsig::definition::CheckedDefinitions;
+/// use archsig_input::definition::CheckedDefinitions;
 /// let forged = CheckedDefinitions::default();
 /// ```
 ///
 /// ```compile_fail,E0596
-/// let mut checked = archsig::definition::check_definitions(&[]).unwrap();
+/// let mut checked = archsig_input::definition::check_definitions(&[]).unwrap();
 /// checked.declarations().clear();
 /// ```
 ///
 /// ```compile_fail,E0596
-/// let mut checked = archsig::definition::check_definitions(&[]).unwrap();
+/// let mut checked = archsig_input::definition::check_definitions(&[]).unwrap();
 /// checked.vocabularies().values_mut().next().unwrap().dependencies.clear();
 /// ```
 ///
 /// ```compile_fail,E0594
-/// let mut checked = archsig::definition::check_definitions(&[]).unwrap();
+/// let mut checked = archsig_input::definition::check_definitions(&[]).unwrap();
 /// checked.inputs()[0].model_digest = None;
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq)]

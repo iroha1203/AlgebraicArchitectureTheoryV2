@@ -458,7 +458,7 @@ impl super::result_kind::ResultKind for Data {
             .indexes
             .inputs
             .law()
-            .declarations
+            .declarations()
             .get(&o.declaration)
             .ok_or("元view宣言がない")?;
         let side =

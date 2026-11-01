@@ -20,7 +20,7 @@ pub(super) fn compute(
     let image = quotient_affine::compute(env, g, &input, request, c)?;
     let ty = &image.ty;
     let declaration =
-        &env.indexes.inputs.law().declarations[request.declaration().ok_or("アフィン商のViewがない")?];
+        &env.indexes.inputs.law().declarations()[request.declaration().ok_or("アフィン商のViewがない")?];
     let Signature::View { body, .. } = &declaration.signature else {
         return Err("アフィン商のView署名が違う".into());
     };
@@ -67,7 +67,7 @@ pub(super) fn compute(
     part.scope.merge(&image.scope);
     part.scope.readings.insert(declaration.reading.clone());
     let law_expression = if let Some(law) = &image.law {
-        let declaration = &env.indexes.inputs.law().declarations[&law.name];
+        let declaration = &env.indexes.inputs.law().declarations()[&law.name];
         let Signature::Law { body, params, .. } = &declaration.signature else {
             return Err("アフィン商のLaw署名がない".into());
         };
@@ -619,7 +619,7 @@ fn law_descent(
     let mut arguments = vec![expression];
     // 不適用のinstanceも族の固定成分であり、キーを落として空族へ変えない。
     if law.instances.iter().any(|i| i.guard.never()) {
-        let Signature::Law { params, .. } = &env.indexes.inputs.law().declarations[&law.name].signature
+        let Signature::Law { params, .. } = &env.indexes.inputs.law().declarations()[&law.name].signature
         else {
             return Err("商のLaw署名がない".into());
         };

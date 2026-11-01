@@ -94,13 +94,13 @@ fn read(
     c: &mut Control,
 ) -> Result<Reading, ConstructionFailure> {
     let row = &readings.instances()[position.instance];
-    let declaration = &inputs.law().declarations[&row.declaration().name];
+    let declaration = &inputs.law().declarations()[&row.declaration().name];
     let crate::law::model::Signature::Law { body, guard, .. } = &declaration.signature else {
         return Err(bad("数値Lawを選択する"));
     };
     let zero_type =
         match crate::observed::object_law_residuals::predicate_equation(inputs, *body, c)? {
-            Some(id) => match inputs.law().exprs[id].kind {
+            Some(id) => match inputs.law().exprs()[id].kind {
                 crate::law::ast::ExprKind::Binary { lhs, .. } => inputs
                     .law()
                     .expr_type(lhs)
@@ -150,7 +150,7 @@ fn read(
             Source::Outside => return outside(c, facts),
             Source::Unknown => {
                 return Ok(unknown(
-                    inputs.law().exprs[*guard].span,
+                    inputs.law().exprs()[*guard].span,
                     vec![],
                     facts,
                     None,
@@ -161,7 +161,7 @@ fn read(
         facts.extend(value.support.iter().cloned());
         if value.condition_failed || value.condition_pending {
             return Ok(unknown(
-                inputs.law().exprs[*guard].span,
+                inputs.law().exprs()[*guard].span,
                 analysis.missing,
                 facts,
                 None,
@@ -173,7 +173,7 @@ fn read(
             _ => {
                 let Some(forms) = analysis.forms else {
                     let mut reading = unknown(
-                        inputs.law().exprs[*guard].span,
+                        inputs.law().exprs()[*guard].span,
                         analysis.missing,
                         facts,
                         None,
@@ -192,7 +192,7 @@ fn read(
                 for form in &forms {
                     if form.numeric_parameter_terms(c).map_err(invalid)?.is_none() {
                         return Ok(unknown(
-                            inputs.law().exprs[*guard].span,
+                            inputs.law().exprs()[*guard].span,
                             missing,
                             facts,
                             None,
@@ -213,7 +213,7 @@ fn read(
         c,
     )? {
         Source::Outside => return outside(c, facts),
-        Source::Unknown => return Ok(unknown(inputs.law().exprs[*body].span, vec![], facts, None)),
+        Source::Unknown => return Ok(unknown(inputs.law().exprs()[*body].span, vec![], facts, None)),
         Source::Value(value) => *value,
     };
     facts.extend(value.support);
@@ -221,7 +221,7 @@ fn read(
     facts.dedup();
     let incomplete = |missing| {
         unknown(
-            inputs.law().exprs[*body].span,
+            inputs.law().exprs()[*body].span,
             missing,
             facts.clone(),
             Some(condition.clone()),
@@ -887,7 +887,7 @@ pub(in crate::observed) fn compare_bound(
         .unwrap_or(if rational_ground { Type::Q } else { Type::Z });
     if result.basis.iter().any(|k| k.kind.ty() != ground) {
         result.pending = Some(pending(
-            inputs.law().declarations[&readings[0].instances()[positions[0].instance]
+            inputs.law().declarations()[&readings[0].instances()[positions[0].instance]
                 .declaration()
                 .name]
                 .span,

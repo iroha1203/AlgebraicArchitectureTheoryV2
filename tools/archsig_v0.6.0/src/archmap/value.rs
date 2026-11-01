@@ -266,7 +266,7 @@ mod lexical_priority_tests {
 }
 
 /// 全 snapshot の subject 表。参照の検査に使う。
-pub(crate) struct Roster<'a> {
+pub struct Roster<'a> {
     pub types: HashMap<(&'a str, &'a str), &'a str>,
 }
 
@@ -675,7 +675,7 @@ impl<E: InputError> Reader<'_, '_, E> {
 
 /// 内部の補完値も元fieldのencoding・型・登録参照で再検査する。
 /// 原始表やAtomを更新せず、補完制約の値として返す。
-pub(crate) fn check_assignment<E: InputError>(
+pub fn check_assignment<E: InputError>(
     value: &Json,
     ty: &Type,
     definitions: &CheckedDefinitions,

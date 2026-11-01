@@ -262,7 +262,7 @@ pub(crate) fn reading_namespaces(
     control: &mut Control,
 ) -> Result<BTreeSet<String>, ConstructionFailure> {
     let mut selected = None;
-    for info in &law.infos {
+    for info in law.infos() {
         tick(control)?;
         if info.kind == "reading" && info.name == reading {
             selected = Some(info);
@@ -282,7 +282,7 @@ pub(crate) fn reading_namespaces(
         if !seen.insert(name.clone()) {
             continue;
         }
-        let vocabulary = law.definitions.vocabularies.get(&name).ok_or_else(|| {
+        let vocabulary = law.definitions().vocabularies().get(&name).ok_or_else(|| {
             ConstructionFailure::Inconsistent(format!("検査済み定義 `{name}` がない"))
         })?;
         for dependency in &vocabulary.dependencies {
@@ -295,7 +295,7 @@ pub(crate) fn reading_namespaces(
 fn visible(inputs: &CheckedInputs, ty: &str, namespaces: &BTreeSet<String>) -> bool {
     inputs
         .definitions()
-        .declarations
+        .declarations()
         .get(ty)
         .is_some_and(|d| namespaces.contains(&d.namespace))
 }
@@ -319,7 +319,7 @@ fn has_reference(
             Type::Data(name) if seen.insert(name) => {
                 let Some(PrimitiveSignature::Data { constructors }) = inputs
                     .definitions()
-                    .declarations
+                    .declarations()
                     .get(name)
                     .map(|d| &d.signature)
                 else {
@@ -492,7 +492,7 @@ pub(crate) fn construct_resolving_owners(
         tick(control)?;
         let subject = inputs
             .archmap()
-            .snapshots
+            .snapshots()
             .iter()
             .flat_map(|s| &s.subjects)
             .find(|s| s.snapshot == requirement.snapshot && s.id == requirement.subject)
@@ -520,7 +520,7 @@ fn construct_with_owners(
     let namespaces = namespaces(inputs, reading, control)?;
     let mut index = BTreeMap::new();
     let mut universe = BTreeSet::new();
-    for snap in &inputs.archmap().snapshots {
+    for snap in inputs.archmap().snapshots() {
         tick(control)?;
         for subject in &snap.subjects {
             tick(control)?;
@@ -549,7 +549,7 @@ fn construct_with_owners(
     if !matches!(
         inputs
             .definitions()
-            .declarations
+            .declarations()
             .get(selected.ty.as_str())
             .map(|d| &d.signature),
         Some(PrimitiveSignature::Entity { owner: None, .. })
@@ -569,7 +569,7 @@ fn construct_with_owners(
         }
         let signature = inputs
             .definitions()
-            .declarations
+            .declarations()
             .get(subject.ty.as_str())
             .ok_or_else(|| ConstructionFailure::Inconsistent("subjectの元定義がない".into()))?;
         let (owner, is_entity) = match &signature.signature {
@@ -702,7 +702,7 @@ mod tests {
         let definition = include_bytes!("../tests/fixtures/configuration.atoms.json");
         let definitions =
             crate::definition::check_definitions(&[("definition0", definition)]).unwrap();
-        let digest = &definitions.vocabularies["Mesh"].digest;
+        let digest = &definitions.vocabularies()["Mesh"].digest;
         let law =
             include_str!("../tests/fixtures/configuration.law").replace("@MESH_DIGEST@", digest);
         let map = include_str!("../tests/fixtures/configuration.archmap.json")

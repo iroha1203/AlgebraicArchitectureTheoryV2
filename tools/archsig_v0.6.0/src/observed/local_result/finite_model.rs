@@ -70,7 +70,7 @@ pub(super) fn analyze(
     c: &mut Control,
 ) -> Result<(Option<Model>, Vec<Fact>), ValidationFailure> {
     let reading = witness.construction().reading();
-    let explicit = env.indexes.inputs.law().declarations.values().any(|d|
+    let explicit = env.indexes.inputs.law().declarations().values().any(|d|
         d.reading == reading && matches!(d.signature, Signature::Local { .. }));
     let change_name = request
         .arguments
@@ -80,7 +80,7 @@ pub(super) fn analyze(
             _ => None,
         })
         .ok_or("局所系のchange名がない")?;
-    let change = &env.indexes.inputs.law().declarations[change_name];
+    let change = &env.indexes.inputs.law().declarations()[change_name];
     let Signature::Change { params, .. } = &change.signature else {
         return Err("局所changeの署名がない".into());
     };
@@ -204,7 +204,7 @@ pub(super) fn analyze(
     let selected = request.declaration();
     let mut requirements = vec![];
     let mut universal = vec![];
-    for law in env.indexes.inputs.law().declarations.values().filter(|d| {
+    for law in env.indexes.inputs.law().declarations().values().filter(|d| {
         d.reading == reading
             && match selected {
                 Some(name) => d.name == name,
@@ -325,7 +325,7 @@ pub(super) fn analyze(
         state.select_local_object(witness, c)?;
         let mut row_truth = vec![];
         for (i, (name, bindings)) in requirements.iter().enumerate() {
-            let law = &env.indexes.inputs.law().declarations[name];
+            let law = &env.indexes.inputs.law().declarations()[name];
             let (row, absent, evaluated) = state.local_point(law, bindings)?;
             missing.extend(absent);
             missing.extend(row.application_missing.iter().cloned());
@@ -382,7 +382,7 @@ pub(super) fn analyze(
                 return Err("局所Lawの署名がない".into());
             };
             let parameters = params.iter().filter(|p| !bindings.iter().any(|(n,_)| *n == p.name)).cloned().collect::<Vec<_>>();
-            let roots = match env.indexes.inputs.law().exprs[body].kind {
+            let roots = match env.indexes.inputs.law().exprs()[body].kind {
                 ExprKind::Binary {
                     op: BinOp::Eq,
                     lhs,
@@ -393,7 +393,7 @@ pub(super) fn analyze(
             for read in evaluated.into_iter().filter(|n| {
                 roots.contains(&n.expression)
                     || guard == Some(n.expression)
-                    || match &env.indexes.inputs.law().exprs[n.expression].kind {
+                    || match &env.indexes.inputs.law().exprs()[n.expression].kind {
                         ExprKind::Field { .. } => true,
                         ExprKind::Dotted(parts) => {
                             parts.len() > 1

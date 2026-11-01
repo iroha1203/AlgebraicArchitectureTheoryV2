@@ -173,7 +173,7 @@ fn parameter_source_with_guard(
 ) -> Result<Option<ParameterEquation>, ConstructionFailure> {
     let crate::law::model::Signature::Law { body, .. } = &inputs
         .law()
-        .declarations
+        .declarations()
         .get(&instance.declaration().name)
         .ok_or_else(|| bad("元数値Lawの宣言がない"))?
         .signature
@@ -188,7 +188,7 @@ fn parameter_source_with_guard(
         lhs: left,
         rhs: right,
         ..
-    } = inputs.law().exprs[eq].kind
+    } = inputs.law().exprs()[eq].kind
     else {
         return Ok(None);
     };
@@ -575,16 +575,16 @@ impl Compiler<'_> {
         Ok(Some(EquationPolynomial::variable(&self.ring.ty, i, c)?))
     }
     fn is_helper(&self, mut callee: usize, c: &mut Control) -> Result<bool, ConstructionFailure> {
-        while let ExprKind::Group(child) = self.inputs.law().exprs[callee].kind {
+        while let ExprKind::Group(child) = self.inputs.law().exprs()[callee].kind {
             tick(c)?;
             callee = child;
         }
-        let span = self.inputs.law().exprs[callee].span;
-        for info in &self.inputs.law().infos {
+        let span = self.inputs.law().exprs()[callee].span;
+        for info in self.inputs.law().infos() {
             for (at, target) in &info.references {
                 tick(c)?;
                 if *at == span
-                    && self.inputs.law().declarations.get(target).is_some_and(|d| {
+                    && self.inputs.law().declarations().get(target).is_some_and(|d| {
                         matches!(d.signature, crate::law::model::Signature::View { .. })
                     })
                 {
@@ -679,7 +679,7 @@ impl Compiler<'_> {
                 return Ok(false);
             };
             // dottedの中間prefixも元token位置を用いる。架空のASTを作らない。
-            for expression in &self.inputs.law().exprs {
+            for expression in self.inputs.law().exprs() {
                 tick(c)?;
                 if let ExprKind::Dotted(names) = &expression.kind {
                     if names.first().is_some_and(|n| n.span.0 == span.0) {
@@ -771,7 +771,7 @@ impl Compiler<'_> {
                 return Ok(None);
             };
             let mut expression = None;
-            for e in &self.inputs.law().exprs {
+            for e in self.inputs.law().exprs() {
                 tick(c)?;
                 if e.span == span {
                     expression = Some(e);
@@ -969,7 +969,7 @@ impl Compiler<'_> {
                 continue;
             };
             let mut field = None;
-            for e in &self.inputs.law().exprs {
+            for e in self.inputs.law().exprs() {
                 tick(c)?;
                 if e.span == span {
                     field = match &e.kind {
@@ -1023,7 +1023,7 @@ impl Compiler<'_> {
                 return Ok(None);
             };
             let mut expression = None;
-            for e in &self.inputs.law().exprs {
+            for e in self.inputs.law().exprs() {
                 tick(c)?;
                 if e.span == span {
                     expression = Some(e);
@@ -1512,7 +1512,7 @@ mod tests {
     fn inputs_from(body: &str, definition: &str, map: &str) -> Arc<CheckedInputs> {
         let d = crate::definition::check_definitions(&[("definition0", definition.as_bytes())])
             .unwrap();
-        let digest = &d.vocabularies["Pattern"].digest;
+        let digest = &d.vocabularies()["Pattern"].digest;
         let law = format!(
             "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";{body}}}"
         );

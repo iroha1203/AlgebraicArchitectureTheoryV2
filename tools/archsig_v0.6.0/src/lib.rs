@@ -1,22 +1,8 @@
-//! ArchSig v0.6.0。共通Atom定義を参照するLawとArchMapを検査し、型付きの結果を返す。
-
+//! ArchSig CLIと既存のライブラリ経路。各層の実装は一方向の別クレートに置く。
 #[cfg(test)]
 extern crate self as archsig;
-
-pub mod archmap;
-pub mod canonical;
-pub mod construction;
-pub mod control;
-pub mod definition;
-pub mod input;
-pub mod issue;
-pub mod json;
-pub mod law;
-pub(crate) mod names;
-mod owner_completion;
-pub use names::QualifiedName;
-pub mod observed;
-pub mod prime;
-pub mod result;
+pub use archsig_computation::{
+    QualifiedName, archmap, canonical, construction, control, definition, input, issue, json, law,
+    names, observed, prime, result, types,
+};
 pub mod run;
-pub mod types;

@@ -683,7 +683,7 @@ fn enumerate_values_maybe(
                                     &mut values,
                                     Scalar::Data {
                                         family: family.clone(),
-                                        constructor: law.resolved_names.get(&format!("{family}.{}", ctor.name)).ok_or("constructorの検査済み名がない")?.clone(),
+                                        constructor: law.resolved_names().get(&format!("{family}.{}", ctor.name)).ok_or("constructorの検査済み名がない")?.clone(),
                                         args,
                                     },
                                     control,

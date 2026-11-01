@@ -176,7 +176,7 @@ mod tests {
         let env = Environment::new(&inputs, &mut control).unwrap();
         let declaration = inputs
             .law()
-            .declarations
+            .declarations()
             .values()
             .find(|d| matches!(d.signature, crate::law::model::Signature::Law { .. }))
             .unwrap();

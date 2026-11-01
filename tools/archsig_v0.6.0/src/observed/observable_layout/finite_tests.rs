@@ -471,8 +471,8 @@ fn boolean_fields_use_the_finite_indicator_with_original_boolean_operands() {
     assert_ne!(definition.as_bytes(), bytes.definitions()[0].bytes());
     let defs =
         crate::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let old = &source.definitions().vocabularies["Family"].digest;
-    let digest = &defs.vocabularies["Family"].digest;
+    let old = &source.definitions().vocabularies()["Family"].digest;
+    let digest = &defs.vocabularies()["Family"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Family version \"1\" digest \"{digest}\";law required on(c:Part):c.quantity=true;}}"
     );

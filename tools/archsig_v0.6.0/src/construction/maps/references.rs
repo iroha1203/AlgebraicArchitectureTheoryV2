@@ -92,7 +92,7 @@ fn reference_type(inputs: &CheckedInputs, name: &str) -> Result<(), Construction
     if matches!(
         inputs
             .definitions()
-            .declarations
+            .declarations()
             .get(name)
             .map(|d| &d.signature),
         Some(
@@ -129,7 +129,7 @@ pub fn reference_type_transport(
     let mut types = BTreeMap::new();
     let mut source = Vec::new();
     let mut target = Vec::new();
-    for snapshot in &inputs.archmap().snapshots {
+    for snapshot in inputs.archmap().snapshots() {
         tick(control)?;
         for subject in &snapshot.subjects {
             tick(control)?;
@@ -253,7 +253,7 @@ mod tests {
     fn forged_domains_images_failures_and_inverses_cannot_pass_current_input_recheck() {
         let d = include_bytes!("../../../tests/fixtures/cross-kind-transport.atoms.json");
         let defs = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
-        let digest = &defs.vocabularies["V"].digest;
+        let digest = &defs.vocabularies()["V"].digest;
         let i = crate::input::check_inputs(
             crate::input::InputSources::from_bytes(
                 vec![d.to_vec()],

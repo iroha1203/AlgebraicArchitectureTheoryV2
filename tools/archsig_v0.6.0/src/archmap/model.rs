@@ -77,7 +77,7 @@ pub struct Fact {
     pub atom: Option<String>,
 }
 impl Fact {
-    pub(crate) fn wire(&self) -> Json {
+    pub fn wire(&self) -> Json {
         let mut f = BTreeMap::from([
             ("snapshot".into(), Json::str(&self.snapshot)),
             ("subject".into(), Json::str(&self.subject)),
@@ -114,25 +114,25 @@ pub struct Snapshot {
 /// 検査を通った ArchMap。`check_archmap` / controlled版で構築し、共有参照で読み取る。
 ///
 /// ```compile_fail,E0616
-/// fn alter(map: &mut archsig::archmap::CheckedArchMap) { map.bytes_digest.clear(); }
+/// fn alter(map: &mut archsig_input::archmap::CheckedArchMap) { map.bytes_digest.clear(); }
 /// ```
 /// ```compile_fail,E0616
-/// fn alter(map: &mut archsig::archmap::CheckedArchMap) { map.model_digest.clear(); }
+/// fn alter(map: &mut archsig_input::archmap::CheckedArchMap) { map.model_digest.clear(); }
 /// ```
 /// ```compile_fail,E0596
-/// fn alter(map: &mut archsig::archmap::CheckedArchMap) { map.vocabularies().clear(); }
+/// fn alter(map: &mut archsig_input::archmap::CheckedArchMap) { map.vocabularies().clear(); }
 /// ```
 /// ```compile_fail,E0596
-/// fn alter(map: &mut archsig::archmap::CheckedArchMap) { map.sources().first_mut(); }
+/// fn alter(map: &mut archsig_input::archmap::CheckedArchMap) { map.sources().first_mut(); }
 /// ```
 /// ```compile_fail,E0596
-/// fn alter(map: &mut archsig::archmap::CheckedArchMap) { map.origins().first_mut(); }
+/// fn alter(map: &mut archsig_input::archmap::CheckedArchMap) { map.origins().first_mut(); }
 /// ```
 /// ```compile_fail,E0596
-/// fn alter(map: &mut archsig::archmap::CheckedArchMap) { map.snapshots().first_mut(); }
+/// fn alter(map: &mut archsig_input::archmap::CheckedArchMap) { map.snapshots().first_mut(); }
 /// ```
 /// ```compile_fail,E0451
-/// use archsig::archmap::CheckedArchMap;
+/// use archsig_input::archmap::CheckedArchMap;
 /// let forged = CheckedArchMap {
 ///     bytes_digest: String::new(), model_digest: String::new(),
 ///     vocabularies: Default::default(), sources: vec![], origins: vec![], snapshots: vec![],

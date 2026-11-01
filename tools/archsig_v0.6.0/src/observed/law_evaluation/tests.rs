@@ -299,7 +299,7 @@ fn native_tuple_body_preserves_both_typed_operand_evaluations_and_source_occurre
                 else {
                     panic!("source")
                 };
-                assert_eq!(*span, p.inputs().law().exprs[row.body].span);
+                assert_eq!(*span, p.inputs().law().exprs()[row.body].span);
                 assert_eq!(bindings.len(), 1);
                 assert_eq!(parts[0].children.len(), 2);
                 for child in &parts[0].children {
@@ -408,7 +408,7 @@ fn native_guard_order_and_false_guard_cannot_be_bypassed_by_direct_body_evaluati
         let index = e.instance.unwrap();
         let row = origin(&g, e.origin).unwrap().unwrap();
         let request = g.requests[0].clone();
-        let decl = &p.inputs().law().declarations[&row.declaration];
+        let decl = &p.inputs().law().declarations()[&row.declaration];
         if guard == "false" {
             let before = g.nodes.len();
             assert!(

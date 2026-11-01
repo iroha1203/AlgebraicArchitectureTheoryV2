@@ -283,7 +283,7 @@ fn as_nat(node: &JNode, pointer: &str) -> AResult<u64> {
 }
 
 /// JSON number の綴りが表す数を丸めずに読み、0..2^53−1 の整数なら返す。
-pub(crate) fn nat_value(text: &str) -> Option<u64> {
+pub fn nat_value(text: &str) -> Option<u64> {
     const MAX: u64 = 9_007_199_254_740_991;
     let (negative, rest) = match text.strip_prefix('-') {
         Some(r) => (true, r),

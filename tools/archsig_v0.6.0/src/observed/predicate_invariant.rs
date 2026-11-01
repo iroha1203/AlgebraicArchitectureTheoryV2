@@ -228,7 +228,7 @@ fn compute(
         let declaration = owner
             .inputs()
             .law()
-            .declarations
+            .declarations()
             .get(&row.declaration().name)
             .ok_or("述語不変量の元宣言がない")?;
         let Signature::Law { body, .. } = &declaration.signature else {
@@ -334,7 +334,7 @@ fn compute(
                         (
                             "location",
                             crate::result::location_wire(&Location::Law {
-                                span: owner.inputs().law().exprs[*body].span,
+                                span: owner.inputs().law().exprs()[*body].span,
                             }),
                         ),
                         ("children", refs(&children)),

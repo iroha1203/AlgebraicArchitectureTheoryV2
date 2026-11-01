@@ -1574,6 +1574,34 @@ pub struct ObservedEvaluation {
     pub(super) universal_witnesses: Vec<UniversalWitness>,
 }
 impl ObservedEvaluation {
+    /// 配送時の終了コードに用いる、検算済み反例の有無。
+    pub fn has_refuted_answer(&self) -> bool {
+        self.answers.iter().any(|a| a.status == Decision::Refuted)
+    }
+    pub fn has_nodes(&self) -> bool {
+        !self.nodes.is_empty()
+    }
+    pub fn has_internal_issue(&self) -> bool {
+        self.issues
+            .iter()
+            .any(|i| matches!(i.kind, ReasonKind::Internal(_)))
+    }
+    pub fn issues_wire(&self) -> Vec<Json> {
+        self.issues.iter().map(Reason::wire).collect()
+    }
+    /// 成果物を保存しない通知には、計算の参照を持ち出さない。
+    pub fn failure_notifications(&self) -> Vec<Json> {
+        self.issues
+            .iter()
+            .filter(|i| matches!(i.kind, ReasonKind::Internal(_) | ReasonKind::Stop(_)))
+            .map(|i| {
+                let mut issue = i.clone();
+                issue.dependencies.clear();
+                issue.missing.clear();
+                issue.wire()
+            })
+            .collect()
+    }
     pub fn status(&self) -> &str {
         self.status
     }
@@ -1592,11 +1620,11 @@ impl ObservedEvaluation {
         self.wire_with_metadata(control, point, true)
     }
     /// 保存成果物。内部照合用の支持と静的解決表を複製しない。
-    pub(crate) fn result_wire(&self) -> Json {
+    pub fn result_wire(&self) -> Json {
         self.result_wire_controlled(&mut Control::unlimited(), Checkpoint::Expression)
             .expect("通常の表示は中断しない")
     }
-    pub(crate) fn result_wire_controlled(
+    pub fn result_wire_controlled(
         &self,
         control: &mut Control,
         point: Checkpoint,

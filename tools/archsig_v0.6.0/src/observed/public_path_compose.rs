@@ -687,8 +687,8 @@ pub(super) fn evaluate(
         let declaration = prepared
             .inputs()
             .law()
-            .definitions
-            .declarations
+            .definitions()
+            .declarations()
             .get(entity)
             .ok_or("Pathの原始宣言がない")?;
         if !namespaces.contains(&declaration.namespace) {

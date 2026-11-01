@@ -122,7 +122,7 @@ fn notice(value: &Json) -> Json {
     )
 }
 impl ObservedEvaluation {
-    pub(crate) fn summary_wire(&self, status: &str, code: u8, issues: &[Json]) -> Json {
+    pub fn summary_wire(&self, status: &str, code: u8, issues: &[Json]) -> Json {
         let answers = self
             .answers
             .iter()
@@ -344,12 +344,12 @@ impl ObservedEvaluation {
             if let Some(Payload::LawInstance {
                 name, guard: None, ..
             }) = &self.nodes[argument.0].payload
-                && let Some(declaration) = self.prepared.inputs().law().declarations.get(name)
+                && let Some(declaration) = self.prepared.inputs().law().declarations().get(name)
                 && let crate::law::model::Signature::Law {
                     body, guard: None, ..
                 } = &declaration.signature
                 && let crate::law::ast::ExprKind::Binary { op, .. } =
-                    self.prepared.inputs().law().exprs[*body].kind
+                    self.prepared.inputs().law().exprs()[*body].kind
             {
                 use crate::law::ast::BinOp;
                 let operator = match op {

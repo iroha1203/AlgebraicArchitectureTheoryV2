@@ -53,7 +53,7 @@ fn stop() {
     let input = fixture::input(false, false, "r1");
     let normal = run(&asks);
     assert_eq!(normal.status(), "partial");
-    let params = match &normal.prepared.inputs().law().declarations["Reservations.obUse"].signature
+    let params = match &normal.prepared.inputs().law().declarations()["Reservations.obUse"].signature
     {
         Signature::View { params, .. } | Signature::Law { params, .. } => params,
         _ => panic!(),
@@ -169,7 +169,7 @@ fn owned_binding_completion_visits_all_admissible_shared_assignments() {
             }
         );
         assert!(r.answers[3].scope.completions);
-        let p = r.prepared.inputs().archmap().snapshots[0]
+        let p = r.prepared.inputs().archmap().snapshots()[0]
             .subjects
             .iter()
             .find(|s| s.id == "p")

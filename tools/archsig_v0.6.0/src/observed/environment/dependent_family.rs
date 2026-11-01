@@ -86,7 +86,7 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        if !plan.dependent || *span != self.indexes.inputs.law().exprs[plan.body].span {
+        if !plan.dependent || *span != self.indexes.inputs.law().exprs()[plan.body].span {
             return Ok(None);
         }
         let limit = self.state.cutoff.get().min(graph.nodes.len());
@@ -120,7 +120,7 @@ impl Environment<'_> {
             return Ok(None);
         };
         let declaration =
-            &self.indexes.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
+            &self.indexes.inputs.law().declarations()[request.declaration().ok_or("元要求に宣言がない")?];
         let mut enumeration = super::super::finite::Enumeration::default();
         match &argument.value {
             Selector::Subject { snapshot, subject } => {
@@ -198,7 +198,7 @@ impl Environment<'_> {
             data::check(value, self.indexes.inputs.law(), &self.control)?;
         }
         let fixed = self.dependent_fixed_value(graph, request, &p.name)?;
-        let reading = &self.indexes.inputs.law().declarations
+        let reading = &self.indexes.inputs.law().declarations()
             [request.declaration().ok_or("元要求に宣言がない")?]
         .reading;
         let mut result = DependentStep {
@@ -660,7 +660,7 @@ impl Environment<'_> {
             return Ok(false);
         };
         self.validate_at(graph, graph.get(source)?, source.0)?;
-        let d = &self.indexes.inputs.law().declarations[graph.requests[graph.context_at(source.0).request]
+        let d = &self.indexes.inputs.law().declarations()[graph.requests[graph.context_at(source.0).request]
             .declaration()
             .ok_or("元要求に宣言がない")?];
         let context = self.current_context(graph);

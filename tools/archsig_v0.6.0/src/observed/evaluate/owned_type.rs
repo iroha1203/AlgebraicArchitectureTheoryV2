@@ -10,7 +10,7 @@ impl Evaluator<'_, '_> {
                     ..
                 },
             ..
-        } = &self.environment.indexes.inputs.law().exprs[id].kind
+        } = &self.environment.indexes.inputs.law().exprs()[id].kind
             && super::super::quantifier::has_owner(original, self.control)?
         {
             self.tick(Checkpoint::FiniteIteration)?;

@@ -308,10 +308,10 @@ fn empty_primitive_sources() -> InputSources {
     let definition=original.replacen(r#"{"name":"quantity","#,r#"{"name":"vacant","type":["Ref","Pattern.Vacant"],"meaning":"空の参照域。"},{"name":"quantity","#,1);
     let defs =
         crate::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let digest = &defs.vocabularies["Pattern"].digest;
+    let digest = &defs.vocabularies()["Pattern"].digest;
     let map = std::str::from_utf8(base.sources().archmap().bytes())
         .unwrap()
-        .replace(&base.definitions().vocabularies["Pattern"].digest, digest);
+        .replace(&base.definitions().vocabularies()["Pattern"].digest, digest);
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";law required empty(c:Part):c.vacant=c.vacant;}}"
     );

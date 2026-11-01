@@ -15,7 +15,7 @@ use std::{cell::Cell, collections::BTreeSet, rc::Rc, sync::Arc};
 fn inputs(finite: bool) -> InputSources {
     let definition = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Fixed","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Fixed.State","meaning":"固定状態。","parameters":[],"fields":[{"name":"flag","type":"Bool","meaning":"観測値。"},{"name":"other","type":"Bool","meaning":"別の観測値。"}],"alignments":[]}]}]}"#;
     let checked = definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Fixed"].digest;
+    let digest = &checked.vocabularies()["Fixed"].digest;
     let map = format!(
         r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Fixed","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"model","mode":"specification","method":"固定状態の独立試験。","locations":[],"note":"観測有無を分ける試験モデル。"}}],"snapshots":[{{"id":"fixed","origin":"model","subjects":[{{"id":"s","type":"Fixed.State","origin":"model"}}],"atoms":[{{"id":"other","subject":"s","field":"Fixed.State.other","value":true,"origin":"model"}},{{"id":"f","subject":"s","field":"Fixed.State.flag","value":true,"origin":"model"}}]}}]}}"#
     );

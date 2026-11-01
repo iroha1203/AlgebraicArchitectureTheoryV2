@@ -270,7 +270,7 @@ impl FiniteViewAssignment {
         let mut rows = vec![Vec::new()];
         let mut scope = Scope::default();
         scope.readings.insert(
-            inputs.law().declarations[&self.instance.declaration().name]
+            inputs.law().declarations()[&self.instance.declaration().name]
                 .reading
                 .clone(),
         );
@@ -487,7 +487,7 @@ mod tests {
         );
         let d = d.as_bytes();
         let defs = crate::definition::check_definitions(&[("d", d)]).unwrap();
-        let digest = &defs.vocabularies["Instances"].digest;
+        let digest = &defs.vocabularies()["Instances"].digest;
         let law = format!(
             "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Selected {{ use vocabulary Instances version \"1\" digest \"{digest}\"; {extra} }}"
         );
@@ -1267,8 +1267,8 @@ mod empty_list_composite_tests {
         let new = crate::definition::check_definitions(&[("d", definitions.as_slice())]).unwrap();
         let mut law = String::from_utf8(i.sources().law().bytes().to_vec()).unwrap();
         law.insert_str(law.rfind('}').unwrap(), extra);
-        let old = &old.vocabularies["Instances"].digest;
-        let new = &new.vocabularies["Instances"].digest;
+        let old = &old.vocabularies()["Instances"].digest;
+        let new = &new.vocabularies()["Instances"].digest;
         Arc::new(
             check_inputs(
                 InputSources::from_bytes(

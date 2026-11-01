@@ -30,7 +30,7 @@ impl Selection {
         readings.recheck(inputs, c).map_err(failure)?;
         let domain = ObjectDomain::from_readings(inputs, readings, object, c)?;
         let mut reading_span = None;
-        for info in &inputs.law().infos {
+        for info in inputs.law().infos() {
             c.checkpoint(Checkpoint::ObjectEvaluation)?;
             if info.kind == "reading" && info.name == domain.identity.reading() {
                 reading_span = Some(info.span);

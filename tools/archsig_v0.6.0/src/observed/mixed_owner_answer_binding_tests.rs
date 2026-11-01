@@ -57,7 +57,7 @@ fn mixed_owner_answer_map_domain_stop_keeps_values_refutation_missing_and_prefix
     let input = fixture::input("stop", "r1");
     let normal = evaluate_observed_bytes(input.clone(), STOP_ASK, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
-    let declaration = &normal.prepared.inputs().law().declarations["Applications.fcMap"];
+    let declaration = &normal.prepared.inputs().law().declarations()["Applications.fcMap"];
     assert!(normal.answers[5].claim.is_some());
     assert!(!normal.answers[5].evidence.is_empty());
     let span = match &declaration.signature {
@@ -191,7 +191,7 @@ fn completed_result() -> ObservedEvaluation {
 fn mixed_completion_coverage_stop_preserves_cases_without_whole_claim() {
     use std::{cell::Cell, rc::Rc};
     let normal = completed_result();
-    let target = normal.prepared.inputs().law().declarations["Applications.mxTuple"].span;
+    let target = normal.prepared.inputs().law().declarations()["Applications.mxTuple"].span;
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));

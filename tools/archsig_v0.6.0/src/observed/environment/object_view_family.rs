@@ -95,7 +95,7 @@ impl Environment<'_> {
         let declaration = self
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .get(request.declaration().ok_or("有限viewの宣言がない")?)
             .ok_or("有限view元宣言がない")?;
         let crate::law::model::Signature::View { params, .. } = &declaration.signature else {
@@ -148,7 +148,7 @@ impl Environment<'_> {
         let declaration = self
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .get(&instance.declaration().name)
             .ok_or("有限view域の元宣言がない")?;
         let reads = RefCell::new(FiniteDomain::default());

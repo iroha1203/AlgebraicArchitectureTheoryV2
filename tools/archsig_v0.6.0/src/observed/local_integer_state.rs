@@ -312,7 +312,7 @@ pub(super) fn build(
         .iter()
         .map(|(n, v)| Ok((n.clone(), change_result::value(b, v)?)))
         .collect::<Result<Vec<_>, ValidationFailure>>()?;
-    let declaration = &env.indexes.inputs.law().declarations[&model.change];
+    let declaration = &env.indexes.inputs.law().declarations()[&model.change];
     let Signature::Change { params, guard, .. } = &declaration.signature else {
         return Err("change署名がない".into());
     };

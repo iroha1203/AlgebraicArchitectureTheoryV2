@@ -360,7 +360,7 @@ fn subject<'a>(
     id: &str,
     control: &mut Control,
 ) -> Result<&'a Subject, ConstructionFailure> {
-    for s in &inputs.archmap().snapshots {
+    for s in inputs.archmap().snapshots() {
         check(control)?;
         if s.id == snapshot {
             for candidate in &s.subjects {
@@ -698,7 +698,7 @@ fn typed_reference_constraints_violation(
             if owner.slot == Slot::Missing {
                 images.push(None);
             }
-            for snapshot in &inputs.archmap().snapshots {
+            for snapshot in inputs.archmap().snapshots() {
                 check(control)?;
                 for target in &snapshot.subjects {
                     check(control)?;
@@ -873,7 +873,7 @@ fn typed_reference_constraints_violation(
             match crate::archmap::check_completion_with_values::<
                 CheckFailure<Box<crate::issue::Issue>>,
             >(
-                &inputs.archmap().snapshots,
+                &inputs.archmap().snapshots(),
                 inputs.definitions(),
                 &assignments,
                 control,
@@ -1001,7 +1001,7 @@ pub fn correspondence_retained(
     let holder = subject(inputs, snapshot, id, control)?;
     let declaration = inputs
         .definitions()
-        .declarations
+        .declarations()
         .get(holder.ty.as_str())
         .ok_or_else(|| ConstructionFailure::Inconsistent("対応の元定義がない".into()))?;
     let PrimitiveSignature::Correspondence {
@@ -1100,7 +1100,7 @@ pub fn correspondence_retained(
         let target_complete = target.base().configuration().is_some();
         // 表の欠測や未観測ownerを「対象外だから固定」と読み替えない。
         let mut unknown_subjects = BTreeSet::new();
-        for snapshot in &inputs.archmap().snapshots {
+        for snapshot in inputs.archmap().snapshots() {
             check(control)?;
             for s in &snapshot.subjects {
                 check(control)?;

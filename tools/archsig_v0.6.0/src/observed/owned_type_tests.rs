@@ -127,7 +127,7 @@ fn owned_type_private_domains(result: &ObservedEvaluation, request: usize) -> Ve
                 .prepared
                 .inputs()
                 .law()
-                .exprs
+                .exprs()
                 .iter()
                 .any(|e| {
                     e.span == *span

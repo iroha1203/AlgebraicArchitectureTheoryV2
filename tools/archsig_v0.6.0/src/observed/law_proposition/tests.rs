@@ -755,7 +755,7 @@ fn native_false_guard_body_source_never_becomes_a_regular_or_universal_evaluatio
                     active.active = g.contexts[guard.0];
                     assert!(env.validate(&active, &forged).is_err(), "{body}");
                     let origin = frames::origin(&g, *r).unwrap().unwrap();
-                    let declaration = &p.inputs().law().declarations[&origin.declaration];
+                    let declaration = &p.inputs().law().declarations()[&origin.declaration];
                     let request = active.requests[0].clone();
                     let before = active.nodes.len();
                     assert!(

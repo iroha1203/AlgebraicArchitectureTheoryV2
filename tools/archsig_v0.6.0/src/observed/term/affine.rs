@@ -910,7 +910,7 @@ impl Term {
                             &Value::data_parts,
                             &|span, c| {
                                 self.reference(span, c).map(|value| {
-                                    value.and_then(|name| law.resolved_names.get(name).cloned())
+                                    value.and_then(|name| law.resolved_names().get(name).cloned())
                                 })
                             },
                         )? {
@@ -1053,7 +1053,7 @@ impl Term {
                             Value::Data {
                                 family: family.clone(),
                                 constructor: law
-                                    .resolved_names
+                                    .resolved_names()
                                     .get(constructor)
                                     .ok_or("constructorの検査済み名がない")?
                                     .clone(),
@@ -1149,7 +1149,7 @@ impl Term {
                 }
                 Scalar::Data {
                     family: family.clone(),
-                    constructor: law.resolved_names.get(reference).ok_or("constructorの検査済み名がない")?.clone(),
+                    constructor: law.resolved_names().get(reference).ok_or("constructorの検査済み名がない")?.clone(),
                     args: values,
                 }
             }

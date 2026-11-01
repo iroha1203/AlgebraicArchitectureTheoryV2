@@ -8,9 +8,9 @@ use crate::law::model::{DeclarationInfo, ExpressionKind, SuppliedRule};
 use std::collections::{BTreeMap, BTreeSet};
 
 mod position;
-pub(crate) use position::add_location_positions;
+pub use position::add_location_positions;
 
-pub(crate) const RESULT_FORMAT: &str = "archsig.result/4";
+pub const RESULT_FORMAT: &str = "archsig.result/4";
 
 /// RunStatus と終了コード(実行仕様 §6)。
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -37,13 +37,6 @@ impl Status {
 }
 
 pub use crate::control::Signal;
-
-impl Signal {
-    /// 取消の Issue。要求固有の request/dependencies は呼出し側が付ける。
-    pub fn issue(self) -> Json {
-        ResultIssue::Cancelled(self).wire()
-    }
-}
 
 /// 入力の不正のほか、CLI・I/O・内部障害・中断の理由。
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -77,7 +70,7 @@ impl ResultIssue {
     }
 
     /// issues の並び(結果仕様 §6): code、location.input、pointer または span 開始。
-    pub(crate) fn sort_key(&self) -> (String, String, String, usize) {
+    pub fn sort_key(&self) -> (String, String, String, usize) {
         let (input, pointer, start) = match self {
             ResultIssue::Input(i) => match &i.location {
                 Location::Law { span } => ("law".to_owned(), String::new(), span.0),
@@ -490,7 +483,7 @@ pub struct InputIdentity {
 }
 
 impl InputIdentity {
-    pub(crate) fn wire(&self) -> Json {
+    pub fn wire(&self) -> Json {
         let mut m = BTreeMap::new();
         m.insert("id".to_owned(), Json::str(self.id.clone()));
         m.insert("kind".to_owned(), Json::str(self.kind));
@@ -553,7 +546,7 @@ pub fn exit_code(status: Status, signal: Option<Signal>, issues: &[ResultIssue])
     }
 }
 
-pub(crate) fn input_identities_wire(inputs: &[InputIdentity]) -> Json {
+pub fn input_identities_wire(inputs: &[InputIdentity]) -> Json {
     let mut inputs: Vec<_> = inputs.iter().collect();
     inputs.sort_by(|a, b| a.id.cmp(&b.id));
     Json::Arr(inputs.into_iter().map(InputIdentity::wire).collect())
@@ -651,5 +644,16 @@ impl CheckResult {
             .map(|(name, value)| (name.to_owned(), value)),
         );
         Json::Obj(fields)
+    }
+}
+
+#[cfg(test)]
+mod signal_compatibility {
+    use super::*;
+    #[test]
+    fn control_signal_preserves_cancelled_issue_wire() {
+        for signal in [Signal::Int, Signal::Term] {
+            assert_eq!(signal.issue(), ResultIssue::Cancelled(signal).wire());
+        }
     }
 }

@@ -44,7 +44,7 @@ pub(super) fn walk<I: Interpretation>(
         if let Some(output) = interpreter.value(env, id, vars, reading, &value)? {
             return Ok(output);
         }
-        match &env.indexes.inputs.law().program.nodes[id].kind {
+        match &env.indexes.inputs.law().program().nodes[id].kind {
             ExprKind::Group(body) => walk(interpreter, env, *body, vars, base, reading),
             ExprKind::Let { name, value, body } => {
                 let Some(local) = interpreter.bind(env, *value, &name.name, vars, base, reading)?

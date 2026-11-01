@@ -250,7 +250,7 @@ impl Data {
         let original = input
             .inputs()
             .law()
-            .declarations
+            .declarations()
             .get(declaration)
             .ok_or("元view宣言がない")?;
         let Signature::View { body, .. } = &original.signature else {
@@ -451,7 +451,7 @@ fn plan(
             let fact = identity.subject();
             let original = inputs
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == fact.snapshot)
                 .and_then(|s| s.subjects.iter().find(|s| s.id == fact.subject))
@@ -550,7 +550,7 @@ fn reading_plan(
         tick(c)?;
         let declaration = inputs
             .law()
-            .declarations
+            .declarations()
             .get(&row.declaration().name)
             .ok_or("対象読取りの元宣言がない")?;
         let (params, returns) = match &declaration.signature {

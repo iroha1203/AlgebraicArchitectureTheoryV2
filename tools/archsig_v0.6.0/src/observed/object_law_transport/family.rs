@@ -413,7 +413,7 @@ pub(in crate::observed) fn constant_numeric_family(
     }
     let ObjectEvaluationOutcome::Evaluated(g) = e.outcome() else { return Ok(None) };
     let law = g.prepared().inputs().law();
-    let Signature::Law { body, guard, .. } = &law.declarations
+    let Signature::Law { body, guard, .. } = &law.declarations()
         .get(&e.instance().declaration().name).ok_or_else(|| inconsistent("元数値族の宣言がない"))?.signature
     else { return Ok(None) };
     let symbolic_constant = super::super::object_equation_presentation::parameter_constant_source_value(g.prepared().inputs(), e.instance(), c)?;
@@ -425,7 +425,7 @@ pub(in crate::observed) fn constant_numeric_family(
     let mut helpers = std::collections::BTreeSet::new();
     while let Some((id, names)) = pending.pop() {
         tick(c)?;
-        match &law.exprs[id].kind {
+        match &law.exprs()[id].kind {
             ExprKind::Int(_) | ExprKind::Bool(_) => {},
             ExprKind::Dotted(path) if path.len() == 1 && names.contains(&path[0].name) => {},
             ExprKind::Group(child) | ExprKind::Unary { operand: child, .. } => pending.push((*child, names)),
@@ -441,17 +441,17 @@ pub(in crate::observed) fn constant_numeric_family(
             },
             ExprKind::Call { callee, args } => {
                 let mut callee = *callee;
-                while let ExprKind::Group(inner) = law.exprs[callee].kind {
+                while let ExprKind::Group(inner) = law.exprs()[callee].kind {
                     tick(c)?;
                     callee = inner;
                 }
-                if matches!(&law.exprs[callee].kind, ExprKind::Dotted(path) if path.len() == 1 && path[0].name == "rat") {
-                    if args.len() != 2 || !args.iter().all(|arg| matches!(law.exprs[*arg].kind, ExprKind::Int(_))) { return Ok(None); }
+                if matches!(&law.exprs()[callee].kind, ExprKind::Dotted(path) if path.len() == 1 && path[0].name == "rat") {
+                    if args.len() != 2 || !args.iter().all(|arg| matches!(law.exprs()[*arg].kind, ExprKind::Int(_))) { return Ok(None); }
                 } else {
-                    let span = law.exprs[callee].span;
-                    let target = law.infos.iter().flat_map(|info| &info.references).find_map(|(at, name)| (*at == span).then_some(name));
+                    let span = law.exprs()[callee].span;
+                    let target = law.infos().iter().flat_map(|info| &info.references).find_map(|(at, name)| (*at == span).then_some(name));
                     let Some(target) = target else { return Ok(None) };
-                    let declaration = law.declarations.get(target).ok_or_else(|| inconsistent("元数値helperの宣言がない"))?;
+                    let declaration = law.declarations().get(target).ok_or_else(|| inconsistent("元数値helperの宣言がない"))?;
                     let Signature::View { params, body, .. } = &declaration.signature else { return Ok(None) };
                     if params.len() != args.len() || !params.iter().all(|p| numeric_parameters::numeric_width(&p.ty).is_some())
                         || !matches!(law.expr_type(*body), Some(Type::Z | Type::Q | Type::Bool)) { return Ok(None); }
@@ -469,7 +469,7 @@ pub(in crate::observed) fn constant_numeric_family(
     let mut expression = *body;
     loop {
         tick(c)?;
-        match &law.exprs[expression].kind {
+        match &law.exprs()[expression].kind {
             ExprKind::Group(next) | ExprKind::Let { body: next, .. } => expression = *next,
             ExprKind::Binary { op: BinOp::Eq, .. } => break,
             _ => return Ok(None),

@@ -92,7 +92,7 @@ pub(super) fn discover_law_reads(
         for entry in object.entries() {
             let declaration = inputs
                 .law()
-                .declarations
+                .declarations()
                 .get(&entry.source.declaration().name)
                 .ok_or("元Lawの宣言がない")?;
             for row in &entry.rows {

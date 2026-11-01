@@ -39,8 +39,8 @@ impl Environment<'_> {
             && let Some(guard) = inputs.origin.guard
         {
             let law = self.indexes.inputs.law();
-            let body = law.exprs.get(inputs.origin.body).ok_or("元Law body式がない")?.span;
-            let guard_span = law.exprs.get(guard).ok_or("元Law guard式がない")?.span;
+            let body = law.exprs().get(inputs.origin.body).ok_or("元Law body式がない")?.span;
+            let guard_span = law.exprs().get(guard).ok_or("元Law guard式がない")?.span;
             if body.0 <= span.0 && span.1 <= body.1 {
                 if !inputs.origin.body_allowed { return Ok(false); }
                 let request = graph.requests.get(self.current_context(graph).request).ok_or("元Law要求がない")?;
@@ -79,7 +79,7 @@ impl Environment<'_> {
             let span = self
                 .indexes.inputs
                 .law()
-                .exprs
+                .exprs()
                 .get(expression)
                 .ok_or("元Law式IDがない")?
                 .span;
@@ -110,7 +110,7 @@ impl Environment<'_> {
             || self
                 .indexes.inputs
                 .law()
-                .exprs
+                .exprs()
                 .get(inputs.origin.body)
                 .ok_or("元body式IDがない")?
                 .span
@@ -125,7 +125,7 @@ impl Environment<'_> {
             // 全域templateのSourceは実guard評価より先に保持される。元guardを
             // 全parameter上で再計算し、falseの場合だけ値のないbodyを保持する。
             let guard = self.universal_template_source_analysis(graph, &plan,
-                self.indexes.inputs.law().exprs[guard].span, bindings)?;
+                self.indexes.inputs.law().exprs()[guard].span, bindings)?;
             guard.analysis.known_value == Some(Scalar::Bool(false))
         } else { false };
         if !universal_false {
@@ -199,7 +199,7 @@ impl Environment<'_> {
                 },
             );
         }
-        let declaration = self.indexes.inputs.law().declarations.get(&inputs.origin.declaration)
+        let declaration = self.indexes.inputs.law().declarations().get(&inputs.origin.declaration)
             .ok_or("元Lawの宣言がない")?;
         if let crate::law::model::Signature::Law { params, .. } = &declaration.signature {
             for parameter in params {

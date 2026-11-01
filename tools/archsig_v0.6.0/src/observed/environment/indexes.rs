@@ -107,13 +107,13 @@ impl<'a> InputIndexes<'a> {
         let mut atoms = BTreeMap::new();
         let mut modes = BTreeMap::new();
         let mut snapshot_origins = BTreeMap::new();
-        for origin in &inputs.archmap().origins {
+        for origin in inputs.archmap().origins() {
             control.checkpoint(Checkpoint::FiniteIteration)?;
             modes.insert(origin.id.clone(), origin.mode.wire());
             control.checkpoint(Checkpoint::FiniteIteration)?;
         }
         control.checkpoint(Checkpoint::FiniteIteration)?;
-        for snapshot in &inputs.archmap().snapshots {
+        for snapshot in inputs.archmap().snapshots() {
             control.checkpoint(Checkpoint::FiniteIteration)?;
             snapshot_origins.insert(snapshot.id.clone(), snapshot.origin.clone());
             for s in &snapshot.subjects {
@@ -172,8 +172,8 @@ impl InputIndexes<'_> {
         if !matches!(
             self.inputs
                 .law()
-                .definitions
-                .declarations
+                .definitions()
+                .declarations()
                 .get(entity)
                 .map(|d| &d.signature),
             Some(
@@ -185,7 +185,7 @@ impl InputIndexes<'_> {
             return Err("plain参照族の元完全型名が原始参照型でない".into());
         }
         let mut family = crate::observed::finite::Enumeration::default();
-        for (index, snapshot) in self.inputs.archmap().snapshots.iter().enumerate() {
+        for (index, snapshot) in self.inputs.archmap().snapshots().iter().enumerate() {
             observer(index);
             control.clone().checkpoint(Checkpoint::FiniteIteration)?;
             family.scope.snapshots.insert(snapshot.id.clone());

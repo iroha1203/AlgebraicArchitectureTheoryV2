@@ -17,6 +17,32 @@ export PATH="$PWD/tools/archsig_v0.6.0/target/debug:$PATH"
 archsig version
 ```
 
+## 開発時のクレート構成
+
+Cargo workspaceは次の順に依存します。下位から上位への依存はありません。
+
+| package | 担当 | entry point |
+| --- | --- | --- |
+| `archsig-common` | 型・名前・JSON・canonical表現・診断・中断制御 | `src/common_lib.rs` |
+| `archsig-input` | 定義・Law・ArchMapの検査、入力と結果の共通表示 | `src/input_lib.rs` |
+| `archsig-computation` | construction・observedとowner補完 | `src/computation_lib.rs` |
+| `archsig` | run・main、既存ライブラリ経路のre-export | `src/lib.rs`、`src/main.rs` |
+
+各packageのmanifestは`crates/`にあり、ソースは既存の`src/`配置を保持します。
+各モジュールは担当crateで一度だけコンパイルします。統合テストの
+`archsig::archmap`などの経路はCLI packageのre-exportで維持します。
+検査済み入力は共有参照のgetterで読み取り、上位crateから構築・更新できません。
+
+workspaceの`default-members`は4 packageすべてです。既存のmanifest指定の
+`cargo test`とCIのnextest partitionで、各crateのunit testとCLIの統合テストを実行します。
+`-p archsig`だけでは下位crateのunit testを実行しません。
+`cargo test --doc --workspace --manifest-path tools/archsig_v0.6.0/Cargo.toml`で
+入力の不変性を含むdoctestを検査できます。
+
+`test-support` featureはdev-dependencyだけから有効にし、停止しない制御と既存の
+最終検算失敗の注入をcrate間テストへ提供します。通常のbuildでは無効です。
+ビルド速度の改善はこの分割の目的ではありません。
+
 ## 実行
 
 Atom 定義・Law・ArchMap を検査します。`--out` には、既存ディレクトリの下にある

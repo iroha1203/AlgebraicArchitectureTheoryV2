@@ -10,7 +10,7 @@ const MAP: &str = include_str!("../../../tests/fixtures/internal-arrow.archmap.j
 use crate::control::quiet;
 fn prepared(map: &str, asks: &[&str]) -> PreparedObserved {
     let defs = crate::definition::check_definitions(&[("definition0", DEF)]).unwrap();
-    let digest = &defs.vocabularies["Flow"].digest;
+    let digest = &defs.vocabularies()["Flow"].digest;
     let input = InputSources::from_bytes(
         vec![DEF.to_vec()],
         LAW.replace("@FLOW_DIGEST@", digest).into_bytes(),

@@ -124,8 +124,8 @@ fn mixed_z_q_fp_components_share_factors_and_place_only_at_the_root_atom() {
     assert_ne!(definition.as_bytes(), s.definitions()[0].bytes());
     let defs =
         crate::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let old = &original.definitions().vocabularies["Family"].digest;
-    let digest = &defs.vocabularies["Family"].digest;
+    let old = &original.definitions().vocabularies()["Family"].digest;
+    let digest = &defs.vocabularies()["Family"].digest;
     let law = String::from_utf8(s.law().bytes().to_vec())
         .unwrap()
         .replace(old, digest);

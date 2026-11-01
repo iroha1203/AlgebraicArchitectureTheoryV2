@@ -45,7 +45,7 @@ fn try_expression(
     name: &str,
     guard: bool,
 ) -> Result<SourceValue, ValidationFailure> {
-    let d = &e.indexes.inputs.law().declarations[&format!("Selected.{name}")];
+    let d = &e.indexes.inputs.law().declarations()[&format!("Selected.{name}")];
     let id = match &d.signature {
         Signature::View { body, .. } => *body,
         Signature::Law { body, guard: g, .. } => {
@@ -454,7 +454,7 @@ fn subject_value(name: &str, entity: &str) -> Scalar {
     }
 }
 fn family(e: &Environment<'_>, owner: &str) -> Result<SourceValue, ValidationFailure> {
-    let Signature::View { body, .. } = e.indexes.inputs.law().declarations["Selected.family"].signature
+    let Signature::View { body, .. } = e.indexes.inputs.law().declarations()["Selected.family"].signature
     else {
         panic!()
     };
@@ -627,7 +627,7 @@ fn ordinary_completion_keeps_rejecting_known_slot_replacements() {
     };
     assert!(
         crate::archmap::check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
-            &i.archmap().snapshots,
+            &i.archmap().snapshots(),
             i.definitions(),
             &[pin],
             &mut quiet()
@@ -647,7 +647,7 @@ fn ordinary_completion_keeps_rejecting_known_slot_replacements() {
     };
     assert!(
         crate::archmap::check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
-            &missing.archmap().snapshots,
+            &missing.archmap().snapshots(),
             missing.definitions(),
             &[pin],
             &mut quiet()
@@ -687,7 +687,7 @@ fn owned_helper(
     owner: &str,
 ) -> Result<SourceValue, ValidationFailure> {
     let Signature::View { body, .. } =
-        e.indexes.inputs.law().declarations[&format!("Selected.{name}")].signature
+        e.indexes.inputs.law().declarations()[&format!("Selected.{name}")].signature
     else {
         panic!()
     };

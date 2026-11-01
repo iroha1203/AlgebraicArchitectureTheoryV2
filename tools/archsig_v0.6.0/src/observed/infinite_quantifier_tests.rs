@@ -83,7 +83,7 @@ fn check_quantifiers(result: &ObservedEvaluation) {
     let mut exists = false;
     for descriptor in &scope.quantifiers {
         let (id, kind, var) = law
-            .exprs
+            .exprs()
             .iter()
             .enumerate()
             .find_map(|(id, expression)| match &expression.kind {
@@ -101,7 +101,7 @@ fn check_quantifiers(result: &ObservedEvaluation) {
             .unwrap();
         assert_eq!(descriptor.kind, kind);
         assert_eq!(descriptor.name, var.name);
-        assert_eq!(Some(&descriptor.ty), law.quantifier_types[id].as_ref());
+        assert_eq!(Some(&descriptor.ty), law.quantifier_types()[id].as_ref());
         // callerの静的分析で得たdescriptorとは別に、実calleeの全域を要求する。
         let Some(domain) = descriptor.domain else {
             assert!(scope.quantifiers.iter().any(|actual| actual.occurrence
@@ -125,11 +125,11 @@ fn check_quantifiers(result: &ObservedEvaluation) {
         let ExprKind::Quant {
             split: QuantSplit::Fixed { body, .. },
             ..
-        } = &law.exprs[id].kind
+        } = &law.exprs()[id].kind
         else {
             panic!()
         };
-        assert!(result.nodes.iter().any(|node| matches!(&node.payload,Some(Payload::Expression {location:Location::Law {span},..}) if *span==law.exprs[*body].span)));
+        assert!(result.nodes.iter().any(|node| matches!(&node.payload,Some(Payload::Expression {location:Location::Law {span},..}) if *span==law.exprs()[*body].span)));
     }
     assert!(exists);
     assert!(result.answers.iter().find(|answer|answer.id=="v").unwrap().reasons.iter().any(|reason| matches!(&reason.kind,ReasonKind::UnsupportedAlgorithm {operand_types, method, question:QuestionKind::Evaluate} if !operand_types.is_empty() && !method.is_empty())));
@@ -334,7 +334,7 @@ fn infinite_exists_preserves_mathematics_and_current_observation_provenance() {
             .expect("既知qの支持");
         assert_eq!(fact.atom.as_deref(), Some("q"));
         let checked = result.prepared.inputs().archmap();
-        let field = &checked.snapshots[0].subjects[0]
+        let field = &checked.snapshots()[0].subjects[0]
             .fields
             .iter()
             .find(|f| f.name == "Numeric.Sample.q")
@@ -343,11 +343,11 @@ fn infinite_exists_preserves_mathematics_and_current_observation_provenance() {
             panic!()
         };
         assert_eq!(Some(atom), fact.atom.as_ref());
-        let origin = checked.origins.iter().find(|o| &o.id == origin).unwrap();
+        let origin = checked.origins().iter().find(|o| &o.id == origin).unwrap();
         assert!(!origin.locations.is_empty());
         for location in &origin.locations {
             let source = checked
-                .sources
+                .sources()
                 .iter()
                 .find(|s| s.id == location.source)
                 .unwrap();

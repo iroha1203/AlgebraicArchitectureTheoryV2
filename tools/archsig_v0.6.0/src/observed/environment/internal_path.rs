@@ -166,9 +166,9 @@ impl Environment<'_> {
         Ok(out)
     }
     pub(super) fn path_reading(&self, id: usize) -> Result<&str, ValidationFailure> {
-        let span = self.indexes.inputs.law().exprs[id].span;
+        let span = self.indexes.inputs.law().exprs()[id].span;
         let mut reading = None;
-        for d in self.indexes.inputs.law().declarations.values() {
+        for d in self.indexes.inputs.law().declarations().values() {
             self.tick()?;
             if d.span.0 <= span.0
                 && span.1 <= d.span.1
@@ -208,7 +208,7 @@ impl Environment<'_> {
         name: &str,
     ) -> Result<&crate::archmap::Field, ValidationFailure> {
         self.tick()?;
-        self.indexes.inputs.law().resolved_names.get(name)
+        self.indexes.inputs.law().resolved_names().get(name)
             .and_then(|name| self.indexes.fields.get(&(owner.snapshot.clone(), owner.id.clone(), name.clone())))
             .copied()
             .ok_or_else(|| "Path構造の元fieldがない".into())
@@ -365,7 +365,7 @@ impl Environment<'_> {
     ) -> Result<PathResult, ValidationFailure> {
         self.tick()?;
         let reading = self.path_reading(id)?;
-        self.generator_path(reading, values, self.indexes.inputs.law().exprs[id].span)
+        self.generator_path(reading, values, self.indexes.inputs.law().exprs()[id].span)
     }
     pub(in crate::observed) fn generator_path(
         &self,
@@ -379,7 +379,7 @@ impl Environment<'_> {
         let declaration = self
             .indexes.inputs
             .definitions()
-            .declarations
+            .declarations()
             .get(entity)
             .ok_or("pathの原始宣言がない")?;
         if matches!(
@@ -419,7 +419,7 @@ impl Environment<'_> {
         let declaration = self
             .indexes.inputs
             .definitions()
-            .declarations
+            .declarations()
             .get(entity)
             .ok_or("pathの原始宣言がない")?;
         let PrimitiveSignature::Arrow { endpoint, .. } = &declaration.signature else {
@@ -473,7 +473,7 @@ impl Environment<'_> {
         }
         // Uは選択した端点のsnapshotだけへ縮めず、全入力の原始identityで構成する。
         let mut universe = BTreeSet::new();
-        for snapshot in &self.indexes.inputs.archmap().snapshots {
+        for snapshot in self.indexes.inputs.archmap().snapshots() {
             self.tick()?;
             for s in &snapshot.subjects {
                 self.tick()?;
@@ -666,7 +666,7 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(span) else {
             return Ok(None);
         };
         if !self.is_path(id)? {
@@ -695,7 +695,7 @@ impl Environment<'_> {
         {
             return Err("Pathの元型・証拠・理由が違う".into());
         }
-        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
+        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs()[id].kind else {
             unreachable!()
         };
         if node.arguments.len() != args.len() + 2 {
@@ -761,18 +761,18 @@ impl Environment<'_> {
         source: NodeRef,
     ) -> Result<Option<Vec<Fact>>, ValidationFailure> {
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(None);
         };
         if self.builtin(id)? != Some("path") {
             return Ok(None);
         }
-        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
+        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs()[id].kind else {
             unreachable!()
         };
         let bindings = self.expression_bindings(graph, source)?;
         let Some(value) = self
-            .analyze_source(graph, self.indexes.inputs.law().exprs[args[0]].span, bindings)?
+            .analyze_source(graph, self.indexes.inputs.law().exprs()[args[0]].span, bindings)?
             .known_value
         else {
             return Ok(None);
@@ -797,7 +797,7 @@ impl Environment<'_> {
             return Ok(None);
         };
         let span = *span;
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(None);
         };
         if !self.is_path(id)? {
@@ -806,7 +806,7 @@ impl Environment<'_> {
         let previous = self.state.context.scoped(Some(graph.context_at(source.0)));
         let result = (|| {
             let bindings = self.expression_bindings(graph, source)?;
-            let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
+            let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs()[id].kind else {
                 unreachable!()
             };
             if children.len() != args.len() {

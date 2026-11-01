@@ -344,7 +344,7 @@ pub(super) fn unavailable(
             environment
                 .indexes.inputs
                 .law()
-                .declarations
+                .declarations()
                 .get(name)
                 .map(|d| d.reading.clone())
                 .unwrap_or_else(|| name.to_owned()),

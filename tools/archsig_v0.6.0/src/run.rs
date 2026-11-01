@@ -238,7 +238,7 @@ fn run_check_validated(
             .collect();
         let definitions = check_definitions_controlled(&files, control);
         let identities = match &definitions {
-            Ok(d) => &d.inputs,
+            Ok(d) => d.inputs(),
             Err(CheckFailure::Input(f)) => &f.inputs,
             Err(CheckFailure::Stopped(reason)) => return stopped(signals, *reason),
         };
@@ -261,10 +261,10 @@ fn run_check_validated(
                         issues.push(ResultIssue::Input(f.issue));
                     }
                     Ok(law) => {
-                        law_id.model_digest = Some(law.model_digest.clone());
-                        declarations = law.infos.clone();
-                        primitives = definitions.declarations.values().cloned().collect();
-                        vocabularies = definitions.vocabularies.values().cloned().collect();
+                        law_id.model_digest = Some(law.model_digest().to_owned());
+                        declarations = law.infos().to_vec();
+                        primitives = definitions.declarations().values().cloned().collect();
+                        vocabularies = definitions.vocabularies().values().cloned().collect();
                         if let Some(Some(bytes)) = &map_bytes {
                             match check_archmap_controlled(bytes, &definitions, control) {
                                 Err(CheckFailure::Stopped(reason)) => {
@@ -276,7 +276,7 @@ fn run_check_validated(
                                 }
                                 Ok(map) => {
                                     if let Some(id) = map_id.as_mut() {
-                                        id.model_digest = Some(map.model_digest.clone());
+                                        id.model_digest = Some(map.model_digest().to_owned());
                                     }
                                 }
                             }
@@ -430,3 +430,6 @@ mod command_tests {
         }
     }
 }
+
+#[cfg(test)]
+mod owner_delivery_tests;

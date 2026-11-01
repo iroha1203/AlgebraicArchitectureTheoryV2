@@ -176,7 +176,7 @@ mod tests {
         case.indexes.object = Some(Arc::new(
             ObjectDomain::from_readings(&inputs, witness.readings(), 0, &mut c).unwrap(),
         ));
-        let change = &inputs.law().declarations["Selected.choose"];
+        let change = &inputs.law().declarations()["Selected.choose"];
         let candidate = change_evaluation::candidate(
             &case,
             change,
@@ -240,7 +240,7 @@ pub(in crate::observed) fn domain(
         Type::Ref(entity) => environment
             .indexes.inputs
             .definitions()
-            .declarations
+            .declarations()
             .get(entity)
             .is_some_and(|d| {
                 matches!(
@@ -343,7 +343,7 @@ pub(in crate::observed) fn search_with_completions(
         let law_name = request.declaration().ok_or("solveの元Lawがない")?;
         let law = inputs
             .law()
-            .declarations
+            .declarations()
             .get(law_name)
             .ok_or("solveの元Law宣言がない")?;
         let Signature::Law { params, .. } = &law.signature else {
@@ -359,7 +359,7 @@ pub(in crate::observed) fn search_with_completions(
         };
         let change = inputs
             .law()
-            .declarations
+            .declarations()
             .get(name)
             .ok_or("solveのchange宣言がない")?;
         let Signature::Change {
@@ -556,7 +556,7 @@ pub(in crate::observed) fn verify_point(
         .ok_or("再代入の元changeがない")?;
     let rebuilt = change_evaluation::candidate(
         &environment,
-        &original.indexes.inputs.law().declarations[change],
+        &original.indexes.inputs.law().declarations()[change],
         &candidates.subjects,
         &candidate.parameters,
     )?;

@@ -533,7 +533,7 @@ impl Evaluator<'_, '_> {
         let Some(guard) = plan.guard else {
             return Ok((body, body, None));
         };
-        let guard_span = self.environment.indexes.inputs.law().exprs[guard].span;
+        let guard_span = self.environment.indexes.inputs.law().exprs()[guard].span;
         let (guard, guard_analysis) = self.universal_raw_source(plan, guard_span, Type::Bool)?;
         let Some(Payload::Expression { parameters, .. }) = &self.graph.get(body)?.payload else {
             unreachable!()
@@ -643,7 +643,7 @@ impl Evaluator<'_, '_> {
                 .environment
                 .indexes.inputs
                 .law()
-                .exprs
+                .exprs()
                 .iter()
                 .position(|expression| expression.span == plan.template_span)
                 .ok_or_else(|| Failure::Internal("全域templateの元ASTがない".into()))?;
@@ -718,7 +718,7 @@ impl Evaluator<'_, '_> {
                         )
                     })
                     .transpose()?;
-                let span = self.environment.indexes.inputs.law().exprs[id].span;
+                let span = self.environment.indexes.inputs.law().exprs()[id].span;
                 let mut reasons = left.reasons.clone();
                 reasons.extend(right.reasons.iter().cloned());
                 sort_reasons(&mut reasons);
@@ -807,7 +807,7 @@ impl Evaluator<'_, '_> {
                 .as_ref()
                 .and_then(|body| body.comparison.as_ref())
                 .ok_or_else(|| Failure::Internal("全域共通反例の元比較がない".into()))?;
-            let original_span = self.environment.indexes.inputs.law().exprs[plan.body].span;
+            let original_span = self.environment.indexes.inputs.law().exprs()[plan.body].span;
             let original=self.graph.nodes.iter().enumerate().find_map(|(index,node)| {
                 (self.graph.context_at(index)==self.graph.active && node.arguments.first()==Some(&template)
                     && matches!(&node.payload,Some(Payload::Expression {location:Location::Law{span},..}) if *span==original_span)).then_some(NodeRef(index))
@@ -899,7 +899,7 @@ impl Evaluator<'_, '_> {
         if let Some(guard) = &guard {
             parts.push(Part {
                 location: Location::Law {
-                    span: self.environment.indexes.inputs.law().exprs[plan.guard.unwrap()].span,
+                    span: self.environment.indexes.inputs.law().exprs()[plan.guard.unwrap()].span,
                 },
                 value: guard.evaluated.value,
                 residual: None,
@@ -1328,7 +1328,7 @@ impl Evaluator<'_, '_> {
         id: usize,
     ) -> Result<SymbolicEvaluation, Failure> {
         self.tick(Checkpoint::Expression)?;
-        let expr = self.environment.indexes.inputs.law().exprs[id].clone();
+        let expr = self.environment.indexes.inputs.law().exprs()[id].clone();
         let ty = self
             .environment
             .indexes.inputs

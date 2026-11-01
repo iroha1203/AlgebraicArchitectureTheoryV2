@@ -24,11 +24,11 @@ impl Environment<'_> {
             return Ok(None);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(None);
         };
         let law = self.indexes.inputs.law();
-        let ExprKind::Call { callee, args } = &law.exprs[id].kind else {
+        let ExprKind::Call { callee, args } = &law.exprs()[id].kind else {
             return Ok(None);
         };
         if !matches!(law.expr_type(*callee), Some(Type::Map(..))) {

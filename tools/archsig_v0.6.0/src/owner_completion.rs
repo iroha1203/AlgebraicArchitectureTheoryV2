@@ -63,7 +63,7 @@ pub(crate) fn determined_owners(
         return Err(Failure::Invalid("owner補完の元slotが違う".into()));
     }
     let mut modes = BTreeMap::new();
-    for origin in &inputs.archmap().origins {
+    for origin in inputs.archmap().origins() {
         tick(c)?;
         modes.insert(origin.id.as_str(), origin.mode.wire());
         tick(c)?;
@@ -76,7 +76,7 @@ pub(crate) fn determined_owners(
     };
     let mut field_index = BTreeMap::new();
     tick(c)?;
-    for snapshot in &inputs.archmap().snapshots {
+    for snapshot in inputs.archmap().snapshots() {
         tick(c)?;
         for subject in &snapshot.subjects {
             tick(c)?;
@@ -127,7 +127,7 @@ pub(crate) fn determined_owners(
     for entity in &entities {
         tick(c)?;
         let mut family = Vec::new();
-        for snapshot in &inputs.archmap().snapshots {
+        for snapshot in inputs.archmap().snapshots() {
             tick(c)?;
             scope.snapshots.insert(snapshot.id.clone());
             scope.modes.insert(mode(&snapshot.origin)?.into());
@@ -161,7 +161,7 @@ pub(crate) fn determined_owners(
         candidates = next;
     }
     // 既知Map/ownerの参照制約も候補を制限するため、全入力の支持を保持する。
-    for snapshot in &inputs.archmap().snapshots {
+    for snapshot in inputs.archmap().snapshots() {
         tick(c)?;
         scope.snapshots.insert(snapshot.id.clone());
         scope.modes.insert(mode(&snapshot.origin)?.into());
@@ -210,8 +210,8 @@ pub(crate) fn determined_owners(
         }
         tick(c)?;
         match crate::archmap::check_completion_with_values::<CheckFailure<Box<Issue>>>(
-            &inputs.archmap().snapshots,
-            &inputs.law().definitions,
+            &inputs.archmap().snapshots(),
+            &inputs.law().definitions(),
             &pinned,
             c,
         ) {
@@ -278,7 +278,7 @@ mod tests {
     fn fields(inputs: &CheckedInputs) -> Vec<Fact> {
         inputs
             .archmap()
-            .snapshots
+            .snapshots()
             .iter()
             .flat_map(|s| &s.subjects)
             .flat_map(|s| {

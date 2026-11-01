@@ -127,7 +127,7 @@ pub(in crate::observed) fn guard_value(
     let (value, _, missing) = evaluate_value(env, id, &variables, &scope, reading)?;
     if value.condition_failed {
         return Err(unsupported(
-            env.indexes.inputs.law().exprs[id].span,
+            env.indexes.inputs.law().exprs()[id].span,
             "local guardの式の適合条件が不成立",
         ));
     }
@@ -219,7 +219,7 @@ pub(in crate::observed) fn read_value(
     let (value, _, missing) = evaluate_value(env, id, &variables, &scope, reading)?;
     if value.condition_failed {
         return Err(unsupported(
-            env.indexes.inputs.law().exprs[id].span,
+            env.indexes.inputs.law().exprs()[id].span,
             "local readの式の適合条件が不成立",
         ));
     }
@@ -295,7 +295,7 @@ pub(in crate::observed) fn read_bindings(
     let mut pending = vec![id];
     while let Some(id) = pending.pop() {
         c.checkpoint(Checkpoint::Localize)?;
-        match &env.indexes.inputs.law().exprs[id].kind {
+        match &env.indexes.inputs.law().exprs()[id].kind {
             ExprKind::Group(child)
             | ExprKind::Field { base: child, .. }
             | ExprKind::Unary { operand: child, .. } => pending.push(*child),
@@ -334,7 +334,7 @@ fn projections(
     let mut pending = vec![(id, value, vec![])];
     while let Some((id, value, path)) = pending.pop() {
         c.checkpoint(Checkpoint::Localize)?;
-        match (&env.indexes.inputs.law().exprs[id].kind, value) {
+        match (&env.indexes.inputs.law().exprs()[id].kind, value) {
             (ExprKind::Group(child), _) => pending.push((*child, value, path)),
             (ExprKind::Tuple(items), Scalar::Tuple(values)) => {
                 for (i, (child, value)) in items.iter().zip(values).enumerate().rev() {
@@ -352,7 +352,7 @@ fn projections(
                     subject: slot.subject.clone(),
                     entity: owner.ty.to_string(),
                 };
-                let declaration = &env.indexes.inputs.definitions().declarations[owner.ty.as_str()];
+                let declaration = &env.indexes.inputs.definitions().declarations()[owner.ty.as_str()];
                 let (params, fields) = declaration
                     .signature
                     .record_fields()
@@ -406,7 +406,7 @@ fn field_path<'a>(env: &'a Environment<'_>, mut id: usize) -> Result<Option<(&'a
     let mut fields = vec![];
     loop {
         env.control.clone().checkpoint(Checkpoint::Localize)?;
-        let expression = &env.indexes.inputs.law().program.nodes[id];
+        let expression = &env.indexes.inputs.law().program().nodes[id];
         match &expression.kind {
             ExprKind::Group(child) => id = *child,
             ExprKind::Field { base, .. } => {
@@ -434,7 +434,7 @@ fn visible_slots(
     let mut pending = vec![id];
     while let Some(id) = pending.pop() {
         env.control.clone().checkpoint(Checkpoint::Localize)?;
-        let expr = &env.indexes.inputs.law().exprs[id];
+        let expr = &env.indexes.inputs.law().exprs()[id];
         match &expr.kind {
             ExprKind::Group(child) => { pending.push(*child); continue; }
             ExprKind::Tuple(items) => { pending.extend(items.iter().rev()); continue; }
@@ -507,7 +507,7 @@ fn state_visibility_inner(
     let mut chain = false;
     while let Some((id, variables)) = pending.pop() {
         c.checkpoint(Checkpoint::Localize)?;
-        match &env.indexes.inputs.law().exprs[id].kind {
+        match &env.indexes.inputs.law().exprs()[id].kind {
             ExprKind::Group(child) | ExprKind::Unary { operand: child, .. } => {
                 pending.push((*child, variables))
             }
@@ -550,7 +550,7 @@ fn state_visibility_inner(
             }
             ExprKind::Dotted(_) | ExprKind::Field { .. } => {
                 let Some((name, fields)) = field_path(env, id)? else {
-                    let ExprKind::Field { base, name } = &env.indexes.inputs.law().exprs[id].kind else {
+                    let ExprKind::Field { base, name } = &env.indexes.inputs.law().exprs()[id].kind else {
                         return Ok(None);
                     };
                     let owner = env.scoped_ast(*base, &variables, &Scope::default(), reading)?;
@@ -809,7 +809,7 @@ fn affine_read_image(
     let mut offset = vec![];
     while let Some((id, value)) = pending.pop() {
         c.checkpoint(Checkpoint::Localize)?;
-        match (&env.indexes.inputs.law().exprs[id].kind, value) {
+        match (&env.indexes.inputs.law().exprs()[id].kind, value) {
             (ExprKind::Group(inner), _) => pending.push((*inner, value)),
             (ExprKind::Tuple(ids), Type::Tuple(values)) if ids.len() == values.len() => {
                 pending.extend(ids.iter().zip(values).rev().map(|(i, v)| (*i, v)))
@@ -818,7 +818,7 @@ fn affine_read_image(
                 let evaluated = arbitrary.scoped_ast(id, &variables, &Scope::default(), reading)?;
                 let form = evaluated.affine.ok_or_else(|| {
                     unsupported(
-                        env.indexes.inputs.law().exprs[id].span,
+                        env.indexes.inputs.law().exprs()[id].span,
                         "局所読取りが係数型上のアフィン式でない",
                     )
                 })?;
@@ -829,18 +829,18 @@ fn affine_read_image(
                 };
                 let (constant, row) = coordinates.ok_or_else(|| {
                     unsupported(
-                        env.indexes.inputs.law().exprs[id].span,
+                        env.indexes.inputs.law().exprs()[id].span,
                         "局所読取りの係数が未確定",
                     )
                 })?;
                 matrix.push(row);
                 offset.push(constant.ok_or_else(|| {
-                    unsupported(env.indexes.inputs.law().exprs[id].span, "局所読取りの定数部が欠測")
+                    unsupported(env.indexes.inputs.law().exprs()[id].span, "局所読取りの定数部が欠測")
                 })?);
             }
             _ => {
                 return Err(unsupported(
-                    env.indexes.inputs.law().exprs[id].span,
+                    env.indexes.inputs.law().exprs()[id].span,
                     "局所読取り像の係数型が混在する",
                 ));
             }
@@ -1025,7 +1025,7 @@ pub(in crate::observed) fn materialize_positions(
             entity: owner.ty.to_string(),
         };
         let name = slot.field.as_ref().ok_or("暗黙読取りのfieldがない")?;
-        let declaration = &env.indexes.inputs.definitions().declarations[owner.ty.as_str()];
+        let declaration = &env.indexes.inputs.definitions().declarations()[owner.ty.as_str()];
         let (params, fields) = declaration
             .signature
             .record_fields()
@@ -1531,7 +1531,7 @@ fn materialize_instance(
                     entity: owner.ty.to_string(),
                 };
                 let name = slot.field.as_ref().ok_or("復元するfieldがない")?;
-                let definition = &env.indexes.inputs.definitions().declarations[owner.ty.as_str()];
+                let definition = &env.indexes.inputs.definitions().declarations()[owner.ty.as_str()];
                 let (params, fields) = definition
                     .signature
                     .record_fields()
@@ -1670,7 +1670,7 @@ mod tests {
         )
         .unwrap();
         let env = Environment::with_requests(&inputs, requests.requests(), &mut quiet()).unwrap();
-        let declaration = &inputs.law().declarations["Reservations.here"];
+        let declaration = &inputs.law().declarations()["Reservations.here"];
         let bindings = vec![
             (
                 "a".into(),

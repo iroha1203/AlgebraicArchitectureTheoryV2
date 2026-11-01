@@ -40,7 +40,7 @@ impl Json {
     }
 
     /// 検査中のcanonical encodingは、子構造と各文字にも同じ停止制御を渡す。
-    pub(crate) fn canonical_controlled<E: InputError>(
+    pub fn canonical_controlled<E: InputError>(
         &self,
         control: &mut Control,
         point: Checkpoint,
@@ -180,7 +180,7 @@ mod controlled_tests {
     use super::*;
     use crate::control::CheckFailure;
     use crate::issue::Issue;
-    use crate::result::Signal;
+    use crate::control::Signal;
     use std::{cell::Cell, rc::Rc};
 
     type Failure = CheckFailure<Box<Issue>>;

@@ -457,7 +457,7 @@ fn build_source(
     let declaration = input
         .inputs()
         .law()
-        .declarations
+        .declarations()
         .get(&o.declaration)
         .ok_or("元view宣言がない")?;
     let Signature::View { params, .. } = &declaration.signature else {
@@ -649,7 +649,7 @@ fn family_node(g: &Graph, s: &Source, rows: &[NodeRef]) -> Result<Node, Validati
         span: witness
             .inputs()
             .law()
-            .exprs
+            .exprs()
             .get(s.origin.body)
             .ok_or("元view bodyの出現がない")?
             .span,

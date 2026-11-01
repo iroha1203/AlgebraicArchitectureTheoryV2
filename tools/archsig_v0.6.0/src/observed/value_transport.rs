@@ -226,8 +226,8 @@ pub(super) fn selected_types(
                 .zip(target.parameters.get(p))
                 .map(|(a, b)| (a.1.clone(), b.1.clone())),
             DeclarationValuePosition::LocalRead(index) => {
-                let source = &inputs.law().declarations[&c.source().name];
-                let target = &inputs.law().declarations[&target.name];
+                let source = &inputs.law().declarations()[&c.source().name];
+                let target = &inputs.law().declarations()[&target.name];
                 let (
                     crate::law::model::Signature::Local { reads: a, .. },
                     crate::law::model::Signature::Local { reads: b, .. },
@@ -295,10 +295,10 @@ fn domain(
         &shared,
         &mut |name| {
             let mut result = finite::Enumeration::default();
-            for snapshot in &inputs.archmap().snapshots {
+            for snapshot in inputs.archmap().snapshots() {
                 control.checkpoint(Checkpoint::FiniteValueTransport)?;
                 result.scope.snapshots.insert(snapshot.id.clone());
-                for origin in &inputs.archmap().origins {
+                for origin in inputs.archmap().origins() {
                     control.checkpoint(Checkpoint::FiniteValueTransport)?;
                     if origin.id == snapshot.origin {
                         result.scope.modes.insert(origin.mode.wire().into());
@@ -318,7 +318,7 @@ fn domain(
                             field: None,
                             atom: None,
                         });
-                        for origin in &inputs.archmap().origins {
+                        for origin in inputs.archmap().origins() {
                             control.checkpoint(Checkpoint::FiniteValueTransport)?;
                             if origin.id == subject.origin {
                                 result.scope.modes.insert(origin.mode.wire().into());
@@ -441,7 +441,7 @@ fn image(
                     let target_type = mu.get(entity).unwrap_or(entity);
                     // F内の外部参照も原始mapで固定される。実subjectの型を保持する。
                     let mut actual = None;
-                    for s in &inputs.archmap().snapshots {
+                    for s in inputs.archmap().snapshots() {
                         tick(control)?;
                         if s.id == to.snapshot {
                             for a in &s.subjects {
@@ -790,8 +790,8 @@ mod tests {
         let right = include_bytes!("../../tests/fixtures/configuration-map-right.atoms.json");
         let defs =
             crate::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
-        let ld = &defs.vocabularies["Left"].digest;
-        let rd = &defs.vocabularies["Right"].digest;
+        let ld = &defs.vocabularies()["Left"].digest;
+        let rd = &defs.vocabularies()["Right"].digest;
         let bridge = include_str!("../../tests/fixtures/configuration-map-bridge.atoms.json")
             .replace("@LEFT_DIGEST@", ld)
             .replace("@RIGHT_DIGEST@", rd);
@@ -804,13 +804,13 @@ mod tests {
         let a = a
             .replace("@LEFT_DIGEST@", ld)
             .replace("@RIGHT_DIGEST@", rd)
-            .replace("@BRIDGE_DIGEST@", &defs.vocabularies["Bridge"].digest);
+            .replace("@BRIDGE_DIGEST@", &defs.vocabularies()["Bridge"].digest);
         check_inputs(
             InputSources::from_bytes(
                 vec![left.to_vec(), right.to_vec(), bridge.into_bytes()],
                 law.replace("@LEFT_DIGEST@", ld)
                     .replace("@RIGHT_DIGEST@", rd)
-                    .replace("@BRIDGE_DIGEST@", &defs.vocabularies["Bridge"].digest)
+                    .replace("@BRIDGE_DIGEST@", &defs.vocabularies()["Bridge"].digest)
                     .into_bytes(),
                 a.into_bytes(),
             ),

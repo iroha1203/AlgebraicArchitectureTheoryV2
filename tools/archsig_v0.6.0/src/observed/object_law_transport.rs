@@ -752,8 +752,8 @@ mod tests {
         let left = include_bytes!("../../tests/fixtures/object-law-transport.atoms.json");
         let right = include_bytes!("../../tests/fixtures/object-law-transport-right.atoms.json");
         let ds = crate::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
-        let ld = &ds.vocabularies["Left"].digest;
-        let rd = &ds.vocabularies["Right"].digest;
+        let ld = &ds.vocabularies()["Left"].digest;
+        let rd = &ds.vocabularies()["Right"].digest;
         let bridge = include_str!("../../tests/fixtures/object-law-transport-bridge.atoms.json")
             .replace("@LEFT_DIGEST@", ld)
             .replace("@RIGHT_DIGEST@", rd);
@@ -766,7 +766,7 @@ mod tests {
         let expand = |s: &str| {
             s.replace("@LEFT_DIGEST@", ld)
                 .replace("@RIGHT_DIGEST@", rd)
-                .replace("@BRIDGE_DIGEST@", &ds.vocabularies["Bridge"].digest)
+                .replace("@BRIDGE_DIGEST@", &ds.vocabularies()["Bridge"].digest)
                 .into_bytes()
         };
         let i = Arc::new(

@@ -53,7 +53,7 @@ fn owned_map_actual_domain_roster_stop_keeps_values_refutation_and_prefix() {
         .prepared
         .inputs()
         .law()
-        .exprs
+        .exprs()
         .iter()
         .find(|x| &bytes[x.span.0..x.span.1] == b"mcAccept(a,b,m.states)")
         .unwrap()

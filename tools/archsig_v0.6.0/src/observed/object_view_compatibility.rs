@@ -741,7 +741,7 @@ mod tests {
         let definitions =
             crate::definition::check_definitions(&[("definition0", fixture::D.as_bytes())])
                 .unwrap();
-        let digest = &definitions.vocabularies["Pattern"].digest;
+        let digest = &definitions.vocabularies()["Pattern"].digest;
         let law = format!(
             "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Selected {{ use vocabulary Pattern version \"1\" digest \"{digest}\"; {body} }}"
         );

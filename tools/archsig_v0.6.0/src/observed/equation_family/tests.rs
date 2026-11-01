@@ -437,8 +437,8 @@ fn tuple_integer_rational_components_keep_distinct_factors_and_original_field_sl
     assert_ne!(definition.as_bytes(), bytes.definitions()[0].bytes());
     let defs =
         crate::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let old = &original.definitions().vocabularies["Family"].digest;
-    let digest = &defs.vocabularies["Family"].digest;
+    let old = &original.definitions().vocabularies()["Family"].digest;
+    let digest = &defs.vocabularies()["Family"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Family version \"1\" digest \"{digest}\";law required pair(r:Root):r.amount=(0,0);}}"
     );

@@ -262,7 +262,7 @@ fn project_inner(
                 // primitive reference constraint; runtime projection records
                 // the absent field without inventing an original subject.
                 let mut candidates = Vec::new();
-                for d in law.definitions.declarations.values() {
+                for d in law.definitions().declarations().values() {
                     tick(control)?;
                     if matches!(
                         &d.signature,
@@ -337,7 +337,7 @@ fn project_inner(
         (Evaluation(_), Field(f)) if f == "environment" => conditional(Architecture),
         (Architecture, Field(f)) if f == "root" => {
             let mut candidates = Vec::new();
-            for d in law.definitions.declarations.values() {
+            for d in law.definitions().declarations().values() {
                 tick(control)?;
                 if matches!(&d.signature, PrimitiveSignature::Entity { owner: None, .. }) {
                     candidates.push(Law(Type::Ref(d.name.clone())));
@@ -356,7 +356,7 @@ fn project_inner(
         (Law(Type::List(t)), Index(_)) => conditional(Law((**t).clone())),
         (Law(Type::Option(t)), Field(f)) if f == "some" => conditional(Law((**t).clone())),
         (Law(Type::Data(name)), Index(i)) => {
-            let Some(d) = law.definitions.declarations.get(name) else {
+            let Some(d) = law.definitions().declarations().get(name) else {
                 return Err("missing data declaration".into());
             };
             let PrimitiveSignature::Data { constructors } = &d.signature else {
@@ -386,7 +386,7 @@ fn project_inner(
                 return Err("specify an index for generators".into());
             }
             let mut ts = Vec::new();
-            for d in law.definitions.declarations.values() {
+            for d in law.definitions().declarations().values() {
                 tick(control)?;
                 if matches!(
                     &d.signature,

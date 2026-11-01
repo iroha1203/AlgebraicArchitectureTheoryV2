@@ -73,7 +73,7 @@ pub struct QualifiedName {
     owner_field: bool,
 }
 impl QualifiedName {
-    pub(crate) fn parse(full: String) -> Self {
+    pub fn parse(full: String) -> Self {
         let namespace_end = full.find('.').unwrap_or(0);
         let member_start = full.rfind('.').map_or(0, |i| i + 1);
         let owner_field = &full[member_start..] == "owner";
@@ -205,34 +205,5 @@ mod qualified_tests {
             assert_eq!(name.is_owner(), owner_field);
             assert_eq!(String::from(name), text);
         }
-    }
-
-    #[test]
-    fn checked_inputs_keep_name_parts_for_observations_and_law_references() {
-        use crate::{
-            control::Control,
-            input::{InputSources, check_inputs},
-        };
-        let inputs = check_inputs(
-            InputSources::from_bytes(
-                vec![include_bytes!("../tests/fixtures/counter.atoms.json").to_vec()],
-                include_bytes!("../tests/fixtures/counter.law").to_vec(),
-                include_bytes!("../tests/fixtures/counter.archmap.json").to_vec(),
-            ),
-            &mut Control::unlimited(),
-        )
-        .unwrap();
-        let subject = &inputs.archmap().snapshots[0].subjects[0];
-        assert_eq!(subject.ty.namespace(), "Counter");
-        let field = &subject.fields[0].name;
-        assert_eq!(field.owner(), Some("Counter.State"));
-        assert_eq!(field.short(), "count");
-        assert!(!field.is_owner());
-        let indexed = &inputs.law().resolved_names["Counter.State.count"];
-        assert_eq!(indexed, field);
-        assert_eq!(
-            inputs.law().resolved_names["CountCheck.amount"].short(),
-            "amount"
-        );
     }
 }

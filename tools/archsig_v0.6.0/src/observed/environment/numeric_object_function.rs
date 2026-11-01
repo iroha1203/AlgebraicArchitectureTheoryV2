@@ -149,7 +149,7 @@ fn expression_inner(
     }
     let declaration = inputs
         .law()
-        .declarations
+        .declarations()
         .get(&row.declaration().name)
         .ok_or_else(|| ConstructionFailure::Inconsistent("数値viewの宣言がない".into()))?;
     let (params, body) = match &declaration.signature {
@@ -164,7 +164,7 @@ fn expression_inner(
     let expression = expression.unwrap_or(body);
     let selected = inputs
         .law()
-        .exprs
+        .exprs()
         .get(expression)
         .ok_or_else(|| ConstructionFailure::Inconsistent("数値読取りの元式がない".into()))?;
     if selected.span.0 < declaration.span.0 || selected.span.1 > declaration.span.1 {

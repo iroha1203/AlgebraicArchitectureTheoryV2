@@ -5,7 +5,7 @@ mod recursive_tree_fixture {
 fn recursive_tree_private_inputs() -> crate::input::InputSources {
     let definitions = recursive_tree_fixture::DEFINITIONS.as_bytes();
     let checked = crate::definition::check_definitions(&[("definition0", definitions)]).unwrap();
-    let digest = &checked.vocabularies["Trees"].digest;
+    let digest = &checked.vocabularies()["Trees"].digest;
     crate::input::InputSources::from_bytes(
         vec![definitions.to_vec()],
         recursive_tree_fixture::law(digest, "view seed():Z=1;law required prior():false;")

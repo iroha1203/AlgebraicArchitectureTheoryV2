@@ -9,7 +9,7 @@ const MAP: &str = include_str!("../../../tests/fixtures/configuration-profile.ar
 use crate::control::quiet;
 fn prepared(law: &str, map: &str) -> PreparedObserved {
     let definitions = crate::definition::check_definitions(&[("definition0", DEFINITION)]).unwrap();
-    let digest = &definitions.vocabularies["Profile"].digest;
+    let digest = &definitions.vocabularies()["Profile"].digest;
     let inputs = Arc::new(
         crate::input::check_inputs(
             InputSources::from_bytes(
@@ -502,8 +502,8 @@ fn unresolved_external_membership_does_not_execute_the_constant_body() {
     let left = include_bytes!("../../../tests/fixtures/object-view-transport.atoms.json");
     let right = include_bytes!("../../../tests/fixtures/configuration-map-right.atoms.json");
     let defs = crate::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
-    let ld = &defs.vocabularies["Left"].digest;
-    let rd = &defs.vocabularies["Right"].digest;
+    let ld = &defs.vocabularies()["Left"].digest;
+    let rd = &defs.vocabularies()["Right"].digest;
     let bridge = include_str!("../../../tests/fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
@@ -518,7 +518,7 @@ fn unresolved_external_membership_does_not_execute_the_constant_body() {
             .replace("@RIGHT_DIGEST@", rd)
             .replace(
                 "@BRIDGE_DIGEST@",
-                &definitions.vocabularies["Bridge"].digest,
+                &definitions.vocabularies()["Bridge"].digest,
             )
             .into_bytes()
     };

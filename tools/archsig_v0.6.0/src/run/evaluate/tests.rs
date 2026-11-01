@@ -85,7 +85,7 @@ fn later_internal_failure_delivers_only_the_validated_prefix_and_no_empty_error_
                 )
                 .unwrap();
                 assert_eq!(evaluation.status(), "error");
-                assert_eq!(evaluation.nodes.is_empty(), !prefix);
+                assert_eq!(!evaluation.has_nodes(), !prefix);
                 let output = directory.join(format!("out-{prefix}-{save}"));
                 let args = RunArgs {
                     inputs: CheckArgs {

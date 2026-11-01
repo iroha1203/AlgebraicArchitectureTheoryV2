@@ -53,7 +53,7 @@ fn dependency_stop() {
     use std::{cell::Cell, rc::Rc};
     let normal = result();
     let Signature::View { params, .. } =
-        &normal.prepared.inputs().law().declarations["Applications.adBoth"].signature
+        &normal.prepared.inputs().law().declarations()["Applications.adBoth"].signature
     else {
         panic!()
     };

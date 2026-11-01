@@ -51,7 +51,7 @@ fn answer_projection_actual_path_stop_keeps_prior_values_refutation_missing_and_
         evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     let params =
-        match &normal.prepared.inputs().law().declarations["Applications.abIdentity"].signature {
+        match &normal.prepared.inputs().law().declarations()["Applications.abIdentity"].signature {
             Signature::View { params, .. } => params,
             _ => panic!(),
         };

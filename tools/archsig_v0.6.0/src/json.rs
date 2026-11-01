@@ -113,7 +113,7 @@ pub fn parse(bytes: &[u8]) -> Result<JNode, Box<Issue>> {
     )
 }
 
-pub(crate) fn parse_inner<E: InputError>(
+pub fn parse_inner<E: InputError>(
     bytes: &[u8],
     control: &mut Control,
     point: Checkpoint,
@@ -415,7 +415,7 @@ pub fn parse_definition(bytes: &[u8], input: &str) -> Result<JNode, Box<Issue>> 
     })
 }
 
-pub(crate) fn parse_definition_inner<E: InputError>(
+pub fn parse_definition_inner<E: InputError>(
     bytes: &[u8],
     input: &str,
     control: &mut Control,

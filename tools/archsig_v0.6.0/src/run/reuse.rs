@@ -413,12 +413,7 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Contr
     }
     let code = match evaluation.status() {
         "partial" => 2,
-        "complete" => u64::from(
-            evaluation
-                .answers
-                .iter()
-                .any(|a| a.status == crate::observed::result::Decision::Refuted),
-        ),
+        "complete" => u64::from(evaluation.has_refuted_answer()),
         _ => return Err(invalid("candidate verification is not finalized")),
     };
     if normalized_candidate(field(document, "exit_code")?, &empty, control)? != Json::Nat(code) {

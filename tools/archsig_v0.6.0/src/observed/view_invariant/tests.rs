@@ -13,7 +13,7 @@ fn prepared(law: &str, map: &str) -> PreparedObserved {
 }
 fn prepared_with_definition(law: &str, map: &str, definition: &[u8]) -> PreparedObserved {
     let definitions = crate::definition::check_definitions(&[("definition0", definition)]).unwrap();
-    let digest = &definitions.vocabularies["Profile"].digest;
+    let digest = &definitions.vocabularies()["Profile"].digest;
     let inputs = Arc::new(
         crate::input::check_inputs(
             InputSources::from_bytes(
@@ -626,8 +626,8 @@ fn external_prepared(extra: &str) -> PreparedObserved {
     let left = include_bytes!("../../../tests/fixtures/object-view-transport.atoms.json");
     let right = include_bytes!("../../../tests/fixtures/configuration-map-right.atoms.json");
     let defs = crate::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
-    let ld = &defs.vocabularies["Left"].digest;
-    let rd = &defs.vocabularies["Right"].digest;
+    let ld = &defs.vocabularies()["Left"].digest;
+    let rd = &defs.vocabularies()["Right"].digest;
     let bridge = include_str!("../../../tests/fixtures/configuration-map-bridge.atoms.json")
         .replace("@LEFT_DIGEST@", ld)
         .replace("@RIGHT_DIGEST@", rd);
@@ -640,7 +640,7 @@ fn external_prepared(extra: &str) -> PreparedObserved {
     let expand = |s: &str| {
         s.replace("@LEFT_DIGEST@", ld)
             .replace("@RIGHT_DIGEST@", rd)
-            .replace("@BRIDGE_DIGEST@", &defs.vocabularies["Bridge"].digest)
+            .replace("@BRIDGE_DIGEST@", &defs.vocabularies()["Bridge"].digest)
             .into_bytes()
     };
     let law = include_str!("../../../tests/fixtures/object-view-transport.law").replacen(

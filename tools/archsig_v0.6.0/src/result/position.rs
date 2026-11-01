@@ -1,7 +1,7 @@
 //! 表示時にだけ、保持した元入力から Location の開始行・列を補う。
 use crate::canonical::Json;
 
-pub(crate) fn add_location_positions<'a>(
+pub fn add_location_positions<'a>(
     document: &mut Json,
     sources: impl IntoIterator<Item = (&'a str, &'a [u8])>,
 ) {

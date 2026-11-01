@@ -5,7 +5,7 @@ fn equality_inputs(revision: &str) -> InputSources {
     let defs = equality_fixture::definitions();
     let checked =
         crate::definition::check_definitions(&[("definition0", defs.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Terms"].digest;
+    let digest = &checked.vocabularies()["Terms"].digest;
     InputSources::from_bytes(
         vec![defs.into_bytes()],
         equality_fixture::law(digest).into_bytes(),

@@ -40,7 +40,7 @@ fn typed_input(
     let defs = defs.canonical();
     let checked_defs =
         crate::definition::check_definitions(&[("definition0", defs.as_bytes())]).unwrap();
-    let digest = &checked_defs.vocabularies["Paths"].digest;
+    let digest = &checked_defs.vocabularies()["Paths"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Walk{{use vocabulary Paths version \"1\" digest \"{digest}\";view step(e:Hop):Path<Node,Node> =path(e);law required exact(e:Hop):path(e)=path(e);{extra}}}"
     );

@@ -41,7 +41,7 @@ pub(super) fn base_scope(
     let declaration = witness
         .inputs()
         .law()
-        .declarations
+        .declarations()
         .get(name)
         .ok_or("元Law宣言がない")?;
     scope.readings.insert(declaration.reading.clone());
@@ -357,7 +357,7 @@ pub(super) fn body_guard(
     let witness = Witness::Architecture(i.origin.architecture.clone());
     let law = witness.inputs().law();
     let body = law
-        .exprs
+        .exprs()
         .get(i.origin.body)
         .ok_or("元Law body式がない")?
         .span;
@@ -367,7 +367,7 @@ pub(super) fn body_guard(
     let Some(guard) = i.origin.guard else {
         return Ok((true, None));
     };
-    let expected = law.exprs.get(guard).ok_or("元Law guard式がない")?.span;
+    let expected = law.exprs().get(guard).ok_or("元Law guard式がない")?.span;
     let record = &graph.instances[index];
     let mut found = None;
     for (at, node) in graph.nodes.iter().enumerate().take(limit) {
@@ -553,7 +553,7 @@ impl super::result_kind::ResultKind for Data {
             .indexes
             .inputs
             .law()
-            .declarations
+            .declarations()
             .get(&row.declaration)
             .ok_or("元Law宣言がない")?;
         let guard = row

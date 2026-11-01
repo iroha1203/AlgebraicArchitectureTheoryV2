@@ -91,7 +91,7 @@ pub(in crate::observed) fn compute(
     }
     let linear = coefficients::Input::from_search(&input.search, c)?;
     let ty = &linear.ty;
-    let decl = &original.indexes.inputs.law().declarations
+    let decl = &original.indexes.inputs.law().declarations()
         [request.declaration().ok_or("アフィン商のViewがない")?];
     let Signature::View {
         params,
@@ -127,7 +127,7 @@ pub(in crate::observed) fn compute(
                 return Err(ValidationFailure::from("アフィン商のLaw名がない"));
             };
             let Signature::Law { params, body, .. } =
-                &original.indexes.inputs.law().declarations[name].signature
+                &original.indexes.inputs.law().declarations()[name].signature
             else {
                 return Err(ValidationFailure::from("アフィン商のLaw署名が違う"));
             };
@@ -135,7 +135,7 @@ pub(in crate::observed) fn compute(
                 op: BinOp::Eq,
                 lhs,
                 rhs,
-            } = original.indexes.inputs.law().exprs[*body].kind
+            } = original.indexes.inputs.law().exprs()[*body].kind
             else {
                 return Err(unsupported(
                     request,
@@ -314,7 +314,7 @@ pub(in crate::observed) fn compute(
     result.matrix = coefficients::multiply(ty, &rows, &result.embedding, dimensions, c)?;
     result.offset = constants;
     if let Some(law) = &mut result.law {
-        let declaration = &original.indexes.inputs.law().declarations[&law.name];
+        let declaration = &original.indexes.inputs.law().declarations()[&law.name];
         let Signature::Law { params, guard, .. } = &declaration.signature else {
             return Err("商のLaw署名がない".into());
         };
@@ -583,7 +583,7 @@ pub(in crate::observed) fn point(
         0,
         c,
     )?));
-    let declaration = &original.indexes.inputs.law().declarations[&law.name];
+    let declaration = &original.indexes.inputs.law().declarations()[&law.name];
     let Signature::Law { body, .. } = &declaration.signature else {
         return Err("アフィン商のLaw署名がない".into());
     };
@@ -653,7 +653,7 @@ pub(in crate::observed) fn point(
             scope: evaluated.scope,
         });
     }
-    let declaration = &original.indexes.inputs.law().declarations
+    let declaration = &original.indexes.inputs.law().declarations()
         [request.declaration().ok_or("アフィン商のViewがない")?];
     let Signature::View {
         body: view_body, ..

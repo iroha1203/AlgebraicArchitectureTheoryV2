@@ -370,8 +370,8 @@ pub(super) fn retain(
         tick(c)?;
         let pair = candidate.pair().ok_or("relationの対応署名がない")?;
         let declarations = [
-            &inputs.law().declarations[pair.source()],
-            &inputs.law().declarations[pair.target()],
+            &inputs.law().declarations()[pair.source()],
+            &inputs.law().declarations()[pair.target()],
         ];
         let (
             Signature::Relation {
@@ -452,7 +452,7 @@ pub(super) fn retain(
                 .map_err(failure)?;
         let definitions = inputs
             .definitions()
-            .declarations
+            .declarations()
             .iter()
             .filter(|(_, d)| namespaces.contains(&d.namespace))
             .filter_map(|(name, d)| endpoints(&d.signature).map(|(from, to)| (name, d, from, to)))
@@ -489,7 +489,7 @@ pub(super) fn retain(
                 continue;
             }
             let target = map_type(name);
-            let Some(target_def) = inputs.definitions().declarations.get(&target) else {
+            let Some(target_def) = inputs.definitions().declarations().get(&target) else {
                 return Err("relation生成元の像宣言がない".into());
             };
             let ft = map_type(from);

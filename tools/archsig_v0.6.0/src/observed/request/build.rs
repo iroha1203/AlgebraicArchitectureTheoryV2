@@ -84,7 +84,7 @@ fn roots(
     match ty {
         ProjectionType::ArchitectureRoot(_) if !architecture => {},
         ProjectionType::Law(Type::Ref(name)) | ProjectionType::ArchitectureRoot(name) => {
-            if let Some(declaration) = law.definitions.declarations.get(name) {
+            if let Some(declaration) = law.definitions().declarations().get(name) {
                 if visible.contains(&declaration.namespace)
                     && matches!(
                         declaration.signature,

@@ -507,7 +507,7 @@ pub(super) fn retain(
             .instances()
             .get(axis.instance)
             .ok_or("元view instanceがない")?;
-        let declaration = &inputs.law().declarations[&instance.declaration().name];
+        let declaration = &inputs.law().declarations()[&instance.declaration().name];
         let crate::law::model::Signature::View { body, .. } = &declaration.signature else {
             return Err("元viewのbodyがない".into());
         };
@@ -530,7 +530,7 @@ pub(super) fn retain(
             dependencies: vec![axis.invariant],
             missing,
             location: Some(crate::issue::Location::Law {
-                span: inputs.law().exprs[*body].span,
+                span: inputs.law().exprs()[*body].span,
             }),
         };
         let mut unsupported_parameter = false;
@@ -655,7 +655,7 @@ pub(super) fn retain(
                         } else {
                             &instance.declaration().name
                         };
-                        let declaration = &inputs.law().declarations[name];
+                        let declaration = &inputs.law().declarations()[name];
                         let crate::law::model::Signature::View { body, params, returns } = &declaration.signature else {
                             return Err("元viewのbodyがない".into());
                         };
@@ -665,7 +665,7 @@ pub(super) fn retain(
                                 .chain(std::iter::once(returns.clone())).collect();
                         }
                         reason.location = Some(crate::issue::Location::Law {
-                            span: inputs.law().exprs[*body].span,
+                            span: inputs.law().exprs()[*body].span,
                         });
                         out.pending.push(reason);
                         continue;

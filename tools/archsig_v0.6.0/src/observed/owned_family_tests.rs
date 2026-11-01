@@ -65,7 +65,7 @@ fn owned_private_evaluations(result: &ObservedEvaluation) -> Vec<usize> {
                 .prepared
                 .inputs()
                 .law()
-                .exprs
+                .exprs()
                 .iter()
                 .any(|e| e.span == *span && matches!(e.kind, ExprKind::Family { .. }))
                 .then_some(i)

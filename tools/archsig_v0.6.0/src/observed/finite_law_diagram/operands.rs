@@ -38,7 +38,7 @@ impl Builder<'_> {
         let span = self
             .inputs
             .law()
-            .exprs
+            .exprs()
             .get(expression)
             .ok_or("有限operandの元式がない")?
             .span;
@@ -116,7 +116,7 @@ impl Builder<'_> {
             match &self
                 .inputs
                 .law()
-                .exprs
+                .exprs()
                 .get(current)
                 .ok_or("有限operandの外側式がない")?
                 .kind
@@ -157,7 +157,7 @@ impl Builder<'_> {
                 _ => return Err("有限operandの元等式までの束縛が違う".into()),
             }
         }
-        let ExprKind::Binary { lhs, rhs, .. } = self.inputs.law().exprs[eq].kind else {
+        let ExprKind::Binary { lhs, rhs, .. } = self.inputs.law().exprs()[eq].kind else {
             return Err("有限operandの元等式がない".into());
         };
         let left = self.closed(lhs, &locals)?;

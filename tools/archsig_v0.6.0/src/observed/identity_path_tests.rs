@@ -104,7 +104,7 @@ fn direct_path_equality_recheck_rejects_wrong_bool_and_swapped_operand_producers
     let index = r.nodes.iter().position(|n| {
         let Rule::Input { kind: "law", location: Location::Law { span } } = &n.rule else { return false };
         matches!(n.payload,Some(Payload::Scalar(Scalar::Bool(true))))
-            && law.exprs.iter().enumerate().any(|(id,e)| {
+            && law.exprs().iter().enumerate().any(|(id,e)| {
                 e.span==*span && matches!(e.kind,ExprKind::Binary{op:BinOp::Eq,..})
                     && matches!(&e.kind,ExprKind::Binary{lhs,..} if matches!(law.expr_type(*lhs),Some(Type::Path(..))))
                     && law.expr_type(id)==Some(&Type::Bool)

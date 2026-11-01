@@ -57,7 +57,7 @@ fn compound_call_member_stop() {
         .prepared
         .inputs()
         .law()
-        .exprs
+        .exprs()
         .iter()
         .find(|x| {
             &bytes[x.span.0..x.span.1]

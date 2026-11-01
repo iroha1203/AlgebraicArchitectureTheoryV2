@@ -143,8 +143,8 @@ fn reference_completion_input_constraints_reject_unknown_duplicate_wrong_type_an
     ] {
         assert!(matches!(
             check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
-                &i.archmap().snapshots,
-                &i.law().definitions,
+                &i.archmap().snapshots(),
+                &i.law().definitions(),
                 &pins,
                 &mut quiet()
             ),
@@ -153,8 +153,8 @@ fn reference_completion_input_constraints_reject_unknown_duplicate_wrong_type_an
     }
     for target in ["A", "B"] {
         check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
-            &i.archmap().snapshots,
-            &i.law().definitions,
+            &i.archmap().snapshots(),
+            &i.law().definitions(),
             &[pin("Refs.Sample.left", target)],
             &mut quiet(),
         )
@@ -178,7 +178,7 @@ fn reference_completion_coverage_stop_keeps_cases_without_whole_claim() {
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
     assert_eq!(normal.answers[3].status, Decision::Established);
-    let target = normal.prepared.inputs().law().declarations["RefCalc.equal"].span;
+    let target = normal.prepared.inputs().law().declarations()["RefCalc.equal"].span;
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));

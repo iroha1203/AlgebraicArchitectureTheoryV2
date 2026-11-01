@@ -124,7 +124,7 @@ mod tests {
     fn finite_view_rows_reject_foreign_outer_readings_objects_and_instances() {
         let d = include_bytes!("../../tests/fixtures/object-instances.atoms.json");
         let defs = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
-        let digest = &defs.vocabularies["Instances"].digest;
+        let digest = &defs.vocabularies()["Instances"].digest;
         let law = format!(
             "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Selected {{ use vocabulary Instances version \"1\" digest \"{digest}\"; view family(c:Part,b:Bool):Bool=b; view other(c:Part,b:Bool):Bool=not b; }}"
         );

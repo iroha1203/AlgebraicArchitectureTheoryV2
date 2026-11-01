@@ -51,7 +51,7 @@ impl Environment<'_> {
                 },
             );
         }
-        let declaration = self.indexes.inputs.law().declarations.get(&i.origin.declaration)
+        let declaration = self.indexes.inputs.law().declarations().get(&i.origin.declaration)
             .ok_or("元viewの宣言がない")?;
         if let crate::law::model::Signature::View { params, .. } = &declaration.signature {
             for parameter in params {

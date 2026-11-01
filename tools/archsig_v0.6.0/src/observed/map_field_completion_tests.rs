@@ -95,7 +95,7 @@ fn map_field_coverage_stop_never_promotes_unfinished_whole() {
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
     assert_eq!(normal.answers[3].status, Decision::Established);
-    let target = normal.prepared.inputs().law().declarations["Inspect.same"].span;
+    let target = normal.prepared.inputs().law().declarations()["Inspect.same"].span;
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
@@ -237,8 +237,8 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
         assert!(
             matches!(
                 check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
-                    &input.archmap().snapshots,
-                    &input.law().definitions,
+                    &input.archmap().snapshots(),
+                    &input.law().definitions(),
                     &[pin(field, value)],
                     &mut quiet()
                 ),
@@ -249,8 +249,8 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
     }
     assert!(matches!(
         check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
-            &input.archmap().snapshots,
-            &input.law().definitions,
+            &input.archmap().snapshots(),
+            &input.law().definitions(),
             &[pin("table", kx.clone()), pin("table", kx.clone())],
             &mut quiet()
         ),
@@ -269,13 +269,13 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
         ]),
     ] {
         assert!(
-            matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots,&input.law().definitions,&[pin("table",bad)],&mut quiet()),Err(CheckFailure::Input(issue)) if issue.code==crate::issue::Code::InconsistentObservation)
+            matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots(),&input.law().definitions(),&[pin("table",bad)],&mut quiet()),Err(CheckFailure::Input(issue)) if issue.code==crate::issue::Code::InconsistentObservation)
         );
     }
     for good in [kx, fixture::table("v", "k", "y")] {
         check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
-            &input.archmap().snapshots,
-            &input.law().definitions,
+            &input.archmap().snapshots(),
+            &input.law().definitions(),
             &[pin("table", good)],
             &mut quiet(),
         )
@@ -284,13 +284,13 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
     let unknown = example(4);
     let input = unknown.prepared.inputs();
     check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(
-        &input.archmap().snapshots,
-        &input.law().definitions,
+        &input.archmap().snapshots(),
+        &input.law().definitions(),
         &[pin("table", Json::Arr(vec![]))],
         &mut quiet(),
     )
     .unwrap();
     assert!(
-        matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots,&input.law().definitions,&[pin("table",Json::Arr(vec![])),pin("owner",fixture::reference("v","A"))],&mut quiet()),Err(CheckFailure::Input(issue)) if issue.code==crate::issue::Code::InconsistentObservation)
+        matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots(),&input.law().definitions(),&[pin("table",Json::Arr(vec![])),pin("owner",fixture::reference("v","A"))],&mut quiet()),Err(CheckFailure::Input(issue)) if issue.code==crate::issue::Code::InconsistentObservation)
     );
 }

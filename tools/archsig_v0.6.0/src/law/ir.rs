@@ -12,20 +12,20 @@ use crate::{
 use std::collections::BTreeMap;
 
 #[derive(Clone, Debug)]
-pub(crate) enum Callee {
+pub enum Callee {
     View(String),
     Ctor(String, usize),
     Builtin(&'static str),
     Value(Type),
 }
 #[derive(Clone, Debug)]
-pub(crate) struct Projection {
+pub struct Projection {
     pub name: QualifiedName,
     pub span: Span,
     pub ty: Type,
 }
 #[derive(Clone, Copy, Debug)]
-pub(crate) enum BindingSource {
+pub enum BindingSource {
     Parameter,
     Let,
     Iteration,
@@ -33,14 +33,14 @@ pub(crate) enum BindingSource {
     TypeQuantifier,
 }
 #[derive(Clone, Debug)]
-pub(crate) struct Lexical {
+pub struct Lexical {
     pub source: BindingSource,
     pub name: String,
     pub ty: Type,
     pub projections: Vec<Projection>,
 }
 #[derive(Debug)]
-pub(crate) struct Expression {
+pub struct Expression {
     pub kind: ExprKind,
     pub span: Span,
     pub ty: Option<Type>,
@@ -48,7 +48,7 @@ pub(crate) struct Expression {
     pub field: Option<QualifiedName>,
 }
 #[derive(Debug, Default)]
-pub(crate) struct Program {
+pub struct Program {
     pub nodes: Vec<Expression>,
     pub callees: BTreeMap<ExprId, Callee>,
     pub expressions: BTreeMap<Span, ExprId>,
@@ -56,7 +56,7 @@ pub(crate) struct Program {
     pub references: BTreeMap<Span, Vec<QualifiedName>>,
 }
 impl Program {
-    pub fn build<E: InputError>(
+    pub(crate) fn build<E: InputError>(
         exprs: &[Expr],
         types: &[Option<Type>],
         infos: &[DeclarationInfo],

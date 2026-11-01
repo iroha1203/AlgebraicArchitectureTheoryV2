@@ -94,9 +94,9 @@ fn single_binding_match_and_let_preserve_tuple_projection_and_occurrence() {
         _ => panic!(),
     };
     let id = equation(&i, body, &mut quiet()).unwrap().unwrap();
-    assert!(matches!(i.law().exprs[body].kind, ExprKind::Match { .. }));
+    assert!(matches!(i.law().exprs()[body].kind, ExprKind::Match { .. }));
     assert!(matches!(
-        i.law().exprs[id].kind,
+        i.law().exprs()[id].kind,
         ExprKind::Binary { op: BinOp::Eq, .. }
     ));
     assert_ne!(body, id);
@@ -162,7 +162,7 @@ fn unknown_binding_match_retains_typed_uncomputed_operands_then_enumerates_all_v
     );
     let e = Environment::new(&i, &mut quiet()).unwrap();
     *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
-    let decl = &i.law().declarations["Selected.eq"];
+    let decl = &i.law().declarations()["Selected.eq"];
     let bindings = vec![("c".into(), subject("p"))];
     let p = probe(&e, decl, &bindings, 0).unwrap();
     assert_eq!(p.row.predicate, None);
@@ -237,7 +237,7 @@ fn pending_owned_condition_in_unused_let_does_not_certify_equal_components() {
     let e = Environment::new(&i, &mut quiet()).unwrap();
     *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
     let bindings = vec![("r".into(), subject("r2")), ("c".into(), subject("p"))];
-    let p = probe(&e, &i.law().declarations["Selected.eq"], &bindings, 0).unwrap();
+    let p = probe(&e, &i.law().declarations()["Selected.eq"], &bindings, 0).unwrap();
     assert!(p.admissible);
     assert!(!p.row.condition_failed);
     assert_eq!(p.row.guard, Some(true));

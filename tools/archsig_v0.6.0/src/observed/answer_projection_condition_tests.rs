@@ -138,7 +138,7 @@ fn projection_condition_actual_inapplicable_walk_stop_keeps_prior_values_refutat
             .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
     );
     let span =
-        match &normal.prepared.inputs().law().declarations["Applications.abIdentity"].signature {
+        match &normal.prepared.inputs().law().declarations()["Applications.abIdentity"].signature {
             Signature::View { params, .. } => params[0].span,
             _ => panic!(),
         };

@@ -4,7 +4,7 @@ mod known_map_fixture {
 fn known_map_private_inputs() -> InputSources {
     let definitions = known_map_fixture::DEFINITIONS.as_bytes();
     let d = crate::definition::check_definitions(&[("definition0", definitions)]).unwrap();
-    let digest = &d.vocabularies["Maps"].digest;
+    let digest = &d.vocabularies()["Maps"].digest;
     InputSources::from_bytes(
         vec![definitions.to_vec()],
         known_map_fixture::law(digest).into_bytes(),
@@ -168,7 +168,7 @@ fn known_map_stops_preserve_prefix_prior_refutation_and_verified_answer() {
 fn owned_map_wrapper_values_recheck_original_nested_types_and_owner_sources() {
     let definitions = known_map_fixture::OWNED_DEFINITIONS.as_bytes();
     let d = crate::definition::check_definitions(&[("definition0", definitions)]).unwrap();
-    let digest = &d.vocabularies["Maps"].digest;
+    let digest = &d.vocabularies()["Maps"].digest;
     let input = InputSources::from_bytes(
         vec![definitions.to_vec()],
         known_map_fixture::owned_law(digest).into_bytes(),
@@ -209,7 +209,7 @@ fn owned_map_wrapper_values_recheck_original_nested_types_and_owner_sources() {
     completion_mutation(&result, target, |nodes| {
         nodes[target].scope.snapshots.clear();
     });
-    let holder = result.prepared.inputs().archmap().snapshots[0]
+    let holder = result.prepared.inputs().archmap().snapshots()[0]
         .subjects
         .iter()
         .find(|s| s.id == "h")

@@ -7,7 +7,7 @@ const MAP: &str = r#"{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","
 fn custom_sources(definition: &str, map: &str, body: &str) -> InputSources {
     let defs =
         crate::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let digest = &defs.vocabularies["Finite"].digest;
+    let digest = &defs.vocabularies()["Finite"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Chosen{{use vocabulary Finite version \"1\" digest \"{digest}\";{body}}}"
     );

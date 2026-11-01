@@ -4,7 +4,7 @@ mod affine_term_fixture {
 fn affine_term_inputs(revision: &str) -> InputSources {
     let defs = affine_term_fixture::definitions();
     let d = crate::definition::check_definitions(&[("definition0", defs.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Terms"].digest;
+    let digest = &d.vocabularies()["Terms"].digest;
     InputSources::from_bytes(
         vec![defs.into_bytes()],
         affine_term_fixture::law(digest).into_bytes(),

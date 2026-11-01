@@ -6,7 +6,7 @@ const MAP: &str = r#"{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","
 fn custom_sources(definition: &str, map: &str, body: &str) -> InputSources {
     let defs =
         crate::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let digest = &defs.vocabularies["Finite"].digest;
+    let digest = &defs.vocabularies()["Finite"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Chosen{{use vocabulary Finite version \"1\" digest \"{digest}\";{body}}}"
     );
@@ -665,7 +665,7 @@ fn unbounded_scalar_parameters_and_the_whole_original_body_stay_symbolic() {
 fn an_equal_configuration_from_another_reading_keeps_a_distinct_origin_and_cache_entry() {
     let defs =
         crate::definition::check_definitions(&[("definition0", DEFINITION.as_bytes())]).unwrap();
-    let digest = &defs.vocabularies["Finite"].digest;
+    let digest = &defs.vocabularies()["Finite"].digest;
     let body = format!(
         "{BODY}}}reading Other{{use vocabulary Finite version \"1\" digest \"{digest}\";{BODY}"
     );

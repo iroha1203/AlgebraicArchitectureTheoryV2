@@ -168,7 +168,7 @@ impl Environment<'_> {
                 if !matches!(
                     self.indexes.inputs
                         .definitions()
-                        .declarations
+                        .declarations()
                         .get(subject.ty.as_str())
                         .map(|d| &d.signature),
                     Some(
@@ -248,7 +248,7 @@ impl Environment<'_> {
                         binder,
                     } => {
                         let ExprKind::Match { scrutinee, .. } =
-                            self.indexes.inputs.law().exprs[matching].kind
+                            self.indexes.inputs.law().exprs()[matching].kind
                         else {
                             return Err("元pattern添字のASTが違う".into());
                         };
@@ -386,7 +386,7 @@ impl Environment<'_> {
         let declaration = self
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .values()
             .find(|d| d.span.0 <= spec.span.0 && spec.span.1 <= d.span.1)
             .ok_or("元Owned型量化の宣言がない")?;
@@ -420,7 +420,7 @@ impl Environment<'_> {
                 }
                 #[cfg(test)]
                 data::observe_actual(
-                    self.indexes.inputs.law().exprs[id].span,
+                    self.indexes.inputs.law().exprs()[id].span,
                     graph.active,
                     "owned_type_case",
                     0,
@@ -442,7 +442,7 @@ impl Environment<'_> {
         source: NodeRef,
     ) -> Result<Option<(Vec<Fact>, (usize, usize))>, ValidationFailure> {
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(None);
         };
         let ExprKind::Quant {
@@ -452,7 +452,7 @@ impl Environment<'_> {
                     ..
                 },
             ..
-        } = &self.indexes.inputs.law().exprs[id].kind
+        } = &self.indexes.inputs.law().exprs()[id].kind
         else {
             return Ok(None);
         };
@@ -492,7 +492,7 @@ impl Environment<'_> {
                     ..
                 },
             ..
-        } = &self.indexes.inputs.law().exprs[id].kind
+        } = &self.indexes.inputs.law().exprs()[id].kind
         else {
             return Ok(vec![]);
         };

@@ -254,7 +254,7 @@ impl Term {
         id: usize,
         c: &Control,
     ) -> Result<Self, ValidationFailure> {
-        let ExprKind::Fn { params, body } = &law.exprs.get(id).ok_or("fn ASTがない")?.kind
+        let ExprKind::Fn { params, body } = &law.exprs().get(id).ok_or("fn ASTがない")?.kind
         else {
             return Err("元fnでない".into());
         };
@@ -264,12 +264,12 @@ impl Term {
         if params.len() != args.len() {
             return Err("元fn parameter数が違う".into());
         }
-        let span = law.exprs[*body].span;
+        let span = law.exprs()[*body].span;
         let text = std::str::from_utf8(raw.get(span.0..span.1).ok_or("fn body spanが違う")?)
             .map_err(|_| ValidationFailure::from("fn body UTF-8が違う"))?
             .to_string();
         let mut refs = Vec::new();
-        for info in &law.infos {
+        for info in law.infos() {
             for (s, n) in &info.references {
                 tick(c)?;
                 if s.0 >= span.0 && s.1 <= span.1 {
@@ -278,9 +278,9 @@ impl Term {
             }
         }
         Self::capture(
-            |i| law.exprs.get(i),
+            |i| law.exprs().get(i),
             |i| law.expr_type(i),
-            |i| law.quantifier_types.get(i).and_then(Option::as_ref),
+            |i| law.quantifier_types().get(i).and_then(Option::as_ref),
             &refs,
             *body,
             params
@@ -720,7 +720,7 @@ impl Term {
                                 Scalar::Data {
                                     family: family.clone(),
                                     constructor: law
-                                        .resolved_names
+                                        .resolved_names()
                                         .get(name)
                                         .ok_or("constructorの検査済み名がない")?
                                         .clone(),
@@ -790,7 +790,7 @@ impl Term {
                                 Scalar::Data {
                                     family: family.clone(),
                                     constructor: law
-                                        .resolved_names
+                                        .resolved_names()
                                         .get(target)
                                         .ok_or("constructorの検査済み名がない")?
                                         .clone(),
