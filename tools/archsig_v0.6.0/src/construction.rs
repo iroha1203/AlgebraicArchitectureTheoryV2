@@ -4,9 +4,9 @@ use crate::{
     archmap::{Slot, Subject, Value},
     canonical::Json,
     control::{Checkpoint, Control},
-    result::Signal,
     definition::model::PrimitiveSignature,
     input::CheckedInputs,
+    result::Signal,
     types::Type,
 };
 use std::collections::{BTreeMap, BTreeSet};

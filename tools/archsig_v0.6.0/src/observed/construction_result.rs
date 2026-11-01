@@ -1297,7 +1297,7 @@ impl MapWitness {
                 result,
                 operation,
                 shape,
-                stopped: stopped,
+                stopped,
                 universe,
             }),
             stopped,

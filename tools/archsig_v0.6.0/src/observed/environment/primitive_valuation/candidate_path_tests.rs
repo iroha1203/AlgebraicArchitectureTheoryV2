@@ -427,10 +427,9 @@ fn candidate_paths_reconstruct_from_same_inputs_and_freeze_each_fixed_stop() {
                     Err(e) => e,
                     Ok(_) => panic!("停止が成功"),
                 };
-                let reason = signal;
-                assert!(matches!(error,ValidationFailure::Stop(ref s)if s==&reason));
+                assert!(matches!(error,ValidationFailure::Stop(ref s)if s==&signal));
                 let before = calls.get();
-                assert_eq!(c.checkpoint(Checkpoint::FiniteIteration), Err(reason));
+                assert_eq!(c.checkpoint(Checkpoint::FiniteIteration), Err(signal));
                 assert_eq!(before, calls.get());
                 let rebuilt = calculate(
                     &Environment::with_primitive_valuation(&i, &assignments, &mut quiet()).unwrap(),

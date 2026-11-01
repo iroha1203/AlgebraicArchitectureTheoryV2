@@ -437,8 +437,7 @@ fn fixed_stops_leave_only_completed_rows_and_freeze_the_probe() {
                     Err(f) => f,
                     Ok(_) => panic!("停止が成功になった"),
                 };
-                let expected = signal;
-                assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
+                assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&signal));
                 let partial = failure.partial.unwrap();
                 assert!(!partial.is_complete());
                 // 完成フラグに到達しても、停止した実行全体を成功結果として返さない。
@@ -447,7 +446,7 @@ fn fixed_stops_leave_only_completed_rows_and_freeze_the_probe() {
                 }
                 assert!(partial.rows().iter().all(|r| r.indicator.is_some()));
                 let before = calls.get();
-                assert_eq!(c.checkpoint(point), Err(expected));
+                assert_eq!(c.checkpoint(point), Err(signal));
                 assert_eq!(calls.get(), before);
             }
         }
@@ -757,13 +756,12 @@ fn term_binding_reparse_stops_before_publishing_and_freezes_the_probe() {
                 Err(f) => f,
                 Ok(_) => panic!("中断後に完成表を返した"),
             };
-            let expected = signal;
-            assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
+            assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&signal));
             let partial = failure.partial.unwrap();
             assert!(!partial.is_complete());
             assert!(partial.rows().is_empty());
             let before = calls.get();
-            assert_eq!(c.checkpoint(Checkpoint::ArchMapTerm), Err(expected));
+            assert_eq!(c.checkpoint(Checkpoint::ArchMapTerm), Err(signal));
             assert_eq!(calls.get(), before);
         }
     }
@@ -1226,8 +1224,7 @@ fn family_fixed_stops_preserve_only_completed_cells_and_freeze_probe() {
                     Err(f) => f,
                     Ok(_) => panic!("停止が成功"),
                 };
-                let expected = signal;
-                assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
+                assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&signal));
                 if let Some(partial) = failure.partial {
                     assert!(!partial.is_complete());
                     assert_eq!(partial.required_zero(), None);
@@ -1242,7 +1239,7 @@ fn family_fixed_stops_preserve_only_completed_cells_and_freeze_probe() {
                     }
                 }
                 let before = calls.get();
-                assert_eq!(c.checkpoint(point), Err(expected));
+                assert_eq!(c.checkpoint(point), Err(signal));
                 assert_eq!(calls.get(), before);
             }
         }
@@ -1611,8 +1608,7 @@ fn component_fixed_stops_keep_completed_rows_and_freeze_probe() {
                 Err(f) => f,
                 Ok(_) => panic!("停止が成功"),
             };
-            let expected = signal;
-            assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
+            assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&signal));
             let partial = failure.partial.unwrap();
             assert!(!partial.is_complete());
             assert_eq!(partial.required_zero(), None);
@@ -1629,7 +1625,7 @@ fn component_fixed_stops_keep_completed_rows_and_freeze_probe() {
                 }
             }
             let before = calls.get();
-            assert_eq!(c.checkpoint(Checkpoint::FiniteLawComponent), Err(expected));
+            assert_eq!(c.checkpoint(Checkpoint::FiniteLawComponent), Err(signal));
             assert_eq!(before, calls.get());
         }
     }

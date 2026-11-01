@@ -21,8 +21,8 @@ use crate::{
 };
 use crate::{
     control::{Checkpoint, Control},
-    result::Signal,
     input::InputSources,
+    result::Signal,
 };
 use std::collections::BTreeMap;
 mod answer_projection_condition;

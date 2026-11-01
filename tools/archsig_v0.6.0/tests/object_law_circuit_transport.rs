@@ -710,7 +710,6 @@ fn side_construction_stops_retain_the_already_refuted_original_condition() {
                 let h = hits.clone();
                 let probes = Rc::new(Cell::new(0));
                 let p = probes.clone();
-                let expected = signal;
                 let mut c = Control::new(move |at| {
                     p.set(p.get() + 1);
                     if at == checkpoint {
@@ -724,12 +723,12 @@ fn side_construction_stops_retain_the_already_refuted_original_condition() {
                 };
                 assert_eq!(partial.outcome(), baseline.outcome());
                 assert!(partial.points().is_empty());
-                assert_eq!(c.stop_reason(), Some(expected));
+                assert_eq!(c.stop_reason(), Some(signal));
                 let complete = checkpoint == C::ObjectLawCircuitTransport && nth == count;
                 assert_eq!(partial.is_complete(), complete);
                 if checkpoint == C::ObjectLawCircuitTransport {
                     assert!(
-                        matches!(cause,LawCircuitTransportFailureCause::Construction(ConstructionFailure::Stopped(reason)) if reason==expected)
+                        matches!(cause,LawCircuitTransportFailureCause::Construction(ConstructionFailure::Stopped(reason)) if reason==signal)
                     );
                     if complete {
                         assert!(partial.source().unwrap().is_complete());

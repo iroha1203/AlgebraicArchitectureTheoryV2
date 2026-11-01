@@ -544,10 +544,9 @@ fn function_and_quotient_fixed_stops_keep_the_completed_base_and_freeze_probe() 
             for signal in [Signal::Int, Signal::Term] {
                 let (mut c, _, calls) = run(at, signal);
                 let cause = operation(&mut c).unwrap_err();
-                let expected = signal;
-                assert!(matches!(cause,ValidationFailure::Stop(ref s) if s==&expected));
+                assert!(matches!(cause,ValidationFailure::Stop(ref s) if s==&signal));
                 let before = calls.get();
-                assert_eq!(c.checkpoint(point), Err(expected));
+                assert_eq!(c.checkpoint(point), Err(signal));
                 assert_eq!(calls.get(), before);
                 r.recheck(&i, &mut quiet()).unwrap();
                 assert_eq!(r.required_zero(), Some([0, 1, 2, 3, 5].as_slice()));

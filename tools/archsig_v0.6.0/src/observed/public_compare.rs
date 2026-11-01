@@ -11,8 +11,9 @@ use super::{
 };
 use crate::{canonical::Json, issue::Location};
 use crate::{
-    control::{Checkpoint, Control}, result::Signal,
+    control::{Checkpoint, Control},
     input::CheckedInputs,
+    result::Signal,
 };
 pub(super) mod values;
 pub(in crate::observed) mod relation_sources;

@@ -295,7 +295,7 @@ fn owner_type_walk_stops_early_and_cancellation_wins_over_known_mismatch() {
             }
         ));
         assert_eq!(seen.get(), at);
-        assert!(matches!(control.checkpoint(Checkpoint::Resolve), Err(_)));
+        assert!(control.checkpoint(Checkpoint::Resolve).is_err());
         assert_eq!(seen.get(), at);
     }
 }

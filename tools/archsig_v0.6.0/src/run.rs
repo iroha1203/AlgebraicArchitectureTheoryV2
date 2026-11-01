@@ -324,8 +324,7 @@ fn input_failure_status(code: Code) -> Status {
     }
 }
 
-fn stopped(signals: &mut dyn Signals, reason: Signal) -> Outcome {
-    let signal = reason;
+fn stopped(signals: &mut dyn Signals, signal: Signal) -> Outcome {
     output::without_result(
         signals,
         Status::Interrupted,

@@ -695,7 +695,7 @@ impl Reason {
             ReasonKind::DependencyBlocked { .. } => "dependency_blocked",
             ReasonKind::ConditionFailed { .. } => "condition_failed",
             ReasonKind::UnsupportedAlgorithm { .. } => "unsupported_algorithm",
-            ReasonKind::Stop(_) => "cancelled",
+            ReasonKind::Stop(signal) => crate::result::ResultIssue::Cancelled(*signal).code(),
             ReasonKind::Internal(_) => "internal",
         }
     }

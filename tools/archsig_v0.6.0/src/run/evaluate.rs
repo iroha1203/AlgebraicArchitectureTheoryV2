@@ -28,13 +28,6 @@ fn failure(signals: &mut dyn Signals, operation: &str, message: String) -> Outco
     )
 }
 
-fn prior_signal(control: &Control) -> Option<Signal> {
-    match control.stop_reason() {
-        Some(s) => Some(s),
-        _ => None,
-    }
-}
-
 pub fn run_requests(
     io: &mut dyn Io,
     signals: &mut dyn Signals,
@@ -100,7 +93,7 @@ pub fn run_requests(
                 signals,
                 status,
                 code,
-                prior_signal(control),
+                control.stop_reason(),
                 failure.issues().to_vec(),
             );
         }
@@ -113,7 +106,7 @@ pub fn run_requests(
                     signals,
                     Status::Invalid,
                     64,
-                    prior_signal(control),
+                    control.stop_reason(),
                     issues.iter().map(|i| i.wire()).collect(),
                 );
             }
@@ -122,7 +115,7 @@ pub fn run_requests(
                     signals,
                     Status::Interrupted,
                     75,
-                    prior_signal(control),
+                    control.stop_reason(),
                     vec![reason.issue()],
                 );
             }
@@ -153,7 +146,7 @@ pub fn run_requests(
                 signals,
                 Status::Interrupted,
                 75,
-                prior_signal(control),
+                control.stop_reason(),
                 vec![reason.issue()],
             );
         }
@@ -232,16 +225,16 @@ fn deliver(
             signals,
             status,
             code,
-            prior_signal(control),
+            control.stop_reason(),
             issues,
         );
     }
     let frozen = signals.freeze();
-    if let Some(signal) = prior_signal(control).or(frozen) {
+    if let Some(signal) = control.stop_reason().or(frozen) {
         status = Status::Interrupted;
         code = exit_code(status, Some(signal), &[]);
-        if prior_signal(control).is_none() {
-            issues.push(ResultIssue::Cancelled(signal).wire());
+        if control.stop_reason().is_none() {
+            issues.push(signal.issue());
         }
     }
     output::sort_issues(&mut issues);
@@ -299,8 +292,8 @@ fn deliver(
     }
     let Json::Arr(saved_issues) = document.get_mut("issues").unwrap() else { unreachable!() };
     if let Some(reason) = reuse_stop { saved_issues.push(reason.issue()); }
-    if prior_signal(control).is_none() && let Some(signal) = frozen {
-        saved_issues.push(ResultIssue::Cancelled(signal).wire());
+    if control.stop_reason().is_none() && let Some(signal) = frozen {
+        saved_issues.push(signal.issue());
     }
     let copies: Vec<_> = copies
         .iter()

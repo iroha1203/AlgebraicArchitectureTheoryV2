@@ -11,8 +11,9 @@ use crate::{
     types::Type,
 };
 use crate::{
-    control::{Checkpoint, Control}, result::Signal,
+    control::{Checkpoint, Control},
     input::CheckedInputs,
+    result::Signal,
 };
 mod object_view_family;
 mod object_reading_environment;

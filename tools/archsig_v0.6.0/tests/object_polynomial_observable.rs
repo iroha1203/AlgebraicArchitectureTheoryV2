@@ -540,7 +540,6 @@ fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_
                     let h = hits.clone();
                     let probes = Rc::new(RefCell::new(0));
                     let p = probes.clone();
-                    let reason = signal;
                     let mut c = Control::new(move |point| {
                         *p.borrow_mut() += 1;
                         if point == at {
@@ -557,7 +556,7 @@ fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_
                     let F::Reading { cause, partial } = failure else {
                         panic!("new product stage")
                     };
-                    assert_eq!(cause, ConstructionFailure::Stopped(reason));
+                    assert_eq!(cause, ConstructionFailure::Stopped(signal));
                     for (index, q) in partial.coordinates().iter().enumerate() {
                         let expected = &baseline.coordinates()[index];
                         assert_eq!(q.occurrence, expected.occurrence);
@@ -595,7 +594,7 @@ fn fixed_stops_keep_complete_coordinate_prefixes_raw_counterexamples_and_frozen_
                     let before = *probes.borrow();
                     assert_eq!(
                         partial.zero(&mut c).unwrap_err(),
-                        ConstructionFailure::Stopped(reason)
+                        ConstructionFailure::Stopped(signal)
                     );
                     assert_eq!(*probes.borrow(), before);
                 }

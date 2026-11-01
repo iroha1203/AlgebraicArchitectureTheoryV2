@@ -10,8 +10,8 @@ use super::{
 use crate::canonical::Json;
 use crate::{
     control::{Checkpoint, Control},
-    result::Signal,
     input::CheckedInputs,
+    result::Signal,
 };
 use std::{
     collections::{BTreeMap, BTreeSet},

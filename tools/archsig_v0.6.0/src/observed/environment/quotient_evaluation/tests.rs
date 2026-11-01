@@ -140,8 +140,7 @@ fn finite_data_type_and_payload_traversals_keep_exact_stop_reasons() {
             } else {
                 data::equal(&tree, &tree, &c)
             };
-            let expected = signal;
-            assert!(matches!(result,Err(ValidationFailure::Stop(reason)) if reason==expected));
+            assert!(matches!(result,Err(ValidationFailure::Stop(reason)) if reason==signal));
             assert_eq!(count.get(), target);
         }
     }

@@ -4,8 +4,8 @@ use crate::json::{JNode, JValue};
 use crate::result::ResultIssue;
 use crate::{
     control::{CheckFailure, Checkpoint, Control},
-    result::Signal,
     observed::ObservedEvaluation,
+    result::Signal,
 };
 use std::{
     collections::BTreeMap,

@@ -24,8 +24,8 @@ use crate::{
 };
 use crate::{
     control::{Checkpoint, Control},
-    result::Signal,
     input::CheckedInputs,
+    result::Signal,
 };
 use std::sync::Arc;
 

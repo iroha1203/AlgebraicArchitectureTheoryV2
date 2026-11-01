@@ -15,8 +15,8 @@ use crate::{
 };
 use crate::{
     control::{Checkpoint, Control},
-    result::Signal,
     input::CheckedInputs,
+    result::Signal,
 };
 use std::{collections::BTreeMap, sync::Arc};
 #[derive(Clone, Debug)]
