@@ -3627,7 +3627,6 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 Ok(())
             },
         );
-        data::clear_iteration_observer();
         let stopped = stopped.unwrap();
         assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
         assert_eq!(control.stop_reason(), Some(expected));
@@ -3839,7 +3838,6 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 Ok(())
             },
         );
-        data::clear_iteration_observer();
         let stopped = stopped.unwrap();
         assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
         assert_eq!(control.stop_reason(), Some(expected));

@@ -160,16 +160,9 @@ impl Evaluator<'_, '_> {
                 self.environment
                     .completion_assignments(&fields, &mut |_phase, _index| {
                         #[cfg(test)]
-                        data::observe_actual(
-                            span,
-                            context,
-                            if _phase == "reference_constraints" {
-                                "completion_reference_constraints"
-                            } else {
-                                "completion_enum"
-                            },
-                            _index,
-                        );
+                        if _phase != "reference_constraints" {
+                            data::observe_actual(span, context, "completion_enum", _index);
+                        }
                     });
             #[cfg(test)]
             data::evaluation_context(previous);

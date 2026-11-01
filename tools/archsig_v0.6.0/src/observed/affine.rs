@@ -411,6 +411,7 @@ impl Form {
                 return Ok(None);
             }
             tick(control)?;
+            tick(control)?;
             let value = self.constant.clone();
             tick(control)?;
             Ok(Some(value))

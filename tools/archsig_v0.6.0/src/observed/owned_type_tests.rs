@@ -492,7 +492,6 @@ fn owned_type_quantification_answer_cancel_preserves_verified_current_result() {
             Ok(())
         },
     );
-    data::clear_iteration_observer();
     let stopped = stopped.unwrap();
     assert!(seen.get());
     assert_eq!(stopped.status(), "interrupted", "{:?}", stopped.issues);
