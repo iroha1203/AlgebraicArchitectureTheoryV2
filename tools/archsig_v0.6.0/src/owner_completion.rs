@@ -345,21 +345,18 @@ mod tests {
         determined_owners(&inputs, &fields, &mut control).unwrap();
         assert!(count.get() > fields.len());
         for stop in 1..=count.get() {
-            let count = Rc::new(Cell::new(0));
-            let seen = count.clone();
-            let signal = if stop % 2 == 0 {
-                Signal::Int
-            } else {
-                Signal::Term
-            };
-            let mut control = Control::new(move |_| {
-                seen.set(seen.get() + 1);
-                (seen.get() == stop).then_some(signal)
-            });
-            assert!(
-                matches!(determined_owners(&inputs, &fields, &mut control), Err(Failure::Stopped(found)) if found == signal)
-            );
-            assert_eq!(count.get(), stop);
+            for signal in [Signal::Int, Signal::Term] {
+                let count = Rc::new(Cell::new(0));
+                let seen = count.clone();
+                let mut control = Control::new(move |_| {
+                    seen.set(seen.get() + 1);
+                    (seen.get() == stop).then_some(signal)
+                });
+                assert!(
+                    matches!(determined_owners(&inputs, &fields, &mut control), Err(Failure::Stopped(found)) if found == signal)
+                );
+                assert_eq!(count.get(), stop);
+            }
         }
     }
 }

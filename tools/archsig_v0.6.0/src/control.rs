@@ -15,7 +15,6 @@ impl Signal {
             Signal::Term => "SIGTERM",
         }
     }
-
 }
 
 /// 原始演算または有限反復の境界。試験用 probe も同じ境界を受け取る。
