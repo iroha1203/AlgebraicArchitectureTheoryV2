@@ -1,7 +1,6 @@
 //! 公開word/action比較を独立した原始入力と明示期待値で検査する。
 use crate::common;
-#[path = "common/public_path_compose.rs"]
-mod fixture;
+use crate::common::public_path_compose as fixture;
 use archsig::json::JNode;
 use common::cli::*;
 use std::path::{Path, PathBuf};

@@ -24,7 +24,7 @@ fn reservations_private_example(body: &str, asks: &[&str], missing: bool) -> Obs
     let result = evaluate_observed_bytes(
         reservations_private_fixture(body, missing),
         asks,
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_ne!(result.status(), "error", "{:?}", result.issues);
@@ -284,7 +284,7 @@ fn reservations_chain_prepare_cancel_retains_completed_source_prefix() {
         "later=evaluate(Reservations.seed)",
     ];
     let inputs = reservations_private_fixture(body, true);
-    let mut quiet = named_call_quiet();
+    let mut quiet = quiet();
     let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
     let Signature::View { body, .. } =
         &prepared.inputs().law().declarations["Reservations.current"].signature

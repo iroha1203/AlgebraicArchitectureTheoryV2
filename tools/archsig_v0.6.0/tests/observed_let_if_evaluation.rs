@@ -13,9 +13,7 @@ use std::{
     rc::Rc,
 };
 
-fn control() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
         panic!("object {j:?}")
@@ -138,9 +136,9 @@ reading Calc {{
     )
 }
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut control())
+    let checked = check_inputs(inputs.clone(), &mut quiet())
         .unwrap_or_else(|failure| panic!("入力検査: {:?}", failure.issues()));
-    let result = evaluate_observed_bytes(inputs, asks, &mut control())
+    let result = evaluate_observed_bytes(inputs, asks, &mut quiet())
         .unwrap_or_else(|failure| {
             if let Some(wire) = failure.wire() {
                 panic!("観測評価: {:?}", f(&wire, "issues"));
@@ -1042,7 +1040,7 @@ fn static_checks_reject_self_reference_duplicate_names_and_unselected_ill_typed_
         "view bad(s: Sample): Q = if true then s.q else s.p;",
         "view bad(s: Sample): Q = if false then s.q+s.p else s.q;",
     ] {
-        let failure = check_inputs(fixture(&[], body), &mut control()).unwrap_err();
+        let failure = check_inputs(fixture(&[], body), &mut quiet()).unwrap_err();
         let wire = failure.wire();
         assert_eq!(f(&wire, "status"), &Json::str("invalid"), "{body}");
         assert_eq!(arr(f(&wire, "issues")).len(), 1);
@@ -1163,7 +1161,7 @@ fn bool_completions_resolve_lexical_reference_fields_and_keep_other_missing() {
         ),
     ] {
         let inputs = fixture(&["p"], body);
-        check_inputs(inputs.clone(), &mut control())
+        check_inputs(inputs.clone(), &mut quiet())
             .unwrap_or_else(|failure| panic!("入力検査: {:?}", failure.issues()));
         let (wire, checked) = run(inputs, &[ask]);
         assert_eq!(f(&wire, "status"), &Json::str("partial"));

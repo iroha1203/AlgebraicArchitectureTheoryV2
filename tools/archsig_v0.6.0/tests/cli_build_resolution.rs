@@ -1,6 +1,5 @@
 use crate::common::cli;
-#[path = "common/request_acceptance_data.rs"]
-mod fixture;
+use crate::common::request_acceptance_data as fixture;
 use cli::*;
 use std::path::{Path, PathBuf};
 

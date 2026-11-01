@@ -4,12 +4,8 @@ mod owned_map_fixture {
     include!("../../tests/common/owned_map_calls.rs");
 }
 fn map_owned_result(mode: &str, asks: &[&str]) -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(
-        owned_map_fixture::input(mode, "r1"),
-        asks,
-        &mut named_call_quiet(),
-    )
-    .unwrap_or_else(|e| panic!("{:?}", e.wire()));
+    let r = evaluate_observed_bytes(owned_map_fixture::input(mode, "r1"), asks, &mut quiet())
+        .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", r.issues);
     r
 }
@@ -139,11 +135,8 @@ fn owned_map_actual_domain_roster_stop_keeps_values_refutation_and_prefix() {
 #[test]
 fn missing_owned_map_uses_complete_original_fibers_before_candidate_tables() {
     use std::{cell::Cell, rc::Rc};
-    let input = crate::input::check_inputs(
-        owned_map_fixture::input("missing", "r1"),
-        &mut named_call_quiet(),
-    )
-    .unwrap();
+    let input = crate::input::check_inputs(owned_map_fixture::input("missing", "r1"), &mut quiet())
+        .unwrap();
     let visits = Rc::new(Cell::new(0));
     let seen = visits.clone();
     let mut c = Control::new(move |p| {
@@ -153,7 +146,7 @@ fn missing_owned_map_uses_complete_original_fibers_before_candidate_tables() {
         (seen.get() >= 5000).then_some(crate::result::Signal::Int)
     });
     let env = Environment::with_requests(&input, &[], &mut c).unwrap();
-    let roster = Environment::with_requests(&input, &[], &mut named_call_quiet())
+    let roster = Environment::with_requests(&input, &[], &mut quiet())
         .unwrap()
         .finite_values(&Type::Ref("Reservations.State".into()), &mut |_, _| {})
         .unwrap();

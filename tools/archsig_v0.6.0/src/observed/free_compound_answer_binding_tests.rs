@@ -20,7 +20,7 @@ fn free_compound_answer_map_domain_stop_keeps_values_refutation_missing_and_pref
     use std::{cell::Cell, rc::Rc};
     let asks = ASK;
     let input = fixture::input("stop", "r1");
-    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     let declaration = &normal.prepared.inputs().law().declarations["Applications.fcMap"];
     assert!(normal.answers[5].claim.is_some());
@@ -106,7 +106,7 @@ fn free_compound_unknown_owner_recheck_preserves_completion_scope_and_rejects_fi
         let r = evaluate_observed_bytes(
             fixture::input("unknown_owner", "r1"),
             &[&make, &other, &take, "later=evaluate(Applications.seed)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(r.status(), "complete", "{law}: {:?}", r.answers);

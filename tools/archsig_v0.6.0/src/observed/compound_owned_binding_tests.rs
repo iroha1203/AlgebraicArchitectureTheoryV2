@@ -17,8 +17,8 @@ fn run(asks: &[&str]) -> ObservedEvaluation {
     run_with("known", asks)
 }
 fn run_with(mode: &str, asks: &[&str]) -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input(mode, "r1"), asks, &mut named_call_quiet())
-        .unwrap_or_else(|e| {
+    let r = evaluate_observed_bytes(fixture::input(mode, "r1"), asks, &mut quiet()).unwrap_or_else(
+        |e| {
             panic!(
                 "{:?}",
                 e.wire().map(|w| match &w {
@@ -26,7 +26,8 @@ fn run_with(mode: &str, asks: &[&str]) -> ObservedEvaluation {
                     _ => None,
                 })
             )
-        });
+        },
+    );
     r
 }
 #[test]

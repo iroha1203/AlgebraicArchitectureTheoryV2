@@ -10,7 +10,7 @@ fn engine_private_inputs(missing: bool) -> InputSources {
     )
 }
 fn engine_private_result(asks: &[&str], missing: bool) -> ObservedEvaluation {
-    let mut c = named_call_quiet();
+    let mut c = quiet();
     let p = prepare_observed(engine_private_inputs(missing), asks, &mut c).unwrap();
     evaluate_observed(p, &mut c).unwrap()
 }

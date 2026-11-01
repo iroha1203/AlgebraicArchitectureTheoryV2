@@ -1,6 +1,7 @@
+use crate::common::object_view_compatibility_data as fixture;
+use crate::common::quiet;
 use archsig::{
     canonical::Json,
-    control::Control,
     input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         object_evaluate::ObjectEvaluationOutcome,
@@ -10,13 +11,8 @@ use archsig::{
         },
     },
 };
-use std::sync::Arc;
-#[path = "common/object_view_compatibility_data.rs"]
-mod fixture;
 use fixture::{A, D};
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use std::sync::Arc;
 fn inputs(body: &str, map: &str) -> Arc<CheckedInputs> {
     let defs = archsig::definition::check_definitions(&[("definition0", D.as_bytes())]).unwrap();
     let digest = &defs.vocabularies()["Pattern"].digest;

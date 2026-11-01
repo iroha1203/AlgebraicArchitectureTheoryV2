@@ -13,12 +13,8 @@ const ASK: &[&str] = &[
     "quant=evaluate(Walk.quantified,n=@v/p)",
 ];
 fn result() -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(
-        fixture::input(SCRIPT, "Z", &[], "r1"),
-        ASK,
-        &mut named_call_quiet(),
-    )
-    .unwrap();
+    let r =
+        evaluate_observed_bytes(fixture::input(SCRIPT, "Z", &[], "r1"), ASK, &mut quiet()).unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
     r
 }
@@ -139,7 +135,7 @@ fn affine_comprehension_actual_iteration_stop_keeps_verified_results() {
         "later=evaluate(Walk.seed)",
     ];
     let input = fixture::input(SCRIPT, "Z", &[], "r1");
-    let normal = evaluate_observed_bytes(input.clone(), asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     let at = evaluation(&normal);
     let Some(Payload::Evaluation { expression, .. }) = &normal.nodes[at].payload else {

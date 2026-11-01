@@ -1,12 +1,6 @@
-#[allow(dead_code)]
-#[path = "common/path_answer_projections.rs"]
-mod fixture;
-use archsig::{
-    canonical::Json, control::Control, input::InputSources, observed::evaluate_observed_bytes,
-};
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::path_answer_projections as fixture;
+use crate::common::quiet;
+use archsig::{canonical::Json, input::InputSources, observed::evaluate_observed_bytes};
 fn f<'a>(value: &'a Json, name: &str) -> &'a Json {
     let Json::Obj(fields) = value else {
         panic!("object")

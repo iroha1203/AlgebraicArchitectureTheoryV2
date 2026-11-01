@@ -11,9 +11,7 @@ mod fixture {
 mod polynomial_fixture {
     include!("../../../tests/common/polynomial_law_family_data.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn prepared(inputs: Arc<CheckedInputs>) -> PreparedObserved {
     let requests = resolve_native_for_test(
         inputs.law(),

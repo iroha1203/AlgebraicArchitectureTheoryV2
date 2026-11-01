@@ -6,7 +6,7 @@ fn compound_call_result(asks: &[&str]) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         compound_call_fixture::input(false, "r1"),
         asks,
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", r.issues);

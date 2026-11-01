@@ -1,7 +1,6 @@
 //! 公開Architectureの根を選び、同じ共有評価器で値とLawを読む。
 use crate::common;
-#[path = "common/architecture_environment.rs"]
-mod fixture;
+use crate::common::architecture_environment as fixture;
 use archsig::json::JNode;
 use common::cli::*;
 use std::path::{Path, PathBuf};

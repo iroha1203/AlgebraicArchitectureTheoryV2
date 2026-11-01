@@ -1,14 +1,71 @@
 #![allow(dead_code)]
 
+pub mod affine_field_chains;
+pub mod affine_terms;
+pub mod answer_bindings;
+pub mod answer_dependencies;
+pub mod answer_dependent_family;
+pub mod answer_family_conditions;
+pub mod answer_projection_conditions;
+pub mod answer_projections;
+pub mod architecture_environment;
 pub mod cli;
+pub mod compare_values;
+pub mod completion_evidence;
 pub mod completion_stops;
+pub mod composed_paths;
+pub mod compound_owned_binding;
+pub mod correspondence_paths;
+pub mod dependent_owner_completions;
+pub mod engine;
+pub mod expression_stops;
+pub mod finite_map;
+pub mod finite_polynomial_data;
+pub mod finite_reference_fields;
+pub mod free_compound_answer_binding;
+pub mod free_owner_answer_binding;
+pub mod identity_paths;
+pub mod infinite_domains;
+pub mod internal_paths;
+pub mod known_map;
 pub mod law_definitions;
+pub mod map_application;
+pub mod map_field_completions;
 pub mod map_scope;
+pub mod mixed_owner_answer_binding;
+pub mod object_view_compatibility_data;
+pub mod owned_binding;
+pub mod owned_calls;
+pub mod owned_compound_calls;
+pub mod owned_compound_family;
+pub mod owned_map_calls;
+pub mod owned_partial_calls;
+pub mod owned_partial_containers;
+pub mod owner_completions;
+pub mod path_answer_projections;
+pub mod positions;
+pub mod public_path_compose;
+pub mod public_relation;
+pub mod public_term_compare;
+pub mod recursive_tree;
+pub mod reference_completions;
+pub mod request_acceptance_data;
+pub mod term_equality;
+pub mod terms;
+pub mod three_edge;
+pub mod unknown_map_domain;
+pub mod unknown_owned_type;
+pub mod watchdog;
 
 use archsig::archmap::{CheckedArchMap, Field, Slot};
 use archsig::issue::Issue;
 use archsig::law::{CheckedLaw, check_law};
 use archsig::types::Type;
+
+/// 止めない制御。テストの既定の入力として使う。
+pub fn quiet() -> archsig::control::Control {
+    archsig::control::Control::unlimited()
+}
 
 pub const HEADER: &str = "law \"archsig.law/2\" semantics \"archsig/0.6.0\";\n";
 pub const RESERVATIONS: &str = include_str!("../fixtures/reservations.law");

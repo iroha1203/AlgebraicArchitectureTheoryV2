@@ -19,9 +19,7 @@ use std::sync::Arc;
 const D: &[u8] = include_bytes!("fixtures/object-instances.atoms.json");
 const A: &str = include_str!("fixtures/object-instances.archmap.json");
 const L: &str = include_str!("fixtures/object-evaluation.law");
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let d = archsig::definition::check_definitions(&[("definition0", D)]).unwrap();
     let digest = &d.vocabularies()["Instances"].digest;

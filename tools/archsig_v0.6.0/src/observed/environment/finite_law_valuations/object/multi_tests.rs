@@ -4,9 +4,7 @@ use crate::construction::{construct, readings::object_reading_instances};
 mod fixture {
     include!("../../../../../tests/common/primitive_valuation_data.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn input(body: &str) -> Arc<CheckedInputs> {
     let map = fixture::MAP.replace(r#""subjects":["#, r#""subjects":[{"id":"r","type":"Pattern.Part","origin":"model"},"#)
         .replace(r#""atoms":["#, r#""atoms":[{"id":"or","subject":"r","field":"Pattern.Part.owner","value":["v","r2"],"origin":"model"},{"id":"xr","subject":"r","field":"Pattern.Part.quantity","value":"1","origin":"model"},"#);

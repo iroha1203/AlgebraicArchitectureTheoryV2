@@ -26,9 +26,7 @@ const ASKS: [&str; 4] = [
     "later=check(CountCheck.nonnegative,s=@v/s)",
 ];
 
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn sources(definitions: &[u8], law: &[u8], map: &[u8]) -> InputSources {
     InputSources::from_bytes(vec![definitions.to_vec()], law.to_vec(), map.to_vec())
 }

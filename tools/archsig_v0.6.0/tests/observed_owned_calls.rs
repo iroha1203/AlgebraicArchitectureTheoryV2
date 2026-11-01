@@ -1,10 +1,7 @@
 //! 元署名の単一Owned参照を実callと原始owner事実へ接続する。
-#[path = "common/owned_calls.rs"]
-mod fixture;
-use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::owned_calls as fixture;
+use crate::common::quiet;
+use archsig::{canonical::Json, observed::evaluate_observed_bytes};
 fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else {
         panic!("object {j:?}")

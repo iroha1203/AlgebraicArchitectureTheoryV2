@@ -776,7 +776,7 @@ fn rational_local_system_keeps_exact_equation_and_semantic_fibers() {
     for i in [2,3,4] {let space=get(output(&j,i,"space"),"value");let module=get(node(&j,get(space,"module")),"value");let ring=get(node(&j,get(module,"ring")),"value");assert_eq!(s(get(ring,"scalar")),"Q");assert!(arr(get(module,"torsion")).is_empty());assert_eq!(num(get(module,"free_rank")),if i==4{1}else{0});}
     assert!(!has(get(&arr(get(&j,"answers"))[4],"outputs"),"class"));
 }
-#[path="common/three_edge.rs"] mod rational_triangle_source;
+use crate::common::three_edge as rational_triangle_source;
 fn rational_triangle(name:&str,gamma:Option<i64>)->std::path::PathBuf {
     let original=rational_triangle_source::input(gamma);
     let before=std::str::from_utf8(original.definitions()[0].bytes()).unwrap();

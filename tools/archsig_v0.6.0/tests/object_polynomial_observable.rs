@@ -1,3 +1,5 @@
+use crate::common::object_view_compatibility_data as fixture;
+use crate::common::quiet;
 use archsig::{
     construction::ConstructionFailure,
     control::Control,
@@ -13,11 +15,6 @@ use archsig::{
     types::Type,
 };
 use std::sync::Arc;
-#[path = "common/object_view_compatibility_data.rs"]
-mod fixture;
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn inputs_with(body: &str, map: &str) -> Arc<CheckedInputs> {
     let d =
         archsig::definition::check_definitions(&[("definition0", fixture::D.as_bytes())]).unwrap();

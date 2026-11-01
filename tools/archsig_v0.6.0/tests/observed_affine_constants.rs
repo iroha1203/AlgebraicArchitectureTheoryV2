@@ -17,9 +17,7 @@ use std::{
     rc::Rc,
 };
 
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
         panic!("object: {j:?}")

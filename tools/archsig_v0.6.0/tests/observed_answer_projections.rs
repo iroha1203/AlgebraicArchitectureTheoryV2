@@ -1,6 +1,5 @@
-#[path = "common/answer_projections.rs"]
-mod fixture;
-use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
+use crate::common::answer_projections as fixture;
+use archsig::{canonical::Json, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!() };
     &m[k]
@@ -24,9 +23,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
 fn output<'a>(w: &'a Json, id: &str) -> &'a Json {
     node(w, f(f(answer(w, id), "outputs"), "value"))
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 #[test]
 fn answer_projection_nested_components_keep_original_typed_roots_and_full_paths() {
     let asks = [

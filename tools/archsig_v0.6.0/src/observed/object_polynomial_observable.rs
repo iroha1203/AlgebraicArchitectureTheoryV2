@@ -459,9 +459,7 @@ mod tests {
     mod fixture {
         include!("../../tests/common/object_view_compatibility_data.rs");
     }
-    fn quiet() -> Control {
-        Control::unlimited()
-    }
+    use crate::control::quiet;
     fn inputs() -> Arc<CheckedInputs> {
         let d = crate::definition::check_definitions(&[("definition0", fixture::D.as_bytes())])
             .unwrap();

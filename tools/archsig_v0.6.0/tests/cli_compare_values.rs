@@ -94,8 +94,7 @@ fn value_comparison_distinguishes_equal_values_refutations_and_false_bool_values
     );
     std::fs::remove_dir_all(dir).unwrap();
 }
-#[path = "common/compare_values.rs"]
-mod primitive;
+use crate::common::compare_values as primitive;
 fn structured_inputs(name: &str, missing: bool, extra: &str) -> PathBuf {
     let dir = workdir(name);
     let src = primitive::input(missing, extra);
@@ -384,8 +383,7 @@ fn false_bool_value_comparison_alone_is_successful_and_argument_order_is_canonic
         std::fs::remove_dir_all(dir).unwrap();
     }
 }
-#[path = "common/public_path_compose.rs"]
-mod paths;
+use crate::common::public_path_compose as paths;
 #[test]
 fn value_comparison_rejects_paths_instead_of_equating_their_display_or_action() {
     let dir = workdir("compare-value-path-rejection");

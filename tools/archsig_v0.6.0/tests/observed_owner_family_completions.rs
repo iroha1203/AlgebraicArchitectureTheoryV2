@@ -1,15 +1,11 @@
-#[path = "common/owner_completions.rs"]
-mod fixture;
+use crate::common::owner_completions as fixture;
+use crate::common::quiet;
 use archsig::{
     canonical::Json,
-    control::Control,
     input::{InputSources, check_inputs},
     observed::evaluate_observed_bytes,
 };
 use std::collections::{BTreeMap, BTreeSet};
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
         panic!("object {j:?}")

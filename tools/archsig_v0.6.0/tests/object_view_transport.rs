@@ -21,9 +21,7 @@ use std::{cell::Cell, rc::Rc, sync::Arc};
 const D: &[u8] = include_bytes!("fixtures/object-view-transport.atoms.json");
 const L: &str = include_str!("fixtures/object-view-transport.law");
 const A: &str = include_str!("fixtures/object-view-transport.archmap.json");
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     inputs_with_left(D, law, map)
 }

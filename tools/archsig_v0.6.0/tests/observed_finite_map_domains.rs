@@ -1,17 +1,13 @@
 //! 元参照族から生成した有限Map型全域の三入力接続。
-#[path = "common/finite_map.rs"]
-mod maps;
+use crate::common::finite_map as maps;
+use crate::common::quiet;
 use archsig::{
     canonical::Json,
-    control::Control,
     definition::check_definitions,
     input::{InputSources, check_inputs},
     observed::evaluate_observed_bytes,
 };
 use std::collections::{BTreeMap, BTreeSet};
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn sources(revision: &str) -> InputSources {
     let d = check_definitions(&[("definition0", maps::DEFINITIONS.as_bytes())]).unwrap();
     let digest = &d.vocabularies()["Maps"].digest;

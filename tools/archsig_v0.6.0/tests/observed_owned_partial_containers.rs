@@ -1,6 +1,5 @@
 //! 部分Option/Setの所属を元三入力から計算する。
-#[path = "common/owned_partial_containers.rs"]
-mod fixture;
+use crate::common::owned_partial_containers as fixture;
 use archsig::{
     canonical::Json, control::Control, input::InputSources, observed::evaluate_observed_bytes,
 };

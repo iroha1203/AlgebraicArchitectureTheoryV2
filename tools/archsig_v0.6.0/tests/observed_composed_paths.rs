@@ -1,7 +1,5 @@
+use crate::common::composed_paths as fixture;
 use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
-#[path = "common/composed_paths.rs"]
-#[allow(dead_code)]
-mod fixture;
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(o) = j else { panic!() };
     &o[k]

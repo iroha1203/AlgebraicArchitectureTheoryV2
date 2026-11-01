@@ -3,9 +3,7 @@ use crate::{input::InputSources, observed::evaluate::evaluate_observed_bytes};
 mod fixture {
     include!("../../../../tests/common/object_view_compatibility_data.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn completed() -> ObservedEvaluation {
     completed_with_structure_only_owner(false)
 }

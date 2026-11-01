@@ -1,9 +1,7 @@
 //! 実製品バイナリのsignalと配送を、満杯のstdoutで同期する。
 #![cfg(unix)]
 use crate::common;
-#[allow(dead_code)]
-#[path = "common/watchdog.rs"]
-mod watchdog;
+use crate::common::watchdog;
 use archsig::json::parse;
 use common::cli::*;
 use nix::sys::signal::{Signal, kill};

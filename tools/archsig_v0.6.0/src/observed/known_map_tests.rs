@@ -12,7 +12,7 @@ fn known_map_private_inputs() -> InputSources {
     )
 }
 fn known_map_private_result(asks: &[&str]) -> ObservedEvaluation {
-    let mut control = named_call_quiet();
+    let mut control = quiet();
     let p = prepare_observed(known_map_private_inputs(), asks, &mut control).unwrap();
     evaluate_observed(p, &mut control).unwrap()
 }
@@ -174,7 +174,7 @@ fn owned_map_wrapper_values_recheck_original_nested_types_and_owner_sources() {
         known_map_fixture::owned_law(digest).into_bytes(),
         known_map_fixture::owned_archmap(digest).into_bytes(),
     );
-    let mut control = named_call_quiet();
+    let mut control = quiet();
     let prepared =
         prepare_observed(input, &["a=evaluate(Maps.tables,s=@v/h)"], &mut control).unwrap();
     let result = evaluate_observed(prepared, &mut control).unwrap();

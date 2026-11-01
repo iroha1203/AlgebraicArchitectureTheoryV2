@@ -5,8 +5,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::time::Duration;
 
-#[path = "watchdog.rs"]
-mod watchdog;
+use super::watchdog;
 
 // 実バイナリの起動・計算・保存・負荷を見込んだ監視上限。超過はテスト失敗にする。
 pub const CHILD_DEADLINE: Duration = Duration::from_secs(180);

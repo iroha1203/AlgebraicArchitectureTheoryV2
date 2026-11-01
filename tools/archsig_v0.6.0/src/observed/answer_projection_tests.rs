@@ -13,8 +13,7 @@ const ASK: &[&str] = &[
     "universal=check(Applications.abUniversal,x=$first.value[0])",
 ];
 fn result() -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input("known", "r1"), ASK, &mut named_call_quiet())
-        .unwrap();
+    let r = evaluate_observed_bytes(fixture::input("known", "r1"), ASK, &mut quiet()).unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
     r
 }
@@ -49,8 +48,7 @@ fn answer_projection_actual_path_stop_keeps_prior_values_refutation_missing_and_
         "later=evaluate(Applications.abSeed)",
     ];
     let normal =
-        evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut named_call_quiet())
-            .unwrap();
+        evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     let params =
         match &normal.prepared.inputs().law().declarations["Applications.abIdentity"].signature {

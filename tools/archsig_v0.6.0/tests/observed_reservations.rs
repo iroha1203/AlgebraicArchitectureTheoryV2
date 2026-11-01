@@ -2,7 +2,6 @@
 use archsig::{
     archmap::{Mode, Slot},
     canonical::{Json, sha256_digest},
-    control::Control,
     input::{CheckedInputs, InputSources, check_inputs},
     json::{JNode, JValue},
     law::{ast::ExprKind, model::Signature},
@@ -17,9 +16,7 @@ const LAW: &[u8] = include_bytes!("fixtures/reservations.law");
 const MAP: &[u8] = include_bytes!("fixtures/reservations.archmap.json");
 const ASK: &str = "c=check(Reservations.conserved,e=@v/e)";
 
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn sources(law: &[u8], map: &[u8]) -> InputSources {
     InputSources::from_bytes(vec![DEFINITIONS.to_vec()], law.to_vec(), map.to_vec())
 }

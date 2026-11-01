@@ -14,7 +14,7 @@ fn owned_call_missing_source_stop_keeps_verified_prefix_and_probe_freeze() {
         "later=evaluate(Reservations.seed)",
     ];
     let inputs = fixture::input(true, "r1");
-    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     let expected = crate::result::Signal::Term;
@@ -109,7 +109,7 @@ fn owned_call_skipped_branch_rejects_changed_selector_and_lost_missing() {
     let r = evaluate_observed_bytes(
         fixture::missing_reference_input(),
         &["x=evaluate(Reservations.pcSkipIf,a=@v/B,e=@v/e)"],
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");

@@ -1,6 +1,4 @@
-#[allow(dead_code)]
-#[path = "common/affine_field_chains.rs"]
-mod fixture;
+use crate::common::affine_field_chains as fixture;
 use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(xs) = j else { panic!("object") };

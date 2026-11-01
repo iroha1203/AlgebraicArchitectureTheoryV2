@@ -2940,9 +2940,7 @@ reading Before {{{vocabulary} local here(n:Z) reads n;}} reading After {{{vocabu
 }
 
 fn rational_local_parameter_inputs(name: &str, missing: bool) -> (PathBuf, String) {
-    #[allow(dead_code)]
-    #[path = "common/architecture_environment.rs"]
-    mod fixture;
+    use crate::common::architecture_environment as fixture;
     use archsig::canonical::Json;
     let (dir, _) = finite_local_parameter_inputs(name);
     let old = std::fs::read_to_string(dir.join("d.json")).unwrap();

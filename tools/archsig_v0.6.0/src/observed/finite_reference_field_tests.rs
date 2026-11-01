@@ -8,7 +8,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap()
 }
@@ -20,7 +20,7 @@ fn example() -> ObservedEvaluation {
             "target=evaluate(Inspect.chosen,h=@v/h)",
             "later=evaluate(Inspect.seed)",
         ],
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.answers);
@@ -152,7 +152,7 @@ fn finite_reference_field_internal_pins_validate_original_shapes_refs_and_missin
                 &input.archmap().snapshots,
                 &input.law().definitions,
                 &pins,
-                &mut named_call_quiet()
+                &mut quiet()
             ),
             Err(CheckFailure::Input(_))
         ));
@@ -173,12 +173,12 @@ fn finite_reference_field_internal_pins_validate_original_shapes_refs_and_missin
             &input.archmap().snapshots,
             &input.law().definitions,
             &[p],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
     }
     assert!(
-        matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots,&input.law().definitions,&[pin("chosen",fixture::reference("v","r"))],&mut named_call_quiet()),Err(CheckFailure::Input(issue))if issue.code==crate::issue::Code::InconsistentObservation)
+        matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots,&input.law().definitions,&[pin("chosen",fixture::reference("v","r"))],&mut quiet()),Err(CheckFailure::Input(issue))if issue.code==crate::issue::Code::InconsistentObservation)
     );
 }
 
@@ -194,7 +194,7 @@ fn finite_reference_field_coverage_stop_never_promotes_unfinished_whole() {
         "current=evaluate(Inspect.stable,h=@v/h)",
         "later=evaluate(Inspect.seed)",
     ];
-    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     assert_eq!(normal.answers[2].status, Decision::Undetermined);

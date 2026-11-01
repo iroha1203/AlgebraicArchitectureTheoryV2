@@ -1,5 +1,6 @@
+use crate::common::object_view_compatibility_data as fixture;
+use crate::common::quiet;
 use archsig::{
-    control::Control,
     input::{CheckedInputs, InputSources, check_inputs},
     observed::object_law_compatibility::{
         LawCompatibilityCondition as Failed, LawCompatibilityOutcome as Outcome,
@@ -7,11 +8,6 @@ use archsig::{
     },
 };
 use std::sync::Arc;
-#[path = "common/object_view_compatibility_data.rs"]
-mod fixture;
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn inputs(body: &str, map: &str) -> Arc<CheckedInputs> {
     inputs_with_definitions(fixture::D, body, map)
 }

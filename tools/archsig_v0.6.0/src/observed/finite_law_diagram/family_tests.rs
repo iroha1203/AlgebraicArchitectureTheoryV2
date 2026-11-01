@@ -4,9 +4,7 @@ use crate::observed::{PreparedObserved, request::resolve_native_for_test};
 mod fixture {
     include!("../../../tests/common/finite_law_family_data.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn prepared(missing: bool, body: &str, root: &str) -> PreparedObserved {
     let inputs = fixture::inputs(missing, body);
     let ask = format!("b=build(Selected,on=@v/{root})");

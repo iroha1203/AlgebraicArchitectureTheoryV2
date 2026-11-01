@@ -13,20 +13,16 @@ const BAD: &[&str] = &[
     "later=evaluate(Reservations.seed)",
 ];
 fn run(asks: &[&str]) -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(
-        fixture::input(false, false, "r1"),
-        asks,
-        &mut named_call_quiet(),
-    )
-    .unwrap_or_else(|e| {
-        panic!(
-            "{:?}",
-            e.wire().map(|w| match &w {
-                Json::Obj(m) => m.get("issues").cloned(),
-                _ => None,
-            })
-        )
-    });
+    let r = evaluate_observed_bytes(fixture::input(false, false, "r1"), asks, &mut quiet())
+        .unwrap_or_else(|e| {
+            panic!(
+                "{:?}",
+                e.wire().map(|w| match &w {
+                    Json::Obj(m) => m.get("issues").cloned(),
+                    _ => None,
+                })
+            )
+        });
     r
 }
 #[test]
@@ -139,7 +135,7 @@ fn completion_run(mode: &str) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         fixture::completion_input(mode, "r1"),
         COMPLETION_ASKS,
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_ne!(r.status(), "error");

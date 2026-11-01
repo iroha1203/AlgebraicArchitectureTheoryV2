@@ -8,9 +8,7 @@ mod fixture {
 mod finite_fixture {
     include!("../../../tests/common/finite_law_reading_data.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn prepared(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
     let requests = resolve_native_for_test(
         inputs.law(),

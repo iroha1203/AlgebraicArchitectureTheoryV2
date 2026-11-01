@@ -1,17 +1,13 @@
 //! 検査済みMap表の値・等値を三入力から確認する。
-#[path = "common/known_map.rs"]
-mod maps;
+use crate::common::known_map as maps;
+use crate::common::quiet;
 use archsig::{
     canonical::Json,
-    control::Control,
     definition::check_definitions,
     input::{InputSources, check_inputs},
     observed::evaluate_observed_bytes,
 };
 use std::collections::BTreeMap;
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn sources(revision: &str) -> InputSources {
     let d = check_definitions(&[("definition0", maps::DEFINITIONS.as_bytes())]).unwrap();
     let digest = &d.vocabularies()["Maps"].digest;

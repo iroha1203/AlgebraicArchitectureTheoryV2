@@ -20,9 +20,7 @@ use std::{cell::Cell, rc::Rc, sync::Arc};
 const D: &[u8] = include_bytes!("fixtures/object-law-transport.atoms.json");
 const L: &str = include_str!("fixtures/object-law-transport.law");
 const A: &str = include_str!("fixtures/object-view-transport.archmap.json");
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
     let defs = archsig::definition::check_definitions(&[("left", D), ("right", right)]).unwrap();

@@ -31,7 +31,7 @@ fn infinite_unbound_mixed_family_claims_recheck_original_domains() {
             "r1",
         ),
         &["v=check(Walk.current)"],
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial", "{:?}", r.issues);
@@ -66,12 +66,9 @@ fn generic_outer_domain_finite_decisions_recheck_before_and_after_false_mutation
             "v=check(Walk.current)",
         ),
     ] {
-        let r = evaluate_observed_bytes(
-            fixture::input(script, "Z", &[], "r1"),
-            &[ask],
-            &mut named_call_quiet(),
-        )
-        .unwrap();
+        let r =
+            evaluate_observed_bytes(fixture::input(script, "Z", &[], "r1"), &[ask], &mut quiet())
+                .unwrap();
         assert_eq!(r.status(), "partial");
         assert_eq!(r.answers[0].status, Decision::Undetermined);
         let at = r.answers[0].outputs["evaluation"].0;
@@ -97,7 +94,7 @@ fn generic_outer_domain_finite_decisions_recheck_before_and_after_false_mutation
         let env = Environment::with_requests(
             r.prepared.inputs(),
             r.prepared.requests().requests(),
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         for _ in 0..2 {

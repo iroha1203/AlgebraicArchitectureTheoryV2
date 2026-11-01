@@ -8,7 +8,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap()
 }
@@ -30,7 +30,7 @@ fn example(mode: usize) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         fixture::input(mode == 8 || mode == 9, false, mode == 4 || mode == 6, false),
         &[&first, &target, "later=evaluate(Inspect.seed)"],
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.answers);
@@ -90,7 +90,7 @@ fn map_field_coverage_stop_never_promotes_unfinished_whole() {
         "current=evaluate(Inspect.same,h=@v/h)",
         "later=evaluate(Inspect.seed)",
     ];
-    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
@@ -240,7 +240,7 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
                     &input.archmap().snapshots,
                     &input.law().definitions,
                     &[pin(field, value)],
-                    &mut named_call_quiet()
+                    &mut quiet()
                 ),
                 Err(CheckFailure::Input(_))
             ),
@@ -252,7 +252,7 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
             &input.archmap().snapshots,
             &input.law().definitions,
             &[pin("table", kx.clone()), pin("table", kx.clone())],
-            &mut named_call_quiet()
+            &mut quiet()
         ),
         Err(CheckFailure::Input(_))
     ));
@@ -269,7 +269,7 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
         ]),
     ] {
         assert!(
-            matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots,&input.law().definitions,&[pin("table",bad)],&mut named_call_quiet()),Err(CheckFailure::Input(issue)) if issue.code==crate::issue::Code::InconsistentObservation)
+            matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots,&input.law().definitions,&[pin("table",bad)],&mut quiet()),Err(CheckFailure::Input(issue)) if issue.code==crate::issue::Code::InconsistentObservation)
         );
     }
     for good in [kx, fixture::table("v", "k", "y")] {
@@ -277,7 +277,7 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
             &input.archmap().snapshots,
             &input.law().definitions,
             &[pin("table", good)],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
     }
@@ -287,10 +287,10 @@ fn map_field_internal_pins_validate_original_map_shapes_refs_totality_and_missin
         &input.archmap().snapshots,
         &input.law().definitions,
         &[pin("table", Json::Arr(vec![]))],
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert!(
-        matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots,&input.law().definitions,&[pin("table",Json::Arr(vec![])),pin("owner",fixture::reference("v","A"))],&mut named_call_quiet()),Err(CheckFailure::Input(issue)) if issue.code==crate::issue::Code::InconsistentObservation)
+        matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots,&input.law().definitions,&[pin("table",Json::Arr(vec![])),pin("owner",fixture::reference("v","A"))],&mut quiet()),Err(CheckFailure::Input(issue)) if issue.code==crate::issue::Code::InconsistentObservation)
     );
 }

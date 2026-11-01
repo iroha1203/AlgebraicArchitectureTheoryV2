@@ -1,6 +1,5 @@
 //! 未使用情報の保持、選択した問いだけの評価、全入力の静的検査。
-#[path = "common/positions.rs"]
-mod positions;
+use crate::common::positions;
 use archsig::{
     canonical::{Json, sha256_digest},
     control::Control,

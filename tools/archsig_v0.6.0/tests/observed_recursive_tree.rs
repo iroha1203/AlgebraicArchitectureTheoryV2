@@ -1,18 +1,14 @@
 //! 三入力から既知有限木の構造再帰と元由来までを接続する。
-#[path = "common/recursive_tree.rs"]
-mod tree;
+use crate::common::recursive_tree as tree;
 use archsig::{
     canonical::Json,
-    control::Control,
     definition::check_definitions,
     input::{InputSources, check_inputs},
     observed::evaluate_observed_bytes,
 };
 use std::collections::{BTreeMap, BTreeSet};
 
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn sources(missing: bool, extra: &str, revision: &str) -> InputSources {
     let checked = check_definitions(&[("definition0", tree::DEFINITIONS.as_bytes())]).unwrap();
     let digest = &checked.vocabularies()["Trees"].digest;

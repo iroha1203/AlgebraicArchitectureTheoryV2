@@ -4,9 +4,7 @@ use crate::construction::{construct, readings::object_reading_instances};
 mod fixture {
     include!("../../../../../../tests/common/primitive_valuation_data.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn readings(i: &CheckedInputs) -> ObjectReadingInstances {
     let c = construct(i, "Selected", "v", "root", &mut quiet()).unwrap();
     object_reading_instances(i, &c, &mut quiet()).unwrap()

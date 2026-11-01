@@ -127,6 +127,12 @@ impl std::fmt::Debug for Control {
     }
 }
 
+/// 止めない制御。テストの既定の入力として使う。
+#[cfg(test)]
+pub(crate) fn quiet() -> Control {
+    Control::unlimited()
+}
+
 impl Default for Control {
     fn default() -> Self {
         Self::unlimited()

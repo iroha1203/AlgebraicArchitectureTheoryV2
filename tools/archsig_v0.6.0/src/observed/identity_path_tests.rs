@@ -12,7 +12,7 @@ fn example() -> ObservedEvaluation {
             "target=evaluate(Walk.maybe_value,x=@v/a)",
             "nested=evaluate(Walk.nested,x=@v/b)",
         ],
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_eq!(result.status(), "complete");
@@ -23,7 +23,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap()
 }
@@ -96,7 +96,7 @@ fn direct_path_equality_recheck_rejects_wrong_bool_and_swapped_operand_producers
     let r = evaluate_observed_bytes(
         fixture::cross_reading(),
         &["same=evaluate(Other.equal_path,x=@v/a,y=@v/a)"],
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -119,7 +119,7 @@ fn direct_path_equality_recheck_rejects_wrong_bool_and_swapped_operand_producers
     let right = graph.scalar(original.arguments[1]).unwrap();
     assert!(matches!(left, Scalar::Path(_)) && matches!(right, Scalar::Path(_)));
     assert_ne!(left, right);
-    assert!(super::super::super::data::equal(left, right, &named_call_quiet()).unwrap());
+    assert!(super::super::super::data::equal(left, right, &quiet()).unwrap());
     let e = environment(&r);
     e.validate(&graph, original).unwrap();
     for kind in 0..2 {
@@ -176,7 +176,7 @@ fn nonprimitive_container_requires_the_same_typed_prior_value() {
     graph.active = r.contexts[index];
     let original = &r.nodes[index];
     graph.push(original.clone()).unwrap();
-    let mut empty = Graph::new(&named_call_quiet());
+    let mut empty = Graph::new(&quiet());
     let mut bad = original.clone();
     bad.arguments.clear();
     assert!(matches!(
@@ -225,7 +225,7 @@ fn stop() {
         "later=evaluate(Walk.seed)",
     ];
     let inputs = fixture::input(false);
-    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     let expected = crate::result::Signal::Term;

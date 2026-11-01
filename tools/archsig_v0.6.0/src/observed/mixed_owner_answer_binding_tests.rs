@@ -22,8 +22,7 @@ fn fixed_domain(r: &ObservedEvaluation) -> usize {
 #[test]
 fn mixed_owner_answer_fibers_recheck_original_fixed_ref_owner_domains_rows_support_and_scope() {
     // 完了しない問いは未決のまま、評価中の自己検査を通った回答だけを返す。
-    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), ASK, &mut named_call_quiet())
-        .unwrap();
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), ASK, &mut quiet()).unwrap();
     assert_eq!(r.status(), "partial");
     assert!(r.answers[7].claim.is_some());
     assert!(!r.answers[7].evidence.is_empty());
@@ -56,7 +55,7 @@ const STOP_ASK: &[&str] = &[
 fn mixed_owner_answer_map_domain_stop_keeps_values_refutation_missing_and_prefix() {
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input("stop", "r1");
-    let normal = evaluate_observed_bytes(input.clone(), STOP_ASK, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), STOP_ASK, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     let declaration = &normal.prepared.inputs().law().declarations["Applications.fcMap"];
     assert!(normal.answers[5].claim.is_some());
@@ -145,7 +144,7 @@ fn mixed_unknown_free_owner_rechecks_completion_scope_with_same_and_fresh_enviro
         let r = evaluate_observed_bytes(
             fixture::input(mode, "r1"),
             &[&make, &take, "later=evaluate(Applications.seed)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(r.status(), "complete", "{:?}", r.issues);
@@ -182,7 +181,7 @@ fn completed_result() -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         fixture::input("ambiguous_free_owner", "r1"),
         COMPLETION_ASKS,
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);

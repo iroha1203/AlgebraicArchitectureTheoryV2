@@ -1,8 +1,6 @@
 use super::*;
+use crate::control::quiet;
 use crate::result::Signal;
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn node(value: i32) -> Node {
     Node {
         ty: NodeType::Value(crate::types::Type::Z),

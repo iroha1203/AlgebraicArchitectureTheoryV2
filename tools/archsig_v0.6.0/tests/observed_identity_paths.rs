@@ -1,12 +1,7 @@
-#[path = "common/identity_paths.rs"]
-mod fixture;
-use archsig::{
-    canonical::Json, control::Control, input::check_inputs, observed::evaluate_observed_bytes,
-};
+use crate::common::identity_paths as fixture;
+use crate::common::quiet;
+use archsig::{canonical::Json, input::check_inputs, observed::evaluate_observed_bytes};
 use std::collections::BTreeMap;
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn object(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(fields) = j else {
         panic!("object {j:?}")

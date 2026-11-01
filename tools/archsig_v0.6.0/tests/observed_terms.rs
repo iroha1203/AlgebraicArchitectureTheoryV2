@@ -1,13 +1,10 @@
 //! 閉じたTermの元bodyと実引数から値を計算する。
-#[path = "common/terms.rs"]
-mod terms;
+use crate::common::quiet;
+use crate::common::terms;
 use archsig::{
-    canonical::Json, control::Control, definition::check_definitions, input::InputSources,
+    canonical::Json, definition::check_definitions, input::InputSources,
     observed::evaluate_observed_bytes,
 };
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn sources(revision: &str) -> InputSources {
     let d = check_definitions(&[("definition0", terms::DEFINITIONS.as_bytes())]).unwrap();
     let digest = &d.vocabularies()["Terms"].digest;

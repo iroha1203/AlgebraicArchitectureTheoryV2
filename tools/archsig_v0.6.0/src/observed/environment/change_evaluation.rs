@@ -598,9 +598,7 @@ mod tests {
     mod fixture {
         include!("../../../tests/common/primitive_valuation_data.rs");
     }
-    fn quiet() -> Control {
-        Control::unlimited()
-    }
+    use crate::control::quiet;
     fn bindings() -> Vec<(String, Scalar)> {
         vec![(
             "c".into(),

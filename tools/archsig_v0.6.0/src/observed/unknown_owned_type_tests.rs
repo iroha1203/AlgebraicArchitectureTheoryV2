@@ -12,7 +12,7 @@ fn example() -> ObservedEvaluation {
             "prior=check(MapCall.prior)",
             "target=evaluate(MapCall.typeEvery,a=@v/A,b=@v/B)",
         ],
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert!(matches!(r.status(), "complete" | "partial"));
@@ -23,7 +23,7 @@ fn env(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap()
 }
@@ -107,7 +107,7 @@ fn owned_type_missing_cancel_keeps_verified_prefix_and_probe_freeze() {
         "later=evaluate(MapCall.seed)",
     ];
     let inputs = fixture::input("plain", "r1");
-    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(inputs.clone(), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));

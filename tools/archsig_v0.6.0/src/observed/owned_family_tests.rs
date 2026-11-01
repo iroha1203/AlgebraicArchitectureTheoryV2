@@ -38,7 +38,7 @@ fn owned_private_example(
     let result = evaluate_observed_bytes(
         owned_private_fixture(body, omit, false_p),
         asks,
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_ne!(result.status(), "error", "{:?}", result.issues);
@@ -243,7 +243,7 @@ fn owned_expression_family_enumeration_cancel_preserves_owner_prefix_and_prior_a
         "later=evaluate(Reservations.seed)",
     ];
     let inputs = owned_private_fixture(&body, Some("q-free"), false);
-    let mut quiet = named_call_quiet();
+    let mut quiet = quiet();
     let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
     let normal = evaluate_observed(prepared, &mut quiet).unwrap();
     assert_eq!(normal.status(), "partial", "{:?}", normal.issues);

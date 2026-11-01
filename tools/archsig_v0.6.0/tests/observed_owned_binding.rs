@@ -1,10 +1,7 @@
 //! 固定ownerと原始Owned参照の同batch束縛。
-#[path = "common/owned_binding.rs"]
-mod fixture;
-use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::owned_binding as fixture;
+use crate::common::quiet;
+use archsig::{canonical::Json, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("object") };
     &m[k]

@@ -15,7 +15,7 @@ fn term_private_inputs(revision: &str) -> InputSources {
     )
 }
 fn term_private_result(asks: &[&str]) -> ObservedEvaluation {
-    let mut c = named_call_quiet();
+    let mut c = quiet();
     let p = prepare_observed(term_private_inputs("r1"), asks, &mut c).unwrap();
     evaluate_observed(p, &mut c).unwrap()
 }

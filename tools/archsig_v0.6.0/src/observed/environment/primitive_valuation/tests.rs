@@ -5,9 +5,7 @@ use std::{cell::Cell, rc::Rc};
 mod fixture {
     include!("../../../../tests/common/primitive_valuation_data.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn fp(p: &str, n: i32) -> Scalar {
     Scalar::Fp {
         modulus: p.into(),

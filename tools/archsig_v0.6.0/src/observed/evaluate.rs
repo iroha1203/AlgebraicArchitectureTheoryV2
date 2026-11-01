@@ -3406,8 +3406,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
 
     fn affine_private_example(body: &str, asks: &[&str]) -> ObservedEvaluation {
         let result =
-            evaluate_observed_bytes(affine_private_fixture(body), asks, &mut named_call_quiet())
-                .unwrap();
+            evaluate_observed_bytes(affine_private_fixture(body), asks, &mut quiet()).unwrap();
         assert_ne!(result.status(), "error", "{:?}", result.issues);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
         result
@@ -3578,8 +3577,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             "current=evaluate(Calc.current,s=@v/sample)",
             "later=evaluate(Calc.later)",
         ];
-        let normal =
-            evaluate_observed_bytes(sources.clone(), &asks, &mut named_call_quiet()).unwrap();
+        let normal = evaluate_observed_bytes(sources.clone(), &asks, &mut quiet()).unwrap();
         assert_eq!(normal.status(), "partial");
         assert_eq!(normal.answers[0].status, Decision::Established);
         assert_eq!(normal.answers[1].status, Decision::Refuted);
@@ -3793,8 +3791,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             "current=evaluate(Calc.current,s=@v/sample)",
             "later=evaluate(Calc.later)",
         ];
-        let normal =
-            evaluate_observed_bytes(sources.clone(), &asks, &mut named_call_quiet()).unwrap();
+        let normal = evaluate_observed_bytes(sources.clone(), &asks, &mut quiet()).unwrap();
         assert_eq!(normal.status(), "partial");
         assert_eq!(normal.answers[0].status, Decision::Established);
         assert_eq!(normal.answers[1].status, Decision::Refuted);
@@ -5232,7 +5229,7 @@ reading R {{
         let result = evaluate_observed_bytes(
             numeric_recheck_fixture(&[], "law required every(b: Bool): b or not b;"),
             &["family=check(Calc.every)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete", "{:?}", result.issues);
@@ -5261,7 +5258,7 @@ reading R {{
         evaluate_observed_bytes(
             numeric_recheck_fixture(if missing { &["p"] } else { &[] }, body),
             asks,
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap()
     }
@@ -5358,7 +5355,7 @@ reading R {{
                 "skipped=check(Calc.skipped,s=@v/sample)",
                 "sets=check(Calc.sets)",
             ],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete", "{:?}", result.issues);
@@ -5589,7 +5586,7 @@ reading R {{
             "current=check(Calc.current)",
             "later=evaluate(Calc.seed)",
         ];
-        let mut normal_control = named_call_quiet();
+        let mut normal_control = quiet();
         let prepared = prepare_observed(sources.clone(), &asks, &mut normal_control).unwrap();
         let target = prepared.inputs().law().declarations["Calc.current"].span;
         let context = super::super::call::Context {
@@ -6166,15 +6163,13 @@ reading Calc {{
             "元の欠測lexical名を新たな自由parameterに変更したSourceを拒否する"
         );
     }
-    fn named_call_quiet() -> Control {
-        Control::unlimited()
-    }
+    use crate::control::quiet;
     #[test]
     fn named_calls_reject_out_of_range_request_at_root_source_prefix() {
         let mut result = evaluate_observed_bytes(
             numeric_recheck_fixture(&[], "view one(): Z = 1; view zero(): Z = one();"),
             &["v=evaluate(Calc.zero)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete");
@@ -6212,7 +6207,7 @@ reading Calc {{
                 "unknown=evaluate(Calc.unknown,s=@v/sample)",
                 "constant=evaluate(Calc.constant,s=@v/sample)",
             ],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap()
     }
@@ -6310,7 +6305,7 @@ reading Calc {{
         let normal = evaluate_observed_bytes(
             inputs(false),
             &["v=evaluate(Calc.caller,s=@v/sample,t=@v/other)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(normal.status(), "complete");
@@ -6322,7 +6317,7 @@ reading Calc {{
         let partial = evaluate_observed_bytes(
             sources,
             &["v=evaluate(Calc.caller,s=@v/sample,t=@v/other)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(partial.status(), "partial", "{:?}", partial.issues);
@@ -6372,7 +6367,7 @@ reading Calc {{
             include_bytes!("../../tests/fixtures/counter.law").to_vec(),
             include_bytes!("../../tests/fixtures/counter.archmap.json").to_vec(),
         );
-        let mut control = named_call_quiet();
+        let mut control = quiet();
         let prepared = prepare_observed(
             sources,
             &[
@@ -6433,7 +6428,7 @@ reading Calc {{
 "#,
             ),
             &["v=evaluate(Calc.caller,s=@v/sample)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(normal.status(), "complete");
@@ -6445,7 +6440,7 @@ reading Calc {{
         );
         let finite = evaluate_observed_bytes(
             numeric_recheck_fixture(&[], "view quantify(): Bool = forall item: Bool. item; view caller(): Bool = quantify();"),
-            &["v=evaluate(Calc.caller)"], &mut named_call_quiet(),
+            &["v=evaluate(Calc.caller)"], &mut quiet(),
         ).unwrap();
         assert_eq!(finite.status(), "complete", "{:?}", finite.issues);
         assert_eq!(
@@ -6464,7 +6459,7 @@ reading Calc {{
         let quantified = evaluate_observed_bytes(
             sources,
             &["v=evaluate(Calc.caller,s=@v/sample)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(quantified.status(), "complete", "{:?}", quantified.issues);
@@ -6604,7 +6599,7 @@ reading Calc {{
         let quantified = evaluate_observed_bytes(
             sources,
             &["v=evaluate(Calc.caller,s=@v/sample)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(quantified.status(), "partial");
@@ -6653,12 +6648,12 @@ reading Calc {{
         assert_ne!(definition, original_definition);
         let old = crate::definition::check_definitions_controlled(
             &[("definition0", original_definition.as_bytes())],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         let new = crate::definition::check_definitions_controlled(
             &[("definition0", definition.as_bytes())],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         let (old_digest, new_digest) = (
@@ -6679,7 +6674,7 @@ reading Calc {{
                 map.into_bytes(),
             ),
             &["v=evaluate(Calc.caller,s=@v/sample)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete");
@@ -6728,7 +6723,7 @@ reading Calc {{
  {"kind":"entity","name":"Owners.Second","meaning":"第二の対象。","parameters":[],"fields":[{"name":"b","type":"Q","meaning":"第二の値。"}],"alignments":[]}]}]}"#;
         let checked = crate::definition::check_definitions_controlled(
             &[("definition0", definitions.as_bytes())],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         let digest = &checked.vocabularies["Owners"].digest;
@@ -6754,7 +6749,7 @@ reading Calc {{
                 map.into_bytes(),
             ),
             &["v=evaluate(Calc.caller,x=@v/first,y=@v/second)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(
@@ -6794,7 +6789,7 @@ reading Calc {{
             "current=evaluate(Calc.current,s=@v/sample)",
             "later=evaluate(Calc.later,s=@v/sample)",
         ];
-        let mut baseline_control = named_call_quiet();
+        let mut baseline_control = quiet();
         let prepared = prepare_observed(sources.clone(), &asks, &mut baseline_control).unwrap();
         let Signature::View { body, .. } =
             &prepared.inputs().law().declarations["Calc.retain"].signature
@@ -6987,12 +6982,12 @@ reading Calc {{
             .replace(r#""fields":["#, r#""fields":[{"name":"packet","type":["Data","Numeric.Packet"],"meaning":"観測した組。"},"#);
         let checked = crate::definition::check_definitions_controlled(
             &[("definition0", definitions.as_bytes())],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         let previous = crate::definition::check_definitions_controlled(
             &[("definition0", original.definitions()[0].bytes())],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         let old_digest = &previous.vocabularies["Numeric"].digest;
@@ -7013,7 +7008,7 @@ reading Calc {{
                 map.into_bytes(),
             ),
             requests,
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap()
     }
@@ -7233,7 +7228,7 @@ reading Calc {{
  view maybe(s: Sample): Option<Q> = some(s.q);
  view total(s: Sample): Q = sum(list<Q>[s.q]);
  view empty(): (Z,Q,Fp(5),(Z,Q,Fp(5))) = (sum(list<Z>[]),sum(set<Q>{}),sum(list<Fp(5)>[]),sum(list<(Z,Q,Fp(5))>[]));
-"#),requests,&mut named_call_quiet()).unwrap()
+"#),requests,&mut quiet()).unwrap()
     }
     #[test]
     fn primitive_containers_recheck_sequence_type_and_option_tags_at_scalar_prefix() {
@@ -7413,7 +7408,7 @@ reading Calc {{
                 "current=evaluate(Calc.current,s=@v/sample)",
                 "later=evaluate(Calc.later,s=@v/sample)",
             ];
-            let mut control = named_call_quiet();
+            let mut control = quiet();
             let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
             let Signature::View {
                 body: expression, ..
@@ -7561,7 +7556,7 @@ reading Calc {{
 "#,
             ),
             requests,
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap()
     }
@@ -7695,7 +7690,7 @@ reading Calc {{
         let normal = evaluate_observed_bytes(
             sources.clone(),
             &["value=evaluate(Calc.normal)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(normal.status(), "complete");
@@ -7703,7 +7698,7 @@ reading Calc {{
         let result = evaluate_observed_bytes(
             sources.clone(),
             &["value=evaluate(Calc.deferred)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete");
@@ -7733,7 +7728,7 @@ reading Calc {{
                 "view capture(): Set<Z> = let y=10 in set { x+y | x in list<Z>[1,2] };",
             ),
             &["value=evaluate(Calc.capture)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete", "{:?}", result.issues);
@@ -7798,7 +7793,7 @@ reading Calc {{
                 "nested=evaluate(Calc.nested_capture)",
                 "pattern=evaluate(Calc.pattern_capture,s=@v/sample)",
             ],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete", "{:?}", result.issues);
@@ -7889,7 +7884,7 @@ reading Calc {{
         )
     }
     fn plain_ref_example(asks: &[&str]) -> ObservedEvaluation {
-        evaluate_observed_bytes(plain_ref_fixture(), asks, &mut named_call_quiet()).unwrap()
+        evaluate_observed_bytes(plain_ref_fixture(), asks, &mut quiet()).unwrap()
     }
     #[test]
     fn plain_ref_owned_type_syntax_stays_distinct_from_plain_roster() {
@@ -7916,7 +7911,7 @@ reading Calc {{
         let normal = evaluate_observed_bytes(
             sources.clone(),
             &["normal=evaluate(Calc.plain,root=@v/root)"],
-            &mut named_call_quiet(),
+            &mut quiet(),
         )
         .unwrap();
         assert_eq!(normal.status(), "complete", "{:?}", normal.issues);
@@ -7942,8 +7937,7 @@ reading Calc {{
             ),
         ] {
             let ask = format!("bad=evaluate(Calc.{name},root=@v/root)");
-            let result =
-                evaluate_observed_bytes(sources.clone(), &[&ask], &mut named_call_quiet()).unwrap();
+            let result = evaluate_observed_bytes(sources.clone(), &[&ask], &mut quiet()).unwrap();
             owned_type_private_completed_missing(&result, &law, original);
         }
     }
@@ -8062,8 +8056,7 @@ reading Calc {{
         )
     }
     fn type_quantifier_example(requests: &[&str]) -> ObservedEvaluation {
-        evaluate_observed_bytes(type_quantifier_fixture(), requests, &mut named_call_quiet())
-            .unwrap()
+        evaluate_observed_bytes(type_quantifier_fixture(), requests, &mut quiet()).unwrap()
     }
     #[test]
     fn type_quantifier_exhaustion_rechecks_coverage_binder_body_and_evidence() {
@@ -8173,7 +8166,7 @@ reading Calc {{
         )
     }
     fn in_quantifier_example(requests: &[&str]) -> ObservedEvaluation {
-        evaluate_observed_bytes(in_quantifier_fixture(), requests, &mut named_call_quiet()).unwrap()
+        evaluate_observed_bytes(in_quantifier_fixture(), requests, &mut quiet()).unwrap()
     }
     fn in_domain(result: &ObservedEvaluation, request: usize) -> usize {
         result
@@ -8306,12 +8299,9 @@ reading Calc {{
         )
     }
     fn finite_completion_example(body: &str, asks: &[&str]) -> ObservedEvaluation {
-        let result = evaluate_observed_bytes(
-            finite_completion_fixture(body, false),
-            asks,
-            &mut named_call_quiet(),
-        )
-        .unwrap();
+        let result =
+            evaluate_observed_bytes(finite_completion_fixture(body, false), asks, &mut quiet())
+                .unwrap();
         assert_ne!(result.status(), "error", "{:?}", result.issues);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
         result
@@ -8839,7 +8829,7 @@ reading Calc {{
             ask,
             "later=evaluate(Calc.seed)",
         ];
-        let mut quiet = named_call_quiet();
+        let mut quiet = quiet();
         let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
         let declaration = &prepared.inputs().law().declarations["Calc.current"];
         let target = declaration.span;
@@ -9101,12 +9091,9 @@ reading Calc {{
         )
     }
     fn fp_completion_example(body: &str, asks: &[&str]) -> ObservedEvaluation {
-        let result = evaluate_observed_bytes(
-            fp_completion_fixture(body, false),
-            asks,
-            &mut named_call_quiet(),
-        )
-        .unwrap();
+        let result =
+            evaluate_observed_bytes(fp_completion_fixture(body, false), asks, &mut quiet())
+                .unwrap();
         assert_ne!(result.status(), "error", "{:?}", result.issues);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
         result
@@ -9427,7 +9414,7 @@ reading Calc {{
             "current=evaluate(Calc.current,s=@v/sample)",
             "later=evaluate(Calc.seed)",
         ];
-        let mut quiet = named_call_quiet();
+        let mut quiet = quiet();
         let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
         let declaration = &prepared.inputs().law().declarations["Calc.current"];
         let target = declaration.span;
@@ -9572,12 +9559,9 @@ reading Calc {{
         assert_eq!(probes.get(), before);
     }
     fn completion_private_example(body: &str, asks: &[&str]) -> ObservedEvaluation {
-        let result = evaluate_observed_bytes(
-            numeric_recheck_fixture(&["p"], body),
-            asks,
-            &mut named_call_quiet(),
-        )
-        .unwrap();
+        let result =
+            evaluate_observed_bytes(numeric_recheck_fixture(&["p"], body), asks, &mut quiet())
+                .unwrap();
         assert_ne!(result.status(), "error", "{:?}", result.issues);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
         result
@@ -9770,7 +9754,7 @@ reading Calc {{
         ];
         {
             let inputs = numeric_recheck_fixture(&["p", "q"], body);
-            let mut quiet = named_call_quiet();
+            let mut quiet = quiet();
             let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
             let target = prepared.inputs().law().declarations["Calc.current"].span;
             let Signature::View {
@@ -9931,7 +9915,7 @@ reading Calc {{
                 current.as_str(),
                 "later=evaluate(Calc.later)",
             ];
-            let mut normal_control = named_call_quiet();
+            let mut normal_control = quiet();
             let prepared = prepare_observed(sources.clone(), &asks, &mut normal_control).unwrap();
             let Signature::View { body, .. } =
                 &prepared.inputs().law().declarations[&format!("Calc.{view}")].signature

@@ -1,6 +1,5 @@
 //! Fp の素数性内部へ三入力検査の共有制御が届き、既知不正と元位置を保つ。
-#[path = "common/positions.rs"]
-mod positions;
+use crate::common::positions;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control},

@@ -4,7 +4,7 @@ mod application_fixture {
     include!("../../tests/common/map_application.rs");
 }
 fn application_result(asks: &[&str], mode: &str) -> ObservedEvaluation {
-    let mut c = named_call_quiet();
+    let mut c = quiet();
     let p = prepare_observed(application_fixture::owned(mode), asks, &mut c).unwrap();
     evaluate_observed(p, &mut c).unwrap()
 }

@@ -1,6 +1,5 @@
-#[path = "common/answer_family_conditions.rs"]
-mod fixture;
-use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
+use crate::common::answer_family_conditions as fixture;
+use archsig::{canonical::Json, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!() };
     &m[k]
@@ -21,9 +20,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .find(|n| f(n, "id") == f(r, "node"))
         .unwrap()
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn blocked(w: &Json, id: &str, producer: &str) -> Json {
     let a = answer(w, id);
     assert_eq!(f(a, "status"), &Json::str("undetermined"));

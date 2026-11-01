@@ -1,5 +1,6 @@
 //! 有限な未束縛Law parameterの実直積と適用族を独立三入力から検査する。
 use crate::common;
+use crate::common::quiet;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control},
@@ -14,9 +15,6 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     rc::Rc,
 };
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
         panic!("object: {j:?}")

@@ -1,8 +1,7 @@
 use crate::common::cli;
-#[path = "common/request_acceptance_data.rs"]
-mod fixture;
+use crate::common::quiet;
+use crate::common::request_acceptance_data as fixture;
 use archsig::{
-    control::Control,
     json::{JNode, JValue, parse},
     observed::{
         PrepareFailure, evaluate_observed_bytes, prepare_observed,
@@ -11,9 +10,6 @@ use archsig::{
 };
 use cli::*;
 use std::path::{Path, PathBuf};
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn internal(asks: &[&str]) -> JNode {
     let r = evaluate_observed_bytes(fixture::input(), asks, &mut quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire()));

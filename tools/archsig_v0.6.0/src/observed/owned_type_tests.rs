@@ -449,7 +449,7 @@ fn owned_type_quantification_answer_cancel_preserves_verified_current_result() {
         "later=evaluate(Reservations.seed)",
     ];
     let inputs = owned_private_fixture(body, Some("q-free"), false);
-    let mut quiet = named_call_quiet();
+    let mut quiet = quiet();
     let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
     let normal = evaluate_observed(prepared, &mut quiet).unwrap();
     assert_eq!(normal.status(), "partial", "{:?}", normal.issues);

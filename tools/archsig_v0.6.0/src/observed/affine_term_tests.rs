@@ -12,8 +12,7 @@ fn affine_term_inputs(revision: &str) -> InputSources {
     )
 }
 fn affine_term_result(asks: &[&str]) -> ObservedEvaluation {
-    let r =
-        evaluate_observed_bytes(affine_term_inputs("r1"), asks, &mut named_call_quiet()).unwrap();
+    let r = evaluate_observed_bytes(affine_term_inputs("r1"), asks, &mut quiet()).unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.issues);
     r
 }
@@ -164,6 +163,6 @@ fn affine_term_standard_evidence_rechecks_typed_matrix_point_nodes_and_foreign_p
         let Some(Payload::Scalar(value)) = &mut ns[left.0].payload else {
             panic!("point")
         };
-        *value = super::super::numeric::literal("17", &value.ty(), &named_call_quiet()).unwrap();
+        *value = super::super::numeric::literal("17", &value.ty(), &quiet()).unwrap();
     });
 }

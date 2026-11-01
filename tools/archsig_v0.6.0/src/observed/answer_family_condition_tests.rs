@@ -13,8 +13,7 @@ const ASK: &[&str] = &[
     "later=evaluate(Applications.abSeed)",
 ];
 fn result() -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input("known", "r1"), ASK, &mut named_call_quiet())
-        .unwrap();
+    let r = evaluate_observed_bytes(fixture::input("known", "r1"), ASK, &mut quiet()).unwrap();
     assert_eq!(r.status(), "partial", "{:?}", r.issues);
     r
 }
@@ -56,8 +55,7 @@ fn stop() {
         "later=evaluate(Applications.abBool,x=$take.evaluation.value)",
     ];
     let normal =
-        evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut named_call_quiet())
-            .unwrap();
+        evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     assert_eq!(normal.answers[5].status, Decision::Undetermined);
     assert!(

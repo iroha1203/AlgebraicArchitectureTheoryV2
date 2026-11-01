@@ -4,9 +4,6 @@ mod fixture {
     use crate as archsig;
     include!("../../tests/common/correspondence_paths.rs");
 }
-fn quiet() -> Control {
-    named_call_quiet()
-}
 fn example(bad: bool) -> ObservedEvaluation {
     let current = if bad {
         "current=evaluate(Reservations.step,m=@v/m)"

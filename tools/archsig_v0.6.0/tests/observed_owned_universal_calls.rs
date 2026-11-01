@@ -1,6 +1,4 @@
-#[path = "common/owned_partial_containers.rs"]
-#[allow(dead_code)]
-mod fixture;
+use crate::common::owned_partial_containers as fixture;
 use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(fields) = j else {
@@ -393,9 +391,7 @@ fn two_unknown_owner_slots_keep_four_joint_assignments_and_numeric_axes() {
     );
 }
 
-#[path = "common/owned_map_calls.rs"]
-#[allow(dead_code)]
-mod map_fixture;
+use crate::common::owned_map_calls as map_fixture;
 fn small_map_input(mode: &str) -> archsig::input::InputSources {
     use archsig::json::{JNode, JValue, parse};
     fn convert(n: &JNode) -> Json {

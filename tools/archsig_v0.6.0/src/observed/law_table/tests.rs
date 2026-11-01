@@ -8,9 +8,7 @@ mod fixture {
 mod finite_fixture {
     include!("../../../tests/common/finite_law_family_data.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn prepared(inputs: Arc<CheckedInputs>, root: &str) -> PreparedObserved {
     let ask = format!("b=build(Selected,on=@v/{root})");
     let requests =

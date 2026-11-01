@@ -7,9 +7,7 @@ use std::{cell::Cell, rc::Rc};
 const DEF: &[u8] = include_bytes!("../../../tests/fixtures/internal-arrow.atoms.json");
 const LAW: &str = include_str!("../../../tests/fixtures/internal-arrow.law");
 const MAP: &str = include_str!("../../../tests/fixtures/internal-arrow.archmap.json");
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn prepared(map: &str, asks: &[&str]) -> PreparedObserved {
     let defs = crate::definition::check_definitions(&[("definition0", DEF)]).unwrap();
     let digest = &defs.vocabularies["Flow"].digest;

@@ -1,9 +1,7 @@
 use super::*;
+use crate::control::quiet;
 use crate::{canonical::Json, input::check_inputs, result::Signal};
 use std::{cell::Cell, rc::Rc};
-fn quiet() -> Control {
-    Control::unlimited()
-}
 const DEFINITIONS: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"namespace":"Loops","version":"1","semantics":"archsig/0.6.0","dependencies":[],"declarations":[{"kind":"entity","name":"Loops.Root","meaning":"所属対象。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Loops.Node","meaning":"操作の端点。","parameters":[{"name":"owner","type":["Ref","Loops.Root"],"meaning":"所属。"}],"fields":[{"name":"mark","type":"Z","meaning":"数量。"}],"alignments":[]},{"kind":"arrow","name":"Loops.Loop","meaning":"名前付き自己操作。","parameters":[{"name":"owner","type":["Ref","Loops.Root"],"meaning":"所属。"},{"name":"from","type":["Owned","Loops.Node","owner"],"meaning":"始点。"},{"name":"to","type":["Owned","Loops.Node","owner"],"meaning":"終点。"}],"fields":[{"name":"label","type":"Z","meaning":"関係の適用条件。"}],"alignments":[]},{"kind":"entity","name":"Loops.Unused","meaning":"空の参照型。","parameters":[],"fields":[],"alignments":[]}]}]}"#;
 fn reference(s: &str) -> Json {
     Json::Arr(vec![Json::str("v"), Json::str(s)])

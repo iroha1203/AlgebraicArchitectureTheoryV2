@@ -1,7 +1,5 @@
 use crate::common::cli;
-#[allow(dead_code)]
-#[path = "common/public_relation.rs"]
-mod fixture;
+use crate::common::public_relation as fixture;
 use archsig::json::JNode;
 use cli::*;
 use std::path::{Path, PathBuf};

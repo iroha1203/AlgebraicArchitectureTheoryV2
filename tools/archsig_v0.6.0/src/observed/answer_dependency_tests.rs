@@ -12,8 +12,7 @@ const ASK: &[&str] = &[
     "later=evaluate(Applications.abSeed)",
 ];
 fn result() -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), ASK, &mut named_call_quiet())
-        .unwrap();
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), ASK, &mut quiet()).unwrap();
     assert_eq!(r.status(), "partial", "{:?}", r.issues);
     r
 }
@@ -40,7 +39,7 @@ fn dependency_answer_rechecks_ids_status_outputs_scope_and_each_original_reason(
     let e = Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     let mut altered = answer.clone();

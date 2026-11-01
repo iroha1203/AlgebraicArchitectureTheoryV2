@@ -3,12 +3,8 @@ mod partial_call_fixture {
     include!("../../tests/common/owned_partial_calls.rs");
 }
 fn partial_call_result(asks: &[&str]) -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(
-        partial_call_fixture::input(false, "r1"),
-        asks,
-        &mut named_call_quiet(),
-    )
-    .unwrap_or_else(|e| panic!("{:?}", e.wire()));
+    let r = evaluate_observed_bytes(partial_call_fixture::input(false, "r1"), asks, &mut quiet())
+        .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", r.issues);
     r
 }
@@ -145,7 +141,7 @@ fn partial_owned_pending_calls_recheck_original_reasons_children_and_value_absen
             "whole=check(Reservations.pcPendingAffine,a=@v/B,e=@v/e)",
             "implication=check(Reservations.pcSkipImpliesLaw,a=@v/B,e=@v/e)",
         ],
-        &mut named_call_quiet(),
+        &mut quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial", "{:?}", r.issues);

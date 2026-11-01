@@ -1,16 +1,11 @@
 //! 自由ownerの実prefixと固定複合Answer値を元三入力から検査する。
-#[path = "common/completion_evidence.rs"]
-mod completion_evidence;
-#[path = "common/free_compound_answer_binding.rs"]
-mod fixture;
+use crate::common::completion_evidence;
+use crate::common::free_compound_answer_binding as fixture;
+use crate::common::quiet;
 use archsig::{
     canonical::Json,
-    control::Control,
     observed::{ObservedEvaluation, evaluate_observed_bytes},
 };
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("object") };
     &m[k]

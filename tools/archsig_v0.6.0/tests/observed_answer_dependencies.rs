@@ -1,5 +1,4 @@
-#[path = "common/answer_dependencies.rs"]
-mod fixture;
+use crate::common::answer_dependencies as fixture;
 use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!() };

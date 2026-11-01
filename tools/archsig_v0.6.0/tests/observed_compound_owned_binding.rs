@@ -1,12 +1,7 @@
 //! 全ownerを固定した複合値の元Refと動的所属を同batchで検査する。
-#[path = "common/compound_owned_binding.rs"]
-mod fixture;
-use archsig::{
-    canonical::Json, control::Control, input::InputSources, observed::evaluate_observed_bytes,
-};
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::compound_owned_binding as fixture;
+use crate::common::quiet;
+use archsig::{canonical::Json, input::InputSources, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("object") };
     &m[k]

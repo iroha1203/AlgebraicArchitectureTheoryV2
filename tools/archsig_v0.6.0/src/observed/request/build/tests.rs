@@ -5,9 +5,7 @@ mod fixture {
     include!("../../../../tests/common/request_acceptance_data.rs");
 }
 
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn resolved(asks: &[&str]) -> ResolvedRequests {
     let inputs = check_inputs(fixture::input(), &mut quiet()).unwrap();
     resolve_inner(inputs.law(), inputs.archmap(), asks, &mut quiet(), None).unwrap()

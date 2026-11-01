@@ -1,12 +1,6 @@
-use archsig::{
-    canonical::Json, control::Control, input::InputSources, observed::evaluate_observed_bytes,
-};
-#[path = "common/unknown_map_domain.rs"]
-#[allow(dead_code)]
-mod fixture;
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
+use crate::common::unknown_map_domain as fixture;
+use archsig::{canonical::Json, input::InputSources, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(o) = j else { panic!("object") };
     &o[k]

@@ -1,6 +1,5 @@
 //! 拒否が決まった型の元診断を、取消の優先規則に沿って保持する。
-#[path = "common/positions.rs"]
-mod positions;
+use crate::common::positions;
 use archsig::{
     canonical::Json,
     control::{Checkpoint, Control},

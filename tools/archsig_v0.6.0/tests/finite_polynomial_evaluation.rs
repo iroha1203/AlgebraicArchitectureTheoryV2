@@ -1,5 +1,5 @@
-#[path = "common/finite_polynomial_data.rs"]
-mod fixture;
+use crate::common::finite_polynomial_data as fixture;
+use crate::common::quiet;
 use archsig::{
     construction::ConstructionFailure,
     control::{Checkpoint, Control},
@@ -13,9 +13,6 @@ use archsig::{
 };
 use num_bigint::BigInt;
 use std::{cell::Cell, collections::BTreeSet, rc::Rc, sync::Arc};
-fn quiet() -> Control {
-    Control::unlimited()
-}
 fn run(i: Arc<CheckedInputs>) -> E {
     finite_polynomial_evaluation(i, "Selected", "v", "root", 0, &mut quiet()).unwrap()
 }

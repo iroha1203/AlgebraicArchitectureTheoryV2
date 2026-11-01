@@ -36,7 +36,7 @@ fn stop() {
         "later=evaluate(Walk.seed)",
     ];
     let inputs = fixture::input(fixture::SCRIPT, "Z", &[], "r1");
-    let normal = evaluate_observed_bytes(inputs.clone(), asks, &mut named_call_quiet()).unwrap();
+    let normal = evaluate_observed_bytes(inputs.clone(), asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     let at = field(&normal);
     let Some(Payload::Evaluation { expression, .. }) = &normal.nodes[at].payload else {

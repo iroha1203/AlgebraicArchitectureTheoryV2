@@ -14,9 +14,7 @@ use std::{
     rc::Rc,
 };
 
-fn control() -> Control {
-    Control::unlimited()
-}
+use crate::common::quiet;
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
         panic!("object: {j:?}")
@@ -487,11 +485,11 @@ fn guarded_case(
     conditional: Option<bool>,
 ) {
     let inputs = fixture(gate, body);
-    let checked = check_inputs(inputs.clone(), &mut control()).unwrap();
+    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
     let result = evaluate_observed_bytes(
         inputs,
         &["g=check(Inspect.guarded,item=@current/root)"],
-        &mut control(),
+        &mut quiet(),
     )
     .unwrap()
     .wire();
@@ -726,7 +724,7 @@ fn bool_false_view_is_established_while_the_same_field_law_is_refuted() {
             "v=evaluate(Inspect.value,item=@current/root)",
             "l=check(Inspect.raw,item=@current/root)",
         ],
-        &mut control(),
+        &mut quiet(),
     )
     .unwrap()
     .wire();

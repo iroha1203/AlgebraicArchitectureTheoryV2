@@ -114,13 +114,11 @@ impl ObjectEvaluationTable {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::control::quiet;
     use crate::{
         construction::{construct, readings::object_reading_instances},
         input::{InputSources, check_inputs},
     };
-    fn quiet() -> Control {
-        Control::unlimited()
-    }
 
     #[test]
     fn finite_view_rows_reject_foreign_outer_readings_objects_and_instances() {

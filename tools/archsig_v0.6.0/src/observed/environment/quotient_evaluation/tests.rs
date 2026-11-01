@@ -4,9 +4,7 @@ mod fixture {
     use crate as archsig;
     include!("../../../../tests/common/finite_data_quotient.rs");
 }
-fn quiet() -> Control {
-    Control::unlimited()
-}
+use crate::control::quiet;
 fn inputs(extra: &str) -> crate::input::CheckedInputs {
     check_inputs(fixture::sources(extra, ""), &mut quiet()).unwrap()
 }
