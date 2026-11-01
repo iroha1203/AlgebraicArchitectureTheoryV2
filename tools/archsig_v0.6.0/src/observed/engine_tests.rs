@@ -48,19 +48,19 @@ fn engine_answer_cancel_keeps_completed_engine_counterexample_and_prior_answer()
     let normal = engine_private_result(&asks, false);
     assert_eq!(normal.answers[0].status, Decision::Established);
     assert_eq!(normal.answers[1].status, Decision::Refuted);
-    let (limits, usage, expected) = reservations_private_stop_usage(0);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(limits, move |_| {
+    let mut c = Control::new(move |_| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert!(freeze.replace(Some(count.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Default::default()
+            None
         }
     });
     let prepared = prepare_observed(engine_private_inputs(false), &asks, &mut c).unwrap();

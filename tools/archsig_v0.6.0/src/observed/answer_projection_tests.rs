@@ -78,20 +78,20 @@ fn projection_stop(recheck: bool, law: bool) {
         assert!(normal.answers[5].claim.is_some());
         assert!(!normal.answers[5].evidence.is_empty());
     }
-    let (limits, usage, expected) = reservations_private_stop_usage(if recheck { 2 } else { 0 });
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(0));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(limits, move |_| {
+    let mut c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Default::default()
+            None
         }
     });
     let prepared = prepare_observed(fixture::input("stop", "r1"), &asks, &mut c).unwrap();

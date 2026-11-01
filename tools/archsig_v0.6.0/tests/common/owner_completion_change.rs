@@ -1,8 +1,5 @@
 use super::*;
-use archsig::{
-    control::{Control, Limits, Usage},
-    input::InputSources,
-};
+use archsig::{control::Control, input::InputSources};
 
 fn sources(
     two_roots: bool,
@@ -58,7 +55,7 @@ fn result(sources: InputSources, asks: &[&str]) -> archsig::json::JNode {
     archsig::json::parse(evaluation.wire().canonical().as_bytes()).unwrap()
 }
 fn control() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn evidence(j: &archsig::json::JNode) -> &archsig::json::JNode {
     arr(get(j, "nodes"))
@@ -182,42 +179,15 @@ fn finite_owner_completions_keep_empty_subject_product_and_guard_meanings() {
 fn finite_owner_completion_stop_does_not_publish_incomplete_exhaustion() {
     use archsig::control::Checkpoint;
     use std::{cell::Cell, rc::Rc};
-    for mode in 0..4 {
+    for signal in [archsig::result::Signal::Int, archsig::result::Signal::Term] {
         let seen = Rc::new(Cell::new(false));
         let stage = seen.clone();
-        let mut c = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |point| {
-                if point == Checkpoint::ChangeWitness {
-                    stage.set(true);
-                }
-                if stage.get() && point == Checkpoint::Completion {
-                    match mode {
-                        0 => Usage {
-                            elapsed_ms: 2,
-                            ..Usage::default()
-                        },
-                        1 => Usage {
-                            memory_mib: 2,
-                            ..Usage::default()
-                        },
-                        _ => Usage {
-                            signal: Some(if mode == 2 {
-                                archsig::result::Signal::Int
-                            } else {
-                                archsig::result::Signal::Term
-                            }),
-                            ..Usage::default()
-                        },
-                    }
-                } else {
-                    Usage::default()
-                }
-            },
-        );
+        let mut c = Control::new(move |point| {
+            if point == Checkpoint::ChangeWitness {
+                stage.set(true);
+            }
+            (stage.get() && point == Checkpoint::Completion).then_some(signal)
+        });
         let value = observed::evaluate_observed_bytes(
             sources(true, "", "", "c.flag", false),
             &[
@@ -236,12 +206,7 @@ fn finite_owner_completion_stop_does_not_publish_incomplete_exhaustion() {
         };
         assert!(outputs.is_empty());
         let reason = format!("{:?}", get(answer(&j, "r"), "reasons"));
-        for expected in match mode {
-            0 => vec!["budget_exhausted", "time_ms"],
-            1 => vec!["budget_exhausted", "memory_mib"],
-            2 => vec!["cancelled", "SIGINT"],
-            _ => vec!["cancelled", "SIGTERM"],
-        } {
+        for expected in ["cancelled", signal.wire()] {
             assert!(reason.contains(expected), "{reason}");
         }
         assert!(!format!("{:?}", get(&j, "nodes")).contains("completion_fibers"));

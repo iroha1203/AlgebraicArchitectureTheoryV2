@@ -325,17 +325,10 @@ fn input_failure_status(code: Code) -> Status {
 }
 
 fn stopped(signals: &mut dyn Signals, reason: StopReason) -> Outcome {
-    let issue = match reason {
-        StopReason::Cancelled(signal) => ResultIssue::Cancelled(signal),
-        StopReason::BudgetExhausted {
-            resource,
-            limit,
-            observed,
-        } => ResultIssue::BudgetExhausted {
-            resource,
-            limit,
-            observed,
-        },
-    };
-    output::without_result(signals, Status::Interrupted, vec![issue])
+    let StopReason::Cancelled(signal) = reason;
+    output::without_result(
+        signals,
+        Status::Interrupted,
+        vec![ResultIssue::Cancelled(signal)],
+    )
 }

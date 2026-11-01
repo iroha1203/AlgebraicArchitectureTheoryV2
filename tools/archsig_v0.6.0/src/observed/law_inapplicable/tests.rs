@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-    control::{Limits, Usage},
-    observed::{PreparedObserved, request::resolve_native_for_test},
-};
+use crate::observed::{PreparedObserved, request::resolve_native_for_test};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../tests/common/polynomial_law_family_data.rs");
@@ -12,7 +9,7 @@ mod finite_fixture {
     include!("../../../tests/common/finite_law_reading_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
     let requests = resolve_native_for_test(
@@ -409,11 +406,11 @@ fn outside_law_interrupt_keeps_exact_completed_prefix_and_final_proposition() {
     let (initial, origin, objects, _, _) = outside(&p);
     let seen = Rc::new(Cell::new(0));
     let counter = seen.clone();
-    let mut c = Control::new(Limits::default(), move |point| {
+    let mut c = Control::new(move |point| {
         if point == Checkpoint::ObjectEvaluation {
             counter.set(counter.get() + 1)
         }
-        Usage::default()
+        None
     });
     let mut complete = copy_graph(&initial, &c);
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
@@ -428,15 +425,12 @@ fn outside_law_interrupt_keeps_exact_completed_prefix_and_final_proposition() {
     for at in 1..=total {
         let seen = Rc::new(Cell::new(0));
         let counter = seen.clone();
-        let mut c = Control::new(Limits::default(), move |point| {
+        let mut c = Control::new(move |point| {
             if point == Checkpoint::ObjectEvaluation {
                 counter.set(counter.get() + 1)
             }
             let stop = counter.get() >= at;
-            Usage {
-                signal: stop.then_some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            stop.then_some(crate::result::Signal::Int)
         });
         let mut g = copy_graph(&initial, &c);
         let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
@@ -474,15 +468,11 @@ fn outside_law_self_and_future_refs_fail_before_recursive_recheck() {
         let arm = armed.clone();
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut control = Control::new(Limits::default(), move |point| {
+        let mut control = Control::new(move |point| {
             if arm.get() && point == Checkpoint::FiniteIteration {
                 count.set(count.get() + 1)
             }
-            Usage {
-                elapsed_ms: 0,
-                memory_mib: 0,
-                signal: (arm.get() && count.get() >= 200).then_some(crate::result::Signal::Int),
-            }
+            (arm.get() && count.get() >= 200).then_some(crate::result::Signal::Int)
         });
         let mut bad = copy_graph(&g, &control);
         let Some(Payload::Construction(v)) = &mut bad.nodes[e.0].payload else {

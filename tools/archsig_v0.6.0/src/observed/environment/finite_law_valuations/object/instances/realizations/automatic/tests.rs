@@ -1,14 +1,11 @@
 use super::*;
-use crate::{
-    construction::{construct, readings::object_reading_instances},
-    control::{Limits, Usage},
-};
+use crate::construction::{construct, readings::object_reading_instances};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../../../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn reading(i: &CheckedInputs, root: &str) -> ObjectReadingInstances {
     let c = construct(i, "Selected", "v", root, &mut quiet()).unwrap();
@@ -433,55 +430,39 @@ fn fixed_stops_keep_the_completed_parameter_plan_and_only_finished_law_rows() {
     use std::{cell::Cell, rc::Rc};
     let i = fixture::with_body(fixture::MAP, "law required zero(c:Part):c.quantity=0;");
     let a = reading(&i, "root");
-    for mode in 0..3 {
-        let started = Rc::new(Cell::new(false));
-        let stage = started.clone();
-        let count = Rc::new(Cell::new(0));
-        let seen = count.clone();
-        let mut c = Control::new(
-            Limits {
-                time_ms: (mode == 1).then_some(1),
-                memory_mib: (mode == 2).then_some(1),
-            },
-            move |p| {
-                if p == Checkpoint::FiniteLawAutomatic {
-                    stage.set(true);
-                }
-                if stage.get() && p == Checkpoint::FiniteLawEvaluation {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() >= 3;
-                Usage {
-                    signal: (stop && mode == 0).then_some(Signal::Term),
-                    elapsed_ms: u128::from(stop && mode == 1),
-                    memory_mib: u128::from(stop && mode == 2),
-                }
-            },
-        );
-        let error = finite_automatic_law_family(&i, &a, &mut c).err().unwrap();
-        assert!(matches!(error.cause, ValidationFailure::Stop(_)));
-        let partial = error.partial.unwrap();
-        assert!(partial.parameters().is_complete());
-        assert!(!partial.is_complete());
-        let f = partial.family().unwrap();
-        assert!(f.domain_complete());
-        assert_eq!(f.domain().len(), 4);
-        assert_eq!(f.columns()[0].rows().len(), 1);
-        assert!(f.columns()[1..].iter().all(|c| c.rows().is_empty()));
-        assert!(f.integer_function(0, None, &mut quiet()).is_err());
-        assert!(f.required_quotient(&mut quiet()).is_err());
-        assert!(partial.recheck(&i, &a, &mut quiet()).is_err());
-    }
+    let started = Rc::new(Cell::new(false));
+    let stage = started.clone();
+    let count = Rc::new(Cell::new(0));
+    let seen = count.clone();
+    let mut c = Control::new(move |p| {
+        if p == Checkpoint::FiniteLawAutomatic {
+            stage.set(true);
+        }
+        if stage.get() && p == Checkpoint::FiniteLawEvaluation {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= 3).then_some(Signal::Term)
+    });
+    let error = finite_automatic_law_family(&i, &a, &mut c).err().unwrap();
+    assert!(matches!(error.cause, ValidationFailure::Stop(_)));
+    let partial = error.partial.unwrap();
+    assert!(partial.parameters().is_complete());
+    assert!(!partial.is_complete());
+    let f = partial.family().unwrap();
+    assert!(f.domain_complete());
+    assert_eq!(f.domain().len(), 4);
+    assert_eq!(f.columns()[0].rows().len(), 1);
+    assert!(f.columns()[1..].iter().all(|c| c.rows().is_empty()));
+    assert!(f.integer_function(0, None, &mut quiet()).is_err());
+    assert!(f.required_quotient(&mut quiet()).is_err());
+    assert!(partial.recheck(&i, &a, &mut quiet()).is_err());
 }
 #[test]
 fn an_interrupt_before_automatic_column_selection_keeps_the_completed_source_plan() {
     use crate::result::Signal;
     let i = fixture::with_body(fixture::MAP, "law required zero(c:Part):c.quantity=0;");
     let a = reading(&i, "root");
-    let mut c = Control::new(Limits::default(), |p| Usage {
-        signal: (p == Checkpoint::FiniteLawAutomatic).then_some(Signal::Int),
-        ..Usage::default()
-    });
+    let mut c = Control::new(|p| (p == Checkpoint::FiniteLawAutomatic).then_some(Signal::Int));
     let error = finite_automatic_law_family(&i, &a, &mut c).err().unwrap();
     assert!(matches!(error.cause, ValidationFailure::Stop(_)));
     let partial = error.partial.unwrap();

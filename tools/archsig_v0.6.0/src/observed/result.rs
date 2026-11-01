@@ -1460,15 +1460,10 @@ impl Node {
             && !matches!(payload, Payload::Construction(v) if v.is_blocked())
         {
             let mut value = match payload {
-                Payload::Scalar(value) => super::path_value::wire(
-                    value,
-                    prior,
-                    &self.arguments,
-                    &Control::new(crate::control::Limits::default(), |_| {
-                        crate::control::Usage::default()
-                    }),
-                )
-                .expect("挿入時に検査した値の既出 Ref 表示"),
+                Payload::Scalar(value) => {
+                    super::path_value::wire(value, prior, &self.arguments, &Control::unlimited())
+                        .expect("挿入時に検査した値の既出 Ref 表示")
+                }
                 other => other.wire(),
             };
             if matches!(
@@ -1802,7 +1797,7 @@ impl Graph {
         if !matches!(node.payload, Some(Payload::Construction(_))) {
             return Err("native転記へ通常の導出を渡した".into());
         }
-        // 資源・signalはここでも凍結する。完成済みnative値の転記だけは
+        // signalはここでも凍結する。完成済みnative値の転記だけは
         // 最後まで保持し、凍結後に通常の推論を再開する権限を与えない。
         let _ = self
             .control
@@ -4964,7 +4959,6 @@ mod invariant_tests {
     #[test]
     fn reason_comparison_preserves_wire_order_and_stop_omissions() {
         use super::super::request::QuestionKind;
-        use crate::control::Resource;
         use crate::result::Signal;
         let reason = |kind| Reason {
             kind,
@@ -5000,11 +4994,7 @@ mod invariant_tests {
                 operand_types: vec![Type::Z, Type::Bool],
                 method: "method".into(),
             }),
-            reason(ReasonKind::Stop(StopReason::BudgetExhausted {
-                resource: Resource::TimeMs,
-                limit: 10,
-                observed: 12,
-            })),
+            reason(ReasonKind::Stop(StopReason::Cancelled(Signal::Int))),
             reason(ReasonKind::Stop(StopReason::Cancelled(Signal::Term))),
             reason(ReasonKind::Internal("recheck".into())),
         ];

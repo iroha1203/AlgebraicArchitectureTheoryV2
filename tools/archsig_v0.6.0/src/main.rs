@@ -90,16 +90,12 @@ impl ProcessSignals {
         }
     }
 
-    /// checkpointでsignalだけを確かめる。時計とpeak RSSは読まない。
+    /// checkpointでsignalを確かめる。
     fn control(&self) -> archsig::control::Control {
-        use archsig::control::{Control, Limits, Usage};
         let first = Arc::clone(&self.first);
         let int = Arc::clone(&self.int);
         let term = Arc::clone(&self.term);
-        Control::new(Limits::default(), move |_| Usage {
-            signal: Self::observed_signal(&first, &int, &term),
-            ..Usage::default()
-        })
+        archsig::control::Control::new(move |_| Self::observed_signal(&first, &int, &term))
     }
 }
 

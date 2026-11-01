@@ -3,10 +3,10 @@ use crate::common;
 
 use archsig::{
     canonical::Json,
-    control::{CheckFailure, Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     input::{InputSources, InputStatus, check_inputs},
     issue::{Code, Issue, Location},
-    law::{check_law, check_law_controlled},
+    law::check_law,
     result::{ResultIssue, Signal},
 };
 use std::{cell::Cell, rc::Rc};
@@ -67,11 +67,11 @@ fn baseline(law: &str) -> (archsig::issue::Issue, usize) {
     );
     let total = Rc::new(Cell::new(0));
     let seen = total.clone();
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::LawCycle {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let failure = check_inputs(sources(law), &mut control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
@@ -83,105 +83,37 @@ fn baseline(law: &str) -> (archsig::issue::Issue, usize) {
     (expected, total.get())
 }
 
-fn injected(stop_after: usize, resource: Option<Resource>, cancel: bool) -> Control {
+fn injected(stop_after: usize) -> Control {
     let mut seen = 0;
-    Control::new(
-        Limits {
-            time_ms: (resource == Some(Resource::TimeMs)).then_some(1),
-            memory_mib: (resource == Some(Resource::MemoryMib)).then_some(1),
-        },
-        move |point| {
-            if point == Checkpoint::LawCycle {
-                seen += 1;
-            }
-            let stop = seen >= stop_after;
-            Usage {
-                signal: (stop && cancel).then_some(Signal::Term),
-                elapsed_ms: u128::from(stop && resource == Some(Resource::TimeMs)),
-                memory_mib: u128::from(stop && resource == Some(Resource::MemoryMib)),
-            }
-        },
-    )
-}
-
-fn assert_known_cycle_over_budget(law: &str) {
-    let (expected, total) = baseline(law);
-    let definitions = common::definitions_ok(&[common::COUNTER_DEFINITION]);
-    for resource in [Resource::TimeMs, Resource::MemoryMib] {
-        let mut control = injected(total, Some(resource), false);
-        let failure = check_law_controlled(law.as_bytes(), &definitions, &mut control).unwrap_err();
-        let CheckFailure::Input(failure) = failure else {
-            panic!("検出済みcycleを予算停止へ上書きしない: {failure:?}");
-        };
-        assert_eq!(failure.issue, expected);
-        let reason = StopReason::BudgetExhausted {
-            resource,
-            limit: 1,
-            observed: 1,
-        };
-        assert_eq!(control.stop_reason(), Some(reason.clone()));
-
-        let mut control = injected(total, Some(resource), false);
-        let failure = check_inputs(sources(law), &mut control).unwrap_err();
-        assert_eq!(failure.status(), InputStatus::Invalid);
-        assert_eq!(
-            failure.issues(),
-            [reason.wire(), expected_input_issue(law, &expected)]
-        );
-        assert!(failure.declarations().is_empty());
-        assert!(failure.primitives().is_empty());
-        assert!(failure.vocabularies().is_empty());
-        assert_eq!(failure.sources().law().bytes(), law.as_bytes());
-        assert_eq!(control.stop_reason(), Some(reason));
-    }
+    Control::new(move |point| {
+        if point == Checkpoint::LawCycle {
+            seen += 1;
+        }
+        (seen >= stop_after).then_some(Signal::Term)
+    })
 }
 
 fn assert_cancel_after_cycle(law: &str) {
     let (_, total) = baseline(law);
-    // Cancellation also wins when a resource limit is reached in the same sample.
-    for resource in [None, Some(Resource::TimeMs), Some(Resource::MemoryMib)] {
-        let mut control = injected(total, resource, true);
-        let failure = check_inputs(sources(law), &mut control).unwrap_err();
-        let reason = StopReason::Cancelled(Signal::Term);
-        assert_eq!(failure.status(), InputStatus::Interrupted);
-        assert_eq!(failure.issues(), [reason.wire()]);
-        assert_eq!(control.stop_reason(), Some(reason));
-    }
+    let mut control = injected(total);
+    let failure = check_inputs(sources(law), &mut control).unwrap_err();
+    let reason = StopReason::Cancelled(Signal::Term);
+    assert_eq!(failure.status(), InputStatus::Interrupted);
+    assert_eq!(failure.issues(), [reason.wire()]);
+    assert_eq!(control.stop_reason(), Some(reason));
 }
 
 fn assert_stop_before_cycle(law: &str) {
     let (_, total) = baseline(law);
     // The penultimate LawCycle checkpoint is still inside DFS, before the
     // active-node revisit establishes a cycle. Its stop is not an input failure.
-    for resource in [Resource::TimeMs, Resource::MemoryMib] {
-        let mut control = injected(total - 1, Some(resource), false);
-        let failure = check_inputs(sources(law), &mut control).unwrap_err();
-        let reason = StopReason::BudgetExhausted {
-            resource,
-            limit: 1,
-            observed: 1,
-        };
-        assert_eq!(failure.status(), InputStatus::Interrupted);
-        assert_eq!(failure.issues(), [reason.wire()]);
-        assert_eq!(control.stop_reason(), Some(reason));
-    }
-    let mut control = injected(total - 1, None, true);
+    let mut control = injected(total - 1);
     let failure = check_inputs(sources(law), &mut control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Interrupted);
     assert_eq!(
         failure.issues(),
         [StopReason::Cancelled(Signal::Term).wire()]
     );
-}
-
-#[test]
-fn view_cycle_preserves_original_issue_and_late_budget() {
-    assert_known_cycle_over_budget(&view_cycle());
-}
-
-#[test]
-fn reading_cycle_preserves_original_issue_and_late_budget() {
-    assert_known_cycle_over_budget(&reading_cycle());
 }
 
 #[test]

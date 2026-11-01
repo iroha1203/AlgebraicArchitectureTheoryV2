@@ -1,12 +1,8 @@
 use super::*;
-use crate::{
-    control::{Limits, Usage},
-    input::InputSources,
-    observed::evaluate_observed_bytes,
-};
+use crate::{input::InputSources, observed::evaluate_observed_bytes};
 
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Finite","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Finite.Root","meaning":"有限入力の対象。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Finite.Part","meaning":"有限入力の対象。","parameters":[{"name":"owner","type":["Ref","Finite.Root"],"meaning":"元の型付き値。"}],"fields":[{"name":"quantity","type":["Fp","2"],"meaning":"元の型付き値。"}],"alignments":[]},{"kind":"correspondence","name":"Finite.Migration","meaning":"有限入力の対象。","parameters":[{"name":"from","type":["Ref","Finite.Root"],"meaning":"元の型付き値。"},{"name":"to","type":["Ref","Finite.Root"],"meaning":"元の型付き値。"}],"fields":[{"name":"states","type":["Map",["Owned","Finite.Part","from"],["Owned","Finite.Part","to"]],"meaning":"元の型付き値。"}],"alignments":[]}]}]}"#;
 const MAP: &str = r#"{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{"namespace":"Finite","version":"1","digest":"@DIGEST@"}],"sources":[],"origins":[{"id":"model","mode":"specification","method":"独立の有限入力。","locations":[],"note":"原始値と対応だけを記録する。"}],"snapshots":[{"id":"v","origin":"model","subjects":[{"id":"a","type":"Finite.Root","origin":"model"},{"id":"b","type":"Finite.Root","origin":"model"},{"id":"p","type":"Finite.Part","origin":"model"},{"id":"q","type":"Finite.Part","origin":"model"},{"id":"m","type":"Finite.Migration","origin":"model"}],"atoms":[{"id":"po","subject":"p","field":"Finite.Part.owner","value":["v","a"],"origin":"model"},{"id":"qo","subject":"q","field":"Finite.Part.owner","value":["v","b"],"origin":"model"},{"id":"px","subject":"p","field":"Finite.Part.quantity","value":"0","origin":"model"},{"id":"mx","subject":"m","field":"Finite.Migration.from","value":["v","a"],"origin":"model"},{"id":"my","subject":"m","field":"Finite.Migration.to","value":["v","b"],"origin":"model"},{"id":"mm","subject":"m","field":"Finite.Migration.states","value":[[["v","p"],["v","q"]]],"origin":"model"},{"id":"qx","subject":"q","field":"Finite.Part.quantity","value":"1","origin":"model"}]}]}"#;
@@ -493,47 +489,28 @@ fn outside_finite_range_and_wrong_producer_never_append_a_completed_diagram() {
     );
     assert_eq!(g.nodes.len(), before);
 }
-fn stopping(mode: usize, at: usize) -> Control {
+fn stopping(signal: crate::result::Signal, at: usize) -> Control {
     let seen = std::rc::Rc::new(std::cell::Cell::new(0));
-    Control::new(
-        Limits {
-            time_ms: (mode == 2).then_some(1),
-            memory_mib: (mode == 3).then_some(1),
-        },
-        move |p| {
-            if p == Checkpoint::FiniteLawFunction {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() >= at;
-            Usage {
-                signal: if stop && mode < 2 {
-                    Some(if mode == 0 {
-                        crate::result::Signal::Int
-                    } else {
-                        crate::result::Signal::Term
-                    })
-                } else {
-                    None
-                },
-                elapsed_ms: u128::from(stop && mode == 2),
-                memory_mib: u128::from(stop && mode == 3),
-            }
-        },
-    )
+    Control::new(move |p| {
+        if p == Checkpoint::FiniteLawFunction {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= at).then_some(signal)
+    })
 }
 #[test]
-fn all_four_stops_keep_unfinished_plan_private_and_preserve_completed_prefix_nodes() {
+fn signal_stops_keep_unfinished_plan_private_and_preserve_completed_prefix_nodes() {
     let e = example(false, BODY);
     let mut g = graph(&e);
     let a = architecture(&g, "a");
     let before = g.nodes.len();
     let count = std::rc::Rc::new(std::cell::Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
+    let mut c = Control::new(move |p| {
         if p == Checkpoint::FiniteLawFunction {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut c)
         .unwrap()
@@ -541,7 +518,7 @@ fn all_four_stops_keep_unfinished_plan_private_and_preserve_completed_prefix_nod
     let source = data(&g, d.ring).source.clone();
     let total = count.get();
     assert!(total > 20);
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, 5, total - 1, total] {
             let mut g = graph(&e);
             let a = architecture(&g, "a");
@@ -551,7 +528,7 @@ fn all_four_stops_keep_unfinished_plan_private_and_preserve_completed_prefix_nod
                     e.prepared.shared_inputs(),
                     a,
                     0,
-                    &mut stopping(mode, at)
+                    &mut stopping(signal, at)
                 ),
                 Err(ValidationFailure::Stop(_))
             ));
@@ -566,7 +543,7 @@ fn all_four_stops_keep_unfinished_plan_private_and_preserve_completed_prefix_nod
                 e.prepared.inputs(),
                 &source.architecture,
                 0,
-                &mut stopping(mode, 1)
+                &mut stopping(signal, 1)
             ),
             Err(ValidationFailure::Stop(_))
         ));
@@ -646,10 +623,7 @@ fn reading_identity_and_cached_validation_cannot_be_exchanged_between_authentic_
     env.recheck_finite_law_diagram(&g, first).unwrap();
     let stop = std::rc::Rc::new(std::cell::Cell::new(false));
     let flag = stop.clone();
-    let mut c = Control::new(Limits::default(), move |_| Usage {
-        signal: flag.get().then_some(crate::result::Signal::Int),
-        ..Usage::default()
-    });
+    let mut c = Control::new(move |_| flag.get().then_some(crate::result::Signal::Int));
     let env = Environment::with_requests(
         e.prepared.inputs(),
         e.prepared.requests().requests(),
@@ -997,10 +971,10 @@ fn nested_primitive_containers_canonicalize_sets_and_maps_but_preserve_sequences
         canonical_value(&normalized, &mut quiet()).unwrap(),
         normalized
     );
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, 5, 10] {
             assert!(matches!(
-                canonical_value(&value, &mut stopping(mode, at)),
+                canonical_value(&value, &mut stopping(signal, at)),
                 Err(ValidationFailure::Stop(_))
             ));
             assert_eq!(value.wire().canonical(), original);
@@ -1649,11 +1623,11 @@ fn all_four_stops_inside_operand_construction_leave_original_graph_and_source_un
     let f = full.family().unwrap();
     let count = std::rc::Rc::new(std::cell::Cell::new(0));
     let seen = count.clone();
-    let mut control = Control::new(Limits::default(), move |p| {
+    let mut control = Control::new(move |p| {
         if p == Checkpoint::FiniteLawFunction {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let mut parts = source.parts.clone();
     operands::append(
@@ -1670,7 +1644,7 @@ fn all_four_stops_inside_operand_construction_leave_original_graph_and_source_un
     let total = count.get();
     assert!(total > 10);
     let before = g.nodes.len();
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, 5, total / 2, total] {
             let mut parts = source.parts.clone();
             assert!(matches!(
@@ -1682,7 +1656,7 @@ fn all_four_stops_inside_operand_construction_leave_original_graph_and_source_un
                     &d.components,
                     &mut parts,
                     source.base,
-                    &mut stopping(mode, at)
+                    &mut stopping(signal, at)
                 ),
                 Err(ValidationFailure::Stop(_))
             ));
@@ -1947,7 +1921,7 @@ fn context_and_presentation_node_stops_keep_exact_finished_prefixes_for_all_four
     .unwrap();
     let context = d.context.unwrap();
     let presentation = d.presentation.unwrap();
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [
             2 * (context.0 - before) + 1,
             2 * (context.0 - before + 1),
@@ -1955,31 +1929,12 @@ fn context_and_presentation_node_stops_keep_exact_finished_prefixes_for_all_four
         ] {
             let seen = std::rc::Rc::new(std::cell::Cell::new(0));
             let count = seen.clone();
-            let mut control = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if point == Checkpoint::NativeResultNode {
-                        count.set(count.get() + 1);
-                    }
-                    let stop = count.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: if stop && mode >= 2 {
-                            Some(if mode == 2 {
-                                crate::result::Signal::Int
-                            } else {
-                                crate::result::Signal::Term
-                            })
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
+            let mut control = Control::new(move |point| {
+                if point == Checkpoint::NativeResultNode {
+                    count.set(count.get() + 1);
+                }
+                (count.get() >= at).then_some(signal)
+            });
             let old = graph(&e);
             let mut g = Graph::new(&control);
             g.nodes = old.nodes;

@@ -436,8 +436,7 @@ fn owned_type_quantification_missing_body_counterexample_and_checked_are_recheck
     });
 }
 
-fn owned_type_private_phase_stop(phase: &'static str, kind: usize) {
-    use crate::control::Usage;
+fn owned_type_private_phase_stop(phase: &'static str) {
     use std::{cell::Cell, rc::Rc};
     let body = "view seed():Unit=unit; law required prior():false; view hole(s:State):Z=s.free; view wrapped(a:System):Bool=forall bag:Option<Set<State[a]>> . true;";
     let current = "current=evaluate(Reservations.wrapped,a=@v/A)";
@@ -463,20 +462,20 @@ fn owned_type_private_phase_stop(phase: &'static str, kind: usize) {
             .flat_map(|r| &r.missing)
             .any(|f| f.subject == "q" && f.field.as_deref() == Some("Reservations.State.free"))
     );
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let seen = Rc::new(Cell::new(false));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |checkpoint| {
+    let mut control = Control::new(move |checkpoint| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert_eq!(checkpoint, Checkpoint::FiniteIteration);
             assert!(freeze.replace(Some(count.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
@@ -609,7 +608,7 @@ fn owned_type_private_phase_stop(phase: &'static str, kind: usize) {
 
 #[test]
 fn owned_type_quantification_answer_cancel_preserves_verified_current_result() {
-    owned_type_private_phase_stop("answer", 0);
+    owned_type_private_phase_stop("answer");
 }
 
 #[test]

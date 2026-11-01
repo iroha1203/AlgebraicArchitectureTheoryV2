@@ -503,7 +503,7 @@ impl<E: InputError> Parser<E> {
                         }
                         first_error.get_or_insert(e);
                         // Every split has failed. Let `checked` finish the
-                        // established Syntax before consulting a latched budget.
+                        // established Syntax before consulting a latched stop.
                         // An earlier candidate's failure cannot establish this.
                         if candidate_index + 1 == eqs.len() {
                             break;
@@ -1328,7 +1328,7 @@ impl<E: InputError> Parser<E> {
 #[cfg(test)]
 mod qname_interruption_tests {
     use super::*;
-    use crate::control::{CheckFailure, Limits, Resource, StopReason, Usage};
+    use crate::control::{CheckFailure, StopReason};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 
@@ -1338,10 +1338,10 @@ mod qname_interruption_tests {
             let tokens = super::super::lexer::lex(text.as_bytes()).unwrap();
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let control = Control::new(Limits::default(), move |point| {
+            let control = Control::new(move |point| {
                 assert_eq!(point, Checkpoint::LawName);
                 seen.set(seen.get() + 1);
-                Usage::default()
+                None
             });
             let mut parser =
                 Parser::<CheckFailure<Box<Issue>>>::with_error(tokens.clone(), text.len(), control);
@@ -1352,48 +1352,23 @@ mod qname_interruption_tests {
             let total = count.get();
             assert_eq!(total, 2 * name.parts.len() + 1);
             for at in 1..=total {
-                for kind in 0..3 {
-                    let mut visits = 0;
-                    let control = Control::new(
-                        Limits {
-                            time_ms: (kind == 1).then_some(1),
-                            memory_mib: (kind == 2).then_some(1),
-                        },
-                        move |point| {
-                            assert_eq!(point, Checkpoint::LawName);
-                            visits += 1;
-                            let stop = visits == at;
-                            Usage {
-                                signal: (stop && kind == 0).then_some(Signal::Int),
-                                elapsed_ms: u128::from(stop && kind == 1),
-                                memory_mib: u128::from(stop && kind == 2),
-                            }
-                        },
-                    );
-                    let expected = match kind {
-                        0 => StopReason::Cancelled(Signal::Int),
-                        1 => StopReason::BudgetExhausted {
-                            resource: Resource::TimeMs,
-                            limit: 1,
-                            observed: 1,
-                        },
-                        _ => StopReason::BudgetExhausted {
-                            resource: Resource::MemoryMib,
-                            limit: 1,
-                            observed: 1,
-                        },
-                    };
-                    let mut parser = Parser::<CheckFailure<Box<Issue>>>::with_error(
-                        tokens.clone(),
-                        text.len(),
-                        control,
-                    );
-                    let stopped = parser.qname().unwrap_err();
-                    assert!(
-                        matches!(stopped, CheckFailure::Stopped(ref r) if r == &expected),
-                        "{text} {at}: {stopped:?}"
-                    );
-                }
+                let mut visits = 0;
+                let control = Control::new(move |point| {
+                    assert_eq!(point, Checkpoint::LawName);
+                    visits += 1;
+                    (visits == at).then_some(Signal::Int)
+                });
+                let expected = StopReason::Cancelled(Signal::Int);
+                let mut parser = Parser::<CheckFailure<Box<Issue>>>::with_error(
+                    tokens.clone(),
+                    text.len(),
+                    control,
+                );
+                let stopped = parser.qname().unwrap_err();
+                assert!(
+                    matches!(stopped, CheckFailure::Stopped(ref r) if r == &expected),
+                    "{text} {at}: {stopped:?}"
+                );
             }
         }
     }
@@ -1405,13 +1380,10 @@ mod qname_interruption_tests {
         assert_eq!(ordinary.qname().unwrap_err().code, Code::Syntax);
         for at in [1, 2] {
             let mut visits = 0;
-            let control = Control::new(Limits::default(), move |point| {
+            let control = Control::new(move |point| {
                 assert_eq!(point, Checkpoint::LawName);
                 visits += 1;
-                Usage {
-                    signal: (visits == at).then_some(Signal::Term),
-                    ..Usage::default()
-                }
+                (visits == at).then_some(Signal::Term)
             });
             let mut controlled =
                 Parser::<CheckFailure<Box<Issue>>>::with_error(tokens.clone(), 1, control);
@@ -1454,64 +1426,30 @@ mod qname_interruption_tests {
         ] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let control = Control::new(Limits::default(), move |point| {
+            let control = Control::new(move |point| {
                 if point == Checkpoint::LawIteration {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             });
             assert_eq!(run(text, operation, control).is_ok(), valid, "{text}");
             let total = count.get();
             assert!(total > 2, "{text}");
             for at in [1, total / 2, total - 1, total] {
-                for mode in 0..3 {
-                    let mut visits = 0;
-                    let control = Control::new(
-                        Limits {
-                            time_ms: (mode == 1).then_some(1),
-                            memory_mib: (mode == 2).then_some(1),
-                        },
-                        move |point| {
-                            if point == Checkpoint::LawIteration {
-                                visits += 1;
-                            }
-                            let stop = visits == at;
-                            Usage {
-                                signal: (stop && mode == 0).then_some(Signal::Term),
-                                elapsed_ms: u128::from(stop && mode == 1),
-                                memory_mib: u128::from(stop && mode == 2),
-                            }
-                        },
-                    );
-                    let expected = match mode {
-                        0 => StopReason::Cancelled(Signal::Term),
-                        1 => StopReason::BudgetExhausted {
-                            resource: Resource::TimeMs,
-                            limit: 1,
-                            observed: 1,
-                        },
-                        _ => StopReason::BudgetExhausted {
-                            resource: Resource::MemoryMib,
-                            limit: 1,
-                            observed: 1,
-                        },
-                    };
-                    let stopped = run(text, operation, control.clone()).unwrap_err();
-                    if !valid && mode > 0 && at == total {
-                        assert!(
-                            matches!(stopped, CheckFailure::Input(_)),
-                            "final known Syntax must survive budget: {text}"
-                        );
+                let mut visits = 0;
+                let control = Control::new(move |point| {
+                    if point == Checkpoint::LawIteration {
+                        visits += 1;
                     }
-                    match stopped {
-                        CheckFailure::Stopped(reason) => assert_eq!(reason, expected),
-                        CheckFailure::Input(issue) => {
-                            assert!(!valid && mode > 0, "{text} {at}/{total}");
-                            assert_eq!(issue.code, Code::Syntax);
-                        }
-                    }
-                    assert_eq!(control.stop_reason(), Some(expected));
+                    (visits == at).then_some(Signal::Term)
+                });
+                let expected = StopReason::Cancelled(Signal::Term);
+                let stopped = run(text, operation, control.clone()).unwrap_err();
+                match stopped {
+                    CheckFailure::Stopped(reason) => assert_eq!(reason, expected),
+                    CheckFailure::Input(issue) => panic!("{text} {at}/{total}: {issue:?}"),
                 }
+                assert_eq!(control.stop_reason(), Some(expected));
             }
         }
     }
@@ -1521,7 +1459,7 @@ mod qname_interruption_tests {
 pub(super) mod candidate_priority_tests {
     use super::*;
     use crate::{
-        control::{CheckFailure, Limits, StopReason, Usage},
+        control::{CheckFailure, StopReason},
         issue::Location,
         result::Signal,
     };
@@ -1559,9 +1497,6 @@ pub(super) mod candidate_priority_tests {
         fn is_stopped(&self) -> bool {
             self.0.is_stopped()
         }
-        fn is_budget_stop(&self) -> bool {
-            self.0.is_budget_stop()
-        }
     }
     pub(crate) struct ErrorArm;
     impl Drop for ErrorArm {
@@ -1569,24 +1504,14 @@ pub(super) mod candidate_priority_tests {
             ERROR_ARM.with(|state| *state.borrow_mut() = None);
         }
     }
-    pub(crate) fn stop_after_issue(span: Span, mode: usize) -> (Control, ErrorArm, Rc<Cell<bool>>) {
+    pub(crate) fn stop_after_issue(span: Span) -> (Control, ErrorArm, Rc<Cell<bool>>) {
         let armed = Rc::new(Cell::new(false));
         ERROR_ARM.with(|state| {
             assert!(state.borrow().is_none());
             *state.borrow_mut() = Some((span, armed.clone()));
         });
         let probe = armed.clone();
-        let control = Control::new(
-            Limits {
-                time_ms: (mode == 1).then_some(1),
-                memory_mib: (mode == 2).then_some(1),
-            },
-            move |_| Usage {
-                signal: (probe.get() && mode == 0).then_some(Signal::Term),
-                elapsed_ms: u128::from(probe.get() && mode == 1),
-                memory_mib: u128::from(probe.get() && mode == 2),
-            },
-        );
+        let control = Control::new(move |_| probe.get().then_some(Signal::Term));
         (control, ErrorArm, armed)
     }
     fn run(text: &str, change: bool, control: Control) -> Result<(), Failure> {
@@ -1599,7 +1524,7 @@ pub(super) mod candidate_priority_tests {
         }
     }
     #[test]
-    fn final_candidate_syntax_survives_budget_at_first_post_error_sample() {
+    fn final_candidate_syntax_stops_at_first_post_error_sample() {
         for (text, change, span) in [
             ("when true = ;", true, (12, 13)),
             ("forall x: Z .", false, (13, 13)),
@@ -1612,26 +1537,13 @@ pub(super) mod candidate_priority_tests {
             };
             assert_eq!(expected.code, Code::Syntax);
             assert_eq!(expected.location, Location::Law { span });
-            for mode in 0..3 {
-                let (control, _arm, observed) = stop_after_issue(span, mode);
-                let failure = run(text, change, control.clone()).unwrap_err();
-                assert!(observed.get(), "{text}: candidate error was not reached");
-                if mode == 0 {
-                    assert!(matches!(
-                        failure.0,
-                        CheckFailure::Stopped(StopReason::Cancelled(Signal::Term))
-                    ));
-                } else {
-                    let CheckFailure::Input(actual) = failure.0 else {
-                        panic!("{text}: final Syntax replaced by budget")
-                    };
-                    assert_eq!(actual, expected);
-                    assert!(matches!(
-                        control.stop_reason(),
-                        Some(StopReason::BudgetExhausted { .. })
-                    ));
-                }
-            }
+            let (control, _arm, observed) = stop_after_issue(span);
+            let failure = run(text, change, control.clone()).unwrap_err();
+            assert!(observed.get(), "{text}: candidate error was not reached");
+            assert!(matches!(
+                failure.0,
+                CheckFailure::Stopped(StopReason::Cancelled(Signal::Term))
+            ));
         }
     }
     #[test]
@@ -1642,16 +1554,14 @@ pub(super) mod candidate_priority_tests {
             // The earlier dot already has a syntactically valid domain/body.
             ("forall x: A . b.", false, (16, 16)),
         ] {
-            for mode in 0..3 {
-                let (control, _arm, observed) = stop_after_issue(span, mode);
-                let failure = run(text, change, control.clone()).unwrap_err();
-                assert!(observed.get(), "{text}: speculative error was not reached");
-                assert!(
-                    matches!(failure.0, CheckFailure::Stopped(_)),
-                    "{text}: speculative Syntax became final"
-                );
-                assert!(control.stop_reason().is_some());
-            }
+            let (control, _arm, observed) = stop_after_issue(span);
+            let failure = run(text, change, control.clone()).unwrap_err();
+            assert!(observed.get(), "{text}: speculative error was not reached");
+            assert!(
+                matches!(failure.0, CheckFailure::Stopped(_)),
+                "{text}: speculative Syntax became final"
+            );
+            assert!(control.stop_reason().is_some());
         }
     }
 }

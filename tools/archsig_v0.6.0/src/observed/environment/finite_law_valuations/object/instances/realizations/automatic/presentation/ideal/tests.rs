@@ -1,7 +1,6 @@
 use super::*;
 use crate::{
     construction::{construct, readings::object_reading_instances},
-    control::{Limits, Usage},
     result::Signal,
 };
 use std::{cell::Cell, rc::Rc};
@@ -10,7 +9,7 @@ mod fixture {
     include!("../../../../../../../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn reading(i: &CheckedInputs) -> ObjectReadingInstances {
     let base = construct(i, "Selected", "v", "root", &mut quiet()).unwrap();
@@ -512,33 +511,18 @@ fn changing_kind_indices_zero_points_or_entire_origin_never_satisfies_the_consum
         )
         .unwrap();
 }
-fn stopping(mode: usize, at: usize) -> Control {
+fn stopping(signal: Signal, at: usize) -> Control {
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    Control::new(
-        Limits {
-            time_ms: (mode == 2).then_some(1),
-            memory_mib: (mode == 3).then_some(1),
-        },
-        move |p| {
-            if p == Checkpoint::FiniteLawQuotient {
-                count.set(count.get() + 1);
-            }
-            let stop = count.get() >= at;
-            Usage {
-                signal: if stop && mode < 2 {
-                    Some(if mode == 0 { Signal::Int } else { Signal::Term })
-                } else {
-                    None
-                },
-                elapsed_ms: u128::from(stop && mode == 2),
-                memory_mib: u128::from(stop && mode == 3),
-            }
-        },
-    )
+    Control::new(move |p| {
+        if p == Checkpoint::FiniteLawQuotient {
+            count.set(count.get() + 1);
+        }
+        (count.get() >= at).then_some(signal)
+    })
 }
 #[test]
-fn interruptions_and_budgets_never_return_unfinished_ideals_or_generator_lists() {
+fn interruptions_never_return_unfinished_ideals_or_generator_lists() {
     let i = fixture::with_body(fixture::MAP, LAWS);
     let a = reading(&i);
     let result = run(&i, &a);
@@ -546,23 +530,23 @@ fn interruptions_and_budgets_never_return_unfinished_ideals_or_generator_lists()
     let o = object(&a, "root");
     let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
     let ideal = p.required_ideal(&mut quiet()).unwrap();
-    for mode in 0..4 {
+    for signal in [Signal::Int, Signal::Term] {
         for at in [1, 4, 10] {
             assert!(matches!(
-                p.witness_ideal(0, &mut stopping(mode, at)),
+                p.witness_ideal(0, &mut stopping(signal, at)),
                 Err(ValidationFailure::Stop(_))
             ));
             assert!(matches!(
-                p.required_ideal(&mut stopping(mode, at)),
+                p.required_ideal(&mut stopping(signal, at)),
                 Err(ValidationFailure::Stop(_))
             ));
         }
         assert!(matches!(
-            ideal.generators(&mut stopping(mode, 4)),
+            ideal.generators(&mut stopping(signal, 4)),
             Err(ValidationFailure::Stop(_))
         ));
         assert!(matches!(
-            ideal.is_zero(&mut stopping(mode, 4)),
+            ideal.is_zero(&mut stopping(signal, 4)),
             Err(ValidationFailure::Stop(_))
         ));
         assert!(matches!(
@@ -573,7 +557,7 @@ fn interruptions_and_budgets_never_return_unfinished_ideals_or_generator_lists()
                 FiniteObjectIdealKind::Obstruction,
                 &i,
                 &a,
-                &mut stopping(mode, 1)
+                &mut stopping(signal, 1)
             ),
             Err(ValidationFailure::Stop(_))
         ));

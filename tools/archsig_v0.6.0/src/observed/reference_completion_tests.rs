@@ -268,8 +268,8 @@ fn reference_completion_input_constraints_reject_unknown_duplicate_wrong_type_an
         .unwrap();
     }
 }
-fn stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::control::{Control, Usage};
+fn stop(phase: &'static str, at: usize) {
+    use crate::control::Control;
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(fixture::SCRIPT, false, false);
     let asks = [
@@ -285,19 +285,19 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
     assert_eq!(normal.answers[3].status, Decision::Established);
     let target = normal.prepared.inputs().law().declarations["RefCalc.equal"].span;
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |_| {
+    let mut control = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(input, &asks, &mut control).unwrap();
@@ -385,8 +385,8 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
 }
 #[test]
-fn reference_completion_coverage_memory_stop_keeps_cases_without_whole_claim() {
-    stop("completion_coverage", 0, 2)
+fn reference_completion_coverage_stop_keeps_cases_without_whole_claim() {
+    stop("completion_coverage", 0)
 }
 #[test]
 fn reference_completion_owner_expression_keeps_known_fiber_and_original_missing_proof() {

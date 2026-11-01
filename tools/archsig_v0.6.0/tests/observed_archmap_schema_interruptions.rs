@@ -1,7 +1,7 @@
 //! Schema helper の内部と入力不正を確定した後の停止優先順位。
 use crate::common;
 use archsig::{
-    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     input::{InputSources, InputStatus, check_inputs},
     observed::{PrepareFailure, prepare_observed},
     result::Signal,
@@ -34,27 +34,16 @@ fn sources(id: &str, path: &str, kind: &str) -> InputSources {
         map.into_bytes(),
     )
 }
-fn probe(at: Option<(usize, usize)>) -> (Control, Rc<Cell<usize>>) {
+fn probe(at: Option<usize>) -> (Control, Rc<Cell<usize>>) {
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
     (
-        Control::new(
-            Limits {
-                time_ms: at.filter(|(_, r)| *r == 1).map(|_| 1),
-                memory_mib: at.filter(|(_, r)| *r == 2).map(|_| 1),
-            },
-            move |point| {
-                if point == Checkpoint::ArchMapSchema {
-                    count.set(count.get() + 1);
-                }
-                let r = at.filter(|(n, _)| *n == count.get()).map(|(_, r)| r);
-                Usage {
-                    signal: (r == Some(0)).then_some(Signal::Term),
-                    elapsed_ms: u128::from(r == Some(1)),
-                    memory_mib: u128::from(r == Some(2)),
-                }
-            },
-        ),
+        Control::new(move |point| {
+            if point == Checkpoint::ArchMapSchema {
+                count.set(count.get() + 1);
+            }
+            (at == Some(count.get())).then_some(Signal::Term)
+        }),
         seen,
     )
 }
@@ -76,22 +65,20 @@ fn byte_preparation_reaches_each_id_character_and_relative_path_segment() {
     ] {
         let end = total(make());
         for at in [1, end / 2, end] {
-            for resource in 0..3 {
-                let (mut control, _) = probe(Some((at, resource)));
-                let failure =
-                    prepare_observed(make(), &["a=evaluate(R.one)"], &mut control).unwrap_err();
-                let PrepareFailure::Inputs(failure) = failure else {
-                    panic!("input failure")
-                };
-                assert_eq!(failure.status(), InputStatus::Interrupted);
-                assert!(!failure.primitives().is_empty());
-                assert!(!failure.declarations().is_empty());
-            }
+            let (mut control, _) = probe(Some(at));
+            let failure =
+                prepare_observed(make(), &["a=evaluate(R.one)"], &mut control).unwrap_err();
+            let PrepareFailure::Inputs(failure) = failure else {
+                panic!("input failure")
+            };
+            assert_eq!(failure.status(), InputStatus::Interrupted);
+            assert!(!failure.primitives().is_empty());
+            assert!(!failure.declarations().is_empty());
         }
     }
 }
 #[test]
-fn schema_version_and_relative_path_errors_outrank_later_budgets_but_not_signals() {
+fn schema_version_and_relative_path_errors_do_not_outrank_signals() {
     for (kind, path, status) in [
         ("version", "a", InputStatus::Unsupported),
         ("field", "a", InputStatus::Invalid),
@@ -101,35 +88,13 @@ fn schema_version_and_relative_path_errors_outrank_later_budgets_but_not_signals
         let baseline = check_inputs(make(), &mut Control::unlimited()).unwrap_err();
         assert_eq!(baseline.status(), status);
         let last = total(make());
-        for resource in 0..3 {
-            let (mut control, seen) = probe(Some((last, resource)));
-            let failure = check_inputs(make(), &mut control).unwrap_err();
-            assert_eq!(seen.get(), last);
-            if resource == 0 {
-                assert_eq!(failure.status(), InputStatus::Interrupted);
-                assert_eq!(
-                    control.stop_reason(),
-                    Some(StopReason::Cancelled(Signal::Term))
-                );
-            } else {
-                assert_eq!(failure.status(), status);
-                let mut expected_issues =
-                    vec![control.stop_reason().expect("observed budget").wire()];
-                expected_issues.extend_from_slice(baseline.issues());
-                assert_eq!(failure.issues(), expected_issues);
-                assert_eq!(
-                    control.stop_reason(),
-                    Some(StopReason::BudgetExhausted {
-                        resource: if resource == 1 {
-                            Resource::TimeMs
-                        } else {
-                            Resource::MemoryMib
-                        },
-                        limit: 1,
-                        observed: 1
-                    })
-                );
-            }
-        }
+        let (mut control, seen) = probe(Some(last));
+        let failure = check_inputs(make(), &mut control).unwrap_err();
+        assert_eq!(seen.get(), last);
+        assert_eq!(failure.status(), InputStatus::Interrupted);
+        assert_eq!(
+            control.stop_reason(),
+            Some(StopReason::Cancelled(Signal::Term))
+        );
     }
 }

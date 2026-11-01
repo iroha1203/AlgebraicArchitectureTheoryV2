@@ -730,7 +730,6 @@ mod tests {
     use super::*;
     use crate::result::Signal;
     use crate::{
-        control::{Limits, Usage},
         input::{InputSources, check_inputs},
         observed::result::Scalar,
     };
@@ -770,34 +769,15 @@ mod tests {
         .unwrap();
         (i, r)
     }
-    fn stop(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+    fn stop(point: Checkpoint, at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>) {
         let n = Rc::new(Cell::new(0_usize));
         let seen = Rc::clone(&n);
-        let c = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |p| {
-                if p == point {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() >= at;
-                Usage {
-                    elapsed_ms: u128::from(stop && mode == 0),
-                    memory_mib: u128::from(stop && mode == 1),
-                    signal: if stop {
-                        match mode {
-                            2 => Some(Signal::Int),
-                            3 => Some(Signal::Term),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    },
-                }
-            },
-        );
+        let c = Control::new(move |p| {
+            if p == point {
+                seen.set(seen.get() + 1);
+            }
+            (seen.get() >= at).then_some(signal)
+        });
         (c, n)
     }
     #[test]
@@ -863,19 +843,19 @@ mod tests {
         ] {
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut c = Control::new(Limits::default(), move |p| {
+            let mut c = Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1)
                 };
-                Usage::default()
+                None
             });
             let full =
                 object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &mut c).unwrap();
             let total = count.get();
             assert!(total > 0);
             for at in [1, total.div_ceil(2), total] {
-                for mode in 0..4 {
-                    let (mut c, n) = stop(point, at, mode);
+                for signal in [Signal::Int, Signal::Term] {
+                    let (mut c, n) = stop(point, at, signal);
                     let failure =
                         object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &mut c)
                             .unwrap_err();
@@ -948,17 +928,17 @@ mod tests {
             let point = full.comparisons[0].points[index].clone();
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut measure = Control::new(Limits::default(), move |p| {
+            let mut measure = Control::new(move |p| {
                 if p == Checkpoint::FiniteIteration {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             });
             let mut measured = example().1;
             compare_point(&mut measured, 0, point.clone(), false, &mut measure).unwrap();
             let total = count.get();
             assert!(total > 0);
-            let (mut c, n) = stop(Checkpoint::FiniteIteration, total, 2);
+            let (mut c, n) = stop(Checkpoint::FiniteIteration, total, Signal::Int);
             let result = compare_point(&mut partial, 0, point, index == 1, &mut c);
             assert!(matches!(result, Err(ConstructionFailure::Stopped(_))));
             assert_eq!(n.get(), total);
@@ -1020,11 +1000,11 @@ mod tests {
             let point = r.comparisons[0].points[0].clone();
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let c = Control::new(Limits::default(), move |p| {
+            let c = Control::new(move |p| {
                 if p == Checkpoint::FiniteIteration {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             });
             let mut published = None;
             value_equality::equal_retained(
@@ -1041,15 +1021,15 @@ mod tests {
             // 最初の完成通知直後と、外側の最後の停止確認の両方で保持する。
             let first_after_completion = published.unwrap() + 1;
             assert!(first_after_completion <= total);
-            for (at, mode) in [first_after_completion, total]
+            for (at, signal) in [first_after_completion, total]
                 .into_iter()
-                .flat_map(|at| (0..4).map(move |mode| (at, mode)))
+                .flat_map(|at| [Signal::Int, Signal::Term].map(move |signal| (at, signal)))
             {
                 r.comparisons[0].points.clear();
                 r.comparisons[0].outcome = None;
                 r.complete = false;
                 r.outcome = None;
-                let (mut c, n) = stop(Checkpoint::FiniteIteration, at, mode);
+                let (mut c, n) = stop(Checkpoint::FiniteIteration, at, signal);
                 assert!(matches!(
                     compare_point(&mut r, 0, point.clone(), true, &mut c),
                     Err(ConstructionFailure::Stopped(_))
@@ -1109,11 +1089,11 @@ mod tests {
             let point = r.comparisons[0].points[0].clone();
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut c = Control::new(Limits::default(), move |p| {
+            let mut c = Control::new(move |p| {
                 if p == Checkpoint::FiniteIteration {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             });
             compare_point(&mut r, 0, point.clone(), true, &mut c).unwrap();
             let at = count.get()
@@ -1122,12 +1102,12 @@ mod tests {
                 } else {
                     1
                 };
-            for mode in 0..4 {
+            for signal in [Signal::Int, Signal::Term] {
                 r.comparisons[0].points.clear();
                 r.comparisons[0].outcome = None;
                 r.complete = false;
                 r.outcome = None;
-                let (mut c, n) = stop(Checkpoint::FiniteIteration, at, mode);
+                let (mut c, n) = stop(Checkpoint::FiniteIteration, at, signal);
                 assert!(matches!(
                     compare_point(&mut r, 0, point.clone(), true, &mut c),
                     Err(ConstructionFailure::Stopped(_))
@@ -1176,14 +1156,18 @@ mod tests {
         let (i, r) = example();
         let count = Rc::new(Cell::new(0_usize));
         let seen = Rc::clone(&count);
-        let mut c = Control::new(Limits::default(), move |p| {
+        let mut c = Control::new(move |p| {
             if p == Checkpoint::ObjectViewCompatibility {
                 seen.set(seen.get() + 1)
             };
-            Usage::default()
+            None
         });
         object_view_compatibility(Arc::clone(&i), "Selected", "v", "root", &mut c).unwrap();
-        let (mut c, n) = stop(Checkpoint::ObjectViewCompatibility, count.get() + 1, 3);
+        let (mut c, n) = stop(
+            Checkpoint::ObjectViewCompatibility,
+            count.get() + 1,
+            Signal::Term,
+        );
         let f = r.recheck(Arc::clone(&i), &mut c).unwrap_err();
         let p = f.partial().unwrap();
         assert!(p.is_complete());
@@ -1198,7 +1182,7 @@ mod tests {
     fn a_completed_counterexample_remains_a_refutation_during_later_cancellation() {
         let i =
             inputs("view family(c:Part,b:Bool):Bool=if b then false else (forall a:Root . false);");
-        let (mut c, n) = stop(Checkpoint::ObjectViewCompatibilityPoint, 1, 2);
+        let (mut c, n) = stop(Checkpoint::ObjectViewCompatibilityPoint, 1, Signal::Int);
         let failure = object_view_compatibility(i, "Selected", "v", "root", &mut c).unwrap_err();
         let r = failure.partial().unwrap();
         assert!(!r.is_complete());

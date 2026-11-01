@@ -1,7 +1,7 @@
-//! 必須の構文・参照・schema拒否が確定した直後の予算優先と元診断を検査する。
+//! 必須の構文・参照・schema拒否が確定した直後にも、取消の停止が優先されることを検査する。
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     input::{InputSources, InputStatus, check_inputs},
     observed::{PrepareFailure, prepare_observed, request::ResolveFailure},
     result::Signal,
@@ -17,26 +17,15 @@ fn sources(law: &str, map: &str) -> InputSources {
         map.as_bytes().to_vec(),
     )
 }
-fn probe(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+fn probe(point: Checkpoint, at: usize) -> (Control, Rc<Cell<usize>>) {
     let visits = Rc::new(Cell::new(0));
     let seen = visits.clone();
-    let control = Control::new(
-        Limits {
-            time_ms: (mode == 1).then_some(1),
-            memory_mib: (mode == 2).then_some(1),
-        },
-        move |current| {
-            if current == point {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() >= at;
-            Usage {
-                signal: (stop && mode == 0).then_some(Signal::Term),
-                elapsed_ms: u128::from(stop && mode == 1),
-                memory_mib: u128::from(stop && mode == 2),
-            }
-        },
-    );
+    let control = Control::new(move |current| {
+        if current == point {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= at).then_some(Signal::Term)
+    });
     (control, visits)
 }
 fn request_issues(failure: &PrepareFailure) -> Vec<Json> {
@@ -52,77 +41,35 @@ fn request_issues(failure: &PrepareFailure) -> Vec<Json> {
 fn assert_request_priority(law: &str, ask: &str, point: Checkpoint, at: usize) {
     let normal =
         prepare_observed(sources(law, MAP), &[ask], &mut Control::unlimited()).unwrap_err();
-    let expected = request_issues(&normal);
-    for mode in 0..3 {
-        let (mut control, visits) = probe(point, at, mode);
-        let failure = prepare_observed(sources(law, MAP), &[ask], &mut control).unwrap_err();
-        assert_eq!(visits.get(), at, "{ask}");
-        if mode == 0 {
-            assert!(matches!(
-                failure,
-                PrepareFailure::Requests {
-                    failure: ResolveFailure::Interrupted {
-                        reason: StopReason::Cancelled(Signal::Term)
-                    },
-                    ..
-                }
-            ));
-        } else {
-            assert_eq!(
-                request_issues(&failure),
-                expected,
-                "original request/argument/message: {ask}"
-            );
-            let PrepareFailure::Requests {
-                inputs,
-                failure:
-                    ResolveFailure::Invalid {
-                        requests,
-                        stop_reason,
-                        ..
-                    },
-            } = &failure
-            else {
-                panic!("invalid request")
-            };
-            assert!(requests.is_empty());
-            assert!(inputs.law().declarations().contains_key("CountCheck.amount"));
-            assert_eq!(inputs.archmap().snapshots()[0].subjects[0].id, "s");
-            assert_eq!(stop_reason.as_ref(), control.stop_reason().as_ref());
-            assert!(matches!(
-                stop_reason,
-                Some(StopReason::BudgetExhausted { .. })
-            ));
-            let Json::Obj(ref wire) = failure.wire().unwrap() else {
-                panic!("wire")
-            };
-            assert_eq!(wire["status"], Json::str("invalid"));
-            let mut expected_wire = vec![stop_reason.as_ref().unwrap().wire()];
-            expected_wire.extend(expected.clone());
-            assert_eq!(wire["issues"], Json::Arr(expected_wire));
-            for key in ["requests", "answers", "nodes"] {
-                assert_eq!(wire[key], Json::Arr(vec![]));
-            }
+    assert!(!request_issues(&normal).is_empty());
+    let (mut control, visits) = probe(point, at);
+    let failure = prepare_observed(sources(law, MAP), &[ask], &mut control).unwrap_err();
+    assert_eq!(visits.get(), at, "{ask}");
+    assert!(matches!(
+        failure,
+        PrepareFailure::Requests {
+            failure: ResolveFailure::Interrupted {
+                reason: StopReason::Cancelled(Signal::Term)
+            },
+            ..
         }
-    }
+    ));
 }
 #[test]
-fn required_delimiter_mismatch_keeps_usage_at_the_first_false_post_from_bytes() {
+fn required_delimiter_mismatch_yields_to_cancellation_at_the_first_false_post_from_bytes() {
     // 11は拒否確定前、12は '=' の不一致を確定した直後のcheckpoint。
     assert_request_priority(LAW, "a!", Checkpoint::RequestSyntax, 12);
-    for mode in 0..3 {
-        let (mut control, _) = probe(Checkpoint::RequestSyntax, 11, mode);
-        assert!(matches!(
-            prepare_observed(sources(LAW, MAP), &["a!"], &mut control),
-            Err(PrepareFailure::Requests {
-                failure: ResolveFailure::Interrupted { .. },
-                ..
-            })
-        ));
-    }
+    let (mut control, _) = probe(Checkpoint::RequestSyntax, 11);
+    assert!(matches!(
+        prepare_observed(sources(LAW, MAP), &["a!"], &mut control),
+        Err(PrepareFailure::Requests {
+            failure: ResolveFailure::Interrupted { .. },
+            ..
+        })
+    ));
 }
 #[test]
-fn required_declaration_and_binding_searches_keep_their_final_rejection_from_bytes() {
+fn required_declaration_and_binding_searches_yield_to_cancellation_from_bytes() {
     // Repeat the complete first reading under a different name, without a second header.
     let extra = LAW
         .split_once("reading CountCheck")
@@ -141,7 +88,7 @@ fn required_declaration_and_binding_searches_keep_their_final_rejection_from_byt
         (LAW, "a=evaluate(CountCheck.amount,s=@v/absent)"),
         (LAW, "a=evaluate(CountCheck.amount)"),
     ] {
-        let (mut baseline, total) = probe(Checkpoint::RequestBinding, usize::MAX, 0);
+        let (mut baseline, total) = probe(Checkpoint::RequestBinding, usize::MAX);
         prepare_observed(sources(law, MAP), &[ask], &mut baseline).unwrap_err();
         assert_request_priority(law, ask, Checkpoint::RequestBinding, total.get());
     }
@@ -158,17 +105,15 @@ fn optional_selector_mismatches_and_untried_search_candidates_still_interrupt() 
         // The first short-name candidate is CountAudit.bounded, before CountCheck.amount.
         ("a=evaluate(amount,s=@v/s)", Checkpoint::RequestBinding, 6),
     ] {
-        for mode in 0..3 {
-            let (mut control, visits) = probe(point, at, mode);
-            assert!(matches!(
-                prepare_observed(sources(LAW, MAP), &[ask], &mut control),
-                Err(PrepareFailure::Requests {
-                    failure: ResolveFailure::Interrupted { .. },
-                    ..
-                })
-            ));
-            assert_eq!(visits.get(), at);
-        }
+        let (mut control, visits) = probe(point, at);
+        assert!(matches!(
+            prepare_observed(sources(LAW, MAP), &[ask], &mut control),
+            Err(PrepareFailure::Requests {
+                failure: ResolveFailure::Interrupted { .. },
+                ..
+            })
+        ));
+        assert_eq!(visits.get(), at);
     }
 }
 #[test]
@@ -205,7 +150,7 @@ fn required_archmap_schema_rejections_keep_original_locations_after_the_first_fa
     ];
     for (map, trailing_posts) in cases {
         assert_ne!(map, MAP, "fixture mutation");
-        let (mut baseline, total) = probe(Checkpoint::ArchMapSchema, usize::MAX, 0);
+        let (mut baseline, total) = probe(Checkpoint::ArchMapSchema, usize::MAX);
         let normal = check_inputs(sources(LAW, &map), &mut baseline).unwrap_err();
         assert!(matches!(
             normal.status(),
@@ -213,32 +158,12 @@ fn required_archmap_schema_rejections_keep_original_locations_after_the_first_fa
         ));
         // Start at the actual invalid-character/final-candidate post, before outer wrappers.
         for at in total.get() - trailing_posts..=total.get() {
-            for mode in 0..3 {
-                let (mut control, visits) = probe(Checkpoint::ArchMapSchema, at, mode);
-                let failure = check_inputs(sources(LAW, &map), &mut control).unwrap_err();
-                assert_eq!(visits.get(), at);
-                assert!(!failure.declarations().is_empty());
-                assert!(!failure.vocabularies().is_empty());
-                if mode == 0 {
-                    assert_eq!(failure.status(), InputStatus::Interrupted);
-                } else {
-                    assert_eq!(
-                        failure.status(),
-                        normal.status(),
-                        "{map} at {at}/{}",
-                        total.get()
-                    );
-                    let reason = control.stop_reason().expect("budget sampled");
-                    assert!(matches!(reason, StopReason::BudgetExhausted { .. }));
-                    let mut expected = vec![reason.wire()];
-                    expected.extend_from_slice(normal.issues());
-                    assert_eq!(
-                        failure.issues(),
-                        expected,
-                        "original pointer/message at {at}"
-                    );
-                }
-            }
+            let (mut control, visits) = probe(Checkpoint::ArchMapSchema, at);
+            let failure = check_inputs(sources(LAW, &map), &mut control).unwrap_err();
+            assert_eq!(visits.get(), at);
+            assert!(!failure.declarations().is_empty());
+            assert!(!failure.vocabularies().is_empty());
+            assert_eq!(failure.status(), InputStatus::Interrupted);
         }
     }
 }

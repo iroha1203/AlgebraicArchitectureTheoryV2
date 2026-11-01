@@ -116,11 +116,10 @@ mod tests {
     use super::*;
     use crate::{
         construction::{construct, readings::object_reading_instances},
-        control::{Limits, Usage},
         input::{InputSources, check_inputs},
     };
     fn quiet() -> Control {
-        Control::new(Limits::default(), |_| Usage::default())
+        Control::unlimited()
     }
 
     #[test]

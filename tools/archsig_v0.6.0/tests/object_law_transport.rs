@@ -5,7 +5,7 @@ use archsig::{
         maps::{DeclarationCorrespondence, correspondence, declaration_correspondence},
         readings::object_reading_instances,
     },
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         object_evaluate::ObjectEvaluationOutcome,
@@ -21,7 +21,7 @@ const D: &[u8] = include_bytes!("fixtures/object-law-transport.atoms.json");
 const L: &str = include_str!("fixtures/object-law-transport.law");
 const A: &str = include_str!("fixtures/object-view-transport.archmap.json");
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
@@ -332,11 +332,11 @@ fn stopped_completion_reading_keeps_the_complete_source_dag_without_a_partial_gu
         &d,
         o,
         n,
-        &mut Control::new(Limits::default(), move |p| {
+        &mut Control::new(move |p| {
             if p == Checkpoint::ObjectLawTransport {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         }),
     )
     .unwrap();
@@ -344,34 +344,15 @@ fn stopped_completion_reading_keeps_the_complete_source_dag_without_a_partial_gu
     assert!(total >= 8);
     // 両補完caseの読取り。後続はsource後・target後・比較後の三checkpoint。
     for at in [total - 4, total - 3] {
-        for mode in 0..4 {
+        for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: Some(1),
-                },
-                move |p| {
-                    if p == Checkpoint::ObjectLawTransport {
-                        seen.set(seen.get() + 1);
-                    }
-                    let stop = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: if stop {
-                            match mode {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
+            let mut c = Control::new(move |p| {
+                if p == Checkpoint::ObjectLawTransport {
+                    seen.set(seen.get() + 1);
+                }
+                (seen.get() >= at).then_some(signal)
+            });
             let Error::Stopped {
                 reason,
                 operation,
@@ -549,43 +530,24 @@ fn stopping_inside_target_expression_keeps_completed_source_and_partial_target()
         &d,
         o,
         n,
-        &mut Control::new(Limits::default(), move |p| {
+        &mut Control::new(move |p| {
             if p == Checkpoint::ObjectLawTransport {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         }),
     )
     .unwrap();
     let source_done = count.get() - 2;
-    for mode in 0..4 {
+    for signal in [Signal::Int, Signal::Term] {
         let phase = Rc::new(Cell::new(0));
         let seen = phase.clone();
-        let mut c = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |p| {
-                if p == Checkpoint::ObjectLawTransport {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = p == Checkpoint::Expression && seen.get() >= source_done;
-                Usage {
-                    elapsed_ms: u128::from(stop && mode == 0),
-                    memory_mib: u128::from(stop && mode == 1),
-                    signal: if stop {
-                        match mode {
-                            2 => Some(Signal::Int),
-                            3 => Some(Signal::Term),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    },
-                }
-            },
-        );
+        let mut c = Control::new(move |p| {
+            if p == Checkpoint::ObjectLawTransport {
+                seen.set(seen.get() + 1);
+            }
+            (p == Checkpoint::Expression && seen.get() >= source_done).then_some(signal)
+        });
         let Error::Stopped {
             reason,
             operation,
@@ -617,7 +579,7 @@ fn stopping_inside_target_expression_keeps_completed_source_and_partial_target()
 }
 
 #[test]
-fn fixed_transport_checkpoints_latch_time_memory_and_cancellation() {
+fn fixed_transport_checkpoints_latch_cancellation() {
     let i = inputs(L, A);
     let d = declarations(&i);
     let (o, n) = indices(&i, "p", "bounded", "p");
@@ -633,11 +595,11 @@ fn fixed_transport_checkpoints_latch_time_memory_and_cancellation() {
             &d,
             o,
             n,
-            &mut Control::new(Limits::default(), move |p| {
+            &mut Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             }),
         )
         .unwrap();
@@ -647,34 +609,15 @@ fn fixed_transport_checkpoints_latch_time_memory_and_cancellation() {
         positions.sort();
         positions.dedup();
         for at in positions {
-            for mode in 0..4 {
+            for signal in [Signal::Int, Signal::Term] {
                 let count = Rc::new(Cell::new(0));
                 let seen = count.clone();
-                let mut c = Control::new(
-                    Limits {
-                        time_ms: Some(1),
-                        memory_mib: Some(1),
-                    },
-                    move |p| {
-                        if p == point {
-                            seen.set(seen.get() + 1);
-                        }
-                        let stop = seen.get() >= at;
-                        Usage {
-                            elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
-                            memory_mib: if stop && mode == 1 { 1 } else { 0 },
-                            signal: if stop {
-                                match mode {
-                                    2 => Some(Signal::Int),
-                                    3 => Some(Signal::Term),
-                                    _ => None,
-                                }
-                            } else {
-                                None
-                            },
-                        }
-                    },
-                );
+                let mut c = Control::new(move |p| {
+                    if p == point {
+                        seen.set(seen.get() + 1);
+                    }
+                    (seen.get() >= at).then_some(signal)
+                });
                 let failure = object_law_transport(Arc::clone(&i), &d, o, n, &mut c).unwrap_err();
                 let reason = match failure {
                     Error::Construction(ConstructionFailure::Stopped(reason)) => reason,
@@ -720,45 +663,26 @@ fn stopped_law_transport_retains_completed_dags_truth_and_only_completed_decisio
             &d,
             o,
             n,
-            &mut Control::new(Limits::default(), move |p| {
+            &mut Control::new(move |p| {
                 if p == Checkpoint::ObjectLawTransport {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             }),
         )
         .unwrap();
         let total = count.get();
         assert!(total >= 6);
         for at in [total - 2, total - 1, total] {
-            for mode in 0..4 {
+            for signal in [Signal::Int, Signal::Term] {
                 let count = Rc::new(Cell::new(0));
                 let seen = count.clone();
-                let mut c = Control::new(
-                    Limits {
-                        time_ms: Some(1),
-                        memory_mib: Some(1),
-                    },
-                    move |p| {
-                        if p == Checkpoint::ObjectLawTransport {
-                            seen.set(seen.get() + 1);
-                        }
-                        let stop = seen.get() >= at;
-                        Usage {
-                            elapsed_ms: u128::from(stop && mode == 0),
-                            memory_mib: u128::from(stop && mode == 1),
-                            signal: if stop {
-                                match mode {
-                                    2 => Some(Signal::Int),
-                                    3 => Some(Signal::Term),
-                                    _ => None,
-                                }
-                            } else {
-                                None
-                            },
-                        }
-                    },
-                );
+                let mut c = Control::new(move |p| {
+                    if p == Checkpoint::ObjectLawTransport {
+                        seen.set(seen.get() + 1);
+                    }
+                    (seen.get() >= at).then_some(signal)
+                });
                 let Error::Stopped {
                     reason,
                     operation,
@@ -898,34 +822,15 @@ fn target_object_and_instance_failures_keep_the_base_configuration_operation() {
     r.operation().recheck(&i, &mut quiet()).unwrap();
 }
 
-fn stop_at(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+fn stop_at(point: Checkpoint, at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let c = Control::new(
-        Limits {
-            time_ms: Some(1),
-            memory_mib: Some(1),
-        },
-        move |p| {
-            if p == point {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() >= at;
-            Usage {
-                elapsed_ms: u128::from(stop && mode == 0),
-                memory_mib: u128::from(stop && mode == 1),
-                signal: if stop {
-                    match mode {
-                        2 => Some(Signal::Int),
-                        3 => Some(Signal::Term),
-                        _ => None,
-                    }
-                } else {
-                    None
-                },
-            }
-        },
-    );
+    let c = Control::new(move |p| {
+        if p == point {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= at).then_some(signal)
+    });
     (c, count)
 }
 
@@ -939,8 +844,8 @@ fn stopped_structure_transport_reaches_the_law_caller() {
         Checkpoint::ConfigurationTransportObject,
         Checkpoint::ObjectInstances,
     ] {
-        for mode in 0..4 {
-            let (mut c, probes) = stop_at(point, 1, mode);
+        for signal in [Signal::Int, Signal::Term] {
+            let (mut c, probes) = stop_at(point, 1, signal);
             let Error::Stopped {
                 reason,
                 operation,

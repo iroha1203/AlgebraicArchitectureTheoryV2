@@ -739,7 +739,6 @@ mod tests {
     use super::*;
     use crate::result::Signal;
     use crate::{
-        control::{Limits, Usage},
         input::{InputSources, check_inputs},
         observed::result::Scalar,
     };
@@ -777,34 +776,15 @@ mod tests {
         let r = evaluate(Arc::clone(&i), &mut Control::unlimited()).unwrap();
         (i, r)
     }
-    fn stop(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+    fn stop(point: Checkpoint, at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>) {
         let n = Rc::new(Cell::new(0_usize));
         let seen = Rc::clone(&n);
-        let c = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |p| {
-                if p == point {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() >= at;
-                Usage {
-                    elapsed_ms: u128::from(stop && mode == 0),
-                    memory_mib: u128::from(stop && mode == 1),
-                    signal: if stop {
-                        match mode {
-                            2 => Some(Signal::Int),
-                            3 => Some(Signal::Term),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    },
-                }
-            },
-        );
+        let c = Control::new(move |p| {
+            if p == point {
+                seen.set(seen.get() + 1);
+            }
+            (seen.get() >= at).then_some(signal)
+        });
         (c, n)
     }
     #[test]
@@ -892,18 +872,18 @@ mod tests {
         ] {
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut c = Control::new(Limits::default(), move |p| {
+            let mut c = Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1)
                 };
-                Usage::default()
+                None
             });
             let full = evaluate(Arc::clone(&i), &mut c).unwrap();
             let total = count.get();
             assert!(total > 0);
             for at in [1, total.div_ceil(2), total] {
-                for mode in 0..4 {
-                    let (mut c, n) = stop(point, at, mode);
+                for signal in [Signal::Int, Signal::Term] {
+                    let (mut c, n) = stop(point, at, signal);
                     let f = evaluate(Arc::clone(&i), &mut c).unwrap_err();
                     assert!(c.stop_reason().is_some());
                     if let Some(p) = f.partial() {
@@ -949,14 +929,18 @@ mod tests {
         let (i, r) = example();
         let count = Rc::new(Cell::new(0_usize));
         let seen = Rc::clone(&count);
-        let mut c = Control::new(Limits::default(), move |p| {
+        let mut c = Control::new(move |p| {
             if p == Checkpoint::ObjectLawCompatibility {
                 seen.set(seen.get() + 1)
             };
-            Usage::default()
+            None
         });
         evaluate(Arc::clone(&i), &mut c).unwrap();
-        let (mut c, n) = stop(Checkpoint::ObjectLawCompatibility, count.get() + 1, 3);
+        let (mut c, n) = stop(
+            Checkpoint::ObjectLawCompatibility,
+            count.get() + 1,
+            Signal::Term,
+        );
         let f = r.recheck(Arc::clone(&i), &mut c).unwrap_err();
         let p = f.partial().unwrap();
         assert!(p.is_complete());
@@ -971,7 +955,7 @@ mod tests {
         let i = inputs(
             "law required family(c:Part,b:Bool):if (forall a:Root . false) then b else not b;",
         );
-        let (mut c, n) = stop(Checkpoint::ObjectLawCompatibilityPoint, 1, 2);
+        let (mut c, n) = stop(Checkpoint::ObjectLawCompatibilityPoint, 1, Signal::Int);
         let f = evaluate(i, &mut c).unwrap_err();
         let r = f.partial().unwrap();
         assert!(!r.complete);

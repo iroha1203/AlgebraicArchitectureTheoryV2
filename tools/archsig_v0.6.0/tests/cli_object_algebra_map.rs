@@ -893,17 +893,14 @@ reading After {{{vocabulary} local here(t:State) reads t.free;}}"#)).unwrap();
 fn interruption_during_additional_transport_keeps_the_checked_operation() {
     use archsig::result::Signal;
     use archsig::{
-        control::{Checkpoint, Control, Limits, Usage},
+        control::{Checkpoint, Control},
         input::InputSources,
         observed::evaluate_observed_bytes,
     };
     // 停止理由の区別はcontrol層で確かめる。ここでは移送中の停止の1種だけを見る。
-    let mut control = Control::new(Limits::default(), |p| {
+    let mut control = Control::new(|p| {
         let stop = p == Checkpoint::ConfigurationTransportGenerator;
-        Usage {
-            signal: stop.then_some(Signal::Int),
-            ..Usage::default()
-        }
+        stop.then_some(Signal::Int)
     });
     let result = evaluate_observed_bytes(
         InputSources::from_bytes(

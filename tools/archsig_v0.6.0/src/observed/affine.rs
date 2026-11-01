@@ -1219,8 +1219,6 @@ pub(crate) fn universal_equality(
     })
 }
 
-/// 正規化の実処理を固定点で中断する試験専用通知。時間・RSSは測定しない。
-
 /// 元Termの引数位置を独立座標にする。外側の観測missing/parameterを供給しない。
 pub(super) fn term_argument(key: TermArgument, c: &Control) -> Result<Form, ValidationFailure> {
     controlled(c, || {
@@ -1328,10 +1326,9 @@ pub(crate) fn with_observer<T>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::control::{Limits, Usage};
 
     fn control() -> Control {
-        Control::new(Limits::default(), |_| Usage::default())
+        Control::unlimited()
     }
 
     fn binder(kind: NumberType) -> Parameter {
@@ -1827,7 +1824,7 @@ mod tests {
 
     #[test]
     fn partial_forall_control_preserves_free_predicate_and_freezes() {
-        use crate::control::{Resource, StopReason};
+        use crate::control::StopReason;
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
 
@@ -1848,79 +1845,52 @@ mod tests {
                 .value,
             None
         );
-        for mode in 0..3 {
-            let ready = Rc::new(Cell::new(false));
-            let calls = Rc::new(Cell::new(0usize));
-            let notifications = Rc::new(Cell::new(0usize));
-            let probe_ready = ready.clone();
-            let probe_calls = calls.clone();
-            let controlled = Control::new(
-                Limits {
-                    time_ms: (mode == 1).then_some(5),
-                    memory_mib: (mode == 2).then_some(5),
-                },
-                move |_| {
-                    probe_calls.set(probe_calls.get() + 1);
-                    if !probe_ready.get() {
-                        return Usage::default();
-                    }
-                    Usage {
-                        signal: (mode == 0).then_some(Signal::Int),
-                        elapsed_ms: if mode == 1 { 7 } else { 0 },
-                        memory_mib: if mode == 2 { 7 } else { 0 },
-                    }
-                },
-            );
-            let expected = match mode {
-                0 => StopReason::Cancelled(Signal::Int),
-                1 => StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 5,
-                    observed: 7,
-                },
-                _ => StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 5,
-                    observed: 7,
-                },
-            };
-            let seen = notifications.clone();
-            with_observer(
-                move |point| {
-                    seen.set(seen.get() + 1);
-                    if point == TestPoint::PartialUniversal {
-                        ready.set(true);
-                    }
-                },
-                || {
-                    assert!(
-                        matches!(partial_forall(Some(&lhs), Some(&y_form), &bound, &controlled),
-                    Err(ValidationFailure::Stop(reason)) if reason == expected)
-                    );
-                    assert_eq!(controlled.stop_reason(), Some(expected.clone()));
-                    let frozen_calls = calls.get();
-                    let frozen_notifications = notifications.get();
-                    assert!(
-                        matches!(partial_forall(Some(&lhs), Some(&y_form), &bound, &controlled),
-                    Err(ValidationFailure::Stop(reason)) if reason == expected)
-                    );
-                    assert_eq!(calls.get(), frozen_calls);
-                    assert_eq!(notifications.get(), frozen_notifications);
-                },
-            );
-            assert_eq!(
-                partial_forall(Some(&lhs), Some(&y_form), &bound, &baseline)
-                    .unwrap()
-                    .unwrap()
-                    .difference,
-                x_form
-            );
-        }
+        let ready = Rc::new(Cell::new(false));
+        let calls = Rc::new(Cell::new(0usize));
+        let notifications = Rc::new(Cell::new(0usize));
+        let probe_ready = ready.clone();
+        let probe_calls = calls.clone();
+        let controlled = Control::new(move |_| {
+            probe_calls.set(probe_calls.get() + 1);
+            probe_ready.get().then_some(Signal::Int)
+        });
+        let expected = StopReason::Cancelled(Signal::Int);
+        let seen = notifications.clone();
+        with_observer(
+            move |point| {
+                seen.set(seen.get() + 1);
+                if point == TestPoint::PartialUniversal {
+                    ready.set(true);
+                }
+            },
+            || {
+                assert!(
+                    matches!(partial_forall(Some(&lhs), Some(&y_form), &bound, &controlled),
+                Err(ValidationFailure::Stop(reason)) if reason == expected)
+                );
+                assert_eq!(controlled.stop_reason(), Some(expected.clone()));
+                let frozen_calls = calls.get();
+                let frozen_notifications = notifications.get();
+                assert!(
+                    matches!(partial_forall(Some(&lhs), Some(&y_form), &bound, &controlled),
+                Err(ValidationFailure::Stop(reason)) if reason == expected)
+                );
+                assert_eq!(calls.get(), frozen_calls);
+                assert_eq!(notifications.get(), frozen_notifications);
+            },
+        );
+        assert_eq!(
+            partial_forall(Some(&lhs), Some(&y_form), &bound, &baseline)
+                .unwrap()
+                .unwrap()
+                .difference,
+            x_form
+        );
     }
 
     #[test]
     fn universal_control_freezes_at_gcd_and_proof_selection() {
-        use crate::control::{Resource, StopReason};
+        use crate::control::StopReason;
         use crate::result::Signal;
         use std::{cell::Cell, rc::Rc};
 
@@ -1940,65 +1910,38 @@ mod tests {
             Some(false)
         );
         for point in [TestPoint::Gcd, TestPoint::Universal] {
-            for mode in 0..3 {
-                let ready = Rc::new(Cell::new(false));
-                let calls = Rc::new(Cell::new(0usize));
-                let notifications = Rc::new(Cell::new(0usize));
-                let probe_ready = ready.clone();
-                let probe_calls = calls.clone();
-                let controlled = Control::new(
-                    Limits {
-                        time_ms: (mode == 1).then_some(5),
-                        memory_mib: (mode == 2).then_some(5),
-                    },
-                    move |_| {
-                        probe_calls.set(probe_calls.get() + 1);
-                        if !probe_ready.get() {
-                            return Usage::default();
-                        }
-                        Usage {
-                            signal: (mode == 0).then_some(Signal::Int),
-                            elapsed_ms: if mode == 1 { 7 } else { 0 },
-                            memory_mib: if mode == 2 { 7 } else { 0 },
-                        }
-                    },
-                );
-                let expected = match mode {
-                    0 => StopReason::Cancelled(Signal::Int),
-                    1 => StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 5,
-                        observed: 7,
-                    },
-                    _ => StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 5,
-                        observed: 7,
-                    },
-                };
-                let seen = notifications.clone();
-                with_observer(
-                    move |actual| {
-                        seen.set(seen.get() + 1);
-                        if actual == point {
-                            ready.set(true);
-                        }
-                    },
-                    || {
-                        assert!(
-                            matches!(universal_equality(Some(&form), Some(&zero), &[], &controlled), Err(ValidationFailure::Stop(reason)) if reason == expected)
-                        );
-                        let frozen_calls = calls.get();
-                        let frozen_notifications = notifications.get();
-                        assert_eq!(controlled.stop_reason(), Some(expected.clone()));
-                        assert!(
-                            matches!(universal_equality(Some(&form), Some(&zero), &[], &controlled), Err(ValidationFailure::Stop(reason)) if reason == expected)
-                        );
-                        assert_eq!(calls.get(), frozen_calls);
-                        assert_eq!(notifications.get(), frozen_notifications);
-                    },
-                );
-            }
+            let ready = Rc::new(Cell::new(false));
+            let calls = Rc::new(Cell::new(0usize));
+            let notifications = Rc::new(Cell::new(0usize));
+            let probe_ready = ready.clone();
+            let probe_calls = calls.clone();
+            let controlled = Control::new(move |_| {
+                probe_calls.set(probe_calls.get() + 1);
+                probe_ready.get().then_some(Signal::Int)
+            });
+            let expected = StopReason::Cancelled(Signal::Int);
+            let seen = notifications.clone();
+            with_observer(
+                move |actual| {
+                    seen.set(seen.get() + 1);
+                    if actual == point {
+                        ready.set(true);
+                    }
+                },
+                || {
+                    assert!(
+                        matches!(universal_equality(Some(&form), Some(&zero), &[], &controlled), Err(ValidationFailure::Stop(reason)) if reason == expected)
+                    );
+                    let frozen_calls = calls.get();
+                    let frozen_notifications = notifications.get();
+                    assert_eq!(controlled.stop_reason(), Some(expected.clone()));
+                    assert!(
+                        matches!(universal_equality(Some(&form), Some(&zero), &[], &controlled), Err(ValidationFailure::Stop(reason)) if reason == expected)
+                    );
+                    assert_eq!(calls.get(), frozen_calls);
+                    assert_eq!(notifications.get(), frozen_notifications);
+                },
+            );
         }
     }
 }

@@ -1,7 +1,7 @@
 //! AC4の非再帰view呼出し: 三入力byteから実引数、元body、値と停止prefixを確認する。
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::{ast::ExprKind, model::Signature},
@@ -15,7 +15,7 @@ use std::{
 };
 
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -1100,11 +1100,11 @@ fn checkpoint_cancellations_keep_public_answers_and_verified_prefixes() {
     ];
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut baseline = Control::new(Limits::default(), move |point| {
+    let mut baseline = Control::new(move |point| {
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let inputs = fixture(&["p"], helpers, caller);
     let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
@@ -1115,33 +1115,23 @@ fn checkpoint_cancellations_keep_public_answers_and_verified_prefixes() {
     assert_missing(&prior, "missing", &["p"], &checked);
     // Sourceの再分析にもExpression checkpointがある。ここでは固定3点の公開prefixを検査する。
     // callの実段階はowned_call_tests.rsの通知駆動試験で別に確認する。
-    for (offset, kind) in [(5, 0), (8, 1), (11, 2)] {
+    for offset in [5, 8, 11] {
         let at = count.get() + offset;
         let expression_count = Rc::new(Cell::new(0));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (expressions, calls, stop) = (expression_count.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(
-            Limits {
-                time_ms: (kind == 1).then_some(1),
-                memory_mib: (kind == 2).then_some(1),
-            },
-            move |point| {
-                calls.set(calls.get() + 1);
-                if point == Checkpoint::Expression {
-                    expressions.set(expressions.get() + 1);
-                    if expressions.get() == at {
-                        stop.set(Some(calls.get()));
-                        return Usage {
-                            signal: (kind == 0).then_some(Signal::Term),
-                            elapsed_ms: u128::from(kind == 1),
-                            memory_mib: u128::from(kind == 2),
-                        };
-                    }
+        let mut control = Control::new(move |point| {
+            calls.set(calls.get() + 1);
+            if point == Checkpoint::Expression {
+                expressions.set(expressions.get() + 1);
+                if expressions.get() == at {
+                    stop.set(Some(calls.get()));
+                    return Some(Signal::Term);
                 }
-                Usage::default()
-            },
-        );
+            }
+            None
+        });
         let result = evaluate_observed_bytes(inputs.clone(), &asks, &mut control)
             .unwrap()
             .wire();
@@ -1167,27 +1157,9 @@ fn checkpoint_cancellations_keep_public_answers_and_verified_prefixes() {
             );
             let reason = arr(f(a, "reasons"))
                 .iter()
-                .find(|r| {
-                    f(r, "code")
-                        == &Json::str(if kind == 0 {
-                            "cancelled"
-                        } else {
-                            "budget_exhausted"
-                        })
-                })
+                .find(|r| f(r, "code") == &Json::str("cancelled"))
                 .unwrap();
-            let expected = if kind == 0 {
-                Json::obj([("signal", Json::str("SIGTERM"))])
-            } else {
-                Json::obj([
-                    (
-                        "resource",
-                        Json::str(if kind == 1 { "time_ms" } else { "memory_mib" }),
-                    ),
-                    ("limit", Json::str("1")),
-                    ("observed", Json::str("1")),
-                ])
-            };
+            let expected = Json::obj([("signal", Json::str("SIGTERM"))]);
             assert_eq!(f(reason, "details"), &expected);
         }
         audit_dag(&result, &checked);

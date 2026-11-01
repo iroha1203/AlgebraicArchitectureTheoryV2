@@ -3,7 +3,7 @@ use crate::common;
 
 use archsig::{
     archmap::check_archmap_controlled,
-    control::{CheckFailure, Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    control::{CheckFailure, Checkpoint, Control, StopReason},
     definition::check_definitions,
     issue::Code,
     law::{check_law, check_law_controlled},
@@ -14,11 +14,11 @@ use std::{cell::Cell, rc::Rc};
 fn counting(point: Checkpoint) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let control = Control::new(Limits::default(), move |current| {
+    let control = Control::new(move |current| {
         if current == point {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     (control, count)
 }
@@ -26,14 +26,11 @@ fn counting(point: Checkpoint) -> (Control, Rc<Cell<usize>>) {
 fn cancelled(point: Checkpoint, stop_after: usize) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let control = Control::new(Limits::default(), move |current| {
+    let control = Control::new(move |current| {
         if current == point {
             seen.set(seen.get() + 1);
         }
-        Usage {
-            signal: (seen.get() == stop_after).then_some(Signal::Term),
-            ..Usage::default()
-        }
+        (seen.get() == stop_after).then_some(Signal::Term)
     });
     (control, count)
 }
@@ -151,37 +148,4 @@ fn archmap_term_lexer_parser_and_late_type_check_share_the_control() {
         );
         assert_eq!(seen.get(), stop_after);
     }
-}
-
-#[test]
-fn a_budget_exhausted_inside_term_type_check_is_not_an_invalid_term() {
-    let (definitions, map) = term_input(&repeated_sum());
-    let (mut baseline, total) = counting(Checkpoint::ArchMapTerm);
-    check_archmap_controlled(map.as_bytes(), &definitions, &mut baseline).unwrap();
-    let stop_after = total.get() - 4;
-    let mut seen = 0usize;
-    let mut control = Control::new(
-        Limits {
-            time_ms: Some(1),
-            memory_mib: None,
-        },
-        move |point| {
-            if point == Checkpoint::ArchMapTerm {
-                seen += 1;
-            }
-            Usage {
-                elapsed_ms: u128::from(seen >= stop_after),
-                ..Usage::default()
-            }
-        },
-    );
-    let failure = check_archmap_controlled(map.as_bytes(), &definitions, &mut control).unwrap_err();
-    assert!(matches!(
-        failure,
-        CheckFailure::Stopped(StopReason::BudgetExhausted {
-            resource: Resource::TimeMs,
-            limit: 1,
-            observed: 1
-        })
-    ));
 }

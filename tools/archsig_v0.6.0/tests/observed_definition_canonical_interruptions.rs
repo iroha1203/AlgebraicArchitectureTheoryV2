@@ -3,7 +3,7 @@ use crate::common;
 
 use archsig::{
     canonical::{Json, sha256_digest},
-    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     definition::{check_definitions, check_definitions_controlled},
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     observed::{PrepareFailure, prepare_observed},
@@ -51,43 +51,16 @@ fn sources(definition: &str) -> InputSources {
     )
 }
 
-fn probe(at: Option<(usize, u8)>) -> (Control, Rc<Cell<usize>>) {
+fn probe(at: Option<usize>) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let control = Control::new(
-        Limits {
-            time_ms: at.filter(|(_, kind)| *kind == 1).map(|_| 1),
-            memory_mib: at.filter(|(_, kind)| *kind == 2).map(|_| 1),
-        },
-        move |point| {
-            if point == Checkpoint::DefinitionCanonical {
-                seen.set(seen.get() + 1);
-            }
-            let kind = at.filter(|(n, _)| seen.get() == *n).map(|(_, kind)| kind);
-            Usage {
-                signal: (kind == Some(0)).then_some(Signal::Term),
-                elapsed_ms: u128::from(kind == Some(1)),
-                memory_mib: u128::from(kind == Some(2)),
-            }
-        },
-    );
+    let control = Control::new(move |point| {
+        if point == Checkpoint::DefinitionCanonical {
+            seen.set(seen.get() + 1);
+        }
+        (at == Some(seen.get())).then_some(Signal::Term)
+    });
     (control, count)
-}
-
-fn reason(kind: u8) -> StopReason {
-    match kind {
-        0 => StopReason::Cancelled(Signal::Term),
-        1 => StopReason::BudgetExhausted {
-            resource: Resource::TimeMs,
-            limit: 1,
-            observed: 1,
-        },
-        _ => StopReason::BudgetExhausted {
-            resource: Resource::MemoryMib,
-            limit: 1,
-            observed: 1,
-        },
-    }
 }
 
 fn stopped(failure: InputFailure, expected: StopReason, count: &Cell<usize>, at: usize) {
@@ -112,20 +85,18 @@ fn definition_manifest_and_model_canonicalization_stop_from_bytes_at_internal_bo
     let (mut control, total) = probe(None);
     prepare_observed(source.clone(), &["v=evaluate(R.value)"], &mut control).unwrap();
     assert!(total.get() > 20);
+    let expected = StopReason::Cancelled(Signal::Term);
     for at in [1, total.get() / 2, total.get()] {
-        for kind in 0..3 {
-            let (mut control, count) = probe(Some((at, kind)));
-            let failure = check_inputs(source.clone(), &mut control).unwrap_err();
-            stopped(failure, reason(kind), &count, at);
-            let (mut control, count) = probe(Some((at, kind)));
-            let PrepareFailure::Inputs(failure) =
-                prepare_observed(source.clone(), &["v=evaluate(R.value)"], &mut control)
-                    .unwrap_err()
-            else {
-                panic!("definition stage")
-            };
-            stopped(*failure, reason(kind), &count, at);
-        }
+        let (mut control, count) = probe(Some(at));
+        let failure = check_inputs(source.clone(), &mut control).unwrap_err();
+        stopped(failure, expected.clone(), &count, at);
+        let (mut control, count) = probe(Some(at));
+        let PrepareFailure::Inputs(failure) =
+            prepare_observed(source.clone(), &["v=evaluate(R.value)"], &mut control).unwrap_err()
+        else {
+            panic!("definition stage")
+        };
+        stopped(*failure, expected.clone(), &count, at);
     }
 }
 
@@ -186,26 +157,13 @@ fn definition_errors_keep_their_stage_and_cannot_hide_final_canonical_stop() {
         assert!(failure.declarations().is_empty());
         assert!(failure.vocabularies().is_empty());
         assert_eq!(total.get(), 3, "byte digest before/after and error exit");
-        for kind in 0..3 {
-            let (mut control, count) = probe(Some((total.get(), kind)));
-            let failure = check_inputs(source.clone(), &mut control).unwrap_err();
-            if kind == 0 {
-                stopped(failure, reason(kind), &count, total.get());
-            } else {
-                assert_eq!(failure.status(), status);
-                assert!(failure.primitives().is_empty());
-                assert!(failure.declarations().is_empty());
-                assert!(failure.vocabularies().is_empty());
-                let expected_code = if status == InputStatus::Invalid {
-                    "syntax"
-                } else {
-                    "unsupported_version"
-                };
-                assert!(failure.issues().iter().any(|issue| matches!(issue, Json::Obj(fields) if fields["code"] == Json::str(expected_code))));
-                assert!(failure.issues().contains(&reason(kind).wire()));
-                assert_eq!(control.stop_reason(), Some(reason(kind)));
-                assert_eq!(count.get(), total.get());
-            }
-        }
+        let (mut control, count) = probe(Some(total.get()));
+        let failure = check_inputs(source.clone(), &mut control).unwrap_err();
+        stopped(
+            failure,
+            StopReason::Cancelled(Signal::Term),
+            &count,
+            total.get(),
+        );
     }
 }

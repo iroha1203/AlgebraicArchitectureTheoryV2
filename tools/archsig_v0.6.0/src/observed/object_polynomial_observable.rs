@@ -455,15 +455,12 @@ pub fn object_polynomial_observable(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        control::{Limits, Usage},
-        input::{InputSources, check_inputs},
-    };
+    use crate::input::{InputSources, check_inputs};
     mod fixture {
         include!("../../tests/common/object_view_compatibility_data.rs");
     }
     fn quiet() -> Control {
-        Control::new(Limits::default(), |_| Usage::default())
+        Control::unlimited()
     }
     fn inputs(missing: bool) -> Arc<CheckedInputs> {
         let d = crate::definition::check_definitions(&[("definition0", fixture::D.as_bytes())])

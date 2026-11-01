@@ -1,14 +1,11 @@
 use super::*;
-use crate::{
-    control::{Limits, Usage},
-    observed::{PreparedObserved, request::resolve_native_for_test},
-};
+use crate::observed::{PreparedObserved, request::resolve_native_for_test};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../tests/common/finite_law_reading_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(missing: bool, body: &str, root: &str) -> PreparedObserved {
     let inputs = fixture::inputs(missing, body);
@@ -440,15 +437,12 @@ fn observed_law_booleans_stop_with_exact_finished_prefixes_on_interrupt() {
     ] {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(Limits::default(), move |point| {
+        let mut c = Control::new(move |point| {
             if point == Checkpoint::NativeResultNode {
                 count.set(count.get() + 1);
             }
             let stop = count.get() >= at;
-            Usage {
-                signal: stop.then_some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            stop.then_some(crate::result::Signal::Int)
         });
         let mut g = prefix(&initial, &c);
         assert!(matches!(

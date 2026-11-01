@@ -1,14 +1,11 @@
 use super::*;
-use crate::{
-    control::{Limits, Usage},
-    observed::{PreparedObserved, request::resolve_native_for_test},
-};
+use crate::observed::{PreparedObserved, request::resolve_native_for_test};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../tests/common/polynomial_law_family_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(missing: bool) -> PreparedObserved {
     let inputs = fixture::inputs(
@@ -391,16 +388,13 @@ fn interrupt_keeps_a_completed_object_without_publishing_unfinished_algebra() {
     for at in [1, 6] {
         let mut armed = false;
         let mut seen = 0;
-        let mut control = Control::new(Limits::default(), move |point| {
+        let mut control = Control::new(move |point| {
             armed |= point == Checkpoint::ObjectLawCircuits;
             if armed && point == Checkpoint::NativeResultNode {
                 seen += 1;
             }
             let stop = seen >= at;
-            Usage {
-                signal: stop.then_some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            stop.then_some(crate::result::Signal::Int)
         });
         let p = prepared(false);
         let env = Environment::with_prepared(&p, &mut quiet()).unwrap();

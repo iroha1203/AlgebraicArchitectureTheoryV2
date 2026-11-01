@@ -1,6 +1,6 @@
 use archsig::{
     canonical::Json,
-    control::{Control, Limits, Usage},
+    control::Control,
     input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         object_evaluate::ObjectEvaluationOutcome,
@@ -15,7 +15,7 @@ use std::sync::Arc;
 mod fixture;
 use fixture::{A, D};
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(body: &str, map: &str) -> Arc<CheckedInputs> {
     let defs = archsig::definition::check_definitions(&[("definition0", D.as_bytes())]).unwrap();

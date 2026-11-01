@@ -288,7 +288,7 @@ impl<E: InputError> Checker<'_, E> {
         let result = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             self.check_change_result(body, params, env, ctx)
         });
-        // 入力不正も、検査内で発生した取消・消尽を確認した後に返す。
+        // 入力不正も、検査内で発生した取消を確認した後に返す。
         let t = E::finish(result, &mut self.control.clone(), Checkpoint::LawChange)?;
         if self.expr_types.len() < self.parser.exprs.len() {
             self.expr_types.resize(self.parser.exprs.len(), None);
@@ -410,7 +410,7 @@ impl<E: InputError> Checker<'_, E> {
         if let Some(n) = find_cycle::<E>(&edges, &mut self.control.clone())? {
             // Capture the original diagnostic while the detected cycle is known.
             // Source spans are indexed before DFS, so no new search is needed
-            // after detection. A later budget retains this issue; cancellation wins.
+            // after detection; a later cancellation still wins.
             let span = first_spans[&n];
             let failure = cycle(span, format!("cyclic view calls involving `{n}`"));
             return E::finish(failure, &mut self.control.clone(), Checkpoint::LawCycle);

@@ -105,24 +105,6 @@ impl<'a, E: InputError> Model<'a, E> {
         Ok(value)
     }
 
-    /// 偽はこの代入に対する否定の根拠として先に返す。呼出し側が未検査候補を
-    /// 続ける前、またはprefix全体の不整合を位置付きで返す前に停止を確認する。
-    fn truth(&self, value: Option<bool>) -> Result<Option<bool>, E> {
-        match self.checkpoint() {
-            Err(stop) if value == Some(false) && stop.is_budget_stop() => Ok(value),
-            Err(stop) => Err(stop),
-            Ok(()) => Ok(value),
-        }
-    }
-
-    fn decision(&self, value: bool) -> Result<bool, E> {
-        match self.checkpoint() {
-            Err(stop) if !value && stop.is_budget_stop() => Ok(value),
-            Err(stop) => Err(stop),
-            Ok(()) => Ok(value),
-        }
-    }
-
     fn field_index(&self, g: usize, name: &str) -> Result<usize, E> {
         self.checkpoint()?;
         for (i, f) in self.subjects[g].fields.iter().enumerate() {
@@ -205,18 +187,18 @@ impl<'a, E: InputError> Model<'a, E> {
             Family::All(e) => Some(self.subjects[x].ty == *e),
             Family::Owned { entity, .. } => {
                 if self.subjects[x].ty != *entity {
-                    return self.truth(Some(false));
+                    return self.done(Some(false));
                 }
                 let Some(Some(root)) = self.family_root(holder, family, assign)? else {
                     return self.done(None);
                 };
                 if self.subjects[x].snapshot != self.subjects[root].snapshot {
-                    return self.truth(Some(false));
+                    return self.done(Some(false));
                 }
                 self.owner(x, assign)?.map(|owner| owner == Some(root))
             }
         };
-        self.truth(out)
+        self.done(out)
     }
 
     fn candidates(&self, family: &Family) -> Result<&[usize], E> {
@@ -245,7 +227,7 @@ impl<'a, E: InputError> Model<'a, E> {
                 self.checkpoint()?;
             }
         }
-        self.truth(out)
+        self.done(out)
     }
 
     fn family_of(&self, holder: usize, ty: &Type) -> Result<Option<Family>, E> {
@@ -291,7 +273,7 @@ impl<'a, E: InputError> Model<'a, E> {
                         self.checkpoint()?;
                         acc = and3(acc, self.inhabited(holder, t, assign)?);
                         if acc == Some(false) {
-                            return self.truth(acc);
+                            return self.done(acc);
                         }
                         self.checkpoint()?;
                     }
@@ -300,7 +282,7 @@ impl<'a, E: InputError> Model<'a, E> {
                 Type::Data(d) => Some(self.data_inhabited.get(d).copied().unwrap_or(true)),
                 _ => Some(true),
             };
-            self.truth(out)
+            self.done(out)
         })
     }
 
@@ -414,7 +396,7 @@ impl<'a, E: InputError> Model<'a, E> {
                     self.checkpoint()?;
                     out = and3(out, self.member(k, *holder, family, assign)?);
                     if out == Some(false) {
-                        return self.truth(out);
+                        return self.done(out);
                     }
                     self.checkpoint()?;
                 }
@@ -423,7 +405,7 @@ impl<'a, E: InputError> Model<'a, E> {
                     if !keys.contains(&x) {
                         out = and3(out, self.member(x, *holder, family, assign)?.map(|m| !m));
                         if out == Some(false) {
-                            return self.truth(out);
+                            return self.done(out);
                         }
                     }
                     self.checkpoint()?;
@@ -432,7 +414,7 @@ impl<'a, E: InputError> Model<'a, E> {
             }
             Cons::Inhabit { holder, ty, .. } => self.inhabited(*holder, ty, assign)?,
         };
-        self.truth(out)
+        self.done(out)
     }
 }
 
@@ -804,9 +786,7 @@ fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[Cons]) -> Result<bool, E> {
     for c in cons {
         m.checkpoint()?;
         match m.eval(c, &empty)? {
-            // このprefix全体の補完不能を確定したので、位置付きの入力不正へ
-            // 変換するまで事後budgetと併せて否定の結果を保持する。
-            Some(false) => return m.decision(false),
+            Some(false) => return m.done(false),
             Some(true) => {}
             None => open.push((c, m.vars_of(c)?)),
         }
@@ -867,7 +847,7 @@ fn feasible<E: InputError>(m: &Model<'_, E>, cons: &[Cons]) -> Result<bool, E> {
     for (_, group) in &groups {
         m.checkpoint()?;
         if !search(m, group, &mut assign)? {
-            return m.decision(false);
+            return m.done(false);
         }
         m.checkpoint()?;
     }
@@ -887,7 +867,7 @@ fn search<E: InputError>(
         for (c, vs) in cons {
             m.checkpoint()?;
             match m.eval(c, assign)? {
-                Some(false) => return m.decision(false),
+                Some(false) => return m.done(false),
                 Some(true) => {}
                 None => {
                     let mut free = Vec::new();
@@ -937,13 +917,13 @@ fn search<E: InputError>(
             }
             if candidate + 1 == m.vars[v].2.len() && order.is_empty() {
                 assign[v] = None;
-                return m.decision(false);
+                return m.done(false);
             }
             m.checkpoint()?;
         }
         if order.is_empty() {
             assign[v] = None;
-            return m.decision(false);
+            return m.done(false);
         }
         order.sort_by_key(|&(decided, _)| std::cmp::Reverse(decided));
         m.checkpoint()?;
@@ -959,7 +939,7 @@ fn search<E: InputError>(
             }
         }
         assign[v] = None;
-        m.decision(false)
+        m.done(false)
     })
 }
 

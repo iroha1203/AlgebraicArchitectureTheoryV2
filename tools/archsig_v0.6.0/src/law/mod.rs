@@ -345,13 +345,9 @@ fn check_law_inner<E: InputError>(
     control: &mut Control,
 ) -> Result<CheckedLaw, (E, String, Option<String>)> {
     let result = check_law_processing::<E>(bytes, definitions, control);
-    // The final sample also covers version and parser error exits. Preserve the
-    // known input failure over a budget, and let cancellation take priority.
+    // The final sample also covers version and parser error exits; cancellation takes priority.
     match (result, E::checkpoint(control, Checkpoint::LawIteration)) {
         (result, Ok(())) => result,
-        (Err((input, bytes, model)), Err(stop)) if !input.is_stopped() && stop.is_budget_stop() => {
-            Err((input, bytes, model))
-        }
         (Err((_, bytes, model)), Err(stop)) => Err((stop, bytes, model)),
         (Ok(checked), Err(stop)) => Err((stop, checked.bytes_digest, Some(checked.model_digest))),
     }
@@ -446,7 +442,6 @@ fn check_law_processing<E: InputError>(
 #[cfg(test)]
 mod entry_control_tests {
     use super::*;
-    use crate::control::{Limits, Usage};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 
@@ -457,30 +452,18 @@ mod entry_control_tests {
     #[test]
     fn stopped_entry_does_not_start_bytes_digest() {
         BYTES_DIGEST_STARTS.with(|count| count.set(0));
-        for cancel in [false, true] {
-            for latched in [false, true] {
-                let mut control = Control::new(
-                    Limits {
-                        time_ms: Some(0),
-                        ..Limits::default()
-                    },
-                    move |_| Usage {
-                        signal: cancel.then_some(Signal::Int),
-                        ..Usage::default()
-                    },
-                );
-                if latched {
-                    control.checkpoint(Checkpoint::InputBundle).unwrap_err();
-                }
-                let failure =
-                    check_law_controlled(b"bad", &CheckedDefinitions::empty(), &mut control)
-                        .unwrap_err();
-                let CheckFailure::Stopped(reason) = failure else {
-                    panic!("entry stop must precede input checking");
-                };
-                assert_eq!(Some(reason), control.stop_reason());
-                BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 0));
+        for latched in [false, true] {
+            let mut control = Control::new(|_| Some(Signal::Int));
+            if latched {
+                control.checkpoint(Checkpoint::InputBundle).unwrap_err();
             }
+            let failure = check_law_controlled(b"bad", &CheckedDefinitions::empty(), &mut control)
+                .unwrap_err();
+            let CheckFailure::Stopped(reason) = failure else {
+                panic!("entry stop must precede input checking");
+            };
+            assert_eq!(Some(reason), control.stop_reason());
+            BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 0));
         }
     }
 
@@ -492,11 +475,11 @@ mod entry_control_tests {
         BYTES_DIGEST_STARTS.with(|count| assert_eq!(count.get(), 1));
         let first = Rc::new(Cell::new(None));
         let observed = first.clone();
-        let mut control = Control::new(Limits::default(), move |point| {
+        let mut control = Control::new(move |point| {
             if observed.get().is_none() {
                 observed.set(Some(point));
             }
-            Usage::default()
+            None
         });
         let controlled = check_law_controlled(b"bad", &definitions, &mut control).unwrap_err();
         let CheckFailure::Input(controlled) = controlled else {

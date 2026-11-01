@@ -4,14 +4,11 @@ mod bool_fixture {
     include!("finite_data_quotient.rs");
 }
 fn bool_result(extra: &str, asks: &[&str]) -> JNode {
-    use archsig::{
-        control::{Control, Limits, Usage},
-        observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig::{control::Control, observed::evaluate::evaluate_observed_bytes};
     let result = evaluate_observed_bytes(
         bool_fixture::sources("", extra),
         asks,
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     )
     .unwrap();
     archsig::json::parse(result.wire().canonical().as_bytes()).unwrap()
@@ -129,9 +126,7 @@ fn compound_bool_observations_preserve_equality_values() {
 #[test]
 fn atomic_bool_guard_false_and_body_false_remain_different_and_unknown_guard_is_not_erased() {
     use archsig::{
-        control::{Control, Limits, Usage},
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
+        control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes,
     };
     let original = bool_fixture::sources(
         "",
@@ -171,7 +166,7 @@ fn atomic_bool_guard_false_and_body_false_remain_different_and_unknown_guard_is_
                 "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
                 "q=quotient(Pair.fixed,on=$s.domain,s=@v/s,law=Pair.gated)",
             ],
-            &mut Control::new(Limits::default(), |_| Usage::default()),
+            &mut Control::unlimited(),
         )
         .unwrap();
         let result = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
@@ -205,50 +200,23 @@ fn atomic_bool_guard_false_and_body_false_remain_different_and_unknown_guard_is_
 #[test]
 fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
     use archsig::{
-        control::{Checkpoint, Control, Limits, Usage},
+        control::{Checkpoint, Control},
         observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
-    for mode in 0..4 {
+    for signal in [archsig::result::Signal::Int, archsig::result::Signal::Term] {
         let active = Rc::new(Cell::new(false));
         let stopped = Rc::new(Cell::new(false));
         let (inside, hit) = (active.clone(), stopped.clone());
-        let mut control = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |point| {
-                if point == Checkpoint::Quotient {
-                    inside.set(true);
-                }
-                if inside.get() && point == Checkpoint::FiniteLawOperand {
-                    hit.set(true);
-                }
-                if hit.get() {
-                    match mode {
-                        0 => Usage {
-                            elapsed_ms: 2,
-                            ..Usage::default()
-                        },
-                        1 => Usage {
-                            memory_mib: 2,
-                            ..Usage::default()
-                        },
-                        _ => Usage {
-                            signal: Some(if mode == 2 {
-                                archsig::result::Signal::Int
-                            } else {
-                                archsig::result::Signal::Term
-                            }),
-                            ..Usage::default()
-                        },
-                    }
-                } else {
-                    Usage::default()
-                }
-            },
-        );
+        let mut control = Control::new(move |point| {
+            if point == Checkpoint::Quotient {
+                inside.set(true);
+            }
+            if inside.get() && point == Checkpoint::FiniteLawOperand {
+                hit.set(true);
+            }
+            hit.get().then_some(signal)
+        });
         let result = evaluate_observed_bytes(
             bool_fixture::sources("", "view first(s:State):Bool=s.x;"),
             &[
@@ -265,12 +233,7 @@ fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
         assert_eq!(s(get(&answers[1], "status")), "undetermined");
         assert!(!has(get(&answers[1], "outputs"), "quotient"));
         let reasons = format!("{:?}", get(&answers[1], "reasons"));
-        for expected in match mode {
-            0 => vec!["budget_exhausted", "time_ms"],
-            1 => vec!["budget_exhausted", "memory_mib"],
-            2 => vec!["cancelled", "SIGINT"],
-            _ => vec!["cancelled", "SIGTERM"],
-        } {
+        for expected in ["cancelled", signal.wire()] {
             assert!(reasons.contains(expected), "{reasons}");
         }
     }
@@ -279,9 +242,7 @@ fn atomic_bool_evaluation_stop_keeps_prior_solve_and_exact_reason() {
 #[test]
 fn compound_missing_reads_follow_selected_branch_and_short_circuit() {
     use archsig::{
-        control::{Control, Limits, Usage},
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
+        control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes,
     };
     for (body, expected) in [
         ("if false then s.y else s.x", "established"),
@@ -328,7 +289,7 @@ fn compound_missing_reads_follow_selected_branch_and_short_circuit() {
                 "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
                 "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.test)",
             ],
-            &mut Control::new(Limits::default(), |_| Usage::default()),
+            &mut Control::unlimited(),
         )
         .unwrap();
         let result = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
@@ -422,7 +383,7 @@ fn compound_cli_refutation_save_reuse_and_tamper() {
 #[test]
 fn compound_quantifier_empty_finite_and_symbolic_infinite_are_distinct() {
     use archsig::{
-        control::{Control, Limits, Usage},
+        control::Control,
         observed::{evaluate::evaluate_observed_bytes, result::EvaluationFailure},
     };
     let result = bool_result(
@@ -450,7 +411,7 @@ fn compound_quantifier_empty_finite_and_symbolic_infinite_are_distinct() {
             "s=solve(Pair.valid,on=@v/s,using=Pair.choose,s=@v/s)",
             "q=quotient(Pair.first,on=$s.domain,s=@v/s,law=Pair.infinite)",
         ],
-        &mut Control::new(Limits::default(), |_| Usage::default()),
+        &mut Control::unlimited(),
     );
     assert!(
         matches!(result, Err(EvaluationFailure::NotImplemented { .. })),

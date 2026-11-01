@@ -7,7 +7,7 @@ use super::{
 };
 use crate::{canonical::Json, definition, result::Signal};
 use crate::{
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::{InputSources, check_inputs},
 };
 use std::{cell::Cell, collections::BTreeSet, rc::Rc, sync::Arc};
@@ -93,15 +93,15 @@ fn support_closure_all_stops_preserve_completed_context_values_and_dependencies(
                 "l=localize($a.object)"
             },
         ];
-        let mut setup = Control::new(Limits::default(), |_| Usage::default());
+        let mut setup = Control::unlimited();
         let checked = Arc::new(check_inputs(inputs(finite), &mut setup).unwrap());
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut control = Control::new(Limits::default(), move |point| {
+        let mut control = Control::new(move |point| {
             if point == Checkpoint::Localize {
                 count.set(count.get() + 1);
             }
-            Usage::default()
+            None
         });
         let prepared = prepare_shared_observed(checked.clone(), &asks, &mut control).unwrap();
         let normal = evaluate_observed(prepared, &mut control).unwrap();
@@ -115,14 +115,11 @@ fn support_closure_all_stops_preserve_completed_context_values_and_dependencies(
         for stop in [(total / 2).max(1), total, total + 1] {
             let seen = Rc::new(Cell::new(0));
             let count = seen.clone();
-            let mut control = Control::new(Limits::default(), move |point| {
+            let mut control = Control::new(move |point| {
                 if point == Checkpoint::Localize {
                     count.set(count.get() + 1);
                 }
-                Usage {
-                    signal: (count.get() >= stop).then_some(Signal::Term),
-                    ..Usage::default()
-                }
+                (count.get() >= stop).then_some(Signal::Term)
             });
             let prepared = prepare_shared_observed(checked.clone(), &asks, &mut control).unwrap();
             let partial = evaluate_observed(prepared, &mut control).unwrap();

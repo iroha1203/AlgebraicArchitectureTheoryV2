@@ -272,54 +272,7 @@ fn reservations_chain_missing_and_counterexample_recheck_original_fact_and_evide
     });
 }
 
-fn reservations_private_stop_usage(
-    kind: usize,
-) -> (crate::control::Limits, crate::control::Usage, StopReason) {
-    use crate::control::{Limits, Resource, Usage};
-    match kind {
-        0 => (
-            Limits::default(),
-            Usage {
-                signal: Some(crate::result::Signal::Term),
-                ..Usage::default()
-            },
-            StopReason::Cancelled(crate::result::Signal::Term),
-        ),
-        1 => (
-            Limits {
-                time_ms: Some(3),
-                memory_mib: None,
-            },
-            Usage {
-                elapsed_ms: 4,
-                ..Usage::default()
-            },
-            StopReason::BudgetExhausted {
-                resource: Resource::TimeMs,
-                limit: 3,
-                observed: 4,
-            },
-        ),
-        _ => (
-            Limits {
-                time_ms: None,
-                memory_mib: Some(7),
-            },
-            Usage {
-                memory_mib: 8,
-                ..Usage::default()
-            },
-            StopReason::BudgetExhausted {
-                resource: Resource::MemoryMib,
-                limit: 7,
-                observed: 8,
-            },
-        ),
-    }
-}
-
-fn reservations_private_phase_stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::control::Usage;
+fn reservations_private_phase_stop(phase: &'static str, at: usize) {
     use std::{cell::Cell, rc::Rc};
     let body = "view seed():Unit=unit; law required prior(e:Reserve):e.from.free=0; view hole(e:Reserve):Z=e.to.held; view current(e:Reserve):Z=e.to.free;";
     let asks = [
@@ -351,20 +304,20 @@ fn reservations_private_phase_stop(phase: &'static str, at: usize, kind: usize) 
             .any(|f| f.subject == "q" && f.field.as_deref() == Some("Reservations.State.held"))
     );
     assert_eq!(normal.answers[3].status, Decision::Established);
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let seen = Rc::new(Cell::new(false));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |checkpoint| {
+    let mut control = Control::new(move |checkpoint| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert_eq!(checkpoint, Checkpoint::FiniteIteration);
             assert!(freeze.replace(Some(count.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
@@ -493,5 +446,5 @@ fn reservations_private_phase_stop(phase: &'static str, at: usize, kind: usize) 
 
 #[test]
 fn reservations_chain_prepare_cancel_retains_completed_source_prefix() {
-    reservations_private_phase_stop("field_prepare", 1, 0);
+    reservations_private_phase_stop("field_prepare", 1);
 }

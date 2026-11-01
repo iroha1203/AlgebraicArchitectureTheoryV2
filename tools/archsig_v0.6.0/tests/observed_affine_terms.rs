@@ -2,14 +2,11 @@
 #[path = "common/affine_terms.rs"]
 mod fixture;
 use archsig::{
-    canonical::Json,
-    control::{Control, Limits, Usage},
-    definition::check_definitions,
-    input::InputSources,
+    canonical::Json, control::Control, definition::check_definitions, input::InputSources,
     observed::evaluate_observed_bytes,
 };
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn sources() -> InputSources {
     sources_at("r1")

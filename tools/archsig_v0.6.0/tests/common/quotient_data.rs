@@ -91,10 +91,7 @@ fn finite_data_quotient_keeps_constructor_identity_and_reuses() {
 
 #[test]
 fn finite_data_quotient_preserves_nested_values_and_law_binding_order() {
-    use archsig::{
-        control::{Control, Limits, Usage},
-        observed::evaluate::evaluate_observed_bytes,
-    };
+    use archsig::{control::Control, observed::evaluate::evaluate_observed_bytes};
     let singletons = vec![
         vec![(false, false)],
         vec![(false, true)],
@@ -170,7 +167,7 @@ fn finite_data_quotient_preserves_nested_values_and_law_binding_order() {
                 "good=quotient(Pair.shape,on=$s.domain,s=@v/s,law=Pair.held)",
                 "bad=quotient(Pair.shape,on=$s.domain,s=@v/s,law=Pair.hidden)",
             ],
-            &mut Control::new(Limits::default(), |_| Usage::default()),
+            &mut Control::unlimited(),
         )
         .unwrap();
         let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();

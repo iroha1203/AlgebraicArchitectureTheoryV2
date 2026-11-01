@@ -61,7 +61,7 @@ fn owned_map_member_stop(recheck: bool) {
         .find(|x| &bytes[x.span.0..x.span.1] == b"mcAccept(a,b,m.states)")
         .unwrap()
         .span;
-    let (limits, usage, expected) = reservations_private_stop_usage(if recheck { 2 } else { 0 });
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let traversing = Rc::new(Cell::new(false));
@@ -69,13 +69,13 @@ fn owned_map_member_stop(recheck: bool) {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(limits, move |_| {
+    let mut c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Default::default()
+            None
         }
     });
     let prepared = prepare_observed(owned_map_fixture::input("stop", "r1"), &asks, &mut c).unwrap();
@@ -170,7 +170,6 @@ fn owned_map_actual_domain_roster_stop_keeps_values_refutation_and_prefix() {
 
 #[test]
 fn missing_owned_map_uses_complete_original_fibers_before_candidate_tables() {
-    use crate::control::{Limits, Usage};
     use std::{cell::Cell, rc::Rc};
     let input = crate::input::check_inputs(
         owned_map_fixture::input("missing", "r1"),
@@ -179,14 +178,11 @@ fn missing_owned_map_uses_complete_original_fibers_before_candidate_tables() {
     .unwrap();
     let visits = Rc::new(Cell::new(0));
     let seen = visits.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
+    let mut c = Control::new(move |p| {
         if p == Checkpoint::FiniteIteration {
             seen.set(seen.get() + 1);
         }
-        Usage {
-            signal: (seen.get() >= 5000).then_some(crate::result::Signal::Int),
-            ..Usage::default()
-        }
+        (seen.get() >= 5000).then_some(crate::result::Signal::Int)
     });
     let env = Environment::with_requests(&input, &[], &mut c).unwrap();
     let roster = Environment::with_requests(&input, &[], &mut named_call_quiet())

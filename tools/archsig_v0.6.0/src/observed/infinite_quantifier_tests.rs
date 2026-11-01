@@ -383,21 +383,20 @@ fn stop(fresh_recheck: bool) {
         }) => *span,
         _ => panic!(),
     };
-    let (limits, usage, expected) =
-        reservations_private_stop_usage(if fresh_recheck { 2 } else { 0 });
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let phase = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(0));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |_| {
+    let mut control = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Default::default()
+            None
         }
     });
     let prepared = prepare_observed(inputs, ASKS, &mut control).unwrap();

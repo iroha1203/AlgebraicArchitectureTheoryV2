@@ -3,7 +3,7 @@ use crate::common;
 use archsig::{
     archmap::{Mode, Slot},
     canonical::{Json, sha256_digest},
-    control::{Control, Limits, Usage},
+    control::Control,
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::ast::{Builtin, ExprKind, QuantDomain, QuantSplit, TypeAst},
@@ -11,7 +11,7 @@ use archsig::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {

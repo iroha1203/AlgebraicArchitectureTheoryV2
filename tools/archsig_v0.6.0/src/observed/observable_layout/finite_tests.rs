@@ -1,6 +1,5 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
     input::CheckedInputs,
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
@@ -13,7 +12,7 @@ mod polynomial_fixture {
     include!("../../../tests/common/polynomial_law_family_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(inputs: Arc<CheckedInputs>) -> PreparedObserved {
     let requests = resolve_native_for_test(
@@ -404,11 +403,11 @@ fn finite_construction_interrupt_keeps_the_exact_finished_node_prefix_and_reques
     let (initial, t) = start(&p);
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(Limits::default(), move |point| {
+    let mut c = Control::new(move |point| {
         if point == Checkpoint::NativeResultNode {
             count.set(count.get() + 1)
         }
-        Usage::default()
+        None
     });
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let mut full = copy(&initial, &c);
@@ -425,16 +424,13 @@ fn finite_construction_interrupt_keeps_the_exact_finished_node_prefix_and_reques
         let count = seen.clone();
         let probes = Rc::new(Cell::new(0));
         let samples = probes.clone();
-        let mut c = Control::new(Limits::default(), move |point| {
+        let mut c = Control::new(move |point| {
             samples.set(samples.get() + 1);
             if point == Checkpoint::NativeResultNode {
                 count.set(count.get() + 1)
             }
             let stop = count.get() >= at;
-            Usage {
-                signal: stop.then_some(crate::result::Signal::Int),
-                ..Usage::default()
-            }
+            stop.then_some(crate::result::Signal::Int)
         });
         let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
         let mut g = copy(&initial, &c);

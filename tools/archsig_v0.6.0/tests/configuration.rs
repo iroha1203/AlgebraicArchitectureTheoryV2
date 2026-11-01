@@ -1,7 +1,7 @@
 use archsig::{
     archmap::{Fact as FactPointer, Slot, Value},
     construction::{ConstructionFailure, construct},
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
@@ -437,41 +437,22 @@ fn every_fixed_stop_rejects_unfinished_construction_and_latches_without_new_prob
     let inputs = checked(A);
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut control = Control::new(Limits::default(), move |p| {
+    let mut control = Control::new(move |p| {
         assert_eq!(p, Checkpoint::Configuration);
         seen.set(seen.get() + 1);
-        Usage::default()
+        None
     });
     construct(&inputs, "MeshRead", "v", "A", &mut control).unwrap();
     let total = count.get();
     assert!(total > 20);
     for at in [1, total / 2, total] {
-        for mode in 0..4 {
+        for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut control = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |_| {
-                    seen.set(seen.get() + 1);
-                    let stopped = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if stopped && mode == 0 { 1 } else { 0 },
-                        memory_mib: if stopped && mode == 1 { 1 } else { 0 },
-                        signal: if stopped {
-                            match mode {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
+            let mut control = Control::new(move |_| {
+                seen.set(seen.get() + 1);
+                (seen.get() >= at).then_some(signal)
+            });
             let failure = construct(&inputs, "MeshRead", "v", "A", &mut control).unwrap_err();
             assert_eq!(
                 failure,

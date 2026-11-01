@@ -206,9 +206,8 @@ pub(super) fn solve(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::control::{Limits, Usage};
     fn quiet() -> Control {
-        Control::new(Limits::default(), |_| Usage::default())
+        Control::unlimited()
     }
     fn q(n: i64) -> Scalar {
         Scalar::Q(n.into(), 1.into())

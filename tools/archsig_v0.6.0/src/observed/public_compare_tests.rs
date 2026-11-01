@@ -1,8 +1,5 @@
 use super::*;
-use crate::{
-    control::{Limits, Usage},
-    observed::{construction_result::ConstructionData as D, public_compare::Part},
-};
+use crate::observed::{construction_result::ConstructionData as D, public_compare::Part};
 use std::{cell::Cell, rc::Rc};
 mod fixture {
     use crate as archsig;
@@ -51,31 +48,16 @@ fn comparison_recheck_rejects_counterexample_and_endpoint_condition_forgery() {
         nodes[condition].judgment.as_mut().unwrap().status = Decision::Established;
     });
 }
-fn stopping(at: usize, mode: usize, point: Checkpoint) -> (Control, Rc<Cell<usize>>) {
+fn stopping(at: usize, point: Checkpoint) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
     (
-        Control::new(
-            Limits {
-                time_ms: (mode == 0).then_some(1),
-                memory_mib: (mode == 1).then_some(1),
-            },
-            move |p| {
-                if p == point {
-                    seen.set(seen.get() + 1);
-                }
-                let stop = seen.get() >= at;
-                Usage {
-                    elapsed_ms: u128::from(stop && mode == 0),
-                    memory_mib: u128::from(stop && mode == 1),
-                    signal: match (stop, mode) {
-                        (true, 2) => Some(crate::result::Signal::Int),
-                        (true, 3) => Some(crate::result::Signal::Term),
-                        _ => None,
-                    },
-                }
-            },
-        ),
+        Control::new(move |p| {
+            if p == point {
+                seen.set(seen.get() + 1);
+            }
+            (seen.get() >= at).then_some(crate::result::Signal::Int)
+        }),
         count,
     )
 }
@@ -104,11 +86,11 @@ fn completed_comparison_transfer_stops_keep_checked_decisions_and_evidence() {
         let qs = [E, second.as_str(), q];
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut probe = Control::new(Limits::default(), move |p| {
+        let mut probe = Control::new(move |p| {
             if p == Checkpoint::NativeResultNode {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         let prepared = prepare_observed(
             fixture::input(false, "compare-unit"),
@@ -121,7 +103,7 @@ fn completed_comparison_transfer_stops_keep_checked_decisions_and_evidence() {
         let total = count.get();
         assert!(total >= 2);
         // 停止の種類と位置は代表1つ(最初の転記点での time 停止)だけを見る。
-        let (mut control, _) = stopping(1, 0, Checkpoint::NativeResultNode);
+        let (mut control, _) = stopping(1, Checkpoint::NativeResultNode);
         let prepared = prepare_observed(
             fixture::input(false, "compare-unit"),
             &qs,
@@ -158,11 +140,11 @@ fn operation_comparisons_keep_completed_native_decisions_at_the_final_checkpoint
     for action in [false, true] {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut probe = Control::new(Limits::default(), move |p| {
+        let mut probe = Control::new(move |p| {
             if p == Checkpoint::ConfigurationOperation {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         if action {
             assert!(op
@@ -177,7 +159,7 @@ fn operation_comparisons_keep_completed_native_decisions_at_the_final_checkpoint
         let total = count.get();
         assert!(total > 10);
         {
-            let (mut c, _) = stopping(total, 0, Checkpoint::ConfigurationOperation);
+            let (mut c, _) = stopping(total, Checkpoint::ConfigurationOperation);
             if action {
                 let mut retained = None;
                 let failure = op
@@ -249,11 +231,11 @@ fn ground_value_computation_stops_keep_only_complete_equalities_and_counterexamp
         };
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut probe = Control::new(Limits::default(), move |p| {
+        let mut probe = Control::new(move |p| {
             if p == Checkpoint::FiniteIteration {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         let a = crate::observed::public_compare::evaluate(
             &prepared,
@@ -268,7 +250,7 @@ fn ground_value_computation_stops_keep_only_complete_equalities_and_counterexamp
         assert!(total >= 4);
         for at in [1, total] {
             {
-                let (mut c, _) = stopping(at, 0, Checkpoint::FiniteIteration);
+                let (mut c, _) = stopping(at, Checkpoint::FiniteIteration);
                 let mut g = graph();
                 let outcome = crate::observed::public_compare::evaluate(
                     &prepared,
@@ -298,16 +280,16 @@ fn ground_value_transfer_stops_keep_the_complete_original_evidence() {
         let q = format!("a=compare(@v/a,to={to},kind=value)");
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut probe = Control::new(Limits::default(), move |p| {
+        let mut probe = Control::new(move |p| {
             if p == Checkpoint::NativeResultNode {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         evaluate_observed_bytes(primitive::input(false, ""), &[q.as_str()], &mut probe).unwrap();
         let total = count.get();
         assert!(total >= 2);
-        let (mut c, _) = stopping(1, 0, Checkpoint::NativeResultNode);
+        let (mut c, _) = stopping(1, Checkpoint::NativeResultNode);
         let r =
             evaluate_observed_bytes(primitive::input(false, ""), &[q.as_str()], &mut c).unwrap();
         assert_eq!(r.status(), "interrupted", "{:?}", r.issues);
@@ -338,11 +320,11 @@ fn nested_ground_equality_retains_only_the_finished_outer_result_before_the_fina
         let right = value(right);
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let probe = Control::new(Limits::default(), move |p| {
+        let probe = Control::new(move |p| {
             if p == Checkpoint::FiniteIteration {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         let mut completed_at = None;
         assert_eq!(
@@ -359,7 +341,7 @@ fn nested_ground_equality_retains_only_the_finished_outer_result_before_the_fina
         // 完成通知の直前・直後を検査する。外側へ戻るpostは複数あり得る。
         for at in [1, completed_at, completed_at + 1, total] {
             {
-                let (c, _) = stopping(at, 0, Checkpoint::FiniteIteration);
+                let (c, _) = stopping(at, Checkpoint::FiniteIteration);
                 let mut retained = None;
                 let outcome = crate::observed::data::equal_retained(&left, &right, &c, |v| {
                     retained = Some(v)
@@ -410,18 +392,18 @@ fn dynamic_value_type_condition_stops_never_publish_an_unchecked_comparison() {
     ];
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut probe = Control::new(Limits::default(), move |p| {
+    let mut probe = Control::new(move |p| {
         if p == Checkpoint::Projection {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let prepared=||prepare_observed(input(),&qs,&mut Control::unlimited()).unwrap();
     let normal = evaluate_observed(prepared(), &mut probe).unwrap();
     assert_eq!(normal.status(), "partial");
     let total = count.get();
     assert!(total > 5);
-    let (mut c, _) = stopping(total / 2, 0, Checkpoint::Projection);
+    let (mut c, _) = stopping(total / 2, Checkpoint::Projection);
     let r = evaluate_observed(prepared(), &mut c).unwrap();
     assert_eq!(r.status(), "interrupted", "{:?}", r.issues);
     assert!(!r.answers[2].outputs.contains_key("comparison"));

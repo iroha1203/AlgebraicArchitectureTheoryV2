@@ -373,8 +373,8 @@ fn dependent_owner_completion_domains_reject_missing_duplicate_and_unregistered_
     mutate(&[0, 1, 9], false)
 }
 
-fn stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::control::{Control, Usage};
+fn stop(phase: &'static str, at: usize) {
+    use crate::control::Control;
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(2, false, false, Some(true));
     let asks = [
@@ -400,19 +400,19 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
     } else {
         target
     };
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |_| {
+    let mut control = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(input, &asks, &mut control).unwrap();
@@ -501,6 +501,6 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
 }
 #[test]
-fn dependent_owner_completion_coverage_memory_stop_keeps_cases_without_whole_claim() {
-    stop("completion_coverage", 0, 2)
+fn dependent_owner_completion_coverage_stop_keeps_cases_without_whole_claim() {
+    stop("completion_coverage", 0)
 }

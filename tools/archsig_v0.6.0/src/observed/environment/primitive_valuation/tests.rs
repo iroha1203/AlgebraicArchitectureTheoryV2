@@ -1,5 +1,4 @@
 use super::*;
-use crate::control::{Limits, Resource, Usage};
 use crate::{law::model::Signature, result::Signal};
 use std::{cell::Cell, rc::Rc};
 #[allow(dead_code)]
@@ -7,7 +6,7 @@ mod fixture {
     include!("../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn fp(p: &str, n: i32) -> Scalar {
     Scalar::Fp {
@@ -386,56 +385,22 @@ fn candidate_environment_cannot_validate_observation_graph_nodes() {
     );
 }
 
-#[derive(Clone, Copy)]
-enum Stop {
-    Time,
-    Memory,
-    Int,
-    Term,
-}
 fn stopping(
     point: Checkpoint,
     at: usize,
-    kind: Option<Stop>,
+    kind: Option<Signal>,
     evaluate_only: bool,
 ) -> (Control, Rc<Cell<usize>>, Rc<Cell<bool>>) {
     let count = Rc::new(Cell::new(0));
     let observed = count.clone();
     let active = Rc::new(Cell::new(false));
     let stage = active.clone();
-    let c = Control::new(
-        Limits {
-            time_ms: Some(1),
-            memory_mib: Some(1),
-        },
-        move |p| {
-            if p == point && (!evaluate_only || stage.get()) {
-                observed.set(observed.get() + 1);
-            }
-            let stop = observed.get() >= at;
-            Usage {
-                elapsed_ms: if stop && matches!(kind, Some(Stop::Time)) {
-                    1
-                } else {
-                    0
-                },
-                memory_mib: if stop && matches!(kind, Some(Stop::Memory)) {
-                    1
-                } else {
-                    0
-                },
-                signal: if stop {
-                    match kind {
-                        Some(Stop::Int) => Some(Signal::Int),
-                        Some(Stop::Term) => Some(Signal::Term),
-                        _ => None,
-                    }
-                } else {
-                    None
-                },
-            }
-        },
-    );
+    let c = Control::new(move |p| {
+        if p == point && (!evaluate_only || stage.get()) {
+            observed.set(observed.get() + 1);
+        }
+        kind.filter(|_| observed.get() >= at)
+    });
     (c, count, active)
 }
 #[test]
@@ -459,7 +424,7 @@ fn fixed_stops_reject_unfinished_valuations_and_values_and_freeze_probes() {
         let last = count.get();
         assert!(last > 1);
         for at in [1, last] {
-            for kind in [Stop::Time, Stop::Memory, Stop::Int, Stop::Term] {
+            for kind in [Signal::Int, Signal::Term] {
                 let (mut c, count, stage) = stopping(point, at, Some(kind), evaluate_only);
                 let failure = if evaluate_only {
                     let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
@@ -472,20 +437,7 @@ fn fixed_stops_reject_unfinished_valuations_and_values_and_freeze_probes() {
                         .err()
                         .expect("未完成環境を返さない")
                 };
-                let expected = match kind {
-                    Stop::Time => StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    Stop::Memory => StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    Stop::Int => StopReason::Cancelled(Signal::Int),
-                    Stop::Term => StopReason::Cancelled(Signal::Term),
-                };
+                let expected = StopReason::Cancelled(kind);
                 assert!(matches!(failure,ValidationFailure::Stop(s) if s==expected));
                 let frozen = count.get();
                 assert_eq!(frozen, at);
@@ -716,26 +668,13 @@ fn fixed_owner_family_stops_keep_candidates_out_of_observation_evidence() {
     let last = count.get();
     assert!(last > 1);
     for at in [1, last] {
-        for kind in [Stop::Time, Stop::Memory, Stop::Int, Stop::Term] {
+        for kind in [Signal::Int, Signal::Term] {
             let (mut c, count, active) =
                 stopping(Checkpoint::FiniteIteration, at, Some(kind), true);
             let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
             active.set(true);
             let error = family(&e, "root").err().expect("族の途中値を返さない");
-            let expected = match kind {
-                Stop::Time => StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 1,
-                    observed: 1,
-                },
-                Stop::Memory => StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 1,
-                    observed: 1,
-                },
-                Stop::Int => StopReason::Cancelled(Signal::Int),
-                Stop::Term => StopReason::Cancelled(Signal::Term),
-            };
+            let expected = StopReason::Cancelled(kind);
             assert!(matches!(error,ValidationFailure::Stop(s) if s==expected));
             assert_eq!(count.get(), at);
             assert_eq!(c.checkpoint(Checkpoint::FiniteIteration), Err(expected));
@@ -832,7 +771,7 @@ fn fixed_owned_helper_stops_reject_unfinished_argument_and_return_checks() {
         let last = count.get();
         assert!(last > 1);
         for at in [1, last] {
-            for kind in [Stop::Time, Stop::Memory, Stop::Int, Stop::Term] {
+            for kind in [Signal::Int, Signal::Term] {
                 let (mut c, count, active) =
                     stopping(Checkpoint::FiniteIteration, at, Some(kind), true);
                 let e = Environment::with_primitive_valuation(&i, &values, &mut c).unwrap();
@@ -840,20 +779,7 @@ fn fixed_owned_helper_stops_reject_unfinished_argument_and_return_checks() {
                 let error = owned_helper(&e, name, "r2")
                     .err()
                     .expect("Owned検査の途中値を返さない");
-                let expected = match kind {
-                    Stop::Time => StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    Stop::Memory => StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    Stop::Int => StopReason::Cancelled(Signal::Int),
-                    Stop::Term => StopReason::Cancelled(Signal::Term),
-                };
+                let expected = StopReason::Cancelled(kind);
                 assert!(matches!(error,ValidationFailure::Stop(s) if s==expected));
                 assert_eq!(count.get(), at);
                 assert_eq!(c.checkpoint(Checkpoint::FiniteIteration), Err(expected));
@@ -1085,25 +1011,12 @@ fn composite_candidate_encoding_stops_without_returning_an_environment() {
         let last = count_constructor.get();
         assert!(last > 1 && count.get() >= last);
         for at in [1, last] {
-            for kind in [Stop::Time, Stop::Memory, Stop::Int, Stop::Term] {
+            for kind in [Signal::Int, Signal::Term] {
                 let (mut c, count, _) = stopping(point, at, Some(kind), false);
                 let error = Environment::with_primitive_valuation(&i, &values, &mut c)
                     .err()
                     .expect("入れ子候補の途中環境を返さない");
-                let expected = match kind {
-                    Stop::Time => StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    Stop::Memory => StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    Stop::Int => StopReason::Cancelled(Signal::Int),
-                    Stop::Term => StopReason::Cancelled(Signal::Term),
-                };
+                let expected = StopReason::Cancelled(kind);
                 assert!(matches!(error,ValidationFailure::Stop(s) if s==expected));
                 assert_eq!(count.get(), at);
                 assert_eq!(c.checkpoint(point), Err(expected));
@@ -1224,25 +1137,12 @@ fn original_term_candidate_program_recheck_stops_and_freezes_the_probe() {
     let last = count.get();
     assert!(last > 1);
     for at in [1, last] {
-        for kind in [Stop::Time, Stop::Memory, Stop::Int, Stop::Term] {
+        for kind in [Signal::Int, Signal::Term] {
             let (mut c, count, _) = stopping(Checkpoint::Expression, at, Some(kind), false);
             let error = Environment::with_primitive_valuation(&i, &values, &mut c)
                 .err()
                 .expect("元Termの再検査途中を成功にしない");
-            let expected = match kind {
-                Stop::Time => StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 1,
-                    observed: 1,
-                },
-                Stop::Memory => StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 1,
-                    observed: 1,
-                },
-                Stop::Int => StopReason::Cancelled(Signal::Int),
-                Stop::Term => StopReason::Cancelled(Signal::Term),
-            };
+            let expected = StopReason::Cancelled(kind);
             assert!(matches!(error,ValidationFailure::Stop(s) if s==expected));
             assert_eq!(count.get(), at);
             assert_eq!(c.checkpoint(Checkpoint::Expression), Err(expected));

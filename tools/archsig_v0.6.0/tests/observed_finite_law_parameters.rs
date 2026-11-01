@@ -2,7 +2,7 @@
 use crate::common;
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, check_inputs},
     law::model::Signature,
@@ -15,7 +15,7 @@ use std::{
     rc::Rc,
 };
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -1668,11 +1668,11 @@ view later(s:E): Unit = unit;
     ];
     let count = Rc::new(Cell::new(0));
     let c = count.clone();
-    let mut prior_control = Control::new(Limits::default(), move |point| {
+    let mut prior_control = Control::new(move |point| {
         if point == Checkpoint::Expression {
             c.set(c.get() + 1);
         }
-        Usage::default()
+        None
     });
     let prior = evaluate_observed_bytes(input.clone(), &asks[..3], &mut prior_control)
         .unwrap()
@@ -1683,11 +1683,11 @@ view later(s:E): Unit = unit;
     check_claim(&prior, "observed", "refuted");
     let total = Rc::new(Cell::new(0));
     let c = total.clone();
-    let mut baseline_control = Control::new(Limits::default(), move |point| {
+    let mut baseline_control = Control::new(move |point| {
         if point == Checkpoint::Expression {
             c.set(c.get() + 1);
         }
-        Usage::default()
+        None
     });
     let baseline = evaluate_observed_bytes(input.clone(), &asks[..4], &mut baseline_control)
         .unwrap()
@@ -1705,33 +1705,23 @@ view later(s:E): Unit = unit;
     let body_span = checked.law().exprs()[declared_body(&checked, "Calc.current")].span;
     assert!(!evidence(&ns, answer(&baseline, "current"), "finite_exhaustion").is_empty());
     // 固定Expression pre/postだけを注入。実直積/適用/集約証拠/再検査内部はprivate試験が担う。
-    for (offset, kind, done_bodies, done_rows) in [(1, 0, 0, 0), (3, 1, 1, 1), (4, 2, 2, 1)] {
+    for (offset, done_bodies, done_rows) in [(1, 0, 0), (3, 1, 1), (4, 2, 1)] {
         let at = count.get() + offset;
         let expressions = Rc::new(Cell::new(0));
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (e, p, s) = (expressions.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(
-            Limits {
-                time_ms: (kind == 1).then_some(1),
-                memory_mib: (kind == 2).then_some(1),
-            },
-            move |point| {
-                p.set(p.get() + 1);
-                if point == Checkpoint::Expression {
-                    e.set(e.get() + 1);
-                    if e.get() == at {
-                        s.set(Some(p.get()));
-                        return Usage {
-                            signal: (kind == 0).then_some(Signal::Term),
-                            elapsed_ms: u128::from(kind == 1),
-                            memory_mib: u128::from(kind == 2),
-                        };
-                    }
+        let mut control = Control::new(move |point| {
+            p.set(p.get() + 1);
+            if point == Checkpoint::Expression {
+                e.set(e.get() + 1);
+                if e.get() == at {
+                    s.set(Some(p.get()));
+                    return Some(Signal::Term);
                 }
-                Usage::default()
-            },
-        );
+            }
+            None
+        });
         let wire = evaluate_observed_bytes(input.clone(), &asks, &mut control)
             .unwrap()
             .wire();
@@ -1754,27 +1744,11 @@ view later(s:E): Unit = unit;
             assert_eq!(f(a, "status"), &Json::str("undetermined"));
             assert!(!obj(a).contains_key("claim"));
             assert!(obj(f(a, "outputs")).is_empty());
-            let code = if kind == 0 {
-                "cancelled"
-            } else {
-                "budget_exhausted"
-            };
             let reason = arr(f(a, "reasons"))
                 .iter()
-                .find(|r| f(r, "code") == &Json::str(code))
+                .find(|r| f(r, "code") == &Json::str("cancelled"))
                 .unwrap();
-            let details = if kind == 0 {
-                Json::obj([("signal", Json::str("SIGTERM"))])
-            } else {
-                Json::obj([
-                    (
-                        "resource",
-                        Json::str(if kind == 1 { "time_ms" } else { "memory_mib" }),
-                    ),
-                    ("limit", Json::str("1")),
-                    ("observed", Json::str("1")),
-                ])
-            };
+            let details = Json::obj([("signal", Json::str("SIGTERM"))]);
             assert_eq!(f(reason, "details"), &details);
         }
         let body_evals = evaluations_at(&wire, body_span);

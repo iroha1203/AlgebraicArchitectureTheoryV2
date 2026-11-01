@@ -257,7 +257,7 @@ fn hex4(src: &[u8], at: usize) -> Option<u32> {
 #[cfg(test)]
 mod interruption_tests {
     use super::*;
-    use crate::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::control::{CheckFailure, StopReason};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 
@@ -265,12 +265,9 @@ mod interruption_tests {
     fn pending_cancel_after_leading_zero_detection_is_sampled_before_return() {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut control = Control::new(Limits::default(), move |_| {
+        let mut control = Control::new(move |_| {
             seen.set(seen.get() + 1);
-            Usage {
-                signal: (seen.get() >= 5).then_some(Signal::Term),
-                ..Usage::default()
-            }
+            (seen.get() >= 5).then_some(Signal::Term)
         });
         let failure = lex_inner::<CheckFailure<Box<Issue>>>(
             b"01",
@@ -287,72 +284,6 @@ mod interruption_tests {
     }
 
     #[test]
-    fn known_lexer_errors_outrank_final_time_and_memory_limits() {
-        for bytes in [
-            b"01".as_slice(),
-            b"?",
-            &[0xff],
-            b"\xef\xbb\xbf",
-            b"\"\\x\"",
-            b"\"unclosed",
-        ] {
-            for memory in [false, true] {
-                let mut baseline = Control::unlimited();
-                let ordinary = lex_inner::<CheckFailure<Box<Issue>>>(
-                    bytes,
-                    usize::MAX,
-                    &mut baseline,
-                    Checkpoint::LawIteration,
-                )
-                .unwrap_err();
-                let CheckFailure::Input(expected) = ordinary else {
-                    panic!("syntax expected")
-                };
-                assert_eq!(expected.code, Code::Syntax);
-                let seen = Rc::new(Cell::new(0));
-                let count = seen.clone();
-                let mut baseline = Control::new(Limits::default(), move |_| {
-                    count.set(count.get() + 1);
-                    Usage::default()
-                });
-                let _ = lex_inner::<CheckFailure<Box<Issue>>>(
-                    bytes,
-                    usize::MAX,
-                    &mut baseline,
-                    Checkpoint::LawIteration,
-                );
-                let total = seen.get();
-                let mut n = 0;
-                let mut control = Control::new(
-                    Limits {
-                        time_ms: (!memory).then_some(1),
-                        memory_mib: memory.then_some(1),
-                    },
-                    move |_| {
-                        n += 1;
-                        Usage {
-                            elapsed_ms: u128::from(n >= total && !memory),
-                            memory_mib: u128::from(n >= total && memory),
-                            signal: None,
-                        }
-                    },
-                );
-                assert!(
-                    matches!(
-                        lex_inner::<CheckFailure<Box<Issue>>>(bytes, usize::MAX, &mut control, Checkpoint::LawIteration),
-                        Err(CheckFailure::Input(actual)) if actual == expected
-                    ),
-                    "known syntax must survive final budget: {bytes:?}"
-                );
-                assert!(matches!(
-                    control.stop_reason(),
-                    Some(StopReason::BudgetExhausted { .. })
-                ));
-            }
-        }
-    }
-
-    #[test]
     fn utf8_unknown_byte_and_string_error_exits_sample_pending_cancel() {
         for bytes in [
             b"?".as_slice(),
@@ -363,9 +294,9 @@ mod interruption_tests {
         ] {
             let seen = Rc::new(Cell::new(0));
             let count = seen.clone();
-            let mut baseline = Control::new(Limits::default(), move |_| {
+            let mut baseline = Control::new(move |_| {
                 count.set(count.get() + 1);
-                Usage::default()
+                None
             });
             assert!(matches!(
                 lex_inner::<CheckFailure<Box<Issue>>>(
@@ -378,12 +309,9 @@ mod interruption_tests {
             ));
             let total = seen.get();
             let mut n = 0;
-            let mut control = Control::new(Limits::default(), move |_| {
+            let mut control = Control::new(move |_| {
                 n += 1;
-                Usage {
-                    signal: (n >= total).then_some(Signal::Int),
-                    ..Usage::default()
-                }
+                (n >= total).then_some(Signal::Int)
             });
             assert!(matches!(
                 lex_inner::<CheckFailure<Box<Issue>>>(

@@ -1,7 +1,7 @@
 //! 原始定義の意味検査へ届いた共有中断が、入力不正や false に変わらないことを確かめる。
 use archsig::{
     canonical::Json,
-    control::{CheckFailure, Checkpoint, Control, Limits, StopReason, Usage},
+    control::{CheckFailure, Checkpoint, Control, StopReason},
     definition::{check_definitions, check_definitions_controlled},
     input::{InputSources, InputStatus, check_inputs},
     issue::Code,
@@ -22,15 +22,12 @@ fn semantic_control(
     let calls = Rc::new(Cell::new(0));
     let seen_calls = calls.clone();
     let mut reached_type = false;
-    let control = Control::new(Limits::default(), move |point| {
+    let control = Control::new(move |point| {
         reached_type |= point == Checkpoint::DefinitionSemantics;
         if point == target && (!after_type || reached_type) {
             seen_calls.set(seen_calls.get() + 1);
         }
-        Usage {
-            signal: (seen_calls.get() == stop_after).then_some(Signal::Term),
-            ..Usage::default()
-        }
+        (seen_calls.get() == stop_after).then_some(Signal::Term)
     });
     (control, calls)
 }

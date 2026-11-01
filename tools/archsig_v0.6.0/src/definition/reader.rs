@@ -866,7 +866,7 @@ fn ty_inner<E: InputError>(
 #[cfg(test)]
 mod interruption_tests {
     use super::*;
-    use crate::control::{CheckFailure, Limits, Resource, StopReason, Usage};
+    use crate::control::{CheckFailure, StopReason};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 
@@ -875,69 +875,33 @@ mod interruption_tests {
     fn boundaries(run: impl Fn(&mut Control) -> Result<(), Failure>) -> usize {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut baseline = Control::new(Limits::default(), move |point| {
+        let mut baseline = Control::new(move |point| {
             if point != Checkpoint::DefinitionSchema {
-                return Usage::default();
+                return None;
             }
             seen.set(seen.get() + 1);
-            Usage::default()
+            None
         });
         let outcome = run(&mut baseline);
         assert!(!matches!(outcome, Err(CheckFailure::Stopped(_))));
-        let baseline_code = match &outcome {
-            Err(CheckFailure::Input(issue)) => Some(issue.code),
-            _ => None,
-        };
         let total = count.get();
         assert!(total >= 2);
         for at in [1, total / 2, total] {
-            for kind in 0..3 {
-                let mut visits = 0;
-                let mut control = Control::new(
-                    Limits {
-                        time_ms: (kind == 1).then_some(1),
-                        memory_mib: (kind == 2).then_some(1),
-                    },
-                    move |point| {
-                        if point != Checkpoint::DefinitionSchema {
-                            return Usage::default();
-                        }
-                        visits += 1;
-                        let stop = visits == at;
-                        Usage {
-                            signal: (stop && kind == 0).then_some(Signal::Term),
-                            elapsed_ms: u128::from(stop && kind == 1),
-                            memory_mib: u128::from(stop && kind == 2),
-                        }
-                    },
-                );
-                let expected = match kind {
-                    0 => StopReason::Cancelled(Signal::Term),
-                    1 => StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    _ => StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 1,
-                        observed: 1,
-                    },
-                };
-                let failure = run(&mut control).expect_err("helper 内の前後境界で停止");
-                match failure {
-                    CheckFailure::Stopped(reason) => assert_eq!(reason, expected),
-                    CheckFailure::Input(issue) => {
-                        assert!(kind > 0, "signal takes priority at {at}/{total}");
-                        assert_eq!(
-                            Some(issue.code),
-                            baseline_code,
-                            "only an already established input failure can outrank budget"
-                        );
-                    }
+            let mut visits = 0;
+            let mut control = Control::new(move |point| {
+                if point != Checkpoint::DefinitionSchema {
+                    return None;
                 }
-                assert_eq!(control.stop_reason(), Some(expected));
-            }
+                visits += 1;
+                (visits == at).then_some(Signal::Term)
+            });
+            let expected = StopReason::Cancelled(Signal::Term);
+            let failure = run(&mut control).expect_err("helper 内の前後境界で停止");
+            let CheckFailure::Stopped(reason) = failure else {
+                panic!("signal takes priority at {at}/{total}");
+            };
+            assert_eq!(reason, expected);
+            assert_eq!(control.stop_reason(), Some(expected));
         }
         total
     }
@@ -1021,90 +985,55 @@ mod interruption_tests {
     }
 
     #[test]
-    fn rejecting_characters_are_errors_before_their_exact_post_checkpoint() {
+    fn rejecting_characters_stop_even_at_their_post_checkpoint() {
         let fp = crate::json::parse(br#"["Fp","1x"]"#).unwrap();
         let entries = crate::json::parse(br#"{"a":true,"b":true}"#).unwrap();
         let JValue::Obj(entries) = &entries.value else {
             unreachable!()
         };
-        for (case, first_post, total) in [(0, 7, 8), (1, 2, 2), (2, 6, 6), (3, 5, 6), (4, 4, 4)] {
+        for (case, total) in [(0, 8), (1, 2), (2, 6), (3, 6), (4, 4)] {
             for at in 1..=total {
-                for mode in 0..3 {
-                    let mut visits = 0;
-                    let mut control = Control::new(
-                        Limits {
-                            time_ms: (mode == 1).then_some(1),
-                            memory_mib: (mode == 2).then_some(1),
-                        },
-                        move |point| {
-                            if point == Checkpoint::DefinitionSchema {
-                                visits += 1;
-                            }
-                            let stop = visits == at;
-                            Usage {
-                                signal: (stop && mode == 0).then_some(Signal::Term),
-                                elapsed_ms: u128::from(stop && mode == 1),
-                                memory_mib: u128::from(stop && mode == 2),
-                            }
-                        },
-                    );
-                    let result = match case {
-                        0 => name::<Failure>(&mut control, "bad!", "definition0", "/name"),
-                        1 => name::<Failure>(&mut control, "!bad", "definition0", "/name"),
-                        2 => name::<Failure>(&mut control, "law", "definition0", "/name"),
-                        3 => ty::<Failure>(
-                            &mut control,
-                            &fp,
-                            "definition0",
-                            "/type",
-                            &mut Vec::new(),
-                        )
-                        .map(|_| ()),
-                        _ => find::<Failure>(
-                            entries,
-                            "missing",
-                            &mut control,
-                            Some(error(
-                                Code::Syntax,
-                                "definition0",
-                                "",
-                                "missing required field `missing`",
-                            )),
-                        )
-                        .map(|_| ()),
-                    };
-                    if mode > 0 && at >= first_post {
-                        assert!(
-                            matches!(result, Err(CheckFailure::Input(_))),
-                            "case {case} at {at}"
-                        );
-                    } else {
-                        assert!(
-                            matches!(result, Err(CheckFailure::Stopped(_))),
-                            "case {case} at {at}"
-                        );
+                let mut visits = 0;
+                let mut control = Control::new(move |point| {
+                    if point == Checkpoint::DefinitionSchema {
+                        visits += 1;
                     }
-                }
+                    (visits == at).then_some(Signal::Term)
+                });
+                let result = match case {
+                    0 => name::<Failure>(&mut control, "bad!", "definition0", "/name"),
+                    1 => name::<Failure>(&mut control, "!bad", "definition0", "/name"),
+                    2 => name::<Failure>(&mut control, "law", "definition0", "/name"),
+                    3 => ty::<Failure>(&mut control, &fp, "definition0", "/type", &mut Vec::new())
+                        .map(|_| ()),
+                    _ => find::<Failure>(
+                        entries,
+                        "missing",
+                        &mut control,
+                        Some(error(
+                            Code::Syntax,
+                            "definition0",
+                            "",
+                            "missing required field `missing`",
+                        )),
+                    )
+                    .map(|_| ()),
+                };
+                assert!(
+                    matches!(result, Err(CheckFailure::Stopped(_))),
+                    "case {case} at {at}"
+                );
             }
         }
         // A missing optional field is a valid lookup result, and an early
         // mismatch while another entry remains is not a required-field error.
         let mut visits = 0;
-        let mut control = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: None,
-            },
-            move |point| {
-                if point == Checkpoint::DefinitionSchema {
-                    visits += 1;
-                }
-                Usage {
-                    elapsed_ms: u128::from(visits == 4),
-                    ..Usage::default()
-                }
-            },
-        );
+        let mut control = Control::new(move |point| {
+            if point == Checkpoint::DefinitionSchema {
+                visits += 1;
+            }
+            (visits == 4).then_some(Signal::Term)
+        });
         assert!(matches!(
             find::<Failure>(entries, "missing", &mut control, None),
             Err(CheckFailure::Stopped(_))

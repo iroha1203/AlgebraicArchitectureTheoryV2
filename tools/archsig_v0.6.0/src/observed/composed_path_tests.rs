@@ -198,7 +198,7 @@ fn then_typed_endpoint_counterexample_recheck_rejects_fabricated_values_and_evid
     bad.ty = NodeType::Value(Type::Bool);
     reject(&r, i, bad);
 }
-fn stop(stage: &'static str, kind: usize, unknown: bool) {
+fn stop(stage: &'static str, unknown: bool) {
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(unknown, "r1");
     let current = if unknown {
@@ -214,19 +214,19 @@ fn stop(stage: &'static str, kind: usize, unknown: bool) {
     ];
     let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
     assert!(matches!(normal.status(), "complete" | "partial"));
-    let (limits, usage, reason) = reservations_private_stop_usage(kind);
+    let reason = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(limits, move |_| {
+    let mut c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            crate::control::Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(input, &asks, &mut c).unwrap();
@@ -284,5 +284,5 @@ fn stop(stage: &'static str, kind: usize, unknown: bool) {
 }
 #[test]
 fn then_actual_composition_cancel_keeps_all_tables_and_prior_answers() {
-    stop("path_compose", 0, false);
+    stop("path_compose", false);
 }

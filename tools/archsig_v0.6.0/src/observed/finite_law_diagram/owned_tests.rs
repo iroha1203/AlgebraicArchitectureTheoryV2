@@ -1,12 +1,8 @@
 use super::*;
-use crate::{
-    control::{Limits, Usage},
-    input::InputSources,
-    observed::evaluate_observed_bytes,
-};
+use crate::{input::InputSources, observed::evaluate_observed_bytes};
 
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Finite","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Finite.Root","meaning":"有限入力の対象。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Finite.Part","meaning":"有限入力の対象。","parameters":[{"name":"owner","type":["Ref","Finite.Root"],"meaning":"元の型付き値。"}],"fields":[{"name":"quantity","type":["Fp","2"],"meaning":"元の型付き値。"}],"alignments":[]},{"kind":"correspondence","name":"Finite.Migration","meaning":"有限入力の対象。","parameters":[{"name":"from","type":["Ref","Finite.Root"],"meaning":"元の型付き値。"},{"name":"to","type":["Ref","Finite.Root"],"meaning":"元の型付き値。"}],"fields":[{"name":"states","type":["Map",["Owned","Finite.Part","from"],["Owned","Finite.Part","to"]],"meaning":"元の型付き値。"}],"alignments":[]}]}]}"#;
 const MAP: &str = r#"{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{"namespace":"Finite","version":"1","digest":"@DIGEST@"}],"sources":[],"origins":[{"id":"model","mode":"specification","method":"独立の有限入力。","locations":[],"note":"原始値と対応だけを記録する。"}],"snapshots":[{"id":"v","origin":"model","subjects":[{"id":"a","type":"Finite.Root","origin":"model"},{"id":"b","type":"Finite.Root","origin":"model"},{"id":"p","type":"Finite.Part","origin":"model"},{"id":"q","type":"Finite.Part","origin":"model"},{"id":"m","type":"Finite.Migration","origin":"model"}],"atoms":[{"id":"po","subject":"p","field":"Finite.Part.owner","value":["v","a"],"origin":"model"},{"id":"qo","subject":"q","field":"Finite.Part.owner","value":["v","b"],"origin":"model"},{"id":"px","subject":"p","field":"Finite.Part.quantity","value":"0","origin":"model"},{"id":"mx","subject":"m","field":"Finite.Migration.from","value":["v","a"],"origin":"model"},{"id":"my","subject":"m","field":"Finite.Migration.to","value":["v","b"],"origin":"model"},{"id":"mm","subject":"m","field":"Finite.Migration.states","value":[[["v","p"],["v","q"]]],"origin":"model"},{"id":"qx","subject":"q","field":"Finite.Part.quantity","value":"1","origin":"model"}]}]}"#;
@@ -436,36 +432,17 @@ fn cached_owned_source_rejects_changed_consumer_index_origin_and_node_metadata()
     assert!(other_env.recheck_finite_law_diagram(&g, value).is_err());
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
-fn stopping(mode: usize, at: usize) -> Control {
+fn stopping(signal: crate::result::Signal, at: usize) -> Control {
     let seen = std::rc::Rc::new(std::cell::Cell::new(0));
-    Control::new(
-        Limits {
-            time_ms: (mode == 2).then_some(1),
-            memory_mib: (mode == 3).then_some(1),
-        },
-        move |p| {
-            if p == Checkpoint::FiniteLawFunction {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() >= at;
-            Usage {
-                signal: if stop && mode < 2 {
-                    Some(if mode == 0 {
-                        crate::result::Signal::Int
-                    } else {
-                        crate::result::Signal::Term
-                    })
-                } else {
-                    None
-                },
-                elapsed_ms: u128::from(stop && mode == 2),
-                memory_mib: u128::from(stop && mode == 3),
-            }
-        },
-    )
+    Control::new(move |p| {
+        if p == Checkpoint::FiniteLawFunction {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= at).then_some(signal)
+    })
 }
 #[test]
-fn all_four_stops_on_owned_law_preserve_the_original_family_and_validate_finished_prefixes() {
+fn signal_stops_on_owned_law_preserve_the_original_family_and_validate_finished_prefixes() {
     let e = example(false, BODY);
     let mut initial = graph(&e);
     let f = family(&e, &mut initial, "a");
@@ -473,11 +450,11 @@ fn all_four_stops_on_owned_law_preserve_the_original_family_and_validate_finishe
     let before = initial.nodes.len();
     let count = std::rc::Rc::new(std::cell::Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
+    let mut c = Control::new(move |p| {
         if p == Checkpoint::FiniteLawFunction {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let mut g = replay(&e, &initial.nodes, &initial.contexts).unwrap();
     retain(&mut g, e.prepared.shared_inputs(), owned, 1, &mut c)
@@ -486,7 +463,7 @@ fn all_four_stops_on_owned_law_preserve_the_original_family_and_validate_finishe
     let total = count.get();
     assert!(total > 20);
     let mut nonempty = false;
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, 5, total - 1, total] {
             let mut g = replay(&e, &initial.nodes, &initial.contexts).unwrap();
             assert!(matches!(
@@ -495,7 +472,7 @@ fn all_four_stops_on_owned_law_preserve_the_original_family_and_validate_finishe
                     e.prepared.shared_inputs(),
                     owned,
                     1,
-                    &mut stopping(mode, at)
+                    &mut stopping(signal, at)
                 ),
                 Err(ValidationFailure::Stop(_))
             ));

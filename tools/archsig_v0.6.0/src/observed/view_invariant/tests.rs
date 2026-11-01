@@ -1,6 +1,5 @@
 use super::*;
 use crate::{
-    control::{Limits, Usage},
     input::InputSources,
     observed::{PreparedObserved, request::resolve_native_for_test},
 };
@@ -9,7 +8,7 @@ const DEFINITION: &[u8] = include_bytes!("../../../tests/fixtures/configuration-
 const LAW: &str = include_str!("../../../tests/fixtures/configuration-profile.law");
 const MAP: &str = include_str!("../../../tests/fixtures/configuration-profile.archmap.json");
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn prepared(law: &str, map: &str) -> PreparedObserved {
     prepared_with_definition(law, map, DEFINITION)
@@ -571,9 +570,9 @@ fn four_stops_keep_only_completed_evaluations_invariants_and_axes_as_exact_prefi
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut control = Control::new(Limits::default(), move |_| {
+    let mut control = Control::new(move |_| {
         seen.set(seen.get() + 1);
-        Usage::default()
+        None
     });
     let mut full = copy(&initial, &control);
     let d = retain(&env, &mut full, o.base, &mut control).unwrap();
@@ -581,7 +580,7 @@ fn four_stops_keep_only_completed_evaluations_invariants_and_axes_as_exact_prefi
     let total = count.get();
     assert!(total > 20);
     let mut partial = false;
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [
             1,
             total / 3,
@@ -593,34 +592,17 @@ fn four_stops_keep_only_completed_evaluations_invariants_and_axes_as_exact_prefi
         ] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let mut control = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |_| {
-                    seen.set(seen.get() + 1);
-                    let hit = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(mode == 0 && hit),
-                        memory_mib: u128::from(mode == 1 && hit),
-                        signal: if hit && mode == 2 {
-                            Some(crate::result::Signal::Int)
-                        } else if hit && mode == 3 {
-                            Some(crate::result::Signal::Term)
-                        } else {
-                            None
-                        },
-                    }
-                },
-            );
+            let mut control = Control::new(move |_| {
+                seen.set(seen.get() + 1);
+                (seen.get() >= at).then_some(signal)
+            });
             let mut g = copy(&initial, &control);
             assert!(
                 matches!(
                     retain(&env, &mut g, o.base, &mut control),
                     Err(ValidationFailure::Stop(_))
                 ),
-                "mode{mode}/at{at}"
+                "{signal:?}/at{at}"
             );
             assert_eq!(g.active, initial.active);
             assert!(env.architecture_ref().is_none());

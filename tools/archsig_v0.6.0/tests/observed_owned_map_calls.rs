@@ -2,10 +2,7 @@
 #[path = "common/owned_map_calls.rs"]
 mod fixture;
 use archsig::{
-    canonical::Json,
-    control::{Control, Limits, Usage},
-    input::InputSources,
-    observed::evaluate_observed_bytes,
+    canonical::Json, control::Control, input::InputSources, observed::evaluate_observed_bytes,
 };
 fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("object") };
@@ -28,17 +25,13 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn run_input(i: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvaluation {
-    let r = evaluate_observed_bytes(
-        i,
-        asks,
-        &mut Control::new(Limits::default(), |_| Usage::default()),
-    )
-    .unwrap_or_else(|e| panic!("{:?}", e.wire()));
+    let r = evaluate_observed_bytes(i, asks, &mut Control::unlimited())
+        .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", get(&r.wire(), "issues"));
     r
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
     run_input(fixture::input("known", "r1"), asks)

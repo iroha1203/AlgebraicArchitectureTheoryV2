@@ -1306,7 +1306,7 @@ mod tests {
     use crate::{
         archmap::value::{TermValue, Value},
         canonical::Json,
-        control::{CheckFailure, Limits, StopReason, Usage},
+        control::{CheckFailure, StopReason},
         law::{
             TermBody,
             ast::{Builtin, Ident, Pattern, TypeAst},
@@ -1323,21 +1323,18 @@ mod tests {
     fn exercise<T: ControlledEq + PartialEq>(a: &T, b: &T) {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut control = Control::new(Limits::default(), move |point| {
+        let mut control = Control::new(move |point| {
             assert_eq!(point, Checkpoint::TableComparison);
             seen.set(seen.get() + 1);
-            Usage::default()
+            None
         });
         assert_eq!(compare(a, b, &mut control).is_ok(), a == b);
         assert!(count.get() > 8);
         for at in 1..=count.get() {
             let mut visits = 0;
-            let mut control = Control::new(Limits::default(), move |_| {
+            let mut control = Control::new(move |_| {
                 visits += 1;
-                Usage {
-                    signal: (visits == at).then_some(Signal::Term),
-                    ..Usage::default()
-                }
+                (visits == at).then_some(Signal::Term)
             });
             assert!(matches!(
                 compare(a, b, &mut control),
@@ -1415,42 +1412,20 @@ mod tests {
     }
 
     #[test]
-    fn known_comparison_mismatch_precedes_budget_and_cancellation_precedes_mismatch() {
-        for resource in 0..3 {
-            let mut visits = 0;
-            let mut control = Control::new(
-                Limits {
-                    time_ms: Some(10),
-                    memory_mib: Some(10),
-                },
-                move |_| {
-                    visits += 1;
-                    let stop = visits == 2; // scalar 不一致を得た直後。
-                    Usage {
-                        signal: (stop && resource == 0).then_some(Signal::Int),
-                        elapsed_ms: if stop && resource == 1 { 11 } else { 0 },
-                        memory_mib: if stop && resource == 2 { 12 } else { 0 },
-                    }
-                },
-            );
-            let mut comparison = Comparison::new(&mut control, Location::Law { span: (0, 1) });
-            let result = comparison.eq(&false, &true);
-            assert!(comparison.mismatched);
-            if resource == 0 {
-                assert!(matches!(
-                    result,
-                    Err(CheckFailure::Stopped(StopReason::Cancelled(Signal::Int)))
-                ));
-            } else {
-                assert!(
-                    matches!(result, Err(CheckFailure::Input(issue)) if issue.code == Code::VocabularyMismatch)
-                );
-                assert!(matches!(
-                    control.stop_reason(),
-                    Some(StopReason::BudgetExhausted { .. })
-                ));
-            }
-        }
+    fn cancellation_precedes_known_comparison_mismatch() {
+        let mut visits = 0;
+        let mut control = Control::new(move |_| {
+            visits += 1;
+            // scalar 不一致を得た直後。
+            (visits == 2).then_some(Signal::Int)
+        });
+        let mut comparison = Comparison::new(&mut control, Location::Law { span: (0, 1) });
+        let result = comparison.eq(&false, &true);
+        assert!(comparison.mismatched);
+        assert!(matches!(
+            result,
+            Err(CheckFailure::Stopped(StopReason::Cancelled(Signal::Int)))
+        ));
     }
 
     #[test]

@@ -3,7 +3,7 @@
 mod fixture;
 use super::result::ReasonKind;
 use archsig::{
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::check_inputs,
     observed::{EvaluationFailure, evaluate::evaluate_observed, prepare_shared_observed},
 };
@@ -53,18 +53,7 @@ fn check_part(part: usize) {
             .find(|case| !case.nested && case.name == *name && case.ty == *ty)
             .unwrap();
         let input = case.input();
-        // 元のfresh CLIと同じ120秒の計算予算。
-        let budget_started = std::time::Instant::now();
-        let mut c = Control::new(
-            Limits {
-                time_ms: (case.code != 70).then_some(120000),
-                memory_mib: None,
-            },
-            move |_| Usage {
-                elapsed_ms: budget_started.elapsed().as_millis(),
-                ..Usage::default()
-            },
-        );
+        let mut c = Control::unlimited();
         let inputs = Arc::new(check_inputs(input, &mut c).unwrap());
         // needed は欠測の計画を照合する組だけが使う。
         let asks = if case.code == 70 {
@@ -76,11 +65,6 @@ fn check_part(part: usize) {
         };
         let prepared = prepare_shared_observed(inputs, asks, &mut c).unwrap();
         let evaluated = evaluate_observed(prepared, &mut c);
-        assert!(
-            c.stop_reason().is_none(),
-            "{}: calculation budget exhausted",
-            case.label()
-        );
         if case.code == 70 {
             match evaluated {
                 Err(EvaluationFailure::NotImplemented { feature, .. }) => {
@@ -113,7 +97,7 @@ fn check_part(part: usize) {
                 }
             });
             // 数学的な結果投影を照合する。OS計測の配送はCLI testが所有する。
-            let mut display = Control::new(Limits::default(), |_| Usage::default());
+            let mut display = Control::unlimited();
             let result = result
                 .result_wire_controlled(&mut display, Checkpoint::Expression)
                 .unwrap();

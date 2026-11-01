@@ -1,7 +1,7 @@
 //! AC1 の byte → 型付き回答。期待値は I/O の最小の一周と結果 §§1–3,6 による。
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     definition::check_definitions,
     input::{InputSources, check_inputs},
     observed::{
@@ -26,7 +26,7 @@ const ASKS: [&str; 3] = [
 ];
 
 fn quiet_control() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn sources(law: &[u8], map: &[u8]) -> InputSources {
     InputSources::from_bytes(vec![DEFINITIONS.to_vec()], law.to_vec(), map.to_vec())
@@ -943,11 +943,11 @@ fn finite_law_quantification_and_answer_dependencies_keep_typed_results() {
 fn expression_count(asks: &[&str]) -> usize {
     let count = Rc::new(Cell::new(0));
     let capture = count.clone();
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::Expression {
             capture.set(capture.get() + 1);
         }
-        Usage::default()
+        None
     });
     evaluate_observed_bytes(sources(LAW, MAP), asks, &mut control).unwrap();
     count.get()
@@ -956,23 +956,22 @@ fn expression_count(asks: &[&str]) -> usize {
 fn interrupted_at_expression(
     asks: &[&str],
     stop_at: usize,
-    usage: Usage,
-    limits: Limits,
+    signal: Signal,
     first_complete: bool,
 ) -> Json {
     let calls = Rc::new(Cell::new(0));
     let capture = calls.clone();
     let expressions = Rc::new(Cell::new(0));
     let observed = expressions.clone();
-    let mut control = Control::new(limits, move |point| {
+    let mut control = Control::new(move |point| {
         capture.set(capture.get() + 1);
         if point == Checkpoint::Expression {
             observed.set(observed.get() + 1);
             if observed.get() == stop_at {
-                return usage;
+                return Some(signal);
             }
         }
-        Usage::default()
+        None
     });
     let result = evaluate_observed_bytes(sources(LAW, MAP), asks, &mut control)
         .unwrap()
@@ -1016,20 +1015,11 @@ fn interrupted_at_expression(
 
 #[test]
 fn cancellation_before_the_first_expression_keeps_all_requests_undetermined() {
-    interrupted_at_expression(
-        &ASKS,
-        1,
-        Usage {
-            signal: Some(Signal::Int),
-            ..Usage::default()
-        },
-        Limits::default(),
-        false,
-    );
+    interrupted_at_expression(&ASKS, 1, Signal::Int, false);
 }
 
 #[test]
-fn time_budget_inside_the_first_evaluation_keeps_the_original_reason() {
+fn cancellation_inside_the_first_evaluation_keeps_the_original_reason() {
     // 比較の左辺を確認した後、右辺/比較全体が未完了の位置で止める。
     // 単一の Dotted 式である amount の開始点停止とは異なる部分評価を検査する。
     let asks = [ASKS[1], ASKS[0], ASKS[2]];
@@ -1037,19 +1027,7 @@ fn time_budget_inside_the_first_evaluation_keeps_the_original_reason() {
     assert!(count > 2);
     let midway = count / 2;
     assert!(1 < midway && midway < count);
-    let result = interrupted_at_expression(
-        &asks,
-        midway,
-        Usage {
-            elapsed_ms: 7,
-            ..Usage::default()
-        },
-        Limits {
-            time_ms: Some(7),
-            memory_mib: None,
-        },
-        false,
-    );
+    let result = interrupted_at_expression(&asks, midway, Signal::Int, false);
     let index = nodes(&result);
     let known = index
         .values()
@@ -1072,21 +1050,9 @@ fn time_budget_inside_the_first_evaluation_keeps_the_original_reason() {
 }
 
 #[test]
-fn memory_budget_after_the_first_answer_preserves_its_known_value() {
+fn cancellation_after_the_first_answer_preserves_its_known_value() {
     let first = expression_count(&ASKS[..1]);
-    interrupted_at_expression(
-        &ASKS,
-        first + 1,
-        Usage {
-            memory_mib: 1,
-            ..Usage::default()
-        },
-        Limits {
-            time_ms: None,
-            memory_mib: Some(1),
-        },
-        true,
-    );
+    interrupted_at_expression(&ASKS, first + 1, Signal::Int, true);
 }
 
 // 公開 checkpoint の列から、先頭 amount の式終了直前を選ぶ。
@@ -1102,7 +1068,7 @@ fn missing_root_expression_finite_interval() -> (usize, usize) {
         at_post.clone(),
         at_start.clone(),
     );
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if point == Checkpoint::FiniteIteration {
             seen_finite.set(seen_finite.get() + 1);
         }
@@ -1115,7 +1081,7 @@ fn missing_root_expression_finite_interval() -> (usize, usize) {
                 captured.set(Some(seen_finite.get()));
             }
         }
-        Usage::default()
+        None
     });
     let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
         .unwrap()
@@ -1137,12 +1103,12 @@ fn missing_root_expression_finite_interval() -> (usize, usize) {
     )
 }
 
-fn missing_scope_survives_finite_stop(offset: usize, limits: Limits, usage: Usage) {
+fn missing_scope_survives_finite_stop(offset: usize, signal: Signal) {
     let stop_at = missing_root_expression_finite_interval().1 - offset;
-    missing_scope_survives_at_finite(stop_at, limits, usage);
+    missing_scope_survives_at_finite(stop_at, signal);
 }
 
-fn missing_scope_survives_at_finite(stop_at: usize, limits: Limits, usage: Usage) -> Json {
+fn missing_scope_survives_at_finite(stop_at: usize, signal: Signal) -> Json {
     let finite = Rc::new(Cell::new(0));
     let expression = Rc::new(Cell::new(0));
     let probes = Rc::new(Cell::new(0));
@@ -1153,7 +1119,7 @@ fn missing_scope_survives_at_finite(stop_at: usize, limits: Limits, usage: Usage
         probes.clone(),
         probes_at_stop.clone(),
     );
-    let mut control = Control::new(limits, move |point| {
+    let mut control = Control::new(move |point| {
         calls.set(calls.get() + 1);
         if point == Checkpoint::Expression {
             seen_expression.set(seen_expression.get() + 1);
@@ -1162,10 +1128,10 @@ fn missing_scope_survives_at_finite(stop_at: usize, limits: Limits, usage: Usage
             seen_finite.set(seen_finite.get() + 1);
             if seen_finite.get() == stop_at {
                 stopped_calls.set(Some(calls.get()));
-                return usage;
+                return Some(signal);
             }
         }
-        Usage::default()
+        None
     });
     let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
         .unwrap()
@@ -1179,27 +1145,11 @@ fn missing_scope_survives_at_finite(stop_at: usize, limits: Limits, usage: Usage
         "停止確認後に probe を再実行しない"
     );
     let stop = control.stop_reason().expect("元の停止理由を保持").wire();
-    if let Some(signal) = usage.signal {
-        assert_eq!(field(&stop, "code"), &Json::str("cancelled"));
-        assert_eq!(
-            field(field(&stop, "details"), "signal"),
-            &Json::str(signal.wire())
-        );
-    } else {
-        assert_eq!(field(&stop, "code"), &Json::str("budget_exhausted"));
-        let (resource, limit, observed) = match limits.time_ms {
-            Some(limit) => ("time_ms", limit, usage.elapsed_ms),
-            None => ("memory_mib", limits.memory_mib.unwrap(), usage.memory_mib),
-        };
-        assert_eq!(
-            field(&stop, "details"),
-            &Json::obj([
-                ("resource", Json::str(resource)),
-                ("limit", Json::str(limit.to_string())),
-                ("observed", Json::str(observed.to_string())),
-            ])
-        );
-    }
+    assert_eq!(field(&stop, "code"), &Json::str("cancelled"));
+    assert_eq!(
+        field(field(&stop, "details"), "signal"),
+        &Json::str(signal.wire())
+    );
     for a in arr(field(&result, "answers")) {
         assert_eq!(field(a, "status"), &Json::str("undetermined"));
         assert!(
@@ -1312,45 +1262,18 @@ fn missing_scope_survives_at_finite(stop_at: usize, limits: Limits, usage: Usage
 }
 
 #[test]
-fn missing_scope_survives_time_stop_during_root_evaluation_push() {
-    missing_scope_survives_finite_stop(
-        1,
-        Limits {
-            time_ms: Some(13),
-            memory_mib: None,
-        },
-        Usage {
-            elapsed_ms: 13,
-            ..Usage::default()
-        },
-    );
+fn missing_scope_survives_sigint_during_root_evaluation_push() {
+    missing_scope_survives_finite_stop(1, Signal::Int);
 }
 
 #[test]
-fn missing_scope_survives_memory_stop_before_root_evaluation_push_completes() {
-    missing_scope_survives_finite_stop(
-        2,
-        Limits {
-            time_ms: None,
-            memory_mib: Some(1),
-        },
-        Usage {
-            memory_mib: 1,
-            ..Usage::default()
-        },
-    );
+fn missing_scope_survives_sigint_before_root_evaluation_push_completes() {
+    missing_scope_survives_finite_stop(2, Signal::Int);
 }
 
 #[test]
 fn missing_scope_survives_sigterm_before_root_expression_completes() {
-    missing_scope_survives_finite_stop(
-        0,
-        Limits::default(),
-        Usage {
-            signal: Some(Signal::Term),
-            ..Usage::default()
-        },
-    );
+    missing_scope_survives_finite_stop(0, Signal::Term);
 }
 
 fn reachable_nodes(index: &BTreeMap<&str, &Json>, roots: &[&Json]) -> BTreeSet<String> {
@@ -1798,26 +1721,17 @@ fn missing_finite_probe(stop_at: usize) -> Json {
     let calls = Rc::new(Cell::new(0));
     let stopped_calls = Rc::new(Cell::new(None));
     let (seen_calls, captured_stop) = (calls.clone(), stopped_calls.clone());
-    let mut control = Control::new(
-        Limits {
-            time_ms: Some(1),
-            memory_mib: None,
-        },
-        move |point| {
-            seen_calls.set(seen_calls.get() + 1);
-            if point == Checkpoint::FiniteIteration {
-                finite += 1;
-                if finite == stop_at {
-                    captured_stop.set(Some(seen_calls.get()));
-                    return Usage {
-                        elapsed_ms: 1,
-                        ..Usage::default()
-                    };
-                }
+    let mut control = Control::new(move |point| {
+        seen_calls.set(seen_calls.get() + 1);
+        if point == Checkpoint::FiniteIteration {
+            finite += 1;
+            if finite == stop_at {
+                captured_stop.set(Some(seen_calls.get()));
+                return Some(Signal::Int);
             }
-            Usage::default()
-        },
-    );
+        }
+        None
+    });
     let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
         .unwrap()
         .wire();
@@ -1868,43 +1782,14 @@ fn missing_reason_survives_the_first_source_expression_post_stop() {
                 && field(value(n), "expression") == &Json::obj([("node", Json::str(&expression))])),
         "root Evaluationはまだ生成されていない"
     );
-    for (limits, usage) in [
-        (
-            Limits {
-                time_ms: Some(13),
-                memory_mib: None,
-            },
-            Usage {
-                elapsed_ms: 13,
-                ..Usage::default()
-            },
-        ),
-        (
-            Limits {
-                time_ms: None,
-                memory_mib: Some(1),
-            },
-            Usage {
-                memory_mib: 1,
-                ..Usage::default()
-            },
-        ),
-        (
-            Limits::default(),
-            Usage {
-                signal: Some(Signal::Term),
-                ..Usage::default()
-            },
-        ),
-    ] {
-        let result = missing_scope_survives_at_finite(low, limits, usage);
-        let expression = missing_source_expression_id(&result).unwrap();
-        assert!(
-            !arr(field(&result, "nodes")).iter().any(|n| field(n, "type")
-                == &Json::str("Evaluation")
+    let result = missing_scope_survives_at_finite(low, Signal::Term);
+    let expression = missing_source_expression_id(&result).unwrap();
+    assert!(
+        !arr(field(&result, "nodes"))
+            .iter()
+            .any(|n| field(n, "type") == &Json::str("Evaluation")
                 && field(value(n), "expression") == &Json::obj([("node", Json::str(&expression))]))
-        );
-    }
+    );
 }
 
 #[test]
@@ -2141,15 +2026,11 @@ fn missing_source_and_canonical_reason_commit_atomically_before_and_after_stop()
             assert!(obj(field(a, "outputs")).is_empty());
             let stopped = arr(field(a, "reasons"))
                 .iter()
-                .find(|r| field(r, "code") == &Json::str("budget_exhausted"))
+                .find(|r| field(r, "code") == &Json::str("cancelled"))
                 .unwrap();
             assert_eq!(
                 field(stopped, "details"),
-                &Json::obj([
-                    ("resource", Json::str("time_ms")),
-                    ("limit", Json::str("1")),
-                    ("observed", Json::str("1")),
-                ])
+                &Json::obj([("signal", Json::str("SIGINT"))])
             );
         }
         assert!(

@@ -1,10 +1,6 @@
 #[path = "common/answer_family_conditions.rs"]
 mod fixture;
-use archsig::{
-    canonical::Json,
-    control::{Control, Limits, Usage},
-    observed::evaluate_observed_bytes,
-};
+use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!() };
     &m[k]
@@ -26,7 +22,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn blocked(w: &Json, id: &str, producer: &str) -> Json {
     let a = answer(w, id);

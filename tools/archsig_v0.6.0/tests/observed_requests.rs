@@ -2,7 +2,7 @@
 use crate::common;
 use archsig::{
     archmap::CheckedArchMap,
-    control::{Control, Limits, StopReason, Usage},
+    control::{Control, StopReason},
     law::CheckedLaw,
     observed::{
         projection::{ProjectionStep, ProjectionType},
@@ -11,6 +11,7 @@ use archsig::{
             resolve_observed_requests, resolve_observed_requests_controlled,
         },
     },
+    result::Signal,
     types::Type,
 };
 
@@ -47,12 +48,7 @@ fn inputs() -> (CheckedLaw, CheckedArchMap) {
 fn rejects(asks: &[&str], expected: RequestIssueCode) {
     let (law, map) = inputs();
     match resolve_observed_requests(&law, &map, asks).unwrap_err() {
-        ResolveFailure::Invalid {
-            requests,
-            issues,
-            stop_reason,
-        } => {
-            assert!(stop_reason.is_none());
+        ResolveFailure::Invalid { requests, issues } => {
             assert!(requests.is_empty());
             assert_eq!(issues[0].code, expected, "{issues:?}");
             assert!(!issues[0].wire().canonical().contains("location"));
@@ -224,15 +220,9 @@ fn cycles_report_each_member_and_keep_the_graph_without_marking_downstream() {
         ],
     )
     .unwrap_err();
-    let ResolveFailure::Invalid {
-        requests,
-        issues,
-        stop_reason,
-    } = error
-    else {
+    let ResolveFailure::Invalid { requests, issues } = error else {
         panic!("cycle");
     };
-    assert!(stop_reason.is_none());
     assert_eq!(requests.len(), 3);
     assert_eq!(requests[2].dependencies, ["a"]);
     assert_eq!(
@@ -256,26 +246,17 @@ fn cycles_report_each_member_and_keep_the_graph_without_marking_downstream() {
 fn request_resolution_uses_the_same_latched_interrupt_control() {
     let (law, map) = inputs();
     let mut calls = 0;
-    let mut control = Control::new(
-        Limits {
-            time_ms: Some(2),
-            memory_mib: None,
-        },
-        move |_| {
-            calls += 1;
-            Usage {
-                elapsed_ms: calls,
-                ..Usage::default()
-            }
-        },
-    );
+    let mut control = Control::new(move |_| {
+        calls += 1;
+        (calls >= 2).then_some(Signal::Term)
+    });
     let error =
         resolve_observed_requests_controlled(&law, &map, &["a=check(R.positive)"], &mut control)
             .unwrap_err();
     assert!(matches!(
         error,
         ResolveFailure::Interrupted {
-            reason: StopReason::BudgetExhausted { observed: 2, .. }
+            reason: StopReason::Cancelled(Signal::Term)
         }
     ));
 }

@@ -46,18 +46,13 @@ pub(crate) fn is_prime_controlled<E: InputError>(
     finish_decision::<E>(prime, control, point)
 }
 
-/// false は素数性全体の棄却が完了した場合だけ渡す。
-/// 予算を観測しても既知の不正を呼出し元で構成できる。取消は常に優先する。
+/// false は素数性全体の棄却が完了した場合だけ渡す。取消は判定より優先する。
 fn finish_decision<E: InputError>(
     prime: bool,
     control: &mut Control,
     point: Checkpoint,
 ) -> Result<bool, E> {
-    match E::checkpoint(control, point) {
-        Err(stop) if !prime && stop.is_budget_stop() => Ok(false),
-        Err(stop) => Err(stop),
-        Ok(()) => Ok(prime),
-    }
+    E::checkpoint(control, point).map(|()| prime)
 }
 
 fn strong_fermat_base2<E: InputError>(
@@ -102,8 +97,6 @@ fn jacobi<E: InputError>(
     point: Checkpoint,
 ) -> Result<i32, E> {
     E::checkpoint(control, point)?;
-    // Only this zero is the very rejection used by the caller's Selfridge search.
-    let zero_proves_composite = a.abs() != *n;
     let mut a = a.mod_floor(n);
     let mut n = n.clone();
     let mut result = 1;
@@ -112,12 +105,7 @@ fn jacobi<E: InputError>(
     let eight = BigInt::from(8);
     let four = BigInt::from(4);
     if a.is_zero() {
-        return finish_jacobi::<E>(
-            if n.is_one() { result } else { 0 },
-            zero_proves_composite,
-            control,
-            point,
-        );
+        return E::checkpoint(control, point).map(|()| if n.is_one() { result } else { 0 });
     }
     E::checkpoint(control, point)?;
     while !a.is_zero() {
@@ -137,34 +125,11 @@ fn jacobi<E: InputError>(
         }
         a = a.mod_floor(&n);
         if a.is_zero() {
-            return finish_jacobi::<E>(
-                if n.is_one() { result } else { 0 },
-                zero_proves_composite,
-                control,
-                point,
-            );
+            return E::checkpoint(control, point).map(|()| if n.is_one() { result } else { 0 });
         }
         E::checkpoint(control, point)?;
     }
-    finish_jacobi::<E>(
-        if n.is_one() { result } else { 0 },
-        zero_proves_composite,
-        control,
-        point,
-    )
-}
-
-fn finish_jacobi<E: InputError>(
-    symbol: i32,
-    zero_proves_composite: bool,
-    control: &mut Control,
-    point: Checkpoint,
-) -> Result<i32, E> {
-    match E::checkpoint(control, point) {
-        Err(stop) if symbol == 0 && zero_proves_composite && stop.is_budget_stop() => Ok(0),
-        Err(stop) => Err(stop),
-        Ok(()) => Ok(symbol),
-    }
+    E::checkpoint(control, point).map(|()| if n.is_one() { result } else { 0 })
 }
 
 fn strong_lucas<E: InputError>(
@@ -266,50 +231,22 @@ mod tests {
 #[cfg(test)]
 mod controlled_tests {
     use super::*;
-    use crate::control::{CheckFailure, Limits, Resource, StopReason, Usage};
+    use crate::control::{CheckFailure, StopReason};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
 
     type Failure = CheckFailure<Box<Issue>>;
     const POINT: Checkpoint = Checkpoint::LawSemantics;
 
-    fn probe(at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+    fn probe(at: usize) -> (Control, Rc<Cell<usize>>) {
         let visits = Rc::new(Cell::new(0));
         let seen = visits.clone();
-        let control = Control::new(
-            Limits {
-                time_ms: (mode == 1).then_some(3),
-                memory_mib: (mode == 2).then_some(5),
-            },
-            move |point| {
-                assert_eq!(point, POINT);
-                seen.set(seen.get() + 1);
-                let stop = seen.get() == at;
-                Usage {
-                    elapsed_ms: if stop && mode == 1 { 7 } else { 0 },
-                    memory_mib: if stop && mode == 2 { 11 } else { 0 },
-                    signal: (stop && mode == 0).then_some(Signal::Int),
-                }
-            },
-        );
+        let control = Control::new(move |point| {
+            assert_eq!(point, POINT);
+            seen.set(seen.get() + 1);
+            (seen.get() == at).then_some(Signal::Int)
+        });
         (control, visits)
-    }
-
-    fn expected_reason(mode: usize) -> StopReason {
-        match mode {
-            0 => StopReason::Cancelled(Signal::Int),
-            1 => StopReason::BudgetExhausted {
-                resource: Resource::TimeMs,
-                limit: 3,
-                observed: 7,
-            },
-            2 => StopReason::BudgetExhausted {
-                resource: Resource::MemoryMib,
-                limit: 5,
-                observed: 11,
-            },
-            _ => unreachable!(),
-        }
     }
 
     fn accepted_stage(stage: usize, control: &mut Control) -> Result<bool, Failure> {
@@ -346,19 +283,21 @@ mod controlled_tests {
         // nested loops, Selfridge search and Lucas bits. 127 additionally
         // traverses Lucas's final squaring loop (127 + 1 has seven factors 2).
         for stage in 0..5 {
-            let (mut baseline, total) = probe(usize::MAX, 0);
+            let (mut baseline, total) = probe(usize::MAX);
             assert!(accepted_stage(stage, &mut baseline).unwrap());
             assert!(total.get() > 2, "stage {stage}");
             for at in 1..=total.get() {
-                for mode in 0..3 {
-                    let (mut control, seen) = probe(at, mode);
-                    let error = accepted_stage(stage, &mut control).unwrap_err();
-                    assert_eq!(seen.get(), at, "stage {stage} at {at}");
-                    assert!(
-                        matches!(error, Failure::Stopped(ref reason) if *reason == expected_reason(mode))
-                    );
-                    assert_eq!(control.stop_reason(), Some(expected_reason(mode)));
-                }
+                let (mut control, seen) = probe(at);
+                let error = accepted_stage(stage, &mut control).unwrap_err();
+                assert_eq!(seen.get(), at, "stage {stage} at {at}");
+                assert!(matches!(
+                    error,
+                    Failure::Stopped(StopReason::Cancelled(Signal::Int))
+                ));
+                assert_eq!(
+                    control.stop_reason(),
+                    Some(StopReason::Cancelled(Signal::Int))
+                );
             }
         }
     }
@@ -377,31 +316,28 @@ mod controlled_tests {
     }
 
     #[test]
-    fn completed_composite_rejections_survive_only_budget_at_terminal_checks() {
+    fn completed_composite_rejections_yield_to_a_stop_at_terminal_checks() {
         // Distinct terminal rejections: divisor, Fermat exhaustion, square,
         // Jacobi zero, final Lucas bit, and final Lucas squaring.
         for stage in 0..7 {
-            let (mut baseline, total) = probe(usize::MAX, 0);
+            let (mut baseline, total) = probe(usize::MAX);
             assert!(
                 !rejected_stage(stage, &mut baseline).unwrap(),
                 "stage {stage}"
             );
-            for mode in 0..3 {
-                let (mut control, seen) = probe(total.get(), mode);
-                let result = rejected_stage(stage, &mut control);
-                assert_eq!(seen.get(), total.get());
-                if mode == 0 {
-                    assert!(matches!(
-                        result,
-                        Err(Failure::Stopped(StopReason::Cancelled(Signal::Int)))
-                    ));
-                } else {
-                    assert!(!result.unwrap(), "stage {stage}");
-                }
-                assert_eq!(control.stop_reason(), Some(expected_reason(mode)));
-            }
+            let (mut control, seen) = probe(total.get());
+            let result = rejected_stage(stage, &mut control);
+            assert_eq!(seen.get(), total.get());
+            assert!(matches!(
+                result,
+                Err(Failure::Stopped(StopReason::Cancelled(Signal::Int)))
+            ));
+            assert_eq!(
+                control.stop_reason(),
+                Some(StopReason::Cancelled(Signal::Int))
+            );
             // An unexamined stage never inherits a later composite answer.
-            let (mut control, _) = probe(1, 1);
+            let (mut control, _) = probe(1);
             assert!(matches!(
                 rejected_stage(stage, &mut control),
                 Err(Failure::Stopped(_))
@@ -411,26 +347,31 @@ mod controlled_tests {
 
     #[test]
     fn jacobi_zero_equal_to_the_modulus_does_not_become_a_composite_answer() {
-        let (mut baseline, total) = probe(usize::MAX, 0);
+        let (mut baseline, total) = probe(usize::MAX);
         assert_eq!(
             jacobi::<Failure>(&5.into(), &5.into(), &mut baseline, POINT).unwrap(),
             0
         );
-        for mode in 0..3 {
-            let (mut control, _) = probe(total.get(), mode);
-            let result = jacobi::<Failure>(&5.into(), &5.into(), &mut control, POINT);
-            assert!(
-                matches!(result, Err(Failure::Stopped(ref reason)) if *reason == expected_reason(mode))
-            );
-        }
-        // A genuinely composite Selfridge result may pass its zero through
-        // the enclosing loop without losing the already sampled budget.
-        let (mut baseline, total) = probe(usize::MAX, 0);
+        let (mut control, _) = probe(total.get());
+        let result = jacobi::<Failure>(&5.into(), &5.into(), &mut control, POINT);
+        assert!(matches!(
+            result,
+            Err(Failure::Stopped(StopReason::Cancelled(Signal::Int)))
+        ));
+        // A genuinely composite Selfridge result passing its zero through
+        // the enclosing loop still reports a stop observed on the way.
+        let (mut baseline, total) = probe(usize::MAX);
         assert!(!strong_lucas::<Failure>(&35u32.into(), &mut baseline, POINT).unwrap());
         for at in total.get() - 1..=total.get() {
-            let (mut control, _) = probe(at, 1);
-            assert!(!strong_lucas::<Failure>(&35u32.into(), &mut control, POINT).unwrap());
-            assert_eq!(control.stop_reason(), Some(expected_reason(1)));
+            let (mut control, _) = probe(at);
+            assert!(matches!(
+                strong_lucas::<Failure>(&35u32.into(), &mut control, POINT),
+                Err(Failure::Stopped(StopReason::Cancelled(Signal::Int)))
+            ));
+            assert_eq!(
+                control.stop_reason(),
+                Some(StopReason::Cancelled(Signal::Int))
+            );
         }
     }
 }

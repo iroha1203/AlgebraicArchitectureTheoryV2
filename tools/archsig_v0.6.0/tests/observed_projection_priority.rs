@@ -1,9 +1,9 @@
-//! 射影不正の確定後の予算、取消、動的候補の局所棄却を区別する。
+//! 射影不正の確定後の取消と、動的候補の局所棄却を区別する。
 use crate::common;
 
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     input::{InputSources, check_inputs},
     observed::{
         PrepareFailure, prepare_observed,
@@ -66,59 +66,21 @@ fn sources_with_empty_constructor(empty_first: Option<bool>) -> InputSources {
     )
 }
 
-#[derive(Clone, Copy)]
-enum Stop {
-    Cancel,
-    Time,
-    Memory,
-}
-
-fn probe(at: Option<usize>, stop: Stop) -> (Control, Rc<Cell<usize>>, StopReason) {
+fn probe(at: Option<usize>) -> (Control, Rc<Cell<usize>>, StopReason) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let reason = match stop {
-        Stop::Cancel => StopReason::Cancelled(Signal::Term),
-        Stop::Time => StopReason::BudgetExhausted {
-            resource: Resource::TimeMs,
-            limit: 3,
-            observed: 5,
-        },
-        Stop::Memory => StopReason::BudgetExhausted {
-            resource: Resource::MemoryMib,
-            limit: 7,
-            observed: 11,
-        },
-    };
-    let control = Control::new(
-        Limits {
-            time_ms: matches!(stop, Stop::Time).then_some(3),
-            memory_mib: matches!(stop, Stop::Memory).then_some(7),
-        },
-        move |point| {
-            if point == Checkpoint::Projection {
-                seen.set(seen.get() + 1);
-            }
-            let hit = at.is_some_and(|at| seen.get() >= at);
-            Usage {
-                elapsed_ms: if hit && matches!(stop, Stop::Time) {
-                    5
-                } else {
-                    0
-                },
-                memory_mib: if hit && matches!(stop, Stop::Memory) {
-                    11
-                } else {
-                    0
-                },
-                signal: (hit && matches!(stop, Stop::Cancel)).then_some(Signal::Term),
-            }
-        },
-    );
-    (control, count, reason)
+    let control = Control::new(move |point| {
+        if point == Checkpoint::Projection {
+            seen.set(seen.get() + 1);
+        }
+        at.is_some_and(|at| seen.get() >= at)
+            .then_some(Signal::Term)
+    });
+    (control, count, StopReason::Cancelled(Signal::Term))
 }
 
 #[test]
-fn known_projection_errors_preserve_usage_and_budget_while_cancellation_wins() {
+fn known_projection_errors_yield_to_cancellation() {
     for (bad, producer, message) in [
         (
             "bad=evaluate(R.echo,s=$choice.value.some)",
@@ -142,15 +104,10 @@ fn known_projection_errors_preserve_usage_and_budget_while_cancellation_wins() {
         ),
     ] {
         let asks = [bad, producer];
-        let (mut baseline, total, _) = probe(None, Stop::Time);
+        let (mut baseline, total, _) = probe(None);
         let normal = prepare_observed(sources(), &asks, &mut baseline).unwrap_err();
         let PrepareFailure::Requests {
-            failure:
-                ResolveFailure::Invalid {
-                    issues,
-                    stop_reason: None,
-                    ..
-                },
+            failure: ResolveFailure::Invalid { issues, .. },
             ..
         } = &normal
         else {
@@ -161,62 +118,46 @@ fn known_projection_errors_preserve_usage_and_budget_while_cancellation_wins() {
         assert_eq!(issues[0].request, "bad");
         assert_eq!(issues[0].argument, "bind.s");
         assert_eq!(issues[0].message, message);
-        let expected_issue = issues[0].wire();
         if bad.ends_with("value.some)") {
             assert_eq!(total.get(), 4, "review counterexample point");
         }
-        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
-            let (mut control, count, reason) = probe(Some(total.get()), kind);
-            let failure = prepare_observed(sources(), &asks, &mut control).unwrap_err();
-            let wire_value = failure.wire().unwrap();
-            let Json::Obj(wire) = &wire_value else {
-                panic!("object");
-            };
-            assert_eq!(wire["nodes"], Json::Arr(vec![]));
-            assert_eq!(wire["answers"], Json::Arr(vec![]));
-            if matches!(kind, Stop::Cancel) {
-                assert_eq!(wire["status"], Json::str("interrupted"));
-                assert_eq!(wire["issues"], Json::Arr(vec![reason.wire()]));
-                assert!(
-                    matches!(&failure, PrepareFailure::Requests { failure: ResolveFailure::Interrupted { reason: actual }, .. } if actual == &reason)
-                );
-            } else {
-                assert_eq!(wire["status"], Json::str("invalid"));
-                assert_eq!(
-                    wire["issues"],
-                    Json::Arr(vec![reason.wire(), expected_issue.clone()])
-                );
-                assert!(
-                    matches!(&failure, PrepareFailure::Requests { failure: ResolveFailure::Invalid { stop_reason: Some(actual), .. }, .. } if actual == &reason)
-                );
-            }
-            let PrepareFailure::Requests { inputs, .. } = &failure else {
-                panic!("requests");
-            };
-            assert!(inputs.law().declarations().contains_key("R.choice"));
-            assert_eq!(inputs.archmap().snapshots()[0].subjects[0].id, "s");
-            assert_eq!(count.get(), total.get());
-            assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
-            assert_eq!(
-                count.get(),
-                total.get(),
-                "latched stop does not resume the probe"
-            );
-        }
+        let (mut control, count, reason) = probe(Some(total.get()));
+        let failure = prepare_observed(sources(), &asks, &mut control).unwrap_err();
+        let wire_value = failure.wire().unwrap();
+        let Json::Obj(wire) = &wire_value else {
+            panic!("object");
+        };
+        assert_eq!(wire["nodes"], Json::Arr(vec![]));
+        assert_eq!(wire["answers"], Json::Arr(vec![]));
+        assert_eq!(wire["status"], Json::str("interrupted"));
+        assert_eq!(wire["issues"], Json::Arr(vec![reason.wire()]));
+        assert!(
+            matches!(&failure, PrepareFailure::Requests { failure: ResolveFailure::Interrupted { reason: actual }, .. } if actual == &reason)
+        );
+        let PrepareFailure::Requests { inputs, .. } = &failure else {
+            panic!("requests");
+        };
+        assert!(inputs.law().declarations().contains_key("R.choice"));
+        assert_eq!(inputs.archmap().snapshots()[0].subjects[0].id, "s");
+        assert_eq!(count.get(), total.get());
+        assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+        assert_eq!(
+            count.get(),
+            total.get(),
+            "latched stop does not resume the probe"
+        );
         // Before the first projection step no invalid result has been established.
-        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
-            let (mut control, count, reason) = probe(Some(1), kind);
-            let failure = prepare_observed(sources(), &asks, &mut control).unwrap_err();
-            assert!(
-                matches!(failure, PrepareFailure::Requests { failure: ResolveFailure::Interrupted { reason: actual }, .. } if actual == reason)
-            );
-            assert_eq!(count.get(), 1);
-        }
+        let (mut control, count, reason) = probe(Some(1));
+        let failure = prepare_observed(sources(), &asks, &mut control).unwrap_err();
+        assert!(
+            matches!(failure, PrepareFailure::Requests { failure: ResolveFailure::Interrupted { reason: actual }, .. } if actual == reason)
+        );
+        assert_eq!(count.get(), 1);
     }
 }
 
 #[test]
-fn early_projection_errors_use_the_same_priority_policy() {
+fn early_projection_errors_yield_to_cancellation_at_the_final_checkpoint() {
     let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
     for (ty, path, message) in [
         (
@@ -240,30 +181,23 @@ fn early_projection_errors_use_the_same_priority_policy() {
             "no type candidate exposes this projection",
         ),
     ] {
-        let (mut baseline, total, _) = probe(None, Stop::Time);
+        let (mut baseline, total, _) = probe(None);
         assert_eq!(
             resolve_projection_controlled(checked.law(), ty.clone(), &path, &mut baseline),
             Err(ProjectionFailure::Invalid(message.into()))
         );
-        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
-            let (mut control, count, reason) = probe(Some(total.get()), kind);
-            let expected = if matches!(kind, Stop::Cancel) {
-                ProjectionFailure::Interrupted(reason.clone())
-            } else {
-                ProjectionFailure::Invalid(message.into())
-            };
-            assert_eq!(
-                resolve_projection_controlled(checked.law(), ty.clone(), &path, &mut control),
-                Err(expected)
-            );
-            assert_eq!(count.get(), total.get());
-            assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
-        }
+        let (mut control, count, reason) = probe(Some(total.get()));
+        assert_eq!(
+            resolve_projection_controlled(checked.law(), ty.clone(), &path, &mut control),
+            Err(ProjectionFailure::Interrupted(reason.clone()))
+        );
+        assert_eq!(count.get(), total.get());
+        assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
     }
 }
 
 #[test]
-fn final_dynamic_rejection_keeps_invalid_at_both_internal_post_checkpoints() {
+fn final_dynamic_rejection_yields_to_cancellation_at_every_checkpoint() {
     let checked = check_inputs(sources(), &mut Control::unlimited()).unwrap();
     let initial = ProjectionType::Dynamic(vec![
         ProjectionType::Law(Type::Bool),
@@ -271,36 +205,28 @@ fn final_dynamic_rejection_keeps_invalid_at_both_internal_post_checkpoints() {
     ]);
     let path = [ProjectionStep::Field("some".into())];
     let invalid = ProjectionFailure::Invalid("no type candidate exposes this projection".into());
-    let (mut baseline, total, _) = probe(None, Stop::Time);
+    let (mut baseline, total, _) = probe(None);
     assert_eq!(
         resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut baseline),
         Err(invalid.clone())
     );
     // Last candidate post = 10, last iteration post = 11, whole project post = 12.
-    // At 6 only the first candidate has rejected; the second remains untried.
     assert_eq!(total.get(), 12);
     for at in 1..=total.get() {
-        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
-            let (mut control, count, reason) = probe(Some(at), kind);
-            let expected = if at >= 10 && !matches!(kind, Stop::Cancel) {
-                invalid.clone()
-            } else {
-                ProjectionFailure::Interrupted(reason.clone())
-            };
-            assert_eq!(
-                resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut control),
-                Err(expected)
-            );
-            assert_eq!(control.stop_reason(), Some(reason.clone()));
-            assert_eq!(count.get(), at);
-            assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
-            assert_eq!(count.get(), at, "latched stop cannot resume candidate work");
-        }
+        let (mut control, count, reason) = probe(Some(at));
+        assert_eq!(
+            resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut control),
+            Err(ProjectionFailure::Interrupted(reason.clone()))
+        );
+        assert_eq!(control.stop_reason(), Some(reason.clone()));
+        assert_eq!(count.get(), at);
+        assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+        assert_eq!(count.get(), at, "latched stop cannot resume candidate work");
     }
 }
 
 #[test]
-fn dynamic_projection_from_bytes_keeps_the_final_candidate_and_iteration_results() {
+fn dynamic_projection_from_bytes_yields_to_cancellation_at_every_checkpoint() {
     let asks = [
         "bad=evaluate(R.echo,s=$choice.value[0].missing)",
         "choice=evaluate(R.choice)",
@@ -310,7 +236,7 @@ fn dynamic_projection_from_bytes_keeps_the_final_candidate_and_iteration_results
 }
 
 #[test]
-fn final_constructor_rejection_from_bytes_keeps_both_post_results() {
+fn final_constructor_rejection_from_bytes_yields_to_cancellation_at_every_checkpoint() {
     let asks = [
         "bad=evaluate(R.echo,s=$choice.value[1])",
         "choice=evaluate(R.choice)",
@@ -326,7 +252,7 @@ fn a_rejected_constructor_cannot_hide_untried_or_accepted_candidates() {
         "choice=evaluate(R.choice)",
     ];
     for empty_first in [true, false] {
-        let (mut baseline, total, _) = probe(None, Stop::Time);
+        let (mut baseline, total, _) = probe(None);
         let normal = prepare_observed(
             sources_with_empty_constructor(Some(empty_first)),
             &asks,
@@ -335,38 +261,31 @@ fn a_rejected_constructor_cannot_hide_untried_or_accepted_candidates() {
         .unwrap();
         assert_eq!(normal.requests().requests()[0].id, "ok");
         for at in 1..=total.get() {
-            for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
-                let (mut control, count, reason) = probe(Some(at), kind);
-                let failure = prepare_observed(
-                    sources_with_empty_constructor(Some(empty_first)),
-                    &asks,
-                    &mut control,
-                )
-                .unwrap_err();
-                assert!(matches!(
-                    failure,
-                    PrepareFailure::Requests {
-                        failure: ResolveFailure::Interrupted { reason: actual }, ..
-                    } if actual == reason
-                ));
-                assert_eq!(count.get(), at);
-                assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
-                assert_eq!(count.get(), at);
-            }
+            let (mut control, count, reason) = probe(Some(at));
+            let failure = prepare_observed(
+                sources_with_empty_constructor(Some(empty_first)),
+                &asks,
+                &mut control,
+            )
+            .unwrap_err();
+            assert!(matches!(
+                failure,
+                PrepareFailure::Requests {
+                    failure: ResolveFailure::Interrupted { reason: actual }, ..
+                } if actual == reason
+            ));
+            assert_eq!(count.get(), at);
+            assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+            assert_eq!(count.get(), at);
         }
     }
 }
 
 fn assert_exhausted_projection_from_bytes(asks: &[&str], message: &str, known_posts: usize) {
-    let (mut baseline, total, _) = probe(None, Stop::Time);
+    let (mut baseline, total, _) = probe(None);
     let normal = prepare_observed(sources(), asks, &mut baseline).unwrap_err();
     let PrepareFailure::Requests {
-        failure:
-            ResolveFailure::Invalid {
-                issues,
-                stop_reason: None,
-                ..
-            },
+        failure: ResolveFailure::Invalid { issues, .. },
         ..
     } = &normal
     else {
@@ -377,52 +296,27 @@ fn assert_exhausted_projection_from_bytes(asks: &[&str], message: &str, known_po
     assert_eq!(issues[0].request, "bad");
     assert_eq!(issues[0].argument, "bind.s");
     assert_eq!(issues[0].message, message);
-    let expected_issue = issues[0].wire();
     assert!(total.get() >= known_posts);
     for at in 1..=total.get() {
-        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
-            let (mut control, count, reason) = probe(Some(at), kind);
-            let failure = prepare_observed(sources(), asks, &mut control).unwrap_err();
-            let Json::Obj(ref wire) = failure.wire().unwrap() else {
-                panic!("object");
-            };
-            assert_eq!(wire["answers"], Json::Arr(vec![]));
-            assert_eq!(wire["nodes"], Json::Arr(vec![]));
-            if at > total.get() - known_posts && !matches!(kind, Stop::Cancel) {
-                assert_eq!(wire["status"], Json::str("invalid"));
-                assert_eq!(
-                    wire["issues"],
-                    Json::Arr(vec![reason.wire(), expected_issue.clone()])
-                );
-                let PrepareFailure::Requests {
-                    inputs,
-                    failure:
-                        ResolveFailure::Invalid {
-                            stop_reason: Some(actual),
-                            ..
-                        },
-                } = &failure
-                else {
-                    panic!("known projection error and budget");
-                };
-                assert_eq!(actual, &reason);
-                assert!(inputs.law().declarations().contains_key("R.choice"));
-                assert_eq!(inputs.archmap().snapshots()[0].subjects[0].id, "s");
-            } else {
-                assert_eq!(wire["status"], Json::str("interrupted"));
-                assert_eq!(wire["issues"], Json::Arr(vec![reason.wire()]));
-                assert!(matches!(
-                    &failure,
-                    PrepareFailure::Requests {
-                        failure: ResolveFailure::Interrupted { reason: actual }, ..
-                    } if actual == &reason
-                ));
-            }
-            assert_eq!(control.stop_reason(), Some(reason.clone()));
-            assert_eq!(count.get(), at);
-            assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
-            assert_eq!(count.get(), at);
-        }
+        let (mut control, count, reason) = probe(Some(at));
+        let failure = prepare_observed(sources(), asks, &mut control).unwrap_err();
+        let Json::Obj(ref wire) = failure.wire().unwrap() else {
+            panic!("object");
+        };
+        assert_eq!(wire["answers"], Json::Arr(vec![]));
+        assert_eq!(wire["nodes"], Json::Arr(vec![]));
+        assert_eq!(wire["status"], Json::str("interrupted"));
+        assert_eq!(wire["issues"], Json::Arr(vec![reason.wire()]));
+        assert!(matches!(
+            &failure,
+            PrepareFailure::Requests {
+                failure: ResolveFailure::Interrupted { reason: actual }, ..
+            } if actual == &reason
+        ));
+        assert_eq!(control.stop_reason(), Some(reason.clone()));
+        assert_eq!(count.get(), at);
+        assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+        assert_eq!(count.get(), at);
     }
 }
 
@@ -453,33 +347,26 @@ fn dynamic_candidate_rejection_never_establishes_global_invalidity() {
     ] {
         let initial = ProjectionType::Dynamic(candidates);
         let path = [ProjectionStep::Field("some".into())];
-        let (mut baseline, total, _) = probe(None, Stop::Time);
+        let (mut baseline, total, _) = probe(None);
         let normal =
             resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut baseline)
                 .unwrap();
         assert_eq!(normal.ty, ProjectionType::Law(Type::Z));
         for at in 1..=total.get() {
-            for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
-                let (mut control, count, reason) = probe(Some(at), kind);
-                assert_eq!(
-                    resolve_projection_controlled(
-                        checked.law(),
-                        initial.clone(),
-                        &path,
-                        &mut control
-                    ),
-                    Err(ProjectionFailure::Interrupted(reason.clone()))
-                );
-                assert_eq!(count.get(), at);
-                assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
-                assert_eq!(count.get(), at);
-            }
+            let (mut control, count, reason) = probe(Some(at));
+            assert_eq!(
+                resolve_projection_controlled(checked.law(), initial.clone(), &path, &mut control),
+                Err(ProjectionFailure::Interrupted(reason.clone()))
+            );
+            assert_eq!(count.get(), at);
+            assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+            assert_eq!(count.get(), at);
         }
     }
 }
 
-fn assert_binding_priority(asks: &[&str], at: usize, kind: Stop, known_mismatch: bool) {
-    let (mut control, count, reason) = probe(Some(at), kind);
+fn assert_binding_priority(asks: &[&str], at: usize) {
+    let (mut control, count, reason) = probe(Some(at));
     let failure = prepare_observed(sources(), asks, &mut control).unwrap_err();
     let wire_value = failure.wire().unwrap();
     let Json::Obj(wire) = &wire_value else {
@@ -487,63 +374,33 @@ fn assert_binding_priority(asks: &[&str], at: usize, kind: Stop, known_mismatch:
     };
     assert_eq!(wire["nodes"], Json::Arr(vec![]));
     assert_eq!(wire["answers"], Json::Arr(vec![]));
-    if known_mismatch && !matches!(kind, Stop::Cancel) {
-        assert_eq!(wire["status"], Json::str("invalid"));
-        let PrepareFailure::Requests {
-            inputs,
-            failure:
-                ResolveFailure::Invalid {
-                    issues,
-                    stop_reason: Some(actual),
-                    ..
-                },
-        } = &failure
-        else {
-            panic!("known binding mismatch");
-        };
-        assert_eq!(actual, &reason);
-        assert_eq!(issues.len(), 1);
-        assert_eq!(issues[0].code, RequestIssueCode::Type);
-        assert_eq!(issues[0].request, "bad");
-        assert_eq!(issues[0].argument, "bind.s");
-        assert_eq!(issues[0].message, "Handle type does not match parameter type");
-        assert_eq!(
-            wire["issues"],
-            Json::Arr(vec![reason.wire(), issues[0].wire()])
-        );
-        assert!(inputs.law().declarations().contains_key("R.echo"));
-        assert_eq!(inputs.archmap().snapshots()[0].subjects[0].id, "s");
-    } else {
-        assert_eq!(wire["status"], Json::str("interrupted"));
-        assert_eq!(wire["issues"], Json::Arr(vec![reason.wire()]));
-        assert!(
-            matches!(&failure, PrepareFailure::Requests { failure: ResolveFailure::Interrupted { reason: actual }, .. } if actual == &reason)
-        );
-    }
+    assert_eq!(wire["status"], Json::str("interrupted"));
+    assert_eq!(wire["issues"], Json::Arr(vec![reason.wire()]));
+    assert!(
+        matches!(&failure, PrepareFailure::Requests { failure: ResolveFailure::Interrupted { reason: actual }, .. } if actual == &reason)
+    );
     assert_eq!(count.get(), at);
     assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
     assert_eq!(count.get(), at);
 }
 
 #[test]
-fn single_binding_mismatch_keeps_usage_at_the_sixth_projection_checkpoint() {
+fn single_binding_mismatch_yields_to_cancellation_at_every_projection_checkpoint() {
     let asks = [
         "bad=evaluate(R.echo,s=$number.value)",
         "number=evaluate(R.accept,x=$pair.value[0],y=$pair.value[1])",
         "pair=evaluate(R.pair)",
     ];
-    let (mut baseline, total, _) = probe(None, Stop::Time);
+    let (mut baseline, total, _) = probe(None);
     let normal = prepare_observed(sources(), &asks, &mut baseline).unwrap_err();
     assert!(
-        matches!(normal, PrepareFailure::Requests { failure: ResolveFailure::Invalid { issues, stop_reason: None, .. }, .. } if issues[0].code == RequestIssueCode::Type)
+        matches!(normal, PrepareFailure::Requests { failure: ResolveFailure::Invalid { issues, .. }, .. } if issues[0].code == RequestIssueCode::Type)
     );
     // Empty selector path: 1-2; can_bind entry/candidate: 3-4;
     // Z versus Ref(W.Root) pre/post: 5-6; whole-binding post: 7.
     assert_eq!(total.get(), 7);
     for at in 1..=total.get() {
-        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
-            assert_binding_priority(&asks, at, kind, at >= 6);
-        }
+        assert_binding_priority(&asks, at);
     }
 }
 
@@ -553,17 +410,15 @@ fn dynamic_binding_rejection_is_known_only_after_all_candidates_mismatch() {
         "bad=evaluate(R.echo,s=$choice.value[0])",
         "choice=evaluate(R.choice)",
     ];
-    let (mut baseline, total, _) = probe(None, Stop::Time);
+    let (mut baseline, total, _) = probe(None);
     let normal = prepare_observed(sources(), &asks, &mut baseline).unwrap_err();
     assert!(
-        matches!(normal, PrepareFailure::Requests { failure: ResolveFailure::Invalid { issues, stop_reason: None, .. }, .. } if issues[0].code == RequestIssueCode::Type)
+        matches!(normal, PrepareFailure::Requests { failure: ResolveFailure::Invalid { issues, .. }, .. } if issues[0].code == RequestIssueCode::Type)
     );
     // The final two samples follow the final candidate mismatch and the
     // existential comparison. Earlier samples still leave a candidate unchecked.
     for at in 1..=total.get() {
-        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
-            assert_binding_priority(&asks, at, kind, at >= total.get() - 1);
-        }
+        assert_binding_priority(&asks, at);
     }
 }
 
@@ -573,21 +428,19 @@ fn binding_candidate_mismatch_cannot_hide_a_stop_before_a_compatible_candidate()
         "ok=evaluate(R.accept_option,x=$choice.value[0])",
         "choice=evaluate(R.choice)",
     ];
-    let (mut baseline, total, _) = probe(None, Stop::Time);
+    let (mut baseline, total, _) = probe(None);
     let prepared = prepare_observed(sources(), &asks, &mut baseline).unwrap();
     assert_eq!(prepared.requests().requests()[0].id, "ok");
     assert!(prepared.requests().requests()[0].constraints[0].dynamic);
     // Dynamic candidates are Option<Z>, List<Z>; the stack checks List first.
     // That rejection does not establish a whole-binding mismatch.
     for at in 1..=total.get() {
-        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
-            assert_binding_priority(&asks, at, kind, false);
-        }
+        assert_binding_priority(&asks, at);
     }
 }
 
 #[test]
-fn every_type_mismatch_shape_preserves_only_established_false_under_budget() {
+fn every_type_mismatch_shape_yields_to_cancellation() {
     use Type::*;
     for (left, right) in [
         (Z, Ref("W.Root".into())),
@@ -618,43 +471,37 @@ fn every_type_mismatch_shape_preserves_only_established_false_under_budget() {
         (Term(vec![Bool], Box::new(Z)), Term(vec![Z], Box::new(Z))),
     ] {
         let actual = ProjectionType::Law(left);
-        let (mut baseline, total, _) = probe(None, Stop::Time);
+        let (mut baseline, total, _) = probe(None);
         assert_eq!(
             can_bind_controlled(&actual, &right, &mut baseline),
             Ok(false)
         );
         for at in 1..=total.get() {
-            for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
-                let (mut control, count, reason) = probe(Some(at), kind);
-                let expected = if !matches!(kind, Stop::Cancel) && at >= total.get() - 1 {
-                    Ok(false)
-                } else {
-                    Err(reason.clone())
-                };
-                assert_eq!(can_bind_controlled(&actual, &right, &mut control), expected);
-                assert_eq!(count.get(), at);
-                assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
-                assert_eq!(count.get(), at);
-            }
+            let (mut control, count, reason) = probe(Some(at));
+            assert_eq!(
+                can_bind_controlled(&actual, &right, &mut control),
+                Err(reason.clone())
+            );
+            assert_eq!(count.get(), at);
+            assert_eq!(control.checkpoint(Checkpoint::Resolve), Err(reason));
+            assert_eq!(count.get(), at);
         }
     }
     // Owned's parameter is intentionally erased for a binding compatibility
-    // check; a successful comparison must still stop at every budget sample.
+    // check; a successful comparison must still stop at every sample.
     let actual = ProjectionType::Law(Owned("W.A".into(), "p".into()));
     let expected = Owned("W.A".into(), "q".into());
-    let (mut baseline, total, _) = probe(None, Stop::Time);
+    let (mut baseline, total, _) = probe(None);
     assert_eq!(
         can_bind_controlled(&actual, &expected, &mut baseline),
         Ok(true)
     );
     for at in 1..=total.get() {
-        for kind in [Stop::Cancel, Stop::Time, Stop::Memory] {
-            let (mut control, count, reason) = probe(Some(at), kind);
-            assert_eq!(
-                can_bind_controlled(&actual, &expected, &mut control),
-                Err(reason)
-            );
-            assert_eq!(count.get(), at);
-        }
+        let (mut control, count, reason) = probe(Some(at));
+        assert_eq!(
+            can_bind_controlled(&actual, &expected, &mut control),
+            Err(reason)
+        );
+        assert_eq!(count.get(), at);
     }
 }

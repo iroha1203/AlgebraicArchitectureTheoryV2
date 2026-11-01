@@ -1,7 +1,7 @@
 //! 実際に保持された補完caseからExpression停止点を特定する。再検査のprobeも数え、固定回数を仮定しない。
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::InputSources,
     observed::evaluate_observed_bytes,
     result::Signal,
@@ -43,19 +43,16 @@ pub fn offsets(
         let p = probes.clone();
         let frozen = Rc::new(Cell::new(None));
         let f = frozen.clone();
-        let mut control = Control::new(Limits::default(), move |point| {
+        let mut control = Control::new(move |point| {
             p.set(p.get() + 1);
             if point == Checkpoint::Expression {
                 e.set(e.get() + 1);
                 if e.get() == at {
                     assert!(f.replace(Some(p.get())).is_none());
-                    return Usage {
-                        signal: Some(Signal::Term),
-                        ..Usage::default()
-                    };
+                    return Some(Signal::Term);
                 }
             }
-            Usage::default()
+            None
         });
         let result = evaluate_observed_bytes(input.clone(), asks, &mut control).unwrap();
         assert_eq!(result.status(), "interrupted");

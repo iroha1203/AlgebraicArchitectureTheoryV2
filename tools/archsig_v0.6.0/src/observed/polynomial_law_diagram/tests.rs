@@ -1,12 +1,8 @@
 use super::*;
-use crate::{
-    control::{Limits, Usage},
-    input::InputSources,
-    observed::evaluate_observed_bytes,
-};
+use crate::{input::InputSources, observed::evaluate_observed_bytes};
 
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 const DEFINITION: &str = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Finite","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Finite.Root","meaning":"有限入力の対象。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Finite.Part","meaning":"有限入力の対象。","parameters":[{"name":"owner","type":["Ref","Finite.Root"],"meaning":"元の型付き値。"}],"fields":[{"name":"quantity","type":"Z","meaning":"元の型付き値。"}],"alignments":[]},{"kind":"correspondence","name":"Finite.Migration","meaning":"有限入力の対象。","parameters":[{"name":"from","type":["Ref","Finite.Root"],"meaning":"元の型付き値。"},{"name":"to","type":["Ref","Finite.Root"],"meaning":"元の型付き値。"}],"fields":[{"name":"states","type":["Map",["Owned","Finite.Part","from"],["Owned","Finite.Part","to"]],"meaning":"元の型付き値。"}],"alignments":[]}]}]}"#;
 const MAP: &str = r#"{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{"namespace":"Finite","version":"1","digest":"@DIGEST@"}],"sources":[],"origins":[{"id":"model","mode":"specification","method":"独立の有限入力。","locations":[],"note":"原始値と対応だけを記録する。"}],"snapshots":[{"id":"v","origin":"model","subjects":[{"id":"a","type":"Finite.Root","origin":"model"},{"id":"b","type":"Finite.Root","origin":"model"},{"id":"p","type":"Finite.Part","origin":"model"},{"id":"q","type":"Finite.Part","origin":"model"},{"id":"m","type":"Finite.Migration","origin":"model"}],"atoms":[{"id":"po","subject":"p","field":"Finite.Part.owner","value":["v","a"],"origin":"model"},{"id":"qo","subject":"q","field":"Finite.Part.owner","value":["v","b"],"origin":"model"},{"id":"px","subject":"p","field":"Finite.Part.quantity","value":"0","origin":"model"},{"id":"mx","subject":"m","field":"Finite.Migration.from","value":["v","a"],"origin":"model"},{"id":"my","subject":"m","field":"Finite.Migration.to","value":["v","b"],"origin":"model"},{"id":"mm","subject":"m","field":"Finite.Migration.states","value":[[["v","p"],["v","q"]]],"origin":"model"},{"id":"qx","subject":"q","field":"Finite.Part.quantity","value":"1","origin":"model"}]}]}"#;
@@ -597,53 +593,34 @@ fn cached_native_validation_rejects_foreign_consumer_input_witness_request_and_n
     }
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
-fn stopping(mode: usize, at: usize) -> Control {
+fn stopping(signal: crate::result::Signal, at: usize) -> Control {
     let seen = std::rc::Rc::new(std::cell::Cell::new(0));
-    Control::new(
-        crate::control::Limits {
-            time_ms: (mode == 2).then_some(1),
-            memory_mib: (mode == 3).then_some(1),
-        },
-        move |p| {
-            if p == Checkpoint::EquationPresentation {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() >= at;
-            crate::control::Usage {
-                signal: if stop && mode < 2 {
-                    Some(if mode == 0 {
-                        crate::result::Signal::Int
-                    } else {
-                        crate::result::Signal::Term
-                    })
-                } else {
-                    None
-                },
-                elapsed_ms: u128::from(stop && mode == 2),
-                memory_mib: u128::from(stop && mode == 3),
-            }
-        },
-    )
+    Control::new(move |p| {
+        if p == Checkpoint::EquationPresentation {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= at).then_some(signal)
+    })
 }
 #[test]
-fn all_four_stops_propagate_through_the_kernel_and_keep_only_complete_native_prefixes() {
+fn signal_stops_propagate_through_the_kernel_and_keep_only_complete_native_prefixes() {
     let e = example(false, BODY);
     let mut complete = graph(&e);
     let a = architecture(&complete, "a");
     let before = complete.nodes.len();
     let seen = std::rc::Rc::new(std::cell::Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
+    let mut c = Control::new(move |p| {
         if p == Checkpoint::EquationPresentation {
             count.set(count.get() + 1);
         }
-        Usage::default()
+        None
     });
     retain(&mut complete, e.prepared.shared_inputs(), a, 0, &mut c).unwrap();
     let total = seen.get();
     assert!(total > 20);
     let mut nonempty = false;
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, 5, total / 2, total - 1, total] {
             let mut g = graph(&e);
             assert!(
@@ -653,11 +630,11 @@ fn all_four_stops_propagate_through_the_kernel_and_keep_only_complete_native_pre
                         e.prepared.shared_inputs(),
                         a,
                         0,
-                        &mut stopping(mode, at)
+                        &mut stopping(signal, at)
                     ),
                     Err(ValidationFailure::Stop(_))
                 ),
-                "mode {mode}/{at}"
+                "{signal:?}/{at}"
             );
             assert_eq!(&g.nodes[..before], &e.nodes[..]);
             assert_eq!(&g.contexts[..before], &e.contexts[..]);

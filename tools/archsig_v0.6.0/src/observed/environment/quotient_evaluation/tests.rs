@@ -1,14 +1,11 @@
 use super::*;
-use crate::{
-    control::{Limits, Usage},
-    input::check_inputs,
-};
+use crate::input::check_inputs;
 mod fixture {
     use crate as archsig;
     include!("../../../../tests/common/finite_data_quotient.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(extra: &str) -> crate::input::CheckedInputs {
     check_inputs(fixture::sources(extra, ""), &mut quiet()).unwrap()
@@ -109,7 +106,7 @@ fn finite_data_values_validate_names_arity_payload_and_family_before_equality() 
 
 #[test]
 fn finite_data_type_and_payload_traversals_keep_exact_stop_reasons() {
-    use crate::control::{Resource, StopReason};
+    use crate::control::StopReason;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     let i = inputs("");
@@ -123,63 +120,28 @@ fn finite_data_type_and_payload_traversals_keep_exact_stop_reasons() {
     data::check(&tree, i.law(), &quiet()).unwrap();
     assert!(data::equal(&tree, &tree, &quiet()).unwrap());
     for type_walk in [true, false] {
-        for mode in 0..4 {
+        for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
             let target = if type_walk { 8 } else { 3 };
-            let mut c = Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: Some(1),
-                },
-                move |point| {
-                    if point
-                        == if type_walk {
-                            Checkpoint::PrimitiveValuation
-                        } else {
-                            Checkpoint::FiniteIteration
-                        }
-                    {
-                        seen.set(seen.get() + 1);
-                    }
-                    if seen.get() == target {
-                        match mode {
-                            0 => Usage {
-                                elapsed_ms: 2,
-                                ..Usage::default()
-                            },
-                            1 => Usage {
-                                memory_mib: 2,
-                                ..Usage::default()
-                            },
-                            _ => Usage {
-                                signal: Some(if mode == 2 { Signal::Int } else { Signal::Term }),
-                                ..Usage::default()
-                            },
-                        }
+            let mut c = Control::new(move |point| {
+                if point
+                    == if type_walk {
+                        Checkpoint::PrimitiveValuation
                     } else {
-                        Usage::default()
+                        Checkpoint::FiniteIteration
                     }
-                },
-            );
+                {
+                    seen.set(seen.get() + 1);
+                }
+                (seen.get() == target).then_some(signal)
+            });
             let result = if type_walk {
                 exact_type(&Type::Data("Pair.Tree".into()), i.law(), &mut c)
             } else {
                 data::equal(&tree, &tree, &c)
             };
-            let expected = match mode {
-                0 => StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 1,
-                    observed: 2,
-                },
-                1 => StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 1,
-                    observed: 2,
-                },
-                _ => StopReason::Cancelled(if mode == 2 { Signal::Int } else { Signal::Term }),
-            };
+            let expected = StopReason::Cancelled(signal);
             assert!(matches!(result,Err(ValidationFailure::Stop(reason)) if reason==expected));
             assert_eq!(count.get(), target);
         }

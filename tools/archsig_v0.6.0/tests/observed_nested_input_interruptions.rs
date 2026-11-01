@@ -3,7 +3,7 @@ use crate::common;
 
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     definition::{check_definitions, check_definitions_controlled},
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     law::{check_law, check_law_controlled},
@@ -49,41 +49,16 @@ fn sources(definition: &str) -> InputSources {
     )
 }
 
-fn probe(point: Checkpoint, at: Option<(usize, u8)>) -> (Control, Rc<Cell<usize>>) {
+fn probe(point: Checkpoint, at: Option<usize>) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let limits = Limits {
-        time_ms: at.filter(|(_, kind)| *kind == 1).map(|_| 1),
-        memory_mib: at.filter(|(_, kind)| *kind == 2).map(|_| 1),
-    };
-    let control = Control::new(limits, move |current| {
+    let control = Control::new(move |current| {
         if current == point {
             seen.set(seen.get() + 1);
         }
-        let stop = at.filter(|(n, _)| seen.get() == *n).map(|(_, kind)| kind);
-        Usage {
-            signal: (stop == Some(0)).then_some(Signal::Term),
-            elapsed_ms: u128::from(stop == Some(1)),
-            memory_mib: u128::from(stop == Some(2)),
-        }
+        (at == Some(seen.get())).then_some(Signal::Term)
     });
     (control, count)
-}
-
-fn reason(kind: u8) -> StopReason {
-    match kind {
-        0 => StopReason::Cancelled(Signal::Term),
-        1 => StopReason::BudgetExhausted {
-            resource: Resource::TimeMs,
-            limit: 1,
-            observed: 1,
-        },
-        _ => StopReason::BudgetExhausted {
-            resource: Resource::MemoryMib,
-            limit: 1,
-            observed: 1,
-        },
-    }
 }
 
 fn assert_stopped(
@@ -127,20 +102,19 @@ fn deep_schema_and_multiple_qnames_stop_from_bytes_before_tables_or_requests_are
             prepare_observed(source.clone(), &["v=evaluate(R.value)"], &mut complete).unwrap();
         assert_eq!(prepared.requests().evaluation_order(), &[0]);
         assert!(total.get() > 4, "{point:?}");
+        let expected = StopReason::Cancelled(Signal::Term);
         for at in [1, total.get() / 2, total.get()] {
-            for kind in 0..3 {
-                let (mut control, count) = probe(point, Some((at, kind)));
-                let failure = check_inputs(source.clone(), &mut control).unwrap_err();
-                assert_stopped(failure, &reason(kind), &mut control, &count, at);
-                let (mut control, count) = probe(point, Some((at, kind)));
-                let PrepareFailure::Inputs(failure) =
-                    prepare_observed(source.clone(), &["v=evaluate(R.value)"], &mut control)
-                        .unwrap_err()
-                else {
-                    panic!("入力検査内の停止")
-                };
-                assert_stopped(*failure, &reason(kind), &mut control, &count, at);
-            }
+            let (mut control, count) = probe(point, Some(at));
+            let failure = check_inputs(source.clone(), &mut control).unwrap_err();
+            assert_stopped(failure, &expected, &mut control, &count, at);
+            let (mut control, count) = probe(point, Some(at));
+            let PrepareFailure::Inputs(failure) =
+                prepare_observed(source.clone(), &["v=evaluate(R.value)"], &mut control)
+                    .unwrap_err()
+            else {
+                panic!("入力検査内の停止")
+            };
+            assert_stopped(*failure, &expected, &mut control, &count, at);
         }
     }
 }

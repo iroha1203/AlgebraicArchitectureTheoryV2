@@ -239,9 +239,8 @@ pub(super) fn solve(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::control::{Limits, Usage};
     fn control() -> Control {
-        Control::new(Limits::default(), |_| Usage::default())
+        Control::unlimited()
     }
     fn matrix(rows: &[&[i64]]) -> Matrix {
         rows.iter()
@@ -285,14 +284,10 @@ mod tests {
         let run = |stop: Option<usize>| {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let c = Control::new(Limits::default(), move |_| {
+            let c = Control::new(move |_| {
                 seen.set(seen.get() + 1);
-                Usage {
-                    signal: stop
-                        .filter(|n| *n == seen.get())
-                        .map(|_| crate::result::Signal::Term),
-                    ..Usage::default()
-                }
+                stop.filter(|n| *n == seen.get())
+                    .map(|_| crate::result::Signal::Term)
             });
             let result = solve(
                 &matrix(&[&[6, 4], &[2, 8]]),

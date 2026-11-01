@@ -420,16 +420,16 @@ fn args(dir: &Path) -> archsig::run::RunArgs {
 }
 #[test]
 fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
-    use archsig::control::{Checkpoint, Control, Limits, Usage};
+    use archsig::control::{Checkpoint, Control};
     use archsig::result::Signal;
     use std::{cell::Cell, rc::Rc};
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut probe = Control::new(Limits::default(), move |p| {
+    let mut probe = Control::new(move |p| {
         if p == Checkpoint::ObservationPlan {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let dir = setup("needed-probe", false);
     let result = archsig::run::run_requests(
@@ -445,15 +445,12 @@ fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
         let dir = setup(&format!("needed-stop-{at}"), false);
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut control = Control::new(Limits::default(), move |point| {
+        let mut control = Control::new(move |point| {
             if point == Checkpoint::ObservationPlan {
                 seen.set(seen.get() + 1);
             }
             let stopped = seen.get() >= at;
-            Usage {
-                signal: stopped.then_some(Signal::Int),
-                ..Usage::default()
-            }
+            stopped.then_some(Signal::Int)
         });
         let mut signals = NoSignal::default();
         let outcome = archsig::run::run_requests(

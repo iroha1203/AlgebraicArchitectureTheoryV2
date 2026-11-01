@@ -1,13 +1,14 @@
-//! AC14: 三入力 byte から混在状態・予算増加時の確定判断保持までを接続する。
+//! AC14: 三入力 byte から混在状態・停止時の確定判断保持までを接続する。
 use archsig::{
     archmap::{Slot, Value},
     canonical::{Json, sha256_digest},
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::{InputSources, check_inputs},
     observed::{
         EvaluationFailure, PrepareFailure, evaluate_observed_bytes,
         request::{RequestIssueCode, ResolveFailure},
     },
+    result::Signal,
 };
 use std::{
     cell::RefCell,
@@ -26,7 +27,7 @@ const ASKS: [&str; 4] = [
 ];
 
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn sources(definitions: &[u8], law: &[u8], map: &[u8]) -> InputSources {
     InputSources::from_bytes(vec![definitions.to_vec()], law.to_vec(), map.to_vec())
@@ -388,37 +389,16 @@ fn mixed_refutation_value_and_missing_preserve_typed_answers_and_source_facts() 
     assert_eq!(answer(&mixed, "bad"), answer(&refutation, "bad"));
 }
 
-type Trace = Rc<RefCell<Vec<(Checkpoint, Usage)>>>;
+type Trace = Rc<RefCell<Vec<Checkpoint>>>;
 
-fn recorded_run(
-    asks: &[&str],
-    limits: Limits,
-    stop_index: Option<usize>,
-    memory: bool,
-) -> (Json, Trace, Control) {
+fn recorded_run(asks: &[&str], stop_index: Option<usize>) -> (Json, Trace, Control) {
     let seen = Rc::new(RefCell::new(Vec::new()));
     let capture = seen.clone();
-    let mut control = Control::new(limits, move |point| {
+    let mut control = Control::new(move |point| {
         let mut trace = capture.borrow_mut();
-        // 同一checkpoint列に同一の小さい単調Usage列を適用する。実時計/RSSは読まない。
-        let amount = if stop_index.is_some_and(|at| trace.len() >= at) {
-            3
-        } else {
-            0
-        };
-        let usage = if memory {
-            Usage {
-                memory_mib: amount,
-                ..Usage::default()
-            }
-        } else {
-            Usage {
-                elapsed_ms: amount,
-                ..Usage::default()
-            }
-        };
-        trace.push((point, usage));
-        usage
+        let stop = stop_index.is_some_and(|at| trace.len() >= at);
+        trace.push(point);
+        stop.then_some(Signal::Term)
     });
     let wire = evaluate_observed_bytes(sources(DEFINITIONS, LAW, &batch_map()), asks, &mut control)
         .unwrap()
@@ -426,82 +406,50 @@ fn recorded_run(
     (wire, seen, control)
 }
 
-fn assert_budget_increase_preserves_completed_answers(memory: bool) {
+#[test]
+fn stop_preserves_established_value_and_refuted_counterexample() {
     // source式が既知の二問を完了する正常対照から、その式境界数を求める。
-    let (prefix, prefix_trace, _) = recorded_run(&ASKS[..2], Limits::default(), None, memory);
+    let (prefix, prefix_trace, _) = recorded_run(&ASKS[..2], None);
     assert_eq!(field(&prefix, "status"), &Json::str("complete"));
     assert_known_answers(&prefix);
     let complete_expressions = prefix_trace
         .borrow()
         .iter()
-        .filter(|(p, _)| *p == Checkpoint::Expression)
+        .filter(|p| **p == Checkpoint::Expression)
         .count();
     assert!(complete_expressions > 0);
-    let (normal, normal_trace, _) = recorded_run(&ASKS, Limits::default(), None, memory);
+    let (normal, normal_trace, _) = recorded_run(&ASKS, None);
     assert_missing_answer(&normal);
     let stop_index = normal_trace
         .borrow()
         .iter()
         .enumerate()
-        .filter(|(_, (p, _))| *p == Checkpoint::Expression)
+        .filter(|(_, p)| **p == Checkpoint::Expression)
         .nth(complete_expressions)
         .unwrap()
         .0;
     assert!(stop_index > 0 && stop_index + 1 < normal_trace.borrow().len());
-    let limits = |amount| {
-        if memory {
-            Limits {
-                time_ms: None,
-                memory_mib: Some(amount),
-            }
-        } else {
-            Limits {
-                time_ms: Some(amount),
-                memory_mib: None,
-            }
-        }
-    };
-    let (low, low_trace, mut low_control) =
-        recorded_run(&ASKS, limits(3), Some(stop_index), memory);
-    let (high, high_trace, high_control) = recorded_run(&ASKS, limits(4), Some(stop_index), memory);
+    let (low, low_trace, mut low_control) = recorded_run(&ASKS, Some(stop_index));
     assert_eq!(field(&low, "status"), &Json::str("interrupted"));
-    assert_eq!(field(&high, "status"), &Json::str("partial"));
-    assert_eq!(
-        high, normal,
-        "高予算は正常対照の最終判断・証拠・元位置を再現する"
-    );
-    assert_eq!(
-        high_trace
-            .borrow()
-            .iter()
-            .map(|(p, _)| *p)
-            .collect::<Vec<_>>(),
-        normal_trace
-            .borrow()
-            .iter()
-            .map(|(p, _)| *p)
-            .collect::<Vec<_>>()
-    );
+    assert_eq!(field(&normal, "status"), &Json::str("partial"));
     assert_eq!(
         &**low_trace.borrow(),
-        &high_trace.borrow()[..=stop_index],
-        "同一checkpoint/Usage traceの第三問の式開始前で止まる"
+        &normal_trace.borrow()[..=stop_index],
+        "同一checkpoint traceの第三問の式開始前で止まる"
     );
     assert_eq!(low_trace.borrow().len(), stop_index + 1);
-    assert!(high_control.stop_reason().is_none());
     assert_known_answers(&low);
-    assert_known_answers(&high);
-    assert_missing_answer(&high);
+    assert_known_answers(&normal);
     assert_eq!(
-        field(answer(&high, "later"), "status"),
+        field(answer(&normal, "later"), "status"),
         &Json::str("established")
     );
-    let (low_nodes, high_nodes) = (nodes(&low), nodes(&high));
+    let (low_nodes, normal_nodes) = (nodes(&low), nodes(&normal));
     for id in ["bad", "amount"] {
         let previous = answer(&low, id);
         assert_eq!(
             previous,
-            answer(&high, id),
+            answer(&normal, id),
             "完成済みAnswerのclaim/判断/Scopeを保持する"
         );
         let reached = reachable(&low_nodes, previous);
@@ -509,20 +457,13 @@ fn assert_budget_increase_preserves_completed_answers(memory: bool) {
         for node in reached {
             assert_eq!(
                 low_nodes[node.as_str()],
-                high_nodes[node.as_str()],
+                normal_nodes[node.as_str()],
                 "支持・元式・型付き値・証拠の導出を保持する"
             );
         }
     }
     let reason = low_control.stop_reason().unwrap().wire();
-    let details = Json::obj([
-        (
-            "resource",
-            Json::str(if memory { "memory_mib" } else { "time_ms" }),
-        ),
-        ("limit", Json::str("3")),
-        ("observed", Json::str("3")),
-    ]);
+    let details = Json::obj([("signal", Json::str("SIGTERM"))]);
     assert_eq!(field(&reason, "details"), &details);
     for id in ["missing", "later"] {
         let pending = answer(&low, id);
@@ -533,7 +474,7 @@ fn assert_budget_increase_preserves_completed_answers(memory: bool) {
         let [stopped] = arr(field(pending, "reasons")) else {
             panic!("同じ停止理由一件")
         };
-        assert_eq!(field(stopped, "code"), &Json::str("budget_exhausted"));
+        assert_eq!(field(stopped, "code"), &Json::str("cancelled"));
         assert_eq!(field(stopped, "request"), &Json::str(id));
         assert_eq!(field(stopped, "details"), &details);
     }
@@ -551,25 +492,13 @@ fn assert_budget_increase_preserves_completed_answers(memory: bool) {
             );
         }
     }
-    let before = low_control.usage();
     assert!(low_control.checkpoint(Checkpoint::Expression).is_err());
     assert!(low_control.checkpoint(Checkpoint::FiniteIteration).is_err());
-    assert_eq!(low_control.usage(), before);
     assert_eq!(
         low_trace.borrow().len(),
         stop_index + 1,
         "同じ評価driverの停止後にprobeを再実行しない"
     );
-}
-
-#[test]
-fn increasing_time_budget_preserves_established_value_and_refuted_counterexample() {
-    assert_budget_increase_preserves_completed_answers(false);
-}
-
-#[test]
-fn increasing_memory_budget_preserves_established_value_and_refuted_counterexample() {
-    assert_budget_increase_preserves_completed_answers(true);
 }
 
 #[test]

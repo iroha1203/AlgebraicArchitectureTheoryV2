@@ -1,14 +1,11 @@
 use super::*;
-use crate::{
-    control::{Limits, Usage},
-    observed::{PreparedObserved, request::resolve_native_for_test},
-};
+use crate::observed::{PreparedObserved, request::resolve_native_for_test};
 use std::collections::BTreeSet;
 const DEFINITION: &[u8] = include_bytes!("../../../tests/fixtures/configuration-profile.atoms.json");
 const LAW: &str = include_str!("../../../tests/fixtures/configuration-profile.law");
 const MAP: &str = include_str!("../../../tests/fixtures/configuration-profile.archmap.json");
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn inputs(map: &str) -> Arc<CheckedInputs> {
     let defs = crate::definition::check_definitions(&[("definition0", DEFINITION)]).unwrap();
@@ -581,14 +578,14 @@ fn four_stops_keep_complete_pattern_nodes_and_the_exact_original_context_prefix(
     let (initial, a, o) = start(&p);
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(Limits::default(), move |point| {
+    let mut c = Control::new(move |point| {
         if matches!(
             point,
             Checkpoint::ConfigurationProfile | Checkpoint::NativeResultNode
         ) {
             count.set(count.get() + 1)
         }
-        Usage::default()
+        None
     });
     let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
     let mut full = copy(&initial, &c);
@@ -600,34 +597,19 @@ fn four_stops_keep_complete_pattern_nodes_and_the_exact_original_context_prefix(
     assert!(total > 420);
     let mut partial = false;
     let mut finished = false;
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, total / 2, total - 3, total - 2, total - 1, total] {
             let seen = Rc::new(Cell::new(0));
             let count = seen.clone();
-            let mut c = Control::new(
-                Limits {
-                    time_ms: (mode == 0).then_some(1),
-                    memory_mib: (mode == 1).then_some(1),
-                },
-                move |point| {
-                    if matches!(
-                        point,
-                        Checkpoint::ConfigurationProfile | Checkpoint::NativeResultNode
-                    ) {
-                        count.set(count.get() + 1)
-                    }
-                    let stop = count.get() >= at;
-                    Usage {
-                        elapsed_ms: u128::from(stop && mode == 0),
-                        memory_mib: u128::from(stop && mode == 1),
-                        signal: (stop && mode >= 2).then_some(if mode == 2 {
-                            crate::result::Signal::Int
-                        } else {
-                            crate::result::Signal::Term
-                        }),
-                    }
-                },
-            );
+            let mut c = Control::new(move |point| {
+                if matches!(
+                    point,
+                    Checkpoint::ConfigurationProfile | Checkpoint::NativeResultNode
+                ) {
+                    count.set(count.get() + 1)
+                }
+                (count.get() >= at).then_some(signal)
+            });
             let mut g = copy(&initial, &c);
             let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
             assert!(matches!(

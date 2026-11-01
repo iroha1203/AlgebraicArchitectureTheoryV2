@@ -174,22 +174,18 @@ fn quotient_rejects_wrong_domain_missing_bindings_private_fields_and_cycles() {
 #[test]
 fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
     use archsig::{
-        control::{Checkpoint, Control, Limits, Usage},
+        control::{Checkpoint, Control},
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
     };
     use std::{cell::Cell, rc::Rc};
     let dir=law_input("quotient-stop","law optional same(s:State,b:Bool):s.x=b;");
-    for case in 0..7 {
-        let mode=case%3;
+    for case in [0, 3, 6] {
         let seen=Rc::new(Cell::new(0));let count=seen.clone();
-        let mut c=Control::new(Limits{time_ms:Some(1),memory_mib:Some(1)},move|point|{
+        let mut c=Control::new(move|point|{
             if point==Checkpoint::Quotient {count.set(count.get()+1);}
             let stop=if case==6 {count.get()>=2 && point==Checkpoint::FiniteLawOperand} else {count.get()==2};
-            if stop {match mode {
-                0=>Usage{elapsed_ms:2,..Usage::default()},1=>Usage{memory_mib:2,..Usage::default()},
-                _=>Usage{signal:Some(archsig::result::Signal::Term),..Usage::default()},
-            }}else{Usage::default()}
+            stop.then_some(archsig::result::Signal::Term)
         });
         let sources=InputSources::from_bytes(vec![std::fs::read(dir.join("d.json")).unwrap()],std::fs::read(dir.join("l.law")).unwrap(),std::fs::read(dir.join("a.json")).unwrap());
         let quotient=if case<3 {"q=quotient(Pair.last,on=$s.domain,s=@v/s)"} else {"q=quotient(Pair.last,on=$s.domain,s=@v/s,law=Pair.same)"};
@@ -201,7 +197,7 @@ fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
 
         for answer in &answers[1..] {
             assert_eq!(s(get(answer,"status")),"undetermined");
-            assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))==if mode==2 {"cancelled"}else{"budget_exhausted"}));
+            assert!(arr(get(answer,"reasons")).iter().any(|r|s(get(r,"code"))=="cancelled"));
         }
     }
 }
@@ -557,9 +553,7 @@ fn option_quotient_keeps_none_fibers_and_typed_laws() {
 #[test]
 fn finite_option_quotient_recurses_and_preserves_none_zero_and_binding_order() {
     use archsig::{
-        control::{Control, Limits, Usage},
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
+        control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes,
     };
     let views = [
         (
@@ -598,7 +592,7 @@ fn finite_option_quotient_recurses_and_preserves_none_zero_and_binding_order() {
                 "good=quotient(Pair.tagged,on=$s.domain,s=@v/s,law=Pair.visible)",
                 "bad=quotient(Pair.tagged,on=$s.domain,s=@v/s,law=Pair.hidden)",
             ],
-            &mut Control::new(Limits::default(), |_| Usage::default()),
+            &mut Control::unlimited(),
         )
         .unwrap();
         let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
@@ -730,9 +724,7 @@ fn container_quotient_preserves_list_and_set_fibers() {
 #[test]
 fn finite_container_quotient_uses_typed_recursive_equality() {
     use archsig::{
-        control::{Control, Limits, Usage},
-        input::InputSources,
-        observed::evaluate::evaluate_observed_bytes,
+        control::Control, input::InputSources, observed::evaluate::evaluate_observed_bytes,
     };
     let separate = vec![
         vec![(false, false)],
@@ -846,7 +838,7 @@ fn finite_container_quotient_uses_typed_recursive_equality() {
                 "good=quotient(Pair.shape,on=$s.domain,s=@v/s,law=Pair.self)",
                 "bad=quotient(Pair.shape,on=$s.domain,s=@v/s,law=Pair.hidden)",
             ],
-            &mut Control::new(Limits::default(), |_| Usage::default()),
+            &mut Control::unlimited(),
         )
         .unwrap();
         let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
@@ -918,57 +910,35 @@ fn finite_container_quotient_uses_typed_recursive_equality() {
 }
 
 #[test]
-fn finite_container_fiber_comparison_propagates_resource_and_signal_stops() {
+fn finite_container_fiber_comparison_propagates_signal_stops() {
     use archsig::{
-        control::{Checkpoint, Control, Limits, Usage},
+        control::{Checkpoint, Control},
         input::InputSources,
         observed::evaluate::evaluate_observed_bytes,
+        result::Signal,
     };
     use std::{cell::Cell, rc::Rc};
     let dir = law_input(
         "quotient-container-stop",
         "view shape(s:State):Set<Bool> = set<Bool>{s.x,s.y};",
     );
-    for mode in 0..4 {
+    for signal in [Signal::Int, Signal::Term] {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
         let hit = Rc::new(Cell::new(false));
         let stopped = hit.clone();
-        let mut control = Control::new(
-            Limits {
-                time_ms: Some(1),
-                memory_mib: Some(1),
-            },
-            move |point| {
-                if point == Checkpoint::Quotient {
-                    seen.set(seen.get() + 1);
-                }
-                // Four candidate evaluations precede the first actual fiber comparison.
-                if seen.get() == 5 && point == Checkpoint::FiniteIteration {
-                    stopped.set(true);
-                    match mode {
-                        0 => Usage {
-                            elapsed_ms: 2,
-                            ..Usage::default()
-                        },
-                        1 => Usage {
-                            memory_mib: 2,
-                            ..Usage::default()
-                        },
-                        _ => Usage {
-                            signal: Some(if mode == 2 {
-                                archsig::result::Signal::Int
-                            } else {
-                                archsig::result::Signal::Term
-                            }),
-                            ..Usage::default()
-                        },
-                    }
-                } else {
-                    Usage::default()
-                }
-            },
-        );
+        let mut control = Control::new(move |point| {
+            if point == Checkpoint::Quotient {
+                seen.set(seen.get() + 1);
+            }
+            // Four candidate evaluations precede the first actual fiber comparison.
+            if seen.get() == 5 && point == Checkpoint::FiniteIteration {
+                stopped.set(true);
+                Some(signal)
+            } else {
+                None
+            }
+        });
         let sources = InputSources::from_bytes(
             vec![std::fs::read(dir.join("d.json")).unwrap()],
             std::fs::read(dir.join("l.law")).unwrap(),
@@ -995,29 +965,10 @@ fn finite_container_fiber_comparison_propagates_resource_and_signal_stops() {
             assert_eq!(s(get(answer, "status")), "undetermined");
             let reason = arr(get(answer, "reasons"))
                 .iter()
-                .find(|r| {
-                    s(get(r, "code"))
-                        == if mode < 2 {
-                            "budget_exhausted"
-                        } else {
-                            "cancelled"
-                        }
-                })
+                .find(|r| s(get(r, "code")) == "cancelled")
                 .unwrap();
             let details = get(reason, "details");
-            if mode < 2 {
-                assert_eq!(s(get(details, "limit")), "1");
-                assert_eq!(s(get(details, "observed")), "2");
-                assert_eq!(
-                    s(get(details, "resource")),
-                    if mode == 0 { "time_ms" } else { "memory_mib" }
-                );
-            } else {
-                assert_eq!(
-                    s(get(details, "signal")),
-                    if mode == 2 { "SIGINT" } else { "SIGTERM" }
-                );
-            }
+            assert_eq!(s(get(details, "signal")), signal.wire());
         }
     }
 }

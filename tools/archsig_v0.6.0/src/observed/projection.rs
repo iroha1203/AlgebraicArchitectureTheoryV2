@@ -111,7 +111,7 @@ pub fn resolve_projection(
     match resolve_projection_controlled(law, initial, path, &mut Control::unlimited()) {
         Ok(plan) => Ok(plan),
         Err(ProjectionFailure::Invalid(message)) => Err(message),
-        Err(ProjectionFailure::Interrupted(_)) => unreachable!("上限と取消通知のない制御"),
+        Err(ProjectionFailure::Interrupted(_)) => unreachable!("取消通知のない制御"),
     }
 }
 
@@ -159,16 +159,8 @@ fn finish_projection<T>(
     result: Result<T, ProjectionFailure>,
     control: &mut Control,
 ) -> Result<T, ProjectionFailure> {
-    match (result, tick(control)) {
-        // Keep the completed result and the latched budget together. A Dynamic
-        // caller must still stop before any untried candidate, or when a prior
-        // candidate succeeded; only exhaustive rejection establishes its error.
-        (Err(error @ ProjectionFailure::Invalid(_)), Err(StopReason::BudgetExhausted { .. })) => {
-            Err(error)
-        }
-        (_, Err(reason)) => Err(ProjectionFailure::Interrupted(reason)),
-        (result, Ok(())) => result,
-    }
+    tick(control).map_err(ProjectionFailure::Interrupted)?;
+    result
 }
 
 fn project_inner(
@@ -370,16 +362,10 @@ fn project_inner(
                 return Err("not a data type".into());
             };
             let mut ts = Vec::new();
-            for (index, c) in constructors.iter().enumerate() {
+            for c in constructors {
                 tick(control)?;
                 if let Some(t) = usize::try_from(*i).ok().and_then(|i| c.arguments.get(i)) {
                     push_unique(&mut ts, Law(t.clone()), control)?;
-                }
-                if index + 1 == constructors.len() && ts.is_empty() {
-                    return finish_projection(
-                        Err("index is out of range for all constructors".into()),
-                        control,
-                    );
                 }
                 tick(control)?;
             }
@@ -420,7 +406,7 @@ fn project_inner(
         (Dynamic(ts), _) => {
             let mut out = Vec::new();
             let mut used = None;
-            for (index, t) in ts.iter().enumerate() {
+            for t in ts {
                 tick(control)?;
                 match project(law, t, path, control) {
                     Ok((p, n)) => {
@@ -432,12 +418,6 @@ fn project_inner(
                     }
                     Err(ProjectionFailure::Invalid(_)) => {}
                     Err(stopped @ ProjectionFailure::Interrupted(_)) => return Err(stopped),
-                }
-                if index + 1 == ts.len() && out.is_empty() {
-                    // Every candidate has now rejected this step. Form that
-                    // conclusion before the final iteration's post checkpoint,
-                    // including a budget latched by the last candidate's post.
-                    return finish_projection(Err("no type candidate exposes this projection".into()), control);
                 }
                 tick(control)?;
             }
@@ -463,10 +443,10 @@ fn project_inner(
 /// 動的な候補が一つでも宣言型へ適合し得る場合だけ、束縛制約として残せる。
 pub fn can_bind(actual: &ProjectionType, expected: &Type) -> bool {
     can_bind_controlled(actual, expected, &mut Control::unlimited())
-        .expect("上限と取消通知のない制御")
+        .expect("取消通知のない制御")
 }
 
-/// 候補と型構造に共有制御を通し、全候補の不適合を確定した場合だけ予算と false を保持する。
+/// 候補と型構造に共有制御を通し、全候補の不適合を確定した場合だけ false を返す。
 pub fn can_bind_controlled(
     actual: &ProjectionType,
     expected: &Type,
@@ -501,14 +481,9 @@ pub fn can_bind_controlled(
     finish_type_match(false, control)
 }
 
-/// 確定した不一致は予算とともに保つ。適合後の予算と取消は停止として返す。
-/// 呼出し側で、一候補の不一致と全候補の不適合を区別する。
+/// 取消は判定より優先する。呼出し側で、一候補の不一致と全候補の不適合を区別する。
 fn finish_type_match(same: bool, control: &mut Control) -> Result<bool, StopReason> {
-    match tick(control) {
-        Err(StopReason::BudgetExhausted { .. }) if !same => Ok(false),
-        Err(reason) => Err(reason),
-        Ok(()) => Ok(same),
-    }
+    tick(control).map(|()| same)
 }
 
 /// Owned の所属条件を別制約に残し、型の全構造を一段ずつ比較する。

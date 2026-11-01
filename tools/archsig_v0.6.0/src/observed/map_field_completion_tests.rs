@@ -78,8 +78,8 @@ fn map_field_totality_owned_key_image_and_duplicate_rows_are_rechecked() {
         Err(ValidationFailure::Internal(_))
     ));
 }
-fn stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::control::{Control, Usage};
+fn stop(phase: &'static str, at: usize) {
+    use crate::control::Control;
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(true, false, false, false);
     let asks = [
@@ -95,20 +95,20 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
     assert_eq!(normal.answers[3].status, Decision::Established);
     let target = normal.prepared.inputs().law().declarations["Inspect.same"].span;
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let pin_gate = Rc::new(Cell::new(false));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(limits, move |_| {
+    let mut c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Usage::default()
+            None
         }
     });
     if phase == "map_reader" || phase == "map_cover" {
@@ -216,8 +216,8 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
 }
 #[test]
-fn map_field_coverage_memory_stop_never_promotes_unfinished_whole() {
-    stop("completion_coverage", 0, 2);
+fn map_field_coverage_stop_never_promotes_unfinished_whole() {
+    stop("completion_coverage", 0);
 }
 
 #[test]

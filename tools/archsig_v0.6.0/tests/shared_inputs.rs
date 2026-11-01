@@ -1,7 +1,7 @@
 use archsig::{
     canonical::Json,
     construction::{construct, readings::object_reading_instances},
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     observed::{
         PrepareFailure, PreparedObserved, evaluate_observed, prepare_checked_observed,
@@ -64,7 +64,7 @@ fn preparations_and_results_share_the_original_tables_without_input_checkpoints(
     let shared = checked("2");
     let checks = Rc::new(Cell::new(0));
     let seen = Rc::clone(&checks);
-    let mut control = Control::new(Limits::default(), move |point| {
+    let mut control = Control::new(move |point| {
         if matches!(
             point,
             Checkpoint::InputBundle
@@ -74,7 +74,7 @@ fn preparations_and_results_share_the_original_tables_without_input_checkpoints(
         ) {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let first = prepare_shared_observed(
         Arc::clone(&shared),
@@ -268,18 +268,12 @@ fn request_failures_keep_the_exact_shared_bundle_and_existing_reasons() {
     let wire = failure.wire().unwrap();
     let PrepareFailure::Requests {
         inputs,
-        failure:
-            ResolveFailure::Invalid {
-                issues,
-                stop_reason,
-                ..
-            },
+        failure: ResolveFailure::Invalid { issues, .. },
     } = failure
     else {
         panic!("missing binding")
     };
     assert!(Arc::ptr_eq(&inputs, &shared));
-    assert!(stop_reason.is_none());
     assert_eq!(issues[0].code, RequestIssueCode::MissingBinding);
     assert_eq!(issues[0].argument, "s");
     assert!(array(field(&wire, "nodes")).is_empty());
@@ -320,33 +314,14 @@ fn owned_byte_and_shared_preparation_use_the_same_existing_evaluator() {
 #[test]
 fn sharing_does_not_reset_the_control_or_probe_again_after_a_stop() {
     let shared = checked("2");
-    for mode in 0..4 {
+    for signal in [Signal::Int, Signal::Term] {
         let prepared = prepare(&shared, &["n=evaluate(CountCheck.amount,s=@v/s)"]);
         let count = Rc::new(Cell::new(0));
         let seen = Rc::clone(&count);
-        let mut control = Control::new(
-            Limits {
-                time_ms: (mode == 0).then_some(1),
-                memory_mib: (mode == 1).then_some(1),
-            },
-            move |point| {
-                seen.set(seen.get() + 1);
-                let stop = point == Checkpoint::Resolve;
-                Usage {
-                    elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
-                    memory_mib: if stop && mode == 1 { 1 } else { 0 },
-                    signal: if stop {
-                        match mode {
-                            2 => Some(Signal::Int),
-                            3 => Some(Signal::Term),
-                            _ => None,
-                        }
-                    } else {
-                        None
-                    },
-                }
-            },
-        );
+        let mut control = Control::new(move |point| {
+            seen.set(seen.get() + 1);
+            (point == Checkpoint::Resolve).then_some(signal)
+        });
         let failure = prepare_shared_observed(
             Arc::clone(&shared),
             &["c=check(CountCheck.nonnegative)"],

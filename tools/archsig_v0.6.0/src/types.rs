@@ -325,7 +325,7 @@ impl PartialEq for Type {
 #[cfg(test)]
 mod controlled_tests {
     use super::*;
-    use crate::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::control::{CheckFailure, StopReason};
     use crate::issue::Issue;
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
@@ -350,9 +350,9 @@ mod controlled_tests {
         let ty = example();
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut control = Control::new(Limits::default(), move |_| {
+        let mut control = Control::new(move |_| {
             seen.set(seen.get() + 1);
-            Usage::default()
+            None
         });
         let wire = ty
             .wire_controlled::<Failure>(&mut control, Checkpoint::Expression)
@@ -366,12 +366,9 @@ mod controlled_tests {
         assert!(total > 20);
         for at in 1..=total {
             let mut visits = 0;
-            let mut control = Control::new(Limits::default(), move |_| {
+            let mut control = Control::new(move |_| {
                 visits += 1;
-                Usage {
-                    signal: (visits == at).then_some(Signal::Int),
-                    ..Usage::default()
-                }
+                (visits == at).then_some(Signal::Int)
             });
             assert!(matches!(
                 ty.wire_controlled::<Failure>(&mut control, Checkpoint::Expression),
@@ -396,9 +393,9 @@ mod controlled_tests {
             });
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let mut control = Control::new(Limits::default(), move |_| {
+            let mut control = Control::new(move |_| {
                 seen.set(seen.get() + 1);
-                Usage::default()
+                None
             });
             let mut controlled = Vec::new();
             let actual = ty
@@ -420,12 +417,9 @@ mod controlled_tests {
             assert_eq!(ordinary, controlled);
             for at in 1..=count.get() {
                 let mut visits = 0;
-                let mut control = Control::new(Limits::default(), move |_| {
+                let mut control = Control::new(move |_| {
                     visits += 1;
-                    Usage {
-                        signal: (visits == at).then_some(Signal::Term),
-                        ..Usage::default()
-                    }
+                    (visits == at).then_some(Signal::Term)
                 });
                 assert!(matches!(
                     ty.any_controlled::<Failure>(
@@ -449,9 +443,9 @@ mod controlled_tests {
         );
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut control = Control::new(Limits::default(), move |_| {
+        let mut control = Control::new(move |_| {
             seen.set(seen.get() + 1);
-            Usage::default()
+            None
         });
         let erased = ty
             .erase_controlled::<Failure>(&mut control, Checkpoint::Expression)
@@ -464,12 +458,9 @@ mod controlled_tests {
         assert!(count.get() > 10);
         for at in 1..=count.get() {
             let mut visits = 0;
-            let mut control = Control::new(Limits::default(), move |_| {
+            let mut control = Control::new(move |_| {
                 visits += 1;
-                Usage {
-                    signal: (visits == at).then_some(Signal::Term),
-                    ..Usage::default()
-                }
+                (visits == at).then_some(Signal::Term)
             });
             assert!(matches!(
                 ty.erase_controlled::<Failure>(&mut control, Checkpoint::Expression),

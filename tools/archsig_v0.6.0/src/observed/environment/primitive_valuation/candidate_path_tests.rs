@@ -1,5 +1,4 @@
 use super::*;
-use crate::control::{Limits, Resource, Usage};
 use crate::{law::model::Signature, result::Signal};
 use std::{cell::Cell, rc::Rc, sync::Arc};
 #[allow(dead_code)]
@@ -13,7 +12,7 @@ mod map_fixture {
     include!("../../../../tests/common/correspondence_paths.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn checked(s: crate::input::InputSources) -> Arc<CheckedInputs> {
     Arc::new(crate::input::check_inputs(s, &mut quiet()).unwrap())
@@ -393,7 +392,7 @@ fn candidate_paths_reconstruct_from_same_inputs_and_freeze_each_fixed_stop() {
             &Environment::with_primitive_valuation(&i, &assignments, &mut quiet()).unwrap(),
         )
         .unwrap();
-        let control = |at: usize, kind: u8| {
+        let control = |at: usize, signal: Signal| {
             let active = Rc::new(Cell::new(false));
             let enabled = active.clone();
             let visits = Rc::new(Cell::new(0));
@@ -401,66 +400,34 @@ fn candidate_paths_reconstruct_from_same_inputs_and_freeze_each_fixed_stop() {
             let calls = Rc::new(Cell::new(0));
             let samples = calls.clone();
             (
-                Control::new(
-                    Limits {
-                        time_ms: Some(1),
-                        memory_mib: Some(1),
-                    },
-                    move |cp| {
-                        samples.set(samples.get() + 1);
-                        if enabled.get() && cp == Checkpoint::FiniteIteration {
-                            seen.set(seen.get() + 1);
-                        }
-                        let stop = enabled.get() && seen.get() >= at;
-                        Usage {
-                            elapsed_ms: if stop && kind == 0 { 1 } else { 0 },
-                            memory_mib: if stop && kind == 1 { 1 } else { 0 },
-                            signal: if stop {
-                                match kind {
-                                    2 => Some(Signal::Int),
-                                    3 => Some(Signal::Term),
-                                    _ => None,
-                                }
-                            } else {
-                                None
-                            },
-                        }
-                    },
-                ),
+                Control::new(move |cp| {
+                    samples.set(samples.get() + 1);
+                    if enabled.get() && cp == Checkpoint::FiniteIteration {
+                        seen.set(seen.get() + 1);
+                    }
+                    (enabled.get() && seen.get() >= at).then_some(signal)
+                }),
                 active,
                 visits,
                 calls,
             )
         };
-        let (mut c, active, visits, _) = control(usize::MAX, 4);
+        let (mut c, active, visits, _) = control(usize::MAX, Signal::Int);
         let e = Environment::with_primitive_valuation(&i, &assignments, &mut c).unwrap();
         active.set(true);
         calculate(&e).unwrap();
         let total = visits.get();
         assert!(total > 3);
         for at in [1, total / 2, total] {
-            for kind in 0..4 {
-                let (mut c, active, _, calls) = control(at, kind);
+            for signal in [Signal::Int, Signal::Term] {
+                let (mut c, active, _, calls) = control(at, signal);
                 let e = Environment::with_primitive_valuation(&i, &assignments, &mut c).unwrap();
                 active.set(true);
                 let error = match calculate(&e) {
                     Err(e) => e,
                     Ok(_) => panic!("停止が成功"),
                 };
-                let reason = match kind {
-                    0 => StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    1 => StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    2 => StopReason::Cancelled(Signal::Int),
-                    _ => StopReason::Cancelled(Signal::Term),
-                };
+                let reason = StopReason::Cancelled(signal);
                 assert!(matches!(error,ValidationFailure::Stop(ref s)if s==&reason));
                 let before = calls.get();
                 assert_eq!(c.checkpoint(Checkpoint::FiniteIteration), Err(reason));

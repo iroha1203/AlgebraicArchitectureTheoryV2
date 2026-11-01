@@ -380,17 +380,17 @@ fn source_only_unavailable_path_preserves_four_stops_without_returning_incomplet
     let before = complete.nodes.len();
     let seen = std::rc::Rc::new(std::cell::Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(Limits::default(), move |p| {
+    let mut c = Control::new(move |p| {
         if p == Checkpoint::EquationPresentation {
             count.set(count.get() + 1);
         }
-        Usage::default()
+        None
     });
     retain(&mut complete, e.prepared.shared_inputs(), a, 0, &mut c).unwrap();
     let total = seen.get();
     assert!(total > 20);
     let mut nonempty = false;
-    for mode in 0..4 {
+    for signal in [crate::result::Signal::Int, crate::result::Signal::Term] {
         for at in [1, 5, total / 2, total - 1, total] {
             let mut g = graph(&e);
             assert!(
@@ -400,11 +400,11 @@ fn source_only_unavailable_path_preserves_four_stops_without_returning_incomplet
                         e.prepared.shared_inputs(),
                         a,
                         0,
-                        &mut stopping(mode, at)
+                        &mut stopping(signal, at)
                     ),
                     Err(ValidationFailure::Stop(_))
                 ),
-                "mode {mode}/{at}"
+                "{signal:?}/{at}"
             );
             assert_eq!(&g.nodes[..before], &e.nodes[..]);
             assert_eq!(&g.contexts[..before], &e.contexts[..]);

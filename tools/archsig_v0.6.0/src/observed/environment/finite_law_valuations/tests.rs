@@ -1,11 +1,11 @@
 use super::*;
-use crate::control::{Control, Limits, Usage};
+use crate::control::Control;
 #[allow(dead_code)]
 mod fixture {
     include!("../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn subject(name: &str) -> Scalar {
     Scalar::Subject {
@@ -400,79 +400,44 @@ fn recheck_rejects_changes_to_the_original_contract_domain_and_rows() {
 
 #[test]
 fn fixed_stops_leave_only_completed_rows_and_freeze_the_probe() {
-    use crate::{
-        control::{Resource, StopReason},
-        result::Signal,
-    };
+    use crate::{control::StopReason, result::Signal};
     use std::{cell::Cell, rc::Rc};
     fn control(
         point: Checkpoint,
         at: usize,
-        kind: u8,
+        signal: Signal,
     ) -> (Control, Rc<Cell<usize>>, Rc<Cell<usize>>) {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
         let calls = Rc::new(Cell::new(0));
         let sampled = calls.clone();
         (
-            Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: Some(1),
-                },
-                move |p| {
-                    sampled.set(sampled.get() + 1);
-                    if p == point {
-                        seen.set(seen.get() + 1)
-                    }
-                    let stop = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if stop && kind == 0 { 1 } else { 0 },
-                        memory_mib: if stop && kind == 1 { 1 } else { 0 },
-                        signal: if stop {
-                            match kind {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            ),
+            Control::new(move |p| {
+                sampled.set(sampled.get() + 1);
+                if p == point {
+                    seen.set(seen.get() + 1)
+                }
+                (seen.get() >= at).then_some(signal)
+            }),
             count,
             calls,
         )
     }
     let i = fixture::inputs();
     for point in [Checkpoint::FiniteLawDomain, Checkpoint::FiniteLawEvaluation] {
-        let (mut c, count, _) = control(point, usize::MAX, 4);
+        let (mut c, count, _) = control(point, usize::MAX, Signal::Int);
         finite_law_valuations(&i, "Selected.guarded", &bound(), &mut c).unwrap();
         let total = count.get();
         assert!(total > 1);
         for at in [1, total] {
-            for kind in 0..4 {
-                let (mut c, _, calls) = control(point, at, kind);
+            for signal in [Signal::Int, Signal::Term] {
+                let (mut c, _, calls) = control(point, at, signal);
                 let failure = match finite_law_valuations(&i, "Selected.guarded", &bound(), &mut c)
                 {
                     Err(f) => f,
                     Ok(_) => panic!("停止が成功になった"),
                 };
-                let expected = match kind {
-                    0 => StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    1 => StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    2 => StopReason::Cancelled(Signal::Int),
-                    _ => StopReason::Cancelled(Signal::Term),
-                };
+                let expected = StopReason::Cancelled(signal);
                 assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
                 let partial = failure.partial.unwrap();
                 assert!(!partial.is_complete());
@@ -753,43 +718,21 @@ fn definition_term_binding_remains_valid_without_a_law_vocabulary_import() {
 
 #[test]
 fn term_binding_reparse_stops_before_publishing_and_freezes_the_probe() {
-    use crate::{
-        control::{Resource, StopReason},
-        result::Signal,
-    };
+    use crate::{control::StopReason, result::Signal};
     use std::{cell::Cell, rc::Rc};
-    fn controlled(at: usize, kind: u8) -> (Control, Rc<Cell<usize>>, Rc<Cell<usize>>) {
+    fn controlled(at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>, Rc<Cell<usize>>) {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
         let calls = Rc::new(Cell::new(0));
         let all = calls.clone();
         (
-            Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: Some(1),
-                },
-                move |point| {
-                    all.set(all.get() + 1);
-                    if point == Checkpoint::ArchMapTerm {
-                        seen.set(seen.get() + 1);
-                    }
-                    let stop = seen.get() >= at;
-                    Usage {
-                        elapsed_ms: if stop && kind == 0 { 1 } else { 0 },
-                        memory_mib: if stop && kind == 1 { 1 } else { 0 },
-                        signal: if stop {
-                            match kind {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            ),
+            Control::new(move |point| {
+                all.set(all.get() + 1);
+                if point == Checkpoint::ArchMapTerm {
+                    seen.set(seen.get() + 1);
+                }
+                (seen.get() >= at).then_some(signal)
+            }),
             count,
             calls,
         )
@@ -799,7 +742,7 @@ fn term_binding_reparse_stops_before_publishing_and_freezes_the_probe() {
         "view make():Term<(Fp(2))->Fp(2)> =fn(n:Fp(2))=>n+1;law required fixed(t:Term<(Fp(2))->Fp(2)>):t(0)=1;",
     );
     let bindings = vec![("t".into(), literal_term(&i, "Selected.make"))];
-    let (mut c, count, _) = controlled(usize::MAX, 4);
+    let (mut c, count, _) = controlled(usize::MAX, Signal::Int);
     assert!(
         finite_law_valuations(&i, "Selected.fixed", &bindings, &mut c)
             .unwrap()
@@ -808,26 +751,13 @@ fn term_binding_reparse_stops_before_publishing_and_freezes_the_probe() {
     let total = count.get();
     assert!(total > 1);
     for at in [1, total] {
-        for kind in 0..4 {
-            let (mut c, _, calls) = controlled(at, kind);
+        for signal in [Signal::Int, Signal::Term] {
+            let (mut c, _, calls) = controlled(at, signal);
             let failure = match finite_law_valuations(&i, "Selected.fixed", &bindings, &mut c) {
                 Err(f) => f,
                 Ok(_) => panic!("中断後に完成表を返した"),
             };
-            let expected = match kind {
-                0 => StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 1,
-                    observed: 1,
-                },
-                1 => StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 1,
-                    observed: 1,
-                },
-                2 => StopReason::Cancelled(Signal::Int),
-                _ => StopReason::Cancelled(Signal::Term),
-            };
+            let expected = StopReason::Cancelled(signal);
             assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
             let partial = failure.partial.unwrap();
             assert!(!partial.is_complete());
@@ -1255,10 +1185,7 @@ fn family_recheck_rebuilds_all_columns_domain_and_required_zero() {
 }
 #[test]
 fn family_fixed_stops_preserve_only_completed_cells_and_freeze_probe() {
-    use crate::{
-        control::{Resource, StopReason},
-        result::Signal,
-    };
+    use crate::{control::StopReason, result::Signal};
     use std::{cell::Cell, rc::Rc};
     let i = fixture::with_body(
         fixture::MAP,
@@ -1271,67 +1198,35 @@ fn family_fixed_stops_preserve_only_completed_cells_and_freeze_probe() {
         Checkpoint::FiniteLawEvaluation,
         Checkpoint::FiniteLawRequired,
     ] {
-        let run = |at: usize, kind: u8| {
+        let run = |at: usize, signal: Signal| {
             let seen = Rc::new(Cell::new(0));
             let visits = seen.clone();
             let calls = Rc::new(Cell::new(0));
             let sampled = calls.clone();
             (
-                Control::new(
-                    Limits {
-                        time_ms: Some(1),
-                        memory_mib: Some(1),
-                    },
-                    move |p| {
-                        sampled.set(sampled.get() + 1);
-                        if p == point {
-                            visits.set(visits.get() + 1);
-                        }
-                        let stop = visits.get() >= at;
-                        Usage {
-                            elapsed_ms: if stop && kind == 0 { 1 } else { 0 },
-                            memory_mib: if stop && kind == 1 { 1 } else { 0 },
-                            signal: if stop {
-                                match kind {
-                                    2 => Some(Signal::Int),
-                                    3 => Some(Signal::Term),
-                                    _ => None,
-                                }
-                            } else {
-                                None
-                            },
-                        }
-                    },
-                ),
+                Control::new(move |p| {
+                    sampled.set(sampled.get() + 1);
+                    if p == point {
+                        visits.set(visits.get() + 1);
+                    }
+                    (visits.get() >= at).then_some(signal)
+                }),
                 seen,
                 calls,
             )
         };
-        let (mut c, count, _) = run(usize::MAX, 4);
+        let (mut c, count, _) = run(usize::MAX, Signal::Int);
         finite_law_family_valuations(&i, &selected, &mut c).unwrap();
         let total = count.get();
         assert!(total > 1);
         for at in [1, total / 2, total] {
-            for kind in 0..4 {
-                let (mut c, _, calls) = run(at, kind);
+            for signal in [Signal::Int, Signal::Term] {
+                let (mut c, _, calls) = run(at, signal);
                 let failure = match finite_law_family_valuations(&i, &selected, &mut c) {
                     Err(f) => f,
                     Ok(_) => panic!("停止が成功"),
                 };
-                let expected = match kind {
-                    0 => StopReason::BudgetExhausted {
-                        resource: Resource::TimeMs,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    1 => StopReason::BudgetExhausted {
-                        resource: Resource::MemoryMib,
-                        limit: 1,
-                        observed: 1,
-                    },
-                    2 => StopReason::Cancelled(Signal::Int),
-                    _ => StopReason::Cancelled(Signal::Term),
-                };
+                let expected = StopReason::Cancelled(signal);
                 assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
                 if let Some(partial) = failure.partial {
                     assert!(!partial.is_complete());
@@ -1681,77 +1576,42 @@ fn component_recheck_rejects_path_type_operands_equality_indicator_and_roster_fo
 }
 #[test]
 fn component_fixed_stops_keep_completed_rows_and_freeze_probe() {
-    use crate::{
-        control::{Resource, StopReason},
-        result::Signal,
-    };
+    use crate::{control::StopReason, result::Signal};
     use std::{cell::Cell, rc::Rc};
     let i = fixture::with_body(
         fixture::MAP,
         "law required pair(c:Part) when c.flag:c.pair=(0,true);",
     );
     let selected = family_selection(&[("pair", bound())]);
-    let run = |at: usize, kind: u8| {
+    let run = |at: usize, signal: Signal| {
         let seen = Rc::new(Cell::new(0));
         let visits = seen.clone();
         let calls = Rc::new(Cell::new(0));
         let sampled = calls.clone();
         (
-            Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: Some(1),
-                },
-                move |p| {
-                    sampled.set(sampled.get() + 1);
-                    if p == Checkpoint::FiniteLawComponent {
-                        visits.set(visits.get() + 1);
-                    }
-                    let stop = visits.get() >= at;
-                    Usage {
-                        elapsed_ms: if stop && kind == 0 { 1 } else { 0 },
-                        memory_mib: if stop && kind == 1 { 1 } else { 0 },
-                        signal: if stop {
-                            match kind {
-                                2 => Some(Signal::Int),
-                                3 => Some(Signal::Term),
-                                _ => None,
-                            }
-                        } else {
-                            None
-                        },
-                    }
-                },
-            ),
+            Control::new(move |p| {
+                sampled.set(sampled.get() + 1);
+                if p == Checkpoint::FiniteLawComponent {
+                    visits.set(visits.get() + 1);
+                }
+                (visits.get() >= at).then_some(signal)
+            }),
             seen,
             calls,
         )
     };
-    let (mut c, total, _) = run(usize::MAX, 4);
+    let (mut c, total, _) = run(usize::MAX, Signal::Int);
     finite_law_family_valuations(&i, &selected, &mut c).unwrap();
     let total = total.get();
     assert!(total > 3);
     for at in [1, total / 2, total] {
-        for kind in 0..4 {
-            let (mut c, _, calls) = run(at, kind);
+        for signal in [Signal::Int, Signal::Term] {
+            let (mut c, _, calls) = run(at, signal);
             let failure = match finite_law_family_valuations(&i, &selected, &mut c) {
                 Err(f) => f,
                 Ok(_) => panic!("停止が成功"),
             };
-            let expected = match kind {
-                0 => StopReason::BudgetExhausted {
-                    resource: Resource::TimeMs,
-                    limit: 1,
-                    observed: 1,
-                },
-                1 => StopReason::BudgetExhausted {
-                    resource: Resource::MemoryMib,
-                    limit: 1,
-                    observed: 1,
-                },
-                2 => StopReason::Cancelled(Signal::Int),
-                _ => StopReason::Cancelled(Signal::Term),
-            };
+            let expected = StopReason::Cancelled(signal);
             assert!(matches!(failure.cause,ValidationFailure::Stop(ref s) if s==&expected));
             let partial = failure.partial.unwrap();
             assert!(!partial.is_complete());

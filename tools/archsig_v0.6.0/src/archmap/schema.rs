@@ -612,7 +612,7 @@ fn read_location_inner<E: InputError>(
 #[cfg(test)]
 mod interruption_tests {
     use super::*;
-    use crate::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::control::{CheckFailure, StopReason};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     type E = CheckFailure<Box<Issue>>;
@@ -621,14 +621,11 @@ mod interruption_tests {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
         (
-            Control::new(Limits::default(), move |point| {
+            Control::new(move |point| {
                 if point == Checkpoint::ArchMapSchema {
                     seen.set(seen.get() + 1);
                 }
-                Usage {
-                    signal: at.filter(|at| *at == seen.get()).map(|_| Signal::Term),
-                    ..Usage::default()
-                }
+                at.filter(|at| *at == seen.get()).map(|_| Signal::Term)
             }),
             count,
         )
@@ -720,59 +717,35 @@ mod interruption_tests {
 #[cfg(test)]
 mod required_identifier_priority_tests {
     use super::*;
-    use crate::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::control::{CheckFailure, StopReason};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     type E = CheckFailure<Box<Issue>>;
 
     #[test]
-    fn first_or_later_invalid_character_is_diagnosed_before_its_post_checkpoint() {
+    fn first_or_later_invalid_character_yields_to_cancellation() {
         for (text, at) in [("!", 3), ("x!", 5)] {
-            for mode in 0..3 {
-                let probe = || {
-                    let seen = Rc::new(Cell::new(0));
-                    Control::new(
-                        Limits {
-                            time_ms: (mode == 1).then_some(1),
-                            memory_mib: (mode == 2).then_some(1),
-                        },
-                        move |point| {
-                            if point == Checkpoint::ArchMapSchema {
-                                seen.set(seen.get() + 1);
-                            }
-                            let stop = seen.get() >= at;
-                            Usage {
-                                signal: (stop && mode == 0).then_some(Signal::Term),
-                                elapsed_ms: u128::from(stop && mode == 1),
-                                memory_mib: u128::from(stop && mode == 2),
-                            }
-                        },
-                    )
-                };
-                let original = || syntax("/snapshots/0/id", format!("`{text}` is not a valid Id"));
-                let mut control = probe();
-                let result = identifier::<E>(text, true, &mut control, Some(&original));
-                if mode == 0 {
-                    assert!(matches!(
-                        result,
-                        Err(CheckFailure::Stopped(StopReason::Cancelled(Signal::Term)))
-                    ));
-                } else {
-                    let Err(CheckFailure::Input(issue)) = result else {
-                        panic!("known identifier syntax")
-                    };
-                    assert_eq!(issue, original());
-                    assert!(matches!(
-                        control.stop_reason(),
-                        Some(StopReason::BudgetExhausted { .. })
-                    ));
-                }
-                let mut control = probe();
-                assert!(matches!(
-                    is_id_controlled::<E>(text, &mut control),
-                    Err(CheckFailure::Stopped(_))
-                ));
-            }
+            let probe = || {
+                let seen = Rc::new(Cell::new(0));
+                Control::new(move |point| {
+                    if point == Checkpoint::ArchMapSchema {
+                        seen.set(seen.get() + 1);
+                    }
+                    (seen.get() >= at).then_some(Signal::Term)
+                })
+            };
+            let original = || syntax("/snapshots/0/id", format!("`{text}` is not a valid Id"));
+            let mut control = probe();
+            let result = identifier::<E>(text, true, &mut control, Some(&original));
+            assert!(matches!(
+                result,
+                Err(CheckFailure::Stopped(StopReason::Cancelled(Signal::Term)))
+            ));
+            let mut control = probe();
+            assert!(matches!(
+                is_id_controlled::<E>(text, &mut control),
+                Err(CheckFailure::Stopped(_))
+            ));
         }
     }
 }

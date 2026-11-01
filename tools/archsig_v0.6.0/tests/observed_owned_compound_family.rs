@@ -3,14 +3,10 @@
 mod completion_evidence;
 #[path = "common/owned_compound_family.rs"]
 mod fixture;
-use archsig::{
-    canonical::Json,
-    control::{Control, Limits, Usage},
-    observed::evaluate_observed_bytes,
-};
+use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 use std::collections::{BTreeMap, BTreeSet};
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(x) = j else { panic!("object") };

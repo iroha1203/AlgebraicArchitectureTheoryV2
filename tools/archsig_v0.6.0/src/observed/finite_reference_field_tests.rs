@@ -405,8 +405,8 @@ fn finite_reference_field_internal_pins_validate_original_shapes_refs_and_missin
     );
 }
 
-fn stop(phase: &'static str, at: usize, kind: usize) {
-    use crate::control::{Checkpoint, Control, Usage};
+fn stop(phase: &'static str, at: usize) {
+    use crate::control::{Checkpoint, Control};
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(false, false, false);
     let asks = [
@@ -422,7 +422,7 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
     assert_eq!(normal.answers[3].status, Decision::Established);
     let target = normal.prepared.inputs().law().declarations["Inspect.stable"].span;
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
@@ -434,7 +434,7 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
         frozen.clone(),
         nested.clone(),
     );
-    let mut c = Control::new(limits, move |checkpoint| {
+    let mut c = Control::new(move |checkpoint| {
         p.set(p.get() + 1);
         let hit = if a.get() && phase == "pin_schema" && checkpoint == Checkpoint::ArchMapSchema {
             n.set(n.get() + 1);
@@ -445,9 +445,9 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
         if hit {
             a.set(false);
             assert!(f.replace(Some(p.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(input, &asks, &mut c).unwrap();
@@ -543,6 +543,6 @@ fn stop(phase: &'static str, at: usize, kind: usize) {
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
 }
 #[test]
-fn finite_reference_field_coverage_memory_stop_never_promotes_unfinished_whole() {
-    stop("completion_coverage", 0, 2);
+fn finite_reference_field_coverage_stop_never_promotes_unfinished_whole() {
+    stop("completion_coverage", 0);
 }

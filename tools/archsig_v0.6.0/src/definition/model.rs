@@ -266,7 +266,7 @@ pub struct DataProperties {
 #[cfg(test)]
 mod field_control_tests {
     use super::*;
-    use crate::control::{CheckFailure, Limits, StopReason, Usage};
+    use crate::control::{CheckFailure, StopReason};
     use crate::result::Signal;
     use std::{cell::Cell, rc::Rc};
     type Failure = CheckFailure<Box<crate::issue::Issue>>;
@@ -289,9 +289,9 @@ mod field_control_tests {
         for name in ["last", "absent"] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let mut control = Control::new(Limits::default(), move |_| {
+            let mut control = Control::new(move |_| {
                 seen.set(seen.get() + 1);
-                Usage::default()
+                None
             });
             let hit = signature
                 .field_controlled::<Failure>(name, &mut control, Checkpoint::DefinitionSemantics)
@@ -300,12 +300,9 @@ mod field_control_tests {
             assert!(count.get() >= 8);
             for at in 1..=count.get() {
                 let mut visits = 0;
-                let mut control = Control::new(Limits::default(), move |_| {
+                let mut control = Control::new(move |_| {
                     visits += 1;
-                    Usage {
-                        signal: (visits == at).then_some(Signal::Term),
-                        ..Usage::default()
-                    }
+                    (visits == at).then_some(Signal::Term)
                 });
                 assert!(matches!(
                     signature.field_controlled::<Failure>(

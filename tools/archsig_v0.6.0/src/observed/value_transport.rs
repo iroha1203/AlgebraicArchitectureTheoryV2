@@ -771,15 +771,11 @@ mod tests {
                 .all(|constructor| constructor.arguments.is_empty())
         );
         let mut seen = 0;
-        let mut control = Control::new(crate::control::Limits::default(), move |point| {
+        let mut control = Control::new(move |point| {
             if point == Checkpoint::FiniteValueTransport {
                 seen += 1;
             }
-            crate::control::Usage {
-                elapsed_ms: 0,
-                memory_mib: 0,
-                signal: (seen == 2).then_some(crate::result::Signal::Term),
-            }
+            (seen == 2).then_some(crate::result::Signal::Term)
         });
         assert!(matches!(
             structural_components(

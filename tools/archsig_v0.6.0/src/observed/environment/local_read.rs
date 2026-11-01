@@ -1647,18 +1647,14 @@ fn materialize_instance(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{
-        control::{Limits, Usage},
-        input::check_inputs,
-        observed::request::resolve_native_for_test,
-    };
+    use crate::{input::check_inputs, observed::request::resolve_native_for_test};
     #[allow(dead_code)]
     mod fixture {
         use crate as archsig;
         include!("../../../tests/common/architecture_environment.rs");
     }
     fn quiet() -> Control {
-        Control::new(Limits::default(), |_| Usage::default())
+        Control::unlimited()
     }
     #[test]
     fn local_owner_missing_survives_the_first_free_state_stop() {
@@ -1695,63 +1691,40 @@ mod tests {
                 },
             ),
         ];
-        for mode in 0..3 {
-            let state =
-                Environment::with_requests(&inputs, requests.requests(), &mut quiet()).unwrap();
-            let graph = Graph::new(&quiet());
-            let mut b = Builder {
-                g: &graph,
-                base: 0,
-                parts: vec![],
-            };
-            let mut c = Control::new(
-                Limits {
-                    time_ms: Some(1),
-                    memory_mib: Some(1),
-                },
-                move |point| {
-                    if point != Checkpoint::Localize {
-                        return Usage::default();
-                    }
-                    match mode {
-                        0 => Usage {
-                            elapsed_ms: 2,
-                            ..Usage::default()
-                        },
-                        1 => Usage {
-                            memory_mib: 2,
-                            ..Usage::default()
-                        },
-                        _ => Usage {
-                            signal: Some(crate::result::Signal::Term),
-                            ..Usage::default()
-                        },
-                    }
-                },
-            );
-            let context = materialize_instance(
-                &env,
-                &mut b,
-                declaration,
-                &requests.requests()[0],
-                &bindings,
-                &[],
-                &[state],
-                &[],
-                None,
-                &mut c,
-            )
-            .unwrap();
-            assert!(
-                context
-                    .reasons
-                    .iter()
-                    .any(|r| matches!(r.kind, ReasonKind::Stop(_)))
-            );
-            assert!(context.reasons.iter().any(|r| r.missing.iter().any(
-                |f| f.subject == "p" && f.field.as_deref() == Some("Reservations.State.owner")
-            )));
-        }
+        let state = Environment::with_requests(&inputs, requests.requests(), &mut quiet()).unwrap();
+        let graph = Graph::new(&quiet());
+        let mut b = Builder {
+            g: &graph,
+            base: 0,
+            parts: vec![],
+        };
+        let mut c = Control::new(|point| {
+            (point == Checkpoint::Localize).then_some(crate::result::Signal::Term)
+        });
+        let context = materialize_instance(
+            &env,
+            &mut b,
+            declaration,
+            &requests.requests()[0],
+            &bindings,
+            &[],
+            &[state],
+            &[],
+            None,
+            &mut c,
+        )
+        .unwrap();
+        assert!(
+            context
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::Stop(_)))
+        );
+        assert!(context.reasons.iter().any(|r| {
+            r.missing
+                .iter()
+                .any(|f| f.subject == "p" && f.field.as_deref() == Some("Reservations.State.owner"))
+        }));
     }
 }
 

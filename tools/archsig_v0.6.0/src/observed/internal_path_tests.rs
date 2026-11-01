@@ -235,7 +235,7 @@ fn changed_path(kinds: &[usize]) {
 fn internal_path_recheck_rejects_carrier_image_and_foreign_atom_mutations() {
     changed_path(&[0, 1, 2]);
 }
-fn stopped(stage: &'static str, kind: usize, unknown: bool) {
+fn stopped(stage: &'static str, unknown: bool) {
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input(if unknown { "missing_to" } else { "normal" }, "r1");
     let asks = [
@@ -246,19 +246,19 @@ fn stopped(stage: &'static str, kind: usize, unknown: bool) {
     ];
     let normal = evaluate_observed_bytes(input.clone(), &asks, &mut named_call_quiet()).unwrap();
     assert!(matches!(normal.status(), "complete" | "partial"));
-    let (limits, usage, reason) = reservations_private_stop_usage(kind);
+    let reason = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |_| {
+    let mut control = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            crate::control::Usage::default()
+            None
         }
     });
     let prepared = prepare_observed(input, &asks, &mut control).unwrap();
@@ -325,5 +325,5 @@ fn stopped(stage: &'static str, kind: usize, unknown: bool) {
 }
 #[test]
 fn internal_path_action_cancel_keeps_all_tables_prior_answers_and_frozen_probe() {
-    stopped("path_action", 0, false);
+    stopped("path_action", false);
 }

@@ -1,6 +1,6 @@
 use crate as archsig;
 use archsig::{
-    control::{Control, Limits, Usage},
+    control::Control,
     input::{CheckedInputs, InputSources, check_inputs},
 };
 use std::sync::Arc;
@@ -24,7 +24,7 @@ pub fn inputs(missing: bool, body: &str) -> Arc<CheckedInputs> {
                 law.into_bytes(),
                 map.replace("@DIGEST@", digest).into_bytes(),
             ),
-            &mut Control::new(Limits::default(), |_| Usage::default()),
+            &mut Control::unlimited(),
         )
         .unwrap(),
     )

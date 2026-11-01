@@ -4,7 +4,7 @@ use crate::common;
 use archsig::{
     archmap::Slot,
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     definition::check_definitions_controlled,
     input::{CheckedInputs, InputSources, InputStatus, check_inputs},
     law::{ast::ExprKind, model::Signature},
@@ -18,7 +18,7 @@ use std::{
 };
 
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -1443,11 +1443,11 @@ fn provenance_relocation_preserves_affine_judgments_and_returns_new_origins() {
 fn counted(inputs: &InputSources, asks: &[&str]) -> (Json, usize) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut control = Control::new(Limits::default(), move |p| {
+    let mut control = Control::new(move |p| {
         if p == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
-        Usage::default()
+        None
     });
     let wire = evaluate_observed_bytes(inputs.clone(), asks, &mut control)
         .unwrap()
@@ -1486,7 +1486,7 @@ view later(s:Sample): Unit = unit;
     let later_span = checked.law().exprs()[body(&checked, "Calc.later")].span;
     // 現在要求の全Expression checkpointを止め、元DAGの完成境界を確認する。
     // 係数走査と再検査の内部はprivate試験が扱う。
-    for kind in 0..4 {
+    for signal in [Signal::Term, Signal::Int] {
         let mut covered = BTreeSet::new();
         for offset in 1..=expression_count {
             let at_stop = prior_count + offset;
@@ -1494,31 +1494,17 @@ view later(s:Sample): Unit = unit;
             let probes = Rc::new(Cell::new(0));
             let frozen = Rc::new(Cell::new(None));
             let (e, p, s) = (expressions.clone(), probes.clone(), frozen.clone());
-            let mut control = Control::new(
-                Limits {
-                    time_ms: (kind == 1).then_some(1),
-                    memory_mib: (kind == 2).then_some(1),
-                },
-                move |point| {
-                    p.set(p.get() + 1);
-                    if point == Checkpoint::Expression {
-                        e.set(e.get() + 1);
-                        if e.get() == at_stop {
-                            s.set(Some(p.get()));
-                            return Usage {
-                                signal: match kind {
-                                    0 => Some(Signal::Term),
-                                    3 => Some(Signal::Int),
-                                    _ => None,
-                                },
-                                elapsed_ms: u128::from(kind == 1),
-                                memory_mib: u128::from(kind == 2),
-                            };
-                        }
+            let mut control = Control::new(move |point| {
+                p.set(p.get() + 1);
+                if point == Checkpoint::Expression {
+                    e.set(e.get() + 1);
+                    if e.get() == at_stop {
+                        s.set(Some(p.get()));
+                        return Some(signal);
                     }
-                    Usage::default()
-                },
-            );
+                }
+                None
+            });
             let wire = evaluate_observed_bytes(inputs.clone(), &asks, &mut control)
                 .unwrap()
                 .wire();
@@ -1548,30 +1534,11 @@ view later(s:Sample): Unit = unit;
                 assert_eq!(f(a, "status"), &Json::str("undetermined"));
                 assert!(!obj(a).contains_key("claim"));
                 assert!(arr(f(a, "evidence")).is_empty());
-                let code = if kind == 0 || kind == 3 {
-                    "cancelled"
-                } else {
-                    "budget_exhausted"
-                };
                 let reason = arr(f(a, "reasons"))
                     .iter()
-                    .find(|r| f(r, "code") == &Json::str(code))
+                    .find(|r| f(r, "code") == &Json::str("cancelled"))
                     .unwrap();
-                let details = if kind == 0 || kind == 3 {
-                    Json::obj([(
-                        "signal",
-                        Json::str(if kind == 0 { "SIGTERM" } else { "SIGINT" }),
-                    )])
-                } else {
-                    Json::obj([
-                        (
-                            "resource",
-                            Json::str(if kind == 1 { "time_ms" } else { "memory_mib" }),
-                        ),
-                        ("limit", Json::str("1")),
-                        ("observed", Json::str("1")),
-                    ])
-                };
+                let details = Json::obj([("signal", Json::str(signal.wire()))]);
                 assert_eq!(f(reason, "details"), &details);
             }
             assert!(obj(f(answer(&wire, "later"), "outputs")).is_empty());
@@ -1612,7 +1579,7 @@ view later(s:Sample): Unit = unit;
             assert_eq!(probes.get(), before, "停止後の再検査でもprobeを再開しない");
         }
         for boundary in [(1, false), (2, false), (2, true)] {
-            assert!(covered.contains(&boundary), "mode {kind}: {boundary:?}");
+            assert!(covered.contains(&boundary), "{signal:?}: {boundary:?}");
         }
     }
 }

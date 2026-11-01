@@ -144,8 +144,7 @@ fn map_application_rechecks_condition_sets_counterexample_and_exact_failure_reas
         });
     }
 }
-fn application_stop(kind: usize, phase: &'static str, at: usize, after_answer: bool) {
-    use crate::control::Usage;
+fn application_stop(phase: &'static str, at: usize, after_answer: bool) {
     use std::{cell::Cell, rc::Rc};
     let asks = [
         "prior=check(Applications.prior)",
@@ -153,19 +152,19 @@ fn application_stop(kind: usize, phase: &'static str, at: usize, after_answer: b
         "later=evaluate(Applications.seed)",
     ];
     let normal = application_result(&asks, "known");
-    let (limits, usage, expected) = reservations_private_stop_usage(kind);
+    let expected = StopReason::Cancelled(crate::result::Signal::Term);
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(limits, move |_| {
+    let mut control = Control::new(move |_| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert!(freeze.replace(Some(count.get())).is_none());
-            usage
+            Some(crate::result::Signal::Term)
         } else {
-            Usage::default()
+            None
         }
     });
     let prepared =
@@ -234,5 +233,5 @@ fn application_stop(kind: usize, phase: &'static str, at: usize, after_answer: b
 
 #[test]
 fn map_application_lookup_cancel_keeps_verified_prefix_and_prior_refutation() {
-    application_stop(0, "map_lookup", 0, false);
+    application_stop("map_lookup", 0, false);
 }

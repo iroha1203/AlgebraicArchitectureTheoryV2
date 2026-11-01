@@ -634,7 +634,7 @@ pub(in crate::observed::local_result) fn between(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::control::{Limits, Usage};
+    use crate::result::Signal;
     #[test]
     fn compound_bindings_preserve_structure_and_actual_images() {
         let subject=|s:&str| Scalar::Subject {snapshot:"v".into(),subject:s.into(),entity:"R.Item".into()};
@@ -650,7 +650,7 @@ mod tests {
         let list=|items|Scalar::List{element:ty.clone(),items};
         let map=|pairs|Scalar::Map{domain:ty.clone(),codomain:ty.clone(),pairs};
         let data=|name:&str,args|Scalar::Data{family:"R.Packet".into(),constructor:name.into(),args};
-        let mut c=Control::new(Limits::default(), |_|Usage::default());
+        let mut c=Control::unlimited();
         for (a,b) in [
             (set(vec![subject("a"),subject("b")]),set(vec![subject("y"),subject("z")])),
             (map(vec![(subject("a"),subject("b")),(subject("b"),subject("a"))]),map(vec![(subject("y"),subject("z")),(subject("z"),subject("y"))])),
@@ -665,7 +665,7 @@ mod tests {
             (Scalar::Option{element:ty.clone(),value:None},Scalar::Option{element:ty.clone(),value:Some(Box::new(subject("z")))}),
             (Scalar::Tuple(vec![subject("a"),Scalar::Z(2.into())]),Scalar::Tuple(vec![subject("z"),Scalar::Z(3.into())])),
         ] { assert!(!rename.binding(&a,&b,&mut c).unwrap()); }
-        let mut stopped=Control::new(Limits{time_ms:Some(0),memory_mib:None},|_|Usage{elapsed_ms:1,..Usage::default()});
+        let mut stopped=Control::new(|_|Some(Signal::Int));
         assert!(matches!(rename.binding(&subject("a"),&subject("z"),&mut stopped),Err(ValidationFailure::Stop(_))));
     }
 }

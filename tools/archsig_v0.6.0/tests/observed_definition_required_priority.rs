@@ -1,7 +1,7 @@
 //! 必須の依存・所属・field・添字探索の終端拒否を、三入力 byte 経路で検査する。
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control, Limits, Resource, StopReason, Usage},
+    control::{Checkpoint, Control, StopReason},
     definition::check_definitions,
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     issue::{Code, Details, Issue, Location},
@@ -85,43 +85,19 @@ fn from_files(definitions: Vec<Vec<u8>>) -> InputSources {
         b"bad".to_vec(),
     )
 }
-fn probe(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+fn probe(point: Checkpoint, at: usize) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let control = Control::new(
-        Limits {
-            time_ms: (mode != 2).then_some(7),
-            memory_mib: (mode != 1).then_some(11),
-        },
-        move |current| {
-            if current == point {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() == at;
-            Usage {
-                elapsed_ms: if stop && mode != 2 { 9 } else { 0 },
-                memory_mib: if stop && mode != 1 { 13 } else { 0 },
-                signal: (stop && mode == 0).then_some(Signal::Term),
-            }
-        },
-    );
+    let control = Control::new(move |current| {
+        if current == point {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() == at).then_some(Signal::Term)
+    });
     (control, count)
 }
-fn reason(mode: usize) -> StopReason {
-    match mode {
-        0 => StopReason::Cancelled(Signal::Term),
-        1 => StopReason::BudgetExhausted {
-            resource: Resource::TimeMs,
-            limit: 7,
-            observed: 9,
-        },
-        2 => StopReason::BudgetExhausted {
-            resource: Resource::MemoryMib,
-            limit: 11,
-            observed: 13,
-        },
-        _ => unreachable!(),
-    }
+fn reason() -> StopReason {
+    StopReason::Cancelled(Signal::Term)
 }
 fn empty_stage(failure: &InputFailure) {
     assert!(failure.declarations().is_empty());
@@ -176,7 +152,7 @@ fn required_priority(
 ) {
     let issue = ordinary_issue(&input);
     assert_issue(&issue, code, message, pointer);
-    let (mut control, total) = probe(point, usize::MAX, 0);
+    let (mut control, total) = probe(point, usize::MAX);
     let failure = check_inputs(input.clone(), &mut control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert_eq!(failure.issues(), [ResultIssue::Input(issue.clone()).wire()]);
@@ -187,49 +163,30 @@ fn required_priority(
         "a required failure must be reached inside its helper"
     );
     for at in post..=total.get() {
-        for mode in 0..3 {
-            let (mut control, seen) = probe(point, at, mode);
-            let failure = check_inputs(input.clone(), &mut control).unwrap_err();
-            assert_eq!(seen.get(), at, "{message}, {point:?} {at}/{}", total.get());
-            assert_eq!(control.stop_reason(), Some(reason(mode)));
-            empty_stage(&failure);
-            if mode == 0 {
-                assert_eq!(failure.status(), InputStatus::Interrupted);
-                assert_eq!(failure.issues(), [reason(mode).wire()]);
-            } else {
-                assert_eq!(
-                    failure.status(),
-                    InputStatus::Invalid,
-                    "{message}, first post {post}, got {at}"
-                );
-                assert_eq!(
-                    failure.issues(),
-                    [
-                        reason(mode).wire(),
-                        ResultIssue::Input(issue.clone()).wire()
-                    ]
-                );
-            }
-        }
+        let (mut control, seen) = probe(point, at);
+        let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+        assert_eq!(seen.get(), at, "{message}, {point:?} {at}/{}", total.get());
+        assert_eq!(control.stop_reason(), Some(reason()));
+        empty_stage(&failure);
+        assert_eq!(failure.status(), InputStatus::Interrupted);
+        assert_eq!(failure.issues(), [reason().wire()]);
     }
     // Before the final predicate/candidate is examined, no required rejection
     // is known. A speculative local mismatch cannot become an input Issue.
-    for mode in 0..3 {
-        let (mut control, seen) = probe(point, post - 1, mode);
-        let failure = check_inputs(input.clone(), &mut control).unwrap_err();
-        assert_eq!(seen.get(), post - 1);
-        assert_eq!(
-            failure.status(),
-            InputStatus::Interrupted,
-            "{message}: before final decision"
-        );
-        assert_eq!(failure.issues(), [reason(mode).wire()]);
-        empty_stage(&failure);
-    }
+    let (mut control, seen) = probe(point, post - 1);
+    let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+    assert_eq!(seen.get(), post - 1);
+    assert_eq!(
+        failure.status(),
+        InputStatus::Interrupted,
+        "{message}: before final decision"
+    );
+    assert_eq!(failure.issues(), [reason().wire()]);
+    empty_stage(&failure);
 }
 
 #[test]
-fn exhausted_dependency_candidates_keep_original_reference_above_budget() {
+fn exhausted_dependency_candidates_keep_original_reference_unless_stopped() {
     let b = definition(vec![vocabulary(
         "B",
         vec![record("entity", "B.Item", vec![], vec![])],
@@ -269,7 +226,7 @@ fn exhausted_dependency_candidates_keep_original_reference_above_budget() {
 }
 
 #[test]
-fn owned_index_final_mismatch_keeps_original_reference_above_budget() {
+fn owned_index_final_mismatch_keeps_original_reference_unless_stopped() {
     let record = record(
         "entity",
         "R.Record",
@@ -287,7 +244,7 @@ fn owned_index_final_mismatch_keeps_original_reference_above_budget() {
 }
 
 #[test]
-fn required_root_and_owned_target_keep_the_original_syntax_above_budget() {
+fn required_root_and_owned_target_keep_the_original_syntax_unless_stopped() {
     let other = record(
         "entity",
         "R.Other",
@@ -319,7 +276,7 @@ fn required_root_and_owned_target_keep_the_original_syntax_above_budget() {
 }
 
 #[test]
-fn missing_arrow_and_correspondence_fields_keep_the_original_syntax_above_budget() {
+fn missing_arrow_and_correspondence_fields_keep_the_original_syntax_unless_stopped() {
     let arrow = record(
         "arrow",
         "R.Edge",
@@ -351,7 +308,7 @@ fn missing_arrow_and_correspondence_fields_keep_the_original_syntax_above_budget
 }
 
 #[test]
-fn correspondence_root_failure_keeps_original_parameter_location_above_budget() {
+fn correspondence_root_failure_keeps_original_parameter_location_unless_stopped() {
     let correspondence = record(
         "correspondence",
         "R.Link",
@@ -372,7 +329,7 @@ fn correspondence_root_failure_keeps_original_parameter_location_above_budget() 
 }
 
 #[test]
-fn alignment_final_field_mismatch_keeps_original_reference_above_budget() {
+fn alignment_final_field_mismatch_keeps_original_reference_unless_stopped() {
     let correspondence = record_aligned(
         "correspondence",
         "R.Link",
@@ -410,19 +367,17 @@ fn optional_absence_and_untried_field_candidates_remain_interrupted() {
         let input = sources(declarations);
         let ordinary_files = [("definition0", input.definitions()[0].bytes())];
         assert!(check_definitions(&ordinary_files).is_ok());
-        let (mut baseline, count) = probe(Checkpoint::DefinitionSemantics, usize::MAX, 0);
+        let (mut baseline, count) = probe(Checkpoint::DefinitionSemantics, usize::MAX);
         // The deliberately bad ArchMap is later; only DefinitionSemantics is sampled.
         let _ = check_inputs(input.clone(), &mut baseline);
         assert!(count.get() > 1);
         for at in [1, count.get() - 1, count.get()] {
-            for mode in 0..3 {
-                let (mut control, seen) = probe(Checkpoint::DefinitionSemantics, at, mode);
-                let failure = check_inputs(input.clone(), &mut control).unwrap_err();
-                assert_eq!(seen.get(), at);
-                assert_eq!(failure.status(), InputStatus::Interrupted);
-                assert_eq!(failure.issues(), [reason(mode).wire()]);
-                empty_stage(&failure);
-            }
+            let (mut control, seen) = probe(Checkpoint::DefinitionSemantics, at);
+            let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+            assert_eq!(seen.get(), at);
+            assert_eq!(failure.status(), InputStatus::Interrupted);
+            assert_eq!(failure.issues(), [reason().wire()]);
+            empty_stage(&failure);
         }
     }
 }
@@ -443,13 +398,11 @@ fn an_untried_owner_field_candidate_cannot_be_promoted_to_invalid() {
     // Each Ref type contributes four samples. Then field/find entries, the
     // first candidate pre and post: r != owner, with owner still untried.
     let first_mismatch_post = 12;
-    for mode in 0..3 {
-        let (mut control, seen) = probe(Checkpoint::DefinitionSemantics, first_mismatch_post, mode);
-        let failure = check_inputs(input.clone(), &mut control).unwrap_err();
-        assert_eq!(seen.get(), first_mismatch_post);
-        assert_eq!(failure.status(), InputStatus::Interrupted);
-        assert_eq!(failure.issues(), [reason(mode).wire()]);
-        assert_eq!(control.stop_reason(), Some(reason(mode)));
-        empty_stage(&failure);
-    }
+    let (mut control, seen) = probe(Checkpoint::DefinitionSemantics, first_mismatch_post);
+    let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+    assert_eq!(seen.get(), first_mismatch_post);
+    assert_eq!(failure.status(), InputStatus::Interrupted);
+    assert_eq!(failure.issues(), [reason().wire()]);
+    assert_eq!(control.stop_reason(), Some(reason()));
+    empty_stage(&failure);
 }

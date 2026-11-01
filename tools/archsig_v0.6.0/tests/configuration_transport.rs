@@ -7,7 +7,7 @@ use archsig::{
             correspondence, identity, internal_arrow,
         },
     },
-    control::{Checkpoint, Control, Limits, Usage},
+    control::{Checkpoint, Control},
     input::{CheckedInputs, InputSources, check_inputs},
     result::Signal,
 };
@@ -356,44 +356,25 @@ fn every_fixed_transport_stop_latches_without_new_probes() {
         let map = r.operation().map();
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut c = Control::new(Limits::default(), move |p| {
+        let mut c = Control::new(move |p| {
             if p == Checkpoint::ConfigurationTransport {
                 seen.set(seen.get() + 1);
             }
-            Usage::default()
+            None
         });
         configuration_transport(&i, map, &mut c).unwrap();
         let total = count.get();
         assert!(total > 39);
         for at in [1, total / 2, total] {
-            for mode in 0..4 {
+            for signal in [Signal::Int, Signal::Term] {
                 let count = Rc::new(Cell::new(0usize));
                 let seen = count.clone();
-                let mut c = Control::new(
-                    Limits {
-                        time_ms: (mode == 0).then_some(1),
-                        memory_mib: (mode == 1).then_some(1),
-                    },
-                    move |p| {
-                        if p == Checkpoint::ConfigurationTransport {
-                            seen.set(seen.get() + 1);
-                        }
-                        let stop = seen.get() >= at;
-                        Usage {
-                            elapsed_ms: if stop && mode == 0 { 1 } else { 0 },
-                            memory_mib: if stop && mode == 1 { 1 } else { 0 },
-                            signal: if stop {
-                                match mode {
-                                    2 => Some(Signal::Int),
-                                    3 => Some(Signal::Term),
-                                    _ => None,
-                                }
-                            } else {
-                                None
-                            },
-                        }
-                    },
-                );
+                let mut c = Control::new(move |p| {
+                    if p == Checkpoint::ConfigurationTransport {
+                        seen.set(seen.get() + 1);
+                    }
+                    (seen.get() >= at).then_some(signal)
+                });
                 let f = configuration_transport(&i, map, &mut c).unwrap_err();
                 assert_eq!(
                     f.cause(),
@@ -457,34 +438,15 @@ fn cross_kind_configuration_maps_keep_object_and_generator_condition_failures_an
     r.recheck(&i, &mut Control::unlimited()).unwrap();
 }
 
-fn stop_at(point: Checkpoint, at: usize, mode: usize) -> (Control, Rc<Cell<usize>>) {
+fn stop_at(point: Checkpoint, at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let c = Control::new(
-        Limits {
-            time_ms: Some(1),
-            memory_mib: Some(1),
-        },
-        move |p| {
-            if p == point {
-                seen.set(seen.get() + 1);
-            }
-            let stop = seen.get() >= at;
-            Usage {
-                elapsed_ms: u128::from(stop && mode == 0),
-                memory_mib: u128::from(stop && mode == 1),
-                signal: if stop {
-                    match mode {
-                        2 => Some(Signal::Int),
-                        3 => Some(Signal::Term),
-                        _ => None,
-                    }
-                } else {
-                    None
-                },
-            }
-        },
-    );
+    let c = Control::new(move |p| {
+        if p == point {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= at).then_some(signal)
+    });
     (c, count)
 }
 
@@ -504,11 +466,11 @@ fn stopped_configuration_transport_retains_operation_tables_and_completed_rows()
         configuration_transport(
             &i,
             m.map().unwrap(),
-            &mut Control::new(Limits::default(), move |p| {
+            &mut Control::new(move |p| {
                 if p == Checkpoint::ConfigurationTransport {
                     seen.set(seen.get() + 1);
                 }
-                Usage::default()
+                None
             }),
         )
         .unwrap();
@@ -523,8 +485,8 @@ fn stopped_configuration_transport_retains_operation_tables_and_completed_rows()
             (Checkpoint::ConfigurationTransportGenerator, 1),
             (Checkpoint::ConfigurationTransport, total.get()),
         ] {
-            for mode in 0..4 {
-                let (mut c, probes) = stop_at(point, at, mode);
+            for signal in [Signal::Int, Signal::Term] {
+                let (mut c, probes) = stop_at(point, at, signal);
                 let f = configuration_transport(&i, m.map().unwrap(), &mut c).unwrap_err();
                 assert_eq!(
                     f.cause(),

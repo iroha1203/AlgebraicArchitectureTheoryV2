@@ -1,14 +1,11 @@
 use super::*;
-use crate::{
-    construction::{construct, readings::object_reading_instances},
-    control::{Limits, Usage},
-};
+use crate::construction::{construct, readings::object_reading_instances};
 #[allow(dead_code)]
 mod fixture {
     include!("../../../../../../tests/common/primitive_valuation_data.rs");
 }
 fn quiet() -> Control {
-    Control::new(Limits::default(), |_| Usage::default())
+    Control::unlimited()
 }
 fn readings(i: &CheckedInputs) -> ObjectReadingInstances {
     let c = construct(i, "Selected", "v", "root", &mut quiet()).unwrap();
@@ -568,43 +565,30 @@ fn fixed_stops_keep_finished_instance_rows_and_do_not_offer_complete_functions()
         (object(&a, "p"), instance(&a, "zero", "p"), bindings("p")),
         (object(&a, "p"), instance(&a, "zero", "q"), bindings("q")),
     ];
-    for mode in 0..3 {
-        let seen = Rc::new(Cell::new(0));
-        let count = seen.clone();
-        let mut c = Control::new(
-            Limits {
-                time_ms: (mode == 1).then_some(1),
-                memory_mib: (mode == 2).then_some(1),
-            },
-            move |p| {
-                if p == Checkpoint::FiniteLawEvaluation {
-                    count.set(count.get() + 1);
-                }
-                let stop = count.get() >= 3;
-                Usage {
-                    signal: (stop && mode == 0).then_some(Signal::Term),
-                    elapsed_ms: u128::from(stop && mode == 1),
-                    memory_mib: u128::from(stop && mode == 2),
-                }
-            },
-        );
-        let failure = finite_instance_law_family_valuations(&i, &a, &selected, &mut c)
-            .err()
-            .unwrap();
-        assert!(matches!(failure.cause, ValidationFailure::Stop(_)));
-        let r = failure.partial.unwrap();
-        assert!(r.domain_complete());
-        assert!(!r.is_complete());
-        assert_eq!(r.columns()[0].rows().len(), 1);
-        assert!(r.columns()[1].rows().is_empty());
-        assert_eq!(r.columns()[1].source_instance(), Some(selected[1].1));
-        assert!(matches!(
-            r.instance_source(1).unwrap().1,
-            InstanceApplication::NotApplicable
-        ));
-        assert!(r.integer_function(0, None, &mut quiet()).is_err());
-        assert!(r.required_quotient(&mut quiet()).is_err());
-    }
+    let seen = Rc::new(Cell::new(0));
+    let count = seen.clone();
+    let mut c = Control::new(move |p| {
+        if p == Checkpoint::FiniteLawEvaluation {
+            count.set(count.get() + 1);
+        }
+        (count.get() >= 3).then_some(Signal::Term)
+    });
+    let failure = finite_instance_law_family_valuations(&i, &a, &selected, &mut c)
+        .err()
+        .unwrap();
+    assert!(matches!(failure.cause, ValidationFailure::Stop(_)));
+    let r = failure.partial.unwrap();
+    assert!(r.domain_complete());
+    assert!(!r.is_complete());
+    assert_eq!(r.columns()[0].rows().len(), 1);
+    assert!(r.columns()[1].rows().is_empty());
+    assert_eq!(r.columns()[1].source_instance(), Some(selected[1].1));
+    assert!(matches!(
+        r.instance_source(1).unwrap().1,
+        InstanceApplication::NotApplicable
+    ));
+    assert!(r.integer_function(0, None, &mut quiet()).is_err());
+    assert!(r.required_quotient(&mut quiet()).is_err());
 }
 #[test]
 fn interruption_before_d_keeps_original_instance_indices_and_conditions() {
@@ -613,10 +597,7 @@ fn interruption_before_d_keeps_original_instance_indices_and_conditions() {
     let i = fixture::with_body(&map, "law required zero(c:Part):c.quantity=0;");
     let a = readings(&i);
     let selected = vec![(object(&a, "q"), instance(&a, "zero", "q"), bindings("q"))];
-    let mut c = Control::new(Limits::default(), |p| Usage {
-        signal: (p == Checkpoint::FiniteLawDomain).then_some(Signal::Int),
-        ..Usage::default()
-    });
+    let mut c = Control::new(|p| (p == Checkpoint::FiniteLawDomain).then_some(Signal::Int));
     let failure = finite_instance_law_family_valuations(&i, &a, &selected, &mut c)
         .err()
         .unwrap();
