@@ -320,7 +320,7 @@ impl Environment<'_> {
                 pinned.push(crate::archmap::FieldAssignment {
                     snapshot: fact.snapshot.clone(),
                     subject: fact.subject.clone(),
-                    field: fact.field.clone().ok_or("補完に元fieldがない")?.to_string(),
+                    field: fact.field.clone().ok_or("補完に元fieldがない")?.into(),
                     value: data::input_json(&value, &self.control)?,
                 });
             }

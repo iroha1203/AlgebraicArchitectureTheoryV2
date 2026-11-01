@@ -70,7 +70,7 @@ impl ObjectDomain {
                     .ok_or("条件付きsubjectがない")?
                     .ty
                     .clone();
-                conditional.push((ty.to_string(), member.subject().clone(), member.owner_slot().clone()));
+                conditional.push((ty.into(), member.subject().clone(), member.owner_slot().clone()));
             }
         }
         Ok(Self {

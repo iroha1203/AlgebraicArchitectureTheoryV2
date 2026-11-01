@@ -126,13 +126,13 @@ impl Data {
             .ty
             .clone();
         match self.ty() {
-            NodeType::Construction(T::CandidateSpace) => Some(ProjectionType::CandidateSpace(ty.to_string())),
-            NodeType::Construction(T::SolutionSet) => Some(ProjectionType::SolutionSet(ty.to_string())),
-            NodeType::Construction(T::StateSpace) => Some(ProjectionType::StateSpace(ty.to_string())),
+            NodeType::Construction(T::CandidateSpace) => Some(ProjectionType::CandidateSpace(ty.into())),
+            NodeType::Construction(T::SolutionSet) => Some(ProjectionType::SolutionSet(ty.into())),
+            NodeType::Construction(T::StateSpace) => Some(ProjectionType::StateSpace(ty.into())),
             NodeType::Construction(T::StateMap) => Some(ProjectionType::StateMap),
-            NodeType::Construction(T::Architecture) => Some(ProjectionType::ArchitectureRoot(ty.to_string())),
-            NodeType::Construction(T::Repair) => Some(ProjectionType::Repair(ty.to_string())),
-            NodeType::Construction(T::Assignment) => Some(ProjectionType::Assignment(ty.to_string())),
+            NodeType::Construction(T::Architecture) => Some(ProjectionType::ArchitectureRoot(ty.into())),
+            NodeType::Construction(T::Repair) => Some(ProjectionType::Repair(ty.into())),
+            NodeType::Construction(T::Assignment) => Some(ProjectionType::Assignment(ty.into())),
             NodeType::Domain => Some(ProjectionType::Domain),
             _ => None,
         }
