@@ -120,64 +120,7 @@ pub(super) fn affine_guard_forms(
     base: &Scope,
     reading: &str,
 ) -> Result<Option<Vec<Form>>, ValidationFailure> {
-    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        env.tick()?;
-        let value = env.scoped_ast(id, vars, base, reading)?;
-        if value.condition_failed || value.condition_pending {
-            return Ok(None);
-        }
-        if let Some(Scalar::Bool(holds)) = value.known_value {
-            return Ok(Some(if holds {
-                vec![]
-            } else {
-                vec![
-                    affine::constant(&Scalar::Z(Z::one()), &env.control)?
-                        .ok_or("偽guardの数値定数がない")?,
-                ]
-            }));
-        }
-        if let Some(comparison) = value
-            .comparison
-            .as_ref()
-            .filter(|p| p.op == BinOp::Eq && p.bound_axes.is_empty())
-        {
-            return Ok(affine::binary(
-                BinOp::Sub,
-                Some(&comparison.left),
-                Some(&comparison.right),
-                &env.control,
-            )?
-            .map(|form| vec![form]));
-        }
-        match &env.indexes.inputs.law().exprs[id].kind {
-            ExprKind::Group(body) => affine_guard_forms(env, *body, vars, base, reading),
-            ExprKind::Let { name, value, body } => {
-                let value = env.scoped_ast(*value, vars, base, reading)?;
-                if value.condition_failed || value.condition_pending {
-                    return Ok(None);
-                }
-                let mut vars = vars.clone();
-                vars.insert(name.name.clone(), value);
-                affine_guard_forms(env, *body, &vars, base, reading)
-            }
-            ExprKind::Binary {
-                op: BinOp::And,
-                lhs,
-                rhs,
-            } => {
-                let left = affine_guard_forms(env, *lhs, vars, base, reading)?;
-                let right = affine_guard_forms(env, *rhs, vars, base, reading)?;
-                Ok(match (left, right) {
-                    (Some(mut left), Some(right)) => {
-                        left.extend(right);
-                        Some(left)
-                    }
-                    _ => None,
-                })
-            }
-            _ => Ok(None),
-        }
-    })
+    super::conjunction::walk(&mut AffineGuard, env, id, vars, base, reading)
 }
 
 #[derive(Clone, Copy)]
@@ -235,76 +178,177 @@ fn equations(
     rhs: &mut Vec<Option<Z>>,
     missing: &mut Pending,
 ) -> Result<(), ValidationFailure> {
-    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        env.tick()?;
-        let base = Scope::default();
-        let v = env.scoped_ast(id, vars, &base, reading)?;
-        missing.support.extend(v.support.iter().cloned());
-        missing.scope.merge(&v.scope);
-        usable(env, id, &v)?;
+    super::conjunction::walk(&mut IntegerEquations { axes, matrix, rhs, missing }, env, id, vars, &Scope::default(), reading)
+}
+
+struct AffineGuard;
+impl super::conjunction::Interpretation for AffineGuard {
+    type Output = Option<Vec<Form>>;
+    fn value(
+        &mut self,
+        env: &Environment<'_>,
+        _id: usize,
+        _vars: &BTreeMap<String, SourceValue>,
+        _reading: &str,
+        value: &SourceValue,
+    ) -> Result<Option<Self::Output>, ValidationFailure> {
+        if value.condition_failed || value.condition_pending {
+            return Ok(Some(None));
+        }
+        if let Some(Scalar::Bool(holds)) = value.known_value {
+            return Ok(Some(Some(if holds {
+                vec![]
+            } else {
+                vec![
+                    affine::constant(&Scalar::Z(Z::one()), &env.control)?
+                        .ok_or("偽guardの数値定数がない")?,
+                ]
+            })));
+        }
+        if let Some(comparison) = value
+            .comparison
+            .as_ref()
+            .filter(|p| p.op == BinOp::Eq && p.bound_axes.is_empty())
+        {
+            return Ok(Some(
+                affine::binary(
+                    BinOp::Sub,
+                    Some(&comparison.left),
+                    Some(&comparison.right),
+                    &env.control,
+                )?
+                .map(|form| vec![form]),
+            ));
+        }
+        Ok(None)
+    }
+    fn bind(
+        &mut self,
+        env: &Environment<'_>,
+        value: usize,
+        name: &str,
+        vars: &BTreeMap<String, SourceValue>,
+        base: &Scope,
+        reading: &str,
+    ) -> Result<Option<BTreeMap<String, SourceValue>>, ValidationFailure> {
+        let value = env.scoped_ast(value, vars, base, reading)?;
+        if value.condition_failed || value.condition_pending {
+            return Ok(None);
+        }
+        let mut vars = vars.clone();
+        vars.insert(name.into(), value);
+        Ok(Some(vars))
+    }
+    fn unavailable(&self) -> Self::Output {
+        None
+    }
+    fn combine(&self, left: Self::Output, right: Self::Output) -> Self::Output {
+        match (left, right) {
+            (Some(mut left), Some(right)) => {
+                left.extend(right);
+                Some(left)
+            }
+            _ => None,
+        }
+    }
+    fn leaf(
+        &mut self,
+        _env: &Environment<'_>,
+        _id: usize,
+        _value: &SourceValue,
+    ) -> Result<Self::Output, ValidationFailure> {
+        Ok(None)
+    }
+}
+struct IntegerEquations<'a> {
+    axes: Axes<'a>,
+    matrix: &'a mut Matrix,
+    rhs: &'a mut Vec<Option<Z>>,
+    missing: &'a mut Pending,
+}
+impl super::conjunction::Interpretation for IntegerEquations<'_> {
+    type Output = ();
+    fn value(
+        &mut self,
+        env: &Environment<'_>,
+        id: usize,
+        vars: &BTreeMap<String, SourceValue>,
+        reading: &str,
+        v: &SourceValue,
+    ) -> Result<Option<()>, ValidationFailure> {
+        self.missing.support.extend(v.support.iter().cloned());
+        self.missing.scope.merge(&v.scope);
+        usable(env, id, v)?;
         if let Some(Scalar::Bool(holds)) = v.known_value {
             if !holds {
-                matrix.push(vec![Z::zero(); axes.len()]);
-                rhs.push(Some(Z::one()));
+                self.matrix.push(vec![Z::zero(); self.axes.len()]);
+                self.rhs.push(Some(Z::one()));
             }
-            return Ok(());
+            return Ok(Some(()));
         }
         if v.comparison.is_none()
-            && let Some(forms) = parameter_coefficient_forms(env, id, vars, reading, &missing.universal)?
+            && let Some(forms) =
+                parameter_coefficient_forms(env, id, vars, reading, &self.missing.universal)?
         {
             for form in forms {
-                let (constant, coefficients) = coordinates(env, id, &form, axes, missing)?;
-                matrix.push(coefficients);
-                rhs.push(constant.map(|v| -v));
+                let (constant, coefficients) =
+                    coordinates(env, id, &form, self.axes, self.missing)?;
+                self.matrix.push(coefficients);
+                self.rhs.push(constant.map(|v| -v));
             }
+            return Ok(Some(()));
+        }
+        Ok(None)
+    }
+    fn bind(
+        &mut self,
+        env: &Environment<'_>,
+        value: usize,
+        name: &str,
+        vars: &BTreeMap<String, SourceValue>,
+        base: &Scope,
+        reading: &str,
+    ) -> Result<Option<BTreeMap<String, SourceValue>>, ValidationFailure> {
+        let mut vars = vars.clone();
+        let v = env.scoped_ast(value, &vars, base, reading)?;
+        usable(env, value, &v)?;
+        vars.insert(name.into(), v);
+        Ok(Some(vars))
+    }
+    fn unavailable(&self) {}
+    fn combine(&self, _left: (), _right: ()) {}
+    fn leaf(
+        &mut self,
+        env: &Environment<'_>,
+        id: usize,
+        v: &SourceValue,
+    ) -> Result<(), ValidationFailure> {
+        let Some(p) = v
+            .comparison
+            .as_ref()
+            .filter(|p| p.op == BinOp::Eq && p.bound_axes.is_empty())
+        else {
+            if numeric_condition(env, id, v)? {
+                self.missing.unsupported = Some("numeric_change_condition");
+            }
+            return Err(unsupported(
+                env,
+                id,
+                "整数changeの全解は既知係数のアフィン等式の連言を要する",
+            ));
+        };
+        let form = affine::binary(BinOp::Sub, Some(&p.left), Some(&p.right), &env.control)?
+            .ok_or("整数等式の差がない")?;
+        if form.varies_over(&self.missing.universal, &env.control)? {
+            self.matrix.push(vec![Z::zero(); self.axes.len()]);
+            self.rhs.push(Some(Z::one()));
             return Ok(());
         }
-        match &env.indexes.inputs.law().exprs[id].kind {
-            ExprKind::Group(body) => equations(env, *body, vars, reading, axes, matrix, rhs, missing),
-            ExprKind::Let { name, value, body } => {
-                let mut vars = vars.clone();
-                let v = env.scoped_ast(*value, &vars, &base, reading)?;
-                usable(env, *value, &v)?;
-                vars.insert(name.name.clone(), v);
-                equations(env, *body, &vars, reading, axes, matrix, rhs, missing)
-            }
-            ExprKind::Binary {
-                op: BinOp::And,
-                lhs,
-                rhs: right,
-            } => {
-                equations(env, *lhs, vars, reading, axes, matrix, rhs, missing)?;
-                equations(env, *right, vars, reading, axes, matrix, rhs, missing)
-            }
-            _ => {
-                let Some(p) = v
-                    .comparison
-                    .as_ref()
-                    .filter(|p| p.op == BinOp::Eq && p.bound_axes.is_empty())
-                else {
-                    if numeric_condition(env, id, &v)? {
-                        missing.unsupported=Some("numeric_change_condition");
-                    }
-                    return Err(unsupported(
-                        env,
-                        id,
-                        "整数changeの全解は既知係数のアフィン等式の連言を要する",
-                    ));
-                };
-                let form = affine::binary(BinOp::Sub, Some(&p.left), Some(&p.right), &env.control)?
-                    .ok_or("整数等式の差がない")?;
-                if form.varies_over(&missing.universal, &env.control)? {
-                    matrix.push(vec![Z::zero(); axes.len()]);
-                    rhs.push(Some(Z::one()));
-                    return Ok(());
-                }
-                let (constant, coefficients) = coordinates(env, id, &form, axes, missing)?;
-                matrix.push(coefficients);
-                rhs.push(constant.map(|v|-v));
-                Ok(())
-            }
-        }
-    })
+        let (constant, coefficients) = coordinates(env, id, &form, self.axes, self.missing)?;
+        self.matrix.push(coefficients);
+        self.rhs.push(constant.map(|v| -v));
+        Ok(())
+    }
 }
 
 fn parameter_coefficient_forms(

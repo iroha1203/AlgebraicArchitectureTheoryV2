@@ -14,6 +14,7 @@ use crate::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 pub(super) mod affine;
+mod walk;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Term {
     pub params: Vec<(String, Type)>,
@@ -693,285 +694,240 @@ impl Term {
             tick(c)?;
             let e = self.nodes.get(&id).ok_or("Term元式がない")?;
             let ty = self.types.get(&id).ok_or("Term元式の型がない")?;
-            let value = match &e.kind {
-                ExprKind::Int(n) => numeric::literal(n, ty, c)?,
-                ExprKind::Str(s) => Scalar::Text(s.clone()),
-                ExprKind::Bool(b) => Scalar::Bool(*b),
-                ExprKind::Unit => Scalar::Unit,
-                ExprKind::Dotted(parts) => {
-                    if parts.len() == 1 && vars.contains_key(&parts[0].name) {
-                        vars[&parts[0].name].clone()
-                    } else {
-                        let Type::Data(family) = ty else {
-                            return Err("Termの元名前が束縛・constructorでない".into());
-                        };
-                        let name = self
-                            .reference(e.span, c)?
-                            .ok_or("Term零constructorの元参照がない")?;
-                        let ctor = data::constructor(law, family, name, c)?;
-                        if !ctor.arguments.is_empty() {
-                            return Err("Term零constructorの引数数が違う".into());
-                        }
-                        Scalar::Data {
-                            family: family.clone(),
-                            constructor: law.resolved_names.get(name).ok_or("constructorの検査済み名がない")?.clone(),
-                            args: vec![],
-                        }
-                    }
-                }
-                ExprKind::Group(i) => self.eval(*i, vars, law, c)?,
-                ExprKind::Unary { op, operand } => {
-                    environment::unary(*op, &self.eval(*operand, vars, law, c)?, c)?
-                }
-                ExprKind::Binary { op, lhs, rhs } => {
-                    let a = self.eval(*lhs, vars, law, c)?;
-                    let short = match (op, &a) {
-                        (BinOp::And, Scalar::Bool(false)) => Some(false),
-                        (BinOp::Or, Scalar::Bool(true)) | (BinOp::Implies, Scalar::Bool(false)) => {
-                            Some(true)
-                        }
-                        _ => None,
-                    };
-                    if let Some(b) = short {
-                        Scalar::Bool(b)
-                    } else {
-                        let b = self.eval(*rhs, vars, law, c)?;
-                        if !environment::supports_binary(*op, &a.ty(), law, c)? {
-                            return Err(ValidationFailure::UnsupportedExpression {
-                                location: crate::issue::Location::Law { span: e.span },
-                                feature: "Term bodyの未対応の型・演算".into(),
-                            });
-                        }
-                        environment::binary(*op, &a, &b, law, e.span, c)?
-                    }
-                }
-                ExprKind::Let { name, value, body } => {
-                    let v = self.eval(*value, vars, law, c)?;
-                    let mut local = copy_variables(vars, c)?;
-                    if local.insert(name.name.clone(), v).is_some() {
-                        return Err("Term let束縛が重複する".into());
-                    }
-                    self.eval(*body, &local, law, c)?
-                }
-                ExprKind::If {
-                    cond,
-                    then_branch,
-                    else_branch,
-                } => match self.eval(*cond, vars, law, c)? {
-                    Scalar::Bool(true) => self.eval(*then_branch, vars, law, c)?,
-                    Scalar::Bool(false) => self.eval(*else_branch, vars, law, c)?,
-                    _ => return Err("Term if条件がBoolでない".into()),
-                },
-                ExprKind::Match { scrutinee, arms } => {
-                    let v = self.eval(*scrutinee, vars, law, c)?;
-                    let mut result = None;
-                    for a in arms {
-                        tick(c)?;
-                        let mut local = copy_variables(vars, c)?;
-                        if self.pattern(&a.pattern, &v, &mut local, c)? {
-                            result = Some(self.eval(a.body, &local, law, c)?);
-                            break;
-                        }
-                    }
-                    result.ok_or("Term matchの元選択枝がない")?
-                }
-                ExprKind::Index { base, index, .. } => {
-                    let Scalar::Tuple(ref v) = self.eval(*base, vars, law, c)? else {
-                        return Err("Term数値射影元がTupleでない".into());
-                    };
-                    v.get(*index).ok_or("Term Tuple位置が違う")?.clone()
-                }
-                ExprKind::Tuple(items) => Scalar::Tuple(self.eval_items(items, vars, law, c)?),
-                ExprKind::ListLit { items, .. } => {
-                    let Type::List(element) = ty else {
-                        return Err("Term List型がない".into());
-                    };
-                    Scalar::List {
-                        element: (**element).clone(),
-                        items: self.eval_items(items, vars, law, c)?,
-                    }
-                }
-                ExprKind::SetLit { items, .. } => {
-                    let Type::Set(element) = ty else {
-                        return Err("Term Set型がない".into());
-                    };
-                    data::set(
-                        (**element).clone(),
-                        &self.eval_items(items, vars, law, c)?,
-                        c,
-                    )?
-                }
-                ExprKind::None(_) => {
-                    let Type::Option(element) = ty else {
-                        return Err("Term Option型がない".into());
-                    };
-                    Scalar::Option {
-                        element: (**element).clone(),
-                        value: None,
-                    }
-                }
-                ExprKind::Some(i) => {
-                    let Type::Option(element) = ty else {
-                        return Err("Term Option型がない".into());
-                    };
-                    Scalar::Option {
-                        element: (**element).clone(),
-                        value: Some(Box::new(self.eval(*i, vars, law, c)?)),
-                    }
-                }
-                ExprKind::Call { callee, args } => {
-                    let values = self.eval_items(args, vars, law, c)?;
-                    let mut callee = *callee;
-                    while let ExprKind::Group(inner) =
-                        self.nodes.get(&callee).ok_or("Term calleeがない")?.kind
-                    {
-                        tick(c)?;
-                        callee = inner;
-                    }
-                    let source = &self.nodes[&callee];
-                    if let Some(target) = self.reference(source.span, c)? {
-                        let Type::Data(family) = ty else {
-                            return Err("Term constructor戻り型がない".into());
-                        };
-                        let ctor = data::constructor(law, family, target, c)?;
-                        if ctor.arguments.len() != values.len() {
-                            return Err("Term constructor引数数が違う".into());
-                        }
-                        Scalar::Data {
-                            family: family.clone(),
-                            constructor: law.resolved_names.get(target).ok_or("constructorの検査済み名がない")?.clone(),
-                            args: values,
-                        }
-                    } else {
-                        let ExprKind::Dotted(parts) = &source.kind else {
-                            return Err("Term calleeが固定演算でない".into());
-                        };
-                        match parts.first().map(|p| p.name.as_str()) {
-                            Some("rat") if parts.len() == 1 && values.len() == 2 => {
-                                numeric::rational(&values[0], &values[1], c)?
+            let value =
+                if let Some(value) = walk::expression::<Concrete>(self, e, ty, vars, law, c)? {
+                    value
+                } else {
+                    match &e.kind {
+                        ExprKind::Int(n) => numeric::literal(n, ty, c)?,
+                        ExprKind::Str(s) => Scalar::Text(s.clone()),
+                        ExprKind::Bool(b) => Scalar::Bool(*b),
+                        ExprKind::Unit => Scalar::Unit,
+                        ExprKind::Dotted(parts) => {
+                            if parts.len() == 1 && vars.contains_key(&parts[0].name) {
+                                vars[&parts[0].name].clone()
+                            } else {
+                                let Type::Data(family) = ty else {
+                                    return Err("Termの元名前が束縛・constructorでない".into());
+                                };
+                                let name = self
+                                    .reference(e.span, c)?
+                                    .ok_or("Term零constructorの元参照がない")?;
+                                let ctor = data::constructor(law, family, name, c)?;
+                                if !ctor.arguments.is_empty() {
+                                    return Err("Term零constructorの引数数が違う".into());
+                                }
+                                Scalar::Data {
+                                    family: family.clone(),
+                                    constructor: law
+                                        .resolved_names
+                                        .get(name)
+                                        .ok_or("constructorの検査済み名がない")?
+                                        .clone(),
+                                    args: vec![],
+                                }
                             }
-                            Some(name @ ("count" | "sum"))
-                                if parts.len() == 1 && values.len() == 1 =>
-                            {
-                                data::aggregate(name, &values[0], c)?
-                            }
-                            _ => return Err("Term bodyに禁止された呼出しがある".into()),
                         }
-                    }
-                }
-                ExprKind::SetComp {
-                    elem,
-                    var,
-                    domain,
-                    filter,
-                } => {
-                    let input = self.eval(*domain, vars, law, c)?;
-                    let values = match &input {
-                        Scalar::List { items, .. } | Scalar::Set { items, .. } => items,
-                        _ => return Err("Term内包域がList/Setでない".into()),
-                    };
-                    let mut result = Vec::new();
-                    for v in values {
-                        tick(c)?;
-                        let mut local = copy_variables(vars, c)?;
-                        if local.insert(var.name.clone(), v.clone()).is_some() {
-                            return Err("Term内包束縛が重複する".into());
-                        }
-                        let keep = match filter {
-                            None => true,
-                            Some(f) => match self.eval(*f, &local, law, c)? {
-                                Scalar::Bool(b) => b,
-                                _ => return Err("Term内包filterがBoolでない".into()),
-                            },
-                        };
-                        if keep {
-                            result.push(self.eval(*elem, &local, law, c)?);
-                        }
-                    }
-                    let Type::Set(t) = ty else {
-                        return Err("Term内包結果型がSetでない".into());
-                    };
-                    data::set((**t).clone(), &result, c)?
-                }
-                ExprKind::Quant {
-                    kind,
-                    var,
-                    split: QuantSplit::Fixed { domain, body },
-                } => {
-                    let element = self
-                        .quantifier_types
-                        .get(&id)
-                        .ok_or("Term量化の元binder型がない")?;
-                    let values = match domain {
-                        QuantDomain::In(i) => match self.eval(*i, vars, law, c)? {
-                            Scalar::List { ref items, .. } | Scalar::Set { ref items, .. } => {
-                                items.clone()
+                        ExprKind::Match { scrutinee, arms } => {
+                            let v = self.eval(*scrutinee, vars, law, c)?;
+                            let mut result = None;
+                            for a in arms {
+                                tick(c)?;
+                                let mut local = copy_variables(vars, c)?;
+                                if self.pattern(&a.pattern, &v, &mut local, c)? {
+                                    result = Some(self.eval(a.body, &local, law, c)?);
+                                    break;
+                                }
                             }
-                            _ => return Err("Term量化域がList/Setでない".into()),
-                        },
-                        QuantDomain::Type(_) => {
-                            if !super::finite::completion_supported(element, law, c)? {
-                                return Err(ValidationFailure::UnsupportedExpression {
-                                    location: crate::issue::Location::Law { span: e.span },
-                                    feature: "Term bodyの非有限な型量化".into(),
-                                });
-                            }
-                            super::finite::values(
-                                element,
-                                law,
+                            result.ok_or("Term matchの元選択枝がない")?
+                        }
+                        ExprKind::SetLit { items, .. } => {
+                            let Type::Set(element) = ty else {
+                                return Err("Term Set型がない".into());
+                            };
+                            data::set(
+                                (**element).clone(),
+                                &self.eval_items(items, vars, law, c)?,
                                 c,
-                                &mut |_| Err("Termに参照族は置けない".into()),
-                                &mut |_| {},
                             )?
-                            .values
                         }
-                    };
-                    let mut result = *kind == QuantKind::Forall;
-                    for v in values {
-                        tick(c)?;
-                        let mut local = copy_variables(vars, c)?;
-                        if local.insert(var.name.clone(), v).is_some() {
-                            return Err("Term量化束縛が重複する".into());
+                        ExprKind::None(_) => {
+                            let Type::Option(element) = ty else {
+                                return Err("Term Option型がない".into());
+                            };
+                            Scalar::Option {
+                                element: (**element).clone(),
+                                value: None,
+                            }
                         }
-                        let Scalar::Bool(b) = self.eval(*body, &local, law, c)? else {
-                            return Err("Term量化bodyがBoolでない".into());
-                        };
-                        if (*kind == QuantKind::Forall && !b) || (*kind == QuantKind::Exists && b) {
-                            result = b;
-                            break;
+                        ExprKind::Some(i) => {
+                            let Type::Option(element) = ty else {
+                                return Err("Term Option型がない".into());
+                            };
+                            Scalar::Option {
+                                element: (**element).clone(),
+                                value: Some(Box::new(self.eval(*i, vars, law, c)?)),
+                            }
                         }
+                        ExprKind::Call { callee, args } => {
+                            let values = self.eval_items(args, vars, law, c)?;
+                            let mut callee = *callee;
+                            while let ExprKind::Group(inner) =
+                                self.nodes.get(&callee).ok_or("Term calleeがない")?.kind
+                            {
+                                tick(c)?;
+                                callee = inner;
+                            }
+                            let source = &self.nodes[&callee];
+                            if let Some(target) = self.reference(source.span, c)? {
+                                let Type::Data(family) = ty else {
+                                    return Err("Term constructor戻り型がない".into());
+                                };
+                                let ctor = data::constructor(law, family, target, c)?;
+                                if ctor.arguments.len() != values.len() {
+                                    return Err("Term constructor引数数が違う".into());
+                                }
+                                Scalar::Data {
+                                    family: family.clone(),
+                                    constructor: law
+                                        .resolved_names
+                                        .get(target)
+                                        .ok_or("constructorの検査済み名がない")?
+                                        .clone(),
+                                    args: values,
+                                }
+                            } else {
+                                let ExprKind::Dotted(parts) = &source.kind else {
+                                    return Err("Term calleeが固定演算でない".into());
+                                };
+                                match parts.first().map(|p| p.name.as_str()) {
+                                    Some("rat") if parts.len() == 1 && values.len() == 2 => {
+                                        numeric::rational(&values[0], &values[1], c)?
+                                    }
+                                    Some(name @ ("count" | "sum"))
+                                        if parts.len() == 1 && values.len() == 1 =>
+                                    {
+                                        data::aggregate(name, &values[0], c)?
+                                    }
+                                    _ => return Err("Term bodyに禁止された呼出しがある".into()),
+                                }
+                            }
+                        }
+                        ExprKind::SetComp {
+                            elem,
+                            var,
+                            domain,
+                            filter,
+                        } => {
+                            let input = self.eval(*domain, vars, law, c)?;
+                            let values = match &input {
+                                Scalar::List { items, .. } | Scalar::Set { items, .. } => items,
+                                _ => return Err("Term内包域がList/Setでない".into()),
+                            };
+                            let mut result = Vec::new();
+                            for v in values {
+                                tick(c)?;
+                                let mut local = copy_variables(vars, c)?;
+                                if local.insert(var.name.clone(), v.clone()).is_some() {
+                                    return Err("Term内包束縛が重複する".into());
+                                }
+                                let keep = match filter {
+                                    None => true,
+                                    Some(f) => match self.eval(*f, &local, law, c)? {
+                                        Scalar::Bool(b) => b,
+                                        _ => return Err("Term内包filterがBoolでない".into()),
+                                    },
+                                };
+                                if keep {
+                                    result.push(self.eval(*elem, &local, law, c)?);
+                                }
+                            }
+                            let Type::Set(t) = ty else {
+                                return Err("Term内包結果型がSetでない".into());
+                            };
+                            data::set((**t).clone(), &result, c)?
+                        }
+                        ExprKind::Quant {
+                            kind,
+                            var,
+                            split: QuantSplit::Fixed { domain, body },
+                        } => {
+                            let element = self
+                                .quantifier_types
+                                .get(&id)
+                                .ok_or("Term量化の元binder型がない")?;
+                            let values = match domain {
+                                QuantDomain::In(i) => match self.eval(*i, vars, law, c)? {
+                                    Scalar::List { ref items, .. }
+                                    | Scalar::Set { ref items, .. } => items.clone(),
+                                    _ => return Err("Term量化域がList/Setでない".into()),
+                                },
+                                QuantDomain::Type(_) => {
+                                    if !super::finite::completion_supported(element, law, c)? {
+                                        return Err(ValidationFailure::UnsupportedExpression {
+                                            location: crate::issue::Location::Law { span: e.span },
+                                            feature: "Term bodyの非有限な型量化".into(),
+                                        });
+                                    }
+                                    super::finite::values(
+                                        element,
+                                        law,
+                                        c,
+                                        &mut |_| Err("Termに参照族は置けない".into()),
+                                        &mut |_| {},
+                                    )?
+                                    .values
+                                }
+                            };
+                            let mut result = *kind == QuantKind::Forall;
+                            for v in values {
+                                tick(c)?;
+                                let mut local = copy_variables(vars, c)?;
+                                if local.insert(var.name.clone(), v).is_some() {
+                                    return Err("Term量化束縛が重複する".into());
+                                }
+                                let Scalar::Bool(b) = self.eval(*body, &local, law, c)? else {
+                                    return Err("Term量化bodyがBoolでない".into());
+                                };
+                                if (*kind == QuantKind::Forall && !b)
+                                    || (*kind == QuantKind::Exists && b)
+                                {
+                                    result = b;
+                                    break;
+                                }
+                            }
+                            Scalar::Bool(result)
+                        }
+                        ExprKind::Fn { params, body } => {
+                            let Type::Term(a, r) = ty else {
+                                return Err("Term内fn型がない".into());
+                            };
+                            let s = self.nodes.get(body).ok_or("Term内fn bodyがない")?.span;
+                            let text = self
+                                .body
+                                .get(s.0 - self.offset..s.1 - self.offset)
+                                .ok_or("Term内fn文字列がない")?
+                                .into();
+                            Scalar::Term(Box::new(Self::capture(
+                                |i| self.nodes.get(&i),
+                                |i| self.types.get(&i),
+                                |i| self.quantifier_types.get(&i),
+                                &self.references,
+                                *body,
+                                params
+                                    .iter()
+                                    .map(|p| p.name.name.clone())
+                                    .zip(a.iter().cloned())
+                                    .collect(),
+                                (**r).clone(),
+                                text,
+                                s.0,
+                                c,
+                            )?))
+                        }
+                        _ => return Err("閉じたTermに禁止された式形がある".into()),
                     }
-                    Scalar::Bool(result)
-                }
-                ExprKind::Fn { params, body } => {
-                    let Type::Term(a, r) = ty else {
-                        return Err("Term内fn型がない".into());
-                    };
-                    let s = self.nodes.get(body).ok_or("Term内fn bodyがない")?.span;
-                    let text = self
-                        .body
-                        .get(s.0 - self.offset..s.1 - self.offset)
-                        .ok_or("Term内fn文字列がない")?
-                        .into();
-                    Scalar::Term(Box::new(Self::capture(
-                        |i| self.nodes.get(&i),
-                        |i| self.types.get(&i),
-                        |i| self.quantifier_types.get(&i),
-                        &self.references,
-                        *body,
-                        params
-                            .iter()
-                            .map(|p| p.name.name.clone())
-                            .zip(a.iter().cloned())
-                            .collect(),
-                        (**r).clone(),
-                        text,
-                        s.0,
-                        c,
-                    )?))
-                }
-                _ => return Err("閉じたTermに禁止された式形がある".into()),
-            };
+                };
             if value.ty() != *ty {
                 return Err("Term原式の評価結果型が違う".into());
             }
@@ -994,5 +950,103 @@ impl Term {
             tick(c)?;
         }
         Ok(values)
+    }
+}
+struct Concrete;
+impl walk::Interpretation for Concrete {
+    type Value = Scalar;
+    fn item_tick(c: &Control) -> Result<(), ValidationFailure> {
+        tick(c)
+    }
+    fn tuple(values: Vec<Scalar>) -> Scalar {
+        Scalar::Tuple(values)
+    }
+    fn list_type(ty: &Type) -> Result<Type, ValidationFailure> {
+        let Type::List(element) = ty else {
+            return Err("Term List型がない".into());
+        };
+        Ok((**element).clone())
+    }
+    fn list(element: Type, items: Vec<Scalar>) -> Scalar {
+        Scalar::List { element, items }
+    }
+    fn project(value: Scalar, index: usize, _ty: &Type) -> Result<Scalar, ValidationFailure> {
+        let Scalar::Tuple(ref values) = value else {
+            return Err("Term数値射影元がTupleでない".into());
+        };
+        Ok(values.get(index).ok_or("Term Tuple位置が違う")?.clone())
+    }
+
+    fn eval(
+        t: &Term,
+        id: usize,
+        vars: &BTreeMap<String, Scalar>,
+        law: &CheckedLaw,
+        c: &Control,
+    ) -> Result<Scalar, ValidationFailure> {
+        t.eval(id, vars, law, c)
+    }
+    fn bind(
+        vars: &BTreeMap<String, Scalar>,
+        name: &str,
+        value: Scalar,
+        c: &Control,
+    ) -> Result<BTreeMap<String, Scalar>, ValidationFailure> {
+        let mut local = copy_variables(vars, c)?;
+        if local.insert(name.into(), value).is_some() {
+            return Err("Term let束縛が重複する".into());
+        }
+        Ok(local)
+    }
+    fn unary(
+        op: crate::law::ast::UnOp,
+        value: Scalar,
+        _ty: &Type,
+        _law: &CheckedLaw,
+        _span: Span,
+        c: &Control,
+    ) -> Result<Scalar, ValidationFailure> {
+        environment::unary(op, &value, c)
+    }
+    fn short(op: BinOp, value: &Scalar, _c: &Control) -> Result<Option<Scalar>, ValidationFailure> {
+        Ok(match (op, value) {
+            (BinOp::And, Scalar::Bool(false)) => Some(Scalar::Bool(false)),
+            (BinOp::Or, Scalar::Bool(true)) | (BinOp::Implies, Scalar::Bool(false)) => {
+                Some(Scalar::Bool(true))
+            }
+            _ => None,
+        })
+    }
+    fn binary(
+        op: BinOp,
+        left: Scalar,
+        right: Scalar,
+        _ty: &Type,
+        law: &CheckedLaw,
+        span: Span,
+        c: &Control,
+    ) -> Result<Scalar, ValidationFailure> {
+        if !environment::supports_binary(op, &left.ty(), law, c)? {
+            return Err(ValidationFailure::UnsupportedExpression {
+                location: crate::issue::Location::Law { span },
+                feature: "Term bodyの未対応の型・演算".into(),
+            });
+        }
+        environment::binary(op, &left, &right, law, span, c)
+    }
+    fn condition(value: Scalar, _c: &Control) -> Result<Option<bool>, ValidationFailure> {
+        match value {
+            Scalar::Bool(value) => Ok(Some(value)),
+            _ => Err("Term if条件がBoolでない".into()),
+        }
+    }
+    fn join(
+        _left: Scalar,
+        _right: Scalar,
+        _ty: &Type,
+        _law: &CheckedLaw,
+        _c: &Control,
+    ) -> Result<Scalar, ValidationFailure> {
+        Err("Term if条件がBoolでない".into())
     }
 }

@@ -870,260 +870,220 @@ impl Term {
             let e = self.nodes.get(&id).ok_or("Term記号計算の元式がない")?;
             let ty = self.types.get(&id).ok_or("Term記号計算の元型がない")?;
             let unknown = || Value::Unsupported(ty.clone());
-            let value = match &e.kind {
-                ExprKind::Int(n) => Value::Known(numeric::literal(n, ty, c)?),
-                ExprKind::Bool(v) => Value::Known(Scalar::Bool(*v)),
-                ExprKind::Str(v) => Value::Known(Scalar::Text(v.clone())),
-                ExprKind::Unit => Value::Known(Scalar::Unit),
-                ExprKind::Dotted(parts)
-                    if parts.len() == 1 && vars.contains_key(&parts[0].name) =>
-                {
-                    vars[&parts[0].name].clone()
-                }
-                ExprKind::Group(i) => self.symbolic(*i, vars, law, c)?,
-                ExprKind::Let { name, value, body } => {
-                    let v = self.symbolic(*value, vars, law, c)?;
-                    let mut local = BTreeMap::new();
-                    for (n, v) in vars {
-                        tick(c)?;
-                        local.insert(n.clone(), v.clone());
+            let value = if let Some(value) =
+                super::walk::expression::<Symbolic>(self, e, ty, vars, law, c)?
+            {
+                value
+            } else {
+                match &e.kind {
+                    ExprKind::Int(n) => Value::Known(numeric::literal(n, ty, c)?),
+                    ExprKind::Bool(v) => Value::Known(Scalar::Bool(*v)),
+                    ExprKind::Str(v) => Value::Known(Scalar::Text(v.clone())),
+                    ExprKind::Unit => Value::Known(Scalar::Unit),
+                    ExprKind::Dotted(parts)
+                        if parts.len() == 1 && vars.contains_key(&parts[0].name) =>
+                    {
+                        vars[&parts[0].name].clone()
                     }
-                    if local.insert(name.name.clone(), v).is_some() {
-                        return Err("Term記号let束縛が重複する".into());
+                    ExprKind::Match { scrutinee, arms } => {
+                        let input = self.symbolic(*scrutinee, vars, law, c)?;
+                        if let Some(value) = input.known(c)? {
+                            let mut answer = None;
+                            for arm in arms {
+                                tick(c)?;
+                                let mut bound = BTreeMap::new();
+                                if self.pattern(&arm.pattern, &value, &mut bound, c)? {
+                                    let mut local = vars.clone();
+                                    for (name, value) in bound {
+                                        tick(c)?;
+                                        local.insert(name, Value::Known(value));
+                                    }
+                                    answer = Some(self.symbolic(arm.body, &local, law, c)?);
+                                    break;
+                                }
+                            }
+                            answer.ok_or("Term記号matchの元選択枝がない")?
+                        } else if let Some((arm, bound)) = data::select_partial(
+                            arms,
+                            &input,
+                            c,
+                            &Value::data_parts,
+                            &|span, c| {
+                                self.reference(span, c).map(|value| {
+                                    value.and_then(|name| law.resolved_names.get(name).cloned())
+                                })
+                            },
+                        )? {
+                            let mut local = vars.clone();
+                            for (name, value) in bound {
+                                tick(c)?;
+                                if local.insert(name, value).is_some() {
+                                    return Err("Term記号matchの束縛名が重複する".into());
+                                }
+                            }
+                            self.symbolic(arms[arm].body, &local, law, c)?
+                        } else {
+                            unknown()
+                        }
                     }
-                    self.symbolic(*body, &local, law, c)?
-                }
-                ExprKind::Tuple(items) => Value::Tuple(
-                    items
-                        .iter()
-                        .map(|i| self.symbolic(*i, vars, law, c))
-                        .collect::<Result<_, _>>()?,
-                ),
-                ExprKind::ListLit { items, .. } => {
-                    let Type::List(element) = ty else {
-                        return Err("Term記号Listの元型が違う".into());
-                    };
-                    Value::List {
-                        element: (**element).clone(),
-                        items: items
+                    ExprKind::Quant {
+                        kind,
+                        var,
+                        split: QuantSplit::Fixed { domain, body },
+                    } => {
+                        let element = self
+                            .quantifier_types
+                            .get(&id)
+                            .ok_or("Term記号量化の元binder型がない")?;
+                        let values = match domain {
+                            QuantDomain::In(i) => self
+                                .symbolic(*i, vars, law, c)?
+                                .known(c)?
+                                .map(|v| match &v {
+                                    Scalar::List { items, .. } | Scalar::Set { items, .. } => {
+                                        Ok(items.clone())
+                                    }
+                                    _ => Err(ValidationFailure::from(
+                                        "Term記号量化域が有限containerでない",
+                                    )),
+                                })
+                                .transpose()?,
+                            QuantDomain::Type(_) => {
+                                if finite::completion_supported(element, law, c)? {
+                                    Some(
+                                        finite::values(
+                                            element,
+                                            law,
+                                            c,
+                                            &mut |_| Err("Term量化に参照族を置けない".into()),
+                                            &mut |_| {},
+                                        )?
+                                        .values,
+                                    )
+                                } else {
+                                    None
+                                }
+                            }
+                        };
+                        if let Some(values) = values {
+                            let mut result = Some(*kind == QuantKind::Forall);
+                            for v in values {
+                                tick(c)?;
+                                let mut local = BTreeMap::new();
+                                for (n, v) in vars {
+                                    tick(c)?;
+                                    local.insert(n.clone(), v.clone());
+                                }
+                                if local.insert(var.name.clone(), Value::Known(v)).is_some() {
+                                    return Err("Term記号量化束縛が重複する".into());
+                                }
+                                match self.symbolic(*body, &local, law, c)?.known(c)? {
+                                    Some(Scalar::Bool(b)) => {
+                                        if (*kind == QuantKind::Forall && !b)
+                                            || (*kind == QuantKind::Exists && b)
+                                        {
+                                            result = Some(b);
+                                            break;
+                                        }
+                                    }
+                                    None => result = None,
+                                    _ => return Err("Term記号量化bodyがBoolでない".into()),
+                                }
+                            }
+                            result
+                                .map(|b| Value::Known(Scalar::Bool(b)))
+                                .unwrap_or_else(unknown)
+                        } else {
+                            unknown()
+                        }
+                    }
+                    ExprKind::Call { callee, args } => {
+                        let a = args
                             .iter()
                             .map(|i| self.symbolic(*i, vars, law, c))
-                            .collect::<Result<_, _>>()?,
-                    }
-                }
-                ExprKind::Index { base, index, .. } => match self.symbolic(*base, vars, law, c)? {
-                    Value::Tuple(ref v) => v.get(*index).ok_or("Term記号Tuple位置が違う")?.clone(),
-                    Value::Known(Scalar::Tuple(ref v)) => {
-                        Value::Known(v.get(*index).ok_or("Term既知Tuple位置が違う")?.clone())
-                    }
-                    _ => unknown(),
-                },
-                ExprKind::Unary { op, operand } => {
-                    let a = self.symbolic(*operand, vars, law, c)?;
-                    if let Some(a) = a.known(c)? {
-                        Value::Known(environment::unary(*op, &a, c)?)
-                    } else if *op == UnOp::Neg && tuple_values(&a, c)?.is_some() {
-                        let zero = Value::Known(numeric::zero(ty, c)?);
-                        operation(BinOp::Sub, &zero, &a, ty, law, e.span, c)?
-                    } else if let Some(f) = forms::unary(*op, a.number(c)?.as_ref(), c)? {
-                        Value::Number(f)
-                    } else {
-                        unknown()
-                    }
-                }
-                ExprKind::Binary { op, lhs, rhs } => {
-                    let a = self.symbolic(*lhs, vars, law, c)?;
-                    let short = match (op, a.known(c)?) {
-                        (BinOp::And, Some(Scalar::Bool(false))) => Some(false),
-                        (BinOp::Or, Some(Scalar::Bool(true)))
-                        | (BinOp::Implies, Some(Scalar::Bool(false))) => Some(true),
-                        _ => None,
-                    };
-                    if let Some(v) = short {
-                        Value::Known(Scalar::Bool(v))
-                    } else {
-                        let b = self.symbolic(*rhs, vars, law, c)?;
-                        operation(*op, &a, &b, ty, law, e.span, c)?
-                    }
-                }
-                ExprKind::If {
-                    cond,
-                    then_branch,
-                    else_branch,
-                } => match self.symbolic(*cond, vars, law, c)?.known(c)? {
-                    Some(Scalar::Bool(true)) => self.symbolic(*then_branch, vars, law, c)?,
-                    Some(Scalar::Bool(false)) => self.symbolic(*else_branch, vars, law, c)?,
-                    None => {
-                        let a = self.symbolic(*then_branch, vars, law, c)?;
-                        let b = self.symbolic(*else_branch, vars, law, c)?;
-                        let same = pointwise_equal(&a, &b, law, c)? == Some(true);
-                        if same { a } else { unknown() }
-                    }
-                    _ => return Err("Term記号if条件がBoolでない".into()),
-                },
-                ExprKind::Match { scrutinee, arms } => {
-                    let input = self.symbolic(*scrutinee, vars, law, c)?;
-                    if let Some(value) = input.known(c)? {
-                        let mut answer = None;
-                        for arm in arms {
+                            .collect::<Result<Vec<_>, _>>()?;
+                        // Term bodyの組込みとconstructorの既知引数計算は元の実評価を再利用する。
+                        let mut target = *callee;
+                        while let ExprKind::Group(inner) =
+                            &self.nodes.get(&target).ok_or("Term元calleeがない")?.kind
+                        {
                             tick(c)?;
-                            let mut bound = BTreeMap::new();
-                            if self.pattern(&arm.pattern, &value, &mut bound, c)? {
-                                let mut local = vars.clone();
-                                for (name, value) in bound { tick(c)?; local.insert(name, Value::Known(value)); }
-                                answer = Some(self.symbolic(arm.body, &local, law, c)?);
-                                break;
-                            }
+                            target = *inner;
                         }
-                        answer.ok_or("Term記号matchの元選択枝がない")?
-                    } else if let Some((arm, bound)) = data::select_partial(arms, &input, c, &Value::data_parts, &|span, c| self.reference(span, c).map(|value| value.and_then(|name| law.resolved_names.get(name).cloned())))? {
-                        let mut local = vars.clone();
-                        for (name, value) in bound {
-                            tick(c)?;
-                            if local.insert(name, value).is_some() { return Err("Term記号matchの束縛名が重複する".into()) }
-                        }
-                        self.symbolic(arms[arm].body, &local, law, c)?
-                    } else {
-                        unknown()
-                    }
-                }
-                ExprKind::Quant {
-                    kind,
-                    var,
-                    split: QuantSplit::Fixed { domain, body },
-                } => {
-                    let element = self
-                        .quantifier_types
-                        .get(&id)
-                        .ok_or("Term記号量化の元binder型がない")?;
-                    let values = match domain {
-                        QuantDomain::In(i) => self
-                            .symbolic(*i, vars, law, c)?
-                            .known(c)?
-                            .map(|v| match &v {
-                                Scalar::List { items, .. } | Scalar::Set { items, .. } => {
-                                    Ok(items.clone())
-                                }
-                                _ => Err(ValidationFailure::from(
-                                    "Term記号量化域が有限containerでない",
-                                )),
-                            })
-                            .transpose()?,
-                        QuantDomain::Type(_) => {
-                            if finite::completion_supported(element, law, c)? {
-                                Some(
-                                    finite::values(
-                                        element,
-                                        law,
-                                        c,
-                                        &mut |_| Err("Term量化に参照族を置けない".into()),
-                                        &mut |_| {},
-                                    )?
-                                    .values,
-                                )
-                            } else {
-                                None
+                        let builtin_name = match &self.nodes[&target].kind {
+                            ExprKind::Dotted(parts) if parts.len() == 1 => {
+                                Some(parts[0].name.as_str())
                             }
-                        }
-                    };
-                    if let Some(values) = values {
-                        let mut result = Some(*kind == QuantKind::Forall);
-                        for v in values {
-                            tick(c)?;
-                            let mut local = BTreeMap::new();
-                            for (n, v) in vars {
-                                tick(c)?;
-                                local.insert(n.clone(), v.clone());
+                            _ => None,
+                        };
+                        let builtin = matches!(builtin_name, Some("rat" | "count" | "sum"));
+                        if !builtin && matches!(self.types.get(callee), Some(Type::Term(..))) {
+                            match self.symbolic(*callee, vars, law, c)?.known(c)? {
+                                Some(Scalar::Term(ref t)) => t.apply_symbolic(&a, law, c)?,
+                                _ => unknown(),
                             }
-                            if local.insert(var.name.clone(), Value::Known(v)).is_some() {
-                                return Err("Term記号量化束縛が重複する".into());
+                        } else if matches!(builtin_name, Some("sum" | "count"))
+                            && a.len() == 1
+                            && matches!(a[0], Value::List { .. })
+                        {
+                            a[0].list_aggregate(
+                                builtin_name.ok_or("集計名がない")?,
+                                law,
+                                e.span,
+                                c,
+                            )?
+                            .ok_or("記号List集計がない")?
+                        } else if a
+                            .iter()
+                            .map(|v| v.known(c))
+                            .collect::<Result<Vec<_>, _>>()?
+                            .iter()
+                            .all(Option::is_some)
+                        {
+                            // 一般evalへ未知変数の名前を渡さず、実引数の式ではなく既知化済み値を使う。
+                            self.symbolic_known_call(id, &a, law, c)?
+                        } else if let Type::Data(family) = ty {
+                            let constructor = self
+                                .reference(self.nodes[&target].span, c)?
+                                .ok_or("Term記号constructorの元参照がない")?;
+                            let ctor = data::constructor(law, family, constructor, c)?;
+                            if ctor.arguments.len() != a.len() {
+                                return Err("Term記号constructorのarityが違う".into());
                             }
-                            match self.symbolic(*body, &local, law, c)?.known(c)? {
-                                Some(Scalar::Bool(b)) => {
-                                    if (*kind == QuantKind::Forall && !b)
-                                        || (*kind == QuantKind::Exists && b)
-                                    {
-                                        result = Some(b);
-                                        break;
-                                    }
-                                }
-                                None => result = None,
-                                _ => return Err("Term記号量化bodyがBoolでない".into()),
+                            Value::Data {
+                                family: family.clone(),
+                                constructor: law
+                                    .resolved_names
+                                    .get(constructor)
+                                    .ok_or("constructorの検査済み名がない")?
+                                    .clone(),
+                                args: Arc::new(a),
                             }
-                        }
-                        result
-                            .map(|b| Value::Known(Scalar::Bool(b)))
-                            .unwrap_or_else(unknown)
-                    } else {
-                        unknown()
-                    }
-                }
-                ExprKind::Call { callee, args } => {
-                    let a = args
-                        .iter()
-                        .map(|i| self.symbolic(*i, vars, law, c))
-                        .collect::<Result<Vec<_>, _>>()?;
-                    // Term bodyの組込みとconstructorの既知引数計算は元の実評価を再利用する。
-                    let mut target = *callee;
-                    while let ExprKind::Group(inner) =
-                        &self.nodes.get(&target).ok_or("Term元calleeがない")?.kind
-                    {
-                        tick(c)?;
-                        target = *inner;
-                    }
-                    let builtin_name = match &self.nodes[&target].kind {
-                        ExprKind::Dotted(parts) if parts.len() == 1 => Some(parts[0].name.as_str()),
-                        _ => None,
-                    };
-                    let builtin = matches!(builtin_name, Some("rat" | "count" | "sum"));
-                    if !builtin && matches!(self.types.get(callee), Some(Type::Term(..))) {
-                        match self.symbolic(*callee, vars, law, c)?.known(c)? {
-                            Some(Scalar::Term(ref t)) => t.apply_symbolic(&a, law, c)?,
-                            _ => unknown(),
-                        }
-                    } else if matches!(builtin_name, Some("sum" | "count"))
-                        && a.len() == 1
-                        && matches!(a[0], Value::List { .. })
-                    {
-                        a[0].list_aggregate(builtin_name.ok_or("集計名がない")?, law, e.span, c)?.ok_or("記号List集計がない")?
-                    } else if a
-                        .iter()
-                        .map(|v| v.known(c))
-                        .collect::<Result<Vec<_>, _>>()?
-                        .iter()
-                        .all(Option::is_some)
-                    {
-                        // 一般evalへ未知変数の名前を渡さず、実引数の式ではなく既知化済み値を使う。
-                        self.symbolic_known_call(id, &a, law, c)?
-                    } else if let Type::Data(family) = ty {
-                        let constructor = self.reference(self.nodes[&target].span, c)?.ok_or("Term記号constructorの元参照がない")?;
-                        let ctor = data::constructor(law, family, constructor, c)?;
-                        if ctor.arguments.len() != a.len() { return Err("Term記号constructorのarityが違う".into()) }
-                        Value::Data { family: family.clone(), constructor: law.resolved_names.get(constructor).ok_or("constructorの検査済み名がない")?.clone(), args: Arc::new(a) }
-                    } else {
-                        unknown()
-                    }
-                }
-                _ => {
-                    let mut concrete = BTreeMap::new();
-                    let mut all = true;
-                    for (n, v) in vars {
-                        tick(c)?;
-                        if let Some(v) = v.known(c)? {
-                            concrete.insert(n.clone(), v);
                         } else {
-                            all = false
+                            unknown()
                         }
                     }
-                    if all
-                        || matches!(
-                            e.kind,
-                            ExprKind::Fn { .. } | ExprKind::None(_) | ExprKind::Dotted(_)
-                        )
-                    {
-                        Value::Known(self.eval(id, &concrete, law, c)?)
-                    } else {
-                        unknown()
+                    _ => {
+                        let mut concrete = BTreeMap::new();
+                        let mut all = true;
+                        for (n, v) in vars {
+                            tick(c)?;
+                            if let Some(v) = v.known(c)? {
+                                concrete.insert(n.clone(), v);
+                            } else {
+                                all = false
+                            }
+                        }
+                        if all
+                            || matches!(
+                                e.kind,
+                                ExprKind::Fn { .. } | ExprKind::None(_) | ExprKind::Dotted(_)
+                            )
+                        {
+                            Value::Known(self.eval(id, &concrete, law, c)?)
+                        } else {
+                            unknown()
+                        }
                     }
                 }
             };
@@ -1327,6 +1287,119 @@ impl Value {
                 },
                 Self::Unsupported(_) => return Err("算法外値を正規形表示にできない".into()),
             })
+        })
+    }
+}
+struct Symbolic;
+impl super::walk::Interpretation for Symbolic {
+    type Value = Value;
+    fn item_tick(_c: &Control) -> Result<(), ValidationFailure> {
+        Ok(())
+    }
+    fn tuple(values: Vec<Value>) -> Value {
+        Value::Tuple(values)
+    }
+    fn list_type(ty: &Type) -> Result<Type, ValidationFailure> {
+        let Type::List(element) = ty else {
+            return Err("Term記号Listの元型が違う".into());
+        };
+        Ok((**element).clone())
+    }
+    fn list(element: Type, items: Vec<Value>) -> Value {
+        Value::List { element, items }
+    }
+    fn project(value: Value, index: usize, ty: &Type) -> Result<Value, ValidationFailure> {
+        Ok(match value {
+            Value::Tuple(ref values) => values.get(index).ok_or("Term記号Tuple位置が違う")?.clone(),
+            Value::Known(Scalar::Tuple(ref values)) => {
+                Value::Known(values.get(index).ok_or("Term既知Tuple位置が違う")?.clone())
+            }
+            _ => Value::Unsupported(ty.clone()),
+        })
+    }
+
+    fn eval(
+        t: &Term,
+        id: usize,
+        vars: &BTreeMap<String, Value>,
+        law: &CheckedLaw,
+        c: &Control,
+    ) -> Result<Value, ValidationFailure> {
+        t.symbolic(id, vars, law, c)
+    }
+    fn bind(
+        vars: &BTreeMap<String, Value>,
+        name: &str,
+        value: Value,
+        c: &Control,
+    ) -> Result<BTreeMap<String, Value>, ValidationFailure> {
+        let mut local = BTreeMap::new();
+        for (n, v) in vars {
+            tick(c)?;
+            local.insert(n.clone(), v.clone());
+        }
+        if local.insert(name.into(), value).is_some() {
+            return Err("Term記号let束縛が重複する".into());
+        }
+        Ok(local)
+    }
+    fn unary(
+        op: UnOp,
+        value: Value,
+        ty: &Type,
+        law: &CheckedLaw,
+        span: Span,
+        c: &Control,
+    ) -> Result<Value, ValidationFailure> {
+        if let Some(a) = value.known(c)? {
+            Ok(Value::Known(environment::unary(op, &a, c)?))
+        } else if op == UnOp::Neg && tuple_values(&value, c)?.is_some() {
+            let zero = Value::Known(numeric::zero(ty, c)?);
+            operation(BinOp::Sub, &zero, &value, ty, law, span, c)
+        } else if let Some(f) = forms::unary(op, value.number(c)?.as_ref(), c)? {
+            Ok(Value::Number(f))
+        } else {
+            Ok(Value::Unsupported(ty.clone()))
+        }
+    }
+    fn short(op: BinOp, value: &Value, c: &Control) -> Result<Option<Value>, ValidationFailure> {
+        Ok(match (op, value.known(c)?) {
+            (BinOp::And, Some(Scalar::Bool(false))) => Some(Value::Known(Scalar::Bool(false))),
+            (BinOp::Or, Some(Scalar::Bool(true))) | (BinOp::Implies, Some(Scalar::Bool(false))) => {
+                Some(Value::Known(Scalar::Bool(true)))
+            }
+            _ => None,
+        })
+    }
+    fn binary(
+        op: BinOp,
+        left: Value,
+        right: Value,
+        ty: &Type,
+        law: &CheckedLaw,
+        span: Span,
+        c: &Control,
+    ) -> Result<Value, ValidationFailure> {
+        operation(op, &left, &right, ty, law, span, c)
+    }
+    fn condition(value: Value, c: &Control) -> Result<Option<bool>, ValidationFailure> {
+        match value.known(c)? {
+            Some(Scalar::Bool(value)) => Ok(Some(value)),
+            None => Ok(None),
+            _ => Err("Term記号if条件がBoolでない".into()),
+        }
+    }
+    fn join(
+        left: Value,
+        right: Value,
+        ty: &Type,
+        law: &CheckedLaw,
+        c: &Control,
+    ) -> Result<Value, ValidationFailure> {
+        Ok(if pointwise_equal(&left, &right, law, c)? == Some(true) {
+            left
+        } else {
+            Value::Unsupported(ty.clone())
         })
     }
 }
