@@ -48,6 +48,7 @@ pub(super) mod change_evaluation;
 pub(super) mod change_search;
 pub(super) mod field_change;
 pub(super) mod change_affine;
+mod conjunction;
 pub(super) mod quotient_affine;
 pub(super) mod quotient_evaluation;
 pub(super) mod local_read;
