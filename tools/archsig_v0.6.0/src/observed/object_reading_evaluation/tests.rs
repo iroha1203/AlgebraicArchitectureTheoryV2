@@ -432,6 +432,37 @@ fn frame_payload_edges_metadata_and_actual_instance_cannot_be_rebound() {
     replay(&p, &g);
 }
 #[test]
+fn shared_source_check_still_rejects_changed_descendant_values() {
+    let p = prepared(LAW, MAP);
+    let (mut g, o) = start(&p);
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let expression = selected(&g, &o, 0, ".amount");
+    let parameter = g.nodes.len();
+    let Outcome::Body { instance, .. } = evaluate(&env, &mut g, expression, &quiet()).unwrap()
+    else {
+        panic!()
+    };
+    let domain = g.instances[instance].domain;
+    frame(&g, domain).unwrap().checked(&g).unwrap();
+    let mut bad = copy(&g, &quiet());
+    let Some(Payload::Construction(v)) = &mut bad.nodes[parameter].payload else {
+        panic!()
+    };
+    let D::ObjectReadingFrame(d) = &mut v.data else {
+        panic!()
+    };
+    let Kind::Parameter { value, .. } = &mut d.kind else {
+        panic!()
+    };
+    *value = Scalar::Bool(true);
+    // The source Arc is unchanged: the child value must still be independently checked.
+    assert!(Arc::ptr_eq(&d.source, &frame(&g, domain).unwrap().source));
+    assert!(
+        matches!(frame(&bad, domain).unwrap().checked(&bad), Err(ValidationFailure::Internal(message)) if message == "view parameterの元型/値が違う")
+    );
+}
+
+#[test]
 fn four_stops_keep_finished_frames_instances_and_body_prefix_and_restore_context() {
     use std::{
         cell::{Cell, RefCell},
