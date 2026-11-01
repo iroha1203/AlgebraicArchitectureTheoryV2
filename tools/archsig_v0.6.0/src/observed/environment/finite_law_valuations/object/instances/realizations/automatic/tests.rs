@@ -424,7 +424,7 @@ fn fixed_stops_keep_the_completed_parameter_plan_and_only_finished_law_rows() {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
     let c = Control::new(move |p| {
-        if p == Checkpoint::Work {
+        if p == Checkpoint::FiniteLawAutomatic {
             stage.set(true);
         }
         if stage.get() && p == Checkpoint::FiniteLawEvaluation {
@@ -451,7 +451,7 @@ fn an_interrupt_before_automatic_column_selection_keeps_the_completed_source_pla
     use crate::result::Signal;
     let i = fixture::with_body(fixture::MAP, "law required zero(c:Part):c.quantity=0;");
     let a = reading(&i, "root");
-    let c = Control::new(|p| (p == Checkpoint::Work).then_some(Signal::Int));
+    let c = Control::new(|p| (p == Checkpoint::FiniteLawAutomatic).then_some(Signal::Int));
     let error = finite_automatic_law_family(&i, &a, &c).err().unwrap();
     assert!(matches!(error.cause, ValidationFailure::Stop(_)));
     let partial = error.partial.unwrap();

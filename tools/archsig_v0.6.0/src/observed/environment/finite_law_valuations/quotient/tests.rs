@@ -484,7 +484,7 @@ fn function_and_quotient_fixed_stops_keep_the_completed_base_and_freeze_probe() 
         .unwrap()
         .basis(4, &quiet())
         .unwrap();
-    for point in [Checkpoint::FiniteLawFunction, Checkpoint::Work] {
+    for point in [Checkpoint::FiniteLawFunction, Checkpoint::FiniteLawQuotient] {
         let run = |at: usize, signal: Signal| {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();

@@ -226,7 +226,7 @@ fn populate_realizations(
         let e = Environment::with_primitive_valuation(inputs, &values, c)?;
         let objects = evaluated_objects(inputs, selections, &values, &e, c)?;
         result.rows.push(ParameterRealization { point, objects });
-        c.checkpoint(Checkpoint::Work)?;
+        c.checkpoint(Checkpoint::FiniteLawRequired)?;
     }
     tick(c)?;
     result.state = if result

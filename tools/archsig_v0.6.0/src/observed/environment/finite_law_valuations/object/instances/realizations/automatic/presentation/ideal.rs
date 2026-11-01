@@ -14,7 +14,7 @@ pub(in crate::observed) struct FiniteObjectLawIdeal<'a, 'b> {
     zero_points: Vec<usize>,
 }
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
-    c.checkpoint(Checkpoint::Work)?;
+    c.checkpoint(Checkpoint::FiniteLawQuotient)?;
     Ok(())
 }
 fn construct<'a, 'b>(

@@ -10,7 +10,7 @@ fn invalid(f: ConstructionFailure) -> ValidationFailure {
     }
 }
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
-    c.checkpoint(Checkpoint::Work)?;
+    c.checkpoint(Checkpoint::FiniteLawQuotient)?;
     Ok(())
 }
 fn paths(ty: &Type, c: &Control) -> Result<Vec<Vec<usize>>, ValidationFailure> {

@@ -1186,7 +1186,7 @@ fn family_fixed_stops_preserve_only_completed_cells_and_freeze_probe() {
         Checkpoint::FiniteLawSelection,
         Checkpoint::FiniteLawDomain,
         Checkpoint::FiniteLawEvaluation,
-        Checkpoint::Work,
+        Checkpoint::FiniteLawRequired,
     ] {
         let run = |at: usize, signal: Signal| {
             let seen = Rc::new(Cell::new(0));
@@ -1578,7 +1578,7 @@ fn component_fixed_stops_keep_completed_rows_and_freeze_probe() {
         (
             Control::new(move |p| {
                 sampled.set(sampled.get() + 1);
-                if p == Checkpoint::Work {
+                if p == Checkpoint::FiniteLawComponent {
                     visits.set(visits.get() + 1);
                 }
                 (visits.get() >= at).then_some(signal)
@@ -1615,7 +1615,7 @@ fn component_fixed_stops_keep_completed_rows_and_freeze_probe() {
                 }
             }
             let before = calls.get();
-            assert_eq!(c.checkpoint(Checkpoint::Work), Err(signal));
+            assert_eq!(c.checkpoint(Checkpoint::FiniteLawComponent), Err(signal));
             assert_eq!(before, calls.get());
         }
     }

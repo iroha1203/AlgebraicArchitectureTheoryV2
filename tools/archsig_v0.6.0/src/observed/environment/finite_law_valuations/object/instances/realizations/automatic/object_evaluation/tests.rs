@@ -434,7 +434,7 @@ fn unfinished_or_unsupported_law_families_are_preserved_without_a_completed_obje
     let stage = Rc::new(Cell::new(false));
     let started = stage.clone();
     let c = Control::new(move |p| {
-        if p == Checkpoint::Work {
+        if p == Checkpoint::FiniteLawAutomatic {
             started.set(true);
         }
         if started.get() && p == Checkpoint::FiniteLawEvaluation {

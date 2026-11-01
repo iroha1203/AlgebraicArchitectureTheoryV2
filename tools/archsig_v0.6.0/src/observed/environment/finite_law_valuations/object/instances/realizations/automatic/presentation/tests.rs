@@ -406,7 +406,7 @@ fn incomplete_or_unsupported_sources_retain_their_data_without_a_numeric_present
     let stage = Rc::new(Cell::new(false));
     let started = stage.clone();
     let c = Control::new(move |p| {
-        if p == Checkpoint::Work {
+        if p == Checkpoint::FiniteLawAutomatic {
             started.set(true);
         }
         if started.get() && p == Checkpoint::FiniteLawEvaluation {

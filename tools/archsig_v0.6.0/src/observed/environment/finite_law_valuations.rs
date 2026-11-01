@@ -997,7 +997,7 @@ fn components(
     let mut pending = vec![(vec![], ty.clone(), left.clone(), right.clone())];
     let mut result = vec![];
     while let Some((path, ty, left, right)) = pending.pop() {
-        e.control.checkpoint(Checkpoint::Work)?;
+        e.control.checkpoint(Checkpoint::FiniteLawComponent)?;
         for value in left.iter().chain(&right) {
             if value.ty() != ty.erase() {
                 return Err("元等式の成分値と型が違う".into());
@@ -1016,7 +1016,7 @@ fn components(
                 }
             };
             for (index, item) in items.iter().enumerate().rev() {
-                e.control.checkpoint(Checkpoint::Work)?;
+                e.control.checkpoint(Checkpoint::FiniteLawComponent)?;
                 let mut next = path.clone();
                 next.push(index);
                 pending.push((
@@ -1050,7 +1050,7 @@ fn components(
                 indicator,
             });
         }
-        e.control.checkpoint(Checkpoint::Work)?;
+        e.control.checkpoint(Checkpoint::FiniteLawComponent)?;
     }
     Ok(result)
 }
@@ -1720,10 +1720,10 @@ fn populate_family(
         r.state = FiniteLawState::Pending;
         let mut zero = vec![];
         for point in 0..r.domain.len() {
-            c.checkpoint(Checkpoint::Work)?;
+            c.checkpoint(Checkpoint::FiniteLawRequired)?;
             let mut holds = true;
             for q in &r.columns {
-                c.checkpoint(Checkpoint::Work)?;
+                c.checkpoint(Checkpoint::FiniteLawRequired)?;
                 if q.required() {
                     let row = &q.rows[point];
                     holds &= match &row.components {
@@ -1738,7 +1738,7 @@ fn populate_family(
                 zero.push(point);
             }
         }
-        c.checkpoint(Checkpoint::Work)?;
+        c.checkpoint(Checkpoint::FiniteLawRequired)?;
         r.required_zero = Some(zero);
         r.state = FiniteLawState::Ready;
     }

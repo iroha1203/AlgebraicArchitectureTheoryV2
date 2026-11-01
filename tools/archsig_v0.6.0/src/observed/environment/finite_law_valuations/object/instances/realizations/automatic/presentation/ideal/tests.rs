@@ -513,7 +513,7 @@ fn stopping(signal: Signal, at: usize) -> Control {
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
     Control::new(move |p| {
-        if p == Checkpoint::Work {
+        if p == Checkpoint::FiniteLawQuotient {
             count.set(count.get() + 1);
         }
         (count.get() >= at).then_some(signal)

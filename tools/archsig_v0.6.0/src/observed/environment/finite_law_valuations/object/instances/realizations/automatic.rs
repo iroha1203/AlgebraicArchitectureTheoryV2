@@ -206,7 +206,7 @@ pub(in crate::observed) fn finite_automatic_law_family(
         return Ok(result);
     }
     let built = (|| -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
-        c.checkpoint(Checkpoint::Work)
+        c.checkpoint(Checkpoint::FiniteLawAutomatic)
             .map_err(|cause| FiniteLawFamilyFailure {
                 cause: cause.into(),
                 partial: None,

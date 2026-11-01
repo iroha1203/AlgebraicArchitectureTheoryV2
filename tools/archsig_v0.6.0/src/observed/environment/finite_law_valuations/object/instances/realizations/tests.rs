@@ -449,7 +449,7 @@ fn fixed_stops_publish_only_finished_points_and_keep_the_original_readings() {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
     let c = Control::new(move |p| {
-        if p == Checkpoint::Work {
+        if p == Checkpoint::FiniteLawRequired {
             seen.set(seen.get() + 1);
         }
         (seen.get() >= 1).then_some(Signal::Term)
