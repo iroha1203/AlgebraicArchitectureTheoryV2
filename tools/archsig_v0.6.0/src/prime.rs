@@ -18,7 +18,7 @@ pub fn is_prime(n: &BigUint) -> bool {
 }
 
 /// 型検査と同じ制御で、crate 所有の反復と原始演算の前後を確認する。
-pub(crate) fn is_prime_controlled<E: InputError>(
+pub fn is_prime_controlled<E: InputError>(
     n: &BigUint,
     control: &mut Control,
     point: Checkpoint,
@@ -232,7 +232,7 @@ mod tests {
 mod controlled_tests {
     use super::*;
     use crate::control::CheckFailure;
-    use crate::result::Signal;
+    use crate::control::Signal;
     use std::{cell::Cell, rc::Rc};
 
     type Failure = CheckFailure<Box<Issue>>;

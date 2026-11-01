@@ -43,7 +43,7 @@ impl<'a> Environment<'a> {
         let mut environment = Self::new(inputs, control)?;
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
         let mut types = std::collections::HashMap::new();
-        for snapshot in &inputs.archmap().snapshots {
+        for snapshot in inputs.archmap().snapshots() {
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
             for subject in &snapshot.subjects {
                 control.checkpoint(Checkpoint::PrimitiveValuation)?;
@@ -110,7 +110,7 @@ impl<'a> Environment<'a> {
             match crate::archmap::check_valuation_with_values::<
                 CheckFailure<Box<crate::issue::Issue>>,
             >(
-                &inputs.archmap().snapshots,
+                &inputs.archmap().snapshots(),
                 inputs.definitions(),
                 &pinned,
                 control,

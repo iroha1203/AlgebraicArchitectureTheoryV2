@@ -537,7 +537,7 @@ fn identity_object(
         let root = subject(inputs, &object.root.snapshot, &object.root.subject, control)?;
         let namespaces = namespaces(inputs, &object.reading, control)?;
         if !visible(inputs, &selected.ty, &namespaces)
-            || !matches!(inputs.definitions().declarations.get(selected.ty.as_str()).map(|d|&d.signature),Some(PrimitiveSignature::Entity{owner:Some(owner),..}) if owner==&root.ty)
+            || !matches!(inputs.definitions().declarations().get(selected.ty.as_str()).map(|d|&d.signature),Some(PrimitiveSignature::Entity{owner:Some(owner),..}) if owner==&root.ty)
         {
             return Err(ConstructionFailure::InvalidSelection(
                 "恒等の部分対象は選択rootのowned entityを要求する".into(),
@@ -552,7 +552,7 @@ fn identity_object(
             ));
         }
         let mut index = BTreeMap::new();
-        for snapshot in &inputs.archmap().snapshots {
+        for snapshot in inputs.archmap().snapshots() {
             tick(control)?;
             for s in &snapshot.subjects {
                 tick(control)?;

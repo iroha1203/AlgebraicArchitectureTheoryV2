@@ -542,7 +542,7 @@ fn forged_term_body_binding_must_be_rejected() {
         fixture::MAP,
         "view make():Term<(Fp(2))->Fp(2)> =fn(n:Fp(2))=>n+1;law required fixed(t:Term<(Fp(2))->Fp(2)>):t(0)=1;",
     );
-    let Signature::View { body, .. } = &i.law().declarations["Selected.make"].signature else {
+    let Signature::View { body, .. } = &i.law().declarations()["Selected.make"].signature else {
         panic!()
     };
     let mut term =
@@ -638,7 +638,7 @@ fn nested_maps_keep_their_original_full_domain_check() {
 }
 
 fn literal_term(i: &CheckedInputs, name: &str) -> Scalar {
-    let Signature::View { body, .. } = &i.law().declarations[name].signature else {
+    let Signature::View { body, .. } = &i.law().declarations()[name].signature else {
         panic!()
     };
     Scalar::Term(Box::new(
@@ -793,7 +793,7 @@ fn registered_identity_and_reconstructed_path_bindings_are_accepted_but_forged_a
     )
     .unwrap();
     let e = Environment::new(&inputs, &mut quiet()).unwrap();
-    let Signature::View { body, .. } = &inputs.law().declarations["Walk.step"].signature else {
+    let Signature::View { body, .. } = &inputs.law().declarations()["Walk.step"].signature else {
         panic!()
     };
     let generator = Scalar::Subject {

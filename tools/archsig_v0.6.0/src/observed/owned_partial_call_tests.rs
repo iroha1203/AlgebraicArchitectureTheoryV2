@@ -54,7 +54,7 @@ fn partial_owned_actual_member_stop_keeps_values_refutation_and_prefix() {
         .prepared
         .inputs()
         .law()
-        .exprs
+        .exprs()
         .iter()
         .find(|x| {
             &bytes[x.span.0..x.span.1]

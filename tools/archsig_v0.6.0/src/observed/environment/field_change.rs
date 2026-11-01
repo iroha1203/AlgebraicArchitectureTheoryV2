@@ -24,7 +24,7 @@ pub(in crate::observed) struct Linear {
 fn unsupported(env: &Environment<'_>, id: usize, feature: &str) -> ValidationFailure {
     ValidationFailure::UnsupportedExpression {
         location: Location::Law {
-            span: env.indexes.inputs.law().exprs[id].span,
+            span: env.indexes.inputs.law().exprs()[id].span,
         },
         feature: feature.into(),
     }
@@ -108,7 +108,7 @@ fn equations(
             }
             return Ok(());
         }
-        match &env.indexes.inputs.law().exprs[id].kind {
+        match &env.indexes.inputs.law().exprs()[id].kind {
             ExprKind::Group(body) => {
                 equations(env, *body, vars, reading, axes, matrix, rhs, missing)
             }
@@ -295,7 +295,7 @@ fn compute_inner(
         let mut current = *body;
         loop {
             env.tick()?;
-            match &env.indexes.inputs.law().exprs[current].kind {
+            match &env.indexes.inputs.law().exprs()[current].kind {
                 ExprKind::Group(inner) => current = *inner,
                 ExprKind::Let { name, value, body } => {
                     let v = env.scoped_ast(*value, &vars, &Scope::default(), &change.reading)?;
@@ -477,7 +477,7 @@ fn requirement_equations(
     let mut matrix = vec![];
     let mut rhs = vec![];
     for (name, bindings) in requirements {
-        let law = &env.indexes.inputs.law().declarations[name];
+        let law = &env.indexes.inputs.law().declarations()[name];
         let Signature::Law {
             body,
             guard,

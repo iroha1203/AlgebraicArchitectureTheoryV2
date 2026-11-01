@@ -245,7 +245,7 @@ pub(super) fn closed(
                 evaluation = *actual;
             }
             let location = crate::issue::Location::Law {
-                span: env.indexes.inputs.law().exprs[origin.body].span,
+                span: env.indexes.inputs.law().exprs()[origin.body].span,
             };
             cases.push(Case {
                 object: row.object,

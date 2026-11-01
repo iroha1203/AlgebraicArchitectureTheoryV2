@@ -71,7 +71,7 @@ fn native_observation_stays_undetermined_without_a_primitive_or_completion_assig
     *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
     let p = probe_mode(
         &e,
-        &i.law().declarations["Selected.all"],
+        &i.law().declarations()["Selected.all"],
         &bindings("p"),
         0,
         true,
@@ -100,7 +100,7 @@ fn existing_completion_assignments_still_include_and_exclude_the_conditional_mem
         *e.state.completion_values.borrow_mut() = vec![(owner(), NodeRef(0), root_value(target))];
         let p = probe_mode(
             &e,
-            &i.law().declarations["Selected.all"],
+            &i.law().declarations()["Selected.all"],
             &bindings("p"),
             0,
             true,
@@ -123,7 +123,7 @@ fn primitive_valuation_has_the_same_precedence_as_other_primitive_reads() {
     *e.state.completion_values.borrow_mut() = vec![(owner(), NodeRef(0), root_value("root"))];
     let p = probe_mode(
         &e,
-        &i.law().declarations["Selected.all"],
+        &i.law().declarations()["Selected.all"],
         &bindings("p"),
         0,
         true,

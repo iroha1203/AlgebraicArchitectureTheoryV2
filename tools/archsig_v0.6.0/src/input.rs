@@ -77,7 +77,7 @@ impl InputSources {
         &self.archmap
     }
 
-    pub(crate) fn add_location_positions(&self, wire: &mut Json) {
+    pub fn add_location_positions(&self, wire: &mut Json) {
         let definitions: Vec<_> = self.definitions.iter().enumerate()
             .map(|(i, input)| (format!("definition{i}"), input.bytes()))
             .collect();
@@ -488,3 +488,35 @@ pub fn check_inputs(
 
 #[cfg(test)]
 mod checked_table_tests;
+
+#[cfg(test)]
+mod qualified_name_tests {
+    #[test]
+    fn checked_inputs_keep_name_parts_for_observations_and_law_references() {
+        use crate::{
+            control::Control,
+            input::{InputSources, check_inputs},
+        };
+        let inputs = check_inputs(
+            InputSources::from_bytes(
+                vec![include_bytes!("../tests/fixtures/counter.atoms.json").to_vec()],
+                include_bytes!("../tests/fixtures/counter.law").to_vec(),
+                include_bytes!("../tests/fixtures/counter.archmap.json").to_vec(),
+            ),
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        let subject = &inputs.archmap().snapshots[0].subjects[0];
+        assert_eq!(subject.ty.namespace(), "Counter");
+        let field = &subject.fields[0].name;
+        assert_eq!(field.owner(), Some("Counter.State"));
+        assert_eq!(field.short(), "count");
+        assert!(!field.is_owner());
+        let indexed = &inputs.law().resolved_names["Counter.State.count"];
+        assert_eq!(indexed, field);
+        assert_eq!(
+            inputs.law().resolved_names["CountCheck.amount"].short(),
+            "amount"
+        );
+    }
+}

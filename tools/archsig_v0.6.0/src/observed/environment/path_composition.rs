@@ -25,7 +25,7 @@ impl Environment<'_> {
             |stage, count| {
                 #[cfg(test)]
                 data::observe_actual(
-                    self.indexes.inputs.law().exprs[id].span,
+                    self.indexes.inputs.law().exprs()[id].span,
                     self.state.scoped_context
                         .get()
                         .or(self.state.context.get())

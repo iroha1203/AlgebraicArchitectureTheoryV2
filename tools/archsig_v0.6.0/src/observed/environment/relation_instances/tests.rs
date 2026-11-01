@@ -27,7 +27,7 @@ fn with_script(
     let checked =
         crate::definition::check_definitions(&[("definition0", original.definitions()[0].bytes())])
             .unwrap();
-    let digest = &checked.vocabularies[namespace].digest;
+    let digest = &checked.vocabularies()[namespace].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading {reading}{{use vocabulary {namespace} version \"1\" digest \"{digest}\";{script}}}{extra}"
     );
@@ -332,7 +332,7 @@ fn reading_scopes_do_not_merge_same_named_relations() {
     let defs =
         crate::definition::check_definitions(&[("definition0", base.definitions()[0].bytes())])
             .unwrap();
-    let digest = &defs.vocabularies["Paths"].digest;
+    let digest = &defs.vocabularies()["Paths"].digest;
     let i = with_script(
         base.clone(),
         "Walk",
@@ -813,7 +813,7 @@ fn local_conditional_missing_cache_is_separate_from_full_evaluation_records() {
     );
     let Signature::Relation {
         guard: Some(guard), ..
-    } = i.law().declarations["Walk.guarded"].signature
+    } = i.law().declarations()["Walk.guarded"].signature
     else {
         panic!()
     };

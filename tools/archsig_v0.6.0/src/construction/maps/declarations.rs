@@ -75,7 +75,7 @@ impl DeclarationCorrespondence {
     pub(crate) fn field_target(&self, inputs: &CheckedInputs, source: &str, control: &mut Control) -> Result<Option<String>, ConstructionFailure> {
         let raw=self.operation.map().candidate().correspondence().ok_or_else(||ConstructionFailure::InvalidSelection("field対応は原始correspondenceを要求する".into()))?;
         let holder=subject(inputs,&raw.snapshot,&raw.subject,control)?;
-        let declaration=inputs.definitions().declarations.get(holder.ty.as_str()).ok_or_else(||ConstructionFailure::Inconsistent("field対応の元定義がない".into()))?;
+        let declaration=inputs.definitions().declarations().get(holder.ty.as_str()).ok_or_else(||ConstructionFailure::Inconsistent("field対応の元定義がない".into()))?;
         let PrimitiveSignature::Correspondence {implicit,alignments,..}=&declaration.signature else {return Err(ConstructionFailure::Inconsistent("field対応の元がcorrespondenceでない".into()));};
         for pair in alignments {tick(control)?;if pair.source==source {return Ok(Some(pair.target.clone()));}}
         for (a,b) in implicit {tick(control)?;if a==source {return Ok(Some(b.clone()));}}
@@ -161,7 +161,7 @@ fn metadata(
     name: &str,
     control: &mut Control,
 ) -> Result<DeclarationInfo, ConstructionFailure> {
-    for info in &inputs.law().infos {
+    for info in inputs.law().infos() {
         tick(control)?;
         if info.name == name {
             return Ok(info.clone());
@@ -187,7 +187,7 @@ pub fn declaration_correspondence(
     let holder = subject(inputs, &raw.snapshot, &raw.subject, control)?;
     let declaration = inputs
         .definitions()
-        .declarations
+        .declarations()
         .get(holder.ty.as_str())
         .ok_or_else(|| ConstructionFailure::Inconsistent("原始対応の定義がない".into()))?;
     let PrimitiveSignature::Correspondence { from, to, maps, .. } = &declaration.signature else {
@@ -204,7 +204,7 @@ pub fn declaration_correspondence(
     let c = map.candidate();
     let prefix = format!("{}.", c.reading());
     let mut candidates = Vec::new();
-    for declaration in inputs.law().declarations.values() {
+    for declaration in inputs.law().declarations().values() {
         tick(control)?;
         let kind = declaration.signature.kind();
         if declaration.reading != c.reading()
@@ -220,7 +220,7 @@ pub fn declaration_correspondence(
         let source = metadata(inputs, &declaration.name, control)?;
         let target = if inputs
             .law()
-            .declarations
+            .declarations()
             .get(&name)
             .is_some_and(|d| d.reading == c.to_reading())
         {
@@ -375,8 +375,8 @@ mod tests {
         let right = include_bytes!("../../../tests/fixtures/configuration-map-right.atoms.json");
         let defs =
             crate::definition::check_definitions(&[("left", left), ("right", right)]).unwrap();
-        let ld = &defs.vocabularies["Left"].digest;
-        let rd = &defs.vocabularies["Right"].digest;
+        let ld = &defs.vocabularies()["Left"].digest;
+        let rd = &defs.vocabularies()["Right"].digest;
         let bridge = include_str!("../../../tests/fixtures/configuration-map-bridge.atoms.json")
             .replace("@LEFT_DIGEST@", ld)
             .replace("@RIGHT_DIGEST@", rd);
@@ -389,7 +389,7 @@ mod tests {
         let map = include_str!("../../../tests/fixtures/configuration-map-bridge.archmap.json")
             .replace("@LEFT_DIGEST@", ld)
             .replace("@RIGHT_DIGEST@", rd)
-            .replace("@BRIDGE_DIGEST@", &defs.vocabularies["Bridge"].digest);
+            .replace("@BRIDGE_DIGEST@", &defs.vocabularies()["Bridge"].digest);
         crate::input::check_inputs(
             crate::input::InputSources::from_bytes(
                 vec![left.to_vec(), right.to_vec(), bridge.into_bytes()],

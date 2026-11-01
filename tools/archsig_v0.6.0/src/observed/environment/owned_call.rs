@@ -252,7 +252,7 @@ impl Environment<'_> {
             self.indexes.inputs
                 .law()
                 .expr_type(
-                    *self.indexes.inputs.law().program.expressions
+                    *self.indexes.inputs.law().program().expressions
                         .get(&self.expression_span(graph, source)?)
                         .ok_or("部分引数の元式がない")?,
                 )
@@ -269,9 +269,9 @@ impl Environment<'_> {
         children: &[NodeRef],
     ) -> Result<Vec<super::super::result::Reason>, ValidationFailure> {
         let span = self.expression_span(graph, source)?;
-        let kind = self.indexes.inputs.law().program.expressions
+        let kind = self.indexes.inputs.law().program().expressions
             .get(&span)
-            .map(|id| &self.indexes.inputs.law().exprs[*id].kind);
+            .map(|id| &self.indexes.inputs.law().exprs()[*id].kind);
         let mut required = vec![true; children.len()];
         match kind {
             Some(ExprKind::If { .. }) if children.len() == 3 => {
@@ -377,8 +377,8 @@ impl Environment<'_> {
         let root = match &self
             .indexes.inputs
             .law()
-            .definitions
-            .declarations
+            .definitions()
+            .declarations()
             .get(entity)
             .ok_or("Owned callの原始型がない")?
             .signature
@@ -688,13 +688,13 @@ impl Environment<'_> {
             return Ok(None);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(None);
         };
         if !self.owns_call(id)? {
             return Ok(None);
         }
-        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
+        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs()[id].kind else {
             return Err("所属slotの元式がcallでない".into());
         };
         let bindings = self.expression_bindings(graph, source)?;
@@ -792,7 +792,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(None);
         };
         let Some(declaration) = self.named_view(id)? else {
@@ -801,7 +801,7 @@ impl Environment<'_> {
         let Signature::View { params, body, .. } = &declaration.signature else {
             unreachable!()
         };
-        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
+        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs()[id].kind else {
             unreachable!()
         };
         if args.len() != params.len()
@@ -1094,7 +1094,7 @@ impl Environment<'_> {
             return Ok(false);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(false);
         };
         let Some(declaration) = self.named_view(id)? else {

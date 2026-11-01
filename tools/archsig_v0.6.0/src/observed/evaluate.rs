@@ -157,7 +157,7 @@ pub(in crate::observed) fn instance_law<'a>(
             Some(plan)
         } else if guard.is_none()
             && matches!(
-                environment.indexes.inputs.law().exprs[*body].kind,
+                environment.indexes.inputs.law().exprs()[*body].kind,
                 ExprKind::Quant { .. }
             ) {
             environment.universal_quantifier_plan(evaluator.graph, *body, &evaluator.bindings)?
@@ -654,7 +654,7 @@ impl Evaluator<'_, '_> {
     /// 対応済みの式だけを子→親で構成する。各 field は直ちに個別 commit する。
     fn prepare_source(&mut self, id: ExprId) -> Result<SourceHandle, Failure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-            let expr = &self.environment.indexes.inputs.law().program.nodes[id];
+            let expr = &self.environment.indexes.inputs.law().program().nodes[id];
             let span = expr.span;
             let ty = self
                 .environment
@@ -1001,7 +1001,7 @@ impl Evaluator<'_, '_> {
                 return Ok(result.evaluated);
             }
             if matches!(
-                self.environment.indexes.inputs.law().exprs[id].kind,
+                self.environment.indexes.inputs.law().exprs()[id].kind,
                 ExprKind::Quant { .. }
             ) && let Some(plan) =
                 self.environment
@@ -1015,7 +1015,7 @@ impl Evaluator<'_, '_> {
             self.prepare_source(id)?;
             #[cfg(test)]
             data::observe_actual(
-                self.environment.indexes.inputs.law().exprs[id].span,
+                self.environment.indexes.inputs.law().exprs()[id].span,
                 self.graph.active,
                 "expression",
                 0,
@@ -1025,11 +1025,11 @@ impl Evaluator<'_, '_> {
             self.completed.insert(id, value.clone());
             #[cfg(test)]
             if matches!(
-                self.environment.indexes.inputs.law().exprs[id].kind,
+                self.environment.indexes.inputs.law().exprs()[id].kind,
                 ExprKind::Call { .. }
             ) {
                 data::observe_actual(
-                    self.environment.indexes.inputs.law().exprs[id].span,
+                    self.environment.indexes.inputs.law().exprs()[id].span,
                     self.graph.active,
                     "call_evaluation_complete",
                     0,
@@ -1040,7 +1040,7 @@ impl Evaluator<'_, '_> {
         })
     }
     fn eval_inner(&mut self, id: ExprId) -> Result<Evaluated, Failure> {
-        let expr = &self.environment.indexes.inputs.law().program.nodes[id];
+        let expr = &self.environment.indexes.inputs.law().program().nodes[id];
         let span = expr.span;
         let ty = self
             .environment
@@ -2465,7 +2465,7 @@ impl Evaluator<'_, '_> {
         if self.request.kind == QuestionKind::Check
             && (guard.is_none() || self.graph.active.instance.is_none())
             && matches!(
-                self.environment.indexes.inputs.law().exprs[body].kind,
+                self.environment.indexes.inputs.law().exprs()[body].kind,
                 ExprKind::Quant { .. }
             )
             && let Some(plan) =
@@ -2606,7 +2606,7 @@ impl Evaluator<'_, '_> {
                     parts: vec![
                         Part {
                             location: Location::Law {
-                                span: self.environment.indexes.inputs.law().exprs
+                                span: self.environment.indexes.inputs.law().exprs()
                                     [guard_id.expect("明示 guard")]
                                 .span,
                             },
@@ -2616,7 +2616,7 @@ impl Evaluator<'_, '_> {
                         },
                         Part {
                             location: Location::Law {
-                                span: self.environment.indexes.inputs.law().exprs[body_id].span,
+                                span: self.environment.indexes.inputs.law().exprs()[body_id].span,
                             },
                             value: body.value,
                             residual: body.residual,
@@ -2775,7 +2775,7 @@ fn evaluate_observed_with_validator(
             let request = &prepared.requests().requests()[index];
             let declaration = request
                 .declaration()
-                .map(|name| &prepared.inputs().law().declarations[name]);
+                .map(|name| &prepared.inputs().law().declarations()[name]);
             let mut base = Scope::default();
             if let Some(declaration) = declaration {
                 base.readings.insert(declaration.reading.clone());
@@ -3191,8 +3191,9 @@ fn evaluate_observed_with_validator(
     }
 }
 
-#[cfg(test)]
-pub(crate) fn evaluate_observed_with_rejected_answer(
+#[cfg(any(test, feature = "test-support"))]
+#[doc(hidden)]
+pub fn evaluate_observed_with_rejected_answer(
     prepared: PreparedObserved,
     control: &mut Control,
     rejected: &str,
@@ -3333,7 +3334,7 @@ mod recheck_tests {
         let checked =
             crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
                 .unwrap();
-        let digest = &checked.vocabularies["Affine"].digest;
+        let digest = &checked.vocabularies()["Affine"].digest;
         let law = format!(
             r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
@@ -3877,11 +3878,11 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         let mut control = Control::unlimited();
         let prepared = prepare(&mut control);
         let Signature::View { body: later, .. } =
-            &prepared.inputs().law().declarations["CountCheck.later"].signature
+            &prepared.inputs().law().declarations()["CountCheck.later"].signature
         else {
             unreachable!()
         };
-        let later_span = prepared.inputs().law().exprs[*later].span;
+        let later_span = prepared.inputs().law().exprs()[*later].span;
         let mut validated = Vec::new();
         let mut original_failure = None;
         let result = evaluate_observed_with_validator(
@@ -4402,7 +4403,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         let checked =
             crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
                 .unwrap();
-        let digest = &checked.vocabularies["Counter"].digest;
+        let digest = &checked.vocabularies()["Counter"].digest;
         let law = include_str!("../../tests/fixtures/counter.law")
             .replace("sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11", digest)
             .replace("law optional bounded(s: State):", "view other(s: State): Bool = true;\n  law optional bounded(s: State) when s.enabled:");
@@ -4720,7 +4721,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         let checked =
             crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
                 .unwrap();
-        let digest = &checked.vocabularies["Counter"].digest;
+        let digest = &checked.vocabularies()["Counter"].digest;
         let law = format!(
             r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Follow {{
@@ -4820,7 +4821,7 @@ reading Follow {{
         let checked =
             crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
                 .unwrap();
-        let digest = &checked.vocabularies["Signal"].digest;
+        let digest = &checked.vocabularies()["Signal"].digest;
         let law = format!(
             r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading R {{
@@ -4994,11 +4995,11 @@ reading R {{
         let answer = &result.answers[answer_index];
         assert_eq!(answer.status, Decision::Undetermined);
         let Signature::Law { body, .. } =
-            &result.prepared.inputs().law().declarations["R.condition"].signature
+            &result.prepared.inputs().law().declarations()["R.condition"].signature
         else {
             unreachable!()
         };
-        let body_span = result.prepared.inputs().law().exprs[*body].span;
+        let body_span = result.prepared.inputs().law().exprs()[*body].span;
         let original:Vec<_>=result.nodes.iter().enumerate().filter_map(|(index,node)| {
             let context=result.contexts[index];
             if context.request!=answer_index || context.case.is_some() || context.frame.is_some() || context.instance.is_some() || context.iteration.is_some() {return None;}
@@ -5062,7 +5063,7 @@ reading R {{
         let checked =
             crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
                 .unwrap();
-        let digest = &checked.vocabularies["Counter"].digest;
+        let digest = &checked.vocabularies()["Counter"].digest;
         let law = include_str!("../../tests/fixtures/counter.law")
             .replace(
                 "sha256:388baddb5f87b80f4448ce9be21a4800c92a11001ab356936b14b6d5fb438a11",
@@ -5282,8 +5283,8 @@ reading R {{
         let definitions=String::from_utf8(sources.definitions()[0].bytes().to_vec()).unwrap().replace("\"declarations\":[", "\"declarations\":[{\"kind\":\"entity\",\"name\":\"Numeric.Empty\",\"meaning\":\"空の対象族。\",\"parameters\":[],\"fields\":[],\"alignments\":[]},");
         let new = crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
             .unwrap();
-        let old_digest = &old.vocabularies["Numeric"].digest;
-        let new_digest = &new.vocabularies["Numeric"].digest;
+        let old_digest = &old.vocabularies()["Numeric"].digest;
+        let new_digest = &new.vocabularies()["Numeric"].digest;
         let law = String::from_utf8(sources.law().bytes().to_vec())
             .unwrap()
             .replace(old_digest, new_digest);
@@ -5361,11 +5362,11 @@ reading R {{
         // 元観測の条件付き族を、補完後の回答rootと区別して元宣言・Contextから選ぶ。
         let original_rows = |request, name: &str| {
             let Signature::Law { body, .. } =
-                &unknown.prepared.inputs().law().declarations[name].signature
+                &unknown.prepared.inputs().law().declarations()[name].signature
             else {
                 unreachable!()
             };
-            let span = unknown.prepared.inputs().law().exprs[*body].span;
+            let span = unknown.prepared.inputs().law().exprs()[*body].span;
             let candidates: Vec<_> = unknown.nodes.iter().enumerate().filter_map(|(index,node)| {
                 let context=unknown.contexts[index];
                 if context.request!=request || context.case.is_some() || context.frame.is_some()
@@ -5534,7 +5535,7 @@ reading R {{
         ];
         let mut normal_control = quiet();
         let prepared = prepare_observed(sources.clone(), &asks, &mut normal_control).unwrap();
-        let target = prepared.inputs().law().declarations["Calc.current"].span;
+        let target = prepared.inputs().law().declarations()["Calc.current"].span;
         let context = super::super::call::Context {
             request: 3,
             frame: None,
@@ -5719,7 +5720,7 @@ reading R {{
         let checked =
             crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
                 .unwrap();
-        let digest = &checked.vocabularies["Numeric"].digest;
+        let digest = &checked.vocabularies()["Numeric"].digest;
         let law = format!(
             r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Calc {{
@@ -5874,11 +5875,11 @@ reading Calc {{
             .declaration()
             .unwrap();
         let Signature::View { body, .. } =
-            &result.prepared.inputs().law().declarations[declaration].signature
+            &result.prepared.inputs().law().declarations()[declaration].signature
         else {
             unreachable!()
         };
-        let span = result.prepared.inputs().law().exprs[*body].span;
+        let span = result.prepared.inputs().law().exprs()[*body].span;
         let candidates:Vec<_>=result.nodes.iter().enumerate().filter_map(|(index,node)| {
             let context=result.contexts[index];
             (context.request==request && context.case.is_none() && context.frame.is_none() && context.iteration.is_none() && context.instance.is_none()
@@ -6009,7 +6010,7 @@ reading Calc {{
             })
             .unwrap();
         let field_span = law
-            .exprs
+            .exprs()
             .iter()
             .find_map(|e| match &e.kind {
                 ExprKind::Dotted(parts)
@@ -6029,12 +6030,12 @@ reading Calc {{
             assert_ne!(false_span, original_span);
             assert_eq!(&bytes[false_span.0..false_span.1], b"q");
             assert!(
-                !law.exprs
+                !law.exprs()
                     .iter()
                     .enumerate()
                     .any(|(id, e)| law.expr_type(id).is_some() && e.span == false_span)
             );
-            assert!(!law.exprs.iter().enumerate().any(|(id,e)| law.expr_type(id).is_some() && matches!(&e.kind,ExprKind::Dotted(parts) if parts[0].span == false_span)));
+            assert!(!law.exprs().iter().enumerate().any(|(id,e)| law.expr_type(id).is_some() && matches!(&e.kind,ExprKind::Dotted(parts) if parts[0].span == false_span)));
             let mut changed = result.nodes[..=alias.0].to_vec();
             let Some(Payload::Expression { location, .. }) = &mut changed[source.0].payload else {
                 unreachable!()
@@ -6415,11 +6416,11 @@ reading Calc {{
         );
         rebuild_for_origin_and_support_recheck(&quantified, &quantified.nodes).unwrap();
         let checked = quantified.prepared.inputs().law();
-        let callee = &checked.declarations["Calc.unsupported"];
+        let callee = &checked.declarations()["Calc.unsupported"];
         let Signature::View { body, .. } = &callee.signature else {
             unreachable!()
         };
-        let span = checked.exprs[*body].span;
+        let span = checked.exprs()[*body].span;
         let ExprKind::Quant {
             kind: crate::law::ast::QuantKind::Forall,
             var,
@@ -6428,12 +6429,12 @@ reading Calc {{
                     domain: crate::law::ast::QuantDomain::Type(_),
                     body: equation,
                 },
-        } = &checked.exprs[*body].kind
+        } = &checked.exprs()[*body].kind
         else {
             unreachable!()
         };
         assert_eq!(var.name, "item");
-        assert_eq!(checked.quantifier_types[*body], Some(Type::Z));
+        assert_eq!(checked.quantifier_types()[*body], Some(Type::Z));
         let normalization = quantified.nodes.iter().enumerate().find_map(|(index,node)| {
             let Some(Payload::Normalization {before,..})=&node.payload else {return None};
             (quantified.contexts[index].frame.is_some()
@@ -6496,14 +6497,14 @@ reading Calc {{
             .unwrap();
         assert!(matches!(&quantified.nodes[domain].rule,
             Rule::Input {kind:"law",location:Location::Law {span}} if *span==var.span));
-        let ExprKind::Binary { lhs, rhs, .. } = &checked.exprs[*equation].kind else {
+        let ExprKind::Binary { lhs, rhs, .. } = &checked.exprs()[*equation].kind else {
             unreachable!()
         };
         for original in [*body, *equation, *lhs, *rhs] {
             assert!(quantified.nodes.iter().enumerate().any(|(index,node)| {
                 quantified.contexts[index]==context
                     && matches!(&node.payload,Some(Payload::Expression {location:Location::Law {span},..})
-                        if *span==checked.exprs[original].span)
+                        if *span==checked.exprs()[original].span)
             }), "calleeの元AST出現を保持する");
         }
         let whole = quantified
@@ -6603,8 +6604,8 @@ reading Calc {{
         )
         .unwrap();
         let (old_digest, new_digest) = (
-            &old.vocabularies["Numeric"].digest,
-            &new.vocabularies["Numeric"].digest,
+            &old.vocabularies()["Numeric"].digest,
+            &new.vocabularies()["Numeric"].digest,
         );
         let law = std::str::from_utf8(original.law().bytes())
             .unwrap()
@@ -6636,7 +6637,7 @@ reading Calc {{
             })
             .unwrap();
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
-        let field = result.prepared.inputs().archmap().snapshots[0].subjects[0]
+        let field = result.prepared.inputs().archmap().snapshots()[0].subjects[0]
             .fields
             .iter()
             .find(|f| f.name == "Numeric.Sample.q2")
@@ -6672,7 +6673,7 @@ reading Calc {{
             &mut quiet(),
         )
         .unwrap();
-        let digest = &checked.vocabularies["Owners"].digest;
+        let digest = &checked.vocabularies()["Owners"].digest;
         let law = format!(
             r#"law "archsig.law/2" semantics "archsig/0.6.0";
  reading Calc {{ use vocabulary Owners version "1" digest "{digest}";
@@ -6738,11 +6739,11 @@ reading Calc {{
         let mut baseline_control = quiet();
         let prepared = prepare_observed(sources.clone(), &asks, &mut baseline_control).unwrap();
         let Signature::View { body, .. } =
-            &prepared.inputs().law().declarations["Calc.retain"].signature
+            &prepared.inputs().law().declarations()["Calc.retain"].signature
         else {
             unreachable!()
         };
-        let parameter_span = prepared.inputs().law().exprs[*body].span;
+        let parameter_span = prepared.inputs().law().exprs()[*body].span;
         assert_eq!(
             &sources.law().bytes()[parameter_span.0..parameter_span.1],
             b"x"
@@ -6936,8 +6937,8 @@ reading Calc {{
             &mut quiet(),
         )
         .unwrap();
-        let old_digest = &previous.vocabularies["Numeric"].digest;
-        let new_digest = &checked.vocabularies["Numeric"].digest;
+        let old_digest = &previous.vocabularies()["Numeric"].digest;
+        let new_digest = &checked.vocabularies()["Numeric"].digest;
         let law = std::str::from_utf8(original.law().bytes())
             .unwrap()
             .replace(old_digest, new_digest);
@@ -7081,14 +7082,14 @@ reading Calc {{
             .prepared
             .inputs()
             .law()
-            .declarations
+            .declarations()
             .get("Calc.matched")
             .map(|d| match &d.signature {
                 Signature::View { body, .. } => body,
                 _ => unreachable!(),
             })
             .unwrap();
-        let ExprKind::Match { arms, .. } = &result.prepared.inputs().law().exprs[id].kind else {
+        let ExprKind::Match { arms, .. } = &result.prepared.inputs().law().exprs()[id].kind else {
             unreachable!()
         };
         let selected = match &changed[root].payload {
@@ -7099,7 +7100,7 @@ reading Calc {{
             Some(Payload::Evaluation { expression, .. }) => *expression,
             _ => unreachable!(),
         };
-        let wrong_span = result.prepared.inputs().law().exprs[arms[1].body].span;
+        let wrong_span = result.prepared.inputs().law().exprs()[arms[1].body].span;
         let Some(Payload::Expression { location, .. }) = &mut changed[source.0].payload else {
             unreachable!()
         };
@@ -7358,11 +7359,11 @@ reading Calc {{
             let prepared = prepare_observed(sources.clone(), &asks, &mut control).unwrap();
             let Signature::View {
                 body: expression, ..
-            } = &prepared.inputs().law().declarations["Calc.current"].signature
+            } = &prepared.inputs().law().declarations()["Calc.current"].signature
             else {
                 unreachable!()
             };
-            let target = prepared.inputs().law().exprs[*expression].span;
+            let target = prepared.inputs().law().exprs()[*expression].span;
             assert_eq!(&sources.law().bytes()[target.0..target.1], body.as_bytes());
             let context = super::super::call::Context {
                 request: 2,
@@ -7797,7 +7798,7 @@ reading Calc {{
         let checked =
             crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
                 .unwrap();
-        let digest = &checked.vocabularies["Roster"].digest;
+        let digest = &checked.vocabularies()["Roster"].digest;
         let law = format!(
             r#"law "archsig.law/2" semantics "archsig/0.6.0";
 reading Calc {{
@@ -8226,7 +8227,7 @@ reading Calc {{
         let checked =
             crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
                 .unwrap();
-        let digest = &checked.vocabularies["ClosedValue"].digest;
+        let digest = &checked.vocabularies()["ClosedValue"].digest;
         let law = format!(
             r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading Calc {{ use vocabulary ClosedValue version "1" digest "{digest}"; {body} }}"#
         );
@@ -8777,13 +8778,13 @@ reading Calc {{
         ];
         let mut quiet = quiet();
         let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
-        let declaration = &prepared.inputs().law().declarations["Calc.current"];
+        let declaration = &prepared.inputs().law().declarations()["Calc.current"];
         let target = declaration.span;
         let body_id = match &declaration.signature {
             Signature::View { body, .. } | Signature::Law { body, .. } => *body,
             _ => unreachable!(),
         };
-        let body_span = prepared.inputs().law().exprs[body_id].span;
+        let body_span = prepared.inputs().law().exprs()[body_id].span;
         let progress = Rc::new(RefCell::new(Vec::new()));
         let observed = progress.clone();
         let normal = evaluate_observed_with_validator(
@@ -9018,7 +9019,7 @@ reading Calc {{
         let checked =
             crate::definition::check_definitions(&[("definition0", definitions.as_bytes())])
                 .unwrap();
-        let digest = &checked.vocabularies["FiniteScalar"].digest;
+        let digest = &checked.vocabularies()["FiniteScalar"].digest;
         let law = format!(
             r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading Calc {{ use vocabulary FiniteScalar version "1" digest "{digest}"; {body} }}"#
         );
@@ -9149,11 +9150,11 @@ reading Calc {{
             bindings[0].name = "foreign".into();
         });
         let Signature::View { body, .. } =
-            &result.prepared.inputs().law().declarations["Calc.stable"].signature
+            &result.prepared.inputs().law().declarations()["Calc.stable"].signature
         else {
             unreachable!()
         };
-        let span = result.prepared.inputs().law().exprs[*body].span;
+        let span = result.prepared.inputs().law().exprs()[*body].span;
         completion_mutation(&result, field, |nodes| {
             nodes[field].rule = Rule::Input {
                 kind: "law",
@@ -9362,13 +9363,13 @@ reading Calc {{
         ];
         let mut quiet = quiet();
         let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
-        let declaration = &prepared.inputs().law().declarations["Calc.current"];
+        let declaration = &prepared.inputs().law().declarations()["Calc.current"];
         let target = declaration.span;
         let body_id = match &declaration.signature {
             Signature::View { body, .. } | Signature::Law { body, .. } => *body,
             _ => unreachable!(),
         };
-        let body_span = prepared.inputs().law().exprs[body_id].span;
+        let body_span = prepared.inputs().law().exprs()[body_id].span;
         let progress = Rc::new(RefCell::new(Vec::new()));
         let observed = progress.clone();
         let normal = evaluate_observed_with_validator(
@@ -9702,14 +9703,14 @@ reading Calc {{
             let inputs = numeric_recheck_fixture(&["p", "q"], body);
             let mut quiet = quiet();
             let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
-            let target = prepared.inputs().law().declarations["Calc.current"].span;
+            let target = prepared.inputs().law().declarations()["Calc.current"].span;
             let Signature::View {
                 body: current_body, ..
-            } = &prepared.inputs().law().declarations["Calc.current"].signature
+            } = &prepared.inputs().law().declarations()["Calc.current"].signature
             else {
                 unreachable!()
             };
-            let body_span = prepared.inputs().law().exprs[*current_body].span;
+            let body_span = prepared.inputs().law().exprs()[*current_body].span;
             let progress = Rc::new(RefCell::new(Vec::new()));
             let observed = progress.clone();
             let normal = evaluate_observed_with_validator(
@@ -9864,11 +9865,11 @@ reading Calc {{
             let mut normal_control = quiet();
             let prepared = prepare_observed(sources.clone(), &asks, &mut normal_control).unwrap();
             let Signature::View { body, .. } =
-                &prepared.inputs().law().declarations[&format!("Calc.{view}")].signature
+                &prepared.inputs().law().declarations()[&format!("Calc.{view}")].signature
             else {
                 unreachable!()
             };
-            let target = prepared.inputs().law().exprs[*body].span;
+            let target = prepared.inputs().law().exprs()[*body].span;
             let context = super::super::call::Context {
                 request: 3,
                 frame: None,

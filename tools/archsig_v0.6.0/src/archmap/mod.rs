@@ -3,12 +3,12 @@
 
 mod canonical;
 mod complete;
-pub(crate) use complete::{
+pub use complete::{
     FieldAssignment, check_completion_with_values, check_valuation_with_values,
 };
 mod model;
 mod schema;
-pub(crate) use schema::nat_value;
+pub use schema::nat_value;
 pub mod value;
 
 use crate::canonical::{Json, sha256_digest};

@@ -54,7 +54,7 @@ impl Environment<'_> {
             atom: None,
         });
         let field_name = format!("{entity}.owner");
-        for (snapshot_index, snapshot) in self.indexes.inputs.archmap().snapshots.iter().enumerate() {
+        for (snapshot_index, snapshot) in self.indexes.inputs.archmap().snapshots().iter().enumerate() {
             observer("dependent_snapshot", snapshot_index);
             self.tick()?;
             if snapshot.id != *owner_snapshot {
@@ -216,12 +216,12 @@ impl Environment<'_> {
     ) -> Result<(String, usize), ValidationFailure> {
         self.tick()?;
         let law = self.indexes.inputs.law();
-        let expression = law.exprs.get(id).ok_or("元Family ASTがない")?;
+        let expression = law.exprs().get(id).ok_or("元Family ASTがない")?;
         let ExprKind::Family { name, owner } = &expression.kind else {
             return Err("元式がFamilyでない".into());
         };
         let mut resolved = None;
-        for info in &law.infos {
+        for info in law.infos() {
             self.tick()?;
             for (span, target) in &info.references {
                 self.tick()?;
@@ -236,8 +236,8 @@ impl Environment<'_> {
         }
         let target = resolved.ok_or("元Family名の静的解決がない")?;
         let root = match law
-            .definitions
-            .declarations
+            .definitions()
+            .declarations()
             .get(&target)
             .map(|d| &d.signature)
         {
@@ -267,11 +267,11 @@ impl Environment<'_> {
         let declaration = self
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .values()
             .find(|d| {
-                d.span.0 <= self.indexes.inputs.law().exprs[id].span.0
-                    && self.indexes.inputs.law().exprs[id].span.1 <= d.span.1
+                d.span.0 <= self.indexes.inputs.law().exprs()[id].span.0
+                    && self.indexes.inputs.law().exprs()[id].span.1 <= d.span.1
             })
             .ok_or("元Familyの宣言がない")?;
         let mut result = if let Some(owner) = owner {
@@ -333,14 +333,14 @@ impl Environment<'_> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<Option<Vec<Fact>>, ValidationFailure> {
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(None);
         };
-        if !matches!(self.indexes.inputs.law().exprs[id].kind, ExprKind::Family { .. }) {
+        if !matches!(self.indexes.inputs.law().exprs()[id].kind, ExprKind::Family { .. }) {
             return Ok(None);
         }
         let (_, owner) = self.owned_expression_spec(id)?;
-        let value = self.analyze_source(graph, self.indexes.inputs.law().exprs[owner].span, bindings)?;
+        let value = self.analyze_source(graph, self.indexes.inputs.law().exprs()[owner].span, bindings)?;
         // 元slotの読取りを収集する。現在caseの値で元Missing自体を消さない。
         let previous = self.state.completion_values.scoped(Vec::new());
         let result = self
@@ -398,7 +398,7 @@ impl Environment<'_> {
         limit: usize,
     ) -> Result<SourceAnalysis, ValidationFailure> {
         let (_, owner_id) = self.owned_expression_spec(id)?;
-        let span = self.indexes.inputs.law().exprs[id].span;
+        let span = self.indexes.inputs.law().exprs()[id].span;
         let context = self.current_context(graph);
         if source.0 >= limit
             || owner_evaluation.0 >= limit
@@ -432,7 +432,7 @@ impl Environment<'_> {
         }
         self.validate_at(graph, own, source.0)?;
         let (owner_source, owner_bindings, value) = self.evaluation(graph, owner_evaluation)?;
-        if self.expression_span(graph, owner_source)? != self.indexes.inputs.law().exprs[owner_id].span
+        if self.expression_span(graph, owner_source)? != self.indexes.inputs.law().exprs()[owner_id].span
             || owner_bindings != bindings
             || graph.get(owner_evaluation)?.ty
                 != NodeType::Evaluation(
@@ -447,7 +447,7 @@ impl Environment<'_> {
             return Err("Familyの実owner子評価が元AST・producer・束縛と違う".into());
         }
         let original_owner =
-            self.analyze_source(graph, self.indexes.inputs.law().exprs[owner_id].span, bindings)?;
+            self.analyze_source(graph, self.indexes.inputs.law().exprs()[owner_id].span, bindings)?;
         let actual_owner = value.map(|r| graph.scalar(r)).transpose()?;
         if original_owner.known_value.as_ref() != actual_owner {
             return Err("Familyの実owner値が元入力と違う".into());
@@ -472,7 +472,7 @@ impl Environment<'_> {
         else {
             return Err("Family Scalarに元Law出現がない".into());
         };
-        let id = *self.indexes.inputs.law().program.expressions
+        let id = *self.indexes.inputs.law().program().expressions
             .get(span)
             .ok_or("Family Scalarの元ASTがない")?;
         let [source, owner_evaluation] = node.arguments.as_slice() else {
@@ -526,10 +526,10 @@ impl Environment<'_> {
             return Ok(false);
         };
         let span = *span;
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(false);
         };
-        if !matches!(&self.indexes.inputs.law().exprs[id].kind, ExprKind::Family { .. }) {
+        if !matches!(&self.indexes.inputs.law().exprs()[id].kind, ExprKind::Family { .. }) {
             return Ok(false);
         }
         if parts.len() != 1

@@ -5,7 +5,7 @@ mod finite_map_fixture {
 fn finite_map_private_inputs() -> InputSources {
     let definitions = finite_map_fixture::DEFINITIONS.as_bytes();
     let d = crate::definition::check_definitions(&[("definition0", definitions)]).unwrap();
-    let digest = &d.vocabularies["Maps"].digest;
+    let digest = &d.vocabularies()["Maps"].digest;
     InputSources::from_bytes(
         vec![definitions.to_vec()],
         finite_map_fixture::law(digest).into_bytes(),

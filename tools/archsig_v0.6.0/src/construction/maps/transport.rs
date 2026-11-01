@@ -501,7 +501,7 @@ mod tests {
     fn cross_kind_inputs() -> CheckedInputs {
         let d = include_bytes!("../../../tests/fixtures/cross-kind-transport.atoms.json");
         let definitions = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
-        let digest = &definitions.vocabularies["V"].digest;
+        let digest = &definitions.vocabularies()["V"].digest;
         crate::input::check_inputs(
             crate::input::InputSources::from_bytes(
                 vec![d.to_vec()],

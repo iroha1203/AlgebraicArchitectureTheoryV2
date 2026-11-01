@@ -281,7 +281,7 @@ impl Data {
                 self.source
                     .inputs
                     .archmap()
-                    .snapshots
+                    .snapshots()
                     .iter()
                     .find(|s| s.id == identity.snapshot)?
                     .subjects
@@ -467,7 +467,7 @@ fn plan(
         let f = row.arrow();
         let original = inputs
             .archmap()
-            .snapshots
+            .snapshots()
             .iter()
             .find(|s| s.id == f.snapshot)
             .and_then(|s| s.subjects.iter().find(|s| s.id == f.subject))

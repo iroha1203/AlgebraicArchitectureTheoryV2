@@ -38,19 +38,19 @@ fn invalid(f: ValidationFailure) -> ConstructionFailure {
     }
 }
 pub(in crate::observed) fn predicate_call(inputs: &CheckedInputs, id: usize) -> Option<(&[crate::law::model::Param], usize, &[usize])> {
-    let ExprKind::Call { callee, args } = &inputs.law().exprs[id].kind else { return None };
+    let ExprKind::Call { callee, args } = &inputs.law().exprs()[id].kind else { return None };
     let mut callee = *callee;
-    while let ExprKind::Group(child) = inputs.law().exprs[callee].kind { callee = child; }
-    let span = inputs.law().exprs[callee].span;
-    let target = inputs.law().infos.iter().find_map(|info| info.references.iter().find_map(|(at,name)| (*at == span).then_some(name)))?;
-    let Signature::View { params, body, .. } = &inputs.law().declarations.get(target)?.signature else { return None };
+    while let ExprKind::Group(child) = inputs.law().exprs()[callee].kind { callee = child; }
+    let span = inputs.law().exprs()[callee].span;
+    let target = inputs.law().infos().iter().find_map(|info| info.references.iter().find_map(|(at,name)| (*at == span).then_some(name)))?;
+    let Signature::View { params, body, .. } = &inputs.law().declarations().get(target)?.signature else { return None };
     if params.len() != args.len() || params.iter().any(|p| matches!(p.ty, Type::Owned(..))) || inputs.law().expr_type(*body) != Some(&Type::Bool) { return None; }
     Some((params, *body, args))
 }
 pub(in crate::observed) fn predicate_equation(inputs: &CheckedInputs, mut id: usize, c: &mut Control) -> Result<Option<usize>, ConstructionFailure> {
     loop {
         tick(c)?;
-        match &inputs.law().exprs[id].kind {
+        match &inputs.law().exprs()[id].kind {
             ExprKind::Group(child) | ExprKind::Let { body: child, .. } => id = *child,
             ExprKind::Call { .. } => { let Some((_, body, _)) = predicate_call(inputs,id) else { return Ok(None) }; id = body; }
             ExprKind::Match { scrutinee, arms } => { let Some(body) = binding_match_body(inputs,*scrutinee,arms,c)? else { return Ok(None) }; id = body; }
@@ -254,7 +254,7 @@ fn numeric_terms(
 ) -> Result<bool, ConstructionFailure> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         tick(c)?;
-        match &inputs.law().exprs[expression].kind {
+        match &inputs.law().exprs()[expression].kind {
             ExprKind::Group(child) | ExprKind::Let { body: child, .. } =>
                 numeric_terms(inputs, body, *child, explicit_guard, terms, c),
             ExprKind::Match { scrutinee, arms } => {
@@ -282,7 +282,7 @@ fn shape(
     inputs: &CheckedInputs, name: &str, c: &mut Control,
 ) -> Result<LawNumericShape, ConstructionFailure> {
     tick(c)?;
-    let Signature::Law { body, guard, .. } = inputs.law().declarations
+    let Signature::Law { body, guard, .. } = inputs.law().declarations()
         .get(name).ok_or_else(|| bad("元Law宣言がない"))?.signature else {
         return Err(bad("元Law署名がない"));
     };
@@ -299,10 +299,10 @@ fn shape(
 }
 /// 元の連言内で、指定された等式を含む側を選ぶ。
 pub(super) fn conjunction_child(inputs: &CheckedInputs, expression: usize, equality: usize) -> Option<(usize, usize)> {
-    let ExprKind::Binary { op: BinOp::And, lhs, rhs } = inputs.law().exprs[expression].kind else { return None };
-    let at = inputs.law().exprs[equality].span;
+    let ExprKind::Binary { op: BinOp::And, lhs, rhs } = inputs.law().exprs()[expression].kind else { return None };
+    let at = inputs.law().exprs()[equality].span;
     [lhs, rhs].into_iter().enumerate().find_map(|(index, child)| {
-        let span = inputs.law().exprs[child].span;
+        let span = inputs.law().exprs()[child].span;
         (span.0 <= at.0 && at.1 <= span.1).then_some((child, index))
     })
 }
@@ -529,7 +529,7 @@ fn read_case(
             let mut evaluated = true;
             while expression != *equality {
                 tick(c)?;
-                let (child, index) = match &inputs.law().exprs[expression].kind {
+                let (child, index) = match &inputs.law().exprs()[expression].kind {
                     ExprKind::Group(child) => (*child, 0),
                     ExprKind::Let { body: child, .. } => (*child, 1),
                     ExprKind::Match { scrutinee, arms } => (
@@ -547,7 +547,7 @@ fn read_case(
                     .ok_or_else(|| bad("元数値等式の外側partがない"))?;
                 if let Some(&next) = p.children.get(index) {
                     at = next;
-                } else if matches!(inputs.law().exprs[expression].kind, ExprKind::Match { .. })
+                } else if matches!(inputs.law().exprs()[expression].kind, ExprKind::Match { .. })
                     && p.children.len() == 1
                     && p.value.is_none()
                 {

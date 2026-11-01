@@ -114,7 +114,7 @@ impl Environment<'_> {
         // 共通Uとsourceの全owned族を、現在補完のownerも含めて決める。
         let mut universe = BTreeSet::new();
         let mut members = vec![];
-        for snap in &self.indexes.inputs.archmap().snapshots {
+        for snap in self.indexes.inputs.archmap().snapshots() {
             for s in &snap.subjects {
                 self.tick()?;
                 out.scope.merge(&self.indexes.scope(s, reading, None)?);

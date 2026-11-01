@@ -6,7 +6,7 @@ mod body;
 pub(crate) mod check;
 mod expr;
 pub mod lexer;
-pub(crate) mod ir;
+pub mod ir;
 mod metadata;
 pub mod model;
 pub mod parser;
@@ -28,33 +28,34 @@ pub const SEMANTICS: &str = "archsig/0.6.0";
 /// 検査を通った Law。`check_law` / controlled版で構築し、共有参照で読み取る。
 ///
 /// ```compile_fail,E0616
-/// fn alter(law: &mut archsig::law::CheckedLaw) { law.bytes_digest.clear(); }
+/// fn alter(law: &mut archsig_input::law::CheckedLaw) { law.bytes_digest.clear(); }
 /// ```
 /// ```compile_fail,E0616
-/// fn alter(law: &mut archsig::law::CheckedLaw) { law.model_digest.clear(); }
+/// fn alter(law: &mut archsig_input::law::CheckedLaw) { law.model_digest.clear(); }
 /// ```
 /// ```compile_fail,E0616
-/// fn alter(law: &mut archsig::law::CheckedLaw) { law.definitions = archsig::definition::check_definitions(&[]).unwrap(); }
+/// fn alter(law: &mut archsig_input::law::CheckedLaw) { law.definitions = archsig_input::definition::check_definitions(&[]).unwrap(); }
 /// ```
 /// ```compile_fail,E0596
-/// fn alter(law: &mut archsig::law::CheckedLaw) { law.declarations().clear(); }
+/// fn alter(law: &mut archsig_input::law::CheckedLaw) { law.declarations().clear(); }
 /// ```
 /// ```compile_fail,E0596
-/// fn alter(law: &mut archsig::law::CheckedLaw) { law.exprs().first_mut(); }
+/// fn alter(law: &mut archsig_input::law::CheckedLaw) { law.exprs().first_mut(); }
 /// ```
 /// ```compile_fail,E0596
-/// fn alter(law: &mut archsig::law::CheckedLaw) { law.expr_types().first_mut(); }
+/// fn alter(law: &mut archsig_input::law::CheckedLaw) { law.expr_types().first_mut(); }
 /// ```
 /// ```compile_fail,E0596
-/// fn alter(law: &mut archsig::law::CheckedLaw) { law.infos().first_mut(); }
+/// fn alter(law: &mut archsig_input::law::CheckedLaw) { law.infos().first_mut(); }
 /// ```
 /// ```compile_fail,E0451
-/// use archsig::law::CheckedLaw;
+/// use archsig_input::law::CheckedLaw;
 /// let forged = CheckedLaw {
 ///     bytes_digest: String::new(), model_digest: String::new(),
 ///     declarations: Default::default(), exprs: vec![], expr_types: vec![],
 ///     quantifier_types: vec![], infos: vec![],
-///     definitions: archsig::definition::check_definitions(&[]).unwrap(),
+///     program: Default::default(), resolved_names: Default::default(),
+///     definitions: archsig_input::definition::check_definitions(&[]).unwrap(),
 /// };
 /// ```
 #[derive(Debug)]
@@ -80,11 +81,31 @@ pub struct TermBody {
     pub exprs: Vec<Expr>,
     pub root: ExprId,
     pub types: Vec<Option<Type>>,
-    pub(crate) references: Vec<(ast::Span, String)>,
-    pub(crate) quantifier_types: Vec<Option<Type>>,
+    pub references: Vec<(ast::Span, String)>,
+    pub quantifier_types: Vec<Option<Type>>,
 }
 
 impl CheckedLaw {
+    /// 検査時に解決した式を共有参照で読む。
+    /// ```compile_fail,E0596
+    /// fn alter(law: &mut archsig_input::law::CheckedLaw) { law.program().nodes.clear(); }
+    /// ```
+    pub fn program(&self) -> &ir::Program {
+        &self.program
+    }
+    /// ```compile_fail,E0596
+    /// fn alter(law: &mut archsig_input::law::CheckedLaw) { law.resolved_names().clear(); }
+    /// ```
+    pub fn resolved_names(&self) -> &BTreeMap<String, crate::names::QualifiedName> {
+        &self.resolved_names
+    }
+    /// ```compile_fail,E0596
+    /// fn alter(law: &mut archsig_input::law::CheckedLaw) { law.quantifier_types().first_mut(); }
+    /// ```
+    pub fn quantifier_types(&self) -> &[Option<Type>] {
+        &self.quantifier_types
+    }
+
     pub fn bytes_digest(&self) -> &str {
         &self.bytes_digest
     }
@@ -130,7 +151,7 @@ pub fn check_definition_term_body(
     )
 }
 
-pub(crate) fn check_definition_term_body_inner<E: InputError>(
+pub fn check_definition_term_body_inner<E: InputError>(
     definitions: &CheckedDefinitions,
     namespace: &str,
     params: &[(String, Type)],
@@ -196,7 +217,7 @@ pub(crate) fn check_definition_term_body_inner<E: InputError>(
 
 /// 閉じた値の本文を、元Lawのreadingが持つ共通定義のscopeで再検査する。
 /// parser/checkerは通常のLawと同じものを使い、捕捉したLaw宣言の呼出しは許さない。
-pub(crate) fn check_reading_term_body<E: InputError>(
+pub fn check_reading_term_body<E: InputError>(
     raw_law: &[u8],
     definitions: &CheckedDefinitions,
     reading: &str,

@@ -219,7 +219,7 @@ fn reading_visibility_uses_transitive_imports_without_adding_other_registered_ro
     use crate::input::InputSources;
     let other = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Other","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Other.Root","meaning":"別の根。","parameters":[],"fields":[],"alignments":[]}]}]}"#;
     let o = crate::definition::check_definitions(&[("other", other.as_bytes())]).unwrap();
-    let od = &o.vocabularies["Other"].digest;
+    let od = &o.vocabularies()["Other"].digest;
     let definition = fixture::D.replacen(
         "\"dependencies\":[]",
         &format!(r#""dependencies":[{{"namespace":"Other","version":"1","digest":"{od}"}}]"#),
@@ -230,12 +230,12 @@ fn reading_visibility_uses_transitive_imports_without_adding_other_registered_ro
         ("other", other.as_bytes()),
     ])
     .unwrap();
-    let rd = &d.vocabularies["Requests"].digest;
+    let rd = &d.vocabularies()["Requests"].digest;
     let original = fixture::input();
     let old = crate::definition::check_definitions(&[("requests", fixture::D.as_bytes())]).unwrap();
     let map = String::from_utf8(original.archmap().bytes().to_vec())
         .unwrap()
-        .replace(&old.vocabularies["Requests"].digest, rd)
+        .replace(&old.vocabularies()["Requests"].digest, rd)
         .replace(
             "\"vocabularies\":[",
             &format!(r#""vocabularies":[{{"namespace":"Other","version":"1","digest":"{od}"}},"#),

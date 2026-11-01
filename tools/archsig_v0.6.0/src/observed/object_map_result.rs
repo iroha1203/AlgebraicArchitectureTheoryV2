@@ -446,7 +446,7 @@ fn compute_inner(
             }
             let def = inputs
                 .definitions()
-                .declarations
+                .declarations()
                 .get(&witness.shape().declaration)
                 .ok_or("原始対応の定義がない")?;
             let PrimitiveSignature::Correspondence {
@@ -462,7 +462,7 @@ fn compute_inner(
                 let parameters = |name: &str| -> Result<_, ValidationFailure> {
                     let d = inputs
                         .definitions()
-                        .declarations
+                        .declarations()
                         .get(name)
                         .ok_or("対応型の定義がない")?;
                     let (parameters, _) = d
@@ -485,7 +485,7 @@ fn compute_inner(
                     .iter()
                     .map(|a| (&a.source, &a.target))
                     .chain(implicit.iter().map(|(s, t)| (s, t)))
-                    .filter(|(s, _)| inputs.law().resolved_names.get(s.as_str()).and_then(|name| name.owner()) == Some(source.as_str()))
+                    .filter(|(s, _)| inputs.law().resolved_names().get(s.as_str()).and_then(|name| name.owner()) == Some(source.as_str()))
                     .map(|(s, t)| Json::Arr(vec![Json::str(s), Json::str(t)]))
                     .collect::<Vec<_>>();
                 fields.sort_by_key(Json::canonical);

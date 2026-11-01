@@ -520,7 +520,7 @@ fn family_with_instance_domain(
             })?;
         let decl = inputs
             .law()
-            .declarations
+            .declarations()
             .get(law)
             .ok_or_else(|| FiniteLawFamilyFailure {
                 cause: "有限Lawの元宣言がない".into(),
@@ -559,7 +559,7 @@ fn family_with_instance_domain(
         };
         let equation_type = equation(inputs, body, c)
             .and_then(|eq| {
-                eq.map(|id| match inputs.law().exprs[id].kind {
+                eq.map(|id| match inputs.law().exprs()[id].kind {
                     ExprKind::Binary { lhs, .. } => inputs
                         .law()
                         .expr_type(lhs)
@@ -726,14 +726,14 @@ fn validate_binding_term(
     // 閉じた値は、選択Law以外のreadingや原始fieldからも来る。
     // 現在入力のscopeで本文を再検査し、保持した全実行情報と一致するものを要求する。
     let mut readings = BTreeSet::new();
-    for d in e.indexes.inputs.law().declarations.values() {
+    for d in e.indexes.inputs.law().declarations().values() {
         tick(&e.control)?;
         readings.insert(d.reading.clone());
     }
     let scopes = readings.into_iter().map(|n| (false, n)).chain(
         e.indexes.inputs
             .definitions()
-            .vocabularies
+            .vocabularies()
             .keys()
             .cloned()
             .map(|n| (true, n)),
@@ -795,7 +795,7 @@ fn validate_binding_path(
     if !e
         .indexes.inputs
         .law()
-        .declarations
+        .declarations()
         .values()
         .any(|d| d.reading == path.reading)
     {
@@ -1022,7 +1022,7 @@ pub(in crate::observed) fn equation(
 ) -> Result<Option<usize>, ValidationFailure> {
     loop {
         c.checkpoint(Checkpoint::FiniteLawOperand)?;
-        match &inputs.law().exprs[id].kind {
+        match &inputs.law().exprs()[id].kind {
             ExprKind::Group(child) | ExprKind::Let { body: child, .. } => id = *child,
             ExprKind::Match { scrutinee, arms } => {
                 let child = crate::observed::object_law_residuals::binding_match_body(
@@ -1054,7 +1054,7 @@ fn operands(
     let Some(eq) = equation(e.indexes.inputs, body, &mut e.control.clone())? else {
         return Ok(None);
     };
-    let ExprKind::Binary { lhs, rhs, .. } = e.indexes.inputs.law().exprs[eq].kind else {
+    let ExprKind::Binary { lhs, rhs, .. } = e.indexes.inputs.law().exprs()[eq].kind else {
         return Err("元等式の出現が違う".into());
     };
     let ty = e
@@ -1067,7 +1067,7 @@ fn operands(
     let mut id = body;
     while id != eq {
         e.control.clone().checkpoint(Checkpoint::FiniteLawOperand)?;
-        match &e.indexes.inputs.law().exprs[id].kind {
+        match &e.indexes.inputs.law().exprs()[id].kind {
             ExprKind::Group(child) => id = *child,
             ExprKind::Let { name, value, body } => {
                 let rhs = e.scoped_ast(*value, &local, scope, reading)?;
@@ -1324,7 +1324,7 @@ fn local_universal_truth(
         let v = e.scoped_ast(id, vars, scope, reading)?;
         if v.condition_failed || v.condition_pending { return Ok(None); }
         if let Some(Scalar::Bool(value)) = v.known_value { return Ok(Some(value)); }
-        match &e.indexes.inputs.law().exprs[id].kind {
+        match &e.indexes.inputs.law().exprs()[id].kind {
             ExprKind::Group(body) => local_universal_truth(e,*body,vars,scope,reading,parameters),
             ExprKind::Let { name, value, body } => {
                 let mut vars = vars.clone();

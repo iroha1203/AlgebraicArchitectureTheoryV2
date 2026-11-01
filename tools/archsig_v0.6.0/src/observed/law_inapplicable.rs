@@ -138,7 +138,7 @@ fn expected(
         span: Witness::Architecture(row.architecture.clone())
             .inputs()
             .law()
-            .exprs
+            .exprs()
             .get(row.body)
             .ok_or("対象外Lawの元body式がない")?
             .span,
@@ -294,7 +294,7 @@ impl super::result_kind::ResultKind for Data {
                     .indexes
                     .inputs
                     .law()
-                    .exprs
+                    .exprs()
                     .get(row.body)
                     .ok_or("対象外Lawの元式がない")?
                     .span,

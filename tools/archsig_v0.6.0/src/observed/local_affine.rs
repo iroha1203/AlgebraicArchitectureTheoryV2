@@ -60,7 +60,7 @@ fn analyze(
             _ => None,
         })
         .ok_or("整数局所changeがない")?;
-    let change = &env.indexes.inputs.law().declarations[name];
+    let change = &env.indexes.inputs.law().declarations()[name];
     let Signature::Change { params, body, .. } = &change.signature else {
         return Err("整数局所changeの署名がない".into());
     };
@@ -96,7 +96,7 @@ fn analyze(
         error
     })?;
     let mut requirements = vec![];
-    for law in env.indexes.inputs.law().declarations.values().filter(|d| {
+    for law in env.indexes.inputs.law().declarations().values().filter(|d| {
         d.reading == reading
             && request.declaration().map_or(
                 matches!(
@@ -151,7 +151,7 @@ fn analyze(
     let mut supports = vec![];
     let mut scope = Scope::default();
     for (name, bindings) in &requirements {
-        let declaration = &env.indexes.inputs.law().declarations[name];
+        let declaration = &env.indexes.inputs.law().declarations()[name];
         let Signature::Law { body, guard, params, .. } = &declaration.signature else {
             return Err("整数局所Lawでない".into());
         };
@@ -476,7 +476,7 @@ pub(super) fn compute(
         let mut laws = vec![];
         let mut expressions = vec![];
         for (name, bindings) in &model.requirements {
-            let declaration = &env.indexes.inputs.law().declarations[name];
+            let declaration = &env.indexes.inputs.law().declarations()[name];
             let Signature::Law {
                 body, guard, role, ref params,
             } = declaration.signature
@@ -540,7 +540,7 @@ pub(super) fn compute(
             );
         }
         if expressions.is_empty() {
-            let declaration = &env.indexes.inputs.law().declarations[&model.change];
+            let declaration = &env.indexes.inputs.law().declarations()[&model.change];
             let Signature::Change { body, params, .. } = &declaration.signature else {
                 return Err("change署名がない".into());
             };
@@ -558,7 +558,7 @@ pub(super) fn compute(
         let locals = env
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .values()
             .filter(|d| {
                 d.reading == witness.construction().reading()

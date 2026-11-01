@@ -33,7 +33,7 @@ pub(super) fn check(
     let declaration = env
         .indexes.inputs
         .law()
-        .declarations
+        .declarations()
         .get(&row.declaration)
         .ok_or("元Law判断の宣言がない")?;
     let answer = super::evaluate::instance_law(env, graph, c, &request, declaration, index)?;

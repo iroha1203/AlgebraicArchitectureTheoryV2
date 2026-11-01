@@ -298,8 +298,8 @@ fn finite_parameter_circuits_keep_every_bound_law_row() {
         .replace(r#""type":"Z""#, r#""type":["Fp","2"]"#);
     let defs =
         crate::definition::check_definitions(&[("definition0", definition.as_bytes())]).unwrap();
-    let old = &initial.definitions().vocabularies["Family"].digest;
-    let new = &defs.vocabularies["Family"].digest;
+    let old = &initial.definitions().vocabularies()["Family"].digest;
+    let new = &defs.vocabularies()["Family"].digest;
     let law = String::from_utf8(sources.law().bytes().to_vec())
         .unwrap()
         .replace(old, new);

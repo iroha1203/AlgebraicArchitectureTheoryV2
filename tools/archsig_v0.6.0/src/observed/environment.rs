@@ -378,7 +378,7 @@ pub(crate) struct Environment<'a> {
 
 impl<'a> Environment<'a> {
     pub(super) fn input_name(&self, name: &str) -> Result<crate::names::QualifiedName, ValidationFailure> {
-        self.indexes.inputs.law().resolved_names.get(name).cloned().ok_or_else(|| "原始fieldの検査済み名がない".into())
+        self.indexes.inputs.law().resolved_names().get(name).cloned().ok_or_else(|| "原始fieldの検査済み名がない".into())
     }
 
     pub(super) fn change_source_checked(&self, source:&std::sync::Arc<super::change_result::Source>)->bool { self.results.cache.borrow().changes.iter().any(|s|std::sync::Arc::ptr_eq(s,source)) }
@@ -862,12 +862,12 @@ impl<'a> Environment<'a> {
             return Ok(None);
         }
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(None);
         };
         let law = self.indexes.inputs.law();
         let mut types = Vec::new();
-        let method = match &law.exprs[id].kind {
+        let method = match &law.exprs()[id].kind {
             ExprKind::Binary {
                 op: BinOp::Eq | BinOp::Ne | BinOp::In,
                 lhs,
@@ -957,7 +957,7 @@ impl<'a> Environment<'a> {
         &self,
         id: usize,
     ) -> Result<(Option<usize>, Vec<usize>), ValidationFailure> {
-        match self.indexes.inputs.law().exprs[id].kind {
+        match self.indexes.inputs.law().exprs()[id].kind {
             ExprKind::SetComp {
                 domain,
                 elem,
@@ -1054,10 +1054,10 @@ impl<'a> Environment<'a> {
             if let Some(span) = own_span {
                 let comp_span = self.expression_span(graph, iteration.source)?;
                 let (_, bodies) = self.iteration_syntax(
-                    *self.indexes.inputs.law().program.expressions.get(&comp_span).ok_or("反復元ASTがない")?,
+                    *self.indexes.inputs.law().program().expressions.get(&comp_span).ok_or("反復元ASTがない")?,
                 )?;
                 if !bodies.into_iter().any(|child| {
-                    let body = self.indexes.inputs.law().exprs[child].span;
+                    let body = self.indexes.inputs.law().exprs()[child].span;
                     body.0 <= span.0 && span.1 <= body.1
                 }) {
                     return Err("反復nodeの元出現がfilter/elem外にある".into());
@@ -1281,14 +1281,14 @@ impl<'a> Environment<'a> {
                     location: Location::Law { span },
                 } => {
                     let law = self.indexes.inputs.law();
-                    let id = self.indexes.inputs.law().program.expressions.get(span).copied();
+                    let id = self.indexes.inputs.law().program().expressions.get(span).copied();
                     if id.is_some_and(|id| law.expr_type(id) != Some(&scalar.ty())) {
                         return Err("導出値が元式の型に合わない".into());
                     }
                     let computed = if self.chain_field_occurrence(*span)?.is_some() {
                         self.chain_field_source_analysis(graph, node, limit)?.0
                     } else if let Some(id) = id {
-                        match &law.exprs[id].kind {
+                        match &law.exprs()[id].kind {
                             ExprKind::Family { .. } => self
                                 .owned_family_scalar_analysis(graph, node, limit)?
                                 .known_value
@@ -1431,9 +1431,9 @@ impl<'a> Environment<'a> {
             if span.0 >= span.1 || bytes.get(span.0..span.1).is_none() {
                 return Err("元 byte span の外".into());
             }
-            let actual = self.indexes.inputs.law().program.expressions
+            let actual = self.indexes.inputs.law().program().expressions
                 .get(span)
-                .map(|&id| (id, &self.indexes.inputs.law().exprs[id]));
+                .map(|&id| (id, &self.indexes.inputs.law().exprs()[id]));
             if let Some((id, _)) = actual {
                 let NodeType::Expression(ty) = &node.ty else {
                     return Err("式の型".into());
@@ -1476,7 +1476,7 @@ impl<'a> Environment<'a> {
             let d = self
                 .indexes.inputs
                 .law()
-                .declarations
+                .declarations()
                 .get(name)
                 .ok_or("LawInstance の宣言がない")?;
             let Signature::Law {
@@ -1650,15 +1650,15 @@ impl<'a> Environment<'a> {
                     return Err("Evaluation の支持が使用した値・子評価の和集合と違う".into());
                 }
                 let children = &parts[0].children;
-                let ast = self.indexes.inputs.law().program.expressions
+                let ast = self.indexes.inputs.law().program().expressions
                     .get(&span)
-                    .map(|id| &self.indexes.inputs.law().exprs[*id]);
+                    .map(|id| &self.indexes.inputs.law().exprs()[*id]);
                 let generated_here = match ast.map(|e| &e.kind) {
                     Some(ExprKind::Dotted(parts)) => {
                         parts.len() > 1
                             || data::expression(
                                 self.indexes.inputs.law(),
-                                *self.indexes.inputs.law().program.expressions.get(&span).ok_or("名元ASTがない")?,
+                                *self.indexes.inputs.law().program().expressions.get(&span).ok_or("名元ASTがない")?,
                                 &self.control,
                             )?
                             .is_some()
@@ -1753,7 +1753,7 @@ impl<'a> Environment<'a> {
                 }
                 if generated_here
                     && ((ast.is_none() && self.find_name_token(span)?.is_some())
-                        || matches!(ast.map(|e| &e.kind), Some(ExprKind::Dotted(parts)) if parts.len() == 1 || data::expression(self.indexes.inputs.law(), *self.indexes.inputs.law().program.expressions.get(&span).ok_or("名元ASTがない")?, &self.control)?.is_some()))
+                        || matches!(ast.map(|e| &e.kind), Some(ExprKind::Dotted(parts)) if parts.len() == 1 || data::expression(self.indexes.inputs.law(), *self.indexes.inputs.law().program().expressions.get(&span).ok_or("名元ASTがない")?, &self.control)?.is_some()))
                     && let Some(value) = value
                     && !matches!(&graph.get(*value)?.rule, Rule::Input { kind: "law", location: Location::Law { span: actual } } if *actual == span)
                 {
@@ -1767,32 +1767,32 @@ impl<'a> Environment<'a> {
                             .2
                             .map(|r| graph.scalar(r))
                             .transpose()?;
-                        let id = *self.indexes.inputs.law().program.expressions.get(&span).ok_or("match元ASTがない")?;
-                        let mut spans = vec![self.indexes.inputs.law().exprs[*scrutinee].span];
+                        let id = *self.indexes.inputs.law().program().expressions.get(&span).ok_or("match元ASTがない")?;
+                        let mut spans = vec![self.indexes.inputs.law().exprs()[*scrutinee].span];
                         if let Some(arm) =
                             self.select_match_arm(graph, id, bindings, known, self.evaluation(graph, input)?.0)?
                         {
-                            spans.push(self.indexes.inputs.law().exprs[arms[arm].body].span);
+                            spans.push(self.indexes.inputs.law().exprs()[arms[arm].body].span);
                         }
                         spans
                     }
                     Some(ExprKind::Let { value, body, .. }) => vec![
-                        self.indexes.inputs.law().exprs[*value].span,
-                        self.indexes.inputs.law().exprs[*body].span,
+                        self.indexes.inputs.law().exprs()[*value].span,
+                        self.indexes.inputs.law().exprs()[*body].span,
                     ],
                     Some(ExprKind::If {
                         cond,
                         then_branch,
                         else_branch,
                     }) => vec![
-                        self.indexes.inputs.law().exprs[*cond].span,
-                        self.indexes.inputs.law().exprs[*then_branch].span,
-                        self.indexes.inputs.law().exprs[*else_branch].span,
+                        self.indexes.inputs.law().exprs()[*cond].span,
+                        self.indexes.inputs.law().exprs()[*then_branch].span,
+                        self.indexes.inputs.law().exprs()[*else_branch].span,
                     ],
                     Some(ExprKind::Dotted(_))
                         if data::expression(
                             self.indexes.inputs.law(),
-                            *self.indexes.inputs.law().program.expressions.get(&span).ok_or("constructor元式がない")?,
+                            *self.indexes.inputs.law().program().expressions.get(&span).ok_or("constructor元式がない")?,
                             &self.control,
                         )?
                         .is_some() =>
@@ -1821,16 +1821,16 @@ impl<'a> Environment<'a> {
                     }
                     Some(ExprKind::Dotted(parts)) if parts.len() == 1 => self
                         .lexical_rhs(span, &parts[0].name)?
-                        .map(|rhs| vec![self.indexes.inputs.law().exprs[rhs].span])
+                        .map(|rhs| vec![self.indexes.inputs.law().exprs()[rhs].span])
                         .unwrap_or_default(),
                     Some(ExprKind::Binary { lhs, rhs, .. }) => vec![
-                        self.indexes.inputs.law().exprs[*lhs].span,
-                        self.indexes.inputs.law().exprs[*rhs].span,
+                        self.indexes.inputs.law().exprs()[*lhs].span,
+                        self.indexes.inputs.law().exprs()[*rhs].span,
                     ],
                     Some(ExprKind::Unary { operand, .. } | ExprKind::Group(operand)) => {
-                        vec![self.indexes.inputs.law().exprs[*operand].span]
+                        vec![self.indexes.inputs.law().exprs()[*operand].span]
                     }
-                    Some(ExprKind::Field { base, .. }) => vec![self.indexes.inputs.law().exprs[*base].span],
+                    Some(ExprKind::Field { base, .. }) => vec![self.indexes.inputs.law().exprs()[*base].span],
                     Some(
                         ExprKind::Fn { .. }
                         | ExprKind::Tuple(_)
@@ -1843,12 +1843,12 @@ impl<'a> Environment<'a> {
                         | ExprKind::Index { .. }
                         | ExprKind::Call { .. },
                     ) => {
-                        let id = *self.indexes.inputs.law().program.expressions.get(&span).ok_or("数値構成の元式がない")?;
+                        let id = *self.indexes.inputs.law().program().expressions.get(&span).ok_or("数値構成の元式がない")?;
                         let mut spans = Vec::new();
                         for child in self.composite_children(id)?.ok_or("数値構成の子がない")?
                         {
                             self.tick()?;
-                            spans.push(self.indexes.inputs.law().exprs[child].span);
+                            spans.push(self.indexes.inputs.law().exprs()[child].span);
                             self.tick()?;
                         }
                         spans
@@ -1860,7 +1860,7 @@ impl<'a> Environment<'a> {
                         if let Some((id, count)) = self.dotted_prefix(span)?
                             && count > 1
                         {
-                            let ExprKind::Dotted(parts) = &self.indexes.inputs.law().exprs[id].kind else {
+                            let ExprKind::Dotted(parts) = &self.indexes.inputs.law().exprs()[id].kind else {
                                 unreachable!()
                             };
                             vec![(parts[0].span.0, parts[count - 2].span.1)]
@@ -1879,7 +1879,7 @@ impl<'a> Environment<'a> {
                                 vec![self.expression_span(graph, self.evaluation(graph, input)?.0)?]
                             } else {
                                 self.lexical_rhs(span, token)?
-                                    .map(|rhs| vec![self.indexes.inputs.law().exprs[rhs].span])
+                                    .map(|rhs| vec![self.indexes.inputs.law().exprs()[rhs].span])
                                     .unwrap_or_default()
                             }
                         }
@@ -2022,7 +2022,7 @@ impl<'a> Environment<'a> {
                         let ty = self
                             .indexes.inputs
                             .law()
-                            .expr_type(*self.indexes.inputs.law().program.expressions.get(&span).ok_or("literal元式がない")?)
+                            .expr_type(*self.indexes.inputs.law().program().expressions.get(&span).ok_or("literal元式がない")?)
                             .ok_or("literal型がない")?;
                         let expected = numeric::literal(n, ty, &self.control)?;
                         if value.map(|r| graph.scalar(r)).transpose()? != Some(&expected) {
@@ -2188,7 +2188,7 @@ impl<'a> Environment<'a> {
                         | ExprKind::Index { .. }
                         | ExprKind::Call { .. },
                     ) => {
-                        let id = *self.indexes.inputs.law().program.expressions.get(&span).ok_or("数値構成の元式がない")?;
+                        let id = *self.indexes.inputs.law().program().expressions.get(&span).ok_or("数値構成の元式がない")?;
                         let mut values = Vec::new();
                         let mut arguments = Vec::new();
                         let mut known = true;
@@ -2268,12 +2268,12 @@ impl<'a> Environment<'a> {
                     Some(ExprKind::Dotted(_))
                         if data::expression(
                             self.indexes.inputs.law(),
-                            *self.indexes.inputs.law().program.expressions.get(&span).ok_or("constructor元式がない")?,
+                            *self.indexes.inputs.law().program().expressions.get(&span).ok_or("constructor元式がない")?,
                             &self.control,
                         )?
                         .is_some() =>
                     {
-                        let id = *self.indexes.inputs.law().program.expressions.get(&span).ok_or("constructor元式がない")?;
+                        let id = *self.indexes.inputs.law().program().expressions.get(&span).ok_or("constructor元式がない")?;
                         if value.map(|r| graph.scalar(r)).transpose()?
                             != self.composite_value(id, &[])?.as_ref()
                         {
@@ -2307,7 +2307,7 @@ impl<'a> Environment<'a> {
                         if let Some((id, count)) = self.dotted_prefix(span)?
                             && count > 1
                         {
-                            let ExprKind::Dotted(parts) = &self.indexes.inputs.law().exprs[id].kind else {
+                            let ExprKind::Dotted(parts) = &self.indexes.inputs.law().exprs()[id].kind else {
                                 unreachable!()
                             };
                             self.check_field(
@@ -2375,8 +2375,8 @@ impl<'a> Environment<'a> {
                 let body=self.instance_evaluation(graph,*instance,evaluation)?;
                 let body_expression=self.evaluation(graph,body)?.0;
                 let span=self.expression_span(graph,body_expression)?;
-                let comparison=self.indexes.inputs.law().program.expressions.get(&span).is_some_and(|id|
-                    matches!(self.indexes.inputs.law().exprs[*id].kind,ExprKind::Binary {op,..} if is_comparison(op)));
+                let comparison=self.indexes.inputs.law().program().expressions.get(&span).is_some_and(|id|
+                    matches!(self.indexes.inputs.law().exprs()[*id].kind,ExprKind::Binary {op,..} if is_comparison(op)));
                 let expected = if !comparison || matches!(
                     &graph.get(expression)?.payload,
                     Some(Payload::Transform { .. })
@@ -2472,7 +2472,7 @@ impl<'a> Environment<'a> {
             else {
                 return Err("let/if 値に元出現がない".into());
             };
-            let id = self.indexes.inputs.law().program.expressions.get(span).copied();
+            let id = self.indexes.inputs.law().program().expressions.get(span).copied();
             if let Some(domain) = node.arguments.first().copied()
                 && graph.get(domain)?.ty == NodeType::Domain
                 && let Some(name) = self.find_name_token(*span)?
@@ -2523,12 +2523,12 @@ impl<'a> Environment<'a> {
             let operands = if let Some((domain, _)) = &binder {
                 let source = self.evaluation(graph, *domain)?.0;
                 vec![
-                    *self.indexes.inputs.law().program.expressions
+                    *self.indexes.inputs.law().program().expressions
                         .get(&self.expression_span(graph, source)?)
                         .ok_or("反復domain元式がない")?,
                 ]
             } else if let Some(id) = id {
-                match self.indexes.inputs.law().exprs[id].kind {
+                match self.indexes.inputs.law().exprs()[id].kind {
                     ExprKind::Let { value, body, .. } => vec![value, body],
                     ExprKind::Match {
                         scrutinee,
@@ -2553,7 +2553,7 @@ impl<'a> Environment<'a> {
                             .pattern_binding(*span, &parts[0].name)?
                             .ok_or("生成値の元patternがない")?;
                         let ExprKind::Match { scrutinee, .. } =
-                            self.indexes.inputs.law().exprs[matching].kind
+                            self.indexes.inputs.law().exprs()[matching].kind
                         else {
                             unreachable!()
                         };
@@ -2570,7 +2570,7 @@ impl<'a> Environment<'a> {
                 let (matching, _, _) = self
                     .pattern_binding(*span, self.name_token(*span)?)?
                     .ok_or("fragmentの元patternがない")?;
-                let ExprKind::Match { scrutinee, .. } = self.indexes.inputs.law().exprs[matching].kind
+                let ExprKind::Match { scrutinee, .. } = self.indexes.inputs.law().exprs()[matching].kind
                 else {
                     unreachable!()
                 };
@@ -2707,8 +2707,8 @@ impl<'a> Environment<'a> {
             }) {
                 if scalar.ty() == Type::Bool
                     && !matches!(
-                        self.indexes.inputs.law().exprs
-                            [*self.indexes.inputs.law().program.expressions.get(span).ok_or("生成Boolの元式がない")?]
+                        self.indexes.inputs.law().exprs()
+                            [*self.indexes.inputs.law().program().expressions.get(span).ok_or("生成Boolの元式がない")?]
                         .kind,
                         ExprKind::Call { .. } | ExprKind::Index { .. }
                     )
@@ -2717,9 +2717,9 @@ impl<'a> Environment<'a> {
                 }
                 return self.affine_source_analysis(graph, node, limit);
             }
-            let id = *self.indexes.inputs.law().program.expressions.get(span).ok_or("生成値の元 AST がない")?;
+            let id = *self.indexes.inputs.law().program().expressions.get(span).ok_or("生成値の元 AST がない")?;
             let law = self.indexes.inputs.law();
-            let operands = match law.exprs[id].kind {
+            let operands = match law.exprs()[id].kind {
                 ExprKind::Int(_) | ExprKind::Bool(_) => vec![],
                 ExprKind::Dotted(_) if data::expression(law, id, &self.control)?.is_some() => {
                     vec![]
@@ -2875,17 +2875,17 @@ impl<'a> Environment<'a> {
     ) -> Result<Option<(Scalar, Scalar)>, ValidationFailure> {
         self.validation_graph_session(graph, || {
             self.tick()?;
-            let id = *self.indexes.inputs.law().program.expressions.get(&span).ok_or("比較の元ASTがない")?;
+            let id = *self.indexes.inputs.law().program().expressions.get(&span).ok_or("比較の元ASTがない")?;
             let ExprKind::Binary {
                 op: op @ (BinOp::Eq | BinOp::Ne),
                 lhs,
                 rhs,
-            } = self.indexes.inputs.law().exprs[id].kind
+            } = self.indexes.inputs.law().exprs()[id].kind
             else {
                 return Ok(None);
             };
-            let left = self.analyze_source(graph, self.indexes.inputs.law().exprs[lhs].span, bindings)?;
-            let right = self.analyze_source(graph, self.indexes.inputs.law().exprs[rhs].span, bindings)?;
+            let left = self.analyze_source(graph, self.indexes.inputs.law().exprs()[lhs].span, bindings)?;
+            let right = self.analyze_source(graph, self.indexes.inputs.law().exprs()[rhs].span, bindings)?;
             if left.known_value.is_some() && right.known_value.is_some() {
                 return Ok(None);
             }
@@ -2947,14 +2947,14 @@ impl<'a> Environment<'a> {
             return Err("アフィン比較の元Sourceが原式でない".into());
         };
         let law = self.indexes.inputs.law();
-        let id = *self.indexes.inputs.law().program.expressions
+        let id = *self.indexes.inputs.law().program().expressions
             .get(span)
             .ok_or("アフィン比較の元ASTがない")?;
         let ExprKind::Binary {
             op: op @ (BinOp::Eq | BinOp::Ne),
             lhs,
             rhs,
-        } = law.exprs[id].kind
+        } = law.exprs()[id].kind
         else {
             return Err("アフィン比較の元SourceがEq/Neでない".into());
         };
@@ -3191,10 +3191,10 @@ impl<'a> Environment<'a> {
         };
         let ty = scalar.ty();
         let law = self.indexes.inputs.law();
-        let id = *self.indexes.inputs.law().program.expressions
+        let id = *self.indexes.inputs.law().program().expressions
             .get(span)
             .ok_or("アフィン定数値の元 AST がない")?;
-        let operands = match law.exprs[id].kind {
+        let operands = match law.exprs()[id].kind {
             ExprKind::Unary {
                 op: UnOp::Neg,
                 operand,
@@ -3269,7 +3269,7 @@ impl<'a> Environment<'a> {
             previous = reference.0;
             self.tick()?;
         }
-        let ordinary = match law.exprs[id].kind {
+        let ordinary = match law.exprs()[id].kind {
             ExprKind::Unary { op, .. } => values[0]
                 .map(|value| unary(op, value, &self.control))
                 .transpose()?,
@@ -3305,7 +3305,7 @@ impl<'a> Environment<'a> {
             children,
         )?;
         let recomputed = if matches!(
-            law.exprs[id].kind,
+            law.exprs()[id].kind,
             ExprKind::Call { .. } | ExprKind::Index { .. }
         ) || matches!(ty, Type::Tuple(_)) && analysis.symbolic.is_some()
         {
@@ -3390,7 +3390,7 @@ impl<'a> Environment<'a> {
                     self.tick()?;
                     continue;
                 };
-                let Some(&id) = self.indexes.inputs.law().program.expressions.get(span) else {
+                let Some(&id) = self.indexes.inputs.law().program().expressions.get(span) else {
                     self.tick()?;
                     continue;
                 };
@@ -3399,7 +3399,7 @@ impl<'a> Environment<'a> {
                     op: BinOp::Eq,
                     lhs,
                     rhs,
-                } = law.exprs[id].kind
+                } = law.exprs()[id].kind
                 else {
                     self.tick()?;
                     continue;
@@ -3442,7 +3442,7 @@ impl<'a> Environment<'a> {
                     for (operand, argument) in [lhs, rhs].into_iter().zip(&node.arguments) {
                         self.tick()?;
                         let expected =
-                            self.analyze_source(graph, law.exprs[operand].span, bindings)?;
+                            self.analyze_source(graph, law.exprs()[operand].span, bindings)?;
                         if expected.known_value.as_ref() != Some(graph.scalar(*argument)?)
                             || !self.has_operand_evaluation(
                                 graph, limit, operand, bindings, *argument,
@@ -3482,7 +3482,7 @@ impl<'a> Environment<'a> {
         argument: NodeRef,
     ) -> Result<bool, ValidationFailure> {
         self.tick()?;
-        let span = self.indexes.inputs.law().exprs[operand].span;
+        let span = self.indexes.inputs.law().exprs()[operand].span;
         let ty = self
             .indexes.inputs
             .law()
@@ -3548,11 +3548,11 @@ impl<'a> Environment<'a> {
             else {
                 return Err("Bool 論理値が元 Law 式を持たない".into());
             };
-            let id = *self.indexes.inputs.law().program.expressions
+            let id = *self.indexes.inputs.law().program().expressions
                 .get(span)
                 .ok_or("Bool 論理値の元 AST がない")?;
             let law = self.indexes.inputs.law();
-            let operands = match law.exprs[id].kind {
+            let operands = match law.exprs()[id].kind {
                 ExprKind::Unary {
                     op: UnOp::Not,
                     operand,
@@ -3686,8 +3686,8 @@ impl<'a> Environment<'a> {
                 } => {
                     if self.chain_field_occurrence(*span)?.is_some() {
                         vec![self.chain_field_source_analysis(graph, node, limit)?.1]
-                    } else if let Some(&id) = self.indexes.inputs.law().program.expressions.get(span) {
-                        match self.indexes.inputs.law().exprs[id].kind {
+                    } else if let Some(&id) = self.indexes.inputs.law().program().expressions.get(span) {
+                        match self.indexes.inputs.law().exprs()[id].kind {
                             ExprKind::Family { .. } => {
                                 self.owned_family_scalar_analysis(graph, node, limit)?
                                     .support
@@ -3702,7 +3702,7 @@ impl<'a> Environment<'a> {
                             ExprKind::Call { .. }
                                 if self
                                     .named_view(
-                                        *self.indexes.inputs.law().program.expressions.get(span).ok_or("call ASTがない")?,
+                                        *self.indexes.inputs.law().program().expressions.get(span).ok_or("call ASTがない")?,
                                     )?
                                     .is_some() =>
                             {
@@ -3720,7 +3720,7 @@ impl<'a> Environment<'a> {
                             ExprKind::Dotted(_)
                                 if data::expression(
                                     self.indexes.inputs.law(),
-                                    *self.indexes.inputs.law().program.expressions.get(span).ok_or("constructor元式がない")?,
+                                    *self.indexes.inputs.law().program().expressions.get(span).ok_or("constructor元式がない")?,
                                     &self.control,
                                 )?
                                 .is_none() =>
@@ -3952,7 +3952,7 @@ impl<'a> Environment<'a> {
         let declaration = self
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .get(name)
             .ok_or("Requestの元宣言がない")?;
         let (params, body) = match (&request.kind, &declaration.signature) {
@@ -4072,10 +4072,10 @@ impl<'a> Environment<'a> {
     fn builtin(&self, id: usize) -> Result<Option<&str>, ValidationFailure> {
         self.tick()?;
         let law = self.indexes.inputs.law();
-        let ExprKind::Call { callee, .. } = law.program.nodes[id].kind else {
+        let ExprKind::Call { callee, .. } = law.program().nodes[id].kind else {
             return Ok(None);
         };
-        Ok(match law.program.callees.get(&callee) {
+        Ok(match law.program().callees.get(&callee) {
             Some(crate::law::ir::Callee::Builtin(name)) => Some(*name),
             _ => None,
         })
@@ -4092,7 +4092,7 @@ impl<'a> Environment<'a> {
         if !data::supported(ty, law, &self.control)? {
             return Err(ValidationFailure::UnsupportedExpression {
                 location: Location::Law {
-                    span: law.program.nodes[id].span,
+                    span: law.program().nodes[id].span,
                 },
                 feature: "未対応payload・型の構成".into(),
             });
@@ -4100,7 +4100,7 @@ impl<'a> Environment<'a> {
         if let Some((_, args)) = data::expression(law, id, &self.control)? {
             return Ok(Some(args));
         }
-        let children = match &law.program.nodes[id].kind {
+        let children = match &law.program().nodes[id].kind {
             ExprKind::Fn { .. } | ExprKind::Unit | ExprKind::Str(_) | ExprKind::None(_) => {
                 Some(vec![])
             }
@@ -4152,12 +4152,12 @@ impl<'a> Environment<'a> {
             data::check(value, law, &self.control)?;
             self.tick()?;
         }
-        if let ExprKind::Call { callee, .. } = &law.exprs[id].kind
+        if let ExprKind::Call { callee, .. } = &law.exprs()[id].kind
             && matches!(law.expr_type(*callee), Some(Type::Map(..)))
         {
             return data::map_apply(&values[0], &values[1], law, &self.control);
         }
-        if let ExprKind::Call { callee, .. } = &law.exprs[id].kind
+        if let ExprKind::Call { callee, .. } = &law.exprs()[id].kind
             && matches!(law.expr_type(*callee), Some(Type::Term(..)))
         {
             let Some(Scalar::Term(term)) = values.first() else {
@@ -4168,7 +4168,7 @@ impl<'a> Environment<'a> {
                     ValidationFailure::UnsupportedExpression { feature, .. } => {
                         ValidationFailure::UnsupportedExpression {
                             location: Location::Law {
-                                span: law.exprs[id].span,
+                                span: law.exprs()[id].span,
                             },
                             feature,
                         }
@@ -4187,7 +4187,7 @@ impl<'a> Environment<'a> {
                 args: values.to_vec(),
             }
         } else {
-            match &law.exprs[id].kind {
+            match &law.exprs()[id].kind {
                 ExprKind::Fn { .. } => Scalar::Term(Box::new(super::term::Term::from_law(
                     law,
                     self.indexes.inputs.sources().law().bytes(),
@@ -4233,9 +4233,9 @@ impl<'a> Environment<'a> {
                         return Ok(self.path_operation(id, values)?.value);
                     }
                     name @ ("identity" | "source" | "target") => {
-                        let span = law.exprs[id].span;
+                        let span = law.exprs()[id].span;
                         let mut reading = None;
-                        for declaration in law.declarations.values() {
+                        for declaration in law.declarations().values() {
                             self.tick()?;
                             if declaration.span.0 <= span.0 && span.1 <= declaration.span.1 {
                                 if reading.replace(declaration.reading.as_str()).is_some() {
@@ -4304,23 +4304,23 @@ impl<'a> Environment<'a> {
     fn dotted_prefixes_uncached(&self, id: usize) -> Result<Vec<DottedPrefix>, ValidationFailure> {
         self.tick()?;
         let law = self.indexes.inputs.law();
-        let expression = law.exprs.get(id).ok_or("prefixの元ASTがない")?;
+        let expression = law.exprs().get(id).ok_or("prefixの元ASTがない")?;
         let ExprKind::Dotted(parts) = &expression.kind else {
             return Err("prefixの元ASTがDottedでない".into());
         };
         let original_ty = law.expr_type(id).ok_or("prefixの元Dottedが未型検査")?;
-        let &indexed = self.indexes.inputs.law().program.expressions
+        let &indexed = self.indexes.inputs.law().program().expressions
             .get(&expression.span)
             .ok_or("prefixの元出現がspan索引にない")?;
         // 量化の区切り候補は同じ元token列を複数のarena IDへ構文解析する。
         // 選択ASTのIDとspan索引の代表IDが違っても、name/span/tokを含む
         // Dotted全体と型が完全一致するときだけ同じ元出現として扱う。
-        if law.exprs[indexed].kind != expression.kind || law.expr_type(indexed) != Some(original_ty)
+        if law.exprs()[indexed].kind != expression.kind || law.expr_type(indexed) != Some(original_ty)
         {
             return Err("prefixの型検査済み元token列・型がspan索引と違う".into());
         }
         let first = parts.first().ok_or("prefixの元Dottedが空")?;
-        let lexical = law.program.nodes[id].lexical.as_ref()
+        let lexical = law.program().nodes[id].lexical.as_ref()
             .ok_or("prefixの先頭が元束縛でない")?;
         let mut result = vec![(first.span, lexical.ty.erase())];
         for projection in &lexical.projections {
@@ -4357,10 +4357,10 @@ impl<'a> Environment<'a> {
         span: (usize, usize),
     ) -> Result<Option<(usize, usize)>, ValidationFailure> {
         let mut found: Option<(usize, usize)> = None;
-        for &(id, count) in self.indexes.inputs.law().program.dotted_candidates.get(&span).into_iter().flatten() {
+        for &(id, count) in self.indexes.inputs.law().program().dotted_candidates.get(&span).into_iter().flatten() {
             self.tick()?;
-            let expression = &self.indexes.inputs.law().exprs[id];
-            if self.indexes.inputs.law().program.expressions.get(&expression.span) == Some(&id)
+            let expression = &self.indexes.inputs.law().exprs()[id];
+            if self.indexes.inputs.law().program().expressions.get(&expression.span) == Some(&id)
                 && let ExprKind::Dotted(parts) = &expression.kind
                 && let Some(first) = parts.first()
                 && first.span.0 == span.0
@@ -4370,7 +4370,7 @@ impl<'a> Environment<'a> {
                 && data::expression(self.indexes.inputs.law(), id, &self.control)?.is_none()
             {
                 if let Some((previous, previous_count)) = found {
-                    let ExprKind::Dotted(previous_parts) = &self.indexes.inputs.law().exprs[previous].kind
+                    let ExprKind::Dotted(previous_parts) = &self.indexes.inputs.law().exprs()[previous].kind
                     else {
                         return Err("prefixの代表が元Dottedでない".into());
                     };
@@ -4404,7 +4404,7 @@ impl<'a> Environment<'a> {
     fn find_name_token(&self, span: (usize, usize)) -> Result<Option<&str>, ValidationFailure> {
         let mut name = None;
         let law = self.indexes.inputs.law();
-        for (id, expression) in law.exprs.iter().enumerate() {
+        for (id, expression) in law.exprs().iter().enumerate() {
             #[cfg(test)]
             if let Some(context) = self.state.optional_name_context.get()
                 && let Some(observer) = self.state.name_token_observer.borrow_mut().as_mut()
@@ -4413,7 +4413,7 @@ impl<'a> Environment<'a> {
             }
             self.tick()?;
             if law.expr_type(id).is_some()
-                && self.indexes.inputs.law().program.expressions.get(&expression.span) == Some(&id)
+                && self.indexes.inputs.law().program().expressions.get(&expression.span) == Some(&id)
                 && let ExprKind::Dotted(parts) = &expression.kind
                 && let Some(first) = parts.first()
                 && first.span == span
@@ -4433,22 +4433,22 @@ impl<'a> Environment<'a> {
     ) -> Result<Vec<(usize, usize)>, ValidationFailure> {
         let law = self.indexes.inputs.law();
         let mut result = Vec::new();
-        for (id, expr) in law.exprs.iter().enumerate() {
+        for (id, expr) in law.exprs().iter().enumerate() {
             self.tick()?;
-            if law.expr_type(id).is_none() || self.indexes.inputs.law().program.expressions.get(&expr.span) != Some(&id) {
+            if law.expr_type(id).is_none() || self.indexes.inputs.law().program().expressions.get(&expr.span) != Some(&id) {
                 continue;
             }
             if let ExprKind::Match { arms, .. } = &expr.kind {
                 for (arm, branch) in arms.iter().enumerate() {
                     self.tick()?;
-                    let body = law.exprs[branch.body].span;
+                    let body = law.exprs()[branch.body].span;
                     if body.0 <= span.0 && span.1 <= body.1 {
                         result.push((id, arm));
                     }
                 }
             }
         }
-        result.sort_by_key(|(id, _)| law.exprs[*id].span.0);
+        result.sort_by_key(|(id, _)| law.exprs()[*id].span.0);
         Ok(result)
     }
     pub(crate) fn pattern_binding(
@@ -4485,7 +4485,7 @@ impl<'a> Environment<'a> {
         graph: &Graph,
         id: usize,
     ) -> Result<super::call::Context, ValidationFailure> {
-        let span = self.indexes.inputs.law().exprs[id].span;
+        let span = self.indexes.inputs.law().exprs()[id].span;
         let mut context = self.current_context(graph);
         while let Some(index) = context.iteration {
             self.tick()?;
@@ -4502,12 +4502,12 @@ impl<'a> Environment<'a> {
                 return Err("lexical反復の親Request/frame/先行性が違う".into());
             }
             self.iteration_input(graph, index)?;
-            let comp = *self.indexes.inputs.law().program.expressions
+            let comp = *self.indexes.inputs.law().program().expressions
                 .get(&self.expression_span(graph, record.source)?)
                 .ok_or("lexical反復の元ASTがない")?;
             let (_, bodies) = self.iteration_syntax(comp)?;
             if bodies.into_iter().any(|child| {
-                let body = self.indexes.inputs.law().exprs[child].span;
+                let body = self.indexes.inputs.law().exprs()[child].span;
                 body.0 <= span.0 && span.1 <= body.1
             }) {
                 return Ok(context);
@@ -4557,7 +4557,7 @@ impl<'a> Environment<'a> {
                 // native Transformは元AST spanを持たない。結果の照合は適用側で行う。
                 continue;
             };
-            if actual == bindings && *actual_span == self.indexes.inputs.law().exprs[id].span {
+            if actual == bindings && *actual_span == self.indexes.inputs.law().exprs()[id].span {
                 // 全称rootの内部pointwise評価は、外側ASTへ返すwholeの実producer
                 // ではない。元template/Domain/Source辺から再検査したrootだけを除く。
                 if self.universal_internal_root_evaluation(graph, NodeRef(index))? {
@@ -4594,7 +4594,7 @@ impl<'a> Environment<'a> {
         let Some((matching, arm, binder)) = self.pattern_binding(span, name)? else {
             return Ok(None);
         };
-        let ExprKind::Match { scrutinee, .. } = self.indexes.inputs.law().exprs[matching].kind else {
+        let ExprKind::Match { scrutinee, .. } = self.indexes.inputs.law().exprs()[matching].kind else {
             unreachable!()
         };
         let input = self.actual_evaluation(graph, scrutinee, bindings)?;
@@ -4622,8 +4622,8 @@ impl<'a> Environment<'a> {
         &self, graph: &Graph, id: usize, bindings: &[Binding], known: Option<&Scalar>, source: NodeRef,
     ) -> Result<Option<usize>, ValidationFailure> {
         if known.is_some() { return data::select(self.indexes.inputs.law(), id, known, &self.control) }
-        let ExprKind::Match { scrutinee, arms } = &self.indexes.inputs.law().exprs[id].kind else { return Err("選択元がmatchでない".into()) };
-        let analyze = || self.analyze_source(graph, self.indexes.inputs.law().exprs[*scrutinee].span, bindings);
+        let ExprKind::Match { scrutinee, arms } = &self.indexes.inputs.law().exprs()[id].kind else { return Err("選択元がmatchでない".into()) };
+        let analyze = || self.analyze_source(graph, self.indexes.inputs.law().exprs()[*scrutinee].span, bindings);
         let analysis = if self.universal_source_root(graph, source)?.is_some() {
             self.with_universal(self.universal_source_context(graph, source)?, analyze)?
         } else { analyze()? };
@@ -4646,7 +4646,7 @@ impl<'a> Environment<'a> {
     ) -> Result<Vec<(String, LexicalOrigin)>, ValidationFailure> {
         let mut enclosing = Vec::new();
         let law = self.indexes.inputs.law();
-        for (id, expression) in law.exprs.iter().enumerate() {
+        for (id, expression) in law.exprs().iter().enumerate() {
             self.tick()?;
             if let ExprKind::Quant {
                 var,
@@ -4654,9 +4654,9 @@ impl<'a> Environment<'a> {
                 ..
             } = &expression.kind
                 && law.expr_type(id).is_some()
-                && self.indexes.inputs.law().program.expressions.get(&expression.span) == Some(&id)
-                && law.exprs[*body].span.0 <= span.0
-                && span.1 <= law.exprs[*body].span.1
+                && self.indexes.inputs.law().program().expressions.get(&expression.span) == Some(&id)
+                && law.exprs()[*body].span.0 <= span.0
+                && span.1 <= law.exprs()[*body].span.1
             {
                 let symbolic = matches!(
                     &expression.kind,
@@ -4668,7 +4668,7 @@ impl<'a> Environment<'a> {
                         ..
                     }
                 ) && self.universal_symbolic_type(
-                    law.quantifier_types[id]
+                    law.quantifier_types()[id]
                         .as_ref()
                         .ok_or("元量化binder型がない")?,
                 )?;
@@ -4686,9 +4686,9 @@ impl<'a> Environment<'a> {
                 elem, var, filter, ..
             } = &expression.kind
                 && law.expr_type(id).is_some()
-                && self.indexes.inputs.law().program.expressions.get(&expression.span) == Some(&id)
+                && self.indexes.inputs.law().program().expressions.get(&expression.span) == Some(&id)
                 && std::iter::once(*elem).chain(*filter).any(|child| {
-                    let body = law.exprs[child].span;
+                    let body = law.exprs()[child].span;
                     body.0 <= span.0 && span.1 <= body.1
                 })
             {
@@ -4699,16 +4699,16 @@ impl<'a> Environment<'a> {
                 ));
             }
             if let ExprKind::Let { name, value, body } = &expression.kind {
-                let body_span = law.exprs[*body].span;
-                let rhs_span = law.exprs[*value].span;
+                let body_span = law.exprs()[*body].span;
+                let rhs_span = law.exprs()[*value].span;
                 // arena には構文解析の未採用候補もある。型検査した実出現だけを
                 // lexical binder とし、Source が使う span 索引との同一性も確かめる。
                 if law.expr_type(id).is_some()
                     && law.expr_type(*value).is_some()
                     && law.expr_type(*body).is_some()
-                    && self.indexes.inputs.law().program.expressions.get(&expression.span) == Some(&id)
-                    && self.indexes.inputs.law().program.expressions.get(&body_span) == Some(body)
-                    && self.indexes.inputs.law().program.expressions.get(&rhs_span) == Some(value)
+                    && self.indexes.inputs.law().program().expressions.get(&expression.span) == Some(&id)
+                    && self.indexes.inputs.law().program().expressions.get(&body_span) == Some(body)
+                    && self.indexes.inputs.law().program().expressions.get(&rhs_span) == Some(value)
                     && body_span.0 <= span.0
                     && span.1 <= body_span.1
                 {
@@ -4722,7 +4722,7 @@ impl<'a> Environment<'a> {
             self.tick()?;
         }
         for (matching, arm) in self.enclosing_matches(span)? {
-            let ExprKind::Match { scrutinee, arms } = &law.exprs[matching].kind else {
+            let ExprKind::Match { scrutinee, arms } = &law.exprs()[matching].kind else {
                 unreachable!()
             };
             for binder in data::binders(
@@ -4732,7 +4732,7 @@ impl<'a> Environment<'a> {
                 &self.control,
             )? {
                 enclosing.push((
-                    law.exprs[matching].span.0,
+                    law.exprs()[matching].span.0,
                     binder.name.clone(),
                     LexicalOrigin::Pattern {
                         matching,
@@ -4797,8 +4797,8 @@ impl<'a> Environment<'a> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<Option<NodeRef>, ValidationFailure> {
-        if let Some(id) = self.indexes.inputs.law().program.expressions.get(&span)
-            && let ExprKind::Group(child) = self.indexes.inputs.law().exprs[*id].kind
+        if let Some(id) = self.indexes.inputs.law().program().expressions.get(&span)
+            && let ExprKind::Group(child) = self.indexes.inputs.law().exprs()[*id].kind
         {
             let input = self.actual_evaluation(graph, child, bindings)?;
             return Ok(self.evaluation(graph, input)?.2);
@@ -4827,7 +4827,7 @@ impl<'a> Environment<'a> {
     ) -> Result<Option<DottedOccurrence>, ValidationFailure> {
         Ok(self.dotted_prefix(span)?.filter(|&(id, count)| {
             count > 1
-                && matches!(&self.indexes.inputs.law().exprs[id].kind, ExprKind::Dotted(parts) if parts.len() > 2)
+                && matches!(&self.indexes.inputs.law().exprs()[id].kind, ExprKind::Dotted(parts) if parts.len() > 2)
         }))
     }
     // 完了済みの元Sourceは、その通常Evaluationが固定した既出producerへ戻る。
@@ -4979,7 +4979,7 @@ impl<'a> Environment<'a> {
         else {
             return Err("chain fieldの実ownerがRefでない".into());
         };
-        let ExprKind::Dotted(parts) = &self.indexes.inputs.law().exprs[id].kind else {
+        let ExprKind::Dotted(parts) = &self.indexes.inputs.law().exprs()[id].kind else {
             return Err("chain fieldの元token列がDottedでない".into());
         };
         let field = self.indexes.field(&self.state,
@@ -5054,7 +5054,7 @@ impl<'a> Environment<'a> {
                 continue;
             };
             let prefix = self.dotted_prefix(*span)?;
-            let Some(id) = self.indexes.inputs.law().program.expressions
+            let Some(id) = self.indexes.inputs.law().program().expressions
                 .get(span)
                 .copied()
                 .or(prefix.map(|(id, _)| id))
@@ -5063,12 +5063,12 @@ impl<'a> Environment<'a> {
             };
             let chained = prefix.is_some_and(|(original, count)| {
                 count > 1
-                    && matches!(&self.indexes.inputs.law().exprs[original].kind, ExprKind::Dotted(parts) if parts.len() > 2)
+                    && matches!(&self.indexes.inputs.law().exprs()[original].kind, ExprKind::Dotted(parts) if parts.len() > 2)
             });
             if chained {
                 continue;
             }
-            let (owner_span, field_name) = match &self.indexes.inputs.law().exprs[id].kind {
+            let (owner_span, field_name) = match &self.indexes.inputs.law().exprs()[id].kind {
                 ExprKind::Dotted(parts) if prefix.is_some_and(|(_, count)| count > 1) => {
                     let count = prefix.ok_or("callee fieldの元prefixがない")?.1;
                     (
@@ -5077,7 +5077,7 @@ impl<'a> Environment<'a> {
                     )
                 }
                 ExprKind::Field { base, name } => {
-                    (self.indexes.inputs.law().exprs[*base].span, name.name.as_str())
+                    (self.indexes.inputs.law().exprs()[*base].span, name.name.as_str())
                 }
                 _ => continue,
             };
@@ -5165,7 +5165,7 @@ impl<'a> Environment<'a> {
         children: &[NodeRef],
         limit: usize,
     ) -> Result<(NodeRef, SourceAnalysis, Option<NodeRef>), ValidationFailure> {
-        let id = *self.indexes.inputs.law().program.expressions.get(&span).ok_or("call元ASTがない")?;
+        let id = *self.indexes.inputs.law().program().expressions.get(&span).ok_or("call元ASTがない")?;
         let declaration = self.named_view(id)?.ok_or("call静的targetがない")?;
         let crate::law::model::Signature::View { body, params, .. } = &declaration.signature else {
             unreachable!()
@@ -5250,7 +5250,7 @@ impl<'a> Environment<'a> {
             return Ok(false);
         };
         let span = self.expression_span(graph, *expression)?;
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(false);
         };
         if self.named_view(id)?.is_none() {
@@ -5329,13 +5329,13 @@ impl<'a> Environment<'a> {
         id: usize,
     ) -> Result<Option<&'a crate::law::model::Declaration>, ValidationFailure> {
         let law = self.indexes.inputs.law();
-        let ExprKind::Call { callee, .. } = &law.program.nodes[id].kind else {
+        let ExprKind::Call { callee, .. } = &law.program().nodes[id].kind else {
             return Ok(None);
         };
-        let Some(crate::law::ir::Callee::View(target)) = law.program.callees.get(callee) else {
+        let Some(crate::law::ir::Callee::View(target)) = law.program().callees.get(callee) else {
             return Ok(None);
         };
-        let declaration = law.declarations.get(target).ok_or("calleeの静的解決先がない")?;
+        let declaration = law.declarations().get(target).ok_or("calleeの静的解決先がない")?;
         let crate::law::model::Signature::View {
             params, returns, ..
         } = &declaration.signature
@@ -5354,7 +5354,7 @@ impl<'a> Environment<'a> {
                 Type::Owned(_, _) if !allowed => {
                     return Err(ValidationFailure::UnsupportedExpression {
                         location: Location::Law {
-                            span: law.program.nodes[id].span,
+                            span: law.program().nodes[id].span,
                         },
                         feature: "Term内部のowner制約を持つview呼出し".into(),
                     });
@@ -5455,14 +5455,14 @@ impl<'a> Environment<'a> {
             return Err("call Sourceがcaller frameと違う".into());
         }
         let span = self.expression_span(graph, frame.source)?;
-        let id = *self.indexes.inputs.law().program.expressions
+        let id = *self.indexes.inputs.law().program().expressions
             .get(&span)
             .ok_or("call frameの元ASTがない")?;
         let d = self.named_view(id)?.ok_or("call frameがnamed viewでない")?;
         let crate::law::model::Signature::View { params, .. } = &d.signature else {
             unreachable!()
         };
-        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
+        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs()[id].kind else {
             unreachable!()
         };
         if args.len() != frame.arguments.len() || params.len() != args.len() {
@@ -5487,7 +5487,7 @@ impl<'a> Environment<'a> {
                     return Err("実引数Sourceのframeが違う".into());
                 }
                 let mut analysis =
-                    self.analyze_source(graph, self.indexes.inputs.law().exprs[arg].span, actual)?;
+                    self.analyze_source(graph, self.indexes.inputs.law().exprs()[arg].span, actual)?;
                 analysis
                     .scope
                     .merge_quantifiers(&graph.get(reference)?.scope);
@@ -5555,13 +5555,13 @@ impl<'a> Environment<'a> {
         children: &[NodeRef],
         limit: usize,
     ) -> Result<(NodeRef, SourceAnalysis), ValidationFailure> {
-        let id = *self.indexes.inputs.law().program.expressions.get(&span).ok_or("内包元ASTがない")?;
+        let id = *self.indexes.inputs.law().program().expressions.get(&span).ok_or("内包元ASTがない")?;
         let ExprKind::SetComp {
             elem,
             domain,
             filter,
             ..
-        } = self.indexes.inputs.law().exprs[id].kind
+        } = self.indexes.inputs.law().exprs()[id].kind
         else {
             return Err("内包元式が違う".into());
         };
@@ -5725,10 +5725,10 @@ impl<'a> Environment<'a> {
             return Ok(false);
         };
         let span = self.expression_span(graph, *expression)?;
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(false);
         };
-        if !matches!(self.indexes.inputs.law().exprs[id].kind, ExprKind::SetComp { .. }) {
+        if !matches!(self.indexes.inputs.law().exprs()[id].kind, ExprKind::SetComp { .. }) {
             return Ok(false);
         }
         if parts.len() != 1
@@ -5797,7 +5797,7 @@ impl<'a> Environment<'a> {
         while let Some(index) = current {
             self.tick()?;
             let record = graph.iterations.get(index).ok_or("反復索引がない")?;
-            if self.expression_span(graph, record.source)? == self.indexes.inputs.law().exprs[comp].span {
+            if self.expression_span(graph, record.source)? == self.indexes.inputs.law().exprs()[comp].span {
                 return Ok(Some(index));
             }
             if record
@@ -5837,7 +5837,7 @@ impl<'a> Environment<'a> {
             return Err("反復元が親Contextに属さない".into());
         }
         let span = self.expression_span(graph, record.source)?;
-        let id = *self.indexes.inputs.law().program.expressions.get(&span).ok_or("反復元ASTがない")?;
+        let id = *self.indexes.inputs.law().program().expressions.get(&span).ok_or("反復元ASTがない")?;
         let (domain, _) = self.iteration_syntax(id)?;
         let previous = self.state.context.scoped(Some(record.caller));
         let result = (|| {
@@ -5893,7 +5893,7 @@ impl<'a> Environment<'a> {
                 return Err("反復元の実束縛が違う".into());
             }
             let mut analysis =
-                self.analyze_source(graph, self.indexes.inputs.law().exprs[domain].span, bindings)?;
+                self.analyze_source(graph, self.indexes.inputs.law().exprs()[domain].span, bindings)?;
             if value.map(|r| graph.scalar(r)).transpose()? != analysis.known_value.as_ref() {
                 return Err("反復域値が元入力と違う".into());
             }
@@ -5901,7 +5901,7 @@ impl<'a> Environment<'a> {
                 .scope
                 .merge_quantifiers(&graph.get(record.domain)?.scope);
             let value = graph.scalar(value.ok_or("未知domainに反復がある")?)?;
-            let quantified = matches!(self.indexes.inputs.law().exprs[id].kind, ExprKind::Quant { .. });
+            let quantified = matches!(self.indexes.inputs.law().exprs()[id].kind, ExprKind::Quant { .. });
             if quantified {
                 let finite = record.finite.ok_or("量化反復にDomainがない")?;
                 self.validate_at(graph, graph.get(finite)?, finite.0)?;
@@ -6044,7 +6044,7 @@ impl<'a> Environment<'a> {
             let declaration = self
                 .indexes.inputs
                 .law()
-                .declarations
+                .declarations()
                 .get(name)
                 .ok_or("Sourceの元Request宣言がない")?;
             let params = match &declaration.signature {
@@ -6097,7 +6097,7 @@ impl<'a> Environment<'a> {
             arguments.extend(record.values.iter().copied());
         }
         for (matching, arm) in self.enclosing_matches(span)? {
-            let ExprKind::Match { scrutinee, .. } = self.indexes.inputs.law().exprs[matching].kind else {
+            let ExprKind::Match { scrutinee, .. } = self.indexes.inputs.law().exprs()[matching].kind else {
                 unreachable!()
             };
             let input = self.actual_evaluation(graph, scrutinee, bindings)?;
@@ -6113,16 +6113,16 @@ impl<'a> Environment<'a> {
         }
         // whole族の原式では未束縛ownerを選ばない。各実rowのSourceが
         // 実際のparameter producerをOwned型域へ結び、その由来を再検査する。
-        if let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span)
-            && matches!(self.indexes.inputs.law().exprs[id].kind, ExprKind::Quant { .. })
+        if let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span)
+            && matches!(self.indexes.inputs.law().exprs()[id].kind, ExprKind::Quant { .. })
         {
             let family_template = if context.frame.is_none()
                 && context.iteration.is_none()
                 && context.instance.is_none()
             {
                 self.family_plan(&graph.requests[context.request])?.is_some_and(|plan| {
-                    span == self.indexes.inputs.law().exprs[plan.body].span
-                        || Some(span) == plan.guard.map(|guard| self.indexes.inputs.law().exprs[guard].span)
+                    span == self.indexes.inputs.law().exprs()[plan.body].span
+                        || Some(span) == plan.guard.map(|guard| self.indexes.inputs.law().exprs()[guard].span)
                 })
             } else {
                 false
@@ -6144,7 +6144,7 @@ impl<'a> Environment<'a> {
         let frame = graph.frames.get(index).ok_or("parameterのframeがない")?;
         let span = self.expression_span(graph, frame.source)?;
         let d = self
-            .named_view(*self.indexes.inputs.law().program.expressions.get(&span).ok_or("call ASTがない")?)?
+            .named_view(*self.indexes.inputs.law().program().expressions.get(&span).ok_or("call ASTがない")?)?
             .ok_or("call targetがない")?;
         let crate::law::model::Signature::View { params, .. } = &d.signature else {
             unreachable!()
@@ -6220,7 +6220,7 @@ impl<'a> Environment<'a> {
         forms: Option<&mut Option<Vec<super::affine::Form>>>,
     ) -> Result<SourceAnalysis, ValidationFailure> {
         let mut declaration = None;
-        for d in self.indexes.inputs.law().declarations.values() {
+        for d in self.indexes.inputs.law().declarations().values() {
             self.tick()?;
             if d.span.0 <= span.0 && span.1 <= d.span.1 {
                 if declaration.is_some() {
@@ -6262,7 +6262,7 @@ impl<'a> Environment<'a> {
             let call_span = self.expression_span(graph, frame.source)?;
             let target = self
                 .named_view(
-                    *self.indexes.inputs.law().program.expressions
+                    *self.indexes.inputs.law().program().expressions
                         .get(&call_span)
                         .ok_or("callの元ASTがない")?,
                 )?
@@ -6508,10 +6508,10 @@ impl<'a> Environment<'a> {
             self.tick()?;
             let value = match rhs {
                 LexicalOrigin::Universal(id) => {
-                    let ExprKind::Quant { var, .. } = &self.indexes.inputs.law().exprs[id].kind else {
+                    let ExprKind::Quant { var, .. } = &self.indexes.inputs.law().exprs()[id].kind else {
                         unreachable!()
                     };
-                    let ty = self.indexes.inputs.law().quantifier_types[id]
+                    let ty = self.indexes.inputs.law().quantifier_types()[id]
                         .as_ref()
                         .ok_or("全域binderの型がない")?;
                     self.universal_parameter_value(var.span, &var.name, ty, &base)?
@@ -6549,7 +6549,7 @@ impl<'a> Environment<'a> {
                     arm,
                     binder,
                 } => {
-                    let ExprKind::Match { scrutinee, .. } = self.indexes.inputs.law().exprs[matching].kind
+                    let ExprKind::Match { scrutinee, .. } = self.indexes.inputs.law().exprs()[matching].kind
                     else {
                         unreachable!()
                     };
@@ -6591,7 +6591,7 @@ impl<'a> Environment<'a> {
             self.tick()?;
         }
         let dotted = self.dotted_prefix(span)?;
-        if let Some(id) = self.indexes.inputs.law().program.expressions
+        if let Some(id) = self.indexes.inputs.law().program().expressions
             .get(&span)
             .copied()
             .or(dotted.map(|(id, _)| id))
@@ -6615,7 +6615,7 @@ impl<'a> Environment<'a> {
             } else {
                 self.scoped_ast(id, &variables, &base, &declaration.reading)?
             };
-            let direct_field = match &self.indexes.inputs.law().exprs[id].kind {
+            let direct_field = match &self.indexes.inputs.law().exprs()[id].kind {
                 ExprKind::Dotted(parts) if dotted.is_some_and(|(_, count)| count > 1) => {
                     let count = dotted.ok_or("元prefixの長さがない")?.1;
                     Some((
@@ -6656,7 +6656,7 @@ impl<'a> Environment<'a> {
                 None
             };
             if missing.is_none() && self.builtin(id)? == Some("path") {
-                let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
+                let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs()[id].kind else {
                     unreachable!()
                 };
                 if let Some(value) = self
@@ -6739,7 +6739,7 @@ impl<'a> Environment<'a> {
         reading: &str,
     ) -> Result<SourceValue, ValidationFailure> {
         self.tick()?;
-        let expression = &self.indexes.inputs.law().program.nodes[id];
+        let expression = &self.indexes.inputs.law().program().nodes[id];
         let lexical = expression.lexical.as_ref().ok_or("範囲検査の未知lexical名")?;
         if count == 0 || count > lexical.projections.len() + 1 {
             return Err("範囲検査のprefix長が違う".into());
@@ -6785,7 +6785,7 @@ impl<'a> Environment<'a> {
             return Ok(*v);
         }
         let law = self.indexes.inputs.law();
-        Ok(match &law.program.nodes[id].kind {
+        Ok(match &law.program().nodes[id].kind {
             ExprKind::Tuple(items) => Value::Tuple(
                 items
                     .iter()
@@ -6824,7 +6824,7 @@ impl<'a> Environment<'a> {
         use super::term::affine::Value;
         self.tick()?;
         let law = self.indexes.inputs.law();
-        let ExprKind::Call { callee, args } = &law.program.nodes[id].kind else {
+        let ExprKind::Call { callee, args } = &law.program().nodes[id].kind else {
             return Err("Term元callがない".into());
         };
         let f = self.scoped_ast(*callee, variables, base, reading)?;
@@ -6846,7 +6846,7 @@ impl<'a> Environment<'a> {
         input: &SourceValue,
         variables: &BTreeMap<String, SourceValue>,
     ) -> Result<Option<ScopedMatchBindings>, ValidationFailure> {
-        let ExprKind::Match { scrutinee, arms } = &self.indexes.inputs.law().program.nodes[id].kind else {
+        let ExprKind::Match { scrutinee, arms } = &self.indexes.inputs.law().program().nodes[id].kind else {
             return Err("束縛の元式がmatchでない".into());
         };
         use super::term::affine::Value;
@@ -6928,7 +6928,7 @@ impl<'a> Environment<'a> {
         let frame = capture.stack.pop().ok_or("評価出現の親がない")?;
         let children = frame.children;
         if let Ok(value) = &result {
-            let residual = if let ExprKind::Binary {op:BinOp::Eq,lhs,rhs} = self.indexes.inputs.law().exprs[id].kind {
+            let residual = if let ExprKind::Binary {op:BinOp::Eq,lhs,rhs} = self.indexes.inputs.law().exprs()[id].kind {
                 let ty = self.indexes.inputs.law().expr_type(lhs).ok_or("残差の元型がない")?;
                 if numeric::is_numeric_type(ty,&self.control)? {
                     let child_value = |id| children.iter().map(|i|&capture.nodes[*i]).find(|n|n.expression==id).and_then(|n|n.value.as_ref());
@@ -7009,7 +7009,7 @@ impl<'a> Environment<'a> {
     ) -> Result<SourceValue, ValidationFailure> {
         stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
             self.tick()?;
-            let expression = &self.indexes.inputs.law().program.nodes[id];
+            let expression = &self.indexes.inputs.law().program().nodes[id];
             if matches!(&expression.kind, ExprKind::Quant { .. }) {
                 return self.scoped_quantified(id, variables, base, reading);
             }
@@ -7779,7 +7779,7 @@ impl<'a> Environment<'a> {
         base: &Scope,
         reading: &str,
     ) -> Result<SourceValue, ValidationFailure> {
-        let expression = &self.indexes.inputs.law().program.nodes[id];
+        let expression = &self.indexes.inputs.law().program().nodes[id];
         let ExprKind::Binary { op, lhs, rhs } = &expression.kind else {
             unreachable!()
         };
@@ -8318,7 +8318,7 @@ impl<'a> Environment<'a> {
                         self.validate_at(graph, operand, reference.0)?;
                         let mut scope = self.source_scope(graph, *span, bindings)?;
                         if !scope.quantifiers.is_empty() {
-                            let id = *self.indexes.inputs.law().program.expressions.get(span).ok_or("変換元量化ASTがない")?;
+                            let id = *self.indexes.inputs.law().program().expressions.get(span).ok_or("変換元量化ASTがない")?;
                             let actual = self.actual_evaluation(graph, id, bindings)?;
                             scope.merge_quantifiers(&graph.get(actual)?.scope);
                         }
@@ -8530,7 +8530,7 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         let span = self.expression_span(graph, expression)?;
         let chained = self.dotted_prefix(span)?.is_some_and(|(id, count)| {
-            count > 1 && matches!(&self.indexes.inputs.law().exprs[id].kind, ExprKind::Dotted(parts) if parts.len() > 2)
+            count > 1 && matches!(&self.indexes.inputs.law().exprs()[id].kind, ExprKind::Dotted(parts) if parts.len() > 2)
         });
         let base = base.ok_or("field の base が未確定")?;
         let Scalar::Subject {
@@ -8683,7 +8683,7 @@ impl<'a> Environment<'a> {
                 location: Location::Law { span },
                 ..
             }) = &graph.get(*expression)?.payload
-                && let Some(&id) = self.indexes.inputs.law().program.expressions.get(span)
+                && let Some(&id) = self.indexes.inputs.law().program().expressions.get(span)
                 && self.owns_call(id)?
             {
                 // validate_call_evaluationが実引数・body・元所属事実まで検査済み。
@@ -8694,8 +8694,8 @@ impl<'a> Environment<'a> {
                 location: Location::Law { span },
                 ..
             }) = &graph.get(*expression)?.payload
-                && let Some(&id) = self.indexes.inputs.law().program.expressions.get(span)
-                && matches!(self.indexes.inputs.law().exprs[id].kind, ExprKind::Family { .. })
+                && let Some(&id) = self.indexes.inputs.law().program().expressions.get(span)
+                && matches!(self.indexes.inputs.law().exprs()[id].kind, ExprKind::Family { .. })
             {
                 // 上のvalidate_atで元owner子とroster支持を独立検査済み。
                 // blockedな所属族も非所属の既知owner Factを支持に持つため、
@@ -8706,7 +8706,7 @@ impl<'a> Environment<'a> {
                 location: Location::Law { span },
                 ..
             }) = &graph.get(*expression)?.payload
-                && let Some(&id) = self.indexes.inputs.law().program.expressions.get(span)
+                && let Some(&id) = self.indexes.inputs.law().program().expressions.get(span)
                 && let ExprKind::Quant {
                     split:
                         crate::law::ast::QuantSplit::Fixed {
@@ -8714,7 +8714,7 @@ impl<'a> Environment<'a> {
                             ..
                         },
                     ..
-                } = &self.indexes.inputs.law().exprs[id].kind
+                } = &self.indexes.inputs.law().exprs()[id].kind
                 && (quantifier::has_owner(original, &self.control)?
                     || self.object_domain().is_some())
             {
@@ -8792,7 +8792,7 @@ impl<'a> Environment<'a> {
         let declaration = self
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .get(name)
             .ok_or("適用の Law 宣言がない")?;
         let crate::law::model::Signature::Law {
@@ -8991,7 +8991,7 @@ impl<'a> Environment<'a> {
         let (expression, _, value) = self.evaluation(graph, body)?;
         let span = self.expression_span(graph, expression)?;
         let expr =
-            &self.indexes.inputs.law().exprs[*self.indexes.inputs.law().program.expressions.get(&span).ok_or("証拠の元 AST がない")?];
+            &self.indexes.inputs.law().exprs()[*self.indexes.inputs.law().program().expressions.get(&span).ok_or("証拠の元 AST がない")?];
         let (law_expression, _, law_value) = self.evaluation(graph, evaluation)?;
         let conditional = matches!(
             &graph.get(law_expression)?.payload,
@@ -9048,7 +9048,7 @@ impl<'a> Environment<'a> {
             Some(Payload::Expression {
                 location: Location::Law { span },
                 ..
-            }) if *span == self.indexes.inputs.law().exprs[id].span => Ok(()),
+            }) if *span == self.indexes.inputs.law().exprs()[id].span => Ok(()),
             _ => Err("元式との出現不一致".into()),
         }
     }
@@ -9125,7 +9125,7 @@ impl<'a> Environment<'a> {
         {
             return Err("量化元Source/collectionの既出性・Contextが違う".into());
         }
-        let id = *self.indexes.inputs.law().program.expressions
+        let id = *self.indexes.inputs.law().program().expressions
             .get(&self.expression_span(graph, source)?)
             .ok_or("量化元ASTがない")?;
         let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
@@ -9190,7 +9190,7 @@ impl<'a> Environment<'a> {
             return Err("Domain要素の元辺が違う".into());
         }
         let source = node.arguments[0];
-        let id = *self.indexes.inputs.law().program.expressions
+        let id = *self.indexes.inputs.law().program().expressions
             .get(&self.expression_span(graph, source)?)
             .ok_or("Domain要素の元ASTがない")?;
         let original = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
@@ -9251,7 +9251,7 @@ impl<'a> Environment<'a> {
         let source = *node.arguments.first().ok_or("Domainの元Sourceがない")?;
         let spec = quantifier::spec(
             self.indexes.inputs.law(),
-            *self.indexes.inputs.law().program.expressions
+            *self.indexes.inputs.law().program().expressions
                 .get(&self.expression_span(graph, source)?)
                 .ok_or("Domain元ASTがない")?,
             &self.control,
@@ -9269,7 +9269,7 @@ impl<'a> Environment<'a> {
             expected.extend(
                 self.owned_type_arguments(
                     graph,
-                    *self.indexes.inputs.law().program.expressions
+                    *self.indexes.inputs.law().program().expressions
                         .get(&self.expression_span(graph, source)?)
                         .ok_or("型Domain元ASTがない")?,
                     self.expression_bindings(graph, source)?,
@@ -9357,7 +9357,7 @@ impl<'a> Environment<'a> {
             return Err("量化元の既出Contextが違う".into());
         }
         let span = self.expression_span(graph, source)?;
-        let id = *self.indexes.inputs.law().program.expressions.get(&span).ok_or("量化ASTがない")?;
+        let id = *self.indexes.inputs.law().program().expressions.get(&span).ok_or("量化ASTがない")?;
         let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
         self.validate_at(graph, graph.get(source)?, source.0)?;
         let (bindings, known) = if let Some(domain) = spec.domain {
@@ -9530,7 +9530,7 @@ impl<'a> Environment<'a> {
         }
         let spec = quantifier::spec(
             self.indexes.inputs.law(),
-            *self.indexes.inputs.law().program.expressions
+            *self.indexes.inputs.law().program().expressions
                 .get(span)
                 .ok_or("量化Scalarの元ASTがない")?,
             &self.control,
@@ -9582,10 +9582,10 @@ impl<'a> Environment<'a> {
             return Ok(false);
         };
         let span = self.expression_span(graph, *expression)?;
-        let Some(id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(false);
         };
-        if !matches!(self.indexes.inputs.law().exprs[*id].kind, ExprKind::Quant { .. }) {
+        if !matches!(self.indexes.inputs.law().exprs()[*id].kind, ExprKind::Quant { .. }) {
             return Ok(false);
         }
         if parts.len() != 1
@@ -9675,7 +9675,7 @@ impl<'a> Environment<'a> {
         analysis: &SourceAnalysis,
         evidence: &[NodeRef],
     ) -> Result<(), ValidationFailure> {
-        let id = *self.indexes.inputs.law().program.expressions
+        let id = *self.indexes.inputs.law().program().expressions
             .get(&self.expression_span(graph, source)?)
             .ok_or("証拠量化ASTがない")?;
         let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
@@ -9767,7 +9767,7 @@ impl<'a> Environment<'a> {
             if let Some(domain) = record.finite {
                 let spec = quantifier::spec(
                     self.indexes.inputs.law(),
-                    *self.indexes.inputs.law().program.expressions
+                    *self.indexes.inputs.law().program().expressions
                         .get(&self.expression_span(graph, record.source)?)
                         .ok_or("binder量化ASTがない")?,
                     &self.control,
@@ -9821,7 +9821,7 @@ impl<'a> Environment<'a> {
         }
         let spec = quantifier::spec(
             self.indexes.inputs.law(),
-            *self.indexes.inputs.law().program.expressions
+            *self.indexes.inputs.law().program().expressions
                 .get(&self.expression_span(graph, *source)?)
                 .ok_or("反例量化ASTがない")?,
             &self.control,
@@ -9902,7 +9902,7 @@ impl<'a> Environment<'a> {
         let source = *node.arguments.first().ok_or("全検査元Sourceがない")?;
         let spec = quantifier::spec(
             self.indexes.inputs.law(),
-            *self.indexes.inputs.law().program.expressions
+            *self.indexes.inputs.law().program().expressions
                 .get(&self.expression_span(graph, source)?)
                 .ok_or("全検査元量化がない")?,
             &self.control,
@@ -9922,7 +9922,7 @@ impl<'a> Environment<'a> {
         let (analysis, actual) = self.quant_parts(graph, source, &children, &node.scope, limit)?;
         let spec = quantifier::spec(
             self.indexes.inputs.law(),
-            *self.indexes.inputs.law().program.expressions
+            *self.indexes.inputs.law().program().expressions
                 .get(&self.expression_span(graph, source)?)
                 .ok_or("全検査元量化がない")?,
             &self.control,
@@ -10181,10 +10181,10 @@ reading CountCheck {{
         ).unwrap();
         let start = law.find("s.count").unwrap();
         let environment = Environment::new(&inputs, &mut Control::unlimited()).unwrap();
-        let candidates = &inputs.law().program.dotted_candidates[&(start, start + 1)];
+        let candidates = &inputs.law().program().dotted_candidates[&(start, start + 1)];
         assert!(candidates.len() > 1, "short rejected and longer accepted candidates share the token prefix");
         for (id, _) in candidates {
-            assert!(inputs.law().program.nodes[*id].lexical.is_some());
+            assert!(inputs.law().program().nodes[*id].lexical.is_some());
         }
         let (id, count) = environment.dotted_prefix((start, start + 1)).unwrap().unwrap();
         assert_eq!(count, 1);

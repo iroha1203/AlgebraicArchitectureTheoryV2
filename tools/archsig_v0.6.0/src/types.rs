@@ -36,7 +36,7 @@ impl Type {
     }
 
     /// 入力の正規化で使う型木にも共有された停止制御を渡す。
-    pub(crate) fn wire_controlled<E: InputError>(
+    pub fn wire_controlled<E: InputError>(
         &self,
         control: &mut Control,
         point: Checkpoint,
@@ -116,7 +116,7 @@ impl Type {
     }
 
     /// 型成分の消去を入力検査と同じ停止制御の下で行う。
-    pub(crate) fn erase_controlled<E: InputError>(
+    pub fn erase_controlled<E: InputError>(
         &self,
         control: &mut Control,
         point: Checkpoint,
@@ -192,7 +192,7 @@ impl Type {
     }
 
     /// `any` と同じ順序・短絡で、各型成分の前後に共有制御を確認する。
-    pub(crate) fn any_controlled<E: InputError>(
+    pub fn any_controlled<E: InputError>(
         &self,
         f: &mut impl FnMut(&Type) -> bool,
         control: &mut Control,
@@ -327,7 +327,7 @@ mod controlled_tests {
     use super::*;
     use crate::control::CheckFailure;
     use crate::issue::Issue;
-    use crate::result::Signal;
+    use crate::control::Signal;
     use std::{cell::Cell, rc::Rc};
 
     type Failure = CheckFailure<Box<Issue>>;

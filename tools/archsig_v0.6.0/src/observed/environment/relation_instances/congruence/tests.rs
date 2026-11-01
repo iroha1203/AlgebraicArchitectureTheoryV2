@@ -9,7 +9,7 @@ fn reference(s: &str) -> Json {
 fn inputs(script: &str, mode: &str) -> CheckedInputs {
     let d =
         crate::definition::check_definitions(&[("definition0", DEFINITIONS.as_bytes())]).unwrap();
-    let digest = &d.vocabularies["Loops"].digest;
+    let digest = &d.vocabularies()["Loops"].digest;
     let mut subjects = vec![];
     let mut atoms = vec![];
     for (name, ty) in [

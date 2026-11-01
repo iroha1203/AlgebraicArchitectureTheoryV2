@@ -55,7 +55,7 @@ impl Environment<'_> {
         let d = self
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("族の元Lawがない")?;
         let Signature::Law {
@@ -221,8 +221,8 @@ impl Environment<'_> {
         else {
             return Ok(false);
         };
-        Ok((*span == self.indexes.inputs.law().exprs[plan.body].span
-            || Some(*span) == plan.guard.map(|g| self.indexes.inputs.law().exprs[g].span))
+        Ok((*span == self.indexes.inputs.law().exprs()[plan.body].span
+            || Some(*span) == plan.guard.map(|g| self.indexes.inputs.law().exprs()[g].span))
             && *parameters
                 == plan
                     .free
@@ -272,12 +272,12 @@ impl Environment<'_> {
             return Err("族の元Sourceがない".into());
         };
         let d =
-            &self.indexes.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
+            &self.indexes.inputs.law().declarations()[request.declaration().ok_or("元要求に宣言がない")?];
         if context.frame.is_some()
             || context.iteration.is_some()
             || context.instance.is_some()
-            || (*span != self.indexes.inputs.law().exprs[plan.body].span
-                && Some(*span) != plan.guard.map(|g| self.indexes.inputs.law().exprs[g].span))
+            || (*span != self.indexes.inputs.law().exprs()[plan.body].span
+                && Some(*span) != plan.guard.map(|g| self.indexes.inputs.law().exprs()[g].span))
             || parameters
                 != &plan
                     .free
@@ -608,7 +608,7 @@ impl Environment<'_> {
         {
             let (_, plan) = self.family_request(graph, source)?;
             self.validate_at(graph, graph.get(source)?, source.0)?;
-            let d = &self.indexes.inputs.law().declarations[graph.requests
+            let d = &self.indexes.inputs.law().declarations()[graph.requests
                 [graph.context_at(source.0).request]
                 .declaration()
                 .ok_or("元要求に宣言がない")?];
@@ -835,7 +835,7 @@ impl Environment<'_> {
         };
         let (request, plan) = self.family_request(graph, *body)?;
         let d =
-            &self.indexes.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
+            &self.indexes.inputs.law().declarations()[request.declaration().ok_or("元要求に宣言がない")?];
         let Signature::Law {
             role: expected_role,
             ..
@@ -1102,7 +1102,7 @@ impl Environment<'_> {
         let (expected_bindings, body_id, id) = if let Some(index) = context.instance {
             let expected = self.family_instance_inputs(graph, index)?;
             if let Some(inputs)=crate::observed::law_evaluation::instance_inputs(graph,index,self.state.cutoff.get().min(graph.nodes.len()))? {
-                let declaration=self.indexes.inputs.law().declarations.get(&inputs.origin.declaration).ok_or("元native Law宣言がない")?;
+                let declaration=self.indexes.inputs.law().declarations().get(&inputs.origin.declaration).ok_or("元native Law宣言がない")?;
                 let Signature::Law {body,guard:Some(guard),..}=&declaration.signature else{return Err("元native Law/guardがない".into())};
                 (expected.0,*body,*guard)
             } else {
@@ -1110,7 +1110,7 @@ impl Environment<'_> {
                 (expected.0,plan.body,plan.guard.ok_or("非適用rowに元guardがない")?)
             }
         } else if context.case.is_some() && context.frame.is_none() && context.iteration.is_none() {
-            let declaration = &self.indexes.inputs.law().declarations
+            let declaration = &self.indexes.inputs.law().declarations()
                 [request.declaration().ok_or("元要求に宣言がない")?];
             let Signature::Law {
                 params,
@@ -1190,7 +1190,7 @@ impl Environment<'_> {
         }
         let declaration=context.instance.map(|index|self.instance_source_declaration(graph,index)).transpose()?.flatten()
             .or_else(||request.declaration().map(str::to_owned)).ok_or("元要求に宣言がない")?;
-        let d=self.indexes.inputs.law().declarations.get(&declaration).ok_or("元Law宣言がない")?;
+        let d=self.indexes.inputs.law().declarations().get(&declaration).ok_or("元Law宣言がない")?;
         let Some(Payload::LawInstance {
             name,
             role,
@@ -1606,7 +1606,7 @@ impl Environment<'_> {
         Ok(plan.numeric.is_empty()
             && plan
                 .guard
-                .is_some_and(|guard| self.indexes.inputs.law().exprs[guard].span == span))
+                .is_some_and(|guard| self.indexes.inputs.law().exprs()[guard].span == span))
     }
     // 完全束縛の有限族rowについて、bodyより先の実guardを照合する。
     fn finite_family_body_guard(
@@ -1627,14 +1627,14 @@ impl Environment<'_> {
         if !plan.numeric.is_empty() {
             return Ok(None);
         }
-        let body = self.indexes.inputs.law().exprs[plan.body].span;
+        let body = self.indexes.inputs.law().exprs()[plan.body].span;
         if !(body.0 <= span.0 && span.1 <= body.1) {
             return Ok(None);
         }
         let Some(guard) = plan.guard else {
             return Ok(None);
         };
-        let guard = self.indexes.inputs.law().exprs[guard].span;
+        let guard = self.indexes.inputs.law().exprs()[guard].span;
         let producer = super::super::call::Context {
             instance: Some(index),
             ..record.caller

@@ -461,7 +461,7 @@ fn resolve_inner(
             )));
         };
         let full = declaration(law, name, control, &raw.id)?;
-        let params = parameters(&law.declarations[&full].signature, kind).ok_or_else(|| {
+        let params = parameters(&law.declarations()[&full].signature, kind).ok_or_else(|| {
             invalid(problem(
                 RequestIssueCode::Type,
                 &raw.id,
@@ -480,7 +480,7 @@ fn resolve_inner(
         } else { None };
         let mut all_params = params.to_vec();
         if let Some(name) = &selected_law {
-            let Signature::Law { params, .. } = &law.declarations[name].signature else {
+            let Signature::Law { params, .. } = &law.declarations()[name].signature else {
                 return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "law", "law must specify a Law declaration")));
             };
             for param in params {
@@ -510,8 +510,8 @@ fn resolve_inner(
                     return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "using", "using must be a fully qualified change name")));
                 };
                 let change = declaration(law, name, control, &raw.id)?;
-                if !matches!(law.declarations[&change].signature, Signature::Change { .. })
-                    || law.declarations[&change].reading != law.declarations[&full].reading {
+                if !matches!(law.declarations()[&change].signature, Signature::Change { .. })
+                    || law.declarations()[&change].reading != law.declarations()[&full].reading {
                     return Err(invalid(problem(RequestIssueCode::Type, &raw.id, "using", "specify a change from the same reading")));
                 }
                 arguments.insert("using".into(), RequestArgument {name:"using".into(), value:Selector::Declaration {name:change}, origin:ArgumentOrigin::Explicit});
@@ -771,14 +771,14 @@ fn resolve_inner(
             continue;
         }
         let params = parameters(
-            &law.declarations[req.declaration().expect("宣言headの問い")].signature,
+            &law.declarations()[req.declaration().expect("宣言headの問い")].signature,
             req.kind,
         )
         .unwrap();
         let mut all_params = params.to_vec();
         if req.kind == QuestionKind::Quotient {
             if let Some(RequestArgument { value: Selector::Declaration { name }, .. }) = req.arguments.iter().find(|a| a.name == "law") {
-                if let Signature::Law { params, .. } = &law.declarations[name].signature {
+                if let Signature::Law { params, .. } = &law.declarations()[name].signature {
                     for param in params {
                         if !all_params.iter().any(|p| p.name == param.name) { all_params.push(param.clone()); }
                     }
@@ -818,7 +818,7 @@ fn resolve_inner(
             }
             let change_root = if matches!(req.kind, QuestionKind::Solve | QuestionKind::Repair)
                 && !architecture(&plan.ty, control)? {
-                let declaration=&law.declarations[req.declaration().expect("Lawのhead")];
+                let declaration=&law.declarations()[req.declaration().expect("Lawのhead")];
                 let mut root_request=req.clone();
                 root_request.head=Selector::Declaration {name:declaration.reading.clone()};
                 build::check_on(law,map,&requests,&names,&root_request,control)?;
@@ -960,23 +960,23 @@ fn declaration(
         ))
     };
     phase(control, Checkpoint::RequestBinding)?;
-    if law.declarations.contains_key(name) {
+    if law.declarations().contains_key(name) {
         return finish_request(Ok(name.to_owned()), control, Checkpoint::RequestBinding);
     }
     if name.contains('.') {
         return finish_request(Err(missing()), control, Checkpoint::RequestBinding);
     }
     let mut found = None;
-    for (index, candidate) in law.declarations.keys().enumerate() {
+    for (index, candidate) in law.declarations().keys().enumerate() {
         phase(control, Checkpoint::RequestBinding)?;
-        let matches = law.resolved_names.get(candidate).is_some_and(|name_parts| name_parts.short() == name);
+        let matches = law.resolved_names().get(candidate).is_some_and(|name_parts| name_parts.short() == name);
         if matches {
             if found.is_some() {
                 return finish_request(Err(missing()), control, Checkpoint::RequestBinding);
             }
             found = Some(candidate.clone());
         }
-        if index + 1 == law.declarations.len() {
+        if index + 1 == law.declarations().len() {
             return finish_request(
                 found.ok_or_else(missing),
                 control,
@@ -1109,7 +1109,7 @@ fn subject<'a>(
         ))
     };
     let snapshot = checked_require(
-        &map.snapshots,
+        &map.snapshots(),
         |s| s.id == snapshot,
         control,
         Checkpoint::RequestBinding,
@@ -1173,7 +1173,7 @@ fn selector_type(
             } else if matches!(r.kind,QuestionKind::Solve|QuestionKind::Repair) {
                 if field=="proposition" || (field=="existence" && r.kind==QuestionKind::Repair) {ProjectionType::Proposition} else {
                     let mut root_request=r.clone();
-                    root_request.head=Selector::Declaration{name:law.declarations[r.declaration().expect("changeのLaw")].reading.clone()};
+                    root_request.head=Selector::Declaration{name:law.declarations()[r.declaration().expect("changeのLaw")].reading.clone()};
                     let root_types=build::root_types(law,map,requests,names,&root_request,control)?;
                     let types=root_types.into_iter().map(|root|match field.as_str() {
                         "domain"=>Ok(ProjectionType::CandidateSpace(root)),
@@ -1202,7 +1202,7 @@ fn selector_type(
             } else if r.kind == QuestionKind::Map {
                 configuration_map::output_type(law, r, field, control)?
             } else {
-                let sig = &law.declarations[r.declaration().expect("宣言headの問い")].signature;
+                let sig = &law.declarations()[r.declaration().expect("宣言headの問い")].signature;
                 match (r.kind, field.as_str()) {
                     (QuestionKind::Evaluate, "value") => {
                         let Signature::View { returns, .. } = sig else {

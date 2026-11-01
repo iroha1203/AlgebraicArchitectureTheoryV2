@@ -338,7 +338,7 @@ pub(super) fn plans(
                 },
                 c,
             )?;
-            let role = match &inputs.law().declarations
+            let role = match &inputs.law().declarations()
                 [&a.readings().instances()[*instance].declaration().name]
                 .signature
             {
@@ -581,7 +581,7 @@ fn parameter_polynomial(
     let span = *span;
     for (parameter, coefficient) in &source.difference.parameters {
         tick(c)?;
-        let (expression, node) = inputs.law().exprs.iter().enumerate().find(|(id, expression)| {
+        let (expression, node) = inputs.law().exprs().iter().enumerate().find(|(id, expression)| {
             inputs.law().expr_type(*id) == Some(ty) && expression.span.0 >= span.0 && expression.span.1 <= span.1 &&
                 matches!(&expression.kind, crate::law::ast::ExprKind::Dotted(names) if names.len() == 1 && names[0].name == parameter.name)
         }).ok_or("引数族の元parameter参照がない")?;

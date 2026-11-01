@@ -326,7 +326,7 @@ fn diagnostic_coefficient(
     if localize.kind != QuestionKind::Localize { return Ok(None); }
     let Some(Selector::Declaration { name }) = localize.arguments.iter()
         .find(|a| a.name == "using").map(|a| &a.value) else { return Ok(None); };
-    let Some(declaration) = law.declarations.get(name) else { return Ok(None); };
+    let Some(declaration) = law.declarations().get(name) else { return Ok(None); };
     let Signature::Change { params, .. } = &declaration.signature else { return Ok(None); };
     for coefficient in [Type::Z, Type::Q] {
         for parameter in params.iter().skip(1) {

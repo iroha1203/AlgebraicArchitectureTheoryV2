@@ -122,7 +122,7 @@ fn observation(
         c.checkpoint(Checkpoint::Quotient)?;
         let unsupported = |feature: &str| ValidationFailure::UnsupportedExpression {
             location: Location::Law {
-                span: law.exprs[expression].span,
+                span: law.exprs()[expression].span,
             },
             feature: feature.into(),
         };
@@ -135,7 +135,7 @@ fn observation(
                     .find(|i| nodes[*i].expression == id)
             })
         };
-        match &law.exprs[expression].kind {
+        match &law.exprs()[expression].kind {
             ExprKind::Group(body) | ExprKind::Let { body, .. } => {
                 observation(law, *body, child(*body), nodes, c)
             }
@@ -337,7 +337,7 @@ pub(in crate::observed) fn compute(
         return Err(unsupported(request, "商の有限候補全域が未確定"));
     }
     let declaration =
-        &original.indexes.inputs.law().declarations[request.declaration().ok_or("商のviewがない")?];
+        &original.indexes.inputs.law().declarations()[request.declaration().ok_or("商のviewがない")?];
     let Signature::View {
         params,
         returns,
@@ -371,7 +371,7 @@ pub(in crate::observed) fn compute(
             let Selector::Declaration { name } = &a.value else {
                 return Err(ValidationFailure::from("商のLaw名がない"));
             };
-            let Signature::Law { body, .. } = &original.indexes.inputs.law().declarations[name].signature
+            let Signature::Law { body, .. } = &original.indexes.inputs.law().declarations()[name].signature
             else {
                 return Err(ValidationFailure::from("商のLaw署名がない"));
             };
@@ -389,7 +389,7 @@ pub(in crate::observed) fn compute(
     let mut missing = BTreeSet::new();
     let mut scope = Scope::default();
     if let Some((name, _)) = &law {
-        let decl = &original.indexes.inputs.law().declarations[name];
+        let decl = &original.indexes.inputs.law().declarations()[name];
         scope.readings.insert(decl.reading.clone());
         let Signature::Law { params, .. } = &decl.signature else {
             unreachable!()
@@ -500,7 +500,7 @@ pub(in crate::observed) fn compute(
         }
         let mut laws = vec![];
         if let Some((name, _)) = &law {
-            let law_decl = &original.indexes.inputs.law().declarations[name];
+            let law_decl = &original.indexes.inputs.law().declarations()[name];
             let Signature::Law {
                 params,
                 body,

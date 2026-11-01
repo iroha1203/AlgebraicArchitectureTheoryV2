@@ -15,7 +15,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
     let mut local_scope = Scope::default();
     let result = (|| -> Result<(Option<geometry::Built>, Vec<Fact>), ValidationFailure> {
         if model.requirements.is_empty() {
-            let declaration = &env.indexes.inputs.law().declarations[&model.change];
+            let declaration = &env.indexes.inputs.law().declarations()[&model.change];
             let Signature::Change { params, body, .. } = &declaration.signature else {
                 return Err("局所changeの署名がない".into());
             };
@@ -46,7 +46,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
         }
         for (name, bindings) in &model.requirements {
             c.checkpoint(crate::control::Checkpoint::Localize)?;
-            let law = &env.indexes.inputs.law().declarations[name];
+            let law = &env.indexes.inputs.law().declarations()[name];
             let Signature::Law {
                 role, body, guard, ..
             } = law.signature
@@ -117,7 +117,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
         let mut readings = vec![];
         let mut read_refs = vec![];
         let mut read_supports = vec![];
-        let locals = env.indexes.inputs.law().declarations.values().filter(|d|
+        let locals = env.indexes.inputs.law().declarations().values().filter(|d|
             d.reading == witness.construction().reading() && matches!(d.signature, Signature::Local { .. })
         ).collect::<Vec<_>>();
         let mut information = if model.affine_equations && !locals.is_empty() { Some(geometry::Information::new(&fixed, &model)?) } else { None };
@@ -187,7 +187,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
                 visible: vec![slot.clone()],
             };
             let subject_ref = change_result::value(&mut b, &value)?;
-            let declaration = &env.indexes.inputs.definitions().declarations[subject.ty.as_str()];
+            let declaration = &env.indexes.inputs.definitions().declarations()[subject.ty.as_str()];
             let (parameters, fields) = declaration.signature.record_fields().ok_or("singletonの原始recordがない")?;
             let field_name = slot.field.as_ref().ok_or("singletonのfieldがない")?;
             let field = parameters.iter().chain(fields).find(|field| {

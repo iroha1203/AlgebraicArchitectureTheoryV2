@@ -151,7 +151,7 @@ fn quantified_observation_requires_recorded_complete_finite_bindings() {
         &mut quiet(),
     )
     .unwrap();
-    let Signature::Law { body, .. } = i.law().declarations["Pair.finite"].signature else {
+    let Signature::Law { body, .. } = i.law().declarations()["Pair.finite"].signature else {
         panic!("law")
     };
     let mut nodes = vec![EvaluationNode {
@@ -192,17 +192,17 @@ fn match_observation_rejects_wrong_pattern_binding_and_extra_arm_capture() {
         &mut quiet(),
     )
     .unwrap();
-    let Signature::Law { body, .. } = i.law().declarations["Pair.matched"].signature else {
+    let Signature::Law { body, .. } = i.law().declarations()["Pair.matched"].signature else {
         panic!("law")
     };
     let ExprKind::Match {
         scrutinee,
         ref arms,
-    } = i.law().exprs[body].kind
+    } = i.law().exprs()[body].kind
     else {
         panic!("match")
     };
-    let ExprKind::Binary { lhs, rhs, .. } = i.law().exprs[arms[0].body].kind else {
+    let ExprKind::Binary { lhs, rhs, .. } = i.law().exprs()[arms[0].body].kind else {
         panic!("eq")
     };
     let node = |expression, value, children, bindings| EvaluationNode {

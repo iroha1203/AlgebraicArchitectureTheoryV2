@@ -259,7 +259,7 @@ fn populate_with_environment(
         }
         let declaration = inputs
             .law()
-            .declarations
+            .declarations()
             .get(&original.declaration().name)
             .ok_or("Law instanceの元宣言がない")?;
         let Signature::Law { params, .. } = &declaration.signature else {

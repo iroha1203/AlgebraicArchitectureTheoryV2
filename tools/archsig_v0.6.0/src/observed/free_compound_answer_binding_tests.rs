@@ -22,7 +22,7 @@ fn free_compound_answer_map_domain_stop_keeps_values_refutation_missing_and_pref
     let input = fixture::input("stop", "r1");
     let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
-    let declaration = &normal.prepared.inputs().law().declarations["Applications.fcMap"];
+    let declaration = &normal.prepared.inputs().law().declarations()["Applications.fcMap"];
     assert!(normal.answers[5].claim.is_some());
     assert!(!normal.answers[5].evidence.is_empty());
     let span = match &declaration.signature {

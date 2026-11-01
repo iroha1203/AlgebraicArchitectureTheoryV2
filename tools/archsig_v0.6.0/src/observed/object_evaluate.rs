@@ -63,7 +63,7 @@ impl ObjectDomain {
                 control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
                 let ty = inputs
                     .archmap()
-                    .snapshots
+                    .snapshots()
                     .iter()
                     .find(|s| s.id == member.subject().snapshot)
                     .and_then(|s| s.subjects.iter().find(|s| s.id == member.subject().subject))
@@ -370,7 +370,7 @@ mod tests {
         let l = include_str!("../../tests/fixtures/object-evaluation.law");
         let a = include_str!("../../tests/fixtures/object-instances.archmap.json");
         let defs = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
-        let digest = &defs.vocabularies["Instances"].digest;
+        let digest = &defs.vocabularies()["Instances"].digest;
         let inputs = Arc::new(
             crate::input::check_inputs(
                 crate::input::InputSources::from_bytes(

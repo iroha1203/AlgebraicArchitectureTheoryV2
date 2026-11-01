@@ -128,7 +128,7 @@ fn analyze_inner(
             normalized.basis = call.normalized.basis;
             return result;
         }
-        match &env.indexes.inputs.law().exprs[id].kind {
+        match &env.indexes.inputs.law().exprs()[id].kind {
             ExprKind::If {
                 cond,
                 then_branch,
@@ -167,14 +167,14 @@ fn analyze_inner(
                 operand,
             } => {
                 let mut child = *operand;
-                while let ExprKind::Group(body) = env.indexes.inputs.law().exprs[child].kind {
+                while let ExprKind::Group(body) = env.indexes.inputs.law().exprs()[child].kind {
                     env.tick()?;
                     child = body;
                 }
                 if let ExprKind::Unary {
                     op: UnOp::Not,
                     operand,
-                } = env.indexes.inputs.law().exprs[child].kind
+                } = env.indexes.inputs.law().exprs()[child].kind
                 {
                     return analyze_inner(env, operand, vars, base, reading, normalized);
                 }
@@ -379,7 +379,7 @@ fn polynomial(
             normalized.basis = call.normalized.basis;
             return result;
         }
-        match &env.indexes.inputs.law().exprs[id].kind {
+        match &env.indexes.inputs.law().exprs()[id].kind {
             ExprKind::If {
                 cond,
                 then_branch,
@@ -472,7 +472,7 @@ fn selected_body(
     reading: &str,
     normalized: &mut Normalized,
 ) -> Result<Option<ScopedBody>, ValidationFailure> {
-    if let ExprKind::Match { scrutinee, arms } = &env.indexes.inputs.law().exprs[id].kind {
+    if let ExprKind::Match { scrutinee, arms } = &env.indexes.inputs.law().exprs()[id].kind {
         let input = env.scoped_ast(*scrutinee, vars, base, reading)?;
         let Some((arm, variables)) = env.scoped_match_bindings(id, &input, vars)? else {
             return Ok(None);
@@ -502,7 +502,7 @@ fn selected_body(
     let crate::law::model::Signature::View { params, body, .. } = &declaration.signature else {
         return Err("数値guardのcalleeがviewでない".into());
     };
-    let ExprKind::Call { args, .. } = &env.indexes.inputs.law().exprs[id].kind else {
+    let ExprKind::Call { args, .. } = &env.indexes.inputs.law().exprs()[id].kind else {
         return Err("数値guardの呼出し式がない".into());
     };
     if params.len() != args.len() {

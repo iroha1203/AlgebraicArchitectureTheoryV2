@@ -9,7 +9,7 @@ mod fixture {
         let source=source.replace("\"declarations\":[",r#""declarations":[{"kind":"entity","name":"Family.Empty","meaning":"空の型。","parameters":[],"fields":[],"alignments":[]},"#);
         let defs =
             archsig::definition::check_definitions(&[("definition0", source.as_bytes())]).unwrap();
-        let digest = &defs.vocabularies["Family"].digest;
+        let digest = &defs.vocabularies()["Family"].digest;
         let law = format!(
             "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Family version \"1\" digest \"{digest}\";{body}}}"
         );

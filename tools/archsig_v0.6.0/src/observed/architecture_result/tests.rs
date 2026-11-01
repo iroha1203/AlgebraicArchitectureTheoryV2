@@ -20,7 +20,7 @@ fn sources(missing_owner: bool, body: &str) -> InputSources {
     let original = fixture::input();
     let defs =
         crate::definition::check_definitions(&[("definition0", fixture::D.as_bytes())]).unwrap();
-    let digest = &defs.vocabularies["Requests"].digest;
+    let digest = &defs.vocabularies()["Requests"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading R{{use vocabulary Requests version \"1\" digest \"{digest}\";{body}}}"
     );

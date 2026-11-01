@@ -15,6 +15,20 @@ impl Signal {
             Signal::Term => "SIGTERM",
         }
     }
+    /// 取消のIssue。要求固有の依存は呼出し側が付ける。
+    pub fn issue(self) -> crate::canonical::Json {
+        use crate::canonical::Json;
+        Json::obj([
+            ("code", Json::str("cancelled")),
+            ("dependencies", Json::Arr(vec![])),
+            ("missing", Json::Arr(vec![])),
+            (
+                "message",
+                Json::str(format!("interrupted by signal {}", self.wire())),
+            ),
+            ("details", Json::obj([("signal", Json::str(self.wire()))])),
+        ])
+    }
 }
 
 /// 原始演算または有限反復の境界。試験用 probe も同じ境界を受け取る。
@@ -142,8 +156,8 @@ impl std::fmt::Debug for Control {
 }
 
 /// 止めない制御。テストの既定の入力として使う。
-#[cfg(test)]
-pub(crate) fn quiet() -> Control {
+#[cfg(any(test, feature = "test-support"))]
+pub fn quiet() -> Control {
     Control::unlimited()
 }
 

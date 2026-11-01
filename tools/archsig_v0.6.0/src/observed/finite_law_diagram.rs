@@ -656,7 +656,7 @@ fn original_rows(
             if inputs.law().expr_type(id) != Some(&Type::Bool) {
                 return Err("有限Lawの元body/guardがBoolでない".into());
             }
-            let ast = inputs.law().exprs.get(id).ok_or("有限Lawの元式がない")?;
+            let ast = inputs.law().exprs().get(id).ok_or("有限Lawの元式がない")?;
             push(
                 parts,
                 base,

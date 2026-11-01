@@ -60,7 +60,7 @@ fn compound_owned_condition_stop_preserves_prior_results_and_probe_freeze() {
     let input = fixture::input("stop", "r1");
     let normal = run_with("stop", &asks);
     assert_eq!(normal.status(), "partial");
-    let params = match &normal.prepared.inputs().law().declarations["Applications.cbEq"].signature {
+    let params = match &normal.prepared.inputs().law().declarations()["Applications.cbEq"].signature {
         Signature::Law { params, .. } => params,
         _ => panic!(),
     };

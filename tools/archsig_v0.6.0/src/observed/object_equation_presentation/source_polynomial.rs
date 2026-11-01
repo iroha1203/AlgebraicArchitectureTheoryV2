@@ -308,7 +308,7 @@ impl Compiler<'_> {
     }
     // Lawのratは整数literal二つだけを許す。既存の正確な数値構成を再利用する。
     fn integer_literal(&self, id: usize, c: &mut Control) -> Result<Scalar, ConstructionFailure> {
-        let ExprKind::Int(value) = &self.inputs.law().exprs[id].kind else {
+        let ExprKind::Int(value) = &self.inputs.law().exprs()[id].kind else {
             return Err(bad("型検査済みratの引数が整数literalでない"));
         };
         numeric::literal(value, &Type::Z, c).map_err(invalid)
@@ -360,7 +360,7 @@ impl Compiler<'_> {
         let selected = self
             .inputs
             .archmap()
-            .snapshots
+            .snapshots()
             .iter()
             .find(|s| s.id == snapshot)
             .and_then(|s| s.subjects.iter().find(|s| s.id == subject))
@@ -441,7 +441,7 @@ impl Compiler<'_> {
             let expression = self
                 .inputs
                 .law()
-                .exprs
+                .exprs()
                 .get(id)
                 .ok_or_else(|| bad("原式IDがない"))?;
             if path.is_empty()
@@ -719,11 +719,11 @@ impl Compiler<'_> {
                 }
                 ExprKind::Call { callee, args } => {
                     let mut callee = *callee;
-                    while let ExprKind::Group(inner) = self.inputs.law().exprs[callee].kind {
+                    while let ExprKind::Group(inner) = self.inputs.law().exprs()[callee].kind {
                         tick(c)?;
                         callee = inner;
                     }
-                    if let ExprKind::Dotted(names) = &self.inputs.law().exprs[callee].kind
+                    if let ExprKind::Dotted(names) = &self.inputs.law().exprs()[callee].kind
                         && let [name] = names.as_slice()
                         && matches!(name.name.as_str(), "count" | "sum")
                     {
@@ -760,7 +760,7 @@ impl Compiler<'_> {
                             Binding::FiniteScalar(value)
                         }));
                     }
-                    if let ExprKind::Dotted(names) = &self.inputs.law().exprs[callee].kind
+                    if let ExprKind::Dotted(names) = &self.inputs.law().exprs()[callee].kind
                         && names.len() == 1
                         && names[0].name == "rat"
                     {
@@ -777,8 +777,8 @@ impl Compiler<'_> {
                             Binding::FiniteScalar(value)
                         }));
                     }
-                    let span = self.inputs.law().exprs[callee].span;
-                    let target = self.inputs.law().infos.iter().find_map(|info| {
+                    let span = self.inputs.law().exprs()[callee].span;
+                    let target = self.inputs.law().infos().iter().find_map(|info| {
                         info.references
                             .iter()
                             .find_map(|(at, name)| (*at == span).then_some(name))
@@ -789,7 +789,7 @@ impl Compiler<'_> {
                     let declaration = self
                         .inputs
                         .law()
-                        .declarations
+                        .declarations()
                         .get(target)
                         .ok_or_else(|| bad("原式helperの宣言がない"))?;
                     let Signature::View { params, body, .. } = &declaration.signature else {
@@ -919,7 +919,7 @@ pub(super) fn family_operands_bound(
     inputs: &CheckedInputs, instance: &ObjectInstance, left: usize, right: usize, path: &[usize],
     ring: &mut EquationRing, finite: &[(String, Scalar)], c: &mut Control,
 ) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
-    let Signature::Law { body, .. } = &inputs.law().declarations
+    let Signature::Law { body, .. } = &inputs.law().declarations()
         .get(&instance.declaration().name).ok_or_else(|| bad("原式のLaw宣言がない"))?.signature
     else { return Err(bad("原式の宣言がLawでない")) };
     family_operands_from_root(inputs, instance, *body, left, right, path, ring, finite, c)
@@ -930,7 +930,7 @@ pub(super) fn guard_value(inputs: &CheckedInputs, instance: &ObjectInstance, c: 
     guard_value_bound(inputs, instance, &[], c)
 }
 pub(super) fn guard_value_bound(inputs: &CheckedInputs, instance: &ObjectInstance, finite: &[(String, Scalar)], c: &mut Control) -> Result<Option<bool>, ConstructionFailure> {
-    let Signature::Law { guard, .. } = &inputs.law().declarations
+    let Signature::Law { guard, .. } = &inputs.law().declarations()
         .get(&instance.declaration().name).ok_or_else(|| bad("元guardのLaw宣言がない"))?.signature
     else { return Ok(None) };
     let Some(root) = *guard else { return Ok(Some(true)) };
@@ -942,7 +942,7 @@ pub(super) fn guard_value_bound(inputs: &CheckedInputs, instance: &ObjectInstanc
     let mut cursor = root;
     let (left, right) = loop {
         tick(c)?;
-        match inputs.law().exprs[cursor].kind {
+        match inputs.law().exprs()[cursor].kind {
             ExprKind::Group(next) => cursor = next,
             ExprKind::Call { .. } => {
                 let Some((_, body, _)) = crate::observed::object_law_residuals::predicate_call(inputs,cursor) else { return Ok(None) };
@@ -1127,7 +1127,7 @@ fn bind_root(
     let mut cursor = root;
     loop {
         tick(c)?;
-        match &compiler.inputs.law().exprs[cursor].kind {
+        match &compiler.inputs.law().exprs()[cursor].kind {
             ExprKind::Group(child) => cursor = *child,
             ExprKind::Call { .. } => {
                 let Some((params, body, args)) =
@@ -1172,7 +1172,7 @@ fn collect_parameter_equations(
         let Some(cursor) = bind_root(compiler, root, c)? else {
             return Ok(None);
         };
-        match &compiler.inputs.law().exprs[cursor].kind {
+        match &compiler.inputs.law().exprs()[cursor].kind {
             ExprKind::Quant {
                 kind: crate::law::ast::QuantKind::Forall,
                 var,
@@ -1185,7 +1185,7 @@ fn collect_parameter_equations(
                 let Some(ty) = compiler
                     .inputs
                     .law()
-                    .quantifier_types
+                    .quantifier_types()
                     .get(cursor)
                     .and_then(Option::as_ref)
                 else {

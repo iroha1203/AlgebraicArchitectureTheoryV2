@@ -496,7 +496,7 @@ fn tuple_components_keep_their_original_types_and_separate_integer_indicators() 
 #[test]
 fn foreign_reading_and_out_of_range_object_selection_are_rejected() {
     let original = input("law required constant(c:Part):true;");
-    let digest = &original.definitions().vocabularies["Pattern"].digest;
+    let digest = &original.definitions().vocabularies()["Pattern"].digest;
     let law = format!(
         "{}reading Foreign{{use vocabulary Pattern version \"1\" digest \"{digest}\";law required constant(c:Part):true;}}",
         String::from_utf8(original.sources().law().bytes().to_vec()).unwrap()

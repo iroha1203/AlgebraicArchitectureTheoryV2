@@ -573,7 +573,7 @@ fn typed_tuple_components_share_coordinates_and_keep_separate_required_generator
 fn the_same_name_and_shape_from_a_foreign_reading_are_rejected() {
     let original = input("law required zero(c:Part):c.quantity=0;");
     let sources = original.sources();
-    let digest = &original.definitions().vocabularies["Pattern"].digest;
+    let digest = &original.definitions().vocabularies()["Pattern"].digest;
     let mut law = String::from_utf8(sources.law().bytes().to_vec()).unwrap();
     law.push_str(&format!("reading Other{{use vocabulary Pattern version \"1\" digest \"{digest}\";law required zero(c:Part):c.quantity=0;}}"));
     let i = Arc::new(

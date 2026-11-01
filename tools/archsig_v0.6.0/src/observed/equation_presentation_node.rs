@@ -312,7 +312,7 @@ pub(super) fn dependencies(
         } else {
             let subject = inputs
                 .archmap()
-                .snapshots
+                .snapshots()
                 .iter()
                 .find(|s| s.id == f.snapshot)
                 .and_then(|s| s.subjects.iter().find(|s| s.id == f.subject))

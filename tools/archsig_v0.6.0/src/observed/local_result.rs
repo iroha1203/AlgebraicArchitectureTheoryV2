@@ -283,10 +283,10 @@ fn compute(
         if let Some(name) = request.arguments.iter().find_map(|a| match (&*a.name, &a.value) {
             ("using", Selector::Declaration { name }) => Some(name), _ => None,
         }) {
-            if matches!(&env.indexes.inputs.law().declarations[name].signature, Signature::Change { params, .. } if params.iter().skip(1).any(|p| p.ty == Type::Z)) {
+            if matches!(&env.indexes.inputs.law().declarations()[name].signature, Signature::Change { params, .. } if params.iter().skip(1).any(|p| p.ty == Type::Z)) {
                 return integer::compute(env, g, request, target, original, base, witness.clone(), c);
             }
-            if matches!(&env.indexes.inputs.law().declarations[name].signature, Signature::Change { params, .. } if params.iter().skip(1).any(|p| p.ty == Type::Q)) {
+            if matches!(&env.indexes.inputs.law().declarations()[name].signature, Signature::Change { params, .. } if params.iter().skip(1).any(|p| p.ty == Type::Q)) {
                 return rational::compute(env, g, request, target, original, base, witness.clone(), c);
             }
             return finite::compute(env, g, request, target, original, base, witness.clone(), c);
@@ -295,7 +295,7 @@ fn compute(
         let locals = env
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .values()
             .filter(|d| d.reading == reading && matches!(d.signature, Signature::Local { .. }))
             .collect::<Vec<_>>();
@@ -313,7 +313,7 @@ fn compute(
         } else {
             env.indexes.inputs
                 .law()
-                .declarations
+                .declarations()
                 .values()
                 .filter(|d| {
                     d.reading == reading
@@ -341,7 +341,7 @@ fn compute(
         fixed.select_local_object(witness, c)?;
         let mut evaluations = vec![];
         for name in &names {
-            let declaration = &env.indexes.inputs.law().declarations[name];
+            let declaration = &env.indexes.inputs.law().declarations()[name];
             if declaration.reading != reading {
                 return Err(unsupported("対象Architectureと局所Lawのreadingが異なる"));
             }
@@ -354,7 +354,7 @@ fn compute(
             else {
                 return Err("局所系の指定宣言がLawでない".into());
             };
-            let mut reading_roots = match env.indexes.inputs.law().exprs[*body].kind {
+            let mut reading_roots = match env.indexes.inputs.law().exprs()[*body].kind {
                 ExprKind::Binary {
                     op: BinOp::Eq,
                     lhs,
@@ -647,7 +647,7 @@ fn compute(
                 .filter(|_| locals.is_empty())
                 .filter(|n| {
                     reading_roots.contains(&n.expression)
-                        || match &env.indexes.inputs.law().exprs[n.expression].kind {
+                        || match &env.indexes.inputs.law().exprs()[n.expression].kind {
                             ExprKind::Field { .. } => true,
                             ExprKind::Dotted(parts) => {
                                 parts.len() > 1

@@ -287,11 +287,11 @@ fn reservations_chain_prepare_cancel_retains_completed_source_prefix() {
     let mut quiet = quiet();
     let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
     let Signature::View { body, .. } =
-        &prepared.inputs().law().declarations["Reservations.current"].signature
+        &prepared.inputs().law().declarations()["Reservations.current"].signature
     else {
         unreachable!()
     };
-    let target = prepared.inputs().law().exprs[*body].span;
+    let target = prepared.inputs().law().exprs()[*body].span;
     let normal = evaluate_observed(prepared, &mut quiet).unwrap();
     assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
     assert_eq!(normal.answers[1].status, Decision::Refuted);

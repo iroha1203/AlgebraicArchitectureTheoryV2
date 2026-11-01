@@ -19,7 +19,7 @@ fn path_answer_projection_actual_walk_stop_keeps_verified_prefix_and_independent
         evaluate_observed_bytes(fixture::composed(false, "r1"), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     let Signature::View { params, .. } =
-        &normal.prepared.inputs().law().declarations["Walk.keep_node"].signature
+        &normal.prepared.inputs().law().declarations()["Walk.keep_node"].signature
     else {
         panic!()
     };

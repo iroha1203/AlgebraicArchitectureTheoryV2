@@ -62,7 +62,7 @@ pub(in super::super) fn zero_indicator(
     };
     row.indicator = Some(0.into());
     if let Some(eq) = equation(e.indexes.inputs, body, &mut e.control.clone())? {
-        let ExprKind::Binary { lhs, .. } = e.indexes.inputs.law().exprs[eq].kind else {
+        let ExprKind::Binary { lhs, .. } = e.indexes.inputs.law().exprs()[eq].kind else {
             return Err("元等式がない".into());
         };
         let ty = e.indexes.inputs.law().expr_type(lhs).ok_or("元等式の型がない")?;
@@ -188,7 +188,7 @@ pub(super) fn initial(
         let declaration = e
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .get(&original.declaration().name)
             .ok_or("元instanceの署名がない")?;
         let mut fixed = BTreeMap::new();

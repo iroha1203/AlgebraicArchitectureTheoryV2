@@ -340,7 +340,7 @@ fn cancelled_observation_families_share_constant_polynomial_and_residual() {
 fn parameter_polynomials_keep_free_observation_variables() {
     fn expression(inputs: &CheckedInputs, id: usize, n: i64, x: i64) -> i64 {
         use crate::law::ast::{BinOp, ExprKind};
-        match &inputs.law().exprs[id].kind {
+        match &inputs.law().exprs()[id].kind {
             ExprKind::Int(value) => value.parse().unwrap(),
             ExprKind::Group(child) => expression(inputs, *child, n, x),
             ExprKind::Dotted(names) if names.len() == 1 && names[0].name == "n" => n,
@@ -1313,8 +1313,8 @@ fn infinite_data_is_not_a_finite_case_sample() {
             crate::definition::check_definitions(&[("definition0", original.as_bytes())]).unwrap();
         let new = crate::definition::check_definitions(&[("definition0", definition.as_bytes())])
             .unwrap();
-        let old_digest = &old.vocabularies["Family"].digest;
-        let new_digest = &new.vocabularies["Family"].digest;
+        let old_digest = &old.vocabularies()["Family"].digest;
+        let new_digest = &new.vocabularies()["Family"].digest;
         let law = std::str::from_utf8(sources.law().bytes())
             .unwrap()
             .replace(old_digest, new_digest)

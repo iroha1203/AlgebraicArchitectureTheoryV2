@@ -119,7 +119,7 @@ impl Data {
         let inputs = origin.inputs();
         let ty = inputs
             .archmap()
-            .snapshots
+            .snapshots()
             .iter()
             .flat_map(|s| &s.subjects)
             .find(|s| s.snapshot == root.snapshot && s.id == root.subject)?
@@ -199,7 +199,7 @@ pub(super) fn source_expression(
     let ast = environment
         .indexes.inputs
         .law()
-        .exprs
+        .exprs()
         .get(expression)
         .ok_or("changeの元式がない")?;
     let ty = environment
@@ -386,7 +386,7 @@ pub(super) fn render_search(
             }
         })
         .ok_or("change名がない")?;
-    let declaration = &env.indexes.inputs.law().declarations[change_name];
+    let declaration = &env.indexes.inputs.law().declarations()[change_name];
     let Signature::Change { params, guard, .. } = &declaration.signature else {
         return Err("change署名がない".into());
     };
@@ -410,7 +410,7 @@ pub(super) fn render_search(
     let mut requirements = vec![];
     for (name, bindings) in &search.requirements {
         c.checkpoint(Checkpoint::PrimitiveValuation)?;
-        let law = &env.indexes.inputs.law().declarations[name];
+        let law = &env.indexes.inputs.law().declarations()[name];
         let Signature::Law {
             role, body, guard, params: law_params,
         } = &law.signature

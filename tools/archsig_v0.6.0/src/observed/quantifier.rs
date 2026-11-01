@@ -36,7 +36,7 @@ pub(super) fn spec<'a>(
     id: usize,
     control: &Control,
 ) -> Result<Spec<'a>, ValidationFailure> {
-    let expression = &law.exprs[id];
+    let expression = &law.exprs()[id];
     let ExprKind::Quant { kind, var, split } = &expression.kind else {
         return Err("量化の元ASTでない".into());
     };
@@ -44,7 +44,7 @@ pub(super) fn spec<'a>(
         return Err("検査済み量化の区切りがない".into());
     };
     let element = law
-        .quantifier_types
+        .quantifier_types()
         .get(id)
         .and_then(Option::as_ref)
         .ok_or("量化の元解決済みbinder型がない")?;
@@ -107,7 +107,7 @@ fn restore_owned_type(
         let ty = match (original, erased) {
             (TypeAst::Named { name, index, span }, Type::Ref(entity) | Type::Data(entity)) => {
                 let mut resolved = None;
-                for info in &law.infos {
+                for info in law.infos() {
                     control.clone().checkpoint(Checkpoint::FiniteIteration)?;
                     for (at, target) in &info.references {
                         control.clone().checkpoint(Checkpoint::FiniteIteration)?;
@@ -125,8 +125,8 @@ fn restore_owned_type(
                 }
                 if let Some(index) = index {
                     let root = match law
-                        .definitions
-                        .declarations
+                        .definitions()
+                        .declarations()
                         .get(entity)
                         .map(|d| &d.signature)
                     {

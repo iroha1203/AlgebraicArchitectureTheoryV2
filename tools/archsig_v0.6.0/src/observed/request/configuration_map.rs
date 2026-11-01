@@ -17,8 +17,8 @@ fn shape(
 ) -> Result<MapProjection, ResolveFailure> {
     phase(control, Checkpoint::RequestBinding)?;
     let d = law
-        .definitions
-        .declarations
+        .definitions()
+        .declarations()
         .get(name)
         .ok_or_else(|| error(id, "head", "missing correspondence declaration"))?;
     let PrimitiveSignature::Correspondence { from, to, .. } = &d.signature else {
@@ -52,10 +52,10 @@ pub(super) fn resolve(
         return Err(error(&raw.id, "head", "map head must be a correspondence declaration"));
     };
     let mut found = Vec::new();
-    for (candidate, d) in &law.definitions.declarations {
+    for (candidate, d) in law.definitions().declarations() {
         phase(control, Checkpoint::RequestBinding)?;
         if candidate == name
-            || (!name.contains('.') && law.resolved_names.get(candidate).is_some_and(|parts| parts.short() == name))
+            || (!name.contains('.') && law.resolved_names().get(candidate).is_some_and(|parts| parts.short() == name))
         {
             found.push((candidate, d));
         }
@@ -129,7 +129,7 @@ pub(super) fn resolve(
         ("to_reading", to.as_str(), signature.target.as_str()),
     ] {
         let imported = namespaces(law, r, &raw.id, key, control)?;
-        let d = &law.definitions.declarations[ty];
+        let d = &law.definitions().declarations()[ty];
         if !imported.contains(&d.namespace) {
             return Err(error(
                 &raw.id,

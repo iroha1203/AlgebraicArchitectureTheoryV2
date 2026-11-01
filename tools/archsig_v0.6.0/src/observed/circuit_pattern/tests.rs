@@ -7,7 +7,7 @@ const MAP: &str = include_str!("../../../tests/fixtures/configuration-profile.ar
 use crate::control::quiet;
 fn inputs(map: &str) -> Arc<CheckedInputs> {
     let defs = crate::definition::check_definitions(&[("definition0", DEFINITION)]).unwrap();
-    let digest = &defs.vocabularies["Profile"].digest;
+    let digest = &defs.vocabularies()["Profile"].digest;
     Arc::new(
         crate::input::check_inputs(
             crate::input::InputSources::from_bytes(
@@ -639,7 +639,7 @@ fn shared_external_references_preserve_identity_and_do_not_import_external_field
     let map = include_str!("../../../tests/fixtures/internal-arrow.archmap.json");
     let bundle = |map: &str| {
         let defs = crate::definition::check_definitions(&[("definition0", definition)]).unwrap();
-        let digest = &defs.vocabularies["Flow"].digest;
+        let digest = &defs.vocabularies()["Flow"].digest;
         Arc::new(
             crate::input::check_inputs(
                 crate::input::InputSources::from_bytes(

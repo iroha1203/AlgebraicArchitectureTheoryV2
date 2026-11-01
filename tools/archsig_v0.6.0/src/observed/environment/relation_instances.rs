@@ -566,7 +566,7 @@ fn instances(
     let result = (|| -> Result<(), ValidationFailure> {
         tick(c)?;
         let mut exists = false;
-        for info in &inputs.law().infos {
+        for info in inputs.law().infos() {
             tick(c)?;
             exists |= info.kind == "reading" && info.name == reading;
         }
@@ -575,7 +575,7 @@ fn instances(
         }
         out.scope.readings.insert(reading.into());
         let e = Environment::new(inputs, c)?;
-        for d in inputs.law().declarations.values() {
+        for d in inputs.law().declarations().values() {
             tick(c)?;
             if d.reading != reading || !matches!(d.signature, Signature::Relation { .. }) {
                 continue;

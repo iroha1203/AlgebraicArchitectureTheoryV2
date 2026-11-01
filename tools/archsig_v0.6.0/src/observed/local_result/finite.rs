@@ -32,7 +32,7 @@ pub(super) fn compute(
                 _ => None,
             })
             .ok_or("欠測した局所change名がない")?;
-        let declaration = &env.indexes.inputs.law().declarations[using];
+        let declaration = &env.indexes.inputs.law().declarations()[using];
         let Signature::Change { params, body, .. } = &declaration.signature else {
             return Err("局所changeの署名がない".into());
         };

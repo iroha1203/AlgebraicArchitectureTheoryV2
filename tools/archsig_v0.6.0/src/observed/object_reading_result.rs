@@ -131,7 +131,7 @@ fn plan(
         span: native::Witness::Architecture(a.clone())
             .inputs()
             .law()
-            .exprs
+            .exprs()
             .get(o.body)
             .ok_or("元view bodyの出現がない")?
             .span,

@@ -638,13 +638,10 @@ mod tests {
     #[test]
     fn compound_bindings_preserve_structure_and_actual_images() {
         let subject=|s:&str| Scalar::Subject {snapshot:"v".into(),subject:s.into(),entity:"R.Item".into()};
-        let law = crate::law::CheckedLaw {
-            resolved_names: Default::default(),
-            program: Default::default(),
-            bytes_digest: String::new(), model_digest: String::new(), declarations: BTreeMap::new(),
-            exprs: vec![], expr_types: vec![], quantifier_types: vec![], infos: vec![],
-            definitions: crate::definition::CheckedDefinitions::empty(),
-        };
+        let definitions = crate::definition::check_definitions(&[(
+            "counter.atoms.json", include_bytes!("../../tests/fixtures/counter.atoms.json").as_slice(),
+        )]).unwrap();
+        let law = crate::law::check_law(include_bytes!("../../tests/fixtures/counter.law"), &definitions).unwrap();
         let rename=Renaming {law: &law, fields:[("a","z"),("b","y")].into_iter().map(|(a,b)|
             (("v".into(),a.into(),None),Fact{snapshot:"v".into(),subject:b.into(),field:None,atom:None})).collect()};
         let ty=Type::Ref("R.Item".into());

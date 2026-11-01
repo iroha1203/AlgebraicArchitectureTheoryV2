@@ -158,7 +158,7 @@ fn owner_completion_coverage_stop_keeps_cases_without_whole_claim() {
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
     assert_eq!(normal.answers[3].status, Decision::Established);
-    let target = normal.prepared.inputs().law().declarations["RefCalc.nonnegative"].span;
+    let target = normal.prepared.inputs().law().declarations()["RefCalc.nonnegative"].span;
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
     let seen = Rc::new(Cell::new(false));

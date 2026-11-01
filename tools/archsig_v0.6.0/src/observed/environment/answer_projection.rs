@@ -282,7 +282,7 @@ impl Environment<'_> {
         let declaration = self
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("射影の元宣言がない")?;
         let params = match &declaration.signature {

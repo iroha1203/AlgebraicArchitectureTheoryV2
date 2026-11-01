@@ -166,7 +166,7 @@ pub(super) fn compare_expression(
                 dependencies: origins.to_vec(),
                 missing,
                 location: Some(crate::issue::Location::Law {
-                    span: inputs.law().exprs[expressions[0]].span,
+                    span: inputs.law().exprs()[expressions[0]].span,
                 }),
             });
             continue;

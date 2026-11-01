@@ -13,7 +13,7 @@ fn unsupported(
 ) -> ValidationFailure {
     ValidationFailure::UnsupportedExpression {
         location: crate::issue::Location::Law {
-            span: inputs.law().exprs[id].span,
+            span: inputs.law().exprs()[id].span,
         },
         feature: message.into(),
     }
@@ -30,11 +30,11 @@ fn updates(
     mut id: usize,
     c: &mut Control,
 ) -> Result<Updates, ValidationFailure> {
-    while let ExprKind::Group(inner) = inputs.law().exprs[id].kind {
+    while let ExprKind::Group(inner) = inputs.law().exprs()[id].kind {
         tick(c)?;
         id = inner;
     }
-    if let ExprKind::With { base, updates } = &inputs.law().exprs[id].kind {
+    if let ExprKind::With { base, updates } = &inputs.law().exprs()[id].kind {
         return Ok(Updates {
             base: *base,
             fields: updates.iter().map(|(name, _)| name.name.clone()).collect(),
@@ -364,8 +364,8 @@ pub(super) fn retain(
 ) -> Result<Output, ValidationFailure> {
     let pair = candidate.pair().ok_or("changeの対応署名がない")?;
     let declarations = [
-        &inputs.law().declarations[pair.source()],
-        &inputs.law().declarations[pair.target()],
+        &inputs.law().declarations()[pair.source()],
+        &inputs.law().declarations()[pair.target()],
     ];
     let mut params = vec![];
     let mut guards = vec![];
@@ -428,7 +428,7 @@ pub(super) fn retain(
     };
     let reference = reference_map(b, inputs, correspondence, st, tt, dependencies, c)?;
     let mut names = vec![];
-    let (source_parameters, source_fields) = inputs.definitions().declarations[st].signature
+    let (source_parameters, source_fields) = inputs.definitions().declarations()[st].signature
         .record_fields().ok_or("change元型にfieldがない")?;
     for field in source_parameters.iter().chain(source_fields) {
         tick(c)?;
@@ -508,7 +508,7 @@ pub(super) fn retain(
         for (side, entity) in [st, tt].into_iter().enumerate() {
             let ty = inputs
                 .definitions()
-                .declarations
+                .declarations()
                 .get(entity)
                 .and_then(|d| d.signature.field(&name[side]))
                 .ok_or("change更新fieldの宣言型がない")?

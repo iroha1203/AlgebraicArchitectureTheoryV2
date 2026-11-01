@@ -31,7 +31,7 @@ fn reference(ty: &str, subject: &str) -> Scalar {
     }
 }
 fn body(i: &CheckedInputs, name: &str) -> usize {
-    match i.law().declarations[name].signature {
+    match i.law().declarations()[name].signature {
         Signature::View { body, .. } => body,
         _ => panic!(),
     }
@@ -244,7 +244,7 @@ fn candidate_quantity_does_not_create_a_missing_target_atom() {
     assert!(out.scope.completions);
     assert!(
         !i.archmap()
-            .snapshots
+            .snapshots()
             .iter()
             .flat_map(|s| &s.subjects)
             .flat_map(|s| &s.fields)
@@ -481,7 +481,7 @@ fn finite_path_law_evaluates_all_seventy_two_original_primitive_assignments() {
     let defs = defs.canonical();
     let checked_defs =
         crate::definition::check_definitions(&[("definition0", defs.as_bytes())]).unwrap();
-    let digest = &checked_defs.vocabularies["Paths"].digest;
+    let digest = &checked_defs.vocabularies()["Paths"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Walk{{use vocabulary Paths version \"1\" digest \"{digest}\";view step(e:Hop):Path<Node,Node> =path(e);law required exact(e:Hop) when (forall n:Node . n.mark=n.mark):path(e)=path(e);}}"
     );

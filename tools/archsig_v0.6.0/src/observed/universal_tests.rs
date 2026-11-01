@@ -29,7 +29,7 @@ fn universal_mixed_reference_rational_rows_recheck_missing_and_subject_producers
         .prepared
         .inputs()
         .archmap()
-        .snapshots
+        .snapshots()
         .iter()
         .flat_map(|snapshot| snapshot.subjects.iter())
         .filter(|subject| subject.ty == "Affine.Sample")
@@ -102,7 +102,7 @@ fn universal_view_local_integer_binder_rechecks_header_domain_and_original_scope
     assert!(context.frame.is_some());
     assert!(result.contexts[root_domain].frame.is_none());
     let law = result.prepared.inputs().law();
-    let callee = &law.declarations["Calc.inner"];
+    let callee = &law.declarations()["Calc.inner"];
     let Signature::View { body, .. } = &callee.signature else {
         unreachable!()
     };
@@ -110,7 +110,7 @@ fn universal_view_local_integer_binder_rechecks_header_domain_and_original_scope
         var,
         split: crate::law::ast::QuantSplit::Fixed { body: equation, .. },
         ..
-    } = &law.exprs[*body].kind
+    } = &law.exprs()[*body].kind
     else {
         unreachable!()
     };
@@ -122,7 +122,7 @@ fn universal_view_local_integer_binder_rechecks_header_domain_and_original_scope
     else {
         unreachable!()
     };
-    assert_eq!(*span, law.exprs[*body].span);
+    assert_eq!(*span, law.exprs()[*body].span);
     assert_eq!(parameters, &[("x".into(), Type::Z)]);
     assert!(
         matches!(&result.nodes[local_domain].rule,Rule::Input {kind:"law",location:Location::Law {span}} if *span==var.span)
@@ -158,7 +158,7 @@ fn universal_view_local_integer_binder_rechecks_header_domain_and_original_scope
     };
     assert!(
         matches!(&result.nodes[body_source.0].payload,Some(Payload::Expression {location:Location::Law {span},parameters,..})
-        if *span==law.exprs[*equation].span && parameters==&[("x".into(),Type::Z),("y".into(),Type::Z)])
+        if *span==law.exprs()[*equation].span && parameters==&[("x".into(),Type::Z),("y".into(),Type::Z)])
     );
     let position = result.nodes[body_source.0]
         .arguments

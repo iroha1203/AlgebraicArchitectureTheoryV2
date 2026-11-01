@@ -18,7 +18,7 @@ fn dependent_answer_fiber_stop_preserves_prior_values_refutation_missing_and_pre
     let input = fixture::input(false, false, "r1");
     let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
-    let declaration = &normal.prepared.inputs().law().declarations["Reservations.option_values"];
+    let declaration = &normal.prepared.inputs().law().declarations()["Reservations.option_values"];
     let span = declaration.span;
     let expected = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));

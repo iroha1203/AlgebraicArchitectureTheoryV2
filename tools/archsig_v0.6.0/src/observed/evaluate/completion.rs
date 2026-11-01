@@ -116,7 +116,7 @@ impl Evaluator<'_, '_> {
                 .map(|p| (p.name.clone(), p.ty.erase()))
                 .collect();
             let location = Location::Law {
-                span: self.environment.indexes.inputs.law().exprs[body].span,
+                span: self.environment.indexes.inputs.law().exprs()[body].span,
             };
             let seed = self.push(Node {
                 ty: NodeType::Expression(
@@ -469,7 +469,7 @@ impl Evaluator<'_, '_> {
                             ty: NodeType::Expression(Type::Bool),
                             payload: Some(Payload::CompletionSeed {
                                 location: Location::Law {
-                                    span: self.environment.indexes.inputs.law().exprs[id].span,
+                                    span: self.environment.indexes.inputs.law().exprs()[id].span,
                                 },
                                 parameters: unbound.clone(),
                                 bindings: fixed.clone(),
@@ -480,7 +480,7 @@ impl Evaluator<'_, '_> {
                             rule: Rule::Input {
                                 kind: "law",
                                 location: Location::Law {
-                                    span: self.environment.indexes.inputs.law().exprs[id].span,
+                                    span: self.environment.indexes.inputs.law().exprs()[id].span,
                                 },
                             },
                             arguments: fixed

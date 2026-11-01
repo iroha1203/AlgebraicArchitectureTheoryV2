@@ -64,7 +64,7 @@ fn stop() {
             .iter()
             .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
     );
-    let span = match &normal.prepared.inputs().law().declarations["Applications.afMany"].signature {
+    let span = match &normal.prepared.inputs().law().declarations()["Applications.afMany"].signature {
         Signature::Law { params, .. } => params[0].span,
         _ => panic!(),
     };

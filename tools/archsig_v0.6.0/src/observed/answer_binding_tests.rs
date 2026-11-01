@@ -37,7 +37,7 @@ fn answer_binding_actual_scan_stop_keeps_prior_value_refutation_and_prefix() {
         evaluate_observed_bytes(fixture::input_mode("stop", "r1"), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     let Signature::View { params, .. } =
-        &normal.prepared.inputs().law().declarations["Applications.abKeep"].signature
+        &normal.prepared.inputs().law().declarations()["Applications.abKeep"].signature
     else {
         panic!()
     };

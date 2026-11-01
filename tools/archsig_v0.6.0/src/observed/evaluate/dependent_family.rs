@@ -411,7 +411,7 @@ impl Evaluator<'_, '_> {
                 bindings: fixed_bindings,
                 parts: vec![Part {
                     location: Location::Law {
-                        span: self.environment.indexes.inputs.law().exprs[body].span,
+                        span: self.environment.indexes.inputs.law().exprs()[body].span,
                     },
                     value: scalar,
                     residual: None,

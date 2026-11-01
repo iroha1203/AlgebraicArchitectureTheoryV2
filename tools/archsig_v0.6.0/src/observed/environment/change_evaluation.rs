@@ -166,7 +166,7 @@ fn evaluate_inner(
             .control
             .clone()
             .checkpoint(Checkpoint::PrimitiveValuation)?;
-        match &environment.indexes.inputs.law().exprs[current].kind {
+        match &environment.indexes.inputs.law().exprs()[current].kind {
             ExprKind::Group(inner) => current = *inner,
             ExprKind::Let { name, value, body } => {
                 let value = environment.scoped_ast(*value, &vars, &base, &declaration.reading)?;
@@ -289,7 +289,7 @@ pub(in crate::observed) fn update_shape(
     let mut base = None;
     while let Some(id) = pending.pop() {
         environment.tick()?;
-        match &environment.indexes.inputs.law().exprs[id].kind {
+        match &environment.indexes.inputs.law().exprs()[id].kind {
             ExprKind::Group(inner) => pending.push(*inner),
             ExprKind::Let { body, .. } => pending.push(*body),
             ExprKind::If {
@@ -545,7 +545,7 @@ pub(in crate::observed) fn solution_row(
         let declaration = environment
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .get(name)
             .ok_or("候補の元Lawがない")?;
         let outer = updated.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
@@ -629,7 +629,7 @@ mod tests {
             let environment = Environment::new(&inputs, &mut quiet()).unwrap();
             let update = evaluate(
                 &environment,
-                &inputs.law().declarations["Selected.bad"],
+                &inputs.law().declarations()["Selected.bad"],
                 &bindings(),
             )
             .unwrap();
@@ -663,7 +663,7 @@ mod tests {
         let environment = Environment::new(&inputs, &mut quiet()).unwrap();
         let update = evaluate(
             &environment,
-            &inputs.law().declarations["Selected.swap"],
+            &inputs.law().declarations()["Selected.swap"],
             &bindings(),
         )
         .unwrap();
@@ -701,7 +701,7 @@ mod tests {
             bs.push(("b".into(), Scalar::Bool(b)));
             let update = evaluate(
                 &environment,
-                &inputs.law().declarations["Selected.choose"],
+                &inputs.law().declarations()["Selected.choose"],
                 &bs,
             )
             .unwrap();
@@ -726,7 +726,7 @@ mod tests {
         let environment = Environment::new(&inputs, &mut quiet()).unwrap();
         let update = evaluate(
             &environment,
-            &inputs.law().declarations["Selected.keep"],
+            &inputs.law().declarations()["Selected.keep"],
             &bindings(),
         )
         .unwrap();
@@ -756,7 +756,7 @@ mod tests {
         ];
         let table = candidates(
             &environment,
-            &inputs.law().declarations["Selected.zero"],
+            &inputs.law().declarations()["Selected.zero"],
             &subjects,
         )
         .unwrap();
@@ -803,7 +803,7 @@ mod tests {
             let environment = Environment::new(&inputs, &mut quiet()).unwrap();
             let table = candidates(
                 &environment,
-                &inputs.law().declarations["Selected.choose"],
+                &inputs.law().declarations()["Selected.choose"],
                 &[bindings()[0].1.clone()],
             )
             .unwrap();

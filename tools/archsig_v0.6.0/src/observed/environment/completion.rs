@@ -167,7 +167,7 @@ impl Environment<'_> {
         }
         // 参照候補の可否は選択したfield以外の既知Map/ownerにも依存する。
         // その元登録族・原始事実と現在の由来を支持へ保持する。
-        for snapshot in &self.indexes.inputs.archmap().snapshots {
+        for snapshot in self.indexes.inputs.archmap().snapshots() {
             self.tick()?;
             all.scope.snapshots.insert(snapshot.id.clone());
             all.scope
@@ -328,8 +328,8 @@ impl Environment<'_> {
             match crate::archmap::check_completion_with_values::<
                 CheckFailure<Box<crate::issue::Issue>>,
             >(
-                &self.indexes.inputs.archmap().snapshots,
-                &self.indexes.inputs.law().definitions,
+                &self.indexes.inputs.archmap().snapshots(),
+                &self.indexes.inputs.law().definitions(),
                 &pinned,
                 &mut self.control.clone(),
             ) {
@@ -686,7 +686,7 @@ impl Environment<'_> {
         let declaration = self
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("補完Seedの元宣言がない")?;
         let (params, body, guard, ty) = match &declaration.signature {
@@ -704,10 +704,10 @@ impl Environment<'_> {
             _ => return Err("補完Seedの問いと宣言が違う".into()),
         };
         let body_location = Location::Law {
-            span: self.indexes.inputs.law().exprs[body].span,
+            span: self.indexes.inputs.law().exprs()[body].span,
         };
         let guard_location = guard.map(|id| Location::Law {
-            span: self.indexes.inputs.law().exprs[id].span,
+            span: self.indexes.inputs.law().exprs()[id].span,
         });
         if location != &body_location && Some(location) != guard_location.as_ref() {
             return Err("補完Seedが元body/guard出現でない".into());
@@ -1072,7 +1072,7 @@ impl Environment<'_> {
         let declaration = self
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("補完caseの元宣言がない")?;
         let params = match &declaration.signature {
@@ -1188,7 +1188,7 @@ impl Environment<'_> {
             seen.push(case.member);
             self.recheck_evaluation(graph, evaluation)?;
             let (expression, bindings, v) = self.evaluation(graph, evaluation)?;
-            let declaration = &self.indexes.inputs.law().declarations
+            let declaration = &self.indexes.inputs.law().declarations()
                 [request.declaration().ok_or("元要求に宣言がない")?];
             let body = match &declaration.signature {
                 Signature::View { body, .. } | Signature::Law { body, .. } => *body,
@@ -1326,7 +1326,7 @@ impl Environment<'_> {
     ) -> Result<(Vec<NodeRef>, Vec<NodeRef>), ValidationFailure> {
         let request = &graph.requests[seed.context.request];
         let declaration =
-            &self.indexes.inputs.law().declarations[request.declaration().ok_or("元要求に宣言がない")?];
+            &self.indexes.inputs.law().declarations()[request.declaration().ok_or("元要求に宣言がない")?];
         let body = match &declaration.signature {
             Signature::View { body, .. } | Signature::Law { body, .. } => *body,
             _ => return Err("補完producer宣言がない".into()),
@@ -1373,7 +1373,7 @@ impl Environment<'_> {
                     // 数値差などの合成式は、元bodyを返す実Sourceではない。
                     continue;
                 };
-                if *span == self.indexes.inputs.law().exprs[body].span {
+                if *span == self.indexes.inputs.law().exprs()[body].span {
                     evaluations.push(NodeRef(i));
                 }
             }
@@ -1447,7 +1447,7 @@ impl Environment<'_> {
         {
             let seed = self.completion_seed(graph, *body)?;
             let request = &graph.requests[seed.context.request];
-            let d = &self.indexes.inputs.law().declarations
+            let d = &self.indexes.inputs.law().declarations()
                 [request.declaration().ok_or("元要求に宣言がない")?];
             let Signature::Law {
                 role: r, guard: g, ..
@@ -1477,7 +1477,7 @@ impl Environment<'_> {
                     let s = self.completion_seed(graph, *actual)?;
                     if s.location
                         != (Location::Law {
-                            span: self.indexes.inputs.law().exprs[*id].span,
+                            span: self.indexes.inputs.law().exprs()[*id].span,
                         })
                         || s.fields != seed.fields
                         || s.sources != seed.sources
@@ -1829,7 +1829,7 @@ impl Environment<'_> {
         let d = self
             .indexes.inputs
             .law()
-            .declarations
+            .declarations()
             .get(request.declaration().ok_or("元要求に宣言がない")?)
             .ok_or("Seed宣言がない")?;
         let (params, body, guard, ty) = match &d.signature {
@@ -1849,12 +1849,12 @@ impl Environment<'_> {
         let is_guard = guard.is_some_and(|g| {
             *location
                 == (Location::Law {
-                    span: self.indexes.inputs.law().exprs[g].span,
+                    span: self.indexes.inputs.law().exprs()[g].span,
                 })
         });
         if *location
             != (Location::Law {
-                span: self.indexes.inputs.law().exprs[body].span,
+                span: self.indexes.inputs.law().exprs()[body].span,
             })
             && !is_guard
         {
@@ -2052,14 +2052,14 @@ impl Environment<'_> {
                     .0,
             ));
         }
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(None);
         };
-        Ok(match &self.indexes.inputs.law().exprs[id].kind {
+        Ok(match &self.indexes.inputs.law().exprs()[id].kind {
             ExprKind::Dotted(parts) if parts.len() > 1 => {
                 Some((parts[0].span.0, parts[parts.len() - 2].span.1))
             }
-            ExprKind::Field { base, .. } => Some(self.indexes.inputs.law().exprs[*base].span),
+            ExprKind::Field { base, .. } => Some(self.indexes.inputs.law().exprs()[*base].span),
             _ => None,
         })
     }

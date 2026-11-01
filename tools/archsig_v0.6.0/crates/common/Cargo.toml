@@ -1,0 +1,18 @@
+[package]
+name = "archsig-common"
+version = "0.6.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "../../src/common_lib.rs"
+
+[dependencies]
+num-bigint = "0.4"
+num-integer = "0.1"
+num-traits = "0.2"
+sha2 = "0.10"
+stacker = "0.1"
+
+[features]
+test-support = []

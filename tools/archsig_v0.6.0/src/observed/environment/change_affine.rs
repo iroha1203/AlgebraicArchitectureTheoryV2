@@ -45,7 +45,7 @@ pub(in crate::observed) struct Pending {
 fn unsupported(env: &Environment<'_>, id: usize, feature: &str) -> ValidationFailure {
     ValidationFailure::UnsupportedExpression {
         location: Location::Law {
-            span: env.indexes.inputs.law().exprs[id].span,
+            span: env.indexes.inputs.law().exprs()[id].span,
         },
         feature: feature.into(),
     }
@@ -157,7 +157,7 @@ pub(super) fn numeric_condition(
     }
     loop {
         env.tick()?;
-        match &env.indexes.inputs.law().exprs[id].kind {
+        match &env.indexes.inputs.law().exprs()[id].kind {
             ExprKind::Group(body) | ExprKind::Let { body, .. } => id = *body,
             ExprKind::Binary { lhs, rhs, .. } => {
                 return Ok([lhs, rhs]
@@ -427,7 +427,7 @@ fn parameter_coefficient_forms(
             &slot.field,
             &Scope::default(),
             reading,
-            env.indexes.inputs.law().exprs[id].span,
+            env.indexes.inputs.law().exprs()[id].span,
         )?;
         usable(env, id, &source)?;
         let Some(form) = source.affine else {
@@ -532,7 +532,7 @@ fn collect_updates(
     let mut current = body;
     loop {
         env.tick()?;
-        match &env.indexes.inputs.law().exprs[current].kind {
+        match &env.indexes.inputs.law().exprs()[current].kind {
             ExprKind::Group(inner) => current = *inner,
             ExprKind::Let { name, value, body } => {
                 let v = env.scoped_ast(*value, vars, &Scope::default(), reading)?;
@@ -943,7 +943,7 @@ fn requirement_equations(
     let mut matrix = vec![];
     let mut rhs = vec![];
     for (name, bindings) in requirements {
-        let law = &env.indexes.inputs.law().declarations[name];
+        let law = &env.indexes.inputs.law().declarations()[name];
         let Signature::Law {
             body,
             guard,

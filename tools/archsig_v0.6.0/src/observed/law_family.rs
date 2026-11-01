@@ -519,7 +519,7 @@ fn expected(g: &Graph, d: &Data) -> Result<(Arc<ArchitectureWitness>, Data), Val
                 span: Witness::Architecture(p.architecture.clone())
                     .inputs()
                     .law()
-                    .exprs
+                    .exprs()
                     .get(origin.body)
                     .ok_or("元Law族のbody式がない")?
                     .span,

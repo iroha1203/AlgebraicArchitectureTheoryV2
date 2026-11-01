@@ -377,7 +377,7 @@ fn incomplete_domains_and_unavailable_components_do_not_become_zero_functions() 
         "view left():Term<(Z)->Z> =fn(n:Z)=>n*n;view right():Term<(Z)->Z> =fn(n:Z)=>n*n+0;law required pair(a:Term<(Z)->Z>,b:Term<(Z)->Z>):(0,a)=(1,b);",
     );
     let term = |name: &str| {
-        let Signature::View { body, .. } = &i.law().declarations[name].signature else {
+        let Signature::View { body, .. } = &i.law().declarations()[name].signature else {
             panic!()
         };
         Scalar::Term(Box::new(

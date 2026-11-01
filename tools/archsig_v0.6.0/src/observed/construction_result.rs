@@ -682,7 +682,7 @@ impl ConstructionValue {
                 Some(ProjectionType::ObjectAlgebraRoot(
                     a.inputs
                         .archmap()
-                        .snapshots
+                        .snapshots()
                         .iter()
                         .find(|s| s.id == a.construction.root().snapshot)?
                         .subjects
@@ -698,7 +698,7 @@ impl ConstructionValue {
                 Some(ProjectionType::ObjectComponentRoot(
                     a.inputs
                         .archmap()
-                        .snapshots
+                        .snapshots()
                         .iter()
                         .find(|s| s.id == a.construction.root().snapshot)?
                         .subjects
@@ -719,7 +719,7 @@ impl ConstructionValue {
                 Some(ProjectionType::ArchitectureRoot(
                     a.inputs
                         .archmap()
-                        .snapshots
+                        .snapshots()
                         .iter()
                         .find(|s| s.id == a.construction.root().snapshot)?
                         .subjects
@@ -1090,7 +1090,7 @@ impl ArchitectureWitness {
             && let Some(crate::law::model::Declaration {
                 signature: crate::law::model::Signature::Change { params, .. },
                 ..
-            }) = inputs.law().declarations.get(name)
+            }) = inputs.law().declarations().get(name)
         {
             finite_change = true;
             for parameter in params.iter().skip(1) {
@@ -1128,7 +1128,7 @@ impl ArchitectureWitness {
             control.checkpoint(crate::control::Checkpoint::ObjectInstances)?;
             let subject = find_subject(&inputs, fact).map_err(ConstructionFailure::Inconsistent)?;
             if matches!(
-                inputs.definitions().declarations[subject.ty.as_str()].signature,
+                inputs.definitions().declarations()[subject.ty.as_str()].signature,
                 crate::definition::PrimitiveSignature::Arrow { .. }
             ) {
                 arrows.push(fact.clone());
@@ -1142,10 +1142,10 @@ impl ArchitectureWitness {
             .ty;
         let mut support = construction.base().known().family().to_vec();
         support.extend_from_slice(construction.owner_support());
-        for snapshot in &inputs.archmap().snapshots {
+        for snapshot in inputs.archmap().snapshots() {
             for subject in &snapshot.subjects {
                 control.checkpoint(crate::control::Checkpoint::ObjectInstances)?;
-                let declaration = &inputs.definitions().declarations[subject.ty.as_str()];
+                let declaration = &inputs.definitions().declarations()[subject.ty.as_str()];
                 let owner = match &declaration.signature {
                     crate::definition::PrimitiveSignature::Entity {
                         owner: Some(owner), ..
@@ -1247,7 +1247,7 @@ impl MapWitness {
             }
         };
         let crate::definition::PrimitiveSignature::Correspondence { from, to, .. } =
-            &inputs.definitions().declarations[name].signature
+            &inputs.definitions().declarations()[name].signature
         else {
             return Err(ConstructionFailure::Inconsistent(
                 "mapの宣言がcorrespondenceでない".into(),
@@ -1373,7 +1373,7 @@ fn find_subject<'a>(
 ) -> Result<&'a crate::archmap::Subject, String> {
     inputs
         .archmap()
-        .snapshots
+        .snapshots()
         .iter()
         .find(|s| s.id == fact.snapshot)
         .and_then(|s| s.subjects.iter().find(|s| s.id == fact.subject))
@@ -1601,7 +1601,7 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
         };
         let origin = inputs
             .archmap()
-            .origins
+            .origins()
             .iter()
             .find(|o| &o.id == origin)
             .ok_or("native支持のoriginがない")?;

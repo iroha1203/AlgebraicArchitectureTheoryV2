@@ -16,13 +16,13 @@ impl Environment<'_> {
         limit: usize,
     ) -> Result<Option<Condition>, ValidationFailure> {
         let span = self.expression_span(graph, source)?;
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(&span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(&span) else {
             return Ok(None);
         };
         if !self.is_path(id)? {
             return Ok(None);
         }
-        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
+        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs()[id].kind else {
             unreachable!()
         };
         if children.len() != args.len() {
@@ -104,7 +104,7 @@ impl Environment<'_> {
                 Ok(false)
             };
         };
-        let Some(&id) = self.indexes.inputs.law().program.expressions.get(span) else {
+        let Some(&id) = self.indexes.inputs.law().program().expressions.get(span) else {
             return if path_payload {
                 Err("Path条件の元式がない".into())
             } else {
@@ -118,7 +118,7 @@ impl Environment<'_> {
                 Ok(false)
             };
         }
-        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs[id].kind else {
+        let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs()[id].kind else {
             unreachable!()
         };
         let children = node

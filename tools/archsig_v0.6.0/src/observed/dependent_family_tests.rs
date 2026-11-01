@@ -2,7 +2,7 @@ fn dependent_private_fixture(body: &str, flags: [Option<bool>; 2]) -> InputSourc
     let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Dep","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Dep.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Dep.Child","meaning":"根に属する対象。","parameters":[{"name":"owner","type":["Ref","Dep.Root"],"meaning":"所属。"}],"fields":[],"alignments":[]},{"kind":"entity","name":"Dep.Leaf","meaning":"同じ根に属する別の対象。","parameters":[{"name":"owner","type":["Ref","Dep.Root"],"meaning":"所属。"}],"fields":[{"name":"ok","type":"Bool","meaning":"観測条件。"}],"alignments":[]}]}]}"#;
     let checked =
         crate::definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Dep"].digest;
+    let digest = &checked.vocabularies()["Dep"].digest;
     let law = format!(
         "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Inspect {{ use vocabulary Dep version \"1\" digest \"{digest}\"; {body} }}"
     );
@@ -119,7 +119,7 @@ fn dependent_private_body_phase_stop() {
     let inputs = dependent_private_fixture(&body, [None, Some(false)]);
     let mut quiet = quiet();
     let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
-    let target = prepared.inputs().law().declarations["Inspect.chain"].span;
+    let target = prepared.inputs().law().declarations()["Inspect.chain"].span;
     let normal = evaluate_observed(prepared, &mut quiet).unwrap();
     assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
     assert_eq!(normal.answers[1].status, Decision::Refuted);

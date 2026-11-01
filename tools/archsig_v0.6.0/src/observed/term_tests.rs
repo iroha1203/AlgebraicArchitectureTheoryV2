@@ -7,7 +7,7 @@ fn term_private_inputs(revision: &str) -> InputSources {
         term_fixture::DEFINITIONS.as_bytes(),
     )])
     .unwrap();
-    let digest = &d.vocabularies["Terms"].digest;
+    let digest = &d.vocabularies()["Terms"].digest;
     InputSources::from_bytes(
         vec![term_fixture::DEFINITIONS.as_bytes().to_vec()],
         term_fixture::law(digest).into_bytes(),

@@ -241,7 +241,7 @@ fn coupled_inputs() -> Arc<CheckedInputs> {
     assert_ne!(definitions, original);
     let checked =
         crate::definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
-    let digest = &checked.vocabularies["Pattern"].digest;
+    let digest = &checked.vocabularies()["Pattern"].digest;
     let map=fixture::MAP.replace(r#""field":"Pattern.Part.link","value":["v","p"]"#,r#""field":"Pattern.Part.link","value":["v","q"]"#)
         .replace(r#""atoms":["#,r#""atoms":[{"id":"lq","subject":"q","field":"Pattern.Part.link","value":["v","p"],"origin":"model"},"#)
         .replace("@DIGEST@",digest);

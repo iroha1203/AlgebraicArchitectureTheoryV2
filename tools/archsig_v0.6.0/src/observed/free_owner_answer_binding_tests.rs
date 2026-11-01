@@ -21,7 +21,7 @@ fn stop() {
     let input = fixture::input(false, false, "r1");
     let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
-    let declaration = &normal.prepared.inputs().law().declarations["Reservations.foMixed"];
+    let declaration = &normal.prepared.inputs().law().declarations()["Reservations.foMixed"];
     assert!(normal.answers[5].claim.is_some());
     assert!(!normal.answers[5].evidence.is_empty());
     let span = match &declaration.signature {

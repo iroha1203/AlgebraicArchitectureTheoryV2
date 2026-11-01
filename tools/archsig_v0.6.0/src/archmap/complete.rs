@@ -8,7 +8,7 @@ use super::*;
 use crate::control::{Checkpoint, Control};
 use crate::json::InputError;
 
-pub(crate) struct FieldAssignment {
+pub struct FieldAssignment {
     pub snapshot: String,
     pub subject: String,
     pub field: String,
@@ -565,7 +565,7 @@ pub(crate) fn check_completion<E: InputError>(
 
 /// 元欠測slotへ置いた型付き値が、既知Map/ownerを保つ補完へ拡張できるかを検査する。
 /// 入力表やLawの真偽を変更せず、通常の存在検査と同じ制約を使う。
-pub(crate) fn check_completion_with_values<E: InputError>(
+pub fn check_completion_with_values<E: InputError>(
     snapshots: &[Snapshot],
     definitions: &CheckedDefinitions,
     pinned: &[FieldAssignment],
@@ -576,7 +576,7 @@ pub(crate) fn check_completion_with_values<E: InputError>(
 
 /// 既知slotを含む内部候補も、同じ原始型・所属・Map全域性で検査する。
 /// 観測表は不変とし、未代入の欠測が整合する補完を持つことを要求する。
-pub(crate) fn check_valuation_with_values<E: InputError>(
+pub fn check_valuation_with_values<E: InputError>(
     snapshots: &[Snapshot],
     definitions: &CheckedDefinitions,
     pinned: &[FieldAssignment],

@@ -306,7 +306,7 @@ pub(super) fn build(
         None,
         None,
     )?;
-    let declaration = &env.indexes.inputs.law().declarations[&model.change];
+    let declaration = &env.indexes.inputs.law().declarations()[&model.change];
     let Signature::Change { params, guard, .. } = &declaration.signature else {
         return Err("局所changeの署名がない".into());
     };

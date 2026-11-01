@@ -38,7 +38,7 @@ impl Builder<'_> {
         let span = self
             .inputs
             .law()
-            .exprs
+            .exprs()
             .get(expression)
             .ok_or("多項式operandの元式がない")?
             .span;
@@ -125,7 +125,7 @@ impl Builder<'_> {
             match &self
                 .inputs
                 .law()
-                .exprs
+                .exprs()
                 .get(current)
                 .ok_or("多項式operandの外側式がない")?
                 .kind
@@ -182,7 +182,7 @@ impl Builder<'_> {
                 _ => return Err("多項式operandの元等式までの束縛が違う".into()),
             }
         }
-        let ExprKind::Binary { lhs, rhs, .. } = self.inputs.law().exprs[eq].kind else {
+        let ExprKind::Binary { lhs, rhs, .. } = self.inputs.law().exprs()[eq].kind else {
             return Err("多項式operandの元等式がない".into());
         };
         let left = self.closed(lhs, &locals)?;
@@ -255,7 +255,7 @@ fn original_bound(
         .ok_or("多項式Lawの元instanceがない")?;
     let declaration = inputs
         .law()
-        .declarations
+        .declarations()
         .get(&original.declaration().name)
         .ok_or("多項式Lawの元宣言がない")?;
     let Signature::Law {
@@ -353,7 +353,7 @@ fn original_bound(
         }
         let ast = inputs
             .law()
-            .exprs
+            .exprs()
             .get(expression)
             .ok_or("多項式Lawの元式がない")?;
         push(

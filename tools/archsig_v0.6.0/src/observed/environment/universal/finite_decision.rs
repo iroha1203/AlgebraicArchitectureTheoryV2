@@ -47,7 +47,7 @@ impl Environment<'_> {
     ) -> Result<Option<(bool, NodeRef)>, ValidationFailure> {
         if !self.universal_finite_syntax(plan.body)?
             || !matches!(
-                self.indexes.inputs.law().exprs[plan.body].kind,
+                self.indexes.inputs.law().exprs()[plan.body].kind,
                 ExprKind::Quant { .. }
             )
         {
@@ -56,7 +56,7 @@ impl Environment<'_> {
         let Some(evaluation) = self.universal_completed_pointwise(
             graph,
             template,
-            self.indexes.inputs.law().exprs[plan.body].span,
+            self.indexes.inputs.law().exprs()[plan.body].span,
             bindings,
         )?
         else {

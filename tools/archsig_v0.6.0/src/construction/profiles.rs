@@ -254,7 +254,7 @@ pub fn construct_profiles(
         );
     }
     let mut index = BTreeMap::new();
-    for snapshot in &inputs.archmap().snapshots {
+    for snapshot in inputs.archmap().snapshots() {
         check(control)?;
         for subject in &snapshot.subjects {
             check(control)?;
@@ -366,7 +366,7 @@ mod tests {
     fn current_inputs_reject_forged_profiles_domains_patterns_and_classes() {
         let d = include_bytes!("../../tests/fixtures/configuration-profile.atoms.json");
         let definitions = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
-        let digest = &definitions.vocabularies["Profile"].digest;
+        let digest = &definitions.vocabularies()["Profile"].digest;
         let l = include_str!("../../tests/fixtures/configuration-profile.law")
             .replace("@PROFILE_DIGEST@", digest);
         let a = include_str!("../../tests/fixtures/configuration-profile.archmap.json")

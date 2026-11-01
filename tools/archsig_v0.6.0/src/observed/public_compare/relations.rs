@@ -314,7 +314,7 @@ pub(super) fn operand_path(
     let scalar = |fact: &crate::archmap::Fact| -> Result<Scalar, ValidationFailure> {
         let subject = inputs
             .archmap()
-            .snapshots
+            .snapshots()
             .iter()
             .flat_map(|s| &s.subjects)
             .find(|s| s.snapshot == fact.snapshot && s.id == fact.subject)
@@ -994,7 +994,7 @@ pub(in crate::observed) fn recheck(
                 return Err("元relationのSourceがない".into());
             };
             let expression = expression.ok_or("元relationの式がない")?;
-            if *span != w.inputs.law().exprs[expression].span
+            if *span != w.inputs.law().exprs()[expression].span
                 || source_bindings != bindings
                 || !parameters.is_empty()
             {

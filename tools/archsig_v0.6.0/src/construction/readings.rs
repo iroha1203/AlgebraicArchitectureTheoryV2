@@ -129,7 +129,7 @@ fn subject<'a>(
     fact: &FactPointer,
     control: &mut Control,
 ) -> Result<&'a Subject, ConstructionFailure> {
-    for snapshot in &inputs.archmap().snapshots {
+    for snapshot in inputs.archmap().snapshots() {
         checkpoint(control)?;
         if snapshot.id != fact.snapshot {
             continue;
@@ -243,7 +243,7 @@ fn choices(
             }
         }
     } else {
-        for snapshot in &inputs.archmap().snapshots {
+        for snapshot in inputs.archmap().snapshots() {
             checkpoint(control)?;
             for member in &snapshot.subjects {
                 checkpoint(control)?;
@@ -283,7 +283,7 @@ pub fn object_reading_instances(
     let root_ty = &subject(inputs, root, control)?.ty;
     let visible_namespaces = namespaces(inputs, construction.reading(), control)?;
     let mut local_types = BTreeSet::from([root_ty.to_string()]);
-    for declaration in inputs.definitions().declarations.values() {
+    for declaration in inputs.definitions().declarations().values() {
         checkpoint(control)?;
         if visible(inputs, &declaration.name, &visible_namespaces)
             && matches!(&declaration.signature,
@@ -324,7 +324,7 @@ pub fn object_reading_instances(
     checkpoint(control)?;
     let mut declarations = Vec::new();
     let mut instances = Vec::new();
-    for declaration in inputs.law().declarations.values() {
+    for declaration in inputs.law().declarations().values() {
         checkpoint(control)?;
         if declaration.reading != construction.reading() {
             continue;
@@ -335,7 +335,7 @@ pub fn object_reading_instances(
         };
         let metadata = inputs
             .law()
-            .infos
+            .infos()
             .iter()
             .find(|info| info.name == declaration.name)
             .ok_or_else(|| ConstructionFailure::Inconsistent("元Law/view metadataがない".into()))?
@@ -479,7 +479,7 @@ mod tests {
         let l = include_str!("../../tests/fixtures/object-instances.law");
         let a = include_str!("../../tests/fixtures/object-instances.archmap.json");
         let definitions = crate::definition::check_definitions(&[("definition0", d)]).unwrap();
-        let digest = &definitions.vocabularies["Instances"].digest;
+        let digest = &definitions.vocabularies()["Instances"].digest;
         crate::input::check_inputs(
             crate::input::InputSources::from_bytes(
                 vec![d.to_vec()],

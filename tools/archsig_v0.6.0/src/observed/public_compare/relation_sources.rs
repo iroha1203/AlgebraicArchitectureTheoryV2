@@ -324,7 +324,7 @@ pub(in crate::observed) fn validate_node(
                 || law.expr_type(*left) != Some(ty)
                 || location
                     != &(Location::Law {
-                        span: law.exprs[*left].span,
+                        span: law.exprs()[*left].span,
                     })
                 || parameters
                     != &params
@@ -730,7 +730,7 @@ pub(in crate::observed) fn domains(
                 expression: *left,
                 ty,
                 location: Location::Law {
-                    span: w.inputs.law().exprs[*left].span,
+                    span: w.inputs.law().exprs()[*left].span,
                 },
                 parameters: params
                     .iter()
@@ -864,7 +864,7 @@ pub(in crate::observed) fn source_allowed(
     else {
         return Ok(false);
     };
-    let outer = w.inputs.law().exprs[*guard].span;
+    let outer = w.inputs.law().exprs()[*guard].span;
     Ok(outer.0 <= span.0 && span.1 <= outer.1)
 }
 pub(in crate::observed) fn prepare_sources(

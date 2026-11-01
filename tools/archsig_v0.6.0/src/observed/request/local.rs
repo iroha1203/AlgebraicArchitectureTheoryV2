@@ -32,7 +32,7 @@ pub(super) fn resolve(
                 };
                 let full = declaration(law, name, c, &raw.id)?;
                 if !matches!(
-                    (&law.declarations[&full].signature, key.as_str()),
+                    (&law.declarations()[&full].signature, key.as_str()),
                     (Signature::Law { .. }, "law") | (Signature::Change { .. }, "using")
                 ) {
                     return Err(err(&raw.id, key, "declaration kind does not match"));
@@ -74,7 +74,7 @@ pub(super) fn resolve(
             let Some(name) = &selected else {
                 return Err(err(&raw.id, &key, "bindings cannot be specified when law is omitted"));
             };
-            let Signature::Law { params, .. } = &law.declarations[name].signature else {
+            let Signature::Law { params, .. } = &law.declarations()[name].signature else {
                 unreachable!()
             };
             let short = key.strip_prefix("bind.").unwrap_or(&key);
@@ -117,7 +117,7 @@ pub(super) fn resolve(
                 });
         }
     } else if let Some(name) = selected {
-        let Signature::Law { params, .. } = &law.declarations[&name].signature else {
+        let Signature::Law { params, .. } = &law.declarations()[&name].signature else {
             unreachable!()
         };
         let parameters = params
@@ -166,7 +166,7 @@ pub(super) fn check(
         ..
     }) = r.arguments.iter().find(|a| a.name == "law")
     {
-        let Signature::Law { params, .. } = &law.declarations[name].signature else {
+        let Signature::Law { params, .. } = &law.declarations()[name].signature else {
             unreachable!()
         };
         return binding_constraints(law, map, requests, names, r, params, c);

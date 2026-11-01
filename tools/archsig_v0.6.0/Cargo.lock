@@ -15,13 +15,45 @@ dependencies = [
 name = "archsig"
 version = "0.6.0"
 dependencies = [
+ "archsig-computation",
  "nix",
+ "num-bigint",
+ "rustix",
+ "signal-hook",
+ "stacker",
+]
+
+[[package]]
+name = "archsig-common"
+version = "0.6.0"
+dependencies = [
  "num-bigint",
  "num-integer",
  "num-traits",
- "rustix",
  "sha2",
- "signal-hook",
+ "stacker",
+]
+
+[[package]]
+name = "archsig-computation"
+version = "0.6.0"
+dependencies = [
+ "archsig-common",
+ "archsig-input",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
+ "stacker",
+]
+
+[[package]]
+name = "archsig-input"
+version = "0.6.0"
+dependencies = [
+ "archsig-common",
+ "num-bigint",
+ "num-integer",
+ "num-traits",
  "stacker",
 ]
 

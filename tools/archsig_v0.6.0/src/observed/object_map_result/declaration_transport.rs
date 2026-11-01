@@ -335,7 +335,7 @@ fn field_read(
 ) -> Result<Option<(usize, String)>, ValidationFailure> {
     loop {
         tick(c)?;
-        match &inputs.law().exprs[id].kind {
+        match &inputs.law().exprs()[id].kind {
             ExprKind::Group(inner) => id = *inner,
             ExprKind::Dotted(parts) if parts.len() == 2 => {
                 for (position, parameter) in parameters.iter().enumerate() {
@@ -363,7 +363,7 @@ fn read_parameter(
 ) -> Result<Option<usize>, ValidationFailure> {
     loop {
         tick(c)?;
-        match &inputs.law().exprs[id].kind {
+        match &inputs.law().exprs()[id].kind {
             ExprKind::Group(inner) => id = *inner,
             ExprKind::Dotted(parts) if parts.len() == 1 => {
                 for (position, parameter) in parameters.iter().enumerate() {
@@ -722,7 +722,7 @@ fn expression(
             (
                 "location",
                 crate::result::location_wire(&crate::issue::Location::Law {
-                    span: inputs.law().exprs[id].span,
+                    span: inputs.law().exprs()[id].span,
                 }),
             ),
             (
@@ -777,8 +777,8 @@ pub(super) fn retain(
             continue;
         }
         let pair = candidate.pair().ok_or("localの対応署名がない")?;
-        let source = &inputs.law().declarations[pair.source()];
-        let target = &inputs.law().declarations[pair.target()];
+        let source = &inputs.law().declarations()[pair.source()];
+        let target = &inputs.law().declarations()[pair.target()];
         let (
             Signature::Local {
                 params: sp,
