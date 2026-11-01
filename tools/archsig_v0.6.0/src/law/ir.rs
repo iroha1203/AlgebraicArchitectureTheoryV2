@@ -209,7 +209,13 @@ mod tests {
             .replace("s.count;", "(s).count;")
             .replace("s.count >= 0", "amount(s) >= 0");
         let law = check_law(source.as_bytes(), &definitions).unwrap();
-        let fields = law.program.nodes.iter().enumerate().filter_map(|(id, node)| node.field.clone().map(|field| (id, field))).collect::<Vec<_>>();
+        let fields = law
+            .program
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(id, node)| node.field.clone().map(|field| (id, field)))
+            .collect::<Vec<_>>();
         assert!(!fields.is_empty());
         assert!(!law.program.callees.is_empty());
         let lexical = law
