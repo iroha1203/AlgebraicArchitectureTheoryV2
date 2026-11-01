@@ -33,9 +33,7 @@ fn constant_forms(
     };
     let mut known = true;
     for form in forms {
-        control
-            .clone()
-            .checkpoint(crate::control::Checkpoint::ObjectLawFamily)?;
+        control.checkpoint(crate::control::Checkpoint::ObjectLawFamily)?;
         match form.value(control)? {
             Some(value) if value != numeric::zero(&value.ty(), control)? => return Ok(Some(false)),
             Some(_) => (),
@@ -240,13 +238,10 @@ fn analyze_inner(
                     return Ok(Analysis::default());
                 };
                 let difference = left
-                    .binary(BinOp::Sub, &right, &mut env.control.clone())
+                    .binary(BinOp::Sub, &right, &env.control)
                     .map_err(invalid)?;
                 if *op != BinOp::Eq {
-                    if let Some(value) = difference
-                        .evaluate(&[], &mut env.control.clone())
-                        .map_err(invalid)?
-                    {
+                    if let Some(value) = difference.evaluate(&[], &env.control).map_err(invalid)? {
                         let zero = numeric::zero(&difference.ty, &env.control)?;
                         let Scalar::Bool(holds) =
                             numeric::binary(*op, value.scalar(), &zero, &env.control)?
@@ -312,7 +307,7 @@ fn polynomial(
             return Ok(None);
         }
         if let Some(value @ (Scalar::Z(_) | Scalar::Q(..))) = value.known_value.as_ref() {
-            return Polynomial::constant(value.clone(), &mut env.control.clone())
+            return Polynomial::constant(value.clone(), &env.control)
                 .map(Some)
                 .map_err(invalid);
         }
@@ -344,8 +339,8 @@ fn polynomial(
             None
         };
         if let Some((constant, terms)) = coordinates {
-            let mut control = env.control.clone();
-            let mut result = Polynomial::constant(constant, &mut control).map_err(invalid)?;
+            let control = env.control.clone();
+            let mut result = Polynomial::constant(constant, &control).map_err(invalid)?;
             for (argument, coefficient) in terms {
                 let index = match normalized.basis.iter().position(|a| a == &argument) {
                     Some(index) => index,
@@ -355,14 +350,13 @@ fn polynomial(
                     }
                 };
                 let variable =
-                    Polynomial::variable(&result.ty, index, &mut control).map_err(invalid)?;
-                let coefficient =
-                    Polynomial::constant(coefficient, &mut control).map_err(invalid)?;
+                    Polynomial::variable(&result.ty, index, &control).map_err(invalid)?;
+                let coefficient = Polynomial::constant(coefficient, &control).map_err(invalid)?;
                 let term = variable
-                    .binary(BinOp::Mul, &coefficient, &mut control)
+                    .binary(BinOp::Mul, &coefficient, &control)
                     .map_err(invalid)?;
                 result = result
-                    .binary(BinOp::Add, &term, &mut control)
+                    .binary(BinOp::Add, &term, &control)
                     .map_err(invalid)?;
             }
             return Ok(Some(result));
@@ -430,7 +424,7 @@ fn polynomial(
                 let Some(right) = polynomial(env, *rhs, vars, base, reading, normalized)? else {
                     return Ok(None);
                 };
-                left.binary(*op, &right, &mut env.control.clone())
+                left.binary(*op, &right, &env.control)
                     .map(Some)
                     .map_err(invalid)
             }
@@ -442,11 +436,11 @@ fn polynomial(
                 else {
                     return Ok(None);
                 };
-                let mut control = env.control.clone();
+                let control = env.control.clone();
                 let zero = numeric::zero(&value.ty, &control)?;
-                Polynomial::constant(zero, &mut control)
+                Polynomial::constant(zero, &control)
                     .map_err(invalid)?
-                    .binary(BinOp::Sub, &value, &mut control)
+                    .binary(BinOp::Sub, &value, &control)
                     .map(Some)
                     .map_err(invalid)
             }

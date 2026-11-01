@@ -19,7 +19,7 @@ fn prepared(law: &str, map: &str) -> PreparedObserved {
                 law.replace("@PROFILE_DIGEST@", digest).into_bytes(),
                 map.replace("@PROFILE_DIGEST@", digest).into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
@@ -27,7 +27,7 @@ fn prepared(law: &str, map: &str) -> PreparedObserved {
         inputs.law(),
         inputs.archmap(),
         &["b=build(ProfileRead,on=@v/A)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -37,7 +37,7 @@ fn prepared(law: &str, map: &str) -> PreparedObserved {
     }
 }
 fn start(p: &PreparedObserved) -> (Graph, super::super::object_component_diagram::Diagram) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -45,14 +45,14 @@ fn start(p: &PreparedObserved) -> (Graph, super::super::object_component_diagram
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let objects = crate::observed::object_component_diagram::retain(
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -73,7 +73,7 @@ fn copy(g: &Graph, c: &Control) -> Graph {
     p
 }
 fn replay(p: &PreparedObserved, g: &Graph) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut prefix = copy(g, &quiet());
     prefix.nodes.clear();
     prefix.contexts.clear();
@@ -111,10 +111,10 @@ fn two_boolean_parameters_keep_all_four_rows_and_actual_option_values() {
     );
     let p = prepared(&law, MAP);
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     // 対象ごとの族は同じ経路を通るので、最初の対象を代表にする。
     let expression = selected(&g, &o, 0, ".adjusted");
-    let Outcome::Family(f) = evaluate(&env, &mut g, expression, &mut quiet()).unwrap() else {
+    let Outcome::Family(f) = evaluate(&env, &mut g, expression, &quiet()).unwrap() else {
         panic!()
     };
     assert_eq!(f.domains.len(), 2);
@@ -170,9 +170,9 @@ fn composite_option_bool_and_set_bool_use_complete_domains() {
     let law=LAW.replace("view root(r: Root): Bool = true;","view choose(p:Part,x:Option<Bool>,b:Bool):Option<Bool> = x; view size(p:Part,x:Set<Bool>):Z=count(x);");
     let p = prepared(&law, MAP);
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let expression = selected(&g, &o, 0, ".choose");
-    let Outcome::Family(f) = evaluate(&env, &mut g, expression, &mut quiet()).unwrap() else {
+    let Outcome::Family(f) = evaluate(&env, &mut g, expression, &quiet()).unwrap() else {
         panic!()
     };
     assert_eq!(f.expressions.len(), 6);
@@ -193,7 +193,7 @@ fn composite_option_bool_and_set_bool_use_complete_domains() {
         );
     }
     let expression = selected(&g, &o, 0, ".size");
-    let Outcome::Family(f) = evaluate(&env, &mut g, expression, &mut quiet()).unwrap() else {
+    let Outcome::Family(f) = evaluate(&env, &mut g, expression, &quiet()).unwrap() else {
         panic!()
     };
     assert_eq!(f.evaluations.len(), 4);
@@ -228,10 +228,10 @@ fn empty_roster_product_is_empty_but_list_of_empty_roster_has_one_value() {
     let map = map.replace("\"origin\":\"model\"},\n]", "\"origin\":\"model\"}\n]");
     let p = prepared(&law, &map);
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let expression = selected(&g, &o, 0, ".vacant");
     let before = g.instances.len();
-    let Outcome::Family(f) = evaluate(&env, &mut g, expression, &mut quiet()).unwrap() else {
+    let Outcome::Family(f) = evaluate(&env, &mut g, expression, &quiet()).unwrap() else {
         panic!()
     };
     assert!(f.expressions.is_empty() && f.evaluations.is_empty());
@@ -252,7 +252,7 @@ fn empty_roster_product_is_empty_but_list_of_empty_roster_has_one_value() {
         ])
     );
     let expression = selected(&g, &o, 0, ".emptyList");
-    let Outcome::Family(f) = evaluate(&env, &mut g, expression, &mut quiet()).unwrap() else {
+    let Outcome::Family(f) = evaluate(&env, &mut g, expression, &quiet()).unwrap() else {
         panic!()
     };
     assert_eq!(f.evaluations.len(), 1);
@@ -271,7 +271,7 @@ fn empty_roster_product_is_empty_but_list_of_empty_roster_has_one_value() {
     replay(&p, &g);
 }
 fn family(env: &Environment<'_>, g: &mut Graph, r: NodeRef) -> Family {
-    let Outcome::Family(f) = evaluate(env, g, r, &mut quiet()).unwrap() else {
+    let Outcome::Family(f) = evaluate(env, g, r, &quiet()).unwrap() else {
         panic!()
     };
     f
@@ -290,7 +290,7 @@ fn fp_rows_and_missing_body_keep_real_values_and_original_missing_slots() {
         };
         let p = prepared(&law, &map);
         let (mut g, o) = start(&p);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let r = selected(&g, &o, 0, ".residue");
         let f = family(&env, &mut g, r);
         assert_eq!(f.evaluations.len(), 2);
@@ -378,7 +378,7 @@ fn external_prepared(extra: &str) -> PreparedObserved {
                     "../../../tests/fixtures/object-view-transport.archmap.json"
                 )),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
@@ -386,7 +386,7 @@ fn external_prepared(extra: &str) -> PreparedObserved {
         inputs.law(),
         inputs.archmap(),
         &["b=build(Before,on=@v/a)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -400,10 +400,10 @@ fn nonnumeric_and_missing_owned_domains_preserve_the_whole_signature_without_fak
     let law=LAW.replace("view root(r: Root): Bool = true;","view shift(p:Part,n:Text,b:Bool):Z=amount(p); view owned(r:Root,x:Option<Part[r]>,b:Bool):Bool=true;");
     let p = prepared(&law, MAP);
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let r = selected(&g, &o, 0, ".shift");
     let before = copy(&g, &quiet());
-    let Outcome::Pending(pending) = evaluate(&env, &mut g, r, &mut quiet()).unwrap() else {
+    let Outcome::Pending(pending) = evaluate(&env, &mut g, r, &quiet()).unwrap() else {
         panic!()
     };
     assert_eq!(pending.expression, r);
@@ -447,7 +447,7 @@ fn nonnumeric_and_missing_owned_domains_preserve_the_whole_signature_without_fak
         "view ownershipProbe(c:Left.Child,a:Left.ExternalRoot,x:Option<Left.ExternalChild[a]>,b:Bool):Bool=true;",
     );
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut count = 0;
     for row in &o.readings {
         if row.object != 0
@@ -460,8 +460,7 @@ fn nonnumeric_and_missing_owned_domains_preserve_the_whole_signature_without_fak
             continue;
         }
         let before = copy(&g, &quiet());
-        let Outcome::Pending(pending) =
-            evaluate(&env, &mut g, row.expression, &mut quiet()).unwrap()
+        let Outcome::Pending(pending) = evaluate(&env, &mut g, row.expression, &quiet()).unwrap()
         else {
             panic!()
         };
@@ -499,7 +498,7 @@ fn mixed_numeric_rows_retain_all_numeric_parameters_and_finite_choices() {
             "view shift(p:Part,n:{parameter_ty},b:Bool,m:{ty}):{ty}=if b then {term}+m+{offset} else {term}+m;"));
         let p = prepared(&law, MAP);
         let (mut g, o) = start(&p);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let r = selected(&g, &o, 0, ".shift");
         let f = family(&env, &mut g, r);
         assert_eq!(f.domains.len(), 1);
@@ -556,14 +555,14 @@ fn family_metadata_rejects_duplicated_quantifiers() {
     let law=LAW.replace("view root(r: Root): Bool = true;","view adjusted(p:Part,a:Bool,b:Bool):Z=amount(p)+(if a then 1 else 0)+(if b then 1 else 0);");
     let p = prepared(&law, MAP);
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let r = selected(&g, &o, 0, ".adjusted");
     let f = family(&env, &mut g, r);
     assert_eq!(g.get(f.evaluation).unwrap().scope.quantifiers.len(), 2);
     let mut bad = copy(&g, &quiet());
     let q = bad.nodes[f.evaluation.0].scope.quantifiers[0].clone();
     bad.nodes[f.evaluation.0].scope.quantifiers.push(q);
-    let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
     assert!(
         fresh
             .recheck_node(&bad, bad.get(f.evaluation).unwrap(), f.evaluation.0)
@@ -577,7 +576,7 @@ fn conditional_membership_keeps_all_bool_rows_without_evaluating_constant_true()
         "view conditionalProbe(c:Left.Child,a:Left.ExternalRoot,e:Left.ExternalChild[a],b:Bool):Bool=true;",
     );
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut count = 0;
     for row in &o.readings {
         let (_, origin) = reading::origin(&g, row.expression).unwrap();
@@ -638,11 +637,11 @@ fn saved_family_domains_rows_and_evaluations_survive_a_later_request() {
             "b=build(ProfileRead,on=@v/A)",
             "later=build(ProfileRead,on=@v/B)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let expression = selected(&g, &o, 0, ".adjusted");
     let start = g.nodes.len();
     let f = family(&env, &mut g, expression);
@@ -654,17 +653,17 @@ fn saved_family_domains_rows_and_evaluations_survive_a_later_request() {
         &env,
         &mut g,
         &p.requests().requests()[1],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(later.complete);
-    let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
     for at in start..end {
         let result = fresh.recheck_node(&g, g.get(NodeRef(at)).unwrap(), at);
         assert!(result.is_ok(), "node {at}: {result:?}");
     }
     let before = copy(&g, &quiet());
-    assert!(evaluate(&env, &mut g, expression, &mut quiet()).is_err());
+    assert!(evaluate(&env, &mut g, expression, &quiet()).is_err());
     assert_eq!(g.nodes, before.nodes);
     assert_eq!(g.contexts, before.contexts);
     assert_eq!(g.instances, before.instances);
@@ -677,7 +676,7 @@ fn saved_family_domains_rows_and_evaluations_survive_a_later_request() {
             2 => bad.contexts[f.domains[0].0].request = 1,
             _ => unreachable!(),
         };
-        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
         assert!(
             fresh
                 .recheck_node(&bad, bad.get(f.evaluation).unwrap(), f.evaluation.0)
@@ -695,12 +694,12 @@ fn interrupt_preserves_exact_completed_domain_row_and_evaluation_prefix() {
     let p = prepared(&law, MAP);
     let (initial, o) = start(&p);
     let expression = selected(&initial, &o, 0, ".adjusted");
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
     let native_points = Rc::new(RefCell::new(Vec::new()));
     let points = native_points.clone();
-    let mut control = Control::new(move |p| {
+    let control = Control::new(move |p| {
         seen.set(seen.get() + 1);
         if p == Checkpoint::NativeResultNode {
             points.borrow_mut().push(seen.get());
@@ -708,7 +707,7 @@ fn interrupt_preserves_exact_completed_domain_row_and_evaluation_prefix() {
         None
     });
     let mut full = copy(&initial, &control);
-    let Outcome::Family(f) = evaluate(&env, &mut full, expression, &mut control).unwrap() else {
+    let Outcome::Family(f) = evaluate(&env, &mut full, expression, &control).unwrap() else {
         panic!()
     };
     assert_eq!(f.evaluations.len(), 4);
@@ -721,13 +720,13 @@ fn interrupt_preserves_exact_completed_domain_row_and_evaluation_prefix() {
     for at in [early, total / 2, total] {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut control = Control::new(move |_| {
+        let control = Control::new(move |_| {
             seen.set(seen.get() + 1);
             let hit = seen.get() >= at;
             hit.then_some(crate::result::Signal::Int)
         });
         let mut g = copy(&initial, &control);
-        let result = evaluate(&env, &mut g, expression, &mut control);
+        let result = evaluate(&env, &mut g, expression, &control);
         assert!(
             matches!(result, Err(ValidationFailure::Stop(_))),
             "at{at}: {result:?}"
@@ -760,7 +759,7 @@ fn an_inapplicable_view_family_keeps_every_none_and_never_runs_a_body() {
     );
     let p = prepared(&law, MAP);
     let (mut g, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let r = selected(&g, &o, 1, ".root");
     let before = g.instances.len();
     let f = family(&env, &mut g, r);

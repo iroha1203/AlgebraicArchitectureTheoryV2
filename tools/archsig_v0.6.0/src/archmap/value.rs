@@ -81,13 +81,13 @@ fn take(v: &mut Value, stack: &mut Vec<Value>) {
 impl Value {
     /// 入力 encoding に沿う canonical 値。Set の要素と Map の対は canonical 値の byte 順に並べる。
     pub fn canonical_json(&self) -> Json {
-        self.canonical_json_controlled::<Box<Issue>>(&mut Control::unlimited())
+        self.canonical_json_controlled::<Box<Issue>>(&Control::unlimited())
             .expect("unlimited value canonicalization")
     }
 
     pub(crate) fn canonical_json_controlled<E: InputError>(
         &self,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Json, E> {
         let point = Checkpoint::ArchMapCanonical;
         E::checkpoint(control, point)?;
@@ -204,7 +204,7 @@ fn syntax(pointer: &str, message: impl Into<String>) -> Box<Issue> {
 // Materialize that caller's diagnostic before sampling the rejection's post.
 fn z_encoding<E: InputError>(
     s: &str,
-    control: &mut Control,
+    control: &Control,
     invalid: impl Fn() -> Box<Issue>,
 ) -> Result<(), E> {
     let point = Checkpoint::ArchMapSchema;
@@ -244,13 +244,13 @@ mod lexical_priority_tests {
         ] {
             for at in 1..=total {
                 let mut visits = 0;
-                let mut control = Control::new(move |point| {
+                let control = Control::new(move |point| {
                     if point == Checkpoint::ArchMapSchema {
                         visits += 1;
                     }
                     (visits == at).then_some(Signal::Term)
                 });
-                let result = z_encoding::<CheckFailure<Box<Issue>>>(text, &mut control, || {
+                let result = z_encoding::<CheckFailure<Box<Issue>>>(text, &control, || {
                     syntax("/value", "original rejection")
                 });
                 assert!(
@@ -279,13 +279,13 @@ struct Reader<'a, 'b, E> {
 
 impl<E: InputError> Reader<'_, '_, E> {
     fn read(&mut self, node: &JNode, ty: &Type, ptr: &str) -> Result<Value, E> {
-        E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
-        E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+        E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
+        E::checkpoint(&self.control, Checkpoint::ArchMapSchema)?;
         let result = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             self.read_inner(node, ty, ptr)
         });
-        let result = E::finish(result, &mut self.control, Checkpoint::ArchMapSchema);
-        E::finish(result, &mut self.control, Checkpoint::ArchMapIteration)
+        let result = E::finish(result, &self.control, Checkpoint::ArchMapSchema);
+        E::finish(result, &self.control, Checkpoint::ArchMapIteration)
     }
 
     fn read_inner(&mut self, node: &JNode, ty: &Type, ptr: &str) -> Result<Value, E> {
@@ -308,7 +308,7 @@ impl<E: InputError> Reader<'_, '_, E> {
             },
             Type::Z => {
                 let s = string()?;
-                z_encoding::<E>(&s, &mut self.control, || {
+                z_encoding::<E>(&s, &self.control, || {
                     syntax(ptr, format!("`{s}` is not a valid Z encoding"))
                 })?;
                 Value::Z(s.parse().expect("Z の形式"))
@@ -317,10 +317,10 @@ impl<E: InputError> Reader<'_, '_, E> {
                 let items = arr(2)?;
                 let n = as_string(&items[0], &pointer_push(ptr, "0"))?;
                 let d = as_string(&items[1], &pointer_push(ptr, "1"))?;
-                z_encoding::<E>(&n, &mut self.control, || {
+                z_encoding::<E>(&n, &self.control, || {
                     syntax(ptr, "Q numerator and denominator must use Z encoding")
                 })?;
-                z_encoding::<E>(&d, &mut self.control, || {
+                z_encoding::<E>(&d, &self.control, || {
                     syntax(ptr, "Q numerator and denominator must use Z encoding")
                 })?;
                 let (n, d): (BigInt, BigInt) = (n.parse().expect("Z"), d.parse().expect("Z"));
@@ -345,7 +345,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                 if s.starts_with('-') {
                     return Err((syntax(ptr, format!("`{s}` is not a valid Fp encoding"))).into());
                 }
-                z_encoding::<E>(&s, &mut self.control, || {
+                z_encoding::<E>(&s, &self.control, || {
                     syntax(ptr, format!("`{s}` is not a valid Fp encoding"))
                 })?;
                 let v: BigUint = s.parse().expect("非負整数");
@@ -364,7 +364,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                 let items = arr(2)?;
                 let mut snapshot = as_string(&items[0], &pointer_push(ptr, "0"))?;
                 for (from, to) in self.rebases {
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
                     if &snapshot == from {
                         snapshot = to.clone();
                     }
@@ -403,9 +403,9 @@ impl<E: InputError> Reader<'_, '_, E> {
                 let items = arr(ts.len())?;
                 let mut out = Vec::new();
                 for (i, (n, t)) in items.iter().zip(ts).enumerate() {
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
                     out.push(self.read(n, t, &pointer_push(ptr, &i.to_string()))?);
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
                 }
                 Value::Tuple(out)
             }
@@ -415,20 +415,20 @@ impl<E: InputError> Reader<'_, '_, E> {
                 };
                 let mut out = Vec::new();
                 for (i, n) in items.iter().enumerate() {
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
                     out.push(self.read(n, t, &pointer_push(ptr, &i.to_string()))?);
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
                 }
                 if matches!(ty, Type::Set(_)) {
                     let mut seen = std::collections::HashSet::new();
                     for (i, v) in out.iter().enumerate() {
-                        E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
-                        let value = v.canonical_json_controlled::<E>(&mut self.control)?;
+                        E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
+                        let value = v.canonical_json_controlled::<E>(&self.control)?;
                         let key = value.canonical_controlled::<E>(
-                            &mut self.control,
+                            &self.control,
                             Checkpoint::ArchMapCanonical,
                         )?;
-                        E::checkpoint(&mut self.control, Checkpoint::ArchMapCanonical)?;
+                        E::checkpoint(&self.control, Checkpoint::ArchMapCanonical)?;
                         let inserted = if seen.insert(key) {
                             Ok(())
                         } else {
@@ -437,7 +437,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                                     .into(),
                             )
                         };
-                        E::finish(inserted, &mut self.control, Checkpoint::ArchMapCanonical)?;
+                        E::finish(inserted, &self.control, Checkpoint::ArchMapCanonical)?;
                     }
                     Value::Set(out)
                 } else {
@@ -478,13 +478,13 @@ impl<E: InputError> Reader<'_, '_, E> {
                     );
                 }
                 let tag =
-                    super::schema::field_map::<E, _>(entries, "tag", &mut self.control, |node| {
+                    super::schema::field_map::<E, _>(entries, "tag", &self.control, |node| {
                         node.ok_or_else(|| {
                             syntax(ptr, "data value must be {\"tag\":...,\"args\":[...]}").into()
                         })
                     })?;
                 let args =
-                    super::schema::field_map::<E, _>(entries, "args", &mut self.control, |node| {
+                    super::schema::field_map::<E, _>(entries, "args", &self.control, |node| {
                         node.ok_or_else(|| {
                             syntax(ptr, "data value must be {\"tag\":...,\"args\":[...]}").into()
                         })
@@ -497,7 +497,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                 };
                 let mut constructor = None;
                 for (index, candidate) in constructors.iter().enumerate() {
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapSchema)?;
                     let matches = candidate.name == tag;
                     let checked = if !matches && index + 1 == constructors.len() {
                         Err(syntax(
@@ -508,7 +508,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                     } else {
                         Ok(())
                     };
-                    E::finish(checked, &mut self.control, Checkpoint::ArchMapSchema)?;
+                    E::finish(checked, &self.control, Checkpoint::ArchMapSchema)?;
                     if matches {
                         constructor = Some(candidate);
                         break;
@@ -537,9 +537,9 @@ impl<E: InputError> Reader<'_, '_, E> {
                 }
                 let mut out = Vec::new();
                 for (i, (n, t)) in items.iter().zip(&c.arguments).enumerate() {
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
                     out.push(self.read(n, t, &pointer_push(&aptr, &i.to_string()))?);
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
                 }
                 Value::Data {
                     constructor: format!("{d}.{tag}").into(),
@@ -553,7 +553,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                 let mut pairs = Vec::new();
                 let mut keys = std::collections::HashSet::new();
                 for (i, n) in items.iter().enumerate() {
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
                     let ip = pointer_push(ptr, &i.to_string());
                     let JValue::Arr(kv) = &n.value else {
                         return Err((syntax(&ip, "Map row must be [key, value]")).into());
@@ -563,12 +563,10 @@ impl<E: InputError> Reader<'_, '_, E> {
                     }
                     let k = self.read(&kv[0], a, &pointer_push(&ip, "0"))?;
                     let v = self.read(&kv[1], b, &pointer_push(&ip, "1"))?;
-                    let key = k.canonical_json_controlled::<E>(&mut self.control)?;
-                    let key = key.canonical_controlled::<E>(
-                        &mut self.control,
-                        Checkpoint::ArchMapCanonical,
-                    )?;
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapCanonical)?;
+                    let key = k.canonical_json_controlled::<E>(&self.control)?;
+                    let key =
+                        key.canonical_controlled::<E>(&self.control, Checkpoint::ArchMapCanonical)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapCanonical)?;
                     let inserted = if keys.insert(key) {
                         Ok(())
                     } else {
@@ -579,9 +577,9 @@ impl<E: InputError> Reader<'_, '_, E> {
                         ))
                         .into())
                     };
-                    E::finish(inserted, &mut self.control, Checkpoint::ArchMapCanonical)?;
+                    E::finish(inserted, &self.control, Checkpoint::ArchMapCanonical)?;
                     pairs.push((k, v));
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
                 }
                 Value::Map(pairs)
             }
@@ -596,18 +594,14 @@ impl<E: InputError> Reader<'_, '_, E> {
                         (syntax(ptr, "Term must contain only params and body fields")).into(),
                     );
                 }
-                let params = super::schema::field_map::<E, _>(
-                    entries,
-                    "params",
-                    &mut self.control,
-                    |node| {
+                let params =
+                    super::schema::field_map::<E, _>(entries, "params", &self.control, |node| {
                         node.ok_or_else(|| {
                             syntax(ptr, "Term must be {\"params\":[...],\"body\":\"...\"}").into()
                         })
-                    },
-                )?;
+                    })?;
                 let body =
-                    super::schema::field_map::<E, _>(entries, "body", &mut self.control, |node| {
+                    super::schema::field_map::<E, _>(entries, "body", &self.control, |node| {
                         node.ok_or_else(|| {
                             syntax(ptr, "Term must be {\"params\":[...],\"body\":\"...\"}").into()
                         })
@@ -626,7 +620,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                 let mut ps = Vec::new();
                 let mut seen = std::collections::HashSet::new();
                 for (i, n) in names.iter().enumerate() {
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
                     let name = as_string(n, &pointer_push(&pptr, &i.to_string()))?;
                     let invalid = || {
                         syntax(
@@ -638,13 +632,13 @@ impl<E: InputError> Reader<'_, '_, E> {
                         return Err(invalid().into());
                     }
                     for ch in name.chars() {
-                        E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+                        E::checkpoint(&self.control, Checkpoint::ArchMapSchema)?;
                         let checked = if ch.is_ascii_alphanumeric() || ch == '_' {
                             Ok(())
                         } else {
                             Err(invalid().into())
                         };
-                        E::finish(checked, &mut self.control, Checkpoint::ArchMapSchema)?;
+                        E::finish(checked, &self.control, Checkpoint::ArchMapSchema)?;
                     }
                     if crate::names::is_reserved(&name) {
                         return Err(invalid().into());
@@ -658,15 +652,15 @@ impl<E: InputError> Reader<'_, '_, E> {
                         .into());
                     }
                     ps.push(name);
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
                 }
                 let bptr = pointer_push(ptr, "body");
                 let body = as_string(body, &bptr)?;
                 let mut typed = Vec::new();
                 for (name, ty) in ps.iter().zip(args) {
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapSchema)?;
                     typed.push((name.clone(), ty.clone()));
-                    E::checkpoint(&mut self.control, Checkpoint::ArchMapSchema)?;
+                    E::checkpoint(&self.control, Checkpoint::ArchMapSchema)?;
                 }
                 let checked = crate::law::check_definition_term_body_inner::<E>(
                     self.definitions,
@@ -674,7 +668,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                     &typed,
                     ret,
                     &body,
-                    &mut self.control,
+                    &self.control,
                 )
                 .map_err(|failure| {
                     failure.map_issue(|mut issue| {
@@ -704,7 +698,7 @@ pub fn check_assignment<E: InputError>(
     definitions: &CheckedDefinitions,
     roster: &Roster<'_>,
     namespace: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Value, E> {
     let encoded = value.canonical_controlled::<E>(control, Checkpoint::Completion)?;
     let node = crate::json::parse_inner::<E>(encoded.as_bytes(), control, Checkpoint::Completion)?;
@@ -723,7 +717,7 @@ pub fn check_assignment<E: InputError>(
 pub(crate) fn check_snapshots<E: InputError>(
     raw: &[RawSnapshot<'_>],
     definitions: &CheckedDefinitions,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<Snapshot>, E> {
     E::checkpoint(control, Checkpoint::ArchMapSchema)?;
     let result = check_snapshots_inner::<E>(raw, definitions, control);
@@ -733,7 +727,7 @@ pub(crate) fn check_snapshots<E: InputError>(
 fn check_snapshots_inner<E: InputError>(
     raw: &[RawSnapshot<'_>],
     definitions: &CheckedDefinitions,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<Snapshot>, E> {
     let mut types = HashMap::new();
     for snap in raw {

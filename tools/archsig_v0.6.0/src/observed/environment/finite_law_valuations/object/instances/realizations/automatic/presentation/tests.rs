@@ -10,11 +10,11 @@ mod fixture {
 }
 use crate::control::quiet;
 fn reading(i: &CheckedInputs) -> ObjectReadingInstances {
-    let base = construct(i, "Selected", "v", "root", &mut quiet()).unwrap();
-    object_reading_instances(i, &base, &mut quiet()).unwrap()
+    let base = construct(i, "Selected", "v", "root", &quiet()).unwrap();
+    object_reading_instances(i, &base, &quiet()).unwrap()
 }
 fn run(i: &CheckedInputs, r: &ObjectReadingInstances) -> FiniteAutomaticLawFamily {
-    finite_automatic_law_family(i, r, &mut quiet()).unwrap()
+    finite_automatic_law_family(i, r, &quiet()).unwrap()
 }
 fn object(a: &ObjectReadingInstances, name: &str) -> usize {
     a.objects()
@@ -36,7 +36,7 @@ fn all_parameter_rows_keep_original_indices_and_the_same_shared_ring_on_every_ob
     let mut count = 0;
     let mut nonzero = 0;
     for (o, selected) in a.objects().iter().enumerate() {
-        let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+        let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
         assert_eq!(p.object(), o);
         assert!(std::ptr::eq(p.family(), f));
         assert!(p.evaluated());
@@ -74,17 +74,17 @@ fn all_parameter_rows_keep_original_indices_and_the_same_shared_ring_on_every_ob
                 let original = if subject == "p" { point / 2 } else { point % 2 };
                 assert_eq!(value, &BigInt::from(applies && original != n));
             }
-            f.integer_ring(&mut quiet())
+            f.integer_ring(&quiet())
                 .unwrap()
-                .member(q.nu(), &mut quiet())
+                .member(q.nu(), &quiet())
                 .unwrap();
-            f.integer_ring(&mut quiet())
+            f.integer_ring(&quiet())
                 .unwrap()
-                .member(q.constant().unwrap(), &mut quiet())
+                .member(q.constant().unwrap(), &quiet())
                 .unwrap();
         }
         assert!(p.required_zero().is_empty());
-        p.recheck(f, o, &i, &a, &mut quiet()).unwrap();
+        p.recheck(f, o, &i, &a, &quiet()).unwrap();
     }
     assert_eq!(count, 24);
     assert_eq!(nonzero, 8);
@@ -105,7 +105,7 @@ fn each_object_ideal_uses_its_own_required_columns_and_never_optional_or_global_
         ("q", vec![0, 2], 1),
     ] {
         let o = object(&a, name);
-        let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+        let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
         assert_eq!(p.columns().len(), 4);
         assert_eq!(p.equations().len(), 4);
         assert_eq!(p.required_zero(), zeros);
@@ -117,7 +117,7 @@ fn each_object_ideal_uses_its_own_required_columns_and_never_optional_or_global_
             nonzeros
         );
         assert_eq!(p.equations().iter().filter(|q| q.required()).count(), 2);
-        p.recheck(f, o, &i, &a, &mut quiet()).unwrap();
+        p.recheck(f, o, &i, &a, &quiet()).unwrap();
     }
 }
 #[test]
@@ -136,7 +136,7 @@ fn the_original_quantifier_domain_is_retained_in_the_selected_objects_function()
         ("q", vec![0, 1, 0, 1]),
     ] {
         let o = object(&a, name);
-        let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+        let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
         assert_eq!(p.equations().len(), 2);
         for q in p.equations() {
             let subject = &a.instances()[q.instance()].bindings()[0].subject().subject;
@@ -153,7 +153,7 @@ fn the_original_quantifier_domain_is_retained_in_the_selected_objects_function()
             assert_eq!(row.application, Some(applies));
             assert_eq!(row.predicate, applies.then_some(name == "p"));
         }
-        p.recheck(f, o, &i, &a, &mut quiet()).unwrap();
+        p.recheck(f, o, &i, &a, &quiet()).unwrap();
     }
 }
 #[test]
@@ -167,7 +167,7 @@ fn tuple_leaves_retain_types_raw_values_and_separate_residuals_without_changing_
     assert_eq!(f.domain().len(), 16);
     assert_eq!(f.observed_point(), Some(6));
     for (o, selected) in a.objects().iter().enumerate() {
-        let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+        let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
         assert_eq!(p.columns().len(), 2);
         assert_eq!(p.equations().len(), 4);
         for q in p.equations() {
@@ -202,7 +202,7 @@ fn tuple_leaves_retain_types_raw_values_and_separate_residuals_without_changing_
                 assert!(row.operands.is_none());
             }
         }
-        p.recheck(f, o, &i, &a, &mut quiet()).unwrap();
+        p.recheck(f, o, &i, &a, &quiet()).unwrap();
     }
     assert!(f.columns().iter().zip(before).all(|(c, b)| c.rows() == b));
 }
@@ -216,7 +216,7 @@ fn contradictory_required_ideals_do_not_zero_out_observed_nonzero_equations() {
     let result = run(&i, &a);
     let f = result.family().unwrap();
     let o = object(&a, "root");
-    let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+    let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
     assert!(p.required_zero().is_empty());
     assert_eq!(p.equations().len(), 4);
     assert_eq!(
@@ -226,13 +226,8 @@ fn contradictory_required_ideals_do_not_zero_out_observed_nonzero_equations() {
             .count(),
         2
     );
-    assert!(
-        f.required_quotient(&mut quiet())
-            .unwrap()
-            .points()
-            .is_empty()
-    );
-    p.recheck(f, o, &i, &a, &mut quiet()).unwrap();
+    assert!(f.required_quotient(&quiet()).unwrap().points().is_empty());
+    p.recheck(f, o, &i, &a, &quiet()).unwrap();
 }
 #[test]
 fn false_and_varying_guards_keep_original_values_and_conditioned_integer_indicators() {
@@ -244,7 +239,7 @@ fn false_and_varying_guards_keep_original_values_and_conditioned_integer_indicat
     let result = run(&i, &a);
     let f = result.family().unwrap();
     let o = object(&a, "root");
-    let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+    let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
     assert_eq!(p.required_zero(), [0]);
     for q in p.equations() {
         let c = &f.columns()[q.column()];
@@ -261,7 +256,7 @@ fn false_and_varying_guards_keep_original_values_and_conditioned_integer_indicat
             );
         }
     }
-    p.recheck(f, o, &i, &a, &mut quiet()).unwrap();
+    p.recheck(f, o, &i, &a, &quiet()).unwrap();
 }
 #[test]
 fn missing_observations_leave_only_dependent_equations_undetermined() {
@@ -273,7 +268,7 @@ fn missing_observations_leave_only_dependent_equations_undetermined() {
     assert_eq!(f.domain().len(), 4);
     assert_eq!(f.observed_point(), None);
     let o = object(&a, "root");
-    let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+    let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
     assert!(!p.evaluated());
     assert_eq!(p.required_zero(), [0]);
     for q in p.equations() {
@@ -290,7 +285,7 @@ fn missing_observations_leave_only_dependent_equations_undetermined() {
             assert!(q.constant().is_none());
         }
     }
-    p.recheck(f, o, &i, &a, &mut quiet()).unwrap();
+    p.recheck(f, o, &i, &a, &quiet()).unwrap();
     assert_eq!(
         f.positions()
             .iter()
@@ -311,11 +306,11 @@ fn empty_law_and_empty_parameter_families_have_a_zero_ideal_and_preserve_the_sha
         let result = run(&i, &a);
         let f = result.family().unwrap();
         for o in 0..a.objects().len() {
-            let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+            let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
             assert!(p.columns().is_empty());
             assert!(p.equations().is_empty());
             assert_eq!(p.required_zero(), (0..f.domain().len()).collect::<Vec<_>>());
-            p.recheck(f, o, &i, &a, &mut quiet()).unwrap();
+            p.recheck(f, o, &i, &a, &quiet()).unwrap();
         }
     }
 }
@@ -329,7 +324,7 @@ fn rechecking_rejects_all_index_value_ideal_origin_and_owner_substitutions() {
     let other = run(&i, &a);
     let foreign = other.family().unwrap();
     for mode in 0..16 {
-        let mut p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+        let mut p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
         match mode {
             0 => p.object = object(&a, "p"),
             1 => p.columns.clear(),
@@ -347,35 +342,28 @@ fn rechecking_rejects_all_index_value_ideal_origin_and_owner_substitutions() {
             11 => p.equations[0].constant.as_mut().unwrap().values[0] = 1.into(),
             12 => p.required_zero.clear(),
             13 => p.family = foreign,
-            14 => {
-                p.equations[0].nu = foreign
-                    .integer_function(0, Some(&[]), &mut quiet())
-                    .unwrap()
-            }
+            14 => p.equations[0].nu = foreign.integer_function(0, Some(&[]), &quiet()).unwrap(),
             _ => {
                 p = foreign
-                    .object_presentation(&i, o, &mut quiet())
+                    .object_presentation(&i, o, &quiet())
                     .unwrap()
                     .unwrap();
             }
         }
-        assert!(
-            p.recheck(f, o, &i, &a, &mut quiet()).is_err(),
-            "mode {mode}"
-        );
+        assert!(p.recheck(f, o, &i, &a, &quiet()).is_err(), "mode {mode}");
     }
-    let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
-    assert!(p.recheck(f, object(&a, "q"), &i, &a, &mut quiet()).is_err());
-    let base = construct(&i, "Selected", "v", "r2", &mut quiet()).unwrap();
-    let wrong = object_reading_instances(&i, &base, &mut quiet()).unwrap();
-    assert!(p.recheck(f, o, &i, &wrong, &mut quiet()).is_err());
+    let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
+    assert!(p.recheck(f, object(&a, "q"), &i, &a, &quiet()).is_err());
+    let base = construct(&i, "Selected", "v", "r2", &quiet()).unwrap();
+    let wrong = object_reading_instances(&i, &base, &quiet()).unwrap();
+    assert!(p.recheck(f, o, &i, &wrong, &quiet()).is_err());
     let changed = fixture::with_body(fixture::MAP, "law required zero(c:Part):c.quantity=1;");
-    assert!(p.recheck(f, o, &changed, &a, &mut quiet()).is_err());
+    assert!(p.recheck(f, o, &changed, &a, &quiet()).is_err());
     assert!(
-        f.object_presentation(&i, a.objects().len(), &mut quiet())
+        f.object_presentation(&i, a.objects().len(), &quiet())
             .is_err()
     );
-    p.recheck(f, o, &i, &a, &mut quiet()).unwrap();
+    p.recheck(f, o, &i, &a, &quiet()).unwrap();
 }
 fn stopping(signal: Signal, at: usize) -> Control {
     let seen = Rc::new(Cell::new(0));
@@ -394,20 +382,20 @@ fn interruption_never_publishes_an_unfinished_presentation() {
     let result = run(&i, &a);
     let f = result.family().unwrap();
     let o = object(&a, "root");
-    let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+    let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
     for signal in [Signal::Int, Signal::Term] {
         for at in [1, 10, 35, 65] {
             assert!(matches!(
-                f.object_presentation(&i, o, &mut stopping(signal, at)),
+                f.object_presentation(&i, o, &stopping(signal, at)),
                 Err(ValidationFailure::Stop(_))
             ));
         }
         assert!(matches!(
-            p.recheck(f, o, &i, &a, &mut stopping(signal, 1)),
+            p.recheck(f, o, &i, &a, &stopping(signal, 1)),
             Err(ValidationFailure::Stop(_))
         ));
     }
-    p.recheck(f, o, &i, &a, &mut quiet()).unwrap();
+    p.recheck(f, o, &i, &a, &quiet()).unwrap();
 }
 #[test]
 fn incomplete_or_unsupported_sources_retain_their_data_without_a_numeric_presentation() {
@@ -417,7 +405,7 @@ fn incomplete_or_unsupported_sources_retain_their_data_without_a_numeric_present
     let count = seen.clone();
     let stage = Rc::new(Cell::new(false));
     let started = stage.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::FiniteLawAutomatic {
             started.set(true);
         }
@@ -426,18 +414,14 @@ fn incomplete_or_unsupported_sources_retain_their_data_without_a_numeric_present
         }
         (count.get() >= 3).then_some(Signal::Term)
     });
-    let error = finite_automatic_law_family(&i, &a, &mut c).err().unwrap();
+    let error = finite_automatic_law_family(&i, &a, &c).err().unwrap();
     assert!(matches!(error.cause, ValidationFailure::Stop(_)));
     let partial = error.partial.unwrap();
     let f = partial.family().unwrap();
     assert!(f.domain_complete());
     assert!(!f.is_complete());
     assert_eq!(f.columns()[0].rows().len(), 1);
-    assert!(
-        f.object_presentation(&i, 0, &mut quiet())
-            .unwrap()
-            .is_none()
-    );
+    assert!(f.object_presentation(&i, 0, &quiet()).unwrap().is_none());
     let i = fixture::with_body(
         fixture::MAP,
         "law required parts(c:Part):(0,fn(n:Z)=>n*n)=(1,fn(n:Z)=>n*n+0);",
@@ -447,9 +431,5 @@ fn incomplete_or_unsupported_sources_retain_their_data_without_a_numeric_present
     let f = result.family().unwrap();
     assert!(matches!(f.state(), FiniteLawState::Unavailable { .. }));
     assert_eq!(f.columns()[0].rows()[0].predicate, Some(false));
-    assert!(
-        f.object_presentation(&i, 0, &mut quiet())
-            .unwrap()
-            .is_none()
-    );
+    assert!(f.object_presentation(&i, 0, &quiet()).unwrap().is_none());
 }

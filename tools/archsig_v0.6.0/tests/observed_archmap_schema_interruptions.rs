@@ -48,8 +48,8 @@ fn probe(at: Option<usize>) -> (Control, Rc<Cell<usize>>) {
     )
 }
 fn total(input: InputSources) -> usize {
-    let (mut control, seen) = probe(None);
-    let _ = check_inputs(input, &mut control);
+    let (control, seen) = probe(None);
+    let _ = check_inputs(input, &control);
     seen.get()
 }
 #[test]
@@ -65,9 +65,8 @@ fn byte_preparation_reaches_each_id_character_and_relative_path_segment() {
     ] {
         let end = total(make());
         for at in [1, end / 2, end] {
-            let (mut control, _) = probe(Some(at));
-            let failure =
-                prepare_observed(make(), &["a=evaluate(R.one)"], &mut control).unwrap_err();
+            let (control, _) = probe(Some(at));
+            let failure = prepare_observed(make(), &["a=evaluate(R.one)"], &control).unwrap_err();
             let PrepareFailure::Inputs(failure) = failure else {
                 panic!("input failure")
             };
@@ -85,11 +84,11 @@ fn schema_version_and_relative_path_errors_do_not_outrank_signals() {
         ("valid", "a/../c", InputStatus::Invalid),
     ] {
         let make = || sources("a", path, kind);
-        let baseline = check_inputs(make(), &mut Control::unlimited()).unwrap_err();
+        let baseline = check_inputs(make(), &Control::unlimited()).unwrap_err();
         assert_eq!(baseline.status(), status);
         let last = total(make());
-        let (mut control, seen) = probe(Some(last));
-        let failure = check_inputs(make(), &mut control).unwrap_err();
+        let (control, seen) = probe(Some(last));
+        let failure = check_inputs(make(), &control).unwrap_err();
         assert_eq!(seen.get(), last);
         assert_eq!(failure.status(), InputStatus::Interrupted);
         assert_eq!(control.stop_reason(), Some(Signal::Term));

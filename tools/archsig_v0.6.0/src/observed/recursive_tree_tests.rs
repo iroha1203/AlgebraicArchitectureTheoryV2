@@ -14,9 +14,9 @@ fn recursive_tree_private_inputs() -> crate::input::InputSources {
     )
 }
 fn recursive_tree_private_result(asks: &[&str]) -> ObservedEvaluation {
-    let mut control = quiet();
-    let prepared = prepare_observed(recursive_tree_private_inputs(), asks, &mut control).unwrap();
-    evaluate_observed(prepared, &mut control).unwrap()
+    let control = quiet();
+    let prepared = prepare_observed(recursive_tree_private_inputs(), asks, &control).unwrap();
+    evaluate_observed(prepared, &control).unwrap()
 }
 fn recursive_tree_private_atom(result: &ObservedEvaluation) -> usize {
     result
@@ -87,7 +87,7 @@ fn recursive_tree_recursive_call_cancel_keeps_prefix_and_prior_refutation() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(move |_| {
+    let control = Control::new(move |_| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert!(freeze.replace(Some(count.get())).is_none());
@@ -96,11 +96,11 @@ fn recursive_tree_recursive_call_cancel_keeps_prefix_and_prior_refutation() {
             None
         }
     });
-    let prepared = prepare_observed(recursive_tree_private_inputs(), &asks, &mut control).unwrap();
+    let prepared = prepare_observed(recursive_tree_private_inputs(), &asks, &control).unwrap();
     let law = prepared.inputs().sources().law().bytes().to_vec();
     let stopped = evaluate_observed_with_validator(
         prepared,
-        &mut control,
+        &control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
             if request.id == "prior" {

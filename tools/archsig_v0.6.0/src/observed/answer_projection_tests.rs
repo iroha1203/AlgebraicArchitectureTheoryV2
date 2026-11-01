@@ -13,7 +13,7 @@ const ASK: &[&str] = &[
     "universal=check(Applications.abUniversal,x=$first.value[0])",
 ];
 fn result() -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input("known", "r1"), ASK, &mut quiet()).unwrap();
+    let r = evaluate_observed_bytes(fixture::input("known", "r1"), ASK, &quiet()).unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
     r
 }
@@ -48,7 +48,7 @@ fn answer_projection_actual_path_stop_keeps_prior_values_refutation_missing_and_
         "later=evaluate(Applications.abSeed)",
     ];
     let normal =
-        evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet()).unwrap();
+        evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     let params =
         match &normal.prepared.inputs().law().declarations()["Applications.abIdentity"].signature {
@@ -63,7 +63,7 @@ fn answer_projection_actual_path_stop_keeps_prior_values_refutation_missing_and_
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -72,8 +72,8 @@ fn answer_projection_actual_path_stop_keeps_prior_values_refutation_missing_and_
             None
         }
     });
-    let prepared = prepare_observed(fixture::input("stop", "r1"), &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+    let prepared = prepare_observed(fixture::input("stop", "r1"), &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "nested" {
             let (a, s) = (armed.clone(), seen.clone());

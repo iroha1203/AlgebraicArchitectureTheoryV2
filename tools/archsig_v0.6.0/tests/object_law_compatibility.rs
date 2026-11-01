@@ -25,13 +25,13 @@ fn inputs_with_definitions(definitions: &str, body: &str, map: &str) -> Arc<Chec
                 law.into_bytes(),
                 map.replace("@DIGEST@", digest).into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap_or_else(|f| panic!("{:?}", f.issues())),
     )
 }
 fn run(i: Arc<CheckedInputs>) -> ObjectLawCompatibility {
-    object_law_compatibility(i, "Selected", "v", "root", &mut quiet())
+    object_law_compatibility(i, "Selected", "v", "root", &quiet())
         .unwrap_or_else(|f| panic!("{:?}", f.cause()))
 }
 #[test]
@@ -68,7 +68,7 @@ fn equal_pattern_ground_laws_keep_roles_original_truth_and_all_evaluations() {
         Some(false)
     );
     assert_eq!(guarded.points()[0].source().conditional(), Some(true));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -93,7 +93,7 @@ fn ground_application_guard_and_body_disagreement_keep_the_original_counterexamp
         );
         assert_eq!(r.evaluations().len(), 2);
         assert_eq!(r.comparisons()[0].points().len(), 1);
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -142,7 +142,7 @@ fn two_refuted_whole_laws_do_not_hide_disagreement_at_each_boolean_argument() {
         assert_eq!(p.target_evaluations().len(), 1);
         assert_eq!(p.outcome(), &Outcome::Refuted(Failed::Holds));
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn all_six_guarded_parameter_assignments_keep_false_none_and_conditional_truth_separate() {
@@ -178,7 +178,7 @@ fn all_six_guarded_parameter_assignments_keep_false_none_and_conditional_truth_s
         assert_eq!(p.target().conditional(), Some(x == 0 || !b));
         assert_eq!(p.outcome(), &Outcome::Compatible);
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn empty_parameter_domains_are_known_while_missing_required_values_remain_undetermined() {
@@ -194,7 +194,7 @@ fn empty_parameter_domains_are_known_while_missing_required_values_remain_undete
         assert!(e.family().rows().is_empty());
         assert!(e.family().domains()[0].values().is_empty());
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
     let map = fixture::A
         .lines()
         .filter(|line| !line.contains("\"quantity-p\""))
@@ -210,7 +210,7 @@ fn empty_parameter_domains_are_known_while_missing_required_values_remain_undete
             .iter()
             .any(|r| r.reading().body().is_none())
     }));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -234,7 +234,7 @@ fn owner_domain_and_conditional_membership_remain_unknown_with_the_original_slot
             .uniform()
             .is_some_and(|v| matches!(v.application(), LawApplication::ConditionalMembership(_)))
     }));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn an_empty_element_list_is_one_law_assignment_with_a_real_false_body() {
@@ -252,7 +252,7 @@ fn an_empty_element_list_is_one_law_assignment_with_a_real_false_body() {
     assert_eq!(point.target().body(), Some(false));
     assert_eq!(point.source_evaluations().len(), 1);
     assert_eq!(point.target_evaluations().len(), 1);
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn different_patterns_keep_their_own_law_readings_without_imposing_equality() {
@@ -270,14 +270,14 @@ fn different_patterns_keep_their_own_law_readings_without_imposing_equality() {
             .iter()
             .any(|v| v.reading().body() == Some(false))
     }));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn current_input_bytes_body_role_and_unused_provenance_are_rechecked() {
     let body = "law required amount(c:Part):c.quantity=c.quantity;";
     let i = inputs(body, fixture::A);
     let r = run(Arc::clone(&i));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
     for (body, map) in [
         (
             body.to_owned(),
@@ -293,7 +293,7 @@ fn current_input_bytes_body_role_and_unused_provenance_are_rechecked() {
             fixture::A.replace("fixture-r1", "fixture-r2"),
         ),
     ] {
-        assert!(r.recheck(inputs(&body, &map), &mut quiet()).is_err());
+        assert!(r.recheck(inputs(&body, &map), &quiet()).is_err());
     }
 }
 #[test]
@@ -314,7 +314,7 @@ fn unbounded_identity_law_is_compared_as_a_universal_family() {
         assert_eq!(parameters[0].name, "z");
         assert_eq!(parameters[0].ty, archsig::types::Type::Z);
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -346,7 +346,7 @@ fn finite_missing_boolean_cases_retain_every_original_case_for_every_assignment(
         assert_ne!(row.source_evaluations()[0], row.source_evaluations()[1]);
         assert_eq!(row.outcome(), &Outcome::Undetermined);
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn a_false_guard_with_missing_body_keeps_known_inapplicability() {
@@ -373,7 +373,7 @@ fn a_false_guard_with_missing_body_keeps_known_inapplicability() {
         assert_eq!(p.target().conditional(), Some(true));
         assert_eq!(p.outcome(), &Outcome::Compatible);
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -386,10 +386,10 @@ fn ordinary_law_requests_keep_the_original_symbolic_list_domain() {
     let prepared = archsig::observed::prepare_shared_observed(
         i,
         &["a=check(Selected.singleton,c=@v/p)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
-    let e = archsig::observed::evaluate_observed(prepared, &mut quiet()).unwrap();
+    let e = archsig::observed::evaluate_observed(prepared, &quiet()).unwrap();
     assert_eq!(e.status(), "complete");
     let wire = e.wire();
     let Json::Obj(wire) = &wire else {
@@ -465,7 +465,7 @@ fn outside_laws_keep_the_true_conditional_predicate_for_ground_and_finite_famili
             assert_eq!(p.target().conditional(), Some(true));
             assert_eq!(p.target().body(), None);
         }
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -492,9 +492,9 @@ fn empty_owner_list_domains_use_the_fixed_owner_and_keep_the_original_false_row(
     assert_eq!(row.reading().body(), Some(false));
     assert_eq!(row.reading().conditional(), Some(false));
     assert!(row.reading().required());
-    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    r.recheck(Arc::clone(&i), &quiet()).unwrap();
     // 同じ入力でもPartを持つownerのList全域は無限。空List一例で代用しない。
-    let failure = object_law_compatibility(i, "Selected", "v", "other", &mut quiet()).unwrap_err();
+    let failure = object_law_compatibility(i, "Selected", "v", "other", &quiet()).unwrap_err();
     assert!(matches!(
         failure.cause(),
         archsig::observed::object_evaluate::ObjectEvaluationFailure::NotImplemented { .. }

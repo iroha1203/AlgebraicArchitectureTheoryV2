@@ -23,9 +23,9 @@ fn answer<'a>(j: &'a Json, id: &str) -> &'a Json {
 }
 // Law適用の集約は、通常の元式Evaluationと異なりLawInstanceを第一引数に持つ。
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut quiet())
-        .unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
-    let wire = evaluate_observed_bytes(inputs, asks, &mut quiet())
+    let checked =
+        check_inputs(inputs.clone(), &quiet()).unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
+    let wire = evaluate_observed_bytes(inputs, asks, &quiet())
         .unwrap_or_else(|e| panic!("評価: {e:?}"))
         .wire();
     audit(&wire, &checked);
@@ -301,8 +301,7 @@ fn fixture(script: &str) -> InputSources {
         )
     ));
     let checked =
-        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
-            .unwrap();
+        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &quiet()).unwrap();
     let digest = &checked.vocabularies()["Containers"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
@@ -858,8 +857,8 @@ fn missing_container_slots_and_static_errors_keep_original_evidence() {
     ] {
         let input = fixture(&format!("view selected(): Z = 7; {bad}"));
         let law = input.law().bytes().to_vec();
-        let failure = evaluate_observed_bytes(input, &["x=evaluate(Calc.selected)"], &mut quiet())
-            .unwrap_err();
+        let failure =
+            evaluate_observed_bytes(input, &["x=evaluate(Calc.selected)"], &quiet()).unwrap_err();
         let invalid = failure.wire().expect("静的不正はinvalid");
         assert_eq!(f(&invalid, "status"), &Json::str("invalid"), "{bad}");
         let issue = &arr(f(&invalid, "issues"))[0];
@@ -888,9 +887,8 @@ fn missing_container_slots_and_static_errors_keep_original_evidence() {
         good.law().bytes().to_vec(),
         duplicate.into_bytes(),
     );
-    let failure =
-        evaluate_observed_bytes(bad, &["s=evaluate(Calc.known,s=@v/sample)"], &mut quiet())
-            .unwrap_err();
+    let failure = evaluate_observed_bytes(bad, &["s=evaluate(Calc.known,s=@v/sample)"], &quiet())
+        .unwrap_err();
     let invalid = failure.wire().unwrap();
     assert_eq!(f(&invalid, "status"), &Json::str("invalid"));
     let issue = &arr(f(&invalid, "issues"))[0];
@@ -911,20 +909,20 @@ fn container_expression_stops_keep_element_preconstruction_and_completed_sum_pre
  view later(s: Sample): Z = s.zero+9;
 "#;
     let inputs = fixture(script);
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
     let prior_asks = [
         "seed=evaluate(Calc.seed,s=@v/sample)",
         "missing=evaluate(Calc.missing,s=@v/sample)",
     ];
     let count = Rc::new(Cell::new(0));
     let c = count.clone();
-    let mut baseline = Control::new(move |point| {
+    let baseline = Control::new(move |point| {
         if point == Checkpoint::Expression {
             c.set(c.get() + 1);
         }
         None
     });
-    let prior = evaluate_observed_bytes(inputs.clone(), &prior_asks, &mut baseline)
+    let prior = evaluate_observed_bytes(inputs.clone(), &prior_asks, &baseline)
         .unwrap()
         .wire();
     output(&prior, "seed", &Json::str("Z"), Json::str("0"));
@@ -941,7 +939,7 @@ fn container_expression_stops_keep_element_preconstruction_and_completed_sum_pre
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (e, p, s) = (expressions.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             p.set(p.get() + 1);
             if point == Checkpoint::Expression {
                 e.set(e.get() + 1);
@@ -961,7 +959,7 @@ fn container_expression_stops_keep_element_preconstruction_and_completed_sum_pre
                 &current,
                 "later=evaluate(Calc.later,s=@v/sample)",
             ],
-            &mut control,
+            &control,
         )
         .unwrap()
         .wire();

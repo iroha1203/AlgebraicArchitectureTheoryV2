@@ -24,7 +24,6 @@ type OwnedRoster<'a> = dyn FnMut(&str, &str) -> Result<Enumeration, ValidationFa
 
 fn tick(control: &Control) -> Result<(), ValidationFailure> {
     control
-        .clone()
         .checkpoint(Checkpoint::FiniteIteration)
         .map_err(ValidationFailure::Stop)
 }

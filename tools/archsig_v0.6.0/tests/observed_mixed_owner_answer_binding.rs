@@ -26,7 +26,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn run(input: archsig::input::InputSources, asks: &[&str]) -> ObservedEvaluation {
-    evaluate_observed_bytes(input, asks, &mut quiet()).unwrap_or_else(|e| match e {
+    evaluate_observed_bytes(input, asks, &quiet()).unwrap_or_else(|e| match e {
         archsig::observed::EvaluationFailure::NotImplemented { feature, .. } => {
             panic!("unimplemented: {feature}")
         }

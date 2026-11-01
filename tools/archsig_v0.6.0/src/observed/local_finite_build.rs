@@ -1,7 +1,7 @@
 #[allow(clippy::too_many_arguments)]
 pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request, target: NodeRef,
     base: usize, witness: Arc<ArchitectureWitness>, fixed: Environment<'_>, model: finite_model::Model,
-    c: &mut Control) -> Result<Source,ValidationFailure> {
+    c: &Control) -> Result<Source,ValidationFailure> {
     let mut b = Builder {
         g,
         base,

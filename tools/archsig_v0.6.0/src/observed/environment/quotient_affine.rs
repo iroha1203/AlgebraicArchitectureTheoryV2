@@ -83,7 +83,7 @@ pub(in crate::observed) fn compute(
     graph: &Graph,
     input: &CandidateInput,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Image, ValidationFailure> {
     c.checkpoint(Checkpoint::Quotient)?;
     if !input.search.complete {
@@ -553,7 +553,7 @@ pub(in crate::observed) fn point(
     image: &Image,
     coordinates: &[Scalar],
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<quotient_evaluation::Row, ValidationFailure> {
     let law = image.law.as_ref().ok_or("アフィン商のLawがない")?;
     let linear = coefficients::Input::from_search(&input.search, c)?;

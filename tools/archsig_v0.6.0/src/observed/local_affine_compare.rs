@@ -102,7 +102,7 @@ fn zero_columns(
     module: NodeRef,
     matrix: &integer_fiber::Matrix,
     cols: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ValidationFailure> {
     let relations = rows(g, module, "relations")?;
     let relations_matrix = from_columns(&relations, size(g, module)?)?;
@@ -122,7 +122,7 @@ fn induced(
     source: NodeRef,
     target: NodeRef,
     map: &integer_fiber::Matrix,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<integer_fiber::Matrix, ValidationFailure> {
     let si = field(g, source, "inclusion")?;
     let ti = field(g, target, "inclusion")?;
@@ -170,7 +170,7 @@ fn check_inverse(
     module: NodeRef,
     left: &integer_fiber::Matrix,
     right: &integer_fiber::Matrix,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     let n = size(g, module)?;
     let composite = integer_fiber::multiply(left, right, n, c)?;
@@ -194,7 +194,7 @@ fn quotient_module(
     generators: usize,
     name: &str,
     hmap: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(NodeRef, linear::Cohomology), ValidationFailure> {
     let q = linear::cohomology(relation, relation_count, &vec![], generators, c)?;
     let rank = q.torsion.len() + q.free_rank;
@@ -252,7 +252,7 @@ fn kernel_cokernel(
     target: NodeRef,
     hmap: NodeRef,
     map: &integer_fiber::Matrix,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(NodeRef, NodeRef, NodeRef, Decision), ValidationFailure> {
     let n = size(b.g, source)?;
     let m = size(b.g, target)?;
@@ -321,7 +321,7 @@ pub(super) fn compare(
     right: NodeRef,
     along: NodeRef,
     transported: Option<&transport::Maps>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Answer, ValidationFailure> {
     let g = b.g;
     let lc = field(g, left, "complex")?;

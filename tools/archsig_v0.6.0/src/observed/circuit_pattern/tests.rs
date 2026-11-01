@@ -16,7 +16,7 @@ fn inputs(map: &str) -> Arc<CheckedInputs> {
                 LAW.replace("@PROFILE_DIGEST@", digest).into_bytes(),
                 map.replace("@PROFILE_DIGEST@", digest).into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     )
@@ -24,7 +24,7 @@ fn inputs(map: &str) -> Arc<CheckedInputs> {
 fn prepared(inputs: Arc<CheckedInputs>, reading: &str) -> PreparedObserved {
     let ask = format!("b=build({reading},on=@v/A)");
     let requests =
-        resolve_native_for_test(inputs.law(), inputs.archmap(), &[&ask], &mut quiet()).unwrap();
+        resolve_native_for_test(inputs.law(), inputs.archmap(), &[&ask], &quiet()).unwrap();
     PreparedObserved {
         inputs,
         requests,
@@ -32,7 +32,7 @@ fn prepared(inputs: Arc<CheckedInputs>, reading: &str) -> PreparedObserved {
     }
 }
 fn start(p: &PreparedObserved) -> (Graph, NodeRef, Option<NodeRef>) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -40,7 +40,7 @@ fn start(p: &PreparedObserved) -> (Graph, NodeRef, Option<NodeRef>) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let objects = if a.complete {
@@ -48,7 +48,7 @@ fn start(p: &PreparedObserved) -> (Graph, NodeRef, Option<NodeRef>) {
             &mut g,
             p.shared_inputs(),
             a.reference,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap()
         .map(|o| o.base)
@@ -72,7 +72,7 @@ fn copy(g: &Graph, c: &Control) -> Graph {
     p
 }
 fn replay(p: &PreparedObserved, g: &Graph) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut prefix = copy(g, &quiet());
     prefix.nodes.clear();
     prefix.contexts.clear();
@@ -177,8 +177,8 @@ fn remove(map: &str, id: &str) -> String {
 fn run(map: &str, reading: &str) -> (PreparedObserved, Graph, Diagram) {
     let p = prepared(inputs(map), reading);
     let (mut g, a, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let d = retain(&env, &mut g, p.shared_inputs(), a, o, &mut quiet())
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let d = retain(&env, &mut g, p.shared_inputs(), a, o, &quiet())
         .unwrap()
         .unwrap();
     (p, g, d)
@@ -224,7 +224,7 @@ fn all_queries_use_the_actual_common_universe_and_keep_equal_pattern_objects_dis
             fields["queries"],
             Json::Arr(qs.iter().map(Query::wire).collect())
         );
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         env.recheck_node(&g, node, row.pattern.0).unwrap();
     }
     let Some(Payload::Construction(v)) = &g.get(d.universe).unwrap().payload else {
@@ -285,9 +285,9 @@ fn unknown_ownership_retains_the_original_partial_graph_without_a_complete_patte
     let (mut g, a, o) = start(&p);
     assert!(o.is_none());
     let old = copy(&g, &quiet());
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     assert!(
-        retain(&env, &mut g, p.shared_inputs(), a, o, &mut quiet())
+        retain(&env, &mut g, p.shared_inputs(), a, o, &quiet())
             .unwrap()
             .is_none()
     );
@@ -319,7 +319,7 @@ fn raw_quantity_values_do_not_create_new_geometry_or_merge_input_provenance() {
             data(&h, y.pattern).output.queries
         );
     }
-    let foreign = Environment::with_prepared(&other, &mut quiet()).unwrap();
+    let foreign = Environment::with_prepared(&other, &quiet()).unwrap();
     assert!(
         foreign
             .recheck_node(&g, g.get(d.rows[0].pattern).unwrap(), d.rows[0].pattern.0)
@@ -386,7 +386,7 @@ fn altered_queries_source_tables_positions_edges_and_metadata_are_rejected() {
     let (p, g, d) = run(MAP, "ProfileRead");
     let r = d.rows[0].pattern;
     let n = g.get(r).unwrap();
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     env.recheck_node(&g, n, r.0).unwrap();
     for mode in 0..16 {
         let mut n = n.clone();
@@ -483,23 +483,23 @@ fn altered_queries_source_tables_positions_edges_and_metadata_are_rejected() {
 fn absent_or_wrong_components_and_foreign_inputs_never_produce_a_fake_table() {
     let p = prepared(inputs(MAP), "ProfileRead");
     let (mut g, a, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let old = copy(&g, &quiet());
     assert!(
-        retain(&env, &mut g, p.shared_inputs(), a, None, &mut quiet())
+        retain(&env, &mut g, p.shared_inputs(), a, None, &quiet())
             .unwrap()
             .is_none()
     );
     assert_eq!(g.nodes, old.nodes);
     for bad in [a, NodeRef(usize::MAX)] {
-        assert!(retain(&env, &mut g, p.shared_inputs(), a, Some(bad), &mut quiet()).is_err());
+        assert!(retain(&env, &mut g, p.shared_inputs(), a, Some(bad), &quiet()).is_err());
         assert_eq!(g.nodes, old.nodes);
     }
     let changed = inputs(&MAP.replace("\"value\":\"2\"", "\"value\":\"8\""));
-    assert!(retain(&env, &mut g, changed, a, o, &mut quiet()).is_err());
+    assert!(retain(&env, &mut g, changed, a, o, &quiet()).is_err());
     assert_eq!(g.nodes, old.nodes);
     g.active.request = 1;
-    assert!(retain(&env, &mut g, p.shared_inputs(), a, o, &mut quiet()).is_err());
+    assert!(retain(&env, &mut g, p.shared_inputs(), a, o, &quiet()).is_err());
     assert_eq!(g.nodes, old.nodes);
 }
 #[test]
@@ -512,7 +512,7 @@ fn finished_patterns_recheck_after_a_later_request_without_allowing_foreign_crea
             "b=build(ProfileRead,on=@v/A)",
             "later=build(ProfileRead,on=@v/B)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let p = PreparedObserved {
@@ -521,8 +521,8 @@ fn finished_patterns_recheck_after_a_later_request_without_allowing_foreign_crea
         object: None,
     };
     let (mut g, a, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let d = retain(&env, &mut g, p.shared_inputs(), a, o, &mut quiet())
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let d = retain(&env, &mut g, p.shared_inputs(), a, o, &quiet())
         .unwrap()
         .unwrap();
     let original_contexts = g.contexts.clone();
@@ -533,7 +533,7 @@ fn finished_patterns_recheck_after_a_later_request_without_allowing_foreign_crea
         &env,
         &mut g,
         &p.requests().requests()[1],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(later.complete);
@@ -541,15 +541,15 @@ fn finished_patterns_recheck_after_a_later_request_without_allowing_foreign_crea
     let active = g.active;
     for row in &d.rows {
         assert_eq!(g.context_at(row.pattern.0).request, 0);
-        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
         let checked = fresh.recheck_node(&g, g.get(row.pattern).unwrap(), row.pattern.0);
         assert!(checked.is_ok(), "{checked:?}");
         assert_eq!(g.active, active);
     }
     assert_eq!(&g.contexts[..original_contexts.len()], &original_contexts);
     let before = copy(&g, &quiet());
-    let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    assert!(retain(&fresh, &mut g, p.shared_inputs(), a, o, &mut quiet()).is_err());
+    let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
+    assert!(retain(&fresh, &mut g, p.shared_inputs(), a, o, &quiet()).is_err());
     assert_eq!(g.nodes, before.nodes);
     assert_eq!(g.contexts, before.contexts);
     assert_eq!(g.active, active);
@@ -561,7 +561,7 @@ fn finished_patterns_recheck_after_a_later_request_without_allowing_foreign_crea
             2 => changed.contexts[d.rows[0].pattern.0].request = 1,
             _ => unreachable!(),
         }
-        let fresh = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
         let r = d.rows[0].pattern;
         assert!(
             fresh
@@ -577,7 +577,7 @@ fn four_stops_keep_complete_pattern_nodes_and_the_exact_original_context_prefix(
     let (initial, a, o) = start(&p);
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if matches!(
             point,
             Checkpoint::ConfigurationProfile | Checkpoint::NativeResultNode
@@ -586,9 +586,9 @@ fn four_stops_keep_complete_pattern_nodes_and_the_exact_original_context_prefix(
         }
         None
     });
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let mut full = copy(&initial, &c);
-    let all = retain(&env, &mut full, p.shared_inputs(), a, o, &mut c)
+    let all = retain(&env, &mut full, p.shared_inputs(), a, o, &c)
         .unwrap()
         .unwrap();
     assert_eq!(all.rows.len(), 2);
@@ -600,7 +600,7 @@ fn four_stops_keep_complete_pattern_nodes_and_the_exact_original_context_prefix(
         for at in [1, total / 2, total - 3, total - 2, total - 1, total] {
             let seen = Rc::new(Cell::new(0));
             let count = seen.clone();
-            let mut c = Control::new(move |point| {
+            let c = Control::new(move |point| {
                 if matches!(
                     point,
                     Checkpoint::ConfigurationProfile | Checkpoint::NativeResultNode
@@ -610,9 +610,9 @@ fn four_stops_keep_complete_pattern_nodes_and_the_exact_original_context_prefix(
                 (count.get() >= at).then_some(signal)
             });
             let mut g = copy(&initial, &c);
-            let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+            let env = Environment::with_prepared(&p, &quiet()).unwrap();
             assert!(matches!(
-                retain(&env, &mut g, p.shared_inputs(), a, o, &mut c),
+                retain(&env, &mut g, p.shared_inputs(), a, o, &c),
                 Err(ValidationFailure::Stop(_))
             ));
             assert_eq!(g.active, initial.active);
@@ -648,15 +648,15 @@ fn shared_external_references_preserve_identity_and_do_not_import_external_field
                     law.replace("@FLOW_DIGEST@", digest).into_bytes(),
                     map.replace("@FLOW_DIGEST@", digest).into_bytes(),
                 ),
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap(),
         )
     };
     let p = prepared(bundle(map), "FlowRead");
     let (mut g, a, o) = start(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    let d = retain(&env, &mut g, p.shared_inputs(), a, o, &mut quiet())
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let d = retain(&env, &mut g, p.shared_inputs(), a, o, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(d.rows.len(), 3);
@@ -758,18 +758,11 @@ fn shared_external_references_preserve_identity_and_do_not_import_external_field
     let (mut graph, a, o) = start(&missing);
     assert!(o.is_none());
     let before = copy(&graph, &quiet());
-    let env = Environment::with_prepared(&missing, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&missing, &quiet()).unwrap();
     assert!(
-        retain(
-            &env,
-            &mut graph,
-            missing.shared_inputs(),
-            a,
-            o,
-            &mut quiet()
-        )
-        .unwrap()
-        .is_none()
+        retain(&env, &mut graph, missing.shared_inputs(), a, o, &quiet())
+            .unwrap()
+            .is_none()
     );
     assert_eq!(graph.nodes, before.nodes);
     assert_eq!(graph.contexts, before.contexts);

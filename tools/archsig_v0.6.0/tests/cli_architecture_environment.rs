@@ -552,7 +552,7 @@ fn public_architecture_delivery_cancellation_protects_unfinished_work_and_retain
             2 => Some(archsig::result::Signal::Term),
             _ => None,
         };
-        let mut control = if mode >= 3 {
+        let control = if mode >= 3 {
             archsig::control::Control::new(move |_| {
                 Some(if mode == 3 {
                     archsig::result::Signal::Int
@@ -567,7 +567,7 @@ fn public_architecture_delivery_cancellation_protects_unfinished_work_and_retain
             &mut DeliveryIo { fail: mode == 0 },
             &mut DeliverySignal(signal),
             &args,
-            &mut control,
+            &control,
         );
         assert_eq!(
             outcome.exit_code,
@@ -790,7 +790,7 @@ law optional guardedOwner(x:System) when forall s:State[x] . s.free+s.held=2 : t
             "guard=check(Reservations.guardedOwner,on=$m.candidate.source)",
             "external=check(Reservations.nestedOwner,x=@v/B,on=$m.candidate.source)",
         ],
-        &mut archsig::control::Control::unlimited(),
+        &archsig::control::Control::unlimited(),
     )
     .unwrap();
     assert_eq!(result.status(), "complete");

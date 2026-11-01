@@ -8,7 +8,7 @@ fn env(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -44,7 +44,7 @@ fn projection_condition_undetermined_environment_rechecks_original_reasons_and_p
         "take=evaluate(Applications.acRoot,a=$missing.evaluation.environment.root)",
         "later=evaluate(Applications.abSeed)",
     ];
-    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet()).unwrap();
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet()).unwrap();
     assert_eq!(r.status(), "partial");
     let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
     let e = env(&r);
@@ -128,7 +128,7 @@ fn projection_condition_actual_inapplicable_walk_stop_keeps_prior_values_refutat
         "later=evaluate(Applications.abSeed)",
     ];
     let normal =
-        evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet()).unwrap();
+        evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     assert_eq!(normal.answers[4].status, Decision::Undetermined);
     assert!(
@@ -148,7 +148,7 @@ fn projection_condition_actual_inapplicable_walk_stop_keeps_prior_values_refutat
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -157,8 +157,8 @@ fn projection_condition_actual_inapplicable_walk_stop_keeps_prior_values_refutat
             None
         }
     });
-    let prepared = prepare_observed(fixture::input("stop", "r1"), &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+    let prepared = prepare_observed(fixture::input("stop", "r1"), &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "empty" {
             let (a, s) = (armed.clone(), seen.clone());

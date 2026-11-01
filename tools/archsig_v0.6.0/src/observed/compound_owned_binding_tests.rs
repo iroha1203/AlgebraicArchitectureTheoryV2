@@ -17,7 +17,7 @@ fn run(asks: &[&str]) -> ObservedEvaluation {
     run_with("known", asks)
 }
 fn run_with(mode: &str, asks: &[&str]) -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input(mode, "r1"), asks, &mut quiet()).unwrap_or_else(
+    let r = evaluate_observed_bytes(fixture::input(mode, "r1"), asks, &quiet()).unwrap_or_else(
         |e| {
             panic!(
                 "{:?}",
@@ -71,7 +71,7 @@ fn compound_owned_condition_stop_preserves_prior_results_and_probe_freeze() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -80,8 +80,8 @@ fn compound_owned_condition_stop_preserves_prior_results_and_probe_freeze() {
             None
         }
     });
-    let prepared = prepare_observed(input, &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+    let prepared = prepare_observed(input, &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "v" {
             let (a, s) = (armed.clone(), seen.clone());

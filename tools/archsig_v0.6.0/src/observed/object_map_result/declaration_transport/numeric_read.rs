@@ -12,7 +12,7 @@ pub(super) fn compare(
     values: NodeRef,
     origins: &[NodeRef],
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<field::Comparison, ValidationFailure> {
     let mut out = field::Comparison {
         values,

@@ -80,7 +80,7 @@ impl std::fmt::Debug for RelationInstancesFailure {
     }
 }
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
-    c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+    c.checkpoint(Checkpoint::FiniteIteration)?;
     Ok(())
 }
 impl RelationInstances {
@@ -112,7 +112,7 @@ impl RelationInstances {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), RelationInstancesFailure> {
         if &self.sources != inputs.sources() {
             return Err(RelationInstancesFailure {
@@ -537,7 +537,7 @@ fn domain(
 pub(in crate::observed) fn relation_instances(
     inputs: &CheckedInputs,
     reading: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<RelationInstances, RelationInstancesFailure> {
     instances(inputs, reading, c, false)
 }
@@ -545,14 +545,14 @@ pub(in crate::observed) fn relation_instances(
 pub(in crate::observed) fn relation_transport_instances(
     inputs: &CheckedInputs,
     reading: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<RelationInstances, RelationInstancesFailure> {
     instances(inputs, reading, c, true)
 }
 fn instances(
     inputs: &CheckedInputs,
     reading: &str,
-    c: &mut Control,
+    c: &Control,
     numeric_families: bool,
 ) -> Result<RelationInstances, RelationInstancesFailure> {
     let mut out = RelationInstances {

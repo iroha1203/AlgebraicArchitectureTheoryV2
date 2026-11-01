@@ -22,8 +22,8 @@ fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
         .unwrap()
 }
 fn run(input: InputSources, asks: &[&str]) -> Json {
-    let c = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
-    let r = evaluate_observed_bytes(input.clone(), asks, &mut quiet()).unwrap();
+    let c = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+    let r = evaluate_observed_bytes(input.clone(), asks, &quiet()).unwrap();
     assert_eq!(r.prepared().inputs().sources(), &input);
     assert_eq!(r.prepared().inputs().definitions(), c.definitions());
     assert_eq!(
@@ -373,7 +373,7 @@ fn owned_map_type_provenance_pair_keeps_math_and_current_three_inputs() {
     let mut wires = vec![];
     for revision in ["r1", "r2"] {
         let input = fixture::input("plain", revision);
-        let c = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
+        let c = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
         assert_eq!(c.archmap().sources()[0].revision, revision);
         let w = run(input, &["x=evaluate(MapCall.typeEvery,a=@v/A,b=@v/A)"]);
         established(&w, "x", true);

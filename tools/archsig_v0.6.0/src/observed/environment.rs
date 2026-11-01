@@ -186,7 +186,7 @@ struct ValidationSnapshot {
 }
 impl ValidationSnapshot {
     fn tick(control: &Control) -> Result<(), ValidationFailure> {
-        control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        control.checkpoint(Checkpoint::FiniteIteration)?;
         Ok(())
     }
     fn same<T: PartialEq>(
@@ -469,7 +469,7 @@ impl<'a> Environment<'a> {
     pub(super) fn select_local_object(
         &mut self,
         w: &super::construction_result::ArchitectureWitness,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         self.indexes.object = Some(std::sync::Arc::new(
             super::object_evaluate::ObjectDomain::from_readings(
@@ -552,7 +552,7 @@ impl<'a> Environment<'a> {
     }
     pub(in crate::observed) fn with_prepared(
         prepared: &'a super::PreparedObserved,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Self, Signal> {
         let mut environment =
             Self::with_requests(prepared.inputs(), prepared.requests().requests(), control)?;
@@ -571,14 +571,14 @@ impl<'a> Environment<'a> {
     pub(in crate::observed) fn with_requests(
         inputs: &'a CheckedInputs,
         requests: &'a [Request],
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Self, Signal> {
         let mut environment = Self::new(inputs, control)?;
         environment.indexes.original_requests = Some(requests);
         Ok(environment)
     }
 
-    pub fn new(inputs: &'a CheckedInputs, control: &mut Control) -> Result<Self, Signal> {
+    pub fn new(inputs: &'a CheckedInputs, control: &Control) -> Result<Self, Signal> {
         Ok(Self {
             indexes: InputIndexes::new(inputs, control)?,
             results: ResultStore::default(),
@@ -632,7 +632,6 @@ impl<'a> Environment<'a> {
 
     pub(super) fn tick(&self) -> Result<(), ValidationFailure> {
         self.control
-            .clone()
             .checkpoint(Checkpoint::FiniteIteration)
             .map_err(ValidationFailure::Stop)
     }
@@ -10853,7 +10852,6 @@ pub(crate) fn conditional_branch(
     control: &Control,
 ) -> Result<Option<Scalar>, ValidationFailure> {
     control
-        .clone()
         .checkpoint(Checkpoint::FiniteIteration)
         .map_err(ValidationFailure::Stop)?;
     let value = match condition {
@@ -10877,7 +10875,6 @@ pub(crate) fn conditional_branch(
         _ => return Err("if の条件が Bool でない".into()),
     };
     control
-        .clone()
         .checkpoint(Checkpoint::FiniteIteration)
         .map_err(ValidationFailure::Stop)?;
     Ok(value)
@@ -11057,11 +11054,11 @@ reading CountCheck {{
                 law.as_bytes().to_vec(),
                 map.into_bytes(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let start = law.find("s.count").unwrap();
-        let environment = Environment::new(&inputs, &mut Control::unlimited()).unwrap();
+        let environment = Environment::new(&inputs, &Control::unlimited()).unwrap();
         let candidates = &inputs.law().program().dotted_candidates[&(start, start + 1)];
         assert!(
             candidates.len() > 1,

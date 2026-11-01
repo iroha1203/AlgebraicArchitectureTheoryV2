@@ -105,8 +105,7 @@ fn fixture(
         vocabulary_json("Affine", &format!("[{root},{sample}]"), "[]")
     ));
     let checked =
-        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
-            .unwrap();
+        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &quiet()).unwrap();
     let digest = &checked.vocabularies()["Affine"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading Calc {{ use vocabulary Affine version "1" digest "{digest}"; {script} }}"#
@@ -171,15 +170,14 @@ fn simple(script: &str) -> InputSources {
     fixture(script, false, false, false, false)
 }
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut quiet())
-        .unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
-    let evaluated =
-        evaluate_observed_bytes(inputs.clone(), asks, &mut quiet()).unwrap_or_else(|e| {
-            if let Some(wire) = e.wire() {
-                panic!("評価: {:?}", f(&wire, "issues"));
-            }
-            panic!("評価: {e:?}");
-        });
+    let checked =
+        check_inputs(inputs.clone(), &quiet()).unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
+    let evaluated = evaluate_observed_bytes(inputs.clone(), asks, &quiet()).unwrap_or_else(|e| {
+        if let Some(wire) = e.wire() {
+            panic!("評価: {:?}", f(&wire, "issues"));
+        }
+        panic!("評価: {e:?}");
+    });
     assert_eq!(evaluated.prepared().inputs().sources(), &inputs);
     assert_eq!(
         evaluated.prepared().inputs().sources().archmap().bytes(),
@@ -998,7 +996,7 @@ fn z_coefficients_and_constants_above_i64_keep_exact_difference() {
 fn q_comparison_with_z_is_rejected_without_implicit_coercion() {
     let failure = check_inputs(
         simple("view comparison(s:Sample): Bool = s.z+1=s.q+1;"),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);

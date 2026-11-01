@@ -31,7 +31,7 @@ fn bad(s: &str) -> ConstructionFailure {
 pub(super) fn parameter_constant_source_value(
     inputs: &CheckedInputs,
     instance: &crate::construction::readings::ObjectInstance,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Scalar>, ConstructionFailure> {
     let Some(source) = parameter_source_difference(inputs, instance, c)? else {
         return Ok(None);
@@ -121,7 +121,7 @@ pub(in crate::observed) struct ParameterEquation {
 pub(in crate::observed) fn parameter_source_difference(
     inputs: &CheckedInputs,
     instance: &crate::construction::readings::ObjectInstance,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<ParameterEquation>, ConstructionFailure> {
     parameter_source_difference_bound(inputs, instance, &[], c)
 }
@@ -129,7 +129,7 @@ pub(in crate::observed) fn parameter_source_difference_bound(
     inputs: &CheckedInputs,
     instance: &crate::construction::readings::ObjectInstance,
     finite: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<ParameterEquation>, ConstructionFailure> {
     let Some(guard) = source_polynomial::guard_value_bound(inputs, instance, finite, c)? else {
         return Ok(None);
@@ -141,7 +141,7 @@ pub(in crate::observed) fn parameter_source_on_guard_fiber(
     readings: &crate::construction::readings::ObjectReadingInstances,
     index: usize,
     finite: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<ParameterEquation>, ConstructionFailure> {
     use crate::construction::readings::InstanceApplication;
     let instance = &readings.instances()[index];
@@ -187,7 +187,7 @@ fn parameter_source_with_guard(
     instance: &crate::construction::readings::ObjectInstance,
     finite: &[(String, Scalar)],
     guard: ParameterGuard,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<ParameterEquation>, ConstructionFailure> {
     let crate::law::model::Signature::Law { body, .. } = &inputs
         .law()
@@ -368,7 +368,7 @@ impl EquationPresentation {
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), EquationPresentationFailure> {
         self.base
             .recheck(Arc::clone(&inputs), c)
@@ -460,7 +460,7 @@ fn value(g: &ObservedEvaluation, r: NodeRef, path: &[usize]) -> Option<Scalar> {
 fn has_fields(
     g: &ObservedEvaluation,
     r: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     let n = g
         .nodes
@@ -481,7 +481,7 @@ fn has_fields(
 fn ring(
     rings: &mut Vec<EquationRing>,
     ty: &Type,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<usize, ConstructionFailure> {
     for (i, r) in rings.iter().enumerate() {
         tick(c)?;
@@ -512,7 +512,7 @@ impl Compiler<'_> {
         r: NodeRef,
         name: &str,
         path: &[usize],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<EquationPolynomial>, ConstructionFailure> {
         let p = part(self.g, r)?;
         let Some(&base) = p.children.first() else {
@@ -597,7 +597,7 @@ impl Compiler<'_> {
         }
         Ok(Some(EquationPolynomial::variable(&self.ring.ty, i, c)?))
     }
-    fn is_helper(&self, mut callee: usize, c: &mut Control) -> Result<bool, ConstructionFailure> {
+    fn is_helper(&self, mut callee: usize, c: &Control) -> Result<bool, ConstructionFailure> {
         while let ExprKind::Group(child) = self.inputs.law().exprs()[callee].kind {
             tick(c)?;
             callee = child;
@@ -628,7 +628,7 @@ impl Compiler<'_> {
         r: NodeRef,
         name: &str,
         path: &[usize],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<EquationPolynomial>, ConstructionFailure> {
         let Some(&base) = part(self.g, r)?.children.first() else {
             return Ok(None);
@@ -642,7 +642,7 @@ impl Compiler<'_> {
         &self,
         r: NodeRef,
         name: &str,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<bool, ConstructionFailure> {
         let p = part(self.g, r)?;
         let [base] = p.children.as_slice() else {
@@ -676,7 +676,7 @@ impl Compiler<'_> {
         r: NodeRef,
         scrutinee: usize,
         arms: &[crate::law::ast::Arm],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<bool, ConstructionFailure> {
         let p = part(self.g, r)?;
         if p.children.len() != 2 {
@@ -695,7 +695,7 @@ impl Compiler<'_> {
         &self,
         r: NodeRef,
         path: &[usize],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<bool, ConstructionFailure> {
         stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             tick(c)?;
@@ -784,7 +784,7 @@ impl Compiler<'_> {
         &mut self,
         r: NodeRef,
         path: &[usize],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<bool>, ConstructionFailure> {
         stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             tick(c)?;
@@ -901,7 +901,7 @@ impl Compiler<'_> {
         right: NodeRef,
         ty: &Type,
         path: &[usize],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<bool>, ConstructionFailure> {
         stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             tick(c)?;
@@ -961,11 +961,7 @@ impl Compiler<'_> {
         })
     }
     // 値の正規化で不要になるlet/helper引数/Tuple位置も、元読取りとして収集する。
-    fn collect_support(
-        &mut self,
-        root: NodeRef,
-        c: &mut Control,
-    ) -> Result<(), ConstructionFailure> {
+    fn collect_support(&mut self, root: NodeRef, c: &Control) -> Result<(), ConstructionFailure> {
         let mut pending = vec![root];
         let mut seen = std::collections::BTreeSet::new();
         while let Some(r) = pending.pop() {
@@ -1039,7 +1035,7 @@ impl Compiler<'_> {
         &mut self,
         r: NodeRef,
         path: &[usize],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<EquationPolynomial>, ConstructionFailure> {
         stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             tick(c)?;
@@ -1167,7 +1163,7 @@ fn guard(
     g: Option<&ObservedEvaluation>,
     case: &LawResidualCase,
     explicit: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<EquationGuard, ConstructionFailure> {
     tick(c)?;
     match case.reading.application() {
@@ -1226,7 +1222,7 @@ fn guard(
 fn populate(
     r: &mut EquationPresentation,
     inputs: &CheckedInputs,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     // work列は元行への添字のみ。出現/係数を事前に供給しない。
     let mut work = vec![];
@@ -1537,7 +1533,7 @@ pub fn object_equation_presentation(
     snapshot: &str,
     root: &str,
     object: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<EquationPresentation, EquationPresentationFailure> {
     let base = object_law_residuals(Arc::clone(&inputs), reading, snapshot, root, c)
         .map_err(EquationPresentationFailure::Original)?;
@@ -1586,7 +1582,7 @@ mod tests {
                     law.into_bytes(),
                     map.replace("@DIGEST@", digest).into_bytes(),
                 ),
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap(),
         )
@@ -1610,16 +1606,10 @@ mod tests {
                     &definition,
                     &map,
                 );
-                let mut c = Control::unlimited();
-                let presentation = object_equation_presentation(
-                    inputs.clone(),
-                    "Selected",
-                    "v",
-                    "root",
-                    0,
-                    &mut c,
-                )
-                .unwrap();
+                let c = Control::unlimited();
+                let presentation =
+                    object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &c)
+                        .unwrap();
                 assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
                 assert_eq!(presentation.rings[0].symbols.len(), 1);
                 assert_eq!(presentation.rings[0].symbols[0].value.is_none(), missing);
@@ -1631,17 +1621,12 @@ mod tests {
                     });
                     assert_eq!(occurrence.epsilon.as_ref(), Some(&expected));
                     assert_eq!(
-                        occurrence
-                            .nu
-                            .as_ref()
-                            .unwrap()
-                            .evaluate(&[], &mut c)
-                            .unwrap(),
+                        occurrence.nu.as_ref().unwrap().evaluate(&[], &c).unwrap(),
                         Some(expected)
                     );
                     assert_eq!(occurrence.component_holds, Some(false));
                 }
-                presentation.recheck(inputs, &mut c).unwrap();
+                presentation.recheck(inputs, &c).unwrap();
             }
         }
     }
@@ -1649,10 +1634,9 @@ mod tests {
     fn uniform_numeric_difference_retains_full_parameters_and_rejects_changed_residual() {
         let ty = Type::Z;
         let inputs = inputs_with("law required balanced(c:Part,n:Z,m:Z):let a=n+m in a=n+m+1;");
-        let mut c = Control::unlimited();
+        let c = Control::unlimited();
         let mut presentation =
-            object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c)
-                .unwrap();
+            object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &c).unwrap();
         assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
         assert!(!presentation.occurrences.is_empty());
         let one = numeric::literal("1", &ty, &c).unwrap();
@@ -1663,12 +1647,7 @@ mod tests {
             assert_eq!(occurrence.residual.as_ref(), Some(&expected));
             assert_eq!(occurrence.component_holds, Some(false));
             assert_eq!(
-                occurrence
-                    .nu
-                    .as_ref()
-                    .unwrap()
-                    .evaluate(&[], &mut c)
-                    .unwrap(),
+                occurrence.nu.as_ref().unwrap().evaluate(&[], &c).unwrap(),
                 Some(expected.clone())
             );
             assert!(occurrence.row.is_none());
@@ -1679,10 +1658,10 @@ mod tests {
             assert!(source.family().domains().is_empty());
             assert!(source.family().uniform().is_some());
         }
-        presentation.recheck(inputs.clone(), &mut c).unwrap();
+        presentation.recheck(inputs.clone(), &c).unwrap();
         presentation.occurrences[0].nu =
-            Some(EquationPolynomial::constant(numeric::zero(&ty, &c).unwrap(), &mut c).unwrap());
-        assert!(presentation.recheck(inputs, &mut c).is_err());
+            Some(EquationPolynomial::constant(numeric::zero(&ty, &c).unwrap(), &c).unwrap());
+        assert!(presentation.recheck(inputs, &c).is_err());
     }
     #[test]
     fn mixed_products_preserve_affine_parameters_with_observed_coefficients() {
@@ -1696,15 +1675,15 @@ mod tests {
             let inputs = inputs_with(&format!(
                 "law required equal(c:Part,n:Z,m:Z):{expression}=m;"
             ));
-            let mut c = Control::unlimited();
+            let c = Control::unlimited();
             let profiles = crate::construction::profiles::construct_profiles(
-                &inputs, "Selected", "v", "root", &mut c,
+                &inputs, "Selected", "v", "root", &c,
             )
             .unwrap();
             let readings = crate::construction::readings::object_reading_instances(
                 &inputs,
                 profiles.construction(),
-                &mut c,
+                &c,
             )
             .unwrap();
             let instance = readings
@@ -1713,7 +1692,7 @@ mod tests {
                 .find(|instance| instance.declaration().kind == "law")
                 .unwrap();
             assert_eq!(
-                parameter_source_difference(&inputs, instance, &mut c)
+                parameter_source_difference(&inputs, instance, &c)
                     .unwrap()
                     .is_some(),
                 expected
@@ -1737,15 +1716,15 @@ mod tests {
                 &definition,
                 fixture::A,
             );
-            let mut c = Control::unlimited();
+            let c = Control::unlimited();
             let profiles = crate::construction::profiles::construct_profiles(
-                &inputs, "Selected", "v", "root", &mut c,
+                &inputs, "Selected", "v", "root", &c,
             )
             .unwrap();
             let readings = crate::construction::readings::object_reading_instances(
                 &inputs,
                 profiles.construction(),
-                &mut c,
+                &c,
             )
             .unwrap();
             let instance = readings
@@ -1754,7 +1733,7 @@ mod tests {
                 .find(|instance| instance.declaration().kind == "law")
                 .unwrap();
             assert_eq!(
-                source_polynomial::guard_value(&inputs, instance, &mut c).unwrap(),
+                source_polynomial::guard_value(&inputs, instance, &c).unwrap(),
                 expected
             );
         }
@@ -1771,15 +1750,15 @@ mod tests {
             let inputs = inputs_with(&format!(
                 "law required equal(c:Part,n:Q,m:Z) when {guard}:m=0;"
             ));
-            let mut c = Control::unlimited();
+            let c = Control::unlimited();
             let profiles = crate::construction::profiles::construct_profiles(
-                &inputs, "Selected", "v", "root", &mut c,
+                &inputs, "Selected", "v", "root", &c,
             )
             .unwrap();
             let readings = crate::construction::readings::object_reading_instances(
                 &inputs,
                 profiles.construction(),
-                &mut c,
+                &c,
             )
             .unwrap();
             let instance = readings
@@ -1788,7 +1767,7 @@ mod tests {
                 .find(|instance| instance.declaration().kind == "law")
                 .unwrap();
             assert_eq!(
-                source_polynomial::guard_value(&inputs, instance, &mut c).unwrap(),
+                source_polynomial::guard_value(&inputs, instance, &c).unwrap(),
                 expected
             );
         }
@@ -1829,15 +1808,15 @@ mod tests {
             let inputs = inputs_with(&format!(
                 "view active(x:Z,y:Z):Bool=x=y;view nested(x:Z):Bool=active(x,x);law required equal(c:Part,n:Z,m:Z) when {guard}:let x=n in x=m;"
             ));
-            let mut c = Control::unlimited();
+            let c = Control::unlimited();
             let profiles = crate::construction::profiles::construct_profiles(
-                &inputs, "Selected", "v", "root", &mut c,
+                &inputs, "Selected", "v", "root", &c,
             )
             .unwrap();
             let readings = crate::construction::readings::object_reading_instances(
                 &inputs,
                 profiles.construction(),
-                &mut c,
+                &c,
             )
             .unwrap();
             let instance = readings
@@ -1846,7 +1825,7 @@ mod tests {
                 .find(|instance| instance.declaration().kind == "law")
                 .unwrap();
             assert_eq!(
-                source_polynomial::guard_value(&inputs, instance, &mut c).unwrap(),
+                source_polynomial::guard_value(&inputs, instance, &c).unwrap(),
                 expected
             );
         }
@@ -1865,15 +1844,15 @@ mod tests {
                 &definition,
                 &map,
             );
-            let mut c = Control::unlimited();
+            let c = Control::unlimited();
             let profiles = crate::construction::profiles::construct_profiles(
-                &inputs, "Selected", "v", "root", &mut c,
+                &inputs, "Selected", "v", "root", &c,
             )
             .unwrap();
             let readings = crate::construction::readings::object_reading_instances(
                 &inputs,
                 profiles.construction(),
-                &mut c,
+                &c,
             )
             .unwrap();
             let instance = readings
@@ -1881,13 +1860,13 @@ mod tests {
                 .iter()
                 .find(|instance| instance.declaration().kind == "law")
                 .unwrap();
-            let source = parameter_source_difference(&inputs, instance, &mut c)
+            let source = parameter_source_difference(&inputs, instance, &c)
                 .unwrap()
                 .unwrap();
             assert_eq!(source.ring.symbols.len(), 1);
             assert_eq!(source.difference.parameters.len(), 2);
             assert!(
-                parameter_constant_source_value(&inputs, instance, &mut c)
+                parameter_constant_source_value(&inputs, instance, &c)
                     .unwrap()
                     .is_none()
             );
@@ -1910,16 +1889,16 @@ mod tests {
                         )
                     })
                     .collect();
-                let polynomial = source.difference.at(&arguments, &mut c).unwrap();
-                assert!(polynomial.evaluate(&[], &mut c).unwrap().is_none());
+                let polynomial = source.difference.at(&arguments, &c).unwrap();
+                assert!(polynomial.evaluate(&[], &c).unwrap().is_none());
                 assert_eq!(
                     polynomial
-                        .evaluate(&[Some(NumericTransportValue::observed(number(2)))], &mut c)
+                        .evaluate(&[Some(NumericTransportValue::observed(number(2)))], &c)
                         .unwrap(),
                     Some(NumericTransportValue::observed(number(expected)))
                 );
             }
-            assert!(source.difference.at(&[], &mut c).is_err());
+            assert!(source.difference.at(&[], &c).is_err());
         }
     }
     #[test]
@@ -1938,9 +1917,9 @@ mod tests {
                 &definition,
                 &map,
             );
-            let mut c = Control::unlimited();
+            let c = Control::unlimited();
             let mut presentation =
-                object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c)
+                object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &c)
                     .unwrap();
             assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
             assert_eq!(presentation.rings[0].symbols.len(), 1);
@@ -1957,24 +1936,20 @@ mod tests {
                         .iter()
                         .any(|term| !term.variables.is_empty())
                 );
-                assert!(polynomial.evaluate(&[], &mut c).unwrap().is_none());
+                assert!(polynomial.evaluate(&[], &c).unwrap().is_none());
                 assert_eq!(
                     polynomial
-                        .evaluate(
-                            &[Some(NumericTransportValue::observed(value.clone()))],
-                            &mut c
-                        )
+                        .evaluate(&[Some(NumericTransportValue::observed(value.clone()))], &c)
                         .unwrap(),
                     Some(NumericTransportValue::observed(value.clone()))
                 );
                 assert_eq!(occurrence.component_holds, Some(false));
                 assert!(occurrence.row.is_none());
             }
-            presentation.recheck(inputs.clone(), &mut c).unwrap();
+            presentation.recheck(inputs.clone(), &c).unwrap();
             // 同じ観測値でも、元のfieldを定数へ置き換えた表示は受け入れない。
-            presentation.occurrences[0].nu =
-                Some(EquationPolynomial::constant(value, &mut c).unwrap());
-            assert!(presentation.recheck(inputs, &mut c).is_err());
+            presentation.occurrences[0].nu = Some(EquationPolynomial::constant(value, &c).unwrap());
+            assert!(presentation.recheck(inputs, &c).is_err());
         }
     }
     #[test]
@@ -1988,15 +1963,15 @@ mod tests {
             "view plus(x:Z):Z=x+1;view twice(y:Z):Z=plus(plus(y));law required varying(c:Part,n:Z):twice(n)=0;",
         ] {
             let inputs = inputs_with(body);
-            let mut c = Control::unlimited();
+            let c = Control::unlimited();
             let profiles = crate::construction::profiles::construct_profiles(
-                &inputs, "Selected", "v", "root", &mut c,
+                &inputs, "Selected", "v", "root", &c,
             )
             .unwrap();
             let readings = crate::construction::readings::object_reading_instances(
                 &inputs,
                 profiles.construction(),
-                &mut c,
+                &c,
             )
             .unwrap();
             let instance = readings
@@ -2009,11 +1984,11 @@ mod tests {
                 &readings,
                 0,
                 instance,
-                &mut c,
+                &c,
             )
             .unwrap();
             assert!(
-                super::super::object_law_transport::constant_numeric_family(&evaluation, &mut c)
+                super::super::object_law_transport::constant_numeric_family(&evaluation, &c)
                     .unwrap()
                     .is_none(),
                 "{body}"
@@ -2028,15 +2003,15 @@ mod tests {
             "view active(x:Z):Bool=x=0;law required varying(c:Part,n:Z) when active(n):n=n;",
         ] {
             let inputs = inputs_with(body);
-            let mut c = Control::unlimited();
+            let c = Control::unlimited();
             let profiles = crate::construction::profiles::construct_profiles(
-                &inputs, "Selected", "v", "root", &mut c,
+                &inputs, "Selected", "v", "root", &c,
             )
             .unwrap();
             let readings = crate::construction::readings::object_reading_instances(
                 &inputs,
                 profiles.construction(),
-                &mut c,
+                &c,
             )
             .unwrap();
             let instance = readings
@@ -2049,11 +2024,11 @@ mod tests {
                 &readings,
                 0,
                 instance,
-                &mut c,
+                &c,
             )
             .unwrap();
             let family =
-                super::super::object_law_transport::constant_numeric_family(&evaluation, &mut c)
+                super::super::object_law_transport::constant_numeric_family(&evaluation, &c)
                     .unwrap();
             assert_eq!(
                 family.map(|(_, _, residual)| residual),
@@ -2068,9 +2043,9 @@ mod tests {
             let inputs = inputs_with(&format!(
                 "view plus(x:{ty}):{ty}=x+1;law required balanced(c:Part,n:{ty},m:{ty}) when {guard}:let x=n+m in plus(x)=m+n+2;"
             ));
-            let mut c = Control::unlimited();
+            let c = Control::unlimited();
             let presentation =
-                object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c)
+                object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &c)
                     .unwrap();
             assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
             assert!(!presentation.occurrences.is_empty());
@@ -2085,7 +2060,7 @@ mod tests {
                     .nu
                     .as_ref()
                     .unwrap()
-                    .evaluate(&[], &mut c)
+                    .evaluate(&[], &c)
                     .unwrap()
                     .unwrap();
                 let one = numeric::literal("1", &value.scalar().ty(), &c).unwrap();
@@ -2108,7 +2083,7 @@ mod tests {
                 assert_eq!(source.evaluation().instance().parameters().len(), 2);
                 assert!(source.family().rows().is_empty() && source.family().domains().is_empty());
             }
-            presentation.recheck(inputs, &mut c).unwrap();
+            presentation.recheck(inputs, &c).unwrap();
         }
     }
     #[test]
@@ -2116,10 +2091,9 @@ mod tests {
         let inputs = inputs_with(
             "view active(x:Q):Bool=let y=x+1 in y=x+1;view enabled(y:Q):Bool=active(y);law required balanced(c:Part,n:Q) when enabled(n):n=n+1;",
         );
-        let mut c = Control::unlimited();
+        let c = Control::unlimited();
         let presentation =
-            object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c)
-                .unwrap();
+            object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &c).unwrap();
         assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
         assert!(!presentation.occurrences.is_empty());
         for occurrence in &presentation.occurrences {
@@ -2127,17 +2101,12 @@ mod tests {
             let expected = NumericTransportValue::observed(Scalar::Q((-1).into(), 1.into()));
             assert_eq!(occurrence.epsilon.as_ref(), Some(&expected));
             assert_eq!(
-                occurrence
-                    .nu
-                    .as_ref()
-                    .unwrap()
-                    .evaluate(&[], &mut c)
-                    .unwrap(),
+                occurrence.nu.as_ref().unwrap().evaluate(&[], &c).unwrap(),
                 Some(expected)
             );
             assert_eq!(occurrence.component_holds, Some(false));
         }
-        presentation.recheck(inputs, &mut c).unwrap();
+        presentation.recheck(inputs, &c).unwrap();
     }
     #[test]
     fn uniform_true_guard_preserves_numeric_difference() {
@@ -2145,9 +2114,9 @@ mod tests {
             let inputs = inputs_with(&format!(
                 "law required balanced(c:Part,n:{ty}) when {guard}:n=n+1;"
             ));
-            let mut c = Control::unlimited();
+            let c = Control::unlimited();
             let presentation =
-                object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c)
+                object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &c)
                     .unwrap();
             assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
             let ty = if ty == "Z" { Type::Z } else { Type::Q };
@@ -2164,17 +2133,12 @@ mod tests {
                 assert_eq!(occurrence.component_holds, Some(false));
                 assert_eq!(occurrence.epsilon.as_ref(), Some(&expected));
                 assert_eq!(
-                    occurrence
-                        .nu
-                        .as_ref()
-                        .unwrap()
-                        .evaluate(&[], &mut c)
-                        .unwrap(),
+                    occurrence.nu.as_ref().unwrap().evaluate(&[], &c).unwrap(),
                     Some(expected.clone())
                 );
             }
             assert!(applicable > 0);
-            presentation.recheck(inputs, &mut c).unwrap();
+            presentation.recheck(inputs, &c).unwrap();
         }
     }
     #[test]
@@ -2182,10 +2146,9 @@ mod tests {
         let inputs = inputs_with(
             "view plus(x:Q,y:Q):Q=let z=x+y in z+rat(1,2);view third():Q=rat(1,3);law required balanced(c:Part,n:Q,m:Q):plus(n,m)=n+m+third();",
         );
-        let mut c = Control::unlimited();
+        let c = Control::unlimited();
         let presentation =
-            object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c)
-                .unwrap();
+            object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &c).unwrap();
         assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
         let expected = NumericTransportValue::observed(
             numeric::rational(&Scalar::Z(1.into()), &Scalar::Z(6.into()), &c).unwrap(),
@@ -2194,12 +2157,7 @@ mod tests {
         for occurrence in &presentation.occurrences {
             assert_eq!(occurrence.epsilon.as_ref(), Some(&expected));
             assert_eq!(
-                occurrence
-                    .nu
-                    .as_ref()
-                    .unwrap()
-                    .evaluate(&[], &mut c)
-                    .unwrap(),
+                occurrence.nu.as_ref().unwrap().evaluate(&[], &c).unwrap(),
                 Some(expected.clone())
             );
         }
@@ -2208,17 +2166,16 @@ mod tests {
             assert!(source.family().rows().is_empty());
             assert!(source.family().domains().is_empty());
         }
-        presentation.recheck(inputs, &mut c).unwrap();
+        presentation.recheck(inputs, &c).unwrap();
     }
     #[test]
     fn nested_numeric_helpers_preserve_scope_and_exact_residual() {
         let inputs = inputs_with(
             "view plus(x:Q):Q=let y=x+rat(1,2) in y;view twice(y:Q):Q=plus(plus(y));law required balanced(c:Part,n:Q):let x=n+1 in twice(x)=n+rat(5,2);",
         );
-        let mut c = Control::unlimited();
+        let c = Control::unlimited();
         let presentation =
-            object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c)
-                .unwrap();
+            object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &c).unwrap();
         assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
         let expected = NumericTransportValue::observed(
             numeric::rational(&Scalar::Z((-1).into()), &Scalar::Z(2.into()), &c).unwrap(),
@@ -2227,25 +2184,19 @@ mod tests {
         for occurrence in &presentation.occurrences {
             assert_eq!(occurrence.epsilon.as_ref(), Some(&expected));
             assert_eq!(
-                occurrence
-                    .nu
-                    .as_ref()
-                    .unwrap()
-                    .evaluate(&[], &mut c)
-                    .unwrap(),
+                occurrence.nu.as_ref().unwrap().evaluate(&[], &c).unwrap(),
                 Some(expected.clone())
             );
             assert_eq!(occurrence.component_holds, Some(false));
         }
-        presentation.recheck(inputs, &mut c).unwrap();
+        presentation.recheck(inputs, &c).unwrap();
     }
     #[test]
     fn uniform_rational_literal_difference_is_exact() {
         let inputs = inputs_with("law required balanced(c:Part,n:Q):n+rat(1,2)=n+rat(1,3);");
-        let mut c = Control::unlimited();
+        let c = Control::unlimited();
         let presentation =
-            object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &mut c)
-                .unwrap();
+            object_equation_presentation(inputs.clone(), "Selected", "v", "root", 0, &c).unwrap();
         assert_eq!(presentation.status(), EquationPresentationStatus::Ready);
         let expected = NumericTransportValue::observed(
             numeric::rational(&Scalar::Z(1.into()), &Scalar::Z(6.into()), &c).unwrap(),
@@ -2255,16 +2206,11 @@ mod tests {
             assert_eq!(occurrence.ty, Type::Q);
             assert_eq!(occurrence.epsilon.as_ref(), Some(&expected));
             assert_eq!(
-                occurrence
-                    .nu
-                    .as_ref()
-                    .unwrap()
-                    .evaluate(&[], &mut c)
-                    .unwrap(),
+                occurrence.nu.as_ref().unwrap().evaluate(&[], &c).unwrap(),
                 Some(expected.clone())
             );
         }
-        presentation.recheck(inputs, &mut c).unwrap();
+        presentation.recheck(inputs, &c).unwrap();
     }
     #[test]
     fn recheck_rejects_forged_symbols_polynomials_ideal_substitution_origin_and_status() {
@@ -2276,7 +2222,7 @@ mod tests {
                 "v",
                 "root",
                 0,
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap();
             match mode {
@@ -2314,7 +2260,7 @@ mod tests {
             }
             assert!(
                 matches!(
-                    r.recheck(i.clone(), &mut Control::unlimited()),
+                    r.recheck(i.clone(), &Control::unlimited()),
                     Err(EquationPresentationFailure::Reading {
                         cause: ConstructionFailure::Inconsistent(_),
                         ..

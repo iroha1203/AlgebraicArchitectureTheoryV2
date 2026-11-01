@@ -56,14 +56,14 @@ pub(in crate::observed) fn canonical_reasons(
     reasons: &mut Vec<Reason>,
     control: &Control,
 ) -> Result<(), ValidationFailure> {
-    let mut controlled = control.clone();
+    let controlled = control.clone();
     let mut keys = Vec::new();
     for (index, reason) in reasons.iter().enumerate() {
         controlled.checkpoint(Checkpoint::FiniteIteration)?;
         let key = reason
             .wire()
             .canonical_controlled::<Box<crate::issue::Issue>>(
-                &mut controlled,
+                &controlled,
                 Checkpoint::FiniteIteration,
             )
             .map_err(|_| {
@@ -106,7 +106,7 @@ fn components(
     law: &crate::law::CheckedLaw,
     control: &Control,
 ) -> Result<Vec<Scalar>, ValidationFailure> {
-    control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+    control.checkpoint(Checkpoint::FiniteIteration)?;
     data::check(value, law, control)?;
     let values = match value {
         value if types.len() == 1 => vec![value.clone()],
@@ -114,14 +114,14 @@ fn components(
         _ => return Err("補完代入の元slot数・型が違う".into()),
     };
     for (value, ty) in values.iter().zip(types) {
-        control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        control.checkpoint(Checkpoint::FiniteIteration)?;
         if !super::super::finite::field_completion_supported(ty, law, control)?
             || value.ty() != ty.erase()
         {
             return Err("補完代入の成分型が元の有限slotと違う".into());
         }
     }
-    control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+    control.checkpoint(Checkpoint::FiniteIteration)?;
     Ok(values)
 }
 
@@ -347,7 +347,7 @@ impl Environment<'_> {
                 &self.indexes.inputs.archmap().snapshots(),
                 &self.indexes.inputs.law().definitions(),
                 &pinned,
-                &mut self.control.clone(),
+                &self.control,
             ) {
                 Ok(()) => kept.push(value),
                 Err(CheckFailure::Input(issue))

@@ -32,8 +32,8 @@ fn assert_priority(
     after_rejection: usize,
     definition_failure: bool,
 ) {
-    let (mut baseline, count) = probe(point, usize::MAX);
-    let original = check_inputs(make(), &mut baseline).unwrap_err();
+    let (baseline, count) = probe(point, usize::MAX);
+    let original = check_inputs(make(), &baseline).unwrap_err();
     assert_eq!(original.status(), InputStatus::Invalid);
     assert_eq!(original.issues(), [ResultIssue::Input(issue).wire()]);
     let total = count.get();
@@ -43,8 +43,8 @@ fn assert_priority(
     // Here the offsets are only the source's Result-unwind wrappers, so the
     // first injection is the post of the rejecting operation itself.
     for at in [first_post - 1, first_post, total] {
-        let (mut control, _) = probe(point, at);
-        let failure = check_inputs(make(), &mut control).unwrap_err();
+        let (control, _) = probe(point, at);
+        let failure = check_inputs(make(), &control).unwrap_err();
         assert_eq!(failure.declarations().is_empty(), definition_failure);
         assert_eq!(failure.primitives().is_empty(), definition_failure);
         assert_eq!(failure.vocabularies().is_empty(), definition_failure);
@@ -218,19 +218,19 @@ fn constructor_and_field_exhaustion_keep_only_established_lookup_rejections() {
         false,
     );
 
-    let (mut baseline, total) = probe(Checkpoint::ArchMapSchema, usize::MAX);
+    let (baseline, total) = probe(Checkpoint::ArchMapSchema, usize::MAX);
     check_inputs(
         value_sources_from_definition(definition.clone(), absent),
-        &mut baseline,
+        &baseline,
     )
     .unwrap_err();
     // A's post is two points before the rejecting final B post. A matching
     // second constructor remains untried, so the first false cannot be invalid.
     let at = total.get() - 5;
-    let (mut control, _) = probe(Checkpoint::ArchMapSchema, at);
+    let (control, _) = probe(Checkpoint::ArchMapSchema, at);
     let failure = check_inputs(
         value_sources_from_definition(definition.clone(), r#"{"tag":"B","args":[]}"#),
-        &mut control,
+        &control,
     )
     .unwrap_err();
     assert_eq!(failure.status(), InputStatus::Interrupted);

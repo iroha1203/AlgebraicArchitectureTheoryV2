@@ -70,7 +70,7 @@ impl CircuitPattern {
                 })
             }))
     }
-    fn key(&self, control: &mut Control) -> Result<Vec<bool>, ConstructionFailure> {
+    fn key(&self, control: &Control) -> Result<Vec<bool>, ConstructionFailure> {
         let mut key = Vec::new();
         for section in [&self.membership, &self.relations, &self.identifications] {
             for bit in section {
@@ -138,7 +138,7 @@ impl ConfigurationProfiles {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         let root = self.construction.root();
         if self
@@ -157,7 +157,7 @@ impl ConfigurationProfiles {
         check(control)
     }
 }
-fn check(control: &mut Control) -> Result<(), ConstructionFailure> {
+fn check(control: &Control) -> Result<(), ConstructionFailure> {
     control
         .checkpoint(Checkpoint::ConfigurationProfile)
         .map_err(Into::into)
@@ -165,7 +165,7 @@ fn check(control: &mut Control) -> Result<(), ConstructionFailure> {
 fn pattern(
     configuration: &Configuration,
     universe: &[FactPointer],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<CircuitPattern, ConstructionFailure> {
     check(control)?;
     let n = universe.len();
@@ -228,7 +228,7 @@ pub fn construct_profiles(
     reading: &str,
     snapshot: &str,
     root: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ConfigurationProfiles, ConstructionFailure> {
     check(control)?;
     let construction = construct(inputs, reading, snapshot, root, control)?;
@@ -356,7 +356,7 @@ mod tests {
             relations: pairs.clone(),
             identifications: pairs,
         };
-        let p = pattern(&c, &[a, b], &mut Control::unlimited()).unwrap();
+        let p = pattern(&c, &[a, b], &Control::unlimited()).unwrap();
         assert_eq!(p.membership(), [true, false]);
         assert_eq!(p.relations(), [true, false, false, false]);
         assert_eq!(p.identifications(), [true, false, false, false]);
@@ -377,11 +377,11 @@ mod tests {
                 l.into_bytes(),
                 a.into_bytes(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let original =
-            construct_profiles(&i, "ProfileRead", "v", "A", &mut Control::unlimited()).unwrap();
+            construct_profiles(&i, "ProfileRead", "v", "A", &Control::unlimited()).unwrap();
         for kind in 0..8 {
             let mut forged = original.clone();
             match kind {
@@ -422,7 +422,7 @@ mod tests {
             }
             assert!(
                 matches!(
-                    forged.recheck(&i, &mut Control::unlimited()),
+                    forged.recheck(&i, &Control::unlimited()),
                     Err(ConstructionFailure::Inconsistent(_))
                 ),
                 "{kind}"

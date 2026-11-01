@@ -284,7 +284,7 @@ fn compute(
     g: &Graph,
     request: &Request,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ValidationFailure> {
     c.checkpoint(crate::control::Checkpoint::Localize)?;
     env.validation_graph_session(g, || {
@@ -960,7 +960,7 @@ fn diagnose(
     original: &ConstructionValue,
     base: usize,
     witness: Arc<ArchitectureWitness>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ValidationFailure> {
     let D::Local(data) = &original.data else {
         return Err("診断対象がLocalSystemでない".into());
@@ -1210,7 +1210,7 @@ pub(super) fn evaluate(
     env: &Environment<'_>,
     g: &mut Graph,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Answer, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((_prepared, env, g, request, c))
 }
@@ -1261,13 +1261,7 @@ impl Environment<'_> {
             return Ok(());
         }
         let rebuilt = self.with_request_context(g, &d.source.request, || {
-            compute(
-                self,
-                g,
-                &d.source.request,
-                d.source.base,
-                &mut self.control.clone(),
-            )
+            compute(self, g, &d.source.request, d.source.base, &self.control)
         })?;
         if let Some(stop) = rebuilt.answer.reasons.iter().find_map(|r| {
             if let ReasonKind::Stop(stop) = &r.kind {
@@ -1349,7 +1343,7 @@ pub(super) fn validate_answer(
     };
     if &d.source.request != request {
         let rebuilt = env.with_request_context(g, request, || {
-            compute(env, g, request, g.nodes.len(), &mut env.control.clone())
+            compute(env, g, request, g.nodes.len(), &env.control)
         })?;
         if let Some(stop) = rebuilt.answer.reasons.iter().find_map(|r| {
             if let ReasonKind::Stop(stop) = &r.kind {
@@ -1398,7 +1392,7 @@ impl super::result_kind::ResultKind for Data {
         &'a Environment<'input>,
         &'a mut Graph,
         &'a Request,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = Answer;
     fn compute_and_retain<'a, 'input: 'a>(

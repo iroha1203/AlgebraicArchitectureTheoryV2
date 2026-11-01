@@ -44,7 +44,7 @@ fn known(value: Scalar) -> SourceValue {
 fn subject_carrier(
     value: &Scalar,
     carrier: &mut Vec<Json>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     let mut pending = vec![value];
     while let Some(value) = pending.pop() {
@@ -156,7 +156,7 @@ pub(in crate::observed) fn value_type_supported(
     c: &Control,
 ) -> Result<bool, ValidationFailure> {
     Ok(super::super::data::supported(ty, law, c)?
-        && super::super::value_transport::identity_declarations(ty, law, &mut c.clone())?.is_some())
+        && super::super::value_transport::identity_declarations(ty, law, &c)?.is_some())
 }
 
 /// 全参照作用とscalar恒等写像をTuple/List/Set/Option/Data/Mapへ延長できる型。
@@ -170,7 +170,7 @@ pub(in crate::observed) fn reference_value_type_supported(
     let mut families = BTreeSet::new();
     let mut reference = false;
     while let Some(ty) = pending.pop() {
-        c.clone().checkpoint(Checkpoint::ObjectViewTransport)?;
+        c.checkpoint(Checkpoint::ObjectViewTransport)?;
         match ty {
             Type::Ref(_) => reference = true,
             Type::Map(a, b) if a.ref_target().is_some() && b.ref_target().is_some() => {
@@ -179,7 +179,7 @@ pub(in crate::observed) fn reference_value_type_supported(
             Type::Data(family) => {
                 if families.insert(family.clone()) {
                     for ctor in super::super::data::constructors(law, family)? {
-                        c.clone().checkpoint(Checkpoint::ObjectViewTransport)?;
+                        c.checkpoint(Checkpoint::ObjectViewTransport)?;
                         pending.extend(&ctor.arguments);
                     }
                 }
@@ -246,7 +246,7 @@ pub(in crate::observed) fn implicit_support(
     id: usize,
     bindings: &[(String, Scalar)],
     reading: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Json>, Vec<Fact>), ValidationFailure> {
     implicit_support_with_parameters(env, id, bindings, &[], reading, c)
 }
@@ -256,7 +256,7 @@ pub(in crate::observed) fn implicit_support_with_parameters(
     bindings: &[(String, Scalar)],
     parameters: &[crate::law::model::Param],
     reading: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Json>, Vec<Fact>), ValidationFailure> {
     let (mut variables, _) = change_affine::law_variables(env, parameters, &[])?;
     variables.extend(bindings.iter().map(|(n, v)| (n.clone(), known(v.clone()))));
@@ -294,7 +294,7 @@ pub(in crate::observed) fn read_bindings(
     env: &Environment<'_>,
     id: usize,
     bindings: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<(String, Scalar)>, ValidationFailure> {
     let mut names = BTreeSet::new();
     let mut pending = vec![id];
@@ -338,7 +338,7 @@ fn projections(
     reading: &str,
     out: &mut Vec<local_result::geometry::Projection>,
     affine_state: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     let mut pending = vec![(id, value, vec![])];
     while let Some((id, value, path)) = pending.pop() {
@@ -423,7 +423,7 @@ fn field_path<'a>(
 ) -> Result<Option<(&'a str, Vec<&'a crate::names::QualifiedName>)>, ValidationFailure> {
     let mut fields = vec![];
     loop {
-        env.control.clone().checkpoint(Checkpoint::Localize)?;
+        env.control.checkpoint(Checkpoint::Localize)?;
         let expression = &env.indexes.inputs.law().program().nodes[id];
         match &expression.kind {
             ExprKind::Group(child) => id = *child,
@@ -458,7 +458,7 @@ fn visible_slots(
     let mut visible = vec![];
     let mut pending = vec![id];
     while let Some(id) = pending.pop() {
-        env.control.clone().checkpoint(Checkpoint::Localize)?;
+        env.control.checkpoint(Checkpoint::Localize)?;
         let expr = &env.indexes.inputs.law().exprs()[id];
         match &expr.kind {
             ExprKind::Group(child) => {
@@ -483,7 +483,7 @@ fn visible_slots(
         };
         let mut owner = known(root.clone());
         for field in prefix {
-            env.control.clone().checkpoint(Checkpoint::Localize)?;
+            env.control.checkpoint(Checkpoint::Localize)?;
             owner = env.scoped_field(owner, field, &Scope::default(), reading, expr.span)?;
         }
         let Some(Scalar::Subject {
@@ -519,7 +519,7 @@ pub(in crate::observed) fn fixed_chain_visibility(
     bindings: &[(String, Scalar)],
     parameters: &[crate::law::model::Param],
     reading: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
     state_visibility_inner(env, roots, bindings, parameters, reading, c, true)
 }
@@ -528,7 +528,7 @@ pub(in crate::observed) fn state_visibility(
     roots: &[usize],
     bindings: &[(String, Scalar)],
     reading: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
     state_visibility_inner(env, roots, bindings, &[], reading, c, false)
 }
@@ -538,7 +538,7 @@ pub(in crate::observed) fn state_visibility_with_parameters(
     bindings: &[(String, Scalar)],
     parameters: &[crate::law::model::Param],
     reading: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
     state_visibility_inner(env, roots, bindings, parameters, reading, c, false)
 }
@@ -548,7 +548,7 @@ fn state_visibility_inner(
     bindings: &[(String, Scalar)],
     parameters: &[crate::law::model::Param],
     reading: &str,
-    c: &mut Control,
+    c: &Control,
     require_chain: bool,
 ) -> Result<Option<(Vec<Json>, Vec<Fact>)>, ValidationFailure> {
     let mut carrier = vec![];
@@ -703,7 +703,7 @@ pub(in crate::observed) fn materialize(
     request: &Request,
     coordinates: &[NodeRef],
     states: &[Environment<'_>],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Context>, ValidationFailure> {
     materialize_with_free(
         env,
@@ -726,7 +726,7 @@ pub(in crate::observed) fn materialize_with_free(
     states: &[Environment<'_>],
     free: &[Fact],
     target: Option<NodeRef>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Context>, ValidationFailure> {
     let Signature::Local { params, .. } = &declaration.signature else {
         return Err("local署名がない".into());
@@ -875,7 +875,7 @@ fn affine_read_image(
     free: &[Fact],
     visible: &[Fact],
     read_type: &Type,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(NodeRef, Vec<Fact>, crate::observed::field_fiber::Matrix), ValidationFailure> {
     use crate::observed::{change_result::field_linear_result as scalar_wire, numeric};
     use crate::observed::{
@@ -1120,7 +1120,7 @@ pub(in crate::observed) fn materialize_positions(
     support: &local_result::geometry::Support,
     free: &[Fact],
     reading: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Context, ValidationFailure> {
     let mut out = Context {
         locals: vec![],
@@ -1242,7 +1242,7 @@ fn materialize_instance(
     states: &[Environment<'_>],
     free: &[Fact],
     target: Option<NodeRef>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Context, ValidationFailure> {
     let Signature::Local {
         params,
@@ -1811,17 +1811,17 @@ mod tests {
         let map = fixture::remove_atom("p-owner");
         let inputs = check_inputs(
             fixture::input("local here(a:System,s:State[a]) reads s.free;", Some(&map)),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         let requests = resolve_native_for_test(
             inputs.law(),
             inputs.archmap(),
             &["c=check(Reservations.roots,x=@v/A)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
-        let env = Environment::with_requests(&inputs, requests.requests(), &mut quiet()).unwrap();
+        let env = Environment::with_requests(&inputs, requests.requests(), &quiet()).unwrap();
         let declaration = &inputs.law().declarations()["Reservations.here"];
         let bindings = vec![
             (
@@ -1841,14 +1841,14 @@ mod tests {
                 },
             ),
         ];
-        let state = Environment::with_requests(&inputs, requests.requests(), &mut quiet()).unwrap();
+        let state = Environment::with_requests(&inputs, requests.requests(), &quiet()).unwrap();
         let graph = Graph::new(&quiet());
         let mut b = Builder {
             g: &graph,
             base: 0,
             parts: vec![],
         };
-        let mut c = Control::new(|point| {
+        let c = Control::new(|point| {
             (point == Checkpoint::Localize).then_some(crate::result::Signal::Term)
         });
         let context = materialize_instance(
@@ -1861,7 +1861,7 @@ mod tests {
             &[state],
             &[],
             None,
-            &mut c,
+            &c,
         )
         .unwrap();
         assert!(

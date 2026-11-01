@@ -25,11 +25,7 @@ impl Input<'_> {
         }
     }
 }
-fn subjects<E: InputError>(
-    items: &[JNode],
-    ptr: &str,
-    c: &mut Control,
-) -> Result<Vec<RawSubject>, E> {
+fn subjects<E: InputError>(items: &[JNode], ptr: &str, c: &Control) -> Result<Vec<RawSubject>, E> {
     let mut result = vec![];
     let mut ids = HashSet::new();
     for (i, node) in items.iter().enumerate() {
@@ -68,7 +64,7 @@ fn subjects<E: InputError>(
 fn atoms<'a, E: InputError>(
     items: &'a [JNode],
     ptr: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<RawAtom<'a>>, E> {
     let mut result = vec![];
     let mut ids = HashSet::new();
@@ -116,8 +112,8 @@ fn atoms<'a, E: InputError>(
 }
 fn patch<'a, T, E: InputError>(
     field: Option<(&'a JNode, String)>,
-    c: &mut Control,
-    read: impl FnOnce(&'a [JNode], &str, &mut Control) -> Result<Vec<T>, E>,
+    c: &Control,
+    read: impl FnOnce(&'a [JNode], &str, &Control) -> Result<Vec<T>, E>,
     id: impl Fn(&T) -> &str,
 ) -> Result<Patch<T>, E> {
     let Some((node, p)) = field else {
@@ -167,7 +163,7 @@ fn patch<'a, T, E: InputError>(
 pub(super) fn read_snapshots<'a, E: InputError>(
     items: &'a [JNode],
     ptr: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<RawSnapshot<'a>>, E> {
     let mut inputs = vec![];
     let mut ids = BTreeMap::new();
@@ -349,14 +345,13 @@ mod tests {
         let run = |at: Option<usize>| {
             let seen = Rc::new(Cell::new(0));
             let count = seen.clone();
-            let mut control = Control::new(move |point| {
+            let control = Control::new(move |point| {
                 if point == Checkpoint::ArchMapIteration {
                     count.set(count.get() + 1);
                 }
                 at.filter(|n| *n == count.get()).map(|_| Signal::Term)
             });
-            let result =
-                read_snapshots::<CheckFailure<Box<Issue>>>(items, "/snapshots", &mut control);
+            let result = read_snapshots::<CheckFailure<Box<Issue>>>(items, "/snapshots", &control);
             (result, seen.get())
         };
         let (complete, count) = run(None);

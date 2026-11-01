@@ -31,7 +31,7 @@ fn infinite_unbound_mixed_family_claims_recheck_original_domains() {
             "r1",
         ),
         &["v=check(Walk.current)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial", "{:?}", r.issues);
@@ -67,7 +67,7 @@ fn generic_outer_domain_finite_decisions_recheck_before_and_after_false_mutation
         ),
     ] {
         let r =
-            evaluate_observed_bytes(fixture::input(script, "Z", &[], "r1"), &[ask], &mut quiet())
+            evaluate_observed_bytes(fixture::input(script, "Z", &[], "r1"), &[ask], &quiet())
                 .unwrap();
         assert_eq!(r.status(), "partial");
         assert_eq!(r.answers[0].status, Decision::Undetermined);
@@ -94,7 +94,7 @@ fn generic_outer_domain_finite_decisions_recheck_before_and_after_false_mutation
         let env = Environment::with_requests(
             r.prepared.inputs(),
             r.prepared.requests().requests(),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         for _ in 0..2 {
@@ -136,15 +136,15 @@ fn committed_reason_stop() {
     let phase = Rc::new(Cell::new(false));
     let count = Rc::new(Cell::new(0));
     let (p, c) = (phase.clone(), count.clone());
-    let mut control = Control::new(move |_| {
+    let control = Control::new(move |_| {
         if p.get() {
             c.set(c.get() + 1);
         }
         None
     });
-    let prepared = prepare_observed(inputs.clone(), ASKS, &mut control).unwrap();
+    let prepared = prepare_observed(inputs.clone(), ASKS, &control).unwrap();
     phase.set(true);
-    let normal = evaluate_observed(prepared, &mut control).unwrap();
+    let normal = evaluate_observed(prepared, &control).unwrap();
     assert_eq!(normal.status(), "partial");
     let total = count.get();
     let target = normal
@@ -187,7 +187,7 @@ fn committed_reason_stop() {
             frozen.clone(),
             point.clone(),
         );
-        let mut control = Control::new(move |checkpoint| {
+        let control = Control::new(move |checkpoint| {
             p.set(p.get() + 1);
             if ph.get() {
                 s.set(s.get() + 1);
@@ -199,9 +199,9 @@ fn committed_reason_stop() {
             }
             None
         });
-        let prepared = prepare_observed(inputs.clone(), ASKS, &mut control).unwrap();
+        let prepared = prepare_observed(inputs.clone(), ASKS, &control).unwrap();
         phase.set(true);
-        let stopped = evaluate_observed(prepared, &mut control).unwrap();
+        let stopped = evaluate_observed(prepared, &control).unwrap();
         assert_eq!(stopped.status(), "interrupted");
         assert_eq!(seen.get(), position);
         assert_eq!(control.stop_reason(), Some(expected));

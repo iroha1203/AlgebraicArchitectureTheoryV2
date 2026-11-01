@@ -21,7 +21,7 @@ fn sources(map: &str) -> InputSources {
     )
 }
 fn example(asks: &[&str]) -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(sources(MAP), asks, &mut Control::unlimited()).unwrap();
+    let r = evaluate_observed_bytes(sources(MAP), asks, &Control::unlimited()).unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.issues);
     r
 }
@@ -50,28 +50,28 @@ fn native_and_transfer_composition_stops_preserve_only_checked_operations() {
     ] {
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut probe = Control::new(move |p| {
+        let probe = Control::new(move |p| {
             if p == point {
                 seen.set(seen.get() + 1);
             }
             None
         });
-        let prepared = prepare_observed(sources(MAP), &ASKS, &mut Control::unlimited()).unwrap();
-        let normal = evaluate_observed(prepared, &mut probe).unwrap();
+        let prepared = prepare_observed(sources(MAP), &ASKS, &Control::unlimited()).unwrap();
+        let normal = evaluate_observed(prepared, &probe).unwrap();
         assert_eq!(normal.status(), "complete");
         let total = count.get();
         assert!(total > 10);
         // 停止の位置は完了直前の1点だけを見る。
         let at = total - 1;
         let seen = Rc::new(Cell::new(0usize));
-        let mut c = Control::new(move |p| {
+        let c = Control::new(move |p| {
             if p == point {
                 seen.set(seen.get() + 1);
             }
             (seen.get() >= at).then_some(crate::result::Signal::Int)
         });
-        let prepared = prepare_observed(sources(MAP), &ASKS, &mut Control::unlimited()).unwrap();
-        let stopped = evaluate_observed(prepared, &mut c).unwrap();
+        let prepared = prepare_observed(sources(MAP), &ASKS, &Control::unlimited()).unwrap();
+        let stopped = evaluate_observed(prepared, &c).unwrap();
         assert_ne!(stopped.status(), "error", "{:?}", stopped.issues);
         let graph = rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
         let a = &stopped.answers[2];
@@ -92,7 +92,7 @@ fn compose_resolution_keeps_forward_dependency_priority_and_empty_cycle_results(
     let prepared = prepare_observed(
         sources(MAP),
         &[ASKS[2], ASKS[1], ASKS[0]],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(prepared.requests().evaluation_order(), &[1, 2, 0]);
@@ -103,7 +103,7 @@ fn compose_resolution_keeps_forward_dependency_priority_and_empty_cycle_results(
             "a=compose($b.operation,then=$m.operation)",
             "b=compose($a.operation,then=$m.operation)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_err();
     let wire = failed.wire().unwrap();

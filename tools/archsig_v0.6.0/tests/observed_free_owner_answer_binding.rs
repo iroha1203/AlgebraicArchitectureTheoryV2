@@ -27,7 +27,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn run(input: archsig::input::InputSources, asks: &[&str]) -> ObservedEvaluation {
-    evaluate_observed_bytes(input, asks, &mut quiet())
+    evaluate_observed_bytes(input, asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().map(|w| f(&w, "issues").clone())))
 }
 fn checked(w: &Json, id: &str) -> u64 {
@@ -276,7 +276,7 @@ fn free_owner_fixed_answer_preserves_unknown_unprovided_static_invalid_and_fixed
         let r = evaluate_observed_bytes(
             fixture::input(false, false, "r1"),
             &[ask, "v=evaluate(Reservations.adFlag)"],
-            &mut quiet(),
+            &quiet(),
         );
         let w = match r {
             Ok(r) => r.wire(),
@@ -336,7 +336,7 @@ fn free_owner_fixed_answer_keeps_input_tables_dag_owner_facts_and_current_source
     ];
     let i = fixture::input(false, true, "r1");
     let original = i.clone();
-    let before = check_inputs(i.clone(), &mut quiet()).unwrap();
+    let before = check_inputs(i.clone(), &quiet()).unwrap();
     let r = run(i, &asks);
     assert_eq!(r.status(), "complete");
     let checked = r.prepared().inputs();

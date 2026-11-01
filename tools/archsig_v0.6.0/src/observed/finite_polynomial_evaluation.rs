@@ -20,14 +20,13 @@ use std::sync::Arc;
 fn bad(s: &str) -> ConstructionFailure {
     ConstructionFailure::Inconsistent(s.into())
 }
-fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
-    c.checkpoint(Checkpoint::FinitePolynomialEvaluation)
-        .map_err(Into::into)
+fn tick(c: &Control) -> Result<(), ConstructionFailure> {
+    c.checkpoint(Checkpoint::Work).map_err(Into::into)
 }
 fn same_values(
     a: &[NumericTransportValue],
     b: &[NumericTransportValue],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     tick(c)?;
     if a.len() != b.len() {
@@ -116,7 +115,7 @@ impl FinitePolynomialEvaluation {
     pub fn is_complete(&self) -> bool {
         self.complete
     }
-    fn ring(&self, c: &mut Control) -> Result<FiniteIntegerRing<'_>, ConstructionFailure> {
+    fn ring(&self, c: &Control) -> Result<FiniteIntegerRing<'_>, ConstructionFailure> {
         tick(c)?;
         if !self.domain_complete {
             return Err(ConstructionFailure::InvalidSelection(
@@ -126,33 +125,29 @@ impl FinitePolynomialEvaluation {
         Ok(FiniteIntegerRing::new(
             &self.owner,
             self.domain.len(),
-            Checkpoint::FinitePolynomialEvaluation,
+            Checkpoint::Work,
         ))
     }
-    fn member(
-        &self,
-        v: &FiniteIntegerFunction,
-        c: &mut Control,
-    ) -> Result<(), ConstructionFailure> {
+    fn member(&self, v: &FiniteIntegerFunction, c: &Control) -> Result<(), ConstructionFailure> {
         self.ring(c)?.member(v, c)
     }
     pub fn constant(
         &self,
         value: BigInt,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.ring(c)?.constant(value, c)
     }
-    pub fn zero(&self, c: &mut Control) -> Result<FiniteIntegerFunction, ConstructionFailure> {
+    pub fn zero(&self, c: &Control) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.ring(c)?.zero(c)
     }
-    pub fn one(&self, c: &mut Control) -> Result<FiniteIntegerFunction, ConstructionFailure> {
+    pub fn one(&self, c: &Control) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.ring(c)?.one(c)
     }
     pub fn basis(
         &self,
         point: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.ring(c)?.basis(point, c)
     }
@@ -160,7 +155,7 @@ impl FinitePolynomialEvaluation {
         &self,
         a: &FiniteIntegerFunction,
         b: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.ring(c)?.add(a, b, c)
     }
@@ -168,7 +163,7 @@ impl FinitePolynomialEvaluation {
         &self,
         a: &FiniteIntegerFunction,
         b: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.ring(c)?.sub(a, b, c)
     }
@@ -176,7 +171,7 @@ impl FinitePolynomialEvaluation {
         &self,
         a: &FiniteIntegerFunction,
         b: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.ring(c)?.mul(a, b, c)
     }
@@ -184,14 +179,14 @@ impl FinitePolynomialEvaluation {
         &self,
         a: &FiniteIntegerFunction,
         b: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<bool, ConstructionFailure> {
         self.ring(c)?.equal(a, b, c)
     }
     pub fn is_zero(
         &self,
         a: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<bool, ConstructionFailure> {
         self.ring(c)?.is_zero(a, c)
     }
@@ -199,14 +194,14 @@ impl FinitePolynomialEvaluation {
         &self,
         a: &FiniteIntegerFunction,
         point: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<BigInt, ConstructionFailure> {
         self.ring(c)?.at(a, point, c)
     }
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), FinitePolynomialFailure> {
         self.base
             .recheck(Arc::clone(&inputs), c)
@@ -222,7 +217,7 @@ impl FinitePolynomialEvaluation {
             c,
         )?;
         let checked = (|| -> Result<bool, ConstructionFailure> {
-            c.checkpoint(Checkpoint::FinitePolynomialRecheck)?;
+            c.checkpoint(Checkpoint::Work)?;
             tick(c)?;
             if self.symbols.len() != expected.symbols.len()
                 || self.domain_complete != expected.domain_complete
@@ -273,7 +268,7 @@ impl FinitePolynomialEvaluation {
                     _ => return Ok(false),
                 }
             }
-            c.checkpoint(Checkpoint::FinitePolynomialRecheck)?;
+            c.checkpoint(Checkpoint::Work)?;
             Ok(true)
         })();
         match checked {
@@ -306,7 +301,7 @@ impl FinitePolynomialFailure {
 fn populate(
     out: &mut FinitePolynomialEvaluation,
     inputs: &CheckedInputs,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     let mut choices = Vec::new();
     for (ri, ring) in out.base.rings().iter().enumerate() {
@@ -363,7 +358,7 @@ fn populate(
         if !more {
             out.domain_complete = true;
         }
-        c.checkpoint(Checkpoint::FinitePolynomialPoint)?;
+        c.checkpoint(Checkpoint::Work)?;
         if !more {
             break;
         }
@@ -461,7 +456,7 @@ pub fn finite_polynomial_evaluation(
     snapshot: &str,
     root: &str,
     object: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FinitePolynomialEvaluation, FinitePolynomialFailure> {
     let base =
         object_equation_presentation(Arc::clone(&inputs), reading, snapshot, root, object, c)

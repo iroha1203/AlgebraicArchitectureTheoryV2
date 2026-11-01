@@ -35,7 +35,7 @@ pub(super) struct Detector {
     pub cases: Vec<Case>,
 }
 
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectLawCircuits)?;
     Ok(())
 }
@@ -45,7 +45,7 @@ fn constant_nonzero(
     g: &Graph,
     r: NodeRef,
     ty: &crate::types::Type,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<bool>, ValidationFailure> {
     tick(c)?;
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
@@ -99,7 +99,7 @@ pub(super) fn closed(
     env: &Environment<'_>,
     g: &Graph,
     plan: &Plan,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Vec<Detector>>, ValidationFailure> {
     plan.boundary.recheck(env, g, plan.boundary.start(), c)?;
     let (Some(table), Some(patterns)) = (&plan.laws, &plan.patterns) else {

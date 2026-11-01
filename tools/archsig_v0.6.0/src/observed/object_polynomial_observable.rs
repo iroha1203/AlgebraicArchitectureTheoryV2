@@ -16,7 +16,7 @@ use crate::{
     input::CheckedInputs,
 };
 use std::sync::Arc;
-fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::PolynomialObservable)
         .map_err(Into::into)
 }
@@ -97,7 +97,7 @@ impl ObjectPolynomialObservable {
     fn constant(
         &self,
         one: bool,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<PolynomialObservableValue, ConstructionFailure> {
         let mut blocks = vec![];
         for factor in self.factors() {
@@ -115,16 +115,16 @@ impl ObjectPolynomialObservable {
             blocks,
         })
     }
-    pub fn zero(&self, c: &mut Control) -> Result<PolynomialObservableValue, ConstructionFailure> {
+    pub fn zero(&self, c: &Control) -> Result<PolynomialObservableValue, ConstructionFailure> {
         self.constant(false, c)
     }
-    pub fn one(&self, c: &mut Control) -> Result<PolynomialObservableValue, ConstructionFailure> {
+    pub fn one(&self, c: &Control) -> Result<PolynomialObservableValue, ConstructionFailure> {
         self.constant(true, c)
     }
     fn member(
         &self,
         value: &PolynomialObservableValue,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ConstructionFailure> {
         tick(c)?;
         if !Arc::ptr_eq(&self.owner, &value.owner) {
@@ -166,7 +166,7 @@ impl ObjectPolynomialObservable {
         a: &PolynomialObservableValue,
         b: &PolynomialObservableValue,
         op: BinOp,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<PolynomialObservableValue, ConstructionFailure> {
         self.member(a, c)?;
         self.member(b, c)?;
@@ -185,7 +185,7 @@ impl ObjectPolynomialObservable {
         &self,
         a: &PolynomialObservableValue,
         b: &PolynomialObservableValue,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<PolynomialObservableValue, ConstructionFailure> {
         self.binary(a, b, BinOp::Add, c)
     }
@@ -193,7 +193,7 @@ impl ObjectPolynomialObservable {
         &self,
         a: &PolynomialObservableValue,
         b: &PolynomialObservableValue,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<PolynomialObservableValue, ConstructionFailure> {
         self.binary(a, b, BinOp::Sub, c)
     }
@@ -201,14 +201,14 @@ impl ObjectPolynomialObservable {
         &self,
         a: &PolynomialObservableValue,
         b: &PolynomialObservableValue,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<PolynomialObservableValue, ConstructionFailure> {
         self.binary(a, b, BinOp::Mul, c)
     }
     pub fn is_zero(
         &self,
         value: &PolynomialObservableValue,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<bool, ConstructionFailure> {
         self.member(value, c)?;
         for block in &value.blocks {
@@ -223,7 +223,7 @@ impl ObjectPolynomialObservable {
         &self,
         a: &PolynomialObservableValue,
         b: &PolynomialObservableValue,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<bool, ConstructionFailure> {
         let difference = self.sub(a, b, c)?;
         self.is_zero(&difference, c)
@@ -233,7 +233,7 @@ impl ObjectPolynomialObservable {
         &self,
         factor: Option<usize>,
         polynomial: Option<&EquationPolynomial>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<PolynomialObservableValue>, ConstructionFailure> {
         tick(c)?;
         let Some(polynomial) = polynomial else {
@@ -254,7 +254,7 @@ impl ObjectPolynomialObservable {
         coordinate: usize,
         atom: usize,
         reading: PolynomialObservableReading,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<PolynomialObservableValue>, ConstructionFailure> {
         tick(c)?;
         let q = self
@@ -287,7 +287,7 @@ impl ObjectPolynomialObservable {
         &self,
         coordinate: usize,
         atom: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<bool>, ConstructionFailure> {
         self.at(coordinate, atom, PolynomialObservableReading::Residual, c)?
             .as_ref()
@@ -297,7 +297,7 @@ impl ObjectPolynomialObservable {
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), PolynomialObservableFailure> {
         self.base
             .recheck(Arc::clone(&inputs), c)
@@ -371,10 +371,7 @@ pub enum PolynomialObservableFailure {
         partial: Box<ObjectPolynomialObservable>,
     },
 }
-fn populate(
-    r: &mut ObjectPolynomialObservable,
-    c: &mut Control,
-) -> Result<(), ConstructionFailure> {
+fn populate(r: &mut ObjectPolynomialObservable, c: &Control) -> Result<(), ConstructionFailure> {
     let construction = r.base.base().base().readings().construction();
     let root = construction.root();
     let mut root_atom = None;
@@ -432,7 +429,7 @@ pub fn object_polynomial_observable(
     snapshot: &str,
     root: &str,
     object: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<ObjectPolynomialObservable, PolynomialObservableFailure> {
     let base = object_equation_presentation(inputs, reading, snapshot, root, object, c)
         .map_err(PolynomialObservableFailure::Original)?;
@@ -480,13 +477,13 @@ mod tests {
                     law.into_bytes(),
                     map.replace("@DIGEST@", digest).into_bytes(),
                 ),
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap(),
         )
     }
     fn run(i: Arc<CheckedInputs>) -> ObjectPolynomialObservable {
-        object_polynomial_observable(i, "Selected", "v", "root", 0, &mut quiet()).unwrap()
+        object_polynomial_observable(i, "Selected", "v", "root", 0, &quiet()).unwrap()
     }
     #[test]
     fn recheck_rejects_an_invented_zero_for_an_unobserved_residual() {
@@ -497,11 +494,11 @@ mod tests {
             .iter()
             .position(|q| q.residual.is_none())
             .unwrap();
-        let zero = r.zero(&mut quiet()).unwrap();
+        let zero = r.zero(&quiet()).unwrap();
         r.coordinates[index].residual = Some(zero);
         r.coordinates[index].conditional_holds = Some(true);
         assert!(matches!(
-            r.recheck(i, &mut quiet()),
+            r.recheck(i, &quiet()),
             Err(PolynomialObservableFailure::Reading {
                 cause: ConstructionFailure::Inconsistent(_),
                 ..

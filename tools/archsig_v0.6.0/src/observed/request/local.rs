@@ -7,7 +7,7 @@ pub(super) fn resolve(
     law: &CheckedLaw,
     raw: RawRequest,
     text: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Request, ResolveFailure> {
     let kind = if raw.kind == "localize" {
         QuestionKind::Localize
@@ -163,7 +163,7 @@ pub(super) fn check(
     requests: &[Request],
     names: &BTreeMap<String, usize>,
     r: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<BindingConstraint>, ResolveFailure> {
     let (head, _) = selector_type(law, map, requests, names, &r.head, c, (&r.id, "head"))?;
     if !matches!(

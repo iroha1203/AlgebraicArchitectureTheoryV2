@@ -1104,7 +1104,7 @@ fn interruption_during_additional_transport_keeps_the_checked_operation() {
         observed::evaluate_observed_bytes,
     };
     // 停止理由の区別はcontrol層で確かめる。ここでは移送中の停止の1種だけを見る。
-    let mut control = Control::new(|p| {
+    let control = Control::new(|p| {
         let stop = p == Checkpoint::ConfigurationTransportGenerator;
         stop.then_some(Signal::Int)
     });
@@ -1115,7 +1115,7 @@ fn interruption_during_additional_transport_keeps_the_checked_operation() {
             four_state_map(false).into_bytes(),
         ),
         &["m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)"],
-        &mut control,
+        &control,
     )
     .unwrap();
     assert_eq!(result.status(), "interrupted");
@@ -4133,7 +4133,7 @@ reading After {{{uses} view affine(s:State,x:Z,y:Z):(Z,Z)=(x+3*y,0);}}"#
             vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
             four_state_map(false).into_bytes()),
         &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
-        &mut archsig::control::Control::unlimited(),
+        &archsig::control::Control::unlimited(),
     ).unwrap();
     let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
     let m = answer(&j, "m");
@@ -4530,7 +4530,7 @@ reading After {{{uses} law required equation(s:State,{z}):{right};}}"#
             vec![include_bytes!("fixtures/reservations.atoms.json").to_vec()],law.into_bytes(),
             four_state_map(false).into_bytes()),
         &["m=map(Reservations.Migration,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)"],
-        &mut archsig::control::Control::unlimited(),
+        &archsig::control::Control::unlimited(),
     ).unwrap_or_else(|e|panic!("{case}: {e:?}"));
     let j = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
     let m = answer(&j, "m");

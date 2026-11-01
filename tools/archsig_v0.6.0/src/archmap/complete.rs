@@ -96,7 +96,7 @@ fn or3(a: Option<bool>, b: Option<bool>) -> Option<bool> {
 
 impl<'a, E: InputError> Model<'a, E> {
     fn checkpoint(&self) -> Result<(), E> {
-        E::checkpoint(&mut self.control.clone(), Checkpoint::Completion)
+        E::checkpoint(&self.control, Checkpoint::Completion)
     }
 
     /// 各意味検査の結果を採用する前にも、共有された停止を確認する。
@@ -558,7 +558,7 @@ fn has_reference<E: InputError>(m: &Model<'_, E>, ty: &Type) -> Result<bool, E> 
 pub(crate) fn check_completion<E: InputError>(
     snapshots: &[Snapshot],
     definitions: &CheckedDefinitions,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(), E> {
     check_completion_with_values::<E>(snapshots, definitions, &[], control)
 }
@@ -569,7 +569,7 @@ pub fn check_completion_with_values<E: InputError>(
     snapshots: &[Snapshot],
     definitions: &CheckedDefinitions,
     pinned: &[FieldAssignment],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(), E> {
     check_valuation_inner::<E>(snapshots, definitions, pinned, false, control)
 }
@@ -580,7 +580,7 @@ pub fn check_valuation_with_values<E: InputError>(
     snapshots: &[Snapshot],
     definitions: &CheckedDefinitions,
     pinned: &[FieldAssignment],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(), E> {
     check_valuation_inner::<E>(snapshots, definitions, pinned, true, control)
 }
@@ -590,7 +590,7 @@ fn check_valuation_inner<E: InputError>(
     definitions: &CheckedDefinitions,
     pinned: &[FieldAssignment],
     replace_known: bool,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(), E> {
     E::checkpoint(control, Checkpoint::Completion)?;
     let mut subjects = Vec::new();
@@ -948,7 +948,7 @@ fn search<E: InputError>(
 fn data_inhabitation<E: InputError>(
     definitions: &CheckedDefinitions,
     by_type: &HashMap<&str, Vec<usize>>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<HashMap<String, bool>, E> {
     E::checkpoint(control, Checkpoint::Completion)?;
     let mut datas = Vec::new();
@@ -965,7 +965,7 @@ fn data_inhabitation<E: InputError>(
         t: &Type,
         ok: &HashMap<String, bool>,
         by_type: &HashMap<&str, Vec<usize>>,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<bool, E> {
         stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             E::checkpoint(control, Checkpoint::Completion)?;

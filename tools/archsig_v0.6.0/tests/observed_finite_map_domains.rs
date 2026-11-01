@@ -106,9 +106,9 @@ fn maps_oracle() -> BTreeSet<String> {
 #[test]
 fn finite_map_type_domain_enumerates_all_four_functions_across_snapshots() {
     let input = sources("r1");
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(input.clone(), &quiet()).unwrap();
     let before = format!("{:?}", checked.archmap());
-    let result = evaluate_observed_bytes(input, &["a=evaluate(Maps.every)"], &mut quiet()).unwrap();
+    let result = evaluate_observed_bytes(input, &["a=evaluate(Maps.every)"], &quiet()).unwrap();
     assert_eq!(result.status(), "complete");
     let wire = result.wire();
     assert_eq!(value(&wire, "a", Json::str("Bool")), &Json::Bool(true));
@@ -291,7 +291,7 @@ fn finite_map_empty_source_and_empty_target_keep_different_function_domains() {
         ("both_empty", "Void", "Void", 1, true),
     ] {
         let ask = format!("a=evaluate(Maps.{name})");
-        let evaluated = evaluate_observed_bytes(sources("r1"), &[&ask], &mut quiet()).unwrap();
+        let evaluated = evaluate_observed_bytes(sources("r1"), &[&ask], &quiet()).unwrap();
         assert_eq!(evaluated.status(), "complete");
         let wire = evaluated.wire();
         assert_eq!(value(&wire, "a", Json::str("Bool")), &Json::Bool(result));
@@ -325,7 +325,7 @@ fn finite_map_option_tuple_and_set_domains_keep_every_concrete_member() {
         ),
     ] {
         let ask = format!("a=evaluate(Maps.{name})");
-        let result = evaluate_observed_bytes(sources("r1"), &[&ask], &mut quiet()).unwrap();
+        let result = evaluate_observed_bytes(sources("r1"), &[&ask], &quiet()).unwrap();
         assert_eq!(result.status(), "complete");
         let w = result.wire();
         let ms = members(&w, domain(&w, &ty));
@@ -364,7 +364,7 @@ fn finite_map_option_tuple_and_set_domains_keep_every_concrete_member() {
 fn finite_map_unbound_law_parameter_has_all_rows_and_real_counterexample() {
     for (name, status) in [("whole", "established"), ("impossible", "refuted")] {
         let ask = format!("a=check(Maps.{name})");
-        let result = evaluate_observed_bytes(sources("r1"), &[&ask], &mut quiet()).unwrap();
+        let result = evaluate_observed_bytes(sources("r1"), &[&ask], &quiet()).unwrap();
         assert_eq!(result.status(), "complete");
         let w = result.wire();
         let a = answer(&w, "a");
@@ -424,9 +424,9 @@ fn finite_owned_map_domains_use_each_actual_endpoint_owner_and_empty_fibers() {
     ] {
         let ask = format!("a=evaluate(Reservations.{name},a=@v/{a},b=@v/{b})");
         let input = owned_sources(false);
-        let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+        let checked = check_inputs(input.clone(), &quiet()).unwrap();
         let before = format!("{:?}", checked.archmap());
-        let result = evaluate_observed_bytes(input, &[&ask], &mut quiet()).unwrap();
+        let result = evaluate_observed_bytes(input, &[&ask], &quiet()).unwrap();
         assert_eq!(result.status(), "complete");
         let w = result.wire();
         assert_eq!(value(&w, "a", Json::str("Bool")), &Json::Bool(wanted));
@@ -477,7 +477,7 @@ fn finite_owned_map_domains_use_each_actual_endpoint_owner_and_empty_fibers() {
     let result = evaluate_observed_bytes(
         owned_sources(false),
         &["a=evaluate(Reservations.lexical,m=@v/m)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(result.status(), "complete");
@@ -492,7 +492,7 @@ fn finite_owned_map_unknown_membership_keeps_all_input_constrained_domains() {
     let result = evaluate_observed_bytes(
         owned_sources(true),
         &["a=evaluate(Reservations.every,a=@v/A,b=@v/B)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(result.status(), "complete");
@@ -514,10 +514,8 @@ fn finite_owned_map_unknown_membership_keeps_all_input_constrained_domains() {
 }
 #[test]
 fn finite_map_provenance_move_keeps_answers_and_current_roster_sources() {
-    let a =
-        evaluate_observed_bytes(sources("r1"), &["a=evaluate(Maps.every)"], &mut quiet()).unwrap();
-    let b =
-        evaluate_observed_bytes(sources("r2"), &["a=evaluate(Maps.every)"], &mut quiet()).unwrap();
+    let a = evaluate_observed_bytes(sources("r1"), &["a=evaluate(Maps.every)"], &quiet()).unwrap();
+    let b = evaluate_observed_bytes(sources("r2"), &["a=evaluate(Maps.every)"], &quiet()).unwrap();
     assert_eq!(get(&a.wire(), "answers"), get(&b.wire(), "answers"));
     assert_ne!(
         a.prepared().inputs().sources().archmap().bytes(),
@@ -539,7 +537,7 @@ fn finite_map_empty_domain_still_rejects_an_ill_typed_body() {
         law.into_bytes(),
         input.archmap().bytes().to_vec(),
     );
-    assert!(check_inputs(input, &mut quiet()).is_err());
+    assert!(check_inputs(input, &quiet()).is_err());
 }
 
 #[test]
@@ -565,7 +563,7 @@ fn finite_owned_map_unbound_parameters_have_concrete_finite_domains() {
         let result = evaluate_observed_bytes(
             input,
             &["c=check(Reservations.nested,a=@v/A,b=@v/B)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete");
@@ -604,7 +602,7 @@ fn nonfinite_owned_map_unbound_parameters_keep_original_typed_domains_and_claims
                 law.into_bytes(),
                 original.archmap().bytes().to_vec(),
             );
-            let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+            let checked = check_inputs(input.clone(), &quiet()).unwrap();
             let archsig::law::model::Signature::Law { params, body, .. } =
                 &checked.law().declarations()["Reservations.nested"].signature
             else {
@@ -615,7 +613,7 @@ fn nonfinite_owned_map_unbound_parameters_keep_original_typed_domains_and_claims
             let result = evaluate_observed_bytes(
                 input.clone(),
                 &["c=check(Reservations.nested,a=@v/A,b=@v/B)"],
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap();
             audit(&result);

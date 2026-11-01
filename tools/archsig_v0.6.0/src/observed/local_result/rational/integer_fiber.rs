@@ -80,7 +80,7 @@ pub(in crate::observed::local_result) fn multiply(
     for (i, row) in a.iter().enumerate() {
         for j in 0..cols {
             for (k, x) in row.iter().enumerate() {
-                c.clone().checkpoint(crate::control::Checkpoint::Localize)?;
+                c.checkpoint(crate::control::Checkpoint::Localize)?;
                 let product = crate::observed::numeric::binary(
                     BinOp::Mul,
                     &x.scalar(),

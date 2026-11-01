@@ -38,7 +38,7 @@ fn bound() -> Vec<(String, Scalar)> {
 fn bool_fp_guard_uses_four_shared_points_and_integer_indicators() {
     let i = fixture::inputs();
     let before = i.sources().clone();
-    let r = finite_law_valuations(&i, "Selected.guarded", &bound(), &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Selected.guarded", &bound(), &quiet()).unwrap();
     assert!(r.is_complete());
     assert!(r.domain_complete());
     assert_eq!(
@@ -75,7 +75,7 @@ fn bool_fp_guard_uses_four_shared_points_and_integer_indicators() {
         assert!(row.support.iter().all(|f| f.atom.is_none()));
         assert_eq!(row.operands.as_ref().unwrap().0, Type::Fp("2".into()));
     }
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
     assert_eq!(i.sources(), &before);
 }
 #[test]
@@ -84,7 +84,7 @@ fn candidate_branches_and_dynamic_references_expand_the_shared_positions() {
         fixture::MAP,
         "law required branched(c:Part):(if c.flag then c.quantity else c.link.quantity)=0;",
     );
-    let r = finite_law_valuations(&i, "Selected.branched", &bound(), &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Selected.branched", &bound(), &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(
         r.positions(),
@@ -122,14 +122,14 @@ fn candidate_branches_and_dynamic_references_expand_the_shared_positions() {
             .count(),
         8
     );
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn missing_finite_field_is_enumerated_without_an_observed_point() {
     let map=fixture::MAP.replace(r#"{"id":"xp","subject":"p","field":"Pattern.Part.quantity","value":"0","origin":"model"},"# ,"");
     let i = fixture::with_body(&map, "law required value(c:Part):c.quantity=0;");
     let before = i.sources().clone();
-    let r = finite_law_valuations(&i, "Selected.value", &bound(), &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Selected.value", &bound(), &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(r.domain(), &[vec![fp(0)], vec![fp(1)]]);
     assert_eq!(r.observed_point(), None);
@@ -143,7 +143,7 @@ fn shared_occurrences_reuse_one_position_and_a_constant_has_one_empty_assignment
         fixture::MAP,
         "law required shared(c:Part):(c.quantity+1)+c.quantity=1;law required constant():true;",
     );
-    let r = finite_law_valuations(&i, "Selected.shared", &bound(), &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Selected.shared", &bound(), &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(r.positions(), &[position("p", "quantity")]);
     assert_eq!(r.domain().len(), 2);
@@ -152,7 +152,7 @@ fn shared_occurrences_reuse_one_position_and_a_constant_has_one_empty_assignment
             .iter()
             .all(|p| p.predicate == Some(true) && p.indicator == Some(0.into()))
     );
-    let c = finite_law_valuations(&i, "Selected.constant", &[], &mut quiet()).unwrap();
+    let c = finite_law_valuations(&i, "Selected.constant", &[], &quiet()).unwrap();
     assert!(c.is_complete());
     assert_eq!(c.domain(), &[Vec::<Scalar>::new()]);
     assert_eq!(c.observed_point(), Some(0));
@@ -162,7 +162,7 @@ fn shared_occurrences_reuse_one_position_and_a_constant_has_one_empty_assignment
 fn known_infinite_type_does_not_become_a_singleton_candidate_domain() {
     let map = fixture::MAP.replace("\"atoms\":[", r#""atoms":[{"id":"integer-p","subject":"p","field":"Pattern.Part.integer","value":"7","origin":"model"},"#);
     let i = fixture::with_body(&map, "law required integer(c:Part):c.integer=c.integer;");
-    let r = finite_law_valuations(&i, "Selected.integer", &bound(), &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Selected.integer", &bound(), &quiet()).unwrap();
     assert!(!r.is_complete());
     assert!(!r.domain_complete());
     assert!(r.rows().is_empty());
@@ -180,10 +180,10 @@ fn invalid_binding_names_types_references_and_non_law_selections_are_rejected() 
         vec![("c".into(), Scalar::Bool(true))],
         vec![("c".into(), subject("absent"))],
     ] {
-        assert!(finite_law_valuations(&i, "Selected.guarded", &bindings, &mut quiet()).is_err());
+        assert!(finite_law_valuations(&i, "Selected.guarded", &bindings, &quiet()).is_err());
     }
-    assert!(finite_law_valuations(&i, "Selected.value", &bound(), &mut quiet()).is_err());
-    assert!(finite_law_valuations(&i, "Selected.absent", &bound(), &mut quiet()).is_err());
+    assert!(finite_law_valuations(&i, "Selected.value", &bound(), &quiet()).is_err());
+    assert!(finite_law_valuations(&i, "Selected.absent", &bound(), &quiet()).is_err());
 }
 
 #[test]
@@ -192,12 +192,12 @@ fn helper_reads_are_shared_and_false_laws_do_not_prune_the_domain() {
         fixture::MAP,
         "view next(c:Part):Fp(2)=c.quantity+1;law required helper(c:Part):next(c)=c.quantity;law required absent(c:Part):false;",
     );
-    let r = finite_law_valuations(&i, "Selected.helper", &bound(), &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Selected.helper", &bound(), &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(r.positions(), &[position("p", "quantity")]);
     assert_eq!(r.domain(), &[vec![fp(0)], vec![fp(1)]]);
     assert!(r.rows().iter().all(|row| row.indicator == Some(1.into())));
-    let r = finite_law_valuations(&i, "Selected.absent", &bound(), &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Selected.absent", &bound(), &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(r.domain(), &[Vec::<Scalar>::new()]);
     assert_eq!(r.rows()[0].indicator, Some(1.into()));
@@ -213,7 +213,7 @@ fn helper_condition_failure_keeps_the_candidate_without_zero_filling() {
         &i,
         "Selected.checked",
         &[("r".into(), subject("root")), ("c".into(), subject("p"))],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.state(), &FiniteLawState::ConditionFailed);
@@ -230,7 +230,7 @@ fn helper_condition_failure_keeps_the_candidate_without_zero_filling() {
     assert_eq!(failed.len(), 1);
     assert_eq!(failed[0].indicator, None);
     assert!(r.rows().iter().any(|row| row.indicator == Some(0.into())));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 
 #[test]
@@ -257,7 +257,7 @@ fn candidate_path_dependency_discovery_retains_original_nonfinite_list_position(
             law.into_bytes(),
             original.archmap().bytes().to_vec(),
         ),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let binding = Scalar::Subject {
@@ -265,13 +265,8 @@ fn candidate_path_dependency_discovery_retains_original_nonfinite_list_position(
         subject: "e".into(),
         entity: "Paths.Hop".into(),
     };
-    let r = finite_law_valuations(
-        &inputs,
-        "Walk.prior",
-        &[("e".into(), binding)],
-        &mut quiet(),
-    )
-    .unwrap();
+    let r =
+        finite_law_valuations(&inputs, "Walk.prior", &[("e".into(), binding)], &quiet()).unwrap();
     assert_eq!(
         r.state(),
         &FiniteLawState::OutsideFinite {
@@ -288,7 +283,7 @@ fn candidate_path_dependency_discovery_retains_original_nonfinite_list_position(
     assert!(!r.domain_complete());
     assert!(r.domain().is_empty());
     assert!(r.rows().is_empty());
-    r.recheck(&inputs, &mut quiet()).unwrap();
+    r.recheck(&inputs, &quiet()).unwrap();
 }
 
 #[test]
@@ -297,7 +292,7 @@ fn owned_map_candidates_keep_all_ten_total_functions_over_moving_families() {
         fixture::MAP,
         "law required table(c:Part):c.ownedtable=c.ownedtable;",
     );
-    let r = finite_law_valuations(&i, "Selected.table", &bound(), &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Selected.table", &bound(), &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(
         r.positions(),
@@ -325,7 +320,7 @@ fn owned_map_candidates_keep_all_ten_total_functions_over_moving_families() {
         assert!(pairs.iter().all(|(_, v)| family.contains(v)));
     }
     assert!(r.rows().iter().all(|row| row.indicator == Some(0.into())));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 
 #[test]
@@ -335,8 +330,7 @@ fn unique_empty_list_and_map_have_one_value_without_observation_promotion() {
         "law required empty(c:Part):c.empty=c.empty;law required table(c:Part):c.emptytable=c.emptytable;",
     );
     for name in ["empty", "table"] {
-        let r =
-            finite_law_valuations(&i, &format!("Selected.{name}"), &bound(), &mut quiet()).unwrap();
+        let r = finite_law_valuations(&i, &format!("Selected.{name}"), &bound(), &quiet()).unwrap();
         assert!(r.is_complete());
         assert_eq!(r.domain().len(), 1);
         assert_eq!(r.domain()[0].len(), 1);
@@ -359,7 +353,7 @@ fn fixed_owned_binding_can_have_an_empty_admissible_domain() {
         &i,
         "Selected.owned",
         &[("r".into(), subject("r2")), ("c".into(), subject("p"))],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(r.is_complete());
@@ -368,13 +362,13 @@ fn fixed_owned_binding_can_have_an_empty_admissible_domain() {
     assert!(r.domain().is_empty());
     assert!(r.rows().is_empty());
     assert_eq!(r.observed_point(), None);
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 
 #[test]
 fn recheck_rejects_changes_to_the_original_contract_domain_and_rows() {
     let i = fixture::inputs();
-    let fresh = || finite_law_valuations(&i, "Selected.guarded", &bound(), &mut quiet()).unwrap();
+    let fresh = || finite_law_valuations(&i, "Selected.guarded", &bound(), &quiet()).unwrap();
     for change in 0..13 {
         let mut r = fresh();
         match change {
@@ -395,13 +389,13 @@ fn recheck_rejects_changes_to_the_original_contract_domain_and_rows() {
             12 => r.state = FiniteLawState::Pending,
             _ => unreachable!(),
         }
-        assert!(r.recheck(&i, &mut quiet()).is_err(), "change={change}");
+        assert!(r.recheck(&i, &quiet()).is_err(), "change={change}");
     }
     let other = fixture::with_body(
         fixture::MAP,
         "law required guarded(c:Part) when c.flag:c.quantity=1;",
     );
-    assert!(fresh().recheck(&other, &mut quiet()).is_err());
+    assert!(fresh().recheck(&other, &quiet()).is_err());
 }
 
 #[test]
@@ -431,15 +425,14 @@ fn fixed_stops_leave_only_completed_rows_and_freeze_the_probe() {
     }
     let i = fixture::inputs();
     for point in [Checkpoint::FiniteLawDomain, Checkpoint::FiniteLawEvaluation] {
-        let (mut c, count, _) = control(point, usize::MAX, Signal::Int);
-        finite_law_valuations(&i, "Selected.guarded", &bound(), &mut c).unwrap();
+        let (c, count, _) = control(point, usize::MAX, Signal::Int);
+        finite_law_valuations(&i, "Selected.guarded", &bound(), &c).unwrap();
         let total = count.get();
         assert!(total > 1);
         for at in [1, total] {
             for signal in [Signal::Int, Signal::Term] {
-                let (mut c, _, calls) = control(point, at, signal);
-                let failure = match finite_law_valuations(&i, "Selected.guarded", &bound(), &mut c)
-                {
+                let (c, _, calls) = control(point, at, signal);
+                let failure = match finite_law_valuations(&i, "Selected.guarded", &bound(), &c) {
                     Err(f) => f,
                     Ok(_) => panic!("停止が成功になった"),
                 };
@@ -467,7 +460,7 @@ fn incomplete_non_owned_map_binding_must_be_rejected() {
         codomain: Type::Ref("Pattern.Part".into()),
         pairs: vec![],
     };
-    let r = finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &mut quiet());
+    let r = finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &quiet());
     assert!(
         r.is_err(),
         "two registered Part subjects require two Map keys"
@@ -483,7 +476,7 @@ fn unregistered_path_binding_must_be_rejected() {
         entity: "Pattern.Part".into(),
         step: None,
     }));
-    let r = finite_law_valuations(&i, "Selected.fixed", &[("p".into(), v)], &mut quiet());
+    let r = finite_law_valuations(&i, "Selected.fixed", &[("p".into(), v)], &quiet());
     assert!(
         r.is_err(),
         "unregistered Path source cannot be a typed fixed binding"
@@ -498,7 +491,7 @@ fn single_key_map_binding_must_be_rejected() {
         codomain: Type::Ref("Pattern.Part".into()),
         pairs: vec![(subject("p"), subject("q"))],
     };
-    assert!(finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &mut quiet()).is_err());
+    assert!(finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &quiet()).is_err());
 }
 #[test]
 fn total_map_binding_is_accepted() {
@@ -508,7 +501,7 @@ fn total_map_binding_is_accepted() {
         codomain: Type::Ref("Pattern.Part".into()),
         pairs: vec![(subject("p"), subject("q")), (subject("q"), subject("p"))],
     };
-    let r = finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(r.rows()[0].indicator, Some(0.into()));
 }
@@ -523,7 +516,7 @@ fn later_comprehension_dependencies_must_not_be_pruned_by_stale_constraints() {
         &i,
         "Selected.branched",
         &[("r".into(), subject("root")), ("c".into(), subject("p"))],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(
@@ -561,7 +554,7 @@ fn forged_term_body_binding_must_be_rejected() {
         &i,
         "Selected.fixed",
         &[("t".into(), Scalar::Term(Box::new(term)))],
-        &mut quiet(),
+        &quiet(),
     );
     assert!(
         r.is_err(),
@@ -587,7 +580,7 @@ fn unused_term_parameters_keep_the_original_identifier_rules() {
         assert!(term.check(&quiet()).is_err(), "{name:?}");
         let bindings = vec![("t".into(), Scalar::Term(Box::new(term)))];
         assert!(
-            finite_law_valuations(&i, "Selected.fixed", &bindings, &mut quiet()).is_err(),
+            finite_law_valuations(&i, "Selected.fixed", &bindings, &quiet()).is_err(),
             "{name:?}"
         );
     }
@@ -599,7 +592,7 @@ fn unused_term_parameters_keep_the_original_identifier_rules() {
             &i,
             "Selected.fixed",
             &[("t".into(), Scalar::Term(Box::new(term)))],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert!(r.is_complete());
@@ -639,7 +632,7 @@ fn nested_maps_keep_their_original_full_domain_check() {
                 },
             };
             let result =
-                finite_law_valuations(&i, "Selected.fixed", &[("m".into(), value)], &mut quiet());
+                finite_law_valuations(&i, "Selected.fixed", &[("m".into(), value)], &quiet());
             assert_eq!(result.is_ok(), full, "{ty}, full={full}");
         }
     }
@@ -667,7 +660,7 @@ fn checked_term_bindings_reparse_in_the_original_reading_and_nested_containers()
             &i,
             "Selected.fixed",
             &[("t".into(), value.clone())],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert!(r.is_complete());
@@ -677,7 +670,7 @@ fn checked_term_bindings_reparse_in_the_original_reading_and_nested_containers()
             items: vec![value.clone()],
         };
         assert!(
-            finite_law_valuations(&i, "Selected.nested", &[("ts".into(), list)], &mut quiet())
+            finite_law_valuations(&i, "Selected.nested", &[("ts".into(), list)], &quiet())
                 .unwrap()
                 .is_complete()
         );
@@ -689,8 +682,7 @@ fn checked_term_bindings_reparse_in_the_original_reading_and_nested_containers()
             items: vec![Scalar::Term(Box::new(changed))],
         };
         assert!(
-            finite_law_valuations(&i, "Selected.nested", &[("ts".into(), bad)], &mut quiet())
-                .is_err()
+            finite_law_valuations(&i, "Selected.nested", &[("ts".into(), bad)], &quiet()).is_err()
         );
     }
 }
@@ -703,8 +695,7 @@ fn closed_term_keeps_its_checked_meaning_across_readings() {
     );
     let i = fixture::with_body(fixture::MAP, &body);
     let value = literal_term(&i, "Selected.complex");
-    let r =
-        finite_law_valuations(&i, "Closed.fixed", &[("t".into(), value)], &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Closed.fixed", &[("t".into(), value)], &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(r.rows()[0].indicator, Some(0.into()));
 }
@@ -714,9 +705,8 @@ fn definition_term_binding_remains_valid_without_a_law_vocabulary_import() {
     use crate::input::{InputSources, check_inputs};
     let donor = fixture::inputs();
     let value = literal_term(&donor, "Selected.complex");
-    let i=check_inputs(InputSources::from_bytes(donor.sources().definitions().iter().map(|d|d.bytes().to_vec()).collect(),b"law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Closed{law required fixed(t:Term<(Fp(2))->Fp(2)>):t(0)=1;}".to_vec(),donor.sources().archmap().bytes().to_vec()),&mut quiet()).unwrap();
-    let r =
-        finite_law_valuations(&i, "Closed.fixed", &[("t".into(), value)], &mut quiet()).unwrap();
+    let i=check_inputs(InputSources::from_bytes(donor.sources().definitions().iter().map(|d|d.bytes().to_vec()).collect(),b"law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Closed{law required fixed(t:Term<(Fp(2))->Fp(2)>):t(0)=1;}".to_vec(),donor.sources().archmap().bytes().to_vec()),&quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Closed.fixed", &[("t".into(), value)], &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(r.rows()[0].indicator, Some(0.into()));
 }
@@ -747,9 +737,9 @@ fn term_binding_reparse_stops_before_publishing_and_freezes_the_probe() {
         "view make():Term<(Fp(2))->Fp(2)> =fn(n:Fp(2))=>n+1;law required fixed(t:Term<(Fp(2))->Fp(2)>):t(0)=1;",
     );
     let bindings = vec![("t".into(), literal_term(&i, "Selected.make"))];
-    let (mut c, count, _) = controlled(usize::MAX, Signal::Int);
+    let (c, count, _) = controlled(usize::MAX, Signal::Int);
     assert!(
-        finite_law_valuations(&i, "Selected.fixed", &bindings, &mut c)
+        finite_law_valuations(&i, "Selected.fixed", &bindings, &c)
             .unwrap()
             .is_complete()
     );
@@ -757,8 +747,8 @@ fn term_binding_reparse_stops_before_publishing_and_freezes_the_probe() {
     assert!(total > 1);
     for at in [1, total] {
         for signal in [Signal::Int, Signal::Term] {
-            let (mut c, _, calls) = controlled(at, signal);
-            let failure = match finite_law_valuations(&i, "Selected.fixed", &bindings, &mut c) {
+            let (c, _, calls) = controlled(at, signal);
+            let failure = match finite_law_valuations(&i, "Selected.fixed", &bindings, &c) {
                 Err(f) => f,
                 Ok(_) => panic!("中断後に完成表を返した"),
             };
@@ -797,10 +787,10 @@ fn registered_identity_and_reconstructed_path_bindings_are_accepted_but_forged_a
             law.into_bytes(),
             original.archmap().bytes().to_vec(),
         ),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
-    let e = Environment::new(&inputs, &mut quiet()).unwrap();
+    let e = Environment::new(&inputs, &quiet()).unwrap();
     let Signature::View { body, .. } = &inputs.law().declarations()["Walk.step"].signature else {
         panic!()
     };
@@ -818,8 +808,8 @@ fn registered_identity_and_reconstructed_path_bindings_are_accepted_but_forged_a
         step: None,
     }));
     for value in [identity, value.clone()] {
-        let r = finite_law_valuations(&inputs, "Walk.prior", &[("p".into(), value)], &mut quiet())
-            .unwrap();
+        let r =
+            finite_law_valuations(&inputs, "Walk.prior", &[("p".into(), value)], &quiet()).unwrap();
         assert!(r.is_complete());
         assert_eq!(r.rows()[0].indicator, Some(0.into()));
     }
@@ -836,7 +826,7 @@ fn registered_identity_and_reconstructed_path_bindings_are_accepted_but_forged_a
             &inputs,
             "Walk.prior",
             &[("p".into(), Scalar::Path(Box::new(forged)))],
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
@@ -872,7 +862,7 @@ fn family_shares_one_coordinate_and_keeps_contradictory_required_laws() {
         "law required zero(c:Part):c.quantity=0;law required one(c:Part):c.quantity=1;",
     );
     let selected = family_selection(&[("zero", bound()), ("one", bound())]);
-    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    let r = finite_law_family_valuations(&i, &selected, &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(r.positions(), &[position("p", "quantity")]);
     assert_eq!(r.types(), &[Type::Fp("2".into())]);
@@ -882,7 +872,7 @@ fn family_shares_one_coordinate_and_keeps_contradictory_required_laws() {
     assert_eq!(family_indicators(&r, 1), vec![1, 0]);
     assert_eq!(r.required_zero(), Some([].as_slice()));
     assert!(r.columns().iter().all(|q| q.required()));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn family_guard_and_optional_law_use_integer_functions_on_the_same_four_points() {
@@ -891,7 +881,7 @@ fn family_guard_and_optional_law_use_integer_functions_on_the_same_four_points()
         "law required guarded(c:Part) when c.flag:c.quantity=0;law optional other(c:Part):c.quantity=1;",
     );
     let selected = family_selection(&[("guarded", bound()), ("other", bound())]);
-    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    let r = finite_law_family_valuations(&i, &selected, &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(
         r.domain(),
@@ -920,7 +910,7 @@ fn family_guard_and_optional_law_use_integer_functions_on_the_same_four_points()
             assert!(row.support.iter().all(|f| f.atom.is_none()));
         }
     }
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn family_independent_fields_form_one_product_and_same_law_bindings_stay_distinct() {
@@ -929,7 +919,7 @@ fn family_independent_fields_form_one_product_and_same_law_bindings_stay_distinc
         ("zero", bound()),
         ("zero", vec![("c".into(), subject("q"))]),
     ]);
-    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    let r = finite_law_family_valuations(&i, &selected, &quiet()).unwrap();
     assert_eq!(
         r.positions(),
         &[position("p", "quantity"), position("q", "quantity")]
@@ -948,7 +938,7 @@ fn family_independent_fields_form_one_product_and_same_law_bindings_stay_distinc
     assert_eq!(r.required_zero(), Some([0].as_slice()));
     assert_eq!(r.observed_point(), Some(1));
     assert_ne!(r.columns()[0].bindings(), r.columns()[1].bindings());
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn family_empty_selection_and_optional_false_keep_the_empty_assignment() {
@@ -956,7 +946,7 @@ fn family_empty_selection_and_optional_false_keep_the_empty_assignment() {
         fixture::MAP,
         "law required no():false;law optional optionalNo():false;",
     );
-    let empty = finite_law_family_valuations(&i, &[], &mut quiet()).unwrap();
+    let empty = finite_law_family_valuations(&i, &[], &quiet()).unwrap();
     assert!(empty.is_complete());
     assert!(empty.domain_complete());
     assert!(empty.columns().is_empty());
@@ -964,18 +954,14 @@ fn family_empty_selection_and_optional_false_keep_the_empty_assignment() {
     assert_eq!(empty.domain(), &[Vec::<Scalar>::new()]);
     assert_eq!(empty.observed_point(), Some(0));
     assert_eq!(empty.required_zero(), Some([0].as_slice()));
-    empty.recheck(&i, &mut quiet()).unwrap();
-    let optional = finite_law_family_valuations(
-        &i,
-        &family_selection(&[("optionalNo", vec![])]),
-        &mut quiet(),
-    )
-    .unwrap();
+    empty.recheck(&i, &quiet()).unwrap();
+    let optional =
+        finite_law_family_valuations(&i, &family_selection(&[("optionalNo", vec![])]), &quiet())
+            .unwrap();
     assert_eq!(family_indicators(&optional, 0), vec![1]);
     assert_eq!(optional.required_zero(), Some([0].as_slice()));
     let required =
-        finite_law_family_valuations(&i, &family_selection(&[("no", vec![])]), &mut quiet())
-            .unwrap();
+        finite_law_family_valuations(&i, &family_selection(&[("no", vec![])]), &quiet()).unwrap();
     assert_eq!(required.domain(), &[Vec::<Scalar>::new()]);
     assert_eq!(family_indicators(&required, 0), vec![1]);
     assert_eq!(required.required_zero(), Some([].as_slice()));
@@ -993,7 +979,7 @@ fn family_incompatible_fixed_owned_bindings_produce_empty_d_without_faking_a_poi
             vec![("r".into(), subject("r2")), ("c".into(), subject("p"))],
         ),
     ]);
-    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    let r = finite_law_family_valuations(&i, &selected, &quiet()).unwrap();
     assert!(r.is_complete());
     assert!(r.domain_complete());
     assert_eq!(r.positions(), &[position("p", "owner")]);
@@ -1001,7 +987,7 @@ fn family_incompatible_fixed_owned_bindings_produce_empty_d_without_faking_a_poi
     assert!(r.columns().iter().all(|q| q.rows().is_empty()));
     assert_eq!(r.observed_point(), None);
     assert_eq!(r.required_zero(), Some([].as_slice()));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn family_missing_field_has_candidates_but_no_observed_point() {
@@ -1013,14 +999,14 @@ fn family_missing_field_has_candidates_but_no_observed_point() {
     let r = finite_law_family_valuations(
         &i,
         &family_selection(&[("zero", bound()), ("flag", bound())]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(r.is_complete());
     assert_eq!(r.domain().len(), 4);
     assert_eq!(r.observed_point(), None);
     assert_eq!(r.required_zero(), Some([0, 2].as_slice()));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn family_joint_discovery_keeps_delayed_reads_and_other_law_positions() {
@@ -1038,7 +1024,7 @@ fn family_joint_discovery_keeps_delayed_reads_and_other_law_positions() {
             ),
             ("other", bound()),
         ]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(r.is_complete());
@@ -1071,7 +1057,7 @@ fn family_joint_discovery_keeps_delayed_reads_and_other_law_positions() {
         .filter_map(|(p, v)| (v[1] == subject("root")).then_some(p))
         .collect::<Vec<_>>();
     assert_eq!(r.required_zero(), Some(expected.as_slice()));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn family_preserves_selection_order_and_duplicate_occurrences() {
@@ -1080,7 +1066,7 @@ fn family_preserves_selection_order_and_duplicate_occurrences() {
         "law optional one(c:Part):c.quantity=1;law required zero(c:Part):c.quantity=0;",
     );
     let selected = family_selection(&[("one", bound()), ("zero", bound()), ("one", bound())]);
-    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    let r = finite_law_family_valuations(&i, &selected, &quiet()).unwrap();
     assert_eq!(r.columns().len(), 3);
     assert_eq!(r.columns()[0].declaration(), r.columns()[2].declaration());
     assert_ne!(r.columns()[0].declaration(), r.columns()[1].declaration());
@@ -1088,13 +1074,13 @@ fn family_preserves_selection_order_and_duplicate_occurrences() {
     assert_eq!(family_indicators(&r, 1), vec![0, 1]);
     assert_eq!(family_indicators(&r, 2), vec![1, 0]);
     assert_eq!(r.required_zero(), Some([0].as_slice()));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn family_rejects_bad_declarations_bindings_and_unregistered_references() {
     let i = fixture::inputs();
     for name in ["Selected.absent", "Selected.value"] {
-        assert!(finite_law_family_valuations(&i, &[(name.into(), bound())], &mut quiet()).is_err());
+        assert!(finite_law_family_valuations(&i, &[(name.into(), bound())], &quiet()).is_err());
     }
     for bindings in [
         vec![],
@@ -1107,7 +1093,7 @@ fn family_rejects_bad_declarations_bindings_and_unregistered_references() {
             ("Selected.guarded".into(), bound()),
             ("Selected.guarded".into(), bindings),
         ];
-        assert!(finite_law_family_valuations(&i, &selected, &mut quiet()).is_err());
+        assert!(finite_law_family_valuations(&i, &selected, &quiet()).is_err());
     }
 }
 #[test]
@@ -1119,7 +1105,7 @@ fn family_outside_finite_and_condition_failure_never_supply_zero_coordinates() {
     let r = finite_law_family_valuations(
         &i,
         &family_selection(&[("infinite", bound()), ("finite", bound())]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(
@@ -1129,7 +1115,7 @@ fn family_outside_finite_and_condition_failure_never_supply_zero_coordinates() {
     assert!(!r.is_complete());
     assert_eq!(r.required_zero(), None);
     assert!(r.columns().iter().all(|q| q.rows().is_empty()));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
     let i = fixture::with_body(
         fixture::MAP,
         "view narrow(r:Root,x:Part):Part[r]=x;law required broken(r:Root,c:Part):narrow(r,c)=c;law required finite(c:Part):c.quantity=0;",
@@ -1143,7 +1129,7 @@ fn family_outside_finite_and_condition_failure_never_supply_zero_coordinates() {
             ),
             ("finite", bound()),
         ]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.state(), &FiniteLawState::ConditionFailed);
@@ -1151,7 +1137,7 @@ fn family_outside_finite_and_condition_failure_never_supply_zero_coordinates() {
     assert_eq!(r.required_zero(), None);
     assert!(r.columns()[0].rows().iter().any(|r| r.condition_failed));
     assert!(r.columns()[1].rows().iter().all(|r| r.indicator.is_some()));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn family_recheck_rebuilds_all_columns_domain_and_required_zero() {
@@ -1161,7 +1147,7 @@ fn family_recheck_rebuilds_all_columns_domain_and_required_zero() {
     );
     let selected = family_selection(&[("zero", bound()), ("one", bound())]);
     for change in 0..14 {
-        let mut r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+        let mut r = finite_law_family_valuations(&i, &selected, &quiet()).unwrap();
         match change {
             0 => r.positions.clear(),
             1 => r.types[0] = Type::Bool,
@@ -1178,14 +1164,14 @@ fn family_recheck_rebuilds_all_columns_domain_and_required_zero() {
             12 => r.columns[1].rows.pop().map(|_| ()).unwrap(),
             _ => r.columns[0].declaration = r.columns[1].declaration.clone(),
         }
-        assert!(r.recheck(&i, &mut quiet()).is_err(), "change={change}");
+        assert!(r.recheck(&i, &quiet()).is_err(), "change={change}");
     }
-    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    let r = finite_law_family_valuations(&i, &selected, &quiet()).unwrap();
     let other = fixture::with_body(
         fixture::MAP,
         "law required zero(c:Part):c.quantity=1;law optional one(c:Part):c.quantity=1;",
     );
-    assert!(r.recheck(&other, &mut quiet()).is_err());
+    assert!(r.recheck(&other, &quiet()).is_err());
 }
 #[test]
 fn family_fixed_stops_preserve_only_completed_cells_and_freeze_probe() {
@@ -1219,14 +1205,14 @@ fn family_fixed_stops_preserve_only_completed_cells_and_freeze_probe() {
                 calls,
             )
         };
-        let (mut c, count, _) = run(usize::MAX, Signal::Int);
-        finite_law_family_valuations(&i, &selected, &mut c).unwrap();
+        let (c, count, _) = run(usize::MAX, Signal::Int);
+        finite_law_family_valuations(&i, &selected, &c).unwrap();
         let total = count.get();
         assert!(total > 1);
         for at in [1, total / 2, total] {
             for signal in [Signal::Int, Signal::Term] {
-                let (mut c, _, calls) = run(at, signal);
-                let failure = match finite_law_family_valuations(&i, &selected, &mut c) {
+                let (c, _, calls) = run(at, signal);
+                let failure = match finite_law_family_valuations(&i, &selected, &c) {
                     Err(f) => f,
                     Ok(_) => panic!("停止が成功"),
                 };
@@ -1255,7 +1241,7 @@ fn family_fixed_stops_preserve_only_completed_cells_and_freeze_probe() {
 #[test]
 fn scalar_equation_component_keeps_original_operand_and_whole_indicator() {
     let i = fixture::inputs();
-    let r = finite_law_valuations(&i, "Selected.guarded", &bound(), &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Selected.guarded", &bound(), &quiet()).unwrap();
     assert!(r.is_complete());
     for row in r.rows() {
         let cs = row.components.as_ref().unwrap();
@@ -1268,7 +1254,7 @@ fn scalar_equation_component_keeps_original_operand_and_whole_indicator() {
         assert_eq!(p.equal, row.predicate);
         assert_eq!(p.indicator, row.indicator);
     }
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn tuple_guard_components_keep_zero_and_nonzero_separate_on_eight_shared_points() {
@@ -1277,7 +1263,7 @@ fn tuple_guard_components_keep_zero_and_nonzero_separate_on_eight_shared_points(
         "law required pair(c:Part) when c.flag:c.pair=(0,true);law optional no():false;",
     );
     let selected = family_selection(&[("pair", bound()), ("no", vec![])]);
-    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    let r = finite_law_family_valuations(&i, &selected, &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(
         r.positions(),
@@ -1314,7 +1300,7 @@ fn tuple_guard_components_keep_zero_and_nonzero_separate_on_eight_shared_points(
             .iter()
             .all(|r| r.components.is_none() && r.indicator == Some(1.into()))
     );
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn nested_tuple_components_share_bool_fp2_fp3_without_mixing_characteristics() {
@@ -1322,9 +1308,8 @@ fn nested_tuple_components_share_bool_fp2_fp3_without_mixing_characteristics() {
         fixture::MAP,
         "law required nested(c:Part):((c.quantity,c.third),c.flag)=((0,0),true);",
     );
-    let r =
-        finite_law_family_valuations(&i, &family_selection(&[("nested", bound())]), &mut quiet())
-            .unwrap();
+    let r = finite_law_family_valuations(&i, &family_selection(&[("nested", bound())]), &quiet())
+        .unwrap();
     assert!(r.is_complete());
     assert_eq!(r.domain().len(), 12);
     assert_eq!(r.observed_point(), None);
@@ -1367,12 +1352,12 @@ fn nested_tuple_components_share_bool_fp2_fp3_without_mixing_characteristics() {
         }
         assert_eq!(row.predicate, Some(expected.iter().all(|p| *p)));
     }
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn a_refuted_tuple_keeps_an_equal_component_zero_at_the_observed_point() {
     let i = fixture::with_body(fixture::MAP, "law required pair(c:Part):c.pair=(1,true);");
-    let r = finite_law_valuations(&i, "Selected.pair", &bound(), &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Selected.pair", &bound(), &quiet()).unwrap();
     let row = &r.rows()[r.observed_point().unwrap()];
     assert_eq!(row.predicate, Some(false));
     assert_eq!(row.indicator, Some(1.into()));
@@ -1381,7 +1366,7 @@ fn a_refuted_tuple_keeps_an_equal_component_zero_at_the_observed_point() {
     assert_eq!(cs[1].indicator, Some(0.into()));
     assert_eq!(cs[1].equal, Some(true));
     assert_eq!(cs[1].left, cs[1].right);
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn finite_term_components_use_extensional_equality_for_different_programs() {
@@ -1396,7 +1381,7 @@ fn finite_term_components_use_extensional_equality_for_different_programs() {
         "pair",
         vec![("a".into(), a.clone()), ("b".into(), b.clone())],
     )]);
-    let r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+    let r = finite_law_family_valuations(&i, &selected, &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(r.domain(), &[Vec::<Scalar>::new()]);
     assert_eq!(r.required_zero(), Some([0].as_slice()));
@@ -1407,7 +1392,7 @@ fn finite_term_components_use_extensional_equality_for_different_programs() {
     assert_eq!(cs[1].equal, Some(true));
     assert_eq!(cs[1].indicator, Some(0.into()));
     assert_eq!(row.predicate, Some(true));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn finite_term_component_refutation_is_separate_from_an_equal_integer_component() {
@@ -1424,7 +1409,7 @@ fn finite_term_component_refutation_is_separate_from_an_equal_integer_component(
                 ("b".into(), literal_term(&i, "Selected.right")),
             ],
         )]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(r.is_complete());
@@ -1436,7 +1421,7 @@ fn finite_term_component_refutation_is_separate_from_an_equal_integer_component(
     assert_eq!(cs[1].equal, Some(false));
     assert_eq!(cs[1].indicator, Some(1.into()));
     assert_eq!(row.predicate, Some(false));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn affine_term_components_keep_exact_equality_on_an_infinite_argument_domain() {
@@ -1453,7 +1438,7 @@ fn affine_term_components_keep_exact_equality_on_an_infinite_argument_domain() {
                 ("b".into(), literal_term(&i, "Selected.right")),
             ],
         )]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(r.is_complete());
@@ -1463,7 +1448,7 @@ fn affine_term_components_keep_exact_equality_on_an_infinite_argument_domain() {
     assert_eq!(cs[0].left, Some(Scalar::Unit));
     assert_eq!(cs[0].equal, Some(true));
     assert_eq!(cs[1].equal, Some(true));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn unsupported_term_component_preserves_the_known_whole_refutation() {
@@ -1480,7 +1465,7 @@ fn unsupported_term_component_preserves_the_known_whole_refutation() {
                 ("b".into(), literal_term(&i, "Selected.right")),
             ],
         )]),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(
@@ -1499,7 +1484,7 @@ fn unsupported_term_component_preserves_the_known_whole_refutation() {
     assert!(cs[1].left.is_some() && cs[1].right.is_some());
     assert_eq!(cs[1].equal, None);
     assert_eq!(cs[1].indicator, None);
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn finite_ref_and_map_components_use_the_original_mathematical_values() {
@@ -1507,7 +1492,7 @@ fn finite_ref_and_map_components_use_the_original_mathematical_values() {
         fixture::MAP,
         "law required ref(c:Part):c.link=c;law required table(c:Part):c.ownedtable=c.ownedtable;",
     );
-    let r = finite_law_valuations(&i, "Selected.ref", &bound(), &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Selected.ref", &bound(), &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(r.domain().len(), 2);
     for (point, row) in r.domain().iter().zip(r.rows()) {
@@ -1516,7 +1501,7 @@ fn finite_ref_and_map_components_use_the_original_mathematical_values() {
         assert_eq!(p.ty, Type::Ref("Pattern.Part".into()));
         assert_eq!(p.equal, Some(point[0] == subject("p")));
     }
-    let r = finite_law_valuations(&i, "Selected.table", &bound(), &mut quiet()).unwrap();
+    let r = finite_law_valuations(&i, "Selected.table", &bound(), &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(r.domain().len(), 10);
     for row in r.rows() {
@@ -1525,7 +1510,7 @@ fn finite_ref_and_map_components_use_the_original_mathematical_values() {
         assert_eq!(p.equal, Some(true));
         assert_eq!(p.indicator, Some(0.into()));
     }
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn non_equality_law_keeps_its_original_condition_and_has_no_fake_components() {
@@ -1533,9 +1518,8 @@ fn non_equality_law_keeps_its_original_condition_and_has_no_fake_components() {
         fixture::MAP,
         "law required boolean(c:Part):c.flag and true;",
     );
-    let r =
-        finite_law_family_valuations(&i, &family_selection(&[("boolean", bound())]), &mut quiet())
-            .unwrap();
+    let r = finite_law_family_valuations(&i, &family_selection(&[("boolean", bound())]), &quiet())
+        .unwrap();
     assert!(r.is_complete());
     assert_eq!(
         r.domain(),
@@ -1548,14 +1532,14 @@ fn non_equality_law_keeps_its_original_condition_and_has_no_fake_components() {
             .iter()
             .all(|r| r.operands.is_none() && r.components.is_none())
     );
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn component_recheck_rejects_path_type_operands_equality_indicator_and_roster_forgery() {
     let i = fixture::with_body(fixture::MAP, "law required pair(c:Part):c.pair=(0,true);");
     let selected = family_selection(&[("pair", bound())]);
     for change in 0..12 {
-        let mut r = finite_law_family_valuations(&i, &selected, &mut quiet()).unwrap();
+        let mut r = finite_law_family_valuations(&i, &selected, &quiet()).unwrap();
         let row = &mut r.columns[0].rows[0];
         let cs = row.components.as_mut().unwrap();
         match change {
@@ -1574,7 +1558,7 @@ fn component_recheck_rejects_path_type_operands_equality_indicator_and_roster_fo
             10 => r.required_zero = Some(vec![]),
             _ => row.indicator = Some(0.into()),
         }
-        assert!(r.recheck(&i, &mut quiet()).is_err(), "change={change}");
+        assert!(r.recheck(&i, &quiet()).is_err(), "change={change}");
     }
 }
 #[test]
@@ -1603,14 +1587,14 @@ fn component_fixed_stops_keep_completed_rows_and_freeze_probe() {
             calls,
         )
     };
-    let (mut c, total, _) = run(usize::MAX, Signal::Int);
-    finite_law_family_valuations(&i, &selected, &mut c).unwrap();
+    let (c, total, _) = run(usize::MAX, Signal::Int);
+    finite_law_family_valuations(&i, &selected, &c).unwrap();
     let total = total.get();
     assert!(total > 3);
     for at in [1, total / 2, total] {
         for signal in [Signal::Int, Signal::Term] {
-            let (mut c, _, calls) = run(at, signal);
-            let failure = match finite_law_family_valuations(&i, &selected, &mut c) {
+            let (c, _, calls) = run(at, signal);
+            let failure = match finite_law_family_valuations(&i, &selected, &c) {
                 Err(f) => f,
                 Ok(_) => panic!("停止が成功"),
             };

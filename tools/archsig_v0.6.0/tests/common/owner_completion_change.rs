@@ -49,8 +49,8 @@ fn sources(
     )
 }
 fn result(sources: InputSources, asks: &[&str]) -> archsig::json::JNode {
-    let prepared = observed::prepare_observed(sources, asks, &mut quiet()).unwrap();
-    let evaluation = observed::evaluate_observed(prepared, &mut quiet()).unwrap();
+    let prepared = observed::prepare_observed(sources, asks, &quiet()).unwrap();
+    let evaluation = observed::evaluate_observed(prepared, &quiet()).unwrap();
     assert!(!evaluation.wire().canonical().contains("not implemented"));
     archsig::json::parse(evaluation.wire().canonical().as_bytes()).unwrap()
 }
@@ -180,7 +180,7 @@ fn finite_owner_completion_stop_does_not_publish_incomplete_exhaustion() {
     for signal in [archsig::result::Signal::Int, archsig::result::Signal::Term] {
         let seen = Rc::new(Cell::new(false));
         let stage = seen.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::ChangeWitness {
                 stage.set(true);
             }
@@ -192,7 +192,7 @@ fn finite_owner_completion_stop_does_not_publish_incomplete_exhaustion() {
                 "v=evaluate(Selected.flag,c=@v/p)",
                 "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
             ],
-            &mut c,
+            &c,
         )
         .unwrap();
         assert!(seen.get());
@@ -286,7 +286,7 @@ fn finite_owner_completion_rejects_empty_observation_and_separates_infinite_doma
         source.law().bytes().to_vec(),
         map.into_bytes(),
     );
-    let failure = archsig::input::check_inputs(invalid, &mut quiet()).unwrap_err();
+    let failure = archsig::input::check_inputs(invalid, &quiet()).unwrap_err();
     assert!(
         failure.issues().iter().any(|issue| issue
             .canonical()
@@ -323,7 +323,7 @@ fn finite_owner_completion_rejects_empty_observation_and_separates_infinite_doma
         let evaluated = observed::evaluate_observed_bytes(
             input,
             &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
-            &mut quiet(),
+            &quiet(),
         );
         if additional {
             let evaluated = evaluated.unwrap();
@@ -368,7 +368,7 @@ fn finite_owner_completion_missing_finite_guard_is_exhausted_without_an_excludin
     let completed = observed::evaluate_observed_bytes(
         input,
         &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let j = archsig::json::parse(completed.wire().canonical().as_bytes()).unwrap();

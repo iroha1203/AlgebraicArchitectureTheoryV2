@@ -41,7 +41,7 @@ pub(crate) fn error(
 /// 全ファイルを登録してから依存 DAG、binding、原始型を検査する。
 #[allow(clippy::result_large_err)]
 pub fn check_definitions(files: &[(&str, &[u8])]) -> Result<CheckedDefinitions, DefinitionFailure> {
-    check_definitions_inner::<Box<Issue>>(files, &mut Control::unlimited()).map_err(
+    check_definitions_inner::<Box<Issue>>(files, &Control::unlimited()).map_err(
         |(issue, inputs)| DefinitionFailure {
             issue: *issue,
             inputs,
@@ -52,7 +52,7 @@ pub fn check_definitions(files: &[(&str, &[u8])]) -> Result<CheckedDefinitions, 
 #[allow(clippy::result_large_err)]
 pub fn check_definitions_controlled(
     files: &[(&str, &[u8])],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<CheckedDefinitions, CheckFailure<DefinitionFailure>> {
     check_definitions_inner::<CheckFailure<Box<Issue>>>(files, control).map_err(
         |(failure, inputs)| match failure {
@@ -66,7 +66,7 @@ pub fn check_definitions_controlled(
 }
 fn check_definitions_inner<E: InputError>(
     files: &[(&str, &[u8])],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<CheckedDefinitions, (E, Vec<DefinitionIdentity>)> {
     let mut checked = CheckedDefinitions::empty();
     let result = (|| -> Result<(), E> {

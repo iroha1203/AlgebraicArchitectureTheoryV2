@@ -13,7 +13,7 @@ const BAD: &[&str] = &[
     "later=evaluate(Reservations.seed)",
 ];
 fn run(asks: &[&str]) -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input(false, false, "r1"), asks, &mut quiet())
+    let r = evaluate_observed_bytes(fixture::input(false, false, "r1"), asks, &quiet())
         .unwrap_or_else(|e| {
             panic!(
                 "{:?}",
@@ -65,7 +65,7 @@ fn stop() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -74,8 +74,8 @@ fn stop() {
             None
         }
     });
-    let prepared = prepare_observed(input, &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+    let prepared = prepare_observed(input, &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "child" {
             let (a, s) = (armed.clone(), seen.clone());
@@ -135,7 +135,7 @@ fn completion_run(mode: &str) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         fixture::completion_input(mode, "r1"),
         COMPLETION_ASKS,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_ne!(r.status(), "error");
@@ -193,7 +193,7 @@ fn completion_stop() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -205,10 +205,10 @@ fn completion_stop() {
     let prepared = prepare_observed(
         fixture::completion_input("ambiguous", "r1"),
         COMPLETION_ASKS,
-        &mut c,
+        &c,
     )
     .unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "child" {
             let (a, s) = (armed.clone(), seen.clone());

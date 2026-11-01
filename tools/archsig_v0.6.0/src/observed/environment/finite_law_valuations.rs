@@ -74,7 +74,7 @@ impl std::fmt::Debug for FiniteLawFailure {
     }
 }
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
-    c.clone().checkpoint(Checkpoint::FiniteLawDomain)?;
+    c.checkpoint(Checkpoint::FiniteLawDomain)?;
     Ok(())
 }
 fn source(value: Scalar) -> SourceValue {
@@ -121,7 +121,7 @@ impl FiniteLawValuations {
     pub fn is_complete(&self) -> bool {
         self.state == FiniteLawState::Ready
     }
-    pub fn recheck(&self, inputs: &CheckedInputs, c: &mut Control) -> Result<(), FiniteLawFailure> {
+    pub fn recheck(&self, inputs: &CheckedInputs, c: &Control) -> Result<(), FiniteLawFailure> {
         let fail = |message: &str| FiniteLawFailure {
             cause: message.into(),
             partial: None,
@@ -187,7 +187,7 @@ pub(in crate::observed) fn finite_law_valuations(
     inputs: &CheckedInputs,
     law: &str,
     bindings: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteLawValuations, FiniteLawFailure> {
     let selected = vec![(law.to_owned(), bindings.to_vec())];
     match finite_law_family_valuations(inputs, &selected, c) {
@@ -307,7 +307,7 @@ impl FiniteLawFamilyValuations {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), FiniteLawFamilyFailure> {
         if &self.sources != inputs.sources() {
             return Err(FiniteLawFamilyFailure {
@@ -357,11 +357,7 @@ impl FiniteLawFamilyValuations {
         )?;
         self.check_expected(expected, c)
     }
-    fn check_expected(
-        &self,
-        expected: Self,
-        c: &mut Control,
-    ) -> Result<(), FiniteLawFamilyFailure> {
+    fn check_expected(&self, expected: Self, c: &Control) -> Result<(), FiniteLawFamilyFailure> {
         let result = (|| -> Result<bool, ValidationFailure> {
             tick(c)?;
             if self.sources != expected.sources
@@ -436,7 +432,7 @@ impl FiniteLawFamilyValuations {
 pub(in crate::observed) fn finite_law_family_valuations(
     inputs: &CheckedInputs,
     selected: &[(String, Vec<(String, Scalar)>)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
     family_with_object(inputs, selected, None, c)
 }
@@ -444,7 +440,7 @@ fn family_with_object(
     inputs: &CheckedInputs,
     selected: &[(String, Vec<(String, Scalar)>)],
     object: Option<Arc<object::Selection>>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
     family_with_column_objects(inputs, selected, object, None, c)
 }
@@ -453,7 +449,7 @@ fn family_with_column_objects(
     selected: &[(String, Vec<(String, Scalar)>)],
     object: Option<Arc<object::Selection>>,
     column_objects: Option<object::Columns>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
     family_with_instances(inputs, selected, object, column_objects, None, c)
 }
@@ -463,7 +459,7 @@ fn family_with_instances(
     object: Option<Arc<object::Selection>>,
     column_objects: Option<object::Columns>,
     instance_indices: Option<Vec<usize>>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
     family_with_instance_domain(
         inputs,
@@ -482,7 +478,7 @@ fn family_with_instance_domain(
     column_objects: Option<object::Columns>,
     instance_indices: Option<Vec<usize>>,
     positions: &[Fact],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
     if instance_indices
         .as_ref()
@@ -786,7 +782,7 @@ fn validate_binding_term(
                 &term.params,
                 &term.returns,
                 &term.body,
-                &mut e.control.clone(),
+                &e.control,
             )
         } else {
             crate::law::check_reading_term_body::<CheckFailure<Box<crate::issue::Issue>>>(
@@ -796,7 +792,7 @@ fn validate_binding_term(
                 &term.params,
                 &term.returns,
                 &term.body,
-                &mut e.control.clone(),
+                &e.control,
             )
         };
         let checked = match checked {
@@ -1001,9 +997,7 @@ fn components(
     let mut pending = vec![(vec![], ty.clone(), left.clone(), right.clone())];
     let mut result = vec![];
     while let Some((path, ty, left, right)) = pending.pop() {
-        e.control
-            .clone()
-            .checkpoint(Checkpoint::FiniteLawComponent)?;
+        e.control.checkpoint(Checkpoint::FiniteLawComponent)?;
         for value in left.iter().chain(&right) {
             if value.ty() != ty.erase() {
                 return Err("元等式の成分値と型が違う".into());
@@ -1022,9 +1016,7 @@ fn components(
                 }
             };
             for (index, item) in items.iter().enumerate().rev() {
-                e.control
-                    .clone()
-                    .checkpoint(Checkpoint::FiniteLawComponent)?;
+                e.control.checkpoint(Checkpoint::FiniteLawComponent)?;
                 let mut next = path.clone();
                 next.push(index);
                 pending.push((
@@ -1058,9 +1050,7 @@ fn components(
                 indicator,
             });
         }
-        e.control
-            .clone()
-            .checkpoint(Checkpoint::FiniteLawComponent)?;
+        e.control.checkpoint(Checkpoint::FiniteLawComponent)?;
     }
     Ok(result)
 }
@@ -1068,7 +1058,7 @@ fn components(
 pub(in crate::observed) fn equation(
     inputs: &CheckedInputs,
     mut id: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<usize>, ValidationFailure> {
     loop {
         c.checkpoint(Checkpoint::FiniteLawOperand)?;
@@ -1101,7 +1091,7 @@ fn operands(
     scope: &Scope,
     reading: &str,
 ) -> Result<Option<(Type, Option<Scalar>, Option<Scalar>)>, ValidationFailure> {
-    let Some(eq) = equation(e.indexes.inputs, body, &mut e.control.clone())? else {
+    let Some(eq) = equation(e.indexes.inputs, body, &e.control)? else {
         return Ok(None);
     };
     let ExprKind::Binary { lhs, rhs, .. } = e.indexes.inputs.law().exprs()[eq].kind else {
@@ -1117,7 +1107,7 @@ fn operands(
     let mut local = e.copy_variables(variables)?;
     let mut id = body;
     while id != eq {
-        e.control.clone().checkpoint(Checkpoint::FiniteLawOperand)?;
+        e.control.checkpoint(Checkpoint::FiniteLawOperand)?;
         match &e.indexes.inputs.law().exprs()[id].kind {
             ExprKind::Group(child) => id = *child,
             ExprKind::Let { name, value, body } => {
@@ -1465,7 +1455,7 @@ fn populate_family(
     inputs: &CheckedInputs,
     r: &mut FiniteLawFamilyValuations,
     seed_positions: &[Fact],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     tick(c)?;
     let mut template = r.in_object(Environment::new(inputs, c)?);

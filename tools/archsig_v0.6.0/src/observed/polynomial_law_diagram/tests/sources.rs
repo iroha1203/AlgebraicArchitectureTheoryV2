@@ -15,7 +15,7 @@ fn original_law_rows_keep_role_whole_source_exact_spans_bindings_and_typed_sides
     let e = example(false, BODY);
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     assert!(!d.originals.is_empty());
     for o in &d.originals {
         let Part::LawInstance {
@@ -90,12 +90,12 @@ fn lexical_let_and_match_are_closed_by_typed_substitution_before_tuple_projectio
     let e = evaluate_observed_bytes(
         custom_sources(&definition, &map, body),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     assert_eq!(d.coordinates.len(), 2);
     for (q, ty) in d.coordinates.iter().zip([Type::Z, Type::Q]) {
         let Part::Transform {
@@ -153,7 +153,7 @@ fn finite_parameter_rows_keep_actual_values_and_symbolic_instance_without_fake_e
     );
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     let symbolic = d
         .originals
         .iter()
@@ -192,12 +192,12 @@ fn finite_parameter_rows_keep_actual_values_and_symbolic_instance_without_fake_e
             "law required empty(c:Part,x:(Empty,Bool)):c.quantity=0;",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     assert!(d.coordinates.is_empty());
     assert_eq!(d.originals.len(), 1);
     assert_eq!(d.originals[0].row, None);
@@ -217,7 +217,7 @@ fn missing_outside_false_guard_and_unsupported_keep_original_sources_without_fab
     let e = example(true, body);
     let mut g = graph(&e);
     let b = architecture(&g, "b");
-    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), b, 0, &quiet()).unwrap();
     for q in &d.coordinates {
         let o = d
             .originals
@@ -251,7 +251,7 @@ fn missing_outside_false_guard_and_unsupported_keep_original_sources_without_fab
         &mut g,
         e.prepared.shared_inputs(),
         a,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
@@ -261,7 +261,7 @@ fn missing_outside_false_guard_and_unsupported_keep_original_sources_without_fab
         e.prepared.shared_inputs(),
         owned,
         objects.architectures.len() - 1,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(
@@ -289,7 +289,7 @@ fn unbounded_parameter_keeps_symbolic_law_typed_sides_and_explicit_unavailable_w
     let e = example(false, "law required parameter(c:Part,k:Z):c.quantity=k;");
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     assert_eq!(d.status, EquationPresentationStatus::Undetermined);
     let reason = d.unavailable.as_ref().unwrap();
     assert_eq!(reason.declaration, "Chosen.parameter");
@@ -328,7 +328,7 @@ fn unbounded_parameter_keeps_symbolic_law_typed_sides_and_explicit_unavailable_w
             _ => bad.outputs.originals[0].parameters.clear(),
         }
         assert!(
-            bad.recheck(e.prepared.inputs(), &source.architecture, &mut quiet())
+            bad.recheck(e.prepared.inputs(), &source.architecture, &quiet())
                 .is_err()
         );
     }
@@ -344,12 +344,12 @@ fn compound_parameter_domain_keeps_external_snapshot_support_scope_and_rejects_o
             "law required parameter(c:Part,x:(Root,Bool)):c.quantity=0;",
         ),
         &["m=map(Finite.Migration,on=@v/m,reading=Chosen)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     assert!(d.unavailable.is_none());
     let mut external = 0;
     for original in &d.originals {
@@ -384,13 +384,13 @@ fn source_only_unavailable_path_preserves_four_stops_without_returning_incomplet
     let before = complete.nodes.len();
     let seen = std::rc::Rc::new(std::cell::Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::EquationPresentation {
             count.set(count.get() + 1);
         }
         None
     });
-    retain(&mut complete, e.prepared.shared_inputs(), a, 0, &mut c).unwrap();
+    retain(&mut complete, e.prepared.shared_inputs(), a, 0, &c).unwrap();
     let total = seen.get();
     assert!(total > 20);
     let mut nonempty = false;
@@ -404,7 +404,7 @@ fn source_only_unavailable_path_preserves_four_stops_without_returning_incomplet
                         e.prepared.shared_inputs(),
                         a,
                         0,
-                        &mut stopping(signal, at)
+                        &stopping(signal, at)
                     ),
                     Err(ValidationFailure::Stop(_))
                 ),
@@ -436,7 +436,7 @@ fn symbolic_parameter_scope_keeps_forall_name_type_source_span_and_bound_rows_do
         let e = example(false, body);
         let mut g = graph(&e);
         let a = architecture(&g, "a");
-        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+        let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
         let original = d.originals.iter().find(|o| o.row.is_none()).unwrap();
         let (left, right) = original.operands.as_ref().unwrap();
         let source = std::str::from_utf8(e.prepared.inputs().sources().law().bytes()).unwrap();
@@ -466,7 +466,7 @@ fn symbolic_quantifier_removal_name_type_kind_span_domain_and_native_scope_chang
     let e = example(false, "law required parameter(c:Part,k:Z):c.quantity=k;");
     let mut g = graph(&e);
     let a = architecture(&g, "a");
-    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &mut quiet()).unwrap();
+    let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet()).unwrap();
     let original = &d.originals[0];
     let source = data(&g, original.reference).source.clone();
     let body = original.body.0 - source.base;
@@ -489,7 +489,7 @@ fn symbolic_quantifier_removal_name_type_kind_span_domain_and_native_scope_chang
             }
         }
         assert!(
-            bad.recheck(e.prepared.inputs(), &source.architecture, &mut quiet())
+            bad.recheck(e.prepared.inputs(), &source.architecture, &quiet())
                 .is_err(),
             "mode {mode}"
         );

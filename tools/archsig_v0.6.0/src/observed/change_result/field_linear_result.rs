@@ -9,7 +9,7 @@ pub(in crate::observed) fn map(
     target: NodeRef,
     matrix: &crate::observed::field_fiber::Matrix,
     cols: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let mut columns = vec![];
     let mut args = vec![source, target];
@@ -39,7 +39,7 @@ pub(in crate::observed) fn vector(
     b: &mut Builder<'_>,
     module: NodeRef,
     items: &[Scalar],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let mut coordinates = vec![];
     for x in items {
@@ -65,7 +65,7 @@ pub(super) fn build(
     b: &mut Builder<'_>,
     linear: &Linear,
     requirements: &[NodeRef],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Parts, ValidationFailure> {
     let n = linear.parameter_count;
     let m = linear.equations.len();

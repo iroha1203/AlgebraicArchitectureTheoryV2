@@ -4,7 +4,7 @@ mod fixture {
     include!("../../tests/common/answer_bindings.rs");
 }
 fn result(asks: &[&str]) -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input("r1"), asks, &mut quiet()).unwrap();
+    let r = evaluate_observed_bytes(fixture::input("r1"), asks, &quiet()).unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
     r
 }
@@ -34,7 +34,7 @@ fn answer_binding_actual_scan_stop_keeps_prior_value_refutation_and_prefix() {
         "later=evaluate(Applications.abSeed)",
     ];
     let normal =
-        evaluate_observed_bytes(fixture::input_mode("stop", "r1"), &asks, &mut quiet()).unwrap();
+        evaluate_observed_bytes(fixture::input_mode("stop", "r1"), &asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     let Signature::View { params, .. } =
         &normal.prepared.inputs().law().declarations()["Applications.abKeep"].signature
@@ -48,7 +48,7 @@ fn answer_binding_actual_scan_stop_keeps_prior_value_refutation_and_prefix() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -57,8 +57,8 @@ fn answer_binding_actual_scan_stop_keeps_prior_value_refutation_and_prefix() {
             None
         }
     });
-    let prepared = prepare_observed(fixture::input_mode("stop", "r1"), &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+    let prepared = prepare_observed(fixture::input_mode("stop", "r1"), &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());

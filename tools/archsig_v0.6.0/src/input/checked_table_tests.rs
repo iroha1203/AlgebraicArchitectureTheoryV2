@@ -79,13 +79,13 @@ fn bundle_preparation_checks_every_digest_id_and_file_iteration() {
     let src = sources();
     let count = Rc::new(Cell::new(0));
     let measured = count.clone();
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         if point == Checkpoint::InputBundle {
             measured.set(measured.get() + 1);
         }
         None
     });
-    let checked = check_inputs(src.clone(), &mut control).unwrap();
+    let checked = check_inputs(src.clone(), &control).unwrap();
     assert_eq!(count.get(), 20); // 四 SHA、四 ID、二つの定義参照、それぞれ前後。
     assert_eq!(checked.sources(), &src);
     assert!(
@@ -95,8 +95,8 @@ fn bundle_preparation_checks_every_digest_id_and_file_iteration() {
             .all(|i| i.bytes_digest.is_some() && i.model_digest.is_some())
     );
     for at in 1..=count.get() {
-        let (mut control, seen, semantic) = stop(at);
-        let failure = check_inputs(src.clone(), &mut control).unwrap_err();
+        let (control, seen, semantic) = stop(at);
+        let failure = check_inputs(src.clone(), &control).unwrap_err();
         assert_stop(&failure, &control, false);
         assert_eq!(seen.get(), at);
         assert!(!semantic.get(), "入力準備の停止後に定義検査を開始しない");
@@ -132,12 +132,12 @@ fn invalid_identity_reports_cancellation_over_input() {
         valid.law().clone(),
         valid.archmap().clone(),
     );
-    let plain = check_inputs(src.clone(), &mut Control::unlimited()).unwrap_err();
+    let plain = check_inputs(src.clone(), &Control::unlimited()).unwrap_err();
     assert_eq!(plain.status(), InputStatus::Invalid);
     assert!(plain.inputs().iter().all(|i| i.bytes_digest.is_some()));
     // 四 SHA・正しい definition0 の後、definition1 の不一致を得た事後確認。
-    let (mut control, seen, semantic) = stop(12);
-    let failure = check_inputs(src.clone(), &mut control).unwrap_err();
+    let (control, seen, semantic) = stop(12);
+    let failure = check_inputs(src.clone(), &control).unwrap_err();
     assert_eq!(seen.get(), 12);
     assert!(!semantic.get());
     assert_eq!(failure.sources(), &src);
@@ -148,10 +148,10 @@ fn invalid_identity_reports_cancellation_over_input() {
 fn checked_table_comparison_has_pre_and_post_stops_with_checked_stage_retained() {
     let src = sources();
     for at in [21, 22] {
-        let (mut control, seen, _) = stop(at);
+        let (control, seen, _) = stop(at);
         let (definitions, law, map) = tables(&src);
-        let failure = CheckedInputs::from_checked(src.clone(), definitions, law, map, &mut control)
-            .unwrap_err();
+        let failure =
+            CheckedInputs::from_checked(src.clone(), definitions, law, map, &control).unwrap_err();
         assert_eq!(seen.get(), at);
         assert_stop(&failure, &control, true);
         assert_eq!(failure.sources(), &src);
@@ -167,11 +167,11 @@ fn checked_table_comparison_has_pre_and_post_stops_with_checked_stage_retained()
 #[test]
 fn mismatched_checked_tables_report_cancellation_at_post_comparison() {
     let src = sources();
-    let (mut control, seen, _) = stop(22);
+    let (control, seen, _) = stop(22);
     let (mut definitions, law, map) = tables(&src);
     definitions = changed_definitions();
     let failure =
-        CheckedInputs::from_checked(src.clone(), definitions, law, map, &mut control).unwrap_err();
+        CheckedInputs::from_checked(src.clone(), definitions, law, map, &control).unwrap_err();
     assert_eq!(seen.get(), 22);
     assert_eq!(failure.sources(), &src);
     assert!(failure.declarations().is_empty());
@@ -185,28 +185,28 @@ fn checked_table_comparison_stops_inside_elements_and_recursive_types() {
     let src = sources();
     let count = Rc::new(Cell::new(0));
     let measured = count.clone();
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         if point == Checkpoint::TableComparison {
             measured.set(measured.get() + 1);
         }
         None
     });
     let (definitions, law, map) = tables(&src);
-    CheckedInputs::from_checked(src.clone(), definitions, law, map, &mut control).unwrap();
+    CheckedInputs::from_checked(src.clone(), definitions, law, map, &control).unwrap();
     let total = count.get();
     assert!(total > 50, "三表の構造内部にも確認点がある");
     for at in [3, total / 3, total * 2 / 3, total - 1] {
         let seen = Rc::new(Cell::new(0));
         let probe = seen.clone();
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if point == Checkpoint::TableComparison {
                 probe.set(probe.get() + 1);
             }
             (probe.get() == at).then_some(Signal::Term)
         });
         let (definitions, law, map) = tables(&src);
-        let failure = CheckedInputs::from_checked(src.clone(), definitions, law, map, &mut control)
-            .unwrap_err();
+        let failure =
+            CheckedInputs::from_checked(src.clone(), definitions, law, map, &control).unwrap_err();
         assert_eq!(seen.get(), at);
         assert_stop(&failure, &control, true);
         assert_eq!(failure.sources(), &src);
@@ -228,28 +228,28 @@ fn internal_comparison_mismatch_stop_preserves_stage() {
         };
         let count = Rc::new(Cell::new(0));
         let measured = count.clone();
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if point == Checkpoint::TableComparison {
                 measured.set(measured.get() + 1);
             }
             None
         });
         let (definitions, law, map) = changed();
-        let plain = CheckedInputs::from_checked(src.clone(), definitions, law, map, &mut control)
-            .unwrap_err();
+        let plain =
+            CheckedInputs::from_checked(src.clone(), definitions, law, map, &control).unwrap_err();
         let at = count.get();
         assert_eq!(plain.status(), InputStatus::Invalid);
         // 最後の比較確認点は、不一致を得た後の外側 compare の事後確認。
         let mut visits = 0;
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if point == Checkpoint::TableComparison {
                 visits += 1;
             }
             (visits == at).then_some(Signal::Term)
         });
         let (definitions, law, map) = changed();
-        let failure = CheckedInputs::from_checked(src.clone(), definitions, law, map, &mut control)
-            .unwrap_err();
+        let failure =
+            CheckedInputs::from_checked(src.clone(), definitions, law, map, &control).unwrap_err();
         assert_eq!(!failure.declarations().is_empty(), !bad_law);
         assert_eq!(!failure.vocabularies().is_empty(), !bad_law);
         assert_stop(&failure, &control, !bad_law);
@@ -291,7 +291,7 @@ fn from_checked_rejects_mutated_map_even_with_original_digests() {
         definitions,
         law,
         map,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
@@ -322,14 +322,9 @@ fn from_checked_rejects_internally_mutated_law_tables_and_digests() {
             "definitions" => law.definitions = check_definitions(&[]).unwrap(),
             _ => unreachable!(),
         }
-        let failure = CheckedInputs::from_checked(
-            src.clone(),
-            definitions,
-            law,
-            map,
-            &mut Control::unlimited(),
-        )
-        .unwrap_err();
+        let failure =
+            CheckedInputs::from_checked(src.clone(), definitions, law, map, &Control::unlimited())
+                .unwrap_err();
         assert_eq!(failure.status(), InputStatus::Invalid, "{field_name}");
         assert_eq!(
             field(&failure.issues()[0], "code"),
@@ -366,14 +361,9 @@ fn from_checked_rejects_internally_mutated_archmap_tables_and_digests() {
             "snapshots" => map.snapshots.clear(),
             _ => unreachable!(),
         }
-        let failure = CheckedInputs::from_checked(
-            src.clone(),
-            definitions,
-            law,
-            map,
-            &mut Control::unlimited(),
-        )
-        .unwrap_err();
+        let failure =
+            CheckedInputs::from_checked(src.clone(), definitions, law, map, &Control::unlimited())
+                .unwrap_err();
         assert_eq!(failure.status(), InputStatus::Invalid, "{field_name}");
         assert_eq!(
             field(&failure.issues()[0], "code"),

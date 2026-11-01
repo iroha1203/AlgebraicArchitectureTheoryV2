@@ -12,7 +12,7 @@ fn example(qs: &[&str]) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         fixture::input(false, "unit-path"),
         qs,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
@@ -183,7 +183,7 @@ fn retained_path_calculation_keeps_only_fully_checked_words_and_actions() {
 fn public_path_transfer_stops_keep_completed_values_and_verified_prefixes() {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut probe = Control::new(move |p| {
+    let probe = Control::new(move |p| {
         if p == Checkpoint::NativeResultNode {
             seen.set(seen.get() + 1);
         }
@@ -192,22 +192,22 @@ fn public_path_transfer_stops_keep_completed_values_and_verified_prefixes() {
     let prepared = prepare_observed(
         fixture::input(false, "unit-path"),
         &[E, F, C],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    let normal = evaluate_observed(prepared, &mut probe).unwrap();
+    let normal = evaluate_observed(prepared, &probe).unwrap();
     assert_eq!(normal.status(), "complete");
     let total = count.get();
     assert!(total >= 3);
     // 停止の種類と位置は代表1つ(最初の転記点での time 停止)だけを見る。
-    let (mut control, _) = stopping(1, Checkpoint::NativeResultNode);
+    let (control, _) = stopping(1, Checkpoint::NativeResultNode);
     let prepared = prepare_observed(
         fixture::input(false, "unit-path"),
         &[E, F, C],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    let stopped = evaluate_observed(prepared, &mut control).unwrap();
+    let stopped = evaluate_observed(prepared, &control).unwrap();
     assert_ne!(stopped.status(), "error", "{:?}", stopped.issues);
     let a = &stopped.answers[2];
     assert_eq!(a.status, Decision::Established);
@@ -227,7 +227,7 @@ fn invisible_path_conditions_recheck_actual_refs_and_keep_refutations_at_transfe
     let r = evaluate_observed_bytes(
         visibility_sources(),
         &VISIBILITY_ASKS,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
@@ -239,7 +239,7 @@ fn invisible_path_conditions_recheck_actual_refs_and_keep_refutations_at_transfe
     });
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut probe = Control::new(move |p| {
+    let probe = Control::new(move |p| {
         if p == Checkpoint::NativeResultNode {
             seen.set(seen.get() + 1);
         }
@@ -248,20 +248,20 @@ fn invisible_path_conditions_recheck_actual_refs_and_keep_refutations_at_transfe
     let prepared = prepare_observed(
         visibility_sources(),
         &VISIBILITY_ASKS,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    evaluate_observed(prepared, &mut probe).unwrap();
+    evaluate_observed(prepared, &probe).unwrap();
     let total = count.get();
     assert!(total >= 5);
-    let (mut control, _) = stopping(1, Checkpoint::NativeResultNode);
+    let (control, _) = stopping(1, Checkpoint::NativeResultNode);
     let prepared = prepare_observed(
         visibility_sources(),
         &VISIBILITY_ASKS,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    let stopped = evaluate_observed(prepared, &mut control).unwrap();
+    let stopped = evaluate_observed(prepared, &control).unwrap();
     assert_ne!(stopped.status(), "error", "{:?}", stopped.issues);
     assert_eq!(stopped.answers[2].status, Decision::Refuted);
     assert!(!stopped.answers[2].outputs.contains_key("operation"));

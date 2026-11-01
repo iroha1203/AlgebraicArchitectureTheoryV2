@@ -28,14 +28,13 @@ fn inputs_with_definitions(definitions: &str, body: &str, map: &str) -> Arc<Chec
                 law.into_bytes(),
                 map.replace("@DIGEST@", digest).into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap_or_else(|f| panic!("{:?}", f.issues())),
     )
 }
 fn run(i: Arc<CheckedInputs>) -> ObjectLawResiduals {
-    object_law_residuals(i, "Selected", "v", "root", &mut quiet())
-        .unwrap_or_else(|f| panic!("{f:?}"))
+    object_law_residuals(i, "Selected", "v", "root", &quiet()).unwrap_or_else(|f| panic!("{f:?}"))
 }
 fn missing() -> String {
     fixture::A
@@ -95,7 +94,7 @@ fn two_false_laws_have_distinct_original_numeric_residuals_with_a_zero_tuple_com
         r.comparisons()[0].points[0].components,
         [Outcome::Refuted { component: vec![0] }, Outcome::Compatible]
     );
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn all_boolean_arguments_and_q_fp_components_keep_the_original_rings_and_values() {
@@ -128,7 +127,7 @@ fn all_boolean_arguments_and_q_fp_components_keep_the_original_rings_and_values(
     for (p, b) in r.comparisons()[0].points.iter().zip([false, true]) {
         assert_eq!(p.arguments[0].wire(), Json::Bool(b));
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn guard_false_keeps_raw_difference_separate_from_zero_conditioned_residual() {
@@ -146,7 +145,7 @@ fn guard_false_keeps_raw_difference_separate_from_zero_conditioned_residual() {
             assert_eq!(text(&c.components[0].epsilon), Some("\"2\"".into()));
         }
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn outside_object_uses_typed_zero_without_inventing_raw_operands_or_fake_parameters() {
@@ -189,7 +188,7 @@ fn outside_object_uses_typed_zero_without_inventing_raw_operands_or_fake_paramet
     }
     assert_eq!(r.comparisons()[0].points.len(), 2);
     assert_eq!(r.outcome(), Some(&Outcome::Refuted { component: vec![] }));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn unread_operands_and_affine_identity_are_not_replaced_by_zero_raw_difference() {
@@ -203,7 +202,7 @@ fn unread_operands_and_affine_identity_are_not_replaced_by_zero_raw_difference()
             assert!(c.components[0].epsilon.is_none());
             assert!(c.components[0].residual.is_none());
         }
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -219,7 +218,7 @@ fn unsupported_numeric_realization_keeps_the_original_condition() {
         assert_eq!(e.rows[0].cases[0].reading.body(), Some(true));
         assert!(e.rows[0].cases[0].components.is_empty());
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn a_grouped_equality_preserves_original_operands_and_epsilon() {
@@ -232,7 +231,7 @@ fn a_grouped_equality_preserves_original_operands_and_epsilon() {
             Some("\"1\"".into())
         );
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn recheck_rejects_changed_current_inputs_and_retains_the_recomputed_result() {
@@ -240,7 +239,7 @@ fn recheck_rejects_changed_current_inputs_and_retains_the_recomputed_result() {
     let r = run(i);
     let changed = inputs("law required amount(c:Part):c.quantity=3;", fixture::A);
     assert!(matches!(
-        r.recheck(changed, &mut quiet()),
+        r.recheck(changed, &quiet()),
         Err(ObjectLawResidualsFailure::Original(_))
     ));
 }
@@ -273,7 +272,7 @@ fn ground_and_finite_rows_keep_all_missing_boolean_completion_cases() {
                 assert_ne!(row.cases[0].evaluation, row.cases[1].evaluation);
             }
         }
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -298,7 +297,7 @@ fn unknown_guards_keep_both_applicable_and_inapplicable_cases_undetermined() {
                 );
             }
         }
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -315,7 +314,7 @@ fn a_guarded_unsupported_body_keeps_its_original_false_body_and_true_conditional
         assert_eq!(c.reading.body(), Some(false));
         assert_eq!(c.reading.conditional(), Some(true));
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn a_finite_false_guard_keeps_unread_original_body_and_zero_conditioned_residual() {
@@ -336,7 +335,7 @@ fn a_finite_false_guard_keeps_unread_original_body_and_zero_conditioned_residual
             assert_eq!(text(&c.components[0].residual), Some("\"0\"".into()));
         }
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn empty_actual_parameter_domains_are_not_fabricated_as_a_zero_argument_row() {
@@ -352,7 +351,7 @@ fn empty_actual_parameter_domains_are_not_fabricated_as_a_zero_argument_row() {
         assert!(e.uniform.is_none());
     }
     assert!(r.comparisons()[0].points.is_empty());
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn unbounded_identity_law_preserves_symbolic_zero_residuals() {
@@ -378,7 +377,7 @@ fn unbounded_identity_law_preserves_symbolic_zero_residuals() {
             row.cases[0].components[0].residual
         );
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -391,7 +390,7 @@ fn different_complete_patterns_keep_their_own_numeric_laws_without_equality_obli
     assert!(r.comparisons().is_empty());
     assert_eq!(r.evaluations().len(), 6);
     assert_eq!(r.outcome(), Some(&Outcome::Compatible));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn residual_point_interrupt_keeps_refutation_and_final_completion() {
@@ -403,11 +402,11 @@ fn residual_point_interrupt_keeps_refutation_and_final_completion() {
     );
     let history = Rc::new(RefCell::new(Vec::new()));
     let h = history.clone();
-    let mut traced = Control::new(move |p| {
+    let traced = Control::new(move |p| {
         h.borrow_mut().push(p);
         None
     });
-    object_law_residuals(i.clone(), "Selected", "v", "root", &mut traced).unwrap();
+    object_law_residuals(i.clone(), "Selected", "v", "root", &traced).unwrap();
     let point = C::ObjectLawResidualPoint;
     let count = history.borrow().iter().filter(|p| **p == point).count();
     assert!(count > 0);
@@ -418,7 +417,7 @@ fn residual_point_interrupt_keeps_refutation_and_final_completion() {
         let hits0 = hits.clone();
         let probes = Rc::new(RefCell::new(0));
         let probes0 = probes.clone();
-        let mut c = Control::new(move |p| {
+        let c = Control::new(move |p| {
             *probes0.borrow_mut() += 1;
             if p == point {
                 *hits0.borrow_mut() += 1;
@@ -429,7 +428,7 @@ fn residual_point_interrupt_keeps_refutation_and_final_completion() {
                 None
             }
         });
-        let f = object_law_residuals(i.clone(), "Selected", "v", "root", &mut c).unwrap_err();
+        let f = object_law_residuals(i.clone(), "Selected", "v", "root", &c).unwrap_err();
         assert!(c.stop_reason().is_some());
         let ObjectLawResidualsFailure::Reading { partial, .. } = f else {
             panic!("original")
@@ -456,13 +455,13 @@ fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes(
     let r = run(i.clone());
     let count = Rc::new(RefCell::new(0));
     let count0 = count.clone();
-    let mut trace = Control::new(move |p| {
+    let trace = Control::new(move |p| {
         if p == C::ObjectLawResiduals {
             *count0.borrow_mut() += 1
         }
         None
     });
-    r.recheck(i.clone(), &mut trace).unwrap();
+    r.recheck(i.clone(), &trace).unwrap();
     let nth = *count.borrow();
     assert!(nth > 0);
     use archsig::{construction::ConstructionFailure, result::Signal};
@@ -471,14 +470,14 @@ fn recheck_stops_keep_the_completed_recomputed_numeric_result_and_freeze_probes(
         let calls0 = calls.clone();
         let probes = Rc::new(RefCell::new(0));
         let probes0 = probes.clone();
-        let mut c = Control::new(move |p| {
+        let c = Control::new(move |p| {
             *probes0.borrow_mut() += 1;
             if p == C::ObjectLawResiduals {
                 *calls0.borrow_mut() += 1
             }
             (*calls0.borrow() == nth).then_some(signal)
         });
-        let failure = r.recheck(i.clone(), &mut c).unwrap_err();
+        let failure = r.recheck(i.clone(), &c).unwrap_err();
         let ObjectLawResidualsFailure::Reading {
             cause: ConstructionFailure::Stopped(reason),
             partial,
@@ -519,7 +518,7 @@ fn each_actual_fp_argument_keeps_its_own_scalar_residual_without_changing_the_in
             assert_eq!(text(&c.components[1].epsilon), Some("\"1\"".into()));
         }
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn every_original_instance_in_a_shared_pattern_is_compared_at_every_actual_argument() {
@@ -554,7 +553,7 @@ fn every_original_instance_in_a_shared_pattern_is_compared_at_every_actual_argum
             _ => panic!("unexpected original instance {name}"),
         }
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -578,7 +577,7 @@ fn conditional_membership_keeps_unknown_residuals_and_the_original_owner_conditi
         }
     }
     assert!(count > 0);
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -608,5 +607,5 @@ fn conjunction_keeps_distinct_signed_residuals_and_original_operand_pairs() {
             case.conjuncts[1].operand_evaluations
         );
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }

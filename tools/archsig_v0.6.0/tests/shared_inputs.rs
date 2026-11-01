@@ -24,7 +24,7 @@ fn sources(count: &str) -> InputSources {
     )
 }
 fn checked(count: &str) -> Arc<CheckedInputs> {
-    Arc::new(check_inputs(sources(count), &mut Control::unlimited()).unwrap())
+    Arc::new(check_inputs(sources(count), &Control::unlimited()).unwrap())
 }
 fn field<'a>(value: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(fields) = value else {
@@ -54,7 +54,7 @@ fn assert_number(result: &ObservedEvaluation, expected: &str) {
     assert_eq!(field(node, "value"), &Json::str(expected));
 }
 fn prepare(shared: &Arc<CheckedInputs>, texts: &[&str]) -> PreparedObserved {
-    prepare_shared_observed(Arc::clone(shared), texts, &mut Control::unlimited()).unwrap()
+    prepare_shared_observed(Arc::clone(shared), texts, &Control::unlimited()).unwrap()
 }
 #[test]
 fn preparations_and_results_share_the_original_tables_without_input_checkpoints() {
@@ -64,7 +64,7 @@ fn preparations_and_results_share_the_original_tables_without_input_checkpoints(
     let shared = checked("2");
     let checks = Rc::new(Cell::new(0));
     let seen = Rc::clone(&checks);
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         if matches!(
             point,
             Checkpoint::InputBundle
@@ -79,13 +79,13 @@ fn preparations_and_results_share_the_original_tables_without_input_checkpoints(
     let first = prepare_shared_observed(
         Arc::clone(&shared),
         &["n=evaluate(CountCheck.amount,s=@v/s)"],
-        &mut control,
+        &control,
     )
     .unwrap();
     let second = prepare_shared_observed(
         first.shared_inputs(),
         &["b=check(CountAudit.bounded,s=@v/s)"],
-        &mut control,
+        &control,
     )
     .unwrap();
     assert!(std::ptr::eq(first.inputs(), shared.as_ref()));
@@ -99,8 +99,8 @@ fn preparations_and_results_share_the_original_tables_without_input_checkpoints(
         second.inputs().definitions()
     ));
     assert!(Arc::ptr_eq(&first.shared_inputs(), &second.shared_inputs()));
-    let first = evaluate_observed(first, &mut control).unwrap();
-    let second = evaluate_observed(second, &mut control).unwrap();
+    let first = evaluate_observed(first, &control).unwrap();
+    let second = evaluate_observed(second, &control).unwrap();
     assert_number(&first, "2");
     assert_eq!(second.status(), "complete");
     assert!(Arc::ptr_eq(
@@ -125,12 +125,12 @@ fn object_instances_use_the_same_bundle_for_multiple_actual_view_evaluations() {
                     .replace("@INSTANCES_DIGEST@", digest)
                     .into_bytes(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap(),
     );
-    let c = construct(&shared, "Selected", "v", "A", &mut Control::unlimited()).unwrap();
-    let instances = object_reading_instances(&shared, &c, &mut Control::unlimited()).unwrap();
+    let c = construct(&shared, "Selected", "v", "A", &Control::unlimited()).unwrap();
+    let instances = object_reading_instances(&shared, &c, &Control::unlimited()).unwrap();
     assert_eq!(
         instances
             .instances()
@@ -142,8 +142,8 @@ fn object_instances_use_the_same_bundle_for_multiple_actual_view_evaluations() {
     );
     let first = prepare(&shared, &["n=evaluate(Selected.amount,c=@v/p)"]);
     let second = prepare(&shared, &["n=evaluate(Selected.amount,c=@v/r)"]);
-    let first = evaluate_observed(first, &mut Control::unlimited()).unwrap();
-    let second = evaluate_observed(second, &mut Control::unlimited()).unwrap();
+    let first = evaluate_observed(first, &Control::unlimited()).unwrap();
+    let second = evaluate_observed(second, &Control::unlimited()).unwrap();
     assert_number(&first, "2");
     assert_number(&second, "2");
     assert!(std::ptr::eq(
@@ -191,8 +191,8 @@ fn results_keep_sources_alive_after_original_handles_are_dropped() {
     let second = prepare(&shared, &["b=check(CountAudit.bounded,s=@v/s)"]);
     drop(shared);
     assert!(weak.upgrade().is_some());
-    let first = evaluate_observed(first, &mut Control::unlimited()).unwrap();
-    let second = evaluate_observed(second, &mut Control::unlimited()).unwrap();
+    let first = evaluate_observed(first, &Control::unlimited()).unwrap();
+    let second = evaluate_observed(second, &Control::unlimited()).unwrap();
     assert_number(&first, "2");
     assert_eq!(first.prepared().inputs().sources().law().bytes(), L);
     assert!(
@@ -216,13 +216,13 @@ fn request_batches_do_not_share_ids_answers_or_another_input_value() {
     let shared = checked("2");
     let first = evaluate_observed(
         prepare(&shared, &["n=evaluate(CountCheck.amount,s=@v/s)"]),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let failure = prepare_shared_observed(
         Arc::clone(&shared),
         &["p=needed($n)"],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_err();
     let PrepareFailure::Requests {
@@ -238,7 +238,7 @@ fn request_batches_do_not_share_ids_answers_or_another_input_value() {
     assert!(!Arc::ptr_eq(&another, &shared));
     let second = evaluate_observed(
         prepare(&another, &["n=evaluate(CountCheck.amount,s=@v/s)"]),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_number(&first, "2");
@@ -262,7 +262,7 @@ fn request_failures_keep_the_exact_shared_bundle_and_existing_reasons() {
     let failure = prepare_shared_observed(
         Arc::clone(&shared),
         &["n=evaluate(CountCheck.amount)"],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_err();
     let wire = failure.wire().unwrap();
@@ -281,7 +281,7 @@ fn request_failures_keep_the_exact_shared_bundle_and_existing_reasons() {
     assert_eq!(inputs.sources().law().bytes(), L);
     let recovered = evaluate_observed(
         prepare(&inputs, &["n=evaluate(CountCheck.amount,s=@v/s)"]),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_number(&recovered, "2");
@@ -296,18 +296,18 @@ fn owned_byte_and_shared_preparation_use_the_same_existing_evaluator() {
     let shared = checked("2");
     let borrowed = prepare(&shared, &asks);
     let owned = prepare_checked_observed(
-        check_inputs(sources("2"), &mut Control::unlimited()).unwrap(),
+        check_inputs(sources("2"), &Control::unlimited()).unwrap(),
         &asks,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    let bytes = prepare_observed(sources("2"), &asks, &mut Control::unlimited()).unwrap();
+    let bytes = prepare_observed(sources("2"), &asks, &Control::unlimited()).unwrap();
     assert_eq!(borrowed.requests(), owned.requests());
     assert_eq!(borrowed.requests(), bytes.requests());
     assert_eq!(borrowed.requests().evaluation_order(), [1, 0, 2]);
-    let borrowed = evaluate_observed(borrowed, &mut Control::unlimited()).unwrap();
-    let owned = evaluate_observed(owned, &mut Control::unlimited()).unwrap();
-    let bytes = evaluate_observed(bytes, &mut Control::unlimited()).unwrap();
+    let borrowed = evaluate_observed(borrowed, &Control::unlimited()).unwrap();
+    let owned = evaluate_observed(owned, &Control::unlimited()).unwrap();
+    let bytes = evaluate_observed(bytes, &Control::unlimited()).unwrap();
     assert_eq!(borrowed.wire(), owned.wire());
     assert_eq!(borrowed.wire(), bytes.wire());
 }
@@ -318,14 +318,14 @@ fn sharing_does_not_reset_the_control_or_probe_again_after_a_stop() {
         let prepared = prepare(&shared, &["n=evaluate(CountCheck.amount,s=@v/s)"]);
         let count = Rc::new(Cell::new(0));
         let seen = Rc::clone(&count);
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             seen.set(seen.get() + 1);
             (point == Checkpoint::Resolve).then_some(signal)
         });
         let failure = prepare_shared_observed(
             Arc::clone(&shared),
             &["c=check(CountCheck.nonnegative)"],
-            &mut control,
+            &control,
         )
         .unwrap_err();
         let PrepareFailure::Requests {
@@ -339,12 +339,12 @@ fn sharing_does_not_reset_the_control_or_probe_again_after_a_stop() {
         assert_eq!(Some(reason), control.stop_reason());
         let before = count.get();
         let failure =
-            prepare_shared_observed(inputs, &["c=check(CountCheck.nonnegative)"], &mut control)
+            prepare_shared_observed(inputs, &["c=check(CountCheck.nonnegative)"], &control)
                 .unwrap_err();
         assert!(
             matches!(failure,PrepareFailure::Requests {failure:ResolveFailure::Interrupted {reason:r},..} if r == reason)
         );
-        let result = evaluate_observed(prepared, &mut control).unwrap();
+        let result = evaluate_observed(prepared, &control).unwrap();
         let wire = result.wire();
         assert!(array(field(&wire, "nodes")).is_empty());
         assert_eq!(

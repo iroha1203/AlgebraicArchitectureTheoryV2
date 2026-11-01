@@ -390,7 +390,7 @@ impl Environment<'_> {
     ) -> Result<(), ValidationFailure> {
         for plan in self.projection_failure_plans(graph, request)? {
             for input in &plan.inputs {
-                self.control.clone().checkpoint(Checkpoint::Projection)?;
+                self.control.checkpoint(Checkpoint::Projection)?;
                 if let ConditionInput::Subject(node) = input
                     && self
                         .projection_subject_input(graph, node, plan.context)?
@@ -403,7 +403,7 @@ impl Environment<'_> {
             use ProjectionCheckPart::*;
             let mut values = vec![];
             for part in [Name, Actual, Required, Evidence, Condition] {
-                self.control.clone().checkpoint(Checkpoint::Projection)?;
+                self.control.checkpoint(Checkpoint::Projection)?;
                 let prior = match part {
                     Name | Actual | Required => vec![],
                     Evidence => values.clone(),
@@ -412,7 +412,7 @@ impl Environment<'_> {
                 let node = self.projection_failure_node(graph, &plan, part, &prior)?;
                 self.validate(graph, &node)?;
                 values.push(graph.push(node)?);
-                self.control.clone().checkpoint(Checkpoint::Projection)?;
+                self.control.checkpoint(Checkpoint::Projection)?;
             }
         }
         Ok(())

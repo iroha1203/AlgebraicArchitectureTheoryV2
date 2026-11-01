@@ -425,19 +425,15 @@ fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
     use std::{cell::Cell, rc::Rc};
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut probe = Control::new(move |p| {
+    let probe = Control::new(move |p| {
         if p == Checkpoint::ObservationPlan {
             seen.set(seen.get() + 1);
         }
         None
     });
     let dir = setup("needed-probe", false);
-    let result = archsig::run::run_requests(
-        &mut TestIo,
-        &mut NoSignal::default(),
-        &args(&dir),
-        &mut probe,
-    );
+    let result =
+        archsig::run::run_requests(&mut TestIo, &mut NoSignal::default(), &args(&dir), &probe);
     assert_eq!(result.exit_code, 0);
     let total = count.get();
     assert!(total > 5);
@@ -445,7 +441,7 @@ fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
         let dir = setup(&format!("needed-stop-{at}"), false);
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if point == Checkpoint::ObservationPlan {
                 seen.set(seen.get() + 1);
             }
@@ -453,8 +449,7 @@ fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
             stopped.then_some(Signal::Int)
         });
         let mut signals = NoSignal::default();
-        let outcome =
-            archsig::run::run_requests(&mut TestIo, &mut signals, &args(&dir), &mut control);
+        let outcome = archsig::run::run_requests(&mut TestIo, &mut signals, &args(&dir), &control);
         assert_eq!(outcome.exit_code, 130, "{at}");
         assert_eq!(signals.0, 1);
         assert_eq!(count.get(), at, "停止後probeなし");

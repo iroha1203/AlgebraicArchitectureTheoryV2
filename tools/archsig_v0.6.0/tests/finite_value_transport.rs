@@ -45,23 +45,15 @@ fn with_left(left: &[u8], a: &str) -> CheckedInputs {
                 .into_bytes(),
             a.into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
 fn declarations(i: &CheckedInputs) -> DeclarationCorrespondence {
-    let r = correspondence(
-        i,
-        "v",
-        "m",
-        "Before",
-        Some("After"),
-        &mut Control::unlimited(),
-    )
-    .unwrap();
+    let r = correspondence(i, "v", "m", "Before", Some("After"), &Control::unlimited()).unwrap();
     assert!(r.counterexamples().is_empty(), "{:?}", r.counterexamples());
     assert!(r.missing().is_empty(), "{:?}", r.missing());
-    declaration_correspondence(i, r.map().unwrap(), &mut Control::unlimited()).unwrap()
+    declaration_correspondence(i, r.map().unwrap(), &Control::unlimited()).unwrap()
 }
 fn result(i: &CheckedInputs, p: usize) -> FiniteValueTransport {
     finite_declaration_value_transport(
@@ -69,7 +61,7 @@ fn result(i: &CheckedInputs, p: usize) -> FiniteValueTransport {
         &declarations(i),
         "Before.axes",
         Position::Parameter(p),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap()
 }
@@ -104,7 +96,7 @@ fn scalar_domains_are_complete_and_parameter_selection_is_typed() {
             r.bijection().unwrap().inverse(),
             r.bijection().unwrap().forward()
         );
-        r.recheck(&i, &mut Control::unlimited()).unwrap();
+        r.recheck(&i, &Control::unlimited()).unwrap();
     }
 }
 #[test]
@@ -138,7 +130,7 @@ fn tuple_option_and_return_domains_are_all_values_with_structural_transport() {
         &declarations(&i),
         "Before.returned",
         Position::Return,
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     expected(
@@ -180,9 +172,7 @@ fn set_images_deduplicate_while_whole_value_domain_collisions_remain() {
         }]
     );
     assert!(r.bijection().is_none());
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn map_domain_is_the_complete_function_space_and_conflicting_keys_are_retained() {
@@ -208,10 +198,8 @@ fn map_domain_is_the_complete_function_space_and_conflicting_keys_are_retained()
         ] if sources == &[1,2]
     ));
     assert!(r.bijection().is_none());
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn finite_data_uses_its_real_constructors_and_does_not_erase_nested_reference_types() {
@@ -265,7 +253,7 @@ fn unselected_and_nonfinite_positions_are_native_selection_errors() {
         ("Before.recursive", Position::Return),
     ] {
         assert!(matches!(
-            finite_declaration_value_transport(&i, &d, name, pos, &mut Control::unlimited()),
+            finite_declaration_value_transport(&i, &d, name, pos, &Control::unlimited()),
             Err(ConstructionFailure::InvalidSelection(_))
         ));
     }
@@ -276,7 +264,7 @@ fn unselected_and_nonfinite_positions_are_native_selection_errors() {
                 &d,
                 "Before.axes",
                 Position::Parameter(p),
-                &mut Control::unlimited()
+                &Control::unlimited()
             ),
             Err(ConstructionFailure::InvalidSelection(_))
         ));
@@ -296,9 +284,9 @@ fn current_input_recheck_and_support_use_the_whole_frozen_roster() {
         ["specification"]
     );
     let changed = inputs(&A.replace("\"value\":\"2\"", "\"value\":\"19\""));
-    r.recheck(&changed, &mut Control::unlimited()).unwrap();
+    r.recheck(&changed, &Control::unlimited()).unwrap();
     let changed = inputs(&many_to_one());
-    assert!(r.recheck(&changed, &mut Control::unlimited()).is_err());
+    assert!(r.recheck(&changed, &Control::unlimited()).is_err());
 }
 #[test]
 fn finite_value_stops_latch_across_enumeration_and_final_bijection_check() {
@@ -310,13 +298,13 @@ fn finite_value_stops_latch_across_enumeration_and_final_bijection_check() {
     ] {
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut c = Control::new(move |p| {
+        let c = Control::new(move |p| {
             if p == point {
                 seen.set(seen.get() + 1);
             }
             None
         });
-        finite_declaration_value_transport(&i, &d, "Before.axes", Position::Parameter(5), &mut c)
+        finite_declaration_value_transport(&i, &d, "Before.axes", Position::Parameter(5), &c)
             .unwrap();
         let total = count.get();
         assert!(total > 30);
@@ -324,7 +312,7 @@ fn finite_value_stops_latch_across_enumeration_and_final_bijection_check() {
             for signal in [Signal::Int, Signal::Term] {
                 let count = Rc::new(Cell::new(0usize));
                 let seen = count.clone();
-                let mut c = Control::new(move |p| {
+                let c = Control::new(move |p| {
                     if p == point {
                         seen.set(seen.get() + 1);
                     }
@@ -335,7 +323,7 @@ fn finite_value_stops_latch_across_enumeration_and_final_bijection_check() {
                     &d,
                     "Before.axes",
                     Position::Parameter(5),
-                    &mut c,
+                    &c,
                 )
                 .unwrap_err();
                 assert_eq!(f, ConstructionFailure::Stopped(c.stop_reason().unwrap()));
@@ -346,7 +334,7 @@ fn finite_value_stops_latch_across_enumeration_and_final_bijection_check() {
                         &d,
                         "Before.axes",
                         Position::Parameter(5),
-                        &mut c
+                        &c
                     )
                     .unwrap_err(),
                     f
@@ -406,9 +394,7 @@ fn map_images_missing_target_keys_are_not_accepted_as_partial_functions() {
         ]
     ));
     assert!(r.bijection().is_none());
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn external_references_keep_snapshot_identity_and_both_origin_modes() {
@@ -459,7 +445,7 @@ fn incompatible_declaration_signatures_cannot_supply_a_value_certificate() {
             law.into_bytes(),
             s.archmap().bytes().to_vec(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let d = declarations(&changed);
@@ -470,12 +456,12 @@ fn incompatible_declaration_signatures_cannot_supply_a_value_certificate() {
             &d,
             "Before.axes",
             Position::Parameter(0),
-            &mut Control::unlimited()
+            &Control::unlimited()
         ),
         Err(ConstructionFailure::InvalidSelection(_))
     ));
     d.operation()
-        .recheck(&changed, &mut Control::unlimited())
+        .recheck(&changed, &Control::unlimited())
         .unwrap();
 }
 #[test]
@@ -502,7 +488,7 @@ fn subject_array_order_keeps_canonical_value_domains_and_support() {
     assert_eq!(ra.failures(), rb.failures());
     assert_eq!(ra.support(), rb.support());
     assert_eq!(ra.bijection(), rb.bijection());
-    ra.recheck(&ib, &mut Control::unlimited()).unwrap();
+    ra.recheck(&ib, &Control::unlimited()).unwrap();
 }
 
 #[test]
@@ -555,7 +541,7 @@ fn nontrivial_reference_permutation_transports_maps_by_both_domain_and_codomain(
             law.into_bytes(),
             a.into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let r = result(&i, 7);
@@ -567,7 +553,7 @@ fn nontrivial_reference_permutation_transports_maps_by_both_domain_and_codomain(
     for (a, b) in r.bijection().unwrap().forward().iter().enumerate() {
         assert_eq!(r.bijection().unwrap().inverse()[*b], a);
     }
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }
 
 #[test]
@@ -594,10 +580,8 @@ fn equal_outside_target_data_images_keep_their_complete_collision_fiber() {
         Failure::Unreached{target:0},Failure::Unreached{target:1}
     ] if sources == &[0,1] && image == &r.images()[0]));
     assert!(r.bijection().is_none());
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn outside_target_data_set_images_are_sets_before_membership_and_collision_checks() {
@@ -613,7 +597,7 @@ fn outside_target_data_set_images_are_sets_before_membership_and_collision_check
             law.into_bytes(),
             s.archmap().bytes().to_vec(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let r = result(&i, 6);
@@ -632,8 +616,6 @@ fn outside_target_data_set_images_are_sets_before_membership_and_collision_check
         Failure::Unreached{target:1},Failure::Unreached{target:2},Failure::Unreached{target:3}
     ] if sources == &[1,2,3] && image == &r.images()[1] && [a,b,c].iter().all(|s| s.contains("payload型") && !s.contains("重複"))));
     assert!(r.bijection().is_none());
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }

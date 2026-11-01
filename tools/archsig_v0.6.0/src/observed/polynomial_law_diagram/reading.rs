@@ -26,7 +26,7 @@ pub(super) fn domain_value(
     value: &Scalar,
     parts: &mut Vec<Part>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(c)?;
@@ -100,7 +100,7 @@ fn scope(
     parts: &mut Vec<Part>,
     base: usize,
     domains: &mut std::collections::BTreeMap<usize, NodeRef>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Scope, ValidationFailure> {
     let mut value = value.clone();
     for q in &mut value.quantifiers {
@@ -157,7 +157,7 @@ pub(super) fn append(
     parts: &mut Vec<Part>,
     out: &mut Diagram,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     let (base_support, base_scope) = native::metadata(&ConstructionValue {
         witness: Witness::Architecture(a.clone()),

@@ -164,16 +164,16 @@ mod tests {
                 include_bytes!("../../../tests/fixtures/counter.law").to_vec(),
                 include_bytes!("../../../tests/fixtures/counter.archmap.json").to_vec(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let armed = Rc::new(Cell::new(false));
         let observed = armed.clone();
-        let mut control = Control::new(move |_| {
+        let control = Control::new(move |_| {
             assert!(!observed.get(), "injected evaluator panic");
             None
         });
-        let env = Environment::new(&inputs, &mut control).unwrap();
+        let env = Environment::new(&inputs, &control).unwrap();
         let declaration = inputs
             .law()
             .declarations()

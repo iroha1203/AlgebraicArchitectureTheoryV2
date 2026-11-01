@@ -696,7 +696,7 @@ fn node(
 }
 fn words(
     p: &super::path_value::PathValue,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<Scalar>, ValidationFailure> {
     let mut out = vec![];
     if let Some(step) = &p.step {
@@ -710,7 +710,7 @@ fn words(
 fn path_difference(
     a: &super::path_value::PathValue,
     b: &super::path_value::PathValue,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<Vec<Fact>>, ValidationFailure> {
     let Some(step) = a.step.as_ref().or(b.step.as_ref()) else {
         return Ok(None);
@@ -809,7 +809,7 @@ fn vector_equal(
     };
     let mut matrix = vec![vec![]; a.len()];
     for relation in relations {
-        c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+        c.checkpoint(Checkpoint::FiniteIteration)?;
         let Json::Arr(row) = relation else {
             return Err("Module関係が座標列でない".into());
         };
@@ -832,7 +832,7 @@ pub(super) fn evaluate(
     env: &Environment<'_>,
     graph: &mut Graph,
     r: &Request,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Answer, ValidationFailure> {
     if super::request::comparison::kind(r).is_ok_and(|k| k == "diagnostics") {
         return super::local_result::evaluate(prepared, env, graph, r, control);

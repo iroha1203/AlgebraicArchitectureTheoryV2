@@ -43,7 +43,7 @@ fn checked_inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
                 expand(law),
                 expand(map),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap_or_else(|f| panic!("{:?}", f.issues())),
     )
@@ -60,7 +60,7 @@ fn inputs(left: &str, right: &str, map: &str) -> Arc<CheckedInputs> {
 fn run(i: Arc<CheckedInputs>) -> ObjectLawCircuitTransport {
     let d = declarations(&i);
     let (o, n) = indices(&i, "p", "measure", "p");
-    object_law_circuit_transport(i, &d, o, n, &mut quiet()).unwrap()
+    object_law_circuit_transport(i, &d, o, n, &quiet()).unwrap()
 }
 fn ground(left: &str, right: &str) -> Arc<CheckedInputs> {
     inputs(
@@ -94,8 +94,8 @@ fn two_false_laws_with_different_nonzero_components_refute_zero_equivalence_and_
     );
     assert_eq!(r.base().object().subject().subject, "p");
     assert_eq!(r.base().target_object().unwrap().subject().subject, "q");
-    r.base().operation().recheck(&i, &mut quiet()).unwrap();
-    r.recheck(i, &mut quiet()).unwrap();
+    r.base().operation().recheck(&i, &quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn unequal_nonzero_values_preserve_zero_equivalence_and_detector_acceptance() {
@@ -132,7 +132,7 @@ fn unequal_nonzero_values_preserve_zero_equivalence_and_detector_acceptance() {
             expected
         );
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn bool_fp_parameter_images_cover_all_six_arguments_and_accept_exact_nonzero_cases() {
@@ -234,7 +234,7 @@ fn false_guards_preserve_rejection_while_unread_operands_stay_unread() {
         assert!(original.components[0].epsilon.is_none());
         assert!(original.components[0].left.is_none());
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn role_failure_and_unknown_operand_keep_original_condition_and_operation() {
@@ -251,7 +251,7 @@ fn role_failure_and_unknown_operand_keep_original_condition_and_operation() {
     assert!(r.points().is_empty());
     assert!(r.source().unwrap().is_complete());
     assert!(r.target().unwrap().is_complete());
-    r.base().operation().recheck(&i, &mut quiet()).unwrap();
+    r.base().operation().recheck(&i, &quiet()).unwrap();
     let missing = A
         .lines()
         .filter(|l| !l.contains("\"id\":\"p-count\""))
@@ -268,8 +268,8 @@ fn role_failure_and_unknown_operand_keep_original_condition_and_operation() {
         &Outcome::Original(LawTransportOutcome::Undetermined)
     );
     assert!(r.points().is_empty());
-    r.base().operation().recheck(&i, &mut quiet()).unwrap();
-    r.recheck(i, &mut quiet()).unwrap();
+    r.base().operation().recheck(&i, &quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn original_nonnumeric_body_and_different_numeric_component_types_are_distinct() {
@@ -287,7 +287,7 @@ fn original_nonnumeric_body_and_different_numeric_component_types_are_distinct()
     assert!(
         matches!(r.outcome(),Outcome::Refuted(Refuted::Components{source,target}) if source==&vec![(vec![],archsig::types::Type::Z)]&&target==&vec![(vec![],archsig::types::Type::Q)])
     );
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn empty_parameter_domain_preserves_vacuously_without_inventing_an_argument() {
@@ -301,12 +301,12 @@ fn empty_parameter_domain_preserves_vacuously_without_inventing_an_argument() {
     assert!(r.points().is_empty());
     assert!(r.source().is_some());
     assert!(r.target().is_some());
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn changed_current_inputs_reject_previous_transport() {
     let r = run(ground("2=0", "3=0"));
-    assert!(r.recheck(ground("2=0", "0=0"), &mut quiet()).is_err());
+    assert!(r.recheck(ground("2=0", "0=0"), &quiet()).is_err());
 }
 #[test]
 fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_frozen_probes() {
@@ -322,11 +322,11 @@ fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_
     // 停止位置の数え上げと基準の結果を同じ一回の評価で得る。
     let history = Rc::new(RefCell::new(Vec::new()));
     let h = history.clone();
-    let mut traced = Control::new(move |p| {
+    let traced = Control::new(move |p| {
         h.borrow_mut().push(p);
         None
     });
-    let baseline = object_law_circuit_transport(i.clone(), &d, o, n, &mut traced).unwrap();
+    let baseline = object_law_circuit_transport(i.clone(), &d, o, n, &traced).unwrap();
     let at = C::ObjectLawCircuitTransportPoint;
     let count = history.borrow().iter().filter(|p| **p == at).count();
     assert!(count > 0);
@@ -336,7 +336,7 @@ fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_
         let probes = Rc::new(RefCell::new(0));
         let p = probes.clone();
         let expected = Signal::Int;
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             *p.borrow_mut() += 1;
             if point == at {
                 *h.borrow_mut() += 1;
@@ -347,7 +347,7 @@ fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_
                 None
             }
         });
-        let f = object_law_circuit_transport(i.clone(), &d, o, n, &mut c).unwrap_err();
+        let f = object_law_circuit_transport(i.clone(), &d, o, n, &c).unwrap_err();
         let ObjectLawCircuitTransportFailure::Reading {
             cause: LawCircuitTransportFailureCause::Construction(cause),
             partial,
@@ -359,11 +359,7 @@ fn fixed_stops_keep_operation_completed_prefix_refutations_final_completion_and_
         assert_eq!(c.stop_reason(), Some(expected));
         assert_eq!(*hits.borrow(), nth);
         assert_eq!(partial.base().object().subject().subject, "p");
-        partial
-            .base()
-            .operation()
-            .recheck(&i, &mut quiet())
-            .unwrap();
+        partial.base().operation().recheck(&i, &quiet()).unwrap();
         assert!(!partial.points().is_empty());
         assert!(matches!(partial.outcome(), Outcome::Refuted(_)));
         if nth == count {
@@ -385,25 +381,25 @@ fn source_or_target_circuit_failure_keeps_completed_other_side_and_original_oper
     let (o, n) = indices(&i, "p", "measure", "p");
     let count = Rc::new(Cell::new(0));
     let h = count.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == C::ObjectLawCircuits {
             h.set(h.get() + 1);
         }
         None
     });
-    object_law_circuit_transport(i.clone(), &d, o, n, &mut c).unwrap();
+    object_law_circuit_transport(i.clone(), &d, o, n, &c).unwrap();
     let total = count.get();
     assert!(total > 1);
     for nth in [1, total] {
         let count = Rc::new(Cell::new(0));
         let h = count.clone();
-        let mut c = Control::new(move |p| {
+        let c = Control::new(move |p| {
             if p == C::ObjectLawCircuits {
                 h.set(h.get() + 1);
             }
             (p == C::ObjectLawCircuits && h.get() == nth).then_some(Signal::Int)
         });
-        let f = object_law_circuit_transport(i.clone(), &d, o, n, &mut c).unwrap_err();
+        let f = object_law_circuit_transport(i.clone(), &d, o, n, &c).unwrap_err();
         let ObjectLawCircuitTransportFailure::Reading { cause, partial } = f else {
             panic!("side partial")
         };
@@ -416,11 +412,7 @@ fn source_or_target_circuit_failure_keeps_completed_other_side_and_original_oper
         }
         assert!(partial.target().is_none());
         assert!(!partial.is_complete());
-        partial
-            .base()
-            .operation()
-            .recheck(&i, &mut quiet())
-            .unwrap();
+        partial.base().operation().recheck(&i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -432,7 +424,7 @@ fn outside_instances_keep_finite_rejection_and_transport_all_actual_argument_ima
     );
     let d = declarations(&i);
     let (o, n) = indices(&i, "p", "measure", "r");
-    let r = object_law_circuit_transport(i.clone(), &d, o, n, &mut quiet()).unwrap();
+    let r = object_law_circuit_transport(i.clone(), &d, o, n, &quiet()).unwrap();
     assert_eq!(r.outcome(), &Outcome::Preserved);
     assert_eq!(r.points().len(), 2);
     for (j, (p, b)) in r.points().iter().zip([false, true]).enumerate() {
@@ -468,7 +460,7 @@ fn outside_instances_keep_finite_rejection_and_transport_all_actual_argument_ima
                 && w.epsilon_producer.is_none()));
         }
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn a_failed_fixed_extension_keeps_its_refutation_and_does_not_generate_transport_acceptance() {
@@ -514,8 +506,8 @@ fn a_failed_fixed_extension_keeps_its_refutation_and_does_not_generate_transport
         r.source().unwrap().base().outcome(),
         Some(archsig::observed::object_law_residuals::LawResidualOutcome::Refuted { .. })
     ));
-    r.base().operation().recheck(&i, &mut quiet()).unwrap();
-    r.recheck(i, &mut quiet()).unwrap();
+    r.base().operation().recheck(&i, &quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn option_reference_arguments_are_mapped_by_the_actual_operation_not_compared_as_labels() {
@@ -601,8 +593,8 @@ fn original_holds_refutation_keeps_both_generated_numeric_circuits_and_the_opera
         );
     }
     assert!(r.points().is_empty());
-    r.base().operation().recheck(&i, &mut quiet()).unwrap();
-    r.recheck(i, &mut quiet()).unwrap();
+    r.base().operation().recheck(&i, &quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn original_undetermined_keeps_unknown_source_and_known_target_circuit_evidence() {
@@ -653,8 +645,8 @@ fn original_undetermined_keeps_unknown_source_and_known_target_circuit_evidence(
             .any(|w| w.epsilon_producer.is_some())
     );
     assert!(r.points().is_empty());
-    r.base().operation().recheck(&i, &mut quiet()).unwrap();
-    r.recheck(i, &mut quiet()).unwrap();
+    r.base().operation().recheck(&i, &quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn side_construction_stops_retain_the_already_refuted_original_condition() {
@@ -667,13 +659,13 @@ fn side_construction_stops_retain_the_already_refuted_original_condition() {
     for checkpoint in [C::ObjectLawCircuitTransport, C::ObjectLawCircuits] {
         let hits = Rc::new(Cell::new(0));
         let h = hits.clone();
-        let mut traced = Control::new(move |p| {
+        let traced = Control::new(move |p| {
             if p == checkpoint {
                 h.set(h.get() + 1);
             }
             None
         });
-        object_law_circuit_transport(i.clone(), &d, o, n, &mut traced).unwrap();
+        object_law_circuit_transport(i.clone(), &d, o, n, &traced).unwrap();
         let count = hits.get();
         assert!(count > 1);
         for nth in [1, count] {
@@ -682,14 +674,14 @@ fn side_construction_stops_retain_the_already_refuted_original_condition() {
                 let h = hits.clone();
                 let probes = Rc::new(Cell::new(0));
                 let p = probes.clone();
-                let mut c = Control::new(move |at| {
+                let c = Control::new(move |at| {
                     p.set(p.get() + 1);
                     if at == checkpoint {
                         h.set(h.get() + 1);
                     }
                     (at == checkpoint && h.get() == nth).then_some(signal)
                 });
-                let f = object_law_circuit_transport(i.clone(), &d, o, n, &mut c).unwrap_err();
+                let f = object_law_circuit_transport(i.clone(), &d, o, n, &c).unwrap_err();
                 let ObjectLawCircuitTransportFailure::Reading { cause, partial } = f else {
                     panic!("generation stop")
                 };
@@ -712,11 +704,7 @@ fn side_construction_stops_retain_the_already_refuted_original_condition() {
                     assert!(matches!(cause, LawCircuitTransportFailureCause::Target(_)));
                     assert!(partial.source().unwrap().is_complete());
                 }
-                partial
-                    .base()
-                    .operation()
-                    .recheck(&i, &mut quiet())
-                    .unwrap();
+                partial.base().operation().recheck(&i, &quiet()).unwrap();
                 let before = probes.get();
                 assert!(c.checkpoint(C::Expression).is_err());
                 assert_eq!(probes.get(), before);

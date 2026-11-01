@@ -12,7 +12,7 @@ fn namespaces(
     law: &CheckedLaw,
     reading: &str,
     id: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<BTreeSet<String>, ResolveFailure> {
     reading_namespaces(law, reading, c).map_err(|failure| match failure {
         ConstructionFailure::Stopped(reason) => stopped(reason),
@@ -27,7 +27,7 @@ pub(super) fn resolve(
     law: &CheckedLaw,
     raw: RawRequest,
     text: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Request, ResolveFailure> {
     phase(c, Checkpoint::RequestBinding)?;
     let Selector::Declaration { name } = &raw.head else {
@@ -84,7 +84,7 @@ fn roots(
     law: &CheckedLaw,
     ty: &ProjectionType,
     visible: &BTreeSet<String>,
-    c: &mut Control,
+    c: &Control,
     found: &mut BTreeSet<String>,
     architecture: bool,
 ) -> Result<(), ResolveFailure> {
@@ -118,7 +118,7 @@ pub(super) fn root_types(
     requests: &[Request],
     names: &BTreeMap<String, usize>,
     r: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<BTreeSet<String>, ResolveFailure> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         phase(c, Checkpoint::RequestBinding)?;
@@ -157,7 +157,7 @@ pub(super) fn check_on(
     requests: &[Request],
     names: &BTreeMap<String, usize>,
     r: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ResolveFailure> {
     root_types(law, map, requests, names, r, c).map(|_| ())
 }
@@ -168,7 +168,7 @@ pub(super) fn output_type(
     names: &BTreeMap<String, usize>,
     r: &Request,
     field: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<ProjectionType, ResolveFailure> {
     if field == "proposition" {
         return Ok(ProjectionType::Proposition);

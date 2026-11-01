@@ -74,7 +74,7 @@ fn infinite_text_quantifier_returns_typed_undetermined_through_actual_call() {
     let result = evaluate_observed_bytes(
         inputs.clone(),
         &["v=evaluate(Walk.caller,n=@v/p)"],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .expect("検査済み無限型の算法非対応は型付き未決へ接続する");
     assert_eq!(result.prepared().inputs().sources(), &inputs);
@@ -115,7 +115,7 @@ fn infinite_explicit_types_preserve_original_domain_kind_and_binder() {
             let result = evaluate_observed_bytes(
                 fixture::input(&script, "Z", &[], "r1"),
                 &["v=evaluate(Walk.current)"],
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap();
             let wire = result.wire();
@@ -175,7 +175,7 @@ fn infinite_free_law_parameters_and_mixed_finite_domains_return_claims() {
         let result = evaluate_observed_bytes(
             fixture::input(&script, "Z", &[], "r1"),
             &["v=check(Walk.current)"],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let wire = result.wire();
@@ -204,7 +204,7 @@ fn infinite_nested_calls_keep_missing_reasons_prior_results_and_dependency() {
         "v=evaluate(Walk.current,n=@v/p)",
         "later=evaluate(Walk.keep,x=$v.value)",
     ];
-    let result = evaluate_observed_bytes(inputs.clone(), &asks, &mut Control::unlimited()).unwrap();
+    let result = evaluate_observed_bytes(inputs.clone(), &asks, &Control::unlimited()).unwrap();
     let wire = result.wire();
     audit(&wire);
     assert_eq!(result.status(), "partial", "{:?}", field(&wire, "issues"));
@@ -247,7 +247,7 @@ fn infinite_domains_preserve_current_provenance_without_changing_mathematical_an
         let result = evaluate_observed_bytes(
             input.clone(),
             &["v=evaluate(Walk.current,n=@v/p)"],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert_eq!(result.status(), "partial");
@@ -306,7 +306,7 @@ fn infinite_domains_keep_constant_short_circuit_and_finite_numeric_decisions() {
         let result = evaluate_observed_bytes(
             fixture::input(&script, "Z", &[], "r1"),
             &["v=evaluate(Walk.current)", "c=check(Walk.required_value)"],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let wire = result.wire();
@@ -347,7 +347,7 @@ fn infinite_typed_frontiers_keep_literal_collection_and_match_source_expressions
         let result = evaluate_observed_bytes(
             input.clone(),
             &["v=evaluate(Walk.current)"],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let wire = result.wire();
@@ -392,7 +392,7 @@ fn generic_outer_domains_do_not_inherit_inner_finite_counterexamples() {
             "c=check(Walk.required_value)",
             "f=check(Walk.free)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .expect("元型の空性を保留した量化を有限bodyの反例で確定しない");
     assert_eq!(result.prepared().inputs().sources(), &input);
@@ -440,7 +440,7 @@ fn generic_outer_domains_do_not_inherit_inner_finite_counterexamples() {
         let result = evaluate_observed_bytes(
             fixture::input(&script, "Z", &[], "r1"),
             &["v=evaluate(Walk.current)", "c=check(Walk.required_value)"],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete");

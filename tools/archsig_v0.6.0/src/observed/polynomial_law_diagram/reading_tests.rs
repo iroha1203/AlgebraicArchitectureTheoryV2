@@ -8,13 +8,8 @@ use crate::control::quiet;
 fn prepared(missing: bool, tuple: bool, body: &str, root: &str) -> PreparedObserved {
     let inputs = fixture::inputs(missing, tuple, body);
     let ask = format!("b=build(Selected,on=@v/{root})");
-    let requests = resolve_native_for_test(
-        inputs.law(),
-        inputs.archmap(),
-        &[ask.as_str()],
-        &mut quiet(),
-    )
-    .unwrap();
+    let requests =
+        resolve_native_for_test(inputs.law(), inputs.archmap(), &[ask.as_str()], &quiet()).unwrap();
     PreparedObserved {
         inputs,
         requests,
@@ -22,8 +17,8 @@ fn prepared(missing: bool, tuple: bool, body: &str, root: &str) -> PreparedObser
     }
 }
 fn built(p: &PreparedObserved) -> (Graph, NodeRef) {
-    let mut c = quiet();
-    let env = Environment::with_prepared(p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(p, &c).unwrap();
     let mut g = Graph::new(&c);
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -31,7 +26,7 @@ fn built(p: &PreparedObserved) -> (Graph, NodeRef) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert!(a.complete, "{:?}", a.reasons);
@@ -42,8 +37,8 @@ fn replay(
     original: &Graph,
     nodes: &[Node],
 ) -> Result<Graph, ValidationFailure> {
-    let mut c = quiet();
-    let env = Environment::with_prepared(p, &mut c)?;
+    let c = quiet();
+    let env = Environment::with_prepared(p, &c)?;
     let mut g = Graph::new(&c);
     g.requests = original.requests.clone();
     g.checked_answers = original.checked_answers.clone();
@@ -103,7 +98,7 @@ fn subject(g: &Graph, bindings: &[Binding]) -> String {
 fn original_polynomial_readings_keep_each_object_row_and_independent_body_truth() {
     let p = prepared(false, false, BODY, "root");
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     assert_eq!(ds.len(), 3);
     for (object, d) in ds.iter().enumerate() {
         assert_eq!(d.readings.len(), 4);
@@ -132,7 +127,7 @@ fn polynomial_false_guard_does_not_evaluate_missing_body() {
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     for d in &ds {
         assert_eq!(d.readings.len(), 2);
         for r in &d.readings {
@@ -151,7 +146,7 @@ fn polynomial_missing_self_equality_retains_exact_inference_and_unknown_operands
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     for (object, d) in ds.iter().enumerate() {
         for r in &d.readings {
             let (_, bindings) = origin(&g, r);
@@ -228,7 +223,7 @@ fn polynomial_readings_preserve_all_bool_bindings_and_do_not_choose_a_display_ro
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     for (object, d) in ds.iter().enumerate() {
         let active = if object == 0 { 4 } else { 2 };
         assert_eq!(
@@ -298,14 +293,14 @@ fn polynomial_reading_interrupt_keeps_exact_completed_boolean_prefixes() {
     let (initial, a) = built(&p);
     let before = initial.nodes.len();
     let mut complete = prefix(&initial, &quiet());
-    let ds = retain_family(&mut complete, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut complete, p.shared_inputs(), a, &quiet()).unwrap();
     for at in [
         2 * (ds[1].readings[0].holds.unwrap().0 - before + 1),
         2 * (ds[2].readings[0].holds.unwrap().0 - before + 1),
     ] {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::NativeResultNode {
                 count.set(count.get() + 1);
             }
@@ -314,7 +309,7 @@ fn polynomial_reading_interrupt_keeps_exact_completed_boolean_prefixes() {
         });
         let mut g = prefix(&initial, &c);
         assert!(matches!(
-            retain_family(&mut g, p.shared_inputs(), a, &mut c),
+            retain_family(&mut g, p.shared_inputs(), a, &c),
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.nodes.len(), before + at.div_ceil(2));
@@ -360,7 +355,7 @@ fn polynomial_tuple_reading_is_one_original_law_truth_and_keeps_both_numeric_com
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     for (object, d) in ds.iter().enumerate() {
         assert_eq!(d.readings.len(), 2);
         assert_eq!(d.coordinates.len(), 4);
@@ -378,7 +373,7 @@ fn polynomial_tuple_reading_is_one_original_law_truth_and_keeps_both_numeric_com
 fn polynomial_empty_and_symbolic_scalar_families_do_not_invent_concrete_readings() {
     let p = prepared(false, false, BODY, "r2");
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     assert_eq!(ds.len(), 1);
     assert!(ds[0].originals.is_empty() && ds[0].readings.is_empty());
     replay(&p, &g, &g.nodes).unwrap();
@@ -389,7 +384,7 @@ fn polynomial_empty_and_symbolic_scalar_families_do_not_invent_concrete_readings
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     for d in &ds {
         assert!(d.readings.is_empty());
         assert!(d.unavailable.is_none());
@@ -419,7 +414,7 @@ fn polynomial_missing_guard_and_nonconstant_body_stay_unknown() {
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     for (object, d) in ds.iter().enumerate() {
         assert_eq!(d.readings.len(), 2);
         for r in &d.readings {
@@ -454,7 +449,7 @@ fn polynomial_unknown_guard_keeps_an_independently_evaluated_false_body() {
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     for (object, d) in ds.iter().enumerate() {
         for r in &d.readings {
             let (_, bindings) = origin(&g, r);
@@ -485,7 +480,7 @@ fn polynomial_unbounded_quantifier_domains_keep_z_and_reject_corrupted_prior_dom
         "root",
     );
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     let mut checked = None;
     for (object, d) in ds.iter().enumerate() {
         assert_eq!(d.readings.len(), 4);
@@ -541,7 +536,7 @@ fn explicit_domain_readings(
 ) {
     let p = prepared(false, false, body, "root");
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).unwrap();
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
     assert_eq!(ds.len(), 3);
     let mut domains = 0;
     for (object, d) in ds.iter().enumerate() {

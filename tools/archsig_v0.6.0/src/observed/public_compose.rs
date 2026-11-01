@@ -742,7 +742,7 @@ pub(super) fn evaluate(
     environment: &Environment<'_>,
     graph: &mut Graph,
     request: &Request,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Answer, ValidationFailure> {
     if request
         .constraints

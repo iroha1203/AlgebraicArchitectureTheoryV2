@@ -7,7 +7,7 @@ use crate::observed::{
     value_transport,
 };
 
-fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectViewTransportFamily)
         .map_err(Into::into)
 }
@@ -92,7 +92,7 @@ impl FiniteViewTypeMap {
     pub fn failures(&self) -> &[FamilyTypeFailure] {
         &self.failures
     }
-    fn image(&self, value: &Scalar, c: &mut Control) -> Result<Scalar, ConstructionFailure> {
+    fn image(&self, value: &Scalar, c: &Control) -> Result<Scalar, ConstructionFailure> {
         if self.forward.is_none() || self.inverse.is_none() {
             return Err(bad("有限view型の順逆が未確認"));
         }
@@ -117,7 +117,7 @@ impl ViewFamilyReturnMap {
         &self,
         value: &Scalar,
         inputs: &CheckedInputs,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Scalar, ConstructionFailure> {
         match self {
             Self::Finite(map) => map.image(value, c),
@@ -196,7 +196,7 @@ fn type_map(
     source: &Param,
     target: &Param,
     position: DeclarationValuePosition,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<FiniteViewTypeMap>, ConstructionFailure> {
     let env = Environment::new(inputs, c)?;
     let Some((source_domain, mut missing)) = env
@@ -337,7 +337,7 @@ pub(super) fn evaluate(
     r: &mut ObjectViewTransport,
     to: usize,
     ti: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ObjectViewTransportFailure> {
     r.family = Some(FiniteViewTransport::default());
     r.source = Some(
@@ -654,7 +654,7 @@ fn aggregate(f: &FiniteViewTransport) -> ViewTransportOutcome {
 fn same_values(
     a: &[ViewTransportValue],
     b: &[ViewTransportValue],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     if a.len() != b.len() {
         return Ok(false);
@@ -672,7 +672,7 @@ fn same_values(
 fn same_type_map(
     a: &FiniteViewTypeMap,
     b: &FiniteViewTypeMap,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     if a.position != b.position
         || a.source_parameter != b.source_parameter
@@ -772,7 +772,7 @@ fn same_type_map(
 fn same_optional_value(
     a: Option<&ViewTransportValue>,
     b: Option<&ViewTransportValue>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     match (a, b) {
         (Some(a), Some(b)) => same_values(std::slice::from_ref(a), std::slice::from_ref(b), c),
@@ -783,7 +783,7 @@ fn same_optional_value(
 pub(super) fn same(
     a: Option<&FiniteViewTransport>,
     b: Option<&FiniteViewTransport>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     let (Some(a), Some(b)) = (a, b) else {
         return Ok(a.is_none() && b.is_none());
@@ -879,13 +879,8 @@ mod tests {
                 1 => f.rows[0].source_arguments[0].value = Scalar::Bool(true),
                 _ => r.outcome = ViewTransportOutcome::Undetermined,
             }
-            r.operation()
-                .recheck(&i, &mut Control::unlimited())
-                .unwrap();
-            assert!(
-                r.recheck(i, &mut Control::unlimited()).is_err(),
-                "mode={mode}"
-            );
+            r.operation().recheck(&i, &Control::unlimited()).unwrap();
+            assert!(r.recheck(i, &Control::unlimited()).is_err(), "mode={mode}");
         }
     }
     #[test]
@@ -897,7 +892,7 @@ mod tests {
             target: None,
             sources: vec![0, 1],
         }];
-        assert!(same_type_map(&a, &a, &mut Control::unlimited()).unwrap());
+        assert!(same_type_map(&a, &a, &Control::unlimited()).unwrap());
         for mode in 0..7 {
             let mut b = a.clone();
             let FamilyTypeFailure::Collision {
@@ -920,16 +915,16 @@ mod tests {
                 _ => b.failures.clear(),
             }
             assert!(
-                !same_type_map(&a, &b, &mut Control::unlimited()).unwrap(),
+                !same_type_map(&a, &b, &Control::unlimited()).unwrap(),
                 "mode={mode}"
             );
         }
-        let (mut c, probes) = stop_at(Checkpoint::ObjectViewTransportFamily, 1, Signal::Term);
+        let (c, probes) = stop_at(Checkpoint::ObjectViewTransportFamily, 1, Signal::Term);
         assert!(matches!(
-            same_type_map(&a, &a, &mut c),
+            same_type_map(&a, &a, &c),
             Err(ConstructionFailure::Stopped(_))
         ));
-        assert!(same_type_map(&a, &a, &mut c).is_err());
+        assert!(same_type_map(&a, &a, &c).is_err());
         assert_eq!(probes.get(), 1);
     }
     #[test]
@@ -942,26 +937,21 @@ mod tests {
         ] {
             let count = Rc::new(Cell::new(0_usize));
             let seen = Rc::clone(&count);
-            let mut c = Control::new(move |p| {
+            let c = Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1);
                 }
                 None
             });
-            let normal = object_view_transport(
-                Arc::clone(&i),
-                &r.declarations,
-                r.object,
-                r.instance,
-                &mut c,
-            )
-            .unwrap();
+            let normal =
+                object_view_transport(Arc::clone(&i), &r.declarations, r.object, r.instance, &c)
+                    .unwrap();
             assert_eq!(normal.outcome(), &ViewTransportOutcome::Preserved);
             let total = count.get();
             assert!(total > 0);
             for at in [1, total.div_ceil(2), total] {
                 for signal in [Signal::Int, Signal::Term] {
-                    let (mut c, count) = stop_at(point, at, signal);
+                    let (c, count) = stop_at(point, at, signal);
                     let Err(ObjectViewTransportFailure::Stopped {
                         reason,
                         operation,
@@ -973,13 +963,13 @@ mod tests {
                         &r.declarations,
                         r.object,
                         r.instance,
-                        &mut c,
+                        &c,
                     )
                     else {
                         panic!("{point:?}/{at}/{signal:?}")
                     };
                     assert_eq!(c.stop_reason(), Some(reason));
-                    operation.recheck(&i, &mut Control::unlimited()).unwrap();
+                    operation.recheck(&i, &Control::unlimited()).unwrap();
                     let p = partial.unwrap();
                     let f = p.family().unwrap();
                     if point == Checkpoint::ObjectViewFamilyRow {
@@ -1019,7 +1009,7 @@ mod tests {
         let seen = Rc::clone(&count);
         let boundaries = Rc::new(RefCell::new(vec![]));
         let record = Rc::clone(&boundaries);
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::FiniteIteration {
                 seen.set(seen.get() + 1);
             }
@@ -1028,19 +1018,12 @@ mod tests {
             }
             None
         });
-        object_view_transport(
-            Arc::clone(&i),
-            &r.declarations,
-            r.object,
-            r.instance,
-            &mut c,
-        )
-        .unwrap();
+        object_view_transport(Arc::clone(&i), &r.declarations, r.object, r.instance, &c).unwrap();
         let boundaries = boundaries.borrow().clone();
         assert_eq!(boundaries.len(), 2);
         for (index, at) in boundaries.into_iter().enumerate() {
             for signal in [Signal::Int, Signal::Term] {
-                let (mut c, count) = stop_at(Checkpoint::FiniteIteration, at, signal);
+                let (c, count) = stop_at(Checkpoint::FiniteIteration, at, signal);
                 let Err(ObjectViewTransportFailure::Stopped {
                     partial: Some(p), ..
                 }) = object_view_transport(
@@ -1048,7 +1031,7 @@ mod tests {
                     &r.declarations,
                     r.object,
                     r.instance,
-                    &mut c,
+                    &c,
                 )
                 else {
                     panic!("{index}/{at}/{signal:?}")
@@ -1080,31 +1063,24 @@ mod tests {
         let (i, r) = example();
         let count = Rc::new(Cell::new(0_usize));
         let seen = Rc::clone(&count);
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::ObjectViewTransportFamily {
                 seen.set(seen.get() + 1);
             }
             None
         });
-        object_view_transport(
-            Arc::clone(&i),
-            &r.declarations,
-            r.object,
-            r.instance,
-            &mut c,
-        )
-        .unwrap();
+        object_view_transport(Arc::clone(&i), &r.declarations, r.object, r.instance, &c).unwrap();
         let calculated = count.get();
         for offset in [1, 2, 3] {
             for signal in [Signal::Int, Signal::Term] {
-                let (mut c, count) = stop_at(
+                let (c, count) = stop_at(
                     Checkpoint::ObjectViewTransportFamily,
                     calculated + offset,
                     signal,
                 );
                 let Err(ObjectViewTransportFailure::Stopped {
                     partial: Some(p), ..
-                }) = r.recheck(Arc::clone(&i), &mut c)
+                }) = r.recheck(Arc::clone(&i), &c)
                 else {
                     panic!("{offset}/{signal:?}")
                 };
@@ -1113,7 +1089,7 @@ mod tests {
                 assert!(f.complete);
                 assert_eq!(f.rows.len(), 2);
                 p.state
-                    .recheck(Arc::clone(&i), &mut Control::unlimited())
+                    .recheck(Arc::clone(&i), &Control::unlimited())
                     .unwrap();
                 let stopped = count.get();
                 assert!(c.checkpoint(Checkpoint::ObjectViewTransportFamily).is_err());

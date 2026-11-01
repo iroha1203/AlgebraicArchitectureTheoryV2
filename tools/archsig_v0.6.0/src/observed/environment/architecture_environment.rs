@@ -84,9 +84,7 @@ impl<'i> Environment<'i> {
             }
             #[cfg(test)]
             crate::observed::data::observe_actual((0, 0), context, "architecture_environment", 0);
-            self.control
-                .clone()
-                .checkpoint(Checkpoint::ObjectEvaluation)?;
+            self.control.checkpoint(Checkpoint::ObjectEvaluation)?;
             let reference = match self.answer_binding(graph, &argument.value, (0, 0)) {
                 Ok(AnswerBinding::Reference(r)) => r,
                 Ok(AnswerBinding::Inapplicable(_))

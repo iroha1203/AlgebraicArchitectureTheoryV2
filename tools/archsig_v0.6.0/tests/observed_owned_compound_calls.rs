@@ -23,7 +23,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input(false, "r1"), asks, &mut quiet())
+    let r = evaluate_observed_bytes(fixture::input(false, "r1"), asks, &quiet())
         .unwrap_or_else(|e| panic!("input/evaluation: {:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", get(&r.wire(), "issues"));
     r
@@ -159,7 +159,7 @@ fn compound_owned_unknown_actual_owner_keeps_completion_conditions() {
     let r = evaluate_observed_bytes(
         fixture::input(true, "r1"),
         &["p=evaluate(Reservations.ccSetEqual,a=@v/A,p=@v/p,q=@v/q)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let w = r.wire();
@@ -198,8 +198,8 @@ fn compound_owned_provenance_and_original_inputs_preserve_values_facts_and_curre
     for revision in ["r1", "r2"] {
         let input = fixture::input(false, revision);
         let original = input.clone();
-        let before = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
-        let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
+        let before = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+        let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(r.prepared().inputs().definitions(), before.definitions());
         assert_eq!(
@@ -324,7 +324,7 @@ fn compound_owned_missing_member_is_not_an_explicit_none_or_empty_value() {
             "unknown=evaluate(Reservations.ccUnknown,a=@v/A,e=@v/e)",
             "empty=evaluate(Reservations.ccEmpty,a=@v/A)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_eq!(r.prepared().inputs().sources(), &input);

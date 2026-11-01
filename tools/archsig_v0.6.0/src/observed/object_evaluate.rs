@@ -46,7 +46,7 @@ impl ObjectDomain {
         let mut known = Vec::new();
         if base {
             for fact in c.local_domain().known() {
-                control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
+                control.checkpoint(Checkpoint::ObjectEvaluation)?;
                 known.push(fact.clone());
             }
         } else {
@@ -54,13 +54,13 @@ impl ObjectDomain {
         }
         let mut local_types = BTreeSet::new();
         for ty in readings.local_types() {
-            control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
+            control.checkpoint(Checkpoint::ObjectEvaluation)?;
             local_types.insert(ty.clone());
         }
         let mut conditional = Vec::new();
         if base {
             for member in c.local_domain().conditional() {
-                control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
+                control.checkpoint(Checkpoint::ObjectEvaluation)?;
                 let ty = inputs
                     .archmap()
                     .snapshots()
@@ -105,7 +105,7 @@ impl ObjectDomain {
         let mut positions = vec![];
         if self.local_types.contains(entity) {
             for (actual, _, slot) in &self.conditional {
-                control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
+                control.checkpoint(Checkpoint::ObjectEvaluation)?;
                 if actual == entity {
                     positions.push(slot.clone());
                 }
@@ -131,10 +131,10 @@ impl ObjectDomain {
         if !self.local_types.contains(entity) {
             return Ok(());
         }
-        control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
+        control.checkpoint(Checkpoint::ObjectEvaluation)?;
         let mut allowed = self.known.clone();
         for (actual, subject, slot) in &self.conditional {
-            control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
+            control.checkpoint(Checkpoint::ObjectEvaluation)?;
             if actual != entity {
                 continue;
             }
@@ -179,7 +179,7 @@ impl ObjectDomain {
         if let Some(values) = values {
             let mut restricted = Vec::new();
             for value in values.drain(..) {
-                control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
+                control.checkpoint(Checkpoint::ObjectEvaluation)?;
                 let Scalar::Subject {
                     snapshot,
                     subject,
@@ -208,13 +208,13 @@ impl ObjectDomain {
         }
         scope.readings.insert(self.identity.reading().into());
         for fact in &allowed {
-            control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
+            control.checkpoint(Checkpoint::ObjectEvaluation)?;
             scope.snapshots.insert(fact.snapshot.clone());
             support.push(fact.clone());
         }
         support.sort();
         support.dedup();
-        control.clone().checkpoint(Checkpoint::ObjectEvaluation)?;
+        control.checkpoint(Checkpoint::ObjectEvaluation)?;
         Ok(())
     }
 }
@@ -282,7 +282,7 @@ pub fn evaluate_object_instance(
     readings: &ObjectReadingInstances,
     object: usize,
     instance: usize,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ObjectEvaluation, ObjectEvaluationFailure> {
     control
         .checkpoint(Checkpoint::ObjectEvaluation)
@@ -384,12 +384,12 @@ mod tests {
                     l.replace("@INSTANCES_DIGEST@", digest).into_bytes(),
                     a.replace("@INSTANCES_DIGEST@", digest).into_bytes(),
                 ),
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap(),
         );
-        let c = construct(&inputs, "Selected", "v", "A", &mut quiet()).unwrap();
-        let plan = object_reading_instances(&inputs, &c, &mut quiet()).unwrap();
+        let c = construct(&inputs, "Selected", "v", "A", &quiet()).unwrap();
+        let plan = object_reading_instances(&inputs, &c, &quiet()).unwrap();
         let o = plan
             .objects()
             .iter()
@@ -402,15 +402,15 @@ mod tests {
                 r.declaration().name == "Selected.same" && r.bindings()[0].subject().subject == "p"
             })
             .unwrap();
-        let result = evaluate_object_instance(inputs, &plan, o, r, &mut quiet()).unwrap();
+        let result = evaluate_object_instance(inputs, &plan, o, r, &quiet()).unwrap();
         let ObjectEvaluationOutcome::Evaluated(result) = result.outcome else {
             panic!("評価対象")
         };
         *result
     }
     fn replay(result: &ObservedEvaluation, nodes: &[Node]) -> Result<(), ValidationFailure> {
-        let mut control = quiet();
-        let environment = environment::Environment::with_prepared(result.prepared(), &mut control)?;
+        let control = quiet();
+        let environment = environment::Environment::with_prepared(result.prepared(), &control)?;
         let mut graph = Graph::new(&control);
         graph.requests = result.prepared().requests().requests().to_vec();
         graph.checked_answers = result.answers.iter().cloned().enumerate().collect();

@@ -1622,31 +1622,31 @@ impl ObservedEvaluation {
         &self.prepared
     }
     pub fn wire(&self) -> Json {
-        self.wire_controlled(&mut Control::unlimited(), Checkpoint::Expression)
+        self.wire_controlled(&Control::unlimited(), Checkpoint::Expression)
             .expect("通常の表示は中断しない")
     }
     pub(crate) fn wire_controlled(
         &self,
-        control: &mut Control,
+        control: &Control,
         point: Checkpoint,
     ) -> Result<Json, Signal> {
         self.wire_with_metadata(control, point, true)
     }
     /// 保存成果物。内部照合用の支持と静的解決表を複製しない。
     pub fn result_wire(&self) -> Json {
-        self.result_wire_controlled(&mut Control::unlimited(), Checkpoint::Expression)
+        self.result_wire_controlled(&Control::unlimited(), Checkpoint::Expression)
             .expect("通常の表示は中断しない")
     }
     pub fn result_wire_controlled(
         &self,
-        control: &mut Control,
+        control: &Control,
         point: Checkpoint,
     ) -> Result<Json, Signal> {
         self.wire_with_metadata(control, point, false)
     }
     fn wire_with_metadata(
         &self,
-        control: &mut Control,
+        control: &Control,
         point: Checkpoint,
         inspection: bool,
     ) -> Result<Json, Signal> {
@@ -1844,10 +1844,7 @@ impl Graph {
         }
         // signalはここでも凍結する。完成済みnative値の転記だけは
         // 最後まで保持し、凍結後に通常の推論を再開する権限を与えない。
-        let _ = self
-            .control
-            .clone()
-            .checkpoint(Checkpoint::NativeResultNode);
+        let _ = self.control.checkpoint(Checkpoint::NativeResultNode);
         super::construction_result::validate_shape(self, &node)?;
         for r in &node.evidence {
             self.expect(*r, &NodeType::Evidence)?;
@@ -1855,10 +1852,7 @@ impl Graph {
         let r = NodeRef(self.nodes.len());
         self.nodes.append_checked(node);
         self.contexts.push(self.active);
-        let _ = self
-            .control
-            .clone()
-            .checkpoint(Checkpoint::NativeResultNode);
+        let _ = self.control.checkpoint(Checkpoint::NativeResultNode);
         Ok(r)
     }
     pub(super) fn map_domain_counterexample_shape(
@@ -1927,7 +1921,6 @@ impl Graph {
     }
     pub(crate) fn tick(&self) -> Result<(), ValidationFailure> {
         self.control
-            .clone()
             .checkpoint(Checkpoint::FiniteIteration)
             .map_err(ValidationFailure::Stop)
     }

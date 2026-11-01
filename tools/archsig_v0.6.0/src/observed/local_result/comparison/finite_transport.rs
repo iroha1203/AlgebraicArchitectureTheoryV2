@@ -43,7 +43,7 @@ fn law_matches(
     a: NodeRef,
     b: NodeRef,
     rename: &Renaming,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ValidationFailure> {
     let x = record(g, a)?;
     let y = record(g, b)?;
@@ -138,7 +138,7 @@ fn position_map(
     a: &[Fact],
     b: &[Fact],
     rename: &Renaming,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Vec<usize>>, ValidationFailure> {
     if a.len() < b.len() {
         return Ok(None);
@@ -172,7 +172,7 @@ macro_rules! read_coordinates {
             i: usize,
             j: usize,
             rename: &Renaming,
-            c: &mut Control,
+            c: &Control,
         ) -> Result<Option<Coordinates>, ValidationFailure> {
             let Some(positions) = position_map(&a.slots, &b.slots, rename, c)? else {
                 return Ok(None);
@@ -210,7 +210,7 @@ fn state_matches(
     b: &Scalar,
     coordinates: &Coordinates,
     rename: &Renaming,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ValidationFailure> {
     let positions = match coordinates {
         Coordinates::Fields(p) => p,
@@ -271,8 +271,8 @@ fn injection(
     g: &Graph,
     a: &[NodeRef],
     b: &[NodeRef],
-    c: &mut Control,
-    mut same: impl FnMut(&Scalar, &Scalar, &mut Control) -> Result<bool, ValidationFailure>,
+    c: &Control,
+    mut same: impl FnMut(&Scalar, &Scalar, &Control) -> Result<bool, ValidationFailure>,
 ) -> Result<Option<Vec<(NodeRef, NodeRef)>>, ValidationFailure> {
     if a.len() > b.len() {
         return Ok(None);
@@ -302,7 +302,7 @@ fn record_outside(
     targets: &[NodeRef],
     count: &mut num_bigint::BigInt,
     example: &mut Option<NodeRef>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     let mut images = BTreeSet::new();
     for (_, image) in pairs {
@@ -370,7 +370,7 @@ pub(super) fn between(
     left: NodeRef,
     right: NodeRef,
     along: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Maps>, ValidationFailure> {
     let ls = field(g, left, "system")?;
     let rs = field(g, right, "system")?;

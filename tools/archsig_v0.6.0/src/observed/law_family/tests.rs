@@ -20,7 +20,7 @@ mod fixture {
                     law.into_bytes(),
                     MAP.replace("@DIGEST@", digest).into_bytes(),
                 ),
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap(),
         )
@@ -36,7 +36,7 @@ fn prepared(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
         inputs.law(),
         inputs.archmap(),
         &["b=build(Selected,on=@v/root)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     PreparedObserved {
@@ -46,7 +46,7 @@ fn prepared(inputs: Arc<crate::input::CheckedInputs>) -> PreparedObserved {
     }
 }
 fn start(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -54,21 +54,21 @@ fn start(p: &PreparedObserved) -> (Graph, NodeRef, Vec<NodeRef>) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let objects = crate::observed::object_component_diagram::retain(
         &mut g,
         p.shared_inputs(),
         a.reference,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .unwrap();
     (g, a.reference, objects.architectures)
 }
 fn replay(p: &PreparedObserved, source: &Graph) -> Result<(), ValidationFailure> {
-    let env = Environment::with_prepared(p, &mut quiet())?;
+    let env = Environment::with_prepared(p, &quiet())?;
     let mut g = Graph::new(&quiet());
     g.requests = source.requests.clone();
     g.frames = source.frames.clone();
@@ -110,7 +110,7 @@ fn poly(
         &mut g,
         p.shared_inputs(),
         a,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     (g, objects, ds)
@@ -153,7 +153,7 @@ fn assert_upstream(p: &PreparedObserved) {
         "Selected",
         "v",
         "root",
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_or_else(|failure| {
         let issues = failure.active().and_then(|active| match active.outcome() {
@@ -181,12 +181,12 @@ fn finite_boolean_family_uses_real_rows_every_object_and_full_exhaustion() {
         false,
         "law optional bit(c:Part,b:Bool) when b:c.quantity=0;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, objects, ds) = poly(&p);
     let mut seen = vec![];
     for (object, diagram) in ds.iter().enumerate().take(2) {
         for t in diagram.originals.iter().filter(|o| o.row.is_none()) {
-            let answer = check(&env, &mut g, t.reference, objects[object], &mut quiet())
+            let answer = check(&env, &mut g, t.reference, objects[object], &quiet())
                 .unwrap()
                 .unwrap();
             let who = match g.scalar(t.bindings[0].value).unwrap() {
@@ -282,12 +282,12 @@ fn missing_body_is_undetermined_inside_and_conditional_true_outside() {
         false,
         "law required bit(c:Part,b:Bool):c.quantity=0;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, objects, ds) = poly(&p);
     let mut statuses = vec![];
     for (object, d) in ds.iter().enumerate() {
         let t=d.originals.iter().find(|o|o.row.is_none()&&matches!(g.scalar(o.bindings[0].value).unwrap(),Scalar::Subject{subject,..} if subject=="q")).unwrap();
-        let answer = check(&env, &mut g, t.reference, objects[object], &mut quiet())
+        let answer = check(&env, &mut g, t.reference, objects[object], &quiet())
             .unwrap()
             .unwrap();
         statuses.push(answer.status);
@@ -313,13 +313,13 @@ fn empty_parameter_product_has_zero_real_rows_and_does_not_evaluate_body() {
     let p = prepared(fixture::empty(
         "law required empty(c:Part,e:(Empty,Bool)):c.quantity=1;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, objects, ds) = poly(&p);
     let mut count = 0;
     for (object, d) in ds.iter().enumerate() {
         for t in d.originals.iter().filter(|o| o.row.is_none()) {
             let before = g.nodes.len();
-            let a = check(&env, &mut g, t.reference, objects[object], &mut quiet())
+            let a = check(&env, &mut g, t.reference, objects[object], &quiet())
                 .unwrap()
                 .unwrap();
             assert_eq!(a.status, Decision::Established);
@@ -356,10 +356,10 @@ fn finite_composite_parameter_values_remain_complete_and_typed() {
         false,
         "law optional composite(c:Part,s:Set<Bool>):c.quantity=0;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, objects, ds) = poly(&p);
     let t = ds[0].originals.iter().find(|o| o.row.is_none()).unwrap();
-    let a = check(&env, &mut g, t.reference, objects[0], &mut quiet())
+    let a = check(&env, &mut g, t.reference, objects[0], &quiet())
         .unwrap()
         .unwrap();
     let data = family_data(&g, a.outputs["evaluation"]);
@@ -387,11 +387,11 @@ fn all_false_guards_keep_unbounded_body_unread_and_count_every_row() {
         "law required skipped(c:Part,b:Bool) when false:forall k:Z.k=0;",
     ));
     assert_upstream(&p);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, objects, ds) = poly(&p);
     for (object, d) in ds.iter().enumerate() {
         for t in d.originals.iter().filter(|o| o.row.is_none()) {
-            let a = check(&env, &mut g, t.reference, objects[object], &mut quiet())
+            let a = check(&env, &mut g, t.reference, objects[object], &quiet())
                 .unwrap()
                 .unwrap();
             assert_eq!(a.status, Decision::Established);
@@ -419,7 +419,7 @@ fn sample() -> (PreparedObserved, Graph, Vec<NodeRef>, NodeRef, Answer) {
         false,
         "law required bit(c:Part,b:Bool):c.quantity=0;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, objects, ds) = poly(&p);
     let t = ds[0]
         .originals
@@ -427,7 +427,7 @@ fn sample() -> (PreparedObserved, Graph, Vec<NodeRef>, NodeRef, Answer) {
         .find(|o| o.row.is_none())
         .unwrap()
         .reference;
-    let a = check(&env, &mut g, t, objects[0], &mut quiet())
+    let a = check(&env, &mut g, t, objects[0], &quiet())
         .unwrap()
         .unwrap();
     (p, g, objects, t, a)
@@ -454,7 +454,7 @@ fn edit(g: &mut Graph, r: NodeRef, f: impl FnOnce(&mut Data)) {
 fn whole_family_self_and_future_refs_fail_before_recursive_validation() {
     let (p, g, _, _, a) = sample();
     let e = a.outputs["evaluation"];
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     for mode in 0..8 {
         let mut bad = copy_graph(&g, &quiet());
         let invalid = NodeRef(e.0 + usize::from(mode >= 4));
@@ -490,7 +490,7 @@ fn unbounded_parameter_is_retained_without_a_finite_family_claim() {
         false,
         "law required unbounded(c:Part,k:Z):c.quantity=k;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, objects, ds) = poly(&p);
     for (object, d) in ds.iter().enumerate() {
         assert!(d.unavailable.is_none());
@@ -518,7 +518,7 @@ fn unbounded_parameter_is_retained_without_a_finite_family_claim() {
         for t in d.originals.iter().filter(|o| o.row.is_none()) {
             let before = g.nodes.len();
             assert!(
-                check(&env, &mut g, t.reference, objects[object], &mut quiet())
+                check(&env, &mut g, t.reference, objects[object], &quiet())
                     .unwrap()
                     .is_none()
             );
@@ -539,15 +539,15 @@ fn whole_family_interrupt_keeps_completed_prefix_and_restore_request_context() {
     let template=ds[1].originals.iter().find(|o|o.row.is_none()&&matches!(initial.scalar(o.bindings[0].value).unwrap(),Scalar::Subject{subject,..} if subject=="q")).unwrap().reference;
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::ObjectEvaluation {
             count.set(count.get() + 1)
         }
         None
     });
     let mut full = copy_graph(&initial, &c);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    check(&env, &mut full, template, objects[1], &mut c)
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    check(&env, &mut full, template, objects[1], &c)
         .unwrap()
         .unwrap();
     let total = seen.get();
@@ -556,7 +556,7 @@ fn whole_family_interrupt_keeps_completed_prefix_and_restore_request_context() {
     for at in [total / 2, total] {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::ObjectEvaluation {
                 count.set(count.get() + 1)
             }
@@ -564,9 +564,9 @@ fn whole_family_interrupt_keeps_completed_prefix_and_restore_request_context() {
             stop.then_some(crate::result::Signal::Int)
         });
         let mut g = copy_graph(&initial, &c);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         assert!(matches!(
-            check(&env, &mut g, template, objects[1], &mut c),
+            check(&env, &mut g, template, objects[1], &c),
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.active, initial.active);
@@ -588,7 +588,7 @@ fn true_and_missing_guards_keep_quantified_body_judgment_and_missing_reasons() {
         false,
         "law required quantified(c:Part,b:Bool) when c.quantity=0:forall k:Z.k=0;",
     ));
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, objects, ds) = poly(&p);
     let mut statuses = vec![];
     for t in ds[0].originals.iter().filter(|o| o.row.is_none()) {
@@ -601,7 +601,7 @@ fn true_and_missing_guards_keep_quantified_body_judgment_and_missing_reasons() {
         } else {
             Decision::Undetermined
         };
-        let a = check(&env, &mut g, t.reference, objects[0], &mut quiet())
+        let a = check(&env, &mut g, t.reference, objects[0], &quiet())
             .unwrap()
             .unwrap();
         assert_eq!(a.status, expected, "subject {subject}");

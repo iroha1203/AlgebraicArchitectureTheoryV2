@@ -99,7 +99,7 @@ fn state(
     positions: &[Fact],
     inhabited: bool,
     unit: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<State, ValidationFailure> {
     let mut slot_values = vec![];
     let mut slot_subjects = vec![];
@@ -252,7 +252,7 @@ pub(super) fn build(
     finite_model: Option<&finite_model::Model>,
     information: Option<&Information>,
     local_scope: &Scope,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Built, ValidationFailure> {
     let integer_ring = if finite_model.is_some_and(|m| m.affine_equations) {
         Some(b.push(NodeType::Construction(T::Ring), "ring",

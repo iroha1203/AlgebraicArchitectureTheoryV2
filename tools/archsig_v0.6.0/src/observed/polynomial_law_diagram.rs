@@ -31,7 +31,7 @@ mod parameters;
 mod reading;
 mod sources;
 
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::EquationPresentation)?;
     Ok(())
 }
@@ -589,7 +589,7 @@ impl Data {
     }
     pub(super) fn parameter_difference(
         &self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<
         Option<(
             NodeRef,
@@ -986,7 +986,7 @@ fn push(
     parts: &mut Vec<Part>,
     base: usize,
     part: Part,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     tick(c)?;
     let index = base
@@ -1002,7 +1002,7 @@ fn polynomial(
     ring: NodeRef,
     ty: &Type,
     variables: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     tick(c)?;
     if &p.ty != ty {
@@ -1052,7 +1052,7 @@ fn plan(
     core: &EquationPresentation,
     inputs: &CheckedInputs,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Part>, Diagram), ValidationFailure> {
     let mut parts = vec![];
     let out = object_plan(core, inputs, base, &mut parts, None, c)?;
@@ -1064,7 +1064,7 @@ fn object_plan(
     base: usize,
     parts: &mut Vec<Part>,
     shared: Option<&[family::Basis]>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Diagram, ValidationFailure> {
     tick(c)?;
     let (originals, expressions) = sources::append(core, inputs, parts, base, c)?;
@@ -1259,7 +1259,7 @@ fn object_plan(
 fn original_positions(
     core: &EquationPresentation,
     instance: Option<usize>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Fact>, ValidationFailure> {
     let mut positions = std::collections::BTreeSet::new();
     for source in core.base().base().evaluations().iter().filter(|e| {
@@ -1298,7 +1298,7 @@ fn append_presentations(
     out: &mut Diagram,
     base: usize,
     shared: Option<&[family::Basis]>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     use super::equation_presentation_node::{self as common, Coordinate as C, Part as E};
     reading::append(a, core, parts, out, base, c)?;
@@ -1529,7 +1529,7 @@ fn metadata(
     inputs: &CheckedInputs,
     a: &Arc<ArchitectureWitness>,
     core: Option<&EquationPresentation>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     let (mut support, mut scope) = native::metadata(&ConstructionValue {
         witness: Witness::Architecture(a.clone()),
@@ -1665,7 +1665,7 @@ fn calculate(
     inputs: Arc<CheckedInputs>,
     a: &Arc<ArchitectureWitness>,
     object: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Option<Arc<EquationPresentation>>, Option<Unavailable>), ValidationFailure> {
     tick(c)?;
     if object >= a.readings().objects().len() {
@@ -1709,7 +1709,7 @@ fn symbolic_plan(
     a: &Arc<ArchitectureWitness>,
     reason: Unavailable,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Part>, Diagram), ValidationFailure> {
     tick(c)?;
     let mut parts = vec![];
@@ -1740,7 +1740,7 @@ impl Source {
         reference: NodeRef,
         object: usize,
         base: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Self, ValidationFailure> {
         tick(c)?;
         if inputs.sources() != Witness::Architecture(a.clone()).inputs().sources() {
@@ -1785,7 +1785,7 @@ impl Source {
         &self,
         inputs: &CheckedInputs,
         a: &Arc<ArchitectureWitness>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         tick(c)?;
         if !Arc::ptr_eq(a, &self.architecture) || inputs.sources() != self.inputs.sources() {
@@ -1856,7 +1856,7 @@ pub(super) fn retain(
     inputs: Arc<CheckedInputs>,
     reference: NodeRef,
     object: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Diagram, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((
         graph, inputs, reference, object, c,
@@ -1882,7 +1882,7 @@ impl FamilyPlan {
         env: &Environment<'_>,
         graph: &Graph,
         reference: NodeRef,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Arc<ArchitectureWitness>, ValidationFailure> {
         tick(c)?;
         if reference != self.0.reference || self.0.object != 0 || self.0.owned_outputs.is_none() {
@@ -1910,7 +1910,7 @@ pub(super) fn retain_table_plan(
     graph: &mut Graph,
     inputs: Arc<CheckedInputs>,
     reference: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FamilyPlan, ValidationFailure> {
     Ok(FamilyPlan(retain_source(
         graph, inputs, reference, 0, true, c,
@@ -1920,7 +1920,7 @@ pub(super) fn retain_family(
     graph: &mut Graph,
     inputs: Arc<CheckedInputs>,
     reference: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Diagram>, ValidationFailure> {
     let source = retain_source(graph, inputs, reference, 0, true, c)?;
     let mut outputs = vec![source.outputs.clone()];
@@ -1941,7 +1941,7 @@ fn retain_source(
     reference: NodeRef,
     object: usize,
     all_objects: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Arc<Source>, ValidationFailure> {
     tick(c)?;
     if graph.active != graph.context_at(reference.0) {
@@ -2039,7 +2039,7 @@ impl Environment<'_> {
         let D::PolynomialLaw(data) = &value.data else {
             return Ok(());
         };
-        tick(&mut self.control.clone())?;
+        tick(&self.control)?;
         let Witness::Architecture(a) = &value.witness else {
             return Err("多項式導出の元Architectureがない".into());
         };
@@ -2061,8 +2061,7 @@ impl Environment<'_> {
         {
             return Ok(());
         }
-        data.source
-            .recheck(self.indexes.inputs, a, &mut self.control.clone())?;
+        data.source.recheck(self.indexes.inputs, a, &self.control)?;
         self.results.remember(data.source.clone());
         Ok(())
     }
@@ -2080,7 +2079,7 @@ impl super::result_kind::ResultKind for Data {
         Arc<CheckedInputs>,
         NodeRef,
         usize,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = Diagram;
     fn compute_and_retain<'a, 'input: 'a>(

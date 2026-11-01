@@ -22,13 +22,13 @@ fn byte_bundle_lexer_error_samples_cancel_at_the_final_checkpoint() {
     for suffix in [b"01".as_slice(), b"?", &[0xff]] {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut baseline = Control::new(move |point| {
+        let baseline = Control::new(move |point| {
             if point == Checkpoint::LawIteration {
                 seen.set(seen.get() + 1);
             }
             None
         });
-        let expected = check_inputs(sources(suffix), &mut baseline).unwrap_err();
+        let expected = check_inputs(sources(suffix), &baseline).unwrap_err();
         assert_eq!(expected.status(), InputStatus::Invalid);
         assert!(
             expected.issues()[0]
@@ -37,13 +37,13 @@ fn byte_bundle_lexer_error_samples_cancel_at_the_final_checkpoint() {
         );
         let final_at = count.get();
         let mut n = 0;
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if point == Checkpoint::LawIteration {
                 n += 1;
             }
             (n >= final_at).then_some(Signal::Term)
         });
-        let failure = check_inputs(sources(suffix), &mut control).unwrap_err();
+        let failure = check_inputs(sources(suffix), &control).unwrap_err();
         assert!(failure.declarations().is_empty());
         assert!(
             failure.primitives().is_empty(),

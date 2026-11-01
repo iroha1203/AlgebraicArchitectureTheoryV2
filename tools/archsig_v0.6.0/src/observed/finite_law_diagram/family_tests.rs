@@ -8,13 +8,8 @@ use crate::control::quiet;
 fn prepared(missing: bool, body: &str, root: &str) -> PreparedObserved {
     let inputs = fixture::inputs(missing, body);
     let ask = format!("b=build(Selected,on=@v/{root})");
-    let requests = resolve_native_for_test(
-        inputs.law(),
-        inputs.archmap(),
-        &[ask.as_str()],
-        &mut quiet(),
-    )
-    .unwrap();
+    let requests =
+        resolve_native_for_test(inputs.law(), inputs.archmap(), &[ask.as_str()], &quiet()).unwrap();
     PreparedObserved {
         inputs,
         requests,
@@ -22,8 +17,8 @@ fn prepared(missing: bool, body: &str, root: &str) -> PreparedObserved {
     }
 }
 fn built(p: &PreparedObserved) -> (Graph, NodeRef) {
-    let mut c = quiet();
-    let env = Environment::with_prepared(p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(p, &c).unwrap();
     let mut g = Graph::new(&c);
     g.requests = p.requests().requests().to_vec();
     let a = crate::observed::architecture_result::build(
@@ -31,7 +26,7 @@ fn built(p: &PreparedObserved) -> (Graph, NodeRef) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert!(a.complete, "{:?}", a.reasons);
@@ -42,8 +37,8 @@ fn replay(
     original: &Graph,
     nodes: &[Node],
 ) -> Result<Graph, ValidationFailure> {
-    let mut c = quiet();
-    let env = Environment::with_prepared(p, &mut c)?;
+    let c = quiet();
+    let env = Environment::with_prepared(p, &c)?;
     let mut g = Graph::new(&c);
     g.requests = original.requests.clone();
     g.checked_answers = original.checked_answers.clone();
@@ -86,7 +81,7 @@ fn all_standard_objects_share_the_same_native_domain_ring_and_evaluation() {
     let p = prepared(false, BODY, "root");
     let (mut g, a) = built(&p);
     let before = g.nodes.len();
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet())
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(ds.len(), 3);
@@ -196,7 +191,7 @@ fn shared_finite_family_preserves_parameter_rows_known_values_and_original_missi
             "root",
         );
         let (mut g, a) = built(&p);
-        let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet())
+        let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet())
             .unwrap()
             .unwrap();
         assert_eq!(ds.len(), 3);
@@ -264,7 +259,7 @@ fn shared_finite_family_preserves_parameter_rows_known_values_and_original_missi
 fn family_source_rejects_missing_reordered_duplicated_and_replaced_object_outputs() {
     let p = prepared(false, BODY, "root");
     let (mut g, a) = built(&p);
-    let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet())
+    let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     let original = data(&g, ds[0].ring).source.clone();
@@ -288,7 +283,7 @@ fn family_source_rejects_missing_reordered_duplicated_and_replaced_object_output
         }
         assert!(
             changed
-                .recheck(p.inputs(), &original.architecture, 0, &mut quiet())
+                .recheck(p.inputs(), &original.architecture, 0, &quiet())
                 .is_err(),
             "source {kind}"
         );
@@ -305,10 +300,10 @@ fn family_source_rejects_missing_reordered_duplicated_and_replaced_object_output
     let missing = prepared(true, BODY, "root");
     assert!(
         original
-            .recheck(missing.inputs(), &original.architecture, 0, &mut quiet())
+            .recheck(missing.inputs(), &original.architecture, 0, &quiet())
             .is_err()
     );
-    assert!(retain_family(&mut g, p.shared_inputs(), NodeRef(usize::MAX), &mut quiet()).is_err());
+    assert!(retain_family(&mut g, p.shared_inputs(), NodeRef(usize::MAX), &quiet()).is_err());
     replay(&p, &g, &g.nodes).unwrap();
 }
 #[test]
@@ -316,7 +311,7 @@ fn an_empty_law_family_keeps_the_real_base_and_all_owned_objects_without_coordin
     for (root, count) in [("root", 3), ("r2", 1)] {
         let p = prepared(false, "", root);
         let (mut g, a) = built(&p);
-        let ds = retain_family(&mut g, p.shared_inputs(), a, &mut quiet())
+        let ds = retain_family(&mut g, p.shared_inputs(), a, &quiet())
             .unwrap()
             .unwrap();
         assert_eq!(ds.len(), count);
@@ -366,7 +361,7 @@ fn interrupt_keeps_only_finished_shared_basis_and_object_prefixes() {
     let (initial, a) = built(&p);
     let before = initial.nodes.len();
     let mut complete = prefix(&initial, &quiet());
-    let ds = retain_family(&mut complete, p.shared_inputs(), a, &mut quiet())
+    let ds = retain_family(&mut complete, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     for at in [
@@ -375,7 +370,7 @@ fn interrupt_keeps_only_finished_shared_basis_and_object_prefixes() {
     ] {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::NativeResultNode {
                 count.set(count.get() + 1);
             }
@@ -384,7 +379,7 @@ fn interrupt_keeps_only_finished_shared_basis_and_object_prefixes() {
         });
         let mut g = prefix(&initial, &c);
         assert!(matches!(
-            retain_family(&mut g, p.shared_inputs(), a, &mut c),
+            retain_family(&mut g, p.shared_inputs(), a, &c),
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.nodes.len(), before + at.div_ceil(2));
@@ -428,26 +423,26 @@ fn shared_family_rejects_foreign_root_request_input_and_cached_witness_without_a
         p.inputs().law(),
         p.inputs().archmap(),
         &["b=build(Selected,on=@v/root)", "c=build(Selected,on=@v/r2)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let (mut g, a) = built(&p);
-    let mut c = quiet();
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(&p, &c).unwrap();
     g.active.request = 1;
     let before = g.nodes.len();
-    assert!(retain_family(&mut g, p.shared_inputs(), a, &mut quiet()).is_err());
+    assert!(retain_family(&mut g, p.shared_inputs(), a, &quiet()).is_err());
     assert_eq!(g.nodes.len(), before);
     let other = crate::observed::architecture_result::build(
         p.shared_inputs(),
         &env,
         &mut g,
         &p.requests().requests()[1],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert!(other.complete);
-    let second = retain_family(&mut g, p.shared_inputs(), other.reference, &mut quiet())
+    let second = retain_family(&mut g, p.shared_inputs(), other.reference, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(second.len(), 1);
@@ -461,7 +456,7 @@ fn shared_family_rejects_foreign_root_request_input_and_cached_witness_without_a
         "r2"
     );
     g.active.request = 0;
-    let first = retain_family(&mut g, p.shared_inputs(), a, &mut quiet())
+    let first = retain_family(&mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     let Some(Payload::Construction(value)) = &g.nodes[first[0].ring.0].payload else {
@@ -473,23 +468,19 @@ fn shared_family_rejects_foreign_root_request_input_and_cached_witness_without_a
     assert!(env.recheck_finite_law_diagram(&g, &foreign).is_err());
     let missing = prepared(true, BODY, "root");
     let before = g.nodes.len();
-    assert!(retain_family(&mut g, missing.shared_inputs(), a, &mut quiet()).is_err());
+    assert!(retain_family(&mut g, missing.shared_inputs(), a, &quiet()).is_err());
     assert_eq!(g.nodes.len(), before);
-    let objects = crate::observed::object_component_diagram::retain(
-        &mut g,
-        p.shared_inputs(),
-        a,
-        &mut quiet(),
-    )
-    .unwrap()
-    .unwrap();
+    let objects =
+        crate::observed::object_component_diagram::retain(&mut g, p.shared_inputs(), a, &quiet())
+            .unwrap()
+            .unwrap();
     let before = g.nodes.len();
     assert!(
         retain_family(
             &mut g,
             p.shared_inputs(),
             objects.architectures[1],
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );

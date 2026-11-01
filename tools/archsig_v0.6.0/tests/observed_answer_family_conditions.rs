@@ -66,7 +66,7 @@ fn answer_family_projection_failure_keeps_condition_refutation_without_filling_f
             "seed=evaluate(Applications.abSeed)",
             "prior=check(Applications.abPrior)",
         ];
-        let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &mut quiet())
+        let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &quiet())
             .unwrap_or_else(|e| match e {
                 archsig::observed::EvaluationFailure::NotImplemented { feature, .. } => {
                     panic!("NotImplemented: {feature}")
@@ -106,7 +106,7 @@ fn answer_family_known_fixed_values_keep_finite_numeric_mixed_quantifiers_and_or
         "double=evaluate(Applications.abDouble,x=$seed.value)",
         "packed=evaluate(Applications.abPack,p=@v/p,m=@v/m)",
     ];
-    let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &mut quiet())
+    let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))));
     assert_eq!(r.status(), "complete", "{:?}", f(&r.wire(), "issues"));
     let w = r.wire();
@@ -216,7 +216,7 @@ fn answer_family_missing_unsupported_and_omitted_environment_keep_original_reaso
             "seed=evaluate(Applications.abSeed)",
             "prior=check(Applications.abPrior)",
         ];
-        let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet())
+        let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet())
             .unwrap_or_else(|e| panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))));
         assert_eq!(r.status(), "partial");
         let w = r.wire();
@@ -259,7 +259,7 @@ fn answer_family_fixed_producers_keep_existing_completion_and_universal_scope() 
         "universal=check(Applications.abUniversal,x=$seed.value)",
         "seed=evaluate(Applications.abSeed)",
     ];
-    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet())
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))));
     assert_eq!(r.status(), "complete", "{:?}", f(&r.wire(), "issues"));
     let w = r.wire();
@@ -307,7 +307,7 @@ fn answer_family_mixed_fixed_failures_keep_each_direct_reason_and_requested_orde
         "seed=evaluate(Applications.abSeed)",
         "prior=check(Applications.abPrior)",
     ];
-    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet()).unwrap();
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet()).unwrap();
     assert_eq!(r.status(), "partial");
     let w = r.wire();
     for producer in ["empty", "missing", "opaque"] {
@@ -359,7 +359,7 @@ fn answer_family_static_bad_bindings_remain_invalid_before_evaluation() {
         let e = evaluate_observed_bytes(
             fixture::input("known", "r1"),
             &[call, "packed=evaluate(Applications.abPack,p=@v/p,m=@v/m)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap_err();
         let w = e.wire().unwrap();
@@ -380,8 +380,8 @@ fn answer_family_conditions_keep_inputs_original_root_dag_support_and_current_pr
     for revision in ["r1", "r2"] {
         let input = fixture::input("known", revision);
         let original = input.clone();
-        let checked = archsig::input::check_inputs(input.clone(), &mut quiet()).unwrap();
-        let r = evaluate_observed_bytes(input, &asks, &mut quiet()).unwrap();
+        let checked = archsig::input::check_inputs(input.clone(), &quiet()).unwrap();
+        let r = evaluate_observed_bytes(input, &asks, &quiet()).unwrap();
         assert_eq!(r.status(), "partial");
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(r.prepared().inputs().definitions(), checked.definitions());
@@ -401,7 +401,7 @@ fn answer_family_conditions_keep_inputs_original_root_dag_support_and_current_pr
         assert_eq!(f(&condition, "scope"), f(node(&w, root), "scope"));
         assert!(!arr(f(&condition, "support")).is_empty());
         let producer =
-            evaluate_observed_bytes(fixture::input("known", revision), &[asks[1]], &mut quiet())
+            evaluate_observed_bytes(fixture::input("known", revision), &[asks[1]], &quiet())
                 .unwrap();
         assert_eq!(
             node(&w, root),

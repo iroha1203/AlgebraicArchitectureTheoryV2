@@ -57,7 +57,7 @@ pub(super) fn restriction(
     from: &State,
     to: &State,
     equation: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<(NodeRef, NodeRef)>, ValidationFailure> {
     let mut pairs = vec![];
     for (value, r) in values(from, equation) {
@@ -78,7 +78,7 @@ pub(super) fn summary(
     patches: &[usize],
     base: usize,
     equation: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteSide, ValidationFailure> {
     let mut matching: Vec<Vec<Scalar>> = vec![vec![]];
     for &patch in patches {
@@ -163,7 +163,7 @@ pub(super) fn summary(
         },
     })
 }
-pub(super) fn bijective(summary: &FiniteSide, c: &mut Control) -> Result<bool, ValidationFailure> {
+pub(super) fn bijective(summary: &FiniteSide, c: &Control) -> Result<bool, ValidationFailure> {
     let key = |value: &Scalar| {
         Json::obj([("type", value.ty().wire()), ("value", value.wire())]).canonical()
     };
@@ -186,7 +186,7 @@ fn scalar_domain(
     b: &mut Builder<'_>,
     ty: &Type,
     values: &[Scalar],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(NodeRef, Vec<(Scalar, NodeRef)>), ValidationFailure> {
     let mut elements = vec![];
     for value in values {
@@ -209,7 +209,7 @@ pub(super) fn build(
     model: &finite_model::Model,
     integer_ring: Option<NodeRef>,
     reading: Option<&integer::linear::Reading>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<State, ValidationFailure> {
     let indexes = model
         .slots

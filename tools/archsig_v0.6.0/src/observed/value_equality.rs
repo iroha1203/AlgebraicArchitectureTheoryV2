@@ -7,7 +7,7 @@ use super::{
 use crate::control::{Checkpoint, Control};
 use crate::{law::CheckedLaw, types::Type};
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
-    c.clone().checkpoint(Checkpoint::FiniteIteration)?;
+    c.checkpoint(Checkpoint::FiniteIteration)?;
     Ok(())
 }
 /// 値を受理する型の範囲。有限/アフィン算法の成否は、元の値から別に計算する。

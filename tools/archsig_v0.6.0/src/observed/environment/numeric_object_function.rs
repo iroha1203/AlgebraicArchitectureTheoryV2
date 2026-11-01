@@ -44,8 +44,7 @@ pub(super) fn fixed_bindings(
 ) -> Result<Vec<(String, Scalar)>, ValidationFailure> {
     let mut bindings = vec![];
     for binding in row.bindings() {
-        c.clone()
-            .checkpoint(Checkpoint::ObjectViewTransportFamily)?;
+        c.checkpoint(Checkpoint::ObjectViewTransportFamily)?;
         let Type::Ref(entity) = &binding.parameter().ty.erase() else {
             return Err("数値viewの固定束縛が参照でない".into());
         };
@@ -67,7 +66,7 @@ fn source(
     names: &[(String, String)],
     target: bool,
     assignments: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ConstructionFailure> {
     expression(
         inputs,
@@ -86,7 +85,7 @@ pub(super) fn expression(
     names: &[(String, String)],
     target: bool,
     assignments: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ConstructionFailure> {
     expression_inner(
         inputs,
@@ -105,7 +104,7 @@ pub(super) fn guard(
     names: &[(String, String)],
     target: bool,
     assignments: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Source, super::numeric_guard::Analysis), ConstructionFailure> {
     let mut forms = super::numeric_guard::Analysis::default();
     let source = expression_inner(
@@ -130,7 +129,7 @@ fn expression_inner(
     names: &[(String, String)],
     target: bool,
     assignments: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ConstructionFailure> {
     let (position, expression, forms) = selection;
     let row = readings
@@ -251,7 +250,7 @@ pub(in crate::observed) fn read(
     instance: usize,
     names: &[(String, String)],
     target: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Reading, ConstructionFailure> {
     let value = match source(
         inputs,
@@ -309,7 +308,7 @@ fn concrete(
     names: &[(String, String)],
     target: bool,
     assignments: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Scalar, Vec<Fact>), ConstructionFailure> {
     let Source::Value(value) = source(inputs, readings, position, names, target, assignments, c)?
     else {
@@ -334,7 +333,7 @@ pub(in crate::observed) fn counterexample(
     positions: [ObjectEvaluationPosition; 2],
     names: &[(String, String)],
     unit: Option<&affine::TermArgument>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Counterexample, ConstructionFailure> {
     let row = &source_readings.instances()[positions[0].instance];
     let mut assignments = vec![];

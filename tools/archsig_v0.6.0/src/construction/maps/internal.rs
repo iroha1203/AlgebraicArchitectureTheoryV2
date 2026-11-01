@@ -44,7 +44,7 @@ impl InternalArrowResult {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         let expected = internal_arrow(
             inputs,
@@ -118,7 +118,7 @@ impl InternalArrows {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         let expected = internal_arrows(
             inputs,
@@ -136,7 +136,7 @@ impl InternalArrows {
         tick(control)
     }
 }
-fn tick(control: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(control: &Control) -> Result<(), ConstructionFailure> {
     control
         .checkpoint(Checkpoint::InternalArrow)
         .map_err(Into::into)
@@ -148,7 +148,7 @@ fn component(
     root: &FactPointer,
     confirmed_owner: bool,
     missing: &mut BTreeSet<FactPointer>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<ObjectComponent>, ConstructionFailure> {
     tick(control)?;
     let selected = subject(inputs, &key.0, &key.1, control)?;
@@ -184,7 +184,7 @@ pub fn internal_arrow(
     root_id: &str,
     arrow_snapshot: &str,
     arrow_id: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<InternalArrowResult, ConstructionFailure> {
     tick(control)?;
     let construction = construct(inputs, reading, root_snapshot, root_id, control)?;
@@ -197,7 +197,7 @@ fn internal_arrow_checked(
     construction: &ConfigurationConstruction,
     arrow_snapshot: &str,
     arrow_id: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<InternalArrowResult, ConstructionFailure> {
     tick(control)?;
     let holder = subject(inputs, arrow_snapshot, arrow_id, control)?;
@@ -402,7 +402,7 @@ pub fn internal_arrows(
     reading: &str,
     root_snapshot: &str,
     root_id: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<InternalArrows, InternalArrowsFailure> {
     tick(control)?;
     let construction = construct(inputs, reading, root_snapshot, root_id, control)?;
@@ -493,7 +493,7 @@ mod tests {
                     .replace("@FLOW_DIGEST@", digest)
                     .into_bytes(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap()
     }
@@ -501,7 +501,7 @@ mod tests {
     fn recheck_rejects_forged_internal_origin_objects_actions_and_dropped_arrows() {
         let inputs = inputs();
         let original =
-            internal_arrows(&inputs, "FlowRead", "v", "A", &mut Control::unlimited()).unwrap();
+            internal_arrows(&inputs, "FlowRead", "v", "A", &Control::unlimited()).unwrap();
         for kind in [
             "drop",
             "selected",
@@ -546,7 +546,7 @@ mod tests {
             }
             assert!(
                 matches!(
-                    forged.recheck(&inputs, &mut Control::unlimited()),
+                    forged.recheck(&inputs, &Control::unlimited()),
                     Err(ConstructionFailure::Inconsistent(_))
                 ),
                 "{kind}"
@@ -567,12 +567,12 @@ mod tests {
                 _ => unreachable!(),
             }
             assert!(
-                forged.recheck(&inputs, &mut Control::unlimited()).is_err(),
+                forged.recheck(&inputs, &Control::unlimited()).is_err(),
                 "{kind}"
             );
             assert!(
                 ConfigurationMap { candidate: forged }
-                    .recheck(&inputs, &mut Control::unlimited())
+                    .recheck(&inputs, &Control::unlimited())
                     .is_err(),
                 "{kind}"
             );

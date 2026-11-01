@@ -26,7 +26,7 @@ fn with_definition(d: &[u8], a: &str) -> CheckedInputs {
             L.replace(DIGEST, digest).into_bytes(),
             a.replace(DIGEST, digest).into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
@@ -47,7 +47,7 @@ fn cross_kind_inputs() -> CheckedInputs {
                 .replace("@DIGEST@", digest)
                 .into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
@@ -67,14 +67,14 @@ fn fact(id: &str, f: Option<&str>) -> FactPointer {
     }
 }
 fn result(i: &CheckedInputs) -> ConfigurationTransport {
-    let map = correspondence(i, "v", "m", "Reservations", None, &mut Control::unlimited()).unwrap();
+    let map = correspondence(i, "v", "m", "Reservations", None, &Control::unlimited()).unwrap();
     assert!(
         map.counterexamples().is_empty(),
         "{:?}",
         map.counterexamples()
     );
     assert!(map.missing().is_empty(), "{:?}", map.missing());
-    configuration_transport(i, map.map().unwrap(), &mut Control::unlimited()).unwrap()
+    configuration_transport(i, map.map().unwrap(), &Control::unlimited()).unwrap()
 }
 fn remove(a: &str, id: &str) -> String {
     let marker = format!("\"id\":\"{id}\"");
@@ -168,7 +168,7 @@ fn actual_objects_share_the_base_action_and_all_universe_naturality() {
         assert_eq!(mu(&arrow(f, "p", "q")), arrow(&mu(f), "r", "s"));
     }
     assert_eq!(r.operation().word(), [fact("m", None)]);
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn third_object_collision_refutes_only_global_naturality_and_retains_operation() {
@@ -210,10 +210,8 @@ fn third_object_collision_refutes_only_global_naturality_and_retains_operation()
             .family()
             .contains(f)
     );
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn unconfirmed_target_generator_is_retained_with_missing_slot() {
@@ -232,10 +230,8 @@ fn unconfirmed_target_generator_is_retained_with_missing_slot() {
     assert!(target.missing().contains(&s));
     assert_eq!(r.generators().len(), 1);
     assert_eq!(r.generators()[0].naturality(), None);
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn refuted_target_reference_structure_does_not_erase_counterexamples_or_operation() {
@@ -263,10 +259,8 @@ fn refuted_target_reference_structure_does_not_erase_counterexamples_or_operatio
     assert!(!target.counterexamples().is_empty());
     assert_eq!(r.generators()[0].naturality(), None);
     assert_eq!(r.generators()[0].endpoints_preserved(), None);
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn all_named_generators_and_separate_readings_remain_in_transport() {
@@ -288,10 +282,10 @@ fn all_named_generators_and_separate_readings_remain_in_transport() {
         "m",
         "Reservations",
         Some("Alternative"),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    let r = configuration_transport(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+    let r = configuration_transport(&i, m.map().unwrap(), &Control::unlimited()).unwrap();
     assert!(r.all_preserved());
     for o in r.objects() {
         assert_eq!(o.source().reading(), "Reservations");
@@ -308,25 +302,18 @@ fn internal_identity_and_composite_maps_are_not_raw_correspondences() {
         "A",
         "v",
         "e",
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    let id = identity(
-        &i,
-        "Reservations",
-        "v",
-        "A",
-        None,
-        &mut Control::unlimited(),
-    )
-    .unwrap()
-    .operation()
-    .unwrap()
-    .clone();
-    let composed = id.compose(&i, &id, &mut Control::unlimited()).unwrap();
+    let id = identity(&i, "Reservations", "v", "A", None, &Control::unlimited())
+        .unwrap()
+        .operation()
+        .unwrap()
+        .clone();
+    let composed = id.compose(&i, &id, &Control::unlimited()).unwrap();
     for map in [e.map().unwrap(), id.map(), composed.map()] {
         assert!(
-            matches!(configuration_transport(&i,map,&mut Control::unlimited()).unwrap_err().cause(),ConstructionFailure::InvalidSelection(message) if !message.is_empty())
+            matches!(configuration_transport(&i,map,&Control::unlimited()).unwrap_err().cause(),ConstructionFailure::InvalidSelection(message) if !message.is_empty())
         );
     }
 }
@@ -340,49 +327,47 @@ fn current_raw_maps_and_universe_are_rechecked_but_quantities_do_not_define_stru
         r#"[["v","u"],["v","w"]]"#,
         r#"[["v","u"],["v","r"]]"#,
     ));
-    assert!(r.recheck(&changed, &mut Control::unlimited()).is_err());
-    assert!(
-        configuration_transport(&changed, r.operation().map(), &mut Control::unlimited()).is_err()
-    );
+    assert!(r.recheck(&changed, &Control::unlimited()).is_err());
+    assert!(configuration_transport(&changed, r.operation().map(), &Control::unlimited()).is_err());
     let quantity = inputs(&edit(A, "u-free", r#""19""#, r#""103""#));
-    r.recheck(&quantity, &mut Control::unlimited()).unwrap();
+    r.recheck(&quantity, &Control::unlimited()).unwrap();
     let missing = inputs(&remove(A, "u-free"));
-    assert!(r.recheck(&missing, &mut Control::unlimited()).is_err());
+    assert!(r.recheck(&missing, &Control::unlimited()).is_err());
 }
 #[test]
 fn every_fixed_transport_stop_latches_without_new_probes() {
     for (i, reading) in [(inputs(A), "Reservations"), (cross_kind_inputs(), "Read")] {
-        let m = correspondence(&i, "v", "m", reading, None, &mut Control::unlimited()).unwrap();
-        let r = configuration_transport(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+        let m = correspondence(&i, "v", "m", reading, None, &Control::unlimited()).unwrap();
+        let r = configuration_transport(&i, m.map().unwrap(), &Control::unlimited()).unwrap();
         let map = r.operation().map();
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut c = Control::new(move |p| {
+        let c = Control::new(move |p| {
             if p == Checkpoint::ConfigurationTransport {
                 seen.set(seen.get() + 1);
             }
             None
         });
-        configuration_transport(&i, map, &mut c).unwrap();
+        configuration_transport(&i, map, &c).unwrap();
         let total = count.get();
         assert!(total > 39);
         for at in [1, total / 2, total] {
             for signal in [Signal::Int, Signal::Term] {
                 let count = Rc::new(Cell::new(0usize));
                 let seen = count.clone();
-                let mut c = Control::new(move |p| {
+                let c = Control::new(move |p| {
                     if p == Checkpoint::ConfigurationTransport {
                         seen.set(seen.get() + 1);
                     }
                     (seen.get() >= at).then_some(signal)
                 });
-                let f = configuration_transport(&i, map, &mut c).unwrap_err();
+                let f = configuration_transport(&i, map, &c).unwrap_err();
                 assert_eq!(
                     f.cause(),
                     &ConstructionFailure::Stopped(c.stop_reason().unwrap())
                 );
                 assert_eq!(count.get(), at);
-                assert_eq!(&r.recheck(&i, &mut c).unwrap_err(), f.cause());
+                assert_eq!(&r.recheck(&i, &c).unwrap_err(), f.cause());
                 assert_eq!(count.get(), at);
             }
         }
@@ -391,10 +376,10 @@ fn every_fixed_transport_stop_latches_without_new_probes() {
 #[test]
 fn cross_kind_configuration_maps_keep_object_and_generator_condition_failures_and_operation() {
     let i = cross_kind_inputs();
-    let m = correspondence(&i, "v", "m", "Read", None, &mut Control::unlimited()).unwrap();
+    let m = correspondence(&i, "v", "m", "Read", None, &Control::unlimited()).unwrap();
     assert!(m.missing().is_empty());
     assert!(m.counterexamples().is_empty());
-    let r = configuration_transport(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+    let r = configuration_transport(&i, m.map().unwrap(), &Control::unlimited()).unwrap();
     assert!(!r.all_preserved());
     assert!(r.source().all_preserved());
     assert!(r.target().all_preserved());
@@ -433,10 +418,8 @@ fn cross_kind_configuration_maps_keep_object_and_generator_condition_failures_an
     );
     assert_eq!(generator.endpoints_preserved(), None);
     assert_eq!(generator.naturality(), None);
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }
 
 #[test]
@@ -447,15 +430,14 @@ fn stopped_configuration_transport_retains_operation_tables_and_completed_rows()
         } else {
             "Reservations"
         };
-        let m = correspondence(&i, "v", "m", reading, None, &mut Control::unlimited()).unwrap();
-        let full =
-            configuration_transport(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+        let m = correspondence(&i, "v", "m", reading, None, &Control::unlimited()).unwrap();
+        let full = configuration_transport(&i, m.map().unwrap(), &Control::unlimited()).unwrap();
         let total = Rc::new(Cell::new(0));
         let seen = total.clone();
         configuration_transport(
             &i,
             m.map().unwrap(),
-            &mut Control::new(move |p| {
+            &Control::new(move |p| {
                 if p == Checkpoint::ConfigurationTransport {
                     seen.set(seen.get() + 1);
                 }
@@ -475,17 +457,15 @@ fn stopped_configuration_transport_retains_operation_tables_and_completed_rows()
             (Checkpoint::ConfigurationTransport, total.get()),
         ] {
             for signal in [Signal::Int, Signal::Term] {
-                let (mut c, probes) = stop_at(point, at, signal);
-                let f = configuration_transport(&i, m.map().unwrap(), &mut c).unwrap_err();
+                let (c, probes) = stop_at(point, at, signal);
+                let f = configuration_transport(&i, m.map().unwrap(), &c).unwrap_err();
                 assert_eq!(
                     f.cause(),
                     &ConstructionFailure::Stopped(c.stop_reason().unwrap())
                 );
                 let p = f.partial().unwrap();
                 assert_eq!(p.operation(), full.operation());
-                p.operation()
-                    .recheck(&i, &mut Control::unlimited())
-                    .unwrap();
+                p.operation().recheck(&i, &Control::unlimited()).unwrap();
                 assert_eq!(p.objects(), &full.objects()[..p.objects().len()]);
                 assert_eq!(p.generators(), &full.generators()[..p.generators().len()]);
                 if point == Checkpoint::InternalArrowRow {
@@ -519,7 +499,7 @@ fn stopped_configuration_transport_retains_operation_tables_and_completed_rows()
                     }
                 );
                 assert!(
-                    configuration_transport(&i, m.map().unwrap(), &mut c)
+                    configuration_transport(&i, m.map().unwrap(), &c)
                         .unwrap_err()
                         .partial()
                         .is_none()

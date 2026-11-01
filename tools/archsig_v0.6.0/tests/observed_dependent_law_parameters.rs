@@ -98,8 +98,7 @@ fn fixture(
         vocabulary_json("Dep", &format!("[{root},{child},{leaf}]"), "[]")
     ));
     let checked =
-        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
-            .unwrap();
+        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &quiet()).unwrap();
     let digest = &checked.vocabularies()["Dep"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading Inspect {{ use vocabulary Dep version "1" digest "{digest}"; {script} }}"#
@@ -344,8 +343,8 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
 }
 
 fn run(inputs: InputSources, ask: &str) -> ObservedEvaluation {
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
-    let result = evaluate_observed_bytes(inputs, &[ask], &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
+    let result = evaluate_observed_bytes(inputs, &[ask], &quiet()).unwrap();
     unchanged(&checked, result.prepared().inputs());
     audit(&result.wire(), result.prepared().inputs());
     result
@@ -1247,7 +1246,7 @@ fn dependent_empty_fiber_still_rejects_statically_invalid_body_at_original_locat
         false,
         false,
     );
-    let failure = check_inputs(inputs.clone(), &mut quiet()).unwrap_err();
+    let failure = check_inputs(inputs.clone(), &quiet()).unwrap_err();
     assert_eq!(failure.status().wire(), "invalid");
     assert_eq!(failure.sources(), &inputs);
     let wire = failure.wire();
@@ -1463,9 +1462,9 @@ fn dependent_numeric_parameters_keep_each_actual_fiber_and_full_z_q_domain() {
 }
 
 fn numeric_batch(inputs: InputSources, asks: &[&str]) -> ObservedEvaluation {
-    let checked = check_inputs(inputs.clone(), &mut quiet())
+    let checked = check_inputs(inputs.clone(), &quiet())
         .unwrap_or_else(|e| panic!("input issues {:?}", e.issues()));
-    let result = evaluate_observed_bytes(inputs, asks, &mut quiet()).unwrap();
+    let result = evaluate_observed_bytes(inputs, asks, &quiet()).unwrap();
     unchanged(&checked, result.prepared().inputs());
     audit(&result.wire(), result.prepared().inputs());
     assert_ne!(

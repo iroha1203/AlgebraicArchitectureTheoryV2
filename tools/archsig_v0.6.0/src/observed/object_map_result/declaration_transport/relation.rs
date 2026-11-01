@@ -46,7 +46,7 @@ fn ensure_map(
     target: &str,
     deps: &[NodeRef],
     maps: &mut Vec<Arc<ParameterMap>>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<usize, ValidationFailure> {
     if let Some(i) = maps
         .iter()
@@ -68,7 +68,7 @@ fn ensure_map(
 fn moved(
     value: &Scalar,
     maps: &[Arc<ParameterMap>],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Scalar, ValidationFailure> {
     if let Scalar::Subject {
         snapshot,
@@ -99,7 +99,7 @@ fn path_binding(
     b: &mut Builder<'_>,
     path: &PathValue,
     deps: &[NodeRef],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     path.check(c)?;
     let mut args = deps.to_vec();
@@ -135,7 +135,7 @@ fn witness_bindings(
     params: &[Param],
     row: &relation_instances::RelationInstance,
     numeric_point: Option<&[Scalar]>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<(String, Scalar)>, ValidationFailure> {
     if numeric_point.is_none()
         && row
@@ -179,7 +179,7 @@ fn example(
     right: &Scalar,
     deps: &[NodeRef],
     facts: &[Fact],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let paths = matches!((left, right), (Scalar::Path(_), Scalar::Path(_)));
     let left = match left {
@@ -252,7 +252,7 @@ fn reach(
     generators: &[Generator],
     seeds: Vec<Point>,
     reverse: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<std::collections::BTreeMap<Point, Vec<usize>>, ValidationFailure> {
     let mut paths = seeds
         .into_iter()
@@ -287,7 +287,7 @@ fn route(
     generators: &[Generator],
     edges: &[usize],
     reading: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<PathValue, ValidationFailure> {
     let (&first, rest) = edges.split_first().ok_or("生成元の経路証人が空")?;
     let mut path = generators[first].path.clone();
@@ -312,7 +312,7 @@ fn word(
     reading: &str,
     maps: &[Arc<ParameterMap>],
     generators: &[&Generator],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<PathValue>, ValidationFailure> {
     let Scalar::Subject {
         snapshot,
@@ -355,7 +355,7 @@ pub(super) fn retain(
     correspondence: &construction::DeclarationCorrespondence,
     deps: &[NodeRef],
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Output, ValidationFailure> {
     let mut out = Output {
         transports: vec![],

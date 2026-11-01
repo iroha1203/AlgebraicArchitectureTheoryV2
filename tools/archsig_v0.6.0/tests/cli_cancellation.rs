@@ -81,12 +81,12 @@ fn cancellation_at_each_input_stage_stops_before_delivery() {
             let (dir, args) = inputs(&format!("cancel-{code}-{index}"), true);
             let trace = Rc::new(RefCell::new(Vec::new()));
             let observed = Rc::clone(&trace);
-            let mut control = Control::new(move |current| {
+            let control = Control::new(move |current| {
                 observed.borrow_mut().push(current);
                 (current == point).then_some(signal)
             });
             let mut signals = Finalize::default();
-            let outcome = run_check(&mut NoOutput, &mut signals, &args, &mut control);
+            let outcome = run_check(&mut NoOutput, &mut signals, &args, &control);
             assert_eq!(
                 (outcome.status, outcome.exit_code),
                 (Status::Interrupted, code)
@@ -112,10 +112,9 @@ fn cancellation_at_each_input_stage_stops_before_delivery() {
 #[test]
 fn cancellation_without_archmap_also_has_no_artifact() {
     let (dir, args) = inputs("cancel-no-map", false);
-    let mut control =
-        Control::new(|point| (point == Checkpoint::LawSemantics).then_some(Signal::Term));
+    let control = Control::new(|point| (point == Checkpoint::LawSemantics).then_some(Signal::Term));
     let mut signals = Finalize::default();
-    let outcome = run_check(&mut NoOutput, &mut signals, &args, &mut control);
+    let outcome = run_check(&mut NoOutput, &mut signals, &args, &control);
     assert_eq!(
         (outcome.status, outcome.exit_code),
         (Status::Interrupted, 143)
@@ -131,13 +130,13 @@ fn earlier_checkpoint_signal_is_not_replaced_at_finalize() {
         (Signal::Int, Signal::Term, 130),
     ] {
         let (dir, args) = inputs(&format!("signal-order-{code}"), true);
-        let mut control =
+        let control =
             Control::new(move |point| (point == Checkpoint::LawSemantics).then_some(first));
         let mut signals = Finalize {
             calls: 0,
             late: Some(later),
         };
-        let outcome = run_check(&mut NoOutput, &mut signals, &args, &mut control);
+        let outcome = run_check(&mut NoOutput, &mut signals, &args, &control);
         assert_eq!(outcome.exit_code, code);
         assert_eq!(signals.calls, 1);
         let receipt = archsig::json::parse(outcome.receipt().as_bytes()).unwrap();

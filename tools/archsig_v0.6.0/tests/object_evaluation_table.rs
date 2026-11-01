@@ -32,14 +32,14 @@ fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
                 law.replace("@INSTANCES_DIGEST@", digest).into_bytes(),
                 map.replace("@INSTANCES_DIGEST@", digest).into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     )
 }
 fn plan(i: &CheckedInputs) -> ObjectReadingInstances {
-    let c = construct(i, "Selected", "v", "A", &mut quiet()).unwrap();
-    object_reading_instances(i, &c, &mut quiet()).unwrap()
+    let c = construct(i, "Selected", "v", "A", &quiet()).unwrap();
+    object_reading_instances(i, &c, &quiet()).unwrap()
 }
 fn field<'a>(j: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(o) = j else {
@@ -125,7 +125,7 @@ fn every_object_instance_row_retains_values_refutations_and_application() {
     assert_ne!(a, A);
     let i = inputs(L, &a);
     let p = plan(&i);
-    let t = evaluate_object_table(Arc::clone(&i), &p, &mut quiet()).unwrap();
+    let t = evaluate_object_table(Arc::clone(&i), &p, &quiet()).unwrap();
     assert!(t.is_complete());
     assert_eq!(t.pending(), None);
     assert_eq!(p.objects().len(), 3);
@@ -137,9 +137,8 @@ fn every_object_instance_row_retains_values_refutations_and_application() {
             instance: index % 12,
         };
         assert_eq!(r.position(), pos);
-        let one =
-            evaluate_object_instance(Arc::clone(&i), &p, pos.object, pos.instance, &mut quiet())
-                .unwrap();
+        let one = evaluate_object_instance(Arc::clone(&i), &p, pos.object, pos.instance, &quiet())
+            .unwrap();
         match (r.evaluation().outcome(), one.outcome()) {
             (ObjectEvaluationOutcome::NotApplicable, ObjectEvaluationOutcome::NotApplicable) => {}
             (ObjectEvaluationOutcome::Evaluated(a), ObjectEvaluationOutcome::Evaluated(b)) => {
@@ -162,7 +161,7 @@ fn every_object_instance_row_retains_values_refutations_and_application() {
         row(&t, "p", "amount", "r").outcome(),
         ObjectEvaluationOutcome::NotApplicable
     ));
-    t.recheck(i, &mut quiet()).unwrap();
+    t.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn missing_values_and_conditional_membership_are_kept_as_distinct_rows() {
@@ -172,7 +171,7 @@ fn missing_values_and_conditional_membership_are_kept_as_distinct_rows() {
     ] {
         let i = inputs(L, &map);
         let p = plan(&i);
-        let t = evaluate_object_table(i, &p, &mut quiet()).unwrap();
+        let t = evaluate_object_table(i, &p, &quiet()).unwrap();
         assert!(t.is_complete());
         assert_eq!(t.rows().len(), p.objects().len() * p.instances().len());
         if conditional {
@@ -202,7 +201,7 @@ fn empty_instance_family_is_a_complete_empty_evaluation_table() {
     let i = inputs(&l, A);
     let p = plan(&i);
     assert!(p.instances().is_empty());
-    let t = evaluate_object_table(i, &p, &mut quiet()).unwrap();
+    let t = evaluate_object_table(i, &p, &quiet()).unwrap();
     assert!(t.is_complete());
     assert!(t.rows().is_empty());
     assert_eq!(t.pending(), None);
@@ -215,7 +214,7 @@ fn infinite_view_families_keep_the_cause_position_and_completed_prefix() {
     );
     let i = inputs(&l, A);
     let p = plan(&i);
-    let f = evaluate_object_table(i, &p, &mut quiet()).unwrap_err();
+    let f = evaluate_object_table(i, &p, &quiet()).unwrap_err();
     let ObjectEvaluationFailure::NotImplemented { object, instance } = f.cause() else {
         panic!("implementation failure must stay explicit")
     };
@@ -236,26 +235,26 @@ fn infinite_view_families_keep_the_cause_position_and_completed_prefix() {
 fn stale_law_tables_are_rejected_and_changed_values_are_recomputed() {
     let i = inputs(L, A);
     let p = plan(&i);
-    let t = evaluate_object_table(Arc::clone(&i), &p, &mut quiet()).unwrap();
+    let t = evaluate_object_table(Arc::clone(&i), &p, &quiet()).unwrap();
     let other = inputs(&L.replace("= c.quantity;", "= c.quantity + 1;"), A);
-    let f = evaluate_object_table(other, &p, &mut quiet()).unwrap_err();
+    let f = evaluate_object_table(other, &p, &quiet()).unwrap_err();
     assert!(f.partial().is_none());
     assert!(matches!(
         f.cause(),
         ObjectEvaluationFailure::Construction(ConstructionFailure::Inconsistent(_))
     ));
     let changed = inputs(L, &A.replace("\"value\":\"2\"", "\"value\":\"3\""));
-    assert!(t.recheck(changed, &mut quiet()).is_err());
+    assert!(t.recheck(changed, &quiet()).is_err());
 }
 #[test]
 fn fixed_table_stops_keep_exact_prefix_and_final_completion_without_new_probes() {
     let i = inputs(L, A);
     let p = plan(&i);
-    let full = evaluate_object_table(Arc::clone(&i), &p, &mut quiet()).unwrap();
+    let full = evaluate_object_table(Arc::clone(&i), &p, &quiet()).unwrap();
     let n = full.rows().len();
     for at in [3, 2 * n + 2] {
-        let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, Signal::Int);
-        let f = evaluate_object_table(Arc::clone(&i), &p, &mut c).unwrap_err();
+        let (c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, Signal::Int);
+        let f = evaluate_object_table(Arc::clone(&i), &p, &c).unwrap_err();
         assert!(
             matches!(f.cause(),ObjectEvaluationFailure::Construction(ConstructionFailure::Stopped(r)) if Some(*r)==c.stop_reason())
         );
@@ -278,7 +277,7 @@ fn fixed_table_stops_keep_exact_prefix_and_final_completion_without_new_probes()
             }
         }
         assert!(
-            evaluate_object_table(Arc::clone(&i), &p, &mut c)
+            evaluate_object_table(Arc::clone(&i), &p, &c)
                 .unwrap_err()
                 .partial()
                 .is_none()
@@ -291,8 +290,8 @@ fn stopping_inside_a_cell_keeps_its_partial_dag_separate_from_completed_rows() {
     let i = inputs(L, A);
     let p = plan(&i);
     for signal in [Signal::Int, Signal::Term] {
-        let (mut c, probes) = stop_at(Checkpoint::Expression, 5, signal);
-        let f = evaluate_object_table(Arc::clone(&i), &p, &mut c).unwrap_err();
+        let (c, probes) = stop_at(Checkpoint::Expression, 5, signal);
+        let f = evaluate_object_table(Arc::clone(&i), &p, &c).unwrap_err();
         assert!(f.position().is_some());
         assert!(!f.partial().unwrap().is_complete());
         let active = f
@@ -304,7 +303,7 @@ fn stopping_inside_a_cell_keeps_its_partial_dag_separate_from_completed_rows() {
         assert_eq!(e.status(), "interrupted");
         assert!(!array(field(&e.wire(), "nodes")).is_empty());
         assert_eq!(f.partial().unwrap().pending(), f.position());
-        assert!(evaluate_object_table(Arc::clone(&i), &p, &mut c).is_err());
+        assert!(evaluate_object_table(Arc::clone(&i), &p, &c).is_err());
         assert_eq!(probes.get(), 5);
     }
 }
@@ -313,13 +312,13 @@ fn stopping_inside_a_cell_keeps_its_partial_dag_separate_from_completed_rows() {
 fn recheck_stops_during_comparison_keep_the_recomputed_complete_table() {
     let i = inputs(L, A);
     let p = plan(&i);
-    let full = evaluate_object_table(Arc::clone(&i), &p, &mut quiet()).unwrap();
+    let full = evaluate_object_table(Arc::clone(&i), &p, &quiet()).unwrap();
     let n = full.rows().len();
     // 全行再計算の2n+2 checkpointの後、一行比較ごとと末尾に検査する。
     // 停止の種類は他のテストが網羅するので、ここでは Int 停止だけを比較の途中と末尾で見る。
     for at in [2 * n + 3, 3 * n + 3] {
-        let (mut c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, Signal::Int);
-        let f = full.recheck(Arc::clone(&i), &mut c).unwrap_err();
+        let (c, probes) = stop_at(Checkpoint::ObjectEvaluationTable, at, Signal::Int);
+        let f = full.recheck(Arc::clone(&i), &c).unwrap_err();
         assert!(
             matches!(f.cause(), ObjectEvaluationFailure::Construction(ConstructionFailure::Stopped(r)) if Some(*r)==c.stop_reason())
         );
@@ -330,7 +329,7 @@ fn recheck_stops_during_comparison_keep_the_recomputed_complete_table() {
         assert!(f.active().is_none());
         assert_eq!(f.position(), None);
         assert!(
-            full.recheck(Arc::clone(&i), &mut c)
+            full.recheck(Arc::clone(&i), &c)
                 .unwrap_err()
                 .partial()
                 .is_none()
@@ -365,7 +364,7 @@ fn empty_and_conditional_tables_reject_changed_values_and_origins() {
     ] {
         let i = inputs(law, map);
         let p = plan(&i);
-        let t = evaluate_object_table(Arc::clone(&i), &p, &mut quiet()).unwrap();
+        let t = evaluate_object_table(Arc::clone(&i), &p, &quiet()).unwrap();
         assert!(t.is_complete());
         assert_eq!(t.inputs().sources(), i.sources());
         assert!(Arc::ptr_eq(&t.shared_inputs(), &i));
@@ -381,7 +380,7 @@ fn empty_and_conditional_tables_reject_changed_values_and_origins() {
             let changed = inputs(law, &changed_map);
             assert_ne!(i.sources(), changed.sources());
             assert!(
-                t.recheck(changed, &mut quiet()).is_err(),
+                t.recheck(changed, &quiet()).is_err(),
                 "original three inputs must be checked even without evaluated rows"
             );
         }
@@ -396,7 +395,7 @@ fn finite_view_functions_complete_the_table_without_changing_applicability() {
     );
     let i = inputs(&l, A);
     let p = plan(&i);
-    let t = evaluate_object_table(Arc::clone(&i), &p, &mut quiet()).unwrap();
+    let t = evaluate_object_table(Arc::clone(&i), &p, &quiet()).unwrap();
     assert!(t.is_complete());
     assert_eq!(t.rows().len(), 36);
     let mut functions = 0;
@@ -420,5 +419,5 @@ fn finite_view_functions_complete_the_table_without_changing_applicability() {
         }
     }
     assert_eq!(functions, 4);
-    t.recheck(i, &mut quiet()).unwrap();
+    t.recheck(i, &quiet()).unwrap();
 }

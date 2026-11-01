@@ -58,12 +58,12 @@ fn unsupported(request: &Request, feature: &str) -> ValidationFailure {
 fn exact_type(
     ty: &Type,
     law: &crate::law::CheckedLaw,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ValidationFailure> {
     fn visit(
         ty: &Type,
         law: &crate::law::CheckedLaw,
-        c: &mut Control,
+        c: &Control,
         active: &mut Vec<String>,
     ) -> Result<bool, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
@@ -116,7 +116,7 @@ fn observation(
     expression: usize,
     occurrence: Option<usize>,
     nodes: &[EvaluationNode],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Type, Option<Scalar>), ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         c.checkpoint(Checkpoint::Quotient)?;
@@ -324,7 +324,7 @@ pub(in crate::observed) fn compute(
     graph: &Graph,
     input: &CandidateInput,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Table, ValidationFailure> {
     if input.search.linear.is_some() || input.search.rational.is_some() {
         return Err(unsupported(

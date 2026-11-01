@@ -77,7 +77,7 @@ impl ConfigurationOperation {
     pub fn from_map(
         inputs: &CheckedInputs,
         map: &ConfigurationMap,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Self, ConstructionFailure> {
         Self::from_map_retained(inputs, map, control).map_err(|failure| failure.cause)
     }
@@ -85,7 +85,7 @@ impl ConfigurationOperation {
     pub fn from_map_retained(
         inputs: &CheckedInputs,
         map: &ConfigurationMap,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Self, OperationFailure> {
         tick(control)?;
         map.recheck(inputs, control)?;
@@ -110,7 +110,7 @@ impl ConfigurationOperation {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         tick(control)?;
         self.map.recheck(inputs, control)?;
@@ -126,7 +126,7 @@ impl ConfigurationOperation {
         &self,
         inputs: &CheckedInputs,
         then: &Self,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Self, ConstructionFailure> {
         self.compose_retained(inputs, then, control)
             .map_err(|failure| failure.cause)
@@ -136,7 +136,7 @@ impl ConfigurationOperation {
         &self,
         inputs: &CheckedInputs,
         then: &Self,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Self, OperationFailure> {
         tick(control)?;
         self.recheck(inputs, control)?;
@@ -173,7 +173,7 @@ impl ConfigurationOperation {
         &self,
         inputs: &CheckedInputs,
         other: &Self,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<bool, ConstructionFailure> {
         self.word_equal_retained(inputs, other, control, |_| {})
     }
@@ -182,7 +182,7 @@ impl ConfigurationOperation {
         &self,
         inputs: &CheckedInputs,
         other: &Self,
-        control: &mut Control,
+        control: &Control,
         mut retain: impl FnMut(bool),
     ) -> Result<bool, ConstructionFailure> {
         self.recheck(inputs, control)?;
@@ -207,7 +207,7 @@ impl ConfigurationOperation {
         &self,
         inputs: &CheckedInputs,
         other: &Self,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Option<ActionDifference>, ConstructionFailure> {
         self.action_difference_retained(inputs, other, control, |_| {})
     }
@@ -216,7 +216,7 @@ impl ConfigurationOperation {
         &self,
         inputs: &CheckedInputs,
         other: &Self,
-        control: &mut Control,
+        control: &Control,
         mut retain: impl FnMut(Option<&ActionDifference>),
     ) -> Result<Option<ActionDifference>, ConstructionFailure> {
         self.recheck(inputs, control)?;
@@ -270,7 +270,7 @@ impl IdentityConstruction {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         if self != &identity_object(inputs, &self.object, control)? {
             return Err(ConstructionFailure::Inconsistent(
@@ -280,7 +280,7 @@ impl IdentityConstruction {
         tick(control)
     }
 }
-fn tick(control: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(control: &Control) -> Result<(), ConstructionFailure> {
     control
         .checkpoint(Checkpoint::ConfigurationOperation)
         .map_err(Into::into)
@@ -304,13 +304,13 @@ fn raw_step(map: &ConfigurationMap) -> Option<OperationStep> {
 }
 fn from_verified_map(
     map: ConfigurationMap,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ConfigurationOperation, ConstructionFailure> {
     from_verified_map_retained(map, control).map_err(|failure| failure.cause)
 }
 fn from_verified_map_retained(
     map: ConfigurationMap,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ConfigurationOperation, OperationFailure> {
     tick(control)?;
     let steps = match &map.candidate.origin {
@@ -330,10 +330,7 @@ fn from_verified_map_retained(
         }),
     }
 }
-fn validate_steps(
-    steps: &[OperationStep],
-    control: &mut Control,
-) -> Result<(), ConstructionFailure> {
+fn validate_steps(steps: &[OperationStep], control: &Control) -> Result<(), ConstructionFailure> {
     tick(control)?;
     if steps.is_empty() {
         return Err(ConstructionFailure::Inconsistent("操作の構成表が空".into()));
@@ -368,7 +365,7 @@ fn validate_steps(
 }
 fn word(
     steps: &[OperationStep],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<FactPointer>, ConstructionFailure> {
     validate_steps(steps, control)?;
     let mut pending = vec![steps.len() - 1];
@@ -408,7 +405,7 @@ impl Data {
         }
     }
 }
-fn compose_data(a: &Data, b: &Data, control: &mut Control) -> Result<Data, ConstructionFailure> {
+fn compose_data(a: &Data, b: &Data, control: &Control) -> Result<Data, ConstructionFailure> {
     tick(control)?;
     if a.target != b.source
         || a.universe != b.universe
@@ -472,7 +469,7 @@ pub fn identity(
     root_snapshot: &str,
     root: &str,
     component: Option<(&str, &str)>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<IdentityConstruction, ConstructionFailure> {
     tick(control)?;
     if component.is_some_and(|(s, id)| s == root_snapshot && id == root) {
@@ -507,7 +504,7 @@ pub fn identity(
 fn identity_object(
     inputs: &CheckedInputs,
     object: &ObjectIdentity,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<IdentityConstruction, ConstructionFailure> {
     tick(control)?;
     let construction = construct(
@@ -597,7 +594,7 @@ fn identity_object(
 pub(super) fn recompute(
     inputs: &CheckedInputs,
     steps: &[OperationStep],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ConfigurationMap, ConstructionFailure> {
     validate_steps(steps, control)?;
     let mut values: Vec<Data> = Vec::new();
@@ -686,7 +683,7 @@ mod tests {
                 include_bytes!("../../../tests/fixtures/configuration-operation.archmap.json")
                     .to_vec(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap()
     }
@@ -700,7 +697,7 @@ mod tests {
             "A",
             "v",
             "e",
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let h = internal_arrow(
@@ -710,16 +707,14 @@ mod tests {
             "A",
             "v",
             "h",
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
-        let e =
-            ConfigurationOperation::from_map(&inputs, e.map().unwrap(), &mut Control::unlimited())
-                .unwrap();
-        let h =
-            ConfigurationOperation::from_map(&inputs, h.map().unwrap(), &mut Control::unlimited())
-                .unwrap();
-        let original = e.compose(&inputs, &h, &mut Control::unlimited()).unwrap();
+        let e = ConfigurationOperation::from_map(&inputs, e.map().unwrap(), &Control::unlimited())
+            .unwrap();
+        let h = ConfigurationOperation::from_map(&inputs, h.map().unwrap(), &Control::unlimited())
+            .unwrap();
+        let original = e.compose(&inputs, &h, &Control::unlimited()).unwrap();
         for kind in [
             "word",
             "action",
@@ -769,7 +764,7 @@ mod tests {
                 }
             }
             assert!(
-                forged.recheck(&inputs, &mut Control::unlimited()).is_err(),
+                forged.recheck(&inputs, &Control::unlimited()).is_err(),
                 "{kind}"
             );
         }
@@ -779,14 +774,14 @@ mod tests {
             "v",
             "A",
             Some(("v", "p")),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         forged.operation = None;
-        assert!(forged.recheck(&inputs, &mut Control::unlimited()).is_err());
+        assert!(forged.recheck(&inputs, &Control::unlimited()).is_err());
         let mut forged = original.clone();
         forged.map.candidate.images.clear();
-        assert!(forged.recheck(&inputs, &mut Control::unlimited()).is_err());
+        assert!(forged.recheck(&inputs, &Control::unlimited()).is_err());
     }
     #[test]
     fn very_deep_identity_composition_is_iterative_and_latches_before_recomputation() {
@@ -797,7 +792,7 @@ mod tests {
             "v",
             "A",
             None,
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let mut operation = identity.operation.unwrap();
@@ -813,7 +808,7 @@ mod tests {
             });
             steps.push(OperationStep::Compose { first, then });
         }
-        assert!(word(&steps, &mut Control::unlimited()).unwrap().is_empty());
+        assert!(word(&steps, &Control::unlimited()).unwrap().is_empty());
         let MapOrigin::Derived(origin) = &mut operation.map.candidate.origin else {
             panic!("identity origin")
         };
@@ -821,20 +816,20 @@ mod tests {
         operation.steps = steps;
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if point == Checkpoint::ConfigurationOperation {
                 seen.set(seen.get() + 1);
             }
             (seen.get() >= 50).then_some(Signal::Int)
         });
-        let failure = operation.recheck(&inputs, &mut control).unwrap_err();
+        let failure = operation.recheck(&inputs, &control).unwrap_err();
         assert_eq!(
             failure,
             ConstructionFailure::Stopped(control.stop_reason().unwrap())
         );
         assert_eq!(count.get(), 50);
         assert_eq!(
-            operation.map.recheck(&inputs, &mut control).unwrap_err(),
+            operation.map.recheck(&inputs, &control).unwrap_err(),
             failure
         );
         assert_eq!(count.get(), 50);

@@ -41,22 +41,13 @@ fn sources(law: &str) -> InputSources {
     )
 }
 fn inputs(law: &str) -> CheckedInputs {
-    check_inputs(sources(law), &mut Control::unlimited())
-        .unwrap_or_else(|f| panic!("{:?}", f.issues()))
+    check_inputs(sources(law), &Control::unlimited()).unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
 fn result(i: &CheckedInputs) -> DeclarationCorrespondence {
-    let m = correspondence(
-        i,
-        "v",
-        "m",
-        "Before",
-        Some("After"),
-        &mut Control::unlimited(),
-    )
-    .unwrap();
+    let m = correspondence(i, "v", "m", "Before", Some("After"), &Control::unlimited()).unwrap();
     assert!(m.missing().is_empty());
     assert!(m.counterexamples().is_empty());
-    declaration_correspondence(i, m.map().unwrap(), &mut Control::unlimited()).unwrap()
+    declaration_correspondence(i, m.map().unwrap(), &Control::unlimited()).unwrap()
 }
 #[test]
 fn all_five_kinds_match_only_selected_readings_with_positional_owner_and_compound_types() {
@@ -152,10 +143,8 @@ fn all_five_kinds_match_only_selected_readings_with_positional_owner_and_compoun
         .find(|c| c.source().name == "Before.bounded")
         .unwrap();
     assert_ne!(bounded.source().role, bounded.target().unwrap().role);
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }
 fn candidate<'a>(
     r: &'a DeclarationCorrespondence,
@@ -207,10 +196,8 @@ fn missing_wrong_kind_and_different_short_name_do_not_use_aliases_or_other_readi
             );
         }
         assert!(i.law().declarations().contains_key("Decoy.amount"));
-        r.operation()
-            .recheck(&i, &mut Control::unlimited())
-            .unwrap();
-        r.recheck(&i, &mut Control::unlimited()).unwrap();
+        r.operation().recheck(&i, &Control::unlimited()).unwrap();
+        r.recheck(&i, &Control::unlimited()).unwrap();
     }
 }
 #[test]
@@ -335,7 +322,7 @@ fn term_value_types_are_preserved_and_path_endpoints_are_transported() {
         "Term<(Child, Bool) -> Option<Z>>",
         1,
     );
-    let failure = check_inputs(sources(&law), &mut Control::unlimited()).unwrap_err();
+    let failure = check_inputs(sources(&law), &Control::unlimited()).unwrap_err();
     assert!(
         failure
             .issues()
@@ -353,9 +340,9 @@ fn current_declaration_metadata_is_rechecked_and_quantity_changes_do_not_define_
     ));
     r.operation()
         .map()
-        .recheck(&changed, &mut Control::unlimited())
+        .recheck(&changed, &Control::unlimited())
         .unwrap();
-    assert!(r.recheck(&changed, &mut Control::unlimited()).is_err());
+    assert!(r.recheck(&changed, &Control::unlimited()).is_err());
     let s = sources(L);
     let map = std::str::from_utf8(s.archmap().bytes())
         .unwrap()
@@ -366,10 +353,10 @@ fn current_declaration_metadata_is_rechecked_and_quantity_changes_do_not_define_
             s.law().bytes().to_vec(),
             map.into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    r.recheck(&changed, &mut Control::unlimited()).unwrap();
+    r.recheck(&changed, &Control::unlimited()).unwrap();
 }
 #[test]
 fn declaration_input_order_keeps_pairs_and_updates_original_positions() {
@@ -388,23 +375,20 @@ fn declaration_input_order_keeps_pairs_and_updates_original_positions() {
         candidate(&a, "amount").target().unwrap().span,
         candidate(&b, "amount").target().unwrap().span
     );
-    assert!(
-        a.recheck(&inputs(&changed), &mut Control::unlimited())
-            .is_err()
-    );
+    assert!(a.recheck(&inputs(&changed), &Control::unlimited()).is_err());
 }
 #[test]
 fn internal_identity_and_composite_maps_cannot_supply_declaration_correspondence() {
     let i = inputs(L);
-    let id = identity(&i, "Before", "v", "a", None, &mut Control::unlimited())
+    let id = identity(&i, "Before", "v", "a", None, &Control::unlimited())
         .unwrap()
         .operation()
         .unwrap()
         .clone();
-    let composed = id.compose(&i, &id, &mut Control::unlimited()).unwrap();
+    let composed = id.compose(&i, &id, &Control::unlimited()).unwrap();
     for map in [id.map(), composed.map()] {
         assert!(
-            matches!(declaration_correspondence(&i,map,&mut Control::unlimited()),Err(ConstructionFailure::InvalidSelection(message))if !message.is_empty())
+            matches!(declaration_correspondence(&i,map,&Control::unlimited()),Err(ConstructionFailure::InvalidSelection(message))if !message.is_empty())
         );
     }
     let i = check_inputs(
@@ -413,7 +397,7 @@ fn internal_identity_and_composite_maps_cannot_supply_declaration_correspondence
             include_bytes!("fixtures/reservations.law").to_vec(),
             include_bytes!("fixtures/reservations.archmap.json").to_vec(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let e = archsig::construction::maps::internal_arrow(
@@ -423,11 +407,11 @@ fn internal_identity_and_composite_maps_cannot_supply_declaration_correspondence
         "A",
         "v",
         "e",
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert!(matches!(
-        declaration_correspondence(&i, e.map().unwrap(), &mut Control::unlimited()),
+        declaration_correspondence(&i, e.map().unwrap(), &Control::unlimited()),
         Err(ConstructionFailure::InvalidSelection(_))
     ));
 }
@@ -438,32 +422,32 @@ fn every_fixed_declaration_stop_latches_without_new_probes() {
     let map = r.operation().map();
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::DeclarationCorrespondence {
             seen.set(seen.get() + 1);
         }
         None
     });
-    declaration_correspondence(&i, map, &mut c).unwrap();
+    declaration_correspondence(&i, map, &c).unwrap();
     let total = count.get();
     assert!(total > 100);
     for at in [1, total / 2, total] {
         for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut c = Control::new(move |p| {
+            let c = Control::new(move |p| {
                 if p == Checkpoint::DeclarationCorrespondence {
                     seen.set(seen.get() + 1);
                 }
                 (seen.get() >= at).then_some(signal)
             });
-            let failure = declaration_correspondence(&i, map, &mut c).unwrap_err();
+            let failure = declaration_correspondence(&i, map, &c).unwrap_err();
             assert_eq!(
                 failure,
                 ConstructionFailure::Stopped(c.stop_reason().unwrap())
             );
             assert_eq!(count.get(), at);
-            assert_eq!(r.recheck(&i, &mut c).unwrap_err(), failure);
+            assert_eq!(r.recheck(&i, &c).unwrap_err(), failure);
             assert_eq!(count.get(), at);
         }
     }

@@ -10,11 +10,11 @@ mod fixture {
 }
 use crate::control::quiet;
 fn reading(i: &CheckedInputs) -> ObjectReadingInstances {
-    let base = construct(i, "Selected", "v", "root", &mut quiet()).unwrap();
-    object_reading_instances(i, &base, &mut quiet()).unwrap()
+    let base = construct(i, "Selected", "v", "root", &quiet()).unwrap();
+    object_reading_instances(i, &base, &quiet()).unwrap()
 }
 fn run(i: &CheckedInputs, a: &ObjectReadingInstances) -> FiniteAutomaticLawFamily {
-    finite_automatic_law_family(i, a, &mut quiet()).unwrap()
+    finite_automatic_law_family(i, a, &quiet()).unwrap()
 }
 fn object(a: &ObjectReadingInstances, name: &str) -> usize {
     a.objects()
@@ -30,13 +30,13 @@ fn symbolic_witness_generators_are_not_observed_epsilon_and_required_excludes_ot
     let result = run(&i, &a);
     let f = result.family().unwrap();
     let o = object(&a, "root");
-    let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+    let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
     assert_eq!(p.equations().len(), 6);
-    let required = p.required_ideal(&mut quiet()).unwrap();
+    let required = p.required_ideal(&quiet()).unwrap();
     assert_eq!(required.kind(), FiniteObjectIdealKind::Obstruction);
     assert!(std::ptr::eq(required.base(), &p));
     assert_eq!(required.zero_points(), [0]);
-    assert!(!required.is_zero(&mut quiet()).unwrap());
+    assert!(!required.is_zero(&quiet()).unwrap());
     let expected: Vec<_> = p
         .equations()
         .iter()
@@ -45,15 +45,15 @@ fn symbolic_witness_generators_are_not_observed_epsilon_and_required_excludes_ot
         .map(|(n, _)| n)
         .collect();
     assert_eq!(required.equations(), expected);
-    assert_eq!(required.generators(&mut quiet()).unwrap().len(), 2);
+    assert_eq!(required.generators(&quiet()).unwrap().len(), 2);
     for (index, equation) in p.equations().iter().enumerate() {
-        let ideal = p.witness_ideal(index, &mut quiet()).unwrap();
+        let ideal = p.witness_ideal(index, &quiet()).unwrap();
         assert_eq!(
             ideal.kind(),
             FiniteObjectIdealKind::Witness { equation: index }
         );
         assert_eq!(ideal.equations(), [index]);
-        let generators = ideal.generators(&mut quiet()).unwrap();
+        let generators = ideal.generators(&quiet()).unwrap();
         assert_eq!(generators.len(), 1);
         assert!(std::ptr::eq(generators[0], equation.nu()));
         let name = f.columns()[equation.column()].declaration().name.as_str();
@@ -61,10 +61,10 @@ fn symbolic_witness_generators_are_not_observed_epsilon_and_required_excludes_ot
             .subject()
             .subject;
         if name == "Selected.same" {
-            assert!(ideal.is_zero(&mut quiet()).unwrap());
+            assert!(ideal.is_zero(&quiet()).unwrap());
             assert_eq!(ideal.zero_points(), [0, 1, 2, 3]);
         } else {
-            assert!(!ideal.is_zero(&mut quiet()).unwrap());
+            assert!(!ideal.is_zero(&quiet()).unwrap());
             let zeros = match (name, source.as_str()) {
                 ("Selected.zero", "p") => vec![0, 1],
                 ("Selected.zero", "q") => vec![0, 2],
@@ -96,7 +96,7 @@ fn symbolic_witness_generators_are_not_observed_epsilon_and_required_excludes_ot
                 FiniteObjectIdealKind::Witness { equation: index },
                 &i,
                 &a,
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap();
     }
@@ -108,7 +108,7 @@ fn symbolic_witness_generators_are_not_observed_epsilon_and_required_excludes_ot
             FiniteObjectIdealKind::Obstruction,
             &i,
             &a,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
 }
@@ -121,17 +121,17 @@ fn each_objects_required_ideal_keeps_its_own_domain_of_application_and_zero_gene
     assert_eq!(f.required_zero(), Some([0].as_slice()));
     for (name, zeros) in [("root", vec![0]), ("p", vec![0, 1]), ("q", vec![0, 2])] {
         let o = object(&a, name);
-        let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
-        let required = p.required_ideal(&mut quiet()).unwrap();
+        let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
+        let required = p.required_ideal(&quiet()).unwrap();
         assert_eq!(required.zero_points(), zeros);
         assert_eq!(required.equations().len(), 2);
         assert_eq!(p.equations().len(), 6);
         for (index, q) in p.equations().iter().enumerate() {
-            let ideal = p.witness_ideal(index, &mut quiet()).unwrap();
+            let ideal = p.witness_ideal(index, &quiet()).unwrap();
             let source = &a.instances()[q.instance()].bindings()[0].subject().subject;
             if name != "root" && name != source {
-                assert!(ideal.is_zero(&mut quiet()).unwrap());
-                assert_eq!(ideal.generators(&mut quiet()).unwrap().len(), 1);
+                assert!(ideal.is_zero(&quiet()).unwrap());
+                assert_eq!(ideal.generators(&quiet()).unwrap().len(), 1);
                 assert_eq!(ideal.zero_points(), [0, 1, 2, 3]);
             }
             ideal
@@ -142,7 +142,7 @@ fn each_objects_required_ideal_keeps_its_own_domain_of_application_and_zero_gene
                     FiniteObjectIdealKind::Witness { equation: index },
                     &i,
                     &a,
-                    &mut quiet(),
+                    &quiet(),
                 )
                 .unwrap();
         }
@@ -154,7 +154,7 @@ fn each_objects_required_ideal_keeps_its_own_domain_of_application_and_zero_gene
                 FiniteObjectIdealKind::Obstruction,
                 &i,
                 &a,
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap();
     }
@@ -167,13 +167,13 @@ fn every_typed_tuple_leaf_has_its_own_original_witness_ideal_in_the_same_ring() 
     let result = run(&i, &a);
     let f = result.family().unwrap();
     let o = object(&a, "root");
-    let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+    let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
     assert_eq!(f.domain().len(), 16);
     assert_eq!(p.equations().len(), 4);
     for (index, q) in p.equations().iter().enumerate() {
         let source = &a.instances()[q.instance()].bindings()[0].subject().subject;
         let component = q.component().unwrap()[0];
-        let ideal = p.witness_ideal(index, &mut quiet()).unwrap();
+        let ideal = p.witness_ideal(index, &quiet()).unwrap();
         let zeros = match (source.as_str(), component) {
             ("p", 0) => (0..8).collect::<Vec<_>>(),
             ("p", 1) => vec![0, 1, 2, 3, 8, 9, 10, 11],
@@ -182,9 +182,9 @@ fn every_typed_tuple_leaf_has_its_own_original_witness_ideal_in_the_same_ring() 
             _ => panic!("original component"),
         };
         assert_eq!(ideal.zero_points(), zeros);
-        assert!(!ideal.is_zero(&mut quiet()).unwrap());
+        assert!(!ideal.is_zero(&quiet()).unwrap());
         assert_eq!(
-            ideal.generators(&mut quiet()).unwrap()[0].values(),
+            ideal.generators(&quiet()).unwrap()[0].values(),
             q.nu().values()
         );
         let expected = if component == 0 {
@@ -201,14 +201,14 @@ fn every_typed_tuple_leaf_has_its_own_original_witness_ideal_in_the_same_ring() 
                 FiniteObjectIdealKind::Witness { equation: index },
                 &i,
                 &a,
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap();
     }
-    let required = p.required_ideal(&mut quiet()).unwrap();
+    let required = p.required_ideal(&quiet()).unwrap();
     assert_eq!(required.equations(), [0, 1, 2, 3]);
     assert_eq!(required.zero_points(), [0]);
-    assert_eq!(required.generators(&mut quiet()).unwrap().len(), 4);
+    assert_eq!(required.generators(&quiet()).unwrap().len(), 4);
     required
         .recheck(
             &p,
@@ -217,7 +217,7 @@ fn every_typed_tuple_leaf_has_its_own_original_witness_ideal_in_the_same_ring() 
             FiniteObjectIdealKind::Obstruction,
             &i,
             &a,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
 }
@@ -231,9 +231,9 @@ fn all_parameter_assignments_keep_distinct_witness_indices_even_when_functions_c
     let result = run(&i, &a);
     let f = result.family().unwrap();
     let o = object(&a, "root");
-    let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+    let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
     assert_eq!(p.equations().len(), 8);
-    let required = p.required_ideal(&mut quiet()).unwrap();
+    let required = p.required_ideal(&quiet()).unwrap();
     assert!(required.zero_points().is_empty());
     assert_eq!(required.equations(), (0..8).collect::<Vec<_>>());
     let mut keys = std::collections::BTreeSet::new();
@@ -255,7 +255,7 @@ fn all_parameter_assignments_keep_distinct_witness_indices_even_when_functions_c
             panic!("b")
         };
         keys.insert((subject.clone(), n.to_string(), b));
-        let ideal = p.witness_ideal(index, &mut quiet()).unwrap();
+        let ideal = p.witness_ideal(index, &quiet()).unwrap();
         assert_eq!(ideal.equations(), [index]);
         let zeros = match (subject.as_str(), n.to_string().as_str()) {
             ("p", "0") => vec![0, 1],
@@ -273,7 +273,7 @@ fn all_parameter_assignments_keep_distinct_witness_indices_even_when_functions_c
                 FiniteObjectIdealKind::Witness { equation: index },
                 &i,
                 &a,
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap();
     }
@@ -286,7 +286,7 @@ fn all_parameter_assignments_keep_distinct_witness_indices_even_when_functions_c
             FiniteObjectIdealKind::Obstruction,
             &i,
             &a,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
 }
@@ -302,9 +302,9 @@ fn empty_families_and_false_guards_keep_zero_ideals_without_losing_existing_indi
         let result = run(&i, &a);
         let f = result.family().unwrap();
         let o = object(&a, "root");
-        let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
-        let ideal = p.required_ideal(&mut quiet()).unwrap();
-        assert!(ideal.is_zero(&mut quiet()).unwrap());
+        let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
+        let ideal = p.required_ideal(&quiet()).unwrap();
+        assert!(ideal.is_zero(&quiet()).unwrap());
         assert_eq!(
             ideal.zero_points(),
             (0..f.domain().len()).collect::<Vec<_>>()
@@ -313,15 +313,15 @@ fn empty_families_and_false_guards_keep_zero_ideals_without_losing_existing_indi
             assert_eq!(p.equations().len(), 2);
             assert_eq!(ideal.equations(), [0, 1]);
             for index in 0..2 {
-                let w = p.witness_ideal(index, &mut quiet()).unwrap();
-                assert_eq!(w.generators(&mut quiet()).unwrap().len(), 1);
-                assert!(w.is_zero(&mut quiet()).unwrap());
+                let w = p.witness_ideal(index, &quiet()).unwrap();
+                assert_eq!(w.generators(&quiet()).unwrap().len(), 1);
+                assert!(w.is_zero(&quiet()).unwrap());
                 assert_eq!(w.zero_points(), [0]);
             }
         } else {
             assert!(ideal.equations().is_empty());
-            assert!(ideal.generators(&mut quiet()).unwrap().is_empty());
-            assert!(p.witness_ideal(0, &mut quiet()).is_err());
+            assert!(ideal.generators(&quiet()).unwrap().is_empty());
+            assert!(p.witness_ideal(0, &quiet()).is_err());
         }
         ideal
             .recheck(
@@ -331,7 +331,7 @@ fn empty_families_and_false_guards_keep_zero_ideals_without_losing_existing_indi
                 FiniteObjectIdealKind::Obstruction,
                 &i,
                 &a,
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap();
     }
@@ -344,10 +344,10 @@ fn unknown_observations_do_not_prune_symbolic_ideal_coordinates_or_fill_dependen
     let result = run(&i, &a);
     let f = result.family().unwrap();
     let o = object(&a, "root");
-    let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+    let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
     assert_eq!(p.observation().points(), [0, 1]);
     for (index, q) in p.equations().iter().enumerate() {
-        let ideal = p.witness_ideal(index, &mut quiet()).unwrap();
+        let ideal = p.witness_ideal(index, &quiet()).unwrap();
         let source = &a.instances()[q.instance()].bindings()[0].subject().subject;
         if source == "q" {
             assert_eq!(ideal.zero_points(), [0, 2]);
@@ -357,7 +357,7 @@ fn unknown_observations_do_not_prune_symbolic_ideal_coordinates_or_fill_dependen
             assert_eq!(ideal.zero_points(), [0, 1]);
             assert_eq!(q.epsilon(), Some(&0.into()));
         }
-        assert!(!ideal.is_zero(&mut quiet()).unwrap());
+        assert!(!ideal.is_zero(&quiet()).unwrap());
         ideal
             .recheck(
                 &p,
@@ -366,11 +366,11 @@ fn unknown_observations_do_not_prune_symbolic_ideal_coordinates_or_fill_dependen
                 FiniteObjectIdealKind::Witness { equation: index },
                 &i,
                 &a,
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap();
     }
-    let required = p.required_ideal(&mut quiet()).unwrap();
+    let required = p.required_ideal(&quiet()).unwrap();
     assert_eq!(required.zero_points(), [0]);
     required
         .recheck(
@@ -380,7 +380,7 @@ fn unknown_observations_do_not_prune_symbolic_ideal_coordinates_or_fill_dependen
             FiniteObjectIdealKind::Obstruction,
             &i,
             &a,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
     assert_eq!(f.observed_point(), None);
@@ -392,10 +392,10 @@ fn changing_kind_indices_zero_points_or_entire_origin_never_satisfies_the_consum
     let result = run(&i, &a);
     let f = result.family().unwrap();
     let o = object(&a, "root");
-    let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
-    let other = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+    let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
+    let other = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
     for mode in 0..9 {
-        let mut ideal = p.required_ideal(&mut quiet()).unwrap();
+        let mut ideal = p.required_ideal(&quiet()).unwrap();
         match mode {
             0 => ideal.equations.clear(),
             1 => ideal.equations.reverse(),
@@ -405,10 +405,10 @@ fn changing_kind_indices_zero_points_or_entire_origin_never_satisfies_the_consum
             5 => ideal.base = &other,
             6 => ideal.kind = FiniteObjectIdealKind::Witness { equation: 0 },
             7 => {
-                ideal = p.witness_ideal(0, &mut quiet()).unwrap();
+                ideal = p.witness_ideal(0, &quiet()).unwrap();
             }
             _ => {
-                ideal = other.required_ideal(&mut quiet()).unwrap();
+                ideal = other.required_ideal(&quiet()).unwrap();
             }
         }
         assert!(
@@ -420,13 +420,13 @@ fn changing_kind_indices_zero_points_or_entire_origin_never_satisfies_the_consum
                     FiniteObjectIdealKind::Obstruction,
                     &i,
                     &a,
-                    &mut quiet()
+                    &quiet()
                 )
                 .is_err(),
             "mode {mode}"
         );
     }
-    let w = p.witness_ideal(0, &mut quiet()).unwrap();
+    let w = p.witness_ideal(0, &quiet()).unwrap();
     assert!(
         w.recheck(
             &p,
@@ -435,12 +435,12 @@ fn changing_kind_indices_zero_points_or_entire_origin_never_satisfies_the_consum
             FiniteObjectIdealKind::Witness { equation: 1 },
             &i,
             &a,
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
-    assert!(p.witness_ideal(p.equations().len(), &mut quiet()).is_err());
-    let required = p.required_ideal(&mut quiet()).unwrap();
+    assert!(p.witness_ideal(p.equations().len(), &quiet()).is_err());
+    let required = p.required_ideal(&quiet()).unwrap();
     let other_family = run(&i, &a);
     assert!(
         required
@@ -451,7 +451,7 @@ fn changing_kind_indices_zero_points_or_entire_origin_never_satisfies_the_consum
                 FiniteObjectIdealKind::Obstruction,
                 &i,
                 &a,
-                &mut quiet()
+                &quiet()
             )
             .is_err()
     );
@@ -464,7 +464,7 @@ fn changing_kind_indices_zero_points_or_entire_origin_never_satisfies_the_consum
                 FiniteObjectIdealKind::Obstruction,
                 &i,
                 &a,
-                &mut quiet()
+                &quiet()
             )
             .is_err()
     );
@@ -478,25 +478,25 @@ fn changing_kind_indices_zero_points_or_entire_origin_never_satisfies_the_consum
                 FiniteObjectIdealKind::Obstruction,
                 &changed,
                 &a,
-                &mut quiet()
+                &quiet()
             )
             .is_err()
     );
-    let mut forged = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+    let mut forged = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
     forged.equations[0].nu.values[0] = 2.into();
-    assert!(forged.witness_ideal(0, &mut quiet()).is_err());
+    assert!(forged.witness_ideal(0, &quiet()).is_err());
     let other_family = run(&i, &a);
-    let mut forged = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
+    let mut forged = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
     forged.equations[0].nu = other_family
         .family()
         .unwrap()
         .integer_function(
             forged.equations[0].column(),
             forged.equations[0].component(),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
-    assert!(forged.witness_ideal(0, &mut quiet()).is_err());
+    assert!(forged.witness_ideal(0, &quiet()).is_err());
     required
         .recheck(
             &p,
@@ -505,7 +505,7 @@ fn changing_kind_indices_zero_points_or_entire_origin_never_satisfies_the_consum
             FiniteObjectIdealKind::Obstruction,
             &i,
             &a,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
 }
@@ -526,25 +526,25 @@ fn interruptions_never_return_unfinished_ideals_or_generator_lists() {
     let result = run(&i, &a);
     let f = result.family().unwrap();
     let o = object(&a, "root");
-    let p = f.object_presentation(&i, o, &mut quiet()).unwrap().unwrap();
-    let ideal = p.required_ideal(&mut quiet()).unwrap();
+    let p = f.object_presentation(&i, o, &quiet()).unwrap().unwrap();
+    let ideal = p.required_ideal(&quiet()).unwrap();
     for signal in [Signal::Int, Signal::Term] {
         for at in [1, 4, 10] {
             assert!(matches!(
-                p.witness_ideal(0, &mut stopping(signal, at)),
+                p.witness_ideal(0, &stopping(signal, at)),
                 Err(ValidationFailure::Stop(_))
             ));
             assert!(matches!(
-                p.required_ideal(&mut stopping(signal, at)),
+                p.required_ideal(&stopping(signal, at)),
                 Err(ValidationFailure::Stop(_))
             ));
         }
         assert!(matches!(
-            ideal.generators(&mut stopping(signal, 4)),
+            ideal.generators(&stopping(signal, 4)),
             Err(ValidationFailure::Stop(_))
         ));
         assert!(matches!(
-            ideal.is_zero(&mut stopping(signal, 4)),
+            ideal.is_zero(&stopping(signal, 4)),
             Err(ValidationFailure::Stop(_))
         ));
         assert!(matches!(
@@ -555,7 +555,7 @@ fn interruptions_never_return_unfinished_ideals_or_generator_lists() {
                 FiniteObjectIdealKind::Obstruction,
                 &i,
                 &a,
-                &mut stopping(signal, 1)
+                &stopping(signal, 1)
             ),
             Err(ValidationFailure::Stop(_))
         ));
@@ -568,7 +568,7 @@ fn interruptions_never_return_unfinished_ideals_or_generator_lists() {
             FiniteObjectIdealKind::Obstruction,
             &i,
             &a,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
 }
@@ -590,7 +590,7 @@ fn the_result_only_derived_role_is_not_added_to_authored_law_declarations() {
         law.into_bytes(),
         original.archmap().bytes().to_vec(),
     );
-    let failure = check_inputs(sources, &mut quiet()).err().unwrap();
+    let failure = check_inputs(sources, &quiet()).err().unwrap();
     assert!(
         failure
             .issues()

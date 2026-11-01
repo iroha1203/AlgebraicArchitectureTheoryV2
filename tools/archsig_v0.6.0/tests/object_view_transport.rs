@@ -53,7 +53,7 @@ fn inputs_with_left(left: &[u8], law: &str, map: &str) -> Arc<CheckedInputs> {
                 expand(law),
                 expand(map),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap_or_else(|f| panic!("{:?}", f.issues())),
     )
@@ -61,7 +61,7 @@ fn inputs_with_left(left: &[u8], law: &str, map: &str) -> Arc<CheckedInputs> {
 fn run(i: Arc<CheckedInputs>, object: &str, view: &str, subject: &str) -> ObjectViewTransport {
     let d = declarations(&i);
     let (o, r) = indices(&i, object, view, subject);
-    object_view_transport(i, &d, o, r, &mut quiet()).unwrap()
+    object_view_transport(i, &d, o, r, &quiet()).unwrap()
 }
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("{j:?}") };
@@ -76,7 +76,7 @@ fn finite_view_family_is_preserved_at_every_boolean_argument() {
     let i = inputs(L, A);
     let d = declarations(&i);
     let (o, r) = indices(&i, "p", "family", "p");
-    let result = object_view_transport(Arc::clone(&i), &d, o, r, &mut quiet())
+    let result = object_view_transport(Arc::clone(&i), &d, o, r, &quiet())
         .expect("Bool parameter の全域でviewの保存を検査する");
     assert_eq!(result.outcome(), &Outcome::Preserved);
     let family = result.family().unwrap();
@@ -96,8 +96,8 @@ fn finite_view_family_is_preserved_at_every_boolean_argument() {
         assert_eq!(row.target().unwrap().wire(), Json::Bool(expected));
         assert_eq!(row.outcome(), &Outcome::Preserved);
     }
-    result.operation().recheck(&i, &mut quiet()).unwrap();
-    result.recheck(i, &mut quiet()).unwrap();
+    result.operation().recheck(&i, &quiet()).unwrap();
+    result.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn actual_numeric_values_commute_and_false_is_an_ordinary_value() {
@@ -123,7 +123,7 @@ fn actual_numeric_values_commute_and_false_is_an_ordinary_value() {
             };
             assert!(Arc::ptr_eq(&i, &e.prepared().shared_inputs()));
         }
-        r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+        r.recheck(Arc::clone(&i), &quiet()).unwrap();
     }
 }
 #[test]
@@ -172,7 +172,7 @@ fn unequal_values_keep_both_evaluations_original_support_and_operation() {
     assert_eq!(r.source_value().unwrap().wire(), Json::str("3"));
     assert_eq!(r.image().unwrap().wire(), Json::str("3"));
     assert_eq!(r.target_value().unwrap().wire(), Json::str("2"));
-    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.operation().recheck(&i, &quiet()).unwrap();
     let r = run(Arc::clone(&i), "p", "amount", "p");
     let ObjectEvaluationOutcome::Evaluated(e) = r.source().unwrap().outcome() else {
         panic!()
@@ -250,7 +250,7 @@ fn absent_axes_and_unknown_membership_differ_from_missing_observed_values() {
     };
     assert_eq!(e.status(), "partial");
     assert!(e.wire().canonical().contains("missing_observation"));
-    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.operation().recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn applicability_and_whole_type_equivalence_failures_are_separate_conditions() {
@@ -263,7 +263,7 @@ fn applicability_and_whole_type_equivalence_failures_are_separate_conditions() {
     let i = inputs(L, &a);
     let r = run(Arc::clone(&i), "p", "flag", "r");
     assert_eq!(r.outcome(), &Outcome::Refuted(Failed::Applicability));
-    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.operation().recheck(&i, &quiet()).unwrap();
     let r = run(Arc::clone(&i), "p", "ref", "p");
     assert_eq!(r.outcome(), &Outcome::Refuted(Failed::ValueType));
     let Some(ViewValueEquivalence::Finite(e)) = r.equivalence() else {
@@ -271,7 +271,7 @@ fn applicability_and_whole_type_equivalence_failures_are_separate_conditions() {
     };
     assert!(e.bijection().is_none());
     assert!(!e.failures().is_empty());
-    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.operation().recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn missing_declaration_and_unimplemented_families_keep_verified_operation() {
@@ -283,7 +283,7 @@ fn missing_declaration_and_unimplemented_families_keep_verified_operation() {
             source: "Before.flag".into()
         })
     );
-    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.operation().recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn current_values_mapping_and_law_body_are_rechecked() {
@@ -308,13 +308,13 @@ fn current_values_mapping_and_law_body_are_rechecked() {
             ),
         ),
     ] {
-        assert!(r.recheck(changed, &mut quiet()).is_err());
+        assert!(r.recheck(changed, &quiet()).is_err());
     }
     let d = declarations(&i);
     let (o, n) = indices(&i, "p", "amount", "p");
     for (o, n) in [(usize::MAX, n), (o, usize::MAX)] {
         assert!(matches!(
-            object_view_transport(Arc::clone(&i), &d, o, n, &mut quiet()),
+            object_view_transport(Arc::clone(&i), &d, o, n, &quiet()),
             Err(Error::Construction(ConstructionFailure::InvalidSelection(
                 _
             )))
@@ -338,7 +338,7 @@ fn fixed_transport_checkpoints_latch_cancellation() {
             &d,
             o,
             n,
-            &mut Control::new(move |p| {
+            &Control::new(move |p| {
                 if p == point {
                     seen.set(seen.get() + 1);
                 }
@@ -355,13 +355,13 @@ fn fixed_transport_checkpoints_latch_cancellation() {
             for signal in [Signal::Int, Signal::Term] {
                 let count = Rc::new(Cell::new(0));
                 let seen = count.clone();
-                let mut c = Control::new(move |p| {
+                let c = Control::new(move |p| {
                     if p == point {
                         seen.set(seen.get() + 1);
                     }
                     (seen.get() >= at).then_some(signal)
                 });
-                let failure = object_view_transport(Arc::clone(&i), &d, o, n, &mut c).unwrap_err();
+                let failure = object_view_transport(Arc::clone(&i), &d, o, n, &c).unwrap_err();
                 let reason = match failure {
                     Error::Construction(ConstructionFailure::Stopped(reason)) => reason,
                     Error::Stopped {
@@ -370,7 +370,7 @@ fn fixed_transport_checkpoints_latch_cancellation() {
                         partial,
                         ..
                     } => {
-                        operation.recheck(&i, &mut quiet()).unwrap();
+                        operation.recheck(&i, &quiet()).unwrap();
                         if let Some(p) = partial {
                             assert_eq!(p.operation(), operation.as_ref());
                         }
@@ -381,7 +381,7 @@ fn fixed_transport_checkpoints_latch_cancellation() {
                 assert_eq!(reason, c.stop_reason().unwrap());
                 assert_eq!(count.get(), at);
                 assert!(matches!(
-                    object_view_transport(Arc::clone(&i), &d, o, n, &mut c),
+                    object_view_transport(Arc::clone(&i), &d, o, n, &c),
                     Err(Error::Construction(ConstructionFailure::Stopped(_)))
                 ));
                 assert_eq!(count.get(), at);
@@ -406,7 +406,7 @@ fn stopped_transport_keeps_completed_evaluations_values_and_decisions_only() {
             &d,
             o,
             n,
-            &mut Control::new(move |p| {
+            &Control::new(move |p| {
                 if p == Checkpoint::ObjectViewTransport {
                     seen.set(seen.get() + 1);
                 }
@@ -421,7 +421,7 @@ fn stopped_transport_keeps_completed_evaluations_values_and_decisions_only() {
             for signal in [Signal::Int, Signal::Term] {
                 let seen = Rc::new(Cell::new(0));
                 let count = seen.clone();
-                let mut control = Control::new(move |p| {
+                let control = Control::new(move |p| {
                     if p == Checkpoint::ObjectViewTransport {
                         count.set(count.get() + 1);
                     }
@@ -433,14 +433,14 @@ fn stopped_transport_keeps_completed_evaluations_values_and_decisions_only() {
                     partial: Some(partial),
                     evaluation,
                     transport: None,
-                } = object_view_transport(Arc::clone(&i), &d, o, n, &mut control).unwrap_err()
+                } = object_view_transport(Arc::clone(&i), &d, o, n, &control).unwrap_err()
                 else {
                     panic!()
                 };
                 assert_eq!(reason, control.stop_reason().unwrap());
                 assert_eq!(seen.get(), at);
                 assert!(evaluation.is_none());
-                operation.recheck(&i, &mut quiet()).unwrap();
+                operation.recheck(&i, &quiet()).unwrap();
                 assert_eq!(partial.operation(), operation.as_ref());
                 assert_eq!(partial.object().subject().subject, subject);
                 assert_eq!(partial.instance().declaration().name, "Before.amount");
@@ -487,7 +487,7 @@ fn stopped_transport_keeps_completed_evaluations_values_and_decisions_only() {
                     assert!(partial.outcome().is_none());
                 }
                 assert!(matches!(
-                    object_view_transport(Arc::clone(&i), &d, o, n, &mut control),
+                    object_view_transport(Arc::clone(&i), &d, o, n, &control),
                     Err(Error::Construction(ConstructionFailure::Stopped(_)))
                 ));
                 assert_eq!(seen.get(), at);
@@ -503,7 +503,7 @@ fn target_expression_stop_keeps_source_and_target_partial_dag_without_a_decision
     let (o, n) = indices(&i, "p", "amount", "p");
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut control = Control::new(move |p| {
+    let control = Control::new(move |p| {
         if p == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
@@ -513,11 +513,11 @@ fn target_expression_stop_keeps_source_and_target_partial_dag_without_a_decision
         operation,
         partial: Some(partial),
         ..
-    } = object_view_transport(Arc::clone(&i), &d, o, n, &mut control).unwrap_err()
+    } = object_view_transport(Arc::clone(&i), &d, o, n, &control).unwrap_err()
     else {
         panic!()
     };
-    operation.recheck(&i, &mut quiet()).unwrap();
+    operation.recheck(&i, &quiet()).unwrap();
     let ObjectEvaluationOutcome::Evaluated(source) = partial.source().unwrap().outcome() else {
         panic!()
     };
@@ -548,16 +548,16 @@ fn target_object_and_instance_failures_keep_the_base_configuration_operation() {
                     .replace("@DIGEST@", digest)
                     .into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
-    let c = correspondence(&i, "v", "m", "Read", None, &mut quiet()).unwrap();
-    let ds = declaration_correspondence(&i, c.map().unwrap(), &mut quiet()).unwrap();
+    let c = correspondence(&i, "v", "m", "Read", None, &quiet()).unwrap();
+    let ds = declaration_correspondence(&i, c.map().unwrap(), &quiet()).unwrap();
     let p = object_reading_instances(
         &i,
-        &construct(&i, "Read", "v", "A", &mut quiet()).unwrap(),
-        &mut quiet(),
+        &construct(&i, "Read", "v", "A", &quiet()).unwrap(),
+        &quiet(),
     )
     .unwrap();
     let o = p
@@ -572,15 +572,15 @@ fn target_object_and_instance_failures_keep_the_base_configuration_operation() {
             r.declaration().name == "Read.probe" && r.bindings()[0].subject().subject == "s"
         })
         .unwrap();
-    let r = object_view_transport(Arc::clone(&i), &ds, o, n, &mut quiet()).unwrap();
+    let r = object_view_transport(Arc::clone(&i), &ds, o, n, &quiet()).unwrap();
     assert_eq!(r.outcome(), &Outcome::Refuted(Failed::Object));
-    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.operation().recheck(&i, &quiet()).unwrap();
     let a=A.replace("\"subjects\":[","\"subjects\":[\n{\"id\":\"z\",\"type\":\"Right.Root\",\"origin\":\"model\"},\n{\"id\":\"u\",\"type\":\"Right.Child\",\"origin\":\"model\"},").replace("\"atoms\":[","\"atoms\":[\n{\"id\":\"u-owner\",\"subject\":\"u\",\"field\":\"Right.Child.owner\",\"value\":[\"v\",\"z\"],\"origin\":\"model\"},");
     let i = inputs(L, &a);
     let p = object_reading_instances(
         &i,
-        &construct(&i, "Before", "v", "a", &mut quiet()).unwrap(),
-        &mut quiet(),
+        &construct(&i, "Before", "v", "a", &quiet()).unwrap(),
+        &quiet(),
     )
     .unwrap();
     let o = p
@@ -601,7 +601,7 @@ fn target_object_and_instance_failures_keep_the_base_configuration_operation() {
                     .any(|b| b.parameter().name == "x" && b.subject().subject == "u")
         })
         .unwrap();
-    let r = object_view_transport(Arc::clone(&i), &declarations(&i), o, n, &mut quiet()).unwrap();
+    let r = object_view_transport(Arc::clone(&i), &declarations(&i), o, n, &quiet()).unwrap();
     let Outcome::Refuted(Failed::TargetInstance {
         declaration,
         bindings,
@@ -615,7 +615,7 @@ fn target_object_and_instance_failures_keep_the_base_configuration_operation() {
             .iter()
             .any(|(name, f)| name == "y" && f.subject == "u")
     );
-    r.operation().recheck(&i, &mut quiet()).unwrap();
+    r.operation().recheck(&i, &quiet()).unwrap();
 }
 
 #[test]
@@ -629,20 +629,20 @@ fn stopped_structure_transport_reaches_the_view_caller() {
         Checkpoint::ObjectInstances,
     ] {
         for signal in [Signal::Int, Signal::Term] {
-            let (mut c, probes) = stop_at(point, 1, signal);
+            let (c, probes) = stop_at(point, 1, signal);
             let Error::Stopped {
                 reason,
                 operation,
                 partial,
                 evaluation,
                 transport: Some(p),
-            } = object_view_transport(Arc::clone(&i), &d, o, n, &mut c).unwrap_err()
+            } = object_view_transport(Arc::clone(&i), &d, o, n, &c).unwrap_err()
             else {
                 panic!("構造側の部分結果が必要")
             };
             assert_eq!(reason, c.stop_reason().unwrap());
             assert_eq!(operation.as_ref(), p.operation());
-            operation.recheck(&i, &mut quiet()).unwrap();
+            operation.recheck(&i, &quiet()).unwrap();
             assert!(partial.is_none());
             assert!(evaluation.is_none());
             assert_eq!(
@@ -662,7 +662,7 @@ fn stopped_structure_transport_reaches_the_view_caller() {
                 assert_eq!(p.objects().len(), 1);
                 assert!(p.target().is_some());
             }
-            assert!(object_view_transport(Arc::clone(&i), &d, o, n, &mut c).is_err());
+            assert!(object_view_transport(Arc::clone(&i), &d, o, n, &c).is_err());
             assert_eq!(probes.get(), 1);
         }
     }
@@ -688,8 +688,8 @@ fn finite_view_family_keeps_each_refuted_or_unknown_point_and_the_operation() {
     assert_eq!(f.rows()[1].outcome(), &Outcome::Refuted(Failed::Value));
     assert_eq!(f.rows()[1].source().unwrap().wire(), Json::Bool(true));
     assert_eq!(f.rows()[1].target().unwrap().wire(), Json::Bool(false));
-    r.operation().recheck(&i, &mut quiet()).unwrap();
-    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    r.operation().recheck(&i, &quiet()).unwrap();
+    r.recheck(Arc::clone(&i), &quiet()).unwrap();
     let law = family_law(
         "view family(c:Left.Child,b:Bool):Bool=if b then c.count=0 else true;",
         "view family(d:Right.Child,q:Bool):Bool=true;",
@@ -705,8 +705,8 @@ fn finite_view_family_keeps_each_refuted_or_unknown_point_and_the_operation() {
     assert!(f.rows()[1].source().is_none());
     assert!(f.rows()[1].image().is_none());
     assert_eq!(f.rows()[1].target().unwrap().wire(), Json::Bool(true));
-    r.operation().recheck(&i, &mut quiet()).unwrap();
-    r.recheck(i, &mut quiet()).unwrap();
+    r.operation().recheck(&i, &quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn finite_view_family_follows_reference_images_instead_of_matching_row_numbers() {
@@ -745,7 +745,7 @@ fn finite_view_family_follows_reference_images_instead_of_matching_row_numbers()
         assert_eq!(row.image().unwrap().wire(), value(target));
         assert_eq!(row.target().unwrap().wire(), value(target));
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn finite_view_parameter_collision_is_a_type_condition_with_its_whole_domains() {
@@ -784,8 +784,8 @@ fn finite_view_parameter_collision_is_a_type_condition_with_its_whole_domains() 
             .iter()
             .any(|f| matches!(f, FamilyTypeFailure::Unreached { target: 2 }))
     );
-    r.operation().recheck(&i, &mut quiet()).unwrap();
-    r.recheck(i, &mut quiet()).unwrap();
+    r.operation().recheck(&i, &quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 fn outside_box_inputs(source: &str, target: &str) -> Arc<CheckedInputs> {
@@ -833,8 +833,8 @@ fn finite_view_parameter_retains_the_collision_of_equal_outside_target_images() 
     ] if sources == &[0, 1] && image == &map.images()[0]));
     assert!(map.forward().is_none());
     assert!(map.inverse().is_none());
-    r.operation().recheck(&i, &mut quiet()).unwrap();
-    r.recheck(i, &mut quiet()).unwrap();
+    r.operation().recheck(&i, &quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -886,8 +886,8 @@ fn finite_view_return_retains_the_collision_of_equal_outside_target_images() {
             assert_eq!(f(node, "value").canonical(), "{\"none\":true}");
         }
     }
-    r.operation().recheck(&i, &mut quiet()).unwrap();
-    r.recheck(i, &mut quiet()).unwrap();
+    r.operation().recheck(&i, &quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn finite_view_family_keeps_non_applicability_separate_from_membership_conditions() {
@@ -919,7 +919,7 @@ fn finite_view_family_keeps_non_applicability_separate_from_membership_condition
         r.target().unwrap().outcome(),
         ObjectEvaluationOutcome::Conditional(_)
     ));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn finite_view_family_uses_fixed_owner_fibers_and_retains_needed_owner_slots() {
@@ -932,7 +932,7 @@ fn finite_view_family_uses_fixed_owner_fibers_and_retains_needed_owner_slots() {
     assert_eq!(r.outcome(), &Outcome::Preserved);
     assert_eq!(r.family().unwrap().rows().len(), 4);
     assert_eq!(r.family().unwrap().parameters()[0].source().len(), 4);
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
     let law = family_law(
         "view family(c:Left.Child,a:Left.ExternalRoot,x:Option<Left.ExternalChild[a]>):Bool=true;",
         "view family(d:Right.Child,z:Left.ExternalRoot,y:Option<Left.ExternalChild[z]>):Bool=true;",
@@ -946,7 +946,7 @@ fn finite_view_family_uses_fixed_owner_fibers_and_retains_needed_owner_slots() {
     assert!(f.parameters()[0].missing().iter().any(
         |fact| fact.subject == "y" && fact.field.as_deref() == Some("Left.ExternalChild.owner")
     ));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn finite_view_family_distinguishes_empty_domain_from_the_single_empty_list() {
@@ -970,7 +970,7 @@ fn finite_view_family_distinguishes_empty_domain_from_the_single_empty_list() {
         let f = r.family().unwrap();
         assert!(f.is_complete());
         assert_eq!(f.rows().len(), rows);
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
     let law = family_law(
         "view family(c:Left.Child,x:List<Left.ExternalChild>):List<Left.ExternalChild> =x;",
@@ -982,7 +982,7 @@ fn finite_view_family_distinguishes_empty_domain_from_the_single_empty_list() {
     let f = r.family().unwrap();
     assert_eq!(f.rows().len(), 1);
     assert_eq!(f.rows()[0].target().unwrap().wire(), Json::Arr(vec![]));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn finite_view_family_keeps_all_data_option_set_and_boolean_product_values() {
@@ -1065,11 +1065,11 @@ fn finite_view_family_preserves_numeric_product_return_maps_without_sampling_the
         assert_eq!(row.image().unwrap().wire(), expected);
         assert_eq!(row.target().unwrap().wire(), expected);
     }
-    r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+    r.recheck(Arc::clone(&i), &quiet()).unwrap();
     let r = run(Arc::clone(&i), "r", "family", "r");
     assert_eq!(r.outcome(), &Outcome::Refuted(Failed::Value));
     assert_eq!(r.family().unwrap().rows().len(), 2);
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn finite_view_family_moves_owned_container_types_with_the_original_owner_parameter_names() {
@@ -1100,7 +1100,7 @@ fn finite_view_family_moves_owned_container_types_with_the_original_owner_parame
             "d".into()
         )))
     );
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn finite_view_family_recheck_rejects_changed_input_bytes_body_and_unused_provenance() {
@@ -1111,9 +1111,9 @@ fn finite_view_family_recheck_rejects_changed_input_bytes_body_and_unused_proven
         inputs(L, &edit(A, "p-count", "\"2\"", "\"9\"")),
         inputs(L, &A.replace("amount-r1", "amount-r2")),
     ] {
-        assert!(r.recheck(changed, &mut quiet()).is_err());
+        assert!(r.recheck(changed, &quiet()).is_err());
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -1150,8 +1150,8 @@ fn finite_view_parameter_outside_target_is_rejected_even_for_two_absent_axes() {
                 ObjectEvaluationOutcome::NotApplicable
             ));
         }
-        r.operation().recheck(&i, &mut quiet()).unwrap();
-        r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+        r.operation().recheck(&i, &quiet()).unwrap();
+        r.recheck(Arc::clone(&i), &quiet()).unwrap();
     }
 }
 
@@ -1202,10 +1202,10 @@ fn mixed_primitive_products_keep_whole_type_identity_for_closed_and_finite_views
                 r.instance().declaration().returns.as_ref()
             );
         }
-        r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+        r.recheck(Arc::clone(&i), &quiet()).unwrap();
         let changed = run(Arc::clone(&i), "r", "family", "r");
         assert_eq!(changed.outcome(), &Outcome::Refuted(Failed::Value));
-        changed.recheck(i, &mut quiet()).unwrap();
+        changed.recheck(i, &quiet()).unwrap();
     }
 }
 
@@ -1270,10 +1270,10 @@ fn primitive_containers_preserve_known_empty_values_without_filling_missing_valu
             assert_eq!(r.image().unwrap().wire(), expected(true));
             assert_eq!(r.target_value().unwrap().wire(), expected(true));
         }
-        r.recheck(Arc::clone(&i), &mut quiet()).unwrap();
+        r.recheck(Arc::clone(&i), &quiet()).unwrap();
         let changed = run(Arc::clone(&i), "r", "family", "r");
         assert_eq!(changed.outcome(), &Outcome::Refuted(Failed::Value));
-        changed.recheck(i, &mut quiet()).unwrap();
+        changed.recheck(i, &quiet()).unwrap();
         let i = inputs(&law, &remove(A, "p-count"));
         let missing = run(Arc::clone(&i), "p", "family", "p");
         assert_eq!(missing.outcome(), &Outcome::Undetermined);
@@ -1289,7 +1289,7 @@ fn primitive_containers_preserve_known_empty_values_without_filling_missing_valu
             assert!(missing.source_value().is_none());
             assert!(missing.image().is_none());
         }
-        missing.operation().recheck(&i, &mut quiet()).unwrap();
-        missing.recheck(i, &mut quiet()).unwrap();
+        missing.operation().recheck(&i, &quiet()).unwrap();
+        missing.recheck(i, &quiet()).unwrap();
     }
 }

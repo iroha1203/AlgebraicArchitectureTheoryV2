@@ -54,7 +54,7 @@ impl Input {
         } else {
             let mut identity = vec![];
             for i in 0..n {
-                c.clone().checkpoint(Checkpoint::Quotient)?;
+                c.checkpoint(Checkpoint::Quotient)?;
                 let mut row = vec![Scalar::Z(num_bigint::BigInt::zero()); n];
                 row[i] = Scalar::Z(num_bigint::BigInt::one());
                 identity.push(row);
@@ -136,7 +136,7 @@ pub(in crate::observed) fn fiber(
     ty: &Type,
     a: &Matrix,
     n: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Fiber, ValidationFailure> {
     if *ty == Type::Z {
         let a = a
@@ -182,7 +182,7 @@ pub(in crate::observed) fn view_type(
     c: &Control,
 ) -> Result<bool, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        c.clone().checkpoint(Checkpoint::Quotient)?;
+        c.checkpoint(Checkpoint::Quotient)?;
         if ty == coefficient {
             return Ok(true);
         }
@@ -205,7 +205,7 @@ pub(in crate::observed) fn view_coordinates(
 ) -> Result<Option<(Vec<Scalar>, Matrix)>, ValidationFailure> {
     use crate::observed::term::affine::Value;
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        c.clone().checkpoint(Checkpoint::Quotient)?;
+        c.checkpoint(Checkpoint::Quotient)?;
         let items = match value {
             Value::Tuple(xs) => Some(xs.clone()),
             Value::Known(Scalar::Tuple(xs)) => Some(xs.iter().cloned().map(Value::Known).collect()),
@@ -241,7 +241,7 @@ pub(in crate::observed) fn view_value(
         c: &Control,
     ) -> Result<Scalar, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-            c.clone().checkpoint(Checkpoint::Quotient)?;
+            c.checkpoint(Checkpoint::Quotient)?;
             if let Type::Tuple(items) = ty {
                 return Ok(Scalar::Tuple(
                     items
@@ -272,7 +272,7 @@ pub(in crate::observed) fn coordinate_names(
     c: &Control,
 ) -> Result<Vec<String>, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        c.clone().checkpoint(Checkpoint::Quotient)?;
+        c.checkpoint(Checkpoint::Quotient)?;
         if let Type::Tuple(items) = ty {
             let mut names = vec![];
             for (i, item) in items.iter().enumerate() {

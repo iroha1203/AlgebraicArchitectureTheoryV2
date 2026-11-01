@@ -19,7 +19,7 @@ fn input() -> std::sync::Arc<archsig::input::CheckedInputs> {
         map.into_bytes(),
     );
     std::sync::Arc::new(
-        archsig::input::check_inputs(sources, &mut archsig::control::Control::unlimited()).unwrap(),
+        archsig::input::check_inputs(sources, &archsig::control::Control::unlimited()).unwrap(),
     )
 }
 pub use archsig::{definition, observed};
@@ -373,14 +373,14 @@ fn finite_owner_solution_and_unimplemented_change_have_distinct_outcomes() {
             law.into_bytes(),
             map.into_bytes(),
         );
-        let mut control = archsig::control::Control::unlimited();
+        let control = archsig::control::Control::unlimited();
         let prepared = observed::prepare_observed(
             sources,
             &["s=solve(Selected.valid,on=@v/root,using=Selected.choose)"],
-            &mut control,
+            &control,
         )
         .unwrap();
-        let evaluated = observed::evaluate_observed(prepared, &mut control);
+        let evaluated = observed::evaluate_observed(prepared, &control);
         if missing {
             let evaluated = evaluated.unwrap();
             assert_eq!(evaluated.status(), "partial");
@@ -562,14 +562,14 @@ fn finite_owner_completion_produces_a_solution_judgment_instead_of_not_implement
         original.sources().law().bytes().to_vec(),
         missing.into_bytes(),
     );
-    let mut control = archsig::control::Control::unlimited();
+    let control = archsig::control::Control::unlimited();
     let prepared = observed::prepare_observed(
         sources,
         &["s=solve(Selected.valid,on=@v/root,using=Selected.choose)"],
-        &mut control,
+        &control,
     )
     .expect("既存の有限owner欠測fixtureは三入力と要求が有効");
-    let result = match observed::evaluate_observed(prepared, &mut control) {
+    let result = match observed::evaluate_observed(prepared, &control) {
         Ok(result) => result,
         Err(observed::EvaluationFailure::NotImplemented {
             partial, feature, ..

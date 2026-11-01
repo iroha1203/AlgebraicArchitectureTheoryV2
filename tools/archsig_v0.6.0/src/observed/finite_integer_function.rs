@@ -30,13 +30,13 @@ impl<'a> FiniteIntegerRing<'a> {
     pub fn dimension(&self) -> usize {
         self.dimension
     }
-    fn tick(&self, c: &mut Control) -> Result<(), ConstructionFailure> {
+    fn tick(&self, c: &Control) -> Result<(), ConstructionFailure> {
         c.checkpoint(self.checkpoint).map_err(Into::into)
     }
     pub fn member(
         &self,
         f: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ConstructionFailure> {
         self.tick(c)?;
         if !Arc::ptr_eq(self.owner, &f.owner) || f.values.len() != self.dimension {
@@ -50,7 +50,7 @@ impl<'a> FiniteIntegerRing<'a> {
     pub fn computed(
         &self,
         values: Vec<BigInt>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.tick(c)?;
         if values.len() != self.dimension {
@@ -66,7 +66,7 @@ impl<'a> FiniteIntegerRing<'a> {
     pub fn constant(
         &self,
         value: BigInt,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.tick(c)?;
         let mut values = vec![];
@@ -76,16 +76,16 @@ impl<'a> FiniteIntegerRing<'a> {
         }
         self.computed(values, c)
     }
-    pub fn zero(&self, c: &mut Control) -> Result<FiniteIntegerFunction, ConstructionFailure> {
+    pub fn zero(&self, c: &Control) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.constant(BigInt::zero(), c)
     }
-    pub fn one(&self, c: &mut Control) -> Result<FiniteIntegerFunction, ConstructionFailure> {
+    pub fn one(&self, c: &Control) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.constant(BigInt::one(), c)
     }
     pub fn basis(
         &self,
         point: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.tick(c)?;
         if point >= self.dimension {
@@ -103,7 +103,7 @@ impl<'a> FiniteIntegerRing<'a> {
         a: &FiniteIntegerFunction,
         b: &FiniteIntegerFunction,
         op: BinOp,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.member(a, c)?;
         self.member(b, c)?;
@@ -127,7 +127,7 @@ impl<'a> FiniteIntegerRing<'a> {
         &self,
         a: &FiniteIntegerFunction,
         b: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.binary(a, b, BinOp::Add, c)
     }
@@ -135,7 +135,7 @@ impl<'a> FiniteIntegerRing<'a> {
         &self,
         a: &FiniteIntegerFunction,
         b: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.binary(a, b, BinOp::Sub, c)
     }
@@ -143,7 +143,7 @@ impl<'a> FiniteIntegerRing<'a> {
         &self,
         a: &FiniteIntegerFunction,
         b: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ConstructionFailure> {
         self.binary(a, b, BinOp::Mul, c)
     }
@@ -151,7 +151,7 @@ impl<'a> FiniteIntegerRing<'a> {
         &self,
         a: &FiniteIntegerFunction,
         b: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<bool, ConstructionFailure> {
         self.member(a, c)?;
         self.member(b, c)?;
@@ -167,7 +167,7 @@ impl<'a> FiniteIntegerRing<'a> {
     pub fn is_zero(
         &self,
         a: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<bool, ConstructionFailure> {
         self.member(a, c)?;
         for a in &a.values {
@@ -183,7 +183,7 @@ impl<'a> FiniteIntegerRing<'a> {
         &self,
         a: &FiniteIntegerFunction,
         point: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<BigInt, ConstructionFailure> {
         self.member(a, c)?;
         a.values

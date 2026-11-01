@@ -142,8 +142,8 @@ fn required_priority(
 ) {
     let issue = ordinary_issue(&input);
     assert_issue(&issue, code, message, pointer);
-    let (mut control, total) = probe(point, usize::MAX);
-    let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+    let (control, total) = probe(point, usize::MAX);
+    let failure = check_inputs(input.clone(), &control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert_eq!(failure.issues(), [ResultIssue::Input(issue.clone()).wire()]);
     empty_stage(&failure);
@@ -153,8 +153,8 @@ fn required_priority(
         "a required failure must be reached inside its helper"
     );
     for at in post..=total.get() {
-        let (mut control, seen) = probe(point, at);
-        let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+        let (control, seen) = probe(point, at);
+        let failure = check_inputs(input.clone(), &control).unwrap_err();
         assert_eq!(seen.get(), at, "{message}, {point:?} {at}/{}", total.get());
         assert_eq!(control.stop_reason(), Some(reason()));
         empty_stage(&failure);
@@ -163,8 +163,8 @@ fn required_priority(
     }
     // Before the final predicate/candidate is examined, no required rejection
     // is known. A speculative local mismatch cannot become an input Issue.
-    let (mut control, seen) = probe(point, post - 1);
-    let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+    let (control, seen) = probe(point, post - 1);
+    let failure = check_inputs(input.clone(), &control).unwrap_err();
     assert_eq!(seen.get(), post - 1);
     assert_eq!(
         failure.status(),
@@ -357,13 +357,13 @@ fn optional_absence_and_untried_field_candidates_remain_interrupted() {
         let input = sources(declarations);
         let ordinary_files = [("definition0", input.definitions()[0].bytes())];
         assert!(check_definitions(&ordinary_files).is_ok());
-        let (mut baseline, count) = probe(Checkpoint::DefinitionSemantics, usize::MAX);
+        let (baseline, count) = probe(Checkpoint::DefinitionSemantics, usize::MAX);
         // The deliberately bad ArchMap is later; only DefinitionSemantics is sampled.
-        let _ = check_inputs(input.clone(), &mut baseline);
+        let _ = check_inputs(input.clone(), &baseline);
         assert!(count.get() > 1);
         for at in [1, count.get() - 1, count.get()] {
-            let (mut control, seen) = probe(Checkpoint::DefinitionSemantics, at);
-            let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+            let (control, seen) = probe(Checkpoint::DefinitionSemantics, at);
+            let failure = check_inputs(input.clone(), &control).unwrap_err();
             assert_eq!(seen.get(), at);
             assert_eq!(failure.status(), InputStatus::Interrupted);
             assert_eq!(failure.issues(), [reason().issue()]);
@@ -388,8 +388,8 @@ fn an_untried_owner_field_candidate_cannot_be_promoted_to_invalid() {
     // Each Ref type contributes four samples. Then field/find entries, the
     // first candidate pre and post: r != owner, with owner still untried.
     let first_mismatch_post = 12;
-    let (mut control, seen) = probe(Checkpoint::DefinitionSemantics, first_mismatch_post);
-    let failure = check_inputs(input.clone(), &mut control).unwrap_err();
+    let (control, seen) = probe(Checkpoint::DefinitionSemantics, first_mismatch_post);
+    let failure = check_inputs(input.clone(), &control).unwrap_err();
     assert_eq!(seen.get(), first_mismatch_post);
     assert_eq!(failure.status(), InputStatus::Interrupted);
     assert_eq!(failure.issues(), [reason().issue()]);

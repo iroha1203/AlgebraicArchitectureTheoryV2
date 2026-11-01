@@ -8,7 +8,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -20,7 +20,7 @@ fn example() -> ObservedEvaluation {
             "target=evaluate(Inspect.chosen,h=@v/h)",
             "later=evaluate(Inspect.seed)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_ne!(r.status(), "error", "{:?}", r.answers);
@@ -152,7 +152,7 @@ fn finite_reference_field_internal_pins_validate_original_shapes_refs_and_missin
                 &input.archmap().snapshots(),
                 &input.law().definitions(),
                 &pins,
-                &mut quiet()
+                &quiet()
             ),
             Err(CheckFailure::Input(_))
         ));
@@ -173,12 +173,12 @@ fn finite_reference_field_internal_pins_validate_original_shapes_refs_and_missin
             &input.archmap().snapshots(),
             &input.law().definitions(),
             &[p],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
     }
     assert!(
-        matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots(),&input.law().definitions(),&[pin("chosen",fixture::reference("v","r"))],&mut quiet()),Err(CheckFailure::Input(issue))if issue.code==crate::issue::Code::InconsistentObservation)
+        matches!(check_completion_with_values::<CheckFailure<Box<crate::issue::Issue>>>(&input.archmap().snapshots(),&input.law().definitions(),&[pin("chosen",fixture::reference("v","r"))],&quiet()),Err(CheckFailure::Input(issue))if issue.code==crate::issue::Code::InconsistentObservation)
     );
 }
 
@@ -194,7 +194,7 @@ fn finite_reference_field_coverage_stop_never_promotes_unfinished_whole() {
         "current=evaluate(Inspect.stable,h=@v/h)",
         "later=evaluate(Inspect.seed)",
     ];
-    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), &asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
@@ -206,7 +206,7 @@ fn finite_reference_field_coverage_stop_never_promotes_unfinished_whole() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.get() {
             a.set(false);
@@ -216,8 +216,8 @@ fn finite_reference_field_coverage_stop_never_promotes_unfinished_whole() {
             None
         }
     });
-    let prepared = prepare_observed(input, &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, q, answer| {
+    let prepared = prepare_observed(input, &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, q, answer| {
         e.validate_answer(g, q, answer)?;
         if q.id == "hole" {
             let (a, s) = (armed.clone(), seen.clone());

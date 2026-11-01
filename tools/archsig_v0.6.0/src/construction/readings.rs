@@ -108,7 +108,7 @@ impl ObjectReadingInstances {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         let actual = object_reading_instances(inputs, &self.construction, control)?;
         if self != &actual {
@@ -119,7 +119,7 @@ impl ObjectReadingInstances {
         checkpoint(control)
     }
 }
-fn checkpoint(control: &mut Control) -> Result<(), ConstructionFailure> {
+fn checkpoint(control: &Control) -> Result<(), ConstructionFailure> {
     control
         .checkpoint(Checkpoint::ObjectInstances)
         .map_err(Into::into)
@@ -127,7 +127,7 @@ fn checkpoint(control: &mut Control) -> Result<(), ConstructionFailure> {
 fn subject<'a>(
     inputs: &'a CheckedInputs,
     fact: &FactPointer,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<&'a Subject, ConstructionFailure> {
     for snapshot in inputs.archmap().snapshots() {
         checkpoint(control)?;
@@ -149,7 +149,7 @@ fn subject<'a>(
 fn merge_conditions(
     left: &[MembershipCondition],
     right: &[MembershipCondition],
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<Vec<MembershipCondition>>, ConstructionFailure> {
     let mut values = BTreeMap::new();
     for condition in left.iter().chain(right) {
@@ -179,7 +179,7 @@ fn owner_condition(
     construction: &ConfigurationConstruction,
     candidate: &Subject,
     owner: &FactPointer,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<Vec<MembershipCondition>>, ConstructionFailure> {
     // LawのOwned型はownerと同じsnapshotの個体を要求する。
     if candidate.snapshot != owner.snapshot {
@@ -228,7 +228,7 @@ fn choices(
     ty: &str,
     local: bool,
     domain: &SubjectDomain,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<ReferenceChoice>, ConstructionFailure> {
     let mut result = Vec::new();
     if local {
@@ -280,7 +280,7 @@ struct Row {
 pub fn object_reading_instances(
     inputs: &CheckedInputs,
     construction: &ConfigurationConstruction,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ObjectReadingInstances, ConstructionFailure> {
     checkpoint(control)?;
     let root = construction.root();
@@ -497,16 +497,16 @@ mod tests {
                 l.replace("@INSTANCES_DIGEST@", digest).into_bytes(),
                 a.replace("@INSTANCES_DIGEST@", digest).into_bytes(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap()
     }
     #[test]
     fn recheck_rejects_forged_instances_domains_metadata_and_shared_conditions() {
         let i = inputs();
-        let c = construct(&i, "Selected", "v", "A", &mut Control::unlimited()).unwrap();
-        let original = object_reading_instances(&i, &c, &mut Control::unlimited()).unwrap();
-        original.recheck(&i, &mut Control::unlimited()).unwrap();
+        let c = construct(&i, "Selected", "v", "A", &Control::unlimited()).unwrap();
+        let original = object_reading_instances(&i, &c, &Control::unlimited()).unwrap();
+        original.recheck(&i, &Control::unlimited()).unwrap();
         for mutation in 0..13 {
             let mut forged = original.clone();
             match mutation {
@@ -600,7 +600,7 @@ mod tests {
             );
             assert!(
                 matches!(
-                    forged.recheck(&i, &mut Control::unlimited()),
+                    forged.recheck(&i, &Control::unlimited()),
                     Err(ConstructionFailure::Inconsistent(_))
                 ),
                 "mutation {mutation}"

@@ -22,7 +22,7 @@ fn fixed_domain(r: &ObservedEvaluation) -> usize {
 #[test]
 fn mixed_owner_answer_fibers_recheck_original_fixed_ref_owner_domains_rows_support_and_scope() {
     // 完了しない問いは未決のまま、評価中の自己検査を通った回答だけを返す。
-    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), ASK, &mut quiet()).unwrap();
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), ASK, &quiet()).unwrap();
     assert_eq!(r.status(), "partial");
     assert!(r.answers[7].claim.is_some());
     assert!(!r.answers[7].evidence.is_empty());
@@ -55,7 +55,7 @@ const STOP_ASK: &[&str] = &[
 fn mixed_owner_answer_map_domain_stop_keeps_values_refutation_missing_and_prefix() {
     use std::{cell::Cell, rc::Rc};
     let input = fixture::input("stop", "r1");
-    let normal = evaluate_observed_bytes(input.clone(), STOP_ASK, &mut quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), STOP_ASK, &quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     let declaration = &normal.prepared.inputs().law().declarations()["Applications.fcMap"];
     assert!(normal.answers[5].claim.is_some());
@@ -70,7 +70,7 @@ fn mixed_owner_answer_map_domain_stop_keeps_values_refutation_missing_and_prefix
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -79,8 +79,8 @@ fn mixed_owner_answer_map_domain_stop_keeps_values_refutation_missing_and_prefix
             None
         }
     });
-    let prepared = prepare_observed(input, STOP_ASK, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+    let prepared = prepare_observed(input, STOP_ASK, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "v" {
             let (a, s) = (armed.clone(), seen.clone());
@@ -144,7 +144,7 @@ fn mixed_unknown_free_owner_rechecks_completion_scope_with_same_and_fresh_enviro
         let r = evaluate_observed_bytes(
             fixture::input(mode, "r1"),
             &[&make, &take, "later=evaluate(Applications.seed)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(r.status(), "complete", "{:?}", r.issues);
@@ -181,7 +181,7 @@ fn completed_result() -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         fixture::input("ambiguous_free_owner", "r1"),
         COMPLETION_ASKS,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
@@ -198,7 +198,7 @@ fn mixed_completion_coverage_stop_preserves_cases_without_whole_claim() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert!(freeze.replace(Some(count.get())).is_none());
@@ -210,10 +210,10 @@ fn mixed_completion_coverage_stop_preserves_cases_without_whole_claim() {
     let prepared = prepare_observed(
         fixture::input("ambiguous_free_owner", "r1"),
         COMPLETION_ASKS,
-        &mut c,
+        &c,
     )
     .unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, q, a| {
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, q, a| {
         e.validate_answer(g, q, a)?;
         if q.id == "v" {
             let (arm, hit) = (armed.clone(), seen.clone());

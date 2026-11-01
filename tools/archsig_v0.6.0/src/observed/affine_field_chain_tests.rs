@@ -36,7 +36,7 @@ fn stop() {
         "later=evaluate(Walk.seed)",
     ];
     let inputs = fixture::input(fixture::SCRIPT, "Z", &[], "r1");
-    let normal = evaluate_observed_bytes(inputs.clone(), asks, &mut quiet()).unwrap();
+    let normal = evaluate_observed_bytes(inputs.clone(), asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
     let at = field(&normal);
     let Some(Payload::Evaluation { expression, .. }) = &normal.nodes[at].payload else {
@@ -56,7 +56,7 @@ fn stop() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(move |_| {
+    let control = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -65,9 +65,9 @@ fn stop() {
             None
         }
     });
-    let prepared = prepare_observed(inputs, asks, &mut control).unwrap();
+    let prepared = prepare_observed(inputs, asks, &control).unwrap();
     let stopped =
-        evaluate_observed_with_validator(prepared, &mut control, |env, graph, request, answer| {
+        evaluate_observed_with_validator(prepared, &control, |env, graph, request, answer| {
             env.validate_answer(graph, request, answer)?;
             if request.id == "prior" {
                 let (a, s) = (armed.clone(), seen.clone());

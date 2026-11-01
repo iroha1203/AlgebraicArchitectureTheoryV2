@@ -172,7 +172,7 @@ pub fn run_check(
     io: &mut dyn Io,
     signals: &mut dyn Signals,
     args: &CheckArgs,
-    control: &mut Control,
+    control: &Control,
 ) -> Outcome {
     if let Err(error) = args::validate_check(args) {
         return usage_outcome(io, signals, error);
@@ -184,7 +184,7 @@ fn run_check_validated(
     io: &mut dyn Io,
     signals: &mut dyn Signals,
     args: &CheckArgs,
-    control: &mut Control,
+    control: &Control,
 ) -> Outcome {
     let out = args.out.as_ref().expect("検査済みcheckの出力先");
     // 開始時に明示された全入力を読み切る。検査中に再読しない。
@@ -349,7 +349,7 @@ pub fn execute_command(
     command: &Command,
     io: &mut dyn Io,
     signals: &mut dyn Signals,
-    control: &mut Control,
+    control: &Control,
 ) -> Option<Outcome> {
     if matches!(command, Command::Version) {
         return None;
@@ -404,9 +404,8 @@ mod command_tests {
             }
             let command = parse_args(&args).unwrap();
             let mut signals = NoSignals(0);
-            let mut control = Control::new(|_| panic!("injected computation failure"));
-            let outcome =
-                execute_command(&command, &mut FileIo, &mut signals, &mut control).unwrap();
+            let control = Control::new(|_| panic!("injected computation failure"));
+            let outcome = execute_command(&command, &mut FileIo, &mut signals, &control).unwrap();
             assert_eq!(outcome.status, Status::Error);
             assert_eq!(outcome.exit_code, 70);
             let expected = if kind == "check" {

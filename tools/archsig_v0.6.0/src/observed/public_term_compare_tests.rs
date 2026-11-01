@@ -13,7 +13,7 @@ fn term_input() -> InputSources {
     term_fixture::input("", false, "term-native")
 }
 fn term_example(qs: &[&str]) -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(term_input(), qs, &mut Control::unlimited()).unwrap();
+    let r = evaluate_observed_bytes(term_input(), qs, &Control::unlimited()).unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
     r
 }
@@ -71,10 +71,10 @@ fn finite_and_affine_comparison_calculation_stops_keep_only_completed_derivation
         let prepared = prepare_observed(
             term_input(),
             &[left, right, FINITE],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
-        let env = Environment::with_prepared(&prepared, &mut Control::unlimited()).unwrap();
+        let env = Environment::with_prepared(&prepared, &Control::unlimited()).unwrap();
         let graph = || {
             let mut g = rebuild_for_origin_and_support_recheck(&prefix, &prefix.nodes).unwrap();
             g.requests = prepared.requests().requests().to_vec();
@@ -90,7 +90,7 @@ fn finite_and_affine_comparison_calculation_stops_keep_only_completed_derivation
         let point = Checkpoint::FiniteIteration;
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut probe = Control::new(move |p| {
+        let probe = Control::new(move |p| {
             if p == point {
                 seen.set(seen.get() + 1)
             }
@@ -101,21 +101,21 @@ fn finite_and_affine_comparison_calculation_stops_keep_only_completed_derivation
             &env,
             &mut graph(),
             &prepared.requests().requests()[2],
-            &mut probe,
+            &probe,
         )
         .unwrap();
         assert_eq!(normal.status, status);
         let total = count.get();
         assert!(total > 10);
         // 停止の種類と位置は代表1つ(計算の途中の time 停止)だけを見る。
-        let (mut c, _) = stopping(total / 2, point);
+        let (c, _) = stopping(total / 2, point);
         let mut g = graph();
         let answer = crate::observed::public_compare::evaluate(
             &prepared,
             &env,
             &mut g,
             &prepared.requests().requests()[2],
-            &mut c,
+            &c,
         );
         match answer {
             Ok(a) => {

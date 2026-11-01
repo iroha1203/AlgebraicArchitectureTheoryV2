@@ -72,8 +72,7 @@ impl Drop for DataBinding {
 }
 impl Binding {
     fn data_parts(&self, c: &Control) -> Result<Option<(String, Vec<Self>)>, ValidationFailure> {
-        c.clone()
-            .checkpoint(Checkpoint::FiniteIteration)
+        c.checkpoint(Checkpoint::FiniteIteration)
             .map_err(ValidationFailure::Stop)?;
         Ok(match self {
             Self::Data(value) => Some((value.constructor.to_string(), value.args.as_ref().clone())),
@@ -91,7 +90,7 @@ impl Binding {
             _ => None,
         })
     }
-    fn finite_scalar(&self, c: &mut Control) -> Result<Option<Scalar>, ConstructionFailure> {
+    fn finite_scalar(&self, c: &Control) -> Result<Option<Scalar>, ConstructionFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(c)?;
             Ok(match self {
@@ -166,7 +165,7 @@ impl Binding {
             })
         })
     }
-    fn affine(&self, c: &mut Control) -> Result<Option<affine::Form>, ConstructionFailure> {
+    fn affine(&self, c: &Control) -> Result<Option<affine::Form>, ConstructionFailure> {
         match self {
             Self::ParameterForm(value) => Ok(Some(value.clone())),
             Self::FiniteScalar(value) => affine::constant(value, c).map_err(invalid),
@@ -183,7 +182,7 @@ impl Binding {
         &self,
         op: BinOp,
         rhs: &Self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<Self>, ConstructionFailure> {
         if let (Self::FiniteScalar(left), Self::FiniteScalar(right)) = (self, rhs) {
             return Ok(Some(Self::FiniteScalar(
@@ -211,7 +210,7 @@ impl Binding {
     fn constant_difference(
         &self,
         rhs: &Self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<EquationPolynomial>, ConstructionFailure> {
         let Some(value) = self.binary(BinOp::Sub, rhs, c)? else {
             return Ok(None);
@@ -229,7 +228,7 @@ impl Binding {
     }
     fn split(
         &self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<(EquationPolynomial, affine::Form)>, ConstructionFailure> {
         Ok(match self {
             Self::Polynomial(polynomial) => {
@@ -264,7 +263,7 @@ impl Compiler<'_> {
         left: &Binding,
         right: &Binding,
         span: (usize, usize),
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<bool>, ConstructionFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(c)?;
@@ -343,7 +342,7 @@ impl Compiler<'_> {
         left: &[Binding],
         right: &[Binding],
         span: (usize, usize),
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<bool>, ConstructionFailure> {
         let mut known = true;
         for (left, right) in left.iter().zip(right) {
@@ -368,7 +367,7 @@ impl Compiler<'_> {
         id: usize,
         scrutinee: usize,
         arms: &[crate::law::ast::Arm],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<usize>, ConstructionFailure> {
         if let Some(body) =
             super::super::object_law_residuals::binding_match_body(self.inputs, scrutinee, arms, c)?
@@ -423,7 +422,7 @@ impl Compiler<'_> {
         ))
     }
     // Lawのratは整数literal二つだけを許す。既存の正確な数値構成を再利用する。
-    fn integer_literal(&self, id: usize, c: &mut Control) -> Result<Scalar, ConstructionFailure> {
+    fn integer_literal(&self, id: usize, c: &Control) -> Result<Scalar, ConstructionFailure> {
         let ExprKind::Int(value) = &self.inputs.law().exprs()[id].kind else {
             return Err(bad("型検査済みratの引数が整数literalでない"));
         };
@@ -433,7 +432,7 @@ impl Compiler<'_> {
         &mut self,
         value: Binding,
         path: &[usize],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<Binding>, ConstructionFailure> {
         tick(c)?;
         match value {
@@ -473,7 +472,7 @@ impl Compiler<'_> {
         reference: Binding,
         name: &str,
         path: &[usize],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<Binding>, ConstructionFailure> {
         tick(c)?;
         let Binding::Reference { snapshot, subject } = reference else {
@@ -556,7 +555,7 @@ impl Compiler<'_> {
         &mut self,
         id: usize,
         path: &[usize],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<Binding>, ConstructionFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             tick(c)?;
@@ -1068,7 +1067,7 @@ impl PolynomialFamily {
     pub(super) fn at(
         &self,
         values: &[(affine::Parameter, Scalar)],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<EquationPolynomial, ConstructionFailure> {
         let mut assignments = BTreeMap::new();
         for (parameter, value) in values {
@@ -1092,7 +1091,7 @@ impl PolynomialFamily {
         }
         Ok(result)
     }
-    fn from_binding(value: &Binding, c: &mut Control) -> Result<Option<Self>, ConstructionFailure> {
+    fn from_binding(value: &Binding, c: &Control) -> Result<Option<Self>, ConstructionFailure> {
         if let Binding::Family(family) = value {
             return Ok(Some(family.clone()));
         }
@@ -1127,7 +1126,7 @@ impl PolynomialFamily {
         &self,
         op: BinOp,
         rhs: &Self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<Self>, ConstructionFailure> {
         if !matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul) {
             return Ok(None);
@@ -1177,7 +1176,7 @@ pub(super) fn operands(
     right: usize,
     path: &[usize],
     ring: &mut EquationRing,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<SourceDifference>, ConstructionFailure> {
     let mut candidate = ring.clone();
     let Some(source) = family_operands(inputs, instance, left, right, path, &mut candidate, c)?
@@ -1201,7 +1200,7 @@ pub(super) fn family_operands(
     right: usize,
     path: &[usize],
     ring: &mut EquationRing,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     family_operands_bound(inputs, instance, left, right, path, ring, &[], c)
 }
@@ -1213,7 +1212,7 @@ pub(super) fn family_operands_bound(
     path: &[usize],
     ring: &mut EquationRing,
     finite: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let Signature::Law { body, .. } = &inputs
         .law()
@@ -1231,7 +1230,7 @@ pub(super) fn family_operands_bound(
 pub(super) fn guard_value(
     inputs: &CheckedInputs,
     instance: &ObjectInstance,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<bool>, ConstructionFailure> {
     guard_value_bound(inputs, instance, &[], c)
 }
@@ -1239,7 +1238,7 @@ pub(super) fn guard_value_bound(
     inputs: &CheckedInputs,
     instance: &ObjectInstance,
     finite: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<bool>, ConstructionFailure> {
     let Signature::Law { guard, .. } = &inputs
         .law()
@@ -1327,7 +1326,7 @@ pub(super) fn guard_value_bound(
 fn variables_for(
     instance: &ObjectInstance,
     finite: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<BTreeMap<String, Binding>, ConstructionFailure> {
     let mut variables: BTreeMap<_, _> = instance
         .bindings()
@@ -1386,7 +1385,7 @@ fn family_operands_from_root(
     path: &[usize],
     ring: &mut EquationRing,
     finite: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let variables = variables_for(instance, finite, c)?;
     family_operands_from_variables(inputs, root, left, right, path, ring, variables, c)
@@ -1400,7 +1399,7 @@ pub(in crate::observed) fn parameter_differences_with_bindings(
     context: crate::observed::call::Context,
     values: &[(String, Scalar)],
     parameters: &[(String, affine::Form)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<
     Option<(EquationRing, Vec<PolynomialFamily>, Vec<affine::Parameter>)>,
     ConstructionFailure,
@@ -1472,7 +1471,7 @@ fn family_operands_from_variables(
     path: &[usize],
     ring: &mut EquationRing,
     variables: BTreeMap<String, Binding>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let mut candidate = ring.clone();
     let mut compiler = Compiler {
@@ -1494,7 +1493,7 @@ fn family_operands_from_variables(
 fn bind_root(
     compiler: &mut Compiler<'_>,
     root: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<usize>, ConstructionFailure> {
     let mut cursor = root;
     loop {
@@ -1537,7 +1536,7 @@ fn collect_parameter_equations(
     out: &mut Vec<PolynomialFamily>,
     context: crate::observed::call::Context,
     local_parameters: &mut Vec<affine::Parameter>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<()>, ConstructionFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(c)?;
@@ -1640,7 +1639,7 @@ fn family_difference(
     left: usize,
     right: usize,
     path: &[usize],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<SourceFamilyDifference>, ConstructionFailure> {
     let Some(left) = compiler.expression(left, path, c)? else {
         return Ok(None);

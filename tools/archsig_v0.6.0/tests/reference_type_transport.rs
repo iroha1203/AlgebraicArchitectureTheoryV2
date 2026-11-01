@@ -48,26 +48,18 @@ fn with_left(left: &[u8], a: &str) -> CheckedInputs {
                 .into_bytes(),
             a.into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
 fn declarations(i: &CheckedInputs) -> DeclarationCorrespondence {
-    let m = correspondence(
-        i,
-        "v",
-        "m",
-        "Before",
-        Some("After"),
-        &mut Control::unlimited(),
-    )
-    .unwrap();
+    let m = correspondence(i, "v", "m", "Before", Some("After"), &Control::unlimited()).unwrap();
     assert!(m.counterexamples().is_empty(), "{:?}", m.counterexamples());
     assert!(m.missing().is_empty(), "{:?}", m.missing());
-    declaration_correspondence(i, m.map().unwrap(), &mut Control::unlimited()).unwrap()
+    declaration_correspondence(i, m.map().unwrap(), &Control::unlimited()).unwrap()
 }
 fn result(i: &CheckedInputs, ty: &str) -> ReferenceTypeTransport {
-    reference_type_transport(i, &declarations(i), ty, &mut Control::unlimited()).unwrap()
+    reference_type_transport(i, &declarations(i), ty, &Control::unlimited()).unwrap()
 }
 fn fact(snapshot: &str, subject: &str) -> FactPointer {
     FactPointer {
@@ -116,10 +108,8 @@ fn root_and_child_bijections_check_both_whole_domains_without_quantity_equality(
         assert_eq!(iso.forward().iter().collect::<Vec<_>>(), [(&v(a), &v(b))]);
         assert_eq!(iso.inverse().iter().collect::<Vec<_>>(), [(&v(b), &v(a))]);
         assert_eq!(iso.forward().get(&v("absent")), None);
-        r.recheck(&i, &mut Control::unlimited()).unwrap();
-        r.operation()
-            .recheck(&i, &mut Control::unlimited())
-            .unwrap();
+        r.recheck(&i, &Control::unlimited()).unwrap();
+        r.operation().recheck(&i, &Control::unlimited()).unwrap();
     }
 }
 #[test]
@@ -159,10 +149,8 @@ fn outside_family_references_from_other_roots_and_snapshots_fail_typed_image() {
         r.operation().map().candidate().image(&fact("w", "p")),
         Some(&v("b"))
     );
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
     let i = inputs(&add(A, "outside", "Left.Root"));
     let r = result(&i, "Left.Root");
     assert_eq!(r.source(), [v("a"), v("outside")]);
@@ -181,9 +169,7 @@ fn unreached_targets_from_another_snapshot_are_not_silently_discarded() {
         }]
     );
     assert!(r.bijection().is_none());
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn collisions_and_unreached_targets_retain_every_reference_and_base_operation() {
@@ -206,10 +192,8 @@ fn collisions_and_unreached_targets_retain_every_reference_and_base_operation() 
         ]
     );
     assert!(r.bijection().is_none());
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn empty_source_and_target_are_a_bijection_and_one_empty_side_is_not() {
@@ -251,21 +235,12 @@ fn same_type_mapping_does_not_invent_inverse_by_reversing_only_selected_table() 
             include_bytes!("fixtures/configuration-operation.law").to_vec(),
             include_bytes!("fixtures/object-configuration-map.archmap.json").to_vec(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    let m = correspondence(
-        &i,
-        "v",
-        "m",
-        "Reservations",
-        None,
-        &mut Control::unlimited(),
-    )
-    .unwrap();
-    let d = declaration_correspondence(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
-    let r =
-        reference_type_transport(&i, &d, "Reservations.State", &mut Control::unlimited()).unwrap();
+    let m = correspondence(&i, "v", "m", "Reservations", None, &Control::unlimited()).unwrap();
+    let d = declaration_correspondence(&i, m.map().unwrap(), &Control::unlimited()).unwrap();
+    let r = reference_type_transport(&i, &d, "Reservations.State", &Control::unlimited()).unwrap();
     assert_eq!(r.source(), [v("p"), v("q"), v("r"), v("s"), v("u"), v("w")]);
     assert_eq!(r.images(), [v("r"), v("s"), v("r"), v("s"), v("w"), v("w")]);
     assert_eq!(
@@ -289,9 +264,7 @@ fn same_type_mapping_does_not_invent_inverse_by_reversing_only_selected_table() 
         ]
     );
     assert!(r.bijection().is_none());
-    r.operation()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
+    r.operation().recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn legal_entity_arrow_transport_is_a_value_condition_instead_of_input_error() {
@@ -308,16 +281,16 @@ fn legal_entity_arrow_transport_is_a_value_condition_instead_of_input_error() {
                 .replace("@DIGEST@", digest)
                 .into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    let m = correspondence(&i, "v", "m", "Read", None, &mut Control::unlimited()).unwrap();
-    let d = declaration_correspondence(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+    let m = correspondence(&i, "v", "m", "Read", None, &Control::unlimited()).unwrap();
+    let d = declaration_correspondence(&i, m.map().unwrap(), &Control::unlimited()).unwrap();
     for (from, to, source, images, wrong, unreached) in [
         ("V.S", "V.E", ["s", "t"], ["f", "t"], "t", "e"),
         ("V.E", "V.S", ["e", "f"], ["t", "f"], "f", "s"),
     ] {
-        let r = reference_type_transport(&i, &d, from, &mut Control::unlimited()).unwrap();
+        let r = reference_type_transport(&i, &d, from, &Control::unlimited()).unwrap();
         assert_eq!(r.target_type(), to);
         assert_eq!(r.source(), source.map(v));
         assert_eq!(r.images(), images.map(v));
@@ -336,9 +309,7 @@ fn legal_entity_arrow_transport_is_a_value_condition_instead_of_input_error() {
             ]
         );
         assert!(r.bijection().is_none());
-        r.operation()
-            .recheck(&i, &mut Control::unlimited())
-            .unwrap();
+        r.operation().recheck(&i, &Control::unlimited()).unwrap();
     }
 }
 #[test]
@@ -347,16 +318,16 @@ fn current_whole_input_roster_is_rechecked_and_quantity_is_not_value_bijection_e
     let d = declarations(&i);
     let r = result(&i, "Left.Child");
     let changed = inputs(&extra_snapshot(A, "Right.Child"));
-    assert!(d.recheck(&changed, &mut Control::unlimited()).is_err());
+    assert!(d.recheck(&changed, &Control::unlimited()).is_err());
     assert!(matches!(
-        r.recheck(&changed, &mut Control::unlimited()),
+        r.recheck(&changed, &Control::unlimited()),
         Err(ConstructionFailure::Inconsistent(_))
     ));
     let changed = inputs(&A.replace("\"value\":\"2\"", "\"value\":\"19\""));
-    r.recheck(&changed, &mut Control::unlimited()).unwrap();
+    r.recheck(&changed, &Control::unlimited()).unwrap();
     for ty in ["Z", "Left.Unknown", "List<Left.Child>", "Left.Child[a]"] {
         assert!(matches!(
-            reference_type_transport(&i, &d, ty, &mut Control::unlimited()),
+            reference_type_transport(&i, &d, ty, &Control::unlimited()),
             Err(ConstructionFailure::InvalidSelection(_))
         ));
     }
@@ -384,30 +355,30 @@ fn fixed_reference_checkpoints_stop_before_returning_any_unfinished_bijection() 
     let d = declarations(&i);
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::ReferenceTypeTransport {
             seen.set(seen.get() + 1);
         }
         None
     });
-    reference_type_transport(&i, &d, "Left.Child", &mut c).unwrap();
+    reference_type_transport(&i, &d, "Left.Child", &c).unwrap();
     let total = count.get();
     assert!(total > 20);
     for at in [1, total / 2, total] {
         for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut c = Control::new(move |p| {
+            let c = Control::new(move |p| {
                 if p == Checkpoint::ReferenceTypeTransport {
                     seen.set(seen.get() + 1);
                 }
                 (seen.get() >= at).then_some(signal)
             });
-            let f = reference_type_transport(&i, &d, "Left.Child", &mut c).unwrap_err();
+            let f = reference_type_transport(&i, &d, "Left.Child", &c).unwrap_err();
             assert_eq!(f, ConstructionFailure::Stopped(c.stop_reason().unwrap()));
             assert_eq!(count.get(), at);
             assert_eq!(
-                reference_type_transport(&i, &d, "Left.Child", &mut c).unwrap_err(),
+                reference_type_transport(&i, &d, "Left.Child", &c).unwrap_err(),
                 f
             );
             assert_eq!(count.get(), at);
@@ -427,7 +398,7 @@ fn external_owned_subjects_with_unknown_owner_remain_in_plain_ref_domain() {
         r.bijection().unwrap().forward().get(&fact("w", "p")),
         Some(&fact("w", "p"))
     );
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn entity_to_arrow_type_with_full_bijection_is_accepted() {
@@ -444,19 +415,19 @@ fn entity_to_arrow_type_with_full_bijection_is_accepted() {
                 .replace("@DIGEST@", digest)
                 .into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    let m = correspondence(&i, "v", "m", "Read", None, &mut Control::unlimited()).unwrap();
+    let m = correspondence(&i, "v", "m", "Read", None, &Control::unlimited()).unwrap();
     assert!(m.counterexamples().is_empty());
     assert!(m.missing().is_empty());
-    let d = declaration_correspondence(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
-    let r = reference_type_transport(&i, &d, "V.S", &mut Control::unlimited()).unwrap();
+    let d = declaration_correspondence(&i, m.map().unwrap(), &Control::unlimited()).unwrap();
+    let r = reference_type_transport(&i, &d, "V.S", &Control::unlimited()).unwrap();
     assert_eq!(r.target_type(), "V.E");
     assert_eq!(r.source(), [v("s")]);
     assert_eq!(r.target(), [v("f")]);
     assert!(r.failures().is_empty());
     assert_eq!(r.bijection().unwrap().forward().get(&v("s")), Some(&v("f")));
     assert_eq!(r.bijection().unwrap().inverse().get(&v("f")), Some(&v("s")));
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }

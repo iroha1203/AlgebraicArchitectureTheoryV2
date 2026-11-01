@@ -9,7 +9,7 @@ fn example(view: &str) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         fixture::input("normal", "r1"),
         &["seed=evaluate(Walk.seed)", "prior=check(Walk.prior)", &ask],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(
@@ -24,7 +24,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -210,7 +210,7 @@ fn stopped() {
         "current=evaluate(Walk.maybe,e=@v/e)",
         "later=evaluate(Walk.seed)",
     ];
-    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), &asks, &quiet()).unwrap();
     assert!(matches!(normal.status(), "complete" | "partial"));
     let reason = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
@@ -218,7 +218,7 @@ fn stopped() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(move |_| {
+    let control = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -227,8 +227,8 @@ fn stopped() {
             None
         }
     });
-    let prepared = prepare_observed(input, &asks, &mut control).unwrap();
-    let result = evaluate_observed_with_validator(prepared, &mut control, |e, g, q, answer| {
+    let prepared = prepare_observed(input, &asks, &control).unwrap();
+    let result = evaluate_observed_with_validator(prepared, &control, |e, g, q, answer| {
         e.validate_answer(g, q, answer)?;
         if q.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());

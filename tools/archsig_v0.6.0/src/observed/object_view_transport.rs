@@ -121,7 +121,7 @@ impl PrimitiveValueIdentity {
         inputs: &CheckedInputs,
         declarations: &DeclarationCorrespondence,
         declaration: &str,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<Self>, ConstructionFailure> {
         let (source, target) = super::value_transport::selected_types(
             inputs,
@@ -141,7 +141,7 @@ impl PrimitiveValueIdentity {
         }
         Ok(Some(Self { ty: source }))
     }
-    fn image(&self, value: &Scalar, c: &mut Control) -> Result<Scalar, ConstructionFailure> {
+    fn image(&self, value: &Scalar, c: &Control) -> Result<Scalar, ConstructionFailure> {
         tick(c)?;
         if value.ty() != self.ty {
             return Err(ConstructionFailure::Inconsistent(
@@ -177,7 +177,7 @@ impl StructuralValueEquivalence {
         inputs: &CheckedInputs,
         declarations: &DeclarationCorrespondence,
         declaration: &str,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<Self>, ConstructionFailure> {
         let (source, target) = super::value_transport::selected_types(
             inputs,
@@ -236,7 +236,7 @@ impl StructuralValueEquivalence {
         &self,
         inputs: &CheckedInputs,
         value: &Scalar,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Scalar, ConstructionFailure> {
         if !self.complete || value.ty() != self.source.erase() {
             return Err(ConstructionFailure::Inconsistent(
@@ -279,7 +279,7 @@ impl ViewValueEquivalence {
         &self,
         v: &Scalar,
         inputs: &CheckedInputs,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Scalar, ConstructionFailure> {
         match self {
             Self::Finite(r) => r.transport_scalar(v, c),
@@ -439,7 +439,7 @@ impl ObjectViewTransport {
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ObjectViewTransportFailure> {
         tick(c)?;
         let r = object_view_transport(inputs, &self.declarations, self.object, self.instance, c)?;
@@ -497,7 +497,7 @@ impl ObjectViewTransport {
     }
 }
 
-fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectViewTransport)
         .map_err(Into::into)
 }
@@ -555,7 +555,7 @@ pub fn object_view_transport(
     declarations: &DeclarationCorrespondence,
     object: usize,
     instance: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<ObjectViewTransport, ObjectViewTransportFailure> {
     tick(c)?;
     declarations.recheck(&inputs, c)?;
@@ -578,7 +578,7 @@ fn checked_view_transport(
     declarations: &DeclarationCorrespondence,
     object: usize,
     instance: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<ObjectViewTransport, ObjectViewTransportFailure> {
     let objects =
         configuration_transport(&inputs, declarations.operation().map(), c).map_err(|failure| {
@@ -1001,25 +1001,17 @@ mod tests {
                         "../../tests/fixtures/object-view-transport.archmap.json"
                     )),
                 ),
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap(),
         );
-        let m = correspondence(
-            &i,
-            "v",
-            "m",
-            "Before",
-            Some("After"),
-            &mut Control::unlimited(),
-        )
-        .unwrap();
-        let d =
-            declaration_correspondence(&i, m.map().unwrap(), &mut Control::unlimited()).unwrap();
+        let m =
+            correspondence(&i, "v", "m", "Before", Some("After"), &Control::unlimited()).unwrap();
+        let d = declaration_correspondence(&i, m.map().unwrap(), &Control::unlimited()).unwrap();
         let p = object_reading_instances(
             &i,
-            &construct(&i, "Before", "v", "a", &mut Control::unlimited()).unwrap(),
-            &mut Control::unlimited(),
+            &construct(&i, "Before", "v", "a", &Control::unlimited()).unwrap(),
+            &Control::unlimited(),
         )
         .unwrap();
         let o = p
@@ -1032,7 +1024,7 @@ mod tests {
             .iter()
             .position(|r| r.declaration().name == name && r.bindings()[0].subject().subject == "p")
             .unwrap();
-        let r = object_view_transport(Arc::clone(&i), &d, o, n, &mut Control::unlimited()).unwrap();
+        let r = object_view_transport(Arc::clone(&i), &d, o, n, &Control::unlimited()).unwrap();
         (i, r)
     }
     #[test]
@@ -1089,7 +1081,7 @@ mod tests {
             lengths.sort();
             assert_eq!(lengths, if parameter { vec![1, 2] } else { vec![2] });
             result
-                .recheck(Arc::clone(&inputs), &mut Control::unlimited())
+                .recheck(Arc::clone(&inputs), &Control::unlimited())
                 .unwrap();
             if !parameter {
                 let Some(ViewValueEquivalence::Structural(map)) = &mut result.equivalence else {
@@ -1106,7 +1098,7 @@ mod tests {
                 map.complete = false;
                 assert!(
                     result
-                        .recheck(Arc::clone(&inputs), &mut Control::unlimited())
+                        .recheck(Arc::clone(&inputs), &Control::unlimited())
                         .is_err()
                 );
             }
@@ -1149,10 +1141,7 @@ mod tests {
                         .clear();
                 }
             }
-            assert!(
-                r.recheck(i, &mut Control::unlimited()).is_err(),
-                "mode={mode}"
-            );
+            assert!(r.recheck(i, &Control::unlimited()).is_err(), "mode={mode}");
         }
     }
     #[test]

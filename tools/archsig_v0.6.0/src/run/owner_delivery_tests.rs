@@ -35,7 +35,7 @@ fn finite_owner_partial_delivery_keeps_io_and_signal_precedence() {
     let baseline = evaluate_observed_bytes(
         owner_sources(false),
         &["r=repair(Selected.valid,on=@v/root,using=Selected.choose)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(!baseline.has_internal_issue());
@@ -90,7 +90,7 @@ fn finite_owner_partial_delivery_keeps_io_and_signal_precedence() {
         &mut io,
         &mut Freeze(None),
         &args(Some(dir.join("out"))),
-        &mut quiet(),
+        &quiet(),
     );
     assert!(
         io.0 > 0,
@@ -104,12 +104,7 @@ fn finite_owner_partial_delivery_keeps_io_and_signal_precedence() {
         (crate::result::Signal::Term, 143),
     ] {
         let mut io = RefuseIo(0);
-        let result = run_requests(
-            &mut io,
-            &mut Freeze(Some(signal)),
-            &args(None),
-            &mut quiet(),
-        );
+        let result = run_requests(&mut io, &mut Freeze(Some(signal)), &args(None), &quiet());
         assert_eq!(result.exit_code, code);
         assert!(result.result.is_none());
         assert_eq!(io.0, 0);

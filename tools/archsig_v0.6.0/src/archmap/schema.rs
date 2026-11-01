@@ -49,8 +49,8 @@ fn syntax(pointer: &str, message: impl Into<String>) -> Box<Issue> {
 
 // Every schema helper shares the caller's stop latch, including error exits.
 fn step<E: InputError, T>(
-    control: &mut Control,
-    run: impl FnOnce(&mut Control) -> Result<T, E>,
+    control: &Control,
+    run: impl FnOnce(&Control) -> Result<T, E>,
 ) -> Result<T, E> {
     E::checkpoint(control, Checkpoint::ArchMapSchema)?;
     let result = run(control);
@@ -71,7 +71,7 @@ impl<'a, E: InputError> Obj<'a, E> {
         pointer: &str,
         required: &[&str],
         optional: &[&str],
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Self, E> {
         step::<E, _>(control, |control| {
             let JValue::Obj(entries) = &node.value else {
@@ -122,7 +122,7 @@ impl<'a, E: InputError> Obj<'a, E> {
         })
     }
     fn get(&self, key: &str) -> Result<Option<(&'a JNode, String)>, E> {
-        step::<E, _>(&mut self.control.clone(), |control| {
+        step::<E, _>(&self.control, |control| {
             Ok(field::<E>(self.entries, key, control)?
                 .map(|v| (v, pointer_push(&self.pointer, key))))
         })
@@ -131,13 +131,13 @@ impl<'a, E: InputError> Obj<'a, E> {
         Ok(self.get(key)?.expect("必須欄は確認済み"))
     }
     fn string(&self, key: &str) -> Result<String, E> {
-        step::<E, _>(&mut self.control.clone(), |_| {
+        step::<E, _>(&self.control, |_| {
             let (v, p) = self.req(key)?;
             as_string(v, &p).map_err(E::from)
         })
     }
     fn id(&self, key: &str) -> Result<String, E> {
-        step::<E, _>(&mut self.control.clone(), |control| {
+        step::<E, _>(&self.control, |control| {
             let (v, p) = self.req(key)?;
             let s = as_string(v, &p)?;
             identifier::<E>(
@@ -150,7 +150,7 @@ impl<'a, E: InputError> Obj<'a, E> {
         })
     }
     fn array(&self, key: &str) -> Result<(&'a [JNode], String), E> {
-        step::<E, _>(&mut self.control.clone(), |_| {
+        step::<E, _>(&self.control, |_| {
             let (v, p) = self.req(key)?;
             match &v.value {
                 JValue::Arr(items) => Ok((items.as_slice(), p)),
@@ -163,7 +163,7 @@ impl<'a, E: InputError> Obj<'a, E> {
 pub(crate) fn field_map<'a, E: InputError, T>(
     entries: &'a [(String, JNode)],
     key: &str,
-    control: &mut Control,
+    control: &Control,
     finish: impl FnOnce(Option<&'a JNode>) -> Result<T, E>,
 ) -> Result<T, E> {
     for (index, (k, v)) in entries.iter().enumerate() {
@@ -183,7 +183,7 @@ pub(crate) fn field_map<'a, E: InputError, T>(
 pub(crate) fn field<'a, E: InputError>(
     entries: &'a [(String, JNode)],
     key: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<&'a JNode>, E> {
     field_map(entries, key, control, Ok)
 }
@@ -201,13 +201,13 @@ pub fn as_string(node: &JNode, pointer: &str) -> AResult<String> {
 
 #[allow(dead_code)]
 pub fn is_id(s: &str) -> bool {
-    is_id_controlled::<Box<Issue>>(s, &mut Control::unlimited()).expect("ordinary schema helper")
+    is_id_controlled::<Box<Issue>>(s, &Control::unlimited()).expect("ordinary schema helper")
 }
 
 fn identifier<E: InputError>(
     s: &str,
     dotted: bool,
-    control: &mut Control,
+    control: &Control,
     invalid: Option<&dyn Fn() -> Box<Issue>>,
 ) -> Result<bool, E> {
     step::<E, _>(control, |control| {
@@ -238,20 +238,20 @@ fn identifier<E: InputError>(
     })
 }
 
-pub(crate) fn is_id_controlled<E: InputError>(s: &str, control: &mut Control) -> Result<bool, E> {
+pub(crate) fn is_id_controlled<E: InputError>(s: &str, control: &Control) -> Result<bool, E> {
     identifier::<E>(s, true, control, None)
 }
 
 #[allow(dead_code)]
 pub fn is_qname(s: &str) -> bool {
-    is_qname_controlled::<Box<Issue>>(s, &mut Control::unlimited()).expect("ordinary schema helper")
+    is_qname_controlled::<Box<Issue>>(s, &Control::unlimited()).expect("ordinary schema helper")
 }
-fn is_qname_controlled<E: InputError>(s: &str, control: &mut Control) -> Result<bool, E> {
+fn is_qname_controlled<E: InputError>(s: &str, control: &Control) -> Result<bool, E> {
     qname::<E>(s, control, None)
 }
 fn qname<E: InputError>(
     s: &str,
-    control: &mut Control,
+    control: &Control,
     invalid: Option<&dyn Fn() -> Box<Issue>>,
 ) -> Result<bool, E> {
     step::<E, _>(control, |control| {
@@ -338,14 +338,14 @@ fn unsupported_version(format: String, semantics: Option<String>) -> Box<Issue> 
 /// 版を先に確かめてから schema を読む。未知版の欄を未知欄として先に拒否しない。
 pub fn read_document<'a, E: InputError>(
     root: &'a JNode,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<RawDocument<'a>, E> {
     step::<E, _>(control, |control| read_document_inner::<E>(root, control))
 }
 
 fn read_document_inner<'a, E: InputError>(
     root: &'a JNode,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<RawDocument<'a>, E> {
     let JValue::Obj(entries) = &root.value else {
         return Err((syntax("", "ArchMap must be an object")).into());
@@ -566,7 +566,7 @@ fn read_document_inner<'a, E: InputError>(
 fn read_location<E: InputError>(
     node: &JNode,
     pointer: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<SourceLocation, E> {
     step::<E, _>(control, |control| {
         read_location_inner::<E>(node, pointer, control)
@@ -575,7 +575,7 @@ fn read_location<E: InputError>(
 fn read_location_inner<E: InputError>(
     node: &JNode,
     pointer: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<SourceLocation, E> {
     let o = Obj::<E>::new(node, pointer, &["source", "path"], &["span"], control)?;
     let source = o.id("source")?;
@@ -644,11 +644,11 @@ mod interruption_tests {
     #[test]
     fn id_and_qname_characters_and_parts_are_interruptible() {
         let count = |s: &str, qualified: bool| {
-            let (mut control, seen) = probe(None);
+            let (control, seen) = probe(None);
             let valid = if qualified {
-                is_qname_controlled::<E>(s, &mut control)
+                is_qname_controlled::<E>(s, &control)
             } else {
-                is_id_controlled::<E>(s, &mut control)
+                is_id_controlled::<E>(s, &control)
             };
             assert_eq!(valid.unwrap(), true);
             seen.get()
@@ -659,11 +659,11 @@ mod interruption_tests {
             let text = if qualified { "Aa.Bb.Cc" } else { "Abcd-ef" };
             let total = count(text, qualified);
             for at in 1..=total {
-                let (mut control, _) = probe(Some(at));
+                let (control, _) = probe(Some(at));
                 let result = if qualified {
-                    is_qname_controlled::<E>(text, &mut control)
+                    is_qname_controlled::<E>(text, &control)
                 } else {
-                    is_id_controlled::<E>(text, &mut control)
+                    is_id_controlled::<E>(text, &control)
                 };
                 assert!(matches!(result, Err(CheckFailure::Stopped(Signal::Term))));
             }
@@ -673,8 +673,8 @@ mod interruption_tests {
     #[test]
     fn object_lookup_visits_each_candidate_before_and_after() {
         let root = crate::json::parse(br#"{"a":true,"b":true,"c":true}"#).unwrap();
-        let mut control = Control::unlimited();
-        let object = Obj::<E>::new(&root, "", &["a", "b", "c"], &[], &mut control).unwrap();
+        let control = Control::unlimited();
+        let object = Obj::<E>::new(&root, "", &["a", "b", "c"], &[], &control).unwrap();
         let count = |key| {
             let (control, seen) = probe(None);
             let object = Obj::<E> {
@@ -704,17 +704,17 @@ mod interruption_tests {
         let count = |path: &str, span: &str| {
             let source = format!(r#"{{"source":"s","path":"{path}","span":{span}}}"#);
             let root = crate::json::parse(source.as_bytes()).unwrap();
-            let (mut control, seen) = probe(None);
-            read_location::<E>(&root, "/location", &mut control).unwrap();
+            let (control, seen) = probe(None);
+            read_location::<E>(&root, "/location", &control).unwrap();
             seen.get()
         };
         assert_eq!(count("a/b/c", "[0,1]"), count("a", "[0,1]") + 4);
         let source = br#"{"source":"s","path":"a/b/c","span":[0,1]}"#;
         let root = crate::json::parse(source).unwrap();
         for at in 1..=count("a/b/c", "[0,1]") {
-            let (mut control, _) = probe(Some(at));
+            let (control, _) = probe(Some(at));
             assert!(matches!(
-                read_location::<E>(&root, "/location", &mut control),
+                read_location::<E>(&root, "/location", &control),
                 Err(CheckFailure::Stopped(_))
             ));
         }
@@ -742,12 +742,12 @@ mod required_identifier_priority_tests {
                 })
             };
             let original = || syntax("/snapshots/0/id", format!("`{text}` is not a valid Id"));
-            let mut control = probe();
-            let result = identifier::<E>(text, true, &mut control, Some(&original));
+            let control = probe();
+            let result = identifier::<E>(text, true, &control, Some(&original));
             assert!(matches!(result, Err(CheckFailure::Stopped(Signal::Term))));
-            let mut control = probe();
+            let control = probe();
             assert!(matches!(
-                is_id_controlled::<E>(text, &mut control),
+                is_id_controlled::<E>(text, &control),
                 Err(CheckFailure::Stopped(_))
             ));
         }

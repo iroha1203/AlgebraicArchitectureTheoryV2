@@ -21,7 +21,7 @@ use crate::{
 };
 use std::sync::Arc;
 
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;
     Ok(())
 }
@@ -63,7 +63,7 @@ pub(super) fn prepare(
     g: &mut Graph,
     inputs: Arc<CheckedInputs>,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Plan, ValidationFailure> {
     tick(c)?;
     let architecture = architecture_result::build(inputs.clone(), env, g, request, c)?;
@@ -75,7 +75,7 @@ pub(super) fn prepare_architecture(
     g: &mut Graph,
     inputs: Arc<CheckedInputs>,
     architecture: Architecture,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Plan, ValidationFailure> {
     tick(c)?;
     let reference = architecture.reference;

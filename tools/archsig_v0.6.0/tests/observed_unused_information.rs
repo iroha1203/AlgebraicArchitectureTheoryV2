@@ -628,12 +628,12 @@ fn compare_unused(count: Option<&str>) {
     ];
     let mut baseline = None;
     for (has_spare, src) in variants {
-        let prepared = prepare_observed(src.clone(), &ASKS, &mut Control::unlimited()).unwrap();
+        let prepared = prepare_observed(src.clone(), &ASKS, &Control::unlimited()).unwrap();
         assert_eq!(prepared.inputs().sources(), &src);
         let checked_metadata = prepared.inputs().metadata_wire();
         // 評価前にも元位置と全 metadata を照合し、同じ bundle を評価へ渡す。
         retained_metadata(prepared.inputs(), &checked_metadata);
-        let evaluated = evaluate_observed(prepared, &mut Control::unlimited()).unwrap();
+        let evaluated = evaluate_observed(prepared, &Control::unlimited()).unwrap();
         let result = evaluated.wire();
         for key in ["inputs", "declarations", "vocabularies"] {
             assert_eq!(get(&result, key), get(&checked_metadata, key));
@@ -663,7 +663,7 @@ fn compare_unused(count: Option<&str>) {
             let selected = evaluate_observed_bytes(
                 src,
                 &["probe=evaluate(Spare.untouched,s=@v/s)"],
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap()
             .wire();
@@ -732,8 +732,7 @@ fn rejected(
     input: &str,
     position: &str,
 ) -> Json {
-    let failure =
-        evaluate_observed_bytes(src.clone(), &ASKS, &mut Control::unlimited()).unwrap_err();
+    let failure = evaluate_observed_bytes(src.clone(), &ASKS, &Control::unlimited()).unwrap_err();
     let EvaluationFailure::Prepare(PrepareFailure::Inputs(failure)) = failure else {
         panic!("全入力検査で拒否: {failure:?}")
     };
@@ -781,7 +780,7 @@ fn rejected(
 }
 
 fn accept(src: InputSources) {
-    let result = evaluate_observed_bytes(src, &ASKS, &mut Control::unlimited())
+    let result = evaluate_observed_bytes(src, &ASKS, &Control::unlimited())
         .unwrap()
         .wire();
     mathematical_answers(&result, Some("2"));

@@ -22,7 +22,7 @@ fn inputs(map: &str) -> CheckedInputs {
             L.replace("@FLOW_DIGEST@", digest).into_bytes(),
             map.replace("@FLOW_DIGEST@", digest).into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
@@ -72,16 +72,7 @@ fn edit(map: &str, id: &str, before: &str, after: &str) -> String {
     result
 }
 fn result(i: &CheckedInputs, arrow: &str) -> archsig::construction::maps::InternalArrowResult {
-    internal_arrow(
-        i,
-        "FlowRead",
-        "v",
-        "A",
-        "v",
-        arrow,
-        &mut Control::unlimited(),
-    )
-    .unwrap()
+    internal_arrow(i, "FlowRead", "v", "A", "v", arrow, &Control::unlimited()).unwrap()
 }
 #[test]
 fn internal_arrow_has_an_independent_total_action_and_fixed_complement() {
@@ -138,17 +129,14 @@ fn internal_arrow_has_an_independent_total_action_and_fixed_complement() {
         c.image(&fact("e", Some("from"))),
         Some(&fact("e", Some("from")))
     );
-    c.recheck(&i, &mut Control::unlimited()).unwrap();
-    r.map()
-        .unwrap()
-        .recheck(&i, &mut Control::unlimited())
-        .unwrap();
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    c.recheck(&i, &Control::unlimited()).unwrap();
+    r.map().unwrap().recheck(&i, &Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn all_internal_arrows_are_kept_instead_of_dropping_failed_or_unknown_ones() {
     let i = inputs(A);
-    let all = internal_arrows(&i, "FlowRead", "v", "A", &mut Control::unlimited()).unwrap();
+    let all = internal_arrows(&i, "FlowRead", "v", "A", &Control::unlimited()).unwrap();
     assert_eq!(
         all.arrows()
             .iter()
@@ -157,7 +145,7 @@ fn all_internal_arrows_are_kept_instead_of_dropping_failed_or_unknown_ones() {
         vec!["e", "f"]
     );
     assert!(all.all_preserved());
-    let other = internal_arrows(&i, "FlowRead", "v", "B", &mut Control::unlimited()).unwrap();
+    let other = internal_arrows(&i, "FlowRead", "v", "B", &Control::unlimited()).unwrap();
     assert_eq!(
         other
             .arrows()
@@ -173,7 +161,7 @@ fn all_internal_arrows_are_kept_instead_of_dropping_failed_or_unknown_ones() {
         r#"[["v","r"],["v","q"],["v","q"]]"#,
     );
     let i = inputs(&remove(&bad, "g-owner"));
-    let all = internal_arrows(&i, "FlowRead", "v", "A", &mut Control::unlimited()).unwrap();
+    let all = internal_arrows(&i, "FlowRead", "v", "A", &Control::unlimited()).unwrap();
     assert_eq!(
         all.arrows()
             .iter()
@@ -196,7 +184,7 @@ fn all_internal_arrows_are_kept_instead_of_dropping_failed_or_unknown_ones() {
     assert!(all.arrows()[2].candidate().is_none());
     assert!(all.arrows()[2].map().is_none());
     assert!(all.arrows()[2].source().is_none());
-    all.recheck(&i, &mut Control::unlimited()).unwrap();
+    all.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn quantity_differences_do_not_replace_reference_structure_preservation() {
@@ -244,9 +232,7 @@ fn quantity_differences_do_not_replace_reference_structure_preservation() {
         );
         assert!(
             matches!(
-                r.map()
-                    .unwrap()
-                    .recheck(&current, &mut Control::unlimited()),
+                r.map().unwrap().recheck(&current, &Control::unlimited()),
                 Err(ConstructionFailure::Inconsistent(_))
             ),
             "{id}"
@@ -266,7 +252,7 @@ fn quantity_differences_do_not_replace_reference_structure_preservation() {
     );
     r.candidate()
         .unwrap()
-        .recheck(&current, &mut Control::unlimited())
+        .recheck(&current, &Control::unlimited())
         .unwrap();
 }
 #[test]
@@ -290,7 +276,7 @@ fn missing_endpoints_owners_references_and_target_atoms_do_not_make_complete_map
             "{id}: {:?}",
             r.missing()
         );
-        r.recheck(&i, &mut Control::unlimited()).unwrap();
+        r.recheck(&i, &Control::unlimited()).unwrap();
     }
     let i = inputs(&remove(A, "p-quantity"));
     let r = result(&i, "e");
@@ -353,46 +339,29 @@ fn selections_and_current_arrow_provenance_are_checked() {
         ("FlowRead", "A", "missing"),
     ] {
         assert!(matches!(
-            internal_arrow(
-                &i,
-                reading,
-                "v",
-                root,
-                "v",
-                arrow,
-                &mut Control::unlimited()
-            ),
+            internal_arrow(&i, reading, "v", root, "v", arrow, &Control::unlimited()),
             Err(ConstructionFailure::InvalidSelection(_))
         ));
     }
-    let other = internal_arrow(
-        &i,
-        "OtherRead",
-        "v",
-        "A",
-        "v",
-        "e",
-        &mut Control::unlimited(),
-    )
-    .unwrap();
+    let other = internal_arrow(&i, "OtherRead", "v", "A", "v", "e", &Control::unlimited()).unwrap();
     assert_ne!(
         r.candidate().unwrap().source_object(),
         other.candidate().unwrap().source_object()
     );
     let current = inputs(&edit(A, "e-to", r#"["v","q"]"#, r#"["v","p"]"#));
     assert!(matches!(
-        r.recheck(&current, &mut Control::unlimited()),
+        r.recheck(&current, &Control::unlimited()),
         Err(ConstructionFailure::Inconsistent(_))
     ));
     assert!(matches!(
         r.candidate()
             .unwrap()
-            .recheck(&current, &mut Control::unlimited()),
+            .recheck(&current, &Control::unlimited()),
         Err(ConstructionFailure::Inconsistent(_))
     ));
-    let all = internal_arrows(&i, "FlowRead", "v", "A", &mut Control::unlimited()).unwrap();
+    let all = internal_arrows(&i, "FlowRead", "v", "A", &Control::unlimited()).unwrap();
     assert!(matches!(
-        all.recheck(&current, &mut Control::unlimited()),
+        all.recheck(&current, &Control::unlimited()),
         Err(ConstructionFailure::Inconsistent(_))
     ));
 }
@@ -422,7 +391,7 @@ fn endpoint_and_object_identity_keep_full_snapshot_references() {
     assert_eq!(c.image(&q), Some(&q));
     assert!(c.universe().contains(&q));
     assert!(c.universe().contains(&fact("q", None)));
-    let next = internal_arrows(&i, "FlowRead", "next", "A", &mut Control::unlimited()).unwrap();
+    let next = internal_arrows(&i, "FlowRead", "next", "A", &Control::unlimited()).unwrap();
     assert_eq!(next.arrows().len(), 1);
     assert!(next.all_preserved());
     let selected = next.arrows()[0].candidate().unwrap().source_object();
@@ -430,14 +399,14 @@ fn endpoint_and_object_identity_keep_full_snapshot_references() {
     assert_eq!(selected.root().snapshot, "next");
     assert_ne!(c.target_object(), selected);
     assert_eq!(
-        internal_arrows(&i, "FlowRead", "v", "A", &mut Control::unlimited())
+        internal_arrows(&i, "FlowRead", "v", "A", &Control::unlimited())
             .unwrap()
             .arrows()
             .len(),
         2
     );
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
-    next.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
+    next.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn reservations_internal_arrow_moves_only_its_source_subject_and_fields() {
@@ -447,10 +416,10 @@ fn reservations_internal_arrow_moves_only_its_source_subject_and_fields() {
             include_bytes!("fixtures/reservations.law").to_vec(),
             include_bytes!("fixtures/reservations.archmap.json").to_vec(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
-    let all = internal_arrows(&i, "Reservations", "v", "A", &mut Control::unlimited()).unwrap();
+    let all = internal_arrows(&i, "Reservations", "v", "A", &Control::unlimited()).unwrap();
     assert_eq!(all.arrows().len(), 1);
     assert!(all.all_preserved());
     let r = &all.arrows()[0];
@@ -469,7 +438,7 @@ fn reservations_internal_arrow_moves_only_its_source_subject_and_fields() {
         assert_eq!(c.image(f), Some(&expected), "{f:?}");
     }
     assert!(c.correspondence().is_none());
-    all.recheck(&i, &mut Control::unlimited()).unwrap();
+    all.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn noninjective_internal_set_images_and_reference_relations_are_checked() {
@@ -505,29 +474,29 @@ fn noninjective_internal_set_images_and_reference_relations_are_checked() {
 #[test]
 fn all_fixed_internal_arrow_stops_latch_the_shared_control() {
     let i = inputs(A);
-    let original = internal_arrows(&i, "FlowRead", "v", "A", &mut Control::unlimited()).unwrap();
+    let original = internal_arrows(&i, "FlowRead", "v", "A", &Control::unlimited()).unwrap();
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut control = Control::new(move |p| {
+    let control = Control::new(move |p| {
         if p == Checkpoint::InternalArrow {
             seen.set(seen.get() + 1);
         }
         None
     });
-    internal_arrows(&i, "FlowRead", "v", "A", &mut control).unwrap();
+    internal_arrows(&i, "FlowRead", "v", "A", &control).unwrap();
     let total = count.get();
     assert!(total > 20);
     for at in [1, total / 2, total] {
         for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut control = Control::new(move |p| {
+            let control = Control::new(move |p| {
                 if p == Checkpoint::InternalArrow {
                     seen.set(seen.get() + 1);
                 }
                 (seen.get() >= at).then_some(signal)
             });
-            let failure = internal_arrows(&i, "FlowRead", "v", "A", &mut control).unwrap_err();
+            let failure = internal_arrows(&i, "FlowRead", "v", "A", &control).unwrap_err();
             assert_eq!(
                 failure.cause(),
                 &ConstructionFailure::Stopped(control.stop_reason().unwrap())
@@ -538,7 +507,7 @@ fn all_fixed_internal_arrow_stops_latch_the_shared_control() {
             }
             assert_eq!(count.get(), at);
             assert_eq!(
-                &original.recheck(&i, &mut control).unwrap_err(),
+                &original.recheck(&i, &control).unwrap_err(),
                 failure.cause()
             );
             assert_eq!(count.get(), at);
@@ -546,7 +515,7 @@ fn all_fixed_internal_arrow_stops_latch_the_shared_control() {
                 original.arrows()[0]
                     .map()
                     .unwrap()
-                    .recheck(&i, &mut control)
+                    .recheck(&i, &control)
                     .unwrap_err(),
                 *failure.cause()
             );
@@ -565,12 +534,12 @@ fn stopped_internal_arrow_batches_keep_roster_status_and_completed_rows() {
     );
     for input in [A.to_string(), remove(&bad, "g-owner")] {
         let i = inputs(&input);
-        let full = internal_arrows(&i, "FlowRead", "v", "A", &mut Control::unlimited()).unwrap();
+        let full = internal_arrows(&i, "FlowRead", "v", "A", &Control::unlimited()).unwrap();
         assert!(full.is_complete());
         assert_eq!(full.pending(), Some([].as_slice()));
         for signal in [Signal::Int, Signal::Term] {
-            let (mut c, probes) = stop_at(Checkpoint::InternalArrowRoster, 1, signal);
-            let f = internal_arrows(&i, "FlowRead", "v", "A", &mut c).unwrap_err();
+            let (c, probes) = stop_at(Checkpoint::InternalArrowRoster, 1, signal);
+            let f = internal_arrows(&i, "FlowRead", "v", "A", &c).unwrap_err();
             let p = f.partial().unwrap();
             assert_eq!(p.construction(), full.construction());
             assert_eq!(p.pending(), None);
@@ -578,15 +547,15 @@ fn stopped_internal_arrow_batches_keep_roster_status_and_completed_rows() {
             assert!(!p.all_preserved());
             assert!(!p.is_complete());
             assert!(
-                internal_arrows(&i, "FlowRead", "v", "A", &mut c)
+                internal_arrows(&i, "FlowRead", "v", "A", &c)
                     .unwrap_err()
                     .partial()
                     .is_none()
             );
             assert_eq!(probes.get(), 1);
             for at in 1..=full.arrows().len() {
-                let (mut c, probes) = stop_at(Checkpoint::InternalArrowRow, at, signal);
-                let f = internal_arrows(&i, "FlowRead", "v", "A", &mut c).unwrap_err();
+                let (c, probes) = stop_at(Checkpoint::InternalArrowRow, at, signal);
+                let f = internal_arrows(&i, "FlowRead", "v", "A", &c).unwrap_err();
                 assert_eq!(
                     f.cause(),
                     &ConstructionFailure::Stopped(c.stop_reason().unwrap())
@@ -601,7 +570,7 @@ fn stopped_internal_arrow_batches_keep_roster_status_and_completed_rows() {
                 assert!(!p.is_complete());
                 assert!(!p.all_preserved());
                 assert!(
-                    internal_arrows(&i, "FlowRead", "v", "A", &mut c)
+                    internal_arrows(&i, "FlowRead", "v", "A", &c)
                         .unwrap_err()
                         .partial()
                         .is_none()

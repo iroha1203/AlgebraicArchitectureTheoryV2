@@ -91,7 +91,7 @@ enum ReadValueMap {
     Structural(NodeRef, bool), // 型全域の値写像と、その恒等性。
 }
 impl ReadValueMap {
-    fn is_identity(&self, c: &mut Control) -> Result<bool, ValidationFailure> {
+    fn is_identity(&self, c: &Control) -> Result<bool, ValidationFailure> {
         match self {
             Self::Structural(_, identity) => Ok(*identity),
             Self::Finite(transport, _) => {
@@ -193,7 +193,7 @@ fn counterexample(
 }
 fn parameter_rows(
     maps: &[LocalParameter],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Vec<usize>>, ValidationFailure> {
     let mut tuples = vec![vec![]];
     for map in maps {
@@ -217,7 +217,7 @@ fn applicable(
     maps: &[LocalParameter],
     origins: &[NodeRef],
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Applicable>, ValidationFailure> {
     let mut signatures = vec![];
     for declaration in declarations {
@@ -333,7 +333,7 @@ fn field_read(
     inputs: &crate::input::CheckedInputs,
     mut id: usize,
     parameters: &[Param],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<(usize, String)>, ValidationFailure> {
     loop {
         tick(c)?;
@@ -361,7 +361,7 @@ fn read_parameter(
     inputs: &crate::input::CheckedInputs,
     mut id: usize,
     parameters: &[Param],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<usize>, ValidationFailure> {
     loop {
         tick(c)?;
@@ -446,7 +446,7 @@ fn reference_map(
     st: &str,
     tt: &str,
     dependencies: &[NodeRef],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Arc<ParameterMap>, ValidationFailure> {
     checked_reference_map(
         b,
@@ -468,7 +468,7 @@ fn checked_reference_map(
     tt: &str,
     dependencies: &[NodeRef],
     failed_arguments: &mut Vec<NodeRef>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Arc<ParameterMap>>, ValidationFailure> {
     let transport =
         construction::reference_type_transport(inputs, declarations, st, c).map_err(failure)?;
@@ -568,7 +568,7 @@ fn value_type_map(
     type_maps: &mut Vec<Arc<ParameterMap>>,
     dependencies: &[NodeRef],
     failed_arguments: &mut Vec<NodeRef>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<
     Option<(
         NodeRef,
@@ -750,7 +750,7 @@ pub(super) fn retain(
     declarations: &construction::DeclarationCorrespondence,
     dependencies: &[NodeRef],
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Output, ValidationFailure> {
     let mut result = Output {
         transports: vec![],

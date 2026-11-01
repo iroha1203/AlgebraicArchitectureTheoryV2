@@ -27,7 +27,7 @@ fn answer<'a>(w: &'a Json, id: &str) -> &'a Json {
         .unwrap()
 }
 fn run(input: InputSources, asks: &[&str], status: &str) -> Json {
-    let result = evaluate_observed_bytes(input.clone(), asks, &mut quiet()).unwrap();
+    let result = evaluate_observed_bytes(input.clone(), asks, &quiet()).unwrap();
     let wire = result.wire();
     assert_eq!(result.status(), status, "{:?}", f(&wire, "issues"));
     assert_eq!(result.prepared().inputs().sources(), &input);
@@ -208,7 +208,7 @@ fn explicit_quantified_chain_and_current_provenance_preserve_mathematical_answer
             &Json::Bool(true)
         );
         let inputs = fixture::input(fixture::SCRIPT, "Z", &[], revision);
-        let checked = archsig::input::check_inputs(inputs, &mut quiet()).unwrap();
+        let checked = archsig::input::check_inputs(inputs, &quiet()).unwrap();
         let map = checked.archmap();
         let subject = map
             .snapshots()

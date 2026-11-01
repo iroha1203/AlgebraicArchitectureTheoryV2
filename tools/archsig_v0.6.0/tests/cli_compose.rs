@@ -389,7 +389,7 @@ fn omitted_composed_candidate_subject_is_a_dynamic_projection_failure() {
         let internal = evaluate_observed_bytes(
             InputSources::from_bytes(vec![D.to_vec()], L.to_vec(), A.as_bytes().to_vec()),
             &questions,
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let internal = archsig::json::parse(internal.wire().canonical().as_bytes()).unwrap();

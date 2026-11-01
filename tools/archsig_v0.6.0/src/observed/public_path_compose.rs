@@ -588,7 +588,7 @@ pub(super) fn reference(
     graph: &Graph,
     roots: &[NodeRef],
     value: &Scalar,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let mut pending = roots.to_vec();
     let mut seen = BTreeSet::new();
@@ -637,7 +637,7 @@ pub(super) fn evaluate(
     env: &Environment<'_>,
     graph: &mut Graph,
     r: &Request,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Answer, ValidationFailure> {
     control.checkpoint(Checkpoint::FiniteIteration)?;
     env.commit_projection_conditions(graph, r)?;

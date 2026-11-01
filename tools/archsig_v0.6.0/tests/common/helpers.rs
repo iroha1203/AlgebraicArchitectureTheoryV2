@@ -373,10 +373,10 @@ pub fn val(j: &Json) -> &Json {
 }
 
 pub fn declarations(i: &CheckedInputs) -> DeclarationCorrespondence {
-    let r = correspondence(i, "v", "m", "Before", Some("After"), &mut quiet()).unwrap();
+    let r = correspondence(i, "v", "m", "Before", Some("After"), &quiet()).unwrap();
     assert!(r.missing().is_empty(), "{:?}", r.missing());
     assert!(r.counterexamples().is_empty(), "{:?}", r.counterexamples());
-    declaration_correspondence(i, r.map().unwrap(), &mut quiet()).unwrap()
+    declaration_correspondence(i, r.map().unwrap(), &quiet()).unwrap()
 }
 
 pub fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
@@ -387,8 +387,8 @@ pub fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
 }
 
 pub fn indices(i: &CheckedInputs, object: &str, view: &str, subject: &str) -> (usize, usize) {
-    let c = construct(i, "Before", "v", "a", &mut quiet()).unwrap();
-    let p = object_reading_instances(i, &c, &mut quiet()).unwrap();
+    let c = construct(i, "Before", "v", "a", &quiet()).unwrap();
+    let p = object_reading_instances(i, &c, &quiet()).unwrap();
     (
         p.objects()
             .iter()

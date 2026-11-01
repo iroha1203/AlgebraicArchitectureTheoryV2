@@ -13,9 +13,9 @@ fn finite_map_private_inputs() -> InputSources {
     )
 }
 fn finite_map_private_result(asks: &[&str]) -> ObservedEvaluation {
-    let mut control = quiet();
-    let p = prepare_observed(finite_map_private_inputs(), asks, &mut control).unwrap();
-    evaluate_observed(p, &mut control).unwrap()
+    let control = quiet();
+    let p = prepare_observed(finite_map_private_inputs(), asks, &control).unwrap();
+    evaluate_observed(p, &control).unwrap()
 }
 fn finite_map_private_domain(r: &ObservedEvaluation) -> usize {
     r.nodes
@@ -105,7 +105,7 @@ fn finite_map_private_stop(after_answer: bool) {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(move |_| {
+    let control = Control::new(move |_| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert!(freeze.replace(Some(count.get())).is_none());
@@ -114,11 +114,11 @@ fn finite_map_private_stop(after_answer: bool) {
             None
         }
     });
-    let prepared = prepare_observed(finite_map_private_inputs(), &asks, &mut control).unwrap();
+    let prepared = prepare_observed(finite_map_private_inputs(), &asks, &control).unwrap();
     let law = prepared.inputs().sources().law().bytes().to_vec();
     let stopped = evaluate_observed_with_validator(
         prepared,
-        &mut control,
+        &control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
             if request.id == "prior" && !after_answer {

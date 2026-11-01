@@ -13,7 +13,7 @@ const ASK: &[&str] = &[
     "later=evaluate(Applications.abSeed)",
 ];
 fn result() -> ObservedEvaluation {
-    let r = evaluate_observed_bytes(fixture::input("known", "r1"), ASK, &mut quiet()).unwrap();
+    let r = evaluate_observed_bytes(fixture::input("known", "r1"), ASK, &quiet()).unwrap();
     assert_eq!(r.status(), "partial", "{:?}", r.issues);
     r
 }
@@ -55,7 +55,7 @@ fn stop() {
         "later=evaluate(Applications.abBool,x=$take.evaluation.value)",
     ];
     let normal =
-        evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet()).unwrap();
+        evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     assert_eq!(normal.answers[5].status, Decision::Undetermined);
     assert!(
@@ -74,7 +74,7 @@ fn stop() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -83,8 +83,8 @@ fn stop() {
             None
         }
     });
-    let prepared = prepare_observed(fixture::input("stop", "r1"), &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+    let prepared = prepare_observed(fixture::input("stop", "r1"), &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "opaque" {
             let (a, s) = (armed.clone(), seen.clone());

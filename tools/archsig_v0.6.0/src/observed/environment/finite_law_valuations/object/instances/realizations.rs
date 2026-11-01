@@ -50,7 +50,7 @@ impl FiniteParameterRealizations {
         &self,
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ParameterRealizationFailure> {
         if inputs.sources() != &self.sources || readings != &self.readings {
             return Err(ParameterRealizationFailure {
@@ -73,7 +73,7 @@ fn evaluated_objects(
     selections: &[Selection],
     values: &[(Fact, Scalar)],
     e: &Environment<'_>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<ObjectLawInstances>, ValidationFailure> {
     let mut objects = vec![];
     for selection in selections {
@@ -94,7 +94,7 @@ fn populate_realizations(
     inputs: &CheckedInputs,
     result: &mut FiniteParameterRealizations,
     selections: &[Selection],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     let template = Environment::new(inputs, c)?;
     let mut positions: BTreeSet<Fact> = BTreeSet::new();
@@ -243,7 +243,7 @@ fn populate_realizations(
 pub(in crate::observed) fn finite_parameter_realizations(
     inputs: &CheckedInputs,
     readings: &ObjectReadingInstances,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteParameterRealizations, ParameterRealizationFailure> {
     compute(inputs, readings, false, c)
 }
@@ -251,7 +251,7 @@ fn compute(
     inputs: &CheckedInputs,
     readings: &ObjectReadingInstances,
     law_dependencies: bool,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteParameterRealizations, ParameterRealizationFailure> {
     let fail = |cause| ParameterRealizationFailure {
         cause,

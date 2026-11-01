@@ -1,6 +1,11 @@
 //! 検査・要求解決・評価で共有する、注入可能な協調中断制御。
 
-use std::{cell::RefCell, rc::Rc};
+use std::sync::{
+    Arc,
+    atomic::{AtomicI32, Ordering},
+};
+#[cfg(any(test, feature = "test-support"))]
+use std::{rc::Rc, sync::Mutex};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Signal {
@@ -34,6 +39,7 @@ impl Signal {
 /// 原始演算または有限反復の境界。試験用 probe も同じ境界を受け取る。
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Checkpoint {
+    Work,
     InputBundle,
     TableComparison,
     BeforeDefinitions,
@@ -43,7 +49,6 @@ pub enum Checkpoint {
     DefinitionSemantics,
     DefinitionData,
     DefinitionDependency,
-    AfterDefinitions,
     BeforeLaw,
     LawIteration,
     LawName,
@@ -96,10 +101,8 @@ pub enum Checkpoint {
     ObjectLawCompatibility,
     ObjectLawCompatibilityPoint,
     ObjectLawResiduals,
-    ObjectLawResidualCase,
     ObjectLawResidualPoint,
     ObjectLawCircuits,
-    ObjectLawCircuitPoint,
     ObjectLawCircuit,
     ObjectLawCircuitTransport,
     ObjectLawCircuitTransportPoint,
@@ -107,10 +110,7 @@ pub enum Checkpoint {
     EquationPresentationRow,
     PolynomialObservable,
     PolynomialObservableCoordinate,
-    FinitePolynomialEvaluation,
-    FinitePolynomialPoint,
     FinitePolynomialTable,
-    FinitePolynomialRecheck,
     PrimitiveValuation,
     ChangeWitness,
     Quotient,
@@ -136,21 +136,23 @@ pub enum CheckFailure<F> {
     Stopped(Signal),
 }
 
-/// 一度取消を観測した後は新しい導出を許さない。
+#[cfg(any(test, feature = "test-support"))]
+type Probe = Rc<Mutex<Box<dyn FnMut(Checkpoint) -> Option<Signal>>>>;
+
+/// 最初に記録された取消を共有する。通常のcheckpointはatomicの読み取りだけを行う。
 #[derive(Clone)]
 pub struct Control {
-    state: Rc<RefCell<ControlState>>,
-}
-
-struct ControlState {
-    probe: Box<dyn FnMut(Checkpoint) -> Option<Signal>>,
-    stopped: Option<Signal>,
+    stopped: Arc<AtomicI32>,
+    int: i32,
+    term: i32,
+    #[cfg(any(test, feature = "test-support"))]
+    probe: Option<Probe>,
 }
 
 impl std::fmt::Debug for Control {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Control")
-            .field("stopped", &self.state.borrow().stopped)
+            .field("stopped", &self.stop_reason())
             .finish_non_exhaustive()
     }
 }
@@ -168,35 +170,67 @@ impl Default for Control {
 }
 
 impl Control {
-    /// probe は検査点ごとに呼ばれ、取消のシグナルを観測したらそれを返す。
+    /// 試験用probe。通常のビルドにはcallbackもlockも含めない。
+    #[cfg(any(test, feature = "test-support"))]
     pub fn new(probe: impl FnMut(Checkpoint) -> Option<Signal> + 'static) -> Self {
+        let mut control = Self::unlimited();
+        control.probe = Some(Rc::new(Mutex::new(Box::new(probe))));
+        control
+    }
+
+    /// CLIが最初に捕捉したsignalを保持するatomicを共有する。
+    /// 呼出し側は0からint/termへの一方向のcompare_exchangeだけで更新する。
+    /// OSのsignal番号はCLIから渡し、共通層はOSに依存しない。
+    pub fn from_signal_flag(stopped: Arc<AtomicI32>, int: i32, term: i32) -> Self {
+        assert!(
+            int != 0 && term != 0 && int != term,
+            "distinct nonzero signal codes"
+        );
         Self {
-            state: Rc::new(RefCell::new(ControlState {
-                probe: Box::new(probe),
-                stopped: None,
-            })),
+            stopped,
+            int,
+            term,
+            #[cfg(any(test, feature = "test-support"))]
+            probe: None,
         }
     }
 
-    /// 取消を観測しない内部計算用の制御。CLIのsignal捕捉はアプリケーション側が所有する。
+    /// 取消を観測しない内部計算用の制御。
     pub fn unlimited() -> Self {
-        Self::new(|_| None)
+        Self::from_signal_flag(Arc::new(AtomicI32::new(0)), 1, 2)
     }
 
     pub fn stop_reason(&self) -> Option<Signal> {
-        self.state.borrow().stopped
+        // Signal carries no accompanying data; atomic coherence alone is sufficient.
+        let value = self.stopped.load(Ordering::Relaxed);
+        if value == self.int {
+            Some(Signal::Int)
+        } else if value == self.term {
+            Some(Signal::Term)
+        } else {
+            None
+        }
     }
 
-    pub fn checkpoint(&mut self, point: Checkpoint) -> Result<(), Signal> {
-        let mut state = self.state.borrow_mut();
-        if let Some(signal) = state.stopped {
+    #[inline]
+    pub fn checkpoint(&self, _point: Checkpoint) -> Result<(), Signal> {
+        if let Some(signal) = self.stop_reason() {
             return Err(signal);
         }
-        let Some(signal) = (state.probe)(point) else {
-            return Ok(());
-        };
-        state.stopped = Some(signal);
-        Err(signal)
+        #[cfg(any(test, feature = "test-support"))]
+        if let Some(probe) = &self.probe
+            && let Some(signal) = (probe.lock().expect("test probe is not poisoned"))(_point)
+        {
+            let code = match signal {
+                Signal::Int => self.int,
+                Signal::Term => self.term,
+            };
+            let _ = self
+                .stopped
+                .compare_exchange(0, code, Ordering::Relaxed, Ordering::Relaxed);
+            return Err(self.stop_reason().expect("signal was recorded"));
+        }
+        Ok(())
     }
 }
 
@@ -207,8 +241,8 @@ mod tests {
 
     #[test]
     fn unlimited_and_default_never_stop() {
-        for mut control in [Control::unlimited(), Control::default()] {
-            let mut shared = control.clone();
+        for control in [Control::unlimited(), Control::default()] {
+            let shared = control.clone();
             for point in [
                 Checkpoint::InputBundle,
                 Checkpoint::Localize,
@@ -223,14 +257,33 @@ mod tests {
     }
 
     #[test]
+    fn atomic_signal_is_observed_by_shared_references() {
+        for (code, expected) in [(2, Signal::Int), (15, Signal::Term)] {
+            let flag = Arc::new(AtomicI32::new(0));
+            let control = Control::from_signal_flag(flag.clone(), 2, 15);
+            let shared = control.clone();
+            assert_eq!(control.checkpoint(Checkpoint::Work), Ok(()));
+            flag.compare_exchange(0, code, Ordering::Relaxed, Ordering::Relaxed)
+                .unwrap();
+            assert_eq!(control.checkpoint(Checkpoint::Work), Err(expected));
+            assert_eq!(shared.stop_reason(), Some(expected));
+            assert!(
+                flag.compare_exchange(0, 99, Ordering::Relaxed, Ordering::Relaxed)
+                    .is_err()
+            );
+            assert_eq!(shared.checkpoint(Checkpoint::Work), Err(expected));
+        }
+    }
+
+    #[test]
     fn injected_signal_latches_and_is_shared() {
         let probes = Rc::new(Cell::new(0));
         let calls = probes.clone();
-        let mut control = Control::new(move |_| {
+        let control = Control::new(move |_| {
             calls.set(calls.get() + 1);
             (calls.get() == 3).then_some(Signal::Term)
         });
-        let mut shared = control.clone();
+        let shared = control.clone();
         assert_eq!(control.checkpoint(Checkpoint::InputBundle), Ok(()));
         assert_eq!(shared.checkpoint(Checkpoint::Localize), Ok(()));
         assert_eq!(

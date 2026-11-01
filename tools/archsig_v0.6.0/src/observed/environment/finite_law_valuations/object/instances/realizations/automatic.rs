@@ -48,7 +48,7 @@ impl FiniteAutomaticLawFamily {
         &self,
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), AutomaticLawFailure> {
         let fail = |cause| AutomaticLawFailure {
             cause,
@@ -77,7 +77,7 @@ pub(super) fn discover_law_reads(
     selections: &[Selection],
     objects: &[ObjectLawInstances],
     e: &mut Environment<'_>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     if selections.len() != objects.len() {
         return Err("自動Law依存の対象列が違う".into());
@@ -123,7 +123,7 @@ pub(super) fn discover_law_reads(
 fn same_bindings(
     a: &[(String, Scalar)],
     b: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ValidationFailure> {
     if a.len() != b.len() {
         return Ok(false);
@@ -138,7 +138,7 @@ fn same_bindings(
 }
 fn selected_columns(
     parameters: &FiniteParameterRealizations,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<(usize, usize, Vec<(String, Scalar)>)>, ValidationFailure> {
     let mut carriers = vec![];
     for (instance, original) in parameters.readings.instances().iter().enumerate() {
@@ -182,7 +182,7 @@ fn selected_columns(
 pub(in crate::observed) fn finite_automatic_law_family(
     inputs: &CheckedInputs,
     readings: &ObjectReadingInstances,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteAutomaticLawFamily, AutomaticLawFailure> {
     let parameters = match compute(inputs, readings, true, c) {
         Ok(p) => p,
@@ -329,7 +329,7 @@ impl AutomaticLawValuations {
         inputs: &CheckedInputs,
         column: usize,
         component: Option<&[usize]>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(Option<BigInt>, Vec<Fact>), ValidationFailure> {
         tick(c)?;
         if &self.value.sources != inputs.sources() {
@@ -343,7 +343,7 @@ impl AutomaticLawValuations {
             let mut positions = vec![];
             for position in tracked.as_ref().ok_or("有限Law実評価の読取り記録がない")?
             {
-                tick(&mut e.control.clone())?;
+                tick(&e.control)?;
                 positions.push(position.clone());
             }
             Ok(positions)
@@ -379,7 +379,7 @@ impl AutomaticLawValuations {
     }
     pub(in crate::observed) fn integer_ring(
         &self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerRing<'_>, ValidationFailure> {
         self.value.integer_ring(c)
     }
@@ -387,19 +387,19 @@ impl AutomaticLawValuations {
         &self,
         column: usize,
         component: Option<&[usize]>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ValidationFailure> {
         self.value.integer_function(column, component, c)
     }
     pub(in crate::observed) fn required_generators(
         &self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Vec<FiniteLawGenerator>, ValidationFailure> {
         self.value.required_generators(c)
     }
     pub(in crate::observed) fn required_quotient(
         &self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<AutomaticLawQuotient<'_>, ValidationFailure> {
         Ok(AutomaticLawQuotient {
             family: self,
@@ -410,7 +410,7 @@ impl AutomaticLawValuations {
         &self,
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         if &self.readings != readings {
             return Err("自動Law族が消費先の元readingsに由来しない".into());
@@ -430,14 +430,14 @@ impl AutomaticLawQuotient<'_> {
     }
     pub(in crate::observed) fn integer_ring(
         &self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerRing<'_>, ValidationFailure> {
         self.value.integer_ring(c)
     }
     pub(in crate::observed) fn project(
         &self,
         f: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIntegerFunction, ValidationFailure> {
         self.value.project(f, c)
     }
@@ -445,7 +445,7 @@ impl AutomaticLawQuotient<'_> {
         &self,
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         if !self.value.belongs_to(&self.family.value) {
             return Err("required商がこの自動Law族に由来しない".into());
@@ -456,7 +456,7 @@ impl AutomaticLawQuotient<'_> {
     pub(in crate::observed) fn ideal_membership(
         &self,
         f: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteIdealMembership, ValidationFailure> {
         self.value.ideal_membership(f, c)
     }
@@ -466,7 +466,7 @@ impl AutomaticLawQuotient<'_> {
         readings: &ObjectReadingInstances,
         f: &FiniteIntegerFunction,
         membership: &FiniteIdealMembership,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         self.recheck(inputs, readings, c)?;
         self.value.recheck_membership_value(f, membership, c)

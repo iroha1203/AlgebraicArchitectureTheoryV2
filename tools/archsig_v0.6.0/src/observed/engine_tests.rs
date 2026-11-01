@@ -10,9 +10,9 @@ fn engine_private_inputs(missing: bool) -> InputSources {
     )
 }
 fn engine_private_result(asks: &[&str], missing: bool) -> ObservedEvaluation {
-    let mut c = quiet();
-    let p = prepare_observed(engine_private_inputs(missing), asks, &mut c).unwrap();
-    evaluate_observed(p, &mut c).unwrap()
+    let c = quiet();
+    let p = prepare_observed(engine_private_inputs(missing), asks, &c).unwrap();
+    evaluate_observed(p, &c).unwrap()
 }
 #[test]
 fn engine_rechecks_all_z_coefficients_counterexample_assignment_and_original_sides() {
@@ -54,7 +54,7 @@ fn engine_answer_cancel_keeps_completed_engine_counterexample_and_prior_answer()
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert!(freeze.replace(Some(count.get())).is_none());
@@ -63,9 +63,9 @@ fn engine_answer_cancel_keeps_completed_engine_counterexample_and_prior_answer()
             None
         }
     });
-    let prepared = prepare_observed(engine_private_inputs(false), &asks, &mut c).unwrap();
+    let prepared = prepare_observed(engine_private_inputs(false), &asks, &c).unwrap();
     let stopped =
-        evaluate_observed_with_validator(prepared, &mut c, |environment, g, request, answer| {
+        evaluate_observed_with_validator(prepared, &c, |environment, g, request, answer| {
             environment.validate_answer(g, request, answer)?;
             if request.id == "current" {
                 assert!(!seen.replace(true));

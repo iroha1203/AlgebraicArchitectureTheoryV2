@@ -23,7 +23,7 @@ use crate::{
 use std::sync::Arc;
 mod declaration_transport;
 
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ConfigurationTransport)?;
     Ok(())
 }
@@ -179,7 +179,7 @@ pub(super) fn extend(
     g: &mut Graph,
     request: &Request,
     configuration: Answer,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Answer, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((
         prepared,
@@ -200,7 +200,7 @@ fn compute(
     pending: Option<[NodeRef; 2]>,
     base: usize,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Part>, Answer), ValidationFailure> {
     env.validation_graph_session(g, || {
         compute_inner(
@@ -226,7 +226,7 @@ fn compute_inner(
     pending: Option<[NodeRef; 2]>,
     base: usize,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Part>, Answer), ValidationFailure> {
     tick(c)?;
     let origin = Witness::Map(witness.clone());
@@ -424,7 +424,7 @@ fn compute_inner(
                     .candidate();
                 let compose = |first: &construction::MapCandidate,
                                second: &construction::MapCandidate,
-                               c: &mut Control|
+                               c: &Control|
                  -> Result<Vec<Fact>, ValidationFailure> {
                     let mut action = std::collections::BTreeMap::new();
                     for (subject, image) in second.universe().iter().zip(second.images()) {
@@ -780,8 +780,8 @@ impl Environment<'_> {
             return Ok(());
         };
         d.position(at)?;
-        let mut c = self.control.clone();
-        d.source.boundary.recheck(self, g, at, &mut c)?;
+        let c = self.control.clone();
+        d.source.boundary.recheck(self, g, at, &c)?;
         if self.object_map_source_checked(&d.source) {
             return Ok(());
         }
@@ -807,7 +807,7 @@ impl Environment<'_> {
             d.source.pending,
             d.source.base,
             request,
-            &mut c,
+            &c,
         )?;
         if parts != d.source.parts || answer != d.source.answer {
             return Err("ObjectAlgebra mapの再構成が違う".into());
@@ -869,7 +869,7 @@ impl super::result_kind::ResultKind for Data {
         &'a mut Graph,
         &'a Request,
         Answer,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = Answer;
     fn compute_and_retain<'a, 'input: 'a>(

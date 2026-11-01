@@ -31,7 +31,7 @@ fn basis(
     cores: &[(Option<Arc<EquationPresentation>>, Option<Unavailable>)],
     parts: &mut Vec<Part>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Basis>, ValidationFailure> {
     basis_from_rings(
         cores
@@ -46,7 +46,7 @@ pub(super) fn basis_from_rings<'a>(
     rings: impl IntoIterator<Item = &'a EquationRing>,
     parts: &mut Vec<Part>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Basis>, ValidationFailure> {
     let mut groups: Vec<(Type, Vec<(Variable, Option<NumericTransportValue>)>)> = vec![];
     for ring in rings {
@@ -144,7 +144,7 @@ pub(super) fn polynomial(
     ty: &Type,
     original: &EquationRing,
     shared: Option<&[Basis]>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let Some(shared) = shared else {
         return super::polynomial(parts, base, p, ring, ty, original.symbols.len(), c);
@@ -184,7 +184,7 @@ impl Source {
         a: Arc<ArchitectureWitness>,
         reference: NodeRef,
         base: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Self, ValidationFailure> {
         tick(c)?;
         if inputs.sources() != Witness::Architecture(a.clone()).inputs().sources() {

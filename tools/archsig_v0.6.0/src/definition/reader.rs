@@ -9,10 +9,7 @@ use crate::{
 use std::collections::{BTreeMap, BTreeSet};
 type R<T, E> = Result<T, E>;
 // Check both boundaries even when schema validation returns an input error.
-fn step<E: InputError, T>(
-    control: &mut Control,
-    run: impl FnOnce(&mut Control) -> R<T, E>,
-) -> R<T, E> {
+fn step<E: InputError, T>(control: &Control, run: impl FnOnce(&Control) -> R<T, E>) -> R<T, E> {
     E::checkpoint(control, Checkpoint::DefinitionSchema)?;
     let result = run(control);
     E::finish(result, control, Checkpoint::DefinitionSchema)
@@ -21,8 +18,8 @@ fn step<E: InputError, T>(
 // These values feed vocabulary/model digests, so their construction belongs to
 // input checking rather than output rendering.
 fn canonical_step<E: InputError, T>(
-    control: &mut Control,
-    run: impl FnOnce(&mut Control) -> R<T, E>,
+    control: &Control,
+    run: impl FnOnce(&Control) -> R<T, E>,
 ) -> R<T, E> {
     E::checkpoint(control, Checkpoint::DefinitionCanonical)?;
     let result = run(control);
@@ -30,9 +27,9 @@ fn canonical_step<E: InputError, T>(
 }
 
 fn wires<E: InputError, T>(
-    control: &mut Control,
+    control: &Control,
     items: &[T],
-    mut wire: impl FnMut(&T, &mut Control) -> R<Json, E>,
+    mut wire: impl FnMut(&T, &Control) -> R<Json, E>,
 ) -> R<Json, E> {
     canonical_step::<E, _>(control, |control| {
         let mut values = Vec::new();
@@ -45,7 +42,7 @@ fn wires<E: InputError, T>(
     })
 }
 
-fn copy_json<E: InputError>(value: &Json, control: &mut Control) -> R<Json, E> {
+fn copy_json<E: InputError>(value: &Json, control: &Control) -> R<Json, E> {
     canonical_step::<E, _>(control, |control| {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             Ok(match value {
@@ -71,7 +68,7 @@ fn copy_json<E: InputError>(value: &Json, control: &mut Control) -> R<Json, E> {
 fn find<'a, E: InputError>(
     entries: &'a [(String, JNode)],
     key: &str,
-    control: &mut Control,
+    control: &Control,
     mut missing: Option<Box<Issue>>,
 ) -> R<Option<&'a JNode>, E> {
     for (index, (name, node)) in entries.iter().enumerate() {
@@ -102,13 +99,7 @@ struct Obj<'a, E> {
     pointer: String,
 }
 impl<'a, E: InputError> Obj<'a, E> {
-    fn new(
-        control: &mut Control,
-        n: &'a JNode,
-        input: &'a str,
-        p: &str,
-        keys: &[&str],
-    ) -> R<Self, E> {
+    fn new(control: &Control, n: &'a JNode, input: &'a str, p: &str, keys: &[&str]) -> R<Self, E> {
         step::<E, _>(control, |control| {
             let JValue::Obj(es) = &n.value else {
                 return Err(error(Code::Syntax, input, p, "expected an object").into());
@@ -163,8 +154,7 @@ impl<'a, E: InputError> Obj<'a, E> {
         })
     }
     fn get(&self, k: &str) -> R<(&'a JNode, String), E> {
-        let node =
-            find::<E>(self.node, k, &mut self.control.clone(), None)?.expect("必須欄を確認済み");
+        let node = find::<E>(self.node, k, &self.control, None)?.expect("必須欄を確認済み");
         Ok((node, pointer_push(&self.pointer, k)))
     }
 
@@ -188,7 +178,7 @@ impl<'a, E: InputError> Obj<'a, E> {
     fn name(&self, k: &str) -> R<String, E> {
         let s = self.string(k)?;
         name::<E>(
-            &mut self.control.clone(),
+            &self.control,
             &s,
             self.input,
             &pointer_push(&self.pointer, k),
@@ -214,7 +204,7 @@ fn array<'a, E: InputError>(n: &'a JNode, input: &str, p: &str) -> R<&'a [JNode]
         Err(error(Code::Syntax, input, p, "expected an array").into())
     }
 }
-fn name<E: InputError>(control: &mut Control, s: &str, input: &str, p: &str) -> R<(), E> {
+fn name<E: InputError>(control: &Control, s: &str, input: &str, p: &str) -> R<(), E> {
     step::<E, _>(control, |control| {
         let mut chars = s.chars();
         let invalid = || error(Code::Syntax, input, p, "invalid or reserved Name");
@@ -238,7 +228,7 @@ fn name<E: InputError>(control: &mut Control, s: &str, input: &str, p: &str) -> 
 }
 
 fn qname<E: InputError>(
-    control: &mut Control,
+    control: &Control,
     s: &str,
     input: &str,
     p: &str,
@@ -274,7 +264,7 @@ fn unique<E: InputError>(seen: &mut BTreeSet<String>, s: &str, input: &str, p: &
     }
     Ok(())
 }
-fn binding<E: InputError>(control: &mut Control, n: &JNode, input: &str, p: &str) -> R<Binding, E> {
+fn binding<E: InputError>(control: &Control, n: &JNode, input: &str, p: &str) -> R<Binding, E> {
     step::<E, _>(control, |control| {
         let o = Obj::<E>::new(control, n, input, p, &["namespace", "version", "digest"])?;
         let digest = o.string("digest")?;
@@ -302,7 +292,7 @@ fn binding<E: InputError>(control: &mut Control, n: &JNode, input: &str, p: &str
 pub(super) fn read<E: InputError>(
     n: &JNode,
     input: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(Vec<Vocabulary>, Vec<PrimitiveDeclaration>, Json), E> {
     step::<E, _>(control, |control| {
         let JValue::Obj(entries) = &n.value else {
@@ -515,7 +505,7 @@ pub(super) fn read<E: InputError>(
     })
 }
 fn declaration<E: InputError>(
-    control: &mut Control,
+    control: &Control,
     n: &JNode,
     input: &str,
     p: &str,
@@ -750,7 +740,7 @@ pub(super) fn pointer(l: &Location) -> &str {
         ""
     }
 }
-fn field_wire<E: InputError>(f: &Field, control: &mut Control) -> R<Json, E> {
+fn field_wire<E: InputError>(f: &Field, control: &Control) -> R<Json, E> {
     canonical_step::<E, _>(control, |control| {
         let ty =
             f.ty.wire_controlled::<E>(control, Checkpoint::DefinitionCanonical)?;
@@ -762,7 +752,7 @@ fn field_wire<E: InputError>(f: &Field, control: &mut Control) -> R<Json, E> {
     })
 }
 fn fields<E: InputError>(
-    control: &mut Control,
+    control: &Control,
     o: &Obj<'_, E>,
     key: &str,
     seen: &mut BTreeSet<String>,
@@ -791,7 +781,7 @@ fn fields<E: InputError>(
     })
 }
 fn ty<E: InputError>(
-    control: &mut Control,
+    control: &Control,
     n: &JNode,
     input: &str,
     p: &str,
@@ -804,7 +794,7 @@ fn ty<E: InputError>(
     })
 }
 fn ty_inner<E: InputError>(
-    control: &mut Control,
+    control: &Control,
     n: &JNode,
     input: &str,
     p: &str,
@@ -917,7 +907,7 @@ mod interruption_tests {
 
     type Failure = CheckFailure<Box<Issue>>;
 
-    fn boundaries(run: impl Fn(&mut Control) -> Result<(), Failure>) -> usize {
+    fn boundaries(run: impl Fn(&Control) -> Result<(), Failure>) -> usize {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
         let mut baseline = Control::new(move |point| {
@@ -1039,22 +1029,22 @@ mod interruption_tests {
         for (case, total) in [(0, 8), (1, 2), (2, 6), (3, 6), (4, 4)] {
             for at in 1..=total {
                 let mut visits = 0;
-                let mut control = Control::new(move |point| {
+                let control = Control::new(move |point| {
                     if point == Checkpoint::DefinitionSchema {
                         visits += 1;
                     }
                     (visits == at).then_some(Signal::Term)
                 });
                 let result = match case {
-                    0 => name::<Failure>(&mut control, "bad!", "definition0", "/name"),
-                    1 => name::<Failure>(&mut control, "!bad", "definition0", "/name"),
-                    2 => name::<Failure>(&mut control, "law", "definition0", "/name"),
-                    3 => ty::<Failure>(&mut control, &fp, "definition0", "/type", &mut Vec::new())
+                    0 => name::<Failure>(&control, "bad!", "definition0", "/name"),
+                    1 => name::<Failure>(&control, "!bad", "definition0", "/name"),
+                    2 => name::<Failure>(&control, "law", "definition0", "/name"),
+                    3 => ty::<Failure>(&control, &fp, "definition0", "/type", &mut Vec::new())
                         .map(|_| ()),
                     _ => find::<Failure>(
                         entries,
                         "missing",
-                        &mut control,
+                        &control,
                         Some(error(
                             Code::Syntax,
                             "definition0",
@@ -1073,14 +1063,14 @@ mod interruption_tests {
         // A missing optional field is a valid lookup result, and an early
         // mismatch while another entry remains is not a required-field error.
         let mut visits = 0;
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if point == Checkpoint::DefinitionSchema {
                 visits += 1;
             }
             (visits == 4).then_some(Signal::Term)
         });
         assert!(matches!(
-            find::<Failure>(entries, "missing", &mut control, None),
+            find::<Failure>(entries, "missing", &control, None),
             Err(CheckFailure::Stopped(_))
         ));
     }

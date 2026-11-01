@@ -51,13 +51,13 @@ fn entity(name: &str, fields: &str) -> String {
 fn count_completion(source: &InputSources, valid: bool) -> usize {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         if point == Checkpoint::Completion {
             seen.set(seen.get() + 1);
         }
         None
     });
-    let result = check_inputs(source.clone(), &mut control);
+    let result = check_inputs(source.clone(), &control);
     if valid {
         result.unwrap();
     } else {
@@ -94,13 +94,13 @@ fn assert_stopped(failure: InputFailure, code: &str, details: Json) {
 fn cancel_at(source: &InputSources, stop_after: usize) {
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         if point == Checkpoint::Completion {
             seen.set(seen.get() + 1);
         }
         (seen.get() == stop_after).then_some(Signal::Term)
     });
-    let failure = check_inputs(source.clone(), &mut control).unwrap_err();
+    let failure = check_inputs(source.clone(), &control).unwrap_err();
     assert_eq!(count.get(), stop_after);
     assert_stopped(
         failure,
@@ -167,7 +167,7 @@ fn multiple_constraints_keep_the_first_inconsistent_prefix_pointer() {
         ],
         &[],
     );
-    let baseline = check_inputs(input.clone(), &mut Control::unlimited()).unwrap_err();
+    let baseline = check_inputs(input.clone(), &Control::unlimited()).unwrap_err();
     let Json::Obj(issue) = &baseline.issues()[0] else {
         panic!("issue")
     };
@@ -216,7 +216,7 @@ fn all_owner_candidates_rejected_keep_the_exact_constraint_and_late_stop() {
         ],
     );
     // h.owner=r1 はsecondを、r2はfirstを破る。firstまでのprefixには補完がある。
-    let baseline = check_inputs(input.clone(), &mut Control::unlimited()).unwrap_err();
+    let baseline = check_inputs(input.clone(), &Control::unlimited()).unwrap_err();
     let Json::Obj(issue) = &baseline.issues()[0] else {
         panic!("issue")
     };

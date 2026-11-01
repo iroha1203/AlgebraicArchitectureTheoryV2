@@ -427,7 +427,7 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
         let map = A.replace("\"value\": \"2\"", "\"value\": \"12\"");
         let count = Rc::new(Cell::new(0usize));
         let seen = Rc::clone(&count);
-        let mut probe = Control::new(move |point| {
+        let probe = Control::new(move |point| {
             if point == Checkpoint::Expression {
                 seen.set(seen.get() + 1);
             }
@@ -441,14 +441,14 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
                 map.as_bytes().to_vec(),
             ),
             &first,
-            &mut probe,
+            &probe,
         )
         .unwrap();
         let before = count.get();
         assert!(before > 0);
         let seen = Rc::new(Cell::new(0usize));
         let observed = Rc::clone(&seen);
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if point == Checkpoint::Expression {
                 observed.set(observed.get() + 1);
             }
@@ -467,7 +467,7 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
             .map(|s| s.to_string())
             .collect();
         let mut signals = NoSignal::default();
-        let outcome = archsig::run::run_requests(&mut TestIo, &mut signals, &args, &mut control);
+        let outcome = archsig::run::run_requests(&mut TestIo, &mut signals, &args, &control);
         assert_eq!(outcome.exit_code, 130);
         assert_eq!(signals.freezes, 1);
         let res =
@@ -490,10 +490,10 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
     }
     let dir = inputs("empty-run-stop", Some("2"), L);
     let args = run_args(&dir);
-    let mut control =
+    let control =
         Control::new(|point| (point == Checkpoint::BeforeDefinitions).then_some(Signal::Int));
     let outcome =
-        archsig::run::run_requests(&mut TestIo, &mut NoSignal::default(), &args, &mut control);
+        archsig::run::run_requests(&mut TestIo, &mut NoSignal::default(), &args, &control);
     assert_eq!(outcome.exit_code, 130);
     assert!(outcome.result.is_none());
     assert!(!dir.join("out").exists());
@@ -580,7 +580,7 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
     let count = Rc::clone(&seen);
     let before_evaluation = Rc::new(Cell::new(None));
     let split = Rc::clone(&before_evaluation);
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         if point == Checkpoint::Reuse {
             count.set(count.get() + 1);
         }
@@ -590,7 +590,7 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
         None
     });
     let outcome =
-        archsig::run::run_requests(&mut TestIo, &mut NoSignal::default(), &args, &mut control);
+        archsig::run::run_requests(&mut TestIo, &mut NoSignal::default(), &args, &control);
     assert_eq!(outcome.exit_code, 0);
     let total = seen.get();
     let before_evaluation = before_evaluation.get().unwrap();
@@ -601,15 +601,14 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
             args.inputs.out = Some(dir.join(format!("stopped-{at}-{code}")));
             let seen = Rc::new(Cell::new(0usize));
             let count = Rc::clone(&seen);
-            let mut control = Control::new(move |point| {
+            let control = Control::new(move |point| {
                 if point == Checkpoint::Reuse {
                     count.set(count.get() + 1);
                 }
                 (count.get() >= at).then_some(signal)
             });
             let mut signals = NoSignal::default();
-            let outcome =
-                archsig::run::run_requests(&mut TestIo, &mut signals, &args, &mut control);
+            let outcome = archsig::run::run_requests(&mut TestIo, &mut signals, &args, &control);
             assert_eq!(outcome.exit_code, code);
             assert_eq!(seen.get(), at, "停止後にprobeしない");
             assert_eq!(signals.freezes, 1);
@@ -685,7 +684,7 @@ fn run_delivery_failure_cleans_only_its_temp_and_existing_out_is_protected() {
         &mut WriteFailure,
         &mut NoSignal::default(),
         &args,
-        &mut archsig::control::Control::unlimited(),
+        &archsig::control::Control::unlimited(),
     );
     assert_eq!(outcome.exit_code, 74);
     assert!(!dir.join("out").exists());

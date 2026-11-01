@@ -24,9 +24,9 @@ fn answer<'a>(j: &'a Json, id: &str) -> &'a Json {
 }
 // Law適用の集約は、通常の元式Evaluationと異なりLawInstanceを第一引数に持つ。
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut quiet())
-        .unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
-    let wire = evaluate_observed_bytes(inputs, asks, &mut quiet())
+    let checked =
+        check_inputs(inputs.clone(), &quiet()).unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
+    let wire = evaluate_observed_bytes(inputs, asks, &quiet())
         .unwrap_or_else(|e| panic!("評価: {e:?}"))
         .wire();
     audit(&wire, &checked);
@@ -239,8 +239,7 @@ fn fixture(script: &str) -> InputSources {
         vocabulary_json("Comprehensions", &format!("[{entity},{packet}]"), "[]")
     ));
     let checked =
-        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
-            .unwrap();
+        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &quiet()).unwrap();
     let digest = &checked.vocabularies()["Comprehensions"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
@@ -654,8 +653,8 @@ view prior(s: Sample): Z = s.zero;
     ] {
         let input = fixture(&format!("view selected(): Z = 7; {bad}"));
         let law = input.law().bytes().to_vec();
-        let failure = evaluate_observed_bytes(input, &["a=evaluate(Calc.selected)"], &mut quiet())
-            .unwrap_err();
+        let failure =
+            evaluate_observed_bytes(input, &["a=evaluate(Calc.selected)"], &quiet()).unwrap_err();
         let invalid = failure.wire().unwrap();
         assert_eq!(f(&invalid, "status"), &Json::str("invalid"), "{bad}");
         let issue = &arr(f(&invalid, "issues"))[0];
@@ -867,7 +866,7 @@ view current(s: Sample): Set<Z> = set { x | x in list<Z>[2,1] where x>1 };
 view later(s: Sample): Z = s.zero+9;
 "#,
     );
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
     let asks = [
         "seed=evaluate(Calc.seed,s=@v/sample)",
         "absent=evaluate(Calc.absent,s=@v/sample)",
@@ -876,14 +875,14 @@ view later(s: Sample): Z = s.zero+9;
     ];
     let total_count = Rc::new(Cell::new(0));
     let c = total_count.clone();
-    let mut baseline_control = Control::new(move |point| {
+    let baseline_control = Control::new(move |point| {
         if point == Checkpoint::Expression {
             c.set(c.get() + 1);
         }
         None
     });
     let baseline_result =
-        evaluate_observed_bytes(inputs.clone(), &asks, &mut baseline_control).unwrap();
+        evaluate_observed_bytes(inputs.clone(), &asks, &baseline_control).unwrap();
     let total_expressions = total_count.get();
     let baseline = baseline_result.wire();
     let prior = &baseline;
@@ -936,7 +935,7 @@ view later(s: Sample): Z = s.zero+9;
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (e, p, frozen_at) = (expressions.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             p.set(p.get() + 1);
             if point == Checkpoint::Expression {
                 e.set(e.get() + 1);
@@ -947,7 +946,7 @@ view later(s: Sample): Z = s.zero+9;
             }
             None
         });
-        let wire = evaluate_observed_bytes(inputs.clone(), &asks, &mut control)
+        let wire = evaluate_observed_bytes(inputs.clone(), &asks, &control)
             .unwrap()
             .wire();
         assert_eq!(f(&wire, "status"), &Json::str("interrupted"));

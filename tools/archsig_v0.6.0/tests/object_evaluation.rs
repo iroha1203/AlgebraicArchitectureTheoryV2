@@ -30,14 +30,14 @@ fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
                 law.replace("@INSTANCES_DIGEST@", digest).into_bytes(),
                 map.replace("@INSTANCES_DIGEST@", digest).into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     )
 }
 fn plan(i: &CheckedInputs) -> ObjectReadingInstances {
-    let c = construct(i, "Selected", "v", "A", &mut quiet()).unwrap();
-    object_reading_instances(i, &c, &mut quiet()).unwrap()
+    let c = construct(i, "Selected", "v", "A", &quiet()).unwrap();
+    object_reading_instances(i, &c, &quiet()).unwrap()
 }
 fn indices(p: &ObjectReadingInstances, object: &str, name: &str, subject: &str) -> (usize, usize) {
     let o = p
@@ -58,7 +58,7 @@ fn indices(p: &ObjectReadingInstances, object: &str, name: &str, subject: &str) 
 fn run(i: Arc<CheckedInputs>, object: &str, name: &str, subject: &str) -> ObjectEvaluation {
     let p = plan(&i);
     let (o, r) = indices(&p, object, name, subject);
-    evaluate_object_instance(i, &p, o, r, &mut quiet()).unwrap()
+    evaluate_object_instance(i, &p, o, r, &quiet()).unwrap()
 }
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     let Json::Obj(m) = j else { panic!("{j:?}") };
@@ -117,7 +117,7 @@ fn base_and_parts_quantify_different_subject_domains_in_the_same_evaluator() {
     }
     let selected = plan(&i);
     let (o, r) = indices(&selected, "p", "amount", "p");
-    let read = evaluate_object_instance(Arc::clone(&i), &selected, o, r, &mut quiet()).unwrap();
+    let read = evaluate_object_instance(Arc::clone(&i), &selected, o, r, &quiet()).unwrap();
     let ObjectEvaluationOutcome::Evaluated(e) = read.outcome() else {
         panic!("評価対象")
     };
@@ -128,11 +128,11 @@ fn base_and_parts_quantify_different_subject_domains_in_the_same_evaluator() {
     let p = prepare_shared_observed(
         Arc::clone(&i),
         &["plain=evaluate(Selected.root,a=@v/A)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(p.object_identity().is_none());
-    let r = evaluate_observed(p, &mut quiet()).unwrap();
+    let r = evaluate_observed(p, &quiet()).unwrap();
     assert_eq!(scalar(&r.wire()), &Json::Bool(false));
 }
 #[test]
@@ -224,7 +224,7 @@ fn finite_view_family_retains_both_boolean_assignments_and_their_evaluations() {
     let i = inputs(L, A);
     let p = plan(&i);
     let (o, r) = indices(&p, "p", "flag", "p");
-    let e = evaluate_object_instance(Arc::clone(&i), &p, o, r, &mut quiet()).unwrap();
+    let e = evaluate_object_instance(Arc::clone(&i), &p, o, r, &quiet()).unwrap();
     let ObjectEvaluationOutcome::FiniteView(f) = e.outcome() else {
         panic!("finite view")
     };
@@ -237,7 +237,7 @@ fn finite_view_family_retains_both_boolean_assignments_and_their_evaluations() {
         assert_eq!(scalar(&row.evaluation().wire()).canonical(), value);
         assert_eq!(row.evaluation().status(), "complete");
     }
-    f.recheck(i, &mut quiet()).unwrap();
+    f.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -246,7 +246,7 @@ fn stale_inputs_and_invalid_indices_are_rejected_before_any_evaluation() {
     let p = plan(&i);
     for (o, r) in [(usize::MAX, 0), (0, usize::MAX)] {
         assert!(matches!(
-            evaluate_object_instance(Arc::clone(&i), &p, o, r, &mut quiet()),
+            evaluate_object_instance(Arc::clone(&i), &p, o, r, &quiet()),
             Err(ObjectEvaluationFailure::Construction(
                 ConstructionFailure::InvalidSelection(_)
             ))
@@ -254,7 +254,7 @@ fn stale_inputs_and_invalid_indices_are_rejected_before_any_evaluation() {
     }
     let changed = inputs(&L.replace("= c.quantity;", "= c.quantity + 1;"), A);
     assert!(matches!(
-        evaluate_object_instance(changed, &p, 0, 0, &mut quiet()),
+        evaluate_object_instance(changed, &p, 0, 0, &quiet()),
         Err(ObjectEvaluationFailure::Construction(
             ConstructionFailure::Inconsistent(_)
         ))
@@ -304,7 +304,7 @@ fn foreign_inputs(import: bool) -> Arc<CheckedInputs> {
                 l.into_bytes(),
                 a.into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     )
@@ -424,7 +424,7 @@ fn current_quantities_optional_law_counterexamples_and_external_binding_identity
                 && r.bindings().iter().any(|b| b.subject().subject == "y")
         })
         .unwrap();
-    let result = evaluate_object_instance(i, &p, o, r, &mut quiet()).unwrap();
+    let result = evaluate_object_instance(i, &p, o, r, &quiet()).unwrap();
     assert_eq!(scalar(&wire(&result)), &Json::str("13"));
 }
 
@@ -438,26 +438,26 @@ fn fixed_object_and_expression_stops_freeze_without_consuming_unfinished_evaluat
     for point in [Checkpoint::ObjectEvaluation, Checkpoint::Expression] {
         let count = Rc::new(Cell::new(0));
         let c = Rc::clone(&count);
-        let mut normal = Control::new(move |at| {
+        let normal = Control::new(move |at| {
             if at == point {
                 c.set(c.get() + 1)
             }
             None
         });
-        evaluate_object_instance(Arc::clone(&i), &p, o, r, &mut normal).unwrap();
+        evaluate_object_instance(Arc::clone(&i), &p, o, r, &normal).unwrap();
         let total = count.get();
         assert!(total >= 3);
         for target in [1, total / 2, total] {
             for signal in [Signal::Int, Signal::Term] {
                 let count = Rc::new(Cell::new(0));
                 let c = Rc::clone(&count);
-                let mut control = Control::new(move |at| {
+                let control = Control::new(move |at| {
                     if at == point {
                         c.set(c.get() + 1)
                     }
                     (c.get() >= target).then_some(signal)
                 });
-                let result = evaluate_object_instance(Arc::clone(&i), &p, o, r, &mut control);
+                let result = evaluate_object_instance(Arc::clone(&i), &p, o, r, &control);
                 assert!(control.stop_reason().is_some());
                 assert_eq!(count.get(), target);
                 if let Ok(result) = result {
@@ -467,7 +467,7 @@ fn fixed_object_and_expression_stops_freeze_without_consuming_unfinished_evaluat
                     assert_eq!(e.status(), "interrupted");
                 }
                 let before = count.get();
-                assert!(evaluate_object_instance(Arc::clone(&i), &p, o, r, &mut control).is_err());
+                assert!(evaluate_object_instance(Arc::clone(&i), &p, o, r, &control).is_err());
                 assert_eq!(count.get(), before);
             }
         }

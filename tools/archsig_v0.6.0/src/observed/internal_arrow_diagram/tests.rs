@@ -17,9 +17,8 @@ fn prepared(map: &str, asks: &[&str]) -> PreparedObserved {
         map.replace("@FLOW_DIGEST@", digest).into_bytes(),
     );
     let inputs =
-        Arc::new(check_inputs(input, &mut quiet()).unwrap_or_else(|e| panic!("{:?}", e.issues())));
-    let requests =
-        resolve_native_for_test(inputs.law(), inputs.archmap(), asks, &mut quiet()).unwrap();
+        Arc::new(check_inputs(input, &quiet()).unwrap_or_else(|e| panic!("{:?}", e.issues())));
+    let requests = resolve_native_for_test(inputs.law(), inputs.archmap(), asks, &quiet()).unwrap();
     PreparedObserved {
         inputs,
         requests,
@@ -32,19 +31,19 @@ fn empty(p: &PreparedObserved) -> Graph {
     g
 }
 fn build(p: &PreparedObserved, g: &mut Graph) -> architecture_result::Architecture {
-    let mut c = quiet();
-    let env = Environment::with_prepared(p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(p, &c).unwrap();
     architecture_result::build(
         p.shared_inputs(),
         &env,
         g,
         &p.requests().requests()[g.active.request],
-        &mut c,
+        &c,
     )
     .unwrap()
 }
 fn family(p: &PreparedObserved, g: &mut Graph, a: &architecture_result::Architecture) -> Objects {
-    objects::retain(g, p.shared_inputs(), a.reference, &mut quiet())
+    objects::retain(g, p.shared_inputs(), a.reference, &quiet())
         .unwrap()
         .unwrap()
 }
@@ -53,8 +52,8 @@ fn replay(
     original: &Graph,
     nodes: &[Node],
 ) -> Result<Graph, ValidationFailure> {
-    let mut c = quiet();
-    let env = Environment::with_prepared(p, &mut c)?;
+    let c = quiet();
+    let env = Environment::with_prepared(p, &c)?;
     let mut g = empty(p);
     g.requests = original.requests.clone();
     for (i, n) in nodes.iter().enumerate() {
@@ -132,7 +131,7 @@ fn generators_use_actual_owned_architectures_and_total_actions_with_fixed_comple
         a.reference,
         &o,
         a.universe,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(d.all_preserved);
@@ -234,7 +233,7 @@ fn refuted_arrows_keep_candidates_and_original_counterexample_facts_without_oper
         a.reference,
         &o,
         a.universe,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(d.rows.len(), 2);
@@ -256,7 +255,7 @@ fn missing_membership_keeps_original_partial_architecture_and_does_not_make_oper
     let a = build(&p, &mut g);
     let before = g.nodes.clone();
     assert!(!a.complete);
-    assert!(objects::retain(&mut g, p.shared_inputs(), a.reference, &mut quiet()).is_err());
+    assert!(objects::retain(&mut g, p.shared_inputs(), a.reference, &quiet()).is_err());
     assert_eq!(g.nodes, before);
     assert!(a.reasons.iter().any(|r| {
         r.missing
@@ -283,7 +282,7 @@ fn no_arrows_is_a_complete_empty_generator_family() {
         a.reference,
         &o,
         a.universe,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(d.all_preserved);
@@ -302,7 +301,7 @@ fn changed_inputs_requests_plans_metadata_and_edges_are_rejected() {
         a.reference,
         &o,
         a.universe,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let r = d.rows[0].operation.unwrap();
@@ -370,7 +369,7 @@ fn interrupt_keeps_exact_completed_prefix_and_never_publish_unfinished_generator
     let measured_count = measured.clone();
     let armed_measurement = Rc::new(Cell::new(false));
     let active_measurement = armed_measurement.clone();
-    let mut measure = Control::new(move |point| {
+    let measure = Control::new(move |point| {
         if active_measurement.get() && point == Checkpoint::NativeResultNode {
             measured_count.set(measured_count.get() + 1);
         }
@@ -388,7 +387,7 @@ fn interrupt_keeps_exact_completed_prefix_and_never_publish_unfinished_generator
         a.reference,
         &o,
         a.universe,
-        &mut measure,
+        &measure,
     )
     .unwrap();
     let total = measured.get();
@@ -400,7 +399,7 @@ fn interrupt_keeps_exact_completed_prefix_and_never_publish_unfinished_generator
         let count = seen.clone();
         let armed = Rc::new(Cell::new(false));
         let active = armed.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if active.get() && point == Checkpoint::NativeResultNode {
                 count.set(count.get() + 1);
             }
@@ -416,14 +415,7 @@ fn interrupt_keeps_exact_completed_prefix_and_never_publish_unfinished_generator
         let prefix = g.nodes.clone();
         armed.set(true);
         assert!(matches!(
-            retain(
-                &mut g,
-                p.shared_inputs(),
-                a.reference,
-                &o,
-                a.universe,
-                &mut c
-            ),
+            retain(&mut g, p.shared_inputs(), a.reference, &o, a.universe, &c),
             Err(ValidationFailure::Stop(_))
         ));
         assert!(c.stop_reason().is_some());
@@ -476,7 +468,7 @@ fn equal_observed_quantities_and_refuted_required_laws_do_not_change_generator_e
                 law.into_bytes(),
                 sources.archmap().bytes().to_vec(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
@@ -491,7 +483,7 @@ fn equal_observed_quantities_and_refuted_required_laws_do_not_change_generator_e
         a.reference,
         &o,
         a.universe,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(d.all_preserved);
@@ -516,7 +508,7 @@ fn equal_observed_quantities_and_refuted_required_laws_do_not_change_generator_e
         a.witness.readings(),
         1,
         instance,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let crate::observed::object_evaluate::ObjectEvaluationOutcome::Evaluated(result) =
@@ -542,7 +534,7 @@ fn original_producers_recheck_under_another_request_and_foreign_object_tables_ar
         a.reference,
         &oa,
         a.universe,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     g.active.request = 1;
@@ -556,7 +548,7 @@ fn original_producers_recheck_under_another_request_and_foreign_object_tables_ar
             b.reference,
             &oa,
             b.universe,
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
@@ -567,14 +559,14 @@ fn original_producers_recheck_under_another_request_and_foreign_object_tables_ar
         b.reference,
         &ob,
         b.universe,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(da.rows.len(), 2);
     assert_eq!(db.rows.len(), 2);
     assert_ne!(da.rows[0].operation, db.rows[0].operation);
-    let mut c = quiet();
-    let env = Environment::with_prepared(&p, &mut c).unwrap();
+    let c = quiet();
+    let env = Environment::with_prepared(&p, &c).unwrap();
     let old = da.rows[0].operation.unwrap();
     env.recheck_node(&g, &g.get(old).unwrap().clone(), old.0)
         .unwrap();
@@ -587,7 +579,7 @@ fn original_producers_recheck_under_another_request_and_foreign_object_tables_ar
             a.reference,
             &oa,
             a.universe,
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
@@ -601,21 +593,14 @@ fn kernel_and_planning_stops_leave_all_existing_objects_unchanged() {
         Checkpoint::InternalArrowRow,
         Checkpoint::ConfigurationOperation,
     ] {
-        let mut c =
+        let c =
             Control::new(move |point| (point == checkpoint).then_some(crate::result::Signal::Int));
         let mut g = empty(&p);
         let a = build(&p, &mut g);
         let o = family(&p, &mut g, &a);
         let before = g.nodes.clone();
         assert!(matches!(
-            retain(
-                &mut g,
-                p.shared_inputs(),
-                a.reference,
-                &o,
-                a.universe,
-                &mut c
-            ),
+            retain(&mut g, p.shared_inputs(), a.reference, &o, a.universe, &c),
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.nodes, before);
@@ -636,7 +621,7 @@ fn a_missing_target_field_keeps_the_arrow_and_slot_without_fabricating_a_candida
         a.reference,
         &o,
         a.universe,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(d.rows.len(), 2);
@@ -682,7 +667,7 @@ fn shared_universe_keeps_external_snapshot_and_mode_in_every_generated_scope() {
         a.reference,
         &o,
         a.universe,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(d.all_preserved);
@@ -755,7 +740,7 @@ fn unfinished_object_family_prefixes_are_rejected_before_appending_any_arrow_nod
                 a.reference,
                 &o,
                 a.universe,
-                &mut quiet()
+                &quiet()
             )
             .is_err()
         );
@@ -796,7 +781,7 @@ fn replaced_object_components_readings_and_foreign_contexts_are_rejected_before_
                 a.reference,
                 &o,
                 a.universe,
-                &mut quiet()
+                &quiet()
             )
             .is_err()
         );
@@ -821,7 +806,7 @@ fn native_generators_are_consumed_with_actual_owned_endpoints_and_public_project
         a.reference,
         &o,
         a.universe,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     for (i, row) in d.rows.iter().enumerate() {
@@ -917,13 +902,13 @@ fn generator_consumer_composition_keeps_total_action_and_distinguishes_repeated_
         a.reference,
         &o,
         a.universe,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let e = consumer::op(&g, d.rows[0].operation.unwrap()).unwrap();
     let f = consumer::op(&g, d.rows[1].operation.unwrap()).unwrap();
-    let ef = e.compose(p.inputs(), f, &mut quiet()).unwrap();
-    let fe = f.compose(p.inputs(), e, &mut quiet()).unwrap();
+    let ef = e.compose(p.inputs(), f, &quiet()).unwrap();
+    let fe = f.compose(p.inputs(), e, &quiet()).unwrap();
     assert_eq!(ef.source().subject().subject, "p");
     assert_eq!(ef.target().subject().subject, "p");
     assert_eq!(fe.source().subject().subject, "q");
@@ -966,7 +951,7 @@ fn generator_consumer_composition_keeps_total_action_and_distinguishes_repeated_
         }
         assert_eq!(image, &expected, "fe at {u:?}");
     }
-    let twice = ef.compose(p.inputs(), &ef, &mut quiet()).unwrap();
+    let twice = ef.compose(p.inputs(), &ef, &quiet()).unwrap();
     assert_eq!(
         ef.word()
             .iter()
@@ -982,13 +967,13 @@ fn generator_consumer_composition_keeps_total_action_and_distinguishes_repeated_
             .collect::<Vec<_>>(),
         ["e", "f", "e", "f"]
     );
-    assert!(!ef.word_equal(p.inputs(), &twice, &mut quiet()).unwrap());
+    assert!(!ef.word_equal(p.inputs(), &twice, &quiet()).unwrap());
     assert!(
-        ef.action_difference(p.inputs(), &twice, &mut quiet())
+        ef.action_difference(p.inputs(), &twice, &quiet())
             .unwrap()
             .is_none()
     );
-    assert!(e.compose(p.inputs(), e, &mut quiet()).is_err());
+    assert!(e.compose(p.inputs(), e, &quiet()).is_err());
     assert_eq!(g.nodes.len(), g.contexts.len());
     replay(&p, &g, &g.nodes).unwrap();
 }
@@ -1014,7 +999,7 @@ fn native_generator_consumers_reject_candidates_refuted_and_missing_rows() {
             a.reference,
             &o,
             a.universe,
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert!(!d.all_preserved);
@@ -1046,7 +1031,7 @@ fn retained_generator_kernel_cannot_be_replaced_by_another_arrow_operation() {
         a.reference,
         &o,
         a.universe,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     let first = d.rows[0].operation.unwrap();

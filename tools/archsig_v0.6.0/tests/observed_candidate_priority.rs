@@ -32,16 +32,16 @@ fn exhausted_syntax_candidates_yield_to_cancellation_from_bytes() {
         "change bad() when true = ;",
         "view bad(): Bool = forall x: Z .;",
     ] {
-        let (mut baseline, total) = probe(usize::MAX);
-        let invalid = check_inputs(sources(declaration), &mut baseline).unwrap_err();
+        let (baseline, total) = probe(usize::MAX);
+        let invalid = check_inputs(sources(declaration), &baseline).unwrap_err();
         assert_eq!(invalid.status(), InputStatus::Invalid);
         assert!(total.get() > 12);
         // These are Result exits after the empty body's Syntax has been
         // constructed: expression/candidate/declaration/reading/Law exits.
         // The private units independently arm at the diagnostic's construction.
         for at in total.get() - 6..=total.get() {
-            let (mut control, _) = probe(at);
-            let failure = check_inputs(sources(declaration), &mut control).unwrap_err();
+            let (control, _) = probe(at);
+            let failure = check_inputs(sources(declaration), &control).unwrap_err();
             assert!(failure.declarations().is_empty());
             assert!(failure.primitives().is_empty());
             assert!(failure.vocabularies().is_empty());

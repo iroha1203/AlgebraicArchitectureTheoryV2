@@ -66,10 +66,10 @@ fn cancellation_inside_primitive_type_data_and_dependency_checks_keeps_empty_sta
         (Checkpoint::DefinitionData, true),
         (Checkpoint::DefinitionDependency, true),
     ] {
-        let (mut control, calls) = semantic_control(target, after_type, 3);
+        let (control, calls) = semantic_control(target, after_type, 3);
         let source =
             InputSources::from_bytes(vec![DEFINITIONS.to_vec()], LAW.to_vec(), MAP.to_vec());
-        let failure = check_inputs(source, &mut control).expect_err("意味検査内で取消");
+        let failure = check_inputs(source, &control).expect_err("意味検査内で取消");
         assert_eq!(calls.get(), 3, "{target:?}");
         assert_empty_stage(&failure);
     }
@@ -85,8 +85,8 @@ fn data_validation_cancellation_is_typed_before_eventual_invalid_self_reference(
     );
     let invalid = check_definitions(&[("definition0", source.as_bytes())]).unwrap_err();
     assert_eq!(invalid.issue.code, Code::Syntax);
-    let (mut control, calls) = semantic_control(Checkpoint::DefinitionData, true, 3);
-    let stopped = check_definitions_controlled(&[("definition0", source.as_bytes())], &mut control)
+    let (control, calls) = semantic_control(Checkpoint::DefinitionData, true, 3);
+    let stopped = check_definitions_controlled(&[("definition0", source.as_bytes())], &control)
         .expect_err("停止を Syntax に変換しない");
     assert_eq!(calls.get(), 3);
     assert!(matches!(stopped, CheckFailure::Stopped(Signal::Term)));
@@ -96,7 +96,7 @@ fn data_validation_cancellation_is_typed_before_eventual_invalid_self_reference(
 fn unlimited_control_preserves_the_complete_primitive_table() {
     let ordinary = check_definitions(&[("definition0", DEFINITIONS)]).unwrap();
     let controlled =
-        check_definitions_controlled(&[("definition0", DEFINITIONS)], &mut Control::unlimited())
+        check_definitions_controlled(&[("definition0", DEFINITIONS)], &Control::unlimited())
             .unwrap();
     assert_eq!(ordinary, controlled);
 }

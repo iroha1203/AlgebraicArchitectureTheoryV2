@@ -23,7 +23,7 @@ pub(super) fn solve(
     selected: &[usize],
     laws: &[NodeRef],
     reading: Option<&integer::linear::Reading>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(NodeRef, NodeRef, State), ValidationFailure> {
     let requirements = selected
         .iter()
@@ -89,7 +89,7 @@ pub(super) fn vector(
     b: &mut Builder<'_>,
     state: &State,
     value: &Scalar,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let Scalar::Tuple(values) = value else {
         return Err("アフィン状態がTupleでない".into());
@@ -121,7 +121,7 @@ pub(super) fn restriction(
     b: &mut Builder<'_>,
     from: &super::State,
     to: &super::State,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(NodeRef, NodeRef, Matrix, Matrix), ValidationFailure> {
     let a = from.integer.as_ref().ok_or("アフィン制限元がない")?;
     let z = to.integer.as_ref().ok_or("アフィン制限先がない")?;
@@ -176,7 +176,7 @@ pub(super) fn diagram(
     laws: &[NodeRef],
     coefficients: BTreeMap<(usize, usize), (Matrix, Matrix)>,
     projections: BTreeMap<(usize, usize), Matrix>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<integer::Diagram, ValidationFailure> {
     let free = states
         .iter()

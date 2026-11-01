@@ -64,8 +64,8 @@ fn value<'a>(j: &'a Json, id: &str) -> &'a Json {
 }
 fn run(i: InputSources, asks: &[&str]) -> Json {
     let checked =
-        check_inputs(i.clone(), &mut quiet()).unwrap_or_else(|e| panic!("input {:?}", e.issues()));
-    let r = evaluate_observed_bytes(i.clone(), asks, &mut quiet())
+        check_inputs(i.clone(), &quiet()).unwrap_or_else(|e| panic!("input {:?}", e.issues()));
+    let r = evaluate_observed_bytes(i.clone(), asks, &quiet())
         .unwrap_or_else(|e| panic!("evaluate {e:?}"));
     assert_ne!(r.status(), "error", "{:?}", r.wire());
     assert_eq!(r.prepared().inputs().sources(), &i);
@@ -247,7 +247,7 @@ fn assert_boolean_completion_pairs(j: &Json, expected: &[Json]) {
 #[test]
 fn dependent_owner_assignments_prove_invariant_wholes_and_keep_varying_fixed_fibers() {
     let input = fixture::input(1, false, false, Some(true));
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(input.clone(), &quiet()).unwrap();
     let all = run(
         input,
         &[
@@ -532,7 +532,7 @@ fn dependent_owner_map_and_arrow_constraints_keep_original_missing_and_known_sup
         ),
         (fixture::arrow(), "Reservations.Reserve.owner", "e", "e-to"),
     ] {
-        let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+        let checked = check_inputs(input.clone(), &quiet()).unwrap();
         assert_eq!(
             checked.archmap().snapshots()[0]
                 .subjects

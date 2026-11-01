@@ -32,7 +32,7 @@ impl Candidate {
     pub(super) fn verify(
         mut self,
         evaluation: &ObservedEvaluation,
-        control: &mut Control,
+        control: &Control,
     ) -> (Vec<Json>, Option<Signal>) {
         if let Some(document) = &self.document
             && matches!(evaluation.status(), "complete" | "partial")
@@ -46,7 +46,7 @@ impl Candidate {
         (self.rejected, None)
     }
 }
-pub(super) fn inspect(path: Option<&Path>, control: &mut Control) -> Result<Candidate, Signal> {
+pub(super) fn inspect(path: Option<&Path>, control: &Control) -> Result<Candidate, Signal> {
     let mut candidate = Candidate {
         path: path.unwrap_or_else(|| Path::new("")).to_owned(),
         document: None,
@@ -164,7 +164,7 @@ fn nat(node: &JNode) -> Checked<()> {
         _ => Err(invalid("Nat must be an integer in 0..9007199254740991")),
     }
 }
-fn header(document: &JNode, control: &mut Control) -> Checked<()> {
+fn header(document: &JNode, control: &Control) -> Checked<()> {
     control.checkpoint(Checkpoint::Reuse)?;
     if text(field(document, "format")?)? != crate::result::RESULT_FORMAT
         || text(field(document, "semantics")?)? != crate::law::SEMANTICS
@@ -200,7 +200,7 @@ fn header(document: &JNode, control: &mut Control) -> Checked<()> {
     }
     Ok(())
 }
-fn issue_shape(issue: &JNode, control: &mut Control) -> Checked<()> {
+fn issue_shape(issue: &JNode, control: &Control) -> Checked<()> {
     control.checkpoint(Checkpoint::Reuse)?;
     record(
         issue,
@@ -246,7 +246,7 @@ fn wire_field<'a>(node: &'a Json, name: &str) -> Checked<&'a Json> {
 fn normalized_candidate(
     node: &JNode,
     ids: &BTreeMap<String, String>,
-    control: &mut Control,
+    control: &Control,
 ) -> Checked<Json> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         control.checkpoint(Checkpoint::Reuse)?;
@@ -287,7 +287,7 @@ fn normalized_candidate(
 fn normalized_wire(
     node: &Json,
     ids: &BTreeMap<String, String>,
-    control: &mut Control,
+    control: &Control,
 ) -> Checked<Json> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         control.checkpoint(Checkpoint::Reuse)?;
@@ -322,7 +322,7 @@ fn normalized_wire(
         })
     })
 }
-fn encoding(json: &Json, control: &mut Control) -> Checked<String> {
+fn encoding(json: &Json, control: &Control) -> Checked<String> {
     match json
         .canonical_controlled::<CheckFailure<Box<crate::issue::Issue>>>(control, Checkpoint::Reuse)
     {
@@ -331,14 +331,14 @@ fn encoding(json: &Json, control: &mut Control) -> Checked<String> {
         Err(CheckFailure::Input(issue)) => Err(invalid(issue.message)),
     }
 }
-fn node_content(mut node: Json, control: &mut Control) -> Checked<String> {
+fn node_content(mut node: Json, control: &Control) -> Checked<String> {
     let Json::Obj(fields) = &mut node else {
         return Err(invalid("node must be an object"));
     };
     fields.remove("id");
     encoding(&node, control)
 }
-fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &mut Control) -> Checked<()> {
+fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &Control) -> Checked<()> {
     control.checkpoint(Checkpoint::Reuse)?;
     let replay = evaluation.result_wire_controlled(control, Checkpoint::Reuse)?;
     let empty = BTreeMap::new();

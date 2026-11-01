@@ -6,11 +6,11 @@ mod fixture {
 }
 use crate::control::quiet;
 fn reading(i: &CheckedInputs, root: &str) -> ObjectReadingInstances {
-    let c = construct(i, "Selected", "v", root, &mut quiet()).unwrap();
-    object_reading_instances(i, &c, &mut quiet()).unwrap()
+    let c = construct(i, "Selected", "v", root, &quiet()).unwrap();
+    object_reading_instances(i, &c, &quiet()).unwrap()
 }
 fn run(i: &CheckedInputs, r: &ObjectReadingInstances) -> FiniteAutomaticLawFamily {
-    finite_automatic_law_family(i, r, &mut quiet()).unwrap()
+    finite_automatic_law_family(i, r, &quiet()).unwrap()
 }
 fn missing_map() -> String {
     fixture::MAP.replace(r#",{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"}"#,"")
@@ -73,14 +73,9 @@ fn all_original_instances_and_parameter_rows_are_automatically_evaluated_on_ever
     }
     assert_eq!(outside, 8);
     assert_eq!(f.required_zero(), Some([].as_slice()));
-    assert_eq!(f.required_generators(&mut quiet()).unwrap().len(), 24);
-    assert!(
-        f.required_quotient(&mut quiet())
-            .unwrap()
-            .points()
-            .is_empty()
-    );
-    result.recheck(&i, &a, &mut quiet()).unwrap();
+    assert_eq!(f.required_generators(&quiet()).unwrap().len(), 24);
+    assert!(f.required_quotient(&quiet()).unwrap().points().is_empty());
+    result.recheck(&i, &a, &quiet()).unwrap();
 }
 #[test]
 fn optional_values_survive_the_same_required_quotient_and_other_rings_are_rejected() {
@@ -101,34 +96,34 @@ fn optional_values_survive_the_same_required_quotient_and_other_rings_are_reject
                 && f.column_object_identity(index).unwrap().subject().subject == "root"
         })
         .unwrap();
-    let value = f.integer_function(optional, None, &mut quiet()).unwrap();
-    let quotient = f.required_quotient(&mut quiet()).unwrap();
+    let value = f.integer_function(optional, None, &quiet()).unwrap();
+    let quotient = f.required_quotient(&quiet()).unwrap();
     assert_eq!(
-        quotient.project(&value, &mut quiet()).unwrap().values(),
+        quotient.project(&value, &quiet()).unwrap().values(),
         &[BigInt::from(1)]
     );
-    let membership = quotient.ideal_membership(&value, &mut quiet()).unwrap();
+    let membership = quotient.ideal_membership(&value, &quiet()).unwrap();
     quotient
-        .recheck_membership(&i, &a, &value, &membership, &mut quiet())
+        .recheck_membership(&i, &a, &value, &membership, &quiet())
         .unwrap();
-    let projected = quotient.project(&value, &mut quiet()).unwrap();
+    let projected = quotient.project(&value, &quiet()).unwrap();
     assert!(
         !quotient
-            .integer_ring(&mut quiet())
+            .integer_ring(&quiet())
             .unwrap()
-            .is_zero(&projected, &mut quiet())
+            .is_zero(&projected, &quiet())
             .unwrap()
     );
     let other = run(&i, &a);
     let foreign = other
         .family()
         .unwrap()
-        .integer_function(optional, None, &mut quiet())
+        .integer_function(optional, None, &quiet())
         .unwrap();
     assert!(
-        f.integer_ring(&mut quiet())
+        f.integer_ring(&quiet())
             .unwrap()
-            .member(&foreign, &mut quiet())
+            .member(&foreign, &quiet())
             .is_err()
     );
 }
@@ -179,7 +174,7 @@ fn varying_owned_parameter_fibers_form_one_carrier_without_pruning_the_shared_do
             assert_eq!(row.indicator, Some(0.into()));
         }
     }
-    result.recheck(&i, &a, &mut quiet()).unwrap();
+    result.recheck(&i, &a, &quiet()).unwrap();
 }
 #[test]
 fn parameter_and_conditional_body_dependencies_share_the_same_exhausted_domain() {
@@ -228,7 +223,7 @@ fn parameter_and_conditional_body_dependencies_share_the_same_exhausted_domain()
         }
     }
     assert_eq!(f.required_zero(), Some([0, 1, 2].as_slice()));
-    result.recheck(&i, &a, &mut quiet()).unwrap();
+    result.recheck(&i, &a, &quiet()).unwrap();
 }
 fn coupled_inputs() -> Arc<CheckedInputs> {
     let base = fixture::inputs();
@@ -255,7 +250,7 @@ fn coupled_inputs() -> Arc<CheckedInputs> {
                 law.into_bytes(),
                 map.into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     )
@@ -264,7 +259,7 @@ fn coupled_inputs() -> Arc<CheckedInputs> {
 fn body_positions_are_discovered_before_constraints_prune_a_parameter_only_assignment() {
     let i = coupled_inputs();
     let a = reading(&i, "root");
-    let parameters = finite_parameter_realizations(&i, &a, &mut quiet()).unwrap();
+    let parameters = finite_parameter_realizations(&i, &a, &quiet()).unwrap();
     assert_eq!(parameters.positions.len(), 2);
     assert_eq!(parameters.domain.len(), 2); // fixed cross-links require equal owners.
     let result = run(&i, &a);
@@ -331,7 +326,7 @@ fn body_positions_are_discovered_before_constraints_prune_a_parameter_only_assig
     assert_eq!(new_points, 2);
     assert_eq!(expected_zero.len(), 4);
     assert_eq!(f.required_zero(), Some(expected_zero.as_slice()));
-    result.recheck(&i, &a, &mut quiet()).unwrap();
+    result.recheck(&i, &a, &quiet()).unwrap();
 }
 #[test]
 fn nonfinite_parameter_and_nonfinite_body_keep_separate_original_reasons() {
@@ -368,7 +363,7 @@ fn nonfinite_parameter_and_nonfinite_body_keep_separate_original_reasons() {
             assert!(!result.parameters().domain_complete);
             assert_eq!(result.parameters().readings(), &a);
         }
-        result.recheck(&i, &a, &mut quiet()).unwrap();
+        result.recheck(&i, &a, &quiet()).unwrap();
     }
 }
 #[test]
@@ -386,14 +381,10 @@ fn empty_laws_and_known_empty_parameter_products_keep_the_anchored_empty_family(
         assert!(f.positions().is_empty());
         assert_eq!(f.domain(), [vec![]]);
         assert_eq!(f.required_zero(), Some([0].as_slice()));
-        assert_eq!(f.required_quotient(&mut quiet()).unwrap().points(), [0]);
+        assert_eq!(f.required_quotient(&quiet()).unwrap().points(), [0]);
         assert_eq!(result.parameters().rows[0].objects.len(), a.objects().len());
-        result.recheck(&i, &a, &mut quiet()).unwrap();
-        assert!(
-            result
-                .recheck(&i, &reading(&i, "r2"), &mut quiet())
-                .is_err()
-        );
+        result.recheck(&i, &a, &quiet()).unwrap();
+        assert!(result.recheck(&i, &reading(&i, "r2"), &quiet()).is_err());
     }
 }
 #[test]
@@ -432,7 +423,7 @@ fn fixed_stops_keep_the_completed_parameter_plan_and_only_finished_law_rows() {
     let stage = started.clone();
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut c = Control::new(move |p| {
+    let c = Control::new(move |p| {
         if p == Checkpoint::FiniteLawAutomatic {
             stage.set(true);
         }
@@ -441,7 +432,7 @@ fn fixed_stops_keep_the_completed_parameter_plan_and_only_finished_law_rows() {
         }
         (seen.get() >= 3).then_some(Signal::Term)
     });
-    let error = finite_automatic_law_family(&i, &a, &mut c).err().unwrap();
+    let error = finite_automatic_law_family(&i, &a, &c).err().unwrap();
     assert!(matches!(error.cause, ValidationFailure::Stop(_)));
     let partial = error.partial.unwrap();
     assert!(partial.parameters().is_complete());
@@ -451,17 +442,17 @@ fn fixed_stops_keep_the_completed_parameter_plan_and_only_finished_law_rows() {
     assert_eq!(f.domain().len(), 4);
     assert_eq!(f.columns()[0].rows().len(), 1);
     assert!(f.columns()[1..].iter().all(|c| c.rows().is_empty()));
-    assert!(f.integer_function(0, None, &mut quiet()).is_err());
-    assert!(f.required_quotient(&mut quiet()).is_err());
-    assert!(partial.recheck(&i, &a, &mut quiet()).is_err());
+    assert!(f.integer_function(0, None, &quiet()).is_err());
+    assert!(f.required_quotient(&quiet()).is_err());
+    assert!(partial.recheck(&i, &a, &quiet()).is_err());
 }
 #[test]
 fn an_interrupt_before_automatic_column_selection_keeps_the_completed_source_plan() {
     use crate::result::Signal;
     let i = fixture::with_body(fixture::MAP, "law required zero(c:Part):c.quantity=0;");
     let a = reading(&i, "root");
-    let mut c = Control::new(|p| (p == Checkpoint::FiniteLawAutomatic).then_some(Signal::Int));
-    let error = finite_automatic_law_family(&i, &a, &mut c).err().unwrap();
+    let c = Control::new(|p| (p == Checkpoint::FiniteLawAutomatic).then_some(Signal::Int));
+    let error = finite_automatic_law_family(&i, &a, &c).err().unwrap();
     assert!(matches!(error.cause, ValidationFailure::Stop(_)));
     let partial = error.partial.unwrap();
     assert!(partial.parameters().is_complete());
@@ -469,7 +460,7 @@ fn an_interrupt_before_automatic_column_selection_keeps_the_completed_source_pla
     assert_eq!(partial.parameters().readings(), &a);
     assert!(partial.family().is_none());
     assert!(!partial.is_complete());
-    assert!(partial.recheck(&i, &a, &mut quiet()).is_err());
+    assert!(partial.recheck(&i, &a, &quiet()).is_err());
 }
 #[test]
 fn missing_primitive_observations_are_not_filled_by_the_completed_function_table() {
@@ -492,12 +483,10 @@ fn missing_primitive_observations_are_not_filled_by_the_completed_function_table
         })
         .unwrap();
     assert_eq!(
-        f.integer_function(index, None, &mut quiet())
-            .unwrap()
-            .values(),
+        f.integer_function(index, None, &quiet()).unwrap().values(),
         &[0.into(), 0.into(), 1.into(), 1.into()]
     );
-    result.recheck(&i, &a, &mut quiet()).unwrap();
+    result.recheck(&i, &a, &quiet()).unwrap();
 }
 #[test]
 fn an_unsupported_component_preserves_the_known_whole_refutation_and_original_type() {
@@ -527,8 +516,8 @@ fn an_unsupported_component_preserves_the_known_whole_refutation_and_original_ty
     assert_eq!(components[1].equal, None);
     assert_eq!(components[1].indicator, None);
     assert_eq!(f.required_zero(), None);
-    assert!(f.required_quotient(&mut quiet()).is_err());
-    result.recheck(&i, &a, &mut quiet()).unwrap();
+    assert!(f.required_quotient(&quiet()).is_err());
+    result.recheck(&i, &a, &quiet()).unwrap();
 }
 #[test]
 fn total_owned_map_parameters_keep_all_seven_carrier_values_and_pointwise_type_conditions() {
@@ -576,7 +565,7 @@ fn total_owned_map_parameters_keep_all_seven_carrier_values_and_pointwise_type_c
         }
     }
     assert_eq!(active, [1, 1, 1, 4]);
-    result.recheck(&i, &a, &mut quiet()).unwrap();
+    result.recheck(&i, &a, &quiet()).unwrap();
 }
 #[test]
 fn real_tuple_components_keep_their_original_types_values_and_twelve_generators() {
@@ -587,7 +576,7 @@ fn real_tuple_components_keep_their_original_types_values_and_twelve_generators(
     assert!(result.is_complete());
     assert_eq!(f.domain().len(), 16);
     assert_eq!(f.columns().len(), 6);
-    assert_eq!(f.required_generators(&mut quiet()).unwrap().len(), 12);
+    assert_eq!(f.required_generators(&quiet()).unwrap().len(), 12);
     assert_eq!(f.required_zero(), Some([0].as_slice()));
     assert_eq!(f.observed_point(), None);
     for (index, column) in f.columns().iter().enumerate() {
@@ -629,7 +618,7 @@ fn real_tuple_components_keep_their_original_types_values_and_twelve_generators(
             }
         }
     }
-    result.recheck(&i, &a, &mut quiet()).unwrap();
+    result.recheck(&i, &a, &quiet()).unwrap();
 }
 
 #[test]
@@ -640,33 +629,33 @@ fn extracted_automatic_family_and_quotient_keep_required_consumer_readings_after
     let valid: AutomaticLawValuations = run(&i, &a).into_family().unwrap();
     assert_eq!(valid.columns().len(), 6);
     assert_eq!(valid.required_zero(), Some([0].as_slice()));
-    valid.recheck(&i, &a, &mut quiet()).unwrap();
-    let quotient: AutomaticLawQuotient<'_> = valid.required_quotient(&mut quiet()).unwrap();
-    quotient.recheck(&i, &a, &mut quiet()).unwrap();
+    valid.recheck(&i, &a, &quiet()).unwrap();
+    let quotient: AutomaticLawQuotient<'_> = valid.required_quotient(&quiet()).unwrap();
+    quotient.recheck(&i, &a, &quiet()).unwrap();
     let other = reading(&i, "r2");
-    assert!(valid.recheck(&i, &other, &mut quiet()).is_err());
-    assert!(quotient.recheck(&i, &other, &mut quiet()).is_err());
+    assert!(valid.recheck(&i, &other, &quiet()).is_err());
+    assert!(quotient.recheck(&i, &other, &quiet()).is_err());
     let independent = run(&i, &a).into_family().unwrap();
-    let mut wrong_quotient = valid.required_quotient(&mut quiet()).unwrap();
-    wrong_quotient.value = independent.value.required_quotient(&mut quiet()).unwrap();
-    assert!(wrong_quotient.recheck(&i, &a, &mut quiet()).is_err());
+    let mut wrong_quotient = valid.required_quotient(&quiet()).unwrap();
+    wrong_quotient.value = independent.value.required_quotient(&quiet()).unwrap();
+    assert!(wrong_quotient.recheck(&i, &a, &quiet()).is_err());
     for mutation in 0..3 {
         let mut bad = run(&i, &a).into_family().unwrap();
         if mutation == 1 {
             // 明示入口で正当に作った空族を、全ての内部metadataごと差し替える。
             let (objects, selected) =
-                super::super::super::super::multi_selection(&i, &a, &[], &mut quiet()).unwrap();
+                super::super::super::super::multi_selection(&i, &a, &[], &quiet()).unwrap();
             let explicit = super::super::super::super::family_with_instances(
                 &i,
                 &selected,
                 None,
                 Some(objects),
                 Some(vec![]),
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap();
             assert!(explicit.columns().is_empty());
-            explicit.recheck(&i, &mut quiet()).unwrap();
+            explicit.recheck(&i, &quiet()).unwrap();
             bad.value = explicit;
         } else {
             bad.value.columns.clear();
@@ -677,13 +666,13 @@ fn extracted_automatic_family_and_quotient_keep_required_consumer_readings_after
             }
         }
         assert!(
-            bad.recheck(&i, &a, &mut quiet()).is_err(),
+            bad.recheck(&i, &a, &quiet()).is_err(),
             "family mutation {mutation}"
         );
         assert!(
-            bad.required_quotient(&mut quiet())
+            bad.required_quotient(&quiet())
                 .unwrap()
-                .recheck(&i, &a, &mut quiet())
+                .recheck(&i, &a, &quiet())
                 .is_err(),
             "quotient mutation {mutation}"
         );
@@ -710,9 +699,9 @@ fn empty_parameter_products_keep_the_parameter_only_shared_domain_in_quotient_re
     assert_eq!(f.domain().len(), 4);
     assert_eq!(f.observed_point(), None);
     assert_eq!(f.required_zero(), Some([0, 1, 2, 3].as_slice()));
-    f.recheck(&i, &a, &mut quiet()).unwrap();
-    let q = f.required_quotient(&mut quiet()).unwrap();
+    f.recheck(&i, &a, &quiet()).unwrap();
+    let q = f.required_quotient(&quiet()).unwrap();
     assert_eq!(q.points(), [0, 1, 2, 3]);
-    assert_eq!(q.integer_ring(&mut quiet()).unwrap().dimension(), 4);
-    q.recheck(&i, &a, &mut quiet()).unwrap();
+    assert_eq!(q.integer_ring(&quiet()).unwrap().dimension(), 4);
+    q.recheck(&i, &a, &quiet()).unwrap();
 }

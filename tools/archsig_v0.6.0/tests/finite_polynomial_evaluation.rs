@@ -14,7 +14,7 @@ use archsig::{
 use num_bigint::BigInt;
 use std::{cell::Cell, collections::BTreeSet, rc::Rc, sync::Arc};
 fn run(i: Arc<CheckedInputs>) -> E {
-    finite_polynomial_evaluation(i, "Selected", "v", "root", 0, &mut quiet()).unwrap()
+    finite_polynomial_evaluation(i, "Selected", "v", "root", 0, &quiet()).unwrap()
 }
 fn index(e: &E, name: &str) -> usize {
     e.tables()
@@ -97,60 +97,56 @@ fn all_four_shared_assignments_keep_original_fp_values_and_integer_indicators() 
     }
     assert_eq!(e.base().rings()[0].required_generators.len(), 2);
     assert_eq!(e.base().rings()[0].symbols.len(), 2);
-    e.recheck(i, &mut quiet()).unwrap();
+    e.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn integer_function_ring_uses_pointwise_exact_arithmetic_and_rejects_other_domains() {
     let e = run(fixture::inputs(fixture::BODY));
     let f = run(fixture::inputs(fixture::BODY));
-    let z = e.zero(&mut quiet()).unwrap();
-    let one = e.one(&mut quiet()).unwrap();
-    let a = e.basis(0, &mut quiet()).unwrap();
-    let b = e.basis(1, &mut quiet()).unwrap();
+    let z = e.zero(&quiet()).unwrap();
+    let one = e.one(&quiet()).unwrap();
+    let a = e.basis(0, &quiet()).unwrap();
+    let b = e.basis(1, &quiet()).unwrap();
     assert_eq!(nums(&a), ["1", "0", "0", "0"]);
     assert!(
-        e.is_zero(&e.mul(&a, &b, &mut quiet()).unwrap(), &mut quiet())
+        e.is_zero(&e.mul(&a, &b, &quiet()).unwrap(), &quiet())
             .unwrap()
     );
     assert!(
-        e.equal(&a, &e.mul(&a, &a, &mut quiet()).unwrap(), &mut quiet())
+        e.equal(&a, &e.mul(&a, &a, &quiet()).unwrap(), &quiet())
             .unwrap()
     );
-    assert!(!e.equal(&a, &one, &mut quiet()).unwrap());
+    assert!(!e.equal(&a, &one, &quiet()).unwrap());
     let huge = BigInt::from(10u32).pow(60);
-    let k = e.constant(huge.clone(), &mut quiet()).unwrap();
-    let minus = e.constant(-&huge, &mut quiet()).unwrap();
+    let k = e.constant(huge.clone(), &quiet()).unwrap();
+    let minus = e.constant(-&huge, &quiet()).unwrap();
     assert!(
-        e.equal(&e.add(&k, &minus, &mut quiet()).unwrap(), &z, &mut quiet())
+        e.equal(&e.add(&k, &minus, &quiet()).unwrap(), &z, &quiet())
             .unwrap()
     );
-    let two = e.add(&one, &one, &mut quiet()).unwrap();
-    assert_eq!(e.at(&two, 3, &mut quiet()).unwrap(), BigInt::from(2));
-    assert!(!e.is_zero(&two, &mut quiet()).unwrap());
+    let two = e.add(&one, &one, &quiet()).unwrap();
+    assert_eq!(e.at(&two, 3, &quiet()).unwrap(), BigInt::from(2));
+    assert!(!e.is_zero(&two, &quiet()).unwrap());
     assert!(
-        e.equal(
-            &e.sub(&two, &one, &mut quiet()).unwrap(),
-            &one,
-            &mut quiet()
-        )
-        .unwrap()
+        e.equal(&e.sub(&two, &one, &quiet()).unwrap(), &one, &quiet())
+            .unwrap()
     );
-    let sum = e.add(&a, &b, &mut quiet()).unwrap();
-    let left = e.mul(&k, &sum, &mut quiet()).unwrap();
+    let sum = e.add(&a, &b, &quiet()).unwrap();
+    let left = e.mul(&k, &sum, &quiet()).unwrap();
     let right = e
         .add(
-            &e.mul(&k, &a, &mut quiet()).unwrap(),
-            &e.mul(&k, &b, &mut quiet()).unwrap(),
-            &mut quiet(),
+            &e.mul(&k, &a, &quiet()).unwrap(),
+            &e.mul(&k, &b, &quiet()).unwrap(),
+            &quiet(),
         )
         .unwrap();
-    assert!(e.equal(&left, &right, &mut quiet()).unwrap());
+    assert!(e.equal(&left, &right, &quiet()).unwrap());
     assert!(matches!(
-        e.add(&a, &f.one(&mut quiet()).unwrap(), &mut quiet()),
+        e.add(&a, &f.one(&quiet()).unwrap(), &quiet()),
         Err(ConstructionFailure::InvalidSelection(_))
     ));
-    assert!(e.at(&a, 4, &mut quiet()).is_err());
-    assert!(e.basis(4, &mut quiet()).is_err());
+    assert!(e.at(&a, 4, &quiet()).is_err());
+    assert!(e.basis(4, &quiet()).is_err());
 }
 #[test]
 fn different_prime_fields_share_a_typed_domain_and_nonzero_two_is_integer_one() {
@@ -202,7 +198,7 @@ fn different_prime_fields_share_a_typed_domain_and_nonzero_two_is_integer_one() 
     let point = e.observed_point().unwrap();
     assert_eq!(t.values().unwrap()[point].wire().canonical(), "\"2\"");
     assert_eq!(
-        e.at(t.nonzero().unwrap(), point, &mut quiet()).unwrap(),
+        e.at(t.nonzero().unwrap(), point, &quiet()).unwrap(),
         BigInt::from(1)
     );
 }
@@ -220,9 +216,9 @@ fn empty_symbols_mean_one_empty_assignment_and_do_not_make_the_integer_ring_triv
         assert_eq!(e.observed_point(), Some(0));
         assert!(
             !e.equal(
-                &e.zero(&mut quiet()).unwrap(),
-                &e.one(&mut quiet()).unwrap(),
-                &mut quiet()
+                &e.zero(&quiet()).unwrap(),
+                &e.one(&quiet()).unwrap(),
+                &quiet()
             )
             .unwrap()
         );
@@ -278,7 +274,7 @@ fn missing_observation_is_not_an_observed_completion_and_unavailable_readings_ar
         nums(e.tables()[index(&e, "ax")].nonzero().unwrap()),
         ["0", "0", "1", "1"]
     );
-    e.recheck(i, &mut quiet()).unwrap();
+    e.recheck(i, &quiet()).unwrap();
     let e = run(fixture::inputs(
         "law optional predicate(c:Part):c.quantity=0 or c.other=0;view integer():Z=2;law optional infinite(c:Part):integer()=1;",
     ));
@@ -297,14 +293,14 @@ fn changed_law_provenance_and_invalid_object_are_rejected() {
     assert!(
         e.recheck(
             fixture::inputs(&fixture::BODY.replace("c.other=1", "c.other=0")),
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
     assert!(
         e.recheck(
             fixture::with_map(fixture::BODY, &fixture::MAP.replace("\"r1\"", "\"r2\"")),
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
@@ -315,7 +311,7 @@ fn changed_law_provenance_and_invalid_object_are_rejected() {
             "v",
             "root",
             99,
-            &mut quiet()
+            &quiet()
         )
         .is_err()
     );
@@ -349,8 +345,8 @@ fn table_stops_keep_complete_domain_and_function_prefix_and_freeze_probes() {
     let i = fixture::inputs(fixture::BODY);
     for at in [1, 4] {
         for signal in [Signal::Int, Signal::Term] {
-            let (mut c, count) = stopped(at, signal);
-            let error = finite_polynomial_evaluation(i.clone(), "Selected", "v", "root", 0, &mut c)
+            let (c, count) = stopped(at, signal);
+            let error = finite_polynomial_evaluation(i.clone(), "Selected", "v", "root", 0, &c)
                 .unwrap_err();
             let F::Reading { partial, cause } = error else {
                 panic!("{error:?}")
@@ -369,7 +365,7 @@ fn table_stops_keep_complete_domain_and_function_prefix_and_freeze_probes() {
                 assert_eq!(t.nonzero().unwrap().values().len(), 4);
             }
             let frozen = count.get();
-            assert!(partial.zero(&mut c).is_err());
+            assert!(partial.zero(&c).is_err());
             assert_eq!(count.get(), frozen);
             assert!(c.checkpoint(Checkpoint::FinitePolynomialTable).is_err());
             assert_eq!(count.get(), frozen);

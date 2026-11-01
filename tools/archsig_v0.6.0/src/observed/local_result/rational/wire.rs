@@ -9,7 +9,7 @@ pub(in crate::observed::local_result) fn map(
     target: NodeRef,
     a: &Matrix,
     n: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     field::map(b, source, target, &integer_fiber::scalars(a), n, c)
 }
@@ -17,7 +17,7 @@ pub(in crate::observed::local_result) fn vector(
     b: &mut Builder<'_>,
     module: NodeRef,
     values: &[Z],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     field::vector(
         b,
@@ -35,7 +35,7 @@ pub(in crate::observed::local_result) fn certificate(
     rhs: &[Z],
     f: &integer_fiber::Fiber,
     dependencies: &[NodeRef],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(NodeRef, NodeRef), ValidationFailure> {
     let n = f.right.len();
     let equations_module = module(b, ring, a.len(), "free", vec![])?;

@@ -122,7 +122,7 @@ impl Data {
         self.wire.clone()
     }
 }
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;
     Ok(())
 }
@@ -694,7 +694,7 @@ pub(super) fn check(
     g: &mut Graph,
     template: NodeRef,
     architecture: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Answer>, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((
         env,
@@ -711,7 +711,7 @@ impl super::result_kind::ResultKind for Data {
         &'a mut Graph,
         NodeRef,
         NodeRef,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = Option<Answer>;
     fn compute_and_retain<'a, 'input: 'a>(

@@ -96,7 +96,7 @@ impl FiniteValueTransport {
     pub(super) fn transport_scalar(
         &self,
         value: &Scalar,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Scalar, ConstructionFailure> {
         tick(control)?;
         if self.bijection.is_none() {
@@ -110,7 +110,7 @@ impl FiniteValueTransport {
     pub(super) fn forward_scalar(
         &self,
         value: &Scalar,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Scalar, ConstructionFailure> {
         tick(control)?;
         if self
@@ -174,7 +174,7 @@ impl FiniteValueTransport {
     pub fn recheck(
         &self,
         inputs: &CheckedInputs,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ConstructionFailure> {
         if self
             != &finite_declaration_value_transport(
@@ -192,7 +192,7 @@ impl FiniteValueTransport {
         tick(control)
     }
 }
-fn tick(control: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(control: &Control) -> Result<(), ConstructionFailure> {
     control
         .checkpoint(Checkpoint::FiniteValueTransport)
         .map_err(Into::into)
@@ -208,7 +208,7 @@ pub(super) fn selected_types(
     declarations: &DeclarationCorrespondence,
     name: &str,
     position: DeclarationValuePosition,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(Type, Type), ConstructionFailure> {
     for c in declarations.candidates() {
         tick(control)?;
@@ -281,7 +281,7 @@ pub(super) fn selected_types(
 fn domain(
     inputs: &CheckedInputs,
     ty: &Type,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<finite::Enumeration, ConstructionFailure> {
     if !finite::supported(ty, inputs.law(), control).map_err(failure)? {
         return Err(ConstructionFailure::InvalidSelection(
@@ -341,22 +341,18 @@ fn moved_type(
     ty: &Type,
     mu: &BTreeMap<String, String>,
     alpha: &BTreeMap<String, String>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Type, ConstructionFailure> {
     crate::construction::maps::moved_declaration_type(ty, mu, alpha, control)
 }
-fn same(a: &Scalar, b: &Scalar, control: &mut Control) -> Result<bool, ConstructionFailure> {
+fn same(a: &Scalar, b: &Scalar, control: &Control) -> Result<bool, ConstructionFailure> {
     tick(control)?;
     if a.ty() != b.ty() {
         return Ok(false);
     }
     data::equal(a, b, control).map_err(failure)
 }
-fn same_candidate(
-    a: &Scalar,
-    b: &Scalar,
-    control: &mut Control,
-) -> Result<bool, ConstructionFailure> {
+fn same_candidate(a: &Scalar, b: &Scalar, control: &Control) -> Result<bool, ConstructionFailure> {
     tick(control)?;
     data::candidate_equal(a, b, control).map_err(failure)
 }
@@ -365,7 +361,7 @@ fn same_candidate(
 fn shape(
     value: &Scalar,
     inputs: &CheckedInputs,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<String>, ConstructionFailure> {
     match data::check(value, inputs.law(), control) {
         Ok(()) => Ok(None),
@@ -378,7 +374,7 @@ fn target_index(
     value: &Scalar,
     target: &[Scalar],
     inputs: &CheckedInputs,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<(Option<usize>, Option<String>), ConstructionFailure> {
     let invalid = shape(value, inputs, control)?;
     if invalid.is_none() {
@@ -399,7 +395,7 @@ pub(super) fn finite_type_domain_failure(
     declarations: &DeclarationCorrespondence,
     declaration: &str,
     ty: &Type,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<Scalar>, ConstructionFailure> {
     let mu = declarations.types().iter().cloned().collect();
     let target_type = moved_type(ty, &mu, &BTreeMap::new(), control)?;
@@ -424,7 +420,7 @@ fn image(
     mu: &BTreeMap<String, String>,
     action: &BTreeMap<Fact, Fact>,
     alpha: &BTreeMap<String, String>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Scalar, ConstructionFailure> {
     stacker::maybe_grow(64 * 1024, 4 * 1024 * 1024, || {
         tick(control)?;
@@ -578,7 +574,7 @@ pub(super) fn candidate_image(
     declarations: &DeclarationCorrespondence,
     declaration: &str,
     value: &Scalar,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Scalar, ConstructionFailure> {
     let mu = declarations.types().iter().cloned().collect();
     let map = declarations.operation().map().candidate();
@@ -612,7 +608,7 @@ pub fn finite_declaration_value_transport(
     declarations: &DeclarationCorrespondence,
     declaration: &str,
     position: DeclarationValuePosition,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<FiniteValueTransport, ConstructionFailure> {
     tick(control)?;
     declarations.recheck(inputs, control)?;
@@ -777,18 +773,14 @@ mod tests {
                 .all(|constructor| constructor.arguments.is_empty())
         );
         let mut seen = 0;
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if point == Checkpoint::FiniteValueTransport {
                 seen += 1;
             }
             (seen == 2).then_some(crate::result::Signal::Term)
         });
         assert!(matches!(
-            structural_components(
-                &Type::Data("Left.Choice".into()),
-                inputs.law(),
-                &mut control
-            ),
+            structural_components(&Type::Data("Left.Choice".into()), inputs.law(), &control),
             Err(ConstructionFailure::Stopped(_))
         ));
     }
@@ -820,23 +812,16 @@ mod tests {
                     .into_bytes(),
                 a.into_bytes(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap_or_else(|f| panic!("{:?}", f.issues()))
     }
     fn declarations(i: &CheckedInputs) -> DeclarationCorrespondence {
-        let r = correspondence(
-            i,
-            "v",
-            "m",
-            "Before",
-            Some("After"),
-            &mut Control::unlimited(),
-        )
-        .unwrap();
+        let r =
+            correspondence(i, "v", "m", "Before", Some("After"), &Control::unlimited()).unwrap();
         assert!(r.counterexamples().is_empty(), "{:?}", r.counterexamples());
         assert!(r.missing().is_empty(), "{:?}", r.missing());
-        declaration_correspondence(i, r.map().unwrap(), &mut Control::unlimited()).unwrap()
+        declaration_correspondence(i, r.map().unwrap(), &Control::unlimited()).unwrap()
     }
 
     #[test]
@@ -855,13 +840,13 @@ mod tests {
             );
         let i = with_left_and_law(left, A, &law);
         let d = declarations(&i);
-        let mut c = Control::unlimited();
+        let c = Control::unlimited();
         let mut transport = finite_declaration_value_transport(
             &i,
             &d,
             "Before.returned",
             DeclarationValuePosition::LocalRead(0),
-            &mut c,
+            &c,
         )
         .unwrap();
         assert_eq!(
@@ -872,9 +857,9 @@ mod tests {
             transport.target_type(),
             &Type::Option(Box::new(Type::Ref("Right.Child".into())))
         );
-        transport.recheck(&i, &mut c).unwrap();
+        transport.recheck(&i, &c).unwrap();
         transport.position = DeclarationValuePosition::LocalRead(1);
-        assert!(transport.recheck(&i, &mut c).is_err());
+        assert!(transport.recheck(&i, &c).is_err());
         let wrong = law.replace(
             target,
             "local returned(value: Right.Child, b: Bool) reads (value,b);",
@@ -887,7 +872,7 @@ mod tests {
                 &d,
                 "Before.returned",
                 DeclarationValuePosition::LocalRead(0),
-                &mut c
+                &c
             )
             .is_err()
         );
@@ -910,14 +895,14 @@ mod tests {
             &law,
         );
         let d = declarations(&i);
-        let mut c = Control::unlimited();
+        let c = Control::unlimited();
         assert!(matches!(
             finite_declaration_value_transport(
                 &i,
                 &d,
                 "Before.returned",
                 DeclarationValuePosition::LocalRead(0),
-                &mut c,
+                &c,
             ),
             Err(ConstructionFailure::InvalidSelection(_))
         ));
@@ -934,7 +919,7 @@ mod tests {
             ])
         };
         let moved =
-            candidate_image(&i, &d, "Before.returned", &value("p", "Left.Child"), &mut c).unwrap();
+            candidate_image(&i, &d, "Before.returned", &value("p", "Left.Child"), &c).unwrap();
         assert_eq!(moved, value("q", "Right.Child"));
     }
 
@@ -948,7 +933,7 @@ mod tests {
                      r#""field":"Bridge.Move.entries","value":[[["v","p"],["v","q"]],[["v","r"],["v","q"]]]"#);
         let i = inputs(&a);
         let d = declarations(&i);
-        let mut c = Control::unlimited();
+        let c = Control::unlimited();
         let element = |entity: &str| Type::Tuple(vec![Type::Ref(entity.into()), Type::Z]);
         let value = |subject: &str, entity: &str, number: i32| {
             Scalar::Tuple(vec![
@@ -968,7 +953,7 @@ mod tests {
                 value("p", "Left.Child", 17),
             ],
         };
-        let moved = candidate_image(&i, &d, "Before.returned", &sequence, &mut c).unwrap();
+        let moved = candidate_image(&i, &d, "Before.returned", &sequence, &c).unwrap();
         assert_eq!(
             moved,
             Scalar::List {
@@ -988,7 +973,7 @@ mod tests {
                 value("r", "Left.Child", 18),
             ],
         };
-        let moved = candidate_image(&i, &d, "Before.returned", &set, &mut c).unwrap();
+        let moved = candidate_image(&i, &d, "Before.returned", &set, &c).unwrap();
         data::check(&moved, i.law(), &c).unwrap();
         let Scalar::Set { items, .. } = &moved else {
             panic!("Set image");
@@ -1016,7 +1001,7 @@ mod tests {
             &d,
             "Before.axes",
             DeclarationValuePosition::Parameter(5),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let failed = finite_declaration_value_transport(
@@ -1024,7 +1009,7 @@ mod tests {
             &d,
             "Before.axes",
             DeclarationValuePosition::Parameter(10),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let mut cases = Vec::new();
@@ -1072,12 +1057,12 @@ mod tests {
         cases.push(v);
         for v in cases {
             assert!(matches!(
-                v.recheck(&i, &mut Control::unlimited()),
+                v.recheck(&i, &Control::unlimited()),
                 Err(ConstructionFailure::Inconsistent(_))
             ));
         }
-        r.recheck(&i, &mut Control::unlimited()).unwrap();
-        failed.recheck(&i, &mut Control::unlimited()).unwrap();
+        r.recheck(&i, &Control::unlimited()).unwrap();
+        failed.recheck(&i, &Control::unlimited()).unwrap();
     }
     #[test]
     fn candidate_equality_keeps_partial_type_mismatches_and_conflicting_map_relations() {
@@ -1088,7 +1073,7 @@ mod tests {
             &d,
             "Before.axes",
             DeclarationValuePosition::Parameter(10),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let invalid = &r.images[0].value;
@@ -1146,7 +1131,7 @@ mod tests {
                 law.into_bytes(),
                 sources.archmap().bytes().to_vec(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let d = declarations(&i);
@@ -1155,7 +1140,7 @@ mod tests {
             &d,
             "Before.axes",
             DeclarationValuePosition::Parameter(6),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert!(r.bijection().is_some());
@@ -1168,7 +1153,7 @@ mod tests {
         }
         assert_ne!(r.images[3], r.target[3]);
         assert!(matches!(
-            r.recheck(&i, &mut Control::unlimited()),
+            r.recheck(&i, &Control::unlimited()),
             Err(ConstructionFailure::Inconsistent(_))
         ));
     }
@@ -1190,7 +1175,7 @@ mod tests {
             &d,
             "Before.axes",
             DeclarationValuePosition::Parameter(7),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert!(
@@ -1199,7 +1184,7 @@ mod tests {
                 &d,
                 "Before.returned",
                 coherent.source_type(),
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap()
             .is_none()
@@ -1225,7 +1210,7 @@ mod tests {
             &d,
             "Before.axes",
             DeclarationValuePosition::Parameter(8),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let witness = finite_type_domain_failure(
@@ -1233,18 +1218,12 @@ mod tests {
             &d,
             "Before.returned",
             result.source_type(),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap()
         .expect("全Map域のキー合流反例");
-        let moved = candidate_image(
-            &i,
-            &d,
-            "Before.returned",
-            &witness,
-            &mut Control::unlimited(),
-        )
-        .unwrap();
+        let moved =
+            candidate_image(&i, &d, "Before.returned", &witness, &Control::unlimited()).unwrap();
         let Scalar::Map { pairs, .. } = &moved else {
             panic!("Map image");
         };
@@ -1282,7 +1261,7 @@ mod tests {
                 assert!(result.target().iter().any(|target| target == image));
             }
         }
-        result.recheck(&i, &mut Control::unlimited()).unwrap();
+        result.recheck(&i, &Control::unlimited()).unwrap();
     }
 }
 
@@ -1290,7 +1269,7 @@ mod tests {
 pub(super) fn identity_declarations(
     ty: &Type,
     law: &crate::law::CheckedLaw,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<Vec<(String, String)>>, ValidationFailure> {
     let mut todo = vec![ty];
     let mut families = BTreeSet::new();
@@ -1329,7 +1308,7 @@ pub(super) struct StructuralComponents {
 pub(super) fn structural_components(
     ty: &Type,
     law: &crate::law::CheckedLaw,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Option<StructuralComponents>, ConstructionFailure> {
     let mut out = StructuralComponents {
         references: BTreeSet::new(),

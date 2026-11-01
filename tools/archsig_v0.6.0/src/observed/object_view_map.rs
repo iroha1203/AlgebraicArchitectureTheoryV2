@@ -20,7 +20,7 @@ pub(super) struct KernelCacheEntry {
     instance: usize,
     result: Arc<ObjectViewTransport>,
 }
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectViewTransport)?;
     Ok(())
 }
@@ -30,7 +30,7 @@ fn transport(
     d: &DeclarationCorrespondence,
     object: usize,
     instance: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Arc<ObjectViewTransport>, ValidationFailure> {
     if !std::ptr::eq(env.indexes.inputs, inputs.as_ref()) {
         return Err("view保存cacheの元入力が違う".into());
@@ -197,7 +197,7 @@ fn proposition(
 fn supported_parameter(
     ty: &Type,
     inputs: &CheckedInputs,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ValidationFailure> {
     Ok(
         super::environment::numeric_parameters::numeric_width(ty).is_some()
@@ -274,7 +274,7 @@ fn finite_action(
     declarations: &DeclarationCorrespondence,
     ty: &Type,
     dependencies: &[NodeRef],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<ValueAction>, ValidationFailure> {
     let mut action = ValueAction {
         subjects: vec![],
@@ -491,7 +491,7 @@ pub(super) fn retain(
     declarations: &DeclarationCorrespondence,
     plans: [&Plan; 2],
     request: &super::request::Request,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Output, ValidationFailure> {
     let mut out = Output {
         preserved: true,

@@ -81,7 +81,7 @@ fn dependent_answer_owner_rejects_static_mismatch_for_both_output_paths_and_ques
                 let consumer = format!("c={question},a={target},b=$o.{output})");
                 let asks = [consumer.as_str(), "o=evaluate(R.owned,a=@v/A,b=@v/i)"];
                 assert_owner_error(
-                    prepare_observed(sources(true), &asks, &mut Control::unlimited()).unwrap_err(),
+                    prepare_observed(sources(true), &asks, &Control::unlimited()).unwrap_err(),
                     "c",
                 );
             }
@@ -97,7 +97,7 @@ fn nested_return_owner_survives_projection_and_compares_inside_container_types()
             prepare_observed(
                 sources(true),
                 &[&consumer, "o=evaluate(R.nested,a=@v/A,b=@v/i)"],
-                &mut Control::unlimited(),
+                &Control::unlimited(),
             )
             .unwrap_err(),
             "c",
@@ -110,7 +110,7 @@ fn nested_return_owner_survives_projection_and_compares_inside_container_types()
                 "c=evaluate(R.accepts,a=@v/B,b=$o.value)",
                 "o=evaluate(R.nested,a=@v/A,b=@v/i)",
             ],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap_err(),
         "c",
@@ -121,7 +121,7 @@ fn nested_return_owner_survives_projection_and_compares_inside_container_types()
             "c=evaluate(R.belongs,a=@v/A,b=$o.value[0][0].some)",
             "o=evaluate(R.nested,a=@v/A,b=@v/i)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     let constraint = &prepared.requests().requests()[0].constraints[1];
@@ -149,7 +149,7 @@ fn renamed_owner_indices_and_answer_chains_use_each_producers_binding_scope() {
         "first=evaluate(R.owned,a=@v/A,b=@v/i)",
     ];
     assert_owner_error(
-        prepare_observed(sources(true), &asks, &mut Control::unlimited()).unwrap_err(),
+        prepare_observed(sources(true), &asks, &Control::unlimited()).unwrap_err(),
         "c",
     );
     let prepared = prepare_observed(
@@ -159,7 +159,7 @@ fn renamed_owner_indices_and_answer_chains_use_each_producers_binding_scope() {
             asks[1],
             asks[2],
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(prepared.requests().evaluation_order(), &[2, 1, 0]);
@@ -185,7 +185,7 @@ fn unknown_owners_keep_constraints_without_inferring_view_value_identity() {
         let prepared = prepare_observed(
             sources(false),
             &[&consumer, producer, "root=evaluate(R.echo,a=@w/A)"],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert!(prepared.requests().requests()[0].constraints[1].dynamic);
@@ -196,7 +196,7 @@ fn unknown_owners_keep_constraints_without_inferring_view_value_identity() {
             "c=check(R.present,b=$o.value)",
             "o=evaluate(R.owned,a=@v/A,b=@v/i)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert!(prepared.requests().requests()[0].constraints[0].dynamic);
@@ -214,7 +214,7 @@ fn equal_answer_owner_selectors_match_but_distinct_answers_remain_unknown() {
                 "root=evaluate(R.echo,a=@v/A)",
                 "other=evaluate(R.echo,a=@v/A)",
             ],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let constraint = &prepared.requests().requests()[0].constraints[1];
@@ -234,7 +234,7 @@ fn dependent_answer_cycles_keep_original_cycle_members_and_request_graph() {
             "b=evaluate(R.renamed,x=@v/A,y=$a.value)",
             "later=evaluate(R.belongs,a=@v/A,b=$a.value)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_err();
     let PrepareFailure::Requests {
@@ -267,26 +267,26 @@ fn owner_type_walk_stops_early_and_cancellation_wins_over_known_mismatch() {
     ];
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut baseline = Control::new(move |point| {
+    let baseline = Control::new(move |point| {
         if point == Checkpoint::RequestBinding {
             seen.set(seen.get() + 1);
         }
         None
     });
     assert_owner_error(
-        prepare_observed(sources(true), &asks, &mut baseline).unwrap_err(),
+        prepare_observed(sources(true), &asks, &baseline).unwrap_err(),
         "c",
     );
     for at in [1, count.get()] {
         let seen = Rc::new(Cell::new(0usize));
         let observed = seen.clone();
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if point == Checkpoint::RequestBinding {
                 observed.set(observed.get() + 1);
             }
             (observed.get() >= at).then_some(Signal::Term)
         });
-        let failure = prepare_observed(sources(true), &asks, &mut control).unwrap_err();
+        let failure = prepare_observed(sources(true), &asks, &control).unwrap_err();
         assert!(matches!(
             failure,
             PrepareFailure::Requests {

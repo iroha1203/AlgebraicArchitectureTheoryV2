@@ -67,8 +67,8 @@ fn run(i: InputSources, asks: &[&str]) -> Json {
 }
 fn run_with_family_state(i: InputSources, asks: &[&str], pending: bool) -> Json {
     let checked =
-        check_inputs(i.clone(), &mut quiet()).unwrap_or_else(|e| panic!("input {:?}", e.issues()));
-    let r = evaluate_observed_bytes(i.clone(), asks, &mut quiet())
+        check_inputs(i.clone(), &quiet()).unwrap_or_else(|e| panic!("input {:?}", e.issues()));
+    let r = evaluate_observed_bytes(i.clone(), asks, &quiet())
         .unwrap_or_else(|e| panic!("evaluate {e:?}"));
     assert_ne!(r.status(), "error", "{:?}", r.wire());
     assert_eq!(r.prepared().inputs().sources(), &i);
@@ -258,7 +258,7 @@ fn assignments(j: &Json, id: &str) -> BTreeSet<String> {
 #[test]
 fn map_field_completions_share_tables_keep_independent_slots_and_actual_application() {
     let input = fixture::input(false, false, false, false);
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(input.clone(), &quiet()).unwrap();
     let field = checked.archmap().snapshots()[0]
         .subjects
         .iter()
@@ -486,7 +486,7 @@ fn map_field_empty_domains_and_inconsistent_nonempty_to_empty_keep_input_stages(
     );
     original_missing(&j, "read", "h", "MapFields.Holder.table");
     original_missing(&j, "empty", "h", "MapFields.Holder.empty");
-    let failure = check_inputs(fixture::no_images(), &mut quiet()).unwrap_err();
+    let failure = check_inputs(fixture::no_images(), &quiet()).unwrap_err();
     assert_eq!(failure.status(), archsig::input::InputStatus::Invalid);
     assert!(
         failure
@@ -656,7 +656,7 @@ fn map_field_known_values_keep_original_map_container_atoms_and_sources() {
 #[test]
 fn map_field_owner_rediscovery_keeps_other_numeric_missing_without_stale_algorithm_reason() {
     let input = fixture::input(false, false, true, false);
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(input.clone(), &quiet()).unwrap();
     let j = run(
         input,
         &[
@@ -718,7 +718,7 @@ fn map_field_owner_rediscovery_keeps_other_numeric_missing_without_stale_algorit
 #[test]
 fn map_field_unresolved_nonfinite_owner_case_retains_its_algorithm_and_missing_sources() {
     let input = fixture::input(false, false, false, false);
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(input.clone(), &quiet()).unwrap();
     let j = run_with_family_state(
         input,
         &["pending=evaluate(Inspect.pending,h=@v/h,a=@v/B)"],

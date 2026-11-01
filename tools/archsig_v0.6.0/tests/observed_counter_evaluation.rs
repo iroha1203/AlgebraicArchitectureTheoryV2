@@ -37,9 +37,7 @@ fn map_count(value: Option<&str>) -> Vec<u8> {
     }
 }
 fn run(src: InputSources, asks: &[&str]) -> Json {
-    evaluate_observed_bytes(src, asks, &mut quiet())
-        .unwrap()
-        .wire()
+    evaluate_observed_bytes(src, asks, &quiet()).unwrap().wire()
 }
 fn obj(value: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(fields) = value else {
@@ -370,7 +368,7 @@ fn counter_twelve_keeps_exact_refutation_and_input_provenance() {
         ("atom", Json::str("count")),
     ]);
     assert!(arr(field(data, "facts")).contains(&expected_fact));
-    let checked = check_inputs(sources(LAW, &map), &mut quiet()).unwrap();
+    let checked = check_inputs(sources(LAW, &map), &quiet()).unwrap();
     let snapshot = checked
         .archmap()
         .snapshots()
@@ -415,7 +413,7 @@ fn counter_twelve_keeps_exact_refutation_and_input_provenance() {
 #[test]
 fn absent_count_keeps_subject_missing_expression_and_all_completions() {
     let map = map_count(None);
-    let checked = check_inputs(sources(LAW, &map), &mut quiet()).unwrap();
+    let checked = check_inputs(sources(LAW, &map), &quiet()).unwrap();
     assert!(
         checked
             .archmap()
@@ -482,7 +480,7 @@ fn absent_count_keeps_subject_missing_expression_and_all_completions() {
 
 #[test]
 fn every_counter_ast_occurrence_has_source_expression_and_child_evaluation() {
-    let checked = check_inputs(sources(LAW, MAP), &mut quiet()).unwrap();
+    let checked = check_inputs(sources(LAW, MAP), &quiet()).unwrap();
     let result = run(sources(LAW, MAP), &ASKS);
     let index = nodes(&result);
     let mut expressions = BTreeMap::new();
@@ -619,10 +617,10 @@ fn every_counter_ast_occurrence_has_source_expression_and_child_evaluation() {
 #[test]
 fn byte_and_checked_bundle_evaluation_have_the_same_semantics() {
     let bytes = run(sources(LAW, MAP), &ASKS);
-    let mut control = quiet();
-    let checked = check_inputs(sources(LAW, MAP), &mut control).unwrap();
-    let prepared = prepare_checked_observed(checked, &ASKS, &mut control).unwrap();
-    let result = evaluate_observed(prepared, &mut control).unwrap().wire();
+    let control = quiet();
+    let checked = check_inputs(sources(LAW, MAP), &control).unwrap();
+    let prepared = prepare_checked_observed(checked, &ASKS, &control).unwrap();
+    let result = evaluate_observed(prepared, &control).unwrap().wire();
     for key in [
         "status",
         "requests",
@@ -729,7 +727,7 @@ fn fact_support_resolves_to_the_actual_origin_and_source() {
     let map = String::from_utf8(MAP.to_vec()).unwrap()
         .replace("\"sources\": []", "\"sources\": [{\"id\":\"src\",\"uri\":\"urn:counter:fixture\",\"revision\":\"r1\",\"digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}]")
         .replace("\"locations\": []", "\"locations\": [{\"source\":\"src\",\"path\":\"counter.model\",\"span\":[3,8]}]");
-    let checked = check_inputs(sources(LAW, map.as_bytes()), &mut quiet()).unwrap();
+    let checked = check_inputs(sources(LAW, map.as_bytes()), &quiet()).unwrap();
     let result = run(sources(LAW, map.as_bytes()), &ASKS);
     let mut saw_count = false;
     for node in arr(field(&result, "nodes")) {
@@ -792,7 +790,7 @@ fn fact_support_resolves_to_the_actual_origin_and_source() {
 
 #[test]
 fn preparation_failures_retain_the_original_stage_and_have_no_evaluation() {
-    let failure = evaluate_observed_bytes(sources(b"bad", MAP), &ASKS, &mut quiet()).unwrap_err();
+    let failure = evaluate_observed_bytes(sources(b"bad", MAP), &ASKS, &quiet()).unwrap_err();
     assert!(matches!(
         &failure,
         EvaluationFailure::Prepare(PrepareFailure::Inputs(_))
@@ -807,7 +805,7 @@ fn preparation_failures_retain_the_original_stage_and_have_no_evaluation() {
     ] {
         assert!(arr(field(&wire, key)).is_empty());
     }
-    let failure = evaluate_observed_bytes(sources(LAW, b"bad"), &ASKS, &mut quiet()).unwrap_err();
+    let failure = evaluate_observed_bytes(sources(LAW, b"bad"), &ASKS, &quiet()).unwrap_err();
     assert!(matches!(
         &failure,
         EvaluationFailure::Prepare(PrepareFailure::Inputs(_))
@@ -821,7 +819,7 @@ fn preparation_failures_retain_the_original_stage_and_have_no_evaluation() {
     let failure = evaluate_observed_bytes(
         sources(LAW, MAP),
         &["n=evaluate(CountCheck.amount)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_err();
     assert!(matches!(
@@ -911,7 +909,7 @@ fn finite_law_quantification_and_answer_dependencies_keep_typed_results() {
             "a=evaluate(CountCheck.same,s=@v/s)",
             "b=evaluate(CountCheck.amount,s=$a.value)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
     .wire();
@@ -939,13 +937,13 @@ fn finite_law_quantification_and_answer_dependencies_keep_typed_results() {
 fn expression_count(asks: &[&str]) -> usize {
     let count = Rc::new(Cell::new(0));
     let capture = count.clone();
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         if point == Checkpoint::Expression {
             capture.set(capture.get() + 1);
         }
         None
     });
-    evaluate_observed_bytes(sources(LAW, MAP), asks, &mut control).unwrap();
+    evaluate_observed_bytes(sources(LAW, MAP), asks, &control).unwrap();
     count.get()
 }
 
@@ -959,7 +957,7 @@ fn interrupted_at_expression(
     let capture = calls.clone();
     let expressions = Rc::new(Cell::new(0));
     let observed = expressions.clone();
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         capture.set(capture.get() + 1);
         if point == Checkpoint::Expression {
             observed.set(observed.get() + 1);
@@ -969,7 +967,7 @@ fn interrupted_at_expression(
         }
         None
     });
-    let result = evaluate_observed_bytes(sources(LAW, MAP), asks, &mut control)
+    let result = evaluate_observed_bytes(sources(LAW, MAP), asks, &control)
         .unwrap()
         .wire();
     assert_eq!(field(&result, "status"), &Json::str("interrupted"));
@@ -1064,7 +1062,7 @@ fn missing_root_expression_finite_interval() -> (usize, usize) {
         at_post.clone(),
         at_start.clone(),
     );
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         if point == Checkpoint::FiniteIteration {
             seen_finite.set(seen_finite.get() + 1);
         }
@@ -1079,7 +1077,7 @@ fn missing_root_expression_finite_interval() -> (usize, usize) {
         }
         None
     });
-    let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
+    let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &control)
         .unwrap()
         .wire();
     assert_eq!(field(&result, "status"), &Json::str("partial"));
@@ -1115,7 +1113,7 @@ fn missing_scope_survives_at_finite(stop_at: usize, signal: Signal) -> Json {
         probes.clone(),
         probes_at_stop.clone(),
     );
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         calls.set(calls.get() + 1);
         if point == Checkpoint::Expression {
             seen_expression.set(seen_expression.get() + 1);
@@ -1129,7 +1127,7 @@ fn missing_scope_survives_at_finite(stop_at: usize, signal: Signal) -> Json {
         }
         None
     });
-    let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
+    let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &control)
         .unwrap()
         .wire();
     assert_eq!(field(&result, "status"), &Json::str("interrupted"));
@@ -1327,7 +1325,7 @@ reading Guarded {{
 
 fn guarded_answer_retains_applicability(count: &str, guard: &str, decision: &str) {
     let (sources, law) = guarded_counter(count, guard);
-    let checked = check_inputs(sources.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(sources.clone(), &quiet()).unwrap();
     let result = run(sources, &["bounded=check(Guarded.bounded,s=@v/s)"]);
     assert_eq!(field(&result, "status"), &Json::str("complete"));
     let a = answer(&result, "bounded");
@@ -1571,7 +1569,7 @@ fn true_field_guard_with_missing_body_keeps_applicability_and_all_completions() 
         original.law().bytes().to_vec(),
         map.into_bytes(),
     );
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
     let subject = &checked.archmap().snapshots()[0].subjects[0];
     assert_eq!(subject.id, "s");
     assert!(matches!(
@@ -1717,7 +1715,7 @@ fn missing_finite_probe(stop_at: usize) -> Json {
     let calls = Rc::new(Cell::new(0));
     let stopped_calls = Rc::new(Cell::new(None));
     let (seen_calls, captured_stop) = (calls.clone(), stopped_calls.clone());
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         seen_calls.set(seen_calls.get() + 1);
         if point == Checkpoint::FiniteIteration {
             finite += 1;
@@ -1728,7 +1726,7 @@ fn missing_finite_probe(stop_at: usize) -> Json {
         }
         None
     });
-    let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &mut control)
+    let result = evaluate_observed_bytes(sources(LAW, &map_count(None)), &ASKS, &control)
         .unwrap()
         .wire();
     assert_eq!(
@@ -1821,7 +1819,7 @@ reading Follow {{
         law.as_bytes().to_vec(),
         map.into_bytes(),
     );
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
     let target_subject = &checked
         .archmap()
         .snapshots()

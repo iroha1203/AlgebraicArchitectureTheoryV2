@@ -12,7 +12,7 @@ fn error(r: &str, key: &str, message: &str) -> ResolveFailure {
 pub(super) fn resolve(
     raw: RawRequest,
     text: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Request, ResolveFailure> {
     phase(control, Checkpoint::RequestBinding)?;
     let mut dependencies = BTreeSet::new();
@@ -73,7 +73,7 @@ pub(super) fn selected(
     value: &Selector,
     request: &Request,
     key: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Shape, ResolveFailure> {
     let (plan, _) = selector_type(
         law,
@@ -117,7 +117,7 @@ pub(super) fn shape(
     requests: &[Request],
     names: &BTreeMap<String, usize>,
     request: &Request,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Shape, ResolveFailure> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         phase(control, Checkpoint::RequestBinding)?;
@@ -174,7 +174,7 @@ pub(super) fn output_type(
     names: &BTreeMap<String, usize>,
     request: &Request,
     field: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ProjectionType, ResolveFailure> {
     let shape = shape(law, map, requests, names, request, control)?;
     match (field, shape) {
@@ -192,7 +192,7 @@ pub(super) fn constraints(
     requests: &[Request],
     names: &BTreeMap<String, usize>,
     request: &Request,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<BindingConstraint>, ResolveFailure> {
     if !matches!(
         shape(law, map, requests, names, request, control)?,

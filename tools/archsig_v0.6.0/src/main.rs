@@ -65,10 +65,13 @@ impl ProcessSignals {
 
     /// checkpointでsignalを確かめる。
     fn control(&self) -> archsig::control::Control {
-        let first = Arc::clone(&self.first);
-        let int = Arc::clone(&self.int);
-        let term = Arc::clone(&self.term);
-        archsig::control::Control::new(move |_| Self::observed_signal(&first, &int, &term))
+        // Flags may already be set before control construction (including test injection).
+        Self::observed_signal(&self.first, &self.int, &self.term);
+        archsig::control::Control::from_signal_flag(
+            Arc::clone(&self.first),
+            signal_hook::consts::SIGINT,
+            signal_hook::consts::SIGTERM,
+        )
     }
 }
 
@@ -135,9 +138,9 @@ fn execute(
     let mut io = FileIo;
     match parse_args(args) {
         Ok(command) => {
-            let mut control = signals.control();
+            let control = signals.control();
             (
-                execute_command(&command, &mut io, signals, &mut control),
+                execute_command(&command, &mut io, signals, &control),
                 VERSION_LINE,
             )
         }
@@ -177,7 +180,7 @@ mod tests {
 
     fn signal_reaches_control(signal: i32, expected: Signal) {
         let mut signals = ProcessSignals::new();
-        let mut control = signals.control();
+        let control = signals.control();
         signal_hook::low_level::raise(signal).unwrap();
         assert_eq!(
             control.checkpoint(Checkpoint::DefinitionSchema),
@@ -209,7 +212,7 @@ mod tests {
                 )),
                 frozen: None,
             };
-            let mut control = signals.control();
+            let control = signals.control();
             assert_eq!(control.checkpoint(Checkpoint::LawSemantics), Err(expected));
             if later_signal == signal_hook::consts::SIGINT {
                 signals.int.store(true, Ordering::SeqCst);

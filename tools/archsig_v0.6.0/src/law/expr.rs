@@ -191,7 +191,7 @@ impl<E: InputError> Checker<'_, E> {
             self.expr_types[id] = Some(t.clone());
             Ok(t)
         })();
-        E::finish(result, &mut self.control.clone(), self.semantic_point)
+        E::finish(result, &self.control, self.semantic_point)
     }
 
     fn check_bool(&mut self, id: ExprId, env: &mut Env, ctx: &Ctx) -> CResult<(), E> {
@@ -203,7 +203,7 @@ impl<E: InputError> Checker<'_, E> {
         self.cooperate()?;
         let result =
             stacker::maybe_grow(RED_ZONE, STACK_STEP, || self.needs_context_inner(id, env));
-        E::finish(result, &mut self.control.clone(), self.semantic_point)
+        E::finish(result, &self.control, self.semantic_point)
     }
     fn needs_context_inner(&mut self, id: ExprId, env: &Env) -> CResult<bool, E> {
         Ok(match self.parser.exprs[id].kind.clone() {
@@ -903,9 +903,8 @@ impl<E: InputError> Checker<'_, E> {
     }
 
     fn non_callable_error<T>(&self, span: Span, ty: &Type) -> CResult<T, E> {
-        let wire = ty.wire_controlled::<E>(&mut self.control.clone(), self.semantic_point)?;
-        let text =
-            wire.canonical_controlled::<E>(&mut self.control.clone(), self.semantic_point)?;
+        let wire = ty.wire_controlled::<E>(&self.control, self.semantic_point)?;
+        let text = wire.canonical_controlled::<E>(&self.control, self.semantic_point)?;
         syntax(span, format!("value of type {text} cannot be applied"))
     }
 
@@ -1451,7 +1450,7 @@ mod semantic_finish_tests {
     static EMPTY_DEFINITIONS: std::sync::LazyLock<CheckedDefinitions> =
         std::sync::LazyLock::new(CheckedDefinitions::empty);
 
-    fn checker(control: &mut Control) -> Checker<'static, Failure> {
+    fn checker(control: &Control) -> Checker<'static, Failure> {
         Checker::with_definitions(
             Parser::with_error(Vec::new(), 4, control.clone()),
             Vec::new(),
@@ -1554,16 +1553,16 @@ mod semantic_finish_tests {
         }
     }
     fn assert_expected_branch_interruptible(branch: usize, steps: usize, expected: Type) {
-        let (mut control, armed, count) = monitored(usize::MAX);
-        let mut check = checker(&mut control);
+        let (control, armed, count) = monitored(usize::MAX);
+        let mut check = checker(&control);
         armed.set(true);
         assert_eq!(expected_branch(&mut check, branch).unwrap(), expected);
         // These six minimal traces lose respectively 2, 2, 4, 2, 4, and 2
         // checkpoints if the expected type goes through the unlimited wrapper.
         assert_eq!(count.get(), steps);
         for at in 1..=steps {
-            let (mut control, armed, seen) = monitored(at);
-            let mut check = checker(&mut control);
+            let (control, armed, seen) = monitored(at);
+            let mut check = checker(&control);
             armed.set(true);
             let failure = expected_branch(&mut check, branch).unwrap_err();
             assert_eq!(seen.get(), at);
@@ -1605,8 +1604,8 @@ mod semantic_finish_tests {
     }
     #[test]
     fn checker_errors_reach_post_checkpoints_and_stop_wins() {
-        let (mut control, armed, count) = monitored(usize::MAX);
-        let mut check = checker(&mut control);
+        let (control, armed, count) = monitored(usize::MAX);
+        let mut check = checker(&control);
         armed.set(true);
         let ordinary = bool_mismatch(&mut check).unwrap_err();
         assert!(
@@ -1614,8 +1613,8 @@ mod semantic_finish_tests {
         );
         let final_step = count.get();
         assert!(final_step >= 4);
-        let (mut control, armed, seen) = monitored(final_step);
-        let mut check = checker(&mut control);
+        let (control, armed, seen) = monitored(final_step);
+        let mut check = checker(&control);
         armed.set(true);
         let failure = bool_mismatch(&mut check).unwrap_err();
         assert_eq!(seen.get(), final_step);
@@ -1634,8 +1633,8 @@ mod semantic_finish_tests {
             ref_free: false,
             validate: true,
         };
-        let (mut baseline, armed, total) = monitored(usize::MAX);
-        let mut check = checker(&mut baseline);
+        let (baseline, armed, total) = monitored(usize::MAX);
+        let mut check = checker(&baseline);
         armed.set(true);
         assert!(matches!(
             check.resolve_type(&ast, &ctx),
@@ -1643,8 +1642,8 @@ mod semantic_finish_tests {
         ));
         let exit = total.get();
         assert!(exit > 2, "primality now has its own internal checkpoints");
-        let (mut control, armed, count) = monitored(exit);
-        let mut check = checker(&mut control);
+        let (control, armed, count) = monitored(exit);
+        let mut check = checker(&control);
         armed.set(true);
         let failure = check.resolve_type(&ast, &ctx).unwrap_err();
         assert_eq!(count.get(), exit);
@@ -1657,16 +1656,16 @@ mod semantic_finish_tests {
             Type::Option(Box::new(Type::Bool)),
         ]);
         let actual = Type::Tuple(vec![Type::Z, Type::Unit]);
-        let (mut control, armed, count) = monitored(usize::MAX);
-        let check = checker(&mut control);
+        let (control, armed, count) = monitored(usize::MAX);
+        let check = checker(&control);
         armed.set(true);
         assert!(matches!(
             check.type_error::<()>((0, 4), &expected, &actual, "mismatch"),
             Err(Failure::Input(_))
         ));
         for at in 1..=count.get() {
-            let (mut control, armed, _) = monitored(at);
-            let check = checker(&mut control);
+            let (control, armed, _) = monitored(at);
+            let check = checker(&control);
             armed.set(true);
             let failure = check
                 .type_error::<()>((0, 4), &expected, &actual, "mismatch")
@@ -1680,8 +1679,8 @@ mod semantic_finish_tests {
             Type::Z,
             Type::Option(Box::new(Type::Tuple(vec![Type::Bool, Type::Unit]))),
         ]);
-        let (mut control, armed, count) = monitored(usize::MAX);
-        let check = checker(&mut control);
+        let (control, armed, count) = monitored(usize::MAX);
+        let check = checker(&control);
         armed.set(true);
         let Failure::Input(issue) = check.non_callable_error::<()>((0, 4), &ty).unwrap_err() else {
             panic!("syntax expected")
@@ -1692,8 +1691,8 @@ mod semantic_finish_tests {
         );
         assert!(count.get() > 20);
         for at in 1..=count.get() {
-            let (mut control, armed, _) = monitored(at);
-            let check = checker(&mut control);
+            let (control, armed, _) = monitored(at);
+            let check = checker(&control);
             armed.set(true);
             let failure = check.non_callable_error::<()>((0, 4), &ty).unwrap_err();
             assert!(matches!(failure, Failure::Stopped(Signal::Term)));
@@ -1701,7 +1700,7 @@ mod semantic_finish_tests {
     }
 
     fn quant_candidate_fixture(
-        control: &mut Control,
+        control: &Control,
         typed: bool,
         valid: [bool; 2],
     ) -> (
@@ -1776,7 +1775,7 @@ mod semantic_finish_tests {
         };
         for typed in [false, true] {
             let (mut baseline, root) =
-                quant_candidate_fixture(&mut Control::unlimited(), typed, [false, false]);
+                quant_candidate_fixture(&Control::unlimited(), typed, [false, false]);
             let CandidateFailure(CheckFailure::Input(expected)) = baseline
                 .check(root, None, &mut Env::default(), &ctx())
                 .unwrap_err()
@@ -1798,8 +1797,8 @@ mod semantic_finish_tests {
                     }
                 );
             }
-            let (mut control, _arm, observed) = stop_after_issue((5, 9));
-            let (mut check, root) = quant_candidate_fixture(&mut control, typed, [false, false]);
+            let (control, _arm, observed) = stop_after_issue((5, 9));
+            let (mut check, root) = quant_candidate_fixture(&control, typed, [false, false]);
             let failure = check
                 .check(root, None, &mut Env::default(), &ctx())
                 .unwrap_err();
@@ -1813,15 +1812,15 @@ mod semantic_finish_tests {
         for typed in [false, true] {
             for (valid, target) in [([false, true], (0, 4)), ([true, false], (5, 9))] {
                 let (mut baseline, root) =
-                    quant_candidate_fixture(&mut Control::unlimited(), typed, valid);
+                    quant_candidate_fixture(&Control::unlimited(), typed, valid);
                 assert_eq!(
                     baseline
                         .check(root, None, &mut Env::default(), &ctx())
                         .unwrap(),
                     Type::Bool
                 );
-                let (mut control, _arm, observed) = stop_after_issue(target);
-                let (mut check, root) = quant_candidate_fixture(&mut control, typed, valid);
+                let (control, _arm, observed) = stop_after_issue(target);
+                let (mut check, root) = quant_candidate_fixture(&control, typed, valid);
                 let failure = check
                     .check(root, None, &mut Env::default(), &ctx())
                     .unwrap_err();

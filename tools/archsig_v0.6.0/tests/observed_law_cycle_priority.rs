@@ -68,13 +68,13 @@ fn baseline(law: &str) -> (archsig::issue::Issue, usize) {
     );
     let total = Rc::new(Cell::new(0));
     let seen = total.clone();
-    let mut control = Control::new(move |point| {
+    let control = Control::new(move |point| {
         if point == Checkpoint::LawCycle {
             seen.set(seen.get() + 1);
         }
         None
     });
-    let failure = check_inputs(sources(law), &mut control).unwrap_err();
+    let failure = check_inputs(sources(law), &control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Invalid);
     assert_eq!(failure.issues(), [expected_input_issue(law, &expected)]);
     assert!(total.get() > 2);
@@ -93,8 +93,8 @@ fn injected(stop_after: usize) -> Control {
 
 fn assert_cancel_after_cycle(law: &str) {
     let (_, total) = baseline(law);
-    let mut control = injected(total);
-    let failure = check_inputs(sources(law), &mut control).unwrap_err();
+    let control = injected(total);
+    let failure = check_inputs(sources(law), &control).unwrap_err();
     let reason = Signal::Term;
     assert_eq!(failure.status(), InputStatus::Interrupted);
     assert_eq!(failure.issues(), [reason.issue()]);
@@ -105,8 +105,8 @@ fn assert_stop_before_cycle(law: &str) {
     let (_, total) = baseline(law);
     // The penultimate LawCycle checkpoint is still inside DFS, before the
     // active-node revisit establishes a cycle. Its stop is not an input failure.
-    let mut control = injected(total - 1);
-    let failure = check_inputs(sources(law), &mut control).unwrap_err();
+    let control = injected(total - 1);
+    let failure = check_inputs(sources(law), &control).unwrap_err();
     assert_eq!(failure.status(), InputStatus::Interrupted);
     assert_eq!(failure.issues(), [Signal::Term.issue()]);
 }

@@ -74,7 +74,7 @@ fn expected() -> Json {
 #[test]
 fn known_map_values_and_extensional_equality_keep_original_pairs() {
     let input = sources("r1");
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(input.clone(), &quiet()).unwrap();
     let before = format!("{:?}", checked.archmap());
     let result = evaluate_observed_bytes(
         input,
@@ -85,7 +85,7 @@ fn known_map_values_and_extensional_equality_keep_original_pairs() {
             "same=check(Maps.same,s=@v/s)",
             "changed=check(Maps.changed,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(result.status(), "complete");
@@ -117,7 +117,7 @@ fn known_map_wrappers_and_calls_keep_types_and_set_extensionality() {
             "empty=evaluate(Maps.empty,s=@v/s)",
             "absent=evaluate(Maps.absent,s=@v/s)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(result.status(), "partial");
@@ -169,14 +169,11 @@ fn known_owned_map_reads_original_reservations_owner_checked_pairs() {
         law.into_bytes(),
         include_bytes!("fixtures/reservations.archmap.json").to_vec(),
     );
-    let checked = check_inputs(source.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(source.clone(), &quiet()).unwrap();
     let original = format!("{:?}", checked.archmap());
-    let result = evaluate_observed_bytes(
-        source,
-        &["a=evaluate(Reservations.table,m=@v/m)"],
-        &mut quiet(),
-    )
-    .unwrap();
+    let result =
+        evaluate_observed_bytes(source, &["a=evaluate(Reservations.table,m=@v/m)"], &quiet())
+            .unwrap();
     let t = Json::Arr(vec![Json::str("Ref"), Json::str("Reservations.State")]);
     let wire = result.wire();
     let expected = Json::Arr(
@@ -206,8 +203,8 @@ fn known_map_provenance_pairs_preserve_answers_and_current_sources() {
         "eq=check(Maps.same,s=@v/s)",
         "ne=check(Maps.changed,s=@v/s)",
     ];
-    let a = evaluate_observed_bytes(sources("r1"), &asks, &mut quiet()).unwrap();
-    let b = evaluate_observed_bytes(sources("r2"), &asks, &mut quiet()).unwrap();
+    let a = evaluate_observed_bytes(sources("r1"), &asks, &quiet()).unwrap();
+    let b = evaluate_observed_bytes(sources("r2"), &asks, &quiet()).unwrap();
     let x = a.wire();
     let y = b.wire();
     assert_eq!(get(&x, "answers"), get(&y, "answers"));
@@ -308,7 +305,7 @@ fn known_map_type_domains_and_application_return_concrete_values() {
         maps::archmap(digest, "r1").into_bytes(),
     );
     let result =
-        evaluate_observed_bytes(input.clone(), &["all=evaluate(Maps.all)"], &mut quiet()).unwrap();
+        evaluate_observed_bytes(input.clone(), &["all=evaluate(Maps.all)"], &quiet()).unwrap();
     assert_eq!(result.status(), "complete");
     assert_eq!(
         value(&result.wire(), "all", Json::str("Bool")),
@@ -329,7 +326,7 @@ fn known_map_type_domains_and_application_return_concrete_values() {
     let applied = evaluate_observed_bytes(
         input,
         &["apply=evaluate(Maps.apply,s=@v/s,x=@v/a)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(applied.status(), "complete");
@@ -353,7 +350,7 @@ fn owned_map_primitive_wrappers_erase_value_types_and_preserve_original_owner_sl
         maps::owned_law(digest).into_bytes(),
         maps::owned_archmap(digest).into_bytes(),
     );
-    let checked = check_inputs(input.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(input.clone(), &quiet()).unwrap();
     let before = format!("{:?}", checked.archmap());
     let m = map_type();
     let list = Json::Arr(vec![Json::str("List"), m.clone()]);
@@ -388,7 +385,7 @@ fn owned_map_primitive_wrappers_erase_value_types_and_preserve_original_owner_sl
     let mut failures = vec![];
     for (name, ty, expected) in cases {
         let ask = format!("a=evaluate(Maps.{name},s=@v/h)");
-        let result = evaluate_observed_bytes(input.clone(), &[&ask], &mut quiet()).unwrap();
+        let result = evaluate_observed_bytes(input.clone(), &[&ask], &quiet()).unwrap();
         if result.status() != "complete" {
             failures.push((name.to_string(), result.status().to_string()));
             continue;

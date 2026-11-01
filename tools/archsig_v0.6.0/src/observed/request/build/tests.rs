@@ -7,13 +7,13 @@ mod fixture {
 
 use crate::control::quiet;
 fn resolved(asks: &[&str]) -> ResolvedRequests {
-    let inputs = check_inputs(fixture::input(), &mut quiet()).unwrap();
-    resolve_inner(inputs.law(), inputs.archmap(), asks, &mut quiet(), None).unwrap()
+    let inputs = check_inputs(fixture::input(), &quiet()).unwrap();
+    resolve_inner(inputs.law(), inputs.archmap(), asks, &quiet(), None).unwrap()
 }
 fn invalid_case(asks: &[&str], code: RequestIssueCode, argument: &str) {
-    let inputs = check_inputs(fixture::input(), &mut quiet()).unwrap();
+    let inputs = check_inputs(fixture::input(), &quiet()).unwrap();
     let Err(ResolveFailure::Invalid { issues, .. }) =
-        resolve_observed_requests_controlled(inputs.law(), inputs.archmap(), asks, &mut quiet())
+        resolve_observed_requests_controlled(inputs.law(), inputs.archmap(), asks, &quiet())
     else {
         panic!("不正なbuildは未実装通知より先に拒否する: {asks:?}");
     };
@@ -72,12 +72,12 @@ fn root_returned_by_a_view_is_accepted_without_evaluating_its_body() {
 }
 #[test]
 fn valid_build_reaches_execution_after_static_resolution() {
-    let inputs = check_inputs(fixture::input(), &mut quiet()).unwrap();
+    let inputs = check_inputs(fixture::input(), &quiet()).unwrap();
     let resolved = resolve_observed_requests_controlled(
         inputs.law(),
         inputs.archmap(),
         &["b=build(R,on=@v/A)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(resolved.requests()[0].kind, QuestionKind::Build);
@@ -138,12 +138,12 @@ fn build_public_projection_table_rejects_private_values_and_indices() {
         "object.root[0]",
     ] {
         let ask = format!("take=evaluate(R.root,a=$b.{projection})");
-        let inputs = check_inputs(fixture::input(), &mut quiet()).unwrap();
+        let inputs = check_inputs(fixture::input(), &quiet()).unwrap();
         let result = resolve_observed_requests_controlled(
             inputs.law(),
             inputs.archmap(),
             &[&ask, "b=build(R,on=@v/A)"],
-            &mut quiet(),
+            &quiet(),
         );
         assert!(
             matches!(result, Err(ResolveFailure::Invalid { .. })),
@@ -153,7 +153,7 @@ fn build_public_projection_table_rejects_private_values_and_indices() {
 }
 #[test]
 fn build_cycles_keep_request_ids_edges_and_never_recurse_into_output_types() {
-    let inputs = check_inputs(fixture::input(), &mut quiet()).unwrap();
+    let inputs = check_inputs(fixture::input(), &quiet()).unwrap();
     for asks in [
         vec!["a=build(R,on=$a.object.root)"],
         vec![
@@ -163,12 +163,7 @@ fn build_cycles_keep_request_ids_edges_and_never_recurse_into_output_types() {
     ] {
         let Err(ResolveFailure::Invalid {
             requests, issues, ..
-        }) = resolve_observed_requests_controlled(
-            inputs.law(),
-            inputs.archmap(),
-            &asks,
-            &mut quiet(),
-        )
+        }) = resolve_observed_requests_controlled(inputs.law(), inputs.archmap(), &asks, &quiet())
         else {
             panic!("循環を拒否する");
         };
@@ -183,19 +178,19 @@ fn build_cycles_keep_request_ids_edges_and_never_recurse_into_output_types() {
 #[test]
 fn build_binding_and_projection_checkpoints_obey_cancellation() {
     use crate::result::Signal;
-    let inputs = check_inputs(fixture::input(), &mut quiet()).unwrap();
+    let inputs = check_inputs(fixture::input(), &quiet()).unwrap();
     for target in [
         Checkpoint::RequestBinding,
         Checkpoint::RequestDependency,
         Checkpoint::Projection,
     ] {
-        let mut c = Control::new(move |point| (point == target).then_some(Signal::Term));
+        let c = Control::new(move |point| (point == target).then_some(Signal::Term));
         assert!(matches!(
             resolve_observed_requests_controlled(
                 inputs.law(),
                 inputs.archmap(),
                 &["b=build(R,on=$a.value)", "a=evaluate(R.root,a=@v/A)"],
-                &mut c
+                &c
             ),
             Err(ResolveFailure::Interrupted { .. })
         ));
@@ -208,9 +203,9 @@ fn build_rejects_arrow_instances_as_roots() {
         use crate as archsig;
         include!("../../../../tests/common/public_path_compose.rs");
     }
-    let inputs = check_inputs(paths::input(false, "build-arrow"), &mut quiet()).unwrap();
+    let inputs = check_inputs(paths::input(false, "build-arrow"), &quiet()).unwrap();
     assert!(
-        matches!(resolve_observed_requests_controlled(inputs.law(), inputs.archmap(), &["b=build(Walk,on=@v/e)"], &mut quiet()), Err(ResolveFailure::Invalid { issues, .. }) if issues.iter().any(|i| i.request == "b" && i.argument == "on" && i.code == RequestIssueCode::Type))
+        matches!(resolve_observed_requests_controlled(inputs.law(), inputs.archmap(), &["b=build(Walk,on=@v/e)"], &quiet()), Err(ResolveFailure::Invalid { issues, .. }) if issues.iter().any(|i| i.request == "b" && i.argument == "on" && i.code == RequestIssueCode::Type))
     );
 }
 
@@ -253,12 +248,12 @@ fn reading_visibility_uses_transitive_imports_without_adding_other_registered_ro
         law.into_bytes(),
         map.into_bytes(),
     );
-    let checked = check_inputs(input, &mut quiet()).unwrap();
+    let checked = check_inputs(input, &quiet()).unwrap();
     let valid = resolve_inner(
         checked.law(),
         checked.archmap(),
         &["b=build(R,on=@v/C)"],
-        &mut quiet(),
+        &quiet(),
         None,
     )
     .unwrap();
@@ -267,6 +262,6 @@ fn reading_visibility_uses_transitive_imports_without_adding_other_registered_ro
         Selector::Declaration { name: "R".into() }
     );
     assert!(
-        matches!(resolve_observed_requests_controlled(checked.law(), checked.archmap(), &["b=build(S,on=@v/A)"], &mut quiet()), Err(ResolveFailure::Invalid { issues, .. }) if issues.iter().any(|i| i.argument == "on" && i.code == RequestIssueCode::Type))
+        matches!(resolve_observed_requests_controlled(checked.law(), checked.archmap(), &["b=build(S,on=@v/A)"], &quiet()), Err(ResolveFailure::Invalid { issues, .. }) if issues.iter().any(|i| i.argument == "on" && i.code == RequestIssueCode::Type))
     );
 }

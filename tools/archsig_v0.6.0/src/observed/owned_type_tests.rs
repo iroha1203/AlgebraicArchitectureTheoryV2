@@ -449,9 +449,9 @@ fn owned_type_quantification_answer_cancel_preserves_verified_current_result() {
         "later=evaluate(Reservations.seed)",
     ];
     let inputs = owned_private_fixture(body, Some("q-free"), false);
-    let mut quiet = quiet();
-    let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
-    let normal = evaluate_observed(prepared, &mut quiet).unwrap();
+    let quiet = quiet();
+    let prepared = prepare_observed(inputs.clone(), &asks, &quiet).unwrap();
+    let normal = evaluate_observed(prepared, &quiet).unwrap();
     assert_eq!(normal.status(), "partial", "{:?}", normal.issues);
     assert_eq!(normal.answers[1].status, Decision::Refuted);
     assert_eq!(normal.answers[2].status, Decision::Undetermined);
@@ -469,7 +469,7 @@ fn owned_type_quantification_answer_cancel_preserves_verified_current_result() {
     let frozen = Rc::new(Cell::new(None));
     let seen = Rc::new(Cell::new(false));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(move |checkpoint| {
+    let control = Control::new(move |checkpoint| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert_eq!(checkpoint, Checkpoint::FiniteIteration);
@@ -479,10 +479,10 @@ fn owned_type_quantification_answer_cancel_preserves_verified_current_result() {
             None
         }
     });
-    let prepared = prepare_observed(inputs, &asks, &mut control).unwrap();
+    let prepared = prepare_observed(inputs, &asks, &control).unwrap();
     let stopped = evaluate_observed_with_validator(
         prepared,
-        &mut control,
+        &control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
             if request.id == "current" {

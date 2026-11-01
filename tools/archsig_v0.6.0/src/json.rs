@@ -13,14 +13,10 @@ impl From<Box<Issue>> for CheckFailure<Box<Issue>> {
 /// Internal error policy shared by ordinary and interruptible input readers.
 #[doc(hidden)]
 pub trait InputError: From<Box<Issue>> {
-    fn checkpoint(control: &mut Control, point: Checkpoint) -> Result<(), Self>;
+    fn checkpoint(control: &Control, point: Checkpoint) -> Result<(), Self>;
     fn map_issue(self, map: impl FnOnce(Box<Issue>) -> Box<Issue>) -> Self;
     /// Cancellation observed at the final checkpoint takes priority over the result.
-    fn finish<T>(
-        result: Result<T, Self>,
-        control: &mut Control,
-        point: Checkpoint,
-    ) -> Result<T, Self> {
+    fn finish<T>(result: Result<T, Self>, control: &Control, point: Checkpoint) -> Result<T, Self> {
         Self::checkpoint(control, point)?;
         result
     }
@@ -29,7 +25,7 @@ pub trait InputError: From<Box<Issue>> {
     }
 }
 impl InputError for Box<Issue> {
-    fn checkpoint(_: &mut Control, _: Checkpoint) -> Result<(), Self> {
+    fn checkpoint(_: &Control, _: Checkpoint) -> Result<(), Self> {
         Ok(())
     }
     fn map_issue(self, map: impl FnOnce(Box<Issue>) -> Box<Issue>) -> Self {
@@ -37,7 +33,7 @@ impl InputError for Box<Issue> {
     }
 }
 impl InputError for CheckFailure<Box<Issue>> {
-    fn checkpoint(control: &mut Control, point: Checkpoint) -> Result<(), Self> {
+    fn checkpoint(control: &Control, point: Checkpoint) -> Result<(), Self> {
         control.checkpoint(point).map_err(CheckFailure::Stopped)
     }
     fn map_issue(self, map: impl FnOnce(Box<Issue>) -> Box<Issue>) -> Self {
@@ -106,16 +102,12 @@ fn syntax(span: Span, message: impl Into<String>) -> Box<Issue> {
 }
 
 pub fn parse(bytes: &[u8]) -> Result<JNode, Box<Issue>> {
-    parse_inner(
-        bytes,
-        &mut Control::unlimited(),
-        Checkpoint::ArchMapIteration,
-    )
+    parse_inner(bytes, &Control::unlimited(), Checkpoint::ArchMapIteration)
 }
 
 pub fn parse_inner<E: InputError>(
     bytes: &[u8],
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
 ) -> Result<JNode, E> {
     E::checkpoint(control, point)?;
@@ -155,7 +147,7 @@ struct P<'a, 'c, E> {
     s: &'a [u8],
     text: &'a str,
     i: usize,
-    control: &'c mut Control,
+    control: &'c Control,
     point: Checkpoint,
     error: std::marker::PhantomData<E>,
 }
@@ -422,7 +414,7 @@ pub fn parse_definition(bytes: &[u8], input: &str) -> Result<JNode, Box<Issue>> 
 pub fn parse_definition_inner<E: InputError>(
     bytes: &[u8],
     input: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<JNode, E> {
     parse_inner::<E>(bytes, control, Checkpoint::DefinitionIteration).map_err(|failure| {
         failure.map_issue(|mut issue| {

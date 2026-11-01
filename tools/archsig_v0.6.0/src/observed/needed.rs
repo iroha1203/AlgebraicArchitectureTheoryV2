@@ -34,7 +34,7 @@ impl Requirement {
     }
 }
 fn tick(control: &Control) -> Result<(), ValidationFailure> {
-    control.clone().checkpoint(Checkpoint::ObservationPlan)?;
+    control.checkpoint(Checkpoint::ObservationPlan)?;
     Ok(())
 }
 fn target(request: &Request) -> Result<&str, ValidationFailure> {
@@ -319,10 +319,7 @@ pub(super) fn evaluate(
     match (result, committed) {
         (Ok(_), Some(answer)) => Ok((
             answer,
-            control
-                .clone()
-                .checkpoint(Checkpoint::ObservationPlan)
-                .err(),
+            control.checkpoint(Checkpoint::ObservationPlan).err(),
         )),
         (Err(ValidationFailure::Stop(reason)), Some(answer)) => Ok((answer, Some(reason))),
         (Err(failure), _) => Err(failure),
@@ -346,7 +343,7 @@ mod tests {
                 map.into_bytes(),
             ),
             &["p=needed($n)", "n=evaluate(CountCheck.amount,s=@v/s)"],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap()
     }
@@ -370,7 +367,7 @@ mod tests {
         let environment = Environment::with_requests(
             result.prepared.inputs(),
             result.prepared.requests().requests(),
-            &mut control.clone(),
+            &control,
         )
         .unwrap();
         let original = graph(&result);

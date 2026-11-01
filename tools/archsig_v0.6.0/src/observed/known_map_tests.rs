@@ -12,9 +12,9 @@ fn known_map_private_inputs() -> InputSources {
     )
 }
 fn known_map_private_result(asks: &[&str]) -> ObservedEvaluation {
-    let mut control = quiet();
-    let p = prepare_observed(known_map_private_inputs(), asks, &mut control).unwrap();
-    evaluate_observed(p, &mut control).unwrap()
+    let control = quiet();
+    let p = prepare_observed(known_map_private_inputs(), asks, &control).unwrap();
+    evaluate_observed(p, &control).unwrap()
 }
 fn known_map_private_atom(r: &ObservedEvaluation) -> usize {
     r.nodes.iter().position(|n|matches!((&n.payload,&n.rule),(Some(Payload::Scalar(Scalar::Map{pairs,..})),Rule::Input{kind:"atom",..}) if !pairs.is_empty())).unwrap()
@@ -87,7 +87,7 @@ fn known_map_private_stop(after_answer: bool) {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (arm, count, freeze) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut control = Control::new(move |_| {
+    let control = Control::new(move |_| {
         count.set(count.get() + 1);
         if arm.replace(false) {
             assert!(freeze.replace(Some(count.get())).is_none());
@@ -96,11 +96,11 @@ fn known_map_private_stop(after_answer: bool) {
             None
         }
     });
-    let prepared = prepare_observed(known_map_private_inputs(), &asks, &mut control).unwrap();
+    let prepared = prepare_observed(known_map_private_inputs(), &asks, &control).unwrap();
     let law = prepared.inputs().sources().law().bytes().to_vec();
     let stopped = evaluate_observed_with_validator(
         prepared,
-        &mut control,
+        &control,
         |environment, graph, request, answer| {
             environment.validate_answer(graph, request, answer)?;
             if request.id == "prior" && !after_answer {
@@ -174,10 +174,10 @@ fn owned_map_wrapper_values_recheck_original_nested_types_and_owner_sources() {
         known_map_fixture::owned_law(digest).into_bytes(),
         known_map_fixture::owned_archmap(digest).into_bytes(),
     );
-    let mut control = quiet();
+    let control = quiet();
     let prepared =
-        prepare_observed(input, &["a=evaluate(Maps.tables,s=@v/h)"], &mut control).unwrap();
-    let result = evaluate_observed(prepared, &mut control).unwrap();
+        prepare_observed(input, &["a=evaluate(Maps.tables,s=@v/h)"], &control).unwrap();
+    let result = evaluate_observed(prepared, &control).unwrap();
     assert_eq!(result.status(), "complete");
     let target=result.nodes.iter().position(|n|matches!((&n.payload,&n.rule),(Some(Payload::Scalar(Scalar::List{items,..})),Rule::Input{kind:"atom",..}) if !items.is_empty())).unwrap();
     rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();

@@ -22,7 +22,7 @@ pub(super) fn compute(
     architecture: &Architecture,
     base: usize,
     request: &Request,
-    c: &mut Control,
+    c: &Control,
     value_fields: &[Fact],
 ) -> Result<Option<Computed>, ValidationFailure> {
     let fields = if value_fields.is_empty() {

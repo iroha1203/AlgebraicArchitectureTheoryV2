@@ -96,7 +96,7 @@ pub fn cycle<T, E: InputError>(span: Span, message: impl Into<String>) -> CResul
 
 impl<'d, E: InputError> Checker<'d, E> {
     pub(super) fn erase_type(&self, ty: &Type) -> CResult<Type, E> {
-        ty.erase_controlled::<E>(&mut self.control.clone(), self.semantic_point)
+        ty.erase_controlled::<E>(&self.control, self.semantic_point)
     }
     pub(super) fn type_error<T>(
         &self,
@@ -122,7 +122,7 @@ impl<'d, E: InputError> Checker<'d, E> {
         parser: Parser<E>,
         readings: Vec<Reading>,
         definitions: &'d CheckedDefinitions,
-        control: &mut Control,
+        control: &Control,
         semantic_point: Checkpoint,
     ) -> CResult<Self, E> {
         E::checkpoint(control, semantic_point)?;
@@ -179,7 +179,7 @@ impl<'d, E: InputError> Checker<'d, E> {
     }
 
     pub(super) fn cooperate(&self) -> CResult<(), E> {
-        E::checkpoint(&mut self.control.clone(), self.semantic_point)
+        E::checkpoint(&self.control, self.semantic_point)
     }
 
     pub fn reading_name(&self, r: usize) -> &str {
@@ -202,7 +202,7 @@ impl<'d, E: InputError> Checker<'d, E> {
     // ---- 名前の表 ----
 
     /// reading・alias・Law 宣言の名前を集め、同じ scope と共通定義との完全名衝突を拒否する。
-    pub(super) fn collect_names_controlled(&mut self, control: &mut Control) -> Result<(), E> {
+    pub(super) fn collect_names_controlled(&mut self, control: &Control) -> Result<(), E> {
         let ast = self.ast.clone();
         for (ri, r) in ast.iter().enumerate() {
             self.cooperate()?;
@@ -533,7 +533,7 @@ impl<'d, E: InputError> Checker<'d, E> {
             }
             Ok(t)
         })();
-        E::finish(result, &mut self.control.clone(), self.semantic_point)
+        E::finish(result, &self.control, self.semantic_point)
     }
 
     fn resolve_type_inner(&mut self, ast: &TypeAst, ctx: &TypeCtx) -> CResult<Type, E> {
@@ -547,7 +547,7 @@ impl<'d, E: InputError> Checker<'d, E> {
             },
             TypeAst::Fp { modulus, span } => {
                 let n: BigUint = modulus.parse().expect("字句で10進整数を確認済み");
-                if !is_prime_controlled::<E>(&n, &mut self.control.clone(), self.semantic_point)? {
+                if !is_prime_controlled::<E>(&n, &self.control, self.semantic_point)? {
                     return syntax(*span, format!("Fp modulus {modulus} is not prime"));
                 }
                 Type::Fp(modulus.clone())
@@ -708,7 +708,7 @@ impl<'d, E: InputError> Checker<'d, E> {
             self.cooperate()?;
             let found = predicate(ty);
             if !matches!(found, Ok(false)) {
-                return E::finish(found, &mut self.control.clone(), self.semantic_point);
+                return E::finish(found, &self.control, self.semantic_point);
             }
             match ty {
                 Type::Tuple(items) => stack.extend(items),
@@ -847,13 +847,13 @@ pub fn check_binding_name<E: InputError>(id: &Ident) -> CResult<(), E> {
 /// 有向グラフの閉路の一点。自己辺は含まない。
 pub fn find_cycle<E: InputError>(
     edges: &BTreeMap<String, BTreeSet<String>>,
-    control: &mut Control,
+    control: &Control,
 ) -> CResult<Option<String>, E> {
     fn visit<E: InputError>(
         n: &str,
         edges: &BTreeMap<String, BTreeSet<String>>,
         state: &mut HashMap<String, u8>,
-        control: &mut Control,
+        control: &Control,
     ) -> CResult<Option<String>, E> {
         E::checkpoint(control, Checkpoint::LawCycle)?;
         stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {

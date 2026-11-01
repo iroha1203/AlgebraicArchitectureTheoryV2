@@ -46,7 +46,7 @@ impl Data {
         Ok(())
     }
 }
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;
     Ok(())
 }
@@ -163,7 +163,7 @@ pub(super) fn instantiate(
     base: NodeRef,
     template: NodeRef,
     architecture: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((
         env,
@@ -182,7 +182,7 @@ impl super::result_kind::ResultKind for Data {
         NodeRef,
         NodeRef,
         NodeRef,
-        &'a mut Control,
+        &'a Control,
     );
     type Output = NodeRef;
     fn compute_and_retain<'a, 'input: 'a>(

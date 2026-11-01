@@ -6,7 +6,7 @@ fn compound_call_result(asks: &[&str]) -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         compound_call_fixture::input(false, "r1"),
         asks,
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap_or_else(|e| panic!("{:?}", e.wire()));
     assert_ne!(r.status(), "error", "{:?}", r.issues);
@@ -72,7 +72,7 @@ fn compound_call_member_stop() {
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -82,8 +82,8 @@ fn compound_call_member_stop() {
         }
     });
     let prepared =
-        prepare_observed(compound_call_fixture::input(false, "r1"), &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+        prepare_observed(compound_call_fixture::input(false, "r1"), &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "prior" {
             let (a, t, s) = (armed.clone(), traversing.clone(), seen.clone());

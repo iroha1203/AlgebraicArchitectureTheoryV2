@@ -22,7 +22,7 @@ use std::sync::Arc;
 fn bad(s: &str) -> ConstructionFailure {
     ConstructionFailure::Inconsistent(s.into())
 }
-fn tick(c: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectLawCircuits)
         .map_err(Into::into)
 }
@@ -99,7 +99,7 @@ impl ObjectLawCircuits {
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ObjectLawCircuitsFailure> {
         self.base
             .recheck(Arc::clone(&inputs), c)
@@ -168,7 +168,7 @@ fn leaves(
     ty: &Type,
     path: &mut Vec<usize>,
     out: &mut Vec<(Vec<usize>, Type)>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ConstructionFailure> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         tick(c)?;
@@ -193,7 +193,7 @@ fn point(
     r: &LawResidualRow,
     component: usize,
     arguments: Vec<FiniteTransportValue>,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<LawCircuitPoint, ConstructionFailure> {
     let mut out = LawCircuitPoint {
         arguments,
@@ -247,7 +247,7 @@ fn point(
     }
     Ok(out)
 }
-fn build(out: &mut ObjectLawCircuits, c: &mut Control) -> Result<(), ConstructionFailure> {
+fn build(out: &mut ObjectLawCircuits, c: &Control) -> Result<(), ConstructionFailure> {
     let mut plan = vec![];
     for e in 0..out.base.evaluations().len() {
         tick(c)?;
@@ -304,7 +304,7 @@ fn build(out: &mut ObjectLawCircuits, c: &mut Control) -> Result<(), Constructio
                 .collect();
             let p = point(&out.base, e, Some(row), r, component, arguments, c)?;
             out.circuits[n].points.push(p);
-            c.checkpoint(Checkpoint::ObjectLawCircuitPoint)?;
+            c.checkpoint(Checkpoint::Work)?;
         }
         if let Some(row) = &source.uniform {
             out.circuits[n].uniform = Some(point(&out.base, e, None, row, component, vec![], c)?);
@@ -347,7 +347,7 @@ fn build(out: &mut ObjectLawCircuits, c: &mut Control) -> Result<(), Constructio
 fn same(
     a: &ObjectLawCircuits,
     b: &ObjectLawCircuits,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<bool, ConstructionFailure> {
     tick(c)?;
     if a.condition != b.condition
@@ -370,7 +370,7 @@ pub fn object_law_circuits(
     reading: &str,
     snapshot: &str,
     root: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<ObjectLawCircuits, ObjectLawCircuitsFailure> {
     let base = object_law_residuals(inputs, reading, snapshot, root, c)
         .map_err(ObjectLawCircuitsFailure::Original)?;

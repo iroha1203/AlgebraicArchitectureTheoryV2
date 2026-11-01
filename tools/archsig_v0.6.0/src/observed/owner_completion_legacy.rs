@@ -23,7 +23,7 @@ impl DeterminedOwners {
 pub(crate) fn determined_owners(
     inputs: &crate::input::CheckedInputs,
     fields: &[result::Fact],
-    control: &mut crate::control::Control,
+    control: &crate::control::Control,
 ) -> Result<Option<DeterminedOwners>, crate::construction::ConstructionFailure> {
     use crate::construction::ConstructionFailure;
     use result::{Scalar, ValidationFailure};

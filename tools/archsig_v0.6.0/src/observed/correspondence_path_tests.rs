@@ -17,7 +17,7 @@ fn example(bad: bool) -> ObservedEvaluation {
             "prior=check(Reservations.prior)",
             current,
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(
@@ -32,7 +32,7 @@ fn environment(r: &ObservedEvaluation) -> Environment<'_> {
     Environment::with_requests(
         r.prepared.inputs(),
         r.prepared.requests().requests(),
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap()
 }
@@ -199,7 +199,7 @@ fn correspondence_actual_action_cancel_preserves_all_tables_and_prior_answers() 
         "current=evaluate(Reservations.step,m=@v/m)",
         "later=evaluate(Reservations.seed)",
     ];
-    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), &asks, &quiet()).unwrap();
     assert!(matches!(normal.status(), "complete" | "partial"));
     let reason = crate::result::Signal::Term;
     let armed = Rc::new(Cell::new(false));
@@ -207,7 +207,7 @@ fn correspondence_actual_action_cancel_preserves_all_tables_and_prior_answers() 
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -216,8 +216,8 @@ fn correspondence_actual_action_cancel_preserves_all_tables_and_prior_answers() 
             None
         }
     });
-    let prepared = prepare_observed(input, &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, q, answer| {
+    let prepared = prepare_observed(input, &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, q, answer| {
         e.validate_answer(g, q, answer)?;
         if q.id == "prior" {
             let (a, s) = (armed.clone(), seen.clone());
@@ -272,7 +272,7 @@ fn correspondence_aligned_full_action_keeps_external_existence_but_collapses_its
     let r = evaluate_observed_bytes(
         aligned::input(false),
         &["x=evaluate(Flow.step,m=@v/m)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");

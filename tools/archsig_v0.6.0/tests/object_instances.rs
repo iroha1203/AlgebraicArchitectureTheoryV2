@@ -21,13 +21,13 @@ fn inputs(law: &str, a: &str) -> CheckedInputs {
             law.replace("@INSTANCES_DIGEST@", digest).into_bytes(),
             a.replace("@INSTANCES_DIGEST@", digest).into_bytes(),
         ),
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap_or_else(|f| panic!("{:?}", f.issues()))
 }
 fn instances(i: &CheckedInputs) -> ObjectReadingInstances {
-    let c = construct(i, "Selected", "v", "A", &mut Control::unlimited()).unwrap();
-    object_reading_instances(i, &c, &mut Control::unlimited()).unwrap()
+    let c = construct(i, "Selected", "v", "A", &Control::unlimited()).unwrap();
+    object_reading_instances(i, &c, &Control::unlimited()).unwrap()
 }
 fn rows<'a>(
     r: &'a ObjectReadingInstances,
@@ -219,7 +219,7 @@ fn all_value_parameter_domains_and_original_metadata_remain_symbolic() {
                 .unwrap()
         );
     }
-    r.recheck(&i, &mut Control::unlimited()).unwrap();
+    r.recheck(&i, &Control::unlimited()).unwrap();
 }
 #[test]
 fn missing_quantity_keeps_existing_instances_and_applicability() {
@@ -302,7 +302,7 @@ fn unknown_owner_retains_conditional_objects_and_reuses_the_same_slot_condition(
     assert_eq!(rows(&r, "bounded").len(), 3);
     let changed = inputs(L, A);
     assert!(matches!(
-        r.recheck(&changed, &mut Control::unlimited()),
+        r.recheck(&changed, &Control::unlimited()),
         Err(ConstructionFailure::Inconsistent(_))
     ));
 }
@@ -425,32 +425,32 @@ fn fixed_instance_stops_latch_without_further_primitive_probes() {
     let c = r.construction();
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
-    let mut control = Control::new(move |p| {
+    let control = Control::new(move |p| {
         if p == Checkpoint::ObjectInstances {
             seen.set(seen.get() + 1);
         }
         None
     });
-    object_reading_instances(&i, c, &mut control).unwrap();
+    object_reading_instances(&i, c, &control).unwrap();
     let total = count.get();
     assert!(total > 100);
     for at in [1, total / 2, total] {
         for signal in [Signal::Int, Signal::Term] {
             let count = Rc::new(Cell::new(0usize));
             let seen = count.clone();
-            let mut control = Control::new(move |p| {
+            let control = Control::new(move |p| {
                 if p == Checkpoint::ObjectInstances {
                     seen.set(seen.get() + 1);
                 }
                 (seen.get() >= at).then_some(signal)
             });
-            let failure = object_reading_instances(&i, c, &mut control).unwrap_err();
+            let failure = object_reading_instances(&i, c, &control).unwrap_err();
             assert_eq!(
                 failure,
                 ConstructionFailure::Stopped(control.stop_reason().unwrap())
             );
             assert_eq!(count.get(), at);
-            assert_eq!(r.recheck(&i, &mut control).unwrap_err(), failure);
+            assert_eq!(r.recheck(&i, &control).unwrap_err(), failure);
             assert_eq!(count.get(), at);
         }
     }
@@ -486,8 +486,8 @@ fn conditional_arrow_stays_in_base_domain_without_adding_an_object() {
 #[test]
 fn empty_owned_domain_keeps_root_instances_and_distinguishes_other_selected_roots() {
     let i = inputs(L, A);
-    let c = construct(&i, "Selected", "v", "B", &mut Control::unlimited()).unwrap();
-    let r = object_reading_instances(&i, &c, &mut Control::unlimited()).unwrap();
+    let c = construct(&i, "Selected", "v", "B", &Control::unlimited()).unwrap();
+    let r = object_reading_instances(&i, &c, &Control::unlimited()).unwrap();
     assert_eq!(
         r.objects()
             .iter()
@@ -503,8 +503,8 @@ fn empty_owned_domain_keeps_root_instances_and_distinguishes_other_selected_root
         "\"subjects\":[\n{\"id\":\"C\",\"type\":\"Instances.Root\",\"origin\":\"model\"},\n",
     );
     let i = inputs(L, &a);
-    let c = construct(&i, "Selected", "v", "C", &mut Control::unlimited()).unwrap();
-    let r = object_reading_instances(&i, &c, &mut Control::unlimited()).unwrap();
+    let c = construct(&i, "Selected", "v", "C", &Control::unlimited()).unwrap();
+    let r = object_reading_instances(&i, &c, &Control::unlimited()).unwrap();
     assert_eq!(r.objects().len(), 1);
     assert_eq!(bindings(rows(&r, "root")[0]), [("a", "v", "C")]);
     assert_eq!(rows(&r, "values").len(), 1);
@@ -526,21 +526,14 @@ fn current_metadata_is_rechecked_while_quantity_changes_do_not_claim_value_equal
         A,
     );
     r.construction()
-        .recheck(
-            &changed_law,
-            "Selected",
-            "v",
-            "A",
-            &mut Control::unlimited(),
-        )
+        .recheck(&changed_law, "Selected", "v", "A", &Control::unlimited())
         .unwrap();
     assert!(matches!(
-        r.recheck(&changed_law, &mut Control::unlimited()),
+        r.recheck(&changed_law, &Control::unlimited()),
         Err(ConstructionFailure::Inconsistent(_))
     ));
     let changed_values = inputs(L, &A.replace("\"value\":\"2\"", "\"value\":\"17\""));
-    r.recheck(&changed_values, &mut Control::unlimited())
-        .unwrap();
+    r.recheck(&changed_values, &Control::unlimited()).unwrap();
     // この計画の署名・参照束縛・適用条件は数量値から独立している。
     assert_eq!(instances(&changed_values), r);
 }
@@ -587,16 +580,16 @@ fn original_body_guard_and_helper_bytes_cannot_be_reattributed_by_equal_metadata
         assert_ne!(r.source_law(), fresh.source_law());
         assert_ne!(r, fresh);
         r.construction()
-            .recheck(&changed, "Selected", "v", "A", &mut Control::unlimited())
+            .recheck(&changed, "Selected", "v", "A", &Control::unlimited())
             .unwrap();
         assert!(
             matches!(
-                r.recheck(&changed, &mut Control::unlimited()),
+                r.recheck(&changed, &Control::unlimited()),
                 Err(ConstructionFailure::Inconsistent(_))
             ),
             "source change {from}"
         );
-        fresh.recheck(&changed, &mut Control::unlimited()).unwrap();
+        fresh.recheck(&changed, &Control::unlimited()).unwrap();
         assert_eq!(r.source_law(), original.sources().law());
     }
 }

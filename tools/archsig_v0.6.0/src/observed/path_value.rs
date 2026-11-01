@@ -24,7 +24,7 @@ pub(crate) struct Step {
     pub images: Vec<super::result::Fact>,
 }
 fn tick(control: &Control) -> Result<(), ValidationFailure> {
-    control.clone().checkpoint(Checkpoint::FiniteIteration)?;
+    control.checkpoint(Checkpoint::FiniteIteration)?;
     Ok(())
 }
 #[cfg(test)]

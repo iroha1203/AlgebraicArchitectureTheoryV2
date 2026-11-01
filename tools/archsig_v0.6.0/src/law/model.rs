@@ -80,11 +80,11 @@ impl Signature {
     /// 検査済み共通署名を式検査の lookup へ接続する。原始型の検査・位置は定義側が所有する。
     pub(crate) fn from_primitive<E: crate::json::InputError>(
         sig: &crate::definition::PrimitiveSignature,
-        control: &mut crate::control::Control,
+        control: &crate::control::Control,
         point: crate::control::Checkpoint,
     ) -> Result<Self, E> {
         use crate::definition::PrimitiveSignature as P;
-        let mut fields = |fs: &[crate::definition::Field]| -> Result<Vec<Param>, E> {
+        let fields = |fs: &[crate::definition::Field]| -> Result<Vec<Param>, E> {
             let mut fields = Vec::new();
             for field in fs {
                 E::checkpoint(control, point)?;

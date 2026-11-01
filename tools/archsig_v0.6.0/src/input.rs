@@ -301,7 +301,7 @@ impl CheckedInputs {
         definitions: CheckedDefinitions,
         law: CheckedLaw,
         archmap: CheckedArchMap,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<Self, InputFailure> {
         let verified = check_inputs(sources, control)?;
         if let Err(error) = BundleError::checkpoint(control, Checkpoint::InputBundle) {
@@ -347,7 +347,7 @@ type BundleError = CheckFailure<Box<Issue>>;
 #[allow(clippy::result_large_err)]
 pub fn check_inputs(
     sources: InputSources,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<CheckedInputs, InputFailure> {
     let mut failure = InputFailure {
         status: InputStatus::Invalid,
@@ -450,7 +450,7 @@ pub fn check_inputs(
     for identity in &definitions.inputs {
         failure.digest(&identity.input, identity.model_digest.clone());
     }
-    for point in [Checkpoint::AfterDefinitions, Checkpoint::BeforeLaw] {
+    for point in [Checkpoint::Work, Checkpoint::BeforeLaw] {
         if let Err(reason) = control.checkpoint(point) {
             return Err(failure.stopped(reason));
         }
@@ -509,7 +509,7 @@ mod qualified_name_tests {
                 include_bytes!("../tests/fixtures/counter.law").to_vec(),
                 include_bytes!("../tests/fixtures/counter.archmap.json").to_vec(),
             ),
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let subject = &inputs.archmap().snapshots[0].subjects[0];

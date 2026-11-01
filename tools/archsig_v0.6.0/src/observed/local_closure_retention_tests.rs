@@ -93,18 +93,18 @@ fn support_closure_all_stops_preserve_completed_context_values_and_dependencies(
                 "l=localize($a.object)"
             },
         ];
-        let mut setup = Control::unlimited();
-        let checked = Arc::new(check_inputs(inputs(finite), &mut setup).unwrap());
+        let setup = Control::unlimited();
+        let checked = Arc::new(check_inputs(inputs(finite), &setup).unwrap());
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if point == Checkpoint::Localize {
                 count.set(count.get() + 1);
             }
             None
         });
-        let prepared = prepare_shared_observed(checked.clone(), &asks, &mut control).unwrap();
-        let normal = evaluate_observed(prepared, &mut control).unwrap();
+        let prepared = prepare_shared_observed(checked.clone(), &asks, &control).unwrap();
+        let normal = evaluate_observed(prepared, &control).unwrap();
         assert_eq!(normal.status(), "complete");
         assert!(normal.answers[1].outputs.contains_key("system"));
         let total = seen.get();
@@ -115,14 +115,14 @@ fn support_closure_all_stops_preserve_completed_context_values_and_dependencies(
         for stop in [(total / 2).max(1), total, total + 1] {
             let seen = Rc::new(Cell::new(0));
             let count = seen.clone();
-            let mut control = Control::new(move |point| {
+            let control = Control::new(move |point| {
                 if point == Checkpoint::Localize {
                     count.set(count.get() + 1);
                 }
                 (count.get() >= stop).then_some(Signal::Term)
             });
-            let prepared = prepare_shared_observed(checked.clone(), &asks, &mut control).unwrap();
-            let partial = evaluate_observed(prepared, &mut control).unwrap();
+            let prepared = prepare_shared_observed(checked.clone(), &asks, &control).unwrap();
+            let partial = evaluate_observed(prepared, &control).unwrap();
             assert_eq!(seen.get(), stop.min(total));
             let answer = &partial.answers[1];
             assert!(

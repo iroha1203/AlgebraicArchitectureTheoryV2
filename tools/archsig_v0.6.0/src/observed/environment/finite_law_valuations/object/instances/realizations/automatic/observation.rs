@@ -14,7 +14,7 @@ pub(in crate::observed) struct FiniteLawObservation<'a> {
     known: Vec<(usize, Fact, Scalar)>,
     points: Vec<usize>,
 }
-fn step(c: &mut Control) -> Result<(), ValidationFailure> {
+fn step(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::FiniteLawFunction)?;
     Ok(())
 }
@@ -27,7 +27,7 @@ fn ring_failure(failure: crate::construction::ConstructionFailure) -> Validation
 fn collect(
     family: &AutomaticLawValuations,
     inputs: &CheckedInputs,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<(usize, Fact, Scalar)>, Vec<usize>), ValidationFailure> {
     step(c)?;
     if &family.value.sources != inputs.sources()
@@ -85,7 +85,7 @@ impl AutomaticLawValuations {
     pub fn observation<'a>(
         &'a self,
         inputs: &'a CheckedInputs,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<FiniteLawObservation<'a>>, ValidationFailure> {
         step(c)?;
         if &self.value.sources != inputs.sources() {
@@ -110,7 +110,7 @@ impl FiniteLawObservation<'_> {
     pub fn points(&self) -> &[usize] {
         &self.points
     }
-    fn check(&self, c: &mut Control) -> Result<(), ValidationFailure> {
+    fn check(&self, c: &Control) -> Result<(), ValidationFailure> {
         let (known, points) = collect(self.family, self.inputs, c)?;
         if self.points != points || self.known.len() != known.len() {
             return Err("有限観測fiberの既知位置・全両立点が違う".into());
@@ -127,7 +127,7 @@ impl FiniteLawObservation<'_> {
     pub fn evaluate(
         &self,
         function: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<ObservedInteger, ValidationFailure> {
         self.check(c)?;
         self.family
@@ -162,7 +162,7 @@ impl FiniteLawObservation<'_> {
     pub fn constant_image(
         &self,
         function: &FiniteIntegerFunction,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<FiniteIntegerFunction>, ValidationFailure> {
         match self.evaluate(function, c)? {
             ObservedInteger::Determined(value) => self
@@ -179,7 +179,7 @@ impl FiniteLawObservation<'_> {
         family: &AutomaticLawValuations,
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         step(c)?;
         if !std::ptr::eq(self.family, family) || self.inputs.sources() != inputs.sources() {

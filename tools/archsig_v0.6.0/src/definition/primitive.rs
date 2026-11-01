@@ -34,7 +34,7 @@ fn required_field<'a, E: InputError>(
     name: &str,
     at: &Location,
     message: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> R<&'a Field, E> {
     signature.field_checked_controlled::<E, _>(
         name,
@@ -51,7 +51,7 @@ fn required_root<E: InputError>(
     name: &str,
     at: &Location,
     message: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> R<(), E> {
     defs.root_entity_checked_controlled::<E, _>(name, control, |root, _| {
         if root {
@@ -67,7 +67,7 @@ fn required_owner<E: InputError>(
     expected: &str,
     at: &Location,
     message: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> R<(), E> {
     defs.owner_root_checked_controlled::<E, _>(name, control, |owner, _| {
         if owner == Some(expected) {
@@ -82,7 +82,7 @@ fn mismatch<T, E: InputError>(
     expected: &Type,
     actual: &Type,
     message: impl Into<String>,
-    control: &mut Control,
+    control: &Control,
 ) -> R<T, E> {
     let message = message.into();
     let details = Details::Type {
@@ -101,13 +101,13 @@ fn mismatch<T, E: InputError>(
 impl CheckedDefinitions {
     /// data を通じた参照・Term の包含を、原始定義だけから固定点で計算する。
     pub fn data_properties(&self) -> BTreeMap<String, DataProperties> {
-        self.data_properties_controlled::<Box<Issue>>(&mut Control::unlimited())
+        self.data_properties_controlled::<Box<Issue>>(&Control::unlimited())
             .expect("通常の性質計算は中断しない")
     }
     /// 同じ固定点計算に検査の共有制御を渡す。
     pub(crate) fn data_properties_controlled<E: InputError>(
         &self,
-        control: &mut Control,
+        control: &Control,
     ) -> R<BTreeMap<String, DataProperties>, E> {
         let mut props = BTreeMap::new();
         for (name, d) in &self.declarations {
@@ -156,26 +156,26 @@ impl CheckedDefinitions {
         at: &Location,
         earlier: &[(&str, &Type)],
     ) -> R<()> {
-        let mut control = Control::unlimited();
-        let props = self.data_properties_controlled::<Box<Issue>>(&mut control)?;
-        check_type::<Box<Issue>>(self, &props, ty, at, earlier, &mut control)
+        let control = Control::unlimited();
+        let props = self.data_properties_controlled::<Box<Issue>>(&control)?;
+        check_type::<Box<Issue>>(self, &props, ty, at, earlier, &control)
     }
     pub fn is_root_entity(&self, name: &str) -> bool {
-        self.is_root_entity_controlled::<Box<Issue>>(name, &mut Control::unlimited())
+        self.is_root_entity_controlled::<Box<Issue>>(name, &Control::unlimited())
             .expect("通常の所属検査は中断しない")
     }
     pub(crate) fn is_root_entity_controlled<E: InputError>(
         &self,
         name: &str,
-        control: &mut Control,
+        control: &Control,
     ) -> R<bool, E> {
         self.root_entity_checked_controlled::<E, _>(name, control, |root, _| Ok(root))
     }
     fn root_entity_checked_controlled<E: InputError, T>(
         &self,
         name: &str,
-        control: &mut Control,
-        check: impl FnOnce(bool, &mut Control) -> R<T, E>,
+        control: &Control,
+        check: impl FnOnce(bool, &Control) -> R<T, E>,
     ) -> R<T, E> {
         E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
         let result = match self.declarations.get(name) {
@@ -193,21 +193,21 @@ impl CheckedDefinitions {
     }
     /// 原始署名に明記した所属先。検査中にも宣言順に依存せず読める。
     pub fn owner_root(&self, name: &str) -> Option<&str> {
-        self.owner_root_controlled::<Box<Issue>>(name, &mut Control::unlimited())
+        self.owner_root_controlled::<Box<Issue>>(name, &Control::unlimited())
             .expect("通常の所属検査は中断しない")
     }
     pub(crate) fn owner_root_controlled<E: InputError>(
         &self,
         name: &str,
-        control: &mut Control,
+        control: &Control,
     ) -> R<Option<&str>, E> {
         self.owner_root_checked_controlled::<E, _>(name, control, |root, _| Ok(root))
     }
     fn owner_root_checked_controlled<'a, E: InputError, T>(
         &'a self,
         name: &str,
-        control: &mut Control,
-        mut check: impl FnMut(Option<&'a str>, &mut Control) -> R<T, E>,
+        control: &Control,
+        mut check: impl FnMut(Option<&'a str>, &Control) -> R<T, E>,
     ) -> R<T, E> {
         E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
         let result = (|| {
@@ -244,7 +244,7 @@ impl CheckedDefinitions {
 fn type_scan<E: InputError>(
     t: &Type,
     predicate: &mut impl FnMut(&Type) -> R<bool, E>,
-    control: &mut Control,
+    control: &Control,
 ) -> R<bool, E> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         E::checkpoint(control, Checkpoint::DefinitionData)?;
@@ -295,7 +295,7 @@ fn type_scan<E: InputError>(
 fn type_any<E: InputError>(
     t: &Type,
     predicate: &mut impl FnMut(&Type) -> bool,
-    control: &mut Control,
+    control: &Control,
 ) -> R<bool, E> {
     type_scan::<E>(t, &mut |ty| Ok(predicate(ty)), control)
 }
@@ -304,7 +304,7 @@ fn reject_type_component<E: InputError>(
     mut forbidden: impl FnMut(&Type) -> bool,
     at: &Location,
     message: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> R<(), E> {
     type_scan::<E>(
         t,
@@ -322,7 +322,7 @@ fn reject_type_component<E: InputError>(
 fn has_term_or_path<E: InputError>(
     t: &Type,
     props: &BTreeMap<String, DataProperties>,
-    control: &mut Control,
+    control: &Control,
 ) -> R<bool, E> {
     type_any::<E>(
         t,
@@ -337,7 +337,7 @@ fn has_term_or_path<E: InputError>(
 fn has_reference<E: InputError>(
     t: &Type,
     props: &BTreeMap<String, DataProperties>,
-    control: &mut Control,
+    control: &Control,
 ) -> R<bool, E> {
     type_any::<E>(
         t,
@@ -355,7 +355,7 @@ fn check_type<E: InputError>(
     t: &Type,
     at: &Location,
     earlier: &[(&str, &Type)],
-    control: &mut Control,
+    control: &Control,
 ) -> R<(), E> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
@@ -369,7 +369,7 @@ fn check_type_inner<E: InputError>(
     t: &Type,
     at: &Location,
     earlier: &[(&str, &Type)],
-    control: &mut Control,
+    control: &Control,
 ) -> R<(), E> {
     E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
     match t {
@@ -552,10 +552,7 @@ fn check_type_inner<E: InputError>(
     Ok(())
 }
 
-pub(super) fn check<E: InputError>(
-    defs: &mut CheckedDefinitions,
-    control: &mut Control,
-) -> R<(), E> {
+pub(super) fn check<E: InputError>(defs: &mut CheckedDefinitions, control: &Control) -> R<(), E> {
     let props = defs.data_properties_controlled::<E>(control)?;
     for d in defs.declarations.values() {
         E::checkpoint(control, Checkpoint::DefinitionDependency)?;
@@ -737,7 +734,7 @@ pub(super) fn check<E: InputError>(
     Ok(())
 }
 
-fn check_data<E: InputError>(defs: &CheckedDefinitions, control: &mut Control) -> R<(), E> {
+fn check_data<E: InputError>(defs: &CheckedDefinitions, control: &Control) -> R<(), E> {
     let mut edges: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
     for (name, d) in &defs.declarations {
         E::checkpoint(control, Checkpoint::DefinitionData)?;
@@ -838,7 +835,7 @@ fn check_data<E: InputError>(defs: &CheckedDefinitions, control: &mut Control) -
 fn owned_types<E: InputError>(
     defs: &CheckedDefinitions,
     root: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> R<BTreeSet<String>, E> {
     let mut owned = BTreeSet::new();
     for name in defs.declarations.keys() {
@@ -854,7 +851,7 @@ fn check_correspondence<E: InputError>(
     defs: &mut CheckedDefinitions,
     props: &BTreeMap<String, DataProperties>,
     name: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> R<(), E> {
     let d = &defs.declarations[name];
     let PrimitiveSignature::Correspondence {
@@ -888,7 +885,7 @@ fn check_correspondence<E: InputError>(
             None => fail(Code::Syntax, &at, message),
         },
     )?;
-    let mut root = |p: &Field| -> R<String, E> {
+    let root = |p: &Field| -> R<String, E> {
         match &p.ty {
             Type::Ref(n) => {
                 required_root::<E>(
@@ -1060,7 +1057,7 @@ fn check_correspondence<E: InputError>(
             .expect("解決済み field");
             let moved = transport::<E>(&sf.ty, &mu, &alpha, control)?;
             for ty in [&sf.ty, &tf.ty] {
-                let mut diagnostic_control = control.clone();
+                let diagnostic_control = control.clone();
                 let references = type_scan::<E>(
                     ty,
                     &mut |ty| {
@@ -1078,7 +1075,7 @@ fn check_correspondence<E: InputError>(
                                     "types of `{e}.{}` and `{f}.{}` do not correspond",
                                     sf.name, tf.name
                                 ),
-                                &mut diagnostic_control,
+                                &diagnostic_control,
                             );
                         }
                         Ok(references)
@@ -1155,7 +1152,7 @@ fn resolve_field<'a, E: InputError>(
     defs: &'a CheckedDefinitions,
     name: &'a str,
     at: &Location,
-    control: &mut Control,
+    control: &Control,
 ) -> R<(&'a str, &'a Field), E> {
     E::checkpoint(control, Checkpoint::DefinitionSemantics)?;
     let result = (|| {
@@ -1191,7 +1188,7 @@ fn check_positive_self<E: InputError>(
     me: &str,
     positive: bool,
     at: &Location,
-    control: &mut Control,
+    control: &Control,
 ) -> R<(), E> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         E::checkpoint(control, Checkpoint::DefinitionData)?;
@@ -1237,7 +1234,7 @@ fn check_positive_self<E: InputError>(
 fn type_inhabited<E: InputError>(
     t: &Type,
     inhabited: &BTreeSet<String>,
-    control: &mut Control,
+    control: &Control,
 ) -> R<bool, E> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         E::checkpoint(control, Checkpoint::DefinitionData)?;
@@ -1265,7 +1262,7 @@ fn transport<E: InputError>(
     t: &Type,
     mu: &BTreeMap<String, String>,
     alpha: &BTreeMap<String, String>,
-    control: &mut Control,
+    control: &Control,
 ) -> R<Type, E> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         E::checkpoint(control, Checkpoint::DefinitionDependency)?;
@@ -1301,13 +1298,13 @@ fn transport<E: InputError>(
 /// 有向グラフの閉路の一点。自己辺は含まない。
 fn find_cycle_controlled<E: InputError>(
     edges: &BTreeMap<String, BTreeSet<String>>,
-    control: &mut Control,
+    control: &Control,
 ) -> R<Option<String>, E> {
     fn visit<E: InputError>(
         n: &str,
         edges: &BTreeMap<String, BTreeSet<String>>,
         state: &mut BTreeMap<String, u8>,
-        control: &mut Control,
+        control: &Control,
     ) -> R<Option<String>, E> {
         stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             E::checkpoint(control, Checkpoint::DefinitionDependency)?;

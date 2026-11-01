@@ -654,7 +654,7 @@ fn nonlinear_change_preserves_unsupported_reason_source_and_completed_answers() 
     let observed = archsig::observed::evaluate_observed_bytes(
         sources,
         &["s=solve(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)"],
-        &mut archsig::control::Control::unlimited(),
+        &archsig::control::Control::unlimited(),
     )
     .unwrap();
     assert_eq!(observed.status(), "partial");
@@ -813,7 +813,7 @@ fn integer_repair_stop_after_first_witness_keeps_existence_without_object() {
     );
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::ChangeWitness {
             count.set(count.get() + 1);
         }
@@ -830,7 +830,7 @@ fn integer_repair_stop_after_first_witness_keeps_existence_without_object() {
             "r=repair(Pair.total,using=Pair.setpair,on=@pair/s,s=@pair/s)",
             "later=check(Pair.total,s=@pair/s)",
         ],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert_eq!(seen.get(), 2);
@@ -1216,7 +1216,7 @@ fn integer_quotient_stop_keeps_solve_and_never_publishes_partial_image() {
     );
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::Quotient {
             count.set(count.get() + 1);
         }
@@ -1233,7 +1233,7 @@ fn integer_quotient_stop_keeps_solve_and_never_publishes_partial_image() {
             "s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)",
             "q=quotient(Pair.first,on=$s.domain,s=@pair/s)",
         ],
-        &mut c,
+        &c,
     )
     .unwrap();
     let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
@@ -1473,7 +1473,7 @@ fn integer_law_descent_stop_during_counterexample_keeps_prior_solve() {
     let seen = Rc::new(Cell::new(false));
     let active = armed.clone();
     let stopped = seen.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::Quotient {
             active.set(true);
         }
@@ -1493,7 +1493,7 @@ fn integer_law_descent_stop_during_counterexample_keeps_prior_solve() {
             "s=solve(Pair.total,on=@pair/s,using=Pair.setpair,s=@pair/s)",
             "q=quotient(Pair.combined,on=$s.domain,s=@pair/s,law=Pair.same)",
         ],
-        &mut c,
+        &c,
     )
     .unwrap();
     assert!(seen.get());
@@ -1538,7 +1538,7 @@ fn three_edge_integer_repair_keeps_translation_freedom_obstruction_and_missing_s
         let result = archsig::observed::evaluate_observed_bytes(
             input,
             &asks,
-            &mut archsig::control::Control::unlimited(),
+            &archsig::control::Control::unlimited(),
         )
         .unwrap();
         assert_eq!(result.status(), "complete");
@@ -1933,7 +1933,7 @@ fn integer_guarded_quotient_keeps_actual_image_offset_and_binding_order() {
             "q=quotient(Pair.odd,on=$s.domain,s=@pair/s,law=Pair.active)",
             "bad=quotient(Pair.odd,on=$s.domain,s=@pair/s,law=Pair.bad)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     );
     let Ok(result) = result else {
         panic!("integer conditional quotient must complete")
@@ -2043,7 +2043,7 @@ fn numeric_conditions_outside_affine_fibers_keep_their_original_unknown_reason()
             let evaluated = archsig::observed::evaluate_observed_bytes(
                 sources,
                 &[query],
-                &mut archsig::control::Control::unlimited(),
+                &archsig::control::Control::unlimited(),
             )
             .unwrap();
             let internal = archsig::json::parse(evaluated.wire().canonical().as_bytes()).unwrap();

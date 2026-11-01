@@ -409,7 +409,7 @@ fn build_nodes(
     base: usize,
     left: NodeRef,
     right: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Data>, Vec<NodeRef>), ValidationFailure> {
     if !model.complete() {
         return Ok((vec![], vec![]));
@@ -580,7 +580,7 @@ pub(in crate::observed) fn evaluate(
     request: &Request,
     left: NodeRef,
     right: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Answer, ValidationFailure> {
     let operands = queries(graph, left, right)?;
     if operands[0].path.reading != operands[1].path.reading
@@ -852,7 +852,7 @@ pub(in crate::observed) fn evaluate(
 pub(in crate::observed) fn recheck(
     graph: &Graph,
     w: &CompareWitness,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
     let plan = w
         .relation_plan

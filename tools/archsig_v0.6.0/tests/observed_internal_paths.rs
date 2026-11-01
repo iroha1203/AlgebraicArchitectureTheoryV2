@@ -35,7 +35,7 @@ fn internal_arrow_path_keeps_original_generator_and_distinct_endpoints() {
     let r = evaluate_observed_bytes(
         inputs.clone(),
         &["p=evaluate(Reservations.step,e=@v/e)"],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(r.prepared().inputs().sources(), &inputs);
@@ -64,7 +64,7 @@ use crate::common::helpers::arr;
 use crate::common::internal_paths as small;
 fn run_small(mode: &str, asks: &[&str]) -> Json {
     let inputs = small::input(mode, "r1");
-    let r = evaluate_observed_bytes(inputs.clone(), asks, &mut quiet()).unwrap();
+    let r = evaluate_observed_bytes(inputs.clone(), asks, &quiet()).unwrap();
     assert_eq!(r.prepared().inputs().sources(), &inputs);
     assert!(
         matches!(r.status(), "complete" | "partial"),
@@ -215,14 +215,11 @@ fn internal_path_provenance_pair_retains_math_and_returns_to_current_inputs() {
     let mut out = vec![];
     for revision in ["r1", "r2"] {
         let inputs = small::input("normal", revision);
-        let checked = archsig::input::check_inputs(inputs.clone(), &mut quiet()).unwrap();
+        let checked = archsig::input::check_inputs(inputs.clone(), &quiet()).unwrap();
         assert_eq!(checked.archmap().sources()[0].revision, revision);
-        let r = evaluate_observed_bytes(
-            inputs.clone(),
-            &["x=evaluate(Walk.maybe,e=@v/e)"],
-            &mut quiet(),
-        )
-        .unwrap();
+        let r =
+            evaluate_observed_bytes(inputs.clone(), &["x=evaluate(Walk.maybe,e=@v/e)"], &quiet())
+                .unwrap();
         assert_eq!(r.status(), "complete");
         assert_eq!(r.prepared().inputs().sources(), &inputs);
         assert_eq!(r.prepared().inputs().definitions(), checked.definitions());

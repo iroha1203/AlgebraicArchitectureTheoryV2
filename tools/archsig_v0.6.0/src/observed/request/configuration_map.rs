@@ -13,7 +13,7 @@ fn shape(
     law: &CheckedLaw,
     name: &str,
     id: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<MapProjection, ResolveFailure> {
     phase(control, Checkpoint::RequestBinding)?;
     let d = law
@@ -39,7 +39,7 @@ fn namespaces(
     reading: &str,
     id: &str,
     key: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<BTreeSet<String>, ResolveFailure> {
     reading_namespaces(law, reading, control).map_err(|e| match e {
         ConstructionFailure::Stopped(r) => stopped(r),
@@ -50,7 +50,7 @@ pub(super) fn resolve(
     law: &CheckedLaw,
     raw: RawRequest,
     text: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Request, ResolveFailure> {
     let Selector::Declaration { name } = &raw.head else {
         return Err(error(
@@ -197,7 +197,7 @@ pub(super) fn output_type(
     law: &CheckedLaw,
     r: &Request,
     field: &str,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ProjectionType, ResolveFailure> {
     let Selector::Declaration { name } = &r.head else {
         return Err(error(&r.id, "head", "map head is not a declaration"));
@@ -225,7 +225,7 @@ pub(super) fn constraints(
     requests: &[Request],
     names: &BTreeMap<String, usize>,
     r: &Request,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Vec<BindingConstraint>, ResolveFailure> {
     let Selector::Declaration { name } = &r.head else {
         return Err(error(&r.id, "head", "map head is not a declaration"));

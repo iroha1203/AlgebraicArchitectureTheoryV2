@@ -36,7 +36,7 @@ fn answer_projection_nested_components_keep_original_typed_roots_and_full_paths(
         "packed=evaluate(Applications.abPack,p=@v/p,m=@v/m)",
         "nested=evaluate(Applications.apNested)",
     ];
-    let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &mut quiet())
+    let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))));
     assert_eq!(r.status(), "complete", "{:?}", f(&r.wire(), "issues"));
     let w = r.wire();
@@ -83,7 +83,7 @@ fn answer_projection_data_constructor_paths_feed_recursion_and_original_z_univer
         "tree=evaluate(Trees.raw,s=@v/sample)",
         "wrapped=evaluate(Trees.wrapped,s=@v/sample)",
     ];
-    let r = evaluate_observed_bytes(fixture::tree_input(false, "r1"), &asks, &mut quiet())
+    let r = evaluate_observed_bytes(fixture::tree_input(false, "r1"), &asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))));
     assert_eq!(r.status(), "complete", "{:?}", f(&r.wire(), "issues"));
     let w = r.wire();
@@ -119,7 +119,7 @@ fn answer_projection_keeps_all_component_types_and_reuses_whole_output_ref() {
         "whole=evaluate(Applications.abCopy,x=$packed.evaluation.value)",
         "packed=evaluate(Applications.abPack,p=@v/p,m=@v/m)",
     ];
-    let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &mut quiet())
+    let r = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))));
     assert_eq!(r.status(), "complete", "{:?}", f(&r.wire(), "issues"));
     let w = r.wire();
@@ -166,7 +166,7 @@ fn answer_projection_missing_roots_keep_original_reasons_through_component_paths
         "copied=evaluate(Applications.abBool,x=$opaque.value[0])",
         "known=evaluate(Applications.abSeed)",
     ];
-    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &mut quiet())
+    let r = evaluate_observed_bytes(fixture::input("stop", "r1"), &asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().as_ref().map(|w| f(w, "issues"))));
     assert_eq!(r.status(), "partial", "{:?}", f(&r.wire(), "issues"));
     let w = r.wire();
@@ -202,7 +202,7 @@ fn answer_projection_missing_roots_keep_original_reasons_through_component_paths
             "take=evaluate(Trees.integer,x=$raw.value[0][0])",
             "raw=evaluate(Trees.raw,s=@v/sample)",
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert_eq!(tree.status(), "partial");
@@ -244,7 +244,7 @@ fn answer_projection_static_invalid_and_dynamic_condition_failures_stay_distinct
             "take=evaluate(Trees.acceptsPair,x=$raw.value[0],t=$raw.value[0])",
             "raw=evaluate(Trees.raw,s=@v/sample)",
         ],
-        &mut quiet(),
+        &quiet(),
     );
     let mixed = mixed.unwrap();
     assert_projection_condition(&mixed.wire());
@@ -260,7 +260,7 @@ fn answer_projection_static_invalid_and_dynamic_condition_failures_stay_distinct
         let e = evaluate_observed_bytes(
             fixture::input("known", "r1"),
             &[&ask, "packed=evaluate(Applications.abPack,p=@v/p,m=@v/m)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap_err();
         let w = e.wire().unwrap();
@@ -278,8 +278,7 @@ fn answer_projection_static_invalid_and_dynamic_condition_failures_stay_distinct
             "empty=evaluate(Applications.apEmpty)",
         ],
     ] {
-        let e =
-            evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &mut quiet()).unwrap();
+        let e = evaluate_observed_bytes(fixture::input("known", "r1"), &asks, &quiet()).unwrap();
         assert_projection_condition(&e.wire());
     }
     for asks in [
@@ -292,8 +291,7 @@ fn answer_projection_static_invalid_and_dynamic_condition_failures_stay_distinct
             "raw=evaluate(Trees.raw,s=@v/sample)",
         ],
     ] {
-        let e =
-            evaluate_observed_bytes(fixture::tree_input(false, "r1"), &asks, &mut quiet()).unwrap();
+        let e = evaluate_observed_bytes(fixture::tree_input(false, "r1"), &asks, &quiet()).unwrap();
         assert_projection_condition(&e.wire());
     }
 }
@@ -309,9 +307,9 @@ fn answer_projection_keeps_original_inputs_producer_nodes_and_current_provenance
     for revision in ["r1", "r2"] {
         let input = fixture::input("known", revision);
         let original = input.clone();
-        let mut c = quiet();
-        let checked = archsig::input::check_inputs(input.clone(), &mut c).unwrap();
-        let r = evaluate_observed_bytes(input, &asks, &mut c).unwrap();
+        let c = quiet();
+        let checked = archsig::input::check_inputs(input.clone(), &c).unwrap();
+        let r = evaluate_observed_bytes(input, &asks, &c).unwrap();
         assert_eq!(r.status(), "complete");
         assert_eq!(r.prepared().inputs().sources(), &original);
         assert_eq!(r.prepared().inputs().definitions(), checked.definitions());
@@ -327,7 +325,7 @@ fn answer_projection_keeps_original_inputs_producer_nodes_and_current_provenance
         let mut facts = 0;
         let mut projections = 0;
         let producer =
-            evaluate_observed_bytes(fixture::input("known", revision), &[asks[2]], &mut quiet())
+            evaluate_observed_bytes(fixture::input("known", revision), &[asks[2]], &quiet())
                 .unwrap();
         assert_eq!(output(&w, "packed"), output(&producer.wire(), "packed"));
         for (at, n) in arr(f(&w, "nodes")).iter().enumerate() {

@@ -20,7 +20,7 @@ fn free_compound_answer_map_domain_stop_keeps_values_refutation_missing_and_pref
     use std::{cell::Cell, rc::Rc};
     let asks = ASK;
     let input = fixture::input("stop", "r1");
-    let normal = evaluate_observed_bytes(input.clone(), &asks, &mut quiet()).unwrap();
+    let normal = evaluate_observed_bytes(input.clone(), &asks, &quiet()).unwrap();
     assert_eq!(normal.status(), "partial");
     let declaration = &normal.prepared.inputs().law().declarations()["Applications.fcMap"];
     assert!(normal.answers[5].claim.is_some());
@@ -35,7 +35,7 @@ fn free_compound_answer_map_domain_stop_keeps_values_refutation_missing_and_pref
     let probes = Rc::new(Cell::new(0));
     let frozen = Rc::new(Cell::new(None));
     let (a, p, f) = (armed.clone(), probes.clone(), frozen.clone());
-    let mut c = Control::new(move |_| {
+    let c = Control::new(move |_| {
         p.set(p.get() + 1);
         if a.replace(false) {
             assert!(f.replace(Some(p.get())).is_none());
@@ -44,8 +44,8 @@ fn free_compound_answer_map_domain_stop_keeps_values_refutation_missing_and_pref
             None
         }
     });
-    let prepared = prepare_observed(input, &asks, &mut c).unwrap();
-    let stopped = evaluate_observed_with_validator(prepared, &mut c, |e, g, request, answer| {
+    let prepared = prepare_observed(input, &asks, &c).unwrap();
+    let stopped = evaluate_observed_with_validator(prepared, &c, |e, g, request, answer| {
         e.validate_answer(g, request, answer)?;
         if request.id == "other" {
             let (a, s) = (armed.clone(), seen.clone());
@@ -106,7 +106,7 @@ fn free_compound_unknown_owner_recheck_preserves_completion_scope_and_rejects_fi
         let r = evaluate_observed_bytes(
             fixture::input("unknown_owner", "r1"),
             &[&make, &other, &take, "later=evaluate(Applications.seed)"],
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap();
         assert_eq!(r.status(), "complete", "{law}: {:?}", r.answers);

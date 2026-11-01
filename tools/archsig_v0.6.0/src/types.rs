@@ -29,7 +29,7 @@ pub enum Type {
 impl Type {
     pub fn wire(&self) -> Json {
         self.wire_controlled::<Box<crate::issue::Issue>>(
-            &mut Control::unlimited(),
+            &Control::unlimited(),
             Checkpoint::Expression,
         )
         .expect("通常の型表示は中断しない")
@@ -38,7 +38,7 @@ impl Type {
     /// 入力の正規化で使う型木にも共有された停止制御を渡す。
     pub fn wire_controlled<E: InputError>(
         &self,
-        control: &mut Control,
+        control: &Control,
         point: Checkpoint,
     ) -> Result<Json, E> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
@@ -109,7 +109,7 @@ impl Type {
     /// 依存参照を、所属条件を除いた参照型へ落とす。式の型の比較と表示に使う。
     pub fn erase(&self) -> Type {
         self.erase_controlled::<Box<crate::issue::Issue>>(
-            &mut Control::unlimited(),
+            &Control::unlimited(),
             Checkpoint::Expression,
         )
         .expect("通常の型消去は中断しない")
@@ -118,7 +118,7 @@ impl Type {
     /// 型成分の消去を入力検査と同じ停止制御の下で行う。
     pub fn erase_controlled<E: InputError>(
         &self,
-        control: &mut Control,
+        control: &Control,
         point: Checkpoint,
     ) -> Result<Type, E> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
@@ -195,7 +195,7 @@ impl Type {
     pub fn any_controlled<E: InputError>(
         &self,
         f: &mut impl FnMut(&Type) -> bool,
-        control: &mut Control,
+        control: &Control,
         point: Checkpoint,
     ) -> Result<bool, E> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
@@ -350,12 +350,12 @@ mod controlled_tests {
         let ty = example();
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut control = Control::new(move |_| {
+        let control = Control::new(move |_| {
             seen.set(seen.get() + 1);
             None
         });
         let wire = ty
-            .wire_controlled::<Failure>(&mut control, Checkpoint::Expression)
+            .wire_controlled::<Failure>(&control, Checkpoint::Expression)
             .unwrap();
         assert_eq!(
             wire.canonical(),
@@ -366,12 +366,12 @@ mod controlled_tests {
         assert!(total > 20);
         for at in 1..=total {
             let mut visits = 0;
-            let mut control = Control::new(move |_| {
+            let control = Control::new(move |_| {
                 visits += 1;
                 (visits == at).then_some(Signal::Int)
             });
             assert!(matches!(
-                ty.wire_controlled::<Failure>(&mut control, Checkpoint::Expression),
+                ty.wire_controlled::<Failure>(&control, Checkpoint::Expression),
                 Err(Failure::Stopped(Signal::Int))
             ));
         }
@@ -393,7 +393,7 @@ mod controlled_tests {
             });
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let mut control = Control::new(move |_| {
+            let control = Control::new(move |_| {
                 seen.set(seen.get() + 1);
                 None
             });
@@ -409,7 +409,7 @@ mod controlled_tests {
                         controlled.push(name);
                         name == target
                     },
-                    &mut control,
+                    &control,
                     Checkpoint::Expression,
                 )
                 .unwrap();
@@ -417,16 +417,12 @@ mod controlled_tests {
             assert_eq!(ordinary, controlled);
             for at in 1..=count.get() {
                 let mut visits = 0;
-                let mut control = Control::new(move |_| {
+                let control = Control::new(move |_| {
                     visits += 1;
                     (visits == at).then_some(Signal::Term)
                 });
                 assert!(matches!(
-                    ty.any_controlled::<Failure>(
-                        &mut |_| false,
-                        &mut control,
-                        Checkpoint::Expression
-                    ),
+                    ty.any_controlled::<Failure>(&mut |_| false, &control, Checkpoint::Expression),
                     Err(Failure::Stopped(Signal::Term))
                 ));
             }
@@ -443,12 +439,12 @@ mod controlled_tests {
         );
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut control = Control::new(move |_| {
+        let control = Control::new(move |_| {
             seen.set(seen.get() + 1);
             None
         });
         let erased = ty
-            .erase_controlled::<Failure>(&mut control, Checkpoint::Expression)
+            .erase_controlled::<Failure>(&control, Checkpoint::Expression)
             .unwrap();
         assert_eq!(erased, ty.erase());
         assert_eq!(
@@ -458,12 +454,12 @@ mod controlled_tests {
         assert!(count.get() > 10);
         for at in 1..=count.get() {
             let mut visits = 0;
-            let mut control = Control::new(move |_| {
+            let control = Control::new(move |_| {
                 visits += 1;
                 (visits == at).then_some(Signal::Term)
             });
             assert!(matches!(
-                ty.erase_controlled::<Failure>(&mut control, Checkpoint::Expression),
+                ty.erase_controlled::<Failure>(&control, Checkpoint::Expression),
                 Err(Failure::Stopped(Signal::Term))
             ));
         }

@@ -22,7 +22,7 @@ fn value<'a>(w: &'a Json, id: &str) -> &'a Json {
 }
 fn run(mode: &str, asks: &[&str]) -> Json {
     let input = fixture::input(mode, "r1");
-    let r = evaluate_observed_bytes(input.clone(), asks, &mut Control::unlimited()).unwrap();
+    let r = evaluate_observed_bytes(input.clone(), asks, &Control::unlimited()).unwrap();
     assert_eq!(r.prepared().inputs().sources(), &input);
     assert!(
         matches!(r.status(), "complete" | "partial"),
@@ -231,8 +231,8 @@ fn correspondence_current_provenance_pair_keeps_math_and_checked_input_tables() 
     let mut wires = vec![];
     for revision in ["r1", "r2"] {
         let input = fixture::input("normal", revision);
-        let checked = check_inputs(input.clone(), &mut Control::unlimited()).unwrap();
-        let r = evaluate_observed_bytes(input.clone(), &asks, &mut Control::unlimited()).unwrap();
+        let checked = check_inputs(input.clone(), &Control::unlimited()).unwrap();
+        let r = evaluate_observed_bytes(input.clone(), &asks, &Control::unlimited()).unwrap();
         assert_eq!(r.prepared().inputs().sources(), &input);
         assert_eq!(r.prepared().inputs().definitions(), checked.definitions());
         assert_eq!(
@@ -281,7 +281,7 @@ fn correspondence_alignment_transports_reference_containers_set_collision_and_un
             "left=evaluate(Flow.left,m=@v/m)",
             "right=evaluate(Flow.right,m=@v/m)",
         ],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(r.status(), "complete");
@@ -300,7 +300,7 @@ fn correspondence_alignment_transports_reference_containers_set_collision_and_un
     let r2 = evaluate_observed_bytes(
         aligned::input(true),
         &["x=evaluate(Flow.step,m=@v/m)"],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(r2.status(), "complete");
@@ -311,7 +311,7 @@ fn correspondence_alignment_rejects_list_multiplicity_option_and_set_reference_m
         let r = evaluate_observed_bytes(
             aligned::mismatched_input(kind),
             &["x=evaluate(Flow.step,m=@v/m)"],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         assert_eq!(r.status(), "partial");
@@ -325,7 +325,7 @@ fn correspondence_missing_declared_target_root_field_is_condition_failure() {
     let r = evaluate_observed_bytes(
         aligned::unmatched_root_field_input(),
         &["x=evaluate(Flow.step,m=@v/m)"],
-        &mut Control::unlimited(),
+        &Control::unlimited(),
     )
     .unwrap();
     assert_eq!(r.status(), "partial");

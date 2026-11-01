@@ -29,11 +29,11 @@ fn fact(field: &str) -> Fact {
 }
 fn table(body: &str) -> (Arc<CheckedInputs>, FiniteLawFamilyValuations) {
     let i = fixture::with_body(fixture::MAP, body);
-    let r = finite_law_family_valuations(&i, &selected(), &mut quiet()).unwrap();
+    let r = finite_law_family_valuations(&i, &selected(), &quiet()).unwrap();
     (i, r)
 }
 fn indicators(r: &FiniteLawFamilyValuations, path: &[usize]) -> Vec<BigInt> {
-    r.integer_function(0, Some(path), &mut quiet())
+    r.integer_function(0, Some(path), &quiet())
         .unwrap()
         .values()
         .to_vec()
@@ -73,10 +73,10 @@ fn nested_let_guarded_tuple_has_original_operands_and_shared_component_functions
         assert!(row.support.contains(&fact("pair")));
         assert!(row.scope.assignments);
     }
-    r.recheck(&i, &mut quiet()).unwrap();
-    r.required_quotient(&mut quiet())
+    r.recheck(&i, &quiet()).unwrap();
+    r.required_quotient(&quiet())
         .unwrap()
-        .recheck(&i, &mut quiet())
+        .recheck(&i, &quiet())
         .unwrap();
 }
 #[test]
@@ -93,7 +93,7 @@ fn single_binding_match_and_let_preserve_tuple_projection_and_occurrence() {
         Signature::Law { body, .. } => body,
         _ => panic!(),
     };
-    let id = equation(&i, body, &mut quiet()).unwrap().unwrap();
+    let id = equation(&i, body, &quiet()).unwrap().unwrap();
     assert!(matches!(i.law().exprs()[body].kind, ExprKind::Match { .. }));
     assert!(matches!(
         i.law().exprs()[id].kind,
@@ -106,7 +106,7 @@ fn single_binding_match_and_let_preserve_tuple_projection_and_occurrence() {
             .iter()
             .all(|row| row.support.contains(&fact("pair")))
     );
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn discarded_let_and_wildcard_match_inputs_remain_original_support_coordinates() {
@@ -130,7 +130,7 @@ fn discarded_let_and_wildcard_match_inputs_remain_original_support_coordinates()
             assert!(row.support.contains(&fact("pair")));
             assert!(row.support.contains(&fact("quantity")));
         }
-        r.recheck(&i, &mut quiet()).unwrap();
+        r.recheck(&i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -152,7 +152,7 @@ fn helper_let_reuses_same_field_and_original_scoped_evaluation() {
         );
         assert!(row.support.contains(&fact("quantity")));
     }
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn unknown_binding_match_retains_typed_uncomputed_operands_then_enumerates_all_values() {
@@ -160,7 +160,7 @@ fn unknown_binding_match_retains_typed_uncomputed_operands_then_enumerates_all_v
         fixture::MAP,
         "law required eq(c:Part):match c.third{n=>n=0;};",
     );
-    let e = Environment::new(&i, &mut quiet()).unwrap();
+    let e = Environment::new(&i, &quiet()).unwrap();
     *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
     let decl = &i.law().declarations()["Selected.eq"];
     let bindings = vec![("c".into(), subject("p"))];
@@ -182,13 +182,13 @@ fn unknown_binding_match_retains_typed_uncomputed_operands_then_enumerates_all_v
             .contains(&fact("third"))
     );
     assert!(!p.row.support.contains(&fact("third")));
-    let r = finite_law_family_valuations(&i, &selected(), &mut quiet()).unwrap();
+    let r = finite_law_family_valuations(&i, &selected(), &quiet()).unwrap();
     assert!(r.is_complete());
     assert_eq!(r.positions(), &[fact("third")]);
     assert_eq!(r.domain().len(), 3);
     assert_eq!(r.observed_point(), None);
     assert_eq!(indicators(&r, &[]), [0, 1, 1].map(BigInt::from));
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn failed_owned_condition_in_unused_let_is_not_a_successful_zero_component() {
@@ -197,8 +197,8 @@ fn failed_owned_condition_in_unused_let_is_not_a_successful_zero_component() {
         "view accept(r:Root,c:Part[r]):Bool=true;law required eq(r:Root,c:Part):let unused=accept(r,c) in c.pair=(0,true);",
     );
     let bindings = vec![("r".into(), subject("r2")), ("c".into(), subject("p"))];
-    let r = finite_law_family_valuations(&i, &[("Selected.eq".into(), bindings)], &mut quiet())
-        .unwrap();
+    let r =
+        finite_law_family_valuations(&i, &[("Selected.eq".into(), bindings)], &quiet()).unwrap();
     assert!(r.domain_complete());
     assert_eq!(r.positions(), &[fact("owner"), fact("pair")]);
     assert_eq!(r.domain().len(), 8);
@@ -222,9 +222,9 @@ fn failed_owned_condition_in_unused_let_is_not_a_successful_zero_component() {
             );
         }
     }
-    assert!(r.required_generators(&mut quiet()).is_err());
-    assert!(r.required_quotient(&mut quiet()).is_err());
-    r.recheck(&i, &mut quiet()).unwrap();
+    assert!(r.required_generators(&quiet()).is_err());
+    assert!(r.required_quotient(&quiet()).is_err());
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn pending_owned_condition_in_unused_let_does_not_certify_equal_components() {
@@ -235,7 +235,7 @@ fn pending_owned_condition_in_unused_let_does_not_certify_equal_components() {
         &map,
         "view accept(r:Root,c:Part[r]):Bool=true;law required eq(r:Root,c:Part):let unused=accept(r,c) in c.pair=(0,true);",
     );
-    let e = Environment::new(&i, &mut quiet()).unwrap();
+    let e = Environment::new(&i, &quiet()).unwrap();
     *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
     let bindings = vec![("r".into(), subject("r2")), ("c".into(), subject("p"))];
     let p = probe(&e, &i.law().declarations()["Selected.eq"], &bindings, 0).unwrap();
@@ -273,12 +273,12 @@ fn different_match_cases_keep_whole_condition_without_identifying_component_occu
             .all(|row| row.operands.is_none() && row.components.is_none())
     );
     assert_eq!(
-        r.integer_function(0, None, &mut quiet()).unwrap().values(),
+        r.integer_function(0, None, &quiet()).unwrap().values(),
         [0, 1, 1, 1].map(BigInt::from)
     );
-    assert!(r.integer_function(0, Some(&[0]), &mut quiet()).is_err());
-    assert_eq!(r.required_generators(&mut quiet()).unwrap().len(), 1);
-    r.recheck(&i, &mut quiet()).unwrap();
+    assert!(r.integer_function(0, Some(&[0]), &quiet()).is_err());
+    assert_eq!(r.required_generators(&quiet()).unwrap().len(), 1);
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn empty_d_retains_lexical_tuple_schema_and_original_required_generators() {
@@ -293,7 +293,7 @@ fn empty_d_retains_lexical_tuple_schema_and_original_required_generators() {
             ("Selected.eq".into(), bind("root")),
             ("Selected.eq".into(), bind("r2")),
         ],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     assert!(r.is_complete());
@@ -302,7 +302,7 @@ fn empty_d_retains_lexical_tuple_schema_and_original_required_generators() {
         r.columns[0].equation_type,
         Some(Type::Tuple(vec![Type::Bool, Type::Bool]))
     );
-    let gs = r.required_generators(&mut quiet()).unwrap();
+    let gs = r.required_generators(&quiet()).unwrap();
     assert_eq!(
         gs.iter()
             .map(|g| (g.column(), g.component().unwrap().to_vec()))
@@ -310,11 +310,11 @@ fn empty_d_retains_lexical_tuple_schema_and_original_required_generators() {
         [(0, vec![0]), (0, vec![1]), (1, vec![0]), (1, vec![1])]
     );
     assert!(gs.iter().all(|g| g.value().values().is_empty()));
-    r.required_quotient(&mut quiet())
+    r.required_quotient(&quiet())
         .unwrap()
-        .recheck(&i, &mut quiet())
+        .recheck(&i, &quiet())
         .unwrap();
-    r.recheck(&i, &mut quiet()).unwrap();
+    r.recheck(&i, &quiet()).unwrap();
 }
 #[test]
 fn lexical_recheck_rejects_operands_component_schema_support_and_zero_coordinate_mutations() {
@@ -323,7 +323,7 @@ fn lexical_recheck_rejects_operands_component_schema_support_and_zero_coordinate
         "law required eq(c:Part):let pair=c.pair in match pair{x=>x=(0,true);};",
     );
     for change in 0..8 {
-        let mut r = finite_law_family_valuations(&i, &selected(), &mut quiet()).unwrap();
+        let mut r = finite_law_family_valuations(&i, &selected(), &quiet()).unwrap();
         match change {
             0 => r.columns[0].equation_type = Some(Type::Bool),
             1 => r.columns[0].rows[0].operands = None,
@@ -334,7 +334,7 @@ fn lexical_recheck_rejects_operands_component_schema_support_and_zero_coordinate
             6 => r.columns[0].rows[0].components.as_mut().unwrap()[0].indicator = Some(1.into()),
             _ => r.required_zero = Some(vec![]),
         }
-        assert!(r.recheck(&i, &mut quiet()).is_err(), "change={change}");
+        assert!(r.recheck(&i, &quiet()).is_err(), "change={change}");
     }
 }
 #[test]
@@ -345,7 +345,7 @@ fn lexical_fixed_stops_preserve_finished_source_table_and_never_certify_partial_
         fixture::MAP,
         "law required eq(c:Part):let pair=c.pair in match pair{x=>x=(0,true);};",
     );
-    let completed = finite_law_family_valuations(&i, &selected(), &mut quiet()).unwrap();
+    let completed = finite_law_family_valuations(&i, &selected(), &quiet()).unwrap();
     let control = |at: usize, signal: Signal| {
         let seen = Rc::new(Cell::new(0));
         let visits = seen.clone();
@@ -363,14 +363,14 @@ fn lexical_fixed_stops_preserve_finished_source_table_and_never_certify_partial_
             calls,
         )
     };
-    let (mut c, visits, _) = control(usize::MAX, Signal::Int);
-    finite_law_family_valuations(&i, &selected(), &mut c).unwrap();
+    let (c, visits, _) = control(usize::MAX, Signal::Int);
+    finite_law_family_valuations(&i, &selected(), &c).unwrap();
     let total = visits.get();
     assert!(total > 3);
     for at in [1, total / 2, total] {
         for signal in [Signal::Int, Signal::Term] {
-            let (mut c, _, calls) = control(at, signal);
-            let f = finite_law_family_valuations(&i, &selected(), &mut c)
+            let (c, _, calls) = control(at, signal);
+            let f = finite_law_family_valuations(&i, &selected(), &c)
                 .err()
                 .expect("停止が成功");
             assert!(matches!(f.cause,ValidationFailure::Stop(ref s) if s==&signal));
@@ -386,7 +386,7 @@ fn lexical_fixed_stops_preserve_finished_source_table_and_never_certify_partial_
             let before = calls.get();
             assert_eq!(c.checkpoint(Checkpoint::FiniteLawOperand), Err(signal));
             assert_eq!(before, calls.get());
-            completed.recheck(&i, &mut quiet()).unwrap();
+            completed.recheck(&i, &quiet()).unwrap();
             assert_eq!(completed.required_zero(), Some([1].as_slice()));
         }
     }

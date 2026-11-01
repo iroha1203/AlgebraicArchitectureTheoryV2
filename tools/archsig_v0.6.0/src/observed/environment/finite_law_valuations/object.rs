@@ -24,7 +24,7 @@ impl Selection {
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
         object: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Self, ValidationFailure> {
         c.checkpoint(Checkpoint::ObjectEvaluation)?;
         readings.recheck(inputs, c).map_err(failure)?;
@@ -78,7 +78,7 @@ impl Selection {
     pub(super) fn recheck(
         &self,
         inputs: &CheckedInputs,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         let expected = Self::compute(inputs, &self.readings, self.object, c)?;
         if self != &expected {
@@ -110,7 +110,7 @@ impl FiniteLawFamilyValuations {
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
         object: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), FiniteLawFamilyFailure> {
         let expected = Selection::compute(inputs, readings, object, c).map_err(|cause| {
             FiniteLawFamilyFailure {
@@ -134,7 +134,7 @@ pub(in crate::observed) fn finite_object_law_family_valuations(
     readings: &ObjectReadingInstances,
     object: usize,
     selected: &[(String, Vec<(String, Scalar)>)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
     let object = Selection::compute(inputs, readings, object, c).map_err(|cause| {
         FiniteLawFamilyFailure {
@@ -202,7 +202,7 @@ impl FiniteLawFamilyValuations {
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
         objects: &[usize],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), FiniteLawFamilyFailure> {
         let fail = |cause| FiniteLawFamilyFailure {
             cause,
@@ -232,7 +232,7 @@ pub(in crate::observed) fn finite_multi_object_law_family_valuations(
     inputs: &CheckedInputs,
     readings: &ObjectReadingInstances,
     selected: &[(usize, String, Vec<(String, Scalar)>)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
     let (columns, laws) = multi_selection(inputs, readings, selected, c)?;
     family_with_column_objects(inputs, &laws, None, Some(columns), c)
@@ -241,7 +241,7 @@ fn multi_selection(
     inputs: &CheckedInputs,
     readings: &ObjectReadingInstances,
     selected: &[(usize, String, Vec<(String, Scalar)>)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Columns, Vec<(String, Vec<(String, Scalar)>)>), FiniteLawFamilyFailure> {
     readings
         .recheck(inputs, c)

@@ -15,7 +15,7 @@ pub(super) fn compute(
     reference: NodeRef,
     request: &Request,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Source, ValidationFailure> {
     let image = quotient_affine::compute(env, g, &input, request, c)?;
     let ty = &image.ty;
@@ -418,7 +418,7 @@ fn law_descent(
     actual_image: NodeRef,
     classes: NodeRef,
     fiber: &coefficients::Fiber,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Option<NodeRef>, Vec<NodeRef>, Vec<NodeRef>), ValidationFailure> {
     let ty = &image.ty;
     let law = image.law.as_ref().ok_or("アフィン商のLawがない")?;
@@ -544,7 +544,7 @@ fn law_descent(
                                 rows: &[Vec<Scalar>],
                                 offset: &[Scalar],
                                 arguments: &mut Vec<NodeRef>,
-                                c: &mut Control| {
+                                c: &Control| {
             let target = linear::module(b, ring, rows.len(), "free", vec![])?;
             let transformed = coefficients::multiply(&image.ty, rows, &fiber.lifts, fiber.rank, c)?;
             let map = scalar_wire::map(b, actual_image, target, &transformed, fiber.rank, c)?;

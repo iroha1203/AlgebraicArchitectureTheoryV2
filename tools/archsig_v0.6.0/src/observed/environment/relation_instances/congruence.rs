@@ -109,7 +109,7 @@ impl Congruence {
         &self,
         a: usize,
         b: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<bool>, ValidationFailure> {
         tick(c)?;
         if !self.complete {
@@ -123,7 +123,7 @@ impl Congruence {
         &self,
         a: usize,
         b: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Option<Vec<ProofStep>>, ValidationFailure> {
         if self.equivalent(a, b, c)? != Some(true) {
             return Ok(None);
@@ -176,18 +176,14 @@ impl Congruence {
         tick(c)?;
         Ok(Some(proof))
     }
-    pub fn recheck(
-        &self,
-        inputs: &CheckedInputs,
-        c: &mut Control,
-    ) -> Result<(), CongruenceFailure> {
+    pub fn recheck(&self, inputs: &CheckedInputs, c: &Control) -> Result<(), CongruenceFailure> {
         self.recheck_queries(inputs, &[], c)
     }
     pub fn recheck_queries(
         &self,
         inputs: &CheckedInputs,
         queries: &[QueryPath],
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), CongruenceFailure> {
         if &self.sources != inputs.sources() {
             return Err(CongruenceFailure {
@@ -230,7 +226,7 @@ struct Rule {
     left: Word,
     right: Word,
 }
-fn closure(out: &mut Congruence, c: &mut Control) -> Result<(), ValidationFailure> {
+fn closure(out: &mut Congruence, c: &Control) -> Result<(), ValidationFailure> {
     let table = out.relations.as_ref().ok_or("元relation表がない")?;
     let mut rules = vec![];
     for (instance, row) in table.instances.iter().enumerate() {
@@ -349,7 +345,7 @@ fn closure(out: &mut Congruence, c: &mut Control) -> Result<(), ValidationFailur
 pub(in crate::observed) fn congruence(
     inputs: &CheckedInputs,
     reading: &str,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Congruence, CongruenceFailure> {
     with_queries(inputs, reading, &[], c)
 }
@@ -357,7 +353,7 @@ pub(in crate::observed) fn with_queries(
     inputs: &CheckedInputs,
     reading: &str,
     queries: &[QueryPath],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Congruence, CongruenceFailure> {
     let mut out = Congruence {
         sources: inputs.sources().clone(),

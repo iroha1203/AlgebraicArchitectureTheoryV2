@@ -13,14 +13,14 @@ pub(in crate::observed) struct FiniteObjectLawIdeal<'a, 'b> {
     equations: Vec<usize>,
     zero_points: Vec<usize>,
 }
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::FiniteLawQuotient)?;
     Ok(())
 }
 fn construct<'a, 'b>(
     base: &'a FiniteObjectLawPresentation<'b>,
     kind: FiniteObjectIdealKind,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<FiniteObjectLawIdeal<'a, 'b>, ValidationFailure> {
     tick(c)?;
     let mut equations = vec![];
@@ -84,13 +84,13 @@ impl<'b> FiniteObjectLawPresentation<'b> {
     pub fn witness_ideal<'a>(
         &'a self,
         equation: usize,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteObjectLawIdeal<'a, 'b>, ValidationFailure> {
         construct(self, FiniteObjectIdealKind::Witness { equation }, c)
     }
     pub fn required_ideal<'a>(
         &'a self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<FiniteObjectLawIdeal<'a, 'b>, ValidationFailure> {
         construct(self, FiniteObjectIdealKind::Obstruction, c)
     }
@@ -111,7 +111,7 @@ impl FiniteObjectLawIdeal<'_, '_> {
     }
     pub fn generators(
         &self,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<Vec<&FiniteIntegerFunction>, ValidationFailure> {
         self.check(c)?;
         let mut values = vec![];
@@ -122,14 +122,14 @@ impl FiniteObjectLawIdeal<'_, '_> {
         tick(c)?;
         Ok(values)
     }
-    fn check(&self, c: &mut Control) -> Result<(), ValidationFailure> {
+    fn check(&self, c: &Control) -> Result<(), ValidationFailure> {
         let expected = construct(self.base, self.kind, c)?;
         if self.equations != expected.equations || self.zero_points != expected.zero_points {
             return Err("有限idealの元生成元・全零座標が違う".into());
         }
         tick(c)
     }
-    pub fn is_zero(&self, c: &mut Control) -> Result<bool, ValidationFailure> {
+    pub fn is_zero(&self, c: &Control) -> Result<bool, ValidationFailure> {
         self.check(c)?;
         // 全元νが全Dで零であること。対象におけるεの零性とは別。
         Ok(self.zero_points.len() == self.base.family().domain().len())
@@ -142,7 +142,7 @@ impl FiniteObjectLawIdeal<'_, '_> {
         kind: FiniteObjectIdealKind,
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         tick(c)?;
         if !std::ptr::eq(self.base, base) || self.kind != kind {

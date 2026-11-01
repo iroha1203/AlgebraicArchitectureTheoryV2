@@ -12,7 +12,7 @@ use crate::control::quiet;
 fn prepared(inputs: Arc<CheckedInputs>, root: &str) -> PreparedObserved {
     let ask = format!("b=build(Selected,on=@v/{root})");
     let requests =
-        resolve_native_for_test(inputs.law(), inputs.archmap(), &[&ask], &mut quiet()).unwrap();
+        resolve_native_for_test(inputs.law(), inputs.archmap(), &[&ask], &quiet()).unwrap();
     PreparedObserved {
         inputs,
         requests,
@@ -20,7 +20,7 @@ fn prepared(inputs: Arc<CheckedInputs>, root: &str) -> PreparedObserved {
     }
 }
 fn start(p: &PreparedObserved) -> (Graph, NodeRef) {
-    let env = Environment::with_prepared(p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(p, &quiet()).unwrap();
     let mut g = Graph::new(&quiet());
     g.requests = p.requests().requests().to_vec();
     let a = super::super::architecture_result::build(
@@ -28,7 +28,7 @@ fn start(p: &PreparedObserved) -> (Graph, NodeRef) {
         &env,
         &mut g,
         &p.requests().requests()[0],
-        &mut quiet(),
+        &quiet(),
     )
     .unwrap();
     (g, a.reference)
@@ -48,7 +48,7 @@ fn copy_graph(g: &Graph, c: &Control) -> Graph {
     p
 }
 fn replay(p: &PreparedObserved, g: &Graph) -> Result<(), ValidationFailure> {
-    let env = Environment::with_prepared(p, &mut quiet())?;
+    let env = Environment::with_prepared(p, &quiet())?;
     let mut prefix = Graph::new(&quiet());
     prefix.requests = g.requests.clone();
     prefix.frames = g.frames.clone();
@@ -76,9 +76,9 @@ const LAWS: &str = "law optional bit(c:Part,b:Bool) when b:c.quantity=0;law requ
 #[test]
 fn all_laws_and_objects_keep_common_order_roles_bindings_and_actual_judgments() {
     let p = prepared(fixture::inputs(false, false, LAWS), "root");
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, a) = start(&p);
-    let t = retain(&env, &mut g, p.shared_inputs(), a, &mut quiet())
+    let t = retain(&env, &mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(t.indices.len(), 6);
@@ -152,7 +152,7 @@ fn all_laws_and_objects_keep_common_order_roles_bindings_and_actual_judgments() 
             .iter()
             .any(|q| q.name == "b" && q.domain.is_some())
     );
-    t.recheck(&env, &g, &mut quiet()).unwrap();
+    t.recheck(&env, &g, &quiet()).unwrap();
     replay(&p, &g).unwrap();
 }
 #[test]
@@ -161,9 +161,9 @@ fn finite_fields_and_finite_parameter_families_use_real_domain_evaluations() {
         finite_fixture::inputs(false, "law optional every(c:Part,n:Fp(2)):c.quantity*n=0;"),
         "root",
     );
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, a) = start(&p);
-    let t = retain(&env, &mut g, p.shared_inputs(), a, &mut quiet())
+    let t = retain(&env, &mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(t.indices.len(), 2);
@@ -188,7 +188,7 @@ fn finite_fields_and_finite_parameter_families_use_real_domain_evaluations() {
             );
         }
     }
-    t.recheck(&env, &g, &mut quiet()).unwrap();
+    t.recheck(&env, &g, &quiet()).unwrap();
     replay(&p, &g).unwrap();
 }
 #[test]
@@ -201,9 +201,9 @@ fn missing_readings_remain_real_undetermined_cells_with_original_reasons() {
         ),
         "root",
     );
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, a) = start(&p);
-    let t = retain(&env, &mut g, p.shared_inputs(), a, &mut quiet())
+    let t = retain(&env, &mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     assert_eq!(t.indices.len(), 4);
@@ -231,7 +231,7 @@ fn missing_readings_remain_real_undetermined_cells_with_original_reasons() {
     }
     assert_eq!(missing, 4);
     assert!(!t.reasons.is_empty());
-    t.recheck(&env, &g, &mut quiet()).unwrap();
+    t.recheck(&env, &g, &quiet()).unwrap();
     replay(&p, &g).unwrap();
 }
 #[test]
@@ -241,10 +241,10 @@ fn an_empty_law_or_reference_family_keeps_every_object_and_no_fake_evaluation() 
         ("law required zero(c:Part):c.quantity=0;", "r2", 1),
     ] {
         let p = prepared(fixture::inputs(false, false, body), root);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let (mut g, a) = start(&p);
         let before = g.nodes.len();
-        let t = retain(&env, &mut g, p.shared_inputs(), a, &mut quiet())
+        let t = retain(&env, &mut g, p.shared_inputs(), a, &quiet())
             .unwrap()
             .unwrap();
         assert!(t.indices.is_empty());
@@ -258,7 +258,7 @@ fn an_empty_law_or_reference_family_keeps_every_object_and_no_fake_evaluation() 
             n.payload,
             Some(Payload::Evaluation { .. } | Payload::Proposition { .. })
         )));
-        t.recheck(&env, &g, &mut quiet()).unwrap();
+        t.recheck(&env, &g, &quiet()).unwrap();
         replay(&p, &g).unwrap();
     }
 }
@@ -275,9 +275,9 @@ fn guarded_unread_bodies_and_tuple_values_keep_the_original_whole_judgments() {
         ),
     ] {
         let p = prepared(fixture::inputs(false, tuple, body), "root");
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         let (mut g, a) = start(&p);
-        let t = retain(&env, &mut g, p.shared_inputs(), a, &mut quiet())
+        let t = retain(&env, &mut g, p.shared_inputs(), a, &quiet())
             .unwrap()
             .unwrap();
         assert_eq!(t.indices.len(), 2);
@@ -301,7 +301,7 @@ fn guarded_unread_bodies_and_tuple_values_keep_the_original_whole_judgments() {
                 }
             }
         }
-        t.recheck(&env, &g, &mut quiet()).unwrap();
+        t.recheck(&env, &g, &quiet()).unwrap();
         replay(&p, &g).unwrap();
     }
 }
@@ -311,9 +311,9 @@ fn numeric_family_table_uses_full_domain_and_preserves_object_applicability() {
         fixture::inputs(false, false, "law required later(c:Part,k:Z):c.quantity=k;"),
         "root",
     );
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, a) = start(&p);
-    let table = retain(&env, &mut g, p.shared_inputs(), a, &mut quiet())
+    let table = retain(&env, &mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     for row in &table.objects {
@@ -334,7 +334,7 @@ fn numeric_family_table_uses_full_domain_and_preserves_object_applicability() {
             );
         }
     }
-    table.recheck(&env, &g, &mut quiet()).unwrap();
+    table.recheck(&env, &g, &quiet()).unwrap();
     assert_eq!(g.active, g.context_at(a.0));
     replay(&p, &g).unwrap();
 }
@@ -347,9 +347,9 @@ fn sample() -> (PreparedObserved, Graph, Table) {
         ),
         "root",
     );
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, a) = start(&p);
-    let t = retain(&env, &mut g, p.shared_inputs(), a, &mut quiet())
+    let t = retain(&env, &mut g, p.shared_inputs(), a, &quiet())
         .unwrap()
         .unwrap();
     (p, g, t)
@@ -357,7 +357,7 @@ fn sample() -> (PreparedObserved, Graph, Table) {
 #[test]
 fn table_recheck_rejects_coverage_order_wrong_sources_metadata_and_future_refs() {
     let (p, g, t) = sample();
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     for mode in 0..25 {
         let mut bad = t.clone();
         match mode {
@@ -401,7 +401,7 @@ fn table_recheck_rejects_coverage_order_wrong_sources_metadata_and_future_refs()
             24 => bad.objects[0].origins[0] = bad.objects[0].holds[0],
             _ => unreachable!(),
         };
-        assert!(bad.recheck(&env, &g, &mut quiet()).is_err(), "mode {mode}");
+        assert!(bad.recheck(&env, &g, &quiet()).is_err(), "mode {mode}");
     }
     let other = prepared(
         fixture::inputs(
@@ -411,9 +411,9 @@ fn table_recheck_rejects_coverage_order_wrong_sources_metadata_and_future_refs()
         ),
         "root",
     );
-    let other_env = Environment::with_prepared(&other, &mut quiet()).unwrap();
-    assert!(t.recheck(&other_env, &g, &mut quiet()).is_err());
-    t.recheck(&env, &g, &mut quiet()).unwrap();
+    let other_env = Environment::with_prepared(&other, &quiet()).unwrap();
+    assert!(t.recheck(&other_env, &g, &quiet()).is_err());
+    t.recheck(&env, &g, &quiet()).unwrap();
 }
 #[test]
 fn interrupt_leaves_exact_completed_dag_prefix_and_no_completed_table() {
@@ -425,15 +425,15 @@ fn interrupt_leaves_exact_completed_dag_prefix_and_no_completed_table() {
     let (initial, a) = start(&p);
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
-    let mut c = Control::new(move |point| {
+    let c = Control::new(move |point| {
         if point == Checkpoint::ObjectEvaluation {
             count.set(count.get() + 1)
         }
         None
     });
     let mut full = copy_graph(&initial, &c);
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
-    retain(&env, &mut full, p.shared_inputs(), a, &mut c)
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    retain(&env, &mut full, p.shared_inputs(), a, &c)
         .unwrap()
         .unwrap();
     let total = seen.get();
@@ -444,7 +444,7 @@ fn interrupt_leaves_exact_completed_dag_prefix_and_no_completed_table() {
     for &at in &points {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::ObjectEvaluation {
                 count.set(count.get() + 1)
             }
@@ -452,9 +452,9 @@ fn interrupt_leaves_exact_completed_dag_prefix_and_no_completed_table() {
             stop.then_some(crate::result::Signal::Int)
         });
         let mut g = copy_graph(&initial, &c);
-        let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+        let env = Environment::with_prepared(&p, &quiet()).unwrap();
         assert!(matches!(
-            retain(&env, &mut g, p.shared_inputs(), a, &mut c),
+            retain(&env, &mut g, p.shared_inputs(), a, &c),
             Err(ValidationFailure::Stop(_))
         ));
         assert_eq!(g.active, initial.active);
@@ -492,12 +492,12 @@ fn unknown_ownership_keeps_a_pending_architecture_and_never_completes_the_table(
                 source.law().clone(),
                 InputBytes::new("archmap", missing.into_bytes()),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap(),
     );
     let p = prepared(inputs, "root");
-    let env = Environment::with_prepared(&p, &mut quiet()).unwrap();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let (mut g, a) = start(&p);
     assert!(
         matches!(&g.get(a).unwrap().payload, Some(Payload::Construction(v)) if matches!(&v.data,D::Pending{ty:T::Architecture,..}))
@@ -505,7 +505,7 @@ fn unknown_ownership_keeps_a_pending_architecture_and_never_completes_the_table(
     assert!(!g.get(a).unwrap().reasons.is_empty());
     let before = g.nodes.clone();
     assert!(matches!(
-        retain(&env, &mut g, p.shared_inputs(), a, &mut quiet()),
+        retain(&env, &mut g, p.shared_inputs(), a, &quiet()),
         Err(ValidationFailure::Internal(_))
     ));
     assert_eq!(g.nodes, before);

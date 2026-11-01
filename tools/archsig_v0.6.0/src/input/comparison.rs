@@ -9,13 +9,13 @@ use crate::{
 use std::collections::BTreeMap;
 
 pub(super) struct Comparison<'a> {
-    control: &'a mut Control,
+    control: &'a Control,
     location: Location,
     // 不一致を得た事後確認の取消でも、どの段階で不一致を得たかを保持する。
     pub(super) mismatched: bool,
 }
 impl<'a> Comparison<'a> {
-    pub(super) fn new(control: &'a mut Control, location: Location) -> Self {
+    pub(super) fn new(control: &'a Control, location: Location) -> Self {
         Self {
             control,
             location,
@@ -1322,28 +1322,28 @@ mod tests {
     };
     use std::{cell::Cell, rc::Rc};
 
-    fn compare<T: ControlledEq>(a: &T, b: &T, control: &mut Control) -> Result<(), BundleError> {
+    fn compare<T: ControlledEq>(a: &T, b: &T, control: &Control) -> Result<(), BundleError> {
         Comparison::new(control, Location::Law { span: (0, 1) }).eq(a, b)
     }
 
     fn exercise<T: ControlledEq + PartialEq>(a: &T, b: &T) {
         let count = Rc::new(Cell::new(0));
         let seen = count.clone();
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             assert_eq!(point, Checkpoint::TableComparison);
             seen.set(seen.get() + 1);
             None
         });
-        assert_eq!(compare(a, b, &mut control).is_ok(), a == b);
+        assert_eq!(compare(a, b, &control).is_ok(), a == b);
         assert!(count.get() > 8);
         for at in 1..=count.get() {
             let mut visits = 0;
-            let mut control = Control::new(move |_| {
+            let control = Control::new(move |_| {
                 visits += 1;
                 (visits == at).then_some(Signal::Term)
             });
             assert!(matches!(
-                compare(a, b, &mut control),
+                compare(a, b, &control),
                 Err(CheckFailure::Stopped(Signal::Term))
             ));
         }
@@ -1420,12 +1420,12 @@ mod tests {
     #[test]
     fn cancellation_precedes_known_comparison_mismatch() {
         let mut visits = 0;
-        let mut control = Control::new(move |_| {
+        let control = Control::new(move |_| {
             visits += 1;
             // scalar 不一致を得た直後。
             (visits == 2).then_some(Signal::Int)
         });
-        let mut comparison = Comparison::new(&mut control, Location::Law { span: (0, 1) });
+        let mut comparison = Comparison::new(&control, Location::Law { span: (0, 1) });
         let result = comparison.eq(&false, &true);
         assert!(comparison.mismatched);
         assert!(matches!(result, Err(CheckFailure::Stopped(Signal::Int))));
@@ -1433,34 +1433,34 @@ mod tests {
 
     #[test]
     fn comparison_preserves_ast_locations_and_term_equality_contract() {
-        let mut control = Control::unlimited();
+        let control = Control::unlimited();
         // 同じ子列でも variant の違いを消さない。
         let a = Type::List(Box::new(Type::Bool));
         let b = Type::Set(Box::new(Type::Bool));
         assert_ne!(a, b);
         assert!(matches!(
-            compare(&a, &b, &mut control),
+            compare(&a, &b, &control),
             Err(CheckFailure::Input(_))
         ));
         let a = Value::Tuple(vec![Value::Bool(true)]);
         let b = Value::List(vec![Value::Bool(true)]);
         assert_ne!(a, b);
         assert!(matches!(
-            compare(&a, &b, &mut control),
+            compare(&a, &b, &control),
             Err(CheckFailure::Input(_))
         ));
         let a = TypeAst::Builtin(Builtin::Bool, (0, 1));
         let b = TypeAst::Builtin(Builtin::Bool, (1, 2));
         assert_ne!(a, b);
         assert!(matches!(
-            compare(&a, &b, &mut control),
+            compare(&a, &b, &control),
             Err(CheckFailure::Input(_))
         ));
         let a = Pattern::Wild((0, 1));
         let b = Pattern::Wild((1, 2));
         assert_ne!(a, b);
         assert!(matches!(
-            compare(&a, &b, &mut control),
+            compare(&a, &b, &control),
             Err(CheckFailure::Input(_))
         ));
         let term = |types| TermValue {
@@ -1477,14 +1477,14 @@ mod tests {
         let a = term(vec![Some(Type::Bool)]);
         let b = term(vec![Some(Type::Z)]);
         assert_eq!(a, b); // 補助 arena を比較しない既存の PartialEq と同じ意味。
-        assert!(compare(&a, &b, &mut control).is_ok());
+        assert!(compare(&a, &b, &control).is_ok());
         let b = TermValue {
             body: "false".into(),
             ..b
         };
         assert_ne!(a, b);
         assert!(matches!(
-            compare(&a, &b, &mut control),
+            compare(&a, &b, &control),
             Err(CheckFailure::Input(_))
         ));
     }

@@ -20,7 +20,7 @@ use crate::{
 };
 use std::sync::Arc;
 
-fn tick(c: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectInstances)?;
     Ok(())
 }
@@ -384,7 +384,7 @@ fn push(
     parts: &mut Vec<Part>,
     base: usize,
     value: Part,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     tick(c)?;
     let reference = base
@@ -400,7 +400,7 @@ fn plan(
     root: NodeRef,
     laws: &[NodeRef],
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<(Vec<Part>, Diagram)>, ValidationFailure> {
     tick(c)?;
     let construction = a.construction();
@@ -531,7 +531,7 @@ fn plan(
         },
     )))
 }
-fn primitive(ty: &Type, c: &mut Control) -> Result<Type, ValidationFailure> {
+fn primitive(ty: &Type, c: &Control) -> Result<Type, ValidationFailure> {
     ty.erase_controlled::<crate::control::CheckFailure<Box<crate::issue::Issue>>>(
         c,
         Checkpoint::ObjectInstances,
@@ -547,7 +547,7 @@ fn reading_plan(
     objects: &[NodeRef],
     parts: &mut Vec<Part>,
     base: usize,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Vec<Reading>, ValidationFailure> {
     let mut outputs = vec![];
     for (instance, row) in a.readings().instances().iter().enumerate() {
@@ -648,7 +648,7 @@ fn reading_metadata(
     inputs: &CheckedInputs,
     a: &Arc<ArchitectureWitness>,
     source: &Node,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     let mut support = source.support.clone();
     let mut scope = source.scope.clone();
@@ -779,7 +779,7 @@ impl Source {
         graph: &Graph,
         inputs: &CheckedInputs,
         a: &Arc<ArchitectureWitness>,
-        c: &mut Control,
+        c: &Control,
     ) -> Result<(), ValidationFailure> {
         tick(c)?;
         let (current, root, laws) = origin(graph, self.reference)?;
@@ -827,7 +827,7 @@ pub(super) fn retain(
     graph: &mut Graph,
     inputs: Arc<CheckedInputs>,
     reference: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<Diagram>, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((graph, inputs, reference, c))
 }
@@ -892,7 +892,7 @@ impl Environment<'_> {
         let D::ObjectComponents(data) = &value.data else {
             return Ok(());
         };
-        tick(&mut self.control.clone())?;
+        tick(&self.control)?;
         let Witness::Architecture(a) = &value.witness else {
             return Err("対象族のconsumerがArchitectureでない".into());
         };
@@ -913,14 +913,14 @@ impl Environment<'_> {
             return Ok(());
         }
         data.source
-            .recheck(graph, self.indexes.inputs, a, &mut self.control.clone())?;
+            .recheck(graph, self.indexes.inputs, a, &self.control)?;
         self.results.remember(data.source.clone());
         Ok(())
     }
 }
 
 impl super::result_kind::ResultKind for Data {
-    type Input<'a, 'input: 'a> = (&'a mut Graph, Arc<CheckedInputs>, NodeRef, &'a mut Control);
+    type Input<'a, 'input: 'a> = (&'a mut Graph, Arc<CheckedInputs>, NodeRef, &'a Control);
     type Output = Option<Diagram>;
     fn compute_and_retain<'a, 'input: 'a>(
         input: Self::Input<'a, 'input>,

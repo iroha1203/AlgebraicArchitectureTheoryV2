@@ -93,8 +93,7 @@ fn fixture(omitted: &[&str], script: &str) -> InputSources {
         )
     ));
     let checked =
-        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &mut quiet())
-            .unwrap();
+        check_definitions_controlled(&[("definition0", definitions.as_bytes())], &quiet()).unwrap();
     let digest = &checked.vocabularies()["Cases"].digest;
     let law = format!(
         r#"law "archsig.law/2" semantics "archsig/0.6.0";
@@ -124,9 +123,9 @@ reading Calc {{ use vocabulary Cases version "1" digest "{digest}"; use Cases as
     )
 }
 fn run(inputs: InputSources, asks: &[&str]) -> (Json, CheckedInputs) {
-    let checked = check_inputs(inputs.clone(), &mut quiet())
-        .unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
-    let wire = evaluate_observed_bytes(inputs, asks, &mut quiet())
+    let checked =
+        check_inputs(inputs.clone(), &quiet()).unwrap_or_else(|e| panic!("入力: {:?}", e.issues()));
+    let wire = evaluate_observed_bytes(inputs, asks, &quiet())
         .unwrap_or_else(|e| panic!("評価: {e:?}"))
         .wire();
     audit(&wire, &checked);
@@ -754,9 +753,8 @@ fn invalid_data_and_patterns_are_rejected_from_original_bytes() {
     ] {
         let inputs = fixture(&[], script);
         let law = inputs.law().bytes().to_vec();
-        let err =
-            evaluate_observed_bytes(inputs, &["x=evaluate(Calc.v,s=@v/sample)"], &mut quiet())
-                .unwrap_err();
+        let err = evaluate_observed_bytes(inputs, &["x=evaluate(Calc.v,s=@v/sample)"], &quiet())
+            .unwrap_err();
         let wire = err.wire().expect("静的不正はinvalid");
         assert_eq!(f(&wire, "status"), &Json::str("invalid"), "{script}");
         let issue = &arr(f(&wire, "issues"))[0];
@@ -780,20 +778,20 @@ fn injected_stops_keep_constructor_and_match_prefixes() {
  view later(s: Sample): Z = s.z+9;
 "#;
     let inputs = fixture(&[], script);
-    let checked = check_inputs(inputs.clone(), &mut quiet()).unwrap();
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
     let prior_asks = [
         "seed=evaluate(Calc.seed,s=@v/sample)",
         "missing=evaluate(Calc.missing,s=@v/sample)",
     ];
     let count = Rc::new(Cell::new(0));
     let seen = count.clone();
-    let mut baseline = Control::new(move |point| {
+    let baseline = Control::new(move |point| {
         if point == Checkpoint::Expression {
             seen.set(seen.get() + 1);
         }
         None
     });
-    let prior = evaluate_observed_bytes(inputs.clone(), &prior_asks, &mut baseline)
+    let prior = evaluate_observed_bytes(inputs.clone(), &prior_asks, &baseline)
         .unwrap()
         .wire();
     output(&prior, "seed", &Json::str("Z"), Json::str("3"));
@@ -825,7 +823,7 @@ fn injected_stops_keep_constructor_and_match_prefixes() {
         let probes = Rc::new(Cell::new(0));
         let frozen = Rc::new(Cell::new(None));
         let (e, p, s) = (expressions.clone(), probes.clone(), frozen.clone());
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             p.set(p.get() + 1);
             if point == Checkpoint::Expression {
                 e.set(e.get() + 1);
@@ -842,7 +840,7 @@ fn injected_stops_keep_constructor_and_match_prefixes() {
             ask,
             "later=evaluate(Calc.later,s=@v/sample)",
         ];
-        let wire = evaluate_observed_bytes(inputs.clone(), &asks, &mut control)
+        let wire = evaluate_observed_bytes(inputs.clone(), &asks, &control)
             .unwrap()
             .wire();
         assert_eq!(f(&wire, "status"), &Json::str("interrupted"));

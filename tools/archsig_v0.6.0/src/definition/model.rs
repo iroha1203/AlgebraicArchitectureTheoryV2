@@ -93,7 +93,7 @@ impl PrimitiveSignature {
     pub fn field(&self, name: &str) -> Option<&Field> {
         self.field_controlled::<Box<crate::issue::Issue>>(
             name,
-            &mut Control::unlimited(),
+            &Control::unlimited(),
             Checkpoint::DefinitionSemantics,
         )
         .expect("通常の field 探索は中断しない")
@@ -101,7 +101,7 @@ impl PrimitiveSignature {
     pub(crate) fn field_controlled<E: InputError>(
         &self,
         name: &str,
-        control: &mut Control,
+        control: &Control,
         point: Checkpoint,
     ) -> Result<Option<&Field>, E> {
         self.field_checked_controlled::<E, _>(name, control, point, |field, _| Ok(field))
@@ -111,9 +111,9 @@ impl PrimitiveSignature {
     pub(crate) fn field_checked_controlled<'a, E: InputError, T>(
         &'a self,
         name: &str,
-        control: &mut Control,
+        control: &Control,
         point: Checkpoint,
-        check: impl FnOnce(Option<&'a Field>, &mut Control) -> Result<T, E>,
+        check: impl FnOnce(Option<&'a Field>, &Control) -> Result<T, E>,
     ) -> Result<T, E> {
         E::checkpoint(control, point)?;
         let result = match self.record_fields() {
@@ -133,7 +133,7 @@ impl PrimitiveSignature {
 pub(crate) fn find_field_controlled<'a, E: InputError>(
     fields: impl IntoIterator<Item = &'a Field>,
     name: &str,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
 ) -> Result<Option<&'a Field>, E> {
     find_field_checked_controlled::<E, _>(fields, name, control, point, |field, _| Ok(field))
@@ -142,9 +142,9 @@ pub(crate) fn find_field_controlled<'a, E: InputError>(
 pub(crate) fn find_field_checked_controlled<'a, E: InputError, T>(
     fields: impl IntoIterator<Item = &'a Field>,
     name: &str,
-    control: &mut Control,
+    control: &Control,
     point: Checkpoint,
-    check: impl FnOnce(Option<&'a Field>, &mut Control) -> Result<T, E>,
+    check: impl FnOnce(Option<&'a Field>, &Control) -> Result<T, E>,
 ) -> Result<T, E> {
     E::checkpoint(control, point)?;
     let result = (|| {
@@ -289,25 +289,25 @@ mod field_control_tests {
         for name in ["last", "absent"] {
             let count = Rc::new(Cell::new(0));
             let seen = count.clone();
-            let mut control = Control::new(move |_| {
+            let control = Control::new(move |_| {
                 seen.set(seen.get() + 1);
                 None
             });
             let hit = signature
-                .field_controlled::<Failure>(name, &mut control, Checkpoint::DefinitionSemantics)
+                .field_controlled::<Failure>(name, &control, Checkpoint::DefinitionSemantics)
                 .unwrap();
             assert_eq!(hit, signature.field(name));
             assert!(count.get() >= 8);
             for at in 1..=count.get() {
                 let mut visits = 0;
-                let mut control = Control::new(move |_| {
+                let control = Control::new(move |_| {
                     visits += 1;
                     (visits == at).then_some(Signal::Term)
                 });
                 assert!(matches!(
                     signature.field_controlled::<Failure>(
                         name,
-                        &mut control,
+                        &control,
                         Checkpoint::DefinitionSemantics
                     ),
                     Err(Failure::Stopped(Signal::Term))

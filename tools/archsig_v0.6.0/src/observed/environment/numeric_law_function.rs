@@ -73,8 +73,7 @@ fn invalid(e: ValidationFailure) -> ConstructionFailure {
     }
 }
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
-    c.clone()
-        .checkpoint(Checkpoint::ObjectLawFamily)
+    c.checkpoint(Checkpoint::ObjectLawFamily)
         .map_err(Into::into)
 }
 fn pending(span: (usize, usize), missing: Vec<Fact>) -> Pending {
@@ -91,7 +90,7 @@ fn read(
     names: &[(String, String)],
     target: bool,
     assignments: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Reading, ConstructionFailure> {
     let row = &readings.instances()[position.instance];
     let declaration = &inputs.law().declarations()[&row.declaration().name];
@@ -639,7 +638,7 @@ pub(in crate::observed) fn on_guard(
     readings: &ObjectReadingInstances,
     position: ObjectEvaluationPosition,
     finite: &[(String, Scalar)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Option<GuardValue>, ConstructionFailure> {
     let row = &readings.instances()[position.instance];
     let names = row
@@ -830,7 +829,7 @@ pub(in crate::observed) fn compare(
     readings: [&ObjectReadingInstances; 2],
     positions: [ObjectEvaluationPosition; 2],
     names: &[(String, String)],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Family, ConstructionFailure> {
     compare_bound(inputs, readings, positions, names, [&[], &[]], c)
 }
@@ -840,7 +839,7 @@ pub(in crate::observed) fn compare_bound(
     positions: [ObjectEvaluationPosition; 2],
     names: &[(String, String)],
     bound: [&[(String, Scalar)]; 2],
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Family, ConstructionFailure> {
     let a = read(inputs, readings[0], positions[0], names, false, bound[0], c)?;
     let z = read(inputs, readings[1], positions[1], names, true, bound[1], c)?;

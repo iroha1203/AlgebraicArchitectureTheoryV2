@@ -70,7 +70,7 @@ impl ObjectEvaluationTable {
     pub fn recheck(
         &self,
         inputs: Arc<CheckedInputs>,
-        control: &mut Control,
+        control: &Control,
     ) -> Result<(), ObjectEvaluationTableFailure> {
         let expected = evaluate_object_table(inputs, &self.readings, control)?;
         let comparison = (|| -> Result<bool, ConstructionFailure> {
@@ -143,18 +143,18 @@ mod tests {
                         .replace("@INSTANCES_DIGEST@", digest)
                         .into_bytes(),
                 ),
-                &mut quiet(),
+                &quiet(),
             )
             .unwrap(),
         );
-        let c = construct(&inputs, "Selected", "v", "A", &mut quiet()).unwrap();
-        let readings = object_reading_instances(&inputs, &c, &mut quiet()).unwrap();
-        let foreign = construct(&inputs, "Selected", "v", "B", &mut quiet()).unwrap();
-        let foreign_readings = object_reading_instances(&inputs, &foreign, &mut quiet()).unwrap();
+        let c = construct(&inputs, "Selected", "v", "A", &quiet()).unwrap();
+        let readings = object_reading_instances(&inputs, &c, &quiet()).unwrap();
+        let foreign = construct(&inputs, "Selected", "v", "B", &quiet()).unwrap();
+        let foreign_readings = object_reading_instances(&inputs, &foreign, &quiet()).unwrap();
         for kind in 0..3 {
             let mut table =
-                evaluate_object_table(Arc::clone(&inputs), &readings, &mut quiet()).unwrap();
-            table.recheck(Arc::clone(&inputs), &mut quiet()).unwrap();
+                evaluate_object_table(Arc::clone(&inputs), &readings, &quiet()).unwrap();
+            table.recheck(Arc::clone(&inputs), &quiet()).unwrap();
             let index = table
                 .rows
                 .iter()
@@ -180,7 +180,7 @@ mod tests {
                     &readings,
                     (position.object + 1) % readings.objects().len(),
                     position.instance,
-                    &mut quiet(),
+                    &quiet(),
                 )
                 .unwrap(),
                 1 => evaluate_object_instance(
@@ -188,17 +188,13 @@ mod tests {
                     &readings,
                     position.object,
                     (position.instance + 1) % readings.instances().len(),
-                    &mut quiet(),
+                    &quiet(),
                 )
                 .unwrap(),
-                _ => evaluate_object_instance(
-                    Arc::clone(&inputs),
-                    &foreign_readings,
-                    0,
-                    0,
-                    &mut quiet(),
-                )
-                .unwrap(),
+                _ => {
+                    evaluate_object_instance(Arc::clone(&inputs), &foreign_readings, 0, 0, &quiet())
+                        .unwrap()
+                }
             };
             let mut original = std::mem::replace(&mut table.rows[index].evaluation, replacement);
             let original_family = std::mem::replace(
@@ -211,7 +207,7 @@ mod tests {
                 table.rows[index].evaluation.outcome(),
                 ObjectEvaluationOutcome::FiniteView(_)
             ));
-            let Err(failure) = table.recheck(Arc::clone(&inputs), &mut quiet()) else {
+            let Err(failure) = table.recheck(Arc::clone(&inputs), &quiet()) else {
                 panic!("foreign outer origin accepted: kind={kind}")
             };
             assert!(matches!(
@@ -257,7 +253,7 @@ impl From<ConstructionFailure> for ObjectEvaluationTableFailure {
         }
     }
 }
-fn tick(control: &mut Control) -> Result<(), ConstructionFailure> {
+fn tick(control: &Control) -> Result<(), ConstructionFailure> {
     control
         .checkpoint(Checkpoint::ObjectEvaluationTable)
         .map_err(Into::into)
@@ -266,7 +262,7 @@ fn tick(control: &mut Control) -> Result<(), ConstructionFailure> {
 pub fn evaluate_object_table(
     inputs: Arc<CheckedInputs>,
     readings: &ObjectReadingInstances,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<ObjectEvaluationTable, ObjectEvaluationTableFailure> {
     tick(control)?;
     readings.recheck(&inputs, control)?;

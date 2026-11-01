@@ -26,14 +26,14 @@ fn inputs_with_definitions(definitions: &str, body: &str, map: &str) -> Arc<Chec
                 law.into_bytes(),
                 map.replace("@DIGEST@", digest).into_bytes(),
             ),
-            &mut quiet(),
+            &quiet(),
         )
         .unwrap_or_else(|f| panic!("{:?}", f.issues())),
     )
 }
 
 fn run(i: Arc<CheckedInputs>) -> ObjectLawCircuits {
-    object_law_circuits(i, "Selected", "v", "root", &mut quiet()).unwrap()
+    object_law_circuits(i, "Selected", "v", "root", &quiet()).unwrap()
 }
 fn missing() -> String {
     fixture::A
@@ -102,7 +102,7 @@ fn tuple_zero_component_is_reject_and_only_nonzero_component_has_any_and_origina
                 .unwrap()
         );
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn all_bool_fp_arguments_make_exact_disjunction_with_typed_values() {
@@ -134,7 +134,7 @@ fn all_bool_fp_arguments_make_exact_disjunction_with_typed_values() {
         );
         assert!(circuit.points.iter().all(|p| p.when.is_some()));
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn false_guard_and_outside_rows_reject_without_fabricating_raw_epsilon_or_arguments() {
@@ -189,7 +189,7 @@ fn missing_operand_and_unknown_guard_do_not_create_acceptance_codes() {
                 .flat_map(|c| &c.points)
                 .any(|p| p.when.is_none())
         );
-        r.recheck(i, &mut quiet()).unwrap();
+        r.recheck(i, &quiet()).unwrap();
     }
 }
 #[test]
@@ -219,7 +219,7 @@ fn nonnumeric_original_law_is_retained_as_unsupported_and_empty_domain_is_reject
     assert_eq!(r.condition(), &Condition::Unsupported);
     assert!(r.circuits().is_empty());
     assert_eq!(r.base().evaluations().len(), 2);
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
     let i = inputs(
         "law required empty(c:Part,x:(Vacant,Bool)):2=1;",
         fixture::A,
@@ -231,7 +231,7 @@ fn nonnumeric_original_law_is_retained_as_unsupported_and_empty_domain_is_reject
         assert!(c.uniform.is_none());
         assert_eq!(c.detector, Some(Detector::Reject));
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn unbounded_identity_law_keeps_the_universal_circuit() {
@@ -245,7 +245,7 @@ fn unbounded_identity_law_keeps_the_universal_circuit() {
         assert_eq!(circuit.detector, Some(Detector::Reject));
         assert_eq!(circuit.uniform.as_ref().unwrap().when, Some(false));
     }
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 
 #[test]
@@ -255,7 +255,7 @@ fn no_laws_has_no_circuits_and_is_complete() {
     assert!(r.is_complete());
     assert_eq!(r.condition(), &Condition::Ready);
     assert!(r.circuits().is_empty());
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }
 #[test]
 fn circuit_stops_preserve_prefix_final_completion_and_freeze_probes() {
@@ -268,11 +268,11 @@ fn circuit_stops_preserve_prefix_final_completion_and_freeze_probes() {
     let baseline = run(i.clone());
     let history = Rc::new(RefCell::new(Vec::new()));
     let h = history.clone();
-    let mut traced = Control::new(move |p| {
+    let traced = Control::new(move |p| {
         h.borrow_mut().push(p);
         None
     });
-    object_law_circuits(i.clone(), "Selected", "v", "root", &mut traced).unwrap();
+    object_law_circuits(i.clone(), "Selected", "v", "root", &traced).unwrap();
     let point = C::ObjectLawCircuit;
     let count = history.borrow().iter().filter(|p| **p == point).count();
     assert!(count > 0);
@@ -282,7 +282,7 @@ fn circuit_stops_preserve_prefix_final_completion_and_freeze_probes() {
         let probes = Rc::new(RefCell::new(0));
         let p = probes.clone();
         let expected = Signal::Int;
-        let mut c = Control::new(move |at| {
+        let c = Control::new(move |at| {
             *p.borrow_mut() += 1;
             if at == point {
                 *h.borrow_mut() += 1;
@@ -293,7 +293,7 @@ fn circuit_stops_preserve_prefix_final_completion_and_freeze_probes() {
                 None
             }
         });
-        let f = object_law_circuits(i.clone(), "Selected", "v", "root", &mut c).unwrap_err();
+        let f = object_law_circuits(i.clone(), "Selected", "v", "root", &c).unwrap_err();
         let ObjectLawCircuitsFailure::Reading { cause, partial } = f else {
             panic!("circuit stop")
         };
@@ -330,7 +330,7 @@ fn changed_input_recheck_rejects_a_previous_detector() {
         "law required amount(c:Part):c.quantity=0;",
         &fixture::A.replace("\"value\":\"2\"", "\"value\":\"0\""),
     );
-    assert!(r.recheck(changed, &mut quiet()).is_err());
+    assert!(r.recheck(changed, &quiet()).is_err());
 }
 #[test]
 fn all_missing_boolean_completion_cases_are_retained_without_accepting_a_case_selection() {
@@ -367,7 +367,7 @@ fn all_missing_boolean_completion_cases_are_retained_without_accepting_a_case_se
         }
         // 再検査は guard 側の補完で代表する。
         if body.contains("guarded") {
-            r.recheck(i, &mut quiet()).unwrap();
+            r.recheck(i, &quiet()).unwrap();
         }
     }
 }
@@ -425,5 +425,5 @@ fn distinct_patterns_and_q_components_keep_their_own_exact_original_reading() {
         }
     }
     assert_eq!((q, q_reject, z_accept, z_reject), (4, 2, 2, 4));
-    r.recheck(i, &mut quiet()).unwrap();
+    r.recheck(i, &quiet()).unwrap();
 }

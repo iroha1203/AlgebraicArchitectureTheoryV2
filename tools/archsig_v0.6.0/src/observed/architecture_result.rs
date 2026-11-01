@@ -17,7 +17,7 @@ use crate::{
 };
 use std::sync::Arc;
 
-fn tick(control: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(control: &Control) -> Result<(), ValidationFailure> {
     control.checkpoint(Checkpoint::ConfigurationMap)?;
     Ok(())
 }
@@ -85,7 +85,7 @@ pub(super) struct Architecture {
 pub(super) fn architecture(
     graph: &mut Graph,
     witness: Arc<ArchitectureWitness>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Architecture, ValidationFailure> {
     architecture_with_root(graph, witness, None, control)
 }
@@ -93,7 +93,7 @@ fn architecture_with_root(
     graph: &mut Graph,
     witness: Arc<ArchitectureWitness>,
     selected_root: Option<NodeRef>,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Architecture, ValidationFailure> {
     tick(control)?;
     let a = witness.clone();
@@ -309,7 +309,7 @@ pub(super) fn build(
     environment: &Environment<'_>,
     graph: &mut Graph,
     request: &Request,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Architecture, ValidationFailure> {
     tick(control)?;
     if inputs.sources() != environment.indexes.inputs.sources()
@@ -431,7 +431,7 @@ pub(super) fn selected_build(
     let visible = crate::construction::reading_namespaces(
         environment.indexes.inputs.law(),
         reading,
-        &mut environment.control.clone(),
+        &environment.control.clone(),
     )
     .map_err(failure)?;
     if !visible.contains(&declaration.namespace)
@@ -501,7 +501,7 @@ pub(super) fn validate_build_origin(
             request,
             reading,
             &root,
-            &mut environment.control.clone(),
+            &environment.control.clone(),
         )
         .map_err(failure)?;
         if **a != *regenerated {

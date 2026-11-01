@@ -228,7 +228,7 @@ fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
     for case in [0, 3, 6] {
         let seen = Rc::new(Cell::new(0));
         let count = seen.clone();
-        let mut c = Control::new(move |point| {
+        let c = Control::new(move |point| {
             if point == Checkpoint::Quotient {
                 count.set(count.get() + 1);
             }
@@ -256,7 +256,7 @@ fn stopped_quotient_keeps_prior_solve_without_publishing_incomplete_classes() {
                 quotient,
                 "later=evaluate(Pair.last,s=@v/s)",
             ],
-            &mut c,
+            &c,
         )
         .unwrap();
         if case == 6 {
@@ -926,7 +926,7 @@ fn finite_option_quotient_recurses_and_preserves_none_zero_and_binding_order() {
                 "good=quotient(Pair.tagged,on=$s.domain,s=@v/s,law=Pair.visible)",
                 "bad=quotient(Pair.tagged,on=$s.domain,s=@v/s,law=Pair.hidden)",
             ],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
@@ -1172,7 +1172,7 @@ fn finite_container_quotient_uses_typed_recursive_equality() {
                 "good=quotient(Pair.shape,on=$s.domain,s=@v/s,law=Pair.self)",
                 "bad=quotient(Pair.shape,on=$s.domain,s=@v/s,law=Pair.hidden)",
             ],
-            &mut Control::unlimited(),
+            &Control::unlimited(),
         )
         .unwrap();
         let wire = archsig::json::parse(result.wire().canonical().as_bytes()).unwrap();
@@ -1261,7 +1261,7 @@ fn finite_container_fiber_comparison_propagates_signal_stops() {
         let seen = count.clone();
         let hit = Rc::new(Cell::new(false));
         let stopped = hit.clone();
-        let mut control = Control::new(move |point| {
+        let control = Control::new(move |point| {
             if point == Checkpoint::Quotient {
                 seen.set(seen.get() + 1);
             }
@@ -1285,7 +1285,7 @@ fn finite_container_fiber_comparison_propagates_signal_stops() {
                 "q=quotient(Pair.shape,on=$s.domain,s=@v/s)",
                 "later=evaluate(Pair.last,s=@v/s)",
             ],
-            &mut control,
+            &control,
         )
         .unwrap();
         assert!(hit.get());

@@ -19,7 +19,7 @@ use crate::{
 };
 use std::collections::BTreeMap;
 
-fn tick(control: &mut Control) -> Result<(), ValidationFailure> {
+fn tick(control: &Control) -> Result<(), ValidationFailure> {
     control.checkpoint(Checkpoint::ConfigurationMap)?;
     Ok(())
 }
@@ -466,7 +466,7 @@ pub(super) fn evaluate_configuration(
     environment: &Environment<'_>,
     graph: &mut Graph,
     request: &Request,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Answer, ValidationFailure> {
     tick(control)?;
     environment.commit_projection_conditions(graph, request)?;
@@ -763,7 +763,7 @@ pub(super) fn evaluate(
     environment: &Environment<'_>,
     graph: &mut Graph,
     request: &Request,
-    control: &mut Control,
+    control: &Control,
 ) -> Result<Answer, ValidationFailure> {
     let answer = evaluate_configuration(prepared, environment, graph, request, control)?;
     if object_algebra(request) && answer.outputs.contains_key("operation") {

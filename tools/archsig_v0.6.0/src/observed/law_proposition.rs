@@ -12,7 +12,7 @@ pub(super) fn check(
     graph: &mut Graph,
     origin: NodeRef,
     architecture: NodeRef,
-    c: &mut Control,
+    c: &Control,
 ) -> Result<Reading, ValidationFailure> {
     let Some((row, index)) = frames::prepare_instance(env, graph, origin, architecture, c)? else {
         return Ok(Reading {

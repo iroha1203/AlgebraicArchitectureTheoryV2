@@ -27,7 +27,7 @@ fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
         .unwrap()
 }
 fn run(input: archsig::input::InputSources, asks: &[&str]) -> ObservedEvaluation {
-    evaluate_observed_bytes(input, asks, &mut quiet())
+    evaluate_observed_bytes(input, asks, &quiet())
         .unwrap_or_else(|e| panic!("{:?}", e.wire().map(|w| f(&w, "issues").clone())))
 }
 fn checked(w: &Json, id: &str) -> u64 {
@@ -368,7 +368,7 @@ fn free_compound_answer_unknown_unprovided_fixed_failures_and_mixed_fibers_are_p
             "take=check(Applications.fcList,x=$v.value)",
             "v=evaluate(Applications.seed)",
         ],
-        &mut quiet(),
+        &quiet(),
     ) else {
         panic!("invalid binding accepted")
     };
@@ -423,7 +423,7 @@ fn free_compound_answer_keeps_three_inputs_dag_map_owner_facts_and_current_sourc
     ];
     let i = fixture::input("known", "r1");
     let original = i.clone();
-    let before = check_inputs(i.clone(), &mut quiet()).unwrap();
+    let before = check_inputs(i.clone(), &quiet()).unwrap();
     let r = run(i, &asks);
     assert_eq!(r.status(), "complete");
     let checked = r.prepared().inputs();
@@ -529,7 +529,7 @@ fn free_compound_answer_dynamic_public_projection_failure_keeps_conditions_and_b
                 "later=check(Applications.fcBool,x=$take.evaluation.value)",
                 "last=evaluate(Applications.seed)",
             ],
-            &mut quiet(),
+            &quiet(),
         ) {
             Ok(r) => r,
             Err(archsig::observed::EvaluationFailure::NotImplemented { feature, .. }) => {
