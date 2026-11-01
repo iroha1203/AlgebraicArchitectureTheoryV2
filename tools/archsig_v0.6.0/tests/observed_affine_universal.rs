@@ -10,25 +10,8 @@ use archsig::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::common::helpers::{arr, obj, q, text};
 use crate::common::quiet;
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
-    let Json::Obj(v) = j else {
-        panic!("object: {j:?}")
-    };
-    v
-}
-fn arr(j: &Json) -> &[Json] {
-    let Json::Arr(v) = j else {
-        panic!("array: {j:?}")
-    };
-    v
-}
-fn text(j: &Json) -> &str {
-    let Json::Str(v) = j else {
-        panic!("string: {j:?}")
-    };
-    v
-}
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     &obj(j)[key]
 }
@@ -115,9 +98,6 @@ fn source(checked: &CheckedInputs, position: (usize, usize)) -> &[u8] {
 }
 fn expression<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> &'a Json {
     target(ns, f(val(evaluation), "expression"), "Expression")
-}
-fn q(n: &str, d: &str) -> Json {
-    Json::Arr(vec![Json::str(n), Json::str(d)])
 }
 fn numeric(ty: &str, value: &str) -> Json {
     if ty == "Q" {

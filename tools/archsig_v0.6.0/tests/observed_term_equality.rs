@@ -1,4 +1,5 @@
 //! 有限な引数型の全値域で、元の閉じた関数の外延を比較する。
+use crate::common::helpers::get;
 use crate::common::quiet;
 use crate::common::term_equality as fixture;
 use archsig::{
@@ -14,10 +15,6 @@ fn sources(revision: &str) -> InputSources {
         fixture::law(digest).into_bytes(),
         fixture::archmap(digest, revision).into_bytes(),
     )
-}
-fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
-    let Json::Obj(m) = j else { panic!("object") };
-    &m[k]
 }
 fn arr(j: &Json) -> &[Json] {
     let Json::Arr(a) = j else { panic!("array") };

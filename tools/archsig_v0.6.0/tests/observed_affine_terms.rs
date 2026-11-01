@@ -1,5 +1,6 @@
 //! 元Termのアフィン全域と実引数の相関を三入力bytesから確認する。
 use crate::common::affine_terms as fixture;
+use crate::common::helpers::get;
 use crate::common::quiet;
 use archsig::{
     canonical::Json, definition::check_definitions, input::InputSources,
@@ -17,10 +18,6 @@ fn sources_at(revision: &str) -> InputSources {
         fixture::law(digest).into_bytes(),
         fixture::archmap(digest, revision).into_bytes(),
     )
-}
-fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
-    let Json::Obj(m) = j else { panic!("object") };
-    &m[k]
 }
 fn arr(j: &Json) -> &[Json] {
     let Json::Arr(a) = j else { panic!("array") };

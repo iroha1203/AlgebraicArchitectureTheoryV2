@@ -1,10 +1,7 @@
 //! 同一batchの既知出力を元Requestと既出Refへ接続する。
 use crate::common::answer_bindings as fixture;
+use crate::common::helpers::get;
 use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
-fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
-    let Json::Obj(m) = j else { panic!("object") };
-    &m[k]
-}
 fn arr(j: &Json) -> &[Json] {
     let Json::Arr(a) = j else { panic!("array") };
     a

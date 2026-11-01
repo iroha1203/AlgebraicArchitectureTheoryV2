@@ -16,6 +16,7 @@ const LAW: &[u8] = include_bytes!("fixtures/reservations.law");
 const MAP: &[u8] = include_bytes!("fixtures/reservations.archmap.json");
 const ASK: &str = "c=check(Reservations.conserved,e=@v/e)";
 
+use crate::common::helpers::{arr, obj, text};
 use crate::common::quiet;
 fn sources(law: &[u8], map: &[u8]) -> InputSources {
     InputSources::from_bytes(vec![DEFINITIONS.to_vec()], law.to_vec(), map.to_vec())
@@ -40,24 +41,6 @@ fn q_free(value: Option<&str>) -> Vec<u8> {
         }),
     )
     .into_bytes()
-}
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
-    let Json::Obj(v) = j else {
-        panic!("object: {j:?}")
-    };
-    v
-}
-fn arr(j: &Json) -> &[Json] {
-    let Json::Arr(v) = j else {
-        panic!("array: {j:?}")
-    };
-    v
-}
-fn text(j: &Json) -> &str {
-    let Json::Str(v) = j else {
-        panic!("string: {j:?}")
-    };
-    v
 }
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     &obj(j)[key]

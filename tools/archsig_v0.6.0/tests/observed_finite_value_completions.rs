@@ -1,5 +1,6 @@
 //! 参照なし有限構造値の共有補完を三入力から検査し、単一slot・構造・wholeと証拠を照合する。
 use crate::common;
+use crate::common::helpers::{arr, obj, reached, reference, refs, source, text, ty};
 use crate::common::quiet;
 use archsig::{
     canonical::Json,
@@ -15,24 +16,6 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     rc::Rc,
 };
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
-    let Json::Obj(v) = j else {
-        panic!("object: {j:?}")
-    };
-    v
-}
-fn arr(j: &Json) -> &[Json] {
-    let Json::Arr(v) = j else {
-        panic!("array: {j:?}")
-    };
-    v
-}
-fn text(j: &Json) -> &str {
-    let Json::Str(v) = j else {
-        panic!("string: {j:?}")
-    };
-    v
-}
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     &obj(j)[key]
 }
@@ -57,35 +40,6 @@ fn answer<'a>(j: &'a Json, id: &str) -> &'a Json {
         .iter()
         .find(|a| text(f(a, "id")) == id)
         .unwrap()
-}
-fn refs(j: &Json, out: &mut Vec<String>) {
-    match j {
-        Json::Obj(m) if m.len() == 1 && m.contains_key("node") => out.push(text(&m["node"]).into()),
-        Json::Obj(m) => {
-            for value in m.values() {
-                refs(value, out);
-            }
-        }
-        Json::Arr(a) => {
-            for value in a {
-                refs(value, out);
-            }
-        }
-        _ => {}
-    }
-}
-fn reached(ns: &BTreeMap<&str, &Json>, roots: &[&Json]) -> BTreeSet<String> {
-    let mut todo = vec![];
-    for root in roots {
-        refs(root, &mut todo);
-    }
-    let mut seen = BTreeSet::new();
-    while let Some(id) = todo.pop() {
-        if seen.insert(id.clone()) {
-            refs(ns[id.as_str()], &mut todo);
-        }
-    }
-    seen
 }
 fn span(location: &Json) -> (usize, usize) {
     assert_eq!(f(location, "input"), &Json::str("law"));
@@ -172,9 +126,6 @@ fn root<'a>(wire: &'a Json, id: &str) -> &'a Json {
         &Json::str("Evaluation"),
     )
 }
-fn source<'a>(checked: &'a CheckedInputs, at: (usize, usize)) -> &'a [u8] {
-    &checked.sources().law().bytes()[at.0..at.1]
-}
 fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
     let (Signature::View { body, .. } | Signature::Law { body, .. }) =
         &checked.law().declarations()[name].signature
@@ -184,12 +135,6 @@ fn declared_body(checked: &CheckedInputs, name: &str) -> usize {
     *body
 }
 
-fn ty(kind: &str, item: Json) -> Json {
-    Json::Arr(vec![Json::str(kind), item])
-}
-fn reference(snapshot: &str, subject: &str) -> Json {
-    Json::Arr(vec![Json::str(snapshot), Json::str(subject)])
-}
 fn children<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> Vec<&'a Json> {
     arr(f(part(evaluation), "children"))
         .iter()

@@ -1,4 +1,5 @@
 //! 検査済みMap表の値・等値を三入力から確認する。
+use crate::common::helpers::object;
 use crate::common::known_map as maps;
 use crate::common::quiet;
 use archsig::{
@@ -7,7 +8,6 @@ use archsig::{
     input::{InputSources, check_inputs},
     observed::evaluate_observed_bytes,
 };
-use std::collections::BTreeMap;
 fn sources(revision: &str) -> InputSources {
     let d = check_definitions(&[("definition0", maps::DEFINITIONS.as_bytes())]).unwrap();
     let digest = &d.vocabularies()["Maps"].digest;
@@ -16,12 +16,6 @@ fn sources(revision: &str) -> InputSources {
         maps::law(digest).into_bytes(),
         maps::archmap(digest, revision).into_bytes(),
     )
-}
-fn object(j: &Json) -> &BTreeMap<String, Json> {
-    let Json::Obj(x) = j else {
-        panic!("object: {j:?}")
-    };
-    x
 }
 fn array(j: &Json) -> &[Json] {
     let Json::Arr(x) = j else {

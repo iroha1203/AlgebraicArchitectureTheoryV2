@@ -14,25 +14,8 @@ use std::{
     rc::Rc,
 };
 
+use crate::common::helpers::{arr, fp, obj, q, reached, refs, text, tuple_type};
 use crate::common::quiet;
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
-    let Json::Obj(v) = j else {
-        panic!("object: {j:?}")
-    };
-    v
-}
-fn arr(j: &Json) -> &[Json] {
-    let Json::Arr(v) = j else {
-        panic!("array: {j:?}")
-    };
-    v
-}
-fn text(j: &Json) -> &str {
-    let Json::Str(v) = j else {
-        panic!("string: {j:?}")
-    };
-    v
-}
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     &obj(j)[key]
 }
@@ -57,35 +40,6 @@ fn answer<'a>(j: &'a Json, id: &str) -> &'a Json {
         .iter()
         .find(|a| text(f(a, "id")) == id)
         .unwrap()
-}
-fn refs(j: &Json, out: &mut Vec<String>) {
-    match j {
-        Json::Obj(m) if m.len() == 1 && m.contains_key("node") => out.push(text(&m["node"]).into()),
-        Json::Obj(m) => {
-            for value in m.values() {
-                refs(value, out);
-            }
-        }
-        Json::Arr(a) => {
-            for value in a {
-                refs(value, out);
-            }
-        }
-        _ => {}
-    }
-}
-fn reached(ns: &BTreeMap<&str, &Json>, roots: &[&Json]) -> BTreeSet<String> {
-    let mut todo = vec![];
-    for root in roots {
-        refs(root, &mut todo);
-    }
-    let mut seen = BTreeSet::new();
-    while let Some(id) = todo.pop() {
-        if seen.insert(id.clone()) {
-            refs(ns[id.as_str()], &mut todo);
-        }
-    }
-    seen
 }
 fn span(location: &Json) -> (usize, usize) {
     assert_eq!(f(location, "input"), &Json::str("law"));
@@ -116,20 +70,6 @@ fn part(evaluation: &Json) -> &Json {
     let parts = arr(f(val(evaluation), "parts"));
     assert_eq!(parts.len(), 1);
     &parts[0]
-}
-fn fp() -> Json {
-    Json::Arr(vec![Json::str("Fp"), Json::str("5")])
-}
-fn q(n: &str, d: &str) -> Json {
-    Json::Arr(vec![Json::str(n), Json::str(d)])
-}
-fn tuple_type() -> Json {
-    Json::Arr(vec![
-        Json::str("Tuple"),
-        Json::str("Z"),
-        Json::str("Q"),
-        fp(),
-    ])
 }
 fn reference_type() -> Json {
     Json::Arr(vec![Json::str("Ref"), Json::str("Calls.Sample")])

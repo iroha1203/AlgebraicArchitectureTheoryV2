@@ -1,3 +1,4 @@
+use crate::common::helpers::add;
 use archsig::{
     archmap::Fact as FactPointer,
     construction::{
@@ -78,14 +79,6 @@ fn fact(snapshot: &str, subject: &str) -> FactPointer {
 }
 fn v(s: &str) -> FactPointer {
     fact("v", s)
-}
-fn add(a: &str, subject: &str, ty: &str) -> String {
-    a.replace(
-        "\"subjects\": [",
-        &format!(
-            "\"subjects\": [\n{{\"id\":\"{subject}\",\"type\":\"{ty}\",\"origin\":\"model\"}},"
-        ),
-    )
 }
 fn extra_snapshot(a: &str, ty: &str) -> String {
     let (root, owner) = match ty {

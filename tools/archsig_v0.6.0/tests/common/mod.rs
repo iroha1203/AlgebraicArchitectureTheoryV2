@@ -24,6 +24,7 @@ pub mod finite_polynomial_data;
 pub mod finite_reference_fields;
 pub mod free_compound_answer_binding;
 pub mod free_owner_answer_binding;
+pub mod helpers;
 pub mod identity_paths;
 pub mod infinite_domains;
 pub mod internal_paths;

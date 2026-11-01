@@ -12,6 +12,7 @@ use archsig::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::common::helpers::{reference, ty};
 use crate::common::quiet;
 fn obj(j: &Json) -> &BTreeMap<String, Json> {
     let Json::Obj(v) = j else {
@@ -37,12 +38,6 @@ fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
 fn val(j: &Json) -> &Json {
     assert_eq!(f(j, "state"), &Json::str("value"));
     f(j, "value")
-}
-fn ty(kind: &str, item: Json) -> Json {
-    Json::Arr(vec![Json::str(kind), item])
-}
-fn reference(snapshot: &str, subject: &str) -> Json {
-    Json::Arr(vec![Json::str(snapshot), Json::str(subject)])
 }
 fn refs(j: &Json, out: &mut Vec<String>) {
     match j {

@@ -3,10 +3,6 @@ use crate::common::owned_map_calls as fixture;
 use archsig::{
     canonical::Json, control::Control, input::InputSources, observed::evaluate_observed_bytes,
 };
-fn get<'a>(j: &'a Json, k: &str) -> &'a Json {
-    let Json::Obj(m) = j else { panic!("object") };
-    &m[k]
-}
 fn arr(j: &Json) -> &[Json] {
     let Json::Arr(a) = j else { panic!("array") };
     a
@@ -29,6 +25,7 @@ fn run_input(i: InputSources, asks: &[&str]) -> archsig::observed::ObservedEvalu
     assert_ne!(r.status(), "error", "{:?}", get(&r.wire(), "issues"));
     r
 }
+use crate::common::helpers::get;
 use crate::common::quiet;
 fn run(asks: &[&str]) -> archsig::observed::ObservedEvaluation {
     run_input(fixture::input("known", "r1"), asks)

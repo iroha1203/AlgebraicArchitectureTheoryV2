@@ -8,6 +8,7 @@ use archsig::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::common::helpers::{data, object};
 use crate::common::quiet;
 fn sources(missing: bool, extra: &str, revision: &str) -> InputSources {
     let checked = check_definitions(&[("definition0", tree::DEFINITIONS.as_bytes())]).unwrap();
@@ -17,12 +18,6 @@ fn sources(missing: bool, extra: &str, revision: &str) -> InputSources {
         tree::law(digest, extra).into_bytes(),
         tree::archmap(digest, missing, revision).into_bytes(),
     )
-}
-fn object(j: &Json) -> &BTreeMap<String, Json> {
-    let Json::Obj(x) = j else {
-        panic!("object: {j:?}")
-    };
-    x
 }
 fn array(j: &Json) -> &[Json] {
     let Json::Arr(x) = j else {
@@ -144,9 +139,6 @@ fn audit(result: &archsig::observed::ObservedEvaluation) {
         refs(a, &mut rs);
         assert!(rs.iter().all(|r| nodes.contains_key(r.as_str())));
     }
-}
-fn data(tag: &str, args: Vec<Json>) -> Json {
-    Json::obj([("tag", Json::str(tag)), ("args", Json::Arr(args))])
 }
 fn expected_tree() -> Json {
     data(

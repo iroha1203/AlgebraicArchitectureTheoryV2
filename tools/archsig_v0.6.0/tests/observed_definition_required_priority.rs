@@ -1,14 +1,14 @@
 //! 必須の依存・所属・field・添字探索の終端拒否を、三入力 byte 経路で検査する。
+use crate::common::helpers::probe;
 use archsig::{
     canonical::Json,
-    control::{Checkpoint, Control},
+    control::Checkpoint,
     definition::check_definitions,
     input::{InputFailure, InputSources, InputStatus, check_inputs},
     issue::{Code, Details, Issue, Location},
     result::ResultIssue,
     result::Signal,
 };
-use std::{cell::Cell, rc::Rc};
 
 fn field(name: &str, ty: Json) -> Json {
     Json::obj([
@@ -85,17 +85,6 @@ fn from_files(definitions: Vec<Vec<u8>>) -> InputSources {
         // A lost definition error must not silently advance into this next input.
         b"bad".to_vec(),
     )
-}
-fn probe(point: Checkpoint, at: usize) -> (Control, Rc<Cell<usize>>) {
-    let count = Rc::new(Cell::new(0));
-    let seen = count.clone();
-    let control = Control::new(move |current| {
-        if current == point {
-            seen.set(seen.get() + 1);
-        }
-        (seen.get() == at).then_some(Signal::Term)
-    });
-    (control, count)
 }
 fn reason() -> Signal {
     Signal::Term

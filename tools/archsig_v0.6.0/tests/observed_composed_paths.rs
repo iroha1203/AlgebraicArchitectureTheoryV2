@@ -1,12 +1,9 @@
 use crate::common::composed_paths as fixture;
+use crate::common::helpers::array;
 use archsig::{canonical::Json, control::Control, observed::evaluate_observed_bytes};
 fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(o) = j else { panic!() };
     &o[k]
-}
-fn array(j: &Json) -> &[Json] {
-    let Json::Arr(a) = j else { panic!() };
-    a
 }
 fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
     array(f(w, "nodes"))

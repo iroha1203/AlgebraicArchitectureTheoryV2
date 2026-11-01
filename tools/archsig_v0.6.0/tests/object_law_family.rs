@@ -20,6 +20,7 @@ use std::{cell::Cell, rc::Rc, sync::Arc};
 const D: &[u8] = include_bytes!("fixtures/object-law-family.atoms.json");
 const L: &str = include_str!("fixtures/object-law-family.law");
 const A: &str = include_str!("fixtures/object-view-transport.archmap.json");
+use crate::common::helpers::{edit, remove};
 use crate::common::quiet;
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
@@ -91,31 +92,6 @@ fn arr(j: &Json) -> &[Json] {
     let Json::Arr(a) = j else { panic!("{j:?}") };
     a
 }
-fn edit(map: &str, id: &str, before: &str, after: &str) -> String {
-    let key = format!("\"id\":\"{id}\"");
-    assert_eq!(map.lines().filter(|l| l.contains(&key)).count(), 1);
-    map.lines()
-        .map(|l| {
-            if l.contains(&key) {
-                assert!(l.contains(before));
-                l.replace(before, after)
-            } else {
-                l.into()
-            }
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
-}
-fn remove(map: &str, id: &str) -> String {
-    let key = format!("\"id\":\"{id}\"");
-    assert_eq!(map.lines().filter(|l| l.contains(&key)).count(), 1);
-    map.lines()
-        .filter(|l| !l.contains(&key))
-        .collect::<Vec<_>>()
-        .join("\n")
-        .replace(",\n]", "\n]")
-}
-
 #[test]
 fn finite_type_domains_and_every_product_row_are_preserved() {
     let i = inputs(L, A);

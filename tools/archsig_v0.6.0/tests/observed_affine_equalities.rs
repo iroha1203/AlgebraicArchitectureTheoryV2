@@ -11,25 +11,8 @@ use archsig::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 
+use crate::common::helpers::{arr, fact, obj, q, text};
 use crate::common::quiet;
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
-    let Json::Obj(v) = j else {
-        panic!("object: {j:?}")
-    };
-    v
-}
-fn arr(j: &Json) -> &[Json] {
-    let Json::Arr(v) = j else {
-        panic!("array: {j:?}")
-    };
-    v
-}
-fn text(j: &Json) -> &str {
-    let Json::Str(v) = j else {
-        panic!("string: {j:?}")
-    };
-    v
-}
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     &obj(j)[key]
 }
@@ -135,17 +118,6 @@ fn body(checked: &CheckedInputs, name: &str) -> usize {
     };
     *body
 }
-fn q(n: &str, d: &str) -> Json {
-    Json::Arr(vec![Json::str(n), Json::str(d)])
-}
-fn fact(snapshot: &str, subject: &str, field: &str) -> Json {
-    Json::obj([
-        ("snapshot", Json::str(snapshot)),
-        ("subject", Json::str(subject)),
-        ("field", Json::str(format!("Affine.Sample.{field}"))),
-    ])
-}
-
 // Z/Q は常に欠測。Bool だけを必要な試験で二つの全補完へ分ける。
 fn fixture(
     script: &str,

@@ -14,25 +14,8 @@ use std::{
     rc::Rc,
 };
 
+use crate::common::helpers::{arr, obj, text};
 use crate::common::quiet;
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
-    let Json::Obj(v) = j else {
-        panic!("object: {j:?}")
-    };
-    v
-}
-fn arr(j: &Json) -> &[Json] {
-    let Json::Arr(v) = j else {
-        panic!("array: {j:?}")
-    };
-    v
-}
-fn text(j: &Json) -> &str {
-    let Json::Str(v) = j else {
-        panic!("string: {j:?}")
-    };
-    v
-}
 fn f<'a>(j: &'a Json, key: &str) -> &'a Json {
     &obj(j)[key]
 }

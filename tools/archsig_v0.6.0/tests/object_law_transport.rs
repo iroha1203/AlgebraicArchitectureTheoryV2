@@ -20,6 +20,7 @@ use std::{cell::Cell, rc::Rc, sync::Arc};
 const D: &[u8] = include_bytes!("fixtures/object-law-transport.atoms.json");
 const L: &str = include_str!("fixtures/object-law-transport.law");
 const A: &str = include_str!("fixtures/object-view-transport.archmap.json");
+use crate::common::helpers::{edit, remove, stop_at};
 use crate::common::quiet;
 fn inputs(law: &str, map: &str) -> Arc<CheckedInputs> {
     let right = include_bytes!("fixtures/object-law-transport-right.atoms.json");
@@ -91,31 +92,6 @@ fn arr(j: &Json) -> &[Json] {
     let Json::Arr(a) = j else { panic!("{j:?}") };
     a
 }
-fn edit(map: &str, id: &str, before: &str, after: &str) -> String {
-    let key = format!("\"id\":\"{id}\"");
-    assert_eq!(map.lines().filter(|l| l.contains(&key)).count(), 1);
-    map.lines()
-        .map(|l| {
-            if l.contains(&key) {
-                assert!(l.contains(before));
-                l.replace(before, after)
-            } else {
-                l.into()
-            }
-        })
-        .collect::<Vec<_>>()
-        .join("\n")
-}
-fn remove(map: &str, id: &str) -> String {
-    let key = format!("\"id\":\"{id}\"");
-    assert_eq!(map.lines().filter(|l| l.contains(&key)).count(), 1);
-    map.lines()
-        .filter(|l| !l.contains(&key))
-        .collect::<Vec<_>>()
-        .join("\n")
-        .replace(",\n]", "\n]")
-}
-
 #[test]
 fn actual_truth_and_required_status_are_preserved_separately_from_lawfulness() {
     let i = inputs(L, A);
@@ -818,18 +794,6 @@ fn target_object_and_instance_failures_keep_the_base_configuration_operation() {
             .any(|(name, f)| name == "y" && f.subject == "u")
     );
     r.operation().recheck(&i, &mut quiet()).unwrap();
-}
-
-fn stop_at(point: Checkpoint, at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>) {
-    let count = Rc::new(Cell::new(0));
-    let seen = count.clone();
-    let c = Control::new(move |p| {
-        if p == point {
-            seen.set(seen.get() + 1);
-        }
-        (seen.get() >= at).then_some(signal)
-    });
-    (c, count)
 }
 
 #[test]

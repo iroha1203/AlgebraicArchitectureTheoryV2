@@ -1,3 +1,4 @@
+use crate::common::helpers::stop_at;
 use archsig::{
     archmap::Fact as FactPointer,
     construction::{
@@ -436,18 +437,6 @@ fn cross_kind_configuration_maps_keep_object_and_generator_condition_failures_an
         .recheck(&i, &mut Control::unlimited())
         .unwrap();
     r.recheck(&i, &mut Control::unlimited()).unwrap();
-}
-
-fn stop_at(point: Checkpoint, at: usize, signal: Signal) -> (Control, Rc<Cell<usize>>) {
-    let count = Rc::new(Cell::new(0));
-    let seen = count.clone();
-    let c = Control::new(move |p| {
-        if p == point {
-            seen.set(seen.get() + 1);
-        }
-        (seen.get() >= at).then_some(signal)
-    });
-    (c, count)
 }
 
 #[test]

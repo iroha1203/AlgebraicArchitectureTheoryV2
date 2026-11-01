@@ -5,10 +5,6 @@ fn f<'a>(j: &'a Json, k: &str) -> &'a Json {
     let Json::Obj(o) = j else { panic!() };
     &o[k]
 }
-fn array(j: &Json) -> &[Json] {
-    let Json::Arr(a) = j else { panic!() };
-    a
-}
 fn node<'a>(w: &'a Json, r: &Json) -> &'a Json {
     array(f(w, "nodes"))
         .iter()
@@ -64,6 +60,7 @@ fn internal_arrow_path_keeps_original_generator_and_distinct_endpoints() {
         &Json::Arr(vec![Json::str("v"), Json::str("e")])
     );
 }
+use crate::common::helpers::array;
 use crate::common::internal_paths as small;
 fn run_small(mode: &str, asks: &[&str]) -> Json {
     let inputs = small::input(mode, "r1");
