@@ -93,11 +93,6 @@ fn mismatch<T, E: InputError>(
     })();
     let details = match details {
         Ok(details) => details,
-        // Complete only the payload of the already detected mismatch.
-        Err(stop) if stop.is_budget_stop() => Details::Type {
-            expected: expected.erase(),
-            actual: actual.erase(),
-        },
         Err(stop) => return Err(stop),
     };
     Err(Box::new(Issue {
@@ -252,7 +247,6 @@ impl CheckedDefinitions {
     }
 }
 /// Bool を読む探索と、拒否を確定する検査で同じ traversal を使う。
-/// predicate が元 Issue を返した後は post-budget よりその Issue を優先する。
 fn type_scan<E: InputError>(
     t: &Type,
     predicate: &mut impl FnMut(&Type) -> R<bool, E>,

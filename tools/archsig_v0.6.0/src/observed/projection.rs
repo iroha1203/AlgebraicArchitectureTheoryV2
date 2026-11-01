@@ -159,16 +159,8 @@ fn finish_projection<T>(
     result: Result<T, ProjectionFailure>,
     control: &mut Control,
 ) -> Result<T, ProjectionFailure> {
-    match (result, tick(control)) {
-        // Keep the completed result and the latched budget together. A Dynamic
-        // caller must still stop before any untried candidate, or when a prior
-        // candidate succeeded; only exhaustive rejection establishes its error.
-        (Err(error @ ProjectionFailure::Invalid(_)), Err(StopReason::BudgetExhausted { .. })) => {
-            Err(error)
-        }
-        (_, Err(reason)) => Err(ProjectionFailure::Interrupted(reason)),
-        (result, Ok(())) => result,
-    }
+    tick(control).map_err(ProjectionFailure::Interrupted)?;
+    result
 }
 
 fn project_inner(
@@ -501,14 +493,9 @@ pub fn can_bind_controlled(
     finish_type_match(false, control)
 }
 
-/// 確定した不一致は予算とともに保つ。適合後の予算と取消は停止として返す。
-/// 呼出し側で、一候補の不一致と全候補の不適合を区別する。
+/// 取消は判定より優先する。呼出し側で、一候補の不一致と全候補の不適合を区別する。
 fn finish_type_match(same: bool, control: &mut Control) -> Result<bool, StopReason> {
-    match tick(control) {
-        Err(StopReason::BudgetExhausted { .. }) if !same => Ok(false),
-        Err(reason) => Err(reason),
-        Ok(()) => Ok(same),
-    }
+    tick(control).map(|()| same)
 }
 
 /// Owned の所属条件を別制約に残し、型の全構造を一段ずつ比較する。

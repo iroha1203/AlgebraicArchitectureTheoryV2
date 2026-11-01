@@ -69,11 +69,6 @@ pub enum ResultIssue {
         message: String,
     },
     Cancelled(Signal),
-    BudgetExhausted {
-        resource: crate::control::Resource,
-        limit: u128,
-        observed: u128,
-    },
 }
 
 impl ResultIssue {
@@ -84,7 +79,6 @@ impl ResultIssue {
             ResultIssue::Io { .. } => "io",
             ResultIssue::Internal { .. } => "internal",
             ResultIssue::Cancelled(_) => "cancelled",
-            ResultIssue::BudgetExhausted { .. } => "budget_exhausted",
         }
     }
 
@@ -188,18 +182,6 @@ impl ResultIssue {
             ResultIssue::Internal { operation, message } => (
                 format!("{message}: {operation}"),
                 Json::obj([("operation", Json::str(operation.clone()))]),
-            ),
-            ResultIssue::BudgetExhausted {
-                resource,
-                limit,
-                observed,
-            } => (
-                format!("computation budget exhausted: {} limit {limit}, observed {observed}", resource.wire()),
-                Json::obj([
-                    ("resource", Json::str(resource.wire())),
-                    ("limit", Json::str(limit.to_string())),
-                    ("observed", Json::str(observed.to_string())),
-                ]),
             ),
             ResultIssue::Cancelled(s) => (
                 format!("interrupted by signal {}", s.wire()),

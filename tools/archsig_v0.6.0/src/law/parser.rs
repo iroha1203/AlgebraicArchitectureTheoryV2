@@ -1559,9 +1559,6 @@ pub(super) mod candidate_priority_tests {
         fn is_stopped(&self) -> bool {
             self.0.is_stopped()
         }
-        fn is_budget_stop(&self) -> bool {
-            self.0.is_budget_stop()
-        }
     }
     pub(crate) struct ErrorArm;
     impl Drop for ErrorArm {

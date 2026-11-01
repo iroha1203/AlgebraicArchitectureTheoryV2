@@ -108,21 +108,13 @@ pub fn run_requests(
             failure: request_failure,
             ..
         }) => match request_failure {
-            ResolveFailure::Invalid {
-                issues,
-                stop_reason,
-                ..
-            } => {
-                let mut issues: Vec<_> = issues.iter().map(|i| i.wire()).collect();
-                if let Some(reason) = stop_reason {
-                    issues.push(reason.wire());
-                }
+            ResolveFailure::Invalid { issues, .. } => {
                 return output::notify(
                     signals,
                     Status::Invalid,
                     64,
                     prior_signal(control),
-                    issues,
+                    issues.iter().map(|i| i.wire()).collect(),
                 );
             }
             ResolveFailure::Interrupted { reason } => {
@@ -208,10 +200,8 @@ fn deliver(
     };
     let mut issues: Vec<Json> = evaluation.issues.iter().map(|i| i.wire()).collect();
     if let Some(reason) = &reuse_stop {
-        if status != Status::Error || matches!(reason, StopReason::Cancelled(_)) {
-            status = Status::Interrupted;
-            code = 75;
-        }
+        status = Status::Interrupted;
+        code = 75;
         issues.push(reason.wire());
     }
     let internal = evaluation

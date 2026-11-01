@@ -345,13 +345,9 @@ fn check_law_inner<E: InputError>(
     control: &mut Control,
 ) -> Result<CheckedLaw, (E, String, Option<String>)> {
     let result = check_law_processing::<E>(bytes, definitions, control);
-    // The final sample also covers version and parser error exits. Preserve the
-    // known input failure over a budget, and let cancellation take priority.
+    // The final sample also covers version and parser error exits; cancellation takes priority.
     match (result, E::checkpoint(control, Checkpoint::LawIteration)) {
         (result, Ok(())) => result,
-        (Err((input, bytes, model)), Err(stop)) if !input.is_stopped() && stop.is_budget_stop() => {
-            Err((input, bytes, model))
-        }
         (Err((_, bytes, model)), Err(stop)) => Err((stop, bytes, model)),
         (Ok(checked), Err(stop)) => Err((stop, checked.bytes_digest, Some(checked.model_digest))),
     }

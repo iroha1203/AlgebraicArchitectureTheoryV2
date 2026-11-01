@@ -843,9 +843,6 @@ impl<E: InputError> Checker<'_, E> {
         })();
         match diagnostic {
             Ok(text) => syntax(span, format!("value of type {text} cannot be applied")),
-            // Applicability was already rejected. A display budget cannot
-            // replace this known input failure or start a new derivation.
-            Err(stop) if stop.is_budget_stop() => syntax(span, "value of this type cannot be applied"),
             Err(stop) => Err(stop),
         }
     }
@@ -1299,8 +1296,7 @@ impl<E: InputError> Checker<'_, E> {
                 // 候補は `.` の位置の順。複数の域が読めるときは、名前の最長一致と同じく最も長い域を選ぶ。
                 match valid.len() {
                     0 => {
-                        // All domains failed. Rechecking the first domain could
-                        // replace its known diagnostic with a latched budget.
+                        // All domains failed; report the first domain's diagnostic.
                         if let Some(error) = first_error {
                             return Err(error);
                         }

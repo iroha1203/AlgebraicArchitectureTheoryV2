@@ -192,9 +192,9 @@ impl InputFailure {
         wire
     }
 
-    fn checked(self, error: CheckFailure<Box<Issue>>, control: &Control) -> Self {
+    fn checked(self, error: CheckFailure<Box<Issue>>) -> Self {
         match error {
-            CheckFailure::Input(issue) => self.input_with_control(*issue, control),
+            CheckFailure::Input(issue) => self.input(*issue),
             CheckFailure::Stopped(reason) => self.stopped(reason),
         }
     }
@@ -209,15 +209,6 @@ impl InputFailure {
         self.sources.add_location_positions(&mut wire);
         self.issues.push(wire);
         self
-    }
-    fn input_with_control(self, issue: Issue, control: &Control) -> Self {
-        let mut failure = self.input(issue);
-        if let Some(reason @ StopReason::BudgetExhausted { .. }) = control.stop_reason() {
-            // 全入力 Issue code より budget_exhausted が辞書順で先。
-            // 既知の入力不正の優先状態を保ち、併発した停止理由も出力に残す。
-            failure.issues.insert(0, reason.wire());
-        }
-        failure
     }
     fn stopped(mut self, reason: StopReason) -> Self {
         self.status = InputStatus::Interrupted;
@@ -308,7 +299,7 @@ impl CheckedInputs {
     ) -> Result<Self, InputFailure> {
         let verified = check_inputs(sources, control)?;
         if let Err(error) = BundleError::checkpoint(control, Checkpoint::InputBundle) {
-            return Err(verified.into_failure(false).checked(error, control));
+            return Err(verified.into_failure(false).checked(error));
         }
         let mut law_comparison = comparison::Comparison::new(
             control,
@@ -337,7 +328,7 @@ impl CheckedInputs {
             }
         };
         if let Err(error) = BundleError::finish(result, control, Checkpoint::InputBundle) {
-            return Err(verified.into_failure(bad_law).checked(error, control));
+            return Err(verified.into_failure(bad_law).checked(error));
         }
         // 公開 field を照合した後も、元 byte 列から得た表だけを採用する。
         Ok(verified)
@@ -365,7 +356,7 @@ pub fn check_inputs(
     // 停止を観測した後に次の入力の原始演算を開始しない。
     for index in 0..failure.inputs.len() {
         if let Err(error) = BundleError::checkpoint(control, Checkpoint::InputBundle) {
-            return Err(failure.checked(error, control));
+            return Err(failure.checked(error));
         }
         let id = failure.inputs[index].id.as_str();
         let bytes = match id {
@@ -382,7 +373,7 @@ pub fn check_inputs(
         };
         failure.inputs[index].bytes_digest = Some(sha256_digest(bytes));
         if let Err(error) = BundleError::finish(Ok(()), control, Checkpoint::InputBundle) {
-            return Err(failure.checked(error, control));
+            return Err(failure.checked(error));
         }
     }
     let invalid_id = || {
@@ -405,7 +396,7 @@ pub fn check_inputs(
     // ID 照合は実際の検査であり、失敗する一回にも事後確認を行う。
     for index in 0..failure.sources.definitions.len() + 2 {
         if let Err(error) = BundleError::checkpoint(control, Checkpoint::InputBundle) {
-            return Err(failure.checked(error, control));
+            return Err(failure.checked(error));
         }
         let (actual, expected) = if index < failure.sources.definitions.len() {
             (
@@ -423,7 +414,7 @@ pub fn check_inputs(
             Err(invalid_id())
         };
         if let Err(error) = BundleError::finish(result, control, Checkpoint::InputBundle) {
-            return Err(failure.checked(error, control));
+            return Err(failure.checked(error));
         }
     }
     if let Err(reason) = control.checkpoint(Checkpoint::BeforeDefinitions) {
@@ -432,11 +423,11 @@ pub fn check_inputs(
     let mut files = Vec::with_capacity(failure.sources.definitions.len());
     for input in &failure.sources.definitions {
         if let Err(error) = BundleError::checkpoint(control, Checkpoint::InputBundle) {
-            return Err(failure.checked(error, control));
+            return Err(failure.checked(error));
         }
         files.push((input.id(), input.bytes()));
         if let Err(error) = BundleError::finish(Ok(()), control, Checkpoint::InputBundle) {
-            return Err(failure.checked(error, control));
+            return Err(failure.checked(error));
         }
     }
     let definitions = match check_definitions_controlled(&files, control) {
@@ -445,7 +436,7 @@ pub fn check_inputs(
             for identity in f.inputs {
                 failure.digest(&identity.input, identity.model_digest);
             }
-            return Err(failure.input_with_control(f.issue, control));
+            return Err(failure.input(f.issue));
         }
         Err(CheckFailure::Stopped(reason)) => return Err(failure.stopped(reason)),
     };
@@ -461,7 +452,7 @@ pub fn check_inputs(
         Ok(law) => law,
         Err(CheckFailure::Input(f)) => {
             failure.digest("law", f.model_digest);
-            return Err(failure.input_with_control(f.issue, control));
+            return Err(failure.input(f.issue));
         }
         Err(CheckFailure::Stopped(reason)) => return Err(failure.stopped(reason)),
     };
@@ -477,7 +468,7 @@ pub fn check_inputs(
             Err(CheckFailure::Input(f)) => {
                 return Err(failure
                     .with_checked_law(definitions, law)
-                    .input_with_control(f.issue, control));
+                    .input(f.issue));
             }
             Err(CheckFailure::Stopped(reason)) => {
                 return Err(failure.with_checked_law(definitions, law).stopped(reason));

@@ -276,8 +276,6 @@ pub enum ResolveFailure {
     Invalid {
         requests: Vec<Request>,
         issues: Vec<RequestIssue>,
-        /// A budget stop observed after an already established request error.
-        stop_reason: Option<StopReason>,
     },
     /// この入口では意味を持たない問い。成功や算法非対応、公開 CLI の usage と区別する。
     NotApplicable {
@@ -879,26 +877,14 @@ fn stopped(reason: StopReason) -> ResolveFailure {
 fn phase(control: &mut Control, point: Checkpoint) -> Result<(), ResolveFailure> {
     control.checkpoint(point).map_err(stopped)
 }
-/// A known request error outranks a budget stop; cancellation remains first.
+/// Cancellation observed at the final checkpoint takes priority over the result.
 fn finish_request<T>(
     result: Result<T, ResolveFailure>,
     control: &mut Control,
     point: Checkpoint,
 ) -> Result<T, ResolveFailure> {
-    match (result, control.checkpoint(point)) {
-        (
-            Err(ResolveFailure::Invalid {
-                requests, issues, ..
-            }),
-            Err(reason @ StopReason::BudgetExhausted { .. }),
-        ) => Err(ResolveFailure::Invalid {
-            requests,
-            issues,
-            stop_reason: Some(reason),
-        }),
-        (_, Err(reason)) => Err(stopped(reason)),
-        (result, Ok(())) => result,
-    }
+    phase(control, point)?;
+    result
 }
 fn checkpoint(control: &mut Control) -> Result<(), ResolveFailure> {
     phase(control, Checkpoint::Resolve)
@@ -915,7 +901,6 @@ fn invalid(issue: RequestIssue) -> ResolveFailure {
     ResolveFailure::Invalid {
         requests: vec![],
         issues: vec![issue],
-        stop_reason: None,
     }
 }
 
@@ -1344,11 +1329,8 @@ fn finish_owner_check(
     relation: Option<bool>,
     control: &mut Control,
 ) -> Result<Option<bool>, ResolveFailure> {
-    match control.checkpoint(Checkpoint::RequestBinding) {
-        Err(StopReason::BudgetExhausted { .. }) if relation.is_none() => Ok(None),
-        Err(reason) => Err(stopped(reason)),
-        Ok(()) => Ok(relation),
-    }
+    phase(control, Checkpoint::RequestBinding)?;
+    Ok(relation)
 }
 
 fn type_owner_check(
@@ -1562,7 +1544,6 @@ fn cycle_failure(requests: &[Request], cyclic: &[usize]) -> ResolveFailure {
     ResolveFailure::Invalid {
         requests: requests.to_vec(),
         issues: issues.into_values().collect(),
-        stop_reason: None,
     }
 }
 
@@ -1662,25 +1643,7 @@ fn order(
         phase(control, Checkpoint::RequestDependency)?;
         Ok(())
     })();
-    if let Err(error) = result {
-        if !cyclic.is_empty()
-            && matches!(
-                error,
-                ResolveFailure::Interrupted {
-                    reason: StopReason::BudgetExhausted { .. }
-                }
-            )
-        {
-            // Keep only the cycles already witnessed; do not continue traversal after the stop.
-            return finish_request(
-                Err(cycle_failure(requests, &cyclic)),
-                control,
-                Checkpoint::RequestDependency,
-            );
-        }
-        return Err(error);
-    }
-
+    result?;
     Ok((sorted, cyclic))
 }
 

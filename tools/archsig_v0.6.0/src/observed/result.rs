@@ -1464,9 +1464,7 @@ impl Node {
                     value,
                     prior,
                     &self.arguments,
-                    &Control::new(crate::control::Limits::default(), |_| {
-                        crate::control::Usage::default()
-                    }),
+                    &Control::unlimited(),
                 )
                 .expect("挿入時に検査した値の既出 Ref 表示"),
                 other => other.wire(),

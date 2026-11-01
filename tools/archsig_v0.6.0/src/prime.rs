@@ -46,18 +46,13 @@ pub(crate) fn is_prime_controlled<E: InputError>(
     finish_decision::<E>(prime, control, point)
 }
 
-/// false は素数性全体の棄却が完了した場合だけ渡す。
-/// 予算を観測しても既知の不正を呼出し元で構成できる。取消は常に優先する。
+/// false は素数性全体の棄却が完了した場合だけ渡す。取消は判定より優先する。
 fn finish_decision<E: InputError>(
     prime: bool,
     control: &mut Control,
     point: Checkpoint,
 ) -> Result<bool, E> {
-    match E::checkpoint(control, point) {
-        Err(stop) if !prime && stop.is_budget_stop() => Ok(false),
-        Err(stop) => Err(stop),
-        Ok(()) => Ok(prime),
-    }
+    E::checkpoint(control, point).map(|()| prime)
 }
 
 fn strong_fermat_base2<E: InputError>(
@@ -102,8 +97,6 @@ fn jacobi<E: InputError>(
     point: Checkpoint,
 ) -> Result<i32, E> {
     E::checkpoint(control, point)?;
-    // Only this zero is the very rejection used by the caller's Selfridge search.
-    let zero_proves_composite = a.abs() != *n;
     let mut a = a.mod_floor(n);
     let mut n = n.clone();
     let mut result = 1;
@@ -112,12 +105,7 @@ fn jacobi<E: InputError>(
     let eight = BigInt::from(8);
     let four = BigInt::from(4);
     if a.is_zero() {
-        return finish_jacobi::<E>(
-            if n.is_one() { result } else { 0 },
-            zero_proves_composite,
-            control,
-            point,
-        );
+        return E::checkpoint(control, point).map(|()| if n.is_one() { result } else { 0 });
     }
     E::checkpoint(control, point)?;
     while !a.is_zero() {
@@ -137,34 +125,11 @@ fn jacobi<E: InputError>(
         }
         a = a.mod_floor(&n);
         if a.is_zero() {
-            return finish_jacobi::<E>(
-                if n.is_one() { result } else { 0 },
-                zero_proves_composite,
-                control,
-                point,
-            );
+            return E::checkpoint(control, point).map(|()| if n.is_one() { result } else { 0 });
         }
         E::checkpoint(control, point)?;
     }
-    finish_jacobi::<E>(
-        if n.is_one() { result } else { 0 },
-        zero_proves_composite,
-        control,
-        point,
-    )
-}
-
-fn finish_jacobi<E: InputError>(
-    symbol: i32,
-    zero_proves_composite: bool,
-    control: &mut Control,
-    point: Checkpoint,
-) -> Result<i32, E> {
-    match E::checkpoint(control, point) {
-        Err(stop) if symbol == 0 && zero_proves_composite && stop.is_budget_stop() => Ok(0),
-        Err(stop) => Err(stop),
-        Ok(()) => Ok(symbol),
-    }
+    E::checkpoint(control, point).map(|()| if n.is_one() { result } else { 0 })
 }
 
 fn strong_lucas<E: InputError>(

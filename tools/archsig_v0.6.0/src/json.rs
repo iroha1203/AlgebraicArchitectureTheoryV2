@@ -15,20 +15,14 @@ impl From<Box<Issue>> for CheckFailure<Box<Issue>> {
 pub trait InputError: From<Box<Issue>> {
     fn checkpoint(control: &mut Control, point: Checkpoint) -> Result<(), Self>;
     fn map_issue(self, map: impl FnOnce(Box<Issue>) -> Box<Issue>) -> Self;
-    fn is_budget_stop(&self) -> bool {
-        false
-    }
-    /// Preserve known input failures above budget exhaustion; cancellation stays first.
+    /// Cancellation observed at the final checkpoint takes priority over the result.
     fn finish<T>(
         result: Result<T, Self>,
         control: &mut Control,
         point: Checkpoint,
     ) -> Result<T, Self> {
-        match (result, Self::checkpoint(control, point)) {
-            (Err(input), Err(stop)) if !input.is_stopped() && stop.is_budget_stop() => Err(input),
-            (_, Err(stop)) => Err(stop),
-            (result, Ok(())) => result,
-        }
+        Self::checkpoint(control, point)?;
+        result
     }
     fn is_stopped(&self) -> bool {
         false
@@ -54,12 +48,6 @@ impl InputError for CheckFailure<Box<Issue>> {
     }
     fn is_stopped(&self) -> bool {
         matches!(self, Self::Stopped(_))
-    }
-    fn is_budget_stop(&self) -> bool {
-        matches!(
-            self,
-            Self::Stopped(crate::control::StopReason::BudgetExhausted { .. })
-        )
     }
 }
 

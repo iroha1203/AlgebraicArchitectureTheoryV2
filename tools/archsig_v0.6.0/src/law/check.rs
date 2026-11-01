@@ -116,9 +116,6 @@ impl<'d, E: InputError> Checker<'d, E> {
                 location: Location::Law { span },
                 details,
             },
-            // The mismatch is already known. Finish only its display payload;
-            // no additional semantic check or mathematical derivation is performed.
-            Err(stop) if stop.is_budget_stop() => Issue::law_type(span, expected, actual, message),
             Err(stop) => return Err(stop),
         };
         Err(Box::new(issue).into())
