@@ -59,14 +59,33 @@ impl std::ops::Deref for BinaryRun {
         &self.run
     }
 }
-impl std::borrow::Borrow<Run> for BinaryRun {
-    fn borrow(&self) -> &Run {
-        &self.run
+
+/// プロセス内の実行と実バイナリの実行に共通の読み方。stderr は実バイナリだけが持つ。
+pub trait Executed {
+    fn result(&self) -> &Run;
+    fn executed(&mut self) -> &mut Run;
+    fn stderr(&self) -> Option<&str>;
+}
+impl Executed for Run {
+    fn result(&self) -> &Run {
+        self
+    }
+    fn executed(&mut self) -> &mut Run {
+        self
+    }
+    fn stderr(&self) -> Option<&str> {
+        None
     }
 }
-impl std::borrow::BorrowMut<Run> for BinaryRun {
-    fn borrow_mut(&mut self) -> &mut Run {
+impl Executed for BinaryRun {
+    fn result(&self) -> &Run {
+        &self.run
+    }
+    fn executed(&mut self) -> &mut Run {
         &mut self.run
+    }
+    fn stderr(&self) -> Option<&str> {
+        Some(&self.stderr)
     }
 }
 
@@ -186,14 +205,11 @@ fn fixture_entries(dir: &Path) -> std::collections::BTreeMap<PathBuf, FixtureEnt
     entries
 }
 /// 失敗を期待する実行だけ、入力・既存出力を含むfixture全体の非変更を確認する。
-pub fn without_file_changes<R: std::borrow::BorrowMut<Run>>(
-    dir: &Path,
-    execute: impl FnOnce() -> R,
-) -> R {
+pub fn without_file_changes<R: Executed>(dir: &Path, execute: impl FnOnce() -> R) -> R {
     let before = fixture_entries(dir);
     let mut result = execute();
     assert_eq!(fixture_entries(dir), before, "失敗実行がfixtureを変更した");
-    result.borrow_mut().files_unchanged = true;
+    result.executed().files_unchanged = true;
     result
 }
 
@@ -258,7 +274,11 @@ pub fn consistent(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
 }
 
 /// 実行失敗は非空の stdout issues を返し、失敗成果物を作らない。
-pub fn notified(_dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
+pub fn notified(_dir: &Path, r: &impl Executed, status: &str, code: i32) -> JNode {
+    if let Some(stderr) = r.stderr() {
+        assert!(stderr.is_empty(), "エラーは stdout のみ: {stderr}");
+    }
+    let r = r.result();
     assert!(r.files_unchanged, "失敗実行はwithout_file_changesで囲む");
     assert_eq!(r.code, code, "{}", r.stdout);
     assert_eq!(s(get(&r.receipt, "format")), "archsig.receipt/1");
