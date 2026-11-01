@@ -697,7 +697,7 @@ fn validate_binding_value(
                         expected.push(Scalar::Subject {
                             snapshot: subject.snapshot.clone(),
                             subject: subject.id.clone(),
-                            entity: subject.ty.clone(),
+                            entity: subject.ty.to_string(),
                         });
                     }
                     let actual = data::set(from.erase(), &keys, &e.control)?;
@@ -913,7 +913,7 @@ fn domains(
                     out.values.push(Scalar::Subject {
                         snapshot: s.snapshot.clone(),
                         subject: s.id.clone(),
-                        entity: s.ty.clone(),
+                        entity: s.ty.to_string(),
                     });
                     out.support.push(Fact {
                         snapshot: s.snapshot.clone(),

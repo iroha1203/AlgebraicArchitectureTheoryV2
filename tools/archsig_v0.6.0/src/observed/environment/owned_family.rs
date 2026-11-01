@@ -76,7 +76,7 @@ impl Environment<'_> {
                 let value = Scalar::Subject {
                     snapshot: snapshot.id.clone(),
                     subject: subject.id.clone(),
-                    entity: subject.ty.clone(),
+                    entity: subject.ty.to_string(),
                 };
                 if subject.ty != entity || fixed.is_some_and(|fixed| fixed != &value) {
                     continue;
@@ -95,7 +95,7 @@ impl Environment<'_> {
                 let position = Fact {
                     snapshot: snapshot.id.clone(),
                     subject: subject.id.clone(),
-                    field: Some(field_name.clone()),
+                    field: Some(field.name.clone()),
                     atom: None,
                 };
                 if let Some(assigned) = self
@@ -138,7 +138,7 @@ impl Environment<'_> {
                         result.enumeration.support.push(Fact {
                             snapshot: snapshot.id.clone(),
                             subject: subject.id.clone(),
-                            field: Some(field_name.clone()),
+                            field: Some(field.name.clone()),
                             atom: Some(atom.clone()),
                         });
                         if target_snapshot == owner_snapshot && target_subject == owner_subject {
@@ -150,7 +150,7 @@ impl Environment<'_> {
                         let fact = Fact {
                             snapshot: snapshot.id.clone(),
                             subject: subject.id.clone(),
-                            field: Some(field_name.clone()),
+                            field: Some(field.name.clone()),
                             atom: None,
                         };
                         let completed = assignment

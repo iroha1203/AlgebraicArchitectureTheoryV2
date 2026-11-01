@@ -39,7 +39,7 @@ pub(in super::super) fn validate_selection(
         let expected = Scalar::Subject {
             snapshot: fact.snapshot.clone(),
             subject: fact.subject.clone(),
-            entity: subject.ty.clone(),
+            entity: subject.ty.to_string(),
         };
         if bindings
             .iter()
@@ -201,7 +201,7 @@ pub(super) fn initial(
                 Scalar::Subject {
                     snapshot: fact.snapshot.clone(),
                     subject: fact.subject.clone(),
-                    entity: subject.ty.clone(),
+                    entity: subject.ty.to_string(),
                 },
             );
         }

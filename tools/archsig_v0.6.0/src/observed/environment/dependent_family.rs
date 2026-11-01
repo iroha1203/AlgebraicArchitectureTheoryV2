@@ -128,7 +128,7 @@ impl Environment<'_> {
                 enumeration.values.push(Scalar::Subject {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),
-                    entity: s.ty.clone(),
+                    entity: s.ty.to_string(),
                 });
                 enumeration.scope = self.scope(s, &declaration.reading, None)?;
                 enumeration.support.push(Fact {

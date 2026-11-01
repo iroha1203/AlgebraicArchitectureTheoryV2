@@ -278,7 +278,7 @@ fn populate_with_environment(
                     Scalar::Subject {
                         snapshot: f.snapshot.clone(),
                         subject: f.subject.clone(),
-                        entity: subject.ty.clone(),
+                        entity: subject.ty.to_string(),
                     }
                 } else {
                     let index = entry

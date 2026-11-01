@@ -398,7 +398,7 @@ pub(super) fn selected_build(
         .inputs
         .definitions()
         .declarations
-        .get(&subject.ty)
+        .get(subject.ty.as_str())
         .ok_or("buildのroot型がない")?;
     let visible = crate::construction::reading_namespaces(
         environment.inputs.law(),

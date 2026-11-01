@@ -129,7 +129,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
             for slot in &model.slots {
                 if patches.iter().any(|p|p.positions.contains(slot)){continue;}
                 let subject=fixed.subject(&slot.snapshot,&slot.subject)?;
-                let value=Scalar::Subject{snapshot:slot.snapshot.clone(),subject:slot.subject.clone(),entity:subject.ty.clone()};
+                let value=Scalar::Subject{snapshot:slot.snapshot.clone(),subject:slot.subject.clone(),entity:subject.ty.to_string()};
                 patches.push(geometry::Support{carrier:vec![Json::obj([("type",value.ty().wire()),("value",value.wire())])],positions:vec![slot.clone()],visible:vec![slot.clone()]});
             }
             for support in &patches {
@@ -176,7 +176,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
             let value = Scalar::Subject {
                 snapshot: slot.snapshot.clone(),
                 subject: slot.subject.clone(),
-                entity: subject.ty.clone(),
+                entity: subject.ty.to_string(),
             };
             let support = geometry::Support {
                 carrier: vec![Json::obj([
@@ -187,7 +187,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
                 visible: vec![slot.clone()],
             };
             let subject_ref = change_result::value(&mut b, &value)?;
-            let declaration = &env.inputs.definitions().declarations[&subject.ty];
+            let declaration = &env.inputs.definitions().declarations[subject.ty.as_str()];
             let (parameters, fields) = declaration.signature.record_fields().ok_or("singletonの原始recordがない")?;
             let field_name = slot.field.as_ref().ok_or("singletonのfieldがない")?;
             let field = parameters.iter().chain(fields).find(|field| {

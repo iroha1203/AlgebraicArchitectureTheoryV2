@@ -83,7 +83,7 @@ fn correspondence_action_maps_all_41_original_atoms_and_collapses_exact_external
             expected.push(Fact {
                 snapshot: "v".into(),
                 subject: name.into(),
-                field: Some(format!("{ty}.{field}")),
+                field: Some(format!("{ty}.{field}").into()),
                 atom: Some(format!("{name}-{field}")),
             });
         }
@@ -305,7 +305,7 @@ fn correspondence_aligned_full_action_keeps_external_existence_but_collapses_its
             expected.push(Fact {
                 snapshot: "v".into(),
                 subject: name.into(),
-                field: Some(format!("{ty}.{field}")),
+                field: Some(format!("{ty}.{field}").into()),
                 atom: Some(format!("{name}-{field}")),
             });
         }
@@ -335,7 +335,7 @@ fn correspondence_aligned_full_action_keeps_external_existence_but_collapses_its
                         "external" => "outside",
                         _ => panic!(),
                     };
-                    out.field = Some(format!("Flow.RNode.{moved}"));
+                    out.field = Some(format!("Flow.RNode.{moved}").into());
                     out.atom = Some(format!("r-{moved}"));
                 }
             }

@@ -172,7 +172,7 @@ impl Environment<'_> {
                 let owner = Scalar::Subject {
                     snapshot: fact.snapshot.clone(),
                     subject: fact.subject.clone(),
-                    entity: subject.ty.clone(),
+                    entity: subject.ty.to_string(),
                 };
                 let members =
                     self.owned_members(entity, &owner, None, &declaration.reading, &mut |_, _| {})?;

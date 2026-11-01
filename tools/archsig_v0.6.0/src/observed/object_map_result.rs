@@ -573,7 +573,7 @@ fn compute_inner(
                     .iter()
                     .map(|a| (&a.source, &a.target))
                     .chain(implicit.iter().map(|(s, t)| (s, t)))
-                    .filter(|(s, _)| s.rsplit_once('.').is_some_and(|(owner, _)| owner == source))
+                    .filter(|(s, _)| inputs.law().resolved_names.get(s.as_str()).and_then(|name| name.owner()) == Some(source.as_str()))
                     .map(|(s, t)| Json::Arr(vec![Json::str(s), Json::str(t)]))
                     .collect::<Vec<_>>();
                 fields.sort_by_key(Json::canonical);

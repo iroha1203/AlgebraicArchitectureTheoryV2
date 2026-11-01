@@ -9,7 +9,7 @@ use std::sync::Arc;
 pub(in crate::observed) enum Value {
     Known(Scalar),
     // constructorが既知でpayloadは記号値の中間値。係数表示として公開しない。
-    Data { family: String, constructor: String, args: Arc<Vec<Value>> },
+    Data { family: String, constructor: crate::names::QualifiedName, args: Arc<Vec<Value>> },
     Number(forms::Form),
     Tuple(Vec<Value>),
     List {
@@ -123,8 +123,8 @@ impl Value {
     pub(in crate::observed) fn data_parts(&self, c: &Control) -> Result<Option<(String, Vec<Self>)>, ValidationFailure> {
         tick(c)?;
         Ok(match self {
-            Self::Data { constructor, args, .. } => Some((constructor.clone(), args.as_ref().clone())),
-            Self::Known(Scalar::Data { constructor, args, .. }) => Some((constructor.clone(), args.iter().cloned().map(Self::Known).collect())),
+            Self::Data { constructor, args, .. } => Some((constructor.to_string(), args.as_ref().clone())),
+            Self::Known(Scalar::Data { constructor, args, .. }) => Some((constructor.to_string(), args.iter().cloned().map(Self::Known).collect())),
             _ => None,
         })
     }
@@ -976,7 +976,7 @@ impl Term {
                             }
                         }
                         answer.ok_or("Term記号matchの元選択枝がない")?
-                    } else if let Some((arm, bound)) = data::select_partial(arms, &input, c, &Value::data_parts, &|span, c| self.reference(span, c).map(|value| value.map(str::to_owned)))? {
+                    } else if let Some((arm, bound)) = data::select_partial(arms, &input, c, &Value::data_parts, &|span, c| self.reference(span, c).map(|value| value.and_then(|name| law.resolved_names.get(name).cloned())))? {
                         let mut local = vars.clone();
                         for (name, value) in bound {
                             tick(c)?;
@@ -1099,7 +1099,7 @@ impl Term {
                         let constructor = self.reference(self.nodes[&target].span, c)?.ok_or("Term記号constructorの元参照がない")?;
                         let ctor = data::constructor(law, family, constructor, c)?;
                         if ctor.arguments.len() != a.len() { return Err("Term記号constructorのarityが違う".into()) }
-                        Value::Data { family: family.clone(), constructor: constructor.into(), args: Arc::new(a) }
+                        Value::Data { family: family.clone(), constructor: law.resolved_names.get(constructor).ok_or("constructorの検査済み名がない")?.clone(), args: Arc::new(a) }
                     } else {
                         unknown()
                     }
@@ -1189,7 +1189,7 @@ impl Term {
                 }
                 Scalar::Data {
                     family: family.clone(),
-                    constructor: reference.into(),
+                    constructor: law.resolved_names.get(reference).ok_or("constructorの検査済み名がない")?.clone(),
                     args: values,
                 }
             }

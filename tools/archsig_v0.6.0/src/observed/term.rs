@@ -714,7 +714,7 @@ impl Term {
                         }
                         Scalar::Data {
                             family: family.clone(),
-                            constructor: name.into(),
+                            constructor: law.resolved_names.get(name).ok_or("constructorの検査済み名がない")?.clone(),
                             args: vec![],
                         }
                     }
@@ -839,7 +839,7 @@ impl Term {
                         }
                         Scalar::Data {
                             family: family.clone(),
-                            constructor: target.into(),
+                            constructor: law.resolved_names.get(target).ok_or("constructorの検査済み名がない")?.clone(),
                             args: values,
                         }
                     } else {

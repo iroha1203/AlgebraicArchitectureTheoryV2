@@ -63,3 +63,162 @@ pub const BUILTIN_OPS: &[&str] = &[
 pub fn is_reserved(name: &str) -> bool {
     RESERVED.contains(&name)
 }
+
+/// 入力検査で分解した名前。元の綴りと所属・末尾名を一緒に保持する。
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct QualifiedName {
+    full: String,
+    namespace_end: usize,
+    member_start: usize,
+    owner_field: bool,
+}
+impl QualifiedName {
+    pub(crate) fn parse(full: String) -> Self {
+        let namespace_end = full.find('.').unwrap_or(0);
+        let member_start = full.rfind('.').map_or(0, |i| i + 1);
+        let owner_field = &full[member_start..] == "owner";
+        Self {
+            full,
+            namespace_end,
+            member_start,
+            owner_field,
+        }
+    }
+    pub fn as_str(&self) -> &str {
+        &self.full
+    }
+    pub fn namespace(&self) -> &str {
+        &self.full[..self.namespace_end]
+    }
+    pub fn short(&self) -> &str {
+        &self.full[self.member_start..]
+    }
+    pub fn owner(&self) -> Option<&str> {
+        self.member_start
+            .checked_sub(1)
+            .map(|end| &self.full[..end])
+    }
+    pub fn is_owner(&self) -> bool {
+        self.owner_field
+    }
+}
+impl std::ops::Deref for QualifiedName {
+    type Target = str;
+    fn deref(&self) -> &str {
+        self.as_str()
+    }
+}
+impl std::fmt::Display for QualifiedName {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.full.fmt(f)
+    }
+}
+impl std::borrow::Borrow<str> for QualifiedName {
+    fn borrow(&self) -> &str {
+        self.as_str()
+    }
+}
+impl AsRef<str> for QualifiedName {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+impl From<String> for QualifiedName {
+    fn from(value: String) -> Self {
+        Self::parse(value)
+    }
+}
+impl From<&str> for QualifiedName {
+    fn from(value: &str) -> Self {
+        Self::parse(value.to_owned())
+    }
+}
+impl From<QualifiedName> for String {
+    fn from(value: QualifiedName) -> Self {
+        value.full
+    }
+}
+impl From<&QualifiedName> for String {
+    fn from(value: &QualifiedName) -> Self {
+        value.full.clone()
+    }
+}
+impl PartialEq<str> for QualifiedName {
+    fn eq(&self, other: &str) -> bool {
+        self.as_str() == other
+    }
+}
+impl PartialEq<&str> for QualifiedName {
+    fn eq(&self, other: &&str) -> bool {
+        self.as_str() == *other
+    }
+}
+impl PartialEq<String> for QualifiedName {
+    fn eq(&self, other: &String) -> bool {
+        self.as_str() == other
+    }
+}
+impl PartialEq<QualifiedName> for String {
+    fn eq(&self, other: &QualifiedName) -> bool {
+        self == other.as_str()
+    }
+}
+
+impl std::borrow::Borrow<String> for QualifiedName {
+    fn borrow(&self) -> &String {
+        &self.full
+    }
+}
+
+#[cfg(test)]
+mod qualified_tests {
+    use super::QualifiedName;
+
+    #[test]
+    fn parsed_parts_preserve_the_original_spelling_and_owner_role() {
+        for (text, namespace, owner, short, owner_field) in [
+            ("Mesh.Part.owner", "Mesh", Some("Mesh.Part"), "owner", true),
+            ("Mesh.Part.value", "Mesh", Some("Mesh.Part"), "value", false),
+            ("Mesh.Part", "Mesh", Some("Mesh"), "Part", false),
+            ("value", "", None, "value", false),
+            ("名.型.値", "名", Some("名.型"), "値", false),
+        ] {
+            let name = QualifiedName::from(text);
+            assert_eq!(name.as_str(), text);
+            assert_eq!(name.namespace(), namespace);
+            assert_eq!(name.owner(), owner);
+            assert_eq!(name.short(), short);
+            assert_eq!(name.is_owner(), owner_field);
+            assert_eq!(String::from(name), text);
+        }
+    }
+
+    #[test]
+    fn checked_inputs_keep_name_parts_for_observations_and_law_references() {
+        use crate::{
+            control::Control,
+            input::{InputSources, check_inputs},
+        };
+        let inputs = check_inputs(
+            InputSources::from_bytes(
+                vec![include_bytes!("../tests/fixtures/counter.atoms.json").to_vec()],
+                include_bytes!("../tests/fixtures/counter.law").to_vec(),
+                include_bytes!("../tests/fixtures/counter.archmap.json").to_vec(),
+            ),
+            &mut Control::unlimited(),
+        )
+        .unwrap();
+        let subject = &inputs.archmap().snapshots[0].subjects[0];
+        assert_eq!(subject.ty.namespace(), "Counter");
+        let field = &subject.fields[0].name;
+        assert_eq!(field.owner(), Some("Counter.State"));
+        assert_eq!(field.short(), "count");
+        assert!(!field.is_owner());
+        let indexed = &inputs.law().resolved_names["Counter.State.count"];
+        assert_eq!(indexed, field);
+        assert_eq!(
+            inputs.law().resolved_names["CountCheck.amount"].short(),
+            "amount"
+        );
+    }
+}

@@ -212,15 +212,15 @@ pub(super) fn carrier(
     let mut values = vec![];
     for f in a.construction().universe() {
         tick(c)?;
-        let optional = |s: &Option<String>| Scalar::Option {
+        let optional = |s: Option<&str>| Scalar::Option {
             element: Type::Text,
-            value: s.as_ref().map(|s| Box::new(Scalar::Text(s.clone()))),
+            value: s.map(|s| Box::new(Scalar::Text(s.to_owned()))),
         };
         values.push(Scalar::Tuple(vec![
             Scalar::Text(f.snapshot.clone()),
             Scalar::Text(f.subject.clone()),
-            optional(&f.field),
-            optional(&f.atom),
+            optional(f.field.as_deref()),
+            optional(f.atom.as_deref()),
         ]));
     }
     values.sort_by_key(|v| v.wire().canonical());
@@ -320,7 +320,7 @@ pub(super) fn dependencies(
             let r = retain(Scalar::Subject {
                 snapshot: f.snapshot.clone(),
                 subject: f.subject.clone(),
-                entity: subject.ty.clone(),
+                entity: subject.ty.to_string(),
             })?;
             subjects.insert(key.clone(), r);
             r
@@ -329,6 +329,6 @@ pub(super) fn dependencies(
     }
     tick(c)?;
     Ok(Dependencies {
-        slots: slots.into_values().collect(),
+        slots: slots.into_values().map(|(node,name)| (node,name.to_string())).collect(),
     })
 }

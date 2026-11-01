@@ -23,7 +23,7 @@ fn fact(field: &str) -> Fact {
     Fact {
         snapshot: "v".into(),
         subject: "p".into(),
-        field: Some(format!("Pattern.Part.{field}")),
+        field: Some(format!("Pattern.Part.{field}").into()),
         atom: None,
     }
 }

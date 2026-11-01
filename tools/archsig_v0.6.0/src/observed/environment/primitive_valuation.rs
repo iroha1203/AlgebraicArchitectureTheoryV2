@@ -74,7 +74,7 @@ impl<'a> Environment<'a> {
             }
             data::check(value, inputs.law(), control)?;
             let encoded = data::input_json(value, control)?;
-            let namespace = subject.ty.rsplit_once('.').map_or("", |(ns, _)| ns);
+            let namespace = subject.ty.namespace();
             let original =
                 crate::archmap::value::check_assignment::<CheckFailure<Box<crate::issue::Issue>>>(
                     &encoded,
@@ -99,7 +99,7 @@ impl<'a> Environment<'a> {
             pinned.push(crate::archmap::FieldAssignment {
                 snapshot: position.snapshot.clone(),
                 subject: position.subject.clone(),
-                field: field.name.clone(),
+                field: field.name.to_string(),
                 value: encoded,
             });
             original_values.insert(position.clone(), original);

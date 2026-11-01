@@ -288,7 +288,7 @@ impl Data {
                     .iter()
                     .find(|s| s.id == identity.subject)?
                     .ty
-                    .clone(),
+                    .to_string(),
             )
         };
         let shape = MapProjection {
@@ -478,7 +478,7 @@ fn plan(
             Part::Subject(Scalar::Subject {
                 snapshot: f.snapshot.clone(),
                 subject: f.subject.clone(),
-                entity: original.ty.clone(),
+                entity: original.ty.to_string(),
             }),
             c,
         )?;
@@ -506,7 +506,7 @@ fn plan(
                 &mut parts,
                 base,
                 Part::Candidate {
-                    declaration: original.ty.clone(),
+                    declaration: original.ty.to_string(),
                     subject,
                     source,
                     target,

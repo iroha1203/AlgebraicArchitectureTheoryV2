@@ -187,7 +187,7 @@ fn owner_condition(
     }
     for field in &candidate.fields {
         checkpoint(control)?;
-        if field.name.rsplit('.').next() != Some("owner") {
+        if !field.name.is_owner() {
             continue;
         }
         return match &field.slot {
@@ -282,7 +282,7 @@ pub fn object_reading_instances(
     )?;
     let root_ty = &subject(inputs, root, control)?.ty;
     let visible_namespaces = namespaces(inputs, construction.reading(), control)?;
-    let mut local_types = BTreeSet::from([root_ty.clone()]);
+    let mut local_types = BTreeSet::from([root_ty.to_string()]);
     for declaration in inputs.definitions().declarations.values() {
         checkpoint(control)?;
         if visible(inputs, &declaration.name, &visible_namespaces)

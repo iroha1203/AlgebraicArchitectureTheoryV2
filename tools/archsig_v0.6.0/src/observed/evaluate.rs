@@ -456,7 +456,7 @@ impl Evaluator<'_, '_> {
                     let scalar = Scalar::Subject {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
-                        entity: s.ty.clone(),
+                        entity: s.ty.to_string(),
                     };
                     if scalar.ty() != p.ty.erase() {
                         return Err(Failure::Internal("解決済み束縛の型が合わない".into()));
@@ -2324,7 +2324,7 @@ impl Evaluator<'_, '_> {
         let fact = Fact {
             snapshot,
             subject,
-            field: Some(fullname),
+            field: Some(field.name.clone()),
             atom: None,
         };
         if let Some((assigned,_))=self.environment.architecture_value(&fact) {

@@ -272,7 +272,7 @@ pub(in crate::observed) fn implicit_support_with_parameters(
             &Scalar::Subject {
                 snapshot: fact.snapshot.clone(),
                 subject: fact.subject.clone(),
-                entity: subject.ty.clone(),
+                entity: subject.ty.to_string(),
             },
             &mut carrier,
             c,
@@ -350,9 +350,9 @@ fn projections(
                 let subject = Scalar::Subject {
                     snapshot: slot.snapshot.clone(),
                     subject: slot.subject.clone(),
-                    entity: owner.ty.clone(),
+                    entity: owner.ty.to_string(),
                 };
-                let declaration = &env.inputs.definitions().declarations[&owner.ty];
+                let declaration = &env.inputs.definitions().declarations[owner.ty.as_str()];
                 let (params, fields) = declaration
                     .signature
                     .record_fields()
@@ -360,7 +360,7 @@ fn projections(
                 let field = params
                     .iter()
                     .chain(fields)
-                    .find(|f| slot.field.as_ref() == Some(&format!("{}.{}", owner.ty, f.name)))
+                    .find(|f| slot.field.as_ref() == Some(&format!("{}.{}", owner.ty, f.name).into()))
                     .ok_or("末端fieldの宣言がない")?;
                 let mut carrier = vec![];
                 subject_carrier(value, &mut carrier, c)?;
@@ -451,7 +451,7 @@ fn visible_slots(
         let Some(Scalar::Subject { snapshot, subject, entity }) = &owner.known_value else {
             return Err(unsupported(expr.span, "明示localのfield読取り元が確定した参照でない"));
         };
-        visible.push(Fact { snapshot: snapshot.clone(), subject: subject.clone(), field: Some(format!("{entity}.{last}")), atom: None });
+        visible.push(Fact { snapshot: snapshot.clone(), subject: subject.clone(), field: Some(env.input_name(&format!("{entity}.{last}"))?), atom: None });
     }
     visible.sort();
     visible.dedup();
@@ -558,7 +558,7 @@ fn state_visibility_inner(
                         return Ok(None);
                     };
                     visible.push(Fact { snapshot: snapshot.clone(), subject: subject.clone(),
-                        field: Some(format!("{entity}.{}",name.name)), atom: None });
+                        field: Some(env.input_name(&format!("{entity}.{}",name.name))?), atom: None });
                     subject_carrier(owner.known_value.as_ref().ok_or("局所読取り元がない")?, &mut carrier, c)?;
                     let value = env.scoped_ast(id, &variables, &Scope::default(), reading)?;
                     if value.condition_failed || value.condition_pending { return Ok(None); }
@@ -878,7 +878,7 @@ fn affine_read_image(
             &Scalar::Subject {
                 snapshot: slot.snapshot.clone(),
                 subject: slot.subject.clone(),
-                entity: owner.ty.clone(),
+                entity: owner.ty.to_string(),
             },
         )?;
         fixed_refs.push(subject);
@@ -1019,10 +1019,10 @@ pub(in crate::observed) fn materialize_positions(
         let subject = Scalar::Subject {
             snapshot: slot.snapshot.clone(),
             subject: slot.subject.clone(),
-            entity: owner.ty.clone(),
+            entity: owner.ty.to_string(),
         };
         let name = slot.field.as_ref().ok_or("暗黙読取りのfieldがない")?;
-        let declaration = &env.inputs.definitions().declarations[&owner.ty];
+        let declaration = &env.inputs.definitions().declarations[owner.ty.as_str()];
         let (params, fields) = declaration
             .signature
             .record_fields()
@@ -1525,10 +1525,10 @@ fn materialize_instance(
                 let subject = Scalar::Subject {
                     snapshot: slot.snapshot.clone(),
                     subject: slot.subject.clone(),
-                    entity: owner.ty.clone(),
+                    entity: owner.ty.to_string(),
                 };
                 let name = slot.field.as_ref().ok_or("復元するfieldがない")?;
-                let definition = &env.inputs.definitions().declarations[&owner.ty];
+                let definition = &env.inputs.definitions().declarations[owner.ty.as_str()];
                 let (params, fields) = definition
                     .signature
                     .record_fields()

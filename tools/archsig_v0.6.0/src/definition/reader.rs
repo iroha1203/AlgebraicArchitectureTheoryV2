@@ -741,7 +741,7 @@ fn fields<E: InputError>(
                 unique(seen, &name, o.input, &p)?;
                 let (n, tp) = f.get("type")?;
                 fields.push(Field {
-                    name,
+                    name: name.into(),
                     ty: ty::<E>(control, n, o.input, &tp, refs)?,
                     meaning: f.nonempty("meaning")?,
                     location: location(o.input, &p),

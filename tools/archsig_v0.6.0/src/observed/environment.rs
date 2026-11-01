@@ -369,7 +369,7 @@ pub(crate) struct Environment<'a> {
     architecture: RefCell<Option<architecture_environment::ArchitectureContext>>,
     original_requests: Option<&'a [Request]>,
     subjects: BTreeMap<(String, String), &'a Subject>,
-    fields: BTreeMap<(String, String, String), &'a crate::archmap::Field>,
+    fields: BTreeMap<(String, String, crate::names::QualifiedName), &'a crate::archmap::Field>,
     atoms: BTreeMap<String, Fact>,
     modes: BTreeMap<String, &'static str>,
     snapshot_origins: BTreeMap<String, String>,
@@ -413,6 +413,10 @@ pub(crate) struct Environment<'a> {
     name_token_observer: RefCell<Option<NameTokenObserver>>,
 }
 impl<'a> Environment<'a> {
+    pub(super) fn input_name(&self, name: &str) -> Result<crate::names::QualifiedName, ValidationFailure> {
+        self.inputs.law().resolved_names.get(name).cloned().ok_or_else(|| "原始fieldの検査済み名がない".into())
+    }
+
     pub(super) fn change_source_checked(&self, source:&std::sync::Arc<super::change_result::Source>)->bool { self.cache.borrow().changes.iter().any(|s|std::sync::Arc::ptr_eq(s,source)) }
     pub(super) fn remember_change_source(&self,source:std::sync::Arc<super::change_result::Source>) { self.cache.borrow_mut().changes.push(source); }
     pub(super) fn local_point(&self, declaration:&crate::law::model::Declaration,bindings:&[(String,Scalar)]) -> Result<(finite_law_valuations::FiniteLawRow,Vec<Fact>,Vec<quotient_evaluation::EvaluationNode>),ValidationFailure> {

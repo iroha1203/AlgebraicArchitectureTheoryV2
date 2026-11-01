@@ -276,7 +276,7 @@ pub(in crate::observed) fn selector(
             Scalar::Subject {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
-                entity: original.ty.clone(),
+                entity: original.ty.to_string(),
             }
         }
         Selector::Answer { .. } => match environment.answer_binding(graph, value, (0, 0))? {
@@ -324,7 +324,7 @@ pub(in crate::observed) fn search_with_completions(
             .into_iter()
             .chain(witness.construction().resolved_owners().iter().map(|(field, owner)| {
                 let subject = original.subject(&owner.snapshot, &owner.subject).expect("検査済みowner参照");
-                (field.clone(), Scalar::Subject { snapshot: owner.snapshot.clone(), subject: owner.subject.clone(), entity: subject.ty.clone() })
+                (field.clone(), Scalar::Subject { snapshot: owner.snapshot.clone(), subject: owner.subject.clone(), entity: subject.ty.to_string() })
             }))
             .chain(completions.iter().cloned())
             .collect(),

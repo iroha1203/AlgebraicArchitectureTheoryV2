@@ -58,6 +58,7 @@ pub const SEMANTICS: &str = "archsig/0.6.0";
 /// ```
 #[derive(Debug)]
 pub struct CheckedLaw {
+    pub(crate) resolved_names: BTreeMap<String, crate::names::QualifiedName>,
     pub(crate) bytes_digest: String,
     pub(crate) model_digest: String,
     /// 完全名から宣言へ。
@@ -427,7 +428,28 @@ fn check_law_processing<E: InputError>(
     }
     let mut expr_types = std::mem::take(&mut checker.expr_types);
     expr_types.resize(checker.parser.exprs.len(), None);
+    // 元入力が持つ名前の区切りは、評価へ渡す前に一度だけ確定する。
+    let mut resolved_names = BTreeMap::new();
+    let mut remember = |name: String| {
+        resolved_names.entry(name.clone()).or_insert_with(|| name.into());
+    };
+    for (name, declaration) in &definitions.declarations {
+        remember(name.clone());
+        if let Some((parameters, fields)) = declaration.signature.record_fields() {
+            for field in parameters.iter().chain(fields) {
+                remember(format!("{name}.{}", field.name));
+            }
+        }
+        if let crate::definition::PrimitiveSignature::Data { constructors } = &declaration.signature {
+            for constructor in constructors { remember(format!("{name}.{}", constructor.name)); }
+        }
+    }
+    for name in declarations.keys() { remember(name.clone()); }
+    for info in &infos {
+        for (_, name) in &info.references { remember(name.clone()); }
+    }
     Ok(CheckedLaw {
+        resolved_names,
         bytes_digest,
         model_digest: digest,
         declarations,

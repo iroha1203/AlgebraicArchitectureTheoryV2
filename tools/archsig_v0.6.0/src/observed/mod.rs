@@ -235,11 +235,7 @@ pub(crate) fn determined_owners(
     if fields.is_empty()
         || fields.iter().any(|field| {
             field.atom.is_some()
-                || field
-                    .field
-                    .as_deref()
-                    .and_then(|name| name.rsplit('.').next())
-                    != Some("owner")
+                || !field.field.as_ref().is_some_and(|name| name.is_owner())
         })
     {
         return Err(ConstructionFailure::Inconsistent(

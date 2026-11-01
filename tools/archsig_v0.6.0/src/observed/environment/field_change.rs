@@ -350,7 +350,7 @@ fn compute_inner(
                         let position = Fact {
                             snapshot: snapshot.clone(),
                             subject: subject.clone(),
-                            field: Some(format!("{entity}.{}", field.name)),
+                            field: Some(env.input_name(&format!("{entity}.{}", field.name))?),
                             atom: None,
                         };
                         if let Some(prior) = updates.get(&position) {

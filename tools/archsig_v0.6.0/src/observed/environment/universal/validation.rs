@@ -781,7 +781,7 @@ impl Environment<'_> {
                     != &(Scalar::Subject {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
-                        entity: original.ty.clone(),
+                        entity: original.ty.to_string(),
                     })
                 || graph.context_at(binding.value.0) != self.current_context(graph)
             {
@@ -2769,7 +2769,7 @@ impl Environment<'_> {
                 != &(Scalar::Subject {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),
-                    entity: original.ty.clone(),
+                    entity: original.ty.to_string(),
                 })
                 || graph.context_at(binding.value.0) != self.current_context(graph)
             {

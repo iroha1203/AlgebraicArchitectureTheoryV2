@@ -75,7 +75,7 @@ impl DeclarationCorrespondence {
     pub(crate) fn field_target(&self, inputs: &CheckedInputs, source: &str, control: &mut Control) -> Result<Option<String>, ConstructionFailure> {
         let raw=self.operation.map().candidate().correspondence().ok_or_else(||ConstructionFailure::InvalidSelection("field対応は原始correspondenceを要求する".into()))?;
         let holder=subject(inputs,&raw.snapshot,&raw.subject,control)?;
-        let declaration=inputs.definitions().declarations.get(&holder.ty).ok_or_else(||ConstructionFailure::Inconsistent("field対応の元定義がない".into()))?;
+        let declaration=inputs.definitions().declarations.get(holder.ty.as_str()).ok_or_else(||ConstructionFailure::Inconsistent("field対応の元定義がない".into()))?;
         let PrimitiveSignature::Correspondence {implicit,alignments,..}=&declaration.signature else {return Err(ConstructionFailure::Inconsistent("field対応の元がcorrespondenceでない".into()));};
         for pair in alignments {tick(control)?;if pair.source==source {return Ok(Some(pair.target.clone()));}}
         for (a,b) in implicit {tick(control)?;if a==source {return Ok(Some(b.clone()));}}
@@ -188,7 +188,7 @@ pub fn declaration_correspondence(
     let declaration = inputs
         .definitions()
         .declarations
-        .get(&holder.ty)
+        .get(holder.ty.as_str())
         .ok_or_else(|| ConstructionFailure::Inconsistent("原始対応の定義がない".into()))?;
     let PrimitiveSignature::Correspondence { from, to, maps, .. } = &declaration.signature else {
         return Err(ConstructionFailure::Inconsistent(

@@ -208,8 +208,8 @@ impl Environment<'_> {
         name: &str,
     ) -> Result<&crate::archmap::Field, ValidationFailure> {
         self.tick()?;
-        self.fields
-            .get(&(owner.snapshot.clone(), owner.id.clone(), name.to_owned()))
+        self.inputs.law().resolved_names.get(name)
+            .and_then(|name| self.fields.get(&(owner.snapshot.clone(), owner.id.clone(), name.clone())))
             .copied()
             .ok_or_else(|| "Path構造の元fieldがない".into())
     }

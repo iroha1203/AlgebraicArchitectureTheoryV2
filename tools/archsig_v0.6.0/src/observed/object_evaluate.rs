@@ -70,7 +70,7 @@ impl ObjectDomain {
                     .ok_or("条件付きsubjectがない")?
                     .ty
                     .clone();
-                conditional.push((ty, member.subject().clone(), member.owner_slot().clone()));
+                conditional.push((ty.to_string(), member.subject().clone(), member.owner_slot().clone()));
             }
         }
         Ok(Self {
@@ -85,7 +85,7 @@ impl ObjectDomain {
     }
 
     pub(super) fn membership_subject(&self, subject: &crate::archmap::Subject) -> bool {
-        self.local_types.contains(&subject.ty)
+        self.local_types.contains(subject.ty.as_str())
             && (self.identity.subject() == self.identity.root()
                 || (subject.snapshot == self.identity.subject().snapshot
                     && subject.id == self.identity.subject().subject))

@@ -86,6 +86,12 @@ impl ControlledEq for String {
         c.eq(self.as_str(), other.as_str())
     }
 }
+impl ControlledEq for crate::names::QualifiedName {
+    fn compare(&self, other: &Self, c: &mut Comparison<'_>) -> Result<(), BundleError> {
+        c.eq(self.as_str(), other.as_str())
+    }
+}
+
 impl<T: ControlledEq + ?Sized> ControlledEq for &T {
     fn compare(&self, other: &Self, c: &mut Comparison<'_>) -> Result<(), BundleError> {
         c.eq(*self, *other)

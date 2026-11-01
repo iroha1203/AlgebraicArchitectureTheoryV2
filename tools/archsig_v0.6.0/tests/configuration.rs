@@ -33,7 +33,7 @@ fn fact(subject: &str, field: Option<&str>, atom: bool) -> FactPointer {
     FactPointer {
         snapshot: "v".into(),
         subject: subject.into(),
-        field: field.map(|s| format!("Mesh.{ty}.{s}")),
+        field: field.map(|s| format!("Mesh.{ty}.{s}").into()),
         atom: if atom {
             Some(format!("{subject}-{}", field.unwrap()))
         } else {

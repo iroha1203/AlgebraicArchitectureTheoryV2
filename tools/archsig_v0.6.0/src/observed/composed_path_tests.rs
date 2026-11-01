@@ -86,7 +86,7 @@ fn then_full_46_atom_action_composes_outside_original_source_family() {
                 expected.push(Fact {
                     snapshot: snapshot.into(),
                     subject: subject.into(),
-                    field: Some(format!("Paths.{entity}.{field}")),
+                    field: Some(format!("Paths.{entity}.{field}").into()),
                     atom: Some(format!("{subject}-{field}")),
                 });
             }

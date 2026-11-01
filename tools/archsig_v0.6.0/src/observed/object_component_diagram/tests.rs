@@ -184,7 +184,7 @@ fn fact(subject: &str, field: Option<&str>, atom: Option<&str>) -> Fact {
     Fact {
         snapshot: "v".into(),
         subject: subject.into(),
-        field: field.map(str::to_owned),
+        field: field.map(Into::into),
         atom: atom.map(str::to_owned),
     }
 }

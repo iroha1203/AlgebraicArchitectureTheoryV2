@@ -27,7 +27,7 @@ fn position(s: &str, f: &str) -> Fact {
     Fact {
         snapshot: "v".into(),
         subject: s.into(),
-        field: Some(format!("Pattern.Part.{f}")),
+        field: Some(format!("Pattern.Part.{f}").into()),
         atom: None,
     }
 }

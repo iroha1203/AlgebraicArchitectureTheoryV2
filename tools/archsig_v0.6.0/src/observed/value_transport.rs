@@ -459,7 +459,7 @@ fn image(
                             ConstructionFailure::Inconsistent(format!(
                                 "参照値の像がない: {target_type}"
                             ))
-                        })?,
+                        })?.to_string(),
                     }
                 } else {
                     value.clone()

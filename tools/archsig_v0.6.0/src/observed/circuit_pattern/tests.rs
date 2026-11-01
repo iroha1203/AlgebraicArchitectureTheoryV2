@@ -100,7 +100,7 @@ fn fact(id: &str, field: Option<&str>) -> Fact {
     Fact {
         snapshot: "v".into(),
         subject: id.into(),
-        field: field.map(|f| format!("Profile.{ty}.{f}")),
+        field: field.map(|f| format!("Profile.{ty}.{f}").into()),
         atom: field.map(|f| format!("{id}-{f}")),
     }
 }
@@ -672,7 +672,7 @@ fn shared_external_references_preserve_identity_and_do_not_import_external_field
         Fact {
             snapshot: "v".into(),
             subject: subject.into(),
-            field: field.map(|f| format!("Flow.{ty}.{f}")),
+            field: field.map(|f| format!("Flow.{ty}.{f}").into()),
             atom: field.map(|f| format!("{subject}-{f}")),
         }
     };

@@ -205,7 +205,7 @@ pub(super) fn validate_origin(
                 let Some(endpoint) = holder
                     .fields
                     .iter()
-                    .find(|f| f.name.rsplit('.').next() == Some(key))
+                    .find(|f| f.name.short() == key)
                 else {
                     continue;
                 };
@@ -465,7 +465,7 @@ pub(super) fn evaluate_configuration(
         let endpoint = holder
             .fields
             .iter()
-            .find(|f| f.name.rsplit('.').next() == Some(key))
+            .find(|f| f.name.short() == key)
             .ok_or("correspondenceの端点slotがない")?;
         if let Slot::Known {
             value: Value::Ref { snapshot, subject },

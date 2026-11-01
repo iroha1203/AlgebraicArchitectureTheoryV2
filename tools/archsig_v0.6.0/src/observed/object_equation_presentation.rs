@@ -226,7 +226,7 @@ fn parameter_source_with_guard(
 pub struct EquationSlot {
     pub snapshot: String,
     pub subject: String,
-    pub field: String,
+    pub field: crate::names::QualifiedName,
     pub component: Vec<usize>,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -516,7 +516,7 @@ impl Compiler<'_> {
             .iter()
             .chain(n.reasons.iter().flat_map(|r| &r.missing))
             .find(|f| {
-                f.snapshot == *snapshot && f.subject == *subject && f.field.as_ref() == Some(&field)
+                f.snapshot == *snapshot && f.subject == *subject && f.field.as_deref() == Some(field.as_str())
             })
             .cloned();
         let Some(fact) = fact else { return Ok(None) };
@@ -528,7 +528,7 @@ impl Compiler<'_> {
         let slot = EquationSlot {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
-            field,
+            field: fact.field.clone().ok_or_else(|| bad("原始記号のfield名がない"))?,
             component: path.to_vec(),
         };
         let mut index = None;
@@ -636,7 +636,7 @@ impl Compiler<'_> {
             tick(c)?;
             if fact.snapshot == *snapshot
                 && fact.subject == *subject
-                && fact.field.as_ref() == Some(&field)
+                && fact.field.as_deref() == Some(field.as_str())
             {
                 observed |= fact.atom.is_some();
             }

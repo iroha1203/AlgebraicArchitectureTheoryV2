@@ -418,7 +418,7 @@ pub fn primitive_declarations_wire(d: &PrimitiveDeclaration) -> Vec<Json> {
     let pairs = |fields: &[crate::definition::Field]| {
         fields
             .iter()
-            .map(|f| (f.name.clone(), f.ty.clone()))
+            .map(|f| (f.name.to_string(), f.ty.clone()))
             .collect()
     };
     let (params, fields) = d

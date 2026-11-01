@@ -10,7 +10,7 @@ pub(in crate::observed::local_result) struct Maps {
 }
 pub(in crate::observed::local_result) struct Renaming<'a> {
     law: &'a crate::law::CheckedLaw,
-    fields: BTreeMap<(String, String, Option<String>), Fact>,
+    fields: BTreeMap<(String, String, Option<crate::names::QualifiedName>), Fact>,
 }
 impl<'a> Renaming<'a> {
     pub(in crate::observed::local_result) fn operation(
@@ -300,7 +300,7 @@ pub(in crate::observed::local_result) fn dependencies(g: &Graph, context: NodeRe
             Ok(Fact {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
-                field: Some(field.clone()),
+                field: Some(field.clone().into()),
                 atom: None,
             })
         })
@@ -639,6 +639,7 @@ mod tests {
     fn compound_bindings_preserve_structure_and_actual_images() {
         let subject=|s:&str| Scalar::Subject {snapshot:"v".into(),subject:s.into(),entity:"R.Item".into()};
         let law = crate::law::CheckedLaw {
+            resolved_names: Default::default(),
             bytes_digest: String::new(), model_digest: String::new(), declarations: BTreeMap::new(),
             exprs: vec![], expr_types: vec![], quantifier_types: vec![], infos: vec![],
             definitions: crate::definition::CheckedDefinitions::empty(),

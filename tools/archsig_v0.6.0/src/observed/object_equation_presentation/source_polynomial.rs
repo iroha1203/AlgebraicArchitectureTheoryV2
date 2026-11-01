@@ -25,7 +25,7 @@ enum Binding {
         variables: Arc<BTreeMap<String, Binding>>,
     },
 }
-struct DataBinding { family: String, constructor: String, args: Arc<Vec<Binding>> }
+struct DataBinding { family: String, constructor: crate::names::QualifiedName, args: Arc<Vec<Binding>> }
 impl Clone for DataBinding {
     fn clone(&self) -> Self {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || Self { family: self.family.clone(), constructor: self.constructor.clone(), args: self.args.clone() })
@@ -49,8 +49,8 @@ impl Binding {
     fn data_parts(&self, c: &Control) -> Result<Option<(String, Vec<Self>)>, ValidationFailure> {
         c.clone().checkpoint(Checkpoint::FiniteIteration).map_err(ValidationFailure::Stop)?;
         Ok(match self {
-            Self::Data(value) => Some((value.constructor.clone(), value.args.as_ref().clone())),
-            Self::FiniteScalar(Scalar::Data { constructor, args, .. }) => Some((constructor.clone(), args.iter().map(|value| match value { Scalar::Bool(value) => Self::Boolean(*value), value => Self::FiniteScalar(value.clone()) }).collect())),
+            Self::Data(value) => Some((value.constructor.to_string(), value.args.as_ref().clone())),
+            Self::FiniteScalar(Scalar::Data { constructor, args, .. }) => Some((constructor.to_string(), args.iter().map(|value| match value { Scalar::Bool(value) => Self::Boolean(*value), value => Self::FiniteScalar(value.clone()) }).collect())),
             _ => None,
         })
     }
@@ -400,7 +400,7 @@ impl Compiler<'_> {
         let slot = EquationSlot {
             snapshot,
             subject,
-            field,
+            field: selected.name.clone(),
             component: path.to_vec(),
         };
         let position = if let Some(i) = self.ring.symbols.iter().position(|s| s.slot == slot) {

@@ -377,7 +377,7 @@ fn parameter_coefficient_forms(
             Scalar::Subject {
                 snapshot: slot.snapshot.clone(),
                 subject: slot.subject.clone(),
-                entity: subject.ty.clone(),
+                entity: subject.ty.to_string(),
             },
         )?;
         let source = env.scoped_field(
@@ -566,7 +566,7 @@ fn collect_updates(
                     let position = Fact {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
-                        field: Some(format!("{entity}.{}", field.name)),
+                        field: Some(env.input_name(&format!("{entity}.{}", field.name))?),
                         atom: None,
                     };
                     if let Some(prior) = updates.get(&position) {

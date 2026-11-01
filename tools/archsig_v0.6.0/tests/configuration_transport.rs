@@ -62,7 +62,7 @@ fn fact(id: &str, f: Option<&str>) -> FactPointer {
     FactPointer {
         snapshot: "v".into(),
         subject: id.into(),
-        field: f.map(|f| format!("Reservations.{ty}.{f}")),
+        field: f.map(|f| format!("Reservations.{ty}.{f}").into()),
         atom: f.map(|f| format!("{id}-{f}")),
     }
 }

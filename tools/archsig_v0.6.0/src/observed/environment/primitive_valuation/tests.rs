@@ -16,7 +16,7 @@ fn slot(subject: &str, field: &str) -> Fact {
     Fact {
         snapshot: "v".into(),
         subject: subject.into(),
-        field: Some(format!("Pattern.Part.{field}")),
+        field: Some(format!("Pattern.Part.{field}").into()),
         atom: None,
     }
 }

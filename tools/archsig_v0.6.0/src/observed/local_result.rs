@@ -410,7 +410,7 @@ fn compute(
                     let v = Scalar::Subject {
                         snapshot: fact.snapshot.clone(),
                         subject: fact.subject.clone(),
-                        entity: subject.ty.clone(),
+                        entity: subject.ty.to_string(),
                     };
                     carrier.push(Json::obj([("type", v.ty().wire()), ("value", v.wire())]));
                 }

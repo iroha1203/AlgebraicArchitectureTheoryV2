@@ -427,7 +427,7 @@ impl Environment<'_> {
         let position = Fact {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
-            field: Some(field.clone()),
+            field: Some(self.input_name(&field)?),
             atom: None,
         };
         if let Some(actual) = self
@@ -482,7 +482,7 @@ impl Environment<'_> {
             let fact = Fact {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
-                field: Some(field),
+                field: Some(self.input_name(&field)?),
                 atom: None,
             };
             let completed = assignment
@@ -538,7 +538,7 @@ impl Environment<'_> {
         checks.support.push(Fact {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
-            field: Some(field),
+            field: Some(self.input_name(&field)?),
             atom: Some(atom.clone()),
         });
         let actual = Scalar::Subject {

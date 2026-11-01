@@ -1333,7 +1333,7 @@ mod empty_list_composite_tests {
                     constructor: format!(
                         "Instances.ListBox.{}",
                         if index % 2 == 0 { "Absent" } else { "Pack" }
-                    ),
+                    ).into(),
                     args: if index % 2 == 0 {
                         vec![]
                     } else {

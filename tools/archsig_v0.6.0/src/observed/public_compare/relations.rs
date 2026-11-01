@@ -322,7 +322,7 @@ pub(super) fn operand_path(
         Ok(Scalar::Subject {
             snapshot: fact.snapshot.clone(),
             subject: fact.subject.clone(),
-            entity: subject.ty.clone(),
+            entity: subject.ty.to_string(),
         })
     };
     let fact = |p: &crate::archmap::Fact| Fact {

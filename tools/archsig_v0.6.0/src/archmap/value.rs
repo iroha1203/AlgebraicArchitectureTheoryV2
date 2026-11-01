@@ -29,7 +29,7 @@ pub enum Value {
     Option(Option<Box<Value>>),
     /// constructor の完全名と引数。
     Data {
-        constructor: String,
+        constructor: crate::names::QualifiedName,
         args: Vec<Value>,
     },
     Map(Vec<(Value, Value)>),
@@ -148,7 +148,7 @@ impl Value {
                     Json::obj([
                         (
                             "tag",
-                            Json::str(constructor.rsplit('.').next().expect("constructor 名")),
+                            Json::str(constructor.short()),
                         ),
                         ("args", Json::Arr(out)),
                     ])
@@ -525,7 +525,7 @@ impl<E: InputError> Reader<'_, '_, E> {
                     E::checkpoint(&mut self.control, Checkpoint::ArchMapIteration)?;
                 }
                 Value::Data {
-                    constructor: format!("{d}.{tag}"),
+                    constructor: format!("{d}.{tag}").into(),
                     args: out,
                 }
             }
@@ -738,7 +738,7 @@ fn check_snapshots_inner<E: InputError>(
             for parameter in params.iter().chain(members) {
                 E::checkpoint(control, Checkpoint::ArchMapSchema)?;
                 fields.push(Field {
-                    name: format!("{}.{}", s.ty, parameter.name),
+                    name: format!("{}.{}", s.ty, parameter.name).into(),
                     ty: parameter.ty.clone(),
                     slot: Slot::Missing,
                 });
@@ -747,7 +747,7 @@ fn check_snapshots_inner<E: InputError>(
             subjects.push(Subject {
                 snapshot: snap.id.clone(),
                 id: s.id.clone(),
-                ty: s.ty.clone(),
+                ty: s.ty.clone().into(),
                 origin: s.origin.clone(),
                 fields,
                 pointer: s.pointer.clone(),
@@ -815,7 +815,7 @@ fn check_snapshots_inner<E: InputError>(
                 error: std::marker::PhantomData,
                 definitions,
                 roster: &roster,
-                namespace: &definitions.declarations[subject_ty].namespace,
+                namespace: &definitions.declarations[subject_ty.as_str()].namespace,
                 rebases: &a.rebases,
             };
             let vptr = format!("{}/value", a.pointer);
