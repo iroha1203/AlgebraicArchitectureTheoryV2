@@ -31,7 +31,7 @@ impl Evaluator<'_, '_> {
         let source = self
             .sources
             .get(&span)
-            .ok_or_else(|| Failure::Internal("所属式族の元Sourceがない".into()))?
+            .ok_or_else(|| Failure::Internal(internal!("所属式族の元Sourceがない")))?
             .clone();
         let mut scope = source.scope;
         scope.merge(&owner.scope);
@@ -73,7 +73,7 @@ impl Evaluator<'_, '_> {
             None
         } else {
             let Type::Set(element) = &ty else {
-                return Err(Failure::Internal("所属式族の結果型がSetでない".into()));
+                return Err(Failure::Internal(internal!("所属式族の結果型がSetでない")));
             };
             Some(self.value(
                 data::set(

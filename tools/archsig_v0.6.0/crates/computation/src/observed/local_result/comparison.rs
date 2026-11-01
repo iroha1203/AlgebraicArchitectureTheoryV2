@@ -8,30 +8,30 @@ fn local(g: &Graph, r: NodeRef) -> Result<&Data, ValidationFailure> {
     match &g.get(r)?.payload {
         Some(Payload::Construction(v)) => match &v.data {
             D::Local(d) => Ok(d),
-            _ => Err("有限診断の元構成がない".into()),
+            _ => Err(internal!("有限診断の元構成がない").into()),
         },
-        _ => Err("有限診断の元構成がない".into()),
+        _ => Err(internal!("有限診断の元構成がない").into()),
     }
 }
 fn field(g: &Graph, r: NodeRef, name: &str) -> Result<NodeRef, ValidationFailure> {
     let d = local(g, r)?;
     let Json::Obj(w) = &d.part().wire else {
-        return Err("有限診断のレコードがない".into());
+        return Err(internal!("有限診断のレコードがない").into());
     };
     d.part()
         .arguments
         .iter()
         .find(|a| Some(&a.wire()) == w.get(name))
         .copied()
-        .ok_or_else(|| "有限診断の参照fieldがない".into())
+        .ok_or_else(|| internal!("有限診断の参照fieldがない").into())
 }
 fn elements(g: &Graph, r: NodeRef) -> Result<Vec<NodeRef>, ValidationFailure> {
     let d = local(g, r)?;
     let Json::Obj(w) = &d.part().wire else {
-        return Err("有限Domainがない".into());
+        return Err(internal!("有限Domainがない").into());
     };
     let Some(Json::Arr(items)) = w.get("elements") else {
-        return Err("有限Domainの要素がない".into());
+        return Err(internal!("有限Domainの要素がない").into());
     };
     items
         .iter()
@@ -41,26 +41,26 @@ fn elements(g: &Graph, r: NodeRef) -> Result<Vec<NodeRef>, ValidationFailure> {
                 .iter()
                 .find(|r| r.wire() == *item)
                 .copied()
-                .ok_or_else(|| "有限Domainの要素参照がない".into())
+                .ok_or_else(|| internal!("有限Domainの要素参照がない").into())
         })
         .collect()
 }
 fn pairs(g: &Graph, r: NodeRef) -> Result<Vec<(NodeRef, NodeRef)>, ValidationFailure> {
     let d = local(g, r)?;
     let Json::Obj(w) = &d.part().wire else {
-        return Err("有限StateMapがない".into());
+        return Err(internal!("有限StateMapがない").into());
     };
     let Some(Json::Arr(items)) = w.get("pairs") else {
-        return Err("有限StateMapの対応がない".into());
+        return Err(internal!("有限StateMapの対応がない").into());
     };
     items
         .iter()
         .map(|item| {
             let Json::Arr(pair) = item else {
-                return Err("対応が組でない".into());
+                return Err(internal!("対応が組でない").into());
             };
             if pair.len() != 2 {
-                return Err("対応の長さが違う".into());
+                return Err(internal!("対応の長さが違う").into());
             }
             let refs = pair
                 .iter()
@@ -70,7 +70,7 @@ fn pairs(g: &Graph, r: NodeRef) -> Result<Vec<(NodeRef, NodeRef)>, ValidationFai
                         .iter()
                         .find(|r| r.wire() == *v)
                         .copied()
-                        .ok_or_else(|| ValidationFailure::from("対応の参照がない"))
+                        .ok_or_else(|| ValidationFailure::from(internal!("対応の参照がない")))
                 })
                 .collect::<Result<Vec<_>, _>>()?;
             Ok((refs[0], refs[1]))
@@ -112,12 +112,12 @@ fn identity_pairs(
             }
         }
         if images.len() != 1 || result.iter().any(|(_, z)| *z == images[0]) {
-            return Err("同じ構成指定の有限状態の対応が一意でない".into());
+            return Err(internal!("同じ構成指定の有限状態の対応が一意でない").into());
         }
         result.push((*a, images[0]));
     }
     if left.len() != right.len() {
-        return Err("同じ構成指定の有限状態の対応が全射でない".into());
+        return Err(internal!("同じ構成指定の有限状態の対応が全射でない").into());
     }
     Ok(result)
 }
@@ -135,20 +135,26 @@ pub(super) fn compute(
             .arguments
             .iter()
             .find(|a| a.name == name)
-            .ok_or_else(|| ValidationFailure::from("診断比較の引数がない"))
+            .ok_or_else(|| ValidationFailure::from(internal!("診断比較の引数がない")))
     };
     let right = reference(env, g, &argument("to")?.value)?;
     let along = reference(env, g, &argument("along")?.value)?;
     let left_system = field(g, left, "system")?;
     let right_system = field(g, right, "system")?;
     let data = local(g, left_system)?;
-    let system = data.source.system.as_ref().ok_or("固定局所系がない")?;
+    let system = data
+        .source
+        .system
+        .as_ref()
+        .ok_or(internal!("固定局所系がない"))?;
     let operation = public_compose::op(g, along)?;
     operation
         .recheck(env.indexes.inputs, c)
         .map_err(|e| match e {
             crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
-            e => ValidationFailure::Internal(format!("診断比較のOperation: {e:?}")),
+            e => ValidationFailure::Internal(
+                e.internal_context(format!("診断比較のOperation: {e:?}")),
+            ),
         })?;
     let (from, to, _, _) = public_compose::components(g, along)?;
     let object = field(g, left_system, "base")?;
@@ -175,7 +181,7 @@ pub(super) fn compute(
         .source
         .system
         .as_ref()
-        .ok_or("比較先の局所系がない")?;
+        .ok_or(internal!("比較先の局所系がない"))?;
     let equation_side = integer::record(g, left)?.get("side") != Some(&Json::str("semantic"));
     let integer_side = system
         .integer
@@ -343,7 +349,7 @@ pub(super) fn compute(
                     transported = Some(*z);
                 }
             }
-            let transported = transported.ok_or("matchingの像がない")?;
+            let transported = transported.ok_or(internal!("matchingの像がない"))?;
             let mut global_image = None;
             for (a, z) in &global_pairs {
                 c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
@@ -351,7 +357,7 @@ pub(super) fn compute(
                     global_image = Some(*z);
                 }
             }
-            let global_image = global_image.ok_or("大域状態の像がない")?;
+            let global_image = global_image.ok_or(internal!("大域状態の像がない"))?;
             let mut commutes = false;
             for (a, z) in &rp {
                 c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
@@ -359,7 +365,7 @@ pub(super) fn compute(
                     && g.scalar(*z)? == g.scalar(transported)?;
             }
             if !commutes {
-                return Err("診断の制限写像が可換でない".into());
+                return Err(internal!("診断の制限写像が可換でない").into());
             }
         }
         let outside_image = finite_transported.as_ref().and_then(|m| m.outside_image);
@@ -411,7 +417,7 @@ pub(super) fn compute(
                 &Scalar::Z(
                     finite_transported
                         .as_ref()
-                        .ok_or("有限輸送の像がない")?
+                        .ok_or(internal!("有限輸送の像がない"))?
                         .outside_count
                         .clone(),
                 ),

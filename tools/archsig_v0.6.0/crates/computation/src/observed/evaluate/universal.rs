@@ -81,7 +81,7 @@ impl Evaluator<'_, '_> {
             }
         }
         if fields.is_empty() {
-            return Err(Failure::Internal("数値補完対の元欠測slotがない".into()));
+            return Err(Failure::Internal(internal!("数値補完対の元欠測slotがない")));
         }
         let parameters = match &self.graph.get(template)?.payload {
             Some(
@@ -89,9 +89,9 @@ impl Evaluator<'_, '_> {
                 | Payload::ParameterizedTransform { parameters, .. },
             ) => parameters.clone(),
             _ => {
-                return Err(Failure::Internal(
-                    "数値補完対の元自由parameterがない".into(),
-                ));
+                return Err(Failure::Internal(internal!(
+                    "数値補完対の元自由parameterがない"
+                )));
             }
         };
         let mut scope = original_scope.clone();
@@ -242,7 +242,7 @@ impl Evaluator<'_, '_> {
             .environment
             .universal_substitution_analysis(self.graph, original, bindings, template, domains)?;
         let NodeType::Expression(ty) = &self.graph.get(original)?.ty else {
-            return Err(Failure::Internal("全域代入の元型がない".into()));
+            return Err(Failure::Internal(internal!("全域代入の元型がない")));
         };
         let node = Node {
             ty: NodeType::Expression(ty.clone()),
@@ -331,7 +331,7 @@ impl Evaluator<'_, '_> {
     ) -> Result<Vec<Binding>, Failure> {
         let mut bindings = match &self.graph.get(original)?.payload {
             Some(Payload::Expression { bindings, .. }) => bindings.clone(),
-            _ => return Err(Failure::Internal("全域反例の元EqSourceがない".into())),
+            _ => return Err(Failure::Internal(internal!("全域反例の元EqSourceがない"))),
         };
         for (name, ty, value, binder) in self.environment.universal_counterexample_bindings(
             self.graph,
@@ -453,7 +453,7 @@ impl Evaluator<'_, '_> {
             &self.graph.get(original)?.payload,
         )
         else {
-            return Err(Failure::Internal("全域反例の共有元Sourceがない".into()));
+            return Err(Failure::Internal(internal!("全域反例の共有元Sourceがない")));
         };
         Ok(side_bindings == original_bindings
             && self
@@ -596,7 +596,7 @@ impl Evaluator<'_, '_> {
             .inputs
             .law()
             .expr_type(plan.body)
-            .ok_or_else(|| Failure::Internal("全域式の戻り型がない".into()))?
+            .ok_or_else(|| Failure::Internal(internal!("全域式の戻り型がない")))?
             .clone();
         let template = if plan.guard.is_some() {
             self.universal_template(&plan)?.0
@@ -675,7 +675,7 @@ impl Evaluator<'_, '_> {
                 .exprs()
                 .iter()
                 .position(|expression| expression.span == plan.template_span)
-                .ok_or_else(|| Failure::Internal("全域templateの元ASTがない".into()))?;
+                .ok_or_else(|| Failure::Internal(internal!("全域templateの元ASTがない")))?;
             Some(self.universal_pointwise(&plan, template, &domains, id)?)
         };
         let analyzed = if guard
@@ -698,13 +698,13 @@ impl Evaluator<'_, '_> {
                 (analyzed.comparison_expression, body.comparison.clone())
             {
                 if expected != id {
-                    return Err(Failure::Internal(
-                        "全域の実比較producerが元最終比較と違う".into(),
-                    ));
+                    return Err(Failure::Internal(internal!(
+                        "全域の実比較producerが元最終比較と違う"
+                    )));
                 }
                 let ty = match &self.graph.get(left.evaluation)?.ty {
                     NodeType::Evaluation(ty) => ty.clone(),
-                    _ => return Err(Failure::Internal("全域比較の左型がない".into())),
+                    _ => return Err(Failure::Internal(internal!("全域比較の左型がない"))),
                 };
                 let Some(Payload::Expression { parameters, .. }) =
                     &self.graph.get(left.expression)?.payload
@@ -842,12 +842,12 @@ impl Evaluator<'_, '_> {
             let comparison = body
                 .as_ref()
                 .and_then(|body| body.comparison.as_ref())
-                .ok_or_else(|| Failure::Internal("全域共通反例の元比較がない".into()))?;
+                .ok_or_else(|| Failure::Internal(internal!("全域共通反例の元比較がない")))?;
             let original_span = self.environment.indexes.inputs.law().exprs()[plan.body].span;
             let original=self.graph.nodes.iter().enumerate().find_map(|(index,node)| {
                 (self.graph.context_at(index)==self.graph.active && node.arguments.first()==Some(&template)
                     && matches!(&node.payload,Some(Payload::Expression {location:Location::Law{span},..}) if *span==original_span)).then_some(NodeRef(index))
-            }).ok_or_else(||Failure::Internal("全域共通反例の元body Sourceがない".into()))?;
+            }).ok_or_else(||Failure::Internal(internal!("全域共通反例の元body Sourceがない")))?;
             let concrete = self.universal_counterexample_substitution(
                 original, comparison, template, &domains, &support, &scope,
             )?;
@@ -983,9 +983,9 @@ impl Evaluator<'_, '_> {
         let mut evidence = normalization.into_iter().chain(pair).collect::<Vec<_>>();
         if analyzed.value == Some(false) {
             let normalization = normalization
-                .ok_or_else(|| Failure::Internal("全域反証に正規化証拠がない".into()))?;
-            let value =
-                value.ok_or_else(|| Failure::Internal("全域反証にwholefalse値がない".into()))?;
+                .ok_or_else(|| Failure::Internal(internal!("全域反証に正規化証拠がない")))?;
+            let value = value
+                .ok_or_else(|| Failure::Internal(internal!("全域反証にwholefalse値がない")))?;
             let (bindings, left, right, arguments) =
                 if let Some((substitute, bindings, left, right)) = concrete {
                     (
@@ -1065,7 +1065,7 @@ impl Evaluator<'_, '_> {
         let plan = self
             .environment
             .universal_family_plan(self.graph, self.request, &self.bindings)?
-            .ok_or_else(|| Failure::Internal("数値Law全域の計画がない".into()))?;
+            .ok_or_else(|| Failure::Internal(internal!("数値Law全域の計画がない")))?;
         self.universal_law_answer(plan, role)
     }
 
@@ -1091,7 +1091,7 @@ impl Evaluator<'_, '_> {
             payload: Some(Payload::LawInstance {
                 name: self.declaration.name.clone(),
                 role: match role
-                    .ok_or_else(|| Failure::Internal("数値全域Law roleがない".into()))?
+                    .ok_or_else(|| Failure::Internal(internal!("数値全域Law roleがない")))?
                 {
                     Role::Required => "required",
                     Role::Optional => "optional",
@@ -1218,7 +1218,7 @@ impl Evaluator<'_, '_> {
             });
         })?;
         Ok((
-            source.ok_or_else(|| Failure::Internal("全域元Sourceのcommitがない".into()))?,
+            source.ok_or_else(|| Failure::Internal(internal!("全域元Sourceのcommitがない")))?,
             support,
         ))
     }
@@ -1253,7 +1253,7 @@ impl Evaluator<'_, '_> {
                 location: Location::Law { span },
                 ..
             }) => *span,
-            _ => return Err(Failure::Internal("全域の元出現がない".into())),
+            _ => return Err(Failure::Internal(internal!("全域の元出現がない"))),
         };
         let mut scope = source.scope;
         let mut has_local_domains = local_domain.is_some();
@@ -1371,7 +1371,7 @@ impl Evaluator<'_, '_> {
             .inputs
             .law()
             .expr_type(id)
-            .ok_or_else(|| Failure::Internal("全域元式の型がない".into()))?
+            .ok_or_else(|| Failure::Internal(internal!("全域元式の型がない")))?
             .clone();
         let (source, support) =
             self.universal_source(plan, template, domains, expr.span, ty.clone())?;
@@ -1426,7 +1426,7 @@ impl Evaluator<'_, '_> {
             ExprKind::Dotted(parts) => {
                 let first = parts
                     .first()
-                    .ok_or_else(|| Failure::Internal("全域の空Dotted".into()))?;
+                    .ok_or_else(|| Failure::Internal(internal!("全域の空Dotted")))?;
                 let iteration = self.environment.iteration_argument(
                     self.graph,
                     first.span,
@@ -1494,7 +1494,7 @@ impl Evaluator<'_, '_> {
                             first_children.clone()
                         } else {
                             vec![owner.take().ok_or_else(|| {
-                                Failure::Internal("全域fieldの前prefixがない".into())
+                                Failure::Internal(internal!("全域fieldの前prefixがない"))
                             })?]
                         };
                         owner = Some(self.universal_finish(
@@ -1514,11 +1514,9 @@ impl Evaluator<'_, '_> {
                         );
                         self.tick(Checkpoint::FiniteIteration)?;
                     }
-                    vec![
-                        owner.ok_or_else(|| {
-                            Failure::Internal("全域fieldのowner出現がない".into())
-                        })?,
-                    ]
+                    vec![owner.ok_or_else(|| {
+                        Failure::Internal(internal!("全域fieldのowner出現がない"))
+                    })?]
                 }
             }
             ExprKind::Field { base, .. }
@@ -1660,7 +1658,7 @@ impl Evaluator<'_, '_> {
                 let declaration = self
                     .environment
                     .named_view(id)?
-                    .ok_or_else(|| Failure::Internal("全域call targetがない".into()))?;
+                    .ok_or_else(|| Failure::Internal(internal!("全域call targetがない")))?;
                 let Signature::View { params, body, .. } = &declaration.signature else {
                     unreachable!()
                 };

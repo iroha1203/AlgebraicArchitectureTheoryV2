@@ -55,7 +55,9 @@ fn checkpoint(c: &Control) -> Result<(), ValidationFailure> {
 fn ring_failure(failure: crate::construction::ConstructionFailure) -> ValidationFailure {
     match failure {
         crate::construction::ConstructionFailure::Stopped(stop) => stop.into(),
-        other => format!("有限方程式表示の関数: {other:?}").into(),
+        other => other
+            .internal_context(format!("有限方程式表示の関数: {other:?}"))
+            .into(),
     }
 }
 fn components(
@@ -94,13 +96,13 @@ impl AutomaticLawValuations {
             .readings
             .objects()
             .get(object)
-            .ok_or("有限方程式表示の対象が範囲外")?;
+            .ok_or(internal!("有限方程式表示の対象が範囲外"))?;
         if !self.is_complete() || !self.domain_complete() {
             return Ok(None);
         }
         let observation = self
             .observation(inputs, c)?
-            .ok_or("有限方程式表示の元観測域が未完成")?;
+            .ok_or(internal!("有限方程式表示の元観測域が未完成"))?;
         let mut columns = vec![];
         let mut equations = vec![];
         for (index, column) in self.columns().iter().enumerate() {
@@ -111,12 +113,12 @@ impl AutomaticLawValuations {
             columns.push(index);
             let instance = column
                 .source_instance()
-                .ok_or("有限方程式の元instanceがない")?;
+                .ok_or(internal!("有限方程式の元instanceがない"))?;
             let (source, _) = self
                 .instance_source(index)
-                .ok_or("有限方程式の元対象列がない")?;
+                .ok_or(internal!("有限方程式の元対象列がない"))?;
             if self.readings.instances().get(instance) != Some(source) {
-                return Err("有限方程式の元instance位置が違う".into());
+                return Err(internal!("有限方程式の元instance位置が違う").into());
             }
             for (component, ty) in components(column.equation_type.as_ref(), c)? {
                 checkpoint(c)?;
@@ -153,7 +155,7 @@ impl AutomaticLawValuations {
                     .nu
                     .values()
                     .get(point)
-                    .ok_or("有限方程式のD座標がない")?
+                    .ok_or(internal!("有限方程式のD座標がない"))?
                     .is_zero();
             }
             if zero {
@@ -204,18 +206,18 @@ impl FiniteObjectLawPresentation<'_> {
     ) -> Result<(), ValidationFailure> {
         checkpoint(c)?;
         if !std::ptr::eq(self.family, expected_family) || self.object != expected_object {
-            return Err("有限方程式表示が消費先の族・対象と違う".into());
+            return Err(internal!("有限方程式表示が消費先の族・対象と違う").into());
         }
         self.observation
             .recheck(expected_family, inputs, readings, c)?;
         let expected = expected_family
             .object_presentation(inputs, expected_object, c)?
-            .ok_or("有限方程式表示の元族が未完成")?;
+            .ok_or(internal!("有限方程式表示の元族が未完成"))?;
         if self.columns != expected.columns
             || self.required_zero != expected.required_zero
             || self.equations.len() != expected.equations.len()
         {
-            return Err("有限方程式表示の全列・成分・required零座標が違う".into());
+            return Err(internal!("有限方程式表示の全列・成分・required零座標が違う").into());
         }
         let ring = expected_family.integer_ring(c)?;
         for (a, b) in self.equations.iter().zip(&expected.equations) {
@@ -236,12 +238,12 @@ impl FiniteObjectLawPresentation<'_> {
                 &b.epsilon,
             ) || !ring.equal(&a.nu, &b.nu, c).map_err(ring_failure)?
             {
-                return Err("有限方程式表示の元添字・型・指示関数・対象値が違う".into());
+                return Err(internal!("有限方程式表示の元添字・型・指示関数・対象値が違う").into());
             }
             match (&a.constant, &b.constant) {
                 (None, None) => (),
                 (Some(a), Some(b)) if ring.equal(a, b, c).map_err(ring_failure)? => (),
-                _ => return Err("有限方程式表示の対象定数像が違う".into()),
+                _ => return Err(internal!("有限方程式表示の対象定数像が違う").into()),
             }
         }
         checkpoint(c)

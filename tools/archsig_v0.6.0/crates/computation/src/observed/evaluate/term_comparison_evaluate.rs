@@ -62,7 +62,7 @@ impl Evaluator<'_, '_> {
         let source = self
             .sources
             .get(&span)
-            .ok_or_else(|| Failure::Internal("Term比較の元Sourceがない".into()))?
+            .ok_or_else(|| Failure::Internal(internal!("Term比較の元Sourceがない")))?
             .expression;
         let base = vec![source, left.evaluation, right.evaluation, l, r];
         let mut evidence = vec![];

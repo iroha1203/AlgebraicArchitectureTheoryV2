@@ -26,7 +26,7 @@ pub(super) fn compare(
     let mut params = vec![];
     for declaration in declarations {
         let Signature::Local { params: p, .. } = &declaration.signature else {
-            return Err("numeric transport requires local".into());
+            return Err(internal!("numeric transport requires local").into());
         };
         params.push(p);
     }
@@ -108,11 +108,12 @@ pub(super) fn compare(
                             &actual[side],
                             &declarations[side].reading,
                         )?;
-                    guards[side] = value.ok_or("numeric guard witness is not determined")?;
+                    guards[side] =
+                        value.ok_or(internal!("numeric guard witness is not determined"))?;
                 }
             }
             if !guards[0] {
-                return Err("numeric witness lies outside source guard".into());
+                return Err(internal!("numeric witness lies outside source guard").into());
             }
             let mut outputs = vec![];
             if !guards[1] {
@@ -126,10 +127,10 @@ pub(super) fn compare(
                         &actual[side],
                         &declarations[side].reading,
                     )?;
-                    outputs.push(v.ok_or("numeric read witness is not determined")?);
+                    outputs.push(v.ok_or(internal!("numeric read witness is not determined"))?);
                 }
                 if outputs[0] == outputs[1] {
-                    return Err("numeric read witness does not refute equality".into());
+                    return Err(internal!("numeric read witness does not refute equality").into());
                 }
             }
             let mut arguments = origins.to_vec();

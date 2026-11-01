@@ -19,7 +19,10 @@ pub(super) fn calculate(
     request: &Request,
     c: &Control,
 ) -> Result<Calculated, ValidationFailure> {
-    let table = model.relations.as_ref().ok_or("元relation表がない")?;
+    let table = model
+        .relations
+        .as_ref()
+        .ok_or(internal!("元relation表がない"))?;
     let mut reasons = missing_reasons(table, rows, sources, request)?;
     if model.complete() {
         let (nodes, evidence) = build_nodes(
@@ -54,22 +57,22 @@ pub(super) fn calculate(
         let row = table
             .instances
             .get(visible.original)
-            .ok_or("元relation rowがない")?;
+            .ok_or(internal!("元relation rowがない"))?;
         if row.state == RelationState::Refuted {
             let left = visible
                 .left
                 .as_ref()
                 .and_then(|s| s.value)
-                .ok_or("反証されたrelationの左値がない")?;
+                .ok_or(internal!("反証されたrelationの左値がない"))?;
             let right = visible
                 .right
                 .as_ref()
                 .and_then(|s| s.value)
-                .ok_or("反証されたrelationの右値がない")?;
+                .ok_or(internal!("反証されたrelationの右値がない"))?;
             let facts=match &row.difference {
                 Some(crate::observed::environment::relation_instances::RelationDifference::Action { fact,left,right })=>vec![fact.clone(),left.clone(),right.clone()],
                 Some(crate::observed::environment::relation_instances::RelationDifference::Endpoints { .. })=>vec![],
-                None=>return Err("relationの原始反例がない".into()),
+                None=>return Err(internal!("relationの原始反例がない").into()),
             };
             let counter = put_data(
                 &mut nodes,
@@ -106,10 +109,10 @@ pub(super) fn calculate(
         .any(|r| r.state == RelationState::ConditionFailed)
         && condition.is_none()
     {
-        return Err("元Path構成失敗の命題がない".into());
+        return Err(internal!("元Path構成失敗の命題がない").into());
     }
     if condition.is_none() && reasons.is_empty() {
-        return Err("未決relationの元理由がない".into());
+        return Err(internal!("未決relationの元理由がない").into());
     }
     Ok(Calculated {
         nodes,

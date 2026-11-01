@@ -121,7 +121,7 @@ impl FiniteLawValuations {
     }
     pub fn recheck(&self, inputs: &CheckedInputs, c: &Control) -> Result<(), FiniteLawFailure> {
         let fail = |message: &str| FiniteLawFailure {
-            cause: message.into(),
+            cause: internal!(message).into(),
             partial: None,
         };
         if &self.sources != inputs.sources() {
@@ -172,9 +172,9 @@ impl FiniteLawValuations {
         match result {
             Ok(true) => Ok(()),
             other => Err(FiniteLawFailure {
-                cause: other
-                    .err()
-                    .unwrap_or_else(|| "有限Law表が元宣言・束縛・全候補・元評価と違う".into()),
+                cause: other.err().unwrap_or_else(|| {
+                    internal!("有限Law表が元宣言・束縛・全候補・元評価と違う").into()
+                }),
                 partial: Some(Box::new(expected)),
             }),
         }
@@ -309,7 +309,7 @@ impl FiniteLawFamilyValuations {
     ) -> Result<(), FiniteLawFamilyFailure> {
         if &self.sources != inputs.sources() {
             return Err(FiniteLawFamilyFailure {
-                cause: "有限Law族の元三入力が違う".into(),
+                cause: internal!("有限Law族の元三入力が違う").into(),
                 partial: None,
             });
         }
@@ -326,7 +326,7 @@ impl FiniteLawFamilyValuations {
                         column
                             .source_instance
                             .ok_or_else(|| FiniteLawFamilyFailure {
-                                cause: "元Law列にinstance位置がない".into(),
+                                cause: internal!("元Law列にinstance位置がない").into(),
                                 partial: None,
                             })
                     })
@@ -339,7 +339,7 @@ impl FiniteLawFamilyValuations {
                 .any(|column| column.source_instance.is_some())
             {
                 return Err(FiniteLawFamilyFailure {
-                    cause: "通常のLaw列へ元instanceを追加した".into(),
+                    cause: internal!("通常のLaw列へ元instanceを追加した").into(),
                     partial: None,
                 });
             }
@@ -420,7 +420,7 @@ impl FiniteLawFamilyValuations {
             Ok(true) => Ok(()),
             other => Err(FiniteLawFamilyFailure {
                 cause: other.err().unwrap_or_else(|| {
-                    "有限Law族が元選択・共有D・全列・required零座標と違う".into()
+                    internal!("有限Law族が元選択・共有D・全列・required零座標と違う").into()
                 }),
                 partial: Some(Box::new(expected)),
             }),
@@ -483,7 +483,7 @@ fn family_with_instance_domain(
         .is_some_and(|indices| indices.len() != selected.len() || column_objects.is_none())
     {
         return Err(FiniteLawFamilyFailure {
-            cause: "元instanceとLaw列の対応が違う".into(),
+            cause: internal!("元instanceとLaw列の対応が違う").into(),
             partial: None,
         });
     }
@@ -493,7 +493,7 @@ fn family_with_instance_domain(
         || (object.is_some() && column_objects.is_some())
     {
         return Err(FiniteLawFamilyFailure {
-            cause: "有限Lawの列と対象族の対応が違う".into(),
+            cause: internal!("有限Lawの列と対象族の対応が違う").into(),
             partial: None,
         });
     }
@@ -504,7 +504,7 @@ fn family_with_instance_domain(
             .any(|object| !object.belongs_to(&objects.readings))
         {
             return Err(FiniteLawFamilyFailure {
-                cause: "有限Law列の対象が共通の元readingsと違う".into(),
+                cause: internal!("有限Law列の対象が共通の元readingsと違う").into(),
                 partial: None,
             });
         }
@@ -541,12 +541,12 @@ fn family_with_instance_domain(
             .declarations()
             .get(law)
             .ok_or_else(|| FiniteLawFamilyFailure {
-                cause: "有限Lawの元宣言がない".into(),
+                cause: internal!("有限Lawの元宣言がない").into(),
                 partial: None,
             })?;
         if !matches!(decl.signature, Signature::Law { .. }) {
             return Err(FiniteLawFamilyFailure {
-                cause: "有限Lawの選択がLawでない".into(),
+                cause: internal!("有限Lawの選択がLawでない").into(),
                 partial: None,
             });
         }
@@ -557,7 +557,7 @@ fn family_with_instance_domain(
             .is_some_and(|o| o.identity().reading() != decl.reading)
         {
             return Err(FiniteLawFamilyFailure {
-                cause: "有限Lawのreadingが選択対象と違う".into(),
+                cause: internal!("有限Lawのreadingが選択対象と違う").into(),
                 partial: None,
             });
         }
@@ -565,7 +565,7 @@ fn family_with_instance_domain(
             let objects = column_objects
                 .as_ref()
                 .ok_or_else(|| FiniteLawFamilyFailure {
-                    cause: "元instanceの対象族がない".into(),
+                    cause: internal!("元instanceの対象族がない").into(),
                     partial: None,
                 })?;
             object::instance::validate_selection(
@@ -584,7 +584,7 @@ fn family_with_instance_domain(
         }
         let Signature::Law { body, .. } = decl.signature else {
             return Err(FiniteLawFamilyFailure {
-                cause: "元Lawがない".into(),
+                cause: internal!("元Lawがない").into(),
                 partial: None,
             });
         };
@@ -595,8 +595,8 @@ fn family_with_instance_domain(
                         .law()
                         .expr_type(lhs)
                         .cloned()
-                        .ok_or_else(|| "元等式の型がない".into()),
-                    _ => Err("元等式の出現が違う".into()),
+                        .ok_or_else(|| internal!("元等式の型がない").into()),
+                    _ => Err(internal!("元等式の出現が違う").into()),
                 })
                 .transpose()
             })
@@ -646,33 +646,33 @@ fn validate_bindings(
     supplied: &[(String, Scalar)],
 ) -> Result<Vec<(String, Scalar)>, ValidationFailure> {
     let Signature::Law { params, .. } = &decl.signature else {
-        return Err("元Law署名がない".into());
+        return Err(internal!("元Law署名がない").into());
     };
     let mut named = BTreeMap::new();
     for (name, value) in supplied {
         tick(&e.control)?;
         if named.insert(name.as_str(), value).is_some() {
-            return Err("有限Lawの束縛名が重複する".into());
+            return Err(internal!("有限Lawの束縛名が重複する").into());
         }
     }
     if named.len() != params.len() {
-        return Err("有限Lawの完全束縛と元署名の個数が違う".into());
+        return Err(internal!("有限Lawの完全束縛と元署名の個数が違う").into());
     }
     let mut result = vec![];
     for p in params {
         tick(&e.control)?;
         let value = named
             .remove(p.name.as_str())
-            .ok_or("有限Lawの元parameterが未束縛")?;
+            .ok_or(internal!("有限Lawの元parameterが未束縛"))?;
         if value.ty() != p.ty.erase() {
-            return Err("有限Lawの束縛型が元parameterと違う".into());
+            return Err(internal!("有限Lawの束縛型が元parameterと違う").into());
         }
         data::check(value, e.indexes.inputs.law(), &e.control)?;
         validate_binding_value(e, decl, &p.ty, value)?;
         result.push((p.name.clone(), value.clone()));
     }
     if !named.is_empty() {
-        return Err("有限Lawに未知の束縛がある".into());
+        return Err(internal!("有限Lawに未知の束縛がある").into());
     }
     Ok(result)
 }
@@ -695,7 +695,7 @@ fn validate_binding_value(
                 },
             ) => {
                 if e.indexes.subject(snapshot, subject)?.ty != *entity {
-                    return Err("有限Lawの参照束縛が登録型と違う".into());
+                    return Err(internal!("有限Lawの参照束縛が登録型と違う").into());
                 }
             }
             (Type::Tuple(types), Scalar::Tuple(values)) => pending.extend(types.iter().zip(values)),
@@ -735,7 +735,7 @@ fn validate_binding_value(
                     let actual = data::set(from.erase(), &keys, &e.control)?;
                     let required = data::set(from.erase(), &expected, &e.control)?;
                     if !data::equal(&actual, &required, &e.control)? {
-                        return Err("有限LawのMap束縛が元の登録始域を覆わない".into());
+                        return Err(internal!("有限LawのMap束縛が元の登録始域を覆わない").into());
                     }
                 }
                 for (key, image) in pairs {
@@ -818,7 +818,7 @@ fn validate_binding_term(
             return Ok(());
         }
     }
-    Err("有限LawのTerm束縛の本文・型・実行ASTが現在入力のscopeで一致しない".into())
+    Err(internal!("有限LawのTerm束縛の本文・型・実行ASTが現在入力のscopeで一致しない").into())
 }
 fn validate_binding_path(
     e: &Environment<'_>,
@@ -827,7 +827,7 @@ fn validate_binding_path(
 ) -> Result<(), ValidationFailure> {
     let source = e.indexes.subject(&path.snapshot, &path.subject)?;
     if source.ty != path.entity {
-        return Err("有限LawのPath束縛の端点型が違う".into());
+        return Err(internal!("有限LawのPath束縛の端点型が違う").into());
     }
     if !e
         .indexes
@@ -837,23 +837,23 @@ fn validate_binding_path(
         .values()
         .any(|d| d.reading == path.reading)
     {
-        return Err("有限LawのPath束縛の元readingがない".into());
+        return Err(internal!("有限LawのPath束縛の元readingがない").into());
     }
     let Some(step) = &path.step else {
         return Ok(());
     };
     let Signature::Law { body, .. } = &decl.signature else {
-        return Err("元Lawがない".into());
+        return Err(internal!("元Lawがない").into());
     };
     let mut rebuilt = None;
     for generator in std::iter::once(&step.generator).chain(&step.word_tail) {
         tick(&e.control)?;
         let result = e.internal_path(*body, std::slice::from_ref(generator))?;
         if result.failure.is_some() {
-            return Err("有限LawのPath束縛の生成作用が元入力で成立しない".into());
+            return Err(internal!("有限LawのPath束縛の生成作用が元入力で成立しない").into());
         }
         let Some(Scalar::Path(actual)) = &result.value else {
-            return Err("有限LawのPath束縛の元作用が未確定".into());
+            return Err(internal!("有限LawのPath束縛の元作用が未確定").into());
         };
         rebuilt = Some(match rebuilt {
             None => (**actual).clone(),
@@ -866,13 +866,13 @@ fn validate_binding_path(
             )
             .map_err(|f| f.cause)?
             .value
-            .ok_or("有限LawのPath束縛の生成語が合成できない")?,
+            .ok_or(internal!("有限LawのPath束縛の生成語が合成できない"))?,
         });
     }
-    let mut rebuilt = rebuilt.ok_or("有限LawのPath束縛に元生成語がない")?;
+    let mut rebuilt = rebuilt.ok_or(internal!("有限LawのPath束縛に元生成語がない"))?;
     rebuilt.reading = path.reading.clone();
     if !path.same_program(&rebuilt, &e.control)? {
-        return Err("有限LawのPath束縛が元入力の生成語・作用と違う".into());
+        return Err(internal!("有限LawのPath束縛が元入力の生成語・作用と違う").into());
     }
     Ok(())
 }
@@ -945,7 +945,7 @@ fn domains(
             position
                 .field
                 .as_deref()
-                .ok_or("有限Law位置のfieldがない")?,
+                .ok_or(internal!("有限Law位置のfieldがない"))?,
         )?;
         let domain = finite::field_candidates_if_finite(
             &field.ty.erase(),
@@ -1002,7 +1002,7 @@ fn components(
         e.control.checkpoint(Checkpoint::FiniteLawComponent)?;
         for value in left.iter().chain(&right) {
             if value.ty() != ty.erase() {
-                return Err("元等式の成分値と型が違う".into());
+                return Err(internal!("元等式の成分値と型が違う").into());
             }
         }
         if let Type::Tuple(items) = &ty {
@@ -1014,7 +1014,7 @@ fn components(
                     Some(Scalar::Tuple(values)) if values.len() == items.len() => {
                         Ok(Some(values[index].clone()))
                     }
-                    _ => Err("元等式の積の成分数が違う".into()),
+                    _ => Err(internal!("元等式の積の成分数が違う").into()),
                 }
             };
             for (index, item) in items.iter().enumerate().rev() {
@@ -1074,7 +1074,9 @@ pub(in crate::observed) fn equation(
                     crate::construction::ConstructionFailure::Stopped(s) => {
                         ValidationFailure::Stop(s)
                     }
-                    f => ValidationFailure::Internal(format!("元等式の束縛match: {f:?}")),
+                    f => ValidationFailure::Internal(
+                        f.internal_context(format!("元等式の束縛match: {f:?}")),
+                    ),
                 })?;
                 match child {
                     Some(child) => id = child,
@@ -1097,14 +1099,14 @@ fn operands(
         return Ok(None);
     };
     let ExprKind::Binary { lhs, rhs, .. } = e.indexes.inputs.law().exprs()[eq].kind else {
-        return Err("元等式の出現が違う".into());
+        return Err(internal!("元等式の出現が違う").into());
     };
     let ty = e
         .indexes
         .inputs
         .law()
         .expr_type(lhs)
-        .ok_or("元等式の型がない")?
+        .ok_or(internal!("元等式の型がない"))?
         .clone();
     let mut local = e.copy_variables(variables)?;
     let mut id = body;
@@ -1115,7 +1117,7 @@ fn operands(
             ExprKind::Let { name, value, body } => {
                 let rhs = e.scoped_ast(*value, &local, scope, reading)?;
                 if local.insert(name.name.clone(), rhs).is_some() {
-                    return Err("元等式のlet名が重複する".into());
+                    return Err(internal!("元等式のlet名が重複する").into());
                 }
                 id = *body;
             }
@@ -1130,7 +1132,10 @@ fn operands(
                 else {
                     return Ok(Some((ty, None, None)));
                 };
-                let input_value = input.known_value.as_ref().ok_or("元matchの値がない")?;
+                let input_value = input
+                    .known_value
+                    .as_ref()
+                    .ok_or(internal!("元matchの値がない"))?;
                 for (name, value) in
                     data::bindings(e.indexes.inputs.law(), id, arm, input_value, &e.control)?
                 {
@@ -1139,12 +1144,12 @@ fn operands(
                     bound.scalar_scope = Some(input.scope.clone());
                     bound.support = input.support.clone();
                     if local.insert(name, bound).is_some() {
-                        return Err("元等式のpattern名が重複する".into());
+                        return Err(internal!("元等式のpattern名が重複する").into());
                     }
                 }
                 id = arms[arm].body;
             }
-            _ => return Err("元等式のlexical経路が違う".into()),
+            _ => return Err(internal!("元等式のlexical経路が違う").into()),
         }
     }
     let left = e.scoped_ast(lhs, &local, scope, reading)?;
@@ -1190,7 +1195,7 @@ fn evaluate_point_mode(
     conditional: bool,
 ) -> Result<FiniteLawRow, ValidationFailure> {
     let Signature::Law { params, .. } = &declaration.signature else {
-        return Err("候補の判定元がLawでない".into());
+        return Err(internal!("候補の判定元がLawでない").into());
     };
     if params.len() != bindings.len()
         || params
@@ -1198,7 +1203,7 @@ fn evaluate_point_mode(
             .zip(bindings)
             .any(|(p, (name, value))| p.name != *name || p.ty.erase() != value.ty())
     {
-        return Err("候補のLaw束縛の名前・数・型が違う".into());
+        return Err(internal!("候補のLaw束縛の名前・数・型が違う").into());
     }
     Ok(probe_mode(environment, declaration, bindings, point, conditional)?.row)
 }
@@ -1234,7 +1239,7 @@ fn probe_local_mode(
         ..
     } = &decl.signature
     else {
-        return Err("元Law署名がない".into());
+        return Err(internal!("元Law署名がない").into());
     };
     let (vars, parameters) = if universal {
         super::change_affine::law_variables(e, params, bindings)?
@@ -1253,7 +1258,7 @@ fn probe_local_mode(
         let p = params
             .iter()
             .find(|p| p.name == *name)
-            .ok_or("Law束縛名が存在しない")?;
+            .ok_or(internal!("Law束縛名が存在しない"))?;
         tick(&e.control)?;
         e.owned_call_value_check(
             &p.ty,
@@ -1303,7 +1308,7 @@ fn probe_local_mode(
         Some(g) => match &g.known_value {
             Some(Scalar::Bool(v)) => Some(*v),
             None => None,
-            _ => return Err("元Law guardがBoolでない".into()),
+            _ => return Err(internal!("元Law guardがBoolでない").into()),
         },
     };
     if conditional
@@ -1326,7 +1331,7 @@ fn probe_local_mode(
     row.predicate = match &b.known_value {
         Some(Scalar::Bool(v)) => Some(*v),
         None => None,
-        _ => return Err("元Law述語がBoolでない".into()),
+        _ => return Err(internal!("元Law述語がBoolでない").into()),
     };
     if row.predicate.is_none() && !parameters.is_empty() {
         row.predicate = local_universal_truth(e, *body, &vars, &scope, &decl.reading, &parameters)?;
@@ -1370,7 +1375,7 @@ fn probe_local_mode(
                         as u8,
                 );
                 if whole != &any {
-                    return Err("元等式全体と成分の零性が違う".into());
+                    return Err(internal!("元等式全体と成分の零性が違う").into());
                 }
             }
         }
@@ -1433,7 +1438,7 @@ fn local_universal_truth(
                 };
                 let difference =
                     affine::binary(BinOp::Sub, Some(&p.left), Some(&p.right), &e.control)?
-                        .ok_or("全称等式の差がない")?;
+                        .ok_or(internal!("全称等式の差がない"))?;
                 if difference.varies_over(parameters, &e.control)? {
                     return Ok(Some(false));
                 }
@@ -1445,7 +1450,7 @@ fn local_universal_truth(
                         &e.control,
                     )? {
                         Scalar::Bool(value) => Ok(Some(value)),
-                        _ => Err("全称等式の比較がBoolでない".into()),
+                        _ => Err(internal!("全称等式の比較がBoolでない").into()),
                     },
                     None => Ok(None),
                 }
@@ -1496,7 +1501,7 @@ fn populate_family(
                     &template.state,
                     &p.snapshot,
                     &p.subject,
-                    p.field.as_deref().ok_or("有限Law fieldがない")?,
+                    p.field.as_deref().ok_or(internal!("有限Law fieldがない"))?,
                 )?;
                 type_dependencies(&template, p, &f.ty, &mut expanded)?;
             }
@@ -1514,7 +1519,7 @@ fn populate_family(
                         &template.state,
                         &p.snapshot,
                         &p.subject,
-                        p.field.as_deref().ok_or("finite fieldがない")?,
+                        p.field.as_deref().ok_or(internal!("finite fieldがない"))?,
                     )?;
                     r.state = FiniteLawState::OutsideFinite {
                         position: p.clone(),
@@ -1523,7 +1528,7 @@ fn populate_family(
                     return Ok(());
                 }
             }
-            return Err("有限Law域の非有限位置を特定できない".into());
+            return Err(internal!("有限Law域の非有限位置を特定できない").into());
         };
         let mut discovered = positions.clone();
         let mut admissible = vec![];
@@ -1598,7 +1603,7 @@ fn populate_family(
                     span: r
                         .columns
                         .first()
-                        .ok_or("空Law族の所属判定が未決")?
+                        .ok_or(internal!("空Law族の所属判定が未決"))?
                         .declaration
                         .span,
                 },
@@ -1620,11 +1625,13 @@ fn populate_family(
             &template.state,
             &p.snapshot,
             &p.subject,
-            p.field.as_deref().ok_or("元fieldがない")?,
+            p.field.as_deref().ok_or(internal!("元fieldがない"))?,
         )?;
         match &f.slot {
-            Slot::Known { value, .. } => observed
-                .push(scalar_from(value, &f.ty, inputs.law(), c)?.ok_or("元原始値が読めない")?),
+            Slot::Known { value, .. } => observed.push(
+                scalar_from(value, &f.ty, inputs.law(), c)?
+                    .ok_or(internal!("元原始値が読めない"))?,
+            ),
             Slot::Missing => all_known = false,
         }
     }
@@ -1637,7 +1644,7 @@ fn populate_family(
             }
             if equal {
                 if r.observed_point.replace(i).is_some() {
-                    return Err("元観測点が有限域で重複する".into());
+                    return Err(internal!("元観測点が有限域で重複する").into());
                 }
             }
         }
@@ -1656,7 +1663,7 @@ fn populate_family(
             r.select_column_object(&mut e, index)?;
             let p = r.probe_column(&e, index, point)?;
             if !p.admissible || p.blocked {
-                return Err("完成Dの元束縛条件が変わった".into());
+                return Err(internal!("完成Dの元束縛条件が変わった").into());
             }
             r.columns[index].rows.push(p.row);
             c.checkpoint(Checkpoint::FiniteLawEvaluation)?;

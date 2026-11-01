@@ -1361,7 +1361,11 @@ fn variables_for(
         let value = numeric_parameters::restore(
             &parameter.ty,
             c,
-            &mut || values.next().ok_or_else(|| "元数値成分がない".into()),
+            &mut || {
+                values
+                    .next()
+                    .ok_or_else(|| internal!("元数値成分がない").into())
+            },
             &Binding::Tuple,
         )
         .map_err(invalid)?;

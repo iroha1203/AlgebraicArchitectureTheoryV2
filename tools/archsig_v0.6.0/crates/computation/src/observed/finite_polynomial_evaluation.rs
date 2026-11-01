@@ -16,8 +16,9 @@ use num_bigint::BigInt;
 use num_traits::{One, Zero};
 use std::sync::Arc;
 
+#[track_caller]
 fn bad(s: &str) -> ConstructionFailure {
-    ConstructionFailure::Inconsistent(s.into())
+    ConstructionFailure::Inconsistent(internal!(s))
 }
 fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::Work).map_err(Into::into)
@@ -314,7 +315,7 @@ fn populate(
                 &ring.ty,
                 inputs.law(),
                 c,
-                &mut |_| Err("Fp全域に参照rosterはない".into()),
+                &mut |_| Err(internal!("Fp全域に参照rosterはない").into()),
                 &mut |_| {},
             )
             .map_err(invalid)?;

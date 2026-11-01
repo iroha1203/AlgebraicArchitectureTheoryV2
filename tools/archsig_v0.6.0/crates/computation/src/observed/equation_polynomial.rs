@@ -17,7 +17,9 @@ pub(super) fn tick(c: &Control) -> Result<(), ConstructionFailure> {
 pub(super) fn invalid(f: ValidationFailure) -> ConstructionFailure {
     match f {
         ValidationFailure::Stop(s) => s.into(),
-        f => ConstructionFailure::Inconsistent(format!("方程式表示の数値演算: {f:?}")),
+        f => ConstructionFailure::Inconsistent(
+            f.internal_context(format!("方程式表示の数値演算: {f:?}")),
+        ),
     }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -72,9 +74,9 @@ impl EquationPolynomial {
     ) -> Result<Self, ConstructionFailure> {
         tick(c)?;
         if self.ty != rhs.ty {
-            return Err(ConstructionFailure::Inconsistent(
-                "多項式の係数環が違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "多項式の係数環が違う"
+            )));
         }
         let zero = numeric::zero(&self.ty, c).map_err(invalid)?;
         let mut terms = BTreeMap::<Vec<usize>, Scalar>::new();
@@ -135,7 +137,11 @@ impl EquationPolynomial {
                     }
                 }
             }
-            _ => return Err(ConstructionFailure::Inconsistent("多項式でない演算".into())),
+            _ => {
+                return Err(ConstructionFailure::Inconsistent(internal!(
+                    "多項式でない演算"
+                )));
+            }
         }
         Ok(Self {
             ty: self.ty.clone(),
@@ -163,9 +169,9 @@ impl EquationPolynomial {
                     return Ok(None);
                 };
                 if argument.ty() != self.ty {
-                    return Err(ConstructionFailure::Inconsistent(
-                        "代入の係数環が違う".into(),
-                    ));
+                    return Err(ConstructionFailure::Inconsistent(internal!(
+                        "代入の係数環が違う"
+                    )));
                 }
                 value =
                     numeric::binary(BinOp::Mul, &value, argument.scalar(), c).map_err(invalid)?;

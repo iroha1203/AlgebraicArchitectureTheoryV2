@@ -11,7 +11,7 @@ impl Information {
         for requirement in &model.requirements {
             let mut pending = change_affine::Pending::default();
             let (rows, _) = change_affine::state_equations(env, &model.slots, std::slice::from_ref(requirement), &mut pending)?;
-            if !pending.facts.is_empty() { return Err("アフィンreadのLawに未観測位置がある".into()); }
+            if !pending.facts.is_empty() { return Err(internal!("アフィンreadのLawに未観測位置がある").into()); }
             laws.push(rows);
         }
         Ok(Self { slots: model.slots.clone(), patches: vec![], reads: vec![], laws })
@@ -25,10 +25,10 @@ impl Information {
         let mut rows = vec![];
         if let Some((slots, matrix)) = information {
             for row in matrix {
-                if row.len() != slots.len() { return Err("アフィンreadの係数次元が違う".into()); }
+                if row.len() != slots.len() { return Err(internal!("アフィンreadの係数次元が違う").into()); }
                 let mut full = vec![Z::zero(); n];
                 for (slot, value) in slots.iter().zip(row) {
-                    let i = self.slots.iter().position(|f| f == slot).ok_or("アフィンreadの自由位置がない")?;
+                    let i = self.slots.iter().position(|f| f == slot).ok_or(internal!("アフィンreadの自由位置がない"))?;
                     full[i] = integer::read_coefficient(value)?;
                 }
                 rows.push(full);
@@ -48,7 +48,7 @@ impl Information {
         Ok(support.contains(&required) && reading.sees(&self.laws[i], c)?)
     }
     pub fn adequate(&self, patches: &[Support], laws: &[Support], c: &Control) -> Result<bool, ValidationFailure> {
-        if patches.len() != self.patches.len() { return Err("アフィンreadのpatch数が違う".into()); }
+        if patches.len() != self.patches.len() { return Err(internal!("アフィンreadのpatch数が違う").into()); }
         let rows = self.patches.iter().flat_map(|r| r.map.iter().cloned()).collect();
         if Reading::new(&rows, self.slots.len(), c)?.map.len() != self.slots.len() { return Ok(false); }
         for (i, law) in laws.iter().enumerate() {
@@ -65,14 +65,14 @@ pub(super) fn contains(a: &Option<Reading>, b: &Option<Reading>, c: &Control) ->
     match (a,b) {
         (None,None) => Ok(true),
         (Some(a),Some(b)) => a.contains(b,c),
-        _ => Err("アフィンreadの有無がcontext間で違う".into()),
+        _ => Err(internal!("アフィンreadの有無がcontext間で違う").into()),
     }
 }
 pub(super) fn intersect(a: &Option<Reading>, b: &Option<Reading>, c: &Control) -> Result<Option<Reading>, ValidationFailure> {
     match (a,b) {
         (None,None) => Ok(None),
         (Some(a),Some(b)) => a.intersect(b,c).map(Some),
-        _ => Err("アフィンreadの有無が交わりで違う".into()),
+        _ => Err(internal!("アフィンreadの有無が交わりで違う").into()),
     }
 }
 pub(super) fn find(supports: &[Support], readings: &[Option<Reading>], support: &Support, reading: &Option<Reading>, c: &Control) -> Result<Option<usize>, ValidationFailure> {

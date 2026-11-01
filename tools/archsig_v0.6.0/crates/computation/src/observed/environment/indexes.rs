@@ -1,5 +1,6 @@
 //! 検査済み入力から構築する索引と固定した評価入力。
 use super::*;
+use archsig_common::internal::InternalError;
 
 pub(crate) struct InputIndexes<'a> {
     pub inputs: &'a CheckedInputs,
@@ -23,17 +24,17 @@ pub(crate) struct InputIndexes<'a> {
 }
 
 impl<'a> InputIndexes<'a> {
-    pub fn subject(&self, snapshot: &str, id: &str) -> Result<&'a Subject, String> {
+    pub fn subject(&self, snapshot: &str, id: &str) -> Result<&'a Subject, InternalError> {
         self.subjects
             .get(&(snapshot.into(), id.into()))
             .copied()
-            .ok_or_else(|| "検査済み subject が見つからない".into())
+            .ok_or_else(|| internal!("検査済み subject が見つからない"))
     }
-    pub fn origin_mode(&self, id: &str) -> Result<&'static str, String> {
+    pub fn origin_mode(&self, id: &str) -> Result<&'static str, InternalError> {
         self.modes
             .get(id)
             .copied()
-            .ok_or_else(|| "origin が見つからない".into())
+            .ok_or_else(|| internal!("origin が見つからない"))
     }
     pub fn field(
         &self,
@@ -41,12 +42,12 @@ impl<'a> InputIndexes<'a> {
         snapshot: &str,
         subject: &str,
         name: &str,
-    ) -> Result<&'a archsig_input::archmap::Field, String> {
+    ) -> Result<&'a archsig_input::archmap::Field, InternalError> {
         let field = self
             .fields
             .get(&(snapshot.into(), subject.into(), name.into()))
             .copied()
-            .ok_or_else(|| String::from("field がない"))?;
+            .ok_or_else(|| internal!("field がない"))?;
         if matches!(field.slot, Slot::Missing)
             && state
                 .architecture_value(&Fact {
@@ -81,7 +82,7 @@ impl<'a> InputIndexes<'a> {
         s: &Subject,
         reading: &str,
         atom_origin: Option<&str>,
-    ) -> Result<Scope, String> {
+    ) -> Result<Scope, InternalError> {
         let mut scope = self.subject_scope(s)?;
         scope.readings.insert(reading.into());
         if let Some(origin) = atom_origin {
@@ -89,14 +90,14 @@ impl<'a> InputIndexes<'a> {
         }
         Ok(scope)
     }
-    pub(in crate::observed) fn subject_scope(&self, s: &Subject) -> Result<Scope, String> {
+    pub(in crate::observed) fn subject_scope(&self, s: &Subject) -> Result<Scope, InternalError> {
         let mut scope = Scope::default();
         scope.snapshots.insert(s.snapshot.clone());
         scope.modes.insert(self.origin_mode(&s.origin)?.into());
         let origin = self
             .snapshot_origins
             .get(&s.snapshot)
-            .ok_or("snapshot がない")?;
+            .ok_or(internal!("snapshot がない"))?;
         scope.modes.insert(self.origin_mode(origin)?.into());
         Ok(scope)
     }
@@ -184,7 +185,7 @@ impl InputIndexes<'_> {
                     | PrimitiveSignature::Correspondence { .. }
             )
         ) {
-            return Err("plain参照族の元完全型名が原始参照型でない".into());
+            return Err(internal!("plain参照族の元完全型名が原始参照型でない").into());
         }
         let mut family = crate::observed::finite::Enumeration::default();
         for (index, snapshot) in self.inputs.archmap().snapshots().iter().enumerate() {

@@ -14,13 +14,13 @@ pub(super) struct Maps {
 }
 fn object(value: &Json) -> Result<&BTreeMap<String, Json>, ValidationFailure> {
     let Json::Obj(fields) = value else {
-        return Err("有限輸送のrecordがない".into());
+        return Err(internal!("有限輸送のrecordがない").into());
     };
     Ok(fields)
 }
 fn array(value: &Json) -> Result<&[Json], ValidationFailure> {
     let Json::Arr(values) = value else {
-        return Err("有限輸送の列がない".into());
+        return Err(internal!("有限輸送の列がない").into());
     };
     Ok(values)
 }
@@ -30,11 +30,11 @@ fn member<'a>(
 ) -> Result<&'a Json, ValidationFailure> {
     fields
         .get(name)
-        .ok_or_else(|| ValidationFailure::from("有限輸送のfieldがない"))
+        .ok_or_else(|| ValidationFailure::from(internal!("有限輸送のfieldがない")))
 }
 fn text(value: &Json) -> Result<&str, ValidationFailure> {
     let Json::Str(s) = value else {
-        return Err("有限輸送の名前がない".into());
+        return Err(internal!("有限輸送の名前がない").into());
     };
     Ok(s)
 }
@@ -80,14 +80,14 @@ fn states(g: &Graph, system: NodeRef, semantic: bool) -> Result<Vec<State>, Vali
     let equations = array(member(wire, "equation_states")?)?;
     let meanings = array(member(wire, "semantic_states")?)?;
     if equations.len() != meanings.len() {
-        return Err("有限状態のcontext列が違う".into());
+        return Err(internal!("有限状態のcontext列が違う").into());
     }
     let mut result = vec![];
     for (e, s) in equations.iter().zip(meanings) {
         let e = object(e)?;
         let s = object(s)?;
         if e.get("context") != s.get("context") {
-            return Err("有限状態のcontext順が違う".into());
+            return Err(internal!("有限状態のcontext順が違う").into());
         }
         let context = reference_value(g, system, member(e, "context")?)?;
         let space = reference_value(g, system, member(e, "space")?)?;
@@ -97,7 +97,7 @@ fn states(g: &Graph, system: NodeRef, semantic: bool) -> Result<Vec<State>, Vali
             if text(member(position, "kind")?)? != "observation"
                 || !array(member(position, "component")?)?.is_empty()
             {
-                return Err("有限状態の座標が観測fieldでない".into());
+                return Err(internal!("有限状態の座標が観測fieldでない").into());
             }
             let f = object(member(position, "field")?)?;
             slots.push(Fact {
@@ -119,7 +119,7 @@ fn states(g: &Graph, system: NodeRef, semantic: bool) -> Result<Vec<State>, Vali
             let solution = reference_value(g, system, member(e, "solutions")?)?;
             let representation = object(member(record(g, solution)?, "representation")?)?;
             if text(member(representation, "kind")?)? != "finite" {
-                return Err("有限解の列挙がない".into());
+                return Err(internal!("有限解の列挙がない").into());
             }
             array(member(representation, "values")?)?
                 .iter()
@@ -350,16 +350,16 @@ fn restrictions(
         let from = states
             .iter()
             .position(|s| s.context == from)
-            .ok_or("制限元contextがない")?;
+            .ok_or(internal!("制限元contextがない"))?;
         let to = states
             .iter()
             .position(|s| s.context == to)
-            .ok_or("制限先contextがない")?;
+            .ok_or(internal!("制限先contextがない"))?;
         if result
             .insert((from, to), reference_value(g, system, member(r, "map")?)?)
             .is_some()
         {
-            return Err("有限制限が重複している".into());
+            return Err(internal!("有限制限が重複している").into());
         }
     }
     Ok(result)
@@ -469,7 +469,7 @@ pub(super) fn between(
             .iter()
             .map(|r| laws.get(&r.0).map(|v| v.0))
             .collect::<Option<BTreeSet<_>>>()
-            .ok_or("局所Lawの対応がない")?;
+            .ok_or(internal!("局所Lawの対応がない"))?;
         let mut matches = vec![];
         for (j, y) in b.iter().enumerate() {
             c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
@@ -512,7 +512,7 @@ pub(super) fn between(
         if matches.len() != 1 {
             return Ok(None);
         }
-        let (j, p, map) = matches.pop().ok_or("有限contextの像がない")?;
+        let (j, p, map) = matches.pop().ok_or(internal!("有限contextの像がない"))?;
         if contexts.contains(&j) {
             return Ok(None);
         }
@@ -531,7 +531,7 @@ pub(super) fn between(
                 state
                     .iter()
                     .position(|s| s.context == *r)
-                    .ok_or_else(|| ValidationFailure::from("coverのcontextがない"))
+                    .ok_or_else(|| ValidationFailure::from(internal!("coverのcontextがない")))
             })
             .collect()
     };
@@ -579,7 +579,7 @@ pub(super) fn between(
             let j = bp
                 .iter()
                 .position(|p| *p == contexts[*i])
-                .ok_or("移送先patchがない")?;
+                .ok_or(internal!("移送先patchがない"))?;
             if !state_matches(value, &y[j], &coordinates[*i], &rename, c)? {
                 return Ok(false);
             }

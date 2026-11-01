@@ -288,7 +288,7 @@ impl Part {
 fn value(graph: &Graph, r: NodeRef) -> Result<&ConstructionValue, ValidationFailure> {
     match &graph.get(r)?.payload {
         Some(Payload::Construction(v)) => Ok(v),
-        _ => Err("合成の元値がnative構成でない".into()),
+        _ => Err(internal!("合成の元値がnative構成でない").into()),
     }
 }
 pub(super) fn op(graph: &Graph, r: NodeRef) -> Result<&ConfigurationOperation, ValidationFailure> {
@@ -296,14 +296,15 @@ pub(super) fn op(graph: &Graph, r: NodeRef) -> Result<&ConfigurationOperation, V
     match (&v.data, &v.witness) {
         (D::InternalArrows(data), Witness::Architecture(_)) => data
             .operation()
-            .ok_or("内部arrowが保存確認済みOperationでない".into()),
-        (D::Operation { .. }, Witness::Map(m)) => {
-            m.operation().ok_or("元mapのOperationがない".into())
-        }
-        (D::Composition(Part::Operation { .. }), Witness::Compose(c)) => {
-            c.operation.as_ref().ok_or("元合成のOperationがない".into())
-        }
-        _ => Err("未確認候補・PathをOperationへ昇格した".into()),
+            .ok_or(internal!("内部arrowが保存確認済みOperationでない").into()),
+        (D::Operation { .. }, Witness::Map(m)) => m
+            .operation()
+            .ok_or(internal!("元mapのOperationがない").into()),
+        (D::Composition(Part::Operation { .. }), Witness::Compose(c)) => c
+            .operation
+            .as_ref()
+            .ok_or(internal!("元合成のOperationがない").into()),
+        _ => Err(internal!("未確認候補・PathをOperationへ昇格した").into()),
     }
 }
 pub(super) fn components(
@@ -313,7 +314,7 @@ pub(super) fn components(
     match &value(graph, r)?.data {
         D::InternalArrows(data) => data
             .components()
-            .ok_or("内部arrowのOperation実体がない".into()),
+            .ok_or(internal!("内部arrowのOperation実体がない").into()),
         D::Operation {
             source,
             target,
@@ -328,26 +329,30 @@ pub(super) fn components(
             word,
             ..
         }) => Ok((*source, *target, *action, word.clone())),
-        _ => Err("Operationの実体がない".into()),
+        _ => Err(internal!("Operationの実体がない").into()),
     }
 }
 pub(super) fn universe(graph: &Graph, r: NodeRef) -> Result<NodeRef, ValidationFailure> {
     match &value(graph, r)?.data {
-        D::InternalArrows(data) => data.universe().ok_or("内部arrowの総作用の元Uがない".into()),
+        D::InternalArrows(data) => data
+            .universe()
+            .ok_or(internal!("内部arrowの総作用の元Uがない").into()),
         D::AtomMap { universe, .. } | D::Composition(Part::Action { universe, .. }) => {
             Ok(*universe)
         }
-        _ => Err("総作用の元Uがない".into()),
+        _ => Err(internal!("総作用の元Uがない").into()),
     }
 }
 pub(super) fn root_type(graph: &Graph, r: NodeRef) -> Result<String, ValidationFailure> {
     let root = match &value(graph, r)?.data {
         D::Architecture { root, .. } => *root,
-        D::ObjectComponents(data) => data.root().ok_or("Operationの端点が実Architectureでない")?,
-        _ => return Err("Operationの端点がArchitectureでない".into()),
+        D::ObjectComponents(data) => data
+            .root()
+            .ok_or(internal!("Operationの端点が実Architectureでない"))?,
+        _ => return Err(internal!("Operationの端点がArchitectureでない").into()),
     };
     let Scalar::Subject { entity, .. } = graph.scalar(root)? else {
-        return Err("Architecture rootが原始参照でない".into());
+        return Err(internal!("Architecture rootが原始参照でない").into());
     };
     Ok(entity.clone())
 }
@@ -360,7 +365,7 @@ fn selector<'a>(request: &'a Request, key: &str) -> Result<&'a Selector, Validat
         .iter()
         .find(|a| a.name == key)
         .map(|a| &a.value)
-        .ok_or("合成の固定引数がない".into())
+        .ok_or(internal!("合成の固定引数がない").into())
 }
 fn selected(
     environment: &Environment<'_>,
@@ -370,7 +375,7 @@ fn selected(
 ) -> Result<NodeRef, ValidationFailure> {
     match environment.answer_binding(graph, selector(request, key)?, (0, 0))? {
         AnswerBinding::Reference(r) => Ok(r),
-        _ => Err("composeのHandleが確認済みOperationでない".into()),
+        _ => Err(internal!("composeのHandleが確認済みOperationでない").into()),
     }
 }
 pub(super) fn validate_origin(
@@ -385,7 +390,7 @@ pub(super) fn validate_origin(
         || selected(environment, graph, request, "head")? != c.left
         || selected(environment, graph, request, "then")? != c.right
     {
-        return Err("合成の現在入力・元要求・元Operationが違う".into());
+        return Err(internal!("合成の現在入力・元要求・元Operationが違う").into());
     }
     Ok(())
 }
@@ -396,10 +401,10 @@ fn part<'a>(
 ) -> Result<&'a Part, ValidationFailure> {
     let v = value(graph, r)?;
     if !matches!(&v.witness,Witness::Compose(actual) if actual.as_ref()==c) {
-        return Err("合成の由来が別の要求・操作である".into());
+        return Err(internal!("合成の由来が別の要求・操作である").into());
     }
     let D::Composition(p) = &v.data else {
-        return Err("合成の型付き部分がない".into());
+        return Err(internal!("合成の型付き部分がない").into());
     };
     Ok(p)
 }
@@ -418,7 +423,7 @@ pub(super) fn validate_node(
     c: &ComposeWitness,
 ) -> Result<(), ValidationFailure> {
     let Some(Payload::Construction(v)) = &node.payload else {
-        return Err("合成payloadがない".into());
+        return Err(internal!("合成payloadがない").into());
     };
     if node.ty != v.ty()
         || node.rule != v.rule()
@@ -427,7 +432,7 @@ pub(super) fn validate_node(
         || node.scope != c.scope
         || !node.reasons.is_empty()
     {
-        return Err("合成の型・規則・引数・支持・Scope・理由が違う".into());
+        return Err(internal!("合成の型・規則・引数・支持・Scope・理由が違う").into());
     }
     for r in node
         .arguments
@@ -438,7 +443,7 @@ pub(super) fn validate_node(
         graph.get(*r)?;
     }
     let fail =
-        || ValidationFailure::Internal("合成の値・由来・保存条件が現在の検査結果と違う".into());
+        || ValidationFailure::Internal(internal!("合成の値・由来・保存条件が現在の検査結果と違う"));
     if let D::ConstructionLabel(label) = &v.data {
         return if label == &Scalar::Text("composition".into())
             && node.judgment.is_none()
@@ -658,21 +663,21 @@ pub(super) fn validate_failure(graph: &Graph, reason: &Reason) -> Result<(), Val
         construction: "composition",
     } = reason.kind
     else {
-        return Err("合成条件の理由でない".into());
+        return Err(internal!("合成条件の理由でない").into());
     };
     let v = value(graph, condition)?;
     if let Witness::PathCompose(c) = &v.witness {
         return super::public_path_compose::validate_failure(graph, reason, c);
     }
     let Witness::Compose(c) = &v.witness else {
-        return Err("合成の元証拠がない".into());
+        return Err(internal!("合成の元証拠がない").into());
     };
     if c.operation.is_some()
         || c.request.id != reason.request
         || &failed_reason(&c.request, condition) != reason
         || !matches!(v.data, D::Composition(Part::Endpoints { .. }))
     {
-        return Err("合成失敗の由来・理由が違う".into());
+        return Err(internal!("合成失敗の由来・理由が違う").into());
     }
     validate_node(graph, graph.get(condition)?, c)
 }
@@ -686,16 +691,16 @@ pub(super) fn validate_answer(
         return if answer == &expected {
             Ok(())
         } else {
-            Err("合成の依存停止理由が元結果と違う".into())
+            Err(internal!("合成の依存停止理由が元結果と違う").into())
         };
     }
-    let p = answer.claim.ok_or("合成の構成命題がない")?;
+    let p = answer.claim.ok_or(internal!("合成の構成命題がない"))?;
     let v = value(graph, p)?;
     if let Witness::PathCompose(c) = &v.witness {
         return super::public_path_compose::validate_answer(environment, graph, request, answer, c);
     }
     let Witness::Compose(c) = &v.witness else {
-        return Err("合成の元検査がない".into());
+        return Err(internal!("合成の元検査がない").into());
     };
     validate_origin(environment, graph, request, c)?;
     validate_node(graph, graph.get(p)?, c)?;
@@ -703,15 +708,15 @@ pub(super) fn validate_answer(
         .get(p)?
         .judgment
         .as_ref()
-        .ok_or("合成命題の判断がない")?;
+        .ok_or(internal!("合成命題の判断がない"))?;
     let mut outputs = BTreeMap::from([("proposition".into(), p)]);
     if c.operation.is_some() {
         let operation = *answer
             .outputs
             .get("operation")
-            .ok_or("合成Operationがない")?;
+            .ok_or(internal!("合成Operationがない"))?;
         let Part::Operation { map, .. } = part(graph, operation, c)? else {
-            return Err("合成出力がOperationでない".into());
+            return Err(internal!("合成出力がOperationでない").into());
         };
         outputs.insert("operation".into(), operation);
         outputs.insert("map".into(), *map);
@@ -728,7 +733,7 @@ pub(super) fn validate_answer(
         || answer.reasons != reasons
         || answer.scope != c.scope
     {
-        return Err("合成回答の状態・値・証拠・Scopeが元検査と違う".into());
+        return Err(internal!("合成回答の状態・値・証拠・Scopeが元検査と違う").into());
     }
     Ok(())
 }
@@ -774,7 +779,7 @@ pub(super) fn evaluate(
     for r in &word {
         control.checkpoint(Checkpoint::ConfigurationOperation)?;
         let Scalar::Subject { entity, .. } = graph.scalar(*r)? else {
-            return Err("合成語が原始参照でない".into());
+            return Err(internal!("合成語が原始参照でない").into());
         };
         types.push(entity.clone());
     }
@@ -797,7 +802,11 @@ pub(super) fn evaluate(
             ConstructionFailure::InvalidSelection(_) if first.target() != then.source() => {
                 (None, None)
             }
-            other => return Err(format!("native compose: {other:?}").into()),
+            other => {
+                return Err(other
+                    .internal_context(format!("native compose: {other:?}"))
+                    .into());
+            }
         },
     };
     let c = Arc::new(ComposeWitness {

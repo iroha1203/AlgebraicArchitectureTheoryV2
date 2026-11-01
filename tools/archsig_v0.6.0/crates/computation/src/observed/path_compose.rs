@@ -62,19 +62,19 @@ pub(super) fn compose_retained(
             }
             (Some(a), Some(b)) => {
                 if a.carrier.len() != b.carrier.len() {
-                    return Err("thenの共通carrier件数が違う".into());
+                    return Err(internal!("thenの共通carrier件数が違う").into());
                 }
                 let mut carrier = Vec::new();
                 let mut images = Vec::new();
                 for ((x, y), image) in a.carrier.iter().zip(&b.carrier).zip(&a.images) {
                     tick(control)?;
                     if x != y {
-                        return Err("thenの原始carrierが同一でない".into());
+                        return Err(internal!("thenの原始carrierが同一でない").into());
                     }
                     let at = b
                         .carrier
                         .binary_search(image)
-                        .map_err(|_| "thenの中間像が共通carrierにない")?;
+                        .map_err(|_| internal!("thenの中間像が共通carrierにない"))?;
                     carrier.push(x.clone());
                     images.push(b.images[at].clone());
                     observe("path_compose", images.len());
@@ -85,7 +85,7 @@ pub(super) fn compose_retained(
         };
         let step = if let Some((carrier, images)) = action {
             let mut word = words.into_iter();
-            let generator = word.next().ok_or("非空Path作用に元語がない")?;
+            let generator = word.next().ok_or(internal!("非空Path作用に元語がない"))?;
             Some(Box::new(Step {
                 generator,
                 word_tail: word.collect(),
@@ -95,7 +95,7 @@ pub(super) fn compose_retained(
             }))
         } else {
             if !words.is_empty() {
-                return Err("空語恒等に生成元がある".into());
+                return Err(internal!("空語恒等に生成元がある").into());
             }
             None
         };

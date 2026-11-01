@@ -116,9 +116,9 @@ impl<'a> FiniteIntegerRing<'a> {
                 BinOp::Sub => a - b,
                 BinOp::Mul => a * b,
                 _ => {
-                    return Err(ConstructionFailure::Inconsistent(
-                        "整数値関数の演算が加減乗でない".into(),
-                    ));
+                    return Err(ConstructionFailure::Inconsistent(internal!(
+                        "整数値関数の演算が加減乗でない"
+                    )));
                 }
             });
         }

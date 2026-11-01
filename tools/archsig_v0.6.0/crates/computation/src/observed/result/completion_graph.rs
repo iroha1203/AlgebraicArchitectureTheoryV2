@@ -14,29 +14,35 @@ impl Graph {
         ) {
             return Ok(false);
         }
-        let judgment = node.judgment.as_ref().ok_or("補完命題に判断がない")?;
+        let judgment = node
+            .judgment
+            .as_ref()
+            .ok_or(internal!("補完命題に判断がない"))?;
         if node.arguments.len() != 2
             || node.arguments[0] != *instance
             || node.evidence != judgment.evidence
         {
-            return Err("補完命題の元対象/証拠が違う".into());
+            return Err(internal!("補完命題の元対象/証拠が違う").into());
         }
         let evaluation = node.arguments[1];
         let Some(Payload::Evaluation { parts, value, .. }) = &self.get(evaluation)?.payload else {
-            return Err("補完命題に集約Evaluationがない".into());
+            return Err(internal!("補完命題に集約Evaluationがない").into());
         };
         let seed = *self
             .get(evaluation)?
             .arguments
             .first()
-            .ok_or("補完評価のSourceがない")?;
+            .ok_or(internal!("補完評価のSourceがない"))?;
         if !matches!(
             self.get(seed)?.payload,
             Some(Payload::CompletionSeed { .. })
         ) {
-            return Err("補完命題に元Sourceがない".into());
+            return Err(internal!("補完命題に元Sourceがない").into());
         }
-        let rows = &parts.first().ok_or("補完評価のpartがない")?.children;
+        let rows = &parts
+            .first()
+            .ok_or(internal!("補完評価のpartがない"))?
+            .children;
         let mut full = 0;
         for &e in &node.evidence {
             self.tick()?;
@@ -47,13 +53,13 @@ impl Graph {
                 {
                     if instances.len() != rows.len() || instances.iter().any(|r| !rows.contains(r))
                     {
-                        return Err("補完証拠が別case集合".into());
+                        return Err(internal!("補完証拠が別case集合").into());
                     }
                     full += 1;
                 }
                 Some(Payload::CompletionPair { .. })
                     if self.get(e)?.arguments.first() == Some(&seed) => {}
-                _ => return Err("補完命題が別の証拠を添付した".into()),
+                _ => return Err(internal!("補完命題が別の証拠を添付した").into()),
             }
         }
         let decision = match self.boolean(*value)? {
@@ -62,7 +68,7 @@ impl Graph {
             None => Decision::Undetermined,
         };
         if decision != judgment.status || full != usize::from(value.is_some()) {
-            return Err("補完命題判断と全case証拠が違う".into());
+            return Err(internal!("補完命題判断と全case証拠が違う").into());
         }
         Ok(true)
     }

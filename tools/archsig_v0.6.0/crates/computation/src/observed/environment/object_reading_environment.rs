@@ -13,7 +13,10 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        let record = g.instances.get(index).ok_or("元view instanceがない")?;
+        let record = g
+            .instances
+            .get(index)
+            .ok_or(internal!("元view instanceがない"))?;
         for r in [
             record.source,
             record.domain,
@@ -32,7 +35,7 @@ impl Environment<'_> {
             self.validate_at(g, g.get(b.value)?, b.value.0)?;
             let value = g.scalar(b.value)?.clone();
             if value.ty() != b.ty {
-                return Err("viewの実束縛型が違う".into());
+                return Err(internal!("viewの実束縛型が違う").into());
             }
             variables.insert(
                 b.name.clone(),
@@ -55,7 +58,7 @@ impl Environment<'_> {
             .law()
             .declarations()
             .get(&i.origin.declaration)
-            .ok_or("元viewの宣言がない")?;
+            .ok_or(internal!("元viewの宣言がない"))?;
         if let archsig_input::law::model::Signature::View { params, .. } = &declaration.signature {
             for parameter in params {
                 self.tick()?;
@@ -92,23 +95,23 @@ impl Environment<'_> {
             || context.iteration.is_some()
             || context.case.is_some()
         {
-            return Err("view全体評価の元Request Contextが違う".into());
+            return Err(internal!("view全体評価の元Request Contextが違う").into());
         }
         let request = g
             .requests
             .get(context.request)
-            .ok_or("view全体評価の元Requestがない")?;
+            .ok_or(internal!("view全体評価の元Requestがない"))?;
         if self
             .indexes
             .original_requests
             .is_none_or(|rs| rs.get(context.request) != Some(request))
         {
-            return Err("view全体評価の元Requestが現在の入力と違う".into());
+            return Err(internal!("view全体評価の元Requestが現在の入力と違う").into());
         }
         for r in super::super::object_reading_result::dependencies(g, n)? {
             self.tick()?;
             if r.0 >= at {
-                return Err("view全体評価の依存が既出でない".into());
+                return Err(internal!("view全体評価の依存が既出でない").into());
             }
             self.validate_at(g, g.get(r)?, r.0)?;
         }
@@ -147,7 +150,7 @@ impl Environment<'_> {
             return Ok(false);
         };
         let Some(Payload::Evaluation { expression, .. }) = &n.payload else {
-            return Err("全view族のpayloadが違う".into());
+            return Err(internal!("全view族のpayloadが違う").into());
         };
         let context = self.current_context(g);
         if context != g.context_at(expression.0)
@@ -156,23 +159,23 @@ impl Environment<'_> {
             || context.iteration.is_some()
             || context.case.is_some()
         {
-            return Err("全view族の元Request Contextが違う".into());
+            return Err(internal!("全view族の元Request Contextが違う").into());
         }
         let request = g
             .requests
             .get(context.request)
-            .ok_or("全view族の元Requestがない")?;
+            .ok_or(internal!("全view族の元Requestがない"))?;
         if self
             .indexes
             .original_requests
             .is_none_or(|ps| ps.get(context.request) != Some(request))
         {
-            return Err("全view族の元Requestが現在の入力と違う".into());
+            return Err(internal!("全view族の元Requestが現在の入力と違う").into());
         }
         for r in rs {
             self.tick()?;
             if r.0 >= at {
-                return Err("全view族の依存が既出でない".into());
+                return Err(internal!("全view族の依存が既出でない").into());
             }
             self.validate_at(g, g.get(r)?, r.0)?;
         }

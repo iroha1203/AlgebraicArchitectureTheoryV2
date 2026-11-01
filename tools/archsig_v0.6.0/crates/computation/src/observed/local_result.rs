@@ -286,10 +286,10 @@ fn compute(
     env.validation_graph_session(g, || {
         let target = reference(env, g, &request.head)?;
         let Some(Payload::Construction(original)) = &g.get(target)?.payload else {
-            return Err("局所系の元構成がない".into());
+            return Err(internal!("局所系の元構成がない").into());
         };
         let Witness::Architecture(witness) = &original.witness else {
-            return Err("局所系の元Architectureがない".into());
+            return Err(internal!("局所系の元Architectureがない").into());
         };
         if request.kind == QuestionKind::Compare {
             return comparison::compute(env,g,request,target,base,witness.clone(),c);
@@ -322,7 +322,7 @@ fn compute(
             .find(|a| a.name == "law")
             .map(|a| match &a.value {
                 Selector::Declaration { name } => Ok(name.as_str()),
-                _ => Err(ValidationFailure::from("局所Law名がない")),
+                _ => Err(ValidationFailure::from(internal!("局所Law名がない"))),
             })
             .transpose()?;
         let names = if let Some(name) = selected {
@@ -354,7 +354,7 @@ fn compute(
         .map(|(f, _, v)| (f, v))
         .collect::<Vec<_>>();
         let mut fixed = Environment::try_primitive_valuation(env.indexes.inputs, &assignments, c)?
-            .ok_or("固定Architectureの値が不適合")?;
+            .ok_or(internal!("固定Architectureの値が不適合"))?;
         fixed.select_local_object(witness, c)?;
         let mut evaluations = vec![];
         for name in &names {
@@ -369,7 +369,7 @@ fn compute(
                 ..
             } = &declaration.signature
             else {
-                return Err("局所系の指定宣言がLawでない".into());
+                return Err(internal!("局所系の指定宣言がLawでない").into());
             };
             let mut reading_roots = match env.indexes.inputs.law().exprs()[*body].kind {
                 ExprKind::Binary {
@@ -502,7 +502,7 @@ fn compute(
                 role, body, guard, params, ..
             } = &declaration.signature
             else {
-                return Err("局所系の指定宣言がLawでない".into());
+                return Err(internal!("局所系の指定宣言がLawでない").into());
             };
             let parameters = params.iter().filter(|p| !bindings.iter().any(|(n, _)| *n == p.name)).cloned().collect::<Vec<_>>();
             let typed_parameters = parameters.iter().map(|p| (p.name.clone(), p.ty.erase())).collect::<Vec<_>>();
@@ -676,7 +676,7 @@ fn compute(
             {
                 let Some(value) = read.value else {
                     if parameters.is_empty() {
-                        return Err("確定した局所読取りの値がない".into());
+                        return Err(internal!("確定した局所読取りの値がない").into());
                     }
                     continue;
                 };
@@ -817,13 +817,13 @@ fn compute(
         let mut fixed_positions = positions.clone();
         for reference in &carrier {
             let Json::Obj(reference) = reference else {
-                return Err("局所carrierが参照でない".into());
+                return Err(internal!("局所carrierが参照でない").into());
             };
             let Some(Json::Arr(value)) = reference.get("value") else {
-                return Err("局所carrierの値がない".into());
+                return Err(internal!("局所carrierの値がない").into());
             };
             let [Json::Str(snapshot), Json::Str(subject)] = value.as_slice() else {
-                return Err("局所carrierが原始参照でない".into());
+                return Err(internal!("局所carrierが原始参照でない").into());
             };
             fixed_positions.push(Fact {
                 snapshot: snapshot.clone(),
@@ -959,9 +959,13 @@ fn diagnose(
     c: &Control,
 ) -> Result<Source, ValidationFailure> {
     let D::Local(data) = &original.data else {
-        return Err("診断対象がLocalSystemでない".into());
+        return Err(internal!("診断対象がLocalSystemでない").into());
     };
-    let system = data.source.system.as_ref().ok_or("局所系の状態がない")?;
+    let system = data
+        .source
+        .system
+        .as_ref()
+        .ok_or(internal!("局所系の状態がない"))?;
     let degree = request
         .arguments
         .iter()
@@ -976,7 +980,7 @@ fn diagnose(
                 None
             }
         })
-        .ok_or("診断次数がない")?;
+        .ok_or(internal!("診断次数がない"))?;
     if let Some(diagram) = &system.integer {
         let semantic = request.arguments.iter().any(|a| {
             a.name == "side" && matches!(&a.value,Selector::Enum{value} if value=="semantic")
@@ -1073,7 +1077,7 @@ fn diagnose(
                 None
             }
         })
-        .ok_or("診断sideがない")?;
+        .ok_or(internal!("診断sideがない"))?;
     let global = if side == "equation" {
         system.equation
     } else {
@@ -1174,7 +1178,7 @@ fn diagnose(
         b.parts[proposition.0 - base]
             .judgment
             .as_mut()
-            .ok_or("診断の判断がない")?
+            .ok_or(internal!("診断の判断がない"))?
             .evidence = evidence.clone();
         outputs.insert("proposition".into(), proposition);
         Some(proposition)
@@ -1217,7 +1221,7 @@ pub(super) fn validate_node(
     d: &Data,
 ) -> Result<(), ValidationFailure> {
     let Witness::Architecture(w) = &v.witness else {
-        return Err("局所系の元Architectureがない".into());
+        return Err(internal!("局所系の元Architectureがない").into());
     };
     let p = d.part();
     if !Arc::ptr_eq(w, &d.source.witness)
@@ -1230,7 +1234,7 @@ pub(super) fn validate_node(
         || n.evidence != p.evidence
         || n.judgment != p.judgment
     {
-        return Err("局所系の元構成が違う".into());
+        return Err(internal!("局所系の元構成が違う").into());
     }
     for r in &p.arguments {
         g.get(*r)?;
@@ -1251,7 +1255,7 @@ impl Environment<'_> {
             || d.source.base + d.index != at
             || d.arguments().iter().any(|r| r.0 >= at)
         {
-            return Err("局所系の位置・既出参照が違う".into());
+            return Err(internal!("局所系の位置・既出参照が違う").into());
         }
         if self.results.source_checked(&d.source) {
             return Ok(());
@@ -1281,7 +1285,7 @@ impl Environment<'_> {
                 || !d.source.answer.outputs.is_empty()
                 || d.source.answer.claim.is_some()
             {
-                return Err("局所系の停止断片の再構成が違う".into());
+                return Err(internal!("局所系の停止断片の再構成が違う").into());
             }
             self.results.remember(d.source.clone());
             return Ok(());
@@ -1291,7 +1295,7 @@ impl Environment<'_> {
             || rebuilt.answer != d.source.answer
             || rebuilt.system != d.source.system
         {
-            return Err("局所系の再構成が違う".into());
+            return Err(internal!("局所系の再構成が違う").into());
         }
         self.results.remember(d.source.clone());
         Ok(())
@@ -1307,7 +1311,7 @@ pub(super) fn validate_answer(
         return if *answer == expected {
             Ok(())
         } else {
-            Err("局所系の依存停止が違う".into())
+            Err(internal!("局所系の依存停止が違う").into())
         };
     }
     let r = answer
@@ -1330,12 +1334,12 @@ pub(super) fn validate_answer(
                 })
                 .and_then(|r| r.dependencies.first())
         })
-        .ok_or("局所系の出力・不足の元式がない")?;
+        .ok_or(internal!("局所系の出力・不足の元式がない"))?;
     let Some(Payload::Construction(v)) = &g.get(*r)?.payload else {
-        return Err("局所系がnativeでない".into());
+        return Err(internal!("局所系がnativeでない").into());
     };
     let D::Local(d) = &v.data else {
-        return Err("局所系が別構成".into());
+        return Err(internal!("局所系が別構成").into());
     };
     if &d.source.request != request {
         let rebuilt = env.with_request_context(g, request, || {
@@ -1353,11 +1357,11 @@ pub(super) fn validate_answer(
         return if rebuilt.parts.is_empty() && rebuilt.answer == *answer {
             Ok(())
         } else {
-            Err("局所系のノードを生成しない回答の再計算が違う".into())
+            Err(internal!("局所系のノードを生成しない回答の再計算が違う").into())
         };
     }
     if &d.source.answer != answer {
-        return Err("局所系の元Request・回答が違う".into());
+        return Err(internal!("局所系の元Request・回答が違う").into());
     }
     env.recheck_local(g, v, r.0)
 }
@@ -1368,16 +1372,16 @@ pub(super) fn validate_origin(
     v: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
     let D::Local(d) = &v.data else {
-        return Err("局所系の構成が別種".into());
+        return Err(internal!("局所系の構成が別種").into());
     };
     let Witness::Architecture(w) = &v.witness else {
-        return Err("局所系の元Architectureがない".into());
+        return Err(internal!("局所系の元Architectureがない").into());
     };
     if &d.source.request != request
         || !Arc::ptr_eq(w, &d.source.witness)
         || v.witness.inputs().sources() != env.indexes.inputs.sources()
     {
-        return Err("局所系が現在の入力・Requestに属さない".into());
+        return Err(internal!("局所系が現在の入力・Requestに属さない").into());
     }
     Ok(())
 }

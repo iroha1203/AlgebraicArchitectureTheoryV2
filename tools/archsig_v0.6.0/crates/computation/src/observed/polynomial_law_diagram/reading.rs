@@ -34,7 +34,8 @@ pub(super) fn domain_value(
             tick(c)?;
             if matches!(part, Part::Scalar(s) | Part::ReadingValue { value: s, .. } if s == value) {
                 return Ok(NodeRef(
-                    base.checked_add(index).ok_or("元量化値の番号が範囲外")?,
+                    base.checked_add(index)
+                        .ok_or(internal!("元量化値の番号が範囲外"))?,
                 ));
             }
         }
@@ -79,7 +80,7 @@ pub(super) fn domain_value(
                 arguments.push(reference);
                 Json::obj([("some", reference.wire())])
             }
-            _ => return Err("元量化域のPathを含む結果型が違う".into()),
+            _ => return Err(internal!("元量化域のPathを含む結果型が違う").into()),
         };
         push(
             parts,
@@ -112,7 +113,7 @@ fn scope(
             let node = raw
                 .nodes
                 .get(original.0)
-                .ok_or("元読取りScopeの量化域がない")?;
+                .ok_or(internal!("元読取りScopeの量化域がない"))?;
             let (ty, elements) = match &node.payload {
                 Some(Payload::TypeDomain { ty }) => (ty.clone(), None),
                 Some(Payload::Domain { ty, elements }) => {
@@ -120,28 +121,31 @@ fn scope(
                     for &element in elements {
                         tick(c)?;
                         if element.0 >= original.0 {
-                            return Err("元量化域の値が既出でない".into());
+                            return Err(internal!("元量化域の値が既出でない").into());
                         }
-                        let scalar =
-                            match &raw.nodes.get(element.0).ok_or("元量化値がない")?.payload
-                            {
-                                Some(Payload::Scalar(s)) => s,
-                                Some(Payload::Construction(v)) => {
-                                    v.scalar().ok_or("元量化値が通常値でない")?
-                                }
-                                _ => return Err("元量化値の生成元が違う".into()),
-                            };
+                        let scalar = match &raw
+                            .nodes
+                            .get(element.0)
+                            .ok_or(internal!("元量化値がない"))?
+                            .payload
+                        {
+                            Some(Payload::Scalar(s)) => s,
+                            Some(Payload::Construction(v)) => {
+                                v.scalar().ok_or(internal!("元量化値が通常値でない"))?
+                            }
+                            _ => return Err(internal!("元量化値の生成元が違う").into()),
+                        };
                         if scalar.ty() != *ty {
-                            return Err("元量化域の型が違う".into());
+                            return Err(internal!("元量化域の型が違う").into());
                         }
                         values.push(domain_value(scalar, parts, base, c)?);
                     }
                     (ty.clone(), Some(values))
                 }
-                _ => return Err("元読取りScopeの参照が型付きDomainでない".into()),
+                _ => return Err(internal!("元読取りScopeの参照が型付きDomainでない").into()),
             };
             if ty != q.ty {
-                return Err("元Scopeと量化Domainの型が違う".into());
+                return Err(internal!("元Scopeと量化Domainの型が違う").into());
             }
             let result = push(parts, base, Part::ReadingDomain { ty, elements }, c)?;
             domains.insert(original.0, result);
@@ -173,7 +177,7 @@ pub(super) fn append(
             .find(|e| {
                 e.position().object == core.object() && e.position().instance == original.instance
             })
-            .ok_or("多項式Law読取りの元対象・instanceがない")?;
+            .ok_or(internal!("多項式Law読取りの元対象・instanceがない"))?;
         // Noneは記号的instance。実rowがある場合に同じ読取りを重ねない。
         if original.row.is_none() && !e.family().rows().is_empty() {
             continue;
@@ -214,7 +218,10 @@ pub(super) fn append(
                             .flatten(),
                     );
                     holds.push(row.conditional());
-                    let node = graph.nodes.get(root.0).ok_or("元観測Law評価の参照がない")?;
+                    let node = graph
+                        .nodes
+                        .get(root.0)
+                        .ok_or(internal!("元観測Law評価の参照がない"))?;
                     support.extend(node.support.iter().cloned());
                     scope.merge(&self::scope(
                         &node.scope,
@@ -239,12 +246,12 @@ pub(super) fn append(
                     || !e.family().is_complete()
                     || !e.family().domains().iter().any(|d| d.values().is_empty())
                 {
-                    return Err("対象非適用Lawの元読取りがない".into());
+                    return Err(internal!("対象非適用Lawの元読取りがない").into());
                 }
                 // 既知の空parameter域には具体的な読取り行を作らない。
             }
             ObjectEvaluationOutcome::FiniteView(_) => {
-                return Err("Law読取りがview族になった".into());
+                return Err(internal!("Law読取りがview族になった").into());
             }
         }
         support.sort_by_key(|f| f.wire().canonical());

@@ -47,7 +47,7 @@ fn evaluation_payload(node: &Node) -> Result<EvaluationPayload<'_>, ValidationFa
         ..
     }) = &node.payload
     else {
-        return Err("全域評価のpayloadがEvaluationでない".into());
+        return Err(internal!("全域評価のpayloadがEvaluationでない").into());
     };
     Ok(EvaluationPayload {
         expression: *expression,
@@ -82,10 +82,10 @@ impl Environment<'_> {
                     break;
                 }
             }
-            let producer = producer.ok_or("数値補完対の元guard実評価がない")?;
+            let producer = producer.ok_or(internal!("数値補完対の元guard実評価がない"))?;
             self.recheck_evaluation(graph, producer)?;
             if graph.boolean(self.evaluation(graph, producer)?.2)? != Some(true) {
-                return Err("数値補完対のguardが成立済みでない".into());
+                return Err(internal!("数値補完対のguardが成立済みでない").into());
             }
             reasons.extend(graph.get(producer)?.reasons.iter().cloned());
         }
@@ -109,7 +109,7 @@ impl Environment<'_> {
                 return Ok(NodeRef(index));
             }
         }
-        Err("全域証拠に先行する実body評価がない".into())
+        Err(internal!("全域証拠に先行する実body評価がない").into())
     }
 
     fn universal_witness_record<'g>(
@@ -125,7 +125,7 @@ impl Environment<'_> {
                     || record.ordinal > 1
                     || record.caller != self.current_context(graph)
                 {
-                    return Err("数値補完証拠のordinal・実Context・anchorが違う".into());
+                    return Err(internal!("数値補完証拠のordinal・実Context・anchorが違う").into());
                 }
                 result = Some(record);
             }
@@ -151,7 +151,7 @@ impl Environment<'_> {
             }
         }
         if latest != Some(record.anchor.0) {
-            return Err("数値補完の現在producerが当該prefixの実anchorと違う".into());
+            return Err(internal!("数値補完の現在producerが当該prefixの実anchorと違う").into());
         }
         Ok(())
     }
@@ -168,11 +168,11 @@ impl Environment<'_> {
         let classification = analysis
             .classification
             .as_ref()
-            .ok_or("数値補完証拠の元アフィン分析がない")?;
+            .ok_or(internal!("数値補完証拠の元アフィン分析がない"))?;
         let pair = classification
             .completion_pair
             .as_ref()
-            .ok_or("元式に成否を分ける数値補完対がない")?;
+            .ok_or(internal!("元式に成否を分ける数値補完対がない"))?;
         let selected = self.restore_numeric_assignment(if record.ordinal == 0 {
             &pair.0
         } else {
@@ -204,13 +204,15 @@ impl Environment<'_> {
                     &self.state,
                     &fact.snapshot,
                     &fact.subject,
-                    fact.field.as_deref().ok_or("数値補完理由に元fieldがない")?,
+                    fact.field
+                        .as_deref()
+                        .ok_or(internal!("数値補完理由に元fieldがない"))?,
                 )?;
                 if numeric::is_numeric_type(&field.ty, &self.control)? {
                     let source = *reason
                         .dependencies
                         .first()
-                        .ok_or("数値補完の元欠測Sourceがない")?;
+                        .ok_or(internal!("数値補完の元欠測Sourceがない"))?;
                     fields.entry(fact.clone()).or_insert(source);
                 }
             }
@@ -222,7 +224,9 @@ impl Environment<'_> {
                 &self.state,
                 &fact.snapshot,
                 &fact.subject,
-                fact.field.as_deref().ok_or("数値補完fieldがない")?,
+                fact.field
+                    .as_deref()
+                    .ok_or(internal!("数値補完fieldがない"))?,
             )?;
             let value = selected
                 .iter()
@@ -231,7 +235,7 @@ impl Environment<'_> {
                 .map(Ok)
                 .unwrap_or_else(|| numeric::zero(&field.ty, &self.control))?;
             if !matches!(field.slot, Slot::Missing) || value.ty() != field.ty {
-                return Err("数値補完の元slot・型が違う".into());
+                return Err(internal!("数値補完の元slot・型が違う").into());
             }
             expected.push((fact, value, source));
         }
@@ -239,7 +243,7 @@ impl Environment<'_> {
             .iter()
             .any(|(fact, _)| !expected.iter().any(|(actual, _, _)| actual == fact))
         {
-            return Err("数値補完証拠が元欠測理由にないFactを使う".into());
+            return Err(internal!("数値補完証拠が元欠測理由にないFactを使う").into());
         }
         Ok((expected, domains, analysis, body))
     }
@@ -262,7 +266,7 @@ impl Environment<'_> {
             }
         }
         if prior.len() != record.ordinal {
-            return Err("数値補完anchorの生成順と元ordinalが違う".into());
+            return Err(internal!("数値補完anchorの生成順と元ordinalが違う").into());
         }
         if let Some(&previous) = prior.first() {
             let mut completed = None;
@@ -271,14 +275,18 @@ impl Environment<'_> {
                 if matches!(&candidate.payload,Some(Payload::Evaluation {expression,..}) if *expression==previous)
                 {
                     if completed.is_some() {
-                        return Err("数値補完の先行caseに複数のwhole producerがある".into());
+                        return Err(
+                            internal!("数値補完の先行caseに複数のwhole producerがある").into()
+                        );
                     }
                     completed = Some(NodeRef(index));
                 }
             }
             self.recheck_evaluation(
                 graph,
-                completed.ok_or("数値補完の先行caseが未完成のまま次のanchorを作った")?,
+                completed.ok_or(internal!(
+                    "数値補完の先行caseが未完成のまま次のanchorを作った"
+                ))?,
             )?;
         }
         let (_, _, analysis, _) = self.universal_witness_expected(graph, record, limit)?;
@@ -290,7 +298,7 @@ impl Environment<'_> {
             bindings,
         }) = &node.payload
         else {
-            return Err("数値補完anchorが既定identity代入でない".into());
+            return Err(internal!("数値補完anchorが既定identity代入でない").into());
         };
         let (_, fixed) = self.universal_source_fields(graph, record.template)?;
         let free = match &template.payload {
@@ -298,7 +306,7 @@ impl Environment<'_> {
                 Payload::Expression { parameters, .. }
                 | Payload::ParameterizedTransform { parameters, .. },
             ) => parameters,
-            _ => return Err("数値補完anchorの元templateがない".into()),
+            _ => return Err(internal!("数値補完anchorの元templateがない").into()),
         };
         if operands != &[record.template]
             || parameters != free
@@ -309,7 +317,7 @@ impl Environment<'_> {
                     .collect::<Vec<_>>()
             || !node.evidence.is_empty()
         {
-            return Err("数値補完anchorの元式・自由軸・固定束縛が違う".into());
+            return Err(internal!("数値補完anchorの元式・自由軸・固定束縛が違う").into());
         }
         self.universal_metadata(
             node,
@@ -331,7 +339,7 @@ impl Environment<'_> {
         let (expected, domains, analysis, body) =
             self.universal_witness_expected(graph, record, limit)?;
         if references.len() != expected.len() {
-            return Err("数値補完証拠が全元missing Factを埋めていない".into());
+            return Err(internal!("数値補完証拠が全元missing Factを埋めていない").into());
         }
         let mut values = Vec::new();
         for (&reference, (fact, value, source)) in references.iter().zip(expected) {
@@ -341,7 +349,7 @@ impl Environment<'_> {
                 || graph.scalar(reference)? != &value
                 || graph.context_at(reference.0) != record.caller
             {
-                return Err("数値補完の値・元slot・anchor producerが違う".into());
+                return Err(internal!("数値補完の値・元slot・anchor producerが違う").into());
             }
             self.validate_at(graph, producer, reference.0)?;
             values.push((fact, value));
@@ -394,21 +402,23 @@ impl Environment<'_> {
                 self.universal_active_witness(graph, record, limit)?;
                 self.validate_at(graph, graph.get(anchor)?, anchor.0)?;
                 if node.arguments.first() != Some(&record.template) {
-                    return Err("数値補完Scalarの元templateが違う".into());
+                    return Err(internal!("数値補完Scalarの元templateが違う").into());
                 }
                 let (expected, _, analysis, _) =
                     self.universal_witness_expected(graph, record, limit)?;
                 if scalar.ty() != Type::Bool {
                     if node.arguments.len() != 3 {
-                        return Err("数値補完値の元slot辺数が違う".into());
+                        return Err(internal!("数値補完値の元slot辺数が違う").into());
                     }
                     let source = node.arguments[2];
                     let (_, value, _) = expected
                         .iter()
                         .find(|(_, _, candidate)| *candidate == source)
-                        .ok_or("数値補完値に元missing Sourceがない")?;
+                        .ok_or(internal!("数値補完値に元missing Sourceがない"))?;
                     if scalar != value || !node.evidence.is_empty() {
-                        return Err("数値補完値が元アフィン分析からの証拠値と違う".into());
+                        return Err(
+                            internal!("数値補完値が元アフィン分析からの証拠値と違う").into()
+                        );
                     }
                     self.universal_metadata(
                         node,
@@ -430,7 +440,9 @@ impl Environment<'_> {
                     if Some(scalar) != rebuilt.value.map(Scalar::Bool).as_ref()
                         || !node.evidence.is_empty()
                     {
-                        return Err("数値補完の結果が元Fact再代入・全称判断と違う".into());
+                        return Err(
+                            internal!("数値補完の結果が元Fact再代入・全称判断と違う").into()
+                        );
                     }
                     self.universal_metadata(
                         node,
@@ -471,14 +483,14 @@ impl Environment<'_> {
             let values = node
                 .arguments
                 .get(offset..offset + expected.len())
-                .ok_or("数値補完wholeの値列がない")?;
+                .ok_or(internal!("数値補完wholeの値列がない"))?;
             let (values, _, _, _) = self.universal_witness_values(graph, record, values, limit)?;
             let rebuilt =
                 self.universal_completion_analysis(graph, record.template, &domains, &values)?;
             let residual = *node
                 .arguments
                 .get(2 + domains.len())
-                .ok_or("数値補完wholeの元差評価がない")?;
+                .ok_or(internal!("数値補完wholeの元差評価がない"))?;
             self.recheck_evaluation(graph, residual)?;
             if bindings != self.universal_source_fields(graph, record.template)?.1
                 || parts.len() != 1
@@ -500,9 +512,9 @@ impl Environment<'_> {
                 || node.arguments.len() != offset + expected.len() + 1
                 || node.arguments.last() != value.as_ref()
             {
-                return Err("数値補完wholeの実producer・元式・再代入判断が違う".into());
+                return Err(internal!("数値補完wholeの実producer・元式・再代入判断が違う").into());
             }
-            let value = value.ok_or("数値補完wholeの判断が未確定")?;
+            let value = value.ok_or(internal!("数値補完wholeの判断が未確定"))?;
             if graph.get(value)?.arguments
                 != [record.template, record.anchor]
                     .into_iter()
@@ -513,7 +525,7 @@ impl Environment<'_> {
                     )
                     .collect::<Vec<_>>()
             {
-                return Err("数値補完wholeのBoolが別case producer".into());
+                return Err(internal!("数値補完wholeのBoolが別case producer").into());
             }
             self.validate_at(graph, graph.get(value)?, value.0)?;
             let (_, fixed) = self.universal_source_fields(graph, record.template)?;
@@ -559,23 +571,23 @@ impl Environment<'_> {
                 return Ok(false);
             }
             if node.arguments.len() < 5 {
-                return Err("数値補完対の元case辺がない".into());
+                return Err(internal!("数値補完対の元case辺がない").into());
             }
             let anchor0 = node.arguments[1];
             let anchor1 = node.arguments[2];
             let record0 = self
                 .universal_witness_record(graph, anchor0)?
-                .ok_or("数値補完対のfirst anchorがない")?;
+                .ok_or(internal!("数値補完対のfirst anchorがない"))?;
             let record1 = self
                 .universal_witness_record(graph, anchor1)?
-                .ok_or("数値補完対のsecond anchorがない")?;
+                .ok_or(internal!("数値補完対のsecond anchorがない"))?;
             if record0.template != template
                 || record1.template != template
                 || record0.ordinal != 0
                 || record1.ordinal != 1
                 || anchor0 == anchor1
             {
-                return Err("数値補完対のordinal・元caseが違う".into());
+                return Err(internal!("数値補完対のordinal・元caseが違う").into());
             }
             let (values0, domains, analysis, _) =
                 self.universal_witness_values(graph, record0, first, limit)?;
@@ -602,12 +614,12 @@ impl Environment<'_> {
                         .collect::<Vec<_>>()
                 || !node.evidence.is_empty()
             {
-                return Err("数値補完対の元Fact全列・実case・全称成否が違う".into());
+                return Err(internal!("数値補完対の元Fact全列・実case・全称成否が違う").into());
             }
             for (result, anchor) in [(*first_result, anchor0), (*second_result, anchor1)] {
                 self.recheck_evaluation(graph, result)?;
                 if self.evaluation(graph, result)?.0 != anchor {
-                    return Err("数値補完対が別producerの結果を消費した".into());
+                    return Err(internal!("数値補完対が別producerの結果を消費した").into());
                 }
             }
             self.universal_metadata(
@@ -641,7 +653,7 @@ impl Environment<'_> {
                 break;
             }
         }
-        let mut current = current.ok_or("全域差に先行する元body評価がない")?;
+        let mut current = current.ok_or(internal!("全域差に先行する元body評価がない"))?;
         self.recheck_evaluation(graph, current)?;
         loop {
             self.tick()?;
@@ -649,10 +661,10 @@ impl Environment<'_> {
                 expression, parts, ..
             }) = &graph.get(current)?.payload
             else {
-                return Err("全域比較producerがEvaluationでない".into());
+                return Err(internal!("全域比較producerがEvaluationでない").into());
             };
             if parts.len() != 1 {
-                return Err("全域比較producerの元part数が違う".into());
+                return Err(internal!("全域比較producerの元part数が違う").into());
             }
             let span = self.expression_span(graph, *expression)?;
             let id = *self
@@ -662,7 +674,7 @@ impl Environment<'_> {
                 .program()
                 .expressions
                 .get(&span)
-                .ok_or("全域比較producerの元ASTがない")?;
+                .ok_or(internal!("全域比較producerの元ASTがない"))?;
             let children = &parts[0].children;
             current = match &self.indexes.inputs.law().exprs()[id].kind {
                 ExprKind::Binary { op: BinOp::Eq, .. } if children.len() == 2 => {
@@ -675,13 +687,13 @@ impl Environment<'_> {
                     match graph.boolean(self.evaluation(graph, children[0])?.2)? {
                         Some(true) => children[1],
                         Some(false) => children[2],
-                        None => return Err("全域比較の実選択If枝が未確定".into()),
+                        None => return Err(internal!("全域比較の実選択If枝が未確定").into()),
                     }
                 }
-                ExprKind::Call { .. } if self.named_view(id)?.is_some() => {
-                    *children.last().ok_or("全域比較callの実bodyがない")?
-                }
-                _ => return Err("全域比較の元終端producerがEqでない".into()),
+                ExprKind::Call { .. } if self.named_view(id)?.is_some() => *children
+                    .last()
+                    .ok_or(internal!("全域比較callの実bodyがない"))?,
+                _ => return Err(internal!("全域比較の元終端producerがEqでない").into()),
             };
         }
     }
@@ -701,7 +713,7 @@ impl Environment<'_> {
                 expression, parts, ..
             }) = &graph.get(current)?.payload
             else {
-                return Err("全域反例の元body producerがEvaluationでない".into());
+                return Err(internal!("全域反例の元body producerがEvaluationでない").into());
             };
             let span = self.expression_span(graph, *expression)?;
             let id = *self
@@ -711,12 +723,14 @@ impl Environment<'_> {
                 .program()
                 .expressions
                 .get(&span)
-                .ok_or("全域反例の元body ASTがない")?;
+                .ok_or(internal!("全域反例の元body ASTがない"))?;
             if id == plan.body {
                 if graph.context_at(expression.0) != graph.context_at(template.0)
                     || graph.get(*expression)?.arguments.first() != Some(&template)
                 {
-                    return Err("全域反例の元body Sourceが別実Context・templateに属す".into());
+                    return Err(
+                        internal!("全域反例の元body Sourceが別実Context・templateに属す").into(),
+                    );
                 }
                 return Ok(*expression);
             }
@@ -726,7 +740,7 @@ impl Environment<'_> {
             ) || parts.len() != 1
                 || parts[0].children.len() != 1
             {
-                return Err("全域反例の代入対象が元先頭全称列のbodyでない".into());
+                return Err(internal!("全域反例の代入対象が元先頭全称列のbodyでない").into());
             }
             current = parts[0].children[0];
         }
@@ -742,7 +756,7 @@ impl Environment<'_> {
             // rowの実producer・直積member・宣言順は既存の元入力再構成で照合する。
             let (expected, _, _) = self.family_instance_inputs(graph, instance)?;
             if bindings != expected {
-                return Err("全域rowの固定bindingが元有限instanceと違う".into());
+                return Err(internal!("全域rowの固定bindingが元有限instanceと違う").into());
             }
             return Ok(());
         }
@@ -751,11 +765,15 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations()
-            .get(request.declaration().ok_or("元要求に宣言がない")?)
-            .ok_or("全域元Requestの宣言がない")?;
+            .get(
+                request
+                    .declaration()
+                    .ok_or(internal!("元要求に宣言がない"))?,
+            )
+            .ok_or(internal!("全域元Requestの宣言がない"))?;
         let parameters = match &declaration.signature {
             Signature::Law { params, .. } | Signature::View { params, .. } => params,
-            _ => return Err("全域元Requestの署名が違う".into()),
+            _ => return Err(internal!("全域元Requestの署名が違う").into()),
         };
         let fixed = parameters
             .iter()
@@ -767,7 +785,7 @@ impl Environment<'_> {
             })
             .collect::<Vec<_>>();
         if fixed.len() != bindings.len() {
-            return Err("全域元Sourceの固定binding数がRequestと違う".into());
+            return Err(internal!("全域元Sourceの固定binding数がRequestと違う").into());
         }
         for (parameter, binding) in fixed.iter().zip(bindings) {
             self.tick()?;
@@ -775,17 +793,17 @@ impl Environment<'_> {
                 .arguments
                 .iter()
                 .find(|argument| argument.name == format!("bind.{}", parameter.name))
-                .ok_or("全域固定selectorがない")?;
+                .ok_or(internal!("全域固定selectorがない"))?;
             if matches!(selected.value, Selector::Answer { .. }) {
                 if binding.name != parameter.name || binding.ty != parameter.ty.erase() {
-                    return Err("全域固定bindingが元Answer出力と違う".into());
+                    return Err(internal!("全域固定bindingが元Answer出力と違う").into());
                 }
                 self.answer_binding_matches(graph, &selected.value, binding.value, parameter.span)?;
                 graph.expect(binding.value, &NodeType::Value(binding.ty.clone()))?;
                 continue;
             }
             let Selector::Subject { snapshot, subject } = &selected.value else {
-                return Err("全域固定selectorがsubjectでない".into());
+                return Err(internal!("全域固定selectorがsubjectでない").into());
             };
             let original = self.indexes.subject(snapshot, subject)?;
             if binding.name != parameter.name
@@ -798,7 +816,9 @@ impl Environment<'_> {
                     })
                 || graph.context_at(binding.value.0) != self.current_context(graph)
             {
-                return Err("全域元Sourceの固定binding・実subject producerが違う".into());
+                return Err(
+                    internal!("全域元Sourceの固定binding・実subject producerが違う").into(),
+                );
             }
             self.validate_at(graph, graph.get(binding.value)?, binding.value.0)?;
         }
@@ -849,19 +869,23 @@ impl Environment<'_> {
         plan: &UniversalPlan,
     ) -> Result<(), ValidationFailure> {
         if analysis.guard_value == Some(false) {
-            let guard = plan.guard.ok_or("全域false guardに元guardがない")?;
+            let guard = plan
+                .guard
+                .ok_or(internal!("全域false guardに元guardがない"))?;
             if steps.len() != 1
                 || self.expression_span(graph, steps[0])?
                     != self.indexes.inputs.law().exprs()[guard].span
             {
-                return Err("全域非適用の固定logic stepsが違う".into());
+                return Err(internal!("全域非適用の固定logic stepsが違う").into());
             }
         } else if let Some(source) = analysis.finite_dependency {
             if steps != [source] {
-                return Err("全域有限量化の元Source stepが違う".into());
+                return Err(internal!("全域有限量化の元Source stepが違う").into());
             }
         } else if analysis.comparison.is_some() {
-            let difference = *steps.first().ok_or("全域正規化に元differenceがない")?;
+            let difference = *steps
+                .first()
+                .ok_or(internal!("全域正規化に元differenceがない"))?;
             if !matches!(
                 &graph.get(difference)?.payload,
                 Some(Payload::ParameterizedTransform {
@@ -870,7 +894,7 @@ impl Environment<'_> {
                 })
             ) || graph.get(difference)?.arguments.first() != Some(&template)
             {
-                return Err("全域正規化の元difference producerが違う".into());
+                return Err(internal!("全域正規化の元difference producerが違う").into());
             }
             let concrete = analysis.value == Some(false)
                 && analysis
@@ -878,7 +902,7 @@ impl Environment<'_> {
                     .as_ref()
                     .is_some_and(|classification| classification.common_counterexample.is_some());
             if steps.len() != 1 + usize::from(concrete) {
-                return Err("全域正規化の具体反例代入数が違う".into());
+                return Err(internal!("全域正規化の具体反例代入数が違う").into());
             }
             for step in steps.iter().skip(1) {
                 if !matches!(
@@ -889,7 +913,7 @@ impl Environment<'_> {
                     })
                 ) || self.universal_source_root(graph, *step)? != Some(template)
                 {
-                    return Err("全域正規化の元代入stepsが違う".into());
+                    return Err(internal!("全域正規化の元代入stepsが違う").into());
                 }
                 let Some(Payload::ParameterizedTransform { operands, .. }) =
                     &graph.get(*step)?.payload
@@ -899,11 +923,11 @@ impl Environment<'_> {
                 let original =
                     self.universal_counterexample_source(graph, template, plan, step.0)?;
                 if operands != &[original] {
-                    return Err("全域正規化の代入対象が元bodyの実producerでない".into());
+                    return Err(internal!("全域正規化の代入対象が元bodyの実producerでない").into());
                 }
             }
         } else if !steps.is_empty() {
-            return Err("全域非アフィン式へ架空の正規化stepsがある".into());
+            return Err(internal!("全域非アフィン式へ架空の正規化stepsがある").into());
         }
         for &step in steps {
             self.tick()?;
@@ -957,10 +981,10 @@ impl Environment<'_> {
                 && candidate.arguments == [header]
                 && result.replace(NodeRef(index)).is_some()
             {
-                return Err("局所全称binderの実型Domainが一意でない".into());
+                return Err(internal!("局所全称binderの実型Domainが一意でない").into());
             }
         }
-        let domain = result.ok_or("局所全称binderの実型Domainがない")?;
+        let domain = result.ok_or(internal!("局所全称binderの実型Domainがない"))?;
         self.validate_at(graph, graph.get(domain)?, domain.0)?;
         Ok(domain)
     }
@@ -975,7 +999,7 @@ impl Environment<'_> {
         let template = *node
             .arguments
             .first()
-            .ok_or("全域型Domainの元templateがない")?;
+            .ok_or(internal!("全域型Domainの元templateがない"))?;
         self.validate_at(graph, graph.get(template)?, template.0)?;
         if let Some(local) = self.universal_local_header(graph, template)? {
             for candidate in graph.nodes.iter().take(limit) {
@@ -983,7 +1007,9 @@ impl Environment<'_> {
                 if matches!(candidate.payload, Some(Payload::TypeDomain { .. }))
                     && candidate.arguments == [template]
                 {
-                    return Err("局所全称型Domainに同じ元headerの先行producerがある".into());
+                    return Err(
+                        internal!("局所全称型Domainに同じ元headerの先行producerがある").into(),
+                    );
                 }
             }
             if node.arguments != [template]
@@ -991,7 +1017,9 @@ impl Environment<'_> {
                 || self.current_context(graph) != local.parameter.context
                 || graph.context_at(template.0) != self.current_context(graph)
             {
-                return Err("局所全称型Domainの元binder・型・Context・producerが違う".into());
+                return Err(
+                    internal!("局所全称型Domainの元binder・型・Context・producerが違う").into(),
+                );
             }
             return self.universal_input_metadata(
                 node,
@@ -1015,12 +1043,12 @@ impl Environment<'_> {
         let parameter = plan
             .parameters
             .get(prior)
-            .ok_or("全域型Domainに元binderがない")?;
+            .ok_or(internal!("全域型Domainに元binderがない"))?;
         if node.arguments != [template]
             || *ty != parameter.ty.clone()
             || self.current_context(graph) != parameter.context
         {
-            return Err("全域型Domainの型・順序・binder・Contextが違う".into());
+            return Err(internal!("全域型Domainの型・順序・binder・Contextが違う").into());
         }
         self.universal_input_metadata(
             node,
@@ -1041,7 +1069,7 @@ impl Environment<'_> {
         bindings: &[Binding],
     ) -> Result<(), ValidationFailure> {
         if operands.len() != operation.arity() {
-            return Err("全域含意式のarityが違う".into());
+            return Err(internal!("全域含意式のarityが違う").into());
         }
         let body = match operation {
             TransformOp::Not => match &graph.get(operands[0])?.payload {
@@ -1056,9 +1084,9 @@ impl Environment<'_> {
                         operands: not,
                         ..
                     }) if not.len() == 1 => not[0],
-                    _ => return Err("全域含意body否定が違う".into()),
+                    _ => return Err(internal!("全域含意body否定が違う").into()),
                 },
-                _ => return Err("全域含意Notの元operandが違う".into()),
+                _ => return Err(internal!("全域含意Notの元operandが違う").into()),
             },
             TransformOp::And => match &graph.get(operands[1])?.payload {
                 Some(Payload::ParameterizedTransform {
@@ -1066,15 +1094,15 @@ impl Environment<'_> {
                     operands: not,
                     ..
                 }) if not.len() == 1 => not[0],
-                _ => return Err("全域含意Andの元operandが違う".into()),
+                _ => return Err(internal!("全域含意Andの元operandが違う").into()),
             },
-            _ => return Err("全域logic transform種が違う".into()),
+            _ => return Err(internal!("全域logic transform種が違う").into()),
         };
         let (body_span, body_bindings) = self.universal_source_fields(graph, body)?;
         let request = graph
             .requests
             .get(self.current_context(graph).request)
-            .ok_or("全域含意元Requestがない")?;
+            .ok_or(internal!("全域含意元Requestがない"))?;
         let body_id = *self
             .indexes
             .inputs
@@ -1082,21 +1110,21 @@ impl Environment<'_> {
             .program()
             .expressions
             .get(&body_span)
-            .ok_or("全域含意元body ASTがない")?;
+            .ok_or(internal!("全域含意元body ASTがない"))?;
         let plan = self
             .universal_family_plan(graph, request, bindings)?
             .or(self.universal_quantifier_plan(graph, body_id, bindings)?)
-            .ok_or("全域含意に元未束縛parameterがない")?;
-        let guard = plan.guard.ok_or("全域含意に元guardがない")?;
+            .ok_or(internal!("全域含意に元未束縛parameterがない"))?;
+        let guard = plan.guard.ok_or(internal!("全域含意に元guardがない"))?;
         if body_span != plan.template_span || body_bindings != bindings {
-            return Err("全域含意の元bodyが違う".into());
+            return Err(internal!("全域含意の元bodyが違う").into());
         }
         let expected_parameters = match &graph.get(body)?.payload {
             Some(Payload::Expression { parameters, .. }) => parameters,
-            _ => return Err("全域含意bodyが元Sourceでない".into()),
+            _ => return Err(internal!("全域含意bodyが元Sourceでない").into()),
         };
         if parameters != expected_parameters {
-            return Err("全域含意の自由parameterが違う".into());
+            return Err(internal!("全域含意の自由parameterが違う").into());
         }
         let body_analysis = self
             .universal_template_source_analysis(graph, &plan, body_span, bindings)?
@@ -1128,7 +1156,7 @@ impl Environment<'_> {
                 != self.indexes.inputs.law().exprs()[guard].span
                 || self.universal_source_fields(graph, guard_source)?.1 != bindings)
         {
-            return Err("全域含意の元guardが違う".into());
+            return Err(internal!("全域含意の元guardが違う").into());
         }
         let support = if guard_source.is_none() {
             // 内側のnot(body)は、元bodyの観測支持を保持する。
@@ -1150,7 +1178,7 @@ impl Environment<'_> {
                 .collect::<Vec<_>>()
             || !node.evidence.is_empty()
         {
-            return Err("全域含意の元operand辺が違う".into());
+            return Err(internal!("全域含意の元operand辺が違う").into());
         }
         self.universal_metadata(
             node,
@@ -1163,7 +1191,7 @@ impl Environment<'_> {
         for &operand in operands {
             self.tick()?;
             if graph.context_at(operand.0) != self.current_context(graph) {
-                return Err("全域含意のproducerが別Context".into());
+                return Err(internal!("全域含意のproducerが別Context").into());
             }
             self.validate_at(graph, graph.get(operand)?, operand.0)?;
         }
@@ -1179,24 +1207,32 @@ impl Environment<'_> {
         bindings: &[Binding],
         limit: usize,
     ) -> Result<(), ValidationFailure> {
-        let template = *node.arguments.first().ok_or("全域差の元templateがない")?;
+        let template = *node
+            .arguments
+            .first()
+            .ok_or(internal!("全域差の元templateがない"))?;
         let (plan, domains, analysis) = self.universal_reanalysis(graph, template, limit)?;
-        let (lhs, rhs) = analysis.comparison.ok_or("全域差に元比較がない")?;
+        let (lhs, rhs) = analysis
+            .comparison
+            .ok_or(internal!("全域差に元比較がない"))?;
         let ty = self
             .indexes
             .inputs
             .law()
             .expr_type(lhs)
-            .ok_or("全域差元数値型がない")?
+            .ok_or(internal!("全域差元数値型がない"))?
             .clone();
         let offset = 1 + domains.len();
-        let children = node.arguments.get(offset..).ok_or("全域差の元左右がない")?;
+        let children = node
+            .arguments
+            .get(offset..)
+            .ok_or(internal!("全域差の元左右がない"))?;
         if children.len() != 2
             || operands.len() != 2
             || node.arguments.get(1..offset) != Some(domains.as_slice())
             || bindings != self.universal_source_fields(graph, template)?.1
         {
-            return Err("全域差の元左右・束縛が違う".into());
+            return Err(internal!("全域差の元左右・束縛が違う").into());
         }
         let (comparison_source, left_producer, right_producer) =
             self.universal_comparison_producer(graph, template, &plan, limit)?;
@@ -1206,7 +1242,7 @@ impl Environment<'_> {
                 .comparison_expression
                 .is_none_or(|id| self.indexes.inputs.law().exprs()[id].span != comparison_span)
         {
-            return Err("全域差が最終比較の実producerを消費していない".into());
+            return Err(internal!("全域差が最終比較の実producerを消費していない").into());
         }
         for ((&child, &operand), id) in children.iter().zip(operands).zip([lhs, rhs]) {
             self.tick()?;
@@ -1215,17 +1251,17 @@ impl Environment<'_> {
                 || actual != self.universal_source_fields(graph, comparison_source)?.1
                 || graph.context_at(child.0) != graph.context_at(comparison_source.0)
             {
-                return Err("全域差の実左右producerが違う".into());
+                return Err(internal!("全域差の実左右producerが違う").into());
             }
             self.source_matches(graph, source, id)?;
             self.recheck_evaluation(graph, child)?;
         }
         let expected = match &graph.get(operands[0])?.payload {
             Some(Payload::Expression { parameters, .. }) => parameters,
-            _ => return Err("全域差の元左Sourceがない".into()),
+            _ => return Err(internal!("全域差の元左Sourceがない").into()),
         };
         if parameters != expected || !node.evidence.is_empty() {
-            return Err("全域差の自由軸・証拠が違う".into());
+            return Err(internal!("全域差の自由軸・証拠が違う").into());
         }
         self.universal_metadata(
             node,
@@ -1247,7 +1283,7 @@ impl Environment<'_> {
     ) -> Result<LocalEvaluation, ValidationFailure> {
         self.universal_pointwise_children(graph, header, children, limit)?;
         if children.len() != 1 {
-            return Err("局所全称評価の元body数が違う".into());
+            return Err(internal!("局所全称評価の元body数が違う").into());
         }
         let domain = self.universal_local_domain(graph, header, limit)?;
         let (span, bindings) = self.universal_source_fields(graph, header)?;
@@ -1295,7 +1331,7 @@ impl Environment<'_> {
             || applicability != "applicable"
             || !node.evidence.is_empty()
         {
-            return Err("局所全称評価の元body・束縛・適用が違う".into());
+            return Err(internal!("局所全称評価の元body・束縛・適用が違う").into());
         }
         let checked =
             self.universal_local_evaluation(graph, expression, &parts[0].children, limit, local)?;
@@ -1309,11 +1345,11 @@ impl Environment<'_> {
             || value.map(|value| graph.scalar(value)).transpose()?
                 != checked.analysis.known_value.as_ref()
         {
-            return Err("局所全称評価の元値・Domain・body辺が違う".into());
+            return Err(internal!("局所全称評価の元値・Domain・body辺が違う").into());
         }
         if let Some(value) = value {
             if graph.get(value)?.arguments != checked.arguments {
-                return Err("局所全称評価の値が別producerに属す".into());
+                return Err(internal!("局所全称評価の値が別producerに属す").into());
             }
             self.validate_at(graph, graph.get(value)?, value.0)?;
         }
@@ -1354,7 +1390,7 @@ impl Environment<'_> {
         }
         let template = self
             .universal_source_root(graph, expression)?
-            .ok_or("全域評価に元templateがない")?;
+            .ok_or(internal!("全域評価に元templateがない"))?;
         let (_, fixed) = self.universal_source_fields(graph, template)?;
         let plan = self.universal_plan_at(graph, template, fixed)?;
         let domains = self.universal_domains_from(graph, source, template, &plan)?;
@@ -1370,7 +1406,7 @@ impl Environment<'_> {
             || applicability != "applicable"
             || !node.evidence.is_empty()
         {
-            return Err("全域各出現の評価・束縛・適用が違う".into());
+            return Err(internal!("全域各出現の評価・束縛・適用が違う").into());
         }
         let children = &parts[0].children;
         self.universal_pointwise_children(graph, expression, children, limit)?;
@@ -1386,7 +1422,7 @@ impl Environment<'_> {
         if node.arguments != expected
             || value.map(|value| graph.scalar(value)).transpose()? != analyzed.known_value.as_ref()
         {
-            return Err("全域各出現の元値・辺が違う".into());
+            return Err(internal!("全域各出現の元値・辺が違う").into());
         }
         if let Some(value) = value {
             let scalar = graph.get(value)?;
@@ -1395,7 +1431,7 @@ impl Environment<'_> {
                     .chain(children.iter().copied())
                     .collect::<Vec<_>>()
             {
-                return Err("全域各出現の値producerが違う".into());
+                return Err(internal!("全域各出現の値producerが違う").into());
             }
             self.validate_at(graph, scalar, value.0)?;
         }
@@ -1410,7 +1446,7 @@ impl Environment<'_> {
             node,
             NodeType::Evaluation(match &source.ty {
                 NodeType::Expression(ty) => ty.clone(),
-                _ => return Err("全域Sourceの型がExpressionでない".into()),
+                _ => return Err(internal!("全域Sourceの型がExpressionでない").into()),
             }),
             &scope,
             &analyzed.support,
@@ -1429,13 +1465,13 @@ impl Environment<'_> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         if operands.len() != 1 {
-            return Err("全域代入の元operand数が違う".into());
+            return Err(internal!("全域代入の元operand数が違う").into());
         }
         let original = operands[0];
         self.validate_at(graph, graph.get(original)?, original.0)?;
         let template = self
             .universal_source_root(graph, original)?
-            .ok_or("全域代入の元templateがない")?;
+            .ok_or(internal!("全域代入の元templateがない"))?;
         let (plan, domains, _) = self.universal_reanalysis(graph, template, limit)?;
         let expected =
             self.universal_counterexample_bindings(graph, original, template, &domains)?;
@@ -1443,12 +1479,12 @@ impl Environment<'_> {
         if bindings.len() != fixed.len() + expected.len()
             || fixed.iter().any(|b| !bindings.contains(b))
         {
-            return Err("全域代入の元固定binding・代入数が違う".into());
+            return Err(internal!("全域代入の元固定binding・代入数が違う").into());
         }
         let mut ordered = bindings.to_vec();
         self.universal_order_counterexample_bindings(graph, original, &mut ordered)?;
         if bindings != ordered {
-            return Err("全域代入の元引数順が違う".into());
+            return Err(internal!("全域代入の元引数順が違う").into());
         }
         let caller_body = self.universal_counterexample_source(graph, template, &plan, limit)?;
         let caller_values = if graph.context_at(original.0) == graph.context_at(caller_body.0) {
@@ -1459,9 +1495,9 @@ impl Environment<'_> {
         for (name, ty, value, binder) in &expected {
             self.tick()?;
             let mut matches = bindings.iter().filter(|b| b.name == *name);
-            let binding = matches.next().ok_or("全域代入の元引数がない")?;
+            let binding = matches.next().ok_or(internal!("全域代入の元引数がない"))?;
             if matches.next().is_some() {
-                return Err("全域代入の元引数が重複する".into());
+                return Err(internal!("全域代入の元引数が重複する").into());
             }
             // 実Contextと元binderを含む同一代入だけcallerのScalarを共有する。
             // 局所binder・別callee formalは各実Sourceを起点に生成する。
@@ -1479,7 +1515,9 @@ impl Environment<'_> {
                 || !matches!(&producer.rule,Rule::Input {kind:"law",location:Location::Law {span}} if span==binder)
                 || graph.context_at(binding.value.0) != self.current_context(graph)
             {
-                return Err("全域代入の型付きparameter・binder・値・producerが違う".into());
+                return Err(
+                    internal!("全域代入の型付きparameter・binder・値・producerが違う").into(),
+                );
             }
             self.validate_at(graph, producer, binding.value.0)?;
         }
@@ -1492,7 +1530,7 @@ impl Environment<'_> {
                     .collect::<Vec<_>>()
             || !node.evidence.is_empty()
         {
-            return Err("全域代入の残自由parameter・元binding辺が違う".into());
+            return Err(internal!("全域代入の残自由parameter・元binding辺が違う").into());
         }
         self.universal_metadata(
             node,
@@ -1517,12 +1555,14 @@ impl Environment<'_> {
             ..
         }) = &graph.get(expression)?.payload
         else {
-            return Err("全域代入評価の元式が代入でない".into());
+            return Err(internal!("全域代入評価の元式が代入でない").into());
         };
-        let original = *operands.first().ok_or("全域代入評価の元operandがない")?;
+        let original = *operands
+            .first()
+            .ok_or(internal!("全域代入評価の元operandがない"))?;
         let template = self
             .universal_source_root(graph, original)?
-            .ok_or("全域代入評価の元templateがない")?;
+            .ok_or(internal!("全域代入評価の元templateがない"))?;
         let (_, domains, _) = self.universal_reanalysis(graph, template, limit)?;
         Ok((
             original,
@@ -1559,7 +1599,7 @@ impl Environment<'_> {
             || applicability != "applicable"
             || !node.evidence.is_empty()
         {
-            return Err("全域代入評価の元part・bindingが違う".into());
+            return Err(internal!("全域代入評価の元part・bindingが違う").into());
         }
         let child = parts[0].children[0];
         self.recheck_evaluation(graph, child)?;
@@ -1576,17 +1616,17 @@ impl Environment<'_> {
             || value.map(|value| graph.scalar(value)).transpose()?
                 != analyzed.analysis.known_value.as_ref()
         {
-            return Err("全域代入評価の元producer・型付き再代入値が違う".into());
+            return Err(internal!("全域代入評価の元producer・型付き再代入値が違う").into());
         }
         if let Some(value) = value {
             if graph.get(value)?.arguments != [expression, child] {
-                return Err("全域再代入値の実producerが違う".into());
+                return Err(internal!("全域再代入値の実producerが違う").into());
             }
             self.validate_at(graph, graph.get(value)?, value.0)?;
         }
         let ty = match &graph.get(original)?.ty {
             NodeType::Expression(ty) => ty.clone(),
-            _ => return Err("全域再代入の元型がない".into()),
+            _ => return Err(internal!("全域再代入の元型がない").into()),
         };
         self.universal_metadata(
             node,
@@ -1616,20 +1656,20 @@ impl Environment<'_> {
         let template = *difference
             .arguments
             .first()
-            .ok_or("全域差評価のtemplateがない")?;
+            .ok_or(internal!("全域差評価のtemplateがない"))?;
         let (plan, domains, analysis) = self.universal_reanalysis(graph, template, limit)?;
         let children = difference
             .arguments
             .get(1 + domains.len()..)
-            .ok_or("全域差評価に元左右がない")?;
+            .ok_or(internal!("全域差評価に元左右がない"))?;
         let comparison = analysis
             .comparison_expression
-            .ok_or("全域差評価の元Eqがない")?;
+            .ok_or(internal!("全域差評価の元Eqがない"))?;
         let span = self.indexes.inputs.law().exprs()[comparison].span;
         let normal_form = analysis
             .difference
             .as_ref()
-            .ok_or("全域差評価の元アフィン正規形がない")?;
+            .ok_or(internal!("全域差評価の元アフィン正規形がない"))?;
         let known = normal_form.value(&self.control)?;
         if bindings != self.universal_source_fields(graph, template)?.1
             || parts.len() != 1
@@ -1646,7 +1686,7 @@ impl Environment<'_> {
                     .collect::<Vec<_>>()
             || value.map(|value| graph.scalar(value)).transpose()? != known.as_ref()
         {
-            return Err("全域差の型付き残差・元子・値が違う".into());
+            return Err(internal!("全域差の型付き残差・元子・値が違う").into());
         }
         let mut reasons = Vec::new();
         for &child in children {
@@ -1661,7 +1701,7 @@ impl Environment<'_> {
         let _ = plan;
         let ty = match &difference.ty {
             NodeType::Expression(ty) => ty.clone(),
-            _ => return Err("全域残差の元数値型がない".into()),
+            _ => return Err(internal!("全域残差の元数値型がない").into()),
         };
         self.universal_metadata(
             node,
@@ -1691,7 +1731,7 @@ impl Environment<'_> {
         if bindings != self.universal_source_fields(graph, template)?.1
             || parts.len() != 1 + usize::from(plan.guard.is_some())
         {
-            return Err("全域wholeの元束縛・part数が違う".into());
+            return Err(internal!("全域wholeの元束縛・part数が違う").into());
         }
         let mut children = Vec::new();
         let mut reasons = Vec::new();
@@ -1704,7 +1744,7 @@ impl Environment<'_> {
                 || part.children.len() != 1
                 || part.residual.is_some()
             {
-                return Err("全域wholeの元guard出現が違う".into());
+                return Err(internal!("全域wholeの元guard出現が違う").into());
             }
             let child = part.children[0];
             let (source, actual, guard_value) = self.evaluation(graph, child)?;
@@ -1713,27 +1753,29 @@ impl Environment<'_> {
                 || guard_value != part.value
                 || graph.context_at(child.0) != self.current_context(graph)
             {
-                return Err("全域wholeの実guard producerが違う".into());
+                return Err(internal!("全域wholeの実guard producerが違う").into());
             }
             self.recheck_evaluation(graph, child)?;
             children.push(child);
             reasons.extend(graph.get(child)?.reasons.iter().cloned());
         }
-        let body = parts.last().ok_or("全域wholeの元body partがない")?;
+        let body = parts
+            .last()
+            .ok_or(internal!("全域wholeの元body partがない"))?;
         if body.location
             != (Location::Law {
                 span: plan.template_span,
             })
         {
-            return Err("全域wholeの元body出現が違う".into());
+            return Err(internal!("全域wholeの元body出現が違う").into());
         }
         if analysis.guard_value == Some(false) {
             if body.value.is_some() || body.residual.is_some() || !body.children.is_empty() {
-                return Err("全域非適用のbodyを評価済みにした".into());
+                return Err(internal!("全域非適用のbodyを評価済みにした").into());
             }
         } else {
             if body.children.len() != 1 {
-                return Err("全域wholeに元bodyの実評価がない".into());
+                return Err(internal!("全域wholeに元bodyの実評価がない").into());
             }
             let child = body.children[0];
             let (source, actual, body_value) = self.evaluation(graph, child)?;
@@ -1747,19 +1789,19 @@ impl Environment<'_> {
                         value
                     }
             {
-                return Err("全域wholeの実body producer・値が違う".into());
+                return Err(internal!("全域wholeの実body producer・値が違う").into());
             }
             self.recheck_evaluation(graph, child)?;
             children.push(child);
             reasons.extend(graph.get(child)?.reasons.iter().cloned());
             if analysis.comparison.is_some() != body.residual.is_some() {
-                return Err("全域wholeの数値差を省略・捏造した".into());
+                return Err(internal!("全域wholeの数値差を省略・捏造した").into());
             }
             if let Some(residual) = body.residual {
                 self.recheck_evaluation(graph, residual)?;
                 let difference = self.evaluation(graph, residual)?.0;
                 if graph.get(difference)?.arguments.first() != Some(&template) {
-                    return Err("全域wholeの残差が別templateに属す".into());
+                    return Err(internal!("全域wholeの残差が別templateに属す").into());
                 }
             }
         }
@@ -1785,7 +1827,7 @@ impl Environment<'_> {
             let request = graph
                 .requests
                 .get(self.current_context(graph).request)
-                .ok_or("全域非対応算法の元Requestがない")?;
+                .ok_or(internal!("全域非対応算法の元Requestがない"))?;
             reasons.push(Reason {
                 kind: ReasonKind::UnsupportedAlgorithm {
                     question: request.kind,
@@ -1811,18 +1853,18 @@ impl Environment<'_> {
             "undetermined"
         };
         if applicability != expected_applicability || graph.boolean(value)? != analysis.value {
-            return Err("全域wholeの適用・全補完判断が元式と違う".into());
+            return Err(internal!("全域wholeの適用・全補完判断が元式と違う").into());
         }
         let normalization = if let Some(value) = value {
             self.validate_at(graph, graph.get(value)?, value.0)?;
             if node.evidence.len() != 1 {
-                return Err("全域wholeに正規化証拠がない".into());
+                return Err(internal!("全域wholeに正規化証拠がない").into());
             }
             let normalization = node.evidence[0];
             self.validate_at(graph, graph.get(normalization)?, normalization.0)?;
             if !matches!(&graph.get(normalization)?.payload,Some(Payload::Normalization {before,after,..}) if *before==template&&*after==value)
             {
-                return Err("全域wholeの正規化が別producer".into());
+                return Err(internal!("全域wholeの正規化が別producer").into());
             }
             Some(normalization)
         } else {
@@ -1833,7 +1875,7 @@ impl Environment<'_> {
                     .is_some_and(|classification| classification.completion_pair.is_some());
             if pair_expected {
                 if node.evidence.len() != 1 {
-                    return Err("全域未決の補完対証拠がない".into());
+                    return Err(internal!("全域未決の補完対証拠がない").into());
                 }
                 let pair = node.evidence[0];
                 if !matches!(
@@ -1841,13 +1883,13 @@ impl Environment<'_> {
                     Some(Payload::CompletionPair { .. })
                 ) || graph.get(pair)?.arguments.first() != Some(&template)
                 {
-                    return Err("全域未決の補完対が別元式に属す".into());
+                    return Err(internal!("全域未決の補完対が別元式に属す").into());
                 }
                 self.validate_at(graph, graph.get(pair)?, pair.0)?;
                 Some(pair)
             } else {
                 if !node.evidence.is_empty() {
-                    return Err("全域未決に架空の証拠がある".into());
+                    return Err(internal!("全域未決に架空の証拠がある").into());
                 }
                 None
             }
@@ -1860,7 +1902,7 @@ impl Environment<'_> {
             .chain(normalization)
             .collect::<Vec<_>>();
         if node.arguments != expected {
-            return Err("全域wholeの元依存・残差・証拠順が違う".into());
+            return Err(internal!("全域wholeの元依存・残差・証拠順が違う").into());
         }
         self.universal_metadata(
             node,
@@ -1962,10 +2004,9 @@ impl Environment<'_> {
                 ordinal += 1;
             }
         }
-        producers
-            .into_iter()
-            .nth(ordinal)
-            .ok_or_else(|| "全域具体parameter Scalarが元caller/左右の生成列を超える".into())
+        producers.into_iter().nth(ordinal).ok_or_else(|| {
+            internal!("全域具体parameter Scalarが元caller/左右の生成列を超える").into()
+        })
     }
 
     fn universal_validate_parameter_scalar(
@@ -1977,7 +2018,7 @@ impl Environment<'_> {
         template: NodeRef,
     ) -> Result<bool, ValidationFailure> {
         if node.arguments.len() != 2 {
-            return Err("全域具体parameter Scalarの元辺数が違う".into());
+            return Err(internal!("全域具体parameter Scalarの元辺数が違う").into());
         }
         let original = node.arguments[1];
         let (plan, domains, analysis) = self.universal_reanalysis(graph, template, limit)?;
@@ -1988,7 +2029,7 @@ impl Environment<'_> {
             ..
         } = &node.rule
         else {
-            return Err("全域具体parameterに元binderがない".into());
+            return Err(internal!("全域具体parameterに元binderがない").into());
         };
         if original != expected.source
             || scalar.ty() != expected.ty
@@ -1996,7 +2037,9 @@ impl Environment<'_> {
             || *span != expected.binder
             || self.current_context(graph) != graph.context_at(template.0)
         {
-            return Err("全域具体parameterの元binder・型付き値・実producer順が違う".into());
+            return Err(
+                internal!("全域具体parameterの元binder・型付き値・実producer順が違う").into(),
+            );
         }
         self.universal_input_metadata(
             node,
@@ -2020,12 +2063,12 @@ impl Environment<'_> {
         let children = node
             .arguments
             .get(2..)
-            .ok_or("局所全称Scalarの元bodyがない")?;
+            .ok_or(internal!("局所全称Scalarの元bodyがない"))?;
         let checked = self.universal_local_evaluation(graph, header, children, limit, local)?;
         if node.arguments != checked.arguments
             || checked.analysis.known_value.as_ref() != Some(scalar)
         {
-            return Err("局所全称Scalarの値・Domain・実bodyが違う".into());
+            return Err(internal!("局所全称Scalarの値・Domain・実bodyが違う").into());
         }
         self.universal_input_metadata(
             node,
@@ -2065,7 +2108,7 @@ impl Environment<'_> {
             scope.merge(&graph.get(*child)?.scope);
         }
         if analysis.known_value.as_ref() != Some(scalar) {
-            return Err("全域出現のScalarが元入力の値と違う".into());
+            return Err(internal!("全域出現のScalarが元入力の値と違う").into());
         }
         self.universal_input_metadata(
             node,
@@ -2092,7 +2135,7 @@ impl Environment<'_> {
         let expected = analysis
             .difference
             .as_ref()
-            .ok_or("全域残差Scalarの元正規形がない")?
+            .ok_or(internal!("全域残差Scalarの元正規形がない"))?
             .value(&self.control)?;
         if expected.as_ref() != Some(scalar)
             || node.arguments
@@ -2101,7 +2144,7 @@ impl Environment<'_> {
                     .collect::<Vec<_>>()
             || !node.evidence.is_empty()
         {
-            return Err("全域残差Scalarの値・元左右が違う".into());
+            return Err(internal!("全域残差Scalarの値・元左右が違う").into());
         }
         self.universal_metadata(
             node,
@@ -2127,13 +2170,13 @@ impl Environment<'_> {
         let child = *node
             .arguments
             .get(1)
-            .ok_or("全域代入Scalarに実producerがない")?;
+            .ok_or(internal!("全域代入Scalarに実producerがない"))?;
         if node.arguments.len() != 2
             || self.evaluation(graph, child)?.0 != original
             || analyzed.analysis.known_value.as_ref() != Some(scalar)
             || !node.evidence.is_empty()
         {
-            return Err("全域代入Scalarの実producer・値が違う".into());
+            return Err(internal!("全域代入Scalarの実producer・値が違う").into());
         }
         self.recheck_evaluation(graph, child)?;
         self.universal_metadata(
@@ -2158,7 +2201,7 @@ impl Environment<'_> {
         let (plan, _, analysis) = self.universal_reanalysis(graph, template, limit)?;
         if matches!(node.rule, Rule::Construction("proposition")) {
             if scalar != &Scalar::Bool(true) || node.arguments.len() != 3 {
-                return Err("全域反証の比較先真値が違う".into());
+                return Err(internal!("全域反証の比較先真値が違う").into());
             }
             let evaluation = node.arguments[1];
             let normalization = node.arguments[2];
@@ -2168,7 +2211,7 @@ impl Environment<'_> {
                 || analysis.value != Some(false)
                 || graph.get(evaluation)?.evidence != [normalization]
             {
-                return Err("全域反証の真値が別wholeに属す".into());
+                return Err(internal!("全域反証の真値が別wholeに属す").into());
             }
             self.universal_metadata(
                 node,
@@ -2183,7 +2226,7 @@ impl Environment<'_> {
             if Some(scalar) != analysis.value.map(Scalar::Bool).as_ref()
                 || !node.evidence.is_empty()
             {
-                return Err("全域Boolが元全域判断と違う".into());
+                return Err(internal!("全域Boolが元全域判断と違う").into());
             }
             self.universal_metadata(
                 node,
@@ -2223,7 +2266,7 @@ impl Environment<'_> {
                     .collect::<Vec<_>>()
             || !node.evidence.is_empty()
         {
-            return Err("全域normalizationの元式・steps・結果が違う".into());
+            return Err(internal!("全域normalizationの元式・steps・結果が違う").into());
         }
         self.universal_metadata(
             node,
@@ -2248,10 +2291,13 @@ impl Environment<'_> {
             facts,
         }) = &node.payload
         else {
-            return Err("全域反例のpayloadがCounterexampleでない".into());
+            return Err(internal!("全域反例のpayloadがCounterexampleでない").into());
         };
         let (bindings, left, right, facts) = (bindings.as_slice(), *left, *right, facts.as_slice());
-        let template = *node.arguments.first().ok_or("全域反例の元templateがない")?;
+        let template = *node
+            .arguments
+            .first()
+            .ok_or(internal!("全域反例の元templateがない"))?;
         let (plan, domains, analysis) = self.universal_reanalysis(graph, template, limit)?;
         if analysis
             .classification
@@ -2263,22 +2309,22 @@ impl Environment<'_> {
                 || facts != analysis.analysis.support
                 || !node.evidence.is_empty()
             {
-                return Err("全域具体反例の元導出・全域判断が違う".into());
+                return Err(internal!("全域具体反例の元導出・全域判断が違う").into());
             }
             let normalization = node.arguments[1];
             let substitute = node.arguments[2];
             if node.arguments[3..] != [left, right] {
-                return Err("全域具体反例の実左右辺が違う".into());
+                return Err(internal!("全域具体反例の実左右辺が違う").into());
             }
             self.validate_at(graph, graph.get(normalization)?, normalization.0)?;
             self.validate_at(graph, graph.get(substitute)?, substitute.0)?;
             let Some(Payload::Normalization { before, steps, .. }) =
                 &graph.get(normalization)?.payload
             else {
-                return Err("全域具体反例の正規化証拠がない".into());
+                return Err(internal!("全域具体反例の正規化証拠がない").into());
             };
             if *before != template || steps.last() != Some(&substitute) {
-                return Err("全域具体反例の正規化が別producer".into());
+                return Err(internal!("全域具体反例の正規化が別producer").into());
             }
             let Some(Payload::ParameterizedTransform {
                 operation: TransformOp::Substitute,
@@ -2287,23 +2333,27 @@ impl Environment<'_> {
                 ..
             }) = &graph.get(substitute)?.payload
             else {
-                return Err("全域具体反例の元Eq代入がない".into());
+                return Err(internal!("全域具体反例の元Eq代入がない").into());
             };
             if actual != bindings || operands.len() != 1 {
-                return Err("全域具体反例の型付き代入bindingが違う".into());
+                return Err(internal!("全域具体反例の型付き代入bindingが違う").into());
             }
             let original = operands[0];
             if original
                 != self.universal_counterexample_source(graph, template, &plan, substitute.0)?
             {
-                return Err("全域具体反例が元caller bodyの実producerへ代入していない".into());
+                return Err(
+                    internal!("全域具体反例が元caller bodyの実producerへ代入していない").into(),
+                );
             }
             let analyzed = self
                 .universal_substitution_analysis(graph, original, bindings, template, &domains)?;
             if analyzed.analysis.known_value != Some(Scalar::Bool(false)) {
-                return Err("全域具体反例を元Eqへ戻すと偽にならない".into());
+                return Err(internal!("全域具体反例を元Eqへ戻すと偽にならない").into());
             }
-            let (lhs, rhs) = analysis.comparison.ok_or("全域具体反例の元左右ASTがない")?;
+            let (lhs, rhs) = analysis
+                .comparison
+                .ok_or(internal!("全域具体反例の元左右ASTがない"))?;
             let (comparison_source, original_left, original_right) =
                 self.universal_comparison_producer(graph, template, &plan, substitute.0)?;
             let comparison_span = self.expression_span(graph, comparison_source)?;
@@ -2311,7 +2361,7 @@ impl Environment<'_> {
                 .comparison_expression
                 .is_none_or(|id| self.indexes.inputs.law().exprs()[id].span != comparison_span)
             {
-                return Err("全域具体反例の元最終比較producerが違う".into());
+                return Err(internal!("全域具体反例の元最終比較producerが違う").into());
             }
             for (evaluation, id, original_evaluation) in
                 [(left, lhs, original_left), (right, rhs, original_right)]
@@ -2325,7 +2375,7 @@ impl Environment<'_> {
                     ..
                 }) = &graph.get(expression)?.payload
                 else {
-                    return Err("全域具体反例の左右が再代入評価でない".into());
+                    return Err(internal!("全域具体反例の左右が再代入評価でない").into());
                 };
                 let original_source = self.evaluation(graph, original_evaluation)?.0;
                 let Some(Payload::Evaluation { parts, .. }) = &graph.get(evaluation)?.payload
@@ -2336,7 +2386,10 @@ impl Environment<'_> {
                     || parts.len() != 1
                     || parts[0].children != [original_evaluation]
                 {
-                    return Err("全域具体反例の左右再代入が元最終比較の実producerと違う".into());
+                    return Err(internal!(
+                        "全域具体反例の左右再代入が元最終比較の実producerと違う"
+                    )
+                    .into());
                 }
                 self.source_matches(graph, operands[0], id)?;
             }
@@ -2355,7 +2408,7 @@ impl Environment<'_> {
             || facts != analysis.analysis.support
             || !node.evidence.is_empty()
         {
-            return Err("全域反例の元束縛・全域反証・事実が違う".into());
+            return Err(internal!("全域反例の元束縛・全域反証・事実が違う").into());
         }
         let evaluation = node.arguments[1];
         let normalization = node.arguments[2];
@@ -2369,7 +2422,7 @@ impl Environment<'_> {
             || graph.get(evaluation)?.evidence != [normalization]
             || graph.get(right)?.arguments != node.arguments
         {
-            return Err("全域反例の元whole・比較先producerが違う".into());
+            return Err(internal!("全域反例の元whole・比較先producerが違う").into());
         }
         self.universal_metadata(
             node,
@@ -2395,7 +2448,7 @@ impl Environment<'_> {
             occurrence,
         }) = &node.payload
         else {
-            return Err("全域LawInstanceのpayloadが違う".into());
+            return Err(internal!("全域LawInstanceのpayloadが違う").into());
         };
         let (name, role, bindings, guard, body) =
             (name.as_str(), *role, bindings.as_slice(), *guard, *body);
@@ -2417,7 +2470,7 @@ impl Environment<'_> {
         let request = graph
             .requests
             .get(self.current_context(graph).request)
-            .ok_or("全域LawInstance元Requestがない")?;
+            .ok_or(internal!("全域LawInstance元Requestがない"))?;
         let declaration_name = self
             .current_context(graph)
             .instance
@@ -2425,14 +2478,14 @@ impl Environment<'_> {
             .transpose()?
             .flatten()
             .or_else(|| request.declaration().map(str::to_owned))
-            .ok_or("全域LawInstanceの元宣言名がない")?;
+            .ok_or(internal!("全域LawInstanceの元宣言名がない"))?;
         let declaration = self
             .indexes
             .inputs
             .law()
             .declarations()
             .get(&declaration_name)
-            .ok_or("全域LawInstance元宣言がない")?;
+            .ok_or(internal!("全域LawInstance元宣言がない"))?;
         let Signature::Law {
             body: original,
             guard: original_guard,
@@ -2440,7 +2493,7 @@ impl Environment<'_> {
             ..
         } = &declaration.signature
         else {
-            return Err("全域LawInstance元署名が違う".into());
+            return Err(internal!("全域LawInstance元署名が違う").into());
         };
         let expected_role = match original_role {
             archsig_input::law::ast::Role::Required => "required",
@@ -2466,7 +2519,7 @@ impl Environment<'_> {
                     .collect::<Vec<_>>()
             || !node.evidence.is_empty()
         {
-            return Err("全域LawInstanceの名前・role・元guard/body・束縛が違う".into());
+            return Err(internal!("全域LawInstanceの名前・role・元guard/body・束縛が違う").into());
         }
         let whole = graph.get(evaluation)?;
         self.universal_metadata(
@@ -2503,7 +2556,10 @@ impl Environment<'_> {
         self.recheck_evaluation(graph, evaluation)?;
         let whole = graph.get(evaluation)?;
         let status = family::family_decision(graph.boolean(value)?);
-        let judgment = node.judgment.as_ref().ok_or("全域命題の判断がない")?;
+        let judgment = node
+            .judgment
+            .as_ref()
+            .ok_or(internal!("全域命題の判断がない"))?;
         if node.ty != NodeType::Proposition
             || node.arguments != [instance, evaluation]
             || node.scope != whole.scope
@@ -2514,7 +2570,7 @@ impl Environment<'_> {
             || judgment.evidence != node.evidence
             || !reasons_equal(&judgment.reasons, &whole.reasons)
         {
-            return Err("全域命題の元Law・Scope・理由・判断が違う".into());
+            return Err(internal!("全域命題の元Law・Scope・理由・判断が違う").into());
         }
         let (plan, _, analysis) =
             self.universal_reanalysis(graph, template, self.state.cutoff.get())?;
@@ -2528,7 +2584,7 @@ impl Environment<'_> {
             || node.evidence.len()
                 != whole.evidence.len() + usize::from(status == Decision::Refuted)
         {
-            return Err("全域命題の正規化・反例証拠が違う".into());
+            return Err(internal!("全域命題の正規化・反例証拠が違う").into());
         }
         for &evidence in &node.evidence {
             self.tick()?;
@@ -2540,16 +2596,19 @@ impl Environment<'_> {
                 Some(Payload::CompletionPair { .. })
             ) || graph.get(node.evidence[0])?.arguments.first() != Some(&template))
         {
-            return Err("全域未決の補完対が元式と違う".into());
+            return Err(internal!("全域未決の補完対が元式と違う").into());
         }
         if status == Decision::Refuted {
-            let counterexample = *node.evidence.last().ok_or("全域反証の反例がない")?;
+            let counterexample = *node
+                .evidence
+                .last()
+                .ok_or(internal!("全域反証の反例がない"))?;
             if !matches!(
                 graph.get(counterexample)?.payload,
                 Some(Payload::Counterexample { .. })
             ) || graph.get(counterexample)?.arguments.first() != Some(&template)
             {
-                return Err("全域反証が別wholeの反例を消費している".into());
+                return Err(internal!("全域反証が別wholeの反例を消費している").into());
             }
         }
         Ok(true)
@@ -2751,17 +2810,19 @@ impl Environment<'_> {
             || !reasons_equal(&answer.reasons, &whole.reasons)
             || graph.boolean(value)? != analysis.value
         {
-            return Err("全域Answerの元判断・Scope・理由が違う".into());
+            return Err(internal!("全域Answerの元判断・Scope・理由が違う").into());
         }
         if request.kind == QuestionKind::Check {
-            let claim = answer.claim.ok_or("全域check Answerに命題がない")?;
+            let claim = answer
+                .claim
+                .ok_or(internal!("全域check Answerに命題がない"))?;
             self.validate_at(graph, graph.get(claim)?, claim.0)?;
             if graph.get(claim)?.arguments.get(1) != Some(&evaluation)
                 || answer.outputs.get("proposition") != Some(&claim)
                 || answer.status != family::family_decision(analysis.value)
                 || answer.evidence != graph.get(claim)?.evidence
             {
-                return Err("全域Answerの元命題・判断・証拠が違う".into());
+                return Err(internal!("全域Answerの元命題・判断・証拠が違う").into());
             }
         } else if answer.claim.is_some()
             || answer.status
@@ -2773,18 +2834,22 @@ impl Environment<'_> {
             || !answer.evidence.is_empty()
             || answer.outputs.get("value").copied() != value
         {
-            return Err("全域値Answerの判断・証拠が違う".into());
+            return Err(internal!("全域値Answerの判断・証拠が違う").into());
         }
         let declaration = self
             .indexes
             .inputs
             .law()
             .declarations()
-            .get(request.declaration().ok_or("元要求に宣言がない")?)
-            .ok_or("全域Answer元宣言がない")?;
+            .get(
+                request
+                    .declaration()
+                    .ok_or(internal!("元要求に宣言がない"))?,
+            )
+            .ok_or(internal!("全域Answer元宣言がない"))?;
         let params = match &declaration.signature {
             Signature::Law { params, .. } | Signature::View { params, .. } => params,
-            _ => return Err("全域Answer元署名が違う".into()),
+            _ => return Err(internal!("全域Answer元署名が違う").into()),
         };
         let fixed = params
             .iter()
@@ -2796,25 +2861,25 @@ impl Environment<'_> {
             })
             .collect::<Vec<_>>();
         if fixed.len() != bindings.len() {
-            return Err("全域Answerの固定束縛数が違う".into());
+            return Err(internal!("全域Answerの固定束縛数が違う").into());
         }
         for (parameter, binding) in fixed.iter().zip(bindings) {
             self.tick()?;
             if parameter.name != binding.name || parameter.ty.erase() != binding.ty {
-                return Err("全域Answer固定署名が違う".into());
+                return Err(internal!("全域Answer固定署名が違う").into());
             }
             let argument = request
                 .arguments
                 .iter()
                 .find(|argument| argument.name == format!("bind.{}", parameter.name))
-                .ok_or("全域Answer固定selectorがない")?;
+                .ok_or(internal!("全域Answer固定selectorがない"))?;
             if matches!(argument.value, Selector::Answer { .. }) {
                 self.answer_binding_matches(graph, &argument.value, binding.value, parameter.span)?;
                 graph.expect(binding.value, &NodeType::Value(binding.ty.clone()))?;
                 continue;
             }
             let Selector::Subject { snapshot, subject } = &argument.value else {
-                return Err("全域Answer固定selectorがsubjectでない".into());
+                return Err(internal!("全域Answer固定selectorがsubjectでない").into());
             };
             let original = self.indexes.subject(snapshot, subject)?;
             if graph.scalar(binding.value)?
@@ -2825,7 +2890,7 @@ impl Environment<'_> {
                 })
                 || graph.context_at(binding.value.0) != self.current_context(graph)
             {
-                return Err("全域Answer固定subject・producerが違う".into());
+                return Err(internal!("全域Answer固定subject・producerが違う").into());
             }
             self.validate_at(graph, graph.get(binding.value)?, binding.value.0)?;
         }
@@ -2872,11 +2937,11 @@ impl Environment<'_> {
             let frame = graph
                 .frames
                 .get(index)
-                .ok_or("有限全域の元call frameがない")?;
+                .ok_or(internal!("有限全域の元call frameがない"))?;
             if frame.caller.frame.is_some_and(|parent| parent >= index)
                 || frame.source.0 >= self.state.cutoff.get().min(graph.nodes.len())
             {
-                return Err("有限全域の元callが先行しない".into());
+                return Err(internal!("有限全域の元callが先行しない").into());
             }
             if enclosed(self.expression_span(graph, frame.source)?)? {
                 return Ok(true);
@@ -2911,7 +2976,7 @@ impl Environment<'_> {
         {
             if let Some(&template) = node.arguments.first() {
                 if template.0 >= limit {
-                    return Err("全域Sourceの元templateが未出".into());
+                    return Err(internal!("全域Sourceの元templateが未出").into());
                 }
                 if self.universal_is_template(graph, template)? {
                     if !self.universal_has_finite_context(graph, *span)? {
@@ -2943,7 +3008,7 @@ impl Environment<'_> {
                 while let Some(at) = reference {
                     self.tick()?;
                     if at.0 >= limit {
-                        return Err("有限全域の元producerが未出".into());
+                        return Err(internal!("有限全域の元producerが未出").into());
                     }
                     let original = graph.get(at)?;
                     match &original.payload {
@@ -2953,7 +3018,7 @@ impl Environment<'_> {
                         }
                         Some(Payload::Evaluation { expression, .. }) => {
                             if expression.0 >= at.0 {
-                                return Err("全域子評価の元Sourceが先行しない".into());
+                                return Err(internal!("全域子評価の元Sourceが先行しない").into());
                             }
                             found = Some(*expression);
                             break;
@@ -2961,7 +3026,7 @@ impl Environment<'_> {
                         Some(Payload::Domain { .. }) => {
                             reference = original.arguments.first().copied();
                             if reference.is_some_and(|next| next.0 >= at.0) {
-                                return Err("有限全域の元Domain辺が先行しない".into());
+                                return Err(internal!("有限全域の元Domain辺が先行しない").into());
                             }
                         }
                         _ => break,
@@ -2974,7 +3039,7 @@ impl Environment<'_> {
             return Ok(None);
         };
         if source.0 >= limit {
-            return Err("全域nodeの元Sourceが未出".into());
+            return Err(internal!("全域nodeの元Sourceが未出").into());
         }
         let Some(Payload::Expression {
             location: Location::Law { span },
@@ -3025,7 +3090,7 @@ impl Environment<'_> {
         };
         let ty = self.indexes.inputs.law().quantifier_types()[id]
             .as_ref()
-            .ok_or("無限型量化の元型がない")?;
+            .ok_or(internal!("無限型量化の元型がない"))?;
         if number(ty).is_some() || !self.universal_symbolic_type(ty)? {
             return Ok(None);
         }
@@ -3050,7 +3115,7 @@ impl Environment<'_> {
         let request = graph
             .requests
             .get(self.current_context(graph).request)
-            .ok_or("無限型量化の元Requestがない")?;
+            .ok_or(internal!("無限型量化の元Requestがない"))?;
         Ok(Some(Reason {
             kind: ReasonKind::UnsupportedAlgorithm {
                 question: request.kind,
@@ -3070,7 +3135,7 @@ impl Environment<'_> {
     ) -> Result<AnalysisContext, ValidationFailure> {
         let template = self
             .universal_source_root(graph, source)?
-            .ok_or("有限全域の元templateがない")?;
+            .ok_or(internal!("有限全域の元templateがない"))?;
         let (_, fixed) = self.universal_source_fields(graph, template)?;
         let plan = self.universal_plan_at(graph, template, fixed)?;
         let domains = self.universal_domains_from(graph, graph.get(source)?, template, &plan)?;
@@ -3098,7 +3163,7 @@ impl Environment<'_> {
                 let raw = self.universal_raw_body(graph, source)?;
                 Ok((self.expression_span(graph, raw)?, bindings))
             }
-            _ => Err("全域の元Source・束縛がない".into()),
+            _ => Err(internal!("全域の元Source・束縛がない").into()),
         }
     }
 
@@ -3184,7 +3249,7 @@ impl Environment<'_> {
             return Ok(Some(request));
         }
         if !graph.requests.is_empty() || self.universal_numeric_source(graph, span, bindings)? {
-            return Err("全域の元numeric templateにRequestがない".into());
+            return Err(internal!("全域の元numeric templateにRequestがない").into());
         }
         Ok(None)
     }
@@ -3205,8 +3270,12 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations()
-            .get(request.declaration().ok_or("元要求に宣言がない")?)
-            .ok_or("全域/有限族の元宣言がない")?;
+            .get(
+                request
+                    .declaration()
+                    .ok_or(internal!("元要求に宣言がない"))?,
+            )
+            .ok_or(internal!("全域/有限族の元宣言がない"))?;
         let Signature::Law {
             params,
             body,
@@ -3315,7 +3384,9 @@ impl Environment<'_> {
                 operands,
                 ..
             }) => {
-                let original = *operands.first().ok_or("全域代入に元operandがない")?;
+                let original = *operands
+                    .first()
+                    .ok_or(internal!("全域代入に元operandがない"))?;
                 self.universal_source_root(graph, original)
             }
             Some(Payload::ParameterizedTransform { .. }) => Ok(Some(source)),
@@ -3340,7 +3411,7 @@ impl Environment<'_> {
             || !matches!(node.rule,Rule::Construction(actual) if actual==rule)
             || node.judgment.is_some()
         {
-            return Err("全域nodeの型・Scope・支持・理由・構成が元入力と違う".into());
+            return Err(internal!("全域nodeの型・Scope・支持・理由・構成が元入力と違う").into());
         }
         Ok(())
     }
@@ -3362,7 +3433,7 @@ impl Environment<'_> {
             || node.judgment.is_some()
             || !matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span:actual}} if *actual==span)
         {
-            return Err("全域の元出現・型・Scope・支持が違う".into());
+            return Err(internal!("全域の元出現・型・Scope・支持が違う").into());
         }
         Ok(())
     }
@@ -3432,7 +3503,7 @@ impl Environment<'_> {
             expected
         };
         if node.arguments != expected || *parameters != analyzed.parameters {
-            return Err("全域Sourceの元引数・自由parameter順が違う".into());
+            return Err(internal!("全域Sourceの元引数・自由parameter順が違う").into());
         }
         let ty = if let Some(id) = self.indexes.inputs.law().program().expressions.get(span) {
             self.indexes
@@ -3440,11 +3511,11 @@ impl Environment<'_> {
                 .law()
                 .expr_type(*id)
                 .cloned()
-                .ok_or("全域AST元型がない")?
+                .ok_or(internal!("全域AST元型がない"))?
         } else {
             let (id, count) = self
                 .dotted_prefix(*span)?
-                .ok_or("全域fragmentの元prefixがない")?;
+                .ok_or(internal!("全域fragmentの元prefixがない"))?;
             self.dotted_prefixes(id)?[count - 1].1.clone()
         };
         self.universal_input_metadata(
@@ -3457,7 +3528,7 @@ impl Environment<'_> {
         for reference in &expected {
             self.tick()?;
             if reference.0 >= limit {
-                return Err("全域Sourceの参照が未出".into());
+                return Err(internal!("全域Sourceの参照が未出").into());
             }
             self.validate_at(graph, graph.get(*reference)?, reference.0)?;
         }
@@ -3573,7 +3644,7 @@ impl Environment<'_> {
                     .map(|index| self.instance_source_declaration(graph, index))
                     .transpose()?
                     .flatten()
-                    .ok_or("全域Sourceの元要求・relation宣言がない")?,
+                    .ok_or(internal!("全域Sourceの元要求・relation宣言がない"))?,
             };
             let declaration = self
                 .indexes
@@ -3581,9 +3652,9 @@ impl Environment<'_> {
                 .law()
                 .declarations()
                 .get(&name)
-                .ok_or("全域Source元宣言がない")?;
+                .ok_or(internal!("全域Source元宣言がない"))?;
             if !(declaration.span.0 <= span.0 && span.1 <= declaration.span.1) {
-                return Err("全域Sourceの元ASTが別Request宣言に属す".into());
+                return Err(internal!("全域Sourceの元ASTが別Request宣言に属す").into());
             }
         }
         let analyzed = self.universal_template_source_analysis(graph, &plan, span, bindings)?;
@@ -3607,18 +3678,18 @@ impl Environment<'_> {
             let prefixes = self.dotted_prefixes(id)?;
             let (owner_span, owner_ty) = &prefixes[count - 2];
             if children.len() != 1 {
-                return Err("全域fieldの実owner子数が違う".into());
+                return Err(internal!("全域fieldの実owner子数が違う").into());
             }
             let child = children[0];
             if child.0 >= limit || graph.context_at(child.0) != self.current_context(graph) {
-                return Err("全域fieldの実ownerが未出・別Context".into());
+                return Err(internal!("全域fieldの実ownerが未出・別Context").into());
             }
             let (original, actual, _) = self.evaluation(graph, child)?;
             if self.expression_span(graph, original)? != *owner_span
                 || actual != bindings
                 || graph.get(child)?.ty != NodeType::Evaluation(owner_ty.clone())
             {
-                return Err("全域fieldの実owner出現・型・束縛が違う".into());
+                return Err(internal!("全域fieldの実owner出現・型・束縛が違う").into());
             }
             self.tick()?;
             self.recheck_evaluation(graph, child)?;
@@ -3645,7 +3716,7 @@ impl Environment<'_> {
                 self.lexical_argument(graph, span, name, bindings)?
             };
             if children != expected.into_iter().collect::<Vec<_>>() {
-                return Err("全域fragmentの実producerが違う".into());
+                return Err(internal!("全域fragmentの実producerが違う").into());
             }
             return Ok(());
         };
@@ -3657,9 +3728,11 @@ impl Environment<'_> {
             | ExprKind::Unary { operand: base, .. } => vec![*base],
             ExprKind::Binary { lhs, rhs, .. } => vec![*lhs, *rhs],
             ExprKind::Match { scrutinee, arms } => {
-                let input = *children.first().ok_or("全域matchの実scrutineeがない")?;
+                let input = *children
+                    .first()
+                    .ok_or(internal!("全域matchの実scrutineeがない"))?;
                 if input.0 >= limit || graph.context_at(input.0) != self.current_context(graph) {
-                    return Err("全域matchの実scrutineeが未出・別Context".into());
+                    return Err(internal!("全域matchの実scrutineeが未出・別Context").into());
                 }
                 self.source_matches(graph, self.evaluation(graph, input)?.0, *scrutinee)?;
                 self.recheck_evaluation(graph, input)?;
@@ -3690,24 +3763,26 @@ impl Environment<'_> {
                 ..
             } => vec![*body],
             ExprKind::Call { args, .. } if self.named_view(id)?.is_some() => {
-                let declaration = self.named_view(id)?.ok_or("全域call元宣言がない")?;
+                let declaration = self
+                    .named_view(id)?
+                    .ok_or(internal!("全域call元宣言がない"))?;
                 let Signature::View { body, .. } = &declaration.signature else {
-                    return Err("全域call元署名が違う".into());
+                    return Err(internal!("全域call元署名が違う").into());
                 };
                 if children.len() != args.len() + 1 {
-                    return Err("全域call子数が違う".into());
+                    return Err(internal!("全域call子数が違う").into());
                 }
-                let body_ref = *children.last().ok_or("全域call bodyがない")?;
+                let body_ref = *children.last().ok_or(internal!("全域call bodyがない"))?;
                 let context = graph.context_at(body_ref.0);
                 let frame = graph
                     .frames
-                    .get(context.frame.ok_or("全域call frameがない")?)
-                    .ok_or("全域call frameがない")?;
+                    .get(context.frame.ok_or(internal!("全域call frameがない"))?)
+                    .ok_or(internal!("全域call frameがない"))?;
                 if frame.caller != self.current_context(graph)
                     || frame.source != source
                     || frame.arguments != children[..args.len()]
                 {
-                    return Err("全域callの実producerが違う".into());
+                    return Err(internal!("全域callの実producerが違う").into());
                 }
                 self.source_matches(graph, self.evaluation(graph, body_ref)?.0, *body)?;
                 for (&child, &original) in children.iter().zip(args) {
@@ -3716,7 +3791,7 @@ impl Environment<'_> {
                 for &child in children {
                     self.tick()?;
                     if child.0 >= limit {
-                        return Err("全域call子が未出".into());
+                        return Err(internal!("全域call子が未出").into());
                     }
                     self.recheck_evaluation(graph, child)?;
                 }
@@ -3724,54 +3799,54 @@ impl Environment<'_> {
             }
             ExprKind::Dotted(_) if data::expression(law, id, &self.control)?.is_some() => vec![],
             ExprKind::Dotted(parts) => {
-                let first = parts.first().ok_or("全域Dottedが空")?;
+                let first = parts.first().ok_or(internal!("全域Dottedが空"))?;
                 if parts.len() == 1 {
                     if let Some((argument, _)) =
                         self.iteration_argument(graph, span, &first.name, bindings)?
                     {
                         if children != [argument] {
-                            return Err("全域反復の元collection producerが違う".into());
+                            return Err(internal!("全域反復の元collection producerが違う").into());
                         }
                     } else if self
                         .type_iteration_argument(graph, span, &first.name, bindings)?
                         .is_some()
                     {
                         if !children.is_empty() {
-                            return Err("全域型binderの実子が余分".into());
+                            return Err(internal!("全域型binderの実子が余分").into());
                         }
                     } else if let Some((argument, _)) =
                         self.pattern_argument(graph, first.span, &first.name, bindings)?
                     {
                         if children != [argument] {
-                            return Err("全域patternの実scrutinee producerが違う".into());
+                            return Err(internal!("全域patternの実scrutinee producerが違う").into());
                         }
                     } else if let Some(argument) = self.call_parameter(graph, &first.name)? {
                         if children != [argument] {
-                            return Err("全域名のcall producerが違う".into());
+                            return Err(internal!("全域名のcall producerが違う").into());
                         }
                     } else if let Some(argument) =
                         self.lexical_argument(graph, span, &first.name, bindings)?
                     {
                         if children != [argument] {
-                            return Err("全域let producerがない".into());
+                            return Err(internal!("全域let producerがない").into());
                         }
                     } else if !children.is_empty() {
-                        return Err("全域parameterに架空の観測producerがある".into());
+                        return Err(internal!("全域parameterに架空の観測producerがある").into());
                     }
                 } else if parts.len() == 2 {
                     if children.len() != 1
                         || self.expression_span(graph, self.evaluation(graph, children[0])?.0)?
                             != first.span
                     {
-                        return Err("全域fieldの実owner出現が違う".into());
+                        return Err(internal!("全域fieldの実owner出現が違う").into());
                     }
                 } else {
-                    return Err("全域Dottedの長さが違う".into());
+                    return Err(internal!("全域Dottedの長さが違う").into());
                 }
                 for &child in children {
                     self.tick()?;
                     if child.0 >= limit {
-                        return Err("全域名のproducerが未出".into());
+                        return Err(internal!("全域名のproducerが未出").into());
                     }
                     self.recheck_evaluation(graph, child)?;
                 }
@@ -3779,20 +3854,20 @@ impl Environment<'_> {
             }
             _ => self
                 .composite_children(id)?
-                .ok_or("全域式の元子構成がない")?,
+                .ok_or(internal!("全域式の元子構成がない"))?,
         };
         if ids.len() != children.len() {
-            return Err("全域評価の元AST子数が違う".into());
+            return Err(internal!("全域評価の元AST子数が違う").into());
         }
         for (&child, &original) in children.iter().zip(&ids) {
             self.tick()?;
             if child.0 >= limit || graph.context_at(child.0) != self.current_context(graph) {
-                return Err("全域評価の実子producer・Contextが違う".into());
+                return Err(internal!("全域評価の実子producer・Contextが違う").into());
             }
             let (expression, actual, _) = self.evaluation(graph, child)?;
             self.source_matches(graph, expression, original)?;
             if actual != bindings {
-                return Err("全域評価の実子束縛が違う".into());
+                return Err(internal!("全域評価の実子束縛が違う").into());
             }
             self.recheck_evaluation(graph, child)?;
         }
@@ -3868,7 +3943,7 @@ impl Environment<'_> {
                 .law()
                 .expr_type(id)
                 .cloned()
-                .ok_or("全域missing Sourceの元field型がない")?
+                .ok_or(internal!("全域missing Sourceの元field型がない"))?
         } else {
             return Ok(None);
         };
@@ -3886,7 +3961,9 @@ impl Environment<'_> {
             .chain(self.source_arguments(graph, *span, bindings)?)
             .collect::<Vec<_>>();
         if node.arguments != expected {
-            return Err("全域missing Sourceの元template・全型Domain・実binding辺が違う".into());
+            return Err(
+                internal!("全域missing Sourceの元template・全型Domain・実binding辺が違う").into(),
+            );
         }
         self.validate_at(graph, node, source.0)?;
         let analyzed =
@@ -3895,7 +3972,9 @@ impl Environment<'_> {
             || node.scope != analyzed.analysis.scope
             || node.ty != NodeType::Expression(field_type)
         {
-            return Err("全域missing Sourceの元自由parameter・Scope・field型が違う".into());
+            return Err(
+                internal!("全域missing Sourceの元自由parameter・Scope・field型が違う").into(),
+            );
         }
         Ok(analyzed
             .analysis
@@ -3966,7 +4045,7 @@ impl Environment<'_> {
             || node.ty != NodeType::Evaluation(Type::Bool)
             || source.ty != NodeType::Expression(Type::Bool)
         {
-            return Err("全域内部rootの元AST・型・束縛・実Contextが違う".into());
+            return Err(internal!("全域内部rootの元AST・型・束縛・実Contextが違う").into());
         }
         let domains = self.universal_domains_from(graph, source, template, &plan)?;
         let expected = std::iter::once(template)
@@ -3974,7 +4053,7 @@ impl Environment<'_> {
             .chain(self.source_arguments(graph, *span, bindings)?)
             .collect::<Vec<_>>();
         if source.arguments != expected {
-            return Err("全域内部rootの元template・全型Domain・AST辺が違う".into());
+            return Err(internal!("全域内部rootの元template・全型Domain・AST辺が違う").into());
         }
         self.validate_at(graph, source, expression.0)?;
         self.validate_at(graph, node, reference.0)?;

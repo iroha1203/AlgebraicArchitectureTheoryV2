@@ -15,17 +15,19 @@ impl Environment<'_> {
                 c.checkpoint(Checkpoint::FiniteIteration)?;
                 if let Some((&index, rest)) = path.split_first() {
                     let Scalar::Tuple(items) = value else {
-                        return Err("数値補完成分の元型がTupleでない".into());
+                        return Err(internal!("数値補完成分の元型がTupleでない").into());
                     };
                     put(
-                        items.get_mut(index).ok_or("数値補完成分位置が元型外")?,
+                        items
+                            .get_mut(index)
+                            .ok_or(internal!("数値補完成分位置が元型外"))?,
                         rest,
                         replacement,
                         c,
                     )
                 } else {
                     if value.ty() != replacement.ty() {
-                        return Err("数値補完成分の型が違う".into());
+                        return Err(internal!("数値補完成分の型が違う").into());
                     }
                     *value = replacement.clone();
                     Ok(())
@@ -37,26 +39,31 @@ impl Environment<'_> {
         for (key, value) in values {
             self.tick()?;
             if !seen.insert(key) {
-                return Err("数値補完の同じ成分が重複する".into());
+                return Err(internal!("数値補完の同じ成分が重複する").into());
             }
             self.fact(&key.fact)?;
             let field = self.indexes.field(
                 &self.state,
                 &key.fact.snapshot,
                 &key.fact.subject,
-                key.fact.field.as_deref().ok_or("数値成分の元fieldがない")?,
+                key.fact
+                    .field
+                    .as_deref()
+                    .ok_or(internal!("数値成分の元fieldがない"))?,
             )?;
             if !matches!(field.slot, Slot::Missing)
                 || key.kind.ty() != value.ty()
                 || !numeric::is_numeric_type(&field.ty, &self.control)?
             {
-                return Err("数値補完の元slot・成分型が違う".into());
+                return Err(internal!("数値補完の元slot・成分型が違う").into());
             }
             if !fields.contains_key(&key.fact) {
                 fields.insert(key.fact.clone(), numeric::zero(&field.ty, &self.control)?);
             }
             put(
-                fields.get_mut(&key.fact).ok_or("復元中のslotがない")?,
+                fields
+                    .get_mut(&key.fact)
+                    .ok_or(internal!("復元中のslotがない"))?,
                 &key.component,
                 value,
                 &self.control,

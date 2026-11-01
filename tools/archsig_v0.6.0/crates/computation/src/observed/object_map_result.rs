@@ -28,7 +28,9 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
 fn failure(e: ConstructionFailure) -> ValidationFailure {
     match e {
         ConstructionFailure::Stopped(s) => s.into(),
-        e => format!("ObjectAlgebra map: {e:?}").into(),
+        e => e
+            .internal_context(format!("ObjectAlgebra map: {e:?}"))
+            .into(),
     }
 }
 
@@ -136,17 +138,17 @@ impl Data {
             || at != self.source.base + self.index
             || self.arguments().iter().any(|r| r.0 >= at)
         {
-            return Err("ObjectAlgebra mapの位置/既出参照が違う".into());
+            return Err(internal!("ObjectAlgebra mapの位置/既出参照が違う").into());
         }
         Ok(())
     }
 }
 fn plan(g: &Graph, r: NodeRef) -> Result<&build_plan::Plan, ValidationFailure> {
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("移送先のalgebraがnativeでない".into());
+        return Err(internal!("移送先のalgebraがnativeでない").into());
     };
     let D::Build(d) = &v.data else {
-        return Err("移送先のalgebraに元buildがない".into());
+        return Err(internal!("移送先のalgebraに元buildがない").into());
     };
     g.expect(r, &NodeType::Construction(T::ObjectAlgebra))?;
     Ok(d.plan())
@@ -154,14 +156,14 @@ fn plan(g: &Graph, r: NodeRef) -> Result<&build_plan::Plan, ValidationFailure> {
 fn retained_architecture(g: &Graph, r: NodeRef) -> Result<Architecture, ValidationFailure> {
     let witness = native::architecture_origin(g, r, 0)?.clone();
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("Architectureがnativeでない".into());
+        return Err(internal!("Architectureがnativeでない").into());
     };
     let D::Architecture { root, .. } = v.data else {
-        return Err("mapの端点Architectureが未完成".into());
+        return Err(internal!("mapの端点Architectureが未完成").into());
     };
     let universe = g.nodes.iter().enumerate().find_map(|(i,n)| match &n.payload {
         Some(Payload::Construction(v)) if matches!(&v.data,D::AtomUniverse(xs) if xs==witness.construction().universe()) => Some(NodeRef(i)), _=>None,
-    }).ok_or("元ArchitectureのUがない")?;
+    }).ok_or(internal!("元ArchitectureのUがない"))?;
     Ok(Architecture {
         witness,
         reference: r,
@@ -232,7 +234,7 @@ fn compute_inner(
     let map = witness
         .result()
         .map()
-        .ok_or("移送元ConfigurationMapがない")?;
+        .ok_or(internal!("移送元ConfigurationMapがない"))?;
     let declarations =
         construction::declaration_correspondence(&inputs, map, c).map_err(failure)?;
     let mut b = Builder {
@@ -258,23 +260,23 @@ fn compute_inner(
     let mut preserved = declarations.all_signatures_compatible();
     if let Some(claims) = pending {
         let Some(Payload::Construction(candidate)) = &g.get(candidate)?.payload else {
-            return Err("元候補がnativeでない".into());
+            return Err(internal!("元候補がnativeでない").into());
         };
         let D::MapCandidate { source, target, .. } = candidate.data else {
-            return Err("元候補の端点がない".into());
+            return Err(internal!("元候補の端点がない").into());
         };
         let mut incomplete = false;
         for (claim, expected) in claims.into_iter().zip([source, target]) {
             tick(c)?;
             let Some(Payload::Construction(value)) = &g.get(claim)?.payload else {
-                return Err("端点buildの命題がnativeでない".into());
+                return Err(internal!("端点buildの命題がnativeでない").into());
             };
             let D::Build(data) = &value.data else {
-                return Err("端点buildの命題が別種".into());
+                return Err(internal!("端点buildの命題が別種").into());
             };
             if data.plan().architecture.reference != expected || data.answer().claim != Some(claim)
             {
-                return Err("端点buildの元Architectureまたは命題が違う".into());
+                return Err(internal!("端点buildの元Architectureまたは命題が違う").into());
             }
             env.recheck_build(g, value, claim.0)?;
             let endpoint = data.answer();
@@ -294,7 +296,7 @@ fn compute_inner(
             declaration_evidence.extend(endpoint.evidence.iter().copied());
         }
         if !incomplete || declaration_status == Decision::Established || algebras.is_some() {
-            return Err("未完成端点の判断が違う".into());
+            return Err(internal!("未完成端点の判断が違う").into());
         }
         sort_reasons(&mut declaration_reasons);
         declaration_evidence.sort_by_key(|r| r.0);
@@ -307,9 +309,9 @@ fn compute_inner(
                 "law" | "view" | "local" | "change" | "relation"
             )
         }) {
-            return Err("ObjectAlgebra mapの読取り宣言配送は未実装".into());
+            return Err(internal!("ObjectAlgebra mapの読取り宣言配送は未実装").into());
         }
-        let [left, right] = algebras.ok_or("ObjectAlgebra mapの端点がない")?;
+        let [left, right] = algebras.ok_or(internal!("ObjectAlgebra mapの端点がない"))?;
         dependencies.extend([left, right]);
         let a = plan(g, left)?;
         let z = plan(g, right)?;
@@ -326,17 +328,17 @@ fn compute_inner(
                 .iter()
                 .any(|r| r.condition_failure().is_some())
         {
-            return Err("ObjectAlgebra mapの保存反例配送は未実装".into());
+            return Err(internal!("ObjectAlgebra mapの保存反例配送は未実装").into());
         }
         if preserved {
-            let ao = a.objects.as_ref().ok_or("元対象族がない")?;
-            let zo = z.objects.as_ref().ok_or("先対象族がない")?;
-            let aa = a.arrows.as_ref().ok_or("元生成元族がない")?;
-            let za = z.arrows.as_ref().ok_or("先生成元族がない")?;
+            let ao = a.objects.as_ref().ok_or(internal!("元対象族がない"))?;
+            let zo = z.objects.as_ref().ok_or(internal!("先対象族がない"))?;
+            let aa = a.arrows.as_ref().ok_or(internal!("元生成元族がない"))?;
+            let za = z.arrows.as_ref().ok_or(internal!("先生成元族がない"))?;
             if transport.objects().len() != ao.objects.len()
                 || transport.generators().len() != aa.rows.len()
             {
-                return Err("全対象・全生成元の移送表が一致しない".into());
+                return Err(internal!("全対象・全生成元の移送表が一致しない").into());
             }
             let mut target_subjects = vec![transport.target().construction().root()];
             target_subjects.extend(
@@ -348,21 +350,21 @@ fn compute_inner(
                     .map(|v| v.subject()),
             );
             let Some(Payload::Construction(cv)) = &g.get(candidate)?.payload else {
-                return Err("元候補がない".into());
+                return Err(internal!("元候補がない").into());
             };
             let D::MapCandidate {
                 subject, action, ..
             } = cv.data
             else {
-                return Err("元候補の作用がない".into());
+                return Err(internal!("元候補の作用がない").into());
             };
             for (i, row) in transport.objects().iter().enumerate() {
                 tick(c)?;
-                let target = row.target().ok_or("保存済み対象の像がない")?;
+                let target = row.target().ok_or(internal!("保存済み対象の像がない"))?;
                 let j = target_subjects
                     .iter()
                     .position(|s| **s == *target.subject())
-                    .ok_or("対象像が終域にない")?;
+                    .ok_or(internal!("対象像が終域にない"))?;
                 let object_map = if i == 0 {
                     configuration.outputs["map"]
                 } else {
@@ -411,14 +413,14 @@ fn compute_inner(
                     .arrows()
                     .iter()
                     .position(|r| r.arrow() == row.target())
-                    .ok_or("生成元像が終域にない")?;
+                    .ok_or(internal!("生成元像が終域にない"))?;
                 let e = transport.source().arrows()[i]
                     .map()
-                    .ok_or("元生成元の保存がない")?
+                    .ok_or(internal!("元生成元の保存がない"))?
                     .candidate();
                 let f = transport.target().arrows()[j]
                     .map()
-                    .ok_or("先生成元の保存がない")?
+                    .ok_or(internal!("先生成元の保存がない"))?
                     .candidate();
                 let compose = |first: &construction::MapCandidate,
                                second: &construction::MapCandidate,
@@ -432,14 +434,22 @@ fn compute_inner(
                     let mut images = vec![];
                     for subject in first.images() {
                         tick(c)?;
-                        images
-                            .push((*action.get(subject).ok_or("総写像の合成位置がない")?).clone());
+                        images.push(
+                            (*action
+                                .get(subject)
+                                .ok_or(internal!("総写像の合成位置がない"))?)
+                            .clone(),
+                        );
                     }
                     Ok(images)
                 };
                 let mut maps = vec![];
-                let source_op = aa.rows[i].operation.ok_or("元生成元Operationがない")?;
-                let target_op = za.rows[j].operation.ok_or("先生成元Operationがない")?;
+                let source_op = aa.rows[i]
+                    .operation
+                    .ok_or(internal!("元生成元Operationがない"))?;
+                let target_op = za.rows[j]
+                    .operation
+                    .ok_or(internal!("先生成元Operationがない"))?;
                 for images in [compose(e, mu, c)?, compose(mu, f, c)?] {
                     tick(c)?;
                     maps.push(b.push(
@@ -467,14 +477,14 @@ fn compute_inner(
                 .definitions()
                 .declarations()
                 .get(&witness.shape().declaration)
-                .ok_or("原始対応の定義がない")?;
+                .ok_or(internal!("原始対応の定義がない"))?;
             let PrimitiveSignature::Correspondence {
                 alignments,
                 implicit,
                 ..
             } = &def.signature
             else {
-                return Err("原始対応の定義型が違う".into());
+                return Err(internal!("原始対応の定義型が違う").into());
             };
             for (source, target) in declarations.types() {
                 tick(c)?;
@@ -483,17 +493,17 @@ fn compute_inner(
                         .definitions()
                         .declarations()
                         .get(name)
-                        .ok_or("対応型の定義がない")?;
+                        .ok_or(internal!("対応型の定義がない"))?;
                     let (parameters, _) = d
                         .signature
                         .record_fields()
-                        .ok_or("対応型が原始recordでない")?;
+                        .ok_or(internal!("対応型が原始recordでない"))?;
                     Ok(parameters)
                 };
                 let sp = parameters(source)?;
                 let tp = parameters(target)?;
                 if sp.len() != tp.len() {
-                    return Err("原始宣言parameter対応の配送は未実装".into());
+                    return Err(internal!("原始宣言parameter対応の配送は未実装").into());
                 }
                 let parameters = sp
                     .iter()
@@ -522,8 +532,8 @@ fn compute_inner(
                     ("fields", Json::Arr(fields)),
                 ]));
             }
-            let se = a.equations.ok_or("元方程式族がない")?;
-            let te = z.equations.ok_or("先方程式族がない")?;
+            let se = a.equations.ok_or(internal!("元方程式族がない"))?;
+            let te = z.equations.ok_or(internal!("先方程式族がない"))?;
             let laws = super::object_law_map::retain(
                 env,
                 &mut b,
@@ -683,16 +693,16 @@ fn compute_inner(
     part.reasons = reasons.clone();
     part.judgment
         .as_mut()
-        .ok_or("ObjectAlgebra mapの判断がない")?
+        .ok_or(internal!("ObjectAlgebra mapの判断がない"))?
         .reasons = reasons.clone();
     part.evidence = declaration_evidence.clone();
     part.judgment
         .as_mut()
-        .ok_or("ObjectAlgebra mapの判断がない")?
+        .ok_or(internal!("ObjectAlgebra mapの判断がない"))?
         .evidence = declaration_evidence.clone();
     outputs.insert("proposition".into(), claim);
     if status == Decision::Established {
-        let [left, right] = algebras.ok_or("構成済みalgebraがない")?;
+        let [left, right] = algebras.ok_or(internal!("構成済みalgebraがない"))?;
         dependencies.push(claim);
         let r = b.push(
             NodeType::Construction(T::ObjectAlgebraMap),
@@ -703,7 +713,10 @@ fn compute_inner(
                 ("configuration_map", configuration.outputs["map"].wire()),
                 ("declarations", Json::Arr(declaration_rows)),
                 ("object_maps", Json::Arr(object_rows)),
-                ("equations", equation_map.ok_or("EquationMapがない")?.wire()),
+                (
+                    "equations",
+                    equation_map.ok_or(internal!("EquationMapがない"))?.wire(),
+                ),
                 (
                     "circuits",
                     Json::Arr(circuit_maps.iter().map(|r| r.wire()).collect()),
@@ -713,7 +726,10 @@ fn compute_inner(
                     "invariants",
                     Json::Arr(invariant_maps.iter().map(|r| r.wire()).collect()),
                 ),
-                ("signature", signature.ok_or("SignatureMapがない")?.wire()),
+                (
+                    "signature",
+                    signature.ok_or(internal!("SignatureMapがない"))?.wire(),
+                ),
                 (
                     "transports",
                     Json::Arr(declaration_transports.iter().map(|r| r.wire()).collect()),
@@ -747,7 +763,7 @@ pub(super) fn validate_node(
     d: &Data,
 ) -> Result<(), ValidationFailure> {
     let Witness::Map(w) = &v.witness else {
-        return Err("ObjectAlgebra mapの元対応がない".into());
+        return Err(internal!("ObjectAlgebra mapの元対応がない").into());
     };
     let p = d.part();
     if !Arc::ptr_eq(w, &d.source.witness)
@@ -760,7 +776,7 @@ pub(super) fn validate_node(
         || n.judgment != p.judgment
         || n.evidence != p.evidence
     {
-        return Err("ObjectAlgebra mapの元構成/辺/判断が違う".into());
+        return Err(internal!("ObjectAlgebra mapの元構成/辺/判断が違う").into());
     }
     for r in &p.arguments {
         g.get(*r)?;
@@ -789,7 +805,7 @@ impl Environment<'_> {
                 g.context_at(d.source.configuration.outputs["candidate"].0)
                     .request,
             )
-            .ok_or("元map Requestがない")?;
+            .ok_or(internal!("元map Requestがない"))?;
         super::public_map::validate_configuration_answer(
             self,
             g,
@@ -808,7 +824,7 @@ impl Environment<'_> {
             &c,
         )?;
         if parts != d.source.parts || answer != d.source.answer {
-            return Err("ObjectAlgebra mapの再構成が違う".into());
+            return Err(internal!("ObjectAlgebra mapの再構成が違う").into());
         }
         self.results.remember(d.source.clone());
         Ok(())
@@ -820,17 +836,17 @@ pub(super) fn validate_answer(
     request: &Request,
     answer: &Answer,
 ) -> Result<(), ValidationFailure> {
-    let r = answer.claim.ok_or("map構成命題がない")?;
+    let r = answer.claim.ok_or(internal!("map構成命題がない"))?;
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("map構成命題がnativeでない".into());
+        return Err(internal!("map構成命題がnativeでない").into());
     };
     let D::ObjectMap(d) = &v.data else {
-        return Err("map構成命題が別種".into());
+        return Err(internal!("map構成命題が別種").into());
     };
     super::public_map::validate_configuration_answer(env, g, request, &d.source.configuration)?;
     env.recheck_object_map(g, v, r.0)?;
     if answer != &d.source.answer {
-        return Err("map回答が再検査結果と違う".into());
+        return Err(internal!("map回答が再検査結果と違う").into());
     }
     Ok(())
 }
@@ -840,14 +856,14 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
         construction: "object_algebra_map",
     } = reason.kind
     else {
-        return Err("map構成反証が別種".into());
+        return Err(internal!("map構成反証が別種").into());
     };
     let n = g.get(condition)?;
     let Some(Payload::Construction(v)) = &n.payload else {
-        return Err("map反証がnativeでない".into());
+        return Err(internal!("map反証がnativeでない").into());
     };
     let D::ObjectMap(d) = &v.data else {
-        return Err("map反証が別構成".into());
+        return Err(internal!("map反証が別構成").into());
     };
     if n.judgment.as_ref().map(|j| j.status) != Some(Decision::Refuted)
         || v.witness.request().id != reason.request
@@ -855,7 +871,7 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
         || !reason.missing.is_empty()
         || !d.source.answer.reasons.contains(reason)
     {
-        return Err("map構成反証の由来が違う".into());
+        return Err(internal!("map構成反証の由来が違う").into());
     }
     validate_node(g, n, v, d)
 }
@@ -877,18 +893,21 @@ impl super::result_kind::ResultKind for Data {
         let (prepared, env, g, request, configuration, c) = input;
         let candidate = configuration.outputs["candidate"];
         let Some(Payload::Construction(v)) = &g.get(candidate)?.payload else {
-            return Err("元候補がnativeでない".into());
+            return Err(internal!("元候補がnativeでない").into());
         };
         let Witness::Map(witness) = &v.witness else {
-            return Err("元候補のmap検査がない".into());
+            return Err(internal!("元候補のmap検査がない").into());
         };
         let witness = witness.clone();
         let D::MapCandidate { source, target, .. } = v.data else {
-            return Err("元候補が未完成".into());
+            return Err(internal!("元候補が未完成").into());
         };
         let declarations = construction::declaration_correspondence(
             prepared.inputs(),
-            witness.result().map().ok_or("元ConfigurationMapがない")?,
+            witness
+                .result()
+                .map()
+                .ok_or(internal!("元ConfigurationMapがない"))?,
             c,
         )
         .map_err(failure)?;
@@ -902,7 +921,7 @@ impl super::result_kind::ResultKind for Data {
                     "law" | "view" | "local" | "change" | "relation"
                 )
             }) {
-                return Err("ObjectAlgebra mapの読取り宣言移送配送は未実装".into());
+                return Err(internal!("ObjectAlgebra mapの読取り宣言移送配送は未実装").into());
             }
             let mut result = vec![];
             let mut claims = vec![];
@@ -917,7 +936,7 @@ impl super::result_kind::ResultKind for Data {
                     c,
                 )?;
                 let answer = build_result::retain_plan(env, g, plan, request, c)?;
-                claims.push(answer.claim.ok_or("端点buildの構成命題がない")?);
+                claims.push(answer.claim.ok_or(internal!("端点buildの構成命題がない"))?);
                 result.extend(answer.outputs.get("algebra").copied());
             }
             if result.len() == 2 {

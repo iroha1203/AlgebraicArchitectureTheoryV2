@@ -63,13 +63,16 @@ pub(in crate::observed) struct Family {
     pub value_example: Option<Counterexample>,
     pub pending: Option<Pending>,
 }
+#[track_caller]
 fn bad(s: &str) -> ConstructionFailure {
-    ConstructionFailure::Inconsistent(s.into())
+    ConstructionFailure::Inconsistent(internal!(s))
 }
 fn invalid(e: ValidationFailure) -> ConstructionFailure {
     match e {
         ValidationFailure::Stop(s) => s.into(),
-        e => bad(&format!("数値Lawの全引数比較: {e:?}")),
+        e => ConstructionFailure::Inconsistent(
+            e.internal_context(format!("数値Lawの全引数比較: {e:?}")),
+        ),
     }
 }
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
@@ -293,7 +296,7 @@ fn rational(value: &Scalar) -> Result<Scalar, ValidationFailure> {
     match value {
         Scalar::Z(n) => Ok(Scalar::Q(n.clone(), 1.into())),
         Scalar::Q(..) => Ok(value.clone()),
-        _ => Err("数値Lawの係数がZ/Qでない".into()),
+        _ => Err(internal!("数値Lawの係数がZ/Qでない").into()),
     }
 }
 fn integer_row(values: &[Scalar], c: &Control) -> Result<Vec<BigInt>, ValidationFailure> {
@@ -303,7 +306,7 @@ fn integer_row(values: &[Scalar], c: &Control) -> Result<Vec<BigInt>, Validation
         if let Scalar::Q(_, d) = v {
             denominator *= d;
         } else if !matches!(v, Scalar::Z(_)) {
-            return Err("整数Law係数がZ/Qでない".into());
+            return Err(internal!("整数Law係数がZ/Qでない").into());
         }
     }
     values
@@ -313,7 +316,7 @@ fn integer_row(values: &[Scalar], c: &Control) -> Result<Vec<BigInt>, Validation
             match v {
                 Scalar::Z(n) => Ok(n * &denominator),
                 Scalar::Q(n, d) => Ok(n * (&denominator / d)),
-                _ => Err("整数Law係数がZ/Qでない".into()),
+                _ => Err(internal!("整数Law係数がZ/Qでない").into()),
             }
         })
         .collect()
@@ -337,7 +340,7 @@ fn systems(
     for form in forms {
         let (constant, terms) = form
             .numeric_parameter_terms(c)?
-            .ok_or("数値Lawに未確定の係数がある")?;
+            .ok_or(internal!("数値Lawに未確定の係数がある"))?;
         let zero = numeric::zero(&constant.ty(), c)?;
         let mut row = vec![];
         for key in basis {
@@ -375,7 +378,7 @@ fn solve_system(
             tick(c)?;
             row.push(value);
             let mut row = integer_row(&row, c)?;
-            right.push(row.pop().ok_or("整数fiberの右辺がない")?);
+            right.push(row.pop().ok_or(internal!("整数fiberの右辺がない"))?);
             matrix.push(row);
         }
         let certificate = integer_fiber::solve(&matrix, cols, &right, c)?;
@@ -437,7 +440,7 @@ impl System {
         for (row, rhs) in self.coefficients.iter().zip(&self.rhs) {
             tick(c)?;
             if row.len() != point.len() {
-                return Err("数値Law反例の次元が違う".into());
+                return Err(internal!("数値Law反例の次元が違う").into());
             }
             let mut value = numeric::zero(&rhs.ty(), c)?;
             for (a, x) in row.iter().zip(point) {
@@ -567,13 +570,14 @@ pub(in crate::observed) fn universal_on_guards(
     let convert = |constant: &Scalar,
                    terms: &[(affine::Parameter, Scalar)]|
      -> Result<affine::Form, ValidationFailure> {
-        let mut form = affine::constant(constant, c)?.ok_or("fiberの定数型が数値でない")?;
+        let mut form =
+            affine::constant(constant, c)?.ok_or(internal!("fiberの定数型が数値でない"))?;
         for (parameter, coefficient) in terms {
             tick(c)?;
             let position = parameters
                 .iter()
                 .position(|p| p == parameter)
-                .ok_or("fiberの元binderがない")?;
+                .ok_or(internal!("fiberの元binderがない"))?;
             let axis = affine::term_argument(
                 TermArgument {
                     argument: position,
@@ -582,11 +586,12 @@ pub(in crate::observed) fn universal_on_guards(
                 },
                 c,
             )?;
-            let coefficient = affine::constant(coefficient, c)?.ok_or("fiberの係数が数値でない")?;
+            let coefficient =
+                affine::constant(coefficient, c)?.ok_or(internal!("fiberの係数が数値でない"))?;
             let term = affine::binary(BinOp::Mul, Some(&axis), Some(&coefficient), c)?
-                .ok_or("fiberの項がアフィンでない")?;
+                .ok_or(internal!("fiberの項がアフィンでない"))?;
             form = affine::binary(BinOp::Add, Some(&form), Some(&term), c)?
-                .ok_or("fiberの和がアフィンでない")?;
+                .ok_or(internal!("fiberの和がアフィンでない"))?;
         }
         Ok(form)
     };
@@ -674,7 +679,11 @@ pub(in crate::observed) fn on_guard(
 }
 // 有限個の等式を同じ正確なfiberへまとめる。guardの共通域に使う。
 fn intersection(a: &System, b: &System, c: &Control) -> Result<System, ValidationFailure> {
-    let cols = a.coefficients.first().ok_or("fiberの行がない")?.len();
+    let cols = a
+        .coefficients
+        .first()
+        .ok_or(internal!("fiberの行がない"))?
+        .len();
     let mut rows = vec![];
     let mut rhs = vec![];
     for (row, value) in a
@@ -685,7 +694,7 @@ fn intersection(a: &System, b: &System, c: &Control) -> Result<System, Validatio
     {
         tick(c)?;
         if row.len() != cols {
-            return Err("fiberの共通域の列数が違う".into());
+            return Err(internal!("fiberの共通域の列数が違う").into());
         }
         rows.push(row.clone());
         rhs.push(value.clone());
@@ -693,7 +702,7 @@ fn intersection(a: &System, b: &System, c: &Control) -> Result<System, Validatio
     let ground = match (&a.certificate, &b.certificate) {
         (Certificate::Integer(_), Certificate::Integer(_)) => Type::Z,
         (Certificate::Field(_), Certificate::Field(_)) => Type::Q,
-        _ => return Err("fiberの共通域の係数型が違う".into()),
+        _ => return Err(internal!("fiberの共通域の係数型が違う").into()),
     };
     solve_system(rows, rhs, cols, &ground, c)
 }
@@ -726,7 +735,7 @@ fn outside_both(
         })
         .collect::<Result<Vec<_>, _>>()?;
     if !base.contains(&point, c)? || a.contains(&point, c)? || b.contains(&point, c)? {
-        return Err("二つの零fiberを分離する元点の再検査に失敗した".into());
+        return Err(internal!("二つの零fiberを分離する元点の再検査に失敗した").into());
     }
     Ok(Some(point))
 }
@@ -749,7 +758,7 @@ fn conditional_outside(
             || da.contains(p, c)?
             || (gz.contains(p, c)? && !dz.contains(p, c)?))
     {
-        return Err("条件付き残差の反例が元の適用域を分離しない".into());
+        return Err(internal!("条件付き残差の反例が元の適用域を分離しない").into());
     }
     Ok(point)
 }
@@ -772,12 +781,12 @@ fn assignments(
         let argument = names
             .iter()
             .position(|(a, _)| a == &p.name)
-            .ok_or("数値Lawの引数対応がない")?;
+            .ok_or(internal!("数値Lawの引数対応がない"))?;
         let Some(domain) = terms::domain(&p.ty, argument, &[], inputs.law(), c)? else {
-            return Err("数値Lawの引数型が数値でない".into());
+            return Err(internal!("数値Lawの引数型が数値でない").into());
         };
         let [domain] = domain.as_slice() else {
-            return Err("数値Lawの記号域が一つでない".into());
+            return Err(internal!("数値Lawの記号域が一つでない").into());
         };
         let mut pending = vec![domain];
         let mut keys = vec![];
@@ -787,11 +796,11 @@ fn assignments(
                 Value::Number(f) => {
                     let (_, terms) = f
                         .numeric_parameter_terms(c)?
-                        .ok_or("数値Lawの引数軸がない")?;
+                        .ok_or(internal!("数値Lawの引数軸がない"))?;
                     keys.extend(terms.into_iter().map(|(k, _)| k));
                 }
                 Value::Tuple(v) => pending.extend(v.iter().rev()),
-                _ => return Err("数値Lawの引数形が違う".into()),
+                _ => return Err(internal!("数値Lawの引数形が違う").into()),
             }
         }
         let mut values = keys
@@ -811,7 +820,7 @@ fn assignments(
             &mut || {
                 values
                     .next()
-                    .ok_or_else(|| "数値Lawの反例成分が足りない".into())
+                    .ok_or_else(|| internal!("数値Lawの反例成分が足りない").into())
             },
             &Scalar::Tuple,
         )?;

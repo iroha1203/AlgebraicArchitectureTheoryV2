@@ -618,7 +618,7 @@ impl Data {
                     .originals
                     .iter()
                     .find(|o| o.reference == coordinate.instance)
-                    .ok_or("数値族の元出現がない")?;
+                    .ok_or(internal!("数値族の元出現がない"))?;
                 if !self.parameter_family(&original.parameters) {
                     return Ok(None);
                 }
@@ -628,7 +628,7 @@ impl Data {
                     .readings()
                     .instances()
                     .get(original.instance)
-                    .ok_or("数値族の元instanceがない")?;
+                    .ok_or(internal!("数値族の元instanceがない"))?;
                 let mut source =
                     match super::object_equation_presentation::parameter_source_difference_bound(
                         &self.source.inputs,
@@ -648,7 +648,7 @@ impl Data {
                                 c,
                             )
                             .map_err(|e| construction_failure(&e))?
-                            .ok_or("数値族の原式差がない")?
+                            .ok_or(internal!("数値族の原式差がない"))?
                         }
                     };
                 if !source.ring.symbols.is_empty() {
@@ -663,7 +663,7 @@ impl Data {
                         .constant
                         .evaluate(&values, c)
                         .map_err(|e| construction_failure(&e))?
-                        .ok_or("数値族の残差の実観測値がない")?;
+                        .ok_or(internal!("数値族の残差の実観測値がない"))?;
                     source.difference.constant =
                         EquationPolynomial::constant(value.scalar().clone(), c)
                             .map_err(|e| construction_failure(&e))?;
@@ -671,7 +671,7 @@ impl Data {
                         let value = coefficient
                             .evaluate(&values, c)
                             .map_err(|e| construction_failure(&e))?
-                            .ok_or("引数係数の実観測値がない")?;
+                            .ok_or(internal!("引数係数の実観測値がない"))?;
                         *coefficient = EquationPolynomial::constant(value.scalar().clone(), c)
                             .map_err(|e| construction_failure(&e))?;
                     }
@@ -756,7 +756,7 @@ impl Data {
             .iter()
             .find(|o| o.instance == original.instance && o.row.is_none())
         else {
-            return Err("元Law族のbase templateがない".into());
+            return Err(internal!("元Law族のbase templateがない").into());
         };
         let Some(parameters) = &base.parameter_domains else {
             return Ok(None);
@@ -773,7 +773,7 @@ impl Data {
             .evaluations()
             .iter()
             .find(|e| e.position().object == object && e.position().instance == original.instance)
-            .ok_or("元Law族の対象読取りがない")?;
+            .ok_or(internal!("元Law族の対象読取りがない"))?;
         if !target.family().is_complete() || !target.family().missing().is_empty() {
             return Ok(None);
         }
@@ -827,13 +827,13 @@ impl Data {
         let (object, diagram) = outputs
             .into_iter()
             .find(|(_, d)| d.originals.iter().any(|o| o.reference == reference))
-            .ok_or("元多項式Law行が出力表にない")?;
+            .ok_or(internal!("元多項式Law行が出力表にない"))?;
         let reading = diagram.readings.iter().find(|r| r.instance == reference);
         let original = diagram
             .originals
             .iter()
             .find(|o| o.reference == reference)
-            .ok_or("元Lawの出現がない")?;
+            .ok_or(internal!("元Lawの出現がない"))?;
         let application = self
             .source
             .architecture
@@ -841,7 +841,7 @@ impl Data {
             .instances()
             .get(original.instance)
             .and_then(|instance| instance.applications().get(object))
-            .ok_or("元Lawの対象適用がない")?;
+            .ok_or(internal!("元Lawの対象適用がない"))?;
         let true_guard = guard.is_none()
             || (self.source.core.is_none()
                 && diagram.unavailable.is_none()
@@ -888,13 +888,12 @@ impl Data {
                 .all(|(_, ty)| numeric_parameters::numeric_width(ty).is_some())
             && matches!(application, crate::construction::readings::InstanceApplication::Applicable { conditions } if conditions.is_empty());
         let expr = |r: NodeRef| -> Result<usize, ValidationFailure> {
-            match self
-                .source
-                .parts
-                .get(r.0.checked_sub(self.source.base).ok_or("元式が計画外")?)
-            {
+            match self.source.parts.get(
+                r.0.checked_sub(self.source.base)
+                    .ok_or(internal!("元式が計画外"))?,
+            ) {
                 Some(Part::Source { expression, .. }) => Ok(*expression),
-                _ => Err("元Law式がSourceでない".into()),
+                _ => Err(internal!("元Law式がSourceでない").into()),
             }
         };
         Ok(Some(super::law_evaluation::Origin {
@@ -973,7 +972,7 @@ impl Data {
         if self.index >= self.source.parts.len()
             || self.source.base.checked_add(self.index) != Some(at)
         {
-            return Err("多項式の生成位置が元計画と違う".into());
+            return Err(internal!("多項式の生成位置が元計画と違う").into());
         }
         Ok(())
     }
@@ -987,7 +986,7 @@ fn push(
     tick(c)?;
     let index = base
         .checked_add(parts.len())
-        .ok_or("多項式の生成番号が範囲外")?;
+        .ok_or(internal!("多項式の生成番号が範囲外"))?;
     parts.push(part);
     Ok(NodeRef(index))
 }
@@ -1002,20 +1001,24 @@ fn polynomial(
 ) -> Result<NodeRef, ValidationFailure> {
     tick(c)?;
     if &p.ty != ty {
-        return Err("多項式の係数型が元環と違う".into());
+        return Err(internal!("多項式の係数型が元環と違う").into());
     }
     let zero = super::numeric::zero(ty, c)?;
     let mut terms = vec![];
     for term in &p.terms {
         tick(c)?;
         if term.coefficient.ty() != *ty || term.coefficient.scalar() == &zero {
-            return Err("多項式に別型または零係数がある".into());
+            return Err(internal!("多項式に別型または零係数がある").into());
         }
         let mut powers = vec![0usize; variables];
         for variable in &term.variables {
             tick(c)?;
-            let power = powers.get_mut(*variable).ok_or("多項式の元記号が範囲外")?;
-            *power = power.checked_add(1).ok_or("多項式の冪が範囲外")?;
+            let power = powers
+                .get_mut(*variable)
+                .ok_or(internal!("多項式の元記号が範囲外"))?;
+            *power = power
+                .checked_add(1)
+                .ok_or(internal!("多項式の冪が範囲外"))?;
         }
         terms.push((powers, term.coefficient.scalar().clone()));
     }
@@ -1024,7 +1027,7 @@ fn polynomial(
     for pair in terms.windows(2) {
         tick(c)?;
         if pair[0].0 == pair[1].0 {
-            return Err("多項式の同冪項が未集約".into());
+            return Err(internal!("多項式の同冪項が未集約").into());
         }
     }
     let mut values = vec![];
@@ -1081,13 +1084,13 @@ fn object_plan(
     for ring in core.rings() {
         tick(c)?;
         if !matches!(ring.ty, Type::Z | Type::Q | Type::Fp(_)) {
-            return Err("多項式の元係数環がscalarでない".into());
+            return Err(internal!("多項式の元係数環がscalarでない").into());
         }
         if let Some(shared) = shared {
             let basis = shared
                 .iter()
                 .find(|b| b.ty == ring.ty)
-                .ok_or("共有係数環がない")?;
+                .ok_or(internal!("共有係数環がない"))?;
             out.bases.push(basis.scalar);
             out.rings.push(basis.ring);
             out.domains.push(basis.domain);
@@ -1137,7 +1140,7 @@ fn object_plan(
         out.domains.push(domain);
         let evaluation = if let Some(images) = &ring.evaluation_images {
             if images.len() != ring.symbols.len() {
-                return Err("多項式の評価像が全記号と違う".into());
+                return Err(internal!("多項式の評価像が全記号と違う").into());
             }
             let mut values = vec![];
             for image in images {
@@ -1183,8 +1186,14 @@ fn object_plan(
             status: q.status.clone(),
         };
         if let Some(index) = q.ring {
-            let original = core.rings().get(index).ok_or("多項式の元環添字がない")?;
-            let ring = *out.rings.get(index).ok_or("多項式の環参照がない")?;
+            let original = core
+                .rings()
+                .get(index)
+                .ok_or(internal!("多項式の元環添字がない"))?;
+            let ring = *out
+                .rings
+                .get(index)
+                .ok_or(internal!("多項式の環参照がない"))?;
             coordinate.ring = Some(ring);
             let mut make = |p: &Option<EquationPolynomial>| {
                 p.as_ref()
@@ -1217,7 +1226,7 @@ fn object_plan(
             || q.epsilon_constant.is_some()
             || q.residual_constant.is_some()
         {
-            return Err("多項式の元式に係数環がない".into());
+            return Err(internal!("多項式の元式に係数環がない").into());
         }
         out.coordinates.push(coordinate);
     }
@@ -1230,11 +1239,11 @@ fn object_plan(
             let q = out
                 .coordinates
                 .get(*occurrence)
-                .ok_or("required多項式の元出現がない")?;
+                .ok_or(internal!("required多項式の元出現がない"))?;
             if q.ring != Some(r) {
-                return Err("required多項式が別の環に属する".into());
+                return Err(internal!("required多項式が別の環に属する").into());
             }
-            generators.push(q.nu.ok_or("required多項式の元νがない")?);
+            generators.push(q.nu.ok_or(internal!("required多項式の元νがない"))?);
         }
         out.required.push(push(
             parts,
@@ -1313,7 +1322,7 @@ fn append_presentations(
     let dependencies = common::dependencies(inputs, &positions, c, |v| {
         let at = base
             .checked_add(parts.len())
-            .ok_or("global Contextの生成番号が範囲外")?;
+            .ok_or(internal!("global Contextの生成番号が範囲外"))?;
         parts.push(Part::Scalar(v));
         Ok(NodeRef(at))
     })?;
@@ -1371,11 +1380,11 @@ fn append_presentations(
                 .originals
                 .iter()
                 .find(|o| o.reference == q.instance)
-                .ok_or("型別表示の元Law出現がない")?;
+                .ok_or(internal!("型別表示の元Law出現がない"))?;
             let current = core
                 .occurrences()
                 .get(q.occurrence)
-                .ok_or("表示の補完座標がない")?;
+                .ok_or(internal!("表示の補完座標がない"))?;
             let actual_key = (q.position.instance, q.row, q.component.clone());
             let actual = if let Some(value) = actual_values.get(&actual_key) {
                 value.clone()
@@ -1386,13 +1395,13 @@ fn append_presentations(
                     .evaluations()
                     .iter()
                     .find(|e| e.position() == q.position)
-                    .ok_or("表示の元Law評価がない")?;
+                    .ok_or(internal!("表示の元Law評価がない"))?;
                 let residual = core
                     .base()
                     .evaluations()
                     .iter()
                     .find(|e| e.position == q.position)
-                    .ok_or("表示の元Law成分がない")?;
+                    .ok_or(internal!("表示の元Law成分がない"))?;
                 let value = super::object_law_residuals::observed_epsilon(
                     inputs,
                     source,
@@ -1406,7 +1415,7 @@ fn append_presentations(
                 value
             };
             if actual.is_some() && current.epsilon.is_some() && actual != current.epsilon {
-                return Err("補完の生差が元実評価と違う".into());
+                return Err(internal!("補完の生差が元実評価と違う").into());
             }
             if actual.is_none()
                 && !matches!(
@@ -1424,7 +1433,7 @@ fn append_presentations(
                 let previous = core
                     .occurrences()
                     .get(previous)
-                    .ok_or("表示の元補完座標がない")?;
+                    .ok_or(internal!("表示の元補完座標がない"))?;
                 // 補完caseを新しいLaw出現にしない。同じ原式のνがcaseで変わるなら
                 // 単一の多項式表示ではなく、既存diagramのcaseと原式を保持する。
                 if previous.nu != current.nu
@@ -1476,7 +1485,7 @@ fn append_presentations(
                     let basis = shared
                         .iter()
                         .find(|b| b.ring == *ring)
-                        .ok_or("表示の共有環がない")?;
+                        .ok_or(internal!("表示の共有環がない"))?;
                     for v in &basis.variables {
                         tick(c)?;
                         omitted_positions.push(v.field.clone());
@@ -1499,15 +1508,21 @@ fn append_presentations(
                 base,
                 Part::Equation(E::Presentation {
                     instances,
-                    domain: *out.domains.get(index).ok_or("型別表示のDomainがない")?,
+                    domain: *out
+                        .domains
+                        .get(index)
+                        .ok_or(internal!("型別表示のDomainがない"))?,
                     ring: *ring,
                     coordinates,
                     witnesses,
                     required: *out
                         .required
                         .get(index)
-                        .ok_or("型別表示のrequired idealがない")?,
-                    evaluation: *out.evaluations.get(index).ok_or("型別表示の評価欄がない")?,
+                        .ok_or(internal!("型別表示のrequired idealがない"))?,
+                    evaluation: *out
+                        .evaluations
+                        .get(index)
+                        .ok_or(internal!("型別表示の評価欄がない"))?,
                     context,
                     quantifiers,
                     omissions,
@@ -1592,9 +1607,11 @@ fn metadata(
 fn construction_failure(e: &crate::construction::ConstructionFailure) -> ValidationFailure {
     match e {
         crate::construction::ConstructionFailure::Stopped(stop) => ValidationFailure::Stop(*stop),
-        crate::construction::ConstructionFailure::InvalidSelection(message)
-        | crate::construction::ConstructionFailure::Inconsistent(message) => {
-            format!("元多項式: {message}").into()
+        crate::construction::ConstructionFailure::InvalidSelection(message) => {
+            internal!(format!("元多項式: {message}")).into()
+        }
+        crate::construction::ConstructionFailure::Inconsistent(message) => {
+            message.with_message(format!("元多項式: {message}")).into()
         }
     }
 }
@@ -1608,10 +1625,10 @@ fn evaluation_failure(e: &super::object_evaluate::ObjectEvaluationFailure) -> Va
                 declaration,
                 feature,
                 ..
-            } => format!("元Law `{declaration}` の評価: {feature}").into(),
-            EvaluationFailure::Prepare(_) => "元Lawの評価要求の検査に失敗した".into(),
+            } => internal!(format!("元Law `{declaration}` の評価: {feature}")).into(),
+            EvaluationFailure::Prepare(_) => internal!("元Lawの評価要求の検査に失敗した").into(),
         },
-        E::NotImplemented { instance, .. } => format!(
+        E::NotImplemented { instance, .. } => internal!(
             "元Law `{}` の値parameterを評価できない",
             instance.declaration().name
         )
@@ -1665,7 +1682,7 @@ fn calculate(
 ) -> Result<(Option<Arc<EquationPresentation>>, Option<Unavailable>), ValidationFailure> {
     tick(c)?;
     if object >= a.readings().objects().len() {
-        return Err("多項式の対象添字が域外".into());
+        return Err(internal!("多項式の対象添字が域外").into());
     }
     let root = a.construction().root();
     match object_equation_presentation(
@@ -1678,7 +1695,7 @@ fn calculate(
     ) {
         Ok(core) => {
             if core.base().base().readings() != a.readings() {
-                return Err("多項式が元対象族・readingと違う".into());
+                return Err(internal!("多項式が元対象族・readingと違う").into());
             }
             Ok((Some(Arc::new(core)), None))
         }
@@ -1740,13 +1757,13 @@ impl Source {
     ) -> Result<Self, ValidationFailure> {
         tick(c)?;
         if inputs.sources() != Witness::Architecture(a.clone()).inputs().sources() {
-            return Err("多項式の元三入力とArchitectureが違う".into());
+            return Err(internal!("多項式の元三入力とArchitectureが違う").into());
         }
         let (core, reason) = calculate(inputs.clone(), &a, object, c)?;
         let (mut parts, mut outputs) = match (&core, reason) {
             (Some(core), None) => plan(core, &inputs, base, c)?,
             (None, Some(reason)) => symbolic_plan(&inputs, &a, reason, base, c)?,
-            _ => return Err("多項式の計算状態が不正".into()),
+            _ => return Err(internal!("多項式の計算状態が不正").into()),
         };
         if let Some(core) = &core {
             append_presentations(
@@ -1785,11 +1802,11 @@ impl Source {
     ) -> Result<(), ValidationFailure> {
         tick(c)?;
         if !Arc::ptr_eq(a, &self.architecture) || inputs.sources() != self.inputs.sources() {
-            return Err("多項式の消費先・元三入力・対象・readingが違う".into());
+            return Err(internal!("多項式の消費先・元三入力・対象・readingが違う").into());
         }
         if self.owned_outputs.is_some() {
             if self.object != 0 {
-                return Err("共有多項式族のbase対象が違う".into());
+                return Err(internal!("共有多項式族のbase対象が違う").into());
             }
             let expected =
                 Self::compute_family(self.inputs.clone(), a.clone(), self.reference, self.base, c)?;
@@ -1799,13 +1816,13 @@ impl Source {
                 || self.support != expected.support
                 || self.scope != expected.scope
             {
-                return Err("共有多項式族が元全対象・環・記号・計画と違う".into());
+                return Err(internal!("共有多項式族が元全対象・環・記号・計画と違う").into());
             }
             return tick(c);
         }
         let (mut parts, mut outputs) = if let Some(core) = &self.core {
             if core.object() != self.object || core.base().base().readings() != a.readings() {
-                return Err("多項式の元計算が対象・readingと違う".into());
+                return Err(internal!("多項式の元計算が対象・readingと違う").into());
             }
             core.recheck(self.inputs.clone(), c)
                 .map_err(|e| failed(e, c))?;
@@ -1813,12 +1830,12 @@ impl Source {
         } else {
             let (core, reason) = calculate(self.inputs.clone(), a, self.object, c)?;
             if core.is_some() {
-                return Err("計算可能な多項式を未対応扱いした".into());
+                return Err(internal!("計算可能な多項式を未対応扱いした").into());
             }
             symbolic_plan(
                 inputs,
                 a,
-                reason.ok_or("多項式の未対応理由がない")?,
+                reason.ok_or(internal!("多項式の未対応理由がない"))?,
                 self.base,
                 c,
             )?
@@ -1842,7 +1859,7 @@ impl Source {
             || support != self.support
             || scope != self.scope
         {
-            return Err("多項式が元共有環・全計画・支持・Scopeと違う".into());
+            return Err(internal!("多項式が元共有環・全計画・支持・Scopeと違う").into());
         }
         tick(c)
     }
@@ -1867,7 +1884,7 @@ impl FamilyPlan {
             self.0
                 .owned_outputs
                 .as_ref()
-                .ok_or("全Law表の元対象計画がない")?
+                .ok_or(internal!("全Law表の元対象計画がない"))?
                 .iter()
                 .cloned(),
         );
@@ -1882,11 +1899,11 @@ impl FamilyPlan {
     ) -> Result<Arc<ArchitectureWitness>, ValidationFailure> {
         tick(c)?;
         if reference != self.0.reference || self.0.object != 0 || self.0.owned_outputs.is_none() {
-            return Err("全Law表の元Architecture/共有計画が違う".into());
+            return Err(internal!("全Law表の元Architecture/共有計画が違う").into());
         }
         let a = native::architecture_origin(graph, reference, 0)?;
         if !Arc::ptr_eq(a, &self.0.architecture) {
-            return Err("全Law表の元Architectureが別由来".into());
+            return Err(internal!("全Law表の元Architectureが別由来").into());
         }
         // 計画本体は元三入力と不変のArchitectureだけに依存する。
         // Graph上の元参照・Architecture同一性は、cache利用時も上で照合する。
@@ -1924,7 +1941,7 @@ pub(super) fn retain_family(
         source
             .owned_outputs
             .as_ref()
-            .ok_or("共有多項式族の全対象がない")?
+            .ok_or(internal!("共有多項式族の全対象がない"))?
             .iter()
             .cloned(),
     );
@@ -1941,11 +1958,11 @@ fn retain_source(
 ) -> Result<Arc<Source>, ValidationFailure> {
     tick(c)?;
     if graph.active != graph.context_at(reference.0) {
-        return Err("多項式の生成が元ArchitectureのRequestでない".into());
+        return Err(internal!("多項式の生成が元ArchitectureのRequestでない").into());
     }
     let a = native::architecture_origin(graph, reference, object)?.clone();
     let Some(Payload::Construction(consumer)) = &graph.get(reference)?.payload else {
-        return Err("多項式の元Architectureがない".into());
+        return Err(internal!("多項式の元Architectureがない").into());
     };
     Environment::new(&inputs, c)?.recheck_object_components(graph, consumer)?;
     let source = Arc::new(if all_objects {
@@ -1983,16 +2000,16 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
         .source
         .parts
         .get(data.index)
-        .ok_or("多項式の元計画添字がない")?;
+        .ok_or(internal!("多項式の元計画添字がない"))?;
     let Some(Payload::Construction(v)) = &n.payload else {
-        return Err("多項式のpayloadがない".into());
+        return Err(internal!("多項式のpayloadがない").into());
     };
     let Witness::Architecture(a) = &v.witness else {
-        return Err("多項式の元Architectureがない".into());
+        return Err(internal!("多項式の元Architectureがない").into());
     };
     let current = native::architecture_origin(graph, data.source.reference, data.source.object)?;
     if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
-        return Err("多項式の元Architecture参照が違う".into());
+        return Err(internal!("多項式の元Architecture参照が違う").into());
     }
     let (support, scope) = data.metadata();
     if n.ty != part.ty()
@@ -2008,20 +2025,20 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
         || !n.evidence.is_empty()
         || n.judgment.is_some()
     {
-        return Err("多項式の型・導出・支持・Scopeが違う".into());
+        return Err(internal!("多項式の型・導出・支持・Scopeが違う").into());
     }
     for reference in part.arguments() {
         let Some(Payload::Construction(v)) = &graph.get(reference)?.payload else {
-            return Err("多項式の引数がnativeでない".into());
+            return Err(internal!("多項式の引数がnativeでない").into());
         };
         let D::PolynomialLaw(other) = &v.data else {
-            return Err("多項式の引数が別由来".into());
+            return Err(internal!("多項式の引数が別由来").into());
         };
         if !Arc::ptr_eq(&data.source, &other.source)
             || other.index >= data.index
             || data.source.base.checked_add(other.index) != Some(reference.0)
         {
-            return Err("多項式の引数が元計画の既出値でない".into());
+            return Err(internal!("多項式の引数が元計画の既出値でない").into());
         }
     }
     Ok(())
@@ -2037,16 +2054,16 @@ impl Environment<'_> {
         };
         tick(&self.control)?;
         let Witness::Architecture(a) = &value.witness else {
-            return Err("多項式導出の元Architectureがない".into());
+            return Err(internal!("多項式導出の元Architectureがない").into());
         };
         let current =
             native::architecture_origin(graph, data.source.reference, data.source.object)?;
         if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
-            return Err("多項式の消費先Architectureが違う".into());
+            return Err(internal!("多項式の消費先Architectureが違う").into());
         }
         let Some(Payload::Construction(consumer)) = &graph.get(data.source.reference)?.payload
         else {
-            return Err("多項式の元参照がない".into());
+            return Err(internal!("多項式の元参照がない").into());
         };
         self.recheck_object_components(graph, consumer)?;
         if self

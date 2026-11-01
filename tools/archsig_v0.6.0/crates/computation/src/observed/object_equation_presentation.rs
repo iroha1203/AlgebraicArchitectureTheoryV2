@@ -20,8 +20,9 @@ use archsig_input::input::CheckedInputs;
 use archsig_input::law::ast::{BinOp, ExprKind, UnOp};
 use std::sync::Arc;
 mod source_polynomial;
+#[track_caller]
 fn bad(s: &str) -> ConstructionFailure {
-    ConstructionFailure::Inconsistent(s.into())
+    ConstructionFailure::Inconsistent(internal!(s))
 }
 // 数値binderが消えた原式の差を、元の共有slotへの観測代入で評価する。
 pub(super) fn parameter_constant_source_value(
@@ -75,7 +76,8 @@ impl ParameterGuard {
         c: &Control,
     ) -> Result<bool, super::result::ValidationFailure> {
         match self {
-            Self::Fibers(v) => match v.get(object).ok_or("数値guardの対象が域外")? {
+            Self::Fibers(v) => match v.get(object).ok_or(internal!("数値guardの対象が域外"))?
+            {
                 GuardFiber::Outside => Ok(true),
                 GuardFiber::Known { proof, .. } => proof.is_zero(c),
                 GuardFiber::Pending { .. } => Ok(false),

@@ -19,7 +19,9 @@ use std::sync::Arc;
 fn invalid(f: ValidationFailure) -> ObjectEvaluationFailure {
     match f {
         ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
-        other => ConstructionFailure::Inconsistent(format!("有限view族の検査: {other:?}")),
+        other => ConstructionFailure::Inconsistent(
+            other.internal_context(format!("有限view族の検査: {other:?}")),
+        ),
     }
     .into()
 }
@@ -132,9 +134,9 @@ impl FiniteObjectView {
         })();
         match comparison {
             Ok(true) => Ok(()),
-            Ok(false) => Err(ConstructionFailure::Inconsistent(
-                "有限view族が現在の元入力・型全域・実評価と違う".into(),
-            )
+            Ok(false) => Err(ConstructionFailure::Inconsistent(internal!(
+                "有限view族が現在の元入力・型全域・実評価と違う"
+            ))
             .into()),
             Err(cause) => Err(ObjectEvaluationFailure::FiniteView {
                 cause: Box::new(cause),
@@ -255,7 +257,7 @@ impl FiniteViewAssignment {
             || request != &self.request
             || request.declaration() != Some(self.instance.declaration().name.as_str())
         {
-            return Err("有限view行の元入力・要求・宣言が違う".into());
+            return Err(internal!("有限view行の元入力・要求・宣言が違う").into());
         }
         let Some(index) = self
             .instance
@@ -276,10 +278,10 @@ impl FiniteViewAssignment {
         for parameter in self.instance.parameters() {
             c.checkpoint(Checkpoint::FiniteIteration)?;
             let Some((domain, missing)) = env.object_view_domain(parameter, &self.instance)? else {
-                return Err("有限view行の型が有限全域でない".into());
+                return Err(internal!("有限view行の型が有限全域でない").into());
             };
             if !missing.is_empty() {
-                return Err("有限view行の元owner域が未決である".into());
+                return Err(internal!("有限view行の元owner域が未決である").into());
             }
             scope.merge(&domain.scope);
             support.extend(domain.support);
@@ -296,7 +298,9 @@ impl FiniteViewAssignment {
         }
         support.sort();
         support.dedup();
-        let values = rows.get(self.row).ok_or("有限view行が元直積の外にある")?;
+        let values = rows
+            .get(self.row)
+            .ok_or(internal!("有限view行が元直積の外にある"))?;
         Ok(Some((values[index].clone(), scope, support)))
     }
 }
@@ -332,9 +336,9 @@ pub(super) fn evaluate_finite_view(
             .into());
         }
         None => {
-            return Err(ConstructionFailure::Inconsistent(
-                "有限view族の対象別適用の行がない".into(),
-            )
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "有限view族の対象別適用の行がない"
+            ))
             .into());
         }
     }
@@ -435,9 +439,9 @@ pub(super) fn evaluate_finite_view(
                 if let Some(s) = c.stop_reason() {
                     return Err(ConstructionFailure::Stopped(s).into());
                 }
-                return Err(ConstructionFailure::Inconsistent(
-                    "有限view行の内部評価が失敗した".into(),
-                )
+                return Err(ConstructionFailure::Inconsistent(internal!(
+                    "有限view行の内部評価が失敗した"
+                ))
                 .into());
             }
             result.rows.push(FiniteViewRow {

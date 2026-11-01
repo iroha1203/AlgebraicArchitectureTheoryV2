@@ -56,9 +56,9 @@ impl InternalArrowResult {
             control,
         )?;
         if self != &expected {
-            return Err(ConstructionFailure::Inconsistent(
-                "内部arrowの構成・保存結果が現在入力と違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "内部arrowの構成・保存結果が現在入力と違う"
+            )));
         }
         tick(control)
     }
@@ -129,9 +129,9 @@ impl InternalArrows {
         )
         .map_err(|failure| failure.cause)?;
         if self != &expected {
-            return Err(ConstructionFailure::Inconsistent(
-                "内部arrow全件の構成が現在入力と違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "内部arrow全件の構成が現在入力と違う"
+            )));
         }
         tick(control)
     }
@@ -158,9 +158,9 @@ fn component(
         .is_some_and(|(s, id)| s != &root.snapshot || id != &root.subject)
     {
         if confirmed_owner {
-            return Err(ConstructionFailure::Inconsistent(
-                "内部arrowの端点が別rootに属する".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "内部arrowの端点が別rootに属する"
+            )));
         }
         // arrowのowner未観測時には、このrootの対象だと仮定しない。
         return Ok(None);
@@ -211,7 +211,7 @@ fn internal_arrow_checked(
         .definitions()
         .declarations()
         .get(holder.ty.as_str())
-        .ok_or_else(|| ConstructionFailure::Inconsistent("arrowの元定義がない".into()))?;
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("arrowの元定義がない")))?;
     let PrimitiveSignature::Arrow { owner, .. } = &signature.signature else {
         return Err(ConstructionFailure::InvalidSelection(
             "内部生成元は原始arrowを要求する".into(),
@@ -336,16 +336,17 @@ fn internal_arrow_checked(
             atom: Some(atom.clone()),
             ..slot(target_subject, &tf.name)
         };
-        let sf = field(source_subject, source_field, control)?
-            .ok_or_else(|| ConstructionFailure::Inconsistent("内部作用の始域fieldがない".into()))?;
+        let sf = field(source_subject, source_field, control)?.ok_or_else(|| {
+            ConstructionFailure::Inconsistent(internal!("内部作用の始域fieldがない"))
+        })?;
         let Slot::Known {
             value: source_value,
             ..
         } = &sf.slot
         else {
-            return Err(ConstructionFailure::Inconsistent(
-                "内部作用の始域Atom値がない".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "内部作用の始域Atom値がない"
+            )));
         };
         if reference_violation(
             source_value,
@@ -436,7 +437,7 @@ pub fn internal_arrows(
                     continue;
                 }
                 let f = field(holder, "owner", control)?.ok_or_else(|| {
-                    ConstructionFailure::Inconsistent("内部arrowのowner slotがない".into())
+                    ConstructionFailure::Inconsistent(internal!("内部arrowのowner slotがない"))
                 })?;
                 let selected = match &f.slot {
                     Slot::Missing => true,

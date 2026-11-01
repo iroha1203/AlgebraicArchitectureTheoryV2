@@ -290,8 +290,14 @@ fn certificate_type() -> Type {
     ])
 }
 fn certificate(model: &Congruence, index: usize) -> Result<Scalar, ValidationFailure> {
-    let word = model.words.get(index).ok_or("閉包の元語がない")?;
-    let class = *model.classes.get(index).ok_or("閉包の元類がない")?;
+    let word = model
+        .words
+        .get(index)
+        .ok_or(internal!("閉包の元語がない"))?;
+    let class = *model
+        .classes
+        .get(index)
+        .ok_or(internal!("閉包の元類がない"))?;
     Ok(Scalar::Tuple(vec![
         triple(&word.source),
         triple(&word.target),
@@ -319,7 +325,7 @@ pub(super) fn operand_path(
             .iter()
             .flat_map(|s| &s.subjects)
             .find(|s| s.snapshot == fact.snapshot && s.id == fact.subject)
-            .ok_or("操作の元subjectがない")?;
+            .ok_or(internal!("操作の元subjectがない"))?;
         Ok(Scalar::Subject {
             snapshot: fact.snapshot.clone(),
             subject: fact.subject.clone(),
@@ -341,7 +347,7 @@ pub(super) fn operand_path(
         entity,
     } = &root
     else {
-        return Err("操作のsourceが原始参照でない".into());
+        return Err(internal!("操作のsourceが原始参照でない").into());
     };
     let generators = operation
         .word()
@@ -424,14 +430,16 @@ fn build_nodes(
             .chain([&word.target])
             .chain(&word.generators)
         {
-            let r = *references.get(name).ok_or("語の原始参照がない")?;
+            let r = *references
+                .get(name)
+                .ok_or(internal!("語の原始参照がない"))?;
             let expected = Scalar::Subject {
                 snapshot: name.0.clone(),
                 subject: name.1.clone(),
                 entity: name.2.clone(),
             };
             if graph.scalar(r)? != &expected {
-                return Err("語の名前が現在の原始参照と違う".into());
+                return Err(internal!("語の名前が現在の原始参照と違う").into());
             }
             arguments.push(r);
         }
@@ -450,9 +458,15 @@ fn build_nodes(
         let row = rows
             .iter()
             .find(|row| row.original == edge.instance)
-            .ok_or("書換えの元relation rowがない")?;
-        let left_side = row.left.as_ref().ok_or("書換えの左元評価がない")?;
-        let right_side = row.right.as_ref().ok_or("書換えの右元評価がない")?;
+            .ok_or(internal!("書換えの元relation rowがない"))?;
+        let left_side = row
+            .left
+            .as_ref()
+            .ok_or(internal!("書換えの左元評価がない"))?;
+        let right_side = row
+            .right
+            .as_ref()
+            .ok_or(internal!("書換えの右元評価がない"))?;
         let (a, b) = if edge.right_to_left {
             (right_side, left_side)
         } else {
@@ -475,8 +489,8 @@ fn build_nodes(
             &mut nodes,
             base,
             Data::Rewrite {
-                left: a.value.ok_or("書換えの左値がない")?,
-                right: b.value.ok_or("書換えの右値がない")?,
+                left: a.value.ok_or(internal!("書換えの左値がない"))?,
+                right: b.value.ok_or(internal!("書換えの右値がない"))?,
                 arguments,
             },
         ));
@@ -498,13 +512,21 @@ fn build_nodes(
             steps: steps.clone(),
         },
     );
-    let a = *model.query_ids.first().ok_or("左queryの語がない")?;
-    let b = *model.query_ids.get(1).ok_or("右queryの語がない")?;
+    let a = *model
+        .query_ids
+        .first()
+        .ok_or(internal!("左queryの語がない"))?;
+    let b = *model
+        .query_ids
+        .get(1)
+        .ok_or(internal!("右queryの語がない"))?;
     let equal = model
         .equivalent(a, b, c)?
-        .ok_or("未完成の閉包を証拠にした")?;
+        .ok_or(internal!("未完成の閉包を証拠にした"))?;
     let evidence = if equal {
-        let proof = model.derivation(a, b, c)?.ok_or("同値導出がない")?;
+        let proof = model
+            .derivation(a, b, c)?
+            .ok_or(internal!("同値導出がない"))?;
         let mut expressions = vec![];
         for step in proof {
             c.checkpoint(Checkpoint::FiniteIteration)?;
@@ -512,13 +534,16 @@ fn build_nodes(
             if step.backwards {
                 let Data::Rewrite { left, right, .. } = nodes[steps[step.edge].0 - base].clone()
                 else {
-                    return Err("元書換え式がない".into());
+                    return Err(internal!("元書換え式がない").into());
                 };
-                let edge = model.edges.get(step.edge).ok_or("逆適用の元edgeがない")?;
+                let edge = model
+                    .edges
+                    .get(step.edge)
+                    .ok_or(internal!("逆適用の元edgeがない"))?;
                 let row = rows
                     .iter()
                     .find(|row| row.original == edge.instance)
-                    .ok_or("逆適用の元relation rowがない")?;
+                    .ok_or(internal!("逆適用の元relation rowがない"))?;
                 let direction = put_data(
                     &mut nodes,
                     base,
@@ -588,14 +613,14 @@ pub(in crate::observed) fn evaluate(
         || operands[0].path.object() != operands[1].path.object()
         || operands[0].path.target() != operands[1].path.target()
     {
-        return Err("relation比較の実端点・readingが違う".into());
+        return Err(internal!("relation比較の実端点・readingが違う").into());
     }
     let (source, domains) =
         relation_sources::prepare_sources(prepared, env, graph, request, left, right, c)?;
     let table = &source
         .relation_family
         .as_ref()
-        .ok_or("元relation族がない")?
+        .ok_or(internal!("元relation族がない"))?
         .table;
     let mut rows = vec![];
     let mut dependencies = domains.sources.clone();
@@ -613,7 +638,7 @@ pub(in crate::observed) fn evaluate(
             .declarations
             .iter()
             .find(|d| d.name == row.declaration)
-            .ok_or("元relation宣言がない")?;
+            .ok_or(internal!("元relation宣言がない"))?;
         let Signature::Relation {
             guard,
             left: le,
@@ -621,7 +646,7 @@ pub(in crate::observed) fn evaluate(
             ..
         } = declaration.signature
         else {
-            return Err("元relation署名が違う".into());
+            return Err(internal!("元relation署名が違う").into());
         };
         let mut visible = Row {
             original,
@@ -687,18 +712,18 @@ pub(in crate::observed) fn evaluate(
             let index = *model
                 .unbalanced
                 .first()
-                .ok_or("長さ変更の元instanceがない")?;
+                .ok_or(internal!("長さ変更の元instanceがない"))?;
             let row = table
                 .instances
                 .get(index)
-                .ok_or("長さ変更の元relationがない")?;
+                .ok_or(internal!("長さ変更の元relationがない"))?;
             (&row.declaration, "語長を変える関係の算法".into())
         };
         let declaration = table
             .declarations
             .iter()
             .find(|declaration| &declaration.name == name)
-            .ok_or("未実装算法の元relation宣言がない")?;
+            .ok_or(internal!("未実装算法の元relation宣言がない"))?;
         c.checkpoint(Checkpoint::FiniteIteration)?;
         return Err(ValidationFailure::UnsupportedExpression {
             location: Location::Law {
@@ -791,7 +816,7 @@ pub(in crate::observed) fn evaluate(
             data.judgment(),
         )?;
         if r.0 != base + index {
-            return Err("元relation証拠の転記位置が違う".into());
+            return Err(internal!("元relation証拠の転記位置が違う").into());
         }
     }
     let comparison = if plan.condition.is_none() {
@@ -858,20 +883,24 @@ pub(in crate::observed) fn recheck(
     let plan = w
         .relation_plan
         .as_ref()
-        .ok_or("元relationの計算証拠がない")?;
+        .ok_or(internal!("元relationの計算証拠がない"))?;
     if w.kind != "relation"
         || w.value_plan.is_some()
         || w.incompatible.is_some()
         || !w.facts.is_empty()
         || w.stopped.is_some()
     {
-        return Err("relationの比較条件が違う".into());
+        return Err(internal!("relationの比較条件が違う").into());
     }
     let operands = queries(graph, w.left, w.right)?;
     plan.model
         .recheck_queries(&w.inputs, &operands, c)
         .map_err(|f| f.cause)?;
-    let table = plan.model.relations.as_ref().ok_or("元relation表がない")?;
+    let table = plan
+        .model
+        .relations
+        .as_ref()
+        .ok_or(internal!("元relation表がない"))?;
     let (support, base_scope) = proof_metadata(graph, &plan.model, &plan.dependencies)?;
     if w.relation_family.as_ref().map(|f| &f.table) != Some(table)
         || w.support != support
@@ -884,18 +913,18 @@ pub(in crate::observed) fn recheck(
                 ..crate::observed::call::Context::default()
             })
     {
-        return Err("元relationの族・支持・範囲が違う".into());
+        return Err(internal!("元relationの族・支持・範囲が違う").into());
     }
     let count = table.declarations.len();
     if plan.source_refs.len() != count || plan.domain_refs.len() != count {
-        return Err("元relationの域件数が違う".into());
+        return Err(internal!("元relationの域件数が違う").into());
     }
     let mut dependencies = plan.source_refs.clone();
     for index in 0..count {
         let r = plan.source_refs[index];
         if !matches!(&relation_sources::source_data(graph,r,w)?.kind,relation_sources::Kind::Template{declaration,..} if *declaration==index)
         {
-            return Err("元relation templateの順序が違う".into());
+            return Err(internal!("元relation templateの順序が違う").into());
         }
         let complete = relation_sources::complete_domain(table, &table.declarations[index].name);
         let available = complete
@@ -907,12 +936,12 @@ pub(in crate::observed) fn recheck(
             Some(r) if available => {
                 if !matches!(&relation_sources::source_data(graph,r,w)?.kind,relation_sources::Kind::Domain{declaration,source,finite,..} if *declaration==index && *source==plan.source_refs[index] && *finite==complete)
                 {
-                    return Err("元relation全域の順序が違う".into());
+                    return Err(internal!("元relation全域の順序が違う").into());
                 }
                 dependencies.push(r);
             }
             None if !available => {}
-            _ => return Err("元relation域の完成状態が違う".into()),
+            _ => return Err(internal!("元relation域の完成状態が違う").into()),
         }
     }
     dependencies.extend([w.left, w.right]);
@@ -923,37 +952,37 @@ pub(in crate::observed) fn recheck(
         .filter(|(_, r)| r.state != RelationState::OutsideDomain)
         .collect::<Vec<_>>();
     if plan.rows.len() != originals.len() {
-        return Err("元relationの全rowが保持されていない".into());
+        return Err(internal!("元relationの全rowが保持されていない").into());
     }
     for (visible, (index, row)) in plan.rows.iter().zip(originals) {
         c.checkpoint(Checkpoint::FiniteIteration)?;
         if visible.original != index {
-            return Err("元relation rowの順序が違う".into());
+            return Err(internal!("元relation rowの順序が違う").into());
         }
         let record = graph
             .instances
             .get(visible.instance)
-            .ok_or("元relation frameがない")?;
+            .ok_or(internal!("元relation frameがない"))?;
         if !matches!(&relation_sources::source_data(graph,record.member,w)?.kind,relation_sources::Kind::Member{instance,..} if *instance==index)
         {
-            return Err("元relation rowが別instanceを指す".into());
+            return Err(internal!("元relation rowが別instanceを指す").into());
         }
         let declaration = table
             .declarations
             .iter()
             .find(|d| d.name == row.declaration)
-            .ok_or("元relation宣言がない")?;
+            .ok_or(internal!("元relation宣言がない"))?;
         let Signature::Relation {
             guard, left, right, ..
         } = declaration.signature
         else {
-            return Err("元relation署名がない".into());
+            return Err(internal!("元relation署名がない").into());
         };
         if visible.guard.is_some() != guard.is_some()
             || visible.left.is_some() != (row.guard == Some(true))
             || visible.right.is_some() != (row.guard == Some(true))
         {
-            return Err("元guardの適用範囲が違う".into());
+            return Err(internal!("元guardの適用範囲が違う").into());
         }
         for (side, expression, expected) in [
             (visible.guard.as_ref(), guard, row.guard.map(Scalar::Bool)),
@@ -971,7 +1000,7 @@ pub(in crate::observed) fn recheck(
                 ..
             }) = &node.payload
             else {
-                return Err("元relationの評価がない".into());
+                return Err(internal!("元relationの評価がない").into());
             };
             if side.evaluation.0 >= plan.base
                 || side.expression != *actual
@@ -984,7 +1013,7 @@ pub(in crate::observed) fn recheck(
                 || graph.context_at(side.evaluation.0).iteration.is_some()
                 || bindings.len() != row.bindings.len()
             {
-                return Err("元relation評価のContext・値・範囲が違う".into());
+                return Err(internal!("元relation評価のContext・値・範囲が違う").into());
             }
             let Some(Payload::Expression {
                 location: Location::Law { span },
@@ -992,23 +1021,23 @@ pub(in crate::observed) fn recheck(
                 parameters,
             }) = &graph.get(*actual)?.payload
             else {
-                return Err("元relationのSourceがない".into());
+                return Err(internal!("元relationのSourceがない").into());
             };
-            let expression = expression.ok_or("元relationの式がない")?;
+            let expression = expression.ok_or(internal!("元relationの式がない"))?;
             if *span != w.inputs.law().exprs()[expression].span
                 || source_bindings != bindings
                 || !parameters.is_empty()
             {
-                return Err("元relationのAST出現が違う".into());
+                return Err(internal!("元relationのAST出現が違う").into());
             }
             for (binding, (name, expected)) in bindings.iter().zip(&row.bindings) {
                 if &binding.name != name || graph.scalar(binding.value)? != expected {
-                    return Err("元relationの束縛が違う".into());
+                    return Err(internal!("元relationの束縛が違う").into());
                 }
             }
             let actual = value.map(|r| graph.scalar(r).cloned()).transpose()?;
             if actual != expected {
-                return Err("元relationの実評価値が違う".into());
+                return Err(internal!("元relationの実評価値が違う").into());
             }
         }
         dependencies.extend(visible.references());
@@ -1017,7 +1046,7 @@ pub(in crate::observed) fn recheck(
         || dependencies.iter().any(|r| r.0 >= plan.base)
         || plan.references.values().any(|r| r.0 >= plan.base)
     {
-        return Err("元relation依存の全件・既出位置が違う".into());
+        return Err(internal!("元relation依存の全件・既出位置が違う").into());
     }
     let expected_names = plan
         .model
@@ -1038,7 +1067,7 @@ pub(in crate::observed) fn recheck(
         .collect::<std::collections::BTreeSet<_>>()
         != expected_names
     {
-        return Err("合同語の原始参照集合が違う".into());
+        return Err(internal!("合同語の原始参照集合が違う").into());
     }
     for reference in plan.references.values() {
         if graph.context_at(reference.0) != plan.context
@@ -1050,7 +1079,7 @@ pub(in crate::observed) fn recheck(
                 }
             )
         {
-            return Err("合同語の原始参照の生成Contextが違う".into());
+            return Err(internal!("合同語の原始参照の生成Contextが違う").into());
         }
     }
     let last = plan
@@ -1059,9 +1088,9 @@ pub(in crate::observed) fn recheck(
         .chain(plan.references.values())
         .map(|r| r.0)
         .max()
-        .ok_or("relationの元依存がない")?;
+        .ok_or(internal!("relationの元依存がない"))?;
     if last.checked_add(1) != Some(plan.base) {
-        return Err("relation証拠の開始位置が元prefix末尾と違う".into());
+        return Err(internal!("relation証拠の開始位置が元prefix末尾と違う").into());
     }
     let calculated = failures::calculate(
         graph,
@@ -1086,7 +1115,7 @@ pub(in crate::observed) fn recheck(
         || w.equal != equal
         || plan.reasons != calculated.reasons
     {
-        return Err("relationの閉包・導出・判断が再計算と違う".into());
+        return Err(internal!("relationの閉包・導出・判断が再計算と違う").into());
     }
     Ok(())
 }
@@ -1095,9 +1124,12 @@ pub(in crate::observed) fn validate_node(
     n: &Node,
     w: &CompareWitness,
 ) -> Result<(), ValidationFailure> {
-    let plan = w.relation_plan.as_ref().ok_or("relationの元計算がない")?;
+    let plan = w
+        .relation_plan
+        .as_ref()
+        .ok_or(internal!("relationの元計算がない"))?;
     let Some(Payload::Construction(v)) = &n.payload else {
-        return Err("relationのpayloadがない".into());
+        return Err(internal!("relationのpayloadがない").into());
     };
     if n.ty != v.ty()
         || n.rule != v.rule()
@@ -1112,7 +1144,7 @@ pub(in crate::observed) fn validate_node(
             }
         || !n.reasons.is_empty()
     {
-        return Err("relationの型・規則・元辺・支持・Scopeが違う".into());
+        return Err(internal!("relationの型・規則・元辺・支持・Scopeが違う").into());
     }
     match &v.data {
         D::Comparison(Part::RelationDerived { index, data }) => {
@@ -1120,7 +1152,7 @@ pub(in crate::observed) fn validate_node(
                 || n.judgment != data.judgment()
                 || n.evidence != data.evidence()
             {
-                return Err("relationの元証拠が違う".into());
+                return Err(internal!("relationの元証拠が違う").into());
             }
         }
         D::Comparison(Part::Comparison { kind, left, right }) => {
@@ -1130,7 +1162,7 @@ pub(in crate::observed) fn validate_node(
                 || n.judgment.is_some()
                 || !n.evidence.is_empty()
             {
-                return Err("relationのComparisonが違う".into());
+                return Err(internal!("relationのComparisonが違う").into());
             }
         }
         D::Comparison(Part::Claim {
@@ -1161,7 +1193,7 @@ pub(in crate::observed) fn validate_node(
                         reasons: plan.reasons.clone(),
                     })
             {
-                return Err("relationの命題・判断・証拠が違う".into());
+                return Err(internal!("relationの命題・判断・証拠が違う").into());
             }
         }
         D::ConstructionLabel(Scalar::Text(label))
@@ -1169,7 +1201,7 @@ pub(in crate::observed) fn validate_node(
                 && label == "comparison"
                 && n.judgment.is_none()
                 && n.evidence.is_empty() => {}
-        _ => return Err("relationに別の構成を混ぜた".into()),
+        _ => return Err(internal!("relationに別の構成を混ぜた").into()),
     }
     Ok(())
 }
@@ -1228,18 +1260,22 @@ fn missing_reasons(
             .declarations
             .iter()
             .position(|d| d.name == pending.declaration)
-            .ok_or("欠測域の元relation宣言がない")?;
+            .ok_or(internal!("欠測域の元relation宣言がない"))?;
         let Signature::Relation { params, .. } = &table.declarations[index].signature else {
-            return Err("欠測域の元署名が違う".into());
+            return Err(internal!("欠測域の元署名が違う").into());
         };
         let parameter = params
             .iter()
             .find(|p| p.name == pending.parameter)
-            .ok_or("欠測域の元parameterがない")?;
+            .ok_or(internal!("欠測域の元parameterがない"))?;
         reasons.push(Reason {
             kind: ReasonKind::Missing,
             request: request.id.clone(),
-            dependencies: vec![*sources.get(index).ok_or("欠測域の元Sourceがない")?],
+            dependencies: vec![
+                *sources
+                    .get(index)
+                    .ok_or(internal!("欠測域の元Sourceがない"))?,
+            ],
             missing: pending.missing.clone(),
             location: Some(Location::Law {
                 span: parameter.span,
@@ -1259,7 +1295,7 @@ pub(in crate::observed) fn validate_failure(
     if reason != &failed(&w.request, condition)
         || !matches!(part(graph,condition,w)?,Part::RelationDerived{data,..} if matches!(data.as_ref(),Data::FailureCondition{..}))
     {
-        return Err("元relation反証の構成失敗理由が違う".into());
+        return Err(internal!("元relation反証の構成失敗理由が違う").into());
     }
     validate_node(graph, graph.get(condition)?, w)
 }
@@ -1268,16 +1304,18 @@ pub(in crate::observed) fn validate_incompatible(
     graph: &Graph,
     w: &CompareWitness,
 ) -> Result<(), ValidationFailure> {
-    let (x, y) = w.incompatible.ok_or("relationの元不適合条件がない")?;
+    let (x, y) = w
+        .incompatible
+        .ok_or(internal!("relationの元不適合条件がない"))?;
     if w.equal.is_some()
         || w.value_plan.is_some()
         || !w.facts.is_empty()
         || w.stopped.is_some()
         || crate::observed::request::comparison::kind(&w.request)
-            .map_err(|e| ValidationFailure::Internal(format!("比較kind: {e:?}")))?
+            .map_err(|e| ValidationFailure::Internal(internal!(format!("比較kind: {e:?}"))))?
             != "relation"
     {
-        return Err("relationの不適合条件が変わった".into());
+        return Err(internal!("relationの不適合条件が変わった").into());
     }
     let mut support = graph.get(w.left)?.support.clone();
     support.extend(graph.get(w.right)?.support.iter().cloned());
@@ -1286,7 +1324,7 @@ pub(in crate::observed) fn validate_incompatible(
     let mut scope = graph.get(w.left)?.scope.clone();
     scope.merge(&graph.get(w.right)?.scope);
     if w.support != support || w.scope != scope {
-        return Err("relation不適合の元支持・Scopeが違う".into());
+        return Err(internal!("relation不適合の元支持・Scopeが違う").into());
     }
     if graph.get(w.left)?.ty == NodeType::Construction(T::Operation) {
         let a = crate::observed::public_compose::op(graph, w.left)?;
@@ -1305,7 +1343,7 @@ pub(in crate::observed) fn validate_incompatible(
             || w.equal.is_some()
             || w.kind != "relation"
         {
-            return Err("relationの元Operation端点が違う".into());
+            return Err(internal!("relationの元Operation端点が違う").into());
         }
         return Ok(());
     }
@@ -1320,7 +1358,7 @@ pub(in crate::observed) fn validate_incompatible(
     };
     if let Some((left, right)) = expected {
         if graph.scalar(x)? != &left || graph.scalar(y)? != &right {
-            return Err("relation不適合の実端点が違う".into());
+            return Err(internal!("relation不適合の実端点が違う").into());
         }
     } else if a.reading != b.reading {
         // Reading値は順に転記する。結論の条件辺では両方が既出である。
@@ -1328,11 +1366,11 @@ pub(in crate::observed) fn validate_incompatible(
             if reference.0 < graph.nodes.len()
                 && !matches!(part(graph,reference,w)?,Part::Reading{path:actual,value} if *actual==path && value==&Scalar::Text(reading.clone()))
             {
-                return Err("relation不適合の実readingが違う".into());
+                return Err(internal!("relation不適合の実readingが違う").into());
             }
         }
     } else {
-        return Err("適合するPathを不適合として返した".into());
+        return Err(internal!("適合するPathを不適合として返した").into());
     }
     Ok(())
 }

@@ -14,6 +14,7 @@ use crate::construction::{
 };
 use crate::construction::{ConstructionFailure, construct, readings::object_reading_instances};
 use archsig_common::control::Control;
+use archsig_common::internal::InternalError;
 use archsig_common::{canonical::Json, issue::Location, types::Type};
 use archsig_input::input::CheckedInputs;
 use archsig_input::result::Signal;
@@ -1042,7 +1043,7 @@ pub(crate) fn counterexample_facts(c: &crate::construction::maps::Counterexample
 fn value<'a>(graph: &'a Graph, r: NodeRef) -> Result<&'a ConstructionValue, ValidationFailure> {
     match graph.get(r)?.payload.as_ref() {
         Some(Payload::Construction(v)) => Ok(v),
-        _ => Err("native構成の参照先が別の型".into()),
+        _ => Err(internal!("native構成の参照先が別の型").into()),
     }
 }
 fn subject_fact(graph: &Graph, r: NodeRef) -> Result<Fact, ValidationFailure> {
@@ -1055,7 +1056,7 @@ fn subject_fact(graph: &Graph, r: NodeRef) -> Result<Fact, ValidationFailure> {
             field: None,
             atom: None,
         }),
-        _ => Err("native構成のsubject参照が原始参照でない".into()),
+        _ => Err(internal!("native構成のsubject参照が原始参照でない").into()),
     }
 }
 impl Witness {
@@ -1116,8 +1117,8 @@ impl ArchitectureWitness {
                     super::finite::field_completion_supported(&parameter.ty, inputs.law(), control)
                         .map_err(|failure| match failure {
                             ValidationFailure::Stop(stop) => ConstructionFailure::Stopped(stop),
-                            other => ConstructionFailure::Inconsistent(format!(
-                                "変更parameter型の有限性検査: {other:?}"
+                            other => ConstructionFailure::Inconsistent(other.internal_context(
+                                format!("変更parameter型の有限性検査: {other:?}"),
                             )),
                         })?;
             }
@@ -1251,26 +1252,26 @@ impl MapWitness {
         let universe = match universe {
             Some(a) if a.inputs.sources() == inputs.sources() => a.construction.universe().to_vec(),
             Some(_) => {
-                return Err(ConstructionFailure::Inconsistent(
-                    "別入力の共通Uをmapへ渡した".into(),
-                ));
+                return Err(ConstructionFailure::Inconsistent(internal!(
+                    "別入力の共通Uをmapへ渡した"
+                )));
             }
             None => vec![],
         };
         let name = match &request.head {
             super::request::Selector::Declaration { name } => name,
             _ => {
-                return Err(ConstructionFailure::Inconsistent(
-                    "mapの原始宣言がない".into(),
-                ));
+                return Err(ConstructionFailure::Inconsistent(internal!(
+                    "mapの原始宣言がない"
+                )));
             }
         };
         let archsig_input::definition::PrimitiveSignature::Correspondence { from, to, .. } =
             &inputs.definitions().declarations()[name].signature
         else {
-            return Err(ConstructionFailure::Inconsistent(
-                "mapの宣言がcorrespondenceでない".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "mapの宣言がcorrespondenceでない"
+            )));
         };
         let shape = MapProjection {
             declaration: name.clone(),
@@ -1349,7 +1350,7 @@ impl MapWitness {
         reasons
     }
 }
-pub fn reading_name<'a>(request: &'a Request, key: &str) -> Result<&'a str, String> {
+pub fn reading_name<'a>(request: &'a Request, key: &str) -> Result<&'a str, InternalError> {
     match request
         .arguments
         .iter()
@@ -1357,7 +1358,7 @@ pub fn reading_name<'a>(request: &'a Request, key: &str) -> Result<&'a str, Stri
         .map(|a| &a.value)
     {
         Some(super::request::Selector::Declaration { name }) => Ok(name),
-        _ => Err(format!("mapの{key}がない")),
+        _ => Err(internal!(format!("mapの{key}がない"))),
     }
 }
 pub fn instance_missing(row: &crate::construction::readings::ObjectInstance) -> Vec<Fact> {
@@ -1383,20 +1384,20 @@ pub fn missing(request: &Request, facts: Vec<Fact>) -> Vec<Reason> {
         location: None,
     }]
 }
-fn reading<'a>(request: &'a Request, key: &str) -> Result<&'a str, String> {
+fn reading<'a>(request: &'a Request, key: &str) -> Result<&'a str, InternalError> {
     reading_name(request, key)
 }
 fn find_subject<'a>(
     inputs: &'a CheckedInputs,
     fact: &Fact,
-) -> Result<&'a archsig_input::archmap::Subject, String> {
+) -> Result<&'a archsig_input::archmap::Subject, InternalError> {
     inputs
         .archmap()
         .snapshots()
         .iter()
         .find(|s| s.id == fact.snapshot)
         .and_then(|s| s.subjects.iter().find(|s| s.id == fact.subject))
-        .ok_or_else(|| "native構成の元subjectが現在の入力にない".into())
+        .ok_or_else(|| internal!("native構成の元subjectが現在の入力にない"))
 }
 pub fn subject_value(
     witness: Witness,
@@ -1431,7 +1432,7 @@ pub fn atom_value(
         .fields
         .iter()
         .find(|f| Some(&f.name) == fact.field.as_ref())
-        .ok_or("元fieldがない")?;
+        .ok_or(internal!("元fieldがない"))?;
     let archsig_input::archmap::Slot::Known {
         value,
         atom,
@@ -1439,13 +1440,13 @@ pub fn atom_value(
         ..
     } = &field.slot
     else {
-        return Err("未観測Atomを通常値へ昇格した".into());
+        return Err(internal!("未観測Atomを通常値へ昇格した").into());
     };
     if Some(atom) != fact.atom.as_ref() {
-        return Err("元Atomのidentityが違う".into());
+        return Err(internal!("元Atomのidentityが違う").into());
     }
     let value = super::environment::scalar_from(value, &field.ty, inputs.law(), control)?
-        .ok_or("既知Atomの型付き値がない")?;
+        .ok_or(internal!("既知Atomの型付き値がない"))?;
     let location = Location::ArchMap {
         pointer: pointer.clone(),
         span: None,
@@ -1538,7 +1539,10 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
         }),
     ) = (&value.witness, &value.data)
     {
-        let plan = w.relation_plan.as_ref().ok_or("relationの元証拠がない")?;
+        let plan = w
+            .relation_plan
+            .as_ref()
+            .ok_or(internal!("relationの元証拠がない"))?;
         return Ok((
             w.support.clone(),
             super::public_compare::relations::scope_at(plan, Some(plan.base + index)),
@@ -1636,7 +1640,7 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
                     archsig_input::archmap::Slot::Known { origin, .. } => Some(origin),
                     _ => None,
                 })
-                .ok_or("native支持が既知fieldでない")?
+                .ok_or(internal!("native支持が既知fieldでない"))?
         } else {
             &subject.origin
         };
@@ -1645,7 +1649,7 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
             .origins()
             .iter()
             .find(|o| &o.id == origin)
-            .ok_or("native支持のoriginがない")?;
+            .ok_or(internal!("native支持のoriginがない"))?;
         scope.modes.insert(origin.mode.wire().into());
     }
     Ok((support, scope))
@@ -1657,7 +1661,7 @@ pub(super) fn architecture_origin(
     object: usize,
 ) -> Result<&Arc<ArchitectureWitness>, ValidationFailure> {
     let Some(Payload::Construction(v)) = &graph.get(reference)?.payload else {
-        return Err("有限Lawの元Architectureがない".into());
+        return Err(internal!("有限Lawの元Architectureがない").into());
     };
     match (&v.witness, &v.data) {
         (
@@ -1672,7 +1676,7 @@ pub(super) fn architecture_origin(
                 || graph.requests.get(context.request)
                     != Some(Witness::Architecture(a.clone()).request())
             {
-                return Err("有限Law導出が元Architectureのroot Requestでない".into());
+                return Err(internal!("有限Law導出が元Architectureのroot Requestでない").into());
             }
             Ok(a)
         }
@@ -1686,14 +1690,14 @@ pub(super) fn architecture_origin(
                 || context.case.is_some()
                 || graph.requests.get(context.request) != Some(d.request())
             {
-                return Err("商の候補Architectureの元Requestが違う".into());
+                return Err(internal!("商の候補Architectureの元Requestが違う").into());
             }
             Ok(a)
         }
         (_, ConstructionData::ObjectComponents(_)) => {
             super::object_component_diagram::architecture_origin(graph, reference, object)
         }
-        _ => Err("有限Lawの元参照が完成Architectureでない".into()),
+        _ => Err(internal!("有限Lawの元参照が完成Architectureでない").into()),
     }
 }
 pub fn retain(
@@ -1779,7 +1783,7 @@ fn connected_reasons(
                 };
                 reason.dependencies.push(
                     missing_reference(graph, witness, &root)
-                        .ok_or("native欠測の元subject参照がない")?,
+                        .ok_or(internal!("native欠測の元subject参照がない"))?,
                 );
             }
             reason.dependencies.sort_by_key(|r| r.0);
@@ -1800,9 +1804,12 @@ fn part<'a>(
         path.push(ProjectionStep::Index(index as u64));
     }
     let mut found = parts.iter().filter(|(p, _)| p == &path);
-    let r = found.next().ok_or("部分結果の既知field/pathを落とした")?.1;
+    let r = found
+        .next()
+        .ok_or(internal!("部分結果の既知field/pathを落とした"))?
+        .1;
     if found.next().is_some() {
-        return Err("部分結果のpathが重複した".into());
+        return Err(internal!("部分結果のpathが重複した").into());
     }
     Ok(r)
 }
@@ -1810,7 +1817,7 @@ fn atom_fact(graph: &Graph, r: NodeRef) -> Result<Fact, ValidationFailure> {
     match &value(graph, r)?.data {
         ConstructionData::Atom(a) => Ok(a.fact.clone()),
         ConstructionData::Subject { .. } => subject_fact(graph, r),
-        _ => Err("部分configurationの元Atomがない".into()),
+        _ => Err(internal!("部分configurationの元Atomがない").into()),
     }
 }
 fn architecture_reasons(a: &ArchitectureWitness) -> Vec<Reason> {
@@ -1837,12 +1844,12 @@ fn validate_partial(
     let reasons = match (&v.witness, ty) {
         (Witness::Architecture(a), ConstructionType::Configuration) => {
             if a.construction.base().configuration().is_some() {
-                return Err("完成configurationを欠測扱いした".into());
+                return Err(internal!("完成configurationを欠測扱いした").into());
             }
             let known = a.construction.base().known();
             for (i, fact) in known.family().iter().enumerate() {
                 if atom_fact(graph, part(parts, "family", Some(i))?)? != *fact {
-                    return Err("部分familyの元位置が違う".into());
+                    return Err(internal!("部分familyの元位置が違う").into());
                 }
                 expected_count += 1;
             }
@@ -1859,7 +1866,7 @@ fn validate_partial(
                         ];
                         let rs = parts.iter().filter(|(p, _)| p == &path).collect::<Vec<_>>();
                         if rs.len() != 1 || atom_fact(graph, rs[0].1)? != *fact {
-                            return Err("部分R/Eの元位置が違う".into());
+                            return Err(internal!("部分R/Eの元位置が違う").into());
                         }
                         expected_count += 1;
                     }
@@ -1870,10 +1877,10 @@ fn validate_partial(
         (Witness::Architecture(a), ConstructionType::Architecture) => {
             let reasons = architecture_reasons(a);
             if reasons.is_empty() {
-                return Err("完成Architectureを未決にした".into());
+                return Err(internal!("完成Architectureを未決にした").into());
             }
             if subject_fact(graph, part(parts, "root", None)?)? != *a.construction.root() {
-                return Err("部分Architectureの根が違う".into());
+                return Err(internal!("部分Architectureの根が違う").into());
             }
             let c = value(graph, part(parts, "configuration", None)?)?;
             if c.witness != v.witness
@@ -1886,7 +1893,7 @@ fn validate_partial(
                         }
                 )
             {
-                return Err("部分Architectureの元configurationが違う".into());
+                return Err(internal!("部分Architectureの元configurationが違う").into());
             }
             expected_count = 2;
             for (i, (instance, _)) in a
@@ -1901,13 +1908,13 @@ fn validate_partial(
                 if law.witness != v.witness
                     || !matches!(law.data,D::LawInstance {instance:n,..}|D::PendingLawInstance {instance:n,..} if n==instance)
                 {
-                    return Err("部分ArchitectureのLaw族が違う".into());
+                    return Err(internal!("部分ArchitectureのLaw族が違う").into());
                 }
                 expected_count += 1;
             }
             for (i, arrow) in a.arrows.iter().enumerate() {
                 if subject_fact(graph, part(parts, "internal_arrows", Some(i))?)? != *arrow {
-                    return Err("部分Architectureの内部arrowが違う".into());
+                    return Err(internal!("部分Architectureの内部arrowが違う").into());
                 }
                 expected_count += 1;
             }
@@ -1915,7 +1922,7 @@ fn validate_partial(
         }
         (Witness::Map(m), ConstructionType::MapCandidate) => {
             if subject_fact(graph, part(parts, "subject", None)?)? != m.subject {
-                return Err("部分候補の元correspondenceが違う".into());
+                return Err(internal!("部分候補の元correspondenceが違う").into());
             }
             expected_count = 1;
             let holder = find_subject(&m.inputs, &m.subject)?;
@@ -1938,7 +1945,7 @@ fn validate_partial(
                     let r = part(parts, name, None)?;
                     let av = value(graph, r)?;
                     let Witness::Architecture(a) = &av.witness else {
-                        return Err("部分候補の始終域がArchitectureでない".into());
+                        return Err(internal!("部分候補の始終域がArchitectureでない").into());
                     };
                     if a.construction.root().snapshot != *snapshot
                         || a.construction.root().subject != *subject
@@ -1953,7 +1960,7 @@ fn validate_partial(
                                 }
                         )
                     {
-                        return Err("部分候補の始終域・readingが違う".into());
+                        return Err(internal!("部分候補の始終域・readingが違う").into());
                     }
                     architectures_complete &= !av.is_blocked();
                     reasons.extend(graph.get(r)?.reasons.iter().cloned());
@@ -1967,11 +1974,11 @@ fn validate_partial(
                 if action.witness != v.witness
                     || !matches!(&action.data,D::AtomMap {images,..} if images==candidate.images())
                 {
-                    return Err("部分候補の既知作用が違う".into());
+                    return Err(internal!("部分候補の既知作用が違う").into());
                 }
                 expected_count += 1;
                 if architectures_complete {
-                    return Err("完成候補を未決にした".into());
+                    return Err(internal!("完成候補を未決にした").into());
                 }
             }
             if m.failed_candidate() {
@@ -1980,11 +1987,11 @@ fn validate_partial(
                     if matches!(&node.payload, Some(Payload::Construction(c)) if c.witness == v.witness && matches!(c.data, D::CandidateCondition { .. }))
                     {
                         if condition.replace(NodeRef(index)).is_some() {
-                            return Err("候補構成条件が重複した".into());
+                            return Err(internal!("候補構成条件が重複した").into());
                         }
                     }
                 }
-                let condition = condition.ok_or("元候補の構成条件反証がない")?;
+                let condition = condition.ok_or(internal!("元候補の構成条件反証がない"))?;
                 reasons.push(Reason {
                     kind: ReasonKind::ConditionFailed {
                         condition,
@@ -1999,16 +2006,16 @@ fn validate_partial(
             super::result::sort_reasons(&mut reasons);
             reasons
         }
-        _ => return Err("部分構成の元検査・型が違う".into()),
+        _ => return Err(internal!("部分構成の元検査・型が違う").into()),
     };
     if parts.len() != expected_count || reasons.is_empty() {
-        return Err("部分構成の既知field数・元理由が違う".into());
+        return Err(internal!("部分構成の既知field数・元理由が違う").into());
     }
     connected_reasons(graph, &v.witness, reasons)
 }
 pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), ValidationFailure> {
     let Some(Payload::Construction(v)) = &node.payload else {
-        return Err("native構成のpayloadがない".into());
+        return Err(internal!("native構成のpayloadがない").into());
     };
     if let Some(result) = super::result_kind::validate(graph, node, v) {
         return result;
@@ -2023,11 +2030,11 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
         return super::public_compare::validate_node(graph, node, c);
     }
     if node.ty != v.ty() || node.rule != v.rule() || node.arguments != v.arguments() {
-        return Err("native構成の型・規則・既出引数が違う".into());
+        return Err(internal!("native構成の型・規則・既出引数が違う").into());
     }
     let (support, scope) = metadata(v)?;
     if node.support != support || node.scope != scope {
-        return Err("native構成の原始支持・Scopeが元入力と違う".into());
+        return Err(internal!("native構成の原始支持・Scopeが元入力と違う").into());
     }
     for r in node
         .arguments
@@ -2041,7 +2048,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
         let p = graph.get(condition)?;
         let expected_candidate = match v.data {
             D::ConfigurationMap { candidate, .. } | D::Operation { candidate, .. } => candidate,
-            _ => return Err("構成条件が写像・操作以外に付いた".into()),
+            _ => return Err(internal!("構成条件が写像・操作以外に付いた").into()),
         };
         if p.ty != NodeType::Proposition
             || !matches!(&p.payload, Some(Payload::Construction(c)) if c.witness==v.witness && matches!(c.data,D::Preservation { candidate } if candidate==expected_candidate))
@@ -2050,22 +2057,22 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 .as_ref()
                 .is_some_and(|j| j.status == Decision::Established && j.reasons.is_empty())
         {
-            return Err("写像・操作の保存条件が元候補の成立命題でない".into());
+            return Err(internal!("写像・操作の保存条件が元候補の成立命題でない").into());
         }
     }
     macro_rules! require {
         ($condition:expr,$message:literal) => {
             if !$condition {
-                return Err($message.into());
+                return Err(internal!($message).into());
             }
         };
     }
     use ConstructionData as D;
     if node.ty != NodeType::Proposition && (node.judgment.is_some() || !node.evidence.is_empty()) {
-        return Err("命題以外のnative構成に判断・証拠がある".into());
+        return Err(internal!("命題以外のnative構成に判断・証拠がある").into());
     }
     if !v.is_blocked() && !node.reasons.is_empty() {
-        return Err("完成native構成へ別の未決理由を付けた".into());
+        return Err(internal!("完成native構成へ別の未決理由を付けた").into());
     }
     match (&v.data, &v.witness) {
         (D::ConstructionLabel(label), Witness::Map(m)) => require!(
@@ -2132,7 +2139,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 entity,
             } = value
             else {
-                return Err("原始参照が別の値".into());
+                return Err(internal!("原始参照が別の値").into());
             };
             let original = find_subject(
                 v.witness.inputs(),
@@ -2197,7 +2204,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 ),
                 (Witness::Architecture(_), ConstructionType::Architecture)
                 | (Witness::Map(_), ConstructionType::MapCandidate) => {}
-                _ => return Err("部分構成の由来・型が違う".into()),
+                _ => return Err(internal!("部分構成の由来・型が違う").into()),
             }
         }
         (D::PendingPreservation { parts }, Witness::Map(m)) => {
@@ -2226,7 +2233,10 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 node.evidence.len() == m.result.counterexamples().len(),
                 "未完成候補の独立反例を落とした"
             );
-            let j = node.judgment.as_ref().ok_or("未完成保存命題の判断がない")?;
+            let j = node
+                .judgment
+                .as_ref()
+                .ok_or(internal!("未完成保存命題の判断がない"))?;
             require!(
                 j.status == Decision::Undetermined
                     && j.evidence == node.evidence
@@ -2247,7 +2257,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 .readings
                 .instances()
                 .get(*instance)
-                .ok_or("未完成Lawの元instanceがない")?;
+                .ok_or(internal!("未完成Lawの元instanceがない"))?;
             require!(
                 row.declaration().kind == "law"
                     && !instance_missing(row).is_empty()
@@ -2357,14 +2367,17 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
             "共通AtomUniverseの全元が違う"
         ),
         (D::AtomUniverse(atoms), Witness::Map(m)) => {
-            let source = m.result.source().ok_or("AtomUniverseの元構成がない")?;
+            let source = m
+                .result
+                .source()
+                .ok_or(internal!("AtomUniverseの元構成がない"))?;
             require!(atoms == source.universe(), "共通AtomUniverseの全元が違う");
         }
         (D::AtomMap { universe, images }, Witness::Map(m)) => {
             let c = m
                 .result
                 .candidate()
-                .ok_or("未完成候補のAtomMapを生成した")?;
+                .ok_or(internal!("未完成候補のAtomMapを生成した"))?;
             require!(images == c.images(), "総作用の像が元候補と違う");
             require!(
                 matches!(&value(graph,*universe)?.data,D::AtomUniverse(atoms) if atoms==c.universe()),
@@ -2384,14 +2397,14 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
             let c = m
                 .result
                 .candidate()
-                .ok_or("未完成の候補を完成MapCandidateへ昇格した")?;
+                .ok_or(internal!("未完成の候補を完成MapCandidateへ昇格した"))?;
             require!(
                 declaration == &m.shape.declaration && subject_fact(graph, *subject)? == m.subject,
                 "候補の元宣言・subjectが違う"
             );
             for (r, expected) in [(*source, m.result.source()), (*target, m.result.target())] {
                 let Witness::Architecture(a) = &value(graph, r)?.witness else {
-                    return Err("候補の始終域がArchitectureでない".into());
+                    return Err(internal!("候補の始終域がArchitectureでない").into());
                 };
                 require!(
                     Some(&a.construction) == expected
@@ -2430,7 +2443,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
             let op = m
                 .operation
                 .as_ref()
-                .ok_or("未確認の候補をOperationへ昇格した")?;
+                .ok_or(internal!("未確認の候補をOperationへ昇格した"))?;
             require!(
                 op.word() == [m.subject.clone()] && Some(op.map()) == m.result.map(),
                 "元Operationの作用・語が違う"
@@ -2462,7 +2475,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 .readings
                 .instances()
                 .get(*instance)
-                .ok_or("元Law instanceがない")?;
+                .ok_or(internal!("元Law instanceがない"))?;
             require!(
                 row.declaration().kind == "law",
                 "viewをLaw Sourceへ昇格した"
@@ -2477,7 +2490,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 .expressions
                 .iter()
                 .find(|e| e.kind == kind)
-                .ok_or("元のLaw式がない")?;
+                .ok_or(internal!("元のLaw式がない"))?;
             require!(
                 *location
                     == Location::Law {
@@ -2519,7 +2532,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 .readings
                 .instances()
                 .get(*instance)
-                .ok_or("元Law instanceがない")?;
+                .ok_or(internal!("元Law instanceがない"))?;
             require!(
                 name == &row.declaration().name
                     && Some(*role) == row.declaration().role
@@ -2566,7 +2579,10 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
             } else {
                 Decision::Undetermined
             };
-            let j = node.judgment.as_ref().ok_or("保存命題の判断がない")?;
+            let j = node
+                .judgment
+                .as_ref()
+                .ok_or(internal!("保存命題の判断がない"))?;
             require!(
                 j.status == expected && j.evidence == node.evidence,
                 "保存命題の真偽・証拠がnative検査と違う"
@@ -2607,21 +2623,21 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 .result
                 .counterexamples()
                 .get(*index)
-                .ok_or("元検査に存在しない反例")?;
+                .ok_or(internal!("元検査に存在しない反例"))?;
             require!(facts == &counterexample_facts(c), "保存反例の元位置が違う");
             require!(
                 subject_fact(graph, *subject)? == m.subject,
                 "保存反例の元correspondenceが違う"
             );
-            let source = m.result.source().ok_or("反例のsourceがない")?;
-            let target = m.result.target().ok_or("反例のtargetがない")?;
+            let source = m.result.source().ok_or(internal!("反例のsourceがない"))?;
+            let target = m.result.target().ok_or(internal!("反例のtargetがない"))?;
             require!(
                 subject_fact(graph, *left)? == *source.root()
                     && subject_fact(graph, *right)? == *target.root(),
                 "保存反例の始終rootが違う"
             );
         }
-        _ => return Err("native構成と検査済み由来が違う".into()),
+        _ => return Err(internal!("native構成と検査済み由来が違う").into()),
     }
     Ok(())
 }

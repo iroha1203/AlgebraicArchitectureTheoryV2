@@ -35,26 +35,26 @@ pub(super) fn spec<'a>(
 ) -> Result<Spec<'a>, ValidationFailure> {
     let expression = &law.exprs()[id];
     let ExprKind::Quant { kind, var, split } = &expression.kind else {
-        return Err("量化の元ASTでない".into());
+        return Err(internal!("量化の元ASTでない").into());
     };
     let QuantSplit::Fixed { domain, body } = split else {
-        return Err("検査済み量化の区切りがない".into());
+        return Err(internal!("検査済み量化の区切りがない").into());
     };
     let element = law
         .quantifier_types()
         .get(id)
         .and_then(Option::as_ref)
-        .ok_or("量化の元解決済みbinder型がない")?;
+        .ok_or(internal!("量化の元解決済みbinder型がない"))?;
     let mut domain_type = element.clone();
     let mut owners = Vec::new();
     let mut type_span = None;
     let (domain, supported) = match domain {
         QuantDomain::In(domain) => {
             let Some(Type::List(actual) | Type::Set(actual)) = law.expr_type(*domain) else {
-                return Err("In量化の元域がList/Setでない".into());
+                return Err(internal!("In量化の元域がList/Setでない").into());
             };
             if actual.as_ref() != element {
-                return Err("In量化の元binder型が違う".into());
+                return Err(internal!("In量化の元binder型が違う").into());
             }
             (Some(*domain), data::supported(element, law, control)?)
         }
@@ -113,12 +113,12 @@ fn restore_owned_type(
                                 .replace(target.clone())
                                 .is_some_and(|old| old != *target)
                         {
-                            return Err("型量化の元静的解決名が一意でない".into());
+                            return Err(internal!("型量化の元静的解決名が一意でない").into());
                         }
                     }
                 }
                 if resolved.as_ref() != Some(entity) {
-                    return Err("型量化の元TypeAst名と消去型が違う".into());
+                    return Err(internal!("型量化の元TypeAst名と消去型が違う").into());
                 }
                 if let Some(index) = index {
                     let root = match law
@@ -137,10 +137,10 @@ fn restore_owned_type(
                                 ..
                             },
                         ) => root.clone(),
-                        _ => return Err("Owned型leafの元宣言に根ownerがない".into()),
+                        _ => return Err(internal!("Owned型leafの元宣言に根ownerがない").into()),
                     };
                     if erased != &Type::Ref(entity.clone()) {
-                        return Err("Owned型leafの元型がRefでない".into());
+                        return Err(internal!("Owned型leafの元型がRefでない").into());
                     }
                     owners.push(OwnerLeaf {
                         entity: entity.clone(),
@@ -183,14 +183,14 @@ fn restore_owned_type(
                     archsig_input::law::ast::Builtin::Text => Type::Text,
                 };
                 if &expected != erased {
-                    return Err("元型量化のBuiltinと消去型が違う".into());
+                    return Err(internal!("元型量化のBuiltinと消去型が違う").into());
                 }
                 expected
             }
             (TypeAst::Fp { modulus, .. }, _) => {
                 let expected = Type::Fp(modulus.clone());
                 if &expected != erased {
-                    return Err("元型量化のFpと消去型が違う".into());
+                    return Err(internal!("元型量化のFpと消去型が違う").into());
                 }
                 expected
             }
@@ -204,7 +204,7 @@ fn restore_owned_type(
             }
         };
         if ty.erase() != *erased {
-            return Err("元Owned型の復元と消去後binder型が違う".into());
+            return Err(internal!("元Owned型の復元と消去後binder型が違う").into());
         }
         control.checkpoint(Checkpoint::FiniteIteration)?;
         Ok(ty)

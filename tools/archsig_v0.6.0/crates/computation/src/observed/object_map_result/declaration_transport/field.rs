@@ -33,19 +33,19 @@ pub(super) fn compare_expression(
         ..
     } = &declarations[0].signature
     else {
-        return Err("local readの元宣言がない".into());
+        return Err(internal!("local readの元宣言がない").into());
     };
     let Signature::Local {
         params: target_params,
         ..
     } = &declarations[1].signature
     else {
-        return Err("local readの先宣言がない".into());
+        return Err(internal!("local readの先宣言がない").into());
     };
     let ty = inputs
         .law()
         .expr_type(expressions[0])
-        .ok_or("local readの元型がない")?
+        .ok_or(internal!("local readの元型がない"))?
         .erase();
     let values = if let Some(map) = read_map {
         map.values()
@@ -56,11 +56,11 @@ pub(super) fn compare_expression(
             c,
         )? || inputs.law().expr_type(expressions[1]).map(|ty| ty.erase()) != Some(ty.clone())
         {
-            return Err("local readの型が同じ恒等移送の適用域にない".into());
+            return Err(internal!("local readの型が同じ恒等移送の適用域にない").into());
         }
         let identities =
             super::super::super::value_transport::identity_declarations(&ty, inputs.law(), c)?
-                .ok_or("local readの恒等値写像がない")?;
+                .ok_or(internal!("local readの恒等値写像がない"))?;
         value_map(b, [&ty, &ty], &[], &identities, dependencies)?
     };
     let mut result = Comparison {
@@ -191,7 +191,7 @@ pub(super) fn compare_expression(
             None => left,
         };
         let equal = super::super::super::value_equality::equal(moved, right, inputs.law(), c)?
-            .ok_or("local read等値の算法は未実装")?;
+            .ok_or(internal!("local read等値の算法は未実装"))?;
         if !equal {
             let left = super::super::super::change_result::value(b, left)?;
             let right = super::super::super::change_result::value(b, right)?;

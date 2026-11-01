@@ -834,7 +834,7 @@ fn wrong_object_indices_and_nonarchitecture_consumers_fail_before_appending_nati
         )
         .unwrap_err();
         assert!(
-            matches!(failure,ValidationFailure::Internal(ref message) if !message.is_empty()&&message.len()<300)
+            matches!(failure,ValidationFailure::Internal(ref message) if !message.message().is_empty()&&message.message().len()<300)
         );
         assert_eq!(g.nodes.len(), before);
     }

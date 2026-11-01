@@ -88,9 +88,10 @@ impl ObjectEvaluationTable {
                                 super::result::ValidationFailure::Stop(s) => {
                                     ConstructionFailure::Stopped(s)
                                 }
-                                other => ConstructionFailure::Inconsistent(format!(
-                                    "有限view表の再照合: {other:?}"
-                                )),
+                                other => ConstructionFailure::Inconsistent(
+                                    other
+                                        .internal_context(format!("有限view表の再照合: {other:?}")),
+                                ),
                             })?,
                         _ => same_evaluation(Some(&a.evaluation), Some(&b.evaluation)),
                     };
@@ -101,9 +102,9 @@ impl ObjectEvaluationTable {
         })();
         let cause = match comparison {
             Ok(true) => return Ok(()),
-            Ok(false) => ConstructionFailure::Inconsistent(
-                "対象別の全評価表が現在入力からの再計算と違う".into(),
-            ),
+            Ok(false) => ConstructionFailure::Inconsistent(internal!(
+                "対象別の全評価表が現在入力からの再計算と違う"
+            )),
             Err(cause) => cause,
         };
         Err(ObjectEvaluationTableFailure {
@@ -286,9 +287,9 @@ pub fn evaluate_object_table(
                 Some(ConstructionFailure::Stopped(reason))
             } else if matches!(evaluation.outcome(), ObjectEvaluationOutcome::Evaluated(e) if e.status() == "error")
             {
-                Some(ConstructionFailure::Inconsistent(
-                    "対象別評価が内部障害を返した".into(),
-                ))
+                Some(ConstructionFailure::Inconsistent(internal!(
+                    "対象別評価が内部障害を返した"
+                )))
             } else {
                 None
             };

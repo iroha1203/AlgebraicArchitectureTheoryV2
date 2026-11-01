@@ -27,7 +27,7 @@ fn evaluation(
         .inputs
         .law()
         .expr_type(expression)
-        .ok_or("商のLaw式型がない")?
+        .ok_or(internal!("商のLaw式型がない"))?
         .clone();
     let mut arguments = vec![source, architecture];
     arguments.extend(children);
@@ -88,7 +88,7 @@ pub(super) fn family_type(
 ) -> Result<Type, ValidationFailure> {
     let Signature::Law { params, .. } = &env.indexes.inputs.law().declarations()[name].signature
     else {
-        return Err("Lawがない".into());
+        return Err(internal!("Lawがない").into());
     };
     Ok(Type::Set(Box::new(Type::Tuple(vec![
         Type::Tuple(params.iter().map(|p| p.ty.erase()).collect()),
@@ -105,10 +105,10 @@ pub(super) fn row(
     dependency: NodeRef,
 ) -> Result<(Scalar, Vec<NodeRef>), ValidationFailure> {
     let Some(Payload::Construction(original)) = &b.g.get(input.architecture)?.payload else {
-        return Err("商の元Architectureがない".into());
+        return Err(internal!("商の元Architectureがない").into());
     };
     let Json::Obj(wire) = &original.wire() else {
-        return Err("商の元Architectureのrecordがない".into());
+        return Err(internal!("商の元Architectureのrecordがない").into());
     };
     let mut wire = wire.clone();
     let mut arguments = original.arguments();
@@ -133,7 +133,11 @@ pub(super) fn row(
                     ("subject", subject.wire()),
                     (
                         "field",
-                        Json::str(fact.field.as_deref().ok_or("商の更新fieldがない")?),
+                        Json::str(
+                            fact.field
+                                .as_deref()
+                                .ok_or(internal!("商の更新fieldがない"))?,
+                        ),
                     ),
                 ]),
             ),
@@ -152,7 +156,7 @@ pub(super) fn row(
     let Signature::Law { body, guard, .. } =
         &env.indexes.inputs.law().declarations()[name].signature
     else {
-        return Err("Lawがない".into());
+        return Err(internal!("Lawがない").into());
     };
     let mut evaluations = vec![];
     let mut items = vec![];
@@ -175,7 +179,12 @@ pub(super) fn row(
             let children = captured
                 .children
                 .iter()
-                .map(|i| nodes.get(*i).copied().ok_or("通常評価の子が先行していない"))
+                .map(|i| {
+                    nodes
+                        .get(*i)
+                        .copied()
+                        .ok_or(internal!("通常評価の子が先行していない"))
+                })
                 .collect::<Result<Vec<_>, _>>()?;
             let local = captured
                 .bindings
@@ -197,7 +206,12 @@ pub(super) fn row(
             nodes.push(node);
         }
         let guard_evaluation = guard_evaluation
-            .map(|i| nodes.get(i).copied().ok_or("通常guard評価がない"))
+            .map(|i| {
+                nodes
+                    .get(i)
+                    .copied()
+                    .ok_or(internal!("通常guard評価がない"))
+            })
             .transpose()?;
         let guard_value = if guard.is_some() {
             Some(change_result::value(b, &Scalar::Bool(*applicable))?)
@@ -205,8 +219,10 @@ pub(super) fn row(
             None
         };
         let evaluated = if *applicable {
-            let index = body_evaluation.ok_or("通常Law body評価がない")?;
-            *nodes.get(index).ok_or("通常Law body評価の位置が違う")?
+            let index = body_evaluation.ok_or(internal!("通常Law body評価がない"))?;
+            *nodes
+                .get(index)
+                .ok_or(internal!("通常Law body評価の位置が違う"))?
         } else {
             evaluation(
                 b,
@@ -221,7 +237,7 @@ pub(super) fn row(
             )?
         };
         if let (Some(guard), Some(guard_evaluation)) = (guard, guard_evaluation) {
-            let guard_value = guard_value.ok_or("商のguard値がない")?;
+            let guard_value = guard_value.ok_or(internal!("商のguard値がない"))?;
             let part = &mut b.parts[evaluated.0 - b.base];
             part.arguments.extend([guard_evaluation, guard_value]);
             part.arguments.sort_by_key(|r| r.0);
@@ -255,7 +271,7 @@ pub(super) fn row(
                     b.parts[r.0 - b.base]
                         .scalar
                         .clone()
-                        .ok_or("Law束縛値がない")
+                        .ok_or(internal!("Law束縛値がない"))
                 })
                 .collect::<Result<Vec<_>, _>>()?,
         );

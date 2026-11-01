@@ -26,7 +26,7 @@ impl Q {
             crate::observed::result::Scalar::Q(n, d) if !d.is_zero() => {
                 Ok(Self::new(n.clone(), d.clone()))
             }
-            _ => Err("局所係数が有理数でない".into()),
+            _ => Err(internal!("局所係数が有理数でない").into()),
         }
     }
 }

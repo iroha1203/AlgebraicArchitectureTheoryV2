@@ -54,6 +54,20 @@ pub enum ObjectLawTransportFailure {
         transport: Option<Box<ConfigurationTransportPartial>>,
     },
 }
+impl ObjectLawTransportFailure {
+    #[track_caller]
+    pub(crate) fn internal_context(
+        &self,
+        message: String,
+    ) -> archsig_common::internal::InternalError {
+        match self {
+            Self::Construction(cause) => cause.internal_context(message),
+            Self::Transport(cause) => cause.cause().internal_context(message),
+            Self::Evaluation { failure, .. } => failure.internal_context(message),
+            _ => internal!(message),
+        }
+    }
+}
 impl From<ConstructionFailure> for ObjectLawTransportFailure {
     fn from(f: ConstructionFailure) -> Self {
         Self::Construction(f)
@@ -151,7 +165,7 @@ fn tick(c: &Control) -> Result<(), ConstructionFailure> {
         .map_err(Into::into)
 }
 fn inconsistent(message: &str) -> ConstructionFailure {
-    ConstructionFailure::Inconsistent(message.into())
+    ConstructionFailure::Inconsistent(internal!(message))
 }
 fn required(row: &ObjectInstance) -> Result<bool, ConstructionFailure> {
     match row.declaration().role {
@@ -282,9 +296,9 @@ fn reading(e: &ObjectEvaluation, c: &Control) -> Result<LawBooleanReading, Const
             return Ok(r);
         }
         ObjectEvaluationOutcome::FiniteView(_) => {
-            return Err(ConstructionFailure::Inconsistent(
-                "Law読取りにviewの関数族がある".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "Law読取りにviewの関数族がある"
+            )));
         }
         ObjectEvaluationOutcome::Evaluated(e) => e,
     };

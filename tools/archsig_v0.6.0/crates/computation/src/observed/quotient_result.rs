@@ -148,10 +148,10 @@ fn compute(
             .arguments
             .iter()
             .find(|a| a.name == "on")
-            .ok_or("商のonがない")?
+            .ok_or(internal!("商のonがない"))?
             .value;
         let AnswerBinding::Reference(reference) = env.answer_binding(g, on, (0, 0))? else {
-            return Err("商のonが既出参照でない".into());
+            return Err(internal!("商のonが既出参照でない").into());
         };
         let input = change_result::candidate_input(env, g, reference, c)?;
         if input.search.linear.is_some() || input.search.rational.is_some() {
@@ -159,9 +159,9 @@ fn compute(
         }
         let table = quotient_evaluation::compute(env, g, &input, request, c)?;
         let declaration = &env.indexes.inputs.law().declarations()
-            [request.declaration().ok_or("商のviewがない")?];
+            [request.declaration().ok_or(internal!("商のviewがない"))?];
         let Signature::View { body, .. } = &declaration.signature else {
-            return Err("商のviewが違う".into());
+            return Err(internal!("商のviewが違う").into());
         };
         let mut b = Builder {
             g,
@@ -176,7 +176,7 @@ fn compute(
                     .arguments
                     .iter()
                     .find(|a| a.name == format!("bind.{name}"))
-                    .ok_or("商の元束縛がない")?
+                    .ok_or(internal!("商の元束縛がない"))?
                     .value;
                 let reference = if matches!(selector, Selector::Answer { .. }) {
                     match env.answer_binding(g, selector, (0, 0))? {
@@ -186,9 +186,9 @@ fn compute(
                             .iter()
                             .position(|n| *n == node)
                             .map(NodeRef)
-                            .ok_or("商の公開射影が保持されていない")?,
+                            .ok_or(internal!("商の公開射影が保持されていない"))?,
                         AnswerBinding::Inapplicable(_) => {
-                            return Err(ValidationFailure::from("商の束縛射影が不適合"));
+                            return Err(ValidationFailure::from(internal!("商の束縛射影が不適合")));
                         }
                     }
                 } else {
@@ -373,7 +373,7 @@ fn compute(
                     ("kind", Json::str("solutions")),
                     ("solutions", reference.wire()),
                 ]),
-                _ => return Err("商のdomain型が違う".into()),
+                _ => return Err(internal!("商のdomain型が違う").into()),
             },
             vec![reference],
             None,
@@ -439,7 +439,7 @@ fn compute(
                 ("domain", reference.wire()),
                 (
                     "view",
-                    Json::str(request.declaration().ok_or("商のviewがない")?),
+                    Json::str(request.declaration().ok_or(internal!("商のviewがない"))?),
                 ),
                 (
                     "bindings",
@@ -504,7 +504,10 @@ fn compute(
                 b.proposition("sufficient", vec![quotient], evidence.clone(), status)?;
             let part = &mut b.parts[proposition.0 - base];
             part.evidence = evidence.clone();
-            part.judgment.as_mut().ok_or("十分性判断がない")?.evidence = evidence.clone();
+            part.judgment
+                .as_mut()
+                .ok_or(internal!("十分性判断がない"))?
+                .evidence = evidence.clone();
             outputs.insert("proposition".into(), proposition);
             claim = Some(proposition);
         }
@@ -543,7 +546,7 @@ pub(super) fn validate_node(
     d: &Data,
 ) -> Result<(), ValidationFailure> {
     let Witness::Architecture(w) = &v.witness else {
-        return Err("商の元Architectureがない".into());
+        return Err(internal!("商の元Architectureがない").into());
     };
     let p = d.part();
     if !Arc::ptr_eq(w, &d.source.witness)
@@ -556,7 +559,7 @@ pub(super) fn validate_node(
         || n.evidence != p.evidence
         || n.judgment != p.judgment
     {
-        return Err("商の元構成が違う".into());
+        return Err(internal!("商の元構成が違う").into());
     }
     for r in &p.arguments {
         g.get(*r)?;
@@ -577,7 +580,7 @@ impl Environment<'_> {
             || d.source.base + d.index != at
             || d.arguments().iter().any(|r| r.0 >= at)
         {
-            return Err("商の位置・既出参照が違う".into());
+            return Err(internal!("商の位置・既出参照が違う").into());
         }
         if self.results.source_checked(&d.source) {
             return Ok(());
@@ -589,7 +592,7 @@ impl Environment<'_> {
             || rebuilt.answer != d.source.answer
             || rebuilt.domain_type != d.source.domain_type
         {
-            return Err("商の再構成が違う".into());
+            return Err(internal!("商の再構成が違う").into());
         }
         self.results.remember(d.source.clone());
         Ok(())
@@ -605,7 +608,7 @@ pub(super) fn validate_answer(
         return if *answer == expected {
             Ok(())
         } else {
-            Err("商の依存停止が違う".into())
+            Err(internal!("商の依存停止が違う").into())
         };
     }
     let r = answer
@@ -618,15 +621,15 @@ pub(super) fn validate_answer(
                 .find(|r| matches!(r.kind, ReasonKind::Missing))
                 .and_then(|r| r.dependencies.first())
         })
-        .ok_or("商の出力・不足の元式がない")?;
+        .ok_or(internal!("商の出力・不足の元式がない"))?;
     let Some(Payload::Construction(v)) = &g.get(*r)?.payload else {
-        return Err("商がnativeでない".into());
+        return Err(internal!("商がnativeでない").into());
     };
     let D::Quotient(d) = &v.data else {
-        return Err("商が別構成".into());
+        return Err(internal!("商が別構成").into());
     };
     if &d.source.request != request || &d.source.answer != answer {
-        return Err("商の元Request・回答が違う".into());
+        return Err(internal!("商の元Request・回答が違う").into());
     }
     env.recheck_quotient(g, v, r.0)
 }
@@ -637,16 +640,16 @@ pub(super) fn validate_origin(
     v: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
     let D::Quotient(d) = &v.data else {
-        return Err("商の構成が別種".into());
+        return Err(internal!("商の構成が別種").into());
     };
     let Witness::Architecture(w) = &v.witness else {
-        return Err("商の元Architectureがない".into());
+        return Err(internal!("商の元Architectureがない").into());
     };
     if &d.source.request != request
         || !Arc::ptr_eq(w, &d.source.witness)
         || v.witness.inputs().sources() != env.indexes.inputs.sources()
     {
-        return Err("商が現在の入力・Requestに属さない".into());
+        return Err(internal!("商が現在の入力・Requestに属さない").into());
     }
     Ok(())
 }

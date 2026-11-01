@@ -74,7 +74,7 @@ pub(in crate::observed::local_result) fn multiply(
     c: &Control,
 ) -> Result<Matrix, ValidationFailure> {
     if a.iter().any(|r| r.len() != b.len()) || b.iter().any(|r| r.len() != cols) {
-        return Err("有理行列の積の次元が異なる".into());
+        return Err(internal!("有理行列の積の次元が異なる").into());
     }
     let mut out = vec![vec![Z::zero(); cols]; a.len()];
     for (i, row) in a.iter().enumerate() {

@@ -198,7 +198,10 @@ impl Environment<'_> {
                 let (node, root) = match plan {
                     AnswerBinding::Reference(r) => (graph.get(r)?.clone(), r),
                     AnswerBinding::Projection(n) => {
-                        let root = *n.arguments.first().ok_or("所属射影の元rootがない")?;
+                        let root = *n
+                            .arguments
+                            .first()
+                            .ok_or(internal!("所属射影の元rootがない"))?;
                         (n, root)
                     }
                     AnswerBinding::Inapplicable(_) => {
@@ -206,7 +209,7 @@ impl Environment<'_> {
                     }
                 };
                 let Some(Payload::Scalar(scalar)) = node.payload else {
-                    return Err("所属束縛の元Answerが通常値でない".into());
+                    return Err(internal!("所属束縛の元Answerが通常値でない").into());
                 };
                 Ok(Selected {
                     scalar,
@@ -216,7 +219,7 @@ impl Environment<'_> {
                     producer: Some(id.clone()),
                 })
             }
-            _ => Err("所属束縛が元subject/Answerでない".into()),
+            _ => Err(internal!("所属束縛が元subject/Answerでない").into()),
         }
     }
 
@@ -232,7 +235,7 @@ impl Environment<'_> {
             snapshot, subject, ..
         } = &selected.scalar
         else {
-            return Err("所属条件の直接入力がsubjectでない".into());
+            return Err(internal!("所属条件の直接入力がsubjectでない").into());
         };
         let original = self.indexes.subject(snapshot, subject)?;
         Ok(ConditionInput::Subject(Box::new(Node {
@@ -267,21 +270,22 @@ impl Environment<'_> {
         let originals = self
             .indexes
             .original_requests
-            .ok_or("所属束縛の元Requestがない")?;
+            .ok_or(internal!("所属束縛の元Requestがない"))?;
         let context = self.current_context(graph);
         if originals.get(context.request) != Some(request)
             || graph.requests.get(context.request) != Some(request)
         {
-            return Err("所属束縛のRequestが元入力と違う".into());
+            return Err(internal!("所属束縛のRequestが元入力と違う").into());
         }
-        let d = &self.indexes.inputs.law().declarations()
-            [request.declaration().ok_or("元要求に宣言がない")?];
+        let d = &self.indexes.inputs.law().declarations()[request
+            .declaration()
+            .ok_or(internal!("元要求に宣言がない"))?];
         let params = match &d.signature {
             Signature::View { params, .. } | Signature::Law { params, .. } => params,
-            _ => return Err("所属束縛の元宣言がview/Lawでない".into()),
+            _ => return Err(internal!("所属束縛の元宣言がview/Lawでない").into()),
         };
         if !params.contains(p) {
-            return Err("所属束縛の元parameterが違う".into());
+            return Err(internal!("所属束縛の元parameterが違う").into());
         }
         let owner_names = self.binding_owner_names(&p.ty, p.span)?;
         let mut selected_owners = BTreeSet::new();
@@ -300,7 +304,7 @@ impl Environment<'_> {
                 .iter()
                 .find(|a| a.name == format!("bind.{name}"))
                 .map(|a| &a.value)
-                .ok_or_else(|| ValidationFailure::Internal("所属束縛の元selectorがない".into()))
+                .ok_or_else(|| ValidationFailure::Internal(internal!("所属束縛の元selectorがない")))
         };
         let value = self.owned_selected(graph, selector(&p.name)?, &d.reading, p.span)?;
         if value.scalar.ty() != p.ty.erase() {
@@ -326,7 +330,7 @@ impl Environment<'_> {
             }
         }
         if owners.is_empty() || owners.len() != selected_owners.len() {
-            return Err("所属束縛の固定owner parameterがない".into());
+            return Err(internal!("所属束縛の固定owner parameterがない").into());
         }
         let fixed = owners.iter().map(|(name, _)| *name).collect();
         let checked_type = self.binding_fixed_type(&p.ty, &fixed)?;
@@ -336,14 +340,17 @@ impl Environment<'_> {
             .collect();
         let mut checks = owned_call::Checks::default();
         if let Some(case) = context.case {
-            let record = graph.cases.get(case).ok_or("所属束縛の補完caseがない")?;
+            let record = graph
+                .cases
+                .get(case)
+                .ok_or(internal!("所属束縛の補完caseがない"))?;
             if record.caller
                 != (super::super::call::Context {
                     case: None,
                     ..context
                 })
             {
-                return Err("所属束縛の補完caseが元Request rootと違う".into());
+                return Err(internal!("所属束縛の補完caseが元Request rootと違う").into());
             }
         }
         let assignment = context
@@ -389,12 +396,12 @@ impl Environment<'_> {
                     vec![assignment]
                 } else {
                     let Scalar::Tuple(members) = &assignment else {
-                        return Err("所属補完の共有assignmentがTupleでない".into());
+                        return Err(internal!("所属補完の共有assignmentがTupleでない").into());
                     };
                     members.clone()
                 };
                 if members.len() != fields.len() {
-                    return Err("所属補完の元slot数が違う".into());
+                    return Err(internal!("所属補完の元slot数が違う").into());
                 }
                 let assignment = fields.iter().cloned().zip(members).collect();
                 let mut case = owned_call::Checks::default();
@@ -448,7 +455,7 @@ impl Environment<'_> {
         }
         checks.support.sort();
         checks.support.dedup();
-        let producer = producer.ok_or("所属束縛に元Answerがない")?;
+        let producer = producer.ok_or(internal!("所属束縛に元Answerがない"))?;
         #[cfg(test)]
         data::observe_actual(p.span, context, "owned_binding_checked", 0);
         self.tick()?;
@@ -472,14 +479,14 @@ impl Environment<'_> {
             return Ok(None);
         };
         if plan.checks.failure.is_some() || plan.checks.blocked {
-            return Err("未確認・不適合Owned束縛を通常値へ消費した".into());
+            return Err(internal!("未確認・不適合Owned束縛を通常値へ消費した").into());
         }
         let input = graph.get(original)?;
         let argument = request
             .arguments
             .iter()
             .find(|a| a.name == format!("bind.{}", p.name))
-            .ok_or("所属束縛の元引数がない")?;
+            .ok_or(internal!("所属束縛の元引数がない"))?;
         match &argument.value {
             selector @ Selector::Answer { .. } => {
                 self.answer_binding_matches(graph, selector, original, p.span)?
@@ -496,14 +503,14 @@ impl Environment<'_> {
                     })
                     || graph.context_at(original.0) != self.current_context(graph)
                 {
-                    return Err("所属束縛の元subject producerが違う".into());
+                    return Err(internal!("所属束縛の元subject producerが違う").into());
                 }
             }
-            _ => return Err("所属束縛の元selectorが違う".into()),
+            _ => return Err(internal!("所属束縛の元selectorが違う").into()),
         }
         self.validate_at(graph, input, original.0)?;
         if graph.scalar(original)? != &plan.scalar {
-            return Err("所属束縛の元値が違う".into());
+            return Err(internal!("所属束縛の元値が違う").into());
         }
         let mut arguments = vec![original];
         for r in plan.dependencies {
@@ -537,34 +544,38 @@ impl Environment<'_> {
         self.tick()?;
         let context = self.current_context(graph);
         if context.frame.is_some() || context.iteration.is_some() || context.instance.is_some() {
-            return Err("所属束縛が元Requestのrootにない".into());
+            return Err(internal!("所属束縛が元Requestのrootにない").into());
         }
         let request = self
             .indexes
             .original_requests
             .and_then(|r| r.get(context.request))
-            .ok_or("所属束縛の元Requestがない")?;
-        let d = &self.indexes.inputs.law().declarations()
-            [request.declaration().ok_or("元要求に宣言がない")?];
+            .ok_or(internal!("所属束縛の元Requestがない"))?;
+        let d = &self.indexes.inputs.law().declarations()[request
+            .declaration()
+            .ok_or(internal!("元要求に宣言がない"))?];
         let params = match &d.signature {
             Signature::View { params, .. } | Signature::Law { params, .. } => params,
-            _ => return Err("所属束縛の元署名がない".into()),
+            _ => return Err(internal!("所属束縛の元署名がない").into()),
         };
         let p = params
             .iter()
             .find(|p| &p.name == parameter)
-            .ok_or("所属束縛の元parameterがない")?;
-        let original = *node.arguments.first().ok_or("所属束縛の元値辺がない")?;
+            .ok_or(internal!("所属束縛の元parameterがない"))?;
+        let original = *node
+            .arguments
+            .first()
+            .ok_or(internal!("所属束縛の元値辺がない"))?;
         for r in &node.arguments {
             if r.0 >= limit {
-                return Err("所属束縛の引数が未出".into());
+                return Err(internal!("所属束縛の引数が未出").into());
             }
         }
         let expected = self
             .owned_binding_node(graph, request, p, original)?
-            .ok_or("元入力に動的固定Owned制約がない")?;
+            .ok_or(internal!("元入力に動的固定Owned制約がない"))?;
         if node != &expected {
-            return Err("所属束縛の型・値・元Ref・辺・支持・Scopeが元入力と違う".into());
+            return Err(internal!("所属束縛の型・値・元Ref・辺・支持・Scopeが元入力と違う").into());
         }
         self.tick()?;
         Ok(true)
@@ -598,16 +609,16 @@ impl Environment<'_> {
                 && node.rule == Rule::OwnedBinding(p.name.clone())
             {
                 if selected.replace(NodeRef(i)).is_some() {
-                    return Err("元Owned制約の所属確認が重複".into());
+                    return Err(internal!("元Owned制約の所属確認が重複").into());
                 }
                 if node.arguments.first() != Some(&value) {
-                    return Err("所属確認が元束縛値を指していない".into());
+                    return Err(internal!("所属確認が元束縛値を指していない").into());
                 }
                 self.validate_at(graph, node, i)?;
             }
         }
         selected
             .map(Some)
-            .ok_or_else(|| "元Owned制約の所属確認がない".into())
+            .ok_or_else(|| internal!("元Owned制約の所属確認がない").into())
     }
 }

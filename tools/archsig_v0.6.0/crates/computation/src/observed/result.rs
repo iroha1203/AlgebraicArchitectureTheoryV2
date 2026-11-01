@@ -1,4 +1,5 @@
 //! 評価内部の型付き DAG。JSON はこの不変データの表示に限定する。
+use archsig_common::internal::InternalError;
 
 use super::{PrepareFailure, PreparedObserved};
 
@@ -1815,7 +1816,7 @@ pub(crate) struct Graph {
 }
 #[derive(Debug)]
 pub(crate) enum ValidationFailure {
-    Internal(String),
+    Internal(InternalError),
     Stop(Signal),
     /// 元式の事前分析だけが返す。生成済みnodeの照合ではInternalへ変換する。
     UnsupportedExpression {
@@ -1823,14 +1824,18 @@ pub(crate) enum ValidationFailure {
         feature: String,
     },
 }
-impl From<String> for ValidationFailure {
-    fn from(s: String) -> Self {
-        Self::Internal(s)
+impl ValidationFailure {
+    #[track_caller]
+    pub(crate) fn internal_context(&self, message: String) -> InternalError {
+        match self {
+            Self::Internal(error) => error.with_message(message),
+            _ => internal!(message),
+        }
     }
 }
-impl From<&str> for ValidationFailure {
-    fn from(s: &str) -> Self {
-        Self::Internal(s.into())
+impl From<InternalError> for ValidationFailure {
+    fn from(error: InternalError) -> Self {
+        Self::Internal(error)
     }
 }
 impl From<Signal> for ValidationFailure {
@@ -1843,7 +1848,7 @@ impl Graph {
     /// 任意のScalarや通常の推論nodeを挿入する経路には使えない。
     pub(super) fn retain_native(&mut self, node: Node) -> Result<NodeRef, ValidationFailure> {
         if !matches!(node.payload, Some(Payload::Construction(_))) {
-            return Err("native転記へ通常の導出を渡した".into());
+            return Err(internal!("native転記へ通常の導出を渡した").into());
         }
         // signalはここでも凍結する。完成済みnative値の転記だけは
         // 最後まで保持し、凍結後に通常の推論を再開する権限を与えない。
@@ -1881,7 +1886,7 @@ impl Graph {
             bindings: original, ..
         }) = &self.get(*source)?.payload
         else {
-            return Err("Map域反例の元Sourceがない".into());
+            return Err(internal!("Map域反例の元Sourceがない").into());
         };
         if self.get(*key)?.ty != NodeType::Evaluation((**domain).clone())
             || left != actual
@@ -1900,7 +1905,7 @@ impl Graph {
             || self.get(*left)?.arguments != node.arguments[..3]
             || self.get(*right)?.arguments != node.arguments[..3]
         {
-            return Err("Map域反例の元実子・値型・束縛が違う".into());
+            return Err(internal!("Map域反例の元実子・値型・束縛が違う").into());
         }
         Ok(true)
     }
@@ -1927,34 +1932,36 @@ impl Graph {
             .checkpoint(Checkpoint::FiniteIteration)
             .map_err(ValidationFailure::Stop)
     }
-    pub fn get(&self, r: NodeRef) -> Result<&Node, String> {
-        self.nodes.get(r.0).ok_or_else(|| "既出でない Ref".into())
+    pub fn get(&self, r: NodeRef) -> Result<&Node, InternalError> {
+        self.nodes
+            .get(r.0)
+            .ok_or_else(|| internal!("既出でない Ref"))
     }
-    pub fn expect(&self, r: NodeRef, ty: &NodeType) -> Result<(), String> {
+    pub fn expect(&self, r: NodeRef, ty: &NodeType) -> Result<(), InternalError> {
         if &self.get(r)?.ty == ty {
             Ok(())
         } else {
-            Err("Ref の型不一致".into())
+            Err(internal!("Ref の型不一致"))
         }
     }
-    pub fn scalar(&self, r: NodeRef) -> Result<&Scalar, String> {
+    pub fn scalar(&self, r: NodeRef) -> Result<&Scalar, InternalError> {
         match &self.get(r)?.payload {
             Some(Payload::Scalar(v)) => Ok(v),
             Some(Payload::Construction(v)) => v
                 .scalar()
-                .ok_or_else(|| "通常値でないnative構成の消費".into()),
-            _ => Err("通常値でない node の消費".into()),
+                .ok_or_else(|| internal!("通常値でないnative構成の消費")),
+            _ => Err(internal!("通常値でない node の消費")),
         }
     }
-    pub(crate) fn boolean(&self, value: Option<NodeRef>) -> Result<Option<bool>, String> {
+    pub(crate) fn boolean(&self, value: Option<NodeRef>) -> Result<Option<bool>, InternalError> {
         value
             .map(|reference| match self.scalar(reference)? {
                 Scalar::Bool(value) => Ok(*value),
-                _ => Err("Bool 評価の値が Bool でない".into()),
+                _ => Err(internal!("Bool 評価の値が Bool でない")),
             })
             .transpose()
     }
-    fn value(&self, r: NodeRef, ty: &Type) -> Result<(), String> {
+    fn value(&self, r: NodeRef, ty: &Type) -> Result<(), InternalError> {
         self.expect(r, &NodeType::Value(ty.clone()))?;
         self.scalar(r)?;
         Ok(())
@@ -1965,7 +1972,7 @@ impl Graph {
         for b in bs {
             self.tick()?;
             if !names.insert(&b.name) {
-                return Err("束縛名の重複".into());
+                return Err(internal!("束縛名の重複").into());
             }
             self.value(b.value, &b.ty)?;
             self.tick()?;
@@ -2014,7 +2021,7 @@ impl Graph {
                         != Some(reason.dependencies.as_slice())
                         || !reason.missing.is_empty()
                     {
-                        return Err("射影条件失敗の元命題・依存が違う".into());
+                        return Err(internal!("射影条件失敗の元命題・依存が違う").into());
                     }
                     continue;
                 }
@@ -2028,7 +2035,7 @@ impl Graph {
                         || reason.dependencies != [condition]
                         || !reason.missing.is_empty()
                     {
-                        return Err("候補構成失敗の元命題・要求・依存が違う".into());
+                        return Err(internal!("候補構成失敗の元命題・要求・依存が違う").into());
                     }
                     super::construction_result::validate_shape(self, proposition)?;
                     continue;
@@ -2053,13 +2060,13 @@ impl Graph {
                         .is_some_and(|source| reason.dependencies == [*source])
                     || !reason.missing.is_empty()
                 {
-                    return Err("構成条件失敗の元命題・構成・依存が違う".into());
+                    return Err(internal!("構成条件失敗の元命題・構成・依存が違う").into());
                 }
             }
             if matches!(reason.kind, ReasonKind::Missing)
                 && (reason.dependencies.is_empty() || reason.missing.is_empty())
             {
-                return Err("canonical 欠測理由に依存式・slot がない".into());
+                return Err(internal!("canonical 欠測理由に依存式・slot がない").into());
             }
             if let ReasonKind::UnsupportedAlgorithm {
                 operand_types,
@@ -2068,7 +2075,7 @@ impl Graph {
             } = &reason.kind
                 && (operand_types.is_empty() || method.is_empty() || reason.dependencies.is_empty())
             {
-                return Err("非対応算法理由に元の型・式・方法がない".into());
+                return Err(internal!("非対応算法理由に元の型・式・方法がない").into());
             }
             for &r in &reason.dependencies {
                 self.tick()?;
@@ -2081,7 +2088,10 @@ impl Graph {
                     let native_missing = matches!(reason.kind, ReasonKind::Missing)
                         && matches!(&node.payload,Some(Payload::Construction(v)) if matches!(&v.data,super::construction_result::ConstructionData::Subject { value:Scalar::Subject {snapshot,subject,..},.. } if reason.missing.iter().any(|f|&f.snapshot==snapshot && &f.subject==subject)));
                     if !native_missing {
-                        return Err("欠測・非対応算法理由の依存先が元式・native原始根でない".into());
+                        return Err(internal!(
+                            "欠測・非対応算法理由の依存先が元式・native原始根でない"
+                        )
+                        .into());
                     }
                 }
                 self.tick()?;
@@ -2123,12 +2133,12 @@ impl Graph {
             || !node.reasons.is_empty()
             || node.judgment.is_some()
         {
-            return Err("Owned call反例の元辺・所属条件型・実不等が違う".into());
+            return Err(internal!("Owned call反例の元辺・所属条件型・実不等が違う").into());
         }
         for r in &node.arguments[1..n - 2] {
             self.tick()?;
             if !matches!(self.get(*r)?.ty, NodeType::Evaluation(_)) {
-                return Err("Owned call反例の実子がEvaluationでない".into());
+                return Err(internal!("Owned call反例の実子がEvaluationでない").into());
             }
         }
         for (r, rule) in [(*left, "evaluation"), (*right, "domain")] {
@@ -2141,7 +2151,7 @@ impl Graph {
                 || !value.reasons.is_empty()
                 || value.judgment.is_some()
             {
-                return Err("Owned call反例のowner値が元callに接続しない".into());
+                return Err(internal!("Owned call反例のowner値が元callに接続しない").into());
             }
         }
         Ok(true)
@@ -2158,15 +2168,18 @@ impl Graph {
             let (evidence, edges) = node
                 .arguments
                 .split_last()
-                .ok_or("Owned条件に導出辺がない")?;
+                .ok_or(internal!("Owned条件に導出辺がない"))?;
             let proof = self.get(*evidence)?;
             let Some(Payload::OwnedCallCounterexample {
                 left: l, right: r, ..
             }) = &proof.payload
             else {
-                return Err("Owned条件に元callの反例がない".into());
+                return Err(internal!("Owned条件に元callの反例がない").into());
             };
-            let judgment = node.judgment.as_ref().ok_or("Owned条件に判断がない")?;
+            let judgment = node
+                .judgment
+                .as_ref()
+                .ok_or(internal!("Owned条件に判断がない"))?;
             if proof.ty != NodeType::Evidence
                 || left != l
                 || right != r
@@ -2181,20 +2194,23 @@ impl Graph {
                 || node.support != proof.support
                 || node.scope != proof.scope
             {
-                return Err("Owned条件の反証・元辺・判断が違う".into());
+                return Err(internal!("Owned条件の反証・元辺・判断が違う").into());
             }
             return Ok(());
         }
         if let Some(Payload::PathCondition { left, right }) = &node.payload {
             if node.arguments.len() < 5 {
-                return Err("Path条件の元式・実子・証拠がない".into());
+                return Err(internal!("Path条件の元式・実子・証拠がない").into());
             }
             let prefix = node.arguments.len() - 3;
             let [actual, required, evidence] = &node.arguments[prefix..] else {
                 unreachable!()
             };
             let proof = self.get(*evidence)?;
-            let judgment = node.judgment.as_ref().ok_or("Path条件の判断がない")?;
+            let judgment = node
+                .judgment
+                .as_ref()
+                .ok_or(internal!("Path条件の判断がない"))?;
             if left != actual
                 || right != required
                 || node.evidence != [*evidence]
@@ -2210,17 +2226,17 @@ impl Graph {
                 || !matches!(&proof.payload,Some(Payload::PathCounterexample{left:a,right:b,facts,..})if a==left&&b==right&&facts==&node.support)
                 || self.scalar(*left)? == self.scalar(*right)?
             {
-                return Err("Path条件の反証・元辺・Scopeが違う".into());
+                return Err(internal!("Path条件の反証・元辺・Scopeが違う").into());
             }
             return Ok(());
         }
         if let Some(Payload::MapDomainCondition { left, right }) = &node.payload {
             let [source, map, key, actual, required, evidence] = node.arguments.as_slice() else {
-                return Err("Map域条件の元式・実子・反証がない".into());
+                return Err(internal!("Map域条件の元式・実子・反証がない").into());
             };
             let proof = self.get(*evidence)?;
             let Some(judgment) = &node.judgment else {
-                return Err("Map域条件の判断がない".into());
+                return Err(internal!("Map域条件の判断がない").into());
             };
             if left != actual
                 || right != required
@@ -2236,7 +2252,7 @@ impl Graph {
                 || proof.support != node.support
                 || super::data::equal(self.scalar(*left)?, self.scalar(*right)?, &self.control)?
             {
-                return Err("Map域条件の反証・導出・Scopeが違う".into());
+                return Err(internal!("Map域条件の反証・導出・Scopeが違う").into());
             }
             return Ok(());
         }
@@ -2244,14 +2260,17 @@ impl Graph {
             return Ok(());
         }
         let Some(Payload::Proposition { instance }) = &node.payload else {
-            return Err("証拠添付先が Proposition でない".into());
+            return Err(internal!("証拠添付先が Proposition でない").into());
         };
-        let judgment = node.judgment.as_ref().ok_or("命題に判断がない")?;
+        let judgment = node
+            .judgment
+            .as_ref()
+            .ok_or(internal!("命題に判断がない"))?;
         if node.evidence != judgment.evidence {
-            return Err("命題と判断の証拠列が違う".into());
+            return Err(internal!("命題と判断の証拠列が違う").into());
         }
         if node.arguments.len() != 2 || node.arguments[0] != *instance {
-            return Err("命題の証拠対象が元 LawInstance と違う".into());
+            return Err(internal!("命題の証拠対象が元 LawInstance と違う").into());
         }
         let evaluation = node.arguments[1];
         let Some(Payload::LawInstance {
@@ -2259,7 +2278,7 @@ impl Graph {
             ..
         }) = &self.get(*instance)?.payload
         else {
-            return Err("証拠添付先の LawInstance が値でない".into());
+            return Err(internal!("証拠添付先の LawInstance が値でない").into());
         };
         if self.universal_evaluation_shape(self.get(evaluation)?)? {
             let whole = self.get(evaluation)?;
@@ -2283,7 +2302,7 @@ impl Graph {
                 || node.scope != whole.scope
                 || node.support != whole.support
             {
-                return Err("全域命題の元LawInstance・whole・Scope・支持が違う".into());
+                return Err(internal!("全域命題の元LawInstance・whole・Scope・支持が違う").into());
             }
             let expected = match self.boolean(*value)? {
                 Some(true) => Decision::Established,
@@ -2291,22 +2310,22 @@ impl Graph {
                 None => Decision::Undetermined,
             };
             if judgment.status != expected {
-                return Err("全域命題の判断が元wholeと違う".into());
+                return Err(internal!("全域命題の判断が元wholeと違う").into());
             }
             match expected {
                 Decision::Undetermined => {
                     if node.evidence != whole.evidence {
-                        return Err("未決の全域命題が別wholeの補完証拠を指す".into());
+                        return Err(internal!("未決の全域命題が別wholeの補完証拠を指す").into());
                     }
                 }
                 Decision::Established => {
                     if node.evidence != whole.evidence {
-                        return Err("全域成立の証拠が元whole正規化でない".into());
+                        return Err(internal!("全域成立の証拠が元whole正規化でない").into());
                     }
                 }
                 Decision::Refuted => {
                     let [normalization, counterexample] = node.evidence.as_slice() else {
-                        return Err("全域反証に元正規化・反例がない".into());
+                        return Err(internal!("全域反証に元正規化・反例がない").into());
                     };
                     let counterexample = self.get(*counterexample)?;
                     let same_normalization = match counterexample.arguments.as_slice() {
@@ -2324,7 +2343,7 @@ impl Graph {
                         || !self.universal_counterexample_shape(counterexample)?
                         || !same_normalization
                     {
-                        return Err("全域反証が別のwhole・正規化の反例を指す".into());
+                        return Err(internal!("全域反証が別のwhole・正規化の反例を指す").into());
                     }
                 }
             }
@@ -2335,9 +2354,9 @@ impl Graph {
         {
             let Some(Payload::Evaluation { parts, value, .. }) = &self.get(evaluation)?.payload
             else {
-                return Err("whole命題に集約評価がない".into());
+                return Err(internal!("whole命題に集約評価がない").into());
             };
-            let rows = &parts.first().ok_or("whole partがない")?.children;
+            let rows = &parts.first().ok_or(internal!("whole partがない"))?.children;
             let mut counterexample = false;
             for &reference in &node.evidence {
                 self.tick()?;
@@ -2349,7 +2368,7 @@ impl Graph {
                         if instances.len() != rows.len()
                             || instances.iter().any(|r| !rows.contains(r))
                         {
-                            return Err("whole全検査が別のrow族".into());
+                            return Err(internal!("whole全検査が別のrow族").into());
                         }
                     }
                     Some(Payload::Counterexample { .. })
@@ -2363,19 +2382,21 @@ impl Graph {
                                 connected = true;
                             } else if e.arguments.get(1) == Some(&row) {
                                 let Some(&actual) = e.arguments.first() else {
-                                    return Err("row反例に元instanceがない".into());
+                                    return Err(internal!("row反例に元instanceがない").into());
                                 };
                                 let Some(Payload::LawInstance { bindings, .. }) =
                                     &self.get(actual)?.payload
                                 else {
-                                    return Err("row反例の元LawInstanceがない".into());
+                                    return Err(internal!("row反例の元LawInstanceがない").into());
                                 };
                                 if self.get(actual)?.arguments.is_empty() {
-                                    return Err("row反例に元bodyがない".into());
+                                    return Err(internal!("row反例に元bodyがない").into());
                                 }
                                 if !matches!(&e.payload,Some(Payload::Counterexample {bindings:bs,..}) if bs==bindings)
                                 {
-                                    return Err("row反例bindingsが元instanceと違う".into());
+                                    return Err(
+                                        internal!("row反例bindingsが元instanceと違う").into()
+                                    );
                                 }
                                 connected = true;
                             } else if self.quantifier_counterexample_shape(e)?
@@ -2385,15 +2406,15 @@ impl Graph {
                             }
                         }
                         if !connected {
-                            return Err("whole反例が別のinstance".into());
+                            return Err(internal!("whole反例が別のinstance").into());
                         }
                         counterexample = true;
                     }
-                    _ => return Err("whole命題に別の証拠を添付した".into()),
+                    _ => return Err(internal!("whole命題に別の証拠を添付した").into()),
                 }
             }
             if judgment.status == Decision::Refuted && !counterexample {
-                return Err("whole反証に実row反例がない".into());
+                return Err(internal!("whole反証に実row反例がない").into());
             }
             return Ok(());
         }
@@ -2411,7 +2432,7 @@ impl Graph {
                     counterexample = true;
                     continue;
                 }
-                return Err("添付証拠が別の LawInstance・適用評価を指す".into());
+                return Err(internal!("添付証拠が別の LawInstance・適用評価を指す").into());
             }
             match &evidence.payload {
                 Some(Payload::EvaluationEvidence {
@@ -2421,12 +2442,12 @@ impl Graph {
                 Some(Payload::Counterexample { bindings, .. }) if bindings == instance_bindings => {
                     counterexample = true
                 }
-                _ => return Err("命題に対応する検査済み証拠でない".into()),
+                _ => return Err(internal!("命題に対応する検査済み証拠でない").into()),
             }
             self.tick()?;
         }
         if judgment.status == Decision::Refuted && !counterexample {
-            return Err("反証に当該 LawInstance の反例がない".into());
+            return Err(internal!("反証に当該 LawInstance の反例がない").into());
         }
         Ok(())
     }
@@ -2456,7 +2477,7 @@ impl Graph {
         let record = self
             .iterations
             .get(index)
-            .ok_or("量化反例の実binderがない")?;
+            .ok_or(internal!("量化反例の実binderがない"))?;
         let Some(Payload::Evaluation {
             value: Some(value), ..
         }) = &self.get(*body)?.payload
@@ -2523,7 +2544,7 @@ impl Graph {
                     for child in &part.children {
                         self.tick()?;
                         if child.0 >= reference.0 {
-                            return Err("証拠への評価依存が既出でない".into());
+                            return Err(internal!("証拠への評価依存が既出でない").into());
                         }
                         pending.push(*child);
                     }
@@ -2536,10 +2557,10 @@ impl Graph {
     fn difference_shape(&self, node: &Node) -> Result<(NodeRef, [NodeRef; 2]), ValidationFailure> {
         self.tick()?;
         let NodeType::Expression(ty) = &node.ty else {
-            return Err("差のExpressionの型が違う".into());
+            return Err(internal!("差のExpressionの型が違う").into());
         };
         if !super::numeric::is_numeric_type(ty, &self.control)? {
-            return Err("差のExpressionが数値型でない".into());
+            return Err(internal!("差のExpressionが数値型でない").into());
         }
         let Some(Payload::Transform {
             operation: TransformOp::Difference,
@@ -2547,10 +2568,10 @@ impl Graph {
             bindings,
         }) = &node.payload
         else {
-            return Err("差がdifference変換でない".into());
+            return Err(internal!("差がdifference変換でない").into());
         };
         let [source, left, right] = node.arguments.as_slice() else {
-            return Err("差の元Source・実左右Evaluationがない".into());
+            return Err(internal!("差の元Source・実左右Evaluationがない").into());
         };
         self.expect(*source, &NodeType::Expression(Type::Bool))?;
         let Some(Payload::Expression {
@@ -2558,10 +2579,10 @@ impl Graph {
             ..
         }) = &self.get(*source)?.payload
         else {
-            return Err("差の元比較がSourceでない".into());
+            return Err(internal!("差の元比較がSourceでない").into());
         };
         if bindings != source_bindings || operands.len() != 2 {
-            return Err("差の元束縛・operand数が違う".into());
+            return Err(internal!("差の元束縛・operand数が違う").into());
         }
         self.bindings(bindings)?;
         for (&evaluation, &operand) in [*left, *right].iter().zip(operands) {
@@ -2570,7 +2591,7 @@ impl Graph {
             self.expect(operand, &NodeType::Expression(ty.clone()))?;
             if !matches!(&self.get(evaluation)?.payload, Some(Payload::Evaluation { expression, .. }) if expression == &operand)
             {
-                return Err("差のoperandが実子EvaluationのExpressionと違う".into());
+                return Err(internal!("差のoperandが実子EvaluationのExpressionと違う").into());
             }
             self.tick()?;
         }
@@ -2597,7 +2618,7 @@ impl Graph {
             ..
         }) = &node.payload
         else {
-            return Err("全域templateが元Source・元適用条件式でない".into());
+            return Err(internal!("全域templateが元Source・元適用条件式でない").into());
         };
         let conjunction = self.get(outer[0])?;
         self.parameterized_transform_shape(conjunction)?;
@@ -2607,7 +2628,7 @@ impl Graph {
             ..
         }) = &conjunction.payload
         else {
-            return Err("全域templateの元guard連言がない".into());
+            return Err(internal!("全域templateの元guard連言がない").into());
         };
         let guard = conjunction[0];
         let negated_body = self.get(conjunction[1])?;
@@ -2618,7 +2639,7 @@ impl Graph {
             ..
         }) = &negated_body.payload
         else {
-            return Err("全域templateの元body否定がない".into());
+            return Err(internal!("全域templateの元body否定がない").into());
         };
         let body = body[0];
         for original in [guard, body] {
@@ -2627,7 +2648,7 @@ impl Graph {
                 &self.get(original)?.payload,
                 Some(Payload::Expression { .. })
             ) {
-                return Err("全域templateのguard/bodyが元Sourceでない".into());
+                return Err(internal!("全域templateのguard/bodyが元Sourceでない").into());
             }
         }
         Ok((body, Some(guard)))
@@ -2636,7 +2657,7 @@ impl Graph {
     fn parameterized_transform_shape(&self, node: &Node) -> Result<(), ValidationFailure> {
         self.tick()?;
         let NodeType::Expression(ty) = &node.ty else {
-            return Err("parameter変換がExpressionでない".into());
+            return Err(internal!("parameter変換がExpressionでない").into());
         };
         let Some(Payload::ParameterizedTransform {
             operation,
@@ -2645,23 +2666,23 @@ impl Graph {
             bindings,
         }) = &node.payload
         else {
-            return Err("parameter変換のpayloadが違う".into());
+            return Err(internal!("parameter変換のpayloadが違う").into());
         };
         self.bindings(bindings)?;
         let mut names = BTreeSet::new();
         for (name, _) in parameters {
             self.tick()?;
             if !names.insert(name) || bindings.iter().any(|binding| &binding.name == name) {
-                return Err("自由parameterが重複または束縛済み".into());
+                return Err(internal!("自由parameterが重複または束縛済み").into());
             }
         }
         match operation {
             TransformOp::Difference => {
                 if !matches!(ty, Type::Z | Type::Q) || operands.len() != 2 {
-                    return Err("全域差の型・operand数が違う".into());
+                    return Err(internal!("全域差の型・operand数が違う").into());
                 }
                 if node.arguments.len() < 4 {
-                    return Err("全域差に元Source・型Domain・左右評価がない".into());
+                    return Err(internal!("全域差に元Source・型Domain・左右評価がない").into());
                 }
                 let source = node.arguments[0];
                 self.expect(source, &NodeType::Expression(Type::Bool))?;
@@ -2670,10 +2691,10 @@ impl Graph {
                     bindings: fixed, ..
                 }) = &self.get(body_source)?.payload
                 else {
-                    return Err("全域差の元式がSourceでない".into());
+                    return Err(internal!("全域差の元式がSourceでない").into());
                 };
                 if bindings != fixed {
-                    return Err("全域差が元固定束縛を変えた".into());
+                    return Err(internal!("全域差が元固定束縛を変えた").into());
                 }
                 let split = node.arguments.len() - 2;
                 for &domain in &node.arguments[1..split] {
@@ -2683,7 +2704,7 @@ impl Graph {
                     if !matches!(&domain.payload, Some(Payload::TypeDomain { .. }))
                         || domain.arguments != [source]
                     {
-                        return Err("全域差の型Domainが別の元式を指す".into());
+                        return Err(internal!("全域差の型Domainが別の元式を指す").into());
                     }
                 }
                 for (&evaluation, &operand) in node.arguments[split..].iter().zip(operands) {
@@ -2697,13 +2718,15 @@ impl Graph {
                         )
                         || self.get(operand)?.arguments.first() != Some(&source)
                     {
-                        return Err("全域差が元左右の実Source・Evaluationを保持しない".into());
+                        return Err(
+                            internal!("全域差が元左右の実Source・Evaluationを保持しない").into(),
+                        );
                     }
                 }
             }
             TransformOp::Substitute => {
                 let [original] = operands.as_slice() else {
-                    return Err("同時代入のoperand数が違う".into());
+                    return Err(internal!("同時代入のoperand数が違う").into());
                 };
                 self.expect(*original, &NodeType::Expression(ty.clone()))?;
                 let (original_parameters, original_bindings) = match &self.get(*original)?.payload {
@@ -2717,18 +2740,18 @@ impl Graph {
                         bindings,
                         ..
                     }) => (parameters, bindings),
-                    _ => return Err("同時代入の対象が元parameter式でない".into()),
+                    _ => return Err(internal!("同時代入の対象が元parameter式でない").into()),
                 };
                 let expected_arguments: Vec<_> = std::iter::once(*original)
                     .chain(bindings.iter().map(|binding| binding.value))
                     .collect();
                 if node.arguments != expected_arguments {
-                    return Err("同時代入の実対象・型付き値列が違う".into());
+                    return Err(internal!("同時代入の実対象・型付き値列が違う").into());
                 }
                 for binding in original_bindings {
                     self.tick()?;
                     if !bindings.contains(binding) {
-                        return Err("同時代入が元固定束縛を変えた".into());
+                        return Err(internal!("同時代入が元固定束縛を変えた").into());
                     }
                 }
                 for binding in bindings {
@@ -2738,7 +2761,9 @@ impl Graph {
                             .iter()
                             .any(|(name, ty)| name == &binding.name && ty == &binding.ty)
                     {
-                        return Err("同時代入に元式の自由parameterでない束縛がある".into());
+                        return Err(
+                            internal!("同時代入に元式の自由parameterでない束縛がある").into()
+                        );
                     }
                 }
                 let remaining: Vec<_> = original_parameters
@@ -2747,12 +2772,12 @@ impl Graph {
                     .cloned()
                     .collect();
                 if parameters != &remaining {
-                    return Err("同時代入の残る自由parameterが違う".into());
+                    return Err(internal!("同時代入の残る自由parameterが違う").into());
                 }
             }
             TransformOp::Not | TransformOp::And => {
                 if *ty != Type::Bool || operands.len() != operation.arity() {
-                    return Err("適用条件変換の型・operand数が違う".into());
+                    return Err(internal!("適用条件変換の型・operand数が違う").into());
                 }
                 for &operand in operands {
                     self.tick()?;
@@ -2761,7 +2786,7 @@ impl Graph {
                         &self.get(operand)?.payload,
                         Some(Payload::Expression { .. } | Payload::ParameterizedTransform { .. })
                     ) {
-                        return Err("適用条件変換が未生成の元式を消費した".into());
+                        return Err(internal!("適用条件変換が未生成の元式を消費した").into());
                     }
                 }
                 let expected_arguments: Vec<_> = operands
@@ -2770,7 +2795,7 @@ impl Graph {
                     .chain(bindings.iter().map(|binding| binding.value))
                     .collect();
                 if node.arguments != expected_arguments {
-                    return Err("適用条件変換の元operand・束縛値列が違う".into());
+                    return Err(internal!("適用条件変換の元operand・束縛値列が違う").into());
                 }
             }
         }
@@ -2818,10 +2843,10 @@ impl Graph {
                 expression, parts, ..
             }) = &self.get(reference)?.payload
             else {
-                return Err("全域有限証拠のbody辺がEvaluationでない".into());
+                return Err(internal!("全域有限証拠のbody辺がEvaluationでない").into());
             };
             if expression.0 >= reference.0 {
-                return Err("全域有限証拠のSourceが既出でない".into());
+                return Err(internal!("全域有限証拠のSourceが既出でない").into());
             }
             if *expression == source {
                 return Ok(true);
@@ -2829,7 +2854,7 @@ impl Graph {
             for child in parts.iter().flat_map(|part| &part.children) {
                 self.tick()?;
                 if child.0 >= reference.0 {
-                    return Err("全域有限証拠のbody辺が既出でない".into());
+                    return Err(internal!("全域有限証拠のbody辺が既出でない").into());
                 }
                 pending.push(*child);
             }
@@ -2856,7 +2881,7 @@ impl Graph {
         let source = self.get(*before)?;
         let (_, guard) = self.universal_template_sources(*before)?;
         if !source.scope.assignments || node.ty != NodeType::Evidence {
-            return Err("全域正規化の元式が全代入templateでない".into());
+            return Err(internal!("全域正規化の元式が全代入templateでない").into());
         }
         self.value(*after, &Type::Bool)?;
         let expected_support;
@@ -2865,7 +2890,7 @@ impl Graph {
             expected_support = &node.support;
         } else if guard.is_some_and(|guard| steps == &[guard]) {
             if self.scalar(*after)? != &Scalar::Bool(true) {
-                return Err("非適用全域正規化の含意がtrueでない".into());
+                return Err(internal!("非適用全域正規化の含意がtrueでない").into());
             }
             expected_support = &source.support;
         } else if steps.len() == 1 && self.universal_finite_step_shape(*before, steps[0])? {
@@ -2873,7 +2898,7 @@ impl Graph {
             expected_support = &node.support;
         } else {
             let [difference, substitutions @ ..] = steps.as_slice() else {
-                return Err("全域正規化に元differenceがない".into());
+                return Err(internal!("全域正規化に元differenceがない").into());
             };
             let difference_node = self.get(*difference)?;
             if !matches!(
@@ -2884,14 +2909,14 @@ impl Graph {
                 })
             ) || difference_node.arguments.first() != Some(before)
             {
-                return Err("全域正規化の差が別の元templateを指す".into());
+                return Err(internal!("全域正規化の差が別の元templateを指す").into());
             }
             self.parameterized_transform_shape(difference_node)?;
             let mut seen = BTreeSet::from([difference.0]);
             for &substitution in substitutions {
                 self.tick()?;
                 if !seen.insert(substitution.0) {
-                    return Err("全域正規化のstepが重複する".into());
+                    return Err(internal!("全域正規化のstepが重複する").into());
                 }
                 let step = self.get(substitution)?;
                 let Some(Payload::ParameterizedTransform {
@@ -2900,12 +2925,12 @@ impl Graph {
                     ..
                 }) = &step.payload
                 else {
-                    return Err("全域正規化のstepが元同時代入でない".into());
+                    return Err(internal!("全域正規化のstepが元同時代入でない").into());
                 };
                 self.parameterized_transform_shape(step)?;
                 let original = self.get(operands[0])?;
                 if operands[0] != *before && original.arguments.first() != Some(before) {
-                    return Err("全域正規化の同時代入が別の元templateを指す".into());
+                    return Err(internal!("全域正規化の同時代入が別の元templateを指す").into());
                 }
             }
             expected_support = if guard.is_some() {
@@ -2932,7 +2957,7 @@ impl Graph {
             || node.support != value.support
             || &node.support != expected_support
         {
-            return Err("全域正規化の導出・Scope・支持が違う".into());
+            return Err(internal!("全域正規化の導出・Scope・支持が違う").into());
         }
         self.tick()?;
         Ok(true)
@@ -2949,7 +2974,7 @@ impl Graph {
             steps,
         }) = &node.payload
         else {
-            return Err("正規化証拠のpayloadが違う".into());
+            return Err(internal!("正規化証拠のpayloadが違う").into());
         };
         let difference = self.get(*before)?;
         let (source, [left, right]) = self.difference_shape(difference)?;
@@ -2972,7 +2997,7 @@ impl Graph {
             || node.support != difference.support
             || node.scope != difference.scope
         {
-            return Err("正規化証拠の実変換・導出・支持・Scopeが違う".into());
+            return Err(internal!("正規化証拠の実変換・導出・支持・Scopeが違う").into());
         }
         self.tick()?;
         Ok(())
@@ -3014,18 +3039,18 @@ impl Graph {
     ) -> Result<(), ValidationFailure> {
         let root = self
             .universal_local_header_root(header)?
-            .ok_or("局所数値量化の元header・root型Domainがない")?;
+            .ok_or(internal!("局所数値量化の元header・root型Domainがない"))?;
         let context = self.context_at(header.0);
         let domain_node = self.get(domain)?;
         let Some(Payload::TypeDomain { ty }) = &domain_node.payload else {
-            return Err("局所数値量化の型Domainがない".into());
+            return Err(internal!("局所数値量化の型Domainがない").into());
         };
         let Rule::Input {
             kind: "law",
             location: Location::Law { span: binder },
         } = &domain_node.rule
         else {
-            return Err("局所数値量化の元binder位置がない".into());
+            return Err(internal!("局所数値量化の元binder位置がない").into());
         };
         self.expect(body, &NodeType::Evaluation(Type::Bool))?;
         let Some(Payload::Evaluation {
@@ -3033,7 +3058,7 @@ impl Graph {
             ..
         }) = &self.get(body)?.payload
         else {
-            return Err("局所数値量化が未生成のbody評価を消費した".into());
+            return Err(internal!("局所数値量化が未生成のbody評価を消費した").into());
         };
         let body_node = self.get(*body_source)?;
         if domain_node.arguments != [header]
@@ -3045,7 +3070,7 @@ impl Graph {
             || !matches!(&body_node.payload, Some(Payload::Expression { .. }))
             || !scope.assignments
         {
-            return Err("局所数値量化の元root・body・型Domain・実Contextが違う".into());
+            return Err(internal!("局所数値量化の元root・body・型Domain・実Contextが違う").into());
         }
         let descriptors: Vec<_> = scope
             .quantifiers
@@ -3053,19 +3078,23 @@ impl Graph {
             .filter(|q| q.domain == Some(domain))
             .collect();
         let [descriptor] = descriptors.as_slice() else {
-            return Err("局所数値量化の実型Domainに一つのbinder descriptorがない".into());
+            return Err(
+                internal!("局所数値量化の実型Domainに一つのbinder descriptorがない").into(),
+            );
         };
         // forall/existsの元種別はEnvironmentが元ASTと照合する。
         if descriptor.ty != *ty
             || descriptor.occurrence != *binder
             || descriptor.context != Some(context)
         {
-            return Err("局所数値量化の元binder・型・実Contextが違う".into());
+            return Err(internal!("局所数値量化の元binder・型・実Contextが違う").into());
         }
         let mut expected_scope = self.get(header)?.scope.clone();
         expected_scope.merge(&self.get(body)?.scope);
         if *scope != expected_scope || !scope.source_compatible(&self.get(header)?.scope) {
-            return Err("局所数値量化のScopeが元header・実bodyから精密化されていない".into());
+            return Err(
+                internal!("局所数値量化のScopeが元header・実bodyから精密化されていない").into(),
+            );
         }
         Ok(())
     }
@@ -3096,7 +3125,9 @@ impl Graph {
             || !node.evidence.is_empty()
             || node.support != self.get(*body)?.support
         {
-            return Err("局所数値量化の確定Boolが元型・Quant位置・支持に合わない".into());
+            return Err(
+                internal!("局所数値量化の確定Boolが元型・Quant位置・支持に合わない").into(),
+            );
         }
         Ok(true)
     }
@@ -3139,7 +3170,7 @@ impl Graph {
             unreachable!()
         };
         let [part] = parts.as_slice() else {
-            return Err("局所数値量化の元part数が違う".into());
+            return Err(internal!("局所数値量化の元part数が違う").into());
         };
         let expected_values: Vec<_> = value.iter().copied().collect();
         if node.ty != NodeType::Evaluation(Type::Bool)
@@ -3153,7 +3184,7 @@ impl Graph {
             || !node.evidence.is_empty()
             || node.support != self.get(*body)?.support
         {
-            return Err("局所数値量化の実body・元位置・値・支持が違う".into());
+            return Err(internal!("局所数値量化の実body・元位置・値・支持が違う").into());
         }
         if let Some(value) = value {
             let scalar = self.get(*value)?;
@@ -3162,7 +3193,7 @@ impl Graph {
                 || scalar.scope != node.scope
                 || scalar.support != node.support
             {
-                return Err("局所数値量化の値が別のbody・binderで導出された".into());
+                return Err(internal!("局所数値量化の値が別のbody・binderで導出された").into());
             }
         }
         Ok(true)
@@ -3232,12 +3263,12 @@ impl Graph {
         };
         let (guard_part, body_part) = if guard_source.is_some() {
             let [guard, body] = parts.as_slice() else {
-                return Err("guard付き全域wholeの元part数が違う".into());
+                return Err(internal!("guard付き全域wholeの元part数が違う").into());
             };
             (Some(guard), body)
         } else {
             let [body] = parts.as_slice() else {
-                return Err("全域wholeの元part数が違う".into());
+                return Err(internal!("全域wholeの元part数が違う").into());
             };
             (None, body)
         };
@@ -3245,7 +3276,7 @@ impl Graph {
             || body_part.location != *location
             || !node.scope.source_compatible(&source.scope)
         {
-            return Err("全域wholeの元位置・束縛・Scopeが違う".into());
+            return Err(internal!("全域wholeの元位置・束縛・Scopeが違う").into());
         }
         let mut expected_arguments = vec![*expression];
         let mut domain_end = 1;
@@ -3255,7 +3286,7 @@ impl Graph {
                 break;
             }
             if self.get(domain)?.arguments != [*expression] {
-                return Err("全域wholeの型Domainが別のtemplateを指す".into());
+                return Err(internal!("全域wholeの型Domainが別のtemplateを指す").into());
             }
             expected_arguments.push(domain);
             domain_end += 1;
@@ -3270,7 +3301,7 @@ impl Graph {
                 unreachable!()
             };
             let [guard_evaluation] = guard_part.children.as_slice() else {
-                return Err("全域wholeの元guard評価がない".into());
+                return Err(internal!("全域wholeの元guard評価がない").into());
             };
             self.expect(*guard_evaluation, &NodeType::Evaluation(Type::Bool))?;
             let Some(Payload::Evaluation {
@@ -3279,14 +3310,14 @@ impl Graph {
                 ..
             }) = &self.get(*guard_evaluation)?.payload
             else {
-                return Err("全域wholeが未生成のguard評価を消費した".into());
+                return Err(internal!("全域wholeが未生成のguard評価を消費した").into());
             };
             if guard_part.location != *guard_location
                 || guard_part.value != *value
                 || guard_part.residual.is_some()
                 || self.get(*actual_guard)?.arguments.first() != Some(expression)
             {
-                return Err("全域wholeの元guard・値・実評価が違う".into());
+                return Err(internal!("全域wholeの元guard・値・実評価が違う").into());
             }
             guard_value = self.boolean(*value)?;
             expected_arguments.push(*guard_evaluation);
@@ -3299,12 +3330,12 @@ impl Graph {
                 || body_part.residual.is_some()
                 || !body_part.children.is_empty()
             {
-                return Err("非適用全域wholeが未評価bodyを成立値として消費した".into());
+                return Err(internal!("非適用全域wholeが未評価bodyを成立値として消費した").into());
             }
-            expected_step = Some(guard_source.ok_or("非適用全域wholeに元guardがない")?);
+            expected_step = Some(guard_source.ok_or(internal!("非適用全域wholeに元guardがない"))?);
         } else {
             let [body] = body_part.children.as_slice() else {
-                return Err("全域wholeの元body評価がない".into());
+                return Err(internal!("全域wholeの元body評価がない").into());
             };
             self.expect(*body, &NodeType::Evaluation(Type::Bool))?;
             let Some(Payload::Evaluation {
@@ -3313,7 +3344,7 @@ impl Graph {
                 ..
             }) = &self.get(*body)?.payload
             else {
-                return Err("全域wholeが未生成のbody評価を消費した".into());
+                return Err(internal!("全域wholeが未生成のbody評価を消費した").into());
             };
             if self.get(*actual_body)?.arguments.first() != Some(expression)
                 || body_part.value
@@ -3323,7 +3354,7 @@ impl Graph {
                         *value
                     }
             {
-                return Err("全域wholeのbodyが別の元template・値を指す".into());
+                return Err(internal!("全域wholeのbodyが別の元template・値を指す").into());
             }
             let expected_applicability = if guard_source.is_some() && guard_value.is_none() {
                 "undetermined"
@@ -3331,7 +3362,7 @@ impl Graph {
                 "applicable"
             };
             if *applicability != expected_applicability || guard_value == Some(false) {
-                return Err("全域wholeの元guard適用性が違う".into());
+                return Err(internal!("全域wholeの元guard適用性が違う").into());
             }
             if let Some(residual) = body_part.residual {
                 let Some(Payload::Evaluation {
@@ -3339,7 +3370,7 @@ impl Graph {
                     ..
                 }) = &self.get(residual)?.payload
                 else {
-                    return Err("全域wholeの残差が完成したEvaluationでない".into());
+                    return Err(internal!("全域wholeの残差が完成したEvaluationでない").into());
                 };
                 let difference_node = self.get(*difference)?;
                 self.parameterized_transform_shape(difference_node)?;
@@ -3353,7 +3384,7 @@ impl Graph {
                     || difference_node.arguments[1..difference_node.arguments.len() - 2]
                         != node.arguments[1..domain_end]
                 {
-                    return Err("全域wholeの元差・型Domainが違う".into());
+                    return Err(internal!("全域wholeの元差・型Domainが違う").into());
                 }
                 expected_step = Some(*difference);
                 expected_arguments.extend([*body, residual]);
@@ -3381,7 +3412,9 @@ impl Graph {
                         body_value
                     };
                     if expected.is_none() || expected != self.boolean(*value)? {
-                        return Err("定数論理全域wholeの元body・guard・判断が違う".into());
+                        return Err(
+                            internal!("定数論理全域wholeの元body・guard・判断が違う").into()
+                        );
                     }
                 } else if value.is_none()
                     && !node.reasons.iter().any(|reason| {
@@ -3393,7 +3426,7 @@ impl Graph {
                         )
                     })
                 {
-                    return Err("全域wholeに正確な差も元式の未確定理由もない".into());
+                    return Err(internal!("全域wholeに正確な差も元式の未確定理由もない").into());
                 }
                 expected_step = finite_step;
                 expected_arguments.push(*body);
@@ -3401,7 +3434,7 @@ impl Graph {
         }
         if let Some(value) = value {
             let [normalization] = node.evidence.as_slice() else {
-                return Err("確定した全域wholeに一つの正規化証拠がない".into());
+                return Err(internal!("確定した全域wholeに一つの正規化証拠がない").into());
             };
             let proof = self.get(*normalization)?;
             if !self.universal_normalization_shape(proof)?
@@ -3409,7 +3442,7 @@ impl Graph {
                 || proof.scope != node.scope
                 || proof.support != node.support
             {
-                return Err("全域wholeの正規化証拠が元式・判断に合わない".into());
+                return Err(internal!("全域wholeの正規化証拠が元式・判断に合わない").into());
             }
             expected_arguments.extend([*value, *normalization]);
         } else if let [pair] = node.evidence.as_slice() {
@@ -3418,14 +3451,14 @@ impl Graph {
                 || proof.arguments.first() != Some(expression)
                 || proof.support != node.support
             {
-                return Err("未決の全域wholeが別template・支持の補完対を指す".into());
+                return Err(internal!("未決の全域wholeが別template・支持の補完対を指す").into());
             }
             expected_arguments.push(*pair);
         } else if !node.evidence.is_empty() {
-            return Err("未決の全域wholeに完成正規化証拠がある".into());
+            return Err(internal!("未決の全域wholeに完成正規化証拠がある").into());
         }
         if node.arguments != expected_arguments {
-            return Err("全域wholeの元Domain・実評価・判断の導出が違う".into());
+            return Err(internal!("全域wholeの元Domain・実評価・判断の導出が違う").into());
         }
         self.tick()?;
         Ok(true)
@@ -3443,7 +3476,7 @@ impl Graph {
             return Ok(None);
         };
         if matching.next().is_some() || witness.ordinal > 1 {
-            return Err("数値補完anchorの実case identityが重複・不正".into());
+            return Err(internal!("数値補完anchorの実case identityが重複・不正").into());
         }
         self.tick()?;
         if self
@@ -3459,7 +3492,7 @@ impl Graph {
             || self.context_at(anchor.0) != witness.caller
             || self.context_at(witness.template.0) != witness.caller
         {
-            return Err("数値補完anchorが別のcaller・caseへ移された".into());
+            return Err(internal!("数値補完anchorが別のcaller・caseへ移された").into());
         }
         let node = self.get(anchor)?;
         self.parameterized_transform_shape(node)?;
@@ -3470,7 +3503,7 @@ impl Graph {
             bindings,
         }) = &node.payload
         else {
-            return Err("数値補完anchorが元wholeの恒等代入でない".into());
+            return Err(internal!("数値補完anchorが元wholeの恒等代入でない").into());
         };
         let (original_parameters, original_bindings) = match &self.get(witness.template)?.payload {
             Some(Payload::Expression {
@@ -3483,7 +3516,7 @@ impl Graph {
                 bindings,
                 ..
             }) => (parameters, bindings),
-            _ => return Err("数値補完anchorの元templateがExpressionでない".into()),
+            _ => return Err(internal!("数値補完anchorの元templateがExpressionでない").into()),
         };
         self.universal_template_sources(witness.template)?;
         let mut source_scope = self.get(witness.template)?.scope.clone();
@@ -3496,7 +3529,9 @@ impl Graph {
             || !node.scope.source_compatible(&source_scope)
             || !matches!(node.rule, Rule::Construction("expression"))
         {
-            return Err("数値補完anchorが元の型・自由parameter・固定束縛を変えた".into());
+            return Err(
+                internal!("数値補完anchorが元の型・自由parameter・固定束縛を変えた").into(),
+            );
         }
         Ok(Some(witness))
     }
@@ -3518,12 +3553,12 @@ impl Graph {
             || !matches!(node.rule, Rule::Construction("evaluation"))
             || !node.evidence.is_empty()
         {
-            return Err("数値補完証拠値の元template・anchor・Scopeが違う".into());
+            return Err(internal!("数値補完証拠値の元template・anchor・Scopeが違う").into());
         }
         match &node.ty {
             NodeType::Value(Type::Bool) => {
                 if values.is_empty() {
-                    return Err("数値補完case判断に元slot値がない".into());
+                    return Err(internal!("数値補完case判断に元slot値がない").into());
                 }
                 for &value in values {
                     self.tick()?;
@@ -3531,13 +3566,13 @@ impl Graph {
                     if !super::numeric::is_numeric_type(&scalar.ty(), &self.control)?
                         || !matches!(self.get(value)?.arguments.as_slice(), [source, case, _] if source == template && case == anchor)
                     {
-                        return Err("数値補完case判断が別のslot代入を消費した".into());
+                        return Err(internal!("数値補完case判断が別のslot代入を消費した").into());
                     }
                 }
             }
             NodeType::Value(ty) if super::numeric::is_numeric_type(ty, &self.control)? => {
                 let [source] = values else {
-                    return Err("数値補完slot値に元field出現がない".into());
+                    return Err(internal!("数値補完slot値に元field出現がない").into());
                 };
                 self.expect(*source, &NodeType::Expression(ty.clone()))?;
                 if !matches!(
@@ -3545,10 +3580,10 @@ impl Graph {
                     Some(Payload::Expression { .. })
                 ) || self.get(*source)?.arguments.first() != Some(template)
                 {
-                    return Err("数値補完slot値の元fieldが別のtemplateを指す".into());
+                    return Err(internal!("数値補完slot値の元fieldが別のtemplateを指す").into());
                 }
             }
-            _ => return Err("数値補完証拠値の型が数値/Boolでない".into()),
+            _ => return Err(internal!("数値補完証拠値の型が数値/Boolでない").into()),
         }
         Ok(true)
     }
@@ -3584,10 +3619,10 @@ impl Graph {
             unreachable!()
         };
         let [part] = parts.as_slice() else {
-            return Err("数値補完case wholeの元part数が違う".into());
+            return Err(internal!("数値補完case wholeの元part数が違う").into());
         };
         let [body] = part.children.as_slice() else {
-            return Err("数値補完case wholeに元body評価がない".into());
+            return Err(internal!("数値補完case wholeに元body評価がない").into());
         };
         self.expect(*body, &NodeType::Evaluation(Type::Bool))?;
         let Some(Payload::Evaluation {
@@ -3595,18 +3630,20 @@ impl Graph {
             ..
         }) = &self.get(*body)?.payload
         else {
-            return Err("数値補完caseが未生成のbodyを消費した".into());
+            return Err(internal!("数値補完caseが未生成のbodyを消費した").into());
         };
-        let residual = part.residual.ok_or("数値補完caseに元残差評価がない")?;
+        let residual = part
+            .residual
+            .ok_or(internal!("数値補完caseに元残差評価がない"))?;
         let NodeType::Evaluation(Type::Z | Type::Q) = self.get(residual)?.ty else {
-            return Err("数値補完caseの元残差が数値Evaluationでない".into());
+            return Err(internal!("数値補完caseの元残差が数値Evaluationでない").into());
         };
         let Some(Payload::Evaluation {
             expression: difference,
             ..
         }) = &self.get(residual)?.payload
         else {
-            return Err("数値補完caseが未生成の残差を消費した".into());
+            return Err(internal!("数値補完caseが未生成の残差を消費した").into());
         };
         let difference_node = self.get(*difference)?;
         self.parameterized_transform_shape(difference_node)?;
@@ -3619,13 +3656,13 @@ impl Graph {
         ) || difference_node.arguments.first() != Some(&template)
             || self.get(*actual_body)?.arguments.first() != Some(&template)
         {
-            return Err("数値補完caseのbody・差が別のtemplateを指す".into());
+            return Err(internal!("数値補完caseのbody・差が別のtemplateを指す").into());
         }
-        let value = value.ok_or("数値補完caseのwhole判断が未完成")?;
+        let value = value.ok_or(internal!("数値補完caseのwhole判断が未完成"))?;
         self.value(value, &Type::Bool)?;
         let value_node = self.get(value)?;
         if !self.universal_witness_value_shape(value_node, self.context_at(value.0))? {
-            return Err("数値補完caseのwhole判断に型付きslot代入がない".into());
+            return Err(internal!("数値補完caseのwhole判断に型付きslot代入がない").into());
         }
         let [actual_template, actual_anchor, values @ ..] = value_node.arguments.as_slice() else {
             unreachable!()
@@ -3650,7 +3687,7 @@ impl Graph {
             || node.support != value_node.support
             || context != witness.caller
         {
-            return Err("数値補完caseの元型域・slot順・whole・Scopeが違う".into());
+            return Err(internal!("数値補完caseの元型域・slot順・whole・Scopeが違う").into());
         }
         Ok(true)
     }
@@ -3700,7 +3737,9 @@ impl Graph {
             || !fields.windows(2).all(|pair| pair[0] < pair[1])
             || values != first.iter().chain(second).copied().collect::<Vec<_>>()
         {
-            return Err("数値補完対の元template・ordinal・slot順・case結果が違う".into());
+            return Err(
+                internal!("数値補完対の元template・ordinal・slot順・case結果が違う").into(),
+            );
         }
         for (anchor, whole, values) in [
             (*first_anchor, *first_whole, first),
@@ -3709,7 +3748,7 @@ impl Graph {
             self.tick()?;
             let whole_node = self.get(whole)?;
             if !self.universal_witness_evaluation_shape(whole_node, self.context_at(whole.0))? {
-                return Err("数値補完対のwhole caseが未完成".into());
+                return Err(internal!("数値補完対のwhole caseが未完成").into());
             }
             let Some(Payload::Evaluation {
                 expression,
@@ -3726,7 +3765,7 @@ impl Graph {
                 || whole_node.scope != node.scope
                 || whole_node.support != node.support
             {
-                return Err("数値補完対が別caseのslot値・whole結果を指す".into());
+                return Err(internal!("数値補完対が別caseのslot値・whole結果を指す").into());
             }
         }
         let Some(Payload::Evaluation { value: left, .. }) = &self.get(*first_result)?.payload
@@ -3738,7 +3777,7 @@ impl Graph {
             unreachable!()
         };
         if self.boolean(*left)? == self.boolean(*right)? {
-            return Err("数値補完対の全称whole判断が同じ".into());
+            return Err(internal!("数値補完対の全称whole判断が同じ").into());
         }
         Ok(true)
     }
@@ -3757,10 +3796,10 @@ impl Graph {
                 && node.arguments.first() == Some(&body_source)
                 && body_evaluation.replace(NodeRef(index)).is_some()
             {
-                return Err("全域反例の元body Sourceに複数の実Evaluationがある".into());
+                return Err(internal!("全域反例の元body Sourceに複数の実Evaluationがある").into());
             }
         }
-        let root = body_evaluation.ok_or("全域反例の元body実Evaluationがない")?;
+        let root = body_evaluation.ok_or(internal!("全域反例の元body実Evaluationがない"))?;
         let mut pending = vec![root];
         let mut seen = BTreeSet::new();
         while let Some(reference) = pending.pop() {
@@ -3773,11 +3812,11 @@ impl Graph {
                 expression, parts, ..
             }) = &node.payload
             else {
-                return Err("全域反例の元body実子が完成Evaluationでない".into());
+                return Err(internal!("全域反例の元body実子が完成Evaluationでない").into());
             };
             if *expression == call_source && self.context_at(reference.0) == caller {
                 if node.arguments.first() != Some(&call_source) {
-                    return Err("全域反例の実call評価が元CallSourceを保持しない".into());
+                    return Err(internal!("全域反例の実call評価が元CallSourceを保持しない").into());
                 }
                 return Ok(true);
             }
@@ -3787,7 +3826,9 @@ impl Graph {
                     if child.0 >= reference.0
                         || !matches!(self.get(child)?.ty, NodeType::Evaluation(_))
                     {
-                        return Err("全域反例の元body実子DAGが既出Evaluationでない".into());
+                        return Err(
+                            internal!("全域反例の元body実子DAGが既出Evaluationでない").into()
+                        );
                     }
                     pending.push(child);
                 }
@@ -3808,12 +3849,12 @@ impl Graph {
         while let Some(index) = context.frame {
             self.tick()?;
             if !seen.insert(index) {
-                return Err("全域反例の実call frameが循環する".into());
+                return Err(internal!("全域反例の実call frameが循環する").into());
             }
             let frame = self
                 .frames
                 .get(index)
-                .ok_or("全域反例の実call frameがない")?;
+                .ok_or(internal!("全域反例の実call frameがない"))?;
             if self.context_at(frame.source.0) != frame.caller
                 || !self.get(source)?.arguments.contains(&frame.source)
                 || !matches!(
@@ -3821,7 +3862,9 @@ impl Graph {
                     Some(Payload::Expression { .. })
                 )
             {
-                return Err("全域反例のcallee Sourceが元実call producerを保持しない".into());
+                return Err(
+                    internal!("全域反例のcallee Sourceが元実call producerを保持しない").into(),
+                );
             }
             for &argument in &frame.arguments {
                 self.tick()?;
@@ -3830,7 +3873,7 @@ impl Graph {
                     Some(Payload::Evaluation { .. })
                 ) || !self.get(source)?.arguments.contains(&argument)
                 {
-                    return Err("全域反例の実call引数Evaluationが別のproducer".into());
+                    return Err(internal!("全域反例の実call引数Evaluationが別のproducer").into());
                 }
             }
             if frame.caller == target {
@@ -4028,7 +4071,7 @@ impl Graph {
                 }
                 let whole = self.get(*evaluation)?;
                 if !self.universal_evaluation_shape(whole)? {
-                    return Err("全域反例が元whole評価を指さない".into());
+                    return Err(internal!("全域反例が元whole評価を指さない").into());
                 }
                 let Some(Payload::Evaluation {
                     expression,
@@ -4052,7 +4095,7 @@ impl Graph {
                     || facts != &node.support
                     || node.support != whole.support
                 {
-                    return Err("全域反例の偽・要求真・正規化・支持が違う".into());
+                    return Err(internal!("全域反例の偽・要求真・正規化・支持が違う").into());
                 }
                 Ok(true)
             }
@@ -4074,10 +4117,12 @@ impl Graph {
                     unreachable!()
                 };
                 if self.scalar(*after)? != &Scalar::Bool(false) {
-                    return Err("具体全域反例のwholeが偽でない".into());
+                    return Err(internal!("具体全域反例のwholeが偽でない").into());
                 }
                 let [difference_step, body_substitution_step] = steps.as_slice() else {
-                    return Err("具体全域反例の正規化stepが元差・caller代入でない".into());
+                    return Err(
+                        internal!("具体全域反例の正規化stepが元差・caller代入でない").into(),
+                    );
                 };
                 let substitute = self.get(*substitution)?;
                 self.parameterized_transform_shape(substitute)?;
@@ -4088,7 +4133,7 @@ impl Graph {
                     ..
                 }) = &substitute.payload
                 else {
-                    return Err("具体全域反例に元bodyの同時代入がない".into());
+                    return Err(internal!("具体全域反例に元bodyの同時代入がない").into());
                 };
                 if substitute.ty != NodeType::Expression(Type::Bool)
                     || self.get(operands[0])?.arguments.first() != Some(source)
@@ -4097,10 +4142,10 @@ impl Graph {
                     || left != left_evaluation
                     || right != right_evaluation
                 {
-                    return Err("具体全域反例の元body・束縛・左右が違う".into());
+                    return Err(internal!("具体全域反例の元body・束縛・左右が違う").into());
                 }
                 let NodeType::Evaluation(ty @ (Type::Z | Type::Q)) = &self.get(*left)?.ty else {
-                    return Err("具体全域反例の左辺が数値Evaluationでない".into());
+                    return Err(internal!("具体全域反例の左辺が数値Evaluationでない").into());
                 };
                 self.expect(*right, &NodeType::Evaluation(ty.clone()))?;
                 let Some(Payload::ParameterizedTransform {
@@ -4108,7 +4153,7 @@ impl Graph {
                     ..
                 }) = &self.get(*difference_step)?.payload
                 else {
-                    return Err("具体全域反例の元差Expressionがない".into());
+                    return Err(internal!("具体全域反例の元差Expressionがない").into());
                 };
                 for (&evaluation, &original_side) in [*left, *right].iter().zip(original_sides) {
                     self.tick()?;
@@ -4118,7 +4163,7 @@ impl Graph {
                         ..
                     }) = &self.get(evaluation)?.payload
                     else {
-                        return Err("具体全域反例が未生成の左右評価を消費した".into());
+                        return Err(internal!("具体全域反例が未生成の左右評価を消費した").into());
                     };
                     let expression = self.get(*expression)?;
                     self.parameterized_transform_shape(expression)?;
@@ -4129,10 +4174,12 @@ impl Graph {
                         ..
                     }) = &expression.payload
                     else {
-                        return Err("具体全域反例が元左右へ再代入していない".into());
+                        return Err(internal!("具体全域反例が元左右へ再代入していない").into());
                     };
                     if actual_sides != &[original_side] || actual != evaluation_bindings {
-                        return Err("具体全域反例の左右が別の元式・同時代入を使う".into());
+                        return Err(
+                            internal!("具体全域反例の左右が別の元式・同時代入を使う").into()
+                        );
                     }
                     if self.context_at(original_side.0) == self.context_at(operands[0].0) {
                         if actual != bindings
@@ -4143,20 +4190,22 @@ impl Graph {
                                 actual,
                             )?
                         {
-                            return Err(
+                            return Err(internal!(
                                 "直接Eqの全域反例が局所型Domainによらず左右の同時代入を変えた"
-                                    .into(),
-                            );
+                            )
+                            .into());
                         }
                     } else if !self.universal_call_descends_from(original_side, operands[0])? {
-                        return Err("具体全域反例のcalleeが元caller代入に属さない".into());
+                        return Err(
+                            internal!("具体全域反例のcalleeが元caller代入に属さない").into()
+                        );
                     }
                 }
                 if node.scope != self.get(*normalization)?.scope
                     || node.support != self.get(*normalization)?.support
                     || facts != &node.support
                 {
-                    return Err("具体全域反例のScope・支持が違う".into());
+                    return Err(internal!("具体全域反例のScope・支持が違う").into());
                 }
                 Ok(true)
             }
@@ -4173,10 +4222,10 @@ impl Graph {
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
         let NodeType::Evaluation(ty) = &self.get(left)?.ty else {
-            return Err("アフィン証拠の左辺がEvaluationでない".into());
+            return Err(internal!("アフィン証拠の左辺がEvaluationでない").into());
         };
         if !super::numeric::is_numeric_type(ty, &self.control)? {
-            return Err("アフィン証拠の元型が数値型でない".into());
+            return Err(internal!("アフィン証拠の元型が数値型でない").into());
         }
         self.expect(right, &NodeType::Evaluation(ty.clone()))?;
         self.value(residual, ty)?;
@@ -4188,11 +4237,13 @@ impl Graph {
             ..
         }) = &self.get(evaluation)?.payload
         else {
-            return Err("アフィン証拠の元比較が確定Evaluationでない".into());
+            return Err(internal!("アフィン証拠の元比較が確定Evaluationでない").into());
         };
-        let part = parts.last().ok_or("アフィン比較の元partがない")?;
+        let part = parts
+            .last()
+            .ok_or(internal!("アフィン比較の元partがない"))?;
         if part.children != [left, right] || part.residual != Some(residual) {
-            return Err("アフィン比較の実左右・残差が違う".into());
+            return Err(internal!("アフィン比較の実左右・残差が違う").into());
         }
         let result = self.get(*value)?;
         self.value(*value, &Type::Bool)?;
@@ -4205,7 +4256,7 @@ impl Graph {
             normalization,
         ] = result.arguments.as_slice()
         else {
-            return Err("アフィン比較値の導出入力が違う".into());
+            return Err(internal!("アフィン比較値の導出入力が違う").into());
         };
         if source != expression
             || *lhs != left
@@ -4213,14 +4264,14 @@ impl Graph {
             || *supplied_residual != residual
             || result.evidence != [*normalization]
         {
-            return Err("アフィン比較値と元評価・正規化証拠が違う".into());
+            return Err(internal!("アフィン比較値と元評価・正規化証拠が違う").into());
         }
         let evidence = self.get(*normalization)?;
         self.expect(*normalization, &NodeType::Evidence)?;
         self.normalization_shape(evidence)?;
         if !matches!(&evidence.payload, Some(Payload::Normalization { before, after, .. }) if before == difference && *after == residual)
         {
-            return Err("アフィン比較の差と正規化証拠が違う".into());
+            return Err(internal!("アフィン比較の差と正規化証拠が違う").into());
         }
         self.tick()?;
         Ok(())
@@ -4237,7 +4288,7 @@ impl Graph {
         let request = self
             .requests
             .get(self.active.request)
-            .ok_or("Path束縛の要求がない")?;
+            .ok_or(internal!("Path束縛の要求がない"))?;
         let mut roots = vec![];
         for (_, answer) in &self.checked_answers {
             self.tick()?;
@@ -4289,7 +4340,7 @@ impl Graph {
         for (index, quantifier) in node.scope.quantifiers.iter().enumerate() {
             self.tick()?;
             if node.scope.quantifiers[..index].contains(quantifier) {
-                return Err("Scopeに同じ実量化descriptorが重複する".into());
+                return Err(internal!("Scopeに同じ実量化descriptorが重複する").into());
             }
             if let Some(domain) = quantifier.domain {
                 self.expect(domain, &NodeType::Domain)?;
@@ -4298,28 +4349,30 @@ impl Graph {
                     Some(Payload::Construction(value)) => match &value.data {
                         super::construction_result::ConstructionData::PolynomialLaw(data) => data
                             .scope_domain_type()
-                            .ok_or("Scopeの多項式読取り参照がDomainでない")?,
+                            .ok_or(internal!("Scopeの多項式読取り参照がDomainでない"))?,
                         super::construction_result::ConstructionData::ViewFamily(data) => data
                             .scope_domain_type()
-                            .ok_or("Scopeの有限view参照がDomainでない")?,
+                            .ok_or(internal!("Scopeの有限view参照がDomainでない"))?,
                         super::construction_result::ConstructionData::Local(data) => data
                             .scope_domain_type()
-                            .ok_or("Scopeの局所参照が量化Domainでない")?,
+                            .ok_or(internal!("Scopeの局所参照が量化Domainでない"))?,
                         super::construction_result::ConstructionData::ObjectMap(data) => data
                             .scope_domain_type()
-                            .ok_or("Scopeの写像参照が量化Domainでない")?,
+                            .ok_or(internal!("Scopeの写像参照が量化Domainでない"))?,
                         super::construction_result::ConstructionData::Comparison(
                             super::public_compare::Part::RelationDerived { data, .. },
                         ) => match data.as_ref() {
                             super::public_compare::relations::Data::Domain { ty, .. } => ty,
-                            _ => return Err("Scopeのnative参照が有限Domainでない".into()),
+                            _ => {
+                                return Err(internal!("Scopeのnative参照が有限Domainでない").into());
+                            }
                         },
-                        _ => return Err("Scopeのnative量化Domainが違う".into()),
+                        _ => return Err(internal!("Scopeのnative量化Domainが違う").into()),
                     },
-                    _ => return Err("Scopeが未生成の量化Domainを消費した".into()),
+                    _ => return Err(internal!("Scopeが未生成の量化Domainを消費した").into()),
                 };
                 if domain_type != &quantifier.ty {
-                    return Err("Scopeの量化型とDomain型が違う".into());
+                    return Err(internal!("Scopeの量化型とDomain型が違う").into());
                 }
             }
         }
@@ -4336,10 +4389,10 @@ impl Graph {
             }
             (NodeType::Domain, Some(Payload::TypeDomain { .. })) => {
                 if !node.scope.assignments {
-                    return Err("型全域Domainが元全代入域でない".into());
+                    return Err(internal!("型全域Domainが元全代入域でない").into());
                 }
                 let [source] = node.arguments.as_slice() else {
-                    return Err("型全域Domainに元Sourceがない".into());
+                    return Err(internal!("型全域Domainに元Sourceがない").into());
                 };
                 self.universal_template_sources(*source)?;
             }
@@ -4350,7 +4403,7 @@ impl Graph {
                     self.value(*element, ty)?;
                     let scalar = self.scalar(*element)?;
                     if super::data::contains(&values, scalar, &self.control)? {
-                        return Err("Domainに意味上重複する要素がある".into());
+                        return Err(internal!("Domainに意味上重複する要素がある").into());
                     }
                     values.push(scalar.clone());
                 }
@@ -4365,10 +4418,10 @@ impl Graph {
             ) => {
                 self.expect(*domain, &NodeType::Domain)?;
                 let Some(Payload::Domain { elements, .. }) = &self.get(*domain)?.payload else {
-                    return Err("全検査域が有限域でない".into());
+                    return Err(internal!("全検査域が有限域でない").into());
                 };
                 if *checked != elements.len() || instances.len() != elements.len() {
-                    return Err("全検査の件数と域が違う".into());
+                    return Err(internal!("全検査の件数と域が違う").into());
                 }
                 for instance in instances {
                     self.tick()?;
@@ -4379,7 +4432,7 @@ impl Graph {
                         )
                     }) {
                         if !matches!(self.get(*instance)?.ty, NodeType::Evaluation(_)) {
-                            return Err("補完coverageがEvaluationでない".into());
+                            return Err(internal!("補完coverageがEvaluationでない").into());
                         }
                     } else {
                         self.expect(*instance, &NodeType::Evaluation(Type::Bool))?;
@@ -4419,11 +4472,11 @@ impl Graph {
                 }),
             ) => {
                 if !matches!(operation, TransformOp::Not | TransformOp::And) {
-                    return Err("Boolの既存変換がnot/andでない".into());
+                    return Err(internal!("Boolの既存変換がnot/andでない").into());
                 }
                 self.bindings(bindings)?;
                 if operands.len() != operation.arity() {
-                    return Err("Bool 変換の引数数が違う".into());
+                    return Err(internal!("Bool 変換の引数数が違う").into());
                 }
                 for &operand in operands {
                     self.tick()?;
@@ -4444,11 +4497,11 @@ impl Graph {
             ) => {
                 self.expect(*expression, &NodeType::Expression(t.clone()))?;
                 if node.scope.assignments && self.get(*expression)?.payload.is_none() {
-                    return Err("全域評価が未生成のExpressionを消費した".into());
+                    return Err(internal!("全域評価が未生成のExpressionを消費した").into());
                 }
                 self.bindings(bindings)?;
                 if !["applicable", "not_applicable", "undetermined"].contains(applicability) {
-                    return Err("適用表示が不正".into());
+                    return Err(internal!("適用表示が不正").into());
                 }
                 if let Some(v) = value {
                     self.value(*v, t)?;
@@ -4466,13 +4519,15 @@ impl Graph {
                                     Some(Payload::Evaluation { .. })
                                 )
                             {
-                                return Err("全域残差が完成した数値Evaluationでない".into());
+                                return Err(
+                                    internal!("全域残差が完成した数値Evaluationでない").into()
+                                );
                             }
                             self.expect(r, &NodeType::Evaluation(ty.clone()))?;
                         } else {
                             let value = self.scalar(r)?;
                             if !super::numeric::is_numeric_type(&value.ty(), &self.control)? {
-                                return Err("残差が数値型でない".into());
+                                return Err(internal!("残差が数値型でない").into());
                             }
                             super::numeric::check(value, &self.control)?;
                         }
@@ -4480,12 +4535,14 @@ impl Graph {
                     for &c in &p.children {
                         self.tick()?;
                         if !matches!(self.get(c)?.ty, NodeType::Evaluation(_)) {
-                            return Err("子が Evaluation でない".into());
+                            return Err(internal!("子が Evaluation でない").into());
                         }
                         if node.scope.assignments
                             && !matches!(&self.get(c)?.payload, Some(Payload::Evaluation { .. }))
                         {
-                            return Err("全域評価が未生成の子Evaluationを消費した".into());
+                            return Err(
+                                internal!("全域評価が未生成の子Evaluationを消費した").into()
+                            );
                         }
                         self.tick()?;
                     }
@@ -4542,21 +4599,21 @@ impl Graph {
                 self.value(*left, &ty)?;
                 self.value(*right, &ty)?;
                 if self.scalar(*left)? == self.scalar(*right)? {
-                    return Err("Path条件反例の両辺が等しい".into());
+                    return Err(internal!("Path条件反例の両辺が等しい").into());
                 }
             }
             (NodeType::Proposition, Some(Payload::MapDomainCondition { left, right })) => {
                 let Type::Set(ref element) = self.scalar(*left)?.ty() else {
-                    return Err("Map域条件の左辺がSetでない".into());
+                    return Err(internal!("Map域条件の左辺がSetでない").into());
                 };
                 if !matches!(element.as_ref(), Type::Ref(_)) {
-                    return Err("Map域条件の要素型が参照でない".into());
+                    return Err(internal!("Map域条件の要素型が参照でない").into());
                 }
                 self.expect(*right, &self.get(*left)?.ty)?;
             }
             (NodeType::Proposition, Some(Payload::OwnedCallCondition { left, right })) => {
                 if !Self::owned_call_operand_type(&self.scalar(*left)?.ty()) {
-                    return Err("Owned条件がowner参照・snapshot・Map域でない".into());
+                    return Err(internal!("Owned条件がowner参照・snapshot・Map域でない").into());
                 }
                 self.expect(*right, &self.get(*left)?.ty)?;
             }
@@ -4575,7 +4632,7 @@ impl Graph {
                 }),
             ) => {
                 let [own, le, re, l, r, selected, normal] = node.arguments.as_slice() else {
-                    return Err("Term正規化の元実辺数が違う".into());
+                    return Err(internal!("Term正規化の元実辺数が違う").into());
                 };
                 if source != own
                     || left != l
@@ -4589,7 +4646,7 @@ impl Graph {
                     || !matches!(self.get(*le)?.ty, NodeType::Evaluation(Type::Term(..)))
                     || !matches!(self.get(*normal)?.ty, NodeType::Value(_))
                 {
-                    return Err("Term正規化の元型・左右が違う".into());
+                    return Err(internal!("Term正規化の元型・左右が違う").into());
                 }
                 self.expect(*own, &NodeType::Expression(Type::Bool))?;
             }
@@ -4606,7 +4663,7 @@ impl Graph {
                 if self.get(*left)?.ty != self.get(*right)?.ty
                     || !matches!(self.get(*left)?.ty, NodeType::Value(_))
                 {
-                    return Err("Term相違点の左右結果型が違う".into());
+                    return Err(internal!("Term相違点の左右結果型が違う").into());
                 }
             }
             (NodeType::Evidence, Some(Payload::Normalization { .. })) => {
@@ -4626,22 +4683,22 @@ impl Graph {
                     || matches!(self.get(*rhs)?.ty, NodeType::Evaluation(_))
                 {
                     let [actual_instance, evaluation] = node.arguments.as_slice() else {
-                        return Err("アフィン評価証拠の元instance・評価がない".into());
+                        return Err(internal!("アフィン評価証拠の元instance・評価がない").into());
                     };
                     if actual_instance != instance {
-                        return Err("アフィン評価証拠のinstanceが違う".into());
+                        return Err(internal!("アフィン評価証拠のinstanceが違う").into());
                     }
                     self.affine_comparison_shape(
                         *evaluation,
                         *lhs,
                         *rhs,
-                        residual.ok_or("アフィン評価証拠に残差がない")?,
+                        residual.ok_or(internal!("アフィン評価証拠に残差がない"))?,
                     )?;
                 } else {
                     let l = self.scalar(*lhs)?;
                     let r = self.scalar(*rhs)?;
                     if l.ty() != r.ty() {
-                        return Err("証拠両辺の型不一致".into());
+                        return Err(internal!("証拠両辺の型不一致").into());
                     }
                     if let Some(d) = residual {
                         let expected = super::numeric::binary(
@@ -4651,7 +4708,7 @@ impl Graph {
                             &self.control,
                         )?;
                         if self.scalar(*d)? != &expected {
-                            return Err("型付き残差が元の両辺に合わない".into());
+                            return Err(internal!("型付き残差が元の両辺に合わない").into());
                         }
                     }
                 }
@@ -4673,13 +4730,13 @@ impl Graph {
                         f.field.is_none() || f.atom.is_some() || fields[..i].contains(f)
                     })
                 {
-                    return Err("補完対の元slot列が不正".into());
+                    return Err(internal!("補完対の元slot列が不正").into());
                 }
                 for (&left, &right) in first.iter().zip(second) {
                     self.tick()?;
                     let ty = self.scalar(left)?.ty();
                     if self.scalar(right)?.ty() != ty {
-                        return Err("補完対のslot代入型が左右で違う".into());
+                        return Err(internal!("補完対のslot代入型が左右で違う").into());
                     }
                     self.value(left, &ty)?;
                     self.value(right, &ty)?;
@@ -4687,7 +4744,7 @@ impl Graph {
                 if !matches!(&self.get(*first_result)?.ty, NodeType::Evaluation(_))
                     || self.get(*first_result)?.ty != self.get(*second_result)?.ty
                 {
-                    return Err("補完対の結果型が違う".into());
+                    return Err(internal!("補完対の結果型が違う").into());
                 }
                 if !self.universal_completion_pair_shape(&node, self.active)?
                     && node.scope.assignments
@@ -4698,7 +4755,7 @@ impl Graph {
                         )
                     })
                 {
-                    return Err("数値補完対に元whole・slot代入の専用導出がない".into());
+                    return Err(internal!("数値補完対に元whole・slot代入の専用導出がない").into());
                 }
             }
             (
@@ -4721,37 +4778,37 @@ impl Graph {
                             && self.get(*evaluation)?.ty == NodeType::Evaluation(Type::Bool))
                         || self.quantifier_counterexample_shape(&node)?)
                 {
-                    return Err("全域反例に元whole正規化の専用導出がない".into());
+                    return Err(internal!("全域反例に元whole正規化の専用導出がない").into());
                 } else if matches!(self.get(*left)?.ty, NodeType::Evaluation(_))
                     || matches!(self.get(*right)?.ty, NodeType::Evaluation(_))
                 {
                     let [instance, evaluation] = node.arguments.as_slice() else {
-                        return Err("アフィン反例の元instance・評価がない".into());
+                        return Err(internal!("アフィン反例の元instance・評価がない").into());
                     };
                     self.expect(*instance, &NodeType::LawInstance)?;
                     let Some(Payload::Evaluation { parts, value, .. }) =
                         &self.get(*evaluation)?.payload
                     else {
-                        return Err("アフィン反例の元比較Evaluationがない".into());
+                        return Err(internal!("アフィン反例の元比較Evaluationがない").into());
                     };
                     let residual = parts
                         .last()
                         .and_then(|part| part.residual)
-                        .ok_or("アフィン反例に元残差がない")?;
+                        .ok_or(internal!("アフィン反例に元残差がない"))?;
                     self.affine_comparison_shape(*evaluation, *left, *right, residual)?;
                     if self.boolean(*value)? != Some(false) {
-                        return Err("アフィン反例の元比較がfalseでない".into());
+                        return Err(internal!("アフィン反例の元比較がfalseでない").into());
                     }
                 } else if self.scalar(*left)?.ty() != self.scalar(*right)?.ty() {
-                    return Err("反例の型不一致".into());
+                    return Err(internal!("反例の型不一致").into());
                 }
             }
             (_, None) if !node.reasons.is_empty() => {}
-            _ => return Err("node の型と payload が合わない".into()),
+            _ => return Err(internal!("node の型と payload が合わない").into()),
         }
         if let Some(j) = &node.judgment {
             if node.ty != NodeType::Proposition {
-                return Err("Proposition 以外の判断".into());
+                return Err(internal!("Proposition 以外の判断").into());
             }
             for &r in &j.evidence {
                 self.tick()?;
@@ -4760,7 +4817,7 @@ impl Graph {
             }
             self.reasons(&j.reasons)?;
             if j.status == Decision::Refuted && j.evidence.is_empty() {
-                return Err("反証の証拠がない".into());
+                return Err(internal!("反証の証拠がない").into());
             }
         }
         if node.ty == NodeType::Proposition
@@ -4791,22 +4848,22 @@ impl Graph {
             match name.as_str() {
                 "value" => {
                     if check {
-                        return Err("check に value 出力がある".into());
+                        return Err(internal!("check に value 出力がある").into());
                     }
                     self.scalar(r)?;
                 }
                 "evaluation" => {
                     if !matches!(self.get(r)?.ty, NodeType::Evaluation(_)) {
-                        return Err("出力 evaluation の型不一致".into());
+                        return Err(internal!("出力 evaluation の型不一致").into());
                     }
                 }
                 "proposition" => {
                     if !check {
-                        return Err("evaluate に proposition 出力がある".into());
+                        return Err(internal!("evaluate に proposition 出力がある").into());
                     }
                     self.expect(r, &NodeType::Proposition)?;
                 }
-                _ => return Err("未定義の出力欄".into()),
+                _ => return Err(internal!("未定義の出力欄").into()),
             }
             self.tick()?;
         }
@@ -4823,13 +4880,16 @@ impl Graph {
                 })
             })
         {
-            return Err("claim のない Answer に命題証拠がある".into());
+            return Err(internal!("claim のない Answer に命題証拠がある").into());
         }
         if !check && (a.claim.is_some() || a.status == Decision::Refuted) {
-            return Err("evaluate に命題の判断がある".into());
+            return Err(internal!("evaluate に命題の判断がある").into());
         }
         if let Some(&value) = a.outputs.get("value") {
-            let evaluation = a.outputs.get("evaluation").ok_or("値の元評価がない")?;
+            let evaluation = a
+                .outputs
+                .get("evaluation")
+                .ok_or(internal!("値の元評価がない"))?;
             let node = self.get(*evaluation)?;
             let (
                 NodeType::Evaluation(ty),
@@ -4839,44 +4899,44 @@ impl Graph {
                 }),
             ) = (&node.ty, &node.payload)
             else {
-                return Err("値の元評価に確定値がない".into());
+                return Err(internal!("値の元評価に確定値がない").into());
             };
             self.value(value, ty)?;
             if value != *expected {
-                return Err("Answer の値が返却評価の値と違う".into());
+                return Err(internal!("Answer の値が返却評価の値と違う").into());
             }
         } else if !check && a.status == Decision::Established {
-            return Err("確定 evaluate に値がない".into());
+            return Err(internal!("確定 evaluate に値がない").into());
         }
         if let Some(evaluation) = a.outputs.get("evaluation")
             && self.get(*evaluation)?.scope != a.scope
         {
-            return Err("Answer の範囲が返却評価と違う".into());
+            return Err(internal!("Answer の範囲が返却評価と違う").into());
         }
         if let Some(c) = a.claim {
             self.expect(c, &NodeType::Proposition)?;
             if self.get(c)?.scope != a.scope {
-                return Err("Answer と claim の範囲が違う".into());
+                return Err(internal!("Answer と claim の範囲が違う").into());
             }
             let Some(j) = &self.get(c)?.judgment else {
-                return Err("claim に判断がない".into());
+                return Err(internal!("claim に判断がない").into());
             };
             self.validate_proposition_evidence(self.get(c)?)?;
             if a.evidence != j.evidence || a.evidence != self.get(c)?.evidence {
-                return Err("Answer の証拠が claim・判断と違う".into());
+                return Err(internal!("Answer の証拠が claim・判断と違う").into());
             }
             if j.status != a.status || a.outputs.get("proposition") != Some(&c) {
-                return Err("Answer と claim が不一致".into());
+                return Err(internal!("Answer と claim が不一致").into());
             }
             if a.outputs.get("evaluation") != self.get(c)?.arguments.get(1) {
-                return Err("Answer と claim の元評価が違う".into());
+                return Err(internal!("Answer と claim の元評価が違う").into());
             }
         }
         if check && a.status != Decision::Undetermined && a.claim.is_none() {
-            return Err("確定 check に claim がない".into());
+            return Err(internal!("確定 check に claim がない").into());
         }
         if a.status == Decision::Refuted && a.evidence.is_empty() {
-            return Err("反証 Answer に証拠がない".into());
+            return Err(internal!("反証 Answer に証拠がない").into());
         }
         Ok(())
     }

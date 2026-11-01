@@ -33,7 +33,7 @@ impl Environment<'_> {
                 continue;
             }
             if found.replace(NodeRef(index)).is_some() {
-                return Err("全域pointwiseの元出現・Contextが一意でない".into());
+                return Err(internal!("全域pointwiseの元出現・Contextが一意でない").into());
             }
         }
         Ok(found)
@@ -85,12 +85,12 @@ impl Environment<'_> {
             return Ok(None);
         }
         let [part] = parts.as_slice() else {
-            return Err("全域有限量化の元partが一つでない".into());
+            return Err(internal!("全域有限量化の元partが一つでない").into());
         };
         let cases = part
             .children
             .get(usize::from(spec.domain.is_some())..)
-            .ok_or("全域有限量化のcollection辺がない")?;
+            .ok_or(internal!("全域有限量化のcollection辺がない"))?;
         let mut decisions = Vec::new();
         for &body in cases {
             self.tick()?;

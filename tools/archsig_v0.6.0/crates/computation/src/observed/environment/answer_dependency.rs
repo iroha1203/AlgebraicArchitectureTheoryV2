@@ -23,7 +23,7 @@ impl Environment<'_> {
         let originals = self
             .indexes
             .original_requests
-            .ok_or("依存停止の元Request列がない")?;
+            .ok_or(internal!("依存停止の元Request列がない"))?;
         let mut current = None;
         for (index, original) in originals.iter().enumerate() {
             self.tick()?;
@@ -31,18 +31,22 @@ impl Environment<'_> {
                 current = Some(index);
             }
         }
-        let current = current.ok_or("依存停止のRequestが元入力にない")?;
+        let current = current.ok_or(internal!("依存停止のRequestが元入力にない"))?;
         let declaration = self
             .indexes
             .inputs
             .law()
             .declarations()
-            .get(request.declaration().ok_or("元要求に宣言がない")?)
-            .ok_or("依存停止の元宣言がない")?;
+            .get(
+                request
+                    .declaration()
+                    .ok_or(internal!("元要求に宣言がない"))?,
+            )
+            .ok_or(internal!("依存停止の元宣言がない"))?;
         let params = match &declaration.signature {
             archsig_input::law::model::Signature::View { params, .. }
             | archsig_input::law::model::Signature::Law { params, .. } => params,
-            _ => return Err("依存停止の元宣言がview/Lawでない".into()),
+            _ => return Err(internal!("依存停止の元宣言がview/Lawでない").into()),
         };
         let mut reasons = native
             .as_ref()
@@ -78,7 +82,7 @@ impl Environment<'_> {
             let parameter = params
                 .iter()
                 .find(|parameter| argument.name == format!("bind.{}", parameter.name))
-                .ok_or("依存停止の元parameterがない")?;
+                .ok_or(internal!("依存停止の元parameterがない"))?;
             if environment {
                 // 元評価の値が未決でも、検査済み環境の公開fieldは独立に使える。
                 // 不適合fieldは後段の射影条件で説明し、未生成の場合だけ依存を止める。
@@ -175,7 +179,7 @@ impl Environment<'_> {
             let evaluation = *producer
                 .outputs
                 .get("evaluation")
-                .ok_or("未確認所属の元producer評価がない")?;
+                .ok_or(internal!("未確認所属の元producer評価がない"))?;
             let source = self.evaluation(graph, evaluation)?.0;
             for fact in plan.checks.missing {
                 self.tick()?;

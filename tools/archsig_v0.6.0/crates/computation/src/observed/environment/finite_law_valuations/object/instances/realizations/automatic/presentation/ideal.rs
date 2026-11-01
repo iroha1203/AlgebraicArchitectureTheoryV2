@@ -28,7 +28,7 @@ fn construct<'a, 'b>(
         FiniteObjectIdealKind::Witness { equation } => {
             base.equations()
                 .get(equation)
-                .ok_or("witness idealの元成分が範囲外")?;
+                .ok_or(internal!("witness idealの元成分が範囲外"))?;
             equations.push(equation);
         }
         FiniteObjectIdealKind::Obstruction => {
@@ -48,7 +48,7 @@ fn construct<'a, 'b>(
         for value in function.values() {
             tick(c)?;
             if !value.is_zero() && !value.is_one() {
-                return Err("有限idealの元νが0/1指示値でない".into());
+                return Err(internal!("有限idealの元νが0/1指示値でない").into());
             }
         }
     }
@@ -62,7 +62,7 @@ fn construct<'a, 'b>(
                 .nu()
                 .values()
                 .get(point)
-                .ok_or("有限idealの元D座標がない")?
+                .ok_or(internal!("有限idealの元D座標がない"))?
                 .is_zero();
         }
         if zero {
@@ -70,7 +70,7 @@ fn construct<'a, 'b>(
         }
     }
     if kind == FiniteObjectIdealKind::Obstruction && zero_points != base.required_zero() {
-        return Err("required idealの零座標が元表示と違う".into());
+        return Err(internal!("required idealの零座標が元表示と違う").into());
     }
     tick(c)?;
     Ok(FiniteObjectLawIdeal {
@@ -125,7 +125,7 @@ impl FiniteObjectLawIdeal<'_, '_> {
     fn check(&self, c: &Control) -> Result<(), ValidationFailure> {
         let expected = construct(self.base, self.kind, c)?;
         if self.equations != expected.equations || self.zero_points != expected.zero_points {
-            return Err("有限idealの元生成元・全零座標が違う".into());
+            return Err(internal!("有限idealの元生成元・全零座標が違う").into());
         }
         tick(c)
     }
@@ -146,7 +146,7 @@ impl FiniteObjectLawIdeal<'_, '_> {
     ) -> Result<(), ValidationFailure> {
         tick(c)?;
         if !std::ptr::eq(self.base, base) || self.kind != kind {
-            return Err("有限idealが消費先の表示・種別・成分と違う".into());
+            return Err(internal!("有限idealが消費先の表示・種別・成分と違う").into());
         }
         base.recheck(family, object, inputs, readings, c)?;
         self.check(c)

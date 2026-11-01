@@ -21,8 +21,9 @@ fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectLawCircuitTransport)
         .map_err(Into::into)
 }
+#[track_caller]
 fn bad(s: &str) -> ConstructionFailure {
-    ConstructionFailure::Inconsistent(s.into())
+    ConstructionFailure::Inconsistent(internal!(s))
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum LawCircuitTransportRefutation {

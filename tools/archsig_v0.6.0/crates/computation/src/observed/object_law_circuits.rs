@@ -17,8 +17,9 @@ use archsig_common::control::{Checkpoint, Control};
 use archsig_common::types::Type;
 use archsig_input::input::CheckedInputs;
 use std::sync::Arc;
+#[track_caller]
 fn bad(s: &str) -> ConstructionFailure {
-    ConstructionFailure::Inconsistent(s.into())
+    ConstructionFailure::Inconsistent(internal!(s))
 }
 fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectLawCircuits)
@@ -27,7 +28,9 @@ fn tick(c: &Control) -> Result<(), ConstructionFailure> {
 fn invalid(f: ValidationFailure) -> ConstructionFailure {
     match f {
         ValidationFailure::Stop(s) => s.into(),
-        f => bad(&format!("circuitの数値成分: {f:?}")),
+        f => ConstructionFailure::Inconsistent(
+            f.internal_context(format!("circuitの数値成分: {f:?}")),
+        ),
     }
 }
 /// 既存detectorの有限code。Exactは実引数tupleの有限選言。
@@ -385,5 +388,32 @@ pub fn object_law_circuits(
             cause,
             partial: Box::new(out),
         }),
+    }
+}
+
+#[cfg(test)]
+mod internal_error_tests {
+    use super::*;
+
+    #[test]
+    fn contextual_circuit_failure_keeps_origin_and_existing_message() {
+        let original = internal!("元の数値エラー");
+        let location = original.location();
+        let converted = invalid(ValidationFailure::Internal(original));
+        let ConstructionFailure::Inconsistent(ref error) = converted else {
+            panic!("内部エラー以外へ変換された")
+        };
+        assert_eq!(error.location(), location);
+        assert_eq!(
+            error.message(),
+            "circuitの数値成分: Internal(\"元の数値エラー\")"
+        );
+        let wrapped =
+            crate::observed::object_law_transport::ObjectLawTransportFailure::Construction(
+                converted,
+            );
+        let context = wrapped.internal_context("law context".into());
+        assert_eq!(context.location(), location);
+        assert_eq!(context.message(), "law context");
     }
 }

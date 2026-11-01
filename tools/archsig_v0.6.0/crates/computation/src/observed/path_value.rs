@@ -167,34 +167,34 @@ impl PathValue {
             .into_iter()
             .any(|part| part.is_empty())
         {
-            return Err("恒等 Path の reading・端点の名前が空".into());
+            return Err(internal!("恒等 Path の reading・端点の名前が空").into());
         }
         if let Some(step) = &self.step {
             if !matches!(&step.generator,Scalar::Subject{snapshot,subject,entity}if !snapshot.is_empty()&&!subject.is_empty()&&!entity.is_empty())
                 || !matches!(&step.target,Scalar::Subject{snapshot,subject,entity}if !snapshot.is_empty()&&!subject.is_empty()&&!entity.is_empty())
             {
-                return Err("生成Pathの原始参照が空・異型".into());
+                return Err(internal!("生成Pathの原始参照が空・異型").into());
             }
             for generator in &step.word_tail {
                 tick(control)?;
                 if !matches!(generator,Scalar::Subject{snapshot,subject,entity}if !snapshot.is_empty()&&!subject.is_empty()&&!entity.is_empty())
                 {
-                    return Err("Path語の生成元が原始参照でない".into());
+                    return Err(internal!("Path語の生成元が原始参照でない").into());
                 }
             }
             if step.carrier.len() != step.images.len() {
-                return Err("Pathのcarrierと全域像の件数が違う".into());
+                return Err(internal!("Pathのcarrierと全域像の件数が違う").into());
             }
             for (i, x) in step.carrier.iter().enumerate() {
                 tick(control)?;
                 if i > 0 && step.carrier[i - 1] >= *x {
-                    return Err("Pathのcarrierが重複・未整列".into());
+                    return Err(internal!("Pathのcarrierが重複・未整列").into());
                 }
             }
             for image in &step.images {
                 tick(control)?;
                 if step.carrier.binary_search(image).is_err() {
-                    return Err("Pathの像が共通carrierにない".into());
+                    return Err(internal!("Pathの像が共通carrierにない").into());
                 }
             }
         }
@@ -273,7 +273,9 @@ pub(super) fn reference(
         if !visited.insert(index) {
             continue;
         }
-        let node = prior.get(index).ok_or("値表示の依存 Ref が既出でない")?;
+        let node = prior
+            .get(index)
+            .ok_or(internal!("値表示の依存 Ref が既出でない"))?;
         let actual = match &node.payload {
             Some(Payload::Scalar(actual)) => Some(actual),
             Some(Payload::Construction(value)) => value.scalar(),
@@ -286,14 +288,14 @@ pub(super) fn reference(
         for child in &node.arguments {
             tick(control)?;
             if child.0 >= index {
-                return Err("値表示の依存 DAG に前方参照がある".into());
+                return Err(internal!("値表示の依存 DAG に前方参照がある").into());
             }
             pending.push(*child);
             tick(control)?;
         }
         tick(control)?;
     }
-    Err("非原始の値表示に対応する型付き既出 node がない".into())
+    Err(internal!("非原始の値表示に対応する型付き既出 node がない").into())
 }
 
 pub(super) fn check_refs(
@@ -357,7 +359,7 @@ pub(super) fn wire(
         Scalar::Option {
             value: Some(value), ..
         } => Json::obj([("some", reference(value, prior, roots, control)?.wire())]),
-        _ => return Err("非原始の結果型に未対応の値を表示しようとした".into()),
+        _ => return Err(internal!("非原始の結果型に未対応の値を表示しようとした").into()),
     };
     tick(control)?;
     Ok(json)
@@ -371,7 +373,7 @@ pub(super) fn construct(
 ) -> Result<Scalar, ValidationFailure> {
     tick(control)?;
     let [value] = values else {
-        return Err("恒等 Path・端点演算の引数数が違う".into());
+        return Err(internal!("恒等 Path・端点演算の引数数が違う").into());
     };
     let result = match (name, value) {
         (
@@ -390,7 +392,7 @@ pub(super) fn construct(
         })),
         ("source", Scalar::Path(identity)) => identity.object(),
         ("target", Scalar::Path(identity)) => identity.target(),
-        _ => return Err("恒等 Path・端点演算の元の値型が違う".into()),
+        _ => return Err(internal!("恒等 Path・端点演算の元の値型が違う").into()),
     };
     tick(control)?;
     Ok(result)

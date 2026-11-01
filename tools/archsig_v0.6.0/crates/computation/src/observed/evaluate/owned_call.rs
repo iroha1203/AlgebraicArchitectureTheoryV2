@@ -13,7 +13,7 @@ impl Evaluator<'_, '_> {
         let source = self
             .sources
             .get(&span)
-            .ok_or_else(|| Failure::Internal("Owned callの元Sourceがない".into()))?
+            .ok_or_else(|| Failure::Internal(internal!("Owned callの元Sourceがない")))?
             .clone();
         self.owned_call_finish_at(source, span, ty, children, known, checks)
     }

@@ -86,7 +86,7 @@ pub(super) fn sources(
                         &parameter.ty,
                         inputs.law(),
                         c,
-                        &mut |_| Err("有限値型に参照rosterはない".into()),
+                        &mut |_| Err(internal!("有限値型に参照rosterはない").into()),
                         &mut |_| {},
                     )?;
                     let mut next = vec![];
@@ -180,12 +180,18 @@ pub(super) fn plans(
             status: EquationPresentationStatus::Ready,
         };
         for (ordinal, (instance, source)) in equations.iter().enumerate() {
-            let original = out.originals.get(ordinal).ok_or("数値族の元Lawがない")?;
-            let ((lhs, ty), (rhs, _)) = original.operands.clone().ok_or("数値族の左右式がない")?;
+            let original = out
+                .originals
+                .get(ordinal)
+                .ok_or(internal!("数値族の元Lawがない"))?;
+            let ((lhs, ty), (rhs, _)) = original
+                .operands
+                .clone()
+                .ok_or(internal!("数値族の左右式がない"))?;
             let (_, _, ring, _, _) = bases
                 .iter()
                 .find(|b| b.0 == ty)
-                .ok_or("数値族の共有環がない")?;
+                .ok_or(internal!("数値族の共有環がない"))?;
             let expression = push(
                 parts,
                 base,
@@ -203,7 +209,7 @@ pub(super) fn plans(
             let variables = shared
                 .iter()
                 .find(|b| b.ring == *ring)
-                .ok_or("数値族の共有環がない")?
+                .ok_or(internal!("数値族の共有環がない"))?
                 .variables
                 .len();
             let nu = if source.difference.parameters.is_empty() {
@@ -277,11 +283,11 @@ pub(super) fn plans(
                     c,
                 )?;
                 let Part::Polynomial { terms, .. } = &parts[reference.0 - base] else {
-                    return Err("数値族の観測項が多項式でない".into());
+                    return Err(internal!("数値族の観測項が多項式でない").into());
                 };
                 let mut terms = terms.clone();
                 if reference.0 != base + parts.len() - 1 {
-                    return Err("数値族の観測項が末尾にない".into());
+                    return Err(internal!("数値族の観測項が末尾にない").into());
                 }
                 parts.pop();
                 terms.push((coefficient, vec![0; variables]));
@@ -329,7 +335,7 @@ pub(super) fn plans(
                     .constant
                     .evaluate(&values, c)
                     .map_err(|e| construction_failure(&e))?
-                    .ok_or("数値族の実観測代入がない")?;
+                    .ok_or(internal!("数値族の実観測代入がない"))?;
                 let p = EquationPolynomial::constant(value.scalar().clone(), c)
                     .map_err(|e| construction_failure(&e))?;
                 Some(polynomial(parts, base, &p, *ring, &ty, variables, c)?)
@@ -389,7 +395,7 @@ pub(super) fn plans(
                 .signature
             {
                 Signature::Law { role, .. } => *role,
-                _ => return Err("数値族のLaw宣言がない".into()),
+                _ => return Err(internal!("数値族のLaw宣言がない").into()),
             };
             out.coordinates.push(Coordinate {
                 occurrence: ordinal,
@@ -467,7 +473,7 @@ pub(super) fn plans(
         let dependencies = common::dependencies(inputs, &positions, c, |value| {
             let at = base
                 .checked_add(parts.len())
-                .ok_or("数値族Contextの生成番号が範囲外")?;
+                .ok_or(internal!("数値族Contextの生成番号が範囲外"))?;
             parts.push(Part::Scalar(value));
             Ok(NodeRef(at))
         })?;
@@ -665,7 +671,7 @@ fn parameter_polynomial(
         c,
     )?;
     let Part::Polynomial { terms, .. } = &parts[constant.0 - base] else {
-        return Err("引数族の定数項が多項式でない".into());
+        return Err(internal!("引数族の定数項が多項式でない").into());
     };
     let mut result = terms.clone();
     let Part::Source {
@@ -673,7 +679,7 @@ fn parameter_polynomial(
         ..
     } = &parts[original.body.0 - base]
     else {
-        return Err("引数族の元bodyがない".into());
+        return Err(internal!("引数族の元bodyがない").into());
     };
     let span = *span;
     for (parameter, coefficient) in &source.difference.parameters {
@@ -681,7 +687,7 @@ fn parameter_polynomial(
         let (expression, node) = inputs.law().exprs().iter().enumerate().find(|(id, expression)| {
             inputs.law().expr_type(*id) == Some(ty) && expression.span.0 >= span.0 && expression.span.1 <= span.1 &&
                 matches!(&expression.kind, archsig_input::law::ast::ExprKind::Dotted(names) if names.len() == 1 && names[0].name == parameter.name)
-        }).ok_or("引数族の元parameter参照がない")?;
+        }).ok_or(internal!("引数族の元parameter参照がない"))?;
         let argument = push(
             parts,
             base,
@@ -708,7 +714,7 @@ fn parameter_polynomial(
             c,
         )?;
         let Part::Polynomial { terms, .. } = &parts[polynomial.0 - base] else {
-            return Err("引数係数が多項式でない".into());
+            return Err(internal!("引数係数が多項式でない").into());
         };
         for (scalar, powers) in terms.clone() {
             let product = push(
@@ -765,15 +771,17 @@ fn guarded_residual(
     c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let Some(index) = epsilon.0.checked_sub(base) else {
-        return Err("条件付きεが計画外".into());
+        return Err(internal!("条件付きεが計画外").into());
     };
     let Some(Part::Polynomial { ring, terms, .. }) = parts.get(index).cloned() else {
-        return Err("条件付きεが多項式でない".into());
+        return Err(internal!("条件付きεが多項式でない").into());
     };
     if terms.is_empty() {
         return Ok(epsilon);
     }
-    let guard = original.guard.ok_or("条件付き数値族の元guardがない")?;
+    let guard = original
+        .guard
+        .ok_or(internal!("条件付き数値族の元guardがない"))?;
     let map = if let Some((_, map)) = indicators.iter().find(|(kind, _)| kind == ty) {
         *map
     } else {

@@ -261,7 +261,10 @@ impl Dependencies {
         let mut missing = vec![];
         for f in positions {
             tick(c)?;
-            let field = f.field.as_deref().ok_or("評価省略の元fieldがない")?;
+            let field = f
+                .field
+                .as_deref()
+                .ok_or(internal!("評価省略の元fieldがない"))?;
             if matches!(
                 env.indexes
                     .field(&env.state, &f.snapshot, &f.subject, field)?
@@ -283,7 +286,7 @@ impl Dependencies {
         dependencies.sort_by_key(|r| r.0);
         dependencies.dedup();
         if dependencies.is_empty() {
-            return Err("評価省略の元Expressionがない".into());
+            return Err(internal!("評価省略の元Expressionがない").into());
         }
         Ok(vec![Reason {
             kind: ReasonKind::Missing,
@@ -307,7 +310,7 @@ pub(super) fn dependencies(
         let field = f
             .field
             .as_ref()
-            .ok_or("global Contextの依存位置がfieldでない")?;
+            .ok_or(internal!("global Contextの依存位置がfieldでない"))?;
         let key = (f.snapshot.clone(), f.subject.clone());
         let reference = if let Some(r) = subjects.get(&key) {
             *r
@@ -318,7 +321,7 @@ pub(super) fn dependencies(
                 .iter()
                 .find(|s| s.id == f.snapshot)
                 .and_then(|s| s.subjects.iter().find(|s| s.id == f.subject))
-                .ok_or("global Contextの原始subjectがない")?;
+                .ok_or(internal!("global Contextの原始subjectがない"))?;
             let r = retain(Scalar::Subject {
                 snapshot: f.snapshot.clone(),
                 subject: f.subject.clone(),

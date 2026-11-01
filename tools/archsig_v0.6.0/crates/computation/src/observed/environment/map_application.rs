@@ -35,7 +35,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         if args.len() != 1 {
-            return Err("Map元適用のarityが違う".into());
+            return Err(internal!("Map元適用のarityが違う").into());
         }
         Ok(Some([*callee, args[0]]))
     }
@@ -51,16 +51,16 @@ impl Environment<'_> {
             return Ok(None);
         };
         let [map, key] = children else {
-            return Err("Map条件の実子数が違う".into());
+            return Err(internal!("Map条件の実子数が違う").into());
         };
         let Some(Payload::Expression { bindings, .. }) = &graph.get(source)?.payload else {
-            return Err("Map条件の元Sourceがない".into());
+            return Err(internal!("Map条件の元Sourceがない").into());
         };
         let context = self.current_context(graph);
         for r in [source, *map, *key] {
             self.tick()?;
             if r.0 >= limit || graph.context_at(r.0) != context {
-                return Err("Map条件のproducerが既出同Contextでない".into());
+                return Err(internal!("Map条件のproducerが既出同Contextでない").into());
             }
             self.validate_at(graph, graph.get(r)?, r.0)?;
         }
@@ -72,7 +72,7 @@ impl Environment<'_> {
             let (expression, actual_bindings, value) = self.evaluation(graph, *r)?;
             self.source_matches(graph, expression, id)?;
             if actual_bindings != bindings {
-                return Err("Map条件の元束縛と実子が違う".into());
+                return Err(internal!("Map条件の元束縛と実子が違う").into());
             }
             let Some(value) = value else {
                 return Ok(None);
@@ -83,7 +83,7 @@ impl Environment<'_> {
             support.extend(graph.get(*r)?.support.iter().cloned());
         }
         let Scalar::Map { domain, pairs, .. } = &values[0] else {
-            return Err("Map条件の実calleeがMap値でない".into());
+            return Err(internal!("Map条件の実calleeがMap値でない").into());
         };
         if data::map_apply(
             &values[0],
@@ -104,7 +104,7 @@ impl Environment<'_> {
         keys.push(values[1].clone());
         let actual = data::set(domain.clone(), &keys, &self.control)?;
         if data::equal(&actual, &required, &self.control)? {
-            return Err("域外Map条件の反証が成立しない".into());
+            return Err(internal!("域外Map条件の反証が成立しない").into());
         }
         support.sort();
         support.dedup();
@@ -132,7 +132,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         if node.arguments.len() < 3 {
-            return Err("Map条件の実子辺がない".into());
+            return Err(internal!("Map条件の実子辺がない").into());
         }
         self.map_condition(graph, source, &node.arguments[1..3], limit)
     }
@@ -162,7 +162,7 @@ impl Environment<'_> {
         }
         let Some(expected) = self.map_condition_proof_inputs(graph, node, limit)? else {
             if matches!(node.payload, Some(Payload::MapDomainCondition { .. })) {
-                return Err("Map条件命題に元域外適用がない".into());
+                return Err(internal!("Map条件命題に元域外適用がない").into());
             }
             return Ok(false);
         };
@@ -170,12 +170,12 @@ impl Environment<'_> {
             || node.scope != expected.scope
             || !node.reasons.is_empty()
         {
-            return Err("Map条件の元支持・Scope・理由が違う".into());
+            return Err(internal!("Map条件の元支持・Scope・理由が違う").into());
         }
         for r in &node.arguments {
             self.tick()?;
             if graph.context_at(r.0) != self.current_context(graph) {
-                return Err("Map条件が別producerを転用した".into());
+                return Err(internal!("Map条件が別producerを転用した").into());
             }
         }
         match &node.payload {
@@ -183,7 +183,7 @@ impl Environment<'_> {
                 let expected_value = match node.rule {
                     Rule::Construction("evaluation") => &expected.actual,
                     Rule::Construction("domain") => &expected.required,
-                    _ => return Err("Map条件集合の役割が違う".into()),
+                    _ => return Err(internal!("Map条件集合の役割が違う").into()),
                 };
                 if node.arguments.len() != 3
                     || node.ty != NodeType::Value(value.ty())
@@ -192,7 +192,7 @@ impl Environment<'_> {
                     || value.ty() != expected.actual.ty()
                     || !data::equal(value, expected_value, &self.control)?
                 {
-                    return Err("Map条件集合値が元key全域・実引数と違う".into());
+                    return Err(internal!("Map条件集合値が元key全域・実引数と違う").into());
                 }
             }
             Some(Payload::Counterexample {
@@ -207,7 +207,7 @@ impl Environment<'_> {
                     || node.arguments.get(3) != Some(left)
                     || node.arguments.get(4) != Some(right)
                 {
-                    return Err("Map条件反例の元値・束縛・支持が違う".into());
+                    return Err(internal!("Map条件反例の元値・束縛・支持が違う").into());
                 }
                 for r in [*left, *right] {
                     self.validate_at(graph, graph.get(r)?, r.0)?;
@@ -215,16 +215,16 @@ impl Environment<'_> {
                 if !data::equal(graph.scalar(*left)?, &expected.actual, &self.control)?
                     || !data::equal(graph.scalar(*right)?, &expected.required, &self.control)?
                 {
-                    return Err("Map条件反例が元key集合等値の不成立でない".into());
+                    return Err(internal!("Map条件反例が元key集合等値の不成立でない").into());
                 }
             }
             Some(Payload::MapDomainCondition { left, right }) => {
                 if node.ty != NodeType::Proposition {
-                    return Err("Map条件命題のnode型が違う".into());
+                    return Err(internal!("Map条件命題のnode型が違う").into());
                 }
                 graph.validate_proposition_evidence(node)?;
                 if node.arguments.len() != 6 {
-                    return Err("Map条件命題の辺数が違う".into());
+                    return Err(internal!("Map条件命題の辺数が違う").into());
                 }
                 for r in [*left, *right, node.arguments[5]] {
                     self.validate_at(graph, graph.get(r)?, r.0)?;
@@ -232,10 +232,10 @@ impl Environment<'_> {
                 if !data::equal(graph.scalar(*left)?, &expected.actual, &self.control)?
                     || !data::equal(graph.scalar(*right)?, &expected.required, &self.control)?
                 {
-                    return Err("Map条件命題が元実keyを判定していない".into());
+                    return Err(internal!("Map条件命題が元実keyを判定していない").into());
                 }
             }
-            _ => return Err("Map条件のpayloadが違う".into()),
+            _ => return Err(internal!("Map条件のpayloadが違う").into()),
         }
         self.tick()?;
         Ok(true)
@@ -262,15 +262,15 @@ impl Environment<'_> {
             {
                 self.validate_at(graph, node, index)?;
                 if found.replace(NodeRef(index)).is_some() {
-                    return Err("元Map適用の条件命題が重複した".into());
+                    return Err(internal!("元Map適用の条件命題が重複した").into());
                 }
             }
         }
-        let condition = found.ok_or("域外Map適用の条件命題がない")?;
+        let condition = found.ok_or(internal!("域外Map適用の条件命題がない"))?;
         let request = graph
             .requests
             .get(self.current_context(graph).request)
-            .ok_or("Map条件の元Requestがない")?;
+            .ok_or(internal!("Map条件の元Requestがない"))?;
         Ok(Some(Reason {
             kind: ReasonKind::ConditionFailed {
                 condition,

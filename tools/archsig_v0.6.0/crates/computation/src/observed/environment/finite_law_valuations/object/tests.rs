@@ -518,7 +518,7 @@ fn foreign_reading_and_out_of_range_object_selection_are_rejected() {
         .err()
         .unwrap();
     assert!(
-        matches!(err.cause,ValidationFailure::Internal(message) if message.contains("reading"))
+        matches!(err.cause,ValidationFailure::Internal(message) if message.message().contains("reading"))
     );
     assert!(
         finite_object_law_family_valuations(

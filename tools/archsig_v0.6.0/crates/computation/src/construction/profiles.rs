@@ -150,9 +150,9 @@ impl ConfigurationProfiles {
                 control,
             )?
         {
-            return Err(ConstructionFailure::Inconsistent(
-                "適用域・query pattern・対象群が現在入力と違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "適用域・query pattern・対象群が現在入力と違う"
+            )));
         }
         check(control)
     }
@@ -171,11 +171,11 @@ fn pattern(
     let n = universe.len();
     let pairs = n
         .checked_mul(n)
-        .ok_or_else(|| ConstructionFailure::Inconsistent("queryの順序対が大きすぎる".into()))?;
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("queryの順序対が大きすぎる")))?;
     pairs
         .checked_mul(2)
         .and_then(|p| p.checked_add(n))
-        .ok_or_else(|| ConstructionFailure::Inconsistent("query表が大きすぎる".into()))?;
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("query表が大きすぎる")))?;
     let mut family = BTreeSet::new();
     for fact in configuration.family() {
         check(control)?;
@@ -209,12 +209,12 @@ fn pattern(
         matrices.push(matrix);
     }
     check(control)?;
-    let identifications = matrices
-        .pop()
-        .ok_or_else(|| ConstructionFailure::Inconsistent("identification queryがない".into()))?;
+    let identifications = matrices.pop().ok_or_else(|| {
+        ConstructionFailure::Inconsistent(internal!("identification queryがない"))
+    })?;
     let relations = matrices
         .pop()
-        .ok_or_else(|| ConstructionFailure::Inconsistent("relation queryがない".into()))?;
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("relation queryがない")))?;
     Ok(CircuitPattern {
         universe: atoms,
         membership,
@@ -270,7 +270,7 @@ pub fn construct_profiles(
         let selected = index
             .get(&(f.snapshot.as_str(), f.subject.as_str()))
             .ok_or_else(|| {
-                ConstructionFailure::Inconsistent("条件付き対象のsubjectがない".into())
+                ConstructionFailure::Inconsistent(internal!("条件付き対象のsubjectがない"))
             })?;
         let candidate = configuration(
             inputs,
@@ -286,7 +286,7 @@ pub fn construct_profiles(
         check(control)?;
         let (candidate, condition) = parts
             .remove(&subject)
-            .ok_or_else(|| ConstructionFailure::Inconsistent("部分対象候補がない".into()))?;
+            .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("部分対象候補がない")))?;
         let pattern = if condition.is_none() {
             candidate
                 .configuration()

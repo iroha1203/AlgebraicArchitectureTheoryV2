@@ -20,7 +20,7 @@ impl Environment<'_> {
     ) -> Result<AnswerBinding, ValidationFailure> {
         self.tick()?;
         if root.0 >= self.state.cutoff.get() {
-            return Err("射影の元出力が既出prefixにない".into());
+            return Err(internal!("射影の元出力が既出prefixにない").into());
         }
         let original = graph.get(root)?;
         if matches!(&original.payload,Some(Payload::Construction(v)) if v.is_blocked()) {
@@ -102,7 +102,7 @@ impl Environment<'_> {
             (root, path)
         };
         if value.0 >= self.state.cutoff.get() {
-            return Err("射影の元値が既出prefixにない".into());
+            return Err(internal!("射影の元値が既出prefixにない").into());
         }
         let mut scalar = graph.scalar(value)?;
         let mut represented = Some(value);
@@ -145,7 +145,7 @@ impl Environment<'_> {
                 };
                 // 成分表示の各段階で選ばれたPathの元Refから辿る。
                 let prior = &graph.nodes[..self.state.cutoff.get().min(graph.nodes.len())];
-                let path_reference = represented.ok_or("Pathの表示元Refがない")?;
+                let path_reference = represented.ok_or(internal!("Pathの表示元Refがない"))?;
                 let selected = super::super::path_value::reference(
                     &component,
                     prior,
@@ -187,7 +187,7 @@ impl Environment<'_> {
             represented = if has_path {
                 // Pathを含むTは成分をRefで表示する。各親と同じ選択を順に
                 // 復元し、同値なPathが複数あっても表示されたRefを保つ。
-                let parent = represented.ok_or("非原始成分の表示元Refがない")?;
+                let parent = represented.ok_or(internal!("非原始成分の表示元Refがない"))?;
                 Some(super::super::path_value::reference(
                     scalar,
                     &graph.nodes[..self.state.cutoff.get().min(graph.nodes.len())],
@@ -235,13 +235,13 @@ impl Environment<'_> {
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
         let Rule::Projection(path) = &node.rule else {
-            return Err("射影nodeの規則が違う".into());
+            return Err(internal!("射影nodeの規則が違う").into());
         };
         let [root] = node.arguments.as_slice() else {
-            return Err("射影の元出力引数数が違う".into());
+            return Err(internal!("射影の元出力引数数が違う").into());
         };
         if path.is_empty() || root.0 >= limit {
-            return Err("射影の全path・既出元出力がない".into());
+            return Err(internal!("射影の全path・既出元出力がない").into());
         }
         let context = self.current_context(graph);
         if context.frame.is_some()
@@ -249,20 +249,20 @@ impl Environment<'_> {
             || context.instance.is_some()
             || context.case.is_some()
         {
-            return Err("射影nodeが元Requestの束縛前contextでない".into());
+            return Err(internal!("射影nodeが元Requestの束縛前contextでない").into());
         }
         let request = self
             .indexes
             .original_requests
             .and_then(|requests| requests.get(context.request))
-            .ok_or("射影の元Requestがない")?;
+            .ok_or(internal!("射影の元Requestがない"))?;
         if request.kind == QuestionKind::Build {
             super::super::architecture_result::selected_build(self, graph, request)?;
             let selector = &request
                 .arguments
                 .iter()
                 .find(|a| a.name == "on")
-                .ok_or("build射影の元onがない")?
+                .ok_or(internal!("build射影の元onがない"))?
                 .value;
             if let AnswerBinding::Projection(expected) =
                 self.answer_binding(graph, selector, (0, 0))?
@@ -270,7 +270,7 @@ impl Environment<'_> {
             {
                 return Ok(());
             }
-            return Err("buildのroot射影が元Handle・値・型・支持・Scopeと違う".into());
+            return Err(internal!("buildのroot射影が元Handle・値・型・支持・Scopeと違う").into());
         }
         if matches!(
             request.kind,
@@ -288,19 +288,23 @@ impl Environment<'_> {
                     return Ok(());
                 }
             }
-            return Err("map射影nodeが元on・型・値・支持・Scopeと違う".into());
+            return Err(internal!("map射影nodeが元on・型・値・支持・Scopeと違う").into());
         }
         let declaration = self
             .indexes
             .inputs
             .law()
             .declarations()
-            .get(request.declaration().ok_or("元要求に宣言がない")?)
-            .ok_or("射影の元宣言がない")?;
+            .get(
+                request
+                    .declaration()
+                    .ok_or(internal!("元要求に宣言がない"))?,
+            )
+            .ok_or(internal!("射影の元宣言がない"))?;
         let params = match &declaration.signature {
             archsig_input::law::model::Signature::View { params, .. }
             | archsig_input::law::model::Signature::Law { params, .. } => params,
-            _ => return Err("射影の元宣言がview/Lawでない".into()),
+            _ => return Err(internal!("射影の元宣言がview/Lawでない").into()),
         };
         for argument in &request.arguments {
             self.tick()?;
@@ -313,7 +317,7 @@ impl Environment<'_> {
             let parameter = params
                 .iter()
                 .find(|parameter| argument.name == format!("bind.{}", parameter.name))
-                .ok_or("射影の元parameterがない")?;
+                .ok_or(internal!("射影の元parameterがない"))?;
             let expected = match self.answer_binding(graph, &argument.value, parameter.span) {
                 Ok(AnswerBinding::Projection(expected)) => expected,
                 Ok(AnswerBinding::Reference(_))
@@ -323,12 +327,12 @@ impl Environment<'_> {
             };
             if expected.arguments == node.arguments && expected.rule == node.rule {
                 if expected != *node || expected.ty != NodeType::Value(parameter.ty.erase()) {
-                    return Err("射影の値・型・支持・Scopeが元出力と違う".into());
+                    return Err(internal!("射影の値・型・支持・Scopeが元出力と違う").into());
                 }
                 self.tick()?;
                 return Ok(());
             }
         }
-        Err("射影nodeの元出力/pathが元Requestにない".into())
+        Err(internal!("射影nodeの元出力/pathが元Requestにない").into())
     }
 }

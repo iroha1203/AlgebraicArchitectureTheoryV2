@@ -175,18 +175,20 @@ impl Environment<'_> {
             let request = graph
                 .requests
                 .get(self.current_context(graph).request)
-                .ok_or("欠測係数の元Requestがない")?;
+                .ok_or(internal!("欠測係数の元Requestがない"))?;
             if request.kind != QuestionKind::Check {
                 return Ok(None);
             }
-            let name = request.declaration().ok_or("欠測係数の元宣言がない")?;
+            let name = request
+                .declaration()
+                .ok_or(internal!("欠測係数の元宣言がない"))?;
             let declaration = self
                 .indexes
                 .inputs
                 .law()
                 .declarations()
                 .get(name)
-                .ok_or("欠測係数の元Lawがない")?;
+                .ok_or(internal!("欠測係数の元Lawがない"))?;
             let Signature::Law { body, .. } = &declaration.signature else {
                 return Ok(None);
             };
@@ -260,7 +262,9 @@ impl Environment<'_> {
                     crate::construction::ConstructionFailure::Stopped(stop) => {
                         ValidationFailure::Stop(stop)
                     }
-                    other => ValidationFailure::Internal(format!("欠測係数の元式照合: {other:?}")),
+                    other => ValidationFailure::Internal(
+                        other.internal_context(format!("欠測係数の元式照合: {other:?}")),
+                    ),
                 })?;
             return Ok(source.filter(|s| s.guard.is_true()));
         }
@@ -379,16 +383,16 @@ impl Environment<'_> {
                 .program()
                 .expressions
                 .get(&span)
-                .ok_or("局所全称callの元ASTがない")?;
+                .ok_or(internal!("局所全称callの元ASTがない"))?;
             if self.named_view(id)?.is_none() || graph.context_at(frame.source.0) != frame.caller {
-                return Err("局所全称callの実Frameが元構文と違う".into());
+                return Err(internal!("局所全称callの実Frameが元構文と違う").into());
             }
             if result
                 .calls
                 .iter()
                 .any(|call| call.expression == id && call.caller == frame.caller)
             {
-                return Err("同じ元call・callerの実Frameが一意でない".into());
+                return Err(internal!("同じ元call・callerの実Frameが一意でない").into());
             }
             result.calls.push(ResolvedCall {
                 expression: id,
@@ -415,7 +419,7 @@ impl Environment<'_> {
                 || graph.context_at(record.source.0) != record.caller
                 || graph.context_at(record.domain.0) != record.caller
             {
-                return Err("全域有限反復の元producer・親Contextが違う".into());
+                return Err(internal!("全域有限反復の元producer・親Contextが違う").into());
             }
             result.iterations.push((
                 super::super::call::Context {
@@ -450,7 +454,7 @@ impl Environment<'_> {
                 .iter()
                 .any(|old| old.parameter == axis.parameter)
             {
-                return Err("同じ局所全称binderの型Domainが重複する".into());
+                return Err(internal!("同じ局所全称binderの型Domainが重複する").into());
             }
             result.local_axes.push(axis);
         }
@@ -493,7 +497,7 @@ impl Environment<'_> {
     ) -> Result<LocalAxis, ValidationFailure> {
         let node = graph.get(domain)?;
         let [header] = node.arguments.as_slice() else {
-            return Err("局所型Domainの元headerが一つでない".into());
+            return Err(internal!("局所型Domainの元headerが一つでない").into());
         };
         let source = graph.get(*header)?;
         let Some(Payload::Expression {
@@ -501,7 +505,7 @@ impl Environment<'_> {
             ..
         }) = &source.payload
         else {
-            return Err("局所型Domainのheaderが元Sourceでない".into());
+            return Err(internal!("局所型Domainのheaderが元Sourceでない").into());
         };
         let id = *self
             .indexes
@@ -510,7 +514,7 @@ impl Environment<'_> {
             .program()
             .expressions
             .get(span)
-            .ok_or("局所型Domainの元量化がない")?;
+            .ok_or(internal!("局所型Domainの元量化がない"))?;
         let ExprKind::Quant {
             var,
             split:
@@ -521,13 +525,13 @@ impl Environment<'_> {
             ..
         } = &self.indexes.inputs.law().exprs()[id].kind
         else {
-            return Err("局所型Domainの元構文が型全称でない".into());
+            return Err(internal!("局所型Domainの元構文が型全称でない").into());
         };
         let ty = self.indexes.inputs.law().quantifier_types()[id]
             .as_ref()
-            .ok_or("局所全称型がない")?;
+            .ok_or(internal!("局所全称型がない"))?;
         if !self.universal_symbolic_type(ty)? {
-            return Err("局所型Domainが有限型である".into());
+            return Err(internal!("局所型Domainが有限型である").into());
         }
         let context = graph.context_at(header.0);
         if graph.context_at(domain.0) != context
@@ -541,7 +545,7 @@ impl Environment<'_> {
             || !matches!(&node.payload,Some(Payload::TypeDomain{ty:actual}) if actual==ty)
             || !matches!(&node.rule,Rule::Input{kind:"law",location:Location::Law{span}} if *span==var.span)
         {
-            return Err("局所全称Domainの元binder・型・実Contextが違う".into());
+            return Err(internal!("局所全称Domainの元binder・型・実Contextが違う").into());
         }
         Ok(LocalAxis {
             parameter: UniversalParameter {
@@ -562,7 +566,7 @@ impl Environment<'_> {
         plan: &UniversalPlan,
     ) -> Result<Vec<NodeRef>, ValidationFailure> {
         if node.arguments.first() != Some(&template) {
-            return Err("全域Sourceの元templateが違う".into());
+            return Err(internal!("全域Sourceの元templateが違う").into());
         }
         let mut domains = Vec::new();
         for &reference in &node.arguments[1..] {
@@ -581,7 +585,7 @@ impl Environment<'_> {
             ..
         }) = &node.payload
         else {
-            return Err("局所Domain列を持つ元Sourceがない".into());
+            return Err(internal!("局所Domain列を持つ元Sourceがない").into());
         };
         let root = &domains[..plan.parameters.len()];
         let registry = self.universal_graph_context(graph, plan, template, root, Vec::new())?;
@@ -592,9 +596,9 @@ impl Environment<'_> {
             let frame = graph
                 .frames
                 .get(index)
-                .ok_or("局所Domain列の実Frameがない")?;
+                .ok_or(internal!("局所Domain列の実Frameがない"))?;
             if frame.caller.frame.is_some_and(|parent| parent >= index) {
-                return Err("局所Domain列の親Frameが先行しない".into());
+                return Err(internal!("局所Domain列の親Frameが先行しない").into());
             }
             path.push((frame.caller, self.expression_span(graph, frame.source)?));
             current = frame.caller;
@@ -624,15 +628,15 @@ impl Environment<'_> {
                         axis.parameter.binder == var.span
                             && axis.parameter.context == binder_context
                     })
-                    .ok_or("元lexical全称に先行する局所型Domainがない")?;
-                let domain = axis.domain.ok_or("実局所型Domainがない")?;
+                    .ok_or(internal!("元lexical全称に先行する局所型Domainがない"))?;
+                let domain = axis.domain.ok_or(internal!("実局所型Domainがない"))?;
                 if !expected.contains(&domain) {
                     expected.push(domain);
                 }
             }
         }
         if domains != expected {
-            return Err("全域Sourceの局所型Domain列が元lexical/実call順と違う".into());
+            return Err(internal!("全域Sourceの局所型Domain列が元lexical/実call順と違う").into());
         }
         Ok(domains)
     }
@@ -659,7 +663,7 @@ impl Environment<'_> {
         };
         let ty = self.indexes.inputs.law().quantifier_types()[id]
             .as_ref()
-            .ok_or("局所型がない")?;
+            .ok_or(internal!("局所型がない"))?;
         if !self.universal_symbolic_type(ty)? {
             return Ok(None);
         }
@@ -717,7 +721,10 @@ impl Environment<'_> {
         // unknown Evaluationの値と取り違えず、その後に原ASTを補完下で再分析する。
         let (bindings, mut variables, base) =
             self.with_universal_graph(graph, original, || self.frame_arguments(graph, index))?;
-        let frame = graph.frames.get(index).ok_or("全域補完の元frameがない")?;
+        let frame = graph
+            .frames
+            .get(index)
+            .ok_or(internal!("全域補完の元frameがない"))?;
         let call = *self
             .indexes
             .inputs
@@ -725,8 +732,10 @@ impl Environment<'_> {
             .program()
             .expressions
             .get(&self.expression_span(graph, frame.source)?)
-            .ok_or("全域補完の元callがない")?;
-        let declaration = self.named_view(call)?.ok_or("全域補完の元viewがない")?;
+            .ok_or(internal!("全域補完の元callがない"))?;
+        let declaration = self
+            .named_view(call)?
+            .ok_or(internal!("全域補完の元viewがない"))?;
         let Signature::View { params, .. } = &declaration.signature else {
             unreachable!()
         };
@@ -794,7 +803,7 @@ impl Environment<'_> {
             return Ok(None);
         };
         if !numeric::is_numeric_type(ty, &self.control)? || value.ty() != *ty {
-            return Err("全域数値補完の元slot型が違う".into());
+            return Err(internal!("全域数値補完の元slot型が違う").into());
         }
         Ok(Some(value.clone()))
     }
@@ -812,19 +821,21 @@ impl Environment<'_> {
             self.tick()?;
             self.fact(fact)?;
             if fact.atom.is_some() || values[..index].iter().any(|(previous, _)| previous == fact) {
-                return Err("全域補完Factが観測済み・重複である".into());
+                return Err(internal!("全域補完Factが観測済み・重複である").into());
             }
             let field = self.indexes.field(
                 &self.state,
                 &fact.snapshot,
                 &fact.subject,
-                fact.field.as_deref().ok_or("全域数値補完にfieldがない")?,
+                fact.field
+                    .as_deref()
+                    .ok_or(internal!("全域数値補完にfieldがない"))?,
             )?;
             if !matches!(field.slot, Slot::Missing)
                 || !numeric::is_numeric_type(&field.ty, &self.control)?
                 || value.ty() != field.ty
             {
-                return Err("全域数値補完の元欠測slot・型が違う".into());
+                return Err(internal!("全域数値補完の元欠測slot・型が違う").into());
             }
         }
         self.with_universal_graph(
@@ -854,10 +865,10 @@ impl Environment<'_> {
                     parameters: and_parameters,
                 }) = &conjunction.payload
                 else {
-                    return Err("全域適用の含意and式がない".into());
+                    return Err(internal!("全域適用の含意and式がない").into());
                 };
                 if and.len() != 2 || and_bindings != bindings || and_parameters != parameters {
-                    return Err("全域適用の含意束縛・軸が違う".into());
+                    return Err(internal!("全域適用の含意束縛・軸が違う").into());
                 }
                 let negation = graph.get(and[1])?;
                 let Some(Payload::ParameterizedTransform {
@@ -867,14 +878,14 @@ impl Environment<'_> {
                     parameters: body_parameters,
                 }) = &negation.payload
                 else {
-                    return Err("全域適用の元body否定式がない".into());
+                    return Err(internal!("全域適用の元body否定式がない").into());
                 };
                 if body.len() != 1 || body_bindings != bindings || body_parameters != parameters {
-                    return Err("全域適用の元body束縛・軸が違う".into());
+                    return Err(internal!("全域適用の元body束縛・軸が違う").into());
                 }
                 Ok(body[0])
             }
-            _ => Err("全域templateが元Source/固定含意式でない".into()),
+            _ => Err(internal!("全域templateが元Source/固定含意式でない").into()),
         }
     }
     pub(super) fn universal_quantifier_source_value(
@@ -898,7 +909,7 @@ impl Environment<'_> {
         };
         let ty = self.indexes.inputs.law().quantifier_types()[id]
             .as_ref()
-            .ok_or("全域binder型がない")?;
+            .ok_or(internal!("全域binder型がない"))?;
         if !self.universal_symbolic_type(ty)? {
             return Ok(None);
         }
@@ -995,7 +1006,7 @@ impl Environment<'_> {
             .universal_context
             .borrow()
             .clone()
-            .ok_or("全域分析contextがない")?;
+            .ok_or(internal!("全域分析contextがない"))?;
         let root_axis = active.plan.parameters.iter().any(|p| p.binder == var.span);
         if !root_axis {
             return self
@@ -1038,13 +1049,13 @@ impl Environment<'_> {
         };
         let ty = self.indexes.inputs.law().quantifier_types()[id]
             .as_ref()
-            .ok_or("局所全称型がない")?;
+            .ok_or(internal!("局所全称型がない"))?;
         let mut context = self
             .state
             .universal_context
             .borrow()
             .clone()
-            .ok_or("局所全称のcaller Planがない")?;
+            .ok_or(internal!("局所全称のcaller Planがない"))?;
         let actual = self.state.scoped_context.get();
         let origin = actual.or(self.state.context.get()).unwrap_or_default();
         let axis = context
@@ -1177,10 +1188,10 @@ impl Environment<'_> {
                 &parameter.ty,
                 &self.control,
                 &mut || {
-                    let axis = axes.next().ok_or("全称Tupleの成分軸がない")?;
+                    let axis = axes.next().ok_or(internal!("全称Tupleの成分軸がない"))?;
                     Ok(Value::Number(
                         affine::parameter(&axis.kind.ty(), &axis, &self.control)?
-                            .ok_or("全称Tupleの成分式がない")?,
+                            .ok_or(internal!("全称Tupleの成分式がない"))?,
                     ))
                 },
                 &Value::Tuple,
@@ -1291,7 +1302,9 @@ impl Environment<'_> {
         } else if let Some(inputs) = &view {
             inputs.origin.declaration.as_str()
         } else if request.kind == QuestionKind::Check {
-            request.declaration().ok_or("元要求に宣言がない")?
+            request
+                .declaration()
+                .ok_or(internal!("元要求に宣言がない"))?
         } else {
             return Ok(None);
         };
@@ -1301,7 +1314,7 @@ impl Environment<'_> {
             .law()
             .declarations()
             .get(name)
-            .ok_or("全域の元Lawがない")?;
+            .ok_or(internal!("全域の元Lawがない"))?;
         let (params, guard, body) = match &declaration.signature {
             Signature::Law {
                 params,
@@ -1360,12 +1373,11 @@ impl Environment<'_> {
         self.universal_strip_quantifiers(graph, &mut plan)?;
         if let Some(request) = graph.requests.get(self.current_context(graph).request)
             && request.kind == QuestionKind::Check
-            && let Some(declaration) = self
-                .indexes
-                .inputs
-                .law()
-                .declarations()
-                .get(request.declaration().ok_or("元要求に宣言がない")?)
+            && let Some(declaration) = self.indexes.inputs.law().declarations().get(
+                request
+                    .declaration()
+                    .ok_or(internal!("元要求に宣言がない"))?,
+            )
             && let Signature::Law { body, guard, .. } = &declaration.signature
             && *body == id
         {
@@ -1419,7 +1431,7 @@ impl Environment<'_> {
                 .quantifier_types()
                 .get(plan.body)
                 .and_then(Option::as_ref)
-                .ok_or("全域binderの元型がない")?;
+                .ok_or(internal!("全域binderの元型がない"))?;
             if !self.universal_symbolic_type(ty)? {
                 break;
             }
@@ -1497,7 +1509,7 @@ impl Environment<'_> {
             ExprKind::Quant { .. } => !self.universal_symbolic_type(
                 self.indexes.inputs.law().quantifier_types()[id]
                     .as_ref()
-                    .ok_or("量化元型がない")?,
+                    .ok_or(internal!("量化元型がない"))?,
             )?,
             _ => false,
         })
@@ -1576,10 +1588,10 @@ impl Environment<'_> {
             .declarations()
             .values()
             .find(|declaration| declaration.span.0 <= span.0 && span.1 <= declaration.span.1)
-            .ok_or("全域Sourceの元宣言がない")?;
+            .ok_or(internal!("全域Sourceの元宣言がない"))?;
         let declared = match &declaration.signature {
             Signature::Law { params, .. } | Signature::View { params, .. } => params,
-            _ => return Err("全域Sourceの元宣言型が違う".into()),
+            _ => return Err(internal!("全域Sourceの元宣言型が違う").into()),
         };
         for parameter in declared {
             self.tick()?;
@@ -1606,7 +1618,7 @@ impl Environment<'_> {
         for (id, name) in lexical {
             let ty = law.quantifier_types()[id]
                 .as_ref()
-                .ok_or("自由全域binder型がない")?;
+                .ok_or(internal!("自由全域binder型がない"))?;
             parameters.push((name, ty.clone()));
         }
         Ok(UniversalSourceAnalysis {
@@ -1629,7 +1641,7 @@ impl Environment<'_> {
                 .universal_context
                 .borrow()
                 .clone()
-                .ok_or("全域sourceの分析Contextがない")?;
+                .ok_or(internal!("全域sourceの分析Contextがない"))?;
             let cached = self
                 .results
                 .cache
@@ -1711,11 +1723,11 @@ impl Environment<'_> {
                         crate::construction::ConstructionFailure::Stopped(stop) => {
                             ValidationFailure::Stop(stop)
                         }
-                        other => {
-                            ValidationFailure::Internal(format!("相関消去の定数差: {other:?}"))
-                        }
+                        other => ValidationFailure::Internal(
+                            other.internal_context(format!("相関消去の定数差: {other:?}")),
+                        ),
                     })?
-                    .ok_or("相関消去した定数差の値がない")?;
+                    .ok_or(internal!("相関消去した定数差の値がない"))?;
                 let zero = crate::observed::numeric::zero(&source.ring.ty, &self.control)?;
                 analysis.known_value = Some(Scalar::Bool(value.scalar() == &zero));
                 analysis.scalar_scope = Some(analysis.scope.clone());
@@ -1781,10 +1793,12 @@ impl Environment<'_> {
                     {
                         Some(Scalar::Bool(value)) => Some(*value),
                         None => None,
-                        _ => return Err("全域guardの型がBoolでない".into()),
+                        _ => return Err(internal!("全域guardの型がBoolでない").into()),
                     };
                     if guard_value == Some(false) {
-                        let mut analysis = guard_analysis.clone().ok_or("全域guard分析がない")?;
+                        let mut analysis = guard_analysis
+                            .clone()
+                            .ok_or(internal!("全域guard分析がない"))?;
                         analysis.scope.merge(&graph.get(template)?.scope);
                         analysis.known_value = Some(Scalar::Bool(true));
                         analysis.scalar_scope = Some(analysis.scope.clone());
@@ -1911,13 +1925,15 @@ impl Environment<'_> {
                                 let assignment = classification
                                     .common_counterexample
                                     .as_mut()
-                                    .ok_or("条件付き反例の元全binder割当てがない")?;
+                                    .ok_or(internal!("条件付き反例の元全binder割当てがない"))?;
                                 for (parameter, value) in point {
                                     self.tick()?;
                                     let (_, target) = assignment
                                         .iter_mut()
                                         .find(|(p, _)| *p == parameter)
-                                        .ok_or("条件付き反例の軸が元全binder割当てにない")?;
+                                        .ok_or(internal!(
+                                            "条件付き反例の軸が元全binder割当てにない"
+                                        ))?;
                                     *target = value;
                                 }
                                 Some(false)
@@ -1971,11 +1987,11 @@ impl Environment<'_> {
         let classification = self
             .universal_analysis(graph, template, domains, fixed)?
             .classification
-            .ok_or("全域代入に元アフィン等式の分析がない")?;
+            .ok_or(internal!("全域代入に元アフィン等式の分析がない"))?;
         let assignment = classification
             .common_counterexample
             .as_ref()
-            .ok_or("全域代入に全補完共通のparameter反例がない")?;
+            .ok_or(internal!("全域代入に全補完共通のparameter反例がない"))?;
         let original_bindings = self.expression_bindings(graph, original)?;
         let expected_bindings =
             self.universal_counterexample_bindings(graph, original, template, domains)?;
@@ -1983,11 +1999,11 @@ impl Environment<'_> {
             parameters: free, ..
         }) = &graph.get(original)?.payload
         else {
-            return Err("全域代入の元Sourceでない".into());
+            return Err(internal!("全域代入の元Sourceでない").into());
         };
         for binding in original_bindings {
             if !bindings.contains(binding) {
-                return Err("全域代入が元固定束縛を変更した".into());
+                return Err(internal!("全域代入が元固定束縛を変更した").into());
             }
         }
         let span = self.expression_span(graph, original)?;
@@ -2009,14 +2025,14 @@ impl Environment<'_> {
                         .iter()
                         .any(|(name, ty)| name == &binding.name && ty == &binding.ty)
                     {
-                        return Err("全域代入が元自由parameter型と違う".into());
+                        return Err(internal!("全域代入が元自由parameter型と違う").into());
                     }
                     let expected = expected_bindings
                         .iter()
                         .find(|(name, ty, _, _)| name == &binding.name && ty == &binding.ty)
-                        .ok_or("全域代入に元自由parameterがない")?;
+                        .ok_or(internal!("全域代入に元自由parameterがない"))?;
                     if graph.scalar(binding.value)? != &expected.2 {
-                        return Err("全域代入のparameter値が元全域反例と違う".into());
+                        return Err(internal!("全域代入のparameter値が元全域反例と違う").into());
                     }
                 }
                 if let Some(form) = &result.analysis.affine {
@@ -2078,10 +2094,10 @@ impl Environment<'_> {
             .declarations()
             .values()
             .find(|d| d.span.0 <= span.0 && span.1 <= d.span.1)
-            .ok_or("全域反例の元宣言がない")?;
+            .ok_or(internal!("全域反例の元宣言がない"))?;
         let params = match &declaration.signature {
             Signature::Law { params, .. } | Signature::View { params, .. } => params,
-            _ => return Err("全域反例の元署名が違う".into()),
+            _ => return Err(internal!("全域反例の元署名が違う").into()),
         };
         self.tick()?;
         // 仮引数は元署名順、式内の量化binderは元の自由変数順に保つ。
@@ -2105,16 +2121,16 @@ impl Environment<'_> {
         let classified = self
             .universal_analysis(graph, template, domains, fixed)?
             .classification
-            .ok_or("具体全域反例の元分析がない")?;
+            .ok_or(internal!("具体全域反例の元分析がない"))?;
         let assignment = classified
             .common_counterexample
             .as_ref()
-            .ok_or("全補完共通の具体反例がない")?;
+            .ok_or(internal!("全補完共通の具体反例がない"))?;
         let Some(Payload::Expression {
             parameters: free, ..
         }) = &graph.get(original)?.payload
         else {
-            return Err("具体全域反例の元Sourceがない".into());
+            return Err(internal!("具体全域反例の元Sourceがない").into());
         };
         let span = self.expression_span(graph, original)?;
         let declaration = self
@@ -2124,10 +2140,10 @@ impl Environment<'_> {
             .declarations()
             .values()
             .find(|declaration| declaration.span.0 <= span.0 && span.1 <= declaration.span.1)
-            .ok_or("具体反例の元宣言がない")?;
+            .ok_or(internal!("具体反例の元宣言がない"))?;
         let formal = match &declaration.signature {
             Signature::Law { params, .. } | Signature::View { params, .. } => params,
-            _ => return Err("具体反例の元署名が違う".into()),
+            _ => return Err(internal!("具体反例の元署名が違う").into()),
         };
         let previous = self
             .state
@@ -2161,7 +2177,7 @@ impl Environment<'_> {
                                 &self.control,
                             )?
                         } else {
-                            return Err("具体反例の実formalが数値式でない".into());
+                            return Err(internal!("具体反例の実formalが数値式でない").into());
                         };
                         let Some(scalar) = scalar else {
                             // callerの全称parameterを具体化しても、実引数の
@@ -2173,7 +2189,7 @@ impl Environment<'_> {
                             formal
                                 .iter()
                                 .find(|parameter| parameter.name == *name)
-                                .ok_or("具体反例の元formalがない")?
+                                .ok_or(internal!("具体反例の元formalがない"))?
                                 .span,
                         )
                     } else {
@@ -2203,7 +2219,7 @@ impl Environment<'_> {
                                 }
                             })
                             .or(declared_binder)
-                            .ok_or("具体反例の元自由binderがない")?;
+                            .ok_or(internal!("具体反例の元自由binderがない"))?;
                         let p = archsig_input::law::model::Param {
                             name: name.clone(),
                             ty: ty.clone(),
@@ -2218,14 +2234,18 @@ impl Environment<'_> {
                             let (_, value) = assignment
                                 .iter()
                                 .find(|(parameter, _)| *parameter == axis)
-                                .ok_or("具体反例の元parameterがない")?;
+                                .ok_or(internal!("具体反例の元parameterがない"))?;
                             values.push(value.clone());
                         }
                         let mut values = values.into_iter();
                         let value = numeric_parameters::restore(
                             ty,
                             &self.control,
-                            &mut || values.next().ok_or_else(|| "具体反例の成分がない".into()),
+                            &mut || {
+                                values
+                                    .next()
+                                    .ok_or_else(|| internal!("具体反例の成分がない").into())
+                            },
                             &Scalar::Tuple,
                         )?;
                         (value, binder)
@@ -2258,16 +2278,16 @@ impl Environment<'_> {
                 .program()
                 .expressions
                 .get(&span)
-                .ok_or("全域templateの元ASTがない")?;
+                .ok_or(internal!("全域templateの元ASTがない"))?;
             let request = graph
                 .requests
                 .get(self.current_context(graph).request)
-                .ok_or("全域templateの元Requestがない")?;
+                .ok_or(internal!("全域templateの元Requestがない"))?;
             let plan = self
                 .universal_family_plan(graph, request, bindings)?
                 .filter(|plan| plan.template_span == span)
                 .or(self.universal_quantifier_plan(graph, id, bindings)?);
-            plan.ok_or_else(|| "全域templateに元全称binderがない".into())
+            plan.ok_or_else(|| internal!("全域templateに元全称binderがない").into())
         })();
         previous.restore();
         result
@@ -2283,7 +2303,7 @@ impl Environment<'_> {
             != plan.template_span
             || domains.len() < plan.parameters.len()
         {
-            return Err("全域型Domainの元template・軸数が違う".into());
+            return Err(internal!("全域型Domainの元template・軸数が違う").into());
         }
         for (&domain, parameter) in domains
             .iter()
@@ -2297,13 +2317,13 @@ impl Environment<'_> {
                 || !matches!(&node.rule, Rule::Input { kind: "law", location: Location::Law { span } } if *span == parameter.binder)
                 || !matches!(&node.payload, Some(Payload::TypeDomain {ty}) if *ty==parameter.ty.clone())
             {
-                return Err("全域型Domainの元binder・型・Contextが違う".into());
+                return Err(internal!("全域型Domainの元binder・型・Contextが違う").into());
             }
         }
         for (index, &domain) in domains.iter().enumerate().skip(plan.parameters.len()) {
             self.tick()?;
             if domains[..index].contains(&domain) {
-                return Err("全域Sourceの局所Domain参照が重複する".into());
+                return Err(internal!("全域Sourceの局所Domain参照が重複する").into());
             }
             self.universal_local_domain_axis(
                 graph,

@@ -21,8 +21,9 @@ use archsig_input::law::{
     model::Signature,
 };
 use std::sync::Arc;
+#[track_caller]
 fn bad(s: &str) -> ConstructionFailure {
-    ConstructionFailure::Inconsistent(s.into())
+    ConstructionFailure::Inconsistent(internal!(s))
 }
 fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectLawResiduals)
@@ -31,7 +32,7 @@ fn tick(c: &Control) -> Result<(), ConstructionFailure> {
 fn invalid(f: ValidationFailure) -> ConstructionFailure {
     match f {
         ValidationFailure::Stop(s) => s.into(),
-        f => bad(&format!("数値Lawの元値: {f:?}")),
+        f => ConstructionFailure::Inconsistent(f.internal_context(format!("数値Lawの元値: {f:?}"))),
     }
 }
 pub(in crate::observed) fn predicate_call(

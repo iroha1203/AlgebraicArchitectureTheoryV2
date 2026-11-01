@@ -21,11 +21,11 @@ pub(super) fn project(
     } else {
     for position in &p.path {
         let NodeType::Expression(Type::Tuple(types)) = &b.parts[expression.0 - b.base].ty else {
-            return Err("Tuple射影の入力型が積でない".into());
+            return Err(internal!("Tuple射影の入力型が積でない").into());
         };
         let ty = types
             .get(*position)
-            .ok_or("Tuple射影の位置が範囲外")?
+            .ok_or(internal!("Tuple射影の位置が範囲外"))?
             .clone();
         expression = b.push(
             NodeType::Expression(ty),
@@ -119,7 +119,7 @@ fn state(
             ("subject", reference.wire()),
             (
                 "field",
-                Json::str(position.field.as_ref().ok_or("固定位置にfieldがない")?),
+                Json::str(position.field.as_ref().ok_or(internal!("固定位置にfieldがない"))?),
             ),
         ]));
     }
@@ -285,7 +285,7 @@ pub(super) fn build(
         let mut selected = vec![];
         for (i, required) in law_supports.iter().enumerate() {
             if if let Some(info) = information {
-                info.visible_law(support, linear_reads[context_index].as_ref().ok_or("アフィン読取りがない")?, required, i, c)?
+                info.visible_law(support, linear_reads[context_index].as_ref().ok_or(internal!("アフィン読取りがない"))?, required, i, c)?
             } else { support.contains(required) } { selected.push(i); }
         }
         let context_laws = selected.iter().map(|i| laws[*i]).collect::<Vec<_>>();
@@ -437,7 +437,7 @@ pub(super) fn build(
                         .iter()
                         .position(|x| x == value)
                         .map(|i| Json::Nat(i as u64))
-                        .ok_or_else(|| ValidationFailure::from("contextの包含像がない"))
+                        .ok_or_else(|| ValidationFailure::from(internal!("contextの包含像がない")))
                 })
                 .collect::<Result<Vec<_>, _>>()?;
             let arrow = b.push(
@@ -463,7 +463,7 @@ pub(super) fn build(
             arrows.insert((v, w), arrow);
             maps.push(arrow);
             if integer_ring.is_some() {
-                let coefficient=*coefficient_refs.last().ok_or("アフィン係数の制限がない")?;
+                let coefficient=*coefficient_refs.last().ok_or(internal!("アフィン係数の制限がない"))?;
                 coefficient_values.push(Json::obj([("side",Json::str("equation")),("arrow",arrow.wire()),("map",coefficient.wire())]));
             }
             restriction_refs.extend([restriction, equation_restriction]);
@@ -485,7 +485,7 @@ pub(super) fn build(
             c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
             let intersection = supports[left].intersect(&supports[right]);
             let read = mixed_read::intersect(&linear_reads[left], &linear_reads[right], c)?;
-            let i = mixed_read::find(&supports, &linear_reads, &intersection, &read, c)?.ok_or("交わりcontextがない")?;
+            let i = mixed_read::find(&supports, &linear_reads, &intersection, &read, c)?.ok_or(internal!("交わりcontextがない"))?;
             let lp = arrows[&(i, left)];
             let rp = arrows[&(i, right)];
             overlaps.push(b.push(
@@ -514,7 +514,7 @@ pub(super) fn build(
             .any(|i| supports[*i].positions.contains(x))
     }) && if let Some(info) = information { info.adequate(patches, law_supports, c)? } else { law_supports.iter().all(|law| patches.iter().any(|patch| patch.contains(law))) };
     if !adequate {
-        return Err("暗黙支持coverが全体を被覆しない".into());
+        return Err(internal!("暗黙支持coverが全体を被覆しない").into());
     }
     let adequacy = b.proposition(
         "cover_adequate",
@@ -549,12 +549,12 @@ pub(super) fn build(
         let mut row = vec![];
         for (j, z) in supports.iter().enumerate() {
             let read = mixed_read::intersect(&linear_reads[i], &linear_reads[j], c)?;
-            row.push(mixed_read::find(&supports, &linear_reads, &a.intersect(z), &read, c)?.ok_or("交わりcontextがない")?);
+            row.push(mixed_read::find(&supports, &linear_reads, &a.intersect(z), &read, c)?.ok_or(internal!("交わりcontextがない"))?);
         }
         intersections.push(row);
     }
     let mut integer = if integer_ring.is_some() {
-        Some(mixed_equation::diagram(finite_model.ok_or("アフィン方程式のmodelがない")?, &states, &intersections, &contexts,
+        Some(mixed_equation::diagram(finite_model.ok_or(internal!("アフィン方程式のmodelがない"))?, &states, &intersections, &contexts,
             &patch_indices,cover,laws,integer_coefficients,integer_projections,c)?)
     } else {None};
     let mut checks = vec![];
@@ -564,12 +564,12 @@ pub(super) fn build(
             Some(finite_state::summary(&states, &intersections, &patch_indices, 0, equation_side, c)?)
         };
         let cover_holds = if let Some(summary)=&summary {finite_state::bijective(summary,c)?} else {
-            integer::linear::glues(integer.as_ref().ok_or("アフィン図式がない")?,&patch_indices,0,false,c)?
+            integer::linear::glues(integer.as_ref().ok_or(internal!("アフィン図式がない"))?,&patch_indices,0,false,c)?
         };
         let mut topology_holds=true;
         for (w,sources) in &matching_checks {
             topology_holds &= if equation_side && integer.is_some() {
-                integer::linear::glues(integer.as_ref().ok_or("アフィン図式がない")?,sources,*w,false,c)?
+                integer::linear::glues(integer.as_ref().ok_or(internal!("アフィン図式がない"))?,sources,*w,false,c)?
             } else {finite_state::bijective(&finite_state::summary(&states,&intersections,sources,*w,equation_side,c)?,c)?};
         }
         for (scope, object, holds) in [("cover",cover,cover_holds),("topology",topology,topology_holds)] {
@@ -582,7 +582,7 @@ pub(super) fn build(
     }
     if let Some(diagram)=&mut integer {diagram.sheaf_conditions=checks.iter().map(|(r,_)|*r).collect();}
     let finite=if finite_model.is_some(){Some(Finite {
-        semantic:summaries.remove(0).ok_or("有限意味状態がない")?,equation:summaries.remove(0),
+        semantic:summaries.remove(0).ok_or(internal!("有限意味状態がない"))?,equation:summaries.remove(0),
     })}else{None};
     let mut fields = BTreeMap::from([
         ("base".into(), target.wire()),
@@ -659,7 +659,7 @@ pub(super) fn build(
     }
     if integer.is_some() {
         fields.insert("coefficients".into(),Json::Arr(contexts.iter().zip(&states).map(|(context,s)| {
-            let state=s.integer.as_ref().ok_or("アフィン係数がない")?;
+            let state=s.integer.as_ref().ok_or(internal!("アフィン係数がない"))?;
             Ok(Json::obj([("side",Json::str("equation")),("context",context.wire()),("module",state.coefficients.wire())]))
         }).collect::<Result<Vec<_>,ValidationFailure>>()?));
         fields.insert("coefficient_restrictions".into(),Json::Arr(coefficient_values));

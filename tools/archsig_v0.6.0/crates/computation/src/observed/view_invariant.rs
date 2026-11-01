@@ -68,10 +68,10 @@ fn original(
     let n = g.get(components)?;
     env.recheck_node(g, n, components.0)?;
     let Some(Payload::Construction(v)) = &n.payload else {
-        return Err("関数不変量の元対象表がnativeでない".into());
+        return Err(internal!("関数不変量の元対象表がnativeでない").into());
     };
     let D::ObjectComponents(d) = &v.data else {
-        return Err("関数不変量の元対象表が別構成".into());
+        return Err(internal!("関数不変量の元対象表が別構成").into());
     };
     let (a, reference, objects) = d.retained_components();
     if objects.base != components
@@ -79,7 +79,7 @@ fn original(
         || objects.architectures.len() != objects.objects.len()
         || !Arc::ptr_eq(&a, native::architecture_origin(g, reference, 0)?)
     {
-        return Err("関数不変量の元全対象/Architectureが違う".into());
+        return Err(internal!("関数不変量の元全対象/Architectureが違う").into());
     }
     Ok((a, objects))
 }
@@ -94,9 +94,9 @@ fn expressions(
         .readings()
         .instances()
         .get(instance)
-        .ok_or("関数不変量の元instanceがない")?;
+        .ok_or(internal!("関数不変量の元instanceがない"))?;
     if row.declaration().kind != "view" {
-        return Err("関数不変量の元instanceがviewでない".into());
+        return Err(internal!("関数不変量の元instanceがviewでない").into());
     }
     let rs = objects
         .readings
@@ -104,7 +104,7 @@ fn expressions(
         .filter(|r| r.instance == instance)
         .collect::<Vec<_>>();
     if rs.len() != objects.objects.len() || rs.is_empty() {
-        return Err("関数不変量の全対象の元式がない".into());
+        return Err(internal!("関数不変量の全対象の元式がない").into());
     }
     let mut out = vec![];
     for (object, r) in rs.into_iter().enumerate() {
@@ -117,7 +117,7 @@ fn expressions(
             || objects.objects.get(object) != Some(&origin.component)
             || objects.architectures.get(object) != Some(&origin.architecture)
         {
-            return Err("関数不変量の元instance/対象順/式の由来が違う".into());
+            return Err(internal!("関数不変量の元instance/対象順/式の由来が違う").into());
         }
         out.push(r.expression);
     }
@@ -134,7 +134,7 @@ fn compute(
 ) -> Result<Output, ValidationFailure> {
     let rs = expressions(g, a, objects, instance, c)?;
     if evaluations.len() != rs.len() {
-        return Err("関数不変量の全対象の評価がない".into());
+        return Err(internal!("関数不変量の全対象の評価がない").into());
     }
     let (_, first) = reading::origin(g, rs[0])?;
     let mut values = vec![];
@@ -153,7 +153,7 @@ fn compute(
             ..
         }) = &n.payload
         else {
-            return Err("関数不変量の値が通常Evaluationでない".into());
+            return Err(internal!("関数不変量の値が通常Evaluationでない").into());
         };
         if origin.declaration != first.declaration
             || origin.parameters != first.parameters
@@ -165,7 +165,7 @@ fn compute(
             || n.ty != NodeType::Evaluation(origin.returns.clone())
             || g.context_at(evaluation.0) != g.context_at(components.0)
         {
-            return Err("関数不変量の元宣言/全署名/束縛/対象評価が違う".into());
+            return Err(internal!("関数不変量の元宣言/全署名/束縛/対象評価が違う").into());
         }
         if origin.parameters.is_empty() {
             whole::validate(g, n, evaluation.0)?;
@@ -291,7 +291,7 @@ impl Data {
         if self.source.base.checked_add(usize::from(self.axis)) != Some(at)
             || self.arguments().iter().any(|r| r.0 >= at)
         {
-            return Err("関数不変量/軸の元生成位置/既出Refが違う".into());
+            return Err(internal!("関数不変量/軸の元生成位置/既出Refが違う").into());
         }
         Ok(())
     }
@@ -345,24 +345,24 @@ pub(super) fn validate_node(
     d: &Data,
 ) -> Result<(), ValidationFailure> {
     let Witness::Architecture(a) = &v.witness else {
-        return Err("関数不変量のconsumerが別種".into());
+        return Err(internal!("関数不変量のconsumerが別種").into());
     };
     if !Arc::ptr_eq(a, &d.source.architecture)
         || d.output != d.source.output
         || n != &d.node()
         || &d.node() != n
     {
-        return Err("関数不変量/軸の元由来/全対象/metadataが違う".into());
+        return Err(internal!("関数不変量/軸の元由来/全対象/metadataが違う").into());
     }
     if d.axis {
         let Some(Payload::Construction(v)) = &g.get(NodeRef(d.source.base))?.payload else {
-            return Err("signatureの関数Invariantがない".into());
+            return Err(internal!("signatureの関数Invariantがない").into());
         };
         let D::ViewInvariant(other) = &v.data else {
-            return Err("signatureの参照が関数Invariantでない".into());
+            return Err(internal!("signatureの参照が関数Invariantでない").into());
         };
         if other.axis || !Arc::ptr_eq(&other.source, &d.source) || other.output != d.output {
-            return Err("signatureが別の関数Invariantを参照する".into());
+            return Err(internal!("signatureが別の関数Invariantを参照する").into());
         }
     }
     Ok(())
@@ -381,7 +381,7 @@ impl Environment<'_> {
         let c = self.control.clone();
         let (a, objects) = original(self, g, d.source.components, &c)?;
         if !Arc::ptr_eq(&a, &d.source.architecture) || objects != d.source.objects {
-            return Err("関数不変量の元入力/全対象が違う".into());
+            return Err(internal!("関数不変量の元入力/全対象が違う").into());
         }
         for r in d.arguments() {
             tick(&c)?;
@@ -397,7 +397,7 @@ impl Environment<'_> {
             &c,
         )? != d.output
         {
-            return Err("関数不変量の元instance/全域評価/支持が違う".into());
+            return Err(internal!("関数不変量の元instance/全域評価/支持が違う").into());
         }
         Ok(())
     }
@@ -413,7 +413,7 @@ impl super::result_kind::ResultKind for Data {
         let (env, g, components, c) = input;
         tick(c)?;
         if g.active != g.context_at(components.0) {
-            return Err("関数不変量の生成が元Request Contextでない".into());
+            return Err(internal!("関数不変量の生成が元Request Contextでない").into());
         }
         let (a, objects) = original(env, g, components, c)?;
         let mut diagram = Diagram {
@@ -446,14 +446,14 @@ impl super::result_kind::ResultKind for Data {
                     let whole::Outcome::Evaluation { evaluation, .. } =
                         whole::evaluate(env, g, expression, c)?
                     else {
-                        return Err("閉じた関数不変量に残parameterがある".into());
+                        return Err(internal!("閉じた関数不変量に残parameterがある").into());
                     };
                     evaluation
                 } else {
                     let view_family::Outcome::Family(f) =
                         view_family::evaluate(env, g, expression, c)?
                     else {
-                        return Err("有限関数不変量の全域が生成途中で変わった".into());
+                        return Err(internal!("有限関数不変量の全域が生成途中で変わった").into());
                     };
                     f.evaluation
                 };

@@ -24,7 +24,9 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
 fn failure(e: ConstructionFailure) -> ValidationFailure {
     match e {
         ConstructionFailure::Stopped(s) => s.into(),
-        e => format!("完全query patternの構成: {e:?}").into(),
+        e => e
+            .internal_context(format!("完全query patternの構成: {e:?}"))
+            .into(),
     }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -159,15 +161,15 @@ fn original(
 > {
     tick(c)?;
     if inputs.sources() != env.indexes.inputs.sources() {
-        return Err("query patternの三入力が検査環境と違う".into());
+        return Err(internal!("query patternの三入力が検査環境と違う").into());
     }
     let node = g.get(reference)?;
     env.recheck_node(g, node, reference.0)?;
     if node.ty != NodeType::Construction(T::Architecture) {
-        return Err("query patternの元Architecture/Requestが違う".into());
+        return Err(internal!("query patternの元Architecture/Requestが違う").into());
     }
     let Some(Payload::Construction(value)) = &node.payload else {
-        return Err("query patternのnative Architectureがない".into());
+        return Err(internal!("query patternのnative Architectureがない").into());
     };
     if matches!(
         value.data,
@@ -180,7 +182,7 @@ fn original(
     }
     let a = native::architecture_origin(g, reference, 0)?.clone();
     if inputs.sources() != Witness::Architecture(a.clone()).inputs().sources() {
-        return Err("query patternの元入力がArchitectureと違う".into());
+        return Err(internal!("query patternの元入力がArchitectureと違う").into());
     }
     let Some(components) = components else {
         return Ok(None);
@@ -188,10 +190,10 @@ fn original(
     let node = g.get(components)?;
     env.recheck_node(g, node, components.0)?;
     let Some(Payload::Construction(v)) = &node.payload else {
-        return Err("query patternの元対象表がnativeでない".into());
+        return Err(internal!("query patternの元対象表がnativeでない").into());
     };
     let D::ObjectComponents(data) = &v.data else {
-        return Err("query patternの元対象表が別構成".into());
+        return Err(internal!("query patternの元対象表が別構成").into());
     };
     let (owner, base, objects) = data.retained_components();
     if !Arc::ptr_eq(&a, &owner)
@@ -200,7 +202,7 @@ fn original(
         || objects.objects.len() != a.readings().objects().len()
         || objects.architectures.len() != objects.objects.len()
     {
-        return Err("query patternの元全対象/Architecture/順序が違う".into());
+        return Err(internal!("query patternの元全対象/Architecture/順序が違う").into());
     }
     let mut universe = None;
     for (i, n) in g.nodes.iter().enumerate().take(reference.0) {
@@ -211,7 +213,7 @@ fn original(
             break;
         }
     }
-    let universe = universe.ok_or("query patternの共通AtomUniverseがない")?;
+    let universe = universe.ok_or(internal!("query patternの共通AtomUniverseがない"))?;
     let mut support = vec![];
     let mut scope = Scope::default();
     for r in [reference, components, universe]
@@ -249,13 +251,13 @@ fn compute(
     )
     .map_err(failure)?;
     if profiles.construction() != a.construction() {
-        return Err("query patternの構成が元Architectureと違う".into());
+        return Err(internal!("query patternの構成が元Architectureと違う").into());
     }
     if !profiles.is_complete() {
         return Ok(None);
     }
     if profiles.profiles().len() != objects.objects.len() {
-        return Err("query patternの全対象coverageが違う".into());
+        return Err(internal!("query patternの全対象coverageが違う").into());
     }
     let mut outputs = vec![];
     let mut rows = vec![];
@@ -265,14 +267,16 @@ fn compute(
             != a.readings()
                 .objects()
                 .get(index)
-                .ok_or("query patternの元対象番号が域外")?
+                .ok_or(internal!("query patternの元対象番号が域外"))?
                 .identity()
         {
-            return Err("query patternの対象identity/順序が違う".into());
+            return Err(internal!("query patternの対象identity/順序が違う").into());
         }
-        let pattern = profile.pattern().ok_or("完成query patternの元表がない")?;
+        let pattern = profile
+            .pattern()
+            .ok_or(internal!("完成query patternの元表がない"))?;
         if pattern.universe() != a.construction().universe() {
-            return Err("query patternの共通Uが違う".into());
+            return Err(internal!("query patternの共通Uが違う").into());
         }
         let mut queries = vec![];
         for query in pattern.queries() {
@@ -304,7 +308,7 @@ fn compute(
         }
         let position = base
             .checked_add(index)
-            .ok_or("query patternの生成番号が域外")?;
+            .ok_or(internal!("query patternの生成番号が域外"))?;
         outputs.push(Output { universe, queries });
         rows.push(Row {
             object: *object,
@@ -319,7 +323,7 @@ fn compute(
             architecture: *objects
                 .architectures
                 .first()
-                .ok_or("query patternのbase Architectureがない")?,
+                .ok_or(internal!("query patternのbase Architectureがない"))?,
             universe,
             rows,
         },
@@ -355,7 +359,7 @@ impl Data {
             || self.source.base.checked_add(self.index) != Some(at)
             || self.arguments().iter().any(|r| r.0 >= at)
         {
-            return Err("query patternの元生成位置/既出参照が違う".into());
+            return Err(internal!("query patternの元生成位置/既出参照が違う").into());
         }
         Ok(())
     }
@@ -374,10 +378,10 @@ pub(super) fn retain(
 }
 pub(super) fn validate_node(g: &Graph, n: &Node, data: &Data) -> Result<(), ValidationFailure> {
     let Some(Payload::Construction(value)) = &n.payload else {
-        return Err("query patternのnative値がない".into());
+        return Err(internal!("query patternのnative値がない").into());
     };
     let Witness::Architecture(a) = &value.witness else {
-        return Err("query patternのconsumerが別種".into());
+        return Err(internal!("query patternのconsumerが別種").into());
     };
     let owner = native::architecture_origin(g, data.source.reference, 0)?;
     let (support, scope) = data.metadata();
@@ -393,7 +397,7 @@ pub(super) fn validate_node(g: &Graph, n: &Node, data: &Data) -> Result<(), Vali
         || !n.evidence.is_empty()
         || n.judgment.is_some()
     {
-        return Err("query patternの全query/元由来/型/辺/metadataが違う".into());
+        return Err(internal!("query patternの全query/元由来/型/辺/metadataが違う").into());
     }
     for r in data.arguments() {
         g.tick()?;
@@ -411,7 +415,7 @@ impl Environment<'_> {
             return Ok(());
         };
         let Witness::Architecture(a) = &value.witness else {
-            return Err("query patternのconsumerが別種".into());
+            return Err(internal!("query patternのconsumerが別種").into());
         };
         let c = self.control.clone();
         let Some((owner, components, objects, universe, support, scope)) = original(
@@ -423,7 +427,7 @@ impl Environment<'_> {
             &c,
         )?
         else {
-            return Err("query patternの元対象が未完成".into());
+            return Err(internal!("query patternの元対象が未完成").into());
         };
         if !Arc::ptr_eq(a, &owner)
             || !Arc::ptr_eq(a, &data.source.architecture)
@@ -434,7 +438,7 @@ impl Environment<'_> {
             || scope != data.source.scope
             || self.indexes.inputs.sources() != data.source.inputs.sources()
         {
-            return Err("query patternの元入力/全対象/共通U/metadataが違う".into());
+            return Err(internal!("query patternの元入力/全対象/共通U/metadataが違う").into());
         }
         if self
             .results
@@ -453,13 +457,13 @@ impl Environment<'_> {
             &c,
         )?
         else {
-            return Err("query patternの元全表が未完成".into());
+            return Err(internal!("query patternの元全表が未完成").into());
         };
         if profiles != data.source.profiles
             || outputs != data.source.outputs
             || diagram != data.source.diagram
         {
-            return Err("query patternが元の全query/対象identity/対応と違う".into());
+            return Err(internal!("query patternが元の全query/対象identity/対応と違う").into());
         }
         self.results.remember(data.source.clone());
         tick(&c)
@@ -483,7 +487,7 @@ impl super::result_kind::ResultKind for Data {
         let (env, g, inputs, reference, components, c) = input;
         tick(c)?;
         if g.active != g.context_at(reference.0) {
-            return Err("query patternの生成が元ArchitectureのRequestでない".into());
+            return Err(internal!("query patternの生成が元ArchitectureのRequestでない").into());
         }
         let Some((a, components, objects, universe, support, scope)) =
             original(env, g, &inputs, reference, components, c)?

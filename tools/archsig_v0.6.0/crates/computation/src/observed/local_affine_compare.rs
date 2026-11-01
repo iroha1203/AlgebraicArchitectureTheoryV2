@@ -7,7 +7,7 @@ pub(super) use transport::{between, dependencies, Renaming};
 
 pub(super) fn record(g: &Graph, r: NodeRef) -> Result<&BTreeMap<String, Json>, ValidationFailure> {
     let Json::Obj(fields) = &local(g, r)?.part().wire else {
-        return Err("整数診断のレコードがない".into());
+        return Err(internal!("整数診断のレコードがない").into());
     };
     Ok(fields)
 }
@@ -22,17 +22,17 @@ pub(super) fn reference_value(
         .iter()
         .find(|r| r.wire() == *value)
         .copied()
-        .ok_or_else(|| "整数診断の参照が依存にない".into())
+        .ok_or_else(|| internal!("整数診断の参照が依存にない").into())
 }
 pub(super) fn list(g: &Graph, r: NodeRef, name: &str) -> Result<Vec<NodeRef>, ValidationFailure> {
     let Some(Json::Arr(values)) = record(g, r)?.get(name) else {
-        return Err("整数診断の参照列がない".into());
+        return Err(internal!("整数診断の参照列がない").into());
     };
     values.iter().map(|v| reference_value(g, r, v)).collect()
 }
 fn size(g: &Graph, module: NodeRef) -> Result<usize, ValidationFailure> {
     let Some(Json::Arr(generators)) = record(g, module)?.get("generators") else {
-        return Err("整数加群の生成元がない".into());
+        return Err(internal!("整数加群の生成元がない").into());
     };
     Ok(generators.len())
 }
@@ -41,13 +41,13 @@ fn integer(g: &Graph, owner: NodeRef, value: &Json) -> Result<Z, ValidationFailu
 }
 fn rows(g: &Graph, r: NodeRef, name: &str) -> Result<Vec<Vec<Z>>, ValidationFailure> {
     let Some(Json::Arr(values)) = record(g, r)?.get(name) else {
-        return Err("整数表示の係数列がない".into());
+        return Err(internal!("整数表示の係数列がない").into());
     };
     values
         .iter()
         .map(|v| {
             let Json::Arr(row) = v else {
-                return Err("整数表示の行がない".into());
+                return Err(internal!("整数表示の行がない").into());
             };
             row.iter().map(|x| integer(g, r, x)).collect()
         })
@@ -76,7 +76,7 @@ fn identity(n: usize) -> integer_fiber::Matrix {
 }
 fn coordinates(g: &Graph, vector: NodeRef) -> Result<Vec<Z>, ValidationFailure> {
     let Some(Json::Arr(values)) = record(g, vector)?.get("coordinates") else {
-        return Err("類の整数座標がない".into());
+        return Err(internal!("類の整数座標がない").into());
     };
     values.iter().map(|v| integer(g, vector, v)).collect()
 }
@@ -85,7 +85,7 @@ fn from_columns(
     rows: usize,
 ) -> Result<integer_fiber::Matrix, ValidationFailure> {
     if columns.iter().any(|c| c.len() != rows) {
-        return Err("整数表示の列次元が違う".into());
+        return Err(internal!("整数表示の列次元が違う").into());
     }
     Ok((0..rows)
         .map(|i| columns.iter().map(|c| c[i].clone()).collect())
@@ -143,7 +143,7 @@ fn induced(
         unit[j] = Z::from(1usize);
         let column = integer_fiber::solve(&projection, cycles, &unit, c)?
             .particular
-            .ok_or("cohomology商射影が全射でない")?;
+            .ok_or(internal!("cohomology商射影が全射でない"))?;
         for i in 0..cycles {
             lift[i][j] = column[i].clone();
         }
@@ -161,7 +161,7 @@ fn induced(
     if !zero_columns(g, tm, &residual, cycles, c)?
         || !zero_columns(g, tm, &images, relations.len(), c)?
     {
-        return Err("cohomology写像がcycle商を通じて因子分解しない".into());
+        return Err(internal!("cohomology写像がcycle商を通じて因子分解しない").into());
     }
     Ok(result)
 }
@@ -180,7 +180,7 @@ fn check_inverse(
         .map(|(a, b)| a.iter().zip(b).map(|(x, y)| x - y).collect())
         .collect();
     if !zero_columns(g, module, &residual, n, c)? {
-        return Err("cohomology写像の合成が恒等でない".into());
+        return Err(internal!("cohomology写像の合成が恒等でない").into());
     }
     Ok(())
 }
@@ -277,7 +277,7 @@ fn kernel_cokernel(
         unit[j] = Z::from(1usize);
         let x = integer_fiber::solve(&kq.projection, k, &unit, c)?
             .particular
-            .ok_or("核の商射影が全射でない")?;
+            .ok_or(internal!("核の商射影が全射でない"))?;
         for i in 0..k {
             lift[i][j] = x[i].clone();
         }
@@ -335,7 +335,7 @@ pub(super) fn compare(
         || record(g, lc)?.get("convention") != record(g, rc)?.get("convention")
         || (transported.is_none() && field(g, lc, "cover")? != field(g, rc, "cover")?)
     {
-        return Err("同じ局所系の複体の表示が一致しない".into());
+        return Err(internal!("同じ局所系の複体の表示が一致しない").into());
     }
     let (forward, backward) = if let Some(maps) = transported {
         (maps.forward.clone(), maps.inverse.clone())
@@ -343,14 +343,14 @@ pub(super) fn compare(
         let mut maps = vec![];
         for (a, z) in lm.iter().zip(&rm) {
             if !same_module(g, *a, *z)? {
-                return Err("複体の同一座標の加群が一致しない".into());
+                return Err(internal!("複体の同一座標の加群が一致しない").into());
             }
             maps.push(identity(size(g, *a)?));
         }
         (maps.clone(), Some(maps))
     };
     if forward.len() != lm.len() || backward.as_ref().is_some_and(|maps| maps.len() != lm.len()) {
-        return Err("cochain写像の次数が違う".into());
+        return Err(internal!("cochain写像の次数が違う").into());
     }
     let mut components = vec![];
     for i in 0..lm.len() {
@@ -358,7 +358,7 @@ pub(super) fn compare(
         let ns = size(g, lm[i])?;
         let nt = size(g, rm[i])?;
         if forward[i].len() != nt || forward[i].iter().any(|r| r.len() != ns) {
-            return Err("cochain写像の順逆が一致しない".into());
+            return Err(internal!("cochain写像の順逆が一致しない").into());
         }
         if let Some(backward) = &backward {
             if backward[i].len() != ns
@@ -366,7 +366,7 @@ pub(super) fn compare(
                 || integer_fiber::multiply(&backward[i], &forward[i], ns, c)? != identity(ns)
                 || integer_fiber::multiply(&forward[i], &backward[i], nt, c)? != identity(nt)
             {
-                return Err("cochain写像の順逆が一致しない".into());
+                return Err(internal!("cochain写像の順逆が一致しない").into());
             }
         }
         components.push(wire::map(b, lm[i], rm[i], &forward[i], ns, c)?);
@@ -377,7 +377,7 @@ pub(super) fn compare(
         if integer_fiber::multiply(&target, &forward[i], size(g, lm[i])?, c)?
             != integer_fiber::multiply(&forward[i + 1], &source, size(g, lm[i])?, c)?
         {
-            return Err("cochain写像と微分が可換でない".into());
+            return Err(internal!("cochain写像と微分が可換でない").into());
         }
     }
     let cochain = b.push(
@@ -403,15 +403,15 @@ pub(super) fn compare(
     let target_n = size(g, rh)?;
     let (hforward, hbackward) = if transported.is_some() {
         let Some(Json::Nat(degree)) = record(g, left)?.get("degree") else {
-            return Err("診断の次数がない".into());
+            return Err(internal!("診断の次数がない").into());
         };
         let degree = usize::try_from(*degree)
-            .map_err(|_| ValidationFailure::from("診断次数が大きすぎる"))?;
+            .map_err(|_| ValidationFailure::from(internal!("診断次数が大きすぎる")))?;
         let f = induced(
             g,
             ls,
             rs,
-            forward.get(degree).ok_or("次数のcochain写像がない")?,
+            forward.get(degree).ok_or(internal!("次数のcochain写像がない"))?,
             c,
         )?;
         let v = if let Some(backward) = &backward {
@@ -419,7 +419,7 @@ pub(super) fn compare(
                 g,
                 rs,
                 ls,
-                backward.get(degree).ok_or("次数の逆cochain写像がない")?,
+                backward.get(degree).ok_or(internal!("次数の逆cochain写像がない"))?,
                 c,
             )?;
             check_inverse(g, lh, &v, &f, c)?;
@@ -434,7 +434,7 @@ pub(super) fn compare(
             || !same_map(g, field(g, ls, "inclusion")?, field(g, rs, "inclusion")?)?
             || !same_map(g, field(g, ls, "projection")?, field(g, rs, "projection")?)?
         {
-            return Err("同じ複体からのコホモロジー表示が一致しない".into());
+            return Err(internal!("同じ複体からのコホモロジー表示が一致しない").into());
         }
         (identity(n), Some(identity(n)))
     };
@@ -487,7 +487,7 @@ pub(super) fn compare(
             let x = coordinates(g, av)?;
             let y = coordinates(g, zv)?;
             if x.len() != n || y.len() != target_n {
-                return Err("対象類の座標次元が違う".into());
+                return Err(internal!("対象類の座標次元が違う").into());
             }
             let x = linear::apply(&hforward, &x, c)?;
             let relations = rows(g, rh, "relations")?;
@@ -569,7 +569,7 @@ pub(super) fn compare(
     sort_reasons(&mut part.reasons);
     part.judgment
         .as_mut()
-        .ok_or("整数診断比較の判断がない")?
+        .ok_or(internal!("整数診断比較の判断がない"))?
         .reasons = part.reasons.clone();
     let reasons = part.reasons.clone();
     let scope = b.parts[comparison.0 - b.base].scope.clone();

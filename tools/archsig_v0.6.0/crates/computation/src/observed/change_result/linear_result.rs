@@ -185,7 +185,7 @@ pub(super) fn build(
                 .fiber
                 .particular
                 .as_ref()
-                .ok_or("guardの復元原点がない")?,
+                .ok_or(internal!("guardの復元原点がない"))?,
             c,
         )?;
         dependencies.extend([guard_certificate, recovery, origin]);

@@ -109,7 +109,7 @@ impl Data {
             || at != self.source.base + self.index
             || self.arguments().iter().any(|r| r.0 >= at)
         {
-            return Err("build構成の位置/既出参照が違う".into());
+            return Err(internal!("build構成の位置/既出参照が違う").into());
         }
         Ok(())
     }
@@ -139,7 +139,7 @@ impl Builder<'_> {
         for input in &arguments {
             self.g.tick()?;
             if input.0 >= r.0 {
-                return Err("buildの未出参照".into());
+                return Err(internal!("buildの未出参照").into());
             }
             let (s, q, why) = if input.0 < self.base {
                 let n = self.g.get(*input)?;
@@ -282,20 +282,20 @@ fn compute_inner(
                         .originals
                         .iter()
                         .find(|o| o.reference == coordinate.instance)
-                        .ok_or("非対応方程式の元Lawがない")?;
+                        .ok_or(internal!("非対応方程式の元Lawがない"))?;
                     let origin = super::law_evaluation::origin(g, original.reference)?
-                        .ok_or("非対応方程式の宣言がない")?;
+                        .ok_or(internal!("非対応方程式の宣言がない"))?;
                     let declaration = env
                         .indexes
                         .inputs
                         .law()
                         .declarations()
                         .get(&origin.declaration)
-                        .ok_or("非対応方程式の宣言が現在の入力にない")?;
+                        .ok_or(internal!("非対応方程式の宣言が現在の入力にない"))?;
                     let archsig_input::law::model::Signature::Law { body, .. } =
                         declaration.signature
                     else {
-                        return Err("非対応方程式の元宣言がLawでない".into());
+                        return Err(internal!("非対応方程式の元宣言がLawでない").into());
                     };
                     let mut body = body;
                     while let archsig_input::law::ast::ExprKind::Group(inner) =
@@ -357,7 +357,7 @@ fn compute_inner(
                     .iter()
                     .find(|p| p.object == object)
                     .map(|p| p.pattern)
-                    .ok_or("build互換性の対象patternがない")
+                    .ok_or(internal!("build互換性の対象patternがない"))
             };
             let s = match comparison.equal {
                 Some(true) => Decision::Established,
@@ -420,7 +420,7 @@ fn compute_inner(
                 p.evidence.push(proof);
                 p.judgment
                     .as_mut()
-                    .ok_or("互換性命題の判断がない")?
+                    .ok_or(internal!("互換性命題の判断がない"))?
                     .evidence
                     .push(proof);
             }
@@ -430,7 +430,9 @@ fn compute_inner(
             }
         }
         let Some(detectors) = build_circuit_plan::closed(env, g, plan, c)? else {
-            return Err("buildの未束縛parameterまたは非定数残差のcircuit配送は未実装".into());
+            return Err(
+                internal!("buildの未束縛parameterまたは非定数残差のcircuit配送は未実装").into(),
+            );
         };
         for detector in detectors {
             tick(c)?;
@@ -565,7 +567,7 @@ fn compute_inner(
     }
     if let Some(views) = &plan.views {
         if !views.pending.is_empty() {
-            return Err("buildの非有限view全域配送は未実装".into());
+            return Err(internal!("buildの非有限view全域配送は未実装").into());
         }
     }
     sort_reasons(&mut reasons);
@@ -573,7 +575,9 @@ fn compute_inner(
         status = Decision::Undetermined;
     }
     if status == Decision::Undetermined && reasons.is_empty() {
-        return Err("buildの構成に必要な配送が未実装で、数学的未決の理由ではない".into());
+        return Err(
+            internal!("buildの構成に必要な配送が未実装で、数学的未決の理由ではない").into(),
+        );
     }
     dependencies.extend(compatibility.iter().copied());
     dependencies.extend(circuits.iter().copied());
@@ -616,7 +620,7 @@ fn compute_inner(
     proposition
         .judgment
         .as_mut()
-        .ok_or("build構成命題に判断がない")?
+        .ok_or(internal!("build構成命題に判断がない"))?
         .evidence = evidence.clone();
     proposition.reasons.extend(reasons);
     proposition.reasons.sort_by_key(|r| r.wire().canonical());
@@ -625,24 +629,36 @@ fn compute_inner(
     proposition
         .judgment
         .as_mut()
-        .ok_or("build構成命題に判断がない")?
+        .ok_or(internal!("build構成命題に判断がない"))?
         .reasons = reasons.clone();
     let mut outputs = BTreeMap::from([("proposition".into(), claim)]);
     if plan.architecture.complete {
         outputs.insert("object".into(), plan.architecture.reference);
     }
     if status == Decision::Established {
-        let objects = plan.objects.as_ref().ok_or("buildの全対象がない")?;
-        let patterns = plan.patterns.as_ref().ok_or("buildの全patternがない")?;
-        let views = plan.views.as_ref().ok_or("buildの全viewがない")?;
-        let arrows = plan.arrows.as_ref().ok_or("buildの内部操作がない")?;
-        let equations = plan.equations.ok_or("buildの方程式族がない")?;
+        let objects = plan
+            .objects
+            .as_ref()
+            .ok_or(internal!("buildの全対象がない"))?;
+        let patterns = plan
+            .patterns
+            .as_ref()
+            .ok_or(internal!("buildの全patternがない"))?;
+        let views = plan
+            .views
+            .as_ref()
+            .ok_or(internal!("buildの全viewがない"))?;
+        let arrows = plan
+            .arrows
+            .as_ref()
+            .ok_or(internal!("buildの内部操作がない"))?;
+        let equations = plan.equations.ok_or(internal!("buildの方程式族がない"))?;
         let generators = arrows
             .rows
             .iter()
             .map(|r| r.operation)
             .collect::<Option<Vec<_>>>()
-            .ok_or("buildの全内部操作が保存済みでない")?;
+            .ok_or(internal!("buildの全内部操作が保存済みでない"))?;
         let invariants = views
             .axes
             .iter()
@@ -778,14 +794,14 @@ pub(super) fn validate_node(
     d: &Data,
 ) -> Result<(), ValidationFailure> {
     let Witness::Architecture(a) = &v.witness else {
-        return Err("buildの元Architectureがない".into());
+        return Err(internal!("buildの元Architectureがない").into());
     };
     let architecture = &d.source.plan.architecture;
     let origin = if architecture.complete {
         native::architecture_origin(g, architecture.reference, 0)?
     } else {
         let Some(Payload::Construction(value)) = &g.get(architecture.reference)?.payload else {
-            return Err("未完成buildの元Architectureがnative構成でない".into());
+            return Err(internal!("未完成buildの元Architectureがnative構成でない").into());
         };
         let ConstructionValue {
             witness: Witness::Architecture(origin),
@@ -795,7 +811,7 @@ pub(super) fn validate_node(
             },
         } = value.as_ref()
         else {
-            return Err("未完成buildの元Architectureが部分構成でない".into());
+            return Err(internal!("未完成buildの元Architectureが部分構成でない").into());
         };
         let context = g.context_at(architecture.reference.0);
         if context.frame.is_some()
@@ -804,7 +820,7 @@ pub(super) fn validate_node(
             || context.case.is_some()
             || g.requests.get(context.request) != Some(v.witness.request())
         {
-            return Err("未完成buildの元Architectureがroot Requestでない".into());
+            return Err(internal!("未完成buildの元Architectureがroot Requestでない").into());
         }
         origin
     };
@@ -820,7 +836,7 @@ pub(super) fn validate_node(
         || n.judgment != p.judgment
         || n.evidence != p.evidence
     {
-        return Err("buildの元構成/型/辺/判断/metadataが違う".into());
+        return Err(internal!("buildの元構成/型/辺/判断/metadataが違う").into());
     }
     for r in &p.arguments {
         g.get(*r)?;
@@ -844,10 +860,13 @@ impl Environment<'_> {
             return Ok(());
         }
         let producer = g.context_at(d.source.plan.architecture.reference.0).request;
-        let request = g.requests.get(producer).ok_or("buildの元Requestがない")?;
+        let request = g
+            .requests
+            .get(producer)
+            .ok_or(internal!("buildの元Requestがない"))?;
         let (parts, answer) = compute(self, g, &d.source.plan, d.source.base, request, &c)?;
         if parts != d.source.parts || answer != d.source.answer {
-            return Err("buildの全構成が元計画の再検査と違う".into());
+            return Err(internal!("buildの全構成が元計画の再検査と違う").into());
         }
         self.results.remember(d.source.clone());
         Ok(())
@@ -863,20 +882,20 @@ pub(super) fn validate_answer(
         return if answer == &expected {
             Ok(())
         } else {
-            Err("buildの依存停止回答が元理由と違う".into())
+            Err(internal!("buildの依存停止回答が元理由と違う").into())
         };
     }
-    let r = answer.claim.ok_or("buildの構成命題がない")?;
+    let r = answer.claim.ok_or(internal!("buildの構成命題がない"))?;
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("build命題がnativeでない".into());
+        return Err(internal!("build命題がnativeでない").into());
     };
     let D::Build(d) = &v.data else {
-        return Err("build命題が別構成".into());
+        return Err(internal!("build命題が別構成").into());
     };
     super::architecture_result::validate_build_origin(env, g, request, v)?;
     env.recheck_build(g, v, r.0)?;
     if answer != &d.source.answer {
-        return Err("build回答が元構成と違う".into());
+        return Err(internal!("build回答が元構成と違う").into());
     }
     Ok(())
 }
@@ -887,14 +906,14 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
         construction: "object_algebra",
     } = reason.kind
     else {
-        return Err("buildの構成条件失敗が別種".into());
+        return Err(internal!("buildの構成条件失敗が別種").into());
     };
     let node = g.get(condition)?;
     let Some(Payload::Construction(v)) = &node.payload else {
-        return Err("buildの条件命題がnativeでない".into());
+        return Err(internal!("buildの条件命題がnativeでない").into());
     };
     let D::Build(d) = &v.data else {
-        return Err("buildの条件命題が別構成".into());
+        return Err(internal!("buildの条件命題が別構成").into());
     };
     if node.ty != NodeType::Proposition
         || node.judgment.as_ref().map(|j| j.status) != Some(Decision::Refuted)
@@ -902,7 +921,7 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
         || reason.dependencies != [condition]
         || !reason.missing.is_empty()
     {
-        return Err("buildの構成反証と元理由が違う".into());
+        return Err(internal!("buildの構成反証と元理由が違う").into());
     }
     validate_node(g, node, v, d)
 }

@@ -41,9 +41,13 @@ impl Environment<'_> {
             let body = law
                 .exprs()
                 .get(inputs.origin.body)
-                .ok_or("元Law body式がない")?
+                .ok_or(internal!("元Law body式がない"))?
                 .span;
-            let guard_span = law.exprs().get(guard).ok_or("元Law guard式がない")?.span;
+            let guard_span = law
+                .exprs()
+                .get(guard)
+                .ok_or(internal!("元Law guard式がない"))?
+                .span;
             if body.0 <= span.0 && span.1 <= body.1 {
                 if !inputs.origin.body_allowed {
                     return Ok(false);
@@ -51,7 +55,7 @@ impl Environment<'_> {
                 let request = graph
                     .requests
                     .get(self.current_context(graph).request)
-                    .ok_or("元Law要求がない")?;
+                    .ok_or(internal!("元Law要求がない"))?;
                 if let Some(plan) = self.universal_family_plan(graph, request, &inputs.bindings)?
                     && plan.guard == Some(guard)
                     && !plan.parameters.is_empty()
@@ -84,7 +88,7 @@ impl Environment<'_> {
         if let Some(guard) = guard {
             self.validate_at(graph, graph.get(guard)?, guard.0)?;
             let Some(Payload::Evaluation { value, .. }) = &graph.get(guard)?.payload else {
-                return Err("元Law guardの通常評価がない".into());
+                return Err(internal!("元Law guardの通常評価がない").into());
             };
             return Ok(allowed && graph.boolean(*value)? != Some(false));
         }
@@ -102,10 +106,10 @@ impl Environment<'_> {
                 .law()
                 .exprs()
                 .get(expression)
-                .ok_or("元Law式IDがない")?
+                .ok_or(internal!("元Law式IDがない"))?
                 .span;
             if !self.native_law_source_allowed(graph, index, span)? {
-                return Err("非適用native Lawのbodyは評価できない".into());
+                return Err(internal!("非適用native Lawのbodyは評価できない").into());
             }
         }
         Ok(())
@@ -134,7 +138,7 @@ impl Environment<'_> {
                 .law()
                 .exprs()
                 .get(inputs.origin.body)
-                .ok_or("元body式IDがない")?
+                .ok_or(internal!("元body式IDがない"))?
                 .span
                 != span
         {
@@ -143,7 +147,7 @@ impl Environment<'_> {
         let request = graph
             .requests
             .get(context.request)
-            .ok_or("元Law要求がない")?;
+            .ok_or(internal!("元Law要求がない"))?;
         let universal_false = if let Some(plan) =
             self.universal_family_plan(graph, request, bindings)?
             && plan
@@ -171,13 +175,13 @@ impl Environment<'_> {
                 span,
                 self.state.cutoff.get().min(graph.nodes.len()),
             )?;
-            let guard = guard.ok_or("未評価bodyの前に実guardがない")?;
+            let guard = guard.ok_or(internal!("未評価bodyの前に実guardがない"))?;
             self.validate_at(graph, graph.get(guard)?, guard.0)?;
             let Some(Payload::Evaluation { value, .. }) = &graph.get(guard)?.payload else {
-                return Err("実guardが評価でない".into());
+                return Err(internal!("実guardが評価でない").into());
             };
             if allowed || graph.boolean(*value)? != Some(false) {
-                return Err("未評価bodyの実guardがfalseでない".into());
+                return Err(internal!("未評価bodyの実guardがfalseでない").into());
             }
         }
         let mut scope = inputs.origin.scope;
@@ -206,7 +210,10 @@ impl Environment<'_> {
         let Some(inputs) = frames::instance_inputs(graph, index, limit)? else {
             return Ok(None);
         };
-        let record = graph.instances.get(index).ok_or("元Law instanceがない")?;
+        let record = graph
+            .instances
+            .get(index)
+            .ok_or(internal!("元Law instanceがない"))?;
         for r in [
             record.source,
             record.domain,
@@ -221,7 +228,7 @@ impl Environment<'_> {
             self.validate_at(graph, graph.get(binding.value)?, binding.value.0)?;
             let scalar = graph.scalar(binding.value)?.clone();
             if scalar.ty() != binding.ty {
-                return Err("native Lawの元parameter型が違う".into());
+                return Err(internal!("native Lawの元parameter型が違う").into());
             }
             variables.insert(
                 binding.name.clone(),
@@ -245,7 +252,7 @@ impl Environment<'_> {
             .law()
             .declarations()
             .get(&inputs.origin.declaration)
-            .ok_or("元Lawの宣言がない")?;
+            .ok_or(internal!("元Lawの宣言がない"))?;
         if let archsig_input::law::model::Signature::Law { params, .. } = &declaration.signature {
             for parameter in params {
                 if !variables.contains_key(&parameter.name)

@@ -32,18 +32,18 @@ pub(crate) fn determined_owners(
             field.atom.is_some() || !field.field.as_ref().is_some_and(|name| name.is_owner())
         })
     {
-        return Err(ConstructionFailure::Inconsistent(
-            "owner補完の元slotが違う".into(),
-        ));
+        return Err(ConstructionFailure::Inconsistent(internal!(
+            "owner補完の元slotが違う"
+        )));
     }
     let env = environment::Environment::new(inputs, control)?;
     let all =
         env.completion_assignments(fields, &mut |_, _| {})
             .map_err(|failure| match failure {
                 ValidationFailure::Stop(reason) => ConstructionFailure::Stopped(reason),
-                other => {
-                    ConstructionFailure::Inconsistent(format!("owner補完の構成検査: {other:?}"))
-                }
+                other => ConstructionFailure::Inconsistent(
+                    other.internal_context(format!("owner補完の構成検査: {other:?}")),
+                ),
             })?;
     if all.values.len() != 1 {
         return Ok(None);
@@ -53,14 +53,14 @@ pub(crate) fn determined_owners(
     } else if let Scalar::Tuple(values) = &all.values[0] {
         values.clone()
     } else {
-        return Err(ConstructionFailure::Inconsistent(
-            "owner補完積の型が違う".into(),
-        ));
+        return Err(ConstructionFailure::Inconsistent(internal!(
+            "owner補完積の型が違う"
+        )));
     };
     if fields.len() != values.len() {
-        return Err(ConstructionFailure::Inconsistent(
-            "owner補完積の幅が違う".into(),
-        ));
+        return Err(ConstructionFailure::Inconsistent(internal!(
+            "owner補完積の幅が違う"
+        )));
     }
     let mut owners = Vec::new();
     for (field, value) in fields.iter().zip(values) {
@@ -69,9 +69,9 @@ pub(crate) fn determined_owners(
             snapshot, subject, ..
         } = &value
         else {
-            return Err(ConstructionFailure::Inconsistent(
-                "owner補完値が参照でない".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "owner補完値が参照でない"
+            )));
         };
         owners.push((
             field.clone(),

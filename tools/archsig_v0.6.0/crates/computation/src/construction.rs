@@ -1,4 +1,5 @@
 //! 検査済み三入力から、共通AtomUniverseと対象のConfigurationを生成する。
+use archsig_common::internal::InternalError;
 use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
@@ -188,9 +189,9 @@ impl ConfigurationConstruction {
             construct_resolving_owners(inputs, reading, snapshot, root, control)?
         };
         if self != &expected {
-            return Err(ConstructionFailure::Inconsistent(
-                "Configuration/Uが現在の入力・reading/rootと違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "Configuration/Uが現在の入力・reading/rootと違う"
+            )));
         }
         tick(control)
     }
@@ -198,8 +199,17 @@ impl ConfigurationConstruction {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ConstructionFailure {
     InvalidSelection(String),
-    Inconsistent(String),
+    Inconsistent(InternalError),
     Stopped(Signal),
+}
+impl ConstructionFailure {
+    #[track_caller]
+    pub(crate) fn internal_context(&self, message: String) -> InternalError {
+        match self {
+            Self::Inconsistent(error) => error.with_message(message),
+            _ => internal!(message),
+        }
+    }
 }
 impl From<Signal> for ConstructionFailure {
     fn from(reason: Signal) -> Self {
@@ -285,7 +295,7 @@ pub(crate) fn reading_namespaces(
             continue;
         }
         let vocabulary = law.definitions().vocabularies().get(&name).ok_or_else(|| {
-            ConstructionFailure::Inconsistent(format!("検査済み定義 `{name}` がない"))
+            ConstructionFailure::Inconsistent(internal!(format!("検査済み定義 `{name}` がない")))
         })?;
         for dependency in &vocabulary.dependencies {
             tick(control)?;
@@ -325,9 +335,9 @@ fn has_reference(
                     .get(name)
                     .map(|d| &d.signature)
                 else {
-                    return Err(ConstructionFailure::Inconsistent(
-                        "dataの元定義がない".into(),
-                    ));
+                    return Err(ConstructionFailure::Inconsistent(internal!(
+                        "dataの元定義がない"
+                    )));
                 };
                 for constructor in constructors {
                     tick(control)?;
@@ -402,7 +412,7 @@ fn configuration_with_owners(
                     for (snapshot, id) in references(value, control)? {
                         tick(control)?;
                         let target = index.get(&(snapshot, id)).ok_or_else(|| {
-                            ConstructionFailure::Inconsistent("参照先の存在事実がない".into())
+                            ConstructionFailure::Inconsistent(internal!("参照先の存在事実がない"))
                         })?;
                         let target = exists(target);
                         family.insert(target.clone());
@@ -427,7 +437,7 @@ fn configuration_with_owners(
         if fact.field.is_none() {
             let subject = index
                 .get(&(fact.snapshot.as_str(), fact.subject.as_str()))
-                .ok_or_else(|| ConstructionFailure::Inconsistent("Fのsubjectがない".into()))?;
+                .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("Fのsubjectがない")))?;
             for field in &subject.fields {
                 tick(control)?;
                 requirements.insert(slot(subject, &field.name));
@@ -483,10 +493,10 @@ pub(crate) fn construct_resolving_owners(
     let Some(resolution) = crate::owner_completion::determined_owners(inputs, &fields, control)
         .map_err(|failure| match failure {
             crate::owner_completion::Failure::Invalid(message) => {
-                ConstructionFailure::Inconsistent(message)
+                ConstructionFailure::Inconsistent(internal!(message))
             }
             crate::owner_completion::Failure::Kernel(message) => ConstructionFailure::Inconsistent(
-                format!("owner補完の構成検査: Internal({message:?})"),
+                message.with_message(format!("owner補完の構成検査: Internal({message:?})")),
             ),
             crate::owner_completion::Failure::Stopped(reason) => {
                 ConstructionFailure::Stopped(reason)
@@ -506,7 +516,9 @@ pub(crate) fn construct_resolving_owners(
             .iter()
             .flat_map(|s| &s.subjects)
             .find(|s| s.snapshot == requirement.snapshot && s.id == requirement.subject)
-            .ok_or_else(|| ConstructionFailure::Inconsistent("構成要求のsubjectがない".into()))?;
+            .ok_or_else(|| {
+                ConstructionFailure::Inconsistent(internal!("構成要求のsubjectがない"))
+            })?;
         if subject.fields.iter().any(|field| {
             Some(&field.name) == requirement.field.as_ref()
                 && matches!(field.slot, Slot::Missing)
@@ -581,7 +593,7 @@ fn construct_with_owners(
             .definitions()
             .declarations()
             .get(subject.ty.as_str())
-            .ok_or_else(|| ConstructionFailure::Inconsistent("subjectの元定義がない".into()))?;
+            .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("subjectの元定義がない")))?;
         let (owner, is_entity) = match &signature.signature {
             PrimitiveSignature::Entity {
                 owner: Some(owner), ..
@@ -600,7 +612,7 @@ fn construct_with_owners(
             }
         }
         let field = owner_field.ok_or_else(|| {
-            ConstructionFailure::Inconsistent("owned subjectのowner slotがない".into())
+            ConstructionFailure::Inconsistent(internal!("owned subjectのowner slotがない"))
         })?;
         match &field.slot {
             Slot::Known {
@@ -649,9 +661,9 @@ fn construct_with_owners(
                 ..
             } => {}
             _ => {
-                return Err(ConstructionFailure::Inconsistent(
-                    "owner slotが原始参照でない".into(),
-                ));
+                return Err(ConstructionFailure::Inconsistent(internal!(
+                    "owner slotが原始参照でない"
+                )));
             }
         }
     }
@@ -664,11 +676,9 @@ fn construct_with_owners(
     let condition_order = canonical_facts(conditional.keys().cloned().collect(), control)?;
     for subject in condition_order {
         tick(control)?;
-        conditions.push(
-            conditional.remove(&subject).ok_or_else(|| {
-                ConstructionFailure::Inconsistent("所属条件のsubjectがない".into())
-            })?,
-        );
+        conditions.push(conditional.remove(&subject).ok_or_else(|| {
+            ConstructionFailure::Inconsistent(internal!("所属条件のsubjectがない"))
+        })?);
     }
     let local_domain = SubjectDomain {
         known: canonical_facts(known, control)?,

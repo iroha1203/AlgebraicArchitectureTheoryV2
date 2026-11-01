@@ -24,11 +24,11 @@ pub(super) fn check(
     let record = graph
         .instances
         .get(index)
-        .ok_or("元Law判断のinstanceがない")?;
+        .ok_or(internal!("元Law判断のinstanceがない"))?;
     let request = graph
         .requests
         .get(record.caller.request)
-        .ok_or("元Law判断のRequestがない")?
+        .ok_or(internal!("元Law判断のRequestがない"))?
         .clone();
     let declaration = env
         .indexes
@@ -36,7 +36,7 @@ pub(super) fn check(
         .law()
         .declarations()
         .get(&row.declaration)
-        .ok_or("元Law判断の宣言がない")?;
+        .ok_or(internal!("元Law判断の宣言がない"))?;
     let answer = super::evaluate::instance_law(env, graph, c, &request, declaration, index)?;
     Ok(Reading {
         origin,

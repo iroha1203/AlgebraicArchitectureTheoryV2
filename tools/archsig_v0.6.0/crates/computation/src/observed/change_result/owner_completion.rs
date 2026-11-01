@@ -47,10 +47,12 @@ pub(super) fn compute(
     {
         return Ok(None);
     }
-    let name = request.declaration().ok_or("補完solveのLawがない")?;
+    let name = request
+        .declaration()
+        .ok_or(internal!("補完solveのLawがない"))?;
     let declaration = &env.indexes.inputs.law().declarations()[name];
     let Signature::Law { body, params, .. } = &declaration.signature else {
-        return Err("補完solveがLawでない".into());
+        return Err(internal!("補完solveがLawでない").into());
     };
     let enumeration = match env.completion_assignments(&fields, &mut |_, _| {}) {
         Ok(enumeration) => enumeration,
@@ -60,7 +62,7 @@ pub(super) fn compute(
         Err(failure) => return Err(failure),
     };
     if enumeration.values.is_empty() {
-        return Err("検査済み入力のowner補完が空".into());
+        return Err(internal!("検査済み入力のowner補完が空").into());
     }
     let mut b = Builder {
         g,
@@ -112,12 +114,12 @@ pub(super) fn compute(
             vec![value_]
         } else {
             let Scalar::Tuple(ref values) = value_ else {
-                return Err("owner補完のslot積が違う".into());
+                return Err(internal!("owner補完のslot積が違う").into());
             };
             values.clone()
         };
         if values.len() != fields.len() {
-            return Err("owner補完の位置数が違う".into());
+            return Err(internal!("owner補完の位置数が違う").into());
         }
         let completions = fields
             .iter()
@@ -136,7 +138,7 @@ pub(super) fn compute(
         let candidates = search
             .candidates
             .as_ref()
-            .ok_or("owner補完に有限候補表がない")?;
+            .ok_or(internal!("owner補完に有限候補表がない"))?;
         let additional = search
             .missing
             .iter()
@@ -196,7 +198,7 @@ pub(super) fn compute(
             let point = candidates
                 .rows
                 .get(row.candidate)
-                .ok_or("補完解の元候補がない")?;
+                .ok_or(internal!("補完解の元候補がない"))?;
             let mut duplicate = false;
             for previous in &original_points {
                 let mut equal = previous.len() == point.parameters.len();
@@ -233,7 +235,7 @@ pub(super) fn compute(
             let previous = previous_search
                 .candidates
                 .as_ref()
-                .ok_or("共通候補表がない")?;
+                .ok_or(internal!("共通候補表がない"))?;
             common_states = previous.subjects == candidates.subjects
                 && previous.parameter_types == candidates.parameter_types
                 && previous.rows.len() == candidates.rows.len()
@@ -258,7 +260,7 @@ pub(super) fn compute(
         }
     }
     if common_states {
-        let search = common.ok_or("有限補完の共通候補表がない")?;
+        let search = common.ok_or(internal!("有限補完の共通候補表がない"))?;
         let mut result = super::render_search(env, g, architecture, base, request, c, search)?;
         for part in &mut result.0 {
             part.scope.merge(&enumeration.scope);
@@ -326,7 +328,7 @@ pub(super) fn compute(
         b.parts[claim.0 - base]
             .judgment
             .as_mut()
-            .ok_or("補完修復判断がない")?
+            .ok_or(internal!("補完修復判断がない"))?
             .reasons
             .clear();
         let reasons = if status == Decision::Refuted {
@@ -349,7 +351,7 @@ pub(super) fn compute(
         b.parts[claim.0 - base]
             .judgment
             .as_mut()
-            .ok_or("補完修復判断がない")?
+            .ok_or(internal!("補完修復判断がない"))?
             .reasons = reasons.clone();
         outputs.insert("proposition".into(), claim);
         (claim, status, reasons)
@@ -366,7 +368,7 @@ pub(super) fn compute(
         part.reasons = vec![reason.clone()];
         part.judgment
             .as_mut()
-            .ok_or("有限補完の構成判断がない")?
+            .ok_or(internal!("有限補完の構成判断がない"))?
             .reasons = vec![reason.clone()];
         (claim, Decision::Undetermined, vec![reason])
     } else {
@@ -413,7 +415,7 @@ fn proof(
     };
     part.reasons = reasons.clone();
     part.evidence = vec![evidence];
-    let judgment = part.judgment.as_mut().ok_or("補完判断がない")?;
+    let judgment = part.judgment.as_mut().ok_or(internal!("補完判断がない"))?;
     judgment.reasons = reasons;
     judgment.evidence = vec![evidence];
     Ok(r)

@@ -72,7 +72,9 @@ pub(in crate::observed) fn canonical_reasons(
                     .stop_reason()
                     .map(ValidationFailure::Stop)
                     .unwrap_or_else(|| {
-                        ValidationFailure::Internal("補完理由のcanonical keyを構成できない".into())
+                        ValidationFailure::Internal(internal!(
+                            "補完理由のcanonical keyを構成できない"
+                        ))
                     })
             })?;
         keys.push((key, index));
@@ -112,14 +114,14 @@ fn components(
     let values = match value {
         value if types.len() == 1 => vec![value.clone()],
         Scalar::Tuple(values) if types.len() > 1 && values.len() == types.len() => values.clone(),
-        _ => return Err("補完代入の元slot数・型が違う".into()),
+        _ => return Err(internal!("補完代入の元slot数・型が違う").into()),
     };
     for (value, ty) in values.iter().zip(types) {
         control.checkpoint(Checkpoint::FiniteIteration)?;
         if !super::super::finite::field_completion_supported(ty, law, control)?
             || value.ty() != ty.erase()
         {
-            return Err("補完代入の成分型が元の有限slotと違う".into());
+            return Err(internal!("補完代入の成分型が元の有限slotと違う").into());
         }
     }
     control.checkpoint(Checkpoint::FiniteIteration)?;
@@ -232,7 +234,9 @@ impl Environment<'_> {
             &self.state,
             &fact.snapshot,
             &fact.subject,
-            fact.field.as_deref().ok_or("補完slotに元fieldがない")?,
+            fact.field
+                .as_deref()
+                .ok_or(internal!("補完slotに元fieldがない"))?,
         )?;
         let Type::Map(domain, codomain) = &field.ty else {
             return Ok(None);
@@ -316,7 +320,7 @@ impl Environment<'_> {
                     .as_ref()
                     .and_then(|(_, rosters)| rosters.get(&(entity.into(), name.into())))
                     .cloned()
-                    .ok_or_else(|| "field候補に元Owned所属族がない".into())
+                    .ok_or_else(|| internal!("field候補に元Owned所属族がない").into())
             },
             &mut |index| observer.borrow_mut()("type_enum", index),
         )?;
@@ -336,7 +340,11 @@ impl Environment<'_> {
                 pinned.push(archsig_input::archmap::FieldAssignment {
                     snapshot: fact.snapshot.clone(),
                     subject: fact.subject.clone(),
-                    field: fact.field.clone().ok_or("補完に元fieldがない")?.into(),
+                    field: fact
+                        .field
+                        .clone()
+                        .ok_or(internal!("補完に元fieldがない"))?
+                        .into(),
                     value: data::input_json(&value, &self.control)?,
                 });
             }
@@ -355,7 +363,7 @@ impl Environment<'_> {
                     if issue.code == archsig_common::issue::Code::InconsistentObservation => {}
                 Err(CheckFailure::Stopped(reason)) => return Err(ValidationFailure::Stop(reason)),
                 Err(CheckFailure::Input(issue)) => {
-                    return Err(ValidationFailure::Internal(format!(
+                    return Err(ValidationFailure::Internal(internal!(
                         "参照補完候補の元入力検査: {}",
                         issue.message
                     )));
@@ -367,7 +375,7 @@ impl Environment<'_> {
         all.support.sort();
         all.support.dedup();
         if all.values.is_empty() {
-            return Err("検査済み入力の参照補完全域が空になった".into());
+            return Err(internal!("検査済み入力の参照補完全域が空になった").into());
         }
         self.tick()?;
         Ok(all)
@@ -376,7 +384,7 @@ impl Environment<'_> {
     fn completion_slot_types(&self, fields: &[Fact]) -> Result<Vec<Type>, ValidationFailure> {
         self.tick()?;
         if fields.is_empty() {
-            return Err("補完slotの型族が空である".into());
+            return Err(internal!("補完slotの型族が空である").into());
         }
         let mut types = Vec::new();
         for fact in fields {
@@ -385,13 +393,15 @@ impl Environment<'_> {
                 &self.state,
                 &fact.snapshot,
                 &fact.subject,
-                fact.field.as_deref().ok_or("補完slotに元field名がない")?,
+                fact.field
+                    .as_deref()
+                    .ok_or(internal!("補完slotに元field名がない"))?,
             )?;
             if fact.atom.is_some()
                 || field.slot != Slot::Missing
                 || !self.completion_type_supported(&field.ty)?
             {
-                return Err("補完slotが元の有限型の欠測fieldでない".into());
+                return Err(internal!("補完slotが元の有限型の欠測fieldでない").into());
             }
             types.push(field.ty.erase());
             self.tick()?;
@@ -594,7 +604,7 @@ impl Environment<'_> {
                     facts.is_empty() || facts.iter().any(|fact| !fields.contains(fact))
                 })
             {
-                return Err("欠測理由のslotが元実読取りSourceと違う".into());
+                return Err(internal!("欠測理由のslotが元実読取りSourceと違う").into());
             }
             for fact in fields {
                 self.tick()?;
@@ -609,15 +619,17 @@ impl Environment<'_> {
                     &self.state,
                     &fact.snapshot,
                     &fact.subject,
-                    fact.field.as_deref().ok_or("欠測slotにfieldがない")?,
+                    fact.field
+                        .as_deref()
+                        .ok_or(internal!("欠測slotにfieldがない"))?,
                 )?;
                 if field.slot != Slot::Missing || fact.atom.is_some() {
-                    return Err("補完の元slotが現在の欠測でない".into());
+                    return Err(internal!("補完の元slotが現在の欠測でない").into());
                 }
                 let request = graph
                     .requests
                     .get(context.request)
-                    .ok_or("欠測Sourceの元Requestがない")?;
+                    .ok_or(internal!("欠測Sourceの元Requestがない"))?;
                 reasons.push(Reason {
                     kind: ReasonKind::Missing,
                     request: request.id.clone(),
@@ -702,7 +714,7 @@ impl Environment<'_> {
             sources,
         }) = &node.payload
         else {
-            return Err("補完の元Sourceがない".into());
+            return Err(internal!("補完の元Sourceがない").into());
         };
         let context = graph.context_at(reference.0);
         if context.case.is_some()
@@ -710,19 +722,23 @@ impl Environment<'_> {
             || context.iteration.is_some()
             || context.instance.is_some()
         {
-            return Err("補完Seedが元Request rootでない".into());
+            return Err(internal!("補完Seedが元Request rootでない").into());
         }
         let request = graph
             .requests
             .get(context.request)
-            .ok_or("補完Seedの元Requestがない")?;
+            .ok_or(internal!("補完Seedの元Requestがない"))?;
         let declaration = self
             .indexes
             .inputs
             .law()
             .declarations()
-            .get(request.declaration().ok_or("元要求に宣言がない")?)
-            .ok_or("補完Seedの元宣言がない")?;
+            .get(
+                request
+                    .declaration()
+                    .ok_or(internal!("元要求に宣言がない"))?,
+            )
+            .ok_or(internal!("補完Seedの元宣言がない"))?;
         let (params, body, guard, ty) = match &declaration.signature {
             Signature::View {
                 params,
@@ -735,7 +751,7 @@ impl Environment<'_> {
                 guard,
                 ..
             } if request.kind == QuestionKind::Check => (params, *body, *guard, Type::Bool),
-            _ => return Err("補完Seedの問いと宣言が違う".into()),
+            _ => return Err(internal!("補完Seedの問いと宣言が違う").into()),
         };
         let body_location = Location::Law {
             span: self.indexes.inputs.law().exprs()[body].span,
@@ -744,7 +760,7 @@ impl Environment<'_> {
             span: self.indexes.inputs.law().exprs()[id].span,
         });
         if location != &body_location && Some(location) != guard_location.as_ref() {
-            return Err("補完Seedが元body/guard出現でない".into());
+            return Err(internal!("補完Seedが元body/guard出現でない").into());
         }
         let expected_free: Vec<_> = params
             .iter()
@@ -773,7 +789,7 @@ impl Environment<'_> {
             || fields.is_empty()
             || fields.len() != sources.len()
         {
-            return Err("補完Seedの自由parameter/固定束縛/欠測族が違う".into());
+            return Err(internal!("補完Seedの自由parameter/固定束縛/欠測族が違う").into());
         }
         let mut scope = Scope::default();
         scope.readings.insert(declaration.reading.clone());
@@ -786,7 +802,7 @@ impl Environment<'_> {
         for root in roots {
             self.tick()?;
             if root.0 >= reference.0 || graph.context_at(root.0).request != context.request {
-                return Err("補完Seedに未来/別Requestのrootがある".into());
+                return Err(internal!("補完Seedに未来/別Requestのrootがある").into());
             }
             self.validate_at(graph, graph.get(*root)?, root.0)?;
             scope.merge(&graph.get(*root)?.scope);
@@ -794,7 +810,7 @@ impl Environment<'_> {
         }
         let (expected_fields, expected_sources, reasons) = self.completion_slots(graph, roots)?;
         if *fields != expected_fields || *sources != expected_sources {
-            return Err("補完Seedのslot identity/元field出現が違う".into());
+            return Err(internal!("補完Seedのslot identity/元field出現が違う").into());
         }
         let types = self.completion_slot_types(fields)?;
         let assignments = self.completion_assignment_context(fields)?;
@@ -803,7 +819,7 @@ impl Environment<'_> {
         for source in sources {
             self.tick()?;
             if source.0 >= reference.0 {
-                return Err("補完SeedのfieldSourceが既出でない".into());
+                return Err(internal!("補完SeedのfieldSourceが既出でない").into());
             }
         }
         scope.completions = true;
@@ -829,7 +845,7 @@ impl Environment<'_> {
             || node.scope != scope
             || !reasons_equal(&node.reasons, &reasons)
         {
-            return Err("補完Seedの型/元辺/Scope/理由が違う".into());
+            return Err(internal!("補完Seedの型/元辺/Scope/理由が違う").into());
         }
         Ok(Seed {
             reference,
@@ -890,7 +906,7 @@ impl Environment<'_> {
     ) -> Result<Vec<NodeRef>, ValidationFailure> {
         let node = graph.get(domain)?;
         let Some(Payload::Domain { ty, elements }) = &node.payload else {
-            return Err("補完の有限代入域がない".into());
+            return Err(internal!("補完の有限代入域がない").into());
         };
         if domain.0 <= seed.reference.0
             || graph.context_at(domain.0) != seed.context
@@ -905,17 +921,17 @@ impl Environment<'_> {
                     .chain(elements.iter().copied())
                     .collect::<Vec<_>>()
         {
-            return Err("補完Domainの型/元Seed/Scope/支持が違う".into());
+            return Err(internal!("補完Domainの型/元Seed/Scope/支持が違う").into());
         }
         let enumeration = self.completion_assignments(&seed.fields, &mut |_, _| {})?;
         if elements.is_empty() || elements.len() != enumeration.values.len() {
-            return Err("補完Domainが空/全域件数と違う".into());
+            return Err(internal!("補完Domainが空/全域件数と違う").into());
         }
         let mut seen = Vec::new();
         for element in elements {
             self.tick()?;
             if element.0 >= domain.0 || graph.context_at(element.0) != seed.context {
-                return Err("補完memberが既出の元Contextでない".into());
+                return Err(internal!("補完memberが既出の元Contextでない").into());
             }
             let member = graph.get(*element)?;
             let value = graph.scalar(*element)?;
@@ -929,7 +945,7 @@ impl Environment<'_> {
                 || !data::contains(&enumeration.values, value, &self.control)?
                 || data::contains(&seen, value, &self.control)?
             {
-                return Err("補完memberの元型/代入/重複/producerが違う".into());
+                return Err(internal!("補完memberの元型/代入/重複/producerが違う").into());
             }
             seen.push(value.clone());
         }
@@ -943,16 +959,19 @@ impl Environment<'_> {
     ) -> Result<Vec<(Fact, NodeRef, Scalar)>, ValidationFailure> {
         self.validation_graph_session(graph, || {
             self.tick()?;
-            let record = graph.cases.get(case).ok_or("補完case索引がない")?;
+            let record = graph
+                .cases
+                .get(case)
+                .ok_or(internal!("補完case索引がない"))?;
             let limit = self.state.cutoff.get().min(graph.nodes.len());
             let prefix = std::iter::once(record.seed)
                 .chain([record.domain, record.member])
                 .chain(record.values.iter().copied())
                 .map(|r| r.0)
                 .max()
-                .ok_or("補完caseの元producerがない")?;
+                .ok_or(internal!("補完caseの元producerがない"))?;
             if prefix >= limit {
-                return Err("補完caseに未出producerがある".into());
+                return Err(internal!("補完caseに未出producerがある").into());
             }
             // assignmentの証拠はcase本体より前のcaller prefixだけに属する。
             // 深いcalleeのContext/全称Planを元の欠測slotへ逆流させない。
@@ -992,14 +1011,17 @@ impl Environment<'_> {
         graph: &Graph,
         case: usize,
     ) -> Result<Vec<(Fact, NodeRef, Scalar)>, ValidationFailure> {
-        let record = graph.cases.get(case).ok_or("補完case索引がない")?;
+        let record = graph
+            .cases
+            .get(case)
+            .ok_or(internal!("補完case索引がない"))?;
         let seed = self.completion_seed(graph, record.seed)?;
         if record.caller != seed.context || record.caller.case.is_some() {
-            return Err("補完caseの元callerが違う".into());
+            return Err(internal!("補完caseの元callerが違う").into());
         }
         let elements = self.completion_domain(graph, &seed, record.domain)?;
         if !elements.contains(&record.member) || record.values.len() != seed.fields.len() {
-            return Err("補完caseのmember/slot数が違う".into());
+            return Err(internal!("補完caseのmember/slot数が違う").into());
         }
         let values = components(
             graph.scalar(record.member)?,
@@ -1026,7 +1048,7 @@ impl Environment<'_> {
                 || node.support != seed.support
                 || !node.reasons.is_empty()
             {
-                return Err("補完slot projectionが元member/field/producerと違う".into());
+                return Err(internal!("補完slot projectionが元member/field/producerと違う").into());
             }
             result.push((seed.fields[i].clone(), reference, value));
         }
@@ -1059,7 +1081,10 @@ impl Environment<'_> {
             return Ok(None);
         };
         self.tick()?;
-        let case = graph.cases.get(index).ok_or("固定Answerの補完caseがない")?;
+        let case = graph
+            .cases
+            .get(index)
+            .ok_or(internal!("固定Answerの補完caseがない"))?;
         let seed = self.completion_seed(graph, case.seed)?;
         if case.caller != seed.context
             || context
@@ -1068,23 +1093,23 @@ impl Environment<'_> {
                     ..seed.context
                 })
         {
-            return Err("固定Answerの補完caseが元Request rootと違う".into());
+            return Err(internal!("固定Answerの補完caseが元Request rootと違う").into());
         }
         self.completion_values(graph, index)?;
         let binding = seed
             .bindings
             .iter()
             .find(|b| b.name == parameter.name && b.ty == parameter.ty.erase())
-            .ok_or("補完Seedに元固定Answer束縛がない")?;
+            .ok_or(internal!("補完Seedに元固定Answer束縛がない"))?;
         let request = self
             .indexes
             .original_requests
             .and_then(|requests| requests.get(context.request))
-            .ok_or("補完固定Answerの元Requestがない")?;
+            .ok_or(internal!("補完固定Answerの元Requestがない"))?;
         if self.object_view_is_bound(parameter) {
             self.object_view_binding_matches(graph, parameter, binding.value)?;
             if graph.context_at(binding.value.0) != seed.context {
-                return Err("有限view固定値が元Seedのproducerでない".into());
+                return Err(internal!("有限view固定値が元Seedのproducerでない").into());
             }
             return Ok(Some(binding.value));
         }
@@ -1092,7 +1117,7 @@ impl Environment<'_> {
             .arguments
             .iter()
             .find(|a| a.name == format!("bind.{}", parameter.name))
-            .ok_or("補完固定Answerの元selectorがない")?;
+            .ok_or(internal!("補完固定Answerの元selectorがない"))?;
         self.answer_binding_matches(graph, &selected.value, binding.value, parameter.span)?;
         self.tick()?;
         Ok(Some(binding.value))
@@ -1114,26 +1139,30 @@ impl Environment<'_> {
             || context.iteration.is_some()
             || context.instance.is_some()
         {
-            return Err("補完固定束縛の元Sourceが別case producer".into());
+            return Err(internal!("補完固定束縛の元Sourceが別case producer").into());
         }
         let source_bindings = self.expression_bindings(graph, source)?;
         if bindings != source_bindings {
-            return Err("補完whole固定束縛が元case Sourceと違う".into());
+            return Err(internal!("補完whole固定束縛が元case Sourceと違う").into());
         }
         let request = graph
             .requests
             .get(context.request)
-            .ok_or("補完caseの元Requestがない")?;
+            .ok_or(internal!("補完caseの元Requestがない"))?;
         let declaration = self
             .indexes
             .inputs
             .law()
             .declarations()
-            .get(request.declaration().ok_or("元要求に宣言がない")?)
-            .ok_or("補完caseの元宣言がない")?;
+            .get(
+                request
+                    .declaration()
+                    .ok_or(internal!("元要求に宣言がない"))?,
+            )
+            .ok_or(internal!("補完caseの元宣言がない"))?;
         let params = match &declaration.signature {
             Signature::View { params, .. } | Signature::Law { params, .. } => params,
-            _ => return Err("補完case対象署名が違う".into()),
+            _ => return Err(internal!("補完case対象署名が違う").into()),
         };
         let fixed: Vec<_> = params
             .iter()
@@ -1146,7 +1175,7 @@ impl Environment<'_> {
             })
             .collect();
         if bindings.len() != fixed.len() || seed.bindings.len() != fixed.len() {
-            return Err("補完case固定parameter件数が違う".into());
+            return Err(internal!("補完case固定parameter件数が違う").into());
         }
         for ((parameter, binding), observed) in fixed.iter().zip(bindings).zip(&seed.bindings) {
             self.tick()?;
@@ -1156,11 +1185,13 @@ impl Environment<'_> {
                 || observed.ty != binding.ty
                 || binding.value.0 >= source.0
             {
-                return Err("補完case固定bindings署名/producerが違う".into());
+                return Err(internal!("補完case固定bindings署名/producerが違う").into());
             }
             if self.object_view_is_bound(parameter) {
                 if binding.value != observed.value {
-                    return Err("有限view補完caseが元Seedのparameter producerでない".into());
+                    return Err(
+                        internal!("有限view補完caseが元Seedのparameter producerでない").into(),
+                    );
                 }
                 self.object_view_binding_matches(graph, parameter, binding.value)?;
                 continue;
@@ -1169,19 +1200,19 @@ impl Environment<'_> {
                 .arguments
                 .iter()
                 .find(|a| a.name == format!("bind.{}", parameter.name))
-                .ok_or("補完case固定selectorがない")?;
+                .ok_or(internal!("補完case固定selectorがない"))?;
             if matches!(&selected.value, Selector::Answer { .. }) {
                 if binding.value != observed.value {
-                    return Err("補完case固定Answerが元Seedのproducerでない".into());
+                    return Err(internal!("補完case固定Answerが元Seedのproducerでない").into());
                 }
                 self.validate_at(graph, graph.get(binding.value)?, binding.value.0)?;
                 continue;
             }
             if graph.context_at(binding.value.0) != context {
-                return Err("補完case固定subjectが別producer".into());
+                return Err(internal!("補完case固定subjectが別producer").into());
             }
             let Selector::Subject { snapshot, subject } = &selected.value else {
-                return Err("補完case固定selectorがsubjectでない".into());
+                return Err(internal!("補完case固定selectorがsubjectでない").into());
             };
             let subject = self.indexes.subject(snapshot, subject)?;
             let expected = Scalar::Subject {
@@ -1196,7 +1227,9 @@ impl Environment<'_> {
                 || !matches!(&producer.rule,Rule::Input{kind:"subject",location:Location::ArchMap{pointer,span:None}} if pointer==&subject.pointer)
                 || !producer.arguments.is_empty()
             {
-                return Err("補完case固定bindingが元selectorのInput subjectでない".into());
+                return Err(
+                    internal!("補完case固定bindingが元selectorのInput subjectでない").into(),
+                );
             }
             self.validate_at(graph, producer, binding.value.0)?;
         }
@@ -1216,7 +1249,7 @@ impl Environment<'_> {
         if evaluations.len() != elements.len()
             || (!propositions.is_empty() && propositions.len() != elements.len())
         {
-            return Err("補完全検査のcoverage件数が違う".into());
+            return Err(internal!("補完全検査のcoverage件数が違う").into());
         }
         let request = &graph.requests[seed.context.request];
         let mut scope = seed.scope.clone();
@@ -1227,8 +1260,13 @@ impl Environment<'_> {
         for &evaluation in evaluations {
             self.tick()?;
             let context = graph.context_at(evaluation.0);
-            let index = context.case.ok_or("補完内whole評価にcaseがない")?;
-            let case = graph.cases.get(index).ok_or("whole評価のcase索引がない")?;
+            let index = context
+                .case
+                .ok_or(internal!("補完内whole評価にcaseがない"))?;
+            let case = graph
+                .cases
+                .get(index)
+                .ok_or(internal!("whole評価のcase索引がない"))?;
             if context.request != seed.context.request
                 || context.frame.is_some()
                 || context.iteration.is_some()
@@ -1239,17 +1277,18 @@ impl Environment<'_> {
                 || !elements.contains(&case.member)
                 || seen.contains(&case.member)
             {
-                return Err("補完全検査に別case/重複memberがある".into());
+                return Err(internal!("補完全検査に別case/重複memberがある").into());
             }
             self.completion_values(graph, index)?;
             seen.push(case.member);
             self.recheck_evaluation(graph, evaluation)?;
             let (expression, bindings, v) = self.evaluation(graph, evaluation)?;
-            let declaration = &self.indexes.inputs.law().declarations()
-                [request.declaration().ok_or("元要求に宣言がない")?];
+            let declaration = &self.indexes.inputs.law().declarations()[request
+                .declaration()
+                .ok_or(internal!("元要求に宣言がない"))?];
             let body = match &declaration.signature {
                 Signature::View { body, .. } | Signature::Law { body, .. } => *body,
-                _ => return Err("補完の対象宣言が違う".into()),
+                _ => return Err(internal!("補完の対象宣言が違う").into()),
             };
             let raw_source = if request.kind == QuestionKind::Check {
                 let proposition = propositions
@@ -1259,7 +1298,7 @@ impl Environment<'_> {
                 if let Some(proposition) = proposition {
                     let p = graph.get(proposition)?;
                     if p.arguments.get(1) != Some(&evaluation) {
-                        return Err("補完case命題が別whole評価を指す".into());
+                        return Err(internal!("補完case命題が別whole評価を指す").into());
                     }
                     self.validate_at(graph, p, proposition.0)?;
                 }
@@ -1302,10 +1341,10 @@ impl Environment<'_> {
                             && graph.context_at(e.0) == graph.context_at(proposition.0)
                     })
                 {
-                    return Err("補完case命題とwhole評価が一対一でない".into());
+                    return Err(internal!("補完case命題とwhole評価が一対一でない").into());
                 }
                 if propositions.iter().filter(|r| **r == proposition).count() != 1 {
-                    return Err("補完case命題を重複した".into());
+                    return Err(internal!("補完case命題を重複した").into());
                 }
                 self.validate_at(graph, node, proposition.0)?;
                 scope.merge(&node.scope);
@@ -1354,22 +1393,25 @@ impl Environment<'_> {
         ) {
             return Ok(None);
         }
-        let domain = *node.arguments.get(1).ok_or("補完集約の代入Domainがない")?;
+        let domain = *node
+            .arguments
+            .get(1)
+            .ok_or(internal!("補完集約の代入Domainがない"))?;
         let evaluations = parts
             .first()
-            .ok_or("補完集約のpartがない")?
+            .ok_or(internal!("補完集約のpartがない"))?
             .children
             .clone();
         let count = evaluations.len();
         if node.arguments.first() != Some(expression)
             || node.arguments.get(2..2 + count) != Some(evaluations.as_slice())
         {
-            return Err("補完集約の実case辺が違う".into());
+            return Err(internal!("補完集約の実case辺が違う").into());
         }
         let propositions = node
             .arguments
             .get(2 + count..)
-            .ok_or("補完集約辺がない")?
+            .ok_or(internal!("補完集約辺がない"))?
             .to_vec();
         Ok(Some((*expression, domain, evaluations, propositions)))
     }
@@ -1383,11 +1425,12 @@ impl Environment<'_> {
         limit: usize,
     ) -> Result<(Vec<NodeRef>, Vec<NodeRef>), ValidationFailure> {
         let request = &graph.requests[seed.context.request];
-        let declaration = &self.indexes.inputs.law().declarations()
-            [request.declaration().ok_or("元要求に宣言がない")?];
+        let declaration = &self.indexes.inputs.law().declarations()[request
+            .declaration()
+            .ok_or(internal!("元要求に宣言がない"))?];
         let body = match &declaration.signature {
             Signature::View { body, .. } | Signature::Law { body, .. } => *body,
-            _ => return Err("補完producer宣言がない".into()),
+            _ => return Err(internal!("補完producer宣言がない").into()),
         };
         let mut evaluations = Vec::new();
         let mut propositions = Vec::new();
@@ -1413,7 +1456,10 @@ impl Environment<'_> {
                 if !matches!(&node.payload, Some(Payload::Proposition { .. })) {
                     continue;
                 }
-                let evaluation = *node.arguments.get(1).ok_or("補完case命題の評価がない")?;
+                let evaluation = *node
+                    .arguments
+                    .get(1)
+                    .ok_or(internal!("補完case命題の評価がない"))?;
                 evaluations.push(evaluation);
                 propositions.push(NodeRef(i));
             } else if let Some(Payload::Evaluation { expression, .. }) = &node.payload {
@@ -1452,7 +1498,7 @@ impl Environment<'_> {
             self.tick()?;
             let proof = graph.get(reference)?;
             if proof.arguments.get(..2) != Some([a.seed.reference, domain].as_slice()) {
-                return Err("補完集約の証拠が別Seed/Domain".into());
+                return Err(internal!("補完集約の証拠が別Seed/Domain").into());
             }
             self.validate_at(graph, proof, reference.0)?;
             match &proof.payload {
@@ -1471,11 +1517,11 @@ impl Environment<'_> {
                 {
                     pair += 1
                 }
-                _ => return Err("補完集約に別wholeの証拠がある".into()),
+                _ => return Err(internal!("補完集約に別wholeの証拠がある").into()),
             }
         }
         if full != usize::from(a.value.is_some()) || pair != usize::from(a.pair.is_some()) {
-            return Err("補完集約の全検査/補完対が不足/余分".into());
+            return Err(internal!("補完集約の全検査/補完対が不足/余分").into());
         }
         Ok(())
     }
@@ -1487,7 +1533,7 @@ impl Environment<'_> {
         limit: usize,
     ) -> Result<bool, ValidationFailure> {
         if node.arguments.iter().any(|r| r.0 >= limit) {
-            return Err("補完nodeが未来を参照する".into());
+            return Err(internal!("補完nodeが未来を参照する").into());
         }
         if matches!(&node.payload, Some(Payload::CompletionSeed { .. })) {
             // 未挿入nodeも元入力へ照合するため、一時Graphを作らず同じ構造検査を行う。
@@ -1505,13 +1551,14 @@ impl Environment<'_> {
         {
             let seed = self.completion_seed(graph, *body)?;
             let request = &graph.requests[seed.context.request];
-            let d = &self.indexes.inputs.law().declarations()
-                [request.declaration().ok_or("元要求に宣言がない")?];
+            let d = &self.indexes.inputs.law().declarations()[request
+                .declaration()
+                .ok_or(internal!("元要求に宣言がない"))?];
             let Signature::Law {
                 role: r, guard: g, ..
             } = &d.signature
             else {
-                return Err("補完命題の対象がLawでない".into());
+                return Err(internal!("補完命題の対象がLawでない").into());
             };
             let offset = 1 + usize::from(guard.is_some());
             if name != &d.name
@@ -1528,7 +1575,7 @@ impl Environment<'_> {
                 || !clean(node, "law_instance")
                 || !node.reasons.is_empty()
             {
-                return Err("補完LawInstanceの元宣言/Context/bindingsが違う".into());
+                return Err(internal!("補完LawInstanceの元宣言/Context/bindingsが違う").into());
             }
             match (guard, g) {
                 (Some(actual), Some(id)) => {
@@ -1542,16 +1589,16 @@ impl Environment<'_> {
                         || s.context != seed.context
                         || node.arguments.get(1) != Some(actual)
                     {
-                        return Err("補完guardSeedが元Lawと違う".into());
+                        return Err(internal!("補完guardSeedが元Lawと違う").into());
                     }
                 }
                 (None, None) => {}
-                _ => return Err("補完LawInstanceのguardが違う".into()),
+                _ => return Err(internal!("補完LawInstanceのguardが違う").into()),
             }
             let props = node
                 .arguments
                 .get(offset..)
-                .ok_or("補完LawInstanceにcase命題がない")?;
+                .ok_or(internal!("補完LawInstanceにcase命題がない"))?;
             let mut evals = Vec::new();
             for p in props {
                 evals.push(
@@ -1559,25 +1606,27 @@ impl Environment<'_> {
                         .get(*p)?
                         .arguments
                         .get(1)
-                        .ok_or("case命題にwhole評価がない")?,
+                        .ok_or(internal!("case命題にwhole評価がない"))?,
                 );
             }
-            let first = *evals.first().ok_or("補完LawInstanceのcaseが空")?;
+            let first = *evals
+                .first()
+                .ok_or(internal!("補完LawInstanceのcaseが空"))?;
             let c = graph
                 .cases
                 .get(
                     graph
                         .context_at(first.0)
                         .case
-                        .ok_or("case命題の補完がない")?,
+                        .ok_or(internal!("case命題の補完がない"))?,
                 )
-                .ok_or("case索引がない")?;
+                .ok_or(internal!("case索引がない"))?;
             let a = self.completion_aggregate(graph, *body, c.domain, &evals, props)?;
             if node.ty != NodeType::LawInstance
                 || node.scope != a.scope
                 || node.support != a.support
             {
-                return Err("補完LawInstanceの全case支持/Scopeが違う".into());
+                return Err(internal!("補完LawInstanceの全case支持/Scopeが違う").into());
             }
             return Ok(true);
         }
@@ -1600,7 +1649,10 @@ impl Environment<'_> {
                     return Ok(true);
                 }
                 if matches!(&node.rule, Rule::Construction("evaluation")) {
-                    let domain = *node.arguments.get(1).ok_or("補完値のDomainがない")?;
+                    let domain = *node
+                        .arguments
+                        .get(1)
+                        .ok_or(internal!("補完値のDomainがない"))?;
                     let a = self.completion_aggregate(
                         graph,
                         seed_ref,
@@ -1620,7 +1672,7 @@ impl Environment<'_> {
                         || !node.reasons.is_empty()
                         || graph.context_at(limit) != seed.context
                     {
-                        return Err("全補完値が元whole全検査と違う".into());
+                        return Err(internal!("全補完値が元whole全検査と違う").into());
                     }
                     self.completion_evidence(graph, node, &a, domain)?;
                     return Ok(true);
@@ -1647,7 +1699,7 @@ impl Environment<'_> {
                     || node.support != a.support
                     || graph.context_at(limit) != seed.context
                 {
-                    return Err("補完全検査の全coverage/同一結果が違う".into());
+                    return Err(internal!("補完全検査の全coverage/同一結果が違う").into());
                 }
                 return Ok(true);
             }
@@ -1702,7 +1754,7 @@ impl Environment<'_> {
                 || (graph.requests[a.seed.context.request].kind == QuestionKind::Check
                     && props.len() != evals.len())
             {
-                return Err("補完集約Evaluationの元case/型/支持/Scopeが違う".into());
+                return Err(internal!("補完集約Evaluationの元case/型/支持/Scopeが違う").into());
             }
             self.completion_evidence(graph, node, &a, domain)?;
             match (value, &a.value) {
@@ -1716,12 +1768,12 @@ impl Environment<'_> {
                                 .collect::<Vec<_>>()
                         || graph.context_at(reference.0) != a.seed.context
                     {
-                        return Err("補完集約値が別producer".into());
+                        return Err(internal!("補完集約値が別producer").into());
                     }
                     self.validate_at(graph, producer, reference.0)?;
                 }
                 (None, None) => {}
-                _ => return Err("補完集約値の有無が違う".into()),
+                _ => return Err(internal!("補完集約値の有無が違う").into()),
             }
             return Ok(true);
         }
@@ -1732,11 +1784,14 @@ impl Environment<'_> {
             )
         {
             self.validate_at(graph, graph.get(*instance)?, instance.0)?;
-            let evaluation = *node.arguments.get(1).ok_or("補完命題の集約評価がない")?;
+            let evaluation = *node
+                .arguments
+                .get(1)
+                .ok_or(internal!("補完命題の集約評価がない"))?;
             let e = graph.get(evaluation)?;
             let (seed, domain, evals, props) = self
                 .completion_evaluation_parts(graph, e)?
-                .ok_or("補完命題が元集約評価を指さない")?;
+                .ok_or(internal!("補完命題が元集約評価を指さない"))?;
             let Some(Payload::CompletionInstance {
                 body: instance_seed,
                 guard: instance_guard,
@@ -1749,12 +1804,14 @@ impl Environment<'_> {
                 .get(*instance)?
                 .arguments
                 .get(1 + usize::from(instance_guard.is_some())..)
-                .ok_or("補完LawInstanceのcase命題群がない")?;
+                .ok_or(internal!("補完LawInstanceのcase命題群がない"))?;
             if *instance_seed != seed
                 || instance_props.len() != props.len()
                 || instance_props.iter().any(|r| !props.contains(r))
             {
-                return Err("補完命題のLawInstanceと集約Evaluationが別Seed/case群".into());
+                return Err(
+                    internal!("補完命題のLawInstanceと集約Evaluationが別Seed/case群").into(),
+                );
             }
             self.validate_at(graph, e, evaluation.0)?;
             let a = self.completion_aggregate(graph, seed, domain, &evals, &props)?;
@@ -1762,7 +1819,7 @@ impl Environment<'_> {
                 Some(Scalar::Bool(true)) => Decision::Established,
                 Some(Scalar::Bool(false)) => Decision::Refuted,
                 None => Decision::Undetermined,
-                _ => return Err("補完Lawの値がBoolでない".into()),
+                _ => return Err(internal!("補完Lawの値がBoolでない").into()),
             };
             if node.ty != NodeType::Proposition
                 || !matches!(&node.rule, Rule::Construction("proposition"))
@@ -1777,11 +1834,11 @@ impl Environment<'_> {
                 })
                 || graph.context_at(limit) != a.seed.context
             {
-                return Err("補完命題の判断/支持/元wholeが違う".into());
+                return Err(internal!("補完命題の判断/支持/元wholeが違う").into());
             }
             self.completion_evidence(graph, node, &a, domain)?;
             if node.evidence != e.evidence {
-                return Err("補完命題と集約評価の証拠が違う".into());
+                return Err(internal!("補完命題と集約評価の証拠が違う").into());
             }
             return Ok(true);
         }
@@ -1816,11 +1873,11 @@ impl Environment<'_> {
             || binding.value.0 >= limit
             || graph.scalar(binding.value)?.ty() != binding.ty
         {
-            return Err("補完Seedの固定binding署名・型・prefixが違う".into());
+            return Err(internal!("補完Seedの固定binding署名・型・prefixが違う").into());
         }
         if self.object_view_is_bound(parameter) {
             if graph.context_at(binding.value.0) != context {
-                return Err("有限view Seed値が元root producerでない".into());
+                return Err(internal!("有限view Seed値が元root producerでない").into());
             }
             return self.object_view_binding_matches(graph, parameter, binding.value);
         }
@@ -1828,7 +1885,7 @@ impl Environment<'_> {
             .arguments
             .iter()
             .find(|a| a.name == format!("bind.{}", parameter.name))
-            .ok_or("Seed固定引数がない")?;
+            .ok_or(internal!("Seed固定引数がない"))?;
         match &selected.value {
             selector @ Selector::Answer { .. } => {
                 self.answer_binding_matches(graph, selector, binding.value, parameter.span)?;
@@ -1843,10 +1900,10 @@ impl Environment<'_> {
                             entity: actual.ty.to_string(),
                         })
                 {
-                    return Err("補完Seed固定subjectが元Requestと違う".into());
+                    return Err(internal!("補完Seed固定subjectが元Requestと違う").into());
                 }
             }
-            _ => return Err("Seed固定引数が元subject/Answerでない".into()),
+            _ => return Err(internal!("Seed固定引数が元subject/Answerでない").into()),
         }
         self.validate_at(graph, graph.get(binding.value)?, binding.value.0)?;
         Ok(())
@@ -1868,7 +1925,7 @@ impl Environment<'_> {
             sources,
         }) = &node.payload
         else {
-            return Err("Seed payloadがない".into());
+            return Err(internal!("Seed payloadがない").into());
         };
         let context = graph.context_at(limit);
         if context.case.is_some()
@@ -1878,19 +1935,23 @@ impl Environment<'_> {
             || roots.is_empty()
             || fields.is_empty()
         {
-            return Err("補完Seedの元Context/族が不正".into());
+            return Err(internal!("補完Seedの元Context/族が不正").into());
         }
         let request = graph
             .requests
             .get(context.request)
-            .ok_or("Seed Requestがない")?;
+            .ok_or(internal!("Seed Requestがない"))?;
         let d = self
             .indexes
             .inputs
             .law()
             .declarations()
-            .get(request.declaration().ok_or("元要求に宣言がない")?)
-            .ok_or("Seed宣言がない")?;
+            .get(
+                request
+                    .declaration()
+                    .ok_or(internal!("元要求に宣言がない"))?,
+            )
+            .ok_or(internal!("Seed宣言がない"))?;
         let (params, body, guard, ty) = match &d.signature {
             Signature::View {
                 params,
@@ -1903,7 +1964,7 @@ impl Environment<'_> {
                 guard,
                 ..
             } if request.kind == QuestionKind::Check => (params, *body, *guard, Type::Bool),
-            _ => return Err("Seed署名が違う".into()),
+            _ => return Err(internal!("Seed署名が違う").into()),
         };
         let is_guard = guard.is_some_and(|g| {
             *location
@@ -1917,7 +1978,7 @@ impl Environment<'_> {
             })
             && !is_guard
         {
-            return Err("Seed位置が元body/guardでない".into());
+            return Err(internal!("Seed位置が元body/guardでない").into());
         }
         let free: Vec<_> = params
             .iter()
@@ -1941,7 +2002,7 @@ impl Environment<'_> {
             })
             .collect();
         if parameters != &free || fixed.len() != bindings.len() {
-            return Err("Seed元parameterが違う".into());
+            return Err(internal!("Seed元parameterが違う").into());
         }
         let mut scope = Scope::default();
         scope.readings.insert(d.reading.clone());
@@ -1953,7 +2014,7 @@ impl Environment<'_> {
         for root in roots {
             self.tick()?;
             if root.0 >= limit || graph.context_at(root.0).request != context.request {
-                return Err("Seed rootが未来/別Request".into());
+                return Err(internal!("Seed rootが未来/別Request").into());
             }
             self.validate_at(graph, graph.get(*root)?, root.0)?;
             scope.merge(&graph.get(*root)?.scope);
@@ -1980,7 +2041,7 @@ impl Environment<'_> {
             || node.scope != scope
             || !reasons_equal(&node.reasons, &rs)
         {
-            return Err("Seed元slot/Scope/辺/理由が違う".into());
+            return Err(internal!("Seed元slot/Scope/辺/理由が違う").into());
         }
         Ok(())
     }
@@ -2005,11 +2066,11 @@ impl Environment<'_> {
                     .chain(elements.iter().copied())
                     .collect::<Vec<_>>()
         {
-            return Err("補完Domain元型/Context/支持が違う".into());
+            return Err(internal!("補完Domain元型/Context/支持が違う").into());
         }
         let all = self.completion_assignments(&seed.fields, &mut |_, _| {})?;
         if elements.is_empty() || elements.len() != all.values.len() {
-            return Err("補完Domain全件数が違う".into());
+            return Err(internal!("補完Domain全件数が違う").into());
         }
         let mut seen = Vec::new();
         for r in elements {
@@ -2022,7 +2083,7 @@ impl Environment<'_> {
                 || !data::contains(&all.values, v, &self.control)?
                 || data::contains(&seen, v, &self.control)?
             {
-                return Err("補完Domainの漏れ/重複/別producer".into());
+                return Err(internal!("補完Domainの漏れ/重複/別producer").into());
             }
             seen.push(v.clone());
         }
@@ -2040,37 +2101,37 @@ impl Environment<'_> {
             || node.scope != seed.scope
             || node.support != seed.support
         {
-            return Err("補完代入のScope/支持が違う".into());
+            return Err(internal!("補完代入のScope/支持が違う").into());
         }
         if node.arguments == [seed.reference] {
             components(value, &seed.types, self.indexes.inputs.law(), &self.control)?;
             if self.completion_has_references(&seed.types)? {
                 let all = self.completion_assignments(&seed.fields, &mut |_, _| {})?;
                 if !data::contains(&all.values, value, &self.control)? {
-                    return Err("参照補完memberが元入力に整合する全域にない".into());
+                    return Err(internal!("参照補完memberが元入力に整合する全域にない").into());
                 }
             }
             if node.ty != NodeType::Value(assignment_type(&seed.types)) {
-                return Err("補完member型が違う".into());
+                return Err(internal!("補完member型が違う").into());
             }
             return Ok(());
         }
         data::check(value, self.indexes.inputs.law(), &self.control)?;
         let [actual, domain, member, source] = node.arguments.as_slice() else {
-            return Err("補完projectionの元辺が違う".into());
+            return Err(internal!("補完projectionの元辺が違う").into());
         };
         if *actual != seed.reference {
-            return Err("補完projectionが別Seed".into());
+            return Err(internal!("補完projectionが別Seed").into());
         }
         let elements = self.completion_domain(graph, seed, *domain)?;
         if !elements.contains(member) {
-            return Err("補完projectionのmemberがDomainにない".into());
+            return Err(internal!("補完projectionのmemberがDomainにない").into());
         }
         let i = seed
             .sources
             .iter()
             .position(|r| r == source)
-            .ok_or("補完projectionのfieldSourceがない")?;
+            .ok_or(internal!("補完projectionのfieldSourceがない"))?;
         let values = components(
             graph.scalar(*member)?,
             &seed.types,
@@ -2095,7 +2156,7 @@ impl Environment<'_> {
             }
         }
         if !matches {
-            return Err("補完projectionのslot値/型が違う".into());
+            return Err(internal!("補完projectionのslot値/型が違う").into());
         }
         Ok(())
     }
@@ -2105,11 +2166,13 @@ impl Environment<'_> {
     ) -> Result<Option<(usize, usize)>, ValidationFailure> {
         if let Some((id, count)) = self.chain_field_occurrence(span)? {
             let prefixes = self.dotted_prefixes(id)?;
-            let previous = count.checked_sub(2).ok_or("補完fieldの元prefix数が違う")?;
+            let previous = count
+                .checked_sub(2)
+                .ok_or(internal!("補完fieldの元prefix数が違う"))?;
             return Ok(Some(
                 prefixes
                     .get(previous)
-                    .ok_or("補完fieldの元owner prefixがない")?
+                    .ok_or(internal!("補完fieldの元owner prefixがない"))?
                     .0,
             ));
         }
@@ -2132,7 +2195,7 @@ impl Environment<'_> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         let [source, owner, assignment] = node.arguments.as_slice() else {
-            return Err("補完fieldの元辺が違う".into());
+            return Err(internal!("補完fieldの元辺が違う").into());
         };
         let Some(Payload::Expression {
             location: Location::Law { span },
@@ -2140,12 +2203,12 @@ impl Environment<'_> {
             ..
         }) = &graph.get(*source)?.payload
         else {
-            return Err("補完fieldの元Sourceがない".into());
+            return Err(internal!("補完fieldの元Sourceがない").into());
         };
         let a = self.analyze_source(graph, *span, bindings)?;
         let owner_span = self
             .field_owner_span(*span)?
-            .ok_or("補完field Sourceが元field構文でない")?;
+            .ok_or(internal!("補完field Sourceが元field構文でない"))?;
         let mut owner_evaluation = None;
         for (index, candidate) in graph.nodes.iter().enumerate().take(limit) {
             self.tick()?;
@@ -2187,27 +2250,28 @@ impl Environment<'_> {
                 continue;
             }
             if owner_evaluation.replace(NodeRef(index)).is_some() {
-                return Err("補完fieldの元owner評価が一意でない".into());
+                return Err(internal!("補完fieldの元owner評価が一意でない").into());
             }
         }
-        let owner_evaluation = owner_evaluation.ok_or("補完fieldの既出実owner評価がない")?;
+        let owner_evaluation =
+            owner_evaluation.ok_or(internal!("補完fieldの既出実owner評価がない"))?;
         self.recheck_evaluation(graph, owner_evaluation)?;
         if self.evaluation(graph, owner_evaluation)?.2 != Some(*owner) {
-            return Err("補完field ownerが元AST実評価のproducerでない".into());
+            return Err(internal!("補完field ownerが元AST実評価のproducerでない").into());
         }
-        let fact = a.missing.ok_or("補完fieldが元欠測でない")?.fact;
+        let fact = a.missing.ok_or(internal!("補完fieldが元欠測でない"))?.fact;
         let expected = self
             .completion_slot(graph, &fact)?
-            .ok_or("補完fieldの代入がない")?;
+            .ok_or(internal!("補完fieldの代入がない"))?;
         let Scalar::Subject {
             snapshot, subject, ..
         } = graph.scalar(*owner)?
         else {
-            return Err("補完field ownerがRefでない".into());
+            return Err(internal!("補完field ownerがRefでない").into());
         };
         let types = self.completion_slot_types(std::slice::from_ref(&fact))?;
         let Some(Payload::Scalar(value)) = &node.payload else {
-            return Err("補完field値がない".into());
+            return Err(internal!("補完field値がない").into());
         };
         data::check(value, self.indexes.inputs.law(), &self.control)?;
         if *assignment != expected
@@ -2224,7 +2288,7 @@ impl Environment<'_> {
             || node.judgment.is_some()
             || graph.context_at(source.0) != graph.context_at(limit)
         {
-            return Err("補完fieldの元slot/共有代入/producerが違う".into());
+            return Err(internal!("補完fieldの元slot/共有代入/producerが違う").into());
         }
         Ok(())
     }
@@ -2241,7 +2305,10 @@ impl Environment<'_> {
         first_result: NodeRef,
         second_result: NodeRef,
     ) -> Result<(), ValidationFailure> {
-        let domain = *node.arguments.get(1).ok_or("補完対Domainがない")?;
+        let domain = *node
+            .arguments
+            .get(1)
+            .ok_or(internal!("補完対Domainがない"))?;
         let (evals, props) = self.completion_producers(graph, seed, domain, limit)?;
         let a = self.completion_aggregate(graph, seed.reference, domain, &evals, &props)?;
         if fields != seed.fields
@@ -2251,26 +2318,26 @@ impl Environment<'_> {
             || !a.evaluations.contains(&second_result)
             || first_result == second_result
         {
-            return Err("補完対のslot/whole結果が違う".into());
+            return Err(internal!("補完対のslot/whole結果が違う").into());
         }
         for (result, values) in [(first_result, first), (second_result, second)] {
             let case = graph
                 .context_at(result.0)
                 .case
-                .ok_or("補完対結果にcaseなし")?;
+                .ok_or(internal!("補完対結果にcaseなし"))?;
             let expected = self.completion_values(graph, case)?;
             if expected.iter().map(|(_, r, _)| *r).collect::<Vec<_>>() != values {
-                return Err("補完対の型付き代入が別case".into());
+                return Err(internal!("補完対の型付き代入が別case").into());
             }
         }
         let left = self
             .evaluation(graph, first_result)?
             .2
-            .ok_or("補完対の第一結果が未知")?;
+            .ok_or(internal!("補完対の第一結果が未知"))?;
         let right = self
             .evaluation(graph, second_result)?
             .2
-            .ok_or("補完対の第二結果が未知")?;
+            .ok_or(internal!("補完対の第二結果が未知"))?;
         if value_equality::equal(
             graph.scalar(left)?,
             graph.scalar(right)?,
@@ -2290,7 +2357,7 @@ impl Environment<'_> {
                     .chain(second.iter().copied())
                     .collect::<Vec<_>>()
         {
-            return Err("補完対の結果差/元代入/支持/Scopeが違う".into());
+            return Err(internal!("補完対の結果差/元代入/支持/Scopeが違う").into());
         }
         Ok(())
     }
@@ -2315,11 +2382,11 @@ impl Environment<'_> {
             || answer.scope != a.scope
             || !reasons_equal(&answer.reasons, &a.reasons)
         {
-            return Err("補完Answerが元Request/Scope/理由と違う".into());
+            return Err(internal!("補完Answerが元Request/Scope/理由と違う").into());
         }
         self.validate_at(graph, node, evaluation.0)?;
         if request.kind == QuestionKind::Check {
-            let claim = answer.claim.ok_or("補完check claimがない")?;
+            let claim = answer.claim.ok_or(internal!("補完check claimがない"))?;
             self.validate_at(graph, graph.get(claim)?, claim.0)?;
             let c = graph.get(claim)?;
             if c.arguments.get(1) != Some(&evaluation)
@@ -2327,7 +2394,7 @@ impl Environment<'_> {
                 || c.judgment.as_ref().map(|j| j.status) != Some(answer.status)
                 || answer.evidence != c.evidence
             {
-                return Err("補完Answer claim/証拠/判断が違う".into());
+                return Err(internal!("補完Answer claim/証拠/判断が違う").into());
             }
         } else {
             let Some(Payload::Evaluation { value, .. }) = &node.payload else {
@@ -2343,7 +2410,7 @@ impl Environment<'_> {
                         Decision::Undetermined
                     }
             {
-                return Err("補完view Answerの値/判断が違う".into());
+                return Err(internal!("補完view Answerの値/判断が違う").into());
             }
         }
         Ok(true)

@@ -38,7 +38,7 @@ impl Environment<'_> {
             .indexes
             .original_requests
             .and_then(|rs| rs.iter().position(|r| r == request))
-            .ok_or("射影条件のRequestが元入力にない")?;
+            .ok_or(internal!("射影条件のRequestが元入力にない"))?;
         let previous = self.state.context.scoped(Some(super::super::call::Context {
             request: index,
             frame: None,
@@ -128,17 +128,21 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations()
-            .get(request.declaration().ok_or("元要求に宣言がない")?)
-            .ok_or("射影条件の元宣言がない")?;
+            .get(
+                request
+                    .declaration()
+                    .ok_or(internal!("元要求に宣言がない"))?,
+            )
+            .ok_or(internal!("射影条件の元宣言がない"))?;
         let params = match &declaration.signature {
             archsig_input::law::model::Signature::View { params, .. }
             | archsig_input::law::model::Signature::Law { params, .. } => params,
-            _ => return Err("射影条件の元宣言がview/Lawでない".into()),
+            _ => return Err(internal!("射影条件の元宣言がview/Lawでない").into()),
         };
         let mut plans = vec![];
         if let Some(argument) = request.arguments.iter().find(|a| a.name == "on") {
             let Selector::Answer { id, .. } = &argument.value else {
-                return Err("onの元Handleがない".into());
+                return Err(internal!("onの元Handleがない").into());
             };
             let selected =
                 match self.answer_binding(graph, &argument.value, (0, 0)) {
@@ -192,7 +196,7 @@ impl Environment<'_> {
             else {
                 // Lawの自由parameterを構成条件の値入力へ補わない。
                 if !matches!(request.kind, QuestionKind::Check | QuestionKind::Localize) {
-                    return Err("射影条件の元view束縛がない".into());
+                    return Err(internal!("射影条件の元view束縛がない").into());
                 }
                 continue;
             };
@@ -251,7 +255,7 @@ impl Environment<'_> {
                 let root = *plan
                     .dependencies
                     .first()
-                    .ok_or("所属条件の元Answerがない")?;
+                    .ok_or(internal!("所属条件の元Answerがない"))?;
                 plans.push(ProjectionFailurePlan {
                     context: self.current_context(graph),
                     parameter: parameter.name.clone(),
@@ -278,7 +282,7 @@ impl Environment<'_> {
             .arguments
             .iter()
             .find(|a| a.name == "to")
-            .ok_or("比較のtoがない")?
+            .ok_or(internal!("比較のtoがない"))?
             .value;
         // 生subject側は静的に一つの型に定まる。複数の共通候補から異なる型が
         // 実際に選ばれる場合だけ、両方の既出出力を構成条件の元入力とする。
@@ -289,9 +293,12 @@ impl Environment<'_> {
         let selected = |selector| -> Result<Option<(NodeType, NodeRef)>, ValidationFailure> {
             Ok(match self.answer_binding(graph, selector, (0, 0)) {
                 Ok(AnswerBinding::Reference(r)) => Some((graph.get(r)?.ty.clone(), r)),
-                Ok(AnswerBinding::Projection(n)) => {
-                    Some((n.ty, *n.arguments.first().ok_or("型比較の射影元がない")?))
-                }
+                Ok(AnswerBinding::Projection(n)) => Some((
+                    n.ty,
+                    *n.arguments
+                        .first()
+                        .ok_or(internal!("型比較の射影元がない"))?,
+                )),
                 Ok(AnswerBinding::Inapplicable(_))
                 | Err(ValidationFailure::UnsupportedExpression { .. }) => None,
                 Err(e) => return Err(e),
@@ -330,7 +337,7 @@ impl Environment<'_> {
             .indexes
             .original_requests
             .and_then(|rs| rs.iter().position(|r| r == request))
-            .ok_or("射影条件の元Requestがない")?;
+            .ok_or(internal!("射影条件の元Requestがない"))?;
         let mut reasons = vec![];
         let mut scope = Scope::default();
         for plan in self.projection_failure_plans(graph, request)? {
@@ -348,13 +355,13 @@ impl Environment<'_> {
                     && matches!(&node.rule, Rule::ProjectionCheck { parameter, part: ProjectionCheckPart::Condition } if parameter == &plan.parameter)
                 {
                     if selected.is_some() {
-                        return Err("同じ元射影条件が重複している".into());
+                        return Err(internal!("同じ元射影条件が重複している").into());
                     }
                     self.validate_at(graph, node, index)?;
                     selected = Some(NodeRef(index));
                 }
             }
-            let condition = selected.ok_or("不適合な元射影の条件反証がない")?;
+            let condition = selected.ok_or(internal!("不適合な元射影の条件反証がない"))?;
             scope.merge(&plan.scope);
             reasons.push(Reason {
                 kind: ReasonKind::ConditionFailed {
@@ -457,7 +464,7 @@ impl Environment<'_> {
                 }
                 ConditionInput::Subject(node) => self
                     .projection_subject_input(graph, node, plan.context)?
-                    .ok_or("所属条件の元subject入力がない")?,
+                    .ok_or(internal!("所属条件の元subject入力がない"))?,
             };
             if !dependencies.contains(&root) {
                 dependencies.push(root);
@@ -520,7 +527,7 @@ impl Environment<'_> {
                     reasons: vec![],
                 });
             }
-            _ => return Err("射影条件の構成part・引数数が違う".into()),
+            _ => return Err(internal!("射影条件の構成part・引数数が違う").into()),
         }
         self.tick()?;
         Ok(node)
@@ -542,33 +549,33 @@ impl Environment<'_> {
             || context.instance.is_some()
             || context.case.is_some()
         {
-            return Err("射影条件が元Requestの束縛前contextでない".into());
+            return Err(internal!("射影条件が元Requestの束縛前contextでない").into());
         }
         let request = self
             .indexes
             .original_requests
             .and_then(|rs| rs.get(context.request))
-            .ok_or("射影条件の元Requestがない")?;
+            .ok_or(internal!("射影条件の元Requestがない"))?;
         let plan = self
             .projection_failure_plans(graph, request)?
             .into_iter()
             .find(|p| &p.parameter == parameter)
-            .ok_or("元selectorに実値射影の不適合がない")?;
+            .ok_or(internal!("元selectorに実値射影の不適合がない"))?;
         if plan.root.0 >= limit {
-            return Err("射影条件のrootが未出".into());
+            return Err(internal!("射影条件のrootが未出").into());
         }
         let dependencies = self.projection_failure_dependencies(graph, &plan)?;
         let prior = node
             .arguments
             .strip_prefix(dependencies.as_slice())
-            .ok_or("射影条件の元root・実依存辺が違う")?;
+            .ok_or(internal!("射影条件の元root・実依存辺が違う"))?;
         if dependencies.iter().any(|r| r.0 >= limit) {
-            return Err("射影条件の依存辺が未出".into());
+            return Err(internal!("射影条件の依存辺が未出").into());
         }
         for &reference in prior {
             self.tick()?;
             if reference.0 >= limit || graph.context_at(reference.0) != context {
-                return Err("射影条件の証拠が既出同Requestでない".into());
+                return Err(internal!("射影条件の証拠が既出同Requestでない").into());
             }
             let original = graph.get(reference)?;
             let Rule::ProjectionCheck {
@@ -576,16 +583,18 @@ impl Environment<'_> {
                 ..
             } = &original.rule
             else {
-                return Err("射影条件の実証拠が元selectorに属さない".into());
+                return Err(internal!("射影条件の実証拠が元selectorに属さない").into());
             };
             if original_parameter != parameter {
-                return Err("射影条件の証拠parameterが違う".into());
+                return Err(internal!("射影条件の証拠parameterが違う").into());
             }
             self.validate_at(graph, original, reference.0)?;
         }
         let expected = self.projection_failure_node(graph, &plan, *part, prior)?;
         if &expected != node {
-            return Err("射影条件の型・値・実辺・支持・Scope・反証が元入力と違う".into());
+            return Err(
+                internal!("射影条件の型・値・実辺・支持・Scope・反証が元入力と違う").into(),
+            );
         }
         graph.projection_check_shape(node)?;
         Ok(true)
@@ -599,7 +608,7 @@ impl Graph {
     ) -> Result<(), ValidationFailure> {
         use ProjectionCheckPart::*;
         let Rule::ProjectionCheck { parameter, part } = &node.rule else {
-            return Err("射影条件の構成規則がない".into());
+            return Err(internal!("射影条件の構成規則がない").into());
         };
         let expect_part = |reference: NodeRef, required| -> Result<(), ValidationFailure> {
             if self.get(reference)?.rule
@@ -608,7 +617,7 @@ impl Graph {
                     part: required,
                 })
             {
-                return Err("射影条件の証拠partが違う".into());
+                return Err(internal!("射影条件の証拠partが違う").into());
             }
             Ok(())
         };
@@ -622,7 +631,7 @@ impl Graph {
             .len()
             .checked_sub(extra)
             .filter(|n| *n > 0)
-            .ok_or("射影条件に元rootがない")?;
+            .ok_or(internal!("射影条件に元rootがない"))?;
         let (roots, prior) = node.arguments.split_at(count);
         match (part, &node.payload, prior) {
             (Name, Some(Payload::Scalar(Scalar::Text(name))), []) if name == "projection" => {}
@@ -646,7 +655,7 @@ impl Graph {
                     || self.scalar(*actual)? != &Scalar::Bool(false)
                     || self.scalar(*required)? != &Scalar::Bool(true)
                 {
-                    return Err("射影反例の実成否・要求・元rootが違う".into());
+                    return Err(internal!("射影反例の実成否・要求・元rootが違う").into());
                 }
             }
             (
@@ -673,10 +682,10 @@ impl Graph {
                     || proof.scope != node.scope
                     || proof.support != node.support
                 {
-                    return Err("射影条件のconstructible・元root・反証が違う".into());
+                    return Err(internal!("射影条件のconstructible・元root・反証が違う").into());
                 }
             }
-            _ => return Err("射影条件のpayload・型・引数数が違う".into()),
+            _ => return Err(internal!("射影条件のpayload・型・引数数が違う").into()),
         }
         Ok(())
     }

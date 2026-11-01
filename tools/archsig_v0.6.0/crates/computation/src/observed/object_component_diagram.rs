@@ -234,20 +234,20 @@ impl Data {
             .readings
             .iter()
             .find(|r| r.expression == reference)
-            .ok_or("view式が元対象表にない")?;
+            .ok_or(internal!("view式が元対象表にない"))?;
         let a = &self.source.architecture;
         let row = a
             .readings()
             .instances()
             .get(reading.instance)
-            .ok_or("viewの元instanceがない")?;
+            .ok_or(internal!("viewの元instanceがない"))?;
         let input = Witness::Architecture(a.clone());
         let original = input
             .inputs()
             .law()
             .declarations()
             .get(declaration)
-            .ok_or("元view宣言がない")?;
+            .ok_or(internal!("元view宣言がない"))?;
         let Signature::View { body, .. } = &original.signature else {
             return Ok(None);
         };
@@ -256,11 +256,11 @@ impl Data {
             .outputs
             .architectures
             .get(reading.object)
-            .ok_or("viewの対象Architectureがない")?;
+            .ok_or(internal!("viewの対象Architectureがない"))?;
         if self.source.outputs.objects.get(reading.object) != Some(object)
             || row.declaration().name != *declaration
         {
-            return Err("viewの元対象/宣言対応が違う".into());
+            return Err(internal!("viewの元対象/宣言対応が違う").into());
         }
         Ok(Some((
             a.clone(),
@@ -278,7 +278,7 @@ impl Data {
                 application: row
                     .applications()
                     .get(reading.object)
-                    .ok_or("viewの対象別適用がない")?
+                    .ok_or(internal!("viewの対象別適用がない"))?
                     .clone(),
             },
         )))
@@ -336,14 +336,14 @@ impl Data {
             self.source.parts.get(self.index),
             Some(Part::Architecture { .. })
         ) {
-            return Err("評価環境が標準対象族のArchitectureでない".into());
+            return Err(internal!("評価環境が標準対象族のArchitectureでない").into());
         }
         self.source
             .outputs
             .architectures
             .iter()
             .position(|r| *r == reference)
-            .ok_or_else(|| "評価環境のArchitectureが元の対象表にない".into())
+            .ok_or_else(|| internal!("評価環境のArchitectureが元の対象表にない").into())
     }
     pub(super) fn ty(&self) -> NodeType {
         self.part().ty()
@@ -370,7 +370,7 @@ impl Data {
         if self.index >= self.source.parts.len()
             || self.source.base.checked_add(self.index) != Some(at)
         {
-            return Err("対象族の生成位置が元計画と違う".into());
+            return Err(internal!("対象族の生成位置が元計画と違う").into());
         }
         Ok(())
     }
@@ -384,7 +384,7 @@ fn push(
     tick(c)?;
     let reference = base
         .checked_add(parts.len())
-        .ok_or("対象族の生成番号が範囲外")?;
+        .ok_or(internal!("対象族の生成番号が範囲外"))?;
     parts.push(value);
     Ok(NodeRef(reference))
 }
@@ -404,7 +404,7 @@ fn plan(
     }
     let readings = a.readings();
     if readings.objects().len() != construction.components().len() + 1 {
-        return Err("対象族と元部分構成の件数が違う".into());
+        return Err(internal!("対象族と元部分構成の件数が違う").into());
     }
     let law_indices: Vec<_> = readings
         .instances()
@@ -414,7 +414,7 @@ fn plan(
         .map(|(i, _)| i)
         .collect();
     if law_indices.len() != laws.len() {
-        return Err("対象族の元Law族の件数が違う".into());
+        return Err(internal!("対象族の元Law族の件数が違う").into());
     }
     let mut parts = vec![];
     let mut objects = vec![];
@@ -430,11 +430,11 @@ fn plan(
             return Ok(None);
         }
         if !seen.insert(identity.subject().clone()) {
-            return Err("対象族のsubject identityが重複する".into());
+            return Err(internal!("対象族のsubject identityが重複する").into());
         }
         let is_base = identity.subject() == construction.root();
         if is_base != (index == 0) {
-            return Err("対象族のbaseの元順序が違う".into());
+            return Err(internal!("対象族のbaseの元順序が違う").into());
         }
         let (subject, architecture) = if is_base {
             (root, reference)
@@ -443,7 +443,7 @@ fn plan(
                 .components()
                 .iter()
                 .find(|p| p.subject() == identity.subject())
-                .ok_or("対象族の元部分構成がない")?;
+                .ok_or(internal!("対象族の元部分構成がない"))?;
             let Some(configuration) = component.candidate().configuration() else {
                 return Ok(None);
             };
@@ -454,7 +454,7 @@ fn plan(
                 .iter()
                 .find(|s| s.id == fact.snapshot)
                 .and_then(|s| s.subjects.iter().find(|s| s.id == fact.subject))
-                .ok_or("部分対象の元subjectがない")?;
+                .ok_or(internal!("部分対象の元subjectがない"))?;
             let subject = push(
                 &mut parts,
                 base,
@@ -478,7 +478,7 @@ fn plan(
                 match row
                     .applications()
                     .get(index)
-                    .ok_or("部分対象のLaw適用行がない")?
+                    .ok_or(internal!("部分対象のLaw適用行がない"))?
                 {
                     InstanceApplication::NotApplicable => {}
                     InstanceApplication::Applicable { conditions } if conditions.is_empty() => {
@@ -514,7 +514,7 @@ fn plan(
         architectures.push(architecture);
     }
     let reading_expressions = reading_plan(inputs, a, &objects, &mut parts, base, c)?;
-    let base = *objects.first().ok_or("対象族にbaseがない")?;
+    let base = *objects.first().ok_or(internal!("対象族にbaseがない"))?;
     tick(c)?;
     Ok(Some((
         parts,
@@ -533,7 +533,9 @@ fn primitive(ty: &Type, c: &Control) -> Result<Type, ValidationFailure> {
     )
     .map_err(|e| match e {
         archsig_common::control::CheckFailure::Stopped(s) => ValidationFailure::Stop(s),
-        archsig_common::control::CheckFailure::Input(_) => "対象読取りの原始型がない".into(),
+        archsig_common::control::CheckFailure::Input(_) => {
+            internal!("対象読取りの原始型がない").into()
+        }
     })
 }
 fn reading_plan(
@@ -551,13 +553,13 @@ fn reading_plan(
             .law()
             .declarations()
             .get(&row.declaration().name)
-            .ok_or("対象読取りの元宣言がない")?;
+            .ok_or(internal!("対象読取りの元宣言がない"))?;
         let (params, returns) = match &declaration.signature {
             Signature::Law { params, .. } => (params, Type::Bool),
             Signature::View {
                 params, returns, ..
             } => (params, Type::Option(Box::new(primitive(returns, c)?))),
-            _ => return Err("対象読取りの元宣言がLaw/viewでない".into()),
+            _ => return Err(internal!("対象読取りの元宣言がLaw/viewでない").into()),
         };
         let mut bindings = vec![];
         let mut parameters = vec![];
@@ -573,7 +575,7 @@ fn reading_plan(
                 [binding] => {
                     let entity = match &parameter.ty {
                         Type::Ref(t) | Type::Owned(t, _) => t.clone(),
-                        _ => return Err("対象読取りの参照束縛型が違う".into()),
+                        _ => return Err(internal!("対象読取りの参照束縛型が違う").into()),
                     };
                     let subject = binding.subject();
                     let value = push(
@@ -597,7 +599,7 @@ fn reading_plan(
                         .parameters()
                         .iter()
                         .find(|p| p.name == parameter.name)
-                        .ok_or("対象読取りの全域parameterがない")?;
+                        .ok_or(internal!("対象読取りの全域parameterがない"))?;
                     parameters.push((original.name.clone(), primitive(&original.ty, c)?));
                     quantifiers.push(Quantifier {
                         kind: archsig_input::law::ast::QuantKind::Forall,
@@ -608,13 +610,13 @@ fn reading_plan(
                         context: None,
                     });
                 }
-                _ => return Err("対象読取りの参照束縛が重複する".into()),
+                _ => return Err(internal!("対象読取りの参照束縛が重複する").into()),
             }
         }
         for (object, reference) in objects.iter().enumerate() {
             tick(c)?;
             if row.applications().get(object).is_none() {
-                return Err("対象読取りの元適用行がない".into());
+                return Err(internal!("対象読取りの元適用行がない").into());
             }
             let expression = push(
                 parts,
@@ -674,12 +676,12 @@ fn origin<'a>(
     reference: NodeRef,
 ) -> Result<(&'a Arc<ArchitectureWitness>, NodeRef, &'a [NodeRef]), ValidationFailure> {
     let Some(Payload::Construction(value)) = &graph.get(reference)?.payload else {
-        return Err("対象族の元Architectureがない".into());
+        return Err(internal!("対象族の元Architectureがない").into());
     };
     let (Witness::Architecture(a), D::Architecture { root, laws, .. }) =
         (&value.witness, &value.data)
     else {
-        return Err("対象族の元参照が完成Architectureでない".into());
+        return Err(internal!("対象族の元参照が完成Architectureでない").into());
     };
     let context = graph.context_at(reference.0);
     if context.frame.is_some()
@@ -688,7 +690,7 @@ fn origin<'a>(
         || context.case.is_some()
         || graph.requests.get(context.request) != Some(Witness::Architecture(a.clone()).request())
     {
-        return Err("対象族が元Architectureのroot Requestでない".into());
+        return Err(internal!("対象族が元Architectureのroot Requestでない").into());
     }
     Ok((a, *root, laws))
 }
@@ -700,10 +702,10 @@ pub(super) fn architecture_origin(
 ) -> Result<&Arc<ArchitectureWitness>, ValidationFailure> {
     let node = graph.get(reference)?;
     let Some(Payload::Construction(value)) = &node.payload else {
-        return Err("有限Lawの部分Architectureがない".into());
+        return Err(internal!("有限Lawの部分Architectureがない").into());
     };
     let D::ObjectComponents(data) = &value.data else {
-        return Err("有限Lawの参照が標準対象族でない".into());
+        return Err(internal!("有限Lawの参照が標準対象族でない").into());
     };
     data.position(reference.0)?;
     if !matches!(
@@ -711,7 +713,7 @@ pub(super) fn architecture_origin(
         Some(Part::Architecture { .. })
     ) || data.source.outputs.architectures.get(object) != Some(&reference)
     {
-        return Err("有限Lawの部分Architectureと元対象の対応が違う".into());
+        return Err(internal!("有限Lawの部分Architectureと元対象の対応が違う").into());
     }
     validate_node(graph, node, data)?;
     Ok(&data.source.architecture)
@@ -723,45 +725,45 @@ pub(super) fn original_family(
 ) -> Result<(NodeRef, Diagram), ValidationFailure> {
     let node = graph.get(base)?;
     let Some(Payload::Construction(value)) = &node.payload else {
-        return Err("内部arrowの対象表がnativeでない".into());
+        return Err(internal!("内部arrowの対象表がnativeでない").into());
     };
     let D::ObjectComponents(data) = &value.data else {
-        return Err("内部arrowの対象表が標準対象族でない".into());
+        return Err(internal!("内部arrowの対象表が標準対象族でない").into());
     };
     data.position(base.0)?;
     if data.source.outputs.base != base {
-        return Err("内部arrowの対象表のbaseが違う".into());
+        return Err(internal!("内部arrowの対象表のbaseが違う").into());
     }
     let source = &data.source;
     let end = source
         .base
         .checked_add(source.parts.len())
-        .ok_or("内部arrowの対象表の完了位置が範囲外")?;
+        .ok_or(internal!("内部arrowの対象表の完了位置が範囲外"))?;
     if graph.nodes.len() < end {
-        return Err("内部arrowの標準対象族が保持途中".into());
+        return Err(internal!("内部arrowの標準対象族が保持途中").into());
     }
     let context = *graph
         .contexts
         .get(source.reference.0)
-        .ok_or("内部arrowの元Architectureのcontextがない")?;
+        .ok_or(internal!("内部arrowの元Architectureのcontextがない"))?;
     for index in 0..source.parts.len() {
         let at = source
             .base
             .checked_add(index)
-            .ok_or("内部arrowの対象表の位置が範囲外")?;
+            .ok_or(internal!("内部arrowの対象表の位置が範囲外"))?;
         let node = graph.get(NodeRef(at))?;
         let Some(Payload::Construction(value)) = &node.payload else {
-            return Err("内部arrowの対象表が別の保持結果に置換された".into());
+            return Err(internal!("内部arrowの対象表が別の保持結果に置換された").into());
         };
         let D::ObjectComponents(current) = &value.data else {
-            return Err("内部arrowの対象表が別由来に置換された".into());
+            return Err(internal!("内部arrowの対象表が別由来に置換された").into());
         };
         current.position(at)?;
         if !Arc::ptr_eq(source, &current.source)
             || current.index != index
             || graph.contexts.get(at) != Some(&context)
         {
-            return Err("内部arrowの対象表の位置・由来・contextが違う".into());
+            return Err(internal!("内部arrowの対象表の位置・由来・contextが違う").into());
         }
         validate_node(graph, node, current)?;
     }
@@ -785,7 +787,7 @@ impl Source {
             || root != self.root
             || laws != self.laws
         {
-            return Err("対象族の元三入力・consumer・根・Law参照が違う".into());
+            return Err(internal!("対象族の元三入力・consumer・根・Law参照が違う").into());
         }
         let construction = a.construction();
         construction
@@ -798,14 +800,18 @@ impl Source {
             )
             .map_err(|e| match e {
                 crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
-                other => format!("対象族の構成: {other:?}").into(),
+                other => other
+                    .internal_context(format!("対象族の構成: {other:?}"))
+                    .into(),
             })?;
         a.readings().recheck(inputs, c).map_err(|e| match e {
             crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
-            other => format!("対象族の適用: {other:?}").into(),
+            other => other
+                .internal_context(format!("対象族の適用: {other:?}"))
+                .into(),
         })?;
         let (parts, outputs) = plan(inputs, a, self.reference, root, laws, self.base, c)?
-            .ok_or("対象族の元構成が未完成")?;
+            .ok_or(internal!("対象族の元構成が未完成"))?;
         let source = graph.get(self.reference)?;
         let (support, scope) = reading_metadata(inputs, a, source, c)?;
         if self.parts != parts
@@ -813,7 +819,7 @@ impl Source {
             || self.support != support
             || self.scope != scope
         {
-            return Err("対象族が元対象・構成・Law・全計画・支持・scopeと違う".into());
+            return Err(internal!("対象族が元対象・構成・Law・全計画・支持・scopeと違う").into());
         }
         tick(c)
     }
@@ -831,12 +837,12 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
         .source
         .parts
         .get(data.index)
-        .ok_or("対象族の元計画添字がない")?;
+        .ok_or(internal!("対象族の元計画添字がない"))?;
     let Some(Payload::Construction(v)) = &n.payload else {
-        return Err("対象族のpayloadがない".into());
+        return Err(internal!("対象族のpayloadがない").into());
     };
     let Witness::Architecture(a) = &v.witness else {
-        return Err("対象族の元由来がない".into());
+        return Err(internal!("対象族の元由来がない").into());
     };
     let (original, root, laws) = origin(graph, data.source.reference)?;
     if !Arc::ptr_eq(a, original)
@@ -844,7 +850,7 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
         || root != data.source.root
         || laws != data.source.laws
     {
-        return Err("対象族の元Architecture参照が違う".into());
+        return Err(internal!("対象族の元Architecture参照が違う").into());
     }
     let (support, scope) = data.metadata();
     if n.ty != part.ty()
@@ -856,7 +862,7 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
         || !n.evidence.is_empty()
         || n.judgment.is_some()
     {
-        return Err("対象族の型・辺・原始支持・scopeが違う".into());
+        return Err(internal!("対象族の型・辺・原始支持・scopeが違う").into());
     }
     for reference in part.arguments() {
         if reference == data.source.reference || reference == root || laws.contains(&reference) {
@@ -864,16 +870,16 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
             continue;
         }
         let Some(Payload::Construction(v)) = &graph.get(reference)?.payload else {
-            return Err("対象族の引数がnativeでない".into());
+            return Err(internal!("対象族の引数がnativeでない").into());
         };
         let D::ObjectComponents(other) = &v.data else {
-            return Err("対象族の引数が別由来".into());
+            return Err(internal!("対象族の引数が別由来").into());
         };
         if !Arc::ptr_eq(&data.source, &other.source)
             || other.index >= data.index
             || data.source.base.checked_add(other.index) != Some(reference.0)
         {
-            return Err("対象族の引数が元計画の既出値でない".into());
+            return Err(internal!("対象族の引数が元計画の既出値でない").into());
         }
     }
     Ok(())
@@ -889,7 +895,7 @@ impl Environment<'_> {
         };
         tick(&self.control)?;
         let Witness::Architecture(a) = &value.witness else {
-            return Err("対象族のconsumerがArchitectureでない".into());
+            return Err(internal!("対象族のconsumerがArchitectureでない").into());
         };
         let (original, root, laws) = origin(graph, data.source.reference)?;
         if !Arc::ptr_eq(a, original)
@@ -897,7 +903,7 @@ impl Environment<'_> {
             || root != data.source.root
             || laws != data.source.laws
         {
-            return Err("対象族のconsumerが元Architectureと違う".into());
+            return Err(internal!("対象族のconsumerが元Architectureと違う").into());
         }
         if self
             .results
@@ -924,11 +930,11 @@ impl super::result_kind::ResultKind for Data {
         let (graph, inputs, reference, c) = input;
         tick(c)?;
         if graph.active != graph.context_at(reference.0) {
-            return Err("対象族の生成が元ArchitectureのRequestでない".into());
+            return Err(internal!("対象族の生成が元ArchitectureのRequestでない").into());
         }
         let (a, root, laws) = origin(graph, reference)?;
         if inputs.sources() != Witness::Architecture(a.clone()).inputs().sources() {
-            return Err("対象族の元三入力が違う".into());
+            return Err(internal!("対象族の元三入力が違う").into());
         }
         let Some((parts, outputs)) = plan(&inputs, a, reference, root, laws, graph.nodes.len(), c)?
         else {

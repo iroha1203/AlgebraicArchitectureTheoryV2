@@ -11,7 +11,7 @@ impl<'a> Environment<'a> {
         control: &Control,
     ) -> Result<Self, ValidationFailure> {
         Self::try_primitive_valuation(inputs, assignments, control)?
-            .ok_or_else(|| "候補代入が原始型・所属・Map全域性を満たさない".into())
+            .ok_or_else(|| internal!("候補代入が原始型・所属・Map全域性を満たさない").into())
     }
 
     /// 型の正しい候補のうち、原始制約に適合する点だけを返す。停止/不正値は黙殺しない。
@@ -31,7 +31,7 @@ impl<'a> Environment<'a> {
         control: &Control,
     ) -> Result<Self, ValidationFailure> {
         Self::primitive_valuation_checked(inputs, assignments, control, false)?
-            .ok_or_else(|| "依存発見用の型付き候補が失われた".into())
+            .ok_or_else(|| internal!("依存発見用の型付き候補が失われた").into())
     }
 
     fn primitive_valuation_checked(
@@ -61,7 +61,9 @@ impl<'a> Environment<'a> {
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
             if position.atom.is_some() || position.field.is_none() || values.contains_key(position)
             {
-                return Err("候補代入の位置が重複・fieldなし・観測Atom付きである".into());
+                return Err(
+                    internal!("候補代入の位置が重複・fieldなし・観測Atom付きである").into(),
+                );
             }
             let subject = environment
                 .indexes
@@ -70,10 +72,13 @@ impl<'a> Environment<'a> {
                 &environment.state,
                 &position.snapshot,
                 &position.subject,
-                position.field.as_deref().ok_or("候補代入のfieldがない")?,
+                position
+                    .field
+                    .as_deref()
+                    .ok_or(internal!("候補代入のfieldがない"))?,
             )?;
             if value.ty() != field.ty.erase() {
-                return Err("候補代入の値と元fieldの型が違う".into());
+                return Err(internal!("候補代入の値と元fieldの型が違う").into());
             }
             data::check(value, inputs.law(), control)?;
             let encoded = data::input_json(value, control)?;
@@ -90,15 +95,15 @@ impl<'a> Environment<'a> {
             )
             .map_err(|failure| match failure {
                 CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
-                CheckFailure::Input(issue) => ValidationFailure::Internal(format!(
+                CheckFailure::Input(issue) => ValidationFailure::Internal(internal!(
                     "候補代入が元fieldの条件を満たさない: {}",
                     issue.message
                 )),
             })?;
             let checked = scalar_from(&original, &field.ty, inputs.law(), control)?
-                .ok_or("候補代入の原始値を読めない")?;
+                .ok_or(internal!("候補代入の原始値を読めない"))?;
             if !same_primitive_value(value, &checked, control)? {
-                return Err("候補代入が元encodingの正規値と違う".into());
+                return Err(internal!("候補代入が元encodingの正規値と違う").into());
             }
             pinned.push(archsig_input::archmap::FieldAssignment {
                 snapshot: position.snapshot.clone(),
@@ -127,7 +132,7 @@ impl<'a> Environment<'a> {
                     return Ok(None);
                 }
                 Err(CheckFailure::Input(issue)) => {
-                    return Err(ValidationFailure::Internal(format!(
+                    return Err(ValidationFailure::Internal(internal!(
                         "候補の原始制約検査: {}",
                         issue.message
                     )));

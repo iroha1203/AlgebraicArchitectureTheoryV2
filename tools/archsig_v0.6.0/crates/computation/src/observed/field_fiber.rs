@@ -40,7 +40,7 @@ fn inverse(value: &Scalar, c: &Control) -> Result<Scalar, ValidationFailure> {
         Scalar::Fp { modulus, value } if !value.is_zero() => {
             let p: num_bigint::BigInt = modulus
                 .parse()
-                .map_err(|_| ValidationFailure::Internal("体の法を読めない".into()))?;
+                .map_err(|_| ValidationFailure::Internal(internal!("体の法を読めない")))?;
             let (mut a, mut b) = (p.clone(), value.clone());
             let (mut x, mut y) = (num_bigint::BigInt::zero(), num_bigint::BigInt::one());
             while !b.is_zero() {
@@ -50,14 +50,14 @@ fn inverse(value: &Scalar, c: &Control) -> Result<Scalar, ValidationFailure> {
                 (x, y) = (y.clone(), x - q * &y);
             }
             if !a.is_one() {
-                return Err("体の係数が可逆でない".into());
+                return Err(internal!("体の係数が可逆でない").into());
             }
             Scalar::Fp {
                 modulus: modulus.clone(),
                 value: ((x % &p) + &p) % &p,
             }
         }
-        _ => return Err("体の非零係数が必要".into()),
+        _ => return Err(internal!("体の非零係数が必要").into()),
     };
     numeric::check(&result, c)?;
     Ok(result)
@@ -71,15 +71,15 @@ pub(super) fn solve(
 ) -> Result<Fiber, ValidationFailure> {
     tick(c)?;
     if !matches!(ty, Type::Q | Type::Fp(_)) {
-        return Err("体上の線形系の係数型がQ/Fpでない".into());
+        return Err(internal!("体上の線形系の係数型がQ/Fpでない").into());
     }
     if a.len() != b.len() || a.iter().any(|row| row.len() != n) {
-        return Err("体上の線形系の次元が違う".into());
+        return Err(internal!("体上の線形系の次元が違う").into());
     }
     for value in a.iter().flatten().chain(b) {
         tick(c)?;
         if value.ty() != *ty {
-            return Err("体上の線形系の係数型が混在する".into());
+            return Err(internal!("体上の線形系の係数型が混在する").into());
         }
     }
     let zero = numeric::zero(ty, c)?;

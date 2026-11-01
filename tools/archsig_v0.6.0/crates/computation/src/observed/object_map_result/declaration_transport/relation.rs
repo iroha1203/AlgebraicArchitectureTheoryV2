@@ -77,7 +77,7 @@ fn moved(
         let map = maps
             .iter()
             .find(|m| m.source == *entity)
-            .ok_or("relationの元参照型写像がない")?;
+            .ok_or(internal!("relationの元参照型写像がない"))?;
         for (s, t) in map.transport.source().iter().zip(map.transport.images()) {
             tick(c)?;
             if s.snapshot == *snapshot && s.subject == *subject {
@@ -88,7 +88,7 @@ fn moved(
                 });
             }
         }
-        return Err("relationの元参照が全型域写像にない".into());
+        return Err(internal!("relationの元参照が全型域写像にない").into());
     }
     Ok(value.clone())
 }
@@ -141,7 +141,7 @@ fn witness_bindings(
             .as_ref()
             .is_some_and(|domain| domain.particular.is_none())
     {
-        return Err("空のrelation適用域に反例はない".into());
+        return Err(internal!("空のrelation適用域に反例はない").into());
     }
     params
         .iter()
@@ -163,7 +163,7 @@ fn witness_bindings(
                         crate::observed::numeric::zero(&p.ty, c)?
                     }
                 } else {
-                    return Err("relation反例の元parameter束縛がない".into());
+                    return Err(internal!("relation反例の元parameter束縛がない").into());
                 };
             Ok((p.name.clone(), value))
         })
@@ -241,7 +241,7 @@ fn point(value: &Scalar) -> Result<Point, ValidationFailure> {
         snapshot, subject, ..
     } = value
     else {
-        return Err("relationの経路端点が原始参照でない".into());
+        return Err(internal!("relationの経路端点が原始参照でない").into());
     };
     Ok((snapshot.clone(), subject.clone()))
 }
@@ -287,14 +287,16 @@ fn route(
     reading: &str,
     c: &Control,
 ) -> Result<PathValue, ValidationFailure> {
-    let (&first, rest) = edges.split_first().ok_or("生成元の経路証人が空")?;
+    let (&first, rest) = edges
+        .split_first()
+        .ok_or(internal!("生成元の経路証人が空"))?;
     let mut path = generators[first].path.clone();
     for &i in rest {
         tick(c)?;
         path = path_compose::compose_retained(&path, &generators[i].path, reading, c, |_, _| {})
             .map_err(|e| e.cause)?
             .value
-            .ok_or("生成元の経路証人の端点が不整合")?;
+            .ok_or(internal!("生成元の経路証人の端点が不整合"))?;
     }
     Ok(path)
 }
@@ -318,7 +320,7 @@ fn word(
         entity,
     } = &moved(&path.object(), maps, c)?
     else {
-        return Err("relationの移送端点が参照でない".into());
+        return Err(internal!("relationの移送端点が参照でない").into());
     };
     let mut result = PathValue {
         reading: reading.into(),
@@ -339,7 +341,7 @@ fn word(
             let composed = path_compose::compose_retained(&result, target, reading, c, |_, _| {})
                 .map_err(|e| e.cause)?;
             let Some(value) = composed.value else {
-                return Err("relationの生成元移送が合成端点を保存しない".into());
+                return Err(internal!("relationの生成元移送が合成端点を保存しない").into());
             };
             result = value;
         }
@@ -369,7 +371,9 @@ pub(super) fn retain(
         .filter(|d| d.source().kind == "relation")
     {
         tick(c)?;
-        let pair = candidate.pair().ok_or("relationの対応署名がない")?;
+        let pair = candidate
+            .pair()
+            .ok_or(internal!("relationの対応署名がない"))?;
         let declarations = [
             &inputs.law().declarations()[pair.source()],
             &inputs.law().declarations()[pair.target()],
@@ -389,7 +393,7 @@ pub(super) fn retain(
             },
         ) = (&declarations[0].signature, &declarations[1].signature)
         else {
-            return Err("relation移送の元宣言が違う".into());
+            return Err(internal!("relation移送の元宣言が違う").into());
         };
         let origins =
             [[*sl, *tl], [*sr, *tr]].map(|ids| -> Result<[NodeRef; 2], ValidationFailure> {
@@ -411,7 +415,7 @@ pub(super) fn retain(
         let (Some(Type::Path(sa, sb)), Some(Type::Path(ta, tb))) =
             (inputs.law().expr_type(*sl), inputs.law().expr_type(*tl))
         else {
-            return Err("relationの辺がPathでない".into());
+            return Err(internal!("relationの辺がPathでない").into());
         };
         let mut maps = vec![];
         let mut identity = correspondence.types().to_vec();
@@ -491,7 +495,7 @@ pub(super) fn retain(
             }
             let target = map_type(name);
             let Some(target_def) = inputs.definitions().declarations().get(&target) else {
-                return Err("relation生成元の像宣言がない".into());
+                return Err(internal!("relation生成元の像宣言がない").into());
             };
             let ft = map_type(from);
             let tt = map_type(to);
@@ -668,10 +672,10 @@ pub(super) fn retain(
         let tables = [
             instance_tables[0]
                 .as_ref()
-                .ok_or("source relation表がない")?,
+                .ok_or(internal!("source relation表がない"))?,
             instance_tables[1]
                 .as_ref()
-                .ok_or("target relation表がない")?,
+                .ok_or(internal!("target relation表がない"))?,
         ];
         if tables[0]
             .outside_finite
@@ -770,7 +774,7 @@ pub(super) fn retain(
                 let bindings = witness_bindings(tp, target, Some(point), c)?;
                 restricted = relation_instances::at_numeric_point(env, declarations[1], bindings)?;
                 if !restricted.guard_checked || restricted.guard != Some(false) {
-                    return Err("relation適用域の反例が元guardを反証しない".into());
+                    return Err(internal!("relation適用域の反例が元guardを反証しない").into());
                 }
                 &restricted
             } else if let Some(domain) = &row.numeric_domain {

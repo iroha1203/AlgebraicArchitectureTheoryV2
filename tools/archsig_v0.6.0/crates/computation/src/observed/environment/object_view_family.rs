@@ -30,7 +30,7 @@ impl Environment<'_> {
         let request = graph
             .requests
             .get(self.current_context(graph).request)
-            .ok_or("有限view行のRequestがない")?;
+            .ok_or(internal!("有限view行のRequestがない"))?;
         let Some((value, scope, support)) = assignment.binding(self, request, p, &self.control)?
         else {
             return Ok(None);
@@ -66,10 +66,10 @@ impl Environment<'_> {
     ) -> Result<(), ValidationFailure> {
         let expected = self
             .object_view_binding(graph, p)?
-            .ok_or("有限viewの元parameterがない")?;
+            .ok_or(internal!("有限viewの元parameterがない"))?;
         let node = graph.get(value)?;
         if node != &expected {
-            return Err("有限view束縛が別parameterまたは値producerである".into());
+            return Err(internal!("有限view束縛が別parameterまたは値producerである").into());
         }
         self.validate_at(graph, node, value.0)
     }
@@ -97,17 +97,21 @@ impl Environment<'_> {
         let request = graph
             .requests
             .get(self.current_context(graph).request)
-            .ok_or("有限view producerのRequestがない")?;
+            .ok_or(internal!("有限view producerのRequestがない"))?;
         let declaration = self
             .indexes
             .inputs
             .law()
             .declarations()
-            .get(request.declaration().ok_or("有限viewの宣言がない")?)
-            .ok_or("有限view元宣言がない")?;
+            .get(
+                request
+                    .declaration()
+                    .ok_or(internal!("有限viewの宣言がない"))?,
+            )
+            .ok_or(internal!("有限view元宣言がない"))?;
         let archsig_input::law::model::Signature::View { params, .. } = &declaration.signature
         else {
-            return Err("有限view producerがviewでない".into());
+            return Err(internal!("有限view producerがviewでない").into());
         };
         let Some(p) = params.iter().find(|p| p.span == *span) else {
             return Ok(false);
@@ -121,9 +125,11 @@ impl Environment<'_> {
         data::check(value, self.indexes.inputs.law(), &self.control)?;
         let expected = self
             .object_view_binding(graph, p)?
-            .ok_or("有限view producerの値がない")?;
+            .ok_or(internal!("有限view producerの値がない"))?;
         if node != &expected {
-            return Err("有限view parameterの値・型・元位置・支持・Scope・辺が違う".into());
+            return Err(
+                internal!("有限view parameterの値・型・元位置・支持・Scope・辺が違う").into(),
+            );
         }
         Ok(true)
     }
@@ -159,7 +165,7 @@ impl Environment<'_> {
             .law()
             .declarations()
             .get(&instance.declaration().name)
-            .ok_or("有限view域の元宣言がない")?;
+            .ok_or(internal!("有限view域の元宣言がない"))?;
         let reads = RefCell::new(FiniteDomain::default());
         let enumeration = super::super::finite::values_if_finite_with_owned(
             &parameter.ty,
@@ -177,7 +183,7 @@ impl Environment<'_> {
                     .bindings()
                     .iter()
                     .find(|b| b.parameter().name == owner)
-                    .ok_or("複合Owned型の固定owner束縛がない")?;
+                    .ok_or(internal!("複合Owned型の固定owner束縛がない"))?;
                 let fact = binding.subject();
                 let subject = self.indexes.subject(&fact.snapshot, &fact.subject)?;
                 let owner = Scalar::Subject {

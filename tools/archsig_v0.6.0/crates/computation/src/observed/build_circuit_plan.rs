@@ -49,12 +49,12 @@ fn constant_nonzero(
 ) -> Result<Option<bool>, ValidationFailure> {
     tick(c)?;
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("circuitの成分残差がnative値でない".into());
+        return Err(internal!("circuitの成分残差がnative値でない").into());
     };
     if let D::FiniteLaw(data) = &v.data {
         let (_, values) = data
             .function_values()
-            .ok_or("circuitの有限残差が関数でない")?;
+            .ok_or(internal!("circuitの有限残差が関数でない"))?;
         let mut result = None;
         for r in values {
             tick(c)?;
@@ -68,7 +68,7 @@ fn constant_nonzero(
         return Ok(result);
     }
     let D::PolynomialLaw(data) = &v.data else {
-        return Err("circuitの成分残差が既存の環表示でない".into());
+        return Err(internal!("circuitの成分残差が既存の環表示でない").into());
     };
     let Some((_, terms)) = data.polynomial() else {
         return Ok(None);
@@ -85,7 +85,7 @@ fn constant_nonzero(
         }
         let coefficient = g.scalar(*coefficient)?;
         if coefficient.ty() != *ty {
-            return Err("circuitの成分残差の係数型が違う".into());
+            return Err(internal!("circuitの成分残差の係数型が違う").into());
         }
         if coefficient != &zero {
             nonzero = true;
@@ -115,7 +115,7 @@ pub(super) fn closed(
     };
     layout.recheck(env, g, c)?;
     let Some(first) = layout.data.objects.first() else {
-        return Err("circuitのbase座標がない".into());
+        return Err(internal!("circuitのbase座標がない").into());
     };
     let mut detectors = vec![];
     let diagrams = table.diagrams()?;
@@ -129,7 +129,7 @@ pub(super) fn closed(
             .indices
             .iter()
             .position(|r| *r == coordinate.index)
-            .ok_or("circuitの元Law添字がない")?;
+            .ok_or(internal!("circuitの元Law添字がない"))?;
         let mut cases = vec![];
         let parameters = if let Source::Polynomial(q) = &coordinate.source
             && q.row.is_none()
@@ -137,7 +137,7 @@ pub(super) fn closed(
             let original = diagrams
                 .first()
                 .and_then(|d| d.originals.iter().find(|o| o.reference == coordinate.index))
-                .ok_or("circuitの元parameter宣言がない")?;
+                .ok_or(internal!("circuitの元parameter宣言がない"))?;
             let parameters = &original.parameters;
             // guardの自由引数もwhenの型域へ保持する。本文の差が定数でも消さない。
             if original.guard.is_some() {
@@ -159,9 +159,9 @@ pub(super) fn closed(
             let current = row
                 .coordinates
                 .get(ordinal)
-                .ok_or("circuitの対象成分がない")?;
+                .ok_or(internal!("circuitの対象成分がない"))?;
             if current.index != coordinate.index {
-                return Err("circuitの対象Law添字が違う".into());
+                return Err(internal!("circuitの対象Law添字が違う").into());
             }
             let (instance, lhs, rhs, actual_component, ty, guard) = match &current.source {
                 Source::Polynomial(p) => (
@@ -182,10 +182,10 @@ pub(super) fn closed(
                 ),
             };
             if actual_component != &component {
-                return Err("circuitの対象成分pathが違う".into());
+                return Err(internal!("circuitの対象成分pathが違う").into());
             }
-            let origin =
-                super::law_evaluation::origin(g, instance)?.ok_or("circuitの元Law由来がない")?;
+            let origin = super::law_evaluation::origin(g, instance)?
+                .ok_or(internal!("circuitの元Law由来がない"))?;
             if origin.outside || !origin.body_allowed {
                 continue;
             }
@@ -236,10 +236,13 @@ pub(super) fn closed(
             let pattern = patterns
                 .rows
                 .get(object)
-                .ok_or("circuitのpattern行がない")?;
-            let source = table.objects.get(object).ok_or("circuitの元評価行がない")?;
+                .ok_or(internal!("circuitのpattern行がない"))?;
+            let source = table
+                .objects
+                .get(object)
+                .ok_or(internal!("circuitの元評価行がない"))?;
             if pattern.object != row.object || source.object != row.object {
-                return Err("circuitの対象とpattern/元評価が違う".into());
+                return Err(internal!("circuitの対象とpattern/元評価が違う").into());
             }
             let mut evaluation = source.evaluations[column];
             if let Some(Payload::Construction(v)) = &g.get(evaluation)?.payload
@@ -250,7 +253,7 @@ pub(super) fn closed(
                 for candidate in rows {
                     tick(c)?;
                     let row = super::law_evaluation::origin(g, candidate.law)?
-                        .ok_or("circuitの実引数行がない")?;
+                        .ok_or(internal!("circuitの実引数行がない"))?;
                     let mut same = row.bindings.len() == origin.bindings.len();
                     for (left, right) in row.bindings.iter().zip(&origin.bindings) {
                         tick(c)?;
@@ -263,7 +266,7 @@ pub(super) fn closed(
                     }
                 }
                 let [actual] = matching.as_slice() else {
-                    return Err("circuitの実引数に対応する評価が一つでない".into());
+                    return Err(internal!("circuitの実引数に対応する評価が一つでない").into());
                 };
                 evaluation = *actual;
             }

@@ -55,14 +55,16 @@ impl FiniteAutomaticLawFamily {
             partial: None,
         };
         if !self.parameters.law_dependencies {
-            return Err(fail("自動Law族がparameter/bodyの共通依存を持たない".into()));
+            return Err(fail(
+                internal!("自動Law族がparameter/bodyの共通依存を持たない").into(),
+            ));
         }
         self.parameters
             .recheck(inputs, readings, c)
             .map_err(|e| fail(e.cause))?;
         if self.family.is_some() != self.parameters.is_complete() {
             return Err(fail(
-                "自動Law族のparameter完成状態と評価族が対応しない".into(),
+                internal!("自動Law族のparameter完成状態と評価族が対応しない").into(),
             ));
         }
         if let Some(family) = &self.family {
@@ -80,7 +82,7 @@ pub(super) fn discover_law_reads(
     c: &Control,
 ) -> Result<(), ValidationFailure> {
     if selections.len() != objects.len() {
-        return Err("自動Law依存の対象列が違う".into());
+        return Err(internal!("自動Law依存の対象列が違う").into());
     }
     let mut failure = None;
     for (selection, object) in selections.iter().zip(objects) {
@@ -94,7 +96,7 @@ pub(super) fn discover_law_reads(
                 .law()
                 .declarations()
                 .get(&entry.source.declaration().name)
-                .ok_or("元Lawの宣言がない")?;
+                .ok_or(internal!("元Lawの宣言がない"))?;
             for row in &entry.rows {
                 tick(c)?;
                 match super::super::super::instance::probe_instance(
@@ -153,7 +155,7 @@ fn selected_columns(
                     .entries()
                     .iter()
                     .find(|e| e.instance == instance)
-                    .ok_or("自動Law族の元instanceがない")?;
+                    .ok_or(internal!("自動Law族の元instanceがない"))?;
                 for row in &entry.rows {
                     tick(c)?;
                     let mut duplicate = false;
@@ -224,7 +226,7 @@ pub(in crate::observed) fn finite_automatic_law_family(
                     .instances()
                     .get(instance)
                     .ok_or_else(|| FiniteLawFamilyFailure {
-                        cause: "自動Law列の元instanceがない".into(),
+                        cause: internal!("自動Law列の元instanceがない").into(),
                         partial: None,
                     })?;
             laws.push((object, original.declaration().name.clone(), bindings));
@@ -255,7 +257,7 @@ pub(in crate::observed) fn finite_automatic_law_family(
             {
                 result.family = Some(family);
                 return Err(AutomaticLawFailure {
-                    cause: "自動Law列とparameter/body共通域が違う".into(),
+                    cause: internal!("自動Law列とparameter/body共通域が違う").into(),
                     partial: Some(Box::new(result)),
                 });
             }
@@ -333,7 +335,7 @@ impl AutomaticLawValuations {
     ) -> Result<(Option<BigInt>, Vec<Fact>), ValidationFailure> {
         tick(c)?;
         if &self.value.sources != inputs.sources() {
-            return Err("有限Lawの実評価と元三入力が違う".into());
+            return Err(internal!("有限Lawの実評価と元三入力が違う").into());
         }
         let mut e = Environment::new(inputs, c)?;
         *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
@@ -341,7 +343,9 @@ impl AutomaticLawValuations {
         let reads = || -> Result<Vec<Fact>, ValidationFailure> {
             let tracked = e.state.primitive_reads.borrow();
             let mut positions = vec![];
-            for position in tracked.as_ref().ok_or("有限Law実評価の読取り記録がない")?
+            for position in tracked
+                .as_ref()
+                .ok_or(internal!("有限Law実評価の読取り記録がない"))?
             {
                 tick(&e.control)?;
                 positions.push(position.clone());
@@ -355,7 +359,7 @@ impl AutomaticLawValuations {
         let selected = self
             .columns()
             .get(column)
-            .ok_or("有限Lawの実評価列がない")?;
+            .ok_or(internal!("有限Lawの実評価列がない"))?;
         // 条件付き指示値が零でも、元operandの欠測を恒値で置き換えない。
         let actual = probe(&e, selected.declaration(), selected.bindings(), 0)?.row;
         if actual.condition_failed || actual.guard.is_none() {
@@ -413,12 +417,12 @@ impl AutomaticLawValuations {
         c: &Control,
     ) -> Result<(), ValidationFailure> {
         if &self.readings != readings {
-            return Err("自動Law族が消費先の元readingsに由来しない".into());
+            return Err(internal!("自動Law族が消費先の元readingsに由来しない").into());
         }
         let expected = finite_automatic_law_family(inputs, readings, c)
             .map_err(|failure| failure.cause)?
             .into_family()
-            .ok_or("自動Law族の元parameter域が未完成")?;
+            .ok_or(internal!("自動Law族の元parameter域が未完成"))?;
         self.value
             .check_expected(expected.value, c)
             .map_err(|failure| failure.cause)
@@ -448,7 +452,7 @@ impl AutomaticLawQuotient<'_> {
         c: &Control,
     ) -> Result<(), ValidationFailure> {
         if !self.value.belongs_to(&self.family.value) {
-            return Err("required商がこの自動Law族に由来しない".into());
+            return Err(internal!("required商がこの自動Law族に由来しない").into());
         }
         self.family.recheck(inputs, readings, c)?;
         self.value.recheck_projection(c)

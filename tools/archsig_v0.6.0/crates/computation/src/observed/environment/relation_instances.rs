@@ -114,7 +114,7 @@ impl RelationInstances {
     ) -> Result<(), RelationInstancesFailure> {
         if &self.sources != inputs.sources() {
             return Err(RelationInstancesFailure {
-                cause: "relation表の元三入力が違う".into(),
+                cause: internal!("relation表の元三入力が違う").into(),
                 partial: Box::new(self.clone()),
             });
         }
@@ -125,7 +125,7 @@ impl RelationInstances {
         })?;
         if self != &expected {
             return Err(RelationInstancesFailure {
-                cause: "relation表が元宣言・全束縛・作用検査と違う".into(),
+                cause: internal!("relation表が元宣言・全束縛・作用検査と違う").into(),
                 partial: Box::new(expected),
             });
         }
@@ -151,7 +151,7 @@ fn known(
             } => {
                 let actual = e.indexes.subject(snapshot, subject)?;
                 if actual.ty != *entity {
-                    return Err("relationの参照束縛と原始型が違う".into());
+                    return Err(internal!("relationの参照束縛と原始型が違う").into());
                 }
                 scope.merge(&e.indexes.scope(actual, reading, None)?);
                 support.extend(e.subject_support(part)?);
@@ -202,17 +202,17 @@ fn difference(
     };
     if let (Some(a), Some(b)) = (&a.step, &b.step) {
         if a.carrier != b.carrier {
-            return Err("relationの共通Uが違う".into());
+            return Err(internal!("relationの共通Uが違う").into());
         }
     }
     for (index, fact) in step.carrier.iter().enumerate() {
         tick(c)?;
         let left = match &a.step {
-            Some(s) => s.images.get(index).ok_or("左relation像がない")?,
+            Some(s) => s.images.get(index).ok_or(internal!("左relation像がない"))?,
             None => fact,
         };
         let right = match &b.step {
-            Some(s) => s.images.get(index).ok_or("右relation像がない")?,
+            Some(s) => s.images.get(index).ok_or(internal!("右relation像がない"))?,
             None => fact,
         };
         if left != right {
@@ -236,7 +236,7 @@ fn restrict_variables(
     let particular = domain
         .particular
         .as_ref()
-        .ok_or("空の数値域にrelationを適用できない")?;
+        .ok_or(internal!("空の数値域にrelationを適用できない"))?;
     let width = domain.kernel.first().map_or(0, Vec::len);
     if particular.len() != axes.len()
         || domain.kernel.len() != axes.len()
@@ -244,12 +244,12 @@ fn restrict_variables(
         || domain.kernel.iter().any(|row| row.len() != width)
         || axes.iter().any(|axis| axis.kind != axes[0].kind)
     {
-        return Err("relation適用域の元parameter座標が違う".into());
+        return Err(internal!("relation適用域の元parameter座標が違う").into());
     }
     for (index, axis) in axes.iter().enumerate() {
         e.tick()?;
-        let mut form =
-            affine::constant(&particular[index], &e.control)?.ok_or("数値特解の式がない")?;
+        let mut form = affine::constant(&particular[index], &e.control)?
+            .ok_or(internal!("数値特解の式がない"))?;
         for (coefficient, free) in domain.kernel[index].iter().zip(axes) {
             e.tick()?;
             let coefficient = affine::constant(coefficient, &e.control)?;
@@ -261,11 +261,11 @@ fn restrict_variables(
                 &e.control,
             )?;
             form = affine::binary(BinOp::Add, Some(&form), term.as_ref(), &e.control)?
-                .ok_or("数値核の式がない")?;
+                .ok_or(internal!("数値核の式がない"))?;
         }
         let value = variables
             .get_mut(&axis.name)
-            .ok_or("relation適用域の数値変数がない")?;
+            .ok_or(internal!("relation適用域の数値変数がない"))?;
         value.known_value = form.value(&e.control)?;
         value.scalar_scope = value.known_value.as_ref().map(|_| value.scope.clone());
         value.affine = Some(Box::new(form));
@@ -302,7 +302,7 @@ fn row_value(
         right,
     } = &declaration.signature
     else {
-        return Err("元relation署名がない".into());
+        return Err(internal!("元relation署名がない").into());
     };
     let mut checks = owned_call::Checks::default();
     let mut values = BTreeMap::new();
@@ -311,7 +311,7 @@ fn row_value(
             if numeric_families && numeric_parameters::numeric_width(&p.ty).is_some() {
                 continue;
             }
-            return Err("relation parameterの束縛がない".into());
+            return Err(internal!("relation parameterの束縛がない").into());
         };
         e.tick()?;
         e.owned_call_value_check(
@@ -362,7 +362,9 @@ fn row_value(
     if numeric_families {
         let (mut symbolic, parameters) = numeric_parameters::law_variables(e, params, &bindings)?;
         for (name, value) in variables {
-            let entry = symbolic.get_mut(&name).ok_or("relationの記号束縛がない")?;
+            let entry = symbolic
+                .get_mut(&name)
+                .ok_or(internal!("relationの記号束縛がない"))?;
             entry.scope = value.scope;
             entry.scalar_scope = value.scalar_scope;
             entry.support = value.support;
@@ -431,7 +433,7 @@ fn row_value(
         Some(g) => match &g.known_value {
             Some(Scalar::Bool(v)) => Some(*v),
             None => None,
-            _ => return Err("relation guardがBoolでない".into()),
+            _ => return Err(internal!("relation guardがBoolでない").into()),
         },
     };
     if let Some(g) = &g {
@@ -496,7 +498,7 @@ fn row(
         .missing_slot_reads
         .borrow_mut()
         .take()
-        .ok_or("relationの不足位置読取りがない")?;
+        .ok_or(internal!("relationの不足位置読取りがない"))?;
     result.map(|mut row| {
         row.missing.extend(missing);
         row.missing.sort();
@@ -522,7 +524,7 @@ fn domain(
                 .iter()
                 .find(|(n, _)| n == name)
                 .map(|(_, v)| v)
-                .ok_or("relation parameterの元owner束縛がない")?;
+                .ok_or(internal!("relation parameterの元owner束縛がない"))?;
             let owned = e.owned_members(entity, value, None, reading, &mut |_, _| {})?;
             Ok(super::super::finite::FiniteDomain {
                 enumeration: owned.enumeration,
@@ -573,7 +575,7 @@ fn instances(
             exists |= info.kind == "reading" && info.name == reading;
         }
         if !exists {
-            return Err("relationの元readingがない".into());
+            return Err(internal!("relationの元readingがない").into());
         }
         out.scope.readings.insert(reading.into());
         let e = Environment::new(inputs, c)?;
@@ -586,7 +588,7 @@ fn instances(
         }
         for d in &out.declarations {
             let Signature::Relation { params, .. } = &d.signature else {
-                return Err("relation族に別種の宣言がある".into());
+                return Err(internal!("relation族に別種の宣言がある").into());
             };
             // 他parameterの無限性で、独立した空型の0件を失わない。
             let mut empty = false;

@@ -32,7 +32,7 @@ fn transport(
     c: &Control,
 ) -> Result<Arc<ObjectViewTransport>, ValidationFailure> {
     if !std::ptr::eq(env.indexes.inputs, inputs.as_ref()) {
-        return Err("view保存cacheの元入力が違う".into());
+        return Err(internal!("view保存cacheの元入力が違う").into());
     }
     for e in env
         .results
@@ -49,7 +49,7 @@ fn transport(
             .map_err(|e| {
                 c.stop_reason()
                     .map(ValidationFailure::Stop)
-                    .unwrap_or_else(|| format!("view保存検査: {e:?}").into())
+                    .unwrap_or_else(|| e.internal_context(format!("view保存検査: {e:?}")).into())
             })?,
     );
     env.results.remember(KernelCacheEntry {
@@ -99,7 +99,7 @@ pub(super) fn counterexample(
     for (ty, value) in [(source, &example.left), (target, &example.right)] {
         let value = if optional {
             let Type::Option(element) = ty else {
-                return Err("数値反例の読取り型がOptionでない".into());
+                return Err(internal!("数値反例の読取り型がOptionでない").into());
             };
             Scalar::Option {
                 element: (**element).clone(),
@@ -145,30 +145,30 @@ pub(super) fn counterexample(
 }
 fn field<'a>(v: &'a Json, name: &str) -> Result<&'a Json, ValidationFailure> {
     let Json::Obj(v) = v else {
-        return Err("view移送のrecord型が違う".into());
+        return Err(internal!("view移送のrecord型が違う").into());
     };
     v.get(name)
-        .ok_or_else(|| format!("view移送の{name}がない").into())
+        .ok_or_else(|| internal!(format!("view移送の{name}がない")).into())
 }
 fn array(v: &Json) -> Result<&[Json], ValidationFailure> {
     let Json::Arr(v) = v else {
-        return Err("view移送の配列型が違う".into());
+        return Err(internal!("view移送の配列型が違う").into());
     };
     Ok(v)
 }
 fn reference(v: &Json) -> Result<NodeRef, ValidationFailure> {
     let Json::Str(id) = field(v, "node")? else {
-        return Err("view移送の参照型が違う".into());
+        return Err(internal!("view移送の参照型が違う").into());
     };
     Ok(NodeRef(
         id.strip_prefix('n')
             .and_then(|v| v.parse().ok())
-            .ok_or("view移送の参照番号が違う")?,
+            .ok_or(internal!("view移送の参照番号が違う"))?,
     ))
 }
 fn wire(g: &Graph, r: NodeRef) -> Result<Json, ValidationFailure> {
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("view移送の元不変量がnativeでない".into());
+        return Err(internal!("view移送の元不変量がnativeでない").into());
     };
     Ok(v.wire())
 }
@@ -283,9 +283,12 @@ fn finite_action(
         .map_err(|e| {
             c.stop_reason()
                 .map(ValidationFailure::Stop)
-                .unwrap_or_else(|| format!("view値型の構造検査: {e:?}").into())
+                .unwrap_or_else(|| {
+                    e.internal_context(format!("view値型の構造検査: {e:?}"))
+                        .into()
+                })
         })?
-        .ok_or("view値型の構造写像がない")?;
+        .ok_or(internal!("view値型の構造写像がない"))?;
     for family in components.families {
         action.declarations.push((family.clone(), family.clone()));
         for constructor in super::data::constructors(inputs.law(), &family)? {
@@ -301,7 +304,10 @@ fn finite_action(
                 .map_err(|e| {
                 c.stop_reason()
                     .map(ValidationFailure::Stop)
-                    .unwrap_or_else(|| format!("有限view参照型の全域検査: {e:?}").into())
+                    .unwrap_or_else(|| {
+                        e.internal_context(format!("有限view参照型の全域検査: {e:?}"))
+                            .into()
+                    })
             })?;
         if transport.bijection().is_none() {
             return Ok(None);
@@ -477,11 +483,11 @@ fn expression(
                 .replace(reference(field(row, "expression")?)?)
                 .is_some()
             {
-                return Err("viewの対象読取りが一意でない".into());
+                return Err(internal!("viewの対象読取りが一意でない").into());
             }
         }
     }
-    found.ok_or_else(|| "viewの対象読取りがない".into())
+    found.ok_or_else(|| internal!("viewの対象読取りがない").into())
 }
 pub(super) fn retain(
     env: &Environment<'_>,
@@ -509,10 +515,10 @@ pub(super) fn retain(
         return Ok(out);
     }
     let [a, z] = plans;
-    let av = a.views.as_ref().ok_or("元view表がない")?;
-    let zv = z.views.as_ref().ok_or("先view表がない")?;
-    let ao = a.objects.as_ref().ok_or("元対象表がない")?;
-    let zo = z.objects.as_ref().ok_or("先対象表がない")?;
+    let av = a.views.as_ref().ok_or(internal!("元view表がない"))?;
+    let zv = z.views.as_ref().ok_or(internal!("先view表がない"))?;
+    let ao = a.objects.as_ref().ok_or(internal!("元対象表がない"))?;
+    let zo = z.objects.as_ref().ok_or(internal!("先対象表がない"))?;
     let ar = a.architecture.witness.readings();
     let zr = z.architecture.witness.readings();
     for axis in &av.axes {
@@ -520,10 +526,10 @@ pub(super) fn retain(
         let instance = ar
             .instances()
             .get(axis.instance)
-            .ok_or("元view instanceがない")?;
+            .ok_or(internal!("元view instanceがない"))?;
         let declaration = &inputs.law().declarations()[&instance.declaration().name];
         let archsig_input::law::model::Signature::View { body, .. } = &declaration.signature else {
-            return Err("元viewのbodyがない".into());
+            return Err(internal!("元viewのbodyがない").into());
         };
         let pending = |method: &str, missing: Vec<Fact>| Reason {
             kind: if missing.is_empty() {
@@ -562,7 +568,7 @@ pub(super) fn retain(
             .declaration()
             .returns
             .as_ref()
-            .ok_or("元viewの返り型がない")?;
+            .ok_or(internal!("元viewの返り型がない"))?;
         let value_declarations =
             super::value_transport::identity_declarations(returns, inputs.law(), c)?;
         let structural_values = if value_declarations.is_none()
@@ -577,7 +583,10 @@ pub(super) fn retain(
             .map_err(|e| {
                 c.stop_reason()
                     .map(ValidationFailure::Stop)
-                    .unwrap_or_else(|| format!("view値の構造写像検査: {e:?}").into())
+                    .unwrap_or_else(|| {
+                        e.internal_context(format!("view値の構造写像検査: {e:?}"))
+                            .into()
+                    })
             })?;
             let Some(map) = map else {
                 out.pending
@@ -600,7 +609,10 @@ pub(super) fn retain(
                 .map_err(|e| {
                     c.stop_reason()
                         .map(ValidationFailure::Stop)
-                        .unwrap_or_else(|| format!("有限view値の全域検査: {e:?}").into())
+                        .unwrap_or_else(|| {
+                            e.internal_context(format!("有限view値の全域検査: {e:?}"))
+                                .into()
+                        })
                 })?,
             )
         } else {
@@ -630,10 +642,10 @@ pub(super) fn retain(
             let t = transport(env, inputs, declarations, oi, axis.instance, c)?;
             let ti = t
                 .target_instance()
-                .ok_or("先view instance未完成の配送は未実装")?;
+                .ok_or(internal!("先view instance未完成の配送は未実装"))?;
             // 型の対応と全域の順逆像は、kernelのFiniteViewTypeMapが検査する。
             if instance.parameters().len() != ti.parameters().len() {
-                return Err("対応viewのparameter数が違う".into());
+                return Err(internal!("対応viewのparameter数が違う").into());
             }
             if ti.declaration().returns.as_ref() != Some(target_returns) {
                 out.preserved = false;
@@ -647,18 +659,20 @@ pub(super) fn retain(
                 }
             }
             let [ta] = matches.as_slice() else {
-                return Err("先view軸が一意でない".into());
+                return Err(internal!("先view軸が一意でない").into());
             };
             if target_axis.is_some_and(|old| old != ta.invariant) {
-                return Err("対象間でviewの移送先軸が変わる".into());
+                return Err(internal!("対象間でviewの移送先軸が変わる").into());
             }
             target_axis = Some(ta.invariant);
-            let target = t.target_object().ok_or("view移送の対象像がない")?;
+            let target = t
+                .target_object()
+                .ok_or(internal!("view移送の対象像がない"))?;
             let oj = zr
                 .objects()
                 .iter()
                 .position(|o| o.identity() == target)
-                .ok_or("view対象像が表にない")?;
+                .ok_or(internal!("view対象像が表にない"))?;
             let preserved = match t.outcome() {
                 ViewTransportOutcome::Preserved => true,
                 ViewTransportOutcome::Refuted(_) => false,
@@ -676,7 +690,7 @@ pub(super) fn retain(
                             returns,
                         } = &declaration.signature
                         else {
-                            return Err("元viewのbodyがない".into());
+                            return Err(internal!("元viewのbodyがない").into());
                         };
                         let mut reason = pending("affine_numeric_view_transport", missing);
                         if let ReasonKind::UnsupportedAlgorithm { operand_types, .. } =
@@ -694,7 +708,7 @@ pub(super) fn retain(
                         out.pending.push(reason);
                         continue;
                     }
-                    return Err("未決view保存の配送は未実装".into());
+                    return Err(internal!("未決view保存の配送は未実装").into());
                 }
             };
             rows.push((
@@ -709,7 +723,7 @@ pub(super) fn retain(
         if rows.is_empty() && !out.pending.is_empty() {
             continue;
         }
-        let first = rows.first().ok_or("view移送の対象族が空")?;
+        let first = rows.first().ok_or(internal!("view移送の対象族が空"))?;
         let target_invariant = first.2;
         let target_signature = first.3;
         let source_wire = wire(b.g, axis.invariant)?;
@@ -717,7 +731,7 @@ pub(super) fn retain(
         if field(&source_wire, "returns")? != &ty.wire()
             || field(&target_wire, "returns")? != &target_ty.wire()
         {
-            return Err("viewのOption読取り型が元返り型と違う".into());
+            return Err(internal!("viewのOption読取り型が元返り型と違う").into());
         }
         let action = if let Some(declarations) = value_declarations {
             ValueAction {
@@ -769,7 +783,7 @@ pub(super) fn retain(
                     part.evidence.push(evidence);
                     part.judgment
                         .as_mut()
-                        .ok_or("数値反例の判断がない")?
+                        .ok_or(internal!("数値反例の判断がない"))?
                         .evidence
                         .push(evidence);
                 }
@@ -788,7 +802,7 @@ pub(super) fn retain(
         let selected = |g: &Graph, r| -> Result<bool, ValidationFailure> {
             let v = wire(g, r)?;
             let Json::Bool(value) = field(&v, "selected")? else {
-                return Err("signature選択がBoolでない".into());
+                return Err(internal!("signature選択がBoolでない").into());
             };
             Ok(*value)
         };

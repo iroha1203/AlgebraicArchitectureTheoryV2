@@ -28,13 +28,16 @@ fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectLawCompatibility)
         .map_err(Into::into)
 }
+#[track_caller]
 fn bad(message: &str) -> ConstructionFailure {
-    ConstructionFailure::Inconsistent(message.into())
+    ConstructionFailure::Inconsistent(internal!(message))
 }
 fn invalid(f: ValidationFailure) -> ConstructionFailure {
     match f {
         ValidationFailure::Stop(s) => s.into(),
-        other => bad(&format!("Law互換性の型付き比較: {other:?}")),
+        other => ConstructionFailure::Inconsistent(
+            other.internal_context(format!("Law互換性の型付き比較: {other:?}")),
+        ),
     }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]

@@ -17,7 +17,7 @@ impl Environment<'_> {
     ) -> Result<AnswerBinding, ValidationFailure> {
         self.tick()?;
         let Selector::Answer { id, path } = selector else {
-            return Err("Answer束縛の元selectorが違う".into());
+            return Err(internal!("Answer束縛の元selectorが違う").into());
         };
         let answer =
             self.answer_binding_source(graph, self.current_context(graph).request, id, span)?;
@@ -78,7 +78,7 @@ impl Environment<'_> {
             return Err(self.answer_projection_unprovided(span));
         }
         let Some(ProjectionStep::Field(output)) = path.first() else {
-            return Err("Answer出力fieldがない".into());
+            return Err(internal!("Answer出力fieldがない").into());
         };
         let root = *answer
             .outputs
@@ -95,7 +95,7 @@ impl Environment<'_> {
         span: (usize, usize),
     ) -> Result<(), ValidationFailure> {
         if value.0 >= self.state.cutoff.get() {
-            return Err("Answer束縛の値が既出prefixにない".into());
+            return Err(internal!("Answer束縛の値が既出prefixにない").into());
         }
         match self.answer_binding(graph, selector, span)? {
             AnswerBinding::Reference(original) if original == value => {}
@@ -107,10 +107,10 @@ impl Environment<'_> {
                     || context.instance.is_some()
                     || context.case.is_some()
                 {
-                    return Err("Answer射影値の元Request/contextが違う".into());
+                    return Err(internal!("Answer射影値の元Request/contextが違う").into());
                 }
             }
-            _ => return Err("Answer束縛が元出力・公開射影と違う".into()),
+            _ => return Err(internal!("Answer束縛が元出力・公開射影と違う").into()),
         }
         self.tick()?;
         Ok(())
@@ -128,26 +128,26 @@ impl Environment<'_> {
         let originals = self
             .indexes
             .original_requests
-            .ok_or("Answer束縛の検査済み元Requestがない")?;
+            .ok_or(internal!("Answer束縛の検査済み元Requestがない"))?;
         if originals.len() != graph.requests.len() {
-            return Err("Answer束縛の元Request列が違う".into());
+            return Err(internal!("Answer束縛の元Request列が違う").into());
         }
         for (original, actual) in originals.iter().zip(&graph.requests) {
             self.tick()?;
             if original != actual {
-                return Err("Answer束縛のRequest metadataが元入力と違う".into());
+                return Err(internal!("Answer束縛のRequest metadataが元入力と違う").into());
             }
         }
         let request = graph
             .requests
             .get(current)
-            .ok_or("Answer消費側Requestがない")?;
+            .ok_or(internal!("Answer消費側Requestがない"))?;
         if !request
             .dependencies
             .iter()
             .any(|dependency| dependency == id)
         {
-            return Err("Answer束縛が元依存グラフにない".into());
+            return Err(internal!("Answer束縛が元依存グラフにない").into());
         }
         let mut producer = None;
         for (index, request) in graph.requests.iter().enumerate() {
@@ -156,9 +156,9 @@ impl Environment<'_> {
                 producer = Some(index);
             }
         }
-        let producer = producer.ok_or("Answer束縛の元Requestがない")?;
+        let producer = producer.ok_or(internal!("Answer束縛の元Requestがない"))?;
         if producer == current {
-            return Err("Answer束縛が自己依存している".into());
+            return Err(internal!("Answer束縛が自己依存している").into());
         }
         let mut answer = None;
         for (index, candidate) in &graph.checked_answers {
@@ -175,15 +175,15 @@ impl Environment<'_> {
             );
             if *index == producer {
                 if answer.is_some() {
-                    return Err("検査済みAnswerの登録が重複している".into());
+                    return Err(internal!("検査済みAnswerの登録が重複している").into());
                 }
                 answer = Some(candidate);
             }
             self.tick()?;
         }
-        let answer = answer.ok_or("元Answerが依存順に検査登録されていない")?;
+        let answer = answer.ok_or(internal!("元Answerが依存順に検査登録されていない"))?;
         if !self.state.answer_rechecks.borrow_mut().insert(producer) {
-            return Err("Answer束縛の元入力再検査が循環している".into());
+            return Err(internal!("Answer束縛の元入力再検査が循環している").into());
         }
         let checked = self.validate_answer(graph, &graph.requests[producer], answer);
         self.state.answer_rechecks.borrow_mut().remove(&producer);

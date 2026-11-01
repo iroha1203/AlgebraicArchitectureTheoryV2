@@ -41,7 +41,10 @@ impl Input {
                 offset: x.offset.clone(),
             });
         }
-        let x = search.linear.as_ref().ok_or("商の線形表示がない")?;
+        let x = search
+            .linear
+            .as_ref()
+            .ok_or(internal!("商の線形表示がない"))?;
         let n = x.parameter_count;
         let (guard_origin, guard_kernel, guard_dimensions) = if x.candidates_empty {
             (None, vec![vec![]; n], 0)
@@ -91,7 +94,7 @@ pub(in crate::observed) fn coordinates(
             .integer_coordinates(axes, c)?
             .map(|(a, b)| (Scalar::Z(a), vector(&b)))),
         Type::Q => f.rational_coordinates(axes, c),
-        _ => Err("商の係数型がZ/Qでない".into()),
+        _ => Err(internal!("商の係数型がZ/Qでない").into()),
     }
 }
 pub(in crate::observed) fn add_product(
@@ -110,7 +113,7 @@ pub(in crate::observed) fn multiply(
     c: &Control,
 ) -> Result<Matrix, ValidationFailure> {
     if a.iter().any(|r| r.len() != b.len()) || b.iter().any(|r| r.len() != cols) {
-        return Err("商の行列積の次元が違う".into());
+        return Err(internal!("商の行列積の次元が違う").into());
     }
     let mut result = vec![];
     for row in a {
@@ -147,7 +150,7 @@ pub(in crate::observed) fn fiber(
                         if let Scalar::Z(x) = x {
                             Ok(x.clone())
                         } else {
-                            Err(ValidationFailure::from("整数商の係数がZでない"))
+                            Err(ValidationFailure::from(internal!("整数商の係数がZでない")))
                         }
                     })
                     .collect()
@@ -250,9 +253,9 @@ pub(in crate::observed) fn view_value(
                         .collect::<Result<_, _>>()?,
                 ));
             }
-            let value = flat.get(*at).ok_or("商のView座標が足りない")?;
+            let value = flat.get(*at).ok_or(internal!("商のView座標が足りない"))?;
             if value.ty() != *ty {
-                return Err("商のView座標の型が違う".into());
+                return Err(internal!("商のView座標の型が違う").into());
             }
             *at += 1;
             Ok(value.clone())
@@ -261,7 +264,7 @@ pub(in crate::observed) fn view_value(
     let mut at = 0;
     let value = read(ty, flat, &mut at, c)?;
     if at != flat.len() {
-        return Err("商のView座標が余る".into());
+        return Err(internal!("商のView座標が余る").into());
     }
     Ok(value)
 }

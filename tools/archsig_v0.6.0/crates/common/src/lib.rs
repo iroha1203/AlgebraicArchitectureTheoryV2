@@ -3,6 +3,7 @@
 extern crate self as archsig_common;
 pub mod canonical;
 pub mod control;
+pub mod internal;
 pub mod issue;
 pub mod json;
 pub mod names;

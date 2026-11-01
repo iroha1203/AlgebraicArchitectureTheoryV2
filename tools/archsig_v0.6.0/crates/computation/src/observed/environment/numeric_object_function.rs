@@ -35,7 +35,9 @@ pub(super) enum Source {
 fn invalid(e: ValidationFailure) -> ConstructionFailure {
     match e {
         ValidationFailure::Stop(s) => s.into(),
-        e => ConstructionFailure::Inconsistent(format!("数値viewの元式: {e:?}")),
+        e => {
+            ConstructionFailure::Inconsistent(e.internal_context(format!("数値viewの元式: {e:?}")))
+        }
     }
 }
 pub(super) fn fixed_bindings(
@@ -46,7 +48,7 @@ pub(super) fn fixed_bindings(
     for binding in row.bindings() {
         c.checkpoint(Checkpoint::ObjectViewTransportFamily)?;
         let Type::Ref(entity) = &binding.parameter().ty.erase() else {
-            return Err("数値viewの固定束縛が参照でない".into());
+            return Err(internal!("数値viewの固定束縛が参照でない").into());
         };
         bindings.push((
             binding.parameter().name.clone(),
@@ -135,22 +137,22 @@ fn expression_inner(
     let row = readings
         .instances()
         .get(position.instance)
-        .ok_or_else(|| ConstructionFailure::Inconsistent("数値viewのinstanceがない".into()))?;
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("数値viewのinstanceがない")))?;
     match row.applications().get(position.object) {
         Some(InstanceApplication::NotApplicable) => return Ok(Source::Outside),
         Some(InstanceApplication::Applicable { conditions }) if conditions.is_empty() => {}
         Some(_) => return Ok(Source::Unknown),
         None => {
-            return Err(ConstructionFailure::Inconsistent(
-                "数値viewの対象別適用がない".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "数値viewの対象別適用がない"
+            )));
         }
     }
     let declaration = inputs
         .law()
         .declarations()
         .get(&row.declaration().name)
-        .ok_or_else(|| ConstructionFailure::Inconsistent("数値viewの宣言がない".into()))?;
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("数値viewの宣言がない")))?;
     let (params, body) = match &declaration.signature {
         archsig_input::law::model::Signature::View { params, body, .. }
         | archsig_input::law::model::Signature::Law { params, body, .. } => (params, *body),
@@ -161,15 +163,14 @@ fn expression_inner(
         }
     };
     let expression = expression.unwrap_or(body);
-    let selected = inputs
-        .law()
-        .exprs()
-        .get(expression)
-        .ok_or_else(|| ConstructionFailure::Inconsistent("数値読取りの元式がない".into()))?;
+    let selected =
+        inputs.law().exprs().get(expression).ok_or_else(|| {
+            ConstructionFailure::Inconsistent(internal!("数値読取りの元式がない"))
+        })?;
     if selected.span.0 < declaration.span.0 || selected.span.1 > declaration.span.1 {
-        return Err(ConstructionFailure::Inconsistent(
-            "数値読取りの元式が別宣言に属する".into(),
-        ));
+        return Err(ConstructionFailure::Inconsistent(internal!(
+            "数値読取りの元式が別宣言に属する"
+        )));
     }
     let mut env = Environment::new(inputs, c).map_err(ConstructionFailure::from)?;
     env.indexes.object = Some(Arc::new(
@@ -185,12 +186,12 @@ fn expression_inner(
             .iter()
             .find(|p| &p.name == name)
             .ok_or_else(|| {
-                ConstructionFailure::Inconsistent("数値反例の引数が元viewにない".into())
+                ConstructionFailure::Inconsistent(internal!("数値反例の引数が元viewにない"))
             })?;
         if value.ty() != parameter.ty || bindings.iter().any(|(n, _)| n == name) {
-            return Err(ConstructionFailure::Inconsistent(
-                "数値反例の引数型または一意性が違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "数値反例の引数型または一意性が違う"
+            )));
         }
         bindings.push((name.clone(), value.clone()));
     }
@@ -205,19 +206,21 @@ fn expression_inner(
         let argument = names
             .iter()
             .position(|(a, z)| if target { z == &p.name } else { a == &p.name })
-            .ok_or_else(|| ConstructionFailure::Inconsistent("数値viewの引数対応がない".into()))?;
+            .ok_or_else(|| {
+                ConstructionFailure::Inconsistent(internal!("数値viewの引数対応がない"))
+            })?;
         let Some(values) = terms::domain(&p.ty, argument, &[], inputs.law(), c).map_err(invalid)?
         else {
             return Ok(Source::Unknown);
         };
         let [value] = values.as_slice() else {
-            return Err(ConstructionFailure::Inconsistent(
-                "数値引数の記号域が一つでない".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "数値引数の記号域が一つでない"
+            )));
         };
-        let variable = variables
-            .get_mut(&p.name)
-            .ok_or_else(|| ConstructionFailure::Inconsistent("数値viewの元変数がない".into()))?;
+        let variable = variables.get_mut(&p.name).ok_or_else(|| {
+            ConstructionFailure::Inconsistent(internal!("数値viewの元変数がない"))
+        })?;
         variable.known_value = value.known(c).map_err(invalid)?;
         variable.affine = value.number(c).map_err(invalid)?.map(Box::new);
         variable.symbolic = Some(Box::new(value.clone()));
@@ -312,17 +315,17 @@ fn concrete(
 ) -> Result<(Scalar, Vec<Fact>), ConstructionFailure> {
     let Source::Value(value) = source(inputs, readings, position, names, target, assignments, c)?
     else {
-        return Err(ConstructionFailure::Inconsistent(
-            "数値反例の元viewが適用されない".into(),
-        ));
+        return Err(ConstructionFailure::Inconsistent(internal!(
+            "数値反例の元viewが適用されない"
+        )));
     };
     if value.condition_failed || value.condition_pending {
-        return Err(ConstructionFailure::Inconsistent(
-            "数値反例の再代入条件が成立しない".into(),
-        ));
+        return Err(ConstructionFailure::Inconsistent(internal!(
+            "数値反例の再代入条件が成立しない"
+        )));
     }
     let value_scalar = value.known_value.ok_or_else(|| {
-        ConstructionFailure::Inconsistent("数値反例の元bodyへの再代入値がない".into())
+        ConstructionFailure::Inconsistent(internal!("数値反例の元bodyへの再代入値がない"))
     })?;
     Ok((value_scalar, value.support))
 }
@@ -345,18 +348,18 @@ pub(in crate::observed) fn counterexample(
             .iter()
             .position(|(a, _)| a == &p.name)
             .ok_or_else(|| {
-                ConstructionFailure::Inconsistent("数値反例の元引数対応がない".into())
+                ConstructionFailure::Inconsistent(internal!("数値反例の元引数対応がない"))
             })?;
         let Some(values) = terms::domain(&p.ty, argument, &[], inputs.law(), c).map_err(invalid)?
         else {
-            return Err(ConstructionFailure::Inconsistent(
-                "数値反例の全型域がない".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "数値反例の全型域がない"
+            )));
         };
         let [value] = values.as_slice() else {
-            return Err(ConstructionFailure::Inconsistent(
-                "数値反例の記号引数が一つでない".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "数値反例の記号引数が一つでない"
+            )));
         };
         let scalar = value.at(unit, c).map_err(invalid)?;
         assignments.push((p.name.clone(), scalar.clone()));
@@ -381,9 +384,9 @@ pub(in crate::observed) fn counterexample(
         c,
     )?;
     if crate::observed::data::equal(&left, &right, c).map_err(invalid)? {
-        return Err(ConstructionFailure::Inconsistent(
-            "数値viewの係数反例が元bodyへの再代入で相違しない".into(),
-        ));
+        return Err(ConstructionFailure::Inconsistent(internal!(
+            "数値viewの係数反例が元bodyへの再代入で相違しない"
+        )));
     }
     facts.extend(target_facts);
     facts.sort();
@@ -398,7 +401,7 @@ pub(in crate::observed) fn counterexample(
             .iter()
             .find(|(actual, _)| actual == name)
             .ok_or_else(|| {
-                ConstructionFailure::Inconsistent("数値反例の全引数が揃わない".into())
+                ConstructionFailure::Inconsistent(internal!("数値反例の全引数が揃わない"))
             })?;
         bindings.push(value.clone());
     }

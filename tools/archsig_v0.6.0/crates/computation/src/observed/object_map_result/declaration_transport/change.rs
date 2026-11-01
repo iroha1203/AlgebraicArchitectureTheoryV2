@@ -69,7 +69,7 @@ fn update_expression(
             return expression(b, inputs, *id, params, dependencies);
         }
     }
-    let source = body.ok_or("change全体の元式がない")?;
+    let source = body.ok_or(internal!("change全体の元式がない"))?;
     b.push(
         NodeType::Expression(ty.clone()),
         "expression",
@@ -202,7 +202,7 @@ fn update_value<'a>(
     values
         .iter()
         .find(|(f, _)| f.field.as_ref().is_some_and(|field| field.short() == name))
-        .ok_or_else(|| ValidationFailure::from("change移送の名前付き更新先がない"))
+        .ok_or_else(|| ValidationFailure::from(internal!("change移送の名前付き更新先がない")))
 }
 fn point(
     env: &Environment<'_>,
@@ -268,8 +268,8 @@ fn point(
             b,
             params[0],
             &bindings[0],
-            Scalar::Bool(truth[0].ok_or("元guard値がない")?),
-            Scalar::Bool(truth[1].ok_or("先guard値がない")?),
+            Scalar::Bool(truth[0].ok_or(internal!("元guard値がない"))?),
+            Scalar::Bool(truth[1].ok_or(internal!("先guard値がない"))?),
             &facts,
         )?;
         checks[0].status = Decision::Refuted;
@@ -366,7 +366,9 @@ pub(super) fn retain(
     request: &Request,
     c: &Control,
 ) -> Result<Output, ValidationFailure> {
-    let pair = candidate.pair().ok_or("changeの対応署名がない")?;
+    let pair = candidate
+        .pair()
+        .ok_or(internal!("changeの対応署名がない"))?;
     let declarations = [
         &inputs.law().declarations()[pair.source()],
         &inputs.law().declarations()[pair.target()],
@@ -382,7 +384,7 @@ pub(super) fn retain(
             body,
         } = &d.signature
         else {
-            return Err("change移送の元宣言が違う".into());
+            return Err(internal!("change移送の元宣言が違う").into());
         };
         params.push(ps.as_slice());
         guards.push(*guard);
@@ -424,18 +426,18 @@ pub(super) fn retain(
         }
     }
     if params[0].is_empty() || params[0].len() != params[1].len() {
-        return Err("change移送の引数数が違う".into());
+        return Err(internal!("change移送の引数数が違う").into());
     }
     let (Type::Ref(st), Type::Ref(tt)) = (&params[0][0].ty.erase(), &params[1][0].ty.erase())
     else {
-        return Err("change第1引数が参照でない".into());
+        return Err(internal!("change第1引数が参照でない").into());
     };
     let reference = reference_map(b, inputs, correspondence, st, tt, dependencies, c)?;
     let mut names = vec![];
     let (source_parameters, source_fields) = inputs.definitions().declarations()[st]
         .signature
         .record_fields()
-        .ok_or("change元型にfieldがない")?;
+        .ok_or(internal!("change元型にfieldがない"))?;
     for field in source_parameters.iter().chain(source_fields) {
         tick(c)?;
         let moved = correspondence
@@ -509,7 +511,7 @@ pub(super) fn retain(
         }
         identity.extend(
             super::super::super::value_transport::identity_declarations(&s.ty, inputs.law(), c)?
-                .ok_or("change値parameterの写像が未対応")?,
+                .ok_or(internal!("change値parameterの写像が未対応"))?,
         );
     }
     identity.extend(correspondence.types().iter().cloned());
@@ -549,7 +551,7 @@ pub(super) fn retain(
                 .declarations()
                 .get(entity)
                 .and_then(|d| d.signature.field(&name[side]))
-                .ok_or("change更新fieldの宣言型がない")?
+                .ok_or(internal!("change更新fieldの宣言型がない"))?
                 .ty
                 .erase();
             origins.push(update_expression(
@@ -587,7 +589,7 @@ pub(super) fn retain(
         }
         let identity =
             super::super::super::value_transport::identity_declarations(&ty, inputs.law(), c)?
-                .ok_or("change更新値写像が未対応")?;
+                .ok_or(internal!("change更新値写像が未対応"))?;
         let values = value_map(b, [&ty, &target_ty], &[], &identity, dependencies)?;
         checks.push(field::Comparison {
             values,
@@ -682,7 +684,7 @@ pub(super) fn retain(
         if let Some(domain) = &finite {
             for tuple in &domain.values {
                 let Scalar::Tuple(values) = tuple else {
-                    return Err("change値域がTupleでない".into());
+                    return Err(internal!("change値域がTupleでない").into());
                 };
                 point(
                     env,
@@ -708,7 +710,9 @@ pub(super) fn retain(
                     declarations[side],
                     &subjects[side],
                     &mut metadata,
-                    coefficient.as_ref().ok_or("数値changeの係数型がない")?,
+                    coefficient
+                        .as_ref()
+                        .ok_or(internal!("数値changeの係数型がない"))?,
                 );
                 for check in &mut checks {
                     check.support.extend(metadata.support.iter().cloned());

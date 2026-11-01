@@ -400,20 +400,19 @@ impl Data {
         let (object, diagram) = outputs
             .into_iter()
             .find(|(_, d)| d.originals.iter().any(|o| o.row == reference))
-            .ok_or("元有限Law行が出力表にない")?;
+            .ok_or(internal!("元有限Law行が出力表にない"))?;
         let reading = diagram
             .readings
             .iter()
             .find(|r| r.instance == reference)
-            .ok_or("元有限Law行の実読取りがない")?;
+            .ok_or(internal!("元有限Law行の実読取りがない"))?;
         let expr = |r: NodeRef| -> Result<usize, ValidationFailure> {
-            match self
-                .source
-                .parts
-                .get(r.0.checked_sub(self.source.base).ok_or("元式が計画外")?)
-            {
+            match self.source.parts.get(
+                r.0.checked_sub(self.source.base)
+                    .ok_or(internal!("元式が計画外"))?,
+            ) {
                 Some(Part::Source { expression, .. }) => Ok(*expression),
-                _ => Err("元Law式がSourceでない".into()),
+                _ => Err(internal!("元Law式がSourceでない").into()),
             }
         };
         Ok(Some(super::law_evaluation::Origin {
@@ -478,7 +477,7 @@ impl Data {
         if self.index >= self.source.parts.len()
             || self.source.base.checked_add(self.index) != Some(position)
         {
-            return Err("有限Law導出の元計画・生成位置が違う".into());
+            return Err(internal!("有限Law導出の元計画・生成位置が違う").into());
         }
         Ok(())
     }
@@ -486,7 +485,7 @@ impl Data {
 fn push(parts: &mut Vec<Part>, base: usize, part: Part) -> Result<NodeRef, ValidationFailure> {
     let index = base
         .checked_add(parts.len())
-        .ok_or("有限Law導出の番号が範囲外")?;
+        .ok_or(internal!("有限Law導出の番号が範囲外"))?;
     parts.push(part);
     Ok(NodeRef(index))
 }
@@ -500,11 +499,13 @@ fn function(
 ) -> Result<NodeRef, ValidationFailure> {
     let mut elements = vec![];
     if points.len() != values.len() {
-        return Err("有限Lawの公開順と関数の次元が違う".into());
+        return Err(internal!("有限Lawの公開順と関数の次元が違う").into());
     }
     for point in points {
         tick(c)?;
-        let v = values.get(*point).ok_or("有限Lawの元関数座標が範囲外")?;
+        let v = values
+            .get(*point)
+            .ok_or(internal!("有限Lawの元関数座標が範囲外"))?;
         elements.push(push(parts, base, Part::Scalar(Scalar::Z(v.clone())))?);
     }
     push(
@@ -525,7 +526,7 @@ fn value_key(value: &Scalar, c: &Control) -> Result<String, ValidationFailure> {
         .map_err(|e| match e {
             archsig_common::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
             archsig_common::control::CheckFailure::Input(_) => {
-                ValidationFailure::Internal("有限Lawのcanonical値が構成できない".into())
+                ValidationFailure::Internal(internal!("有限Lawのcanonical値が構成できない"))
             }
         })
 }
@@ -574,7 +575,7 @@ pub(super) fn canonical_value(value: &Scalar, c: &Control) -> Result<Scalar, Val
                     value: Some(item), ..
                 } => visit(item, c)?,
                 Scalar::Path(_) | Scalar::Term(_) => {
-                    return Err("有限LawのDに原始値でない値がある".into());
+                    return Err(internal!("有限LawのDに原始値でない値がある").into());
                 }
                 _ => {}
             }
@@ -597,10 +598,13 @@ fn original_rows(
     let mut originals = Vec::new();
     for &column in columns {
         tick(c)?;
-        let source = f.columns().get(column).ok_or("有限Lawの元columnがない")?;
+        let source = f
+            .columns()
+            .get(column)
+            .ok_or(internal!("有限Lawの元columnがない"))?;
         let instance = source
             .source_instance()
-            .ok_or("有限Lawの元instanceがない")?;
+            .ok_or(internal!("有限Lawの元instanceがない"))?;
         let declaration = source.declaration();
         let Signature::Law {
             role,
@@ -609,10 +613,10 @@ fn original_rows(
             body,
         } = &declaration.signature
         else {
-            return Err("有限Lawの元宣言がLawでない".into());
+            return Err(internal!("有限Lawの元宣言がLawでない").into());
         };
         if source.bindings().len() != params.len() {
-            return Err("有限Lawの全parameter束縛が揃わない".into());
+            return Err(internal!("有限Lawの全parameter束縛が揃わない").into());
         }
         let mut bindings = Vec::new();
         for parameter in params {
@@ -621,7 +625,9 @@ fn original_rows(
                 .bindings()
                 .iter()
                 .filter(|(name, _)| name == &parameter.name);
-            let (_, value) = found.next().ok_or("有限Lawの元parameter束縛がない")?;
+            let (_, value) = found
+                .next()
+                .ok_or(internal!("有限Lawの元parameter束縛がない"))?;
             let ty = parameter
                 .ty
                 .erase_controlled::<archsig_common::control::CheckFailure<Box<archsig_common::issue::Issue>>>(
@@ -631,11 +637,11 @@ fn original_rows(
                 .map_err(|e| match e {
                     archsig_common::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
                     archsig_common::control::CheckFailure::Input(_) => {
-                        ValidationFailure::Internal("有限Lawのparameterの原始型がない".into())
+                        ValidationFailure::Internal(internal!("有限Lawのparameterの原始型がない"))
                     }
                 })?;
             if found.next().is_some() || value.ty() != ty {
-                return Err("有限Lawの元parameterが重複または型違い".into());
+                return Err(internal!("有限Lawの元parameterが重複または型違い").into());
             }
             let value = canonical_value(value, c)?;
             let reference = push(parts, base, Part::Scalar(value))?;
@@ -648,9 +654,13 @@ fn original_rows(
         let mut expression = |id: usize| -> Result<NodeRef, ValidationFailure> {
             tick(c)?;
             if inputs.law().expr_type(id) != Some(&Type::Bool) {
-                return Err("有限Lawの元body/guardがBoolでない".into());
+                return Err(internal!("有限Lawの元body/guardがBoolでない").into());
             }
-            let ast = inputs.law().exprs().get(id).ok_or("有限Lawの元式がない")?;
+            let ast = inputs
+                .law()
+                .exprs()
+                .get(id)
+                .ok_or(internal!("有限Lawの元式がない"))?;
             push(
                 parts,
                 base,
@@ -722,7 +732,7 @@ fn basis(
             .map_err(|e| match e {
                 archsig_common::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
                 archsig_common::control::CheckFailure::Input(_) => {
-                    ValidationFailure::Internal("有限Lawの原始表示型が解決できない".into())
+                    ValidationFailure::Internal(internal!("有限Lawの原始表示型が解決できない"))
                 }
             })?,
         );
@@ -741,7 +751,7 @@ fn basis(
             items => Scalar::Tuple(items.to_vec()),
         };
         if value.ty() != ty {
-            return Err("有限Lawの全Dの型が違う".into());
+            return Err(internal!("有限Lawの全Dの型が違う").into());
         }
         let value = canonical_value(&value, c)?;
         let key = value_key(&value, c)?;
@@ -753,7 +763,7 @@ fn basis(
     for pair in ordered.windows(2) {
         tick(c)?;
         if pair[0].0 == pair[1].0 {
-            return Err("有限Lawの公開Dに重複した値がある".into());
+            return Err(internal!("有限Lawの公開Dに重複した値がある").into());
         }
     }
     let mut points = vec![];
@@ -773,7 +783,7 @@ fn basis(
             let v = ev
                 .basis_images()
                 .get(*point)
-                .ok_or("有限Lawの元評価座標が範囲外")?;
+                .ok_or(internal!("有限Lawの元評価座標が範囲外"))?;
             images.push(push(parts, base, Part::Scalar(Scalar::Z(v.clone())))?);
         }
         Some(push(
@@ -808,7 +818,7 @@ fn object_plan(
     tick(c)?;
     let p = f
         .object_presentation(inputs, object, c)?
-        .ok_or("有限Lawの元表示が未完成")?;
+        .ok_or(internal!("有限Lawの元表示が未完成"))?;
     let Basis {
         points,
         domain,
@@ -834,7 +844,7 @@ fn object_plan(
         );
         let ideal = p.witness_ideal(index, c)?;
         if ideal.equations() != [index] {
-            return Err("有限witnessの元成分が違う".into());
+            return Err(internal!("有限witnessの元成分が違う").into());
         }
         witnesses.push(push(
             parts,
@@ -850,7 +860,7 @@ fn object_plan(
     let mut generators = vec![];
     for index in required.equations() {
         tick(c)?;
-        generators.push(*nu.get(*index).ok_or("requiredの元νがない")?);
+        generators.push(*nu.get(*index).ok_or(internal!("requiredの元νがない"))?);
     }
     let required = push(
         parts,
@@ -951,8 +961,14 @@ fn append_presentation(
     let mut positions = f.positions().to_vec();
     for i in 0..out.nu.len() {
         tick(c)?;
-        let column = *out.columns.get(i).ok_or("有限表示の元columnがない")?;
-        let (_, component) = out.components.get(i).ok_or("有限表示の元成分がない")?;
+        let column = *out
+            .columns
+            .get(i)
+            .ok_or(internal!("有限表示の元columnがない"))?;
+        let (_, component) = out
+            .components
+            .get(i)
+            .ok_or(internal!("有限表示の元成分がない"))?;
         let (value, support) = f.observed_indicator(inputs, column, component.as_deref(), c)?;
         observed.push(value);
         for mut fact in support {
@@ -983,15 +999,27 @@ fn append_presentation(
     let mut coordinates = vec![];
     for i in 0..out.nu.len() {
         tick(c)?;
-        let column = *out.columns.get(i).ok_or("有限表示の元columnがない")?;
-        let (instance, component) = out.components.get(i).ok_or("有限表示の元成分がない")?;
+        let column = *out
+            .columns
+            .get(i)
+            .ok_or(internal!("有限表示の元columnがない"))?;
+        let (instance, component) = out
+            .components
+            .get(i)
+            .ok_or(internal!("有限表示の元成分がない"))?;
         let row = out
             .originals
             .iter()
             .find(|o| o.column == column && o.instance == *instance)
-            .ok_or("有限表示の元Law出現がない")?;
-        let (lhs, rhs) = *out.operands.get(i).ok_or("有限表示の左右式がない")?;
-        let epsilon = match observed.get(i).ok_or("有限表示の元operand評価がない")? {
+            .ok_or(internal!("有限表示の元Law出現がない"))?;
+        let (lhs, rhs) = *out
+            .operands
+            .get(i)
+            .ok_or(internal!("有限表示の左右式がない"))?;
+        let epsilon = match observed
+            .get(i)
+            .ok_or(internal!("有限表示の元operand評価がない"))?
+        {
             None => None,
             Some(value) => {
                 let reference = out
@@ -999,18 +1027,23 @@ fn append_presentation(
                     .get(i)
                     .copied()
                     .flatten()
-                    .ok_or("有限表示の実評価に対応するεがない")?;
+                    .ok_or(internal!("有限表示の実評価に対応するεがない"))?;
                 let Part::Function { values, .. } = parts
-                    .get(reference.0.checked_sub(base).ok_or("有限εの位置が範囲外")?)
-                    .ok_or("有限εの元関数がない")?
+                    .get(
+                        reference
+                            .0
+                            .checked_sub(base)
+                            .ok_or(internal!("有限εの位置が範囲外"))?,
+                    )
+                    .ok_or(internal!("有限εの元関数がない"))?
                 else {
-                    return Err("有限εが元関数でない".into());
+                    return Err(internal!("有限εが元関数でない").into());
                 };
                 for scalar in values {
                     tick(c)?;
-                    if !matches!(parts.get(scalar.0.checked_sub(base).ok_or("有限ε値の位置が範囲外")?), Some(Part::Scalar(Scalar::Z(v))) if v == value)
+                    if !matches!(parts.get(scalar.0.checked_sub(base).ok_or(internal!("有限ε値の位置が範囲外"))?), Some(Part::Scalar(Scalar::Z(v))) if v == value)
                     {
-                        return Err("有限εの恒値と元operandの実評価が違う".into());
+                        return Err(internal!("有限εの恒値と元operandの実評価が違う").into());
                     }
                 }
                 Some(reference)
@@ -1086,7 +1119,10 @@ fn metadata(
             &env.state,
             &position.snapshot,
             &position.subject,
-            position.field.as_deref().ok_or("有限Lawの元fieldがない")?,
+            position
+                .field
+                .as_deref()
+                .ok_or(internal!("有限Lawの元fieldがない"))?,
         )?;
         let mut fact = position.clone();
         if let Slot::Known { atom, .. } = &field.slot {
@@ -1132,7 +1168,7 @@ impl Source {
         c: &Control,
     ) -> Result<Option<Self>, ValidationFailure> {
         if all_objects && object != 0 {
-            return Err("共有有限Lawの先頭がbase対象でない".into());
+            return Err(internal!("共有有限Lawの先頭がbase対象でない").into());
         }
         tick(c)?;
         if Witness::Architecture(architecture.clone())
@@ -1140,13 +1176,13 @@ impl Source {
             .sources()
             != inputs.sources()
         {
-            return Err("有限Lawの三入力とArchitectureが違う".into());
+            return Err(internal!("有限Lawの三入力とArchitectureが違う").into());
         }
         architecture
             .readings()
             .objects()
             .get(object)
-            .ok_or("有限Lawの対象が範囲外")?;
+            .ok_or(internal!("有限Lawの対象が範囲外"))?;
         let full = finite_automatic_law_family(&inputs, architecture.readings(), c)
             .map_err(|e| e.cause)?;
         let Some(f) = full.family() else {
@@ -1218,14 +1254,16 @@ impl Source {
             || object != self.object
             || inputs.sources() != self.inputs.sources()
         {
-            return Err("有限Law導出の消費先Architecture・対象・三入力が違う".into());
+            return Err(internal!("有限Law導出の消費先Architecture・対象・三入力が違う").into());
         }
         architecture
             .readings()
             .recheck(inputs, c)
             .map_err(|e| match e {
                 crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
-                other => format!("有限Lawの元reading: {other:?}").into(),
+                other => other
+                    .internal_context(format!("有限Lawの元reading: {other:?}"))
+                    .into(),
             })?;
         let other = Self::compute_plan(
             self.inputs.clone(),
@@ -1236,14 +1274,14 @@ impl Source {
             self.owned_outputs.is_some(),
             c,
         )?
-        .ok_or("有限Law導出の元族が未完成")?;
+        .ok_or(internal!("有限Law導出の元族が未完成"))?;
         if self.parts != other.parts
             || self.outputs != other.outputs
             || self.owned_outputs != other.owned_outputs
             || self.support != other.support
             || self.scope != other.scope
         {
-            return Err("有限Law導出が元全D・成分・生成元・支持と違う".into());
+            return Err(internal!("有限Law導出が元全D・成分・生成元・支持と違う").into());
         }
         tick(c)
     }
@@ -1272,7 +1310,7 @@ impl FamilyPlan {
             self.0
                 .owned_outputs
                 .as_ref()
-                .ok_or("有限配置の全対象計画がない")?
+                .ok_or(internal!("有限配置の全対象計画がない"))?
                 .iter()
                 .cloned(),
         );
@@ -1287,7 +1325,7 @@ impl FamilyPlan {
     ) -> Result<Arc<ArchitectureWitness>, ValidationFailure> {
         tick(c)?;
         if self.0.reference != reference || self.0.object != 0 || self.0.owned_outputs.is_none() {
-            return Err("有限配置の元Architecture/全対象計画が違う".into());
+            return Err(internal!("有限配置の元Architecture/全対象計画が違う").into());
         }
         let a = native::architecture_origin(graph, reference, 0)?;
         self.0.recheck(env.indexes.inputs, a, 0, c)?;
@@ -1315,7 +1353,7 @@ pub(super) fn retain_family(
     let owned = source
         .owned_outputs
         .as_ref()
-        .ok_or("共有有限Lawの対象表がない")?;
+        .ok_or(internal!("共有有限Lawの対象表がない"))?;
     let mut outputs = vec![source.outputs.clone()];
     for output in owned {
         tick(c)?;
@@ -1334,11 +1372,11 @@ fn retain_source(
 ) -> Result<Option<Arc<Source>>, ValidationFailure> {
     tick(c)?;
     if graph.active != graph.context_at(architecture.0) {
-        return Err("有限Law導出が消費先ArchitectureのRequestでない".into());
+        return Err(internal!("有限Law導出が消費先ArchitectureのRequestでない").into());
     }
     let a = native::architecture_origin(graph, architecture, object)?.clone();
     let Some(Payload::Construction(consumer)) = &graph.get(architecture)?.payload else {
-        return Err("有限Lawの消費先Architectureがない".into());
+        return Err(internal!("有限Lawの消費先Architectureがない").into());
     };
     Environment::new(&inputs, c)?.recheck_object_components(graph, consumer)?;
     let source = if all_objects {
@@ -1392,17 +1430,17 @@ fn retain_source(
 }
 pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), ValidationFailure> {
     let Some(part) = data.source.parts.get(data.index) else {
-        return Err("有限Lawの元計画添字がない".into());
+        return Err(internal!("有限Lawの元計画添字がない").into());
     };
     let Some(Payload::Construction(v)) = &n.payload else {
-        return Err("有限Law導出payloadがない".into());
+        return Err(internal!("有限Law導出payloadがない").into());
     };
     let Witness::Architecture(a) = &v.witness else {
-        return Err("有限Lawの元Architectureがない".into());
+        return Err(internal!("有限Lawの元Architectureがない").into());
     };
     let current = native::architecture_origin(graph, data.source.reference, data.source.object)?;
     if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
-        return Err("有限Lawの元Architecture参照が違う".into());
+        return Err(internal!("有限Lawの元Architecture参照が違う").into());
     }
     let (support, scope) = data.metadata();
     if n.ty != part.ty()
@@ -1418,21 +1456,21 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
         || !n.evidence.is_empty()
         || n.judgment.is_some()
     {
-        return Err("有限Lawの型・導出・原始支持・scopeが違う".into());
+        return Err(internal!("有限Lawの型・導出・原始支持・scopeが違う").into());
     }
     for reference in part.arguments() {
         let child = graph.get(reference)?;
         let Some(Payload::Construction(v)) = &child.payload else {
-            return Err("有限Lawの構成引数がnativeでない".into());
+            return Err(internal!("有限Lawの構成引数がnativeでない").into());
         };
         let D::FiniteLaw(other) = &v.data else {
-            return Err("有限Lawの構成引数が別由来".into());
+            return Err(internal!("有限Lawの構成引数が別由来").into());
         };
         if !Arc::ptr_eq(&data.source, &other.source)
             || other.index >= data.index
             || data.source.base.checked_add(other.index) != Some(reference.0)
         {
-            return Err("有限Lawの構成引数が元計画の既出値でない".into());
+            return Err(internal!("有限Lawの構成引数が元計画の既出値でない").into());
         }
     }
     Ok(())
@@ -1448,16 +1486,16 @@ impl Environment<'_> {
         };
         tick(&self.control)?;
         let Witness::Architecture(a) = &value.witness else {
-            return Err("有限Law導出の元Architectureがない".into());
+            return Err(internal!("有限Law導出の元Architectureがない").into());
         };
         let current =
             native::architecture_origin(graph, data.source.reference, data.source.object)?;
         if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
-            return Err("有限Lawの消費先Architectureが違う".into());
+            return Err(internal!("有限Lawの消費先Architectureが違う").into());
         }
         let Some(Payload::Construction(consumer)) = &graph.get(data.source.reference)?.payload
         else {
-            return Err("有限Lawの消費先Architectureがない".into());
+            return Err(internal!("有限Lawの消費先Architectureがない").into());
         };
         self.recheck_object_components(graph, consumer)?;
         // immutable Arcを保持し、別のreading/根の検査成功を再利用しない。

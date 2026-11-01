@@ -43,15 +43,15 @@ pub(super) struct Plan {
 fn retained_objects(g: &Graph, table: &Table) -> Result<Objects, ValidationFailure> {
     let r = table.component_source();
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("buildの元Law表に対象族がない".into());
+        return Err(internal!("buildの元Law表に対象族がない").into());
     };
     let D::ObjectComponents(d) = &v.data else {
-        return Err("buildの元Law表が別の対象構成を参照した".into());
+        return Err(internal!("buildの元Law表が別の対象構成を参照した").into());
     };
     d.position(r.0)?;
     let (_, architecture, objects) = d.retained_components();
     if architecture != table.architecture || objects.base != r {
-        return Err("buildの元Law表のArchitectureまたは対象族が違う".into());
+        return Err(internal!("buildの元Law表のArchitectureまたは対象族が違う").into());
     }
     Ok(objects)
 }

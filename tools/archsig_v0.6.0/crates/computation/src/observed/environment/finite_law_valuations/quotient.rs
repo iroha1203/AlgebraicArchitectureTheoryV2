@@ -6,7 +6,9 @@ use num_traits::{One, Zero};
 fn invalid(f: ConstructionFailure) -> ValidationFailure {
     match f {
         ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
-        f => format!("有限整数値関数の構成: {f:?}").into(),
+        f => f
+            .internal_context(format!("有限整数値関数の構成: {f:?}"))
+            .into(),
     }
 }
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
@@ -76,7 +78,7 @@ impl FiniteLawFamilyValuations {
     pub fn integer_ring(&self, c: &Control) -> Result<FiniteIntegerRing<'_>, ValidationFailure> {
         c.checkpoint(Checkpoint::FiniteLawFunction)?;
         if !self.domain_complete {
-            return Err("未完成Dに整数値関数環を作れない".into());
+            return Err(internal!("未完成Dに整数値関数環を作れない").into());
         }
         Ok(FiniteIntegerRing::new(
             &self.owner,
@@ -92,21 +94,27 @@ impl FiniteLawFamilyValuations {
         c: &Control,
     ) -> Result<FiniteIntegerFunction, ValidationFailure> {
         let ring = self.integer_ring(c)?;
-        let q = self.columns.get(column).ok_or("有限Lawの列が範囲外")?;
+        let q = self
+            .columns
+            .get(column)
+            .ok_or(internal!("有限Lawの列が範囲外"))?;
         if let Some(path) = component {
-            let ty = q.equation_type.as_ref().ok_or("非等式に葉成分はない")?;
+            let ty = q
+                .equation_type
+                .as_ref()
+                .ok_or(internal!("非等式に葉成分はない"))?;
             if !paths(ty, c)?.iter().any(|p| p == path) {
-                return Err("元等式に葉成分pathがない".into());
+                return Err(internal!("元等式に葉成分pathがない").into());
             }
         }
         if q.rows.len() != self.domain.len() {
-            return Err("元Lawの全D評価が未完成".into());
+            return Err(internal!("元Lawの全D評価が未完成").into());
         }
         let mut values = vec![];
         for (point, row) in q.rows.iter().enumerate() {
             c.checkpoint(Checkpoint::FiniteLawFunction)?;
             if row.point != point || row.condition_failed {
-                return Err("元Lawの行または条件が未確定".into());
+                return Err(internal!("元Lawの行または条件が未確定").into());
             }
             let value = match component {
                 None => row.indicator.as_ref(),
@@ -116,9 +124,9 @@ impl FiniteLawFamilyValuations {
                     .and_then(|cs| cs.iter().find(|p| p.path == path))
                     .and_then(|p| p.indicator.as_ref()),
             }
-            .ok_or("元Lawの指示関数が未決または非対応")?;
+            .ok_or(internal!("元Lawの指示関数が未決または非対応"))?;
             if !value.is_zero() && !value.is_one() {
-                return Err("元Lawの指示関数が0/1でない".into());
+                return Err(internal!("元Lawの指示関数が0/1でない").into());
             }
             values.push(value.clone());
         }
@@ -158,12 +166,12 @@ impl FiniteLawFamilyValuations {
     ) -> Result<FiniteLawQuotient<'_>, ValidationFailure> {
         tick(c)?;
         if !self.is_complete() {
-            return Err("有限Law族が未完成でrequired商を作れない".into());
+            return Err(internal!("有限Law族が未完成でrequired商を作れない").into());
         }
         let zero = self
             .required_zero
             .as_ref()
-            .ok_or("required零座標が未完成")?;
+            .ok_or(internal!("required零座標が未完成"))?;
         let mut points = vec![];
         for &point in zero {
             tick(c)?;
@@ -188,13 +196,13 @@ impl FiniteLawQuotient<'_> {
     fn check(&self, c: &Control) -> Result<(), ValidationFailure> {
         tick(c)?;
         if !self.base.is_complete() || self.base.required_zero.as_ref() != Some(&self.points) {
-            return Err("required商の座標が元Law族と違う".into());
+            return Err(internal!("required商の座標が元Law族と違う").into());
         }
         let mut previous = None;
         for &p in &self.points {
             tick(c)?;
             if p >= self.base.domain.len() || previous.is_some_and(|q| q >= p) {
-                return Err("required商の座標がD内の昇順でない".into());
+                return Err(internal!("required商の座標がD内の昇順でない").into());
             }
             previous = Some(p);
         }
@@ -232,7 +240,7 @@ impl FiniteLawQuotient<'_> {
         for g in self.base.required_generators(c)? {
             let image = self.project(&g.value, c)?;
             if !ring.is_zero(&image, c).map_err(invalid)? {
-                return Err("required生成元が商で零でない".into());
+                return Err(internal!("required生成元が商で零でない").into());
             }
         }
         tick(c)
@@ -267,7 +275,8 @@ impl FiniteLawQuotient<'_> {
                     break;
                 }
             }
-            let selected = selected.ok_or("射影が零の関数にrequired生成元の係数を作れない")?;
+            let selected =
+                selected.ok_or(internal!("射影が零の関数にrequired生成元の係数を作れない"))?;
             coefficients[selected].values[point] = value.clone();
         }
         let witness = FiniteIdealWitness {
@@ -288,11 +297,11 @@ impl FiniteLawQuotient<'_> {
         self.check(c)?;
         let ring = self.base.integer_ring(c)?;
         if !ring.equal(f, &w.target, c).map_err(invalid)? {
-            return Err("ideal分解の対象関数が違う".into());
+            return Err(internal!("ideal分解の対象関数が違う").into());
         }
         let expected = self.base.required_generators(c)?;
         if w.generators.len() != expected.len() || w.coefficients.len() != expected.len() {
-            return Err("ideal分解の生成元・係数の個数が違う".into());
+            return Err(internal!("ideal分解の生成元・係数の個数が違う").into());
         }
         let mut sum = ring.zero(c).map_err(invalid)?;
         for ((g, e), a) in w.generators.iter().zip(&expected).zip(&w.coefficients) {
@@ -301,13 +310,13 @@ impl FiniteLawQuotient<'_> {
                 || g.component != e.component
                 || !ring.equal(&g.value, &e.value, c).map_err(invalid)?
             {
-                return Err("ideal分解の元Law生成元が違う".into());
+                return Err(internal!("ideal分解の元Law生成元が違う").into());
             }
             let term = ring.mul(a, &g.value, c).map_err(invalid)?;
             sum = ring.add(&sum, &term, c).map_err(invalid)?;
         }
         if !ring.equal(&sum, f, c).map_err(invalid)? {
-            return Err("ideal分解の係数関数の和が元関数と違う".into());
+            return Err(internal!("ideal分解の係数関数の和が元関数と違う").into());
         }
         tick(c)
     }
@@ -335,7 +344,7 @@ impl FiniteLawQuotient<'_> {
                 if !ring.equal(&actual, projection, c).map_err(invalid)?
                     || ring.is_zero(projection, c).map_err(invalid)?
                 {
-                    return Err("ideal非所属の射影値が違うか零である".into());
+                    return Err(internal!("ideal非所属の射影値が違うか零である").into());
                 }
                 tick(c)
             }

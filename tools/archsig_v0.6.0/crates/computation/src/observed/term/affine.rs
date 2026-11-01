@@ -338,7 +338,7 @@ impl Value {
             tick(c)?;
             match self {
                 Self::Known(v) => Ok(v.clone()),
-                Self::Data { .. } => Err("記号Data全体をTerm反例点にできない".into()),
+                Self::Data { .. } => Err(internal!("記号Data全体をTerm反例点にできない").into()),
                 Self::Number(f) => forms::term_point(f, unit, c),
                 Self::Tuple(v) => Ok(Scalar::Tuple(
                     v.iter().map(|x| x.at(unit, c)).collect::<Result<_, _>>()?,
@@ -365,7 +365,7 @@ impl Value {
                         .map(|v| v.at(unit, c).map(Box::new))
                         .transpose()?,
                 }),
-                Self::Unsupported(_) => Err("未対応値をTerm反例点にできない".into()),
+                Self::Unsupported(_) => Err(internal!("未対応値をTerm反例点にできない").into()),
             }
         })
     }
@@ -407,7 +407,7 @@ pub(in crate::observed) fn pointwise_equal(
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(c)?;
         if a.ty(c)? != b.ty(c)? {
-            return Err("Term記号等値の左右型が違う".into());
+            return Err(internal!("Term記号等値の左右型が違う").into());
         }
         if let (Some(a), Some(b)) = (a.known(c)?, b.known(c)?) {
             return value_equality::equal(&a, &b, law, c);
@@ -472,7 +472,7 @@ pub(in crate::observed) fn operation(
         if let (Some(a), Some(b)) = (tuple_values(a, c)?, tuple_values(b, c)?) {
             if matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul) {
                 if a.len() != b.len() {
-                    return Err("Term記号演算のTuple長が違う".into());
+                    return Err(internal!("Term記号演算のTuple長が違う").into());
                 }
                 let mut values = Vec::new();
                 for (a, b) in a.iter().zip(&b) {
@@ -549,7 +549,7 @@ pub(in crate::observed) fn domain(
                     t,
                     law,
                     c,
-                    &mut |_| Err("Term引数に参照族を置けない".into()),
+                    &mut |_| Err(internal!("Term引数に参照族を置けない").into()),
                     &mut |_| {},
                 )?
                 .values
@@ -575,7 +575,7 @@ pub(in crate::observed) fn compare(
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(c)?;
         if a.ty(c)? != b.ty(c)? {
-            return Err("Term正規形の左右型が違う".into());
+            return Err(internal!("Term正規形の左右型が違う").into());
         }
         if let (Some(a), Some(b)) = (a.number(c)?, b.number(c)?) {
             return Ok(match forms::term_difference(&a, &b, c)? {
@@ -603,7 +603,7 @@ pub(in crate::observed) fn compare(
         }
         if let (Some(a), Some(b)) = (tuple_values(a, c)?, tuple_values(b, c)?) {
             if a.len() != b.len() {
-                return Err("Term正規形のTuple長が違う".into());
+                return Err(internal!("Term正規形のTuple長が違う").into());
             }
             let mut unknown = false;
             for (a, b) in a.iter().zip(&b) {
@@ -800,7 +800,7 @@ pub(in crate::observed) fn comparison(
     a.check(c)?;
     b.check(c)?;
     if a.ty() != b.ty() {
-        return Err("アフィンTermの左右型が違う".into());
+        return Err(internal!("アフィンTermの左右型が違う").into());
     }
     let mut rows = vec![Vec::new()];
     for (i, (_, t)) in a.params.iter().enumerate() {
@@ -847,7 +847,7 @@ pub(in crate::observed) fn comparison(
                     .collect::<Result<Vec<_>, _>>()?;
                 let (left, right) = (a.apply(&args, law, c)?, b.apply(&args, law, c)?);
                 if value_equality::equal(&left, &right, law, c)? != Some(false) {
-                    return Err("Term係数の反例が元bodyへの再代入で相違しない".into());
+                    return Err(internal!("Term係数の反例が元bodyへの再代入で相違しない").into());
                 }
                 return Ok(Some(Certificate {
                     cases,
@@ -872,7 +872,7 @@ impl Term {
     ) -> Result<Value, ValidationFailure> {
         self.check(c)?;
         if args.len() != self.params.len() {
-            return Err("Term記号適用の元引数数が違う".into());
+            return Err(internal!("Term記号適用の元引数数が違う").into());
         }
         let mut vars = BTreeMap::new();
         let mut known = Vec::new();
@@ -880,7 +880,7 @@ impl Term {
         for ((name, t), v) in self.params.iter().zip(args) {
             tick(c)?;
             if *t != v.ty(c)? {
-                return Err("Term記号適用の元引数型が違う".into());
+                return Err(internal!("Term記号適用の元引数型が違う").into());
             }
             if let Some(v) = v.known(c)? {
                 known.push(v)
@@ -894,7 +894,7 @@ impl Term {
         }
         let value = self.symbolic(self.root, &vars, law, c)?;
         if value.ty(c)? != self.returns {
-            return Err("Term記号適用の元戻り型が違う".into());
+            return Err(internal!("Term記号適用の元戻り型が違う").into());
         }
         Ok(value)
     }
@@ -907,8 +907,14 @@ impl Term {
     ) -> Result<Value, ValidationFailure> {
         stacker::maybe_grow(128 * 1024, 1024 * 1024, || {
             tick(c)?;
-            let e = self.nodes.get(&id).ok_or("Term記号計算の元式がない")?;
-            let ty = self.types.get(&id).ok_or("Term記号計算の元型がない")?;
+            let e = self
+                .nodes
+                .get(&id)
+                .ok_or(internal!("Term記号計算の元式がない"))?;
+            let ty = self
+                .types
+                .get(&id)
+                .ok_or(internal!("Term記号計算の元型がない"))?;
             let unknown = || Value::Unsupported(ty.clone());
             let value = if let Some(value) =
                 super::walk::expression::<Symbolic>(self, e, ty, vars, law, c)?
@@ -933,7 +939,7 @@ impl Term {
                         let element = self
                             .quantifier_types
                             .get(&id)
-                            .ok_or("Term記号量化の元binder型がない")?;
+                            .ok_or(internal!("Term記号量化の元binder型がない"))?;
                         let values = match domain {
                             QuantDomain::In(i) => self
                                 .symbolic(*i, vars, law, c)?
@@ -942,9 +948,9 @@ impl Term {
                                     Scalar::List { items, .. } | Scalar::Set { items, .. } => {
                                         Ok(items.clone())
                                     }
-                                    _ => Err(ValidationFailure::from(
-                                        "Term記号量化域が有限containerでない",
-                                    )),
+                                    _ => Err(ValidationFailure::from(internal!(
+                                        "Term記号量化域が有限containerでない"
+                                    ))),
                                 })
                                 .transpose()?,
                             QuantDomain::Type(_) => {
@@ -954,7 +960,9 @@ impl Term {
                                             element,
                                             law,
                                             c,
-                                            &mut |_| Err("Term量化に参照族を置けない".into()),
+                                            &mut |_| {
+                                                Err(internal!("Term量化に参照族を置けない").into())
+                                            },
                                             &mut |_| {},
                                         )?
                                         .values,
@@ -972,12 +980,12 @@ impl Term {
                                     local.insert(n.clone(), v.clone());
                                 }
                                 if local.insert(var.name.clone(), Value::Known(v)).is_some() {
-                                    return Err("Term記号量化束縛が重複する".into());
+                                    return Err(internal!("Term記号量化束縛が重複する").into());
                                 }
                                 match self.symbolic(*body, &local, law, c)?.known(c)? {
                                     Some(Scalar::Bool(b)) => Ok(Some(b)),
                                     None => Ok(None),
-                                    _ => Err("Term記号量化bodyがBoolでない".into()),
+                                    _ => Err(internal!("Term記号量化bodyがBoolでない").into()),
                                 }
                             })?;
                             result
@@ -991,8 +999,11 @@ impl Term {
                         let a = super::walk::items::<Symbolic>(self, args, vars, law, c)?;
                         // Term bodyの組込みとconstructorの既知引数計算は元の実評価を再利用する。
                         let mut target = *callee;
-                        while let ExprKind::Group(inner) =
-                            &self.nodes.get(&target).ok_or("Term元calleeがない")?.kind
+                        while let ExprKind::Group(inner) = &self
+                            .nodes
+                            .get(&target)
+                            .ok_or(internal!("Term元calleeがない"))?
+                            .kind
                         {
                             tick(c)?;
                             target = *inner;
@@ -1014,12 +1025,12 @@ impl Term {
                             && matches!(a[0], Value::List { .. })
                         {
                             a[0].list_aggregate(
-                                builtin_name.ok_or("集計名がない")?,
+                                builtin_name.ok_or(internal!("集計名がない"))?,
                                 law,
                                 e.span,
                                 c,
                             )?
-                            .ok_or("記号List集計がない")?
+                            .ok_or(internal!("記号List集計がない"))?
                         } else if a
                             .iter()
                             .map(|v| v.known(c))
@@ -1032,17 +1043,17 @@ impl Term {
                         } else if let Type::Data(family) = ty {
                             let constructor = self
                                 .reference(self.nodes[&target].span, c)?
-                                .ok_or("Term記号constructorの元参照がない")?;
+                                .ok_or(internal!("Term記号constructorの元参照がない"))?;
                             let ctor = data::constructor(law, family, constructor, c)?;
                             if ctor.arguments.len() != a.len() {
-                                return Err("Term記号constructorのarityが違う".into());
+                                return Err(internal!("Term記号constructorのarityが違う").into());
                             }
                             Value::Data {
                                 family: family.clone(),
                                 constructor: law
                                     .resolved_names()
                                     .get(constructor)
-                                    .ok_or("constructorの検査済み名がない")?
+                                    .ok_or(internal!("constructorの検査済み名がない"))?
                                     .clone(),
                                 args: Arc::new(a),
                             }
@@ -1075,7 +1086,7 @@ impl Term {
                 }
             };
             if value.ty(c)? != *ty {
-                return Err("Term記号部分式の元型が違う".into());
+                return Err(internal!("Term記号部分式の元型が違う").into());
             }
             tick(c)?;
             Ok(value)
@@ -1088,13 +1099,20 @@ impl Term {
         law: &CheckedLaw,
         c: &Control,
     ) -> Result<Value, ValidationFailure> {
-        let ExprKind::Call { callee, .. } = &self.nodes.get(&id).ok_or("Term元callがない")?.kind
+        let ExprKind::Call { callee, .. } = &self
+            .nodes
+            .get(&id)
+            .ok_or(internal!("Term元callがない"))?
+            .kind
         else {
-            return Err("Term元call形が違う".into());
+            return Err(internal!("Term元call形が違う").into());
         };
         let mut callee = *callee;
-        while let ExprKind::Group(inner) =
-            &self.nodes.get(&callee).ok_or("Term元call先がない")?.kind
+        while let ExprKind::Group(inner) = &self
+            .nodes
+            .get(&callee)
+            .ok_or(internal!("Term元call先がない"))?
+            .kind
         {
             tick(c)?;
             callee = *inner;
@@ -1102,12 +1120,13 @@ impl Term {
         let values = args
             .iter()
             .map(|v| {
-                v.known(c)?
-                    .ok_or_else(|| ValidationFailure::from("Term既知callに未知引数がある"))
+                v.known(c)?.ok_or_else(|| {
+                    ValidationFailure::from(internal!("Term既知callに未知引数がある"))
+                })
             })
             .collect::<Result<Vec<_>, _>>()?;
         let ExprKind::Dotted(parts) = &self.nodes[&callee].kind else {
-            return Err("Term組込みcallee形が違う".into());
+            return Err(internal!("Term組込みcallee形が違う").into());
         };
         let name = parts
             .iter()
@@ -1118,7 +1137,7 @@ impl Term {
         let value = match name.as_str() {
             "rat" => {
                 if values.len() != 2 {
-                    return Err("Term rat引数数が違う".into());
+                    return Err(internal!("Term rat引数数が違う").into());
                 }
                 numeric::rational(&values[0], &values[1], c)?
             }
@@ -1129,17 +1148,17 @@ impl Term {
                 };
                 let reference = self
                     .reference(self.nodes[&callee].span, c)?
-                    .ok_or("Term constructor参照がない")?;
+                    .ok_or(internal!("Term constructor参照がない"))?;
                 let ctor = data::constructor(law, family, reference, c)?;
                 if ctor.arguments.len() != values.len() {
-                    return Err("Term constructor引数数が違う".into());
+                    return Err(internal!("Term constructor引数数が違う").into());
                 }
                 Scalar::Data {
                     family: family.clone(),
                     constructor: law
                         .resolved_names()
                         .get(reference)
-                        .ok_or("constructorの検査済み名がない")?
+                        .ok_or(internal!("constructorの検査済み名がない"))?
                         .clone(),
                     args: values,
                 }
@@ -1248,7 +1267,9 @@ impl Value {
             Ok(match self {
                 Self::Number(f) => f.term_coordinates(axes, c)?,
                 Self::Known(v) => v.clone(),
-                Self::Data { .. } => return Err("記号Data全体を正規形表示にできない".into()),
+                Self::Data { .. } => {
+                    return Err(internal!("記号Data全体を正規形表示にできない").into());
+                }
                 Self::Tuple(v) => Scalar::Tuple(
                     v.iter()
                         .map(|v| v.presentation(axes, c))
@@ -1276,7 +1297,9 @@ impl Value {
                         .map(|v| v.presentation(axes, c).map(Box::new))
                         .transpose()?,
                 },
-                Self::Unsupported(_) => return Err("算法外値を正規形表示にできない".into()),
+                Self::Unsupported(_) => {
+                    return Err(internal!("算法外値を正規形表示にできない").into());
+                }
             })
         })
     }
@@ -1308,7 +1331,9 @@ impl super::walk::Interpretation for Symbolic {
                 }
                 Ok(Some(local))
             })?;
-            Ok(Some(selected.ok_or("Term記号matchの元選択枝がない")?))
+            Ok(Some(
+                selected.ok_or(internal!("Term記号matchの元選択枝がない"))?,
+            ))
         } else if let Some((arm, bound)) =
             data::select_partial(arms, &input, c, &Value::data_parts, &|span, c| {
                 term.reference(span, c)
@@ -1319,7 +1344,7 @@ impl super::walk::Interpretation for Symbolic {
             for (name, value) in bound {
                 tick(c)?;
                 if local.insert(name, value).is_some() {
-                    return Err("Term記号matchの束縛名が重複する".into());
+                    return Err(internal!("Term記号matchの束縛名が重複する").into());
                 }
             }
             Ok(Some((arms[arm].body, local)))
@@ -1335,7 +1360,7 @@ impl super::walk::Interpretation for Symbolic {
     }
     fn list_type(ty: &Type) -> Result<Type, ValidationFailure> {
         let Type::List(element) = ty else {
-            return Err("Term記号Listの元型が違う".into());
+            return Err(internal!("Term記号Listの元型が違う").into());
         };
         Ok((**element).clone())
     }
@@ -1344,10 +1369,16 @@ impl super::walk::Interpretation for Symbolic {
     }
     fn project(value: Value, index: usize, ty: &Type) -> Result<Value, ValidationFailure> {
         Ok(match value {
-            Value::Tuple(ref values) => values.get(index).ok_or("Term記号Tuple位置が違う")?.clone(),
-            Value::Known(Scalar::Tuple(ref values)) => {
-                Value::Known(values.get(index).ok_or("Term既知Tuple位置が違う")?.clone())
-            }
+            Value::Tuple(ref values) => values
+                .get(index)
+                .ok_or(internal!("Term記号Tuple位置が違う"))?
+                .clone(),
+            Value::Known(Scalar::Tuple(ref values)) => Value::Known(
+                values
+                    .get(index)
+                    .ok_or(internal!("Term既知Tuple位置が違う"))?
+                    .clone(),
+            ),
             _ => Value::Unsupported(ty.clone()),
         })
     }
@@ -1373,7 +1404,7 @@ impl super::walk::Interpretation for Symbolic {
             local.insert(n.clone(), v.clone());
         }
         if local.insert(name.into(), value).is_some() {
-            return Err("Term記号let束縛が重複する".into());
+            return Err(internal!("Term記号let束縛が重複する").into());
         }
         Ok(local)
     }
@@ -1420,7 +1451,7 @@ impl super::walk::Interpretation for Symbolic {
         match value.known(c)? {
             Some(Scalar::Bool(value)) => Ok(Some(value)),
             None => Ok(None),
-            _ => Err("Term記号if条件がBoolでない".into()),
+            _ => Err(internal!("Term記号if条件がBoolでない").into()),
         }
     }
     fn join(

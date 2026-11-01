@@ -30,7 +30,7 @@ fn transport(
     c: &Control,
 ) -> Result<Arc<object_law_transport::ObjectLawTransport>, ValidationFailure> {
     if !std::ptr::eq(env.indexes.inputs, inputs.as_ref()) {
-        return Err("Law保存cacheの元入力が違う".into());
+        return Err(internal!("Law保存cacheの元入力が違う").into());
     }
     for entry in env
         .results
@@ -56,7 +56,7 @@ fn transport(
         .map_err(|e| {
             c.stop_reason()
                 .map(ValidationFailure::Stop)
-                .unwrap_or_else(|| format!("Law保存検査: {e:?}").into())
+                .unwrap_or_else(|| e.internal_context(format!("Law保存検査: {e:?}")).into())
         })?,
     );
     env.results.remember(KernelCacheEntry {
@@ -84,30 +84,30 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
 }
 fn field<'a>(v: &'a Json, key: &str) -> Result<&'a Json, ValidationFailure> {
     let Json::Obj(m) = v else {
-        return Err("Law移送のrecord型が違う".into());
+        return Err(internal!("Law移送のrecord型が違う").into());
     };
     m.get(key)
-        .ok_or_else(|| format!("Law移送の{key}がない").into())
+        .ok_or_else(|| internal!(format!("Law移送の{key}がない")).into())
 }
 fn array(v: &Json) -> Result<&[Json], ValidationFailure> {
     let Json::Arr(v) = v else {
-        return Err("Law移送の配列型が違う".into());
+        return Err(internal!("Law移送の配列型が違う").into());
     };
     Ok(v)
 }
 fn reference(v: &Json) -> Result<NodeRef, ValidationFailure> {
     let Json::Str(id) = field(v, "node")? else {
-        return Err("Law移送の参照型が違う".into());
+        return Err(internal!("Law移送の参照型が違う").into());
     };
     Ok(NodeRef(
         id.strip_prefix('n')
             .and_then(|s| s.parse().ok())
-            .ok_or("Law移送の参照番号が違う")?,
+            .ok_or(internal!("Law移送の参照番号が違う"))?,
     ))
 }
 fn wire(g: &Graph, r: NodeRef) -> Result<Json, ValidationFailure> {
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("Law移送の元buildがnativeでない".into());
+        return Err(internal!("Law移送の元buildがnativeでない").into());
     };
     Ok(v.wire())
 }
@@ -116,7 +116,7 @@ fn same_origin(
     r: NodeRef,
     instance: &ObjectInstance,
 ) -> Result<bool, ValidationFailure> {
-    let o = law_evaluation::origin(g, r)?.ok_or("Law移送の元添字がない")?;
+    let o = law_evaluation::origin(g, r)?.ok_or(internal!("Law移送の元添字がない"))?;
     if o.declaration != instance.declaration().name || o.bindings.len() != instance.bindings().len()
     {
         return Ok(false);
@@ -144,7 +144,7 @@ fn contains_origin(
     r: NodeRef,
     instance: &ObjectInstance,
 ) -> Result<bool, ValidationFailure> {
-    let o = law_evaluation::origin(g, r)?.ok_or("Law成分の元添字がない")?;
+    let o = law_evaluation::origin(g, r)?.ok_or(internal!("Law成分の元添字がない"))?;
     if o.declaration != instance.declaration().name {
         return Ok(false);
     }
@@ -185,14 +185,14 @@ fn matching_component(
     if source.component != target.component {
         return Ok(false);
     }
-    let a = law_evaluation::origin(g, source.index)?.ok_or("元成分の添字がない")?;
-    let z = law_evaluation::origin(g, target.index)?.ok_or("先成分の添字がない")?;
+    let a = law_evaluation::origin(g, source.index)?.ok_or(internal!("元成分の添字がない"))?;
+    let z = law_evaluation::origin(g, target.index)?.ok_or(internal!("先成分の添字がない"))?;
     let pair = declarations
         .candidates()
         .iter()
         .filter_map(|d| d.pair())
         .find(|p| p.source() == a.declaration)
-        .ok_or("成分宣言の対応がない")?;
+        .ok_or(internal!("成分宣言の対応がない"))?;
     if pair.target() != z.declaration || a.bindings.len() != z.bindings.len() {
         return Ok(false);
     }
@@ -218,7 +218,7 @@ fn matching_component(
         .map_err(|e| {
             c.stop_reason()
                 .map(ValidationFailure::Stop)
-                .unwrap_or_else(|| format!("成分の引数移送: {e:?}").into())
+                .unwrap_or_else(|| e.internal_context(format!("成分の引数移送: {e:?}")).into())
         })?;
         if !super::data::equal(&moved, g.scalar(image.value)?, c)? {
             return Ok(false);
@@ -235,11 +235,11 @@ fn locate(
     for (i, r) in indices.iter().enumerate() {
         if same_origin(g, *r, instance)? {
             if found.replace(i).is_some() {
-                return Err("Law移送の添字が一意でない".into());
+                return Err(internal!("Law移送の添字が一意でない").into());
             }
         }
     }
-    found.ok_or_else(|| "Law移送の対応添字がない".into())
+    found.ok_or_else(|| internal!("Law移送の対応添字がない").into())
 }
 struct Case {
     reference: NodeRef,
@@ -267,17 +267,17 @@ fn detectors(
         .as_ref()
         .filter(|p| p.data.complete)
         .or_else(|| plan.finite.as_ref().filter(|p| p.data.complete))
-        .ok_or("Law移送の完了済み方程式表示がない")?;
+        .ok_or(internal!("Law移送の完了済み方程式表示がない"))?;
     let coordinates = &layout
         .data
         .objects
         .first()
-        .ok_or("Law移送のbase座標がない")?
+        .ok_or(internal!("Law移送のbase座標がない"))?
         .coordinates;
     let algebra_wire = wire(g, algebra)?;
     let circuits = array(field(&algebra_wire, "circuits")?)?;
     if circuits.len() != coordinates.len() {
-        return Err("Law移送のdetectorと全成分の数が違う".into());
+        return Err(internal!("Law移送のdetectorと全成分の数が違う").into());
     }
     for (r, coordinate) in circuits.iter().zip(coordinates) {
         tick(c)?;
@@ -292,14 +292,14 @@ fn detectors(
             let v = wire(g, r)?;
             let evaluation = wire(g, reference(field(&v, "refutation")?)?)?;
             let Json::Obj(evaluation) = &evaluation else {
-                return Err("circuitの評価がrecordでない".into());
+                return Err(internal!("circuitの評価がrecordでない").into());
             };
             let value = evaluation
                 .get("value")
                 .map(|r| -> Result<bool, ValidationFailure> {
                     match g.scalar(reference(r)?)? {
                         Scalar::Bool(v) => Ok(*v),
-                        _ => Err("circuitの実真値がBoolでない".into()),
+                        _ => Err(internal!("circuitの実真値がBoolでない").into()),
                     }
                 })
                 .transpose()?;
@@ -321,10 +321,10 @@ fn detectors(
             || *field(&v, "component")?
                 != Json::Arr(component.iter().map(|n| Json::Nat(*n as u64)).collect())
         {
-            return Err("Law移送のdetectorが別の成分を指す".into());
+            return Err(internal!("Law移送のdetectorが別の成分を指す").into());
         }
         let NodeType::Expression(ty) = g.get(lhs)?.ty.clone() else {
-            return Err("Law移送の成分が型付き式でない".into());
+            return Err(internal!("Law移送の成分が型付き式でない").into());
         };
         out.push(Detector {
             reference: r,
@@ -339,10 +339,10 @@ fn detectors(
 fn pattern(g: &Graph, a: NodeRef, b: NodeRef) -> Result<bool, ValidationFailure> {
     let get = |r| -> Result<_, ValidationFailure> {
         let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-            return Err("比較patternがnativeでない".into());
+            return Err(internal!("比較patternがnativeでない").into());
         };
         let D::CircuitPattern(d) = &v.data else {
-            return Err("比較patternが別型".into());
+            return Err(internal!("比較patternが別型").into());
         };
         Ok(d)
     };
@@ -374,7 +374,7 @@ fn attach(b: &mut Builder<'_>, r: NodeRef, evidence: NodeRef) -> Result<(), Vali
     part.evidence.push(evidence);
     part.judgment
         .as_mut()
-        .ok_or("数値Law反例の判断がない")?
+        .ok_or(internal!("数値Law反例の判断がない"))?
         .evidence
         .push(evidence);
     Ok(())
@@ -384,7 +384,7 @@ fn path(b: &mut Builder<'_>, p: &Json, parent: NodeRef) -> Result<NodeRef, Valid
     for n in array(p)? {
         b.g.tick()?;
         let Json::Nat(n) = n else {
-            return Err("成分pathが非負整数でない".into());
+            return Err(internal!("成分pathが非負整数でない").into());
         };
         items.push(Scalar::Z((*n).into()));
     }
@@ -425,7 +425,7 @@ pub(super) fn retain(
     }
     for d in declarations.candidates() {
         tick(c)?;
-        let pair = d.pair().ok_or("Law宣言の対応がない")?;
+        let pair = d.pair().ok_or(internal!("Law宣言の対応がない"))?;
         out.declarations.push(Json::obj([
             ("source", Json::str(pair.source())),
             ("target", Json::str(pair.target())),
@@ -449,8 +449,8 @@ pub(super) fn retain(
         return Ok(out);
     }
     let [a, z] = plans;
-    let at = a.laws.as_ref().ok_or("元Law表がない")?;
-    let zt = z.laws.as_ref().ok_or("先Law表がない")?;
+    let at = a.laws.as_ref().ok_or(internal!("元Law表がない"))?;
+    let zt = z.laws.as_ref().ok_or(internal!("先Law表がない"))?;
     let ar = a.architecture.witness.readings();
     let zr = z.architecture.witness.readings();
     let ad = detectors(b.g, algebras[0], a, c)?;
@@ -464,7 +464,7 @@ pub(super) fn retain(
             }
         }
         let [instance_index] = matching.as_slice() else {
-            return Err("元Lawのinstance対応が一意でない".into());
+            return Err(internal!("元Lawのinstance対応が一意でない").into());
         };
         let instance = &ar.instances()[*instance_index];
         let mut target_index = None;
@@ -485,7 +485,7 @@ pub(super) fn retain(
             }
             let ti = transfer
                 .target_instance()
-                .ok_or("移送先Law instance未完成の配送は未実装")?;
+                .ok_or(internal!("移送先Law instance未完成の配送は未実装"))?;
             let zi = locate(b.g, &zt.indices, ti)?;
             // required statusの不一致ではkernelは値の比較を始めない。
             // 確定した構成失敗を未実装エラーへ変換しない。
@@ -500,15 +500,17 @@ pub(super) fn retain(
                 return Ok(out);
             }
             if target_index.is_some_and(|old| old != zi) {
-                return Err("対象間で移送添字が変わる".into());
+                return Err(internal!("対象間で移送添字が変わる").into());
             }
             target_index = Some(zi);
-            let target_object = transfer.target_object().ok_or("Law移送の対象像がない")?;
+            let target_object = transfer
+                .target_object()
+                .ok_or(internal!("Law移送の対象像がない"))?;
             let oj = zr
                 .objects()
                 .iter()
                 .position(|o| o.identity() == target_object)
-                .ok_or("Law移送の対象像が表にない")?;
+                .ok_or(internal!("Law移送の対象像が表にない"))?;
             let target = &zt.objects[oj];
             if required.is_none() {
                 required = Some(proof(
@@ -526,15 +528,17 @@ pub(super) fn retain(
             }
             let (applicable_equal, holds_equal) = if let Some(family) = numeric {
                 (
-                    family.applicable.ok_or("数値Lawの適用が未決")?,
-                    family.equivalent.ok_or("数値Lawの零集合比較が未決")?,
+                    family.applicable.ok_or(internal!("数値Lawの適用が未決"))?,
+                    family
+                        .equivalent
+                        .ok_or(internal!("数値Lawの零集合比較が未決"))?,
                 )
             } else if let Some(family) = transfer.family() {
                 if matches!(
                     transfer.outcome(),
                     object_law_transport::LawTransportOutcome::Undetermined
                 ) {
-                    return Err("Law族の全域比較が未決".into());
+                    return Err(internal!("Law族の全域比較が未決").into());
                 }
                 let mut app = true;
                 let mut holds = true;
@@ -545,12 +549,12 @@ pub(super) fn retain(
                         .application()
                         .value()
                         .zip(row.target().application().value())
-                        .ok_or("Law族の適用条件が未決")?;
+                        .ok_or(internal!("Law族の適用条件が未決"))?;
                     let h = row
                         .source()
                         .conditional()
                         .zip(row.target().conditional())
-                        .ok_or("Law族の成立が未決")?;
+                        .ok_or(internal!("Law族の成立が未決"))?;
                     app &= a.0 == a.1;
                     holds &= h.0 == h.1;
                 }
@@ -558,19 +562,19 @@ pub(super) fn retain(
             } else {
                 let sr = transfer
                     .source_reading()
-                    .ok_or("元Law読取り未完成の配送は未実装")?;
+                    .ok_or(internal!("元Law読取り未完成の配送は未実装"))?;
                 let tr = transfer
                     .target_reading()
-                    .ok_or("先Law読取り未完成の配送は未実装")?;
+                    .ok_or(internal!("先Law読取り未完成の配送は未実装"))?;
                 let app = sr
                     .application()
                     .value()
                     .zip(tr.application().value())
-                    .ok_or("Law適用条件の未決配送は未実装")?;
+                    .ok_or(internal!("Law適用条件の未決配送は未実装"))?;
                 let value = sr
                     .conditional()
                     .zip(tr.conditional())
-                    .ok_or("Law成立の未決配送は未実装")?;
+                    .ok_or(internal!("Law成立の未決配送は未実装"))?;
                 (app.0 == app.1, value.0 == value.1)
             };
             let args = vec![*index, zt.indices[zi], object.object, target.object];
@@ -629,12 +633,12 @@ pub(super) fn retain(
                 .map(|f| {
                     f.implies
                         .map(|implies| (holds_equal, implies))
-                        .ok_or("数値Lawの含意が未決")
+                        .ok_or(internal!("数値Lawの含意が未決"))
                 })
                 .transpose()?;
             rows.push((oi, oj, equivalent, numeric_conditions, evidence));
         }
-        let zi = target_index.ok_or("Law移送の全対象表が空")?;
+        let zi = target_index.ok_or(internal!("Law移送の全対象表が空"))?;
         let mut target_instances = vec![];
         for i in zr.instances() {
             if same_origin(b.g, zt.indices[zi], i)? {
@@ -642,14 +646,14 @@ pub(super) fn retain(
             }
         }
         let [target_instance] = target_instances.as_slice() else {
-            return Err("先Lawの実instanceが一意でない".into());
+            return Err(internal!("先Lawの実instanceが一意でない").into());
         };
         let pair = declarations
             .candidates()
             .iter()
             .filter_map(|d| d.pair())
             .find(|p| p.source() == instance.declaration().name)
-            .ok_or("Lawの型移送宣言がない")?;
+            .ok_or(internal!("Lawの型移送宣言がない"))?;
         let mu = declarations.types().iter().cloned().collect();
         let alpha = pair.parameters().iter().cloned().collect();
         let mut source_components = vec![];
@@ -661,7 +665,9 @@ pub(super) fn retain(
                         .map_err(|e| {
                             c.stop_reason()
                                 .map(ValidationFailure::Stop)
-                                .unwrap_or_else(|| format!("Lawの成分型移送: {e:?}").into())
+                                .unwrap_or_else(|| {
+                                    e.internal_context(format!("Lawの成分型移送: {e:?}")).into()
+                                })
                         })?;
                 source_components.push((d.component.clone(), moved))
             }
@@ -698,7 +704,7 @@ pub(super) fn retain(
                 })
                 .collect::<Result<Vec<_>, _>>()?;
             let [target] = targets.as_slice() else {
-                return Err("Law移送の成分対応が一意でない".into());
+                return Err(internal!("Law移送の成分対応が一意でない").into());
             };
             let sp = path(b, &source.component, source.reference)?;
             let tp = path(b, &target.component, target.reference)?;
@@ -717,11 +723,11 @@ pub(super) fn retain(
                     &mut out,
                     "residual_zero_iff",
                     vec![
-                        a.equations.ok_or("元方程式族がない")?,
+                        a.equations.ok_or(internal!("元方程式族がない"))?,
                         source.index,
                         so,
                         sp,
-                        z.equations.ok_or("先方程式族がない")?,
+                        z.equations.ok_or(internal!("先方程式族がない"))?,
                         target.index,
                         to,
                         tp,
@@ -729,11 +735,11 @@ pub(super) fn retain(
                     match numeric {
                         Some((equal, _)) => equal,
                         None => {
-                            sc.map(|r| r.value.ok_or("元circuitの真値が未決"))
+                            sc.map(|r| r.value.ok_or(internal!("元circuitの真値が未決")))
                                 .transpose()?
                                 .unwrap_or(false)
                                 == tc
-                                    .map(|r| r.value.ok_or("先circuitの真値が未決"))
+                                    .map(|r| r.value.ok_or(internal!("先circuitの真値が未決")))
                                     .transpose()?
                                     .unwrap_or(false)
                         }
@@ -756,10 +762,18 @@ pub(super) fn retain(
                     ("target", to.wire()),
                     ("equivalent", equivalent.wire()),
                 ]));
-                let source_pattern =
-                    a.patterns.as_ref().ok_or("元pattern表がない")?.rows[oi].pattern;
-                let target_pattern =
-                    z.patterns.as_ref().ok_or("先pattern表がない")?.rows[oj].pattern;
+                let source_pattern = a
+                    .patterns
+                    .as_ref()
+                    .ok_or(internal!("元pattern表がない"))?
+                    .rows[oi]
+                    .pattern;
+                let target_pattern = z
+                    .patterns
+                    .as_ref()
+                    .ok_or(internal!("先pattern表がない"))?
+                    .rows[oj]
+                    .pattern;
                 for sc in &source.cases {
                     tick(c)?;
                     if !pattern(b.g, sc.pattern, source_pattern)? {
@@ -784,8 +798,8 @@ pub(super) fn retain(
                         match numeric {
                             Some((_, implies)) => implies,
                             None => {
-                                !sc.value.ok_or("元circuitの真値が未決")?
-                                    || tc.value.ok_or("先circuitの真値が未決")?
+                                !sc.value.ok_or(internal!("元circuitの真値が未決"))?
+                                    || tc.value.ok_or(internal!("先circuitの真値が未決"))?
                             }
                         },
                     )?;
@@ -796,7 +810,7 @@ pub(super) fn retain(
                             accepts |=
                                 case.when == tc.when && pattern(b.g, case.pattern, tc.pattern)?;
                         } else {
-                            accepts |= case.value.ok_or("先circuitの真値が未決")?
+                            accepts |= case.value.ok_or(internal!("先circuitの真値が未決"))?
                                 && pattern(b.g, case.pattern, tc.pattern)?;
                         }
                     }
@@ -808,7 +822,7 @@ pub(super) fn retain(
                         if numeric.is_some() {
                             accepts
                         } else {
-                            !tc.value.ok_or("先circuitの真値が未決")? || accepts
+                            !tc.value.ok_or(internal!("先circuitの真値が未決"))? || accepts
                         },
                     )?;
                     if numeric.is_some() {
@@ -865,12 +879,12 @@ pub(super) fn retain(
             .predicates
             .iter()
             .find(|p| p.law == *index)
-            .ok_or("元述語Invariantがない")?;
+            .ok_or(internal!("元述語Invariantがない"))?;
         let ti = z
             .predicates
             .iter()
             .find(|p| p.law == zt.indices[zi])
-            .ok_or("先述語Invariantがない")?;
+            .ok_or(internal!("先述語Invariantがない"))?;
         let checks = rows
             .iter()
             .map(|&(i, j, e, _, _)| {
@@ -904,7 +918,10 @@ pub(super) fn retain(
         out.indices.push(Json::obj([
             ("source", index.wire()),
             ("target", zt.indices[zi].wire()),
-            ("required", required.ok_or("required比較がない")?.wire()),
+            (
+                "required",
+                required.ok_or(internal!("required比較がない"))?.wire(),
+            ),
             ("holds", Json::Arr(holds)),
             ("components", Json::Arr(components)),
         ]));

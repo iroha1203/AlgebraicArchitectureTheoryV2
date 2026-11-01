@@ -8,11 +8,11 @@ impl Evaluator<'_, '_> {
             entity,
         } = &value
         else {
-            return Err(Failure::Internal("Path端点が原始参照でない".into()));
+            return Err(Failure::Internal(internal!("Path端点が原始参照でない")));
         };
         let s = self.environment.indexes.subject(snapshot, subject)?;
         if &s.ty != entity {
-            return Err(Failure::Internal("Path端点の原始型が違う".into()));
+            return Err(Failure::Internal(internal!("Path端点の原始型が違う")));
         }
         let rule = Rule::Input {
             kind: "subject",
@@ -47,7 +47,7 @@ impl Evaluator<'_, '_> {
             let source = self
                 .sources
                 .get(&span)
-                .ok_or_else(|| Failure::Internal("Path条件の元Sourceがない".into()))?
+                .ok_or_else(|| Failure::Internal(internal!("Path条件の元Sourceがない")))?
                 .expression;
             let children: Vec<_> = evaluated.iter().map(|e| e.evaluation).collect();
             let edges: Vec<_> = std::iter::once(source)
@@ -112,7 +112,7 @@ impl Evaluator<'_, '_> {
             let reason = self
                 .environment
                 .path_condition_reason(self.graph, source, &children, self.graph.nodes.len())?
-                .ok_or_else(|| Failure::Internal("Pathの条件失敗理由がない".into()))?;
+                .ok_or_else(|| Failure::Internal(internal!("Pathの条件失敗理由がない")))?;
             return self.finish_with_reasons(
                 span,
                 ty,
@@ -139,7 +139,7 @@ impl Evaluator<'_, '_> {
                 arguments.push(
                     child
                         .value
-                        .ok_or_else(|| Failure::Internal("Pathの元実引数値がない".into()))?,
+                        .ok_or_else(|| Failure::Internal(internal!("Pathの元実引数値がない")))?,
                 );
             }
             arguments.extend([from, to]);
@@ -149,7 +149,7 @@ impl Evaluator<'_, '_> {
             let source = self
                 .sources
                 .get(&span)
-                .ok_or_else(|| Failure::Internal("Pathの元Sourceがない".into()))?;
+                .ok_or_else(|| Failure::Internal(internal!("Pathの元Sourceがない")))?;
             let mut support = info.support.clone();
             for child in &evaluated {
                 support.extend(child.support.iter().cloned())

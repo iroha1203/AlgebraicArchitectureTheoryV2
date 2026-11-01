@@ -33,14 +33,14 @@ pub(super) fn solve(
     let (matrix, rhs) =
         change_affine::state_equations(env, &model.slots, &requirements, &mut pending)?;
     if !pending.facts.is_empty() {
-        return Err("アフィン方程式の固定位置が欠測している".into());
+        return Err(internal!("アフィン方程式の固定位置が欠測している").into());
     }
     if matrix.iter().any(|row| {
         row.iter()
             .enumerate()
             .any(|(i, x)| !x.is_zero() && !indexes.contains(&i))
     }) {
-        return Err("局所アフィン方程式に不可視の座標がある".into());
+        return Err(internal!("局所アフィン方程式に不可視の座標がある").into());
     }
     let matrix: Matrix = matrix
         .iter()
@@ -62,7 +62,7 @@ pub(super) fn solve(
     if let Some(reading) = reading {
         let projection: Matrix = reading.map.iter().map(|row| indexes.iter().map(|i| row[*i].clone()).collect()).collect();
         if reading.map.iter().any(|row| row.iter().enumerate().any(|(i,x)| !x.is_zero() && !indexes.contains(&i))) {
-            return Err("アフィン読取りにcontext外の座標がある".into());
+            return Err(internal!("アフィン読取りにcontext外の座標がある").into());
         }
         let read_module = wire::module(b, ring, reading.map.len(), "image", vec![solution])?;
         let read_domain = wire::domain(b, read_module)?;
@@ -92,7 +92,7 @@ pub(super) fn vector(
     c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let Scalar::Tuple(values) = value else {
-        return Err("アフィン状態がTupleでない".into());
+        return Err(internal!("アフィン状態がTupleでない").into());
     };
     let values = values
         .iter()
@@ -102,8 +102,8 @@ pub(super) fn vector(
         .fiber
         .origin
         .as_ref()
-        .ok_or("有限作用の像を含むアフィンfiberが空か未確定")?;
-    if values.len() != origin.len() { return Err("アフィン状態の座標数が違う".into()); }
+        .ok_or(internal!("有限作用の像を含むアフィンfiberが空か未確定"))?;
+    if values.len() != origin.len() { return Err(internal!("アフィン状態の座標数が違う").into()); }
     let delta = values
         .iter()
         .zip(origin)
@@ -112,7 +112,7 @@ pub(super) fn vector(
     let solution =
         integer_fiber::solve(&state.fiber.basis, state.fiber.rank, &delta, c)?;
     if solution.particular.is_none() {
-        return Err("有限作用の解がアフィン方程式を満たさない".into());
+        return Err(internal!("有限作用の解がアフィン方程式を満たさない").into());
     }
     wire::vector(b, state.ambient, &values, c)
 }
@@ -123,8 +123,8 @@ pub(super) fn restriction(
     to: &super::State,
     c: &Control,
 ) -> Result<(NodeRef, NodeRef, Matrix, Matrix), ValidationFailure> {
-    let a = from.integer.as_ref().ok_or("アフィン制限元がない")?;
-    let z = to.integer.as_ref().ok_or("アフィン制限先がない")?;
+    let a = from.integer.as_ref().ok_or(internal!("アフィン制限元がない"))?;
+    let z = to.integer.as_ref().ok_or(internal!("アフィン制限先がない"))?;
     let projection: Matrix = if let (Some(a), Some(z)) = (&from.reading, &to.reading) { a.restriction(z,c)? } else { to
         .free
         .iter()
@@ -133,7 +133,7 @@ pub(super) fn restriction(
                 .free
                 .iter()
                 .position(|x| x == f)
-                .ok_or("アフィン制限先の座標がない")?;
+                .ok_or(internal!("アフィン制限先の座標がない"))?;
             Ok((0..from.free.len())
                 .map(|j| Z::from(usize::from(i == j)))
                 .collect())
@@ -188,7 +188,7 @@ pub(super) fn diagram(
                         .slots
                         .iter()
                         .position(|x| x == f)
-                        .ok_or("自由位置がない")
+                        .ok_or(internal!("自由位置がない"))
                 })
                 .collect::<Result<Vec<_>, _>>()
         })
@@ -223,7 +223,7 @@ pub(super) fn diagram(
                 s.integer
                     .as_ref()
                     .map(|s| s.fiber.clone())
-                    .ok_or_else(|| ValidationFailure::from("アフィンfiberがない"))
+                    .ok_or_else(|| ValidationFailure::from(internal!("アフィンfiberがない")))
             })
             .collect::<Result<Vec<_>, _>>()?,
         semantic: vec![],

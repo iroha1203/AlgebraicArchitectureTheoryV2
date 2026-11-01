@@ -67,7 +67,7 @@ fn evaluated_origin<'a>(
         return Ok(template);
     };
     if row.row != Some(0) || rows.next().is_some() {
-        return Err("全Law表の閉じたLawに唯一の具体行がない".into());
+        return Err(internal!("全Law表の閉じたLawに唯一の具体行がない").into());
     }
     matching(g, template, row)?;
     Ok(row)
@@ -84,19 +84,19 @@ fn components(
     ValidationFailure,
 > {
     let Some(Payload::Construction(v)) = &g.get(source)?.payload else {
-        return Err("全Law表の対象計画がnativeでない".into());
+        return Err(internal!("全Law表の対象計画がnativeでない").into());
     };
     let D::ObjectComponents(data) = &v.data else {
-        return Err("全Law表の対象計画が別構成".into());
+        return Err(internal!("全Law表の対象計画が別構成").into());
     };
     data.position(source.0)?;
     let (a, r, outputs) = data.retained_components();
     if r != architecture || outputs.base != source {
-        return Err("全Law表の対象計画が別Architecture/base".into());
+        return Err(internal!("全Law表の対象計画が別Architecture/base").into());
     }
     let actual = native::architecture_origin(g, architecture, 0)?;
     if !Arc::ptr_eq(actual, &a) {
-        return Err("全Law表の対象族が別由来".into());
+        return Err(internal!("全Law表の対象族が別由来").into());
     }
     Ok((a, outputs))
 }
@@ -105,17 +105,17 @@ fn matching(g: &Graph, base: &Original, target: &Original) -> Result<(), Validat
         || base.parameters != target.parameters
         || base.bindings.len() != target.bindings.len()
     {
-        return Err("全Law表の元添字/parameter/固定束縛数が違う".into());
+        return Err(internal!("全Law表の元添字/parameter/固定束縛数が違う").into());
     }
-    let a = frames::origin(g, base.reference)?.ok_or("全Law表の元Lawがない")?;
-    let b = frames::origin(g, target.reference)?.ok_or("全Law表の対象Lawがない")?;
+    let a = frames::origin(g, base.reference)?.ok_or(internal!("全Law表の元Lawがない"))?;
+    let b = frames::origin(g, target.reference)?.ok_or(internal!("全Law表の対象Lawがない"))?;
     if a.declaration != b.declaration || !Arc::ptr_eq(&a.architecture, &b.architecture) {
-        return Err("全Law表の対象Lawが別宣言/入力".into());
+        return Err(internal!("全Law表の対象Lawが別宣言/入力").into());
     }
     for (a, b) in base.bindings.iter().zip(&target.bindings) {
         g.tick()?;
         if a.name != b.name || a.ty != b.ty || g.scalar(a.value)? != g.scalar(b.value)? {
-            return Err("全Law表の元参照束縛/順序/型/値が違う".into());
+            return Err(internal!("全Law表の元参照束縛/順序/型/値が違う").into());
         }
     }
     Ok(())
@@ -143,11 +143,11 @@ fn cell(
                     && matches!(d.kind,super::law_family::Kind::Proposition{evaluation:r,..} if r==evaluation) =>
             {
                 let Some(Payload::Construction(v)) = &e.payload else {
-                    return Err("全Law表の族命題に族評価がない".into());
+                    return Err(internal!("全Law表の族命題に族評価がない").into());
                 };
                 if !matches!(&v.data,D::LawFamily(x) if x.template==origin && x.architecture==architecture && matches!(x.kind,super::law_family::Kind::Evaluation{..}))
                 {
-                    return Err("全Law表の族評価が別Law/対象".into());
+                    return Err(internal!("全Law表の族評価が別Law/対象").into());
                 }
             }
             D::OutsideLaw(d)
@@ -156,36 +156,41 @@ fn cell(
                     && matches!(d.kind,super::law_inapplicable::Kind::Proposition{evaluation:r} if r==evaluation) =>
             {
                 let Some(Payload::Construction(v)) = &e.payload else {
-                    return Err("全Law表の非適用命題に実評価がない".into());
+                    return Err(internal!("全Law表の非適用命題に実評価がない").into());
                 };
                 if !matches!(&v.data,D::OutsideLaw(x) if x.origin==origin && x.architecture==architecture && matches!(x.kind,super::law_inapplicable::Kind::Evaluation{..}))
                 {
-                    return Err("全Law表の非適用評価が別Law/対象".into());
+                    return Err(internal!("全Law表の非適用評価が別Law/対象").into());
                 }
             }
-            _ => return Err("全Law表の命題が別のLaw/評価/対象".into()),
+            _ => return Err(internal!("全Law表の命題が別のLaw/評価/対象").into()),
         },
         Some(Payload::Proposition { instance }) => {
             let context = g.context_at(holds.0);
-            let index = context.instance.ok_or("全Law表の命題に実instanceがない")?;
-            let record = g.instances.get(index).ok_or("全Law表の実instanceがない")?;
+            let index = context
+                .instance
+                .ok_or(internal!("全Law表の命題に実instanceがない"))?;
+            let record = g
+                .instances
+                .get(index)
+                .ok_or(internal!("全Law表の実instanceがない"))?;
             if record.source != origin
                 || record.caller != g.context_at(architecture.0)
                 || g.context_at(evaluation.0) != context
                 || p.arguments != [*instance, evaluation]
                 || frames::architecture(g, index, g.nodes.len())? != Some(architecture)
             {
-                return Err("全Law表の実行producer/元Law/対象が違う".into());
+                return Err(internal!("全Law表の実行producer/元Law/対象が違う").into());
             }
             if !matches!(&e.payload,Some(Payload::Evaluation{environment:Some(a),..}) if *a==architecture)
             {
-                return Err("全Law表の実評価環境が違う".into());
+                return Err(internal!("全Law表の実評価環境が違う").into());
             }
         }
-        _ => return Err("全Law表の実命題がない".into()),
+        _ => return Err(internal!("全Law表の実命題がない").into()),
     }
     if p.judgment.is_none() {
-        return Err("全Law表の命題判断がない".into());
+        return Err(internal!("全Law表の命題判断がない").into());
     }
     Ok(())
 }
@@ -207,18 +212,18 @@ impl Table {
         let (a, objects) = components(g, self.component_source, self.architecture)?;
         let planned = self.plan.recheck(env, g, self.architecture, c)?;
         if !Arc::ptr_eq(&a, &planned) {
-            return Err("全Law表のLaw計画と対象計画が別由来".into());
+            return Err(internal!("全Law表のLaw計画と対象計画が別由来").into());
         }
         let ds = self.plan.diagrams()?;
         if ds.len() != objects.objects.len()
             || self.objects.len() != ds.len()
             || objects.architectures.len() != ds.len()
         {
-            return Err("全Law表の全対象coverageが違う".into());
+            return Err(internal!("全Law表の全対象coverageが違う").into());
         }
-        let base = templates(ds.first().ok_or("全Law表にbase対象がない")?);
+        let base = templates(ds.first().ok_or(internal!("全Law表にbase対象がない"))?);
         if self.indices != base.iter().map(|t| t.reference).collect::<Vec<_>>() {
-            return Err("全Law表の元全添字/順序が違う".into());
+            return Err(internal!("全Law表の元全添字/順序が違う").into());
         }
         refs(env, g, self.indices.iter().copied(), c)?;
         let mut support = g.get(self.architecture)?.support.clone();
@@ -229,7 +234,7 @@ impl Table {
             if actual.object != objects.objects[object]
                 || actual.architecture != objects.architectures[object]
             {
-                return Err("全Law表の対象identity/順序/Architectureが違う".into());
+                return Err(internal!("全Law表の対象identity/順序/Architectureが違う").into());
             }
             g.expect(actual.object, &NodeType::Construction(T::ObjectComponent))?;
             refs(env, g, [actual.object, actual.architecture], c)?;
@@ -243,18 +248,19 @@ impl Table {
                 || actual.evaluations.len() != base.len()
                 || actual.holds.len() != base.len()
             {
-                return Err("全Law表のLaw行coverage/順序が違う".into());
+                return Err(internal!("全Law表のLaw行coverage/順序が違う").into());
             }
             for (i, (original, target)) in base.iter().zip(ts).enumerate() {
                 tick(c)?;
                 matching(g, original, target)?;
                 let target = evaluated_origin(g, diagram, target)?;
                 if actual.origins[i] != target.reference {
-                    return Err("全Law表の具体行/元Lawの対応が違う".into());
+                    return Err(internal!("全Law表の具体行/元Lawの対応が違う").into());
                 }
-                let o = frames::origin(g, target.reference)?.ok_or("全Law表の元対象Lawがない")?;
+                let o = frames::origin(g, target.reference)?
+                    .ok_or(internal!("全Law表の元対象Lawがない"))?;
                 if o.object != object || !Arc::ptr_eq(&o.architecture, &a) {
-                    return Err("全Law表の対象Lawが別の対象".into());
+                    return Err(internal!("全Law表の対象Lawが別の対象").into());
                 }
                 cell(
                     env,
@@ -277,7 +283,7 @@ impl Table {
         reasons.sort_by_key(|r| r.wire().canonical());
         reasons.dedup();
         if self.support != support || self.scope != scope || self.reasons != reasons {
-            return Err("全Law表の支持/Scope/理由が実表と違う".into());
+            return Err(internal!("全Law表の支持/Scope/理由が実表と違う").into());
         }
         tick(c)
     }
@@ -291,7 +297,7 @@ pub(super) fn retain(
 ) -> Result<Option<Table>, ValidationFailure> {
     tick(c)?;
     if g.active != g.context_at(architecture.0) {
-        return Err("全Law表の生成が元ArchitectureのRequestでない".into());
+        return Err(internal!("全Law表の生成が元ArchitectureのRequestでない").into());
     }
     refs(env, g, [architecture], c)?;
     let Some(objects) =
@@ -301,10 +307,10 @@ pub(super) fn retain(
     };
     let plan = super::polynomial_law_diagram::retain_table_plan(g, inputs, architecture, c)?;
     let ds = plan.diagrams()?;
-    let base = templates(ds.first().ok_or("全Law表のbase計画がない")?);
+    let base = templates(ds.first().ok_or(internal!("全Law表のbase計画がない"))?);
     let indices = base.iter().map(|t| t.reference).collect::<Vec<_>>();
     if ds.len() != objects.objects.len() || ds.len() != objects.architectures.len() {
-        return Err("全Law表の元対象計画数が違う".into());
+        return Err(internal!("全Law表の元対象計画数が違う").into());
     }
     let mut rows = vec![];
     let mut support = g.get(architecture)?.support.clone();
@@ -314,7 +320,7 @@ pub(super) fn retain(
         tick(c)?;
         let ts = templates(d);
         if ts.len() != base.len() {
-            return Err("全Law表の元Law添字が対象間で違う".into());
+            return Err(internal!("全Law表の元Law添字が対象間で違う").into());
         }
         let mut row = ObjectRow {
             object: objects.objects[object],
@@ -338,8 +344,8 @@ pub(super) fn retain(
                         .iter()
                         .all(|(_, ty)| numeric_parameters::numeric_width(ty).is_some())
                 {
-                    let origin =
-                        frames::origin(g, t.reference)?.ok_or("全Law表の元Lawに由来がない")?;
+                    let origin = frames::origin(g, t.reference)?
+                        .ok_or(internal!("全Law表の元Lawに由来がない"))?;
                     if origin.outside {
                         super::law_inapplicable::check(env, g, t.reference, row.architecture, c)?
                     } else {
@@ -350,7 +356,8 @@ pub(super) fn retain(
                     answer
                 }
             } else {
-                let origin = frames::origin(g, t.reference)?.ok_or("全Law表の元Lawに由来がない")?;
+                let origin = frames::origin(g, t.reference)?
+                    .ok_or(internal!("全Law表の元Lawに由来がない"))?;
                 if origin.outside {
                     super::law_inapplicable::check(env, g, t.reference, row.architecture, c)?
                 } else {
@@ -363,8 +370,8 @@ pub(super) fn retain(
             let e = *answer
                 .outputs
                 .get("evaluation")
-                .ok_or("全Law表の実Evaluationがない")?;
-            let p = answer.claim.ok_or("全Law表の実holdsがない")?;
+                .ok_or(internal!("全Law表の実Evaluationがない"))?;
+            let p = answer.claim.ok_or(internal!("全Law表の実holdsがない"))?;
             cell(env, g, t.reference, row.architecture, e, p, c)?;
             row.origins.push(t.reference);
             row.evaluations.push(e);
