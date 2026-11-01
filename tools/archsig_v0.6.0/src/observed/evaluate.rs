@@ -315,8 +315,6 @@ impl Evaluator<'_, '_> {
             support,
             scope,
         )?;
-        #[cfg(test)]
-        data::observe_actual(span, self.graph.active, "affine_scalar", 1);
         self.tick(Checkpoint::FiniteIteration)?;
         Ok(Some(value))
     }
@@ -371,8 +369,6 @@ impl Evaluator<'_, '_> {
             scope: scope.clone(),
             reasons: vec![],
         })?;
-        #[cfg(test)]
-        data::observe_actual(span, self.graph.active, "affine_comparison", 0);
         self.tick(Checkpoint::FiniteIteration)?;
         let residual = self.value(
             residual,
@@ -381,8 +377,6 @@ impl Evaluator<'_, '_> {
             support.clone(),
             scope.clone(),
         )?;
-        #[cfg(test)]
-        data::observe_actual(span, self.graph.active, "affine_comparison", 1);
         self.tick(Checkpoint::FiniteIteration)?;
         let normalization = self.push(Node {
             ty: NodeType::Evidence,
@@ -399,8 +393,6 @@ impl Evaluator<'_, '_> {
             scope: scope.clone(),
             reasons: vec![],
         })?;
-        #[cfg(test)]
-        data::observe_actual(span, self.graph.active, "affine_comparison", 2);
         self.tick(Checkpoint::FiniteIteration)?;
         let value = self.push(Node {
             ty: NodeType::Value(Type::Bool),
@@ -423,8 +415,6 @@ impl Evaluator<'_, '_> {
             scope,
             reasons: vec![],
         })?;
-        #[cfg(test)]
-        data::observe_actual(span, self.graph.active, "affine_comparison", 3);
         self.tick(Checkpoint::FiniteIteration)?;
         Ok(Some((value, residual)))
     }
@@ -1251,7 +1241,7 @@ impl Evaluator<'_, '_> {
                 } else {
                     return Err(self.unsupported(span, "束縛変数以外を先頭とするドット式"));
                 };
-                for (_index, part) in parts.iter().enumerate().skip(1) {
+                for part in parts.iter().skip(1) {
                     self.tick(Checkpoint::FiniteIteration)?;
                     current = self.field(
                         current,
@@ -1259,8 +1249,6 @@ impl Evaluator<'_, '_> {
                         (first.span.0, part.span.1),
                         parts.len() > 2,
                     )?;
-                    #[cfg(test)]
-                    data::observe_actual(span, self.graph.active, "field_evaluate", _index);
                     self.tick(Checkpoint::FiniteIteration)?;
                 }
                 if parts.len() == 1 {
@@ -1630,8 +1618,6 @@ impl Evaluator<'_, '_> {
         if let Some(items) = members {
             let mut elements = Vec::new();
             for item in &items {
-                #[cfg(test)]
-                data::observe_actual(spec.span, self.graph.active, "quant_domain", elements.len());
                 self.tick(Checkpoint::FiniteIteration)?;
                 elements.push(
                     self.value(
@@ -1675,8 +1661,6 @@ impl Evaluator<'_, '_> {
             for item in &items {
                 #[cfg(test)]
                 let position = results.len();
-                #[cfg(test)]
-                data::observe_actual(spec.span, self.graph.active, "quant_body", position);
                 self.tick(Checkpoint::FiniteIteration)?;
                 let caller = self.graph.active;
                 let index = self.graph.iterations.len();
@@ -1777,17 +1761,8 @@ impl Evaluator<'_, '_> {
         ) {
             let domain = finite.expect("既知量化域");
             let mut instances = Vec::new();
-            #[cfg(test)]
-            data::observe_actual(spec.span, self.graph.active, "quant_exhaustion", 0);
             self.tick(Checkpoint::FiniteIteration)?;
             for body in &children[usize::from(input.is_some())..] {
-                #[cfg(test)]
-                data::observe_actual(
-                    spec.span,
-                    self.graph.active,
-                    "quant_exhaustion",
-                    instances.len() + 1,
-                );
                 self.tick(Checkpoint::FiniteIteration)?;
                 instances.push(body.evaluation);
                 self.tick(Checkpoint::FiniteIteration)?;
@@ -2318,8 +2293,6 @@ impl Evaluator<'_, '_> {
                     return Err(Failure::Internal("失敗fieldの元Source型がない".into()));
                 };
                 let ty = ty.clone();
-                #[cfg(test)]
-                data::observe_actual(span, self.graph.active, "failed_field", 0);
                 return self.lexical_result(span, ty, None, vec![base]);
             }
             return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
@@ -8082,9 +8055,9 @@ reading Calc {{
         items.reverse();
         rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
     }
-    fn type_quantifier_fixture(omitted: &[&str]) -> InputSources {
+    fn type_quantifier_fixture() -> InputSources {
         numeric_recheck_fixture(
-            omitted,
+            &[],
             r#"
  view all(): Bool = forall bit: Bool . bit=bit;
  view unused(): Bool = forall item: Option<Bool> . true;
@@ -8101,12 +8074,8 @@ reading Calc {{
         )
     }
     fn type_quantifier_example(requests: &[&str]) -> ObservedEvaluation {
-        evaluate_observed_bytes(
-            type_quantifier_fixture(&[]),
-            requests,
-            &mut named_call_quiet(),
-        )
-        .unwrap()
+        evaluate_observed_bytes(type_quantifier_fixture(), requests, &mut named_call_quiet())
+            .unwrap()
     }
     #[test]
     fn type_quantifier_exhaustion_rechecks_coverage_binder_body_and_evidence() {
@@ -8196,9 +8165,9 @@ reading Calc {{
         items.reverse();
         rebuild_for_origin_and_support_recheck(&result, &reordered).unwrap();
     }
-    fn in_quantifier_fixture(omitted: &[&str]) -> InputSources {
+    fn in_quantifier_fixture() -> InputSources {
         numeric_recheck_fixture(
-            omitted,
+            &[],
             r#"
  view all(): Bool = forall n in list<Z>[1,1,2] . n>0;
  view empty(): Bool = exists q in list<Q>[] . q>rat(0,1);
@@ -8216,12 +8185,7 @@ reading Calc {{
         )
     }
     fn in_quantifier_example(requests: &[&str]) -> ObservedEvaluation {
-        evaluate_observed_bytes(
-            in_quantifier_fixture(&[]),
-            requests,
-            &mut named_call_quiet(),
-        )
-        .unwrap()
+        evaluate_observed_bytes(in_quantifier_fixture(), requests, &mut named_call_quiet()).unwrap()
     }
     fn in_domain(result: &ObservedEvaluation, request: usize) -> usize {
         result

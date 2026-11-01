@@ -1,4 +1,4 @@
-fn dependent_private_fixture(body: &str, flags: [Option<bool>; 2], unknown: bool) -> InputSources {
+fn dependent_private_fixture(body: &str, flags: [Option<bool>; 2]) -> InputSources {
     let definitions = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Dep","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Dep.Root","meaning":"根。","parameters":[],"fields":[],"alignments":[]},{"kind":"entity","name":"Dep.Child","meaning":"根に属する対象。","parameters":[{"name":"owner","type":["Ref","Dep.Root"],"meaning":"所属。"}],"fields":[],"alignments":[]},{"kind":"entity","name":"Dep.Leaf","meaning":"同じ根に属する別の対象。","parameters":[{"name":"owner","type":["Ref","Dep.Root"],"meaning":"所属。"}],"fields":[{"name":"ok","type":"Bool","meaning":"観測条件。"}],"alignments":[]}]}]}"#;
     let checked =
         crate::definition::check_definitions(&[("definition0", definitions.as_bytes())]).unwrap();
@@ -24,9 +24,6 @@ fn dependent_private_fixture(body: &str, flags: [Option<bool>; 2], unknown: bool
         ("l", "Leaf", "A"),
         ("m", "Leaf", "B"),
     ] {
-        if unknown && id == "p" {
-            continue;
-        }
         atoms.push(format!(r#"{{"id":"{id}-owner","subject":"{id}","field":"Dep.{ty}.owner","value":["v","{owner}"],"origin":"scan"}}"#));
     }
     for (id, flag) in ["l", "m"].into_iter().zip(flags) {
@@ -51,7 +48,7 @@ fn dependent_private_example(
     flags: [Option<bool>; 2],
 ) -> ObservedEvaluation {
     let result = evaluate_observed_bytes(
-        dependent_private_fixture(body, flags, false),
+        dependent_private_fixture(body, flags),
         asks,
         &mut named_call_quiet(),
     )
@@ -110,10 +107,10 @@ fn dependent_family_missing_body_and_counterexample_remain_distinct_and_rechecke
     });
 }
 
-fn dependent_private_body_phase_stop(declaration: &str) {
+fn dependent_private_body_phase_stop() {
     use std::{cell::Cell, rc::Rc};
     let body = format!(
-        "view seed():Unit=unit; law required prior():false; view hole(c:Leaf):Bool=c.ok; {declaration}"
+        "view seed():Unit=unit; law required prior():false; view hole(c:Leaf):Bool=c.ok; {DEPENDENT_NUMERIC_BODY}"
     );
     let asks = [
         "seed=evaluate(Inspect.seed)",
@@ -122,7 +119,7 @@ fn dependent_private_body_phase_stop(declaration: &str) {
         "current=check(Inspect.chain)",
         "later=evaluate(Inspect.seed)",
     ];
-    let inputs = dependent_private_fixture(&body, [None, Some(false)], false);
+    let inputs = dependent_private_fixture(&body, [None, Some(false)]);
     let mut quiet = named_call_quiet();
     let prepared = prepare_observed(inputs.clone(), &asks, &mut quiet).unwrap();
     let target = prepared.inputs().law().declarations["Inspect.chain"].span;
@@ -214,5 +211,5 @@ fn dependent_private_body_phase_stop(declaration: &str) {
 const DEPENDENT_NUMERIC_BODY: &str = "law required chain(z:Z,a:Root,b:Child[a],q:Q,c:Leaf[a]):if c.ok then z+1=z+1 and q+1=q+1 else z+1=z+2;";
 #[test]
 fn dependent_numeric_family_domain_cancel_keeps_strict_prefix_and_prior_answers() {
-    dependent_private_body_phase_stop(DEPENDENT_NUMERIC_BODY);
+    dependent_private_body_phase_stop();
 }

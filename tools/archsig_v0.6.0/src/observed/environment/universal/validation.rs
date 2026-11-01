@@ -3526,13 +3526,6 @@ impl Environment<'_> {
             {
                 return Err("全域fieldの実owner出現・型・束縛が違う".into());
             }
-            #[cfg(test)]
-            super::data::observe_actual(
-                span,
-                self.current_context(graph),
-                "universal_field_recheck",
-                count - 1,
-            );
             self.tick()?;
             self.recheck_evaluation(graph, child)?;
             return Ok(());

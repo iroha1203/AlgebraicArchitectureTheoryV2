@@ -6055,15 +6055,6 @@ impl<'a> Environment<'a> {
         let mut known = items.is_some();
         if let Some((items, is_list)) = items {
             for position in 0..items.len() {
-                #[cfg(test)]
-                if self.universal_source_root(graph, own)?.is_some() {
-                    data::observe_actual(
-                        span,
-                        self.current_context(graph),
-                        "universal_finite_recheck",
-                        position,
-                    );
-                }
                 self.tick()?;
                 let first = *children.get(cursor).ok_or("内包に反復漏れがある")?;
                 let context = graph.context_at(first.0);
@@ -9889,15 +9880,6 @@ impl<'a> Environment<'a> {
                     return Err("量化instance全coverageの件数が違う".into());
                 }
                 for body in &children[1..] {
-                    #[cfg(test)]
-                    if self.universal_source_root(graph, source)?.is_some() {
-                        data::observe_actual(
-                            span,
-                            self.current_context(graph),
-                            "universal_quant_recheck",
-                            seen.len(),
-                        );
-                    }
                     self.tick()?;
                     if body.0 >= limit {
                         return Err("量化bodyが未来を指す".into());

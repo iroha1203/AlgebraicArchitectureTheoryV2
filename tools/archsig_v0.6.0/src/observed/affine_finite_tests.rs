@@ -22,7 +22,7 @@ fn result() -> ObservedEvaluation {
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
     r
 }
-fn evaluation(r: &ObservedEvaluation, text: &str) -> usize {
+fn evaluation(r: &ObservedEvaluation) -> usize {
     r.nodes
         .iter()
         .enumerate()
@@ -40,7 +40,8 @@ fn evaluation(r: &ObservedEvaluation, text: &str) -> usize {
             else {
                 return None;
             };
-            (&r.prepared.inputs().sources().law().bytes()[span.0..span.1] == text.as_bytes())
+            (&r.prepared.inputs().sources().law().bytes()[span.0..span.1]
+                == b"set{x|x in list<Z>[1,1,2]}")
                 .then_some(i)
         })
         .unwrap()
@@ -84,7 +85,7 @@ fn replace_children(ns: &mut [Node], at: usize, children: Vec<NodeRef>) {
 #[test]
 fn affine_comprehension_rejects_equal_duplicate_iteration_and_incomplete_coverage() {
     let mut r = result();
-    let at = evaluation(&r, "set{x|x in list<Z>[1,1,2]}");
+    let at = evaluation(&r);
     let cs = children(&r.nodes[at]);
     assert_eq!(cs.len(), 4);
     assert_ne!(cs[1], cs[2]);
@@ -140,7 +141,7 @@ fn affine_comprehension_actual_iteration_stop_keeps_verified_results() {
     let input = fixture::input(SCRIPT, "Z", &[], "r1");
     let normal = evaluate_observed_bytes(input.clone(), asks, &mut named_call_quiet()).unwrap();
     assert_eq!(normal.status(), "complete");
-    let at = evaluation(&normal, "set{x|x in list<Z>[1,1,2]}");
+    let at = evaluation(&normal);
     let Some(Payload::Evaluation { expression, .. }) = &normal.nodes[at].payload else {
         panic!()
     };

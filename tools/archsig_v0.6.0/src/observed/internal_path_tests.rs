@@ -4,10 +4,10 @@ mod fixture {
     use crate as archsig;
     include!("../../tests/common/internal_paths.rs");
 }
-fn example(mode: &str, view: &str) -> ObservedEvaluation {
+fn example(view: &str) -> ObservedEvaluation {
     let ask = format!("current=evaluate(Walk.{view},e=@v/e)");
     let r = evaluate_observed_bytes(
-        fixture::input(mode, "r1"),
+        fixture::input("normal", "r1"),
         &["seed=evaluate(Walk.seed)", "prior=check(Walk.prior)", &ask],
         &mut named_call_quiet(),
     )
@@ -52,7 +52,7 @@ fn fact(snapshot: &str, subject: &str, field: Option<&str>) -> Fact {
 }
 #[test]
 fn internal_path_action_is_exact_on_all_42_original_atoms_and_external_identity() {
-    let r = example("normal", "step");
+    let r = example("step");
     let Some(Payload::Scalar(Scalar::Path(p))) = &r.nodes[path_index(&r)].payload else {
         panic!()
     };
@@ -172,10 +172,10 @@ fn reject_node(r: &ObservedEvaluation, index: usize, bad: Node) {
         "whole {index}"
     );
 }
-fn changed_path(kinds: &[usize]) {
-    let r = example("normal", "maybe");
+fn changed_path() {
+    let r = example("maybe");
     let i = path_index(&r);
-    for &kind in kinds {
+    for kind in [0, 1, 2] {
         let mut bad = r.nodes[i].clone();
         match kind {
             0 => {
@@ -192,40 +192,6 @@ fn changed_path(kinds: &[usize]) {
                 s.images[j] = s.carrier[j].clone();
             }
             2 => path_mut(&mut bad).step.as_mut().unwrap().carrier[0].snapshot = "foreign".into(),
-            3 => {
-                path_mut(&mut bad).step.as_mut().unwrap().generator = Scalar::Subject {
-                    snapshot: "v".into(),
-                    subject: "alias".into(),
-                    entity: "Paths.Hop".into(),
-                }
-            }
-            4 => {
-                path_mut(&mut bad).step.as_mut().unwrap().target = Scalar::Subject {
-                    snapshot: "v".into(),
-                    subject: "r".into(),
-                    entity: "Paths.Node".into(),
-                }
-            }
-            5 => path_mut(&mut bad).step.as_mut().unwrap().target = Scalar::Bool(true),
-            6 => path_mut(&mut bad).reading = "Other".into(),
-            7 => path_mut(&mut bad).subject = "q".into(),
-            8 => bad.support.clear(),
-            9 => bad.scope.snapshots.clear(),
-            10 => bad.arguments.clear(),
-            11 => bad.arguments.swap(1, 2),
-            12 => bad.arguments[0] = bad.arguments[1],
-            13 => {
-                let Rule::Input {
-                    location: Location::Law { span },
-                    ..
-                } = &mut bad.rule
-                else {
-                    panic!()
-                };
-                span.0 += 1;
-            }
-            14 => bad.ty = NodeType::Value(Type::Bool),
-            15 => path_mut(&mut bad).step = None,
             _ => panic!(),
         }
         reject_node(&r, i, bad);
@@ -233,7 +199,7 @@ fn changed_path(kinds: &[usize]) {
 }
 #[test]
 fn internal_path_recheck_rejects_carrier_image_and_foreign_atom_mutations() {
-    changed_path(&[0, 1, 2]);
+    changed_path();
 }
 fn stopped() {
     use std::{cell::Cell, rc::Rc};

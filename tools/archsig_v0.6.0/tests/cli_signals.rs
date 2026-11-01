@@ -33,12 +33,12 @@ fn setup(name: &str) -> PathBuf {
     std::fs::write(dir.join("a.json"), A).unwrap();
     dir
 }
-fn command(dir: &Path, definition: &str) -> Command {
+fn command(dir: &Path) -> Command {
     let mut command = bin();
     command.current_dir(dir).args([
         "run",
         "--atom-definition",
-        definition,
+        "d.json",
         "--law",
         "l.law",
         "--archmap",
@@ -97,7 +97,7 @@ fn signals_after_publication_keep_result_receipt_and_exit_frozen() {
     )
     .unwrap();
     let (mut reader, writer, count) = full_stdout();
-    let mut command = command(&dir, "d.json");
+    let mut command = command(&dir);
     command.args(["--ask", "audit=check(CountAudit.bounded,s=@v/s)"]);
     let mut child = Running(command.stdout(Stdio::from(writer)).spawn().unwrap());
     drop(command);
@@ -141,12 +141,7 @@ fn broken_stdout_after_publication_keeps_partial_result_and_exit_code() {
     let dir = setup("broken-stdout");
     let missing = A.replace("{\"id\": \"count\", \"subject\": \"s\", \"field\": \"Counter.State.count\", \"value\": \"2\", \"origin\": \"model\"}", "");
     std::fs::write(dir.join("a.json"), missing).unwrap();
-    let mut child = Running(
-        command(&dir, "d.json")
-            .stdout(Stdio::piped())
-            .spawn()
-            .unwrap(),
-    );
+    let mut child = Running(command(&dir).stdout(Stdio::piped()).spawn().unwrap());
     // 読取側を閉じ、receiptのwriteによるEPIPE/SIGPIPEを実際に発生させる。
     drop(child.0.stdout.take());
     let (status, timed_out, stderr) = std::thread::scope(|scope| {

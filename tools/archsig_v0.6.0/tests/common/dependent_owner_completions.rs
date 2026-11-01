@@ -92,15 +92,7 @@ fn nested_base(body: &str, flags: [Option<bool>; 2]) -> InputSources {
     .map(|(id, ty)| format!(r#"{{"id":"{id}","type":"Dep.{ty}","origin":"scan"}}"#))
     .join(",");
     let mut atoms = Vec::new();
-    for (id, ty, owner) in [
-        ("p", "Child", "A"),
-        ("q", "Child", "B"),
-        ("l", "Leaf", "A"),
-        ("m", "Leaf", "B"),
-    ] {
-        if id == "p" {
-            continue;
-        }
+    for (id, ty, owner) in [("q", "Child", "B"), ("l", "Leaf", "A"), ("m", "Leaf", "B")] {
         atoms.push(format!(r#"{{"id":"{id}-owner","subject":"{id}","field":"Dep.{ty}.owner","value":["v","{owner}"],"origin":"scan"}}"#));
     }
     for (id, flag) in ["l", "m"].into_iter().zip(flags) {

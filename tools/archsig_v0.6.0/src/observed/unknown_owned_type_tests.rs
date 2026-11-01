@@ -4,14 +4,13 @@ mod fixture {
     use crate as archsig;
     include!("../../tests/common/unknown_owned_type.rs");
 }
-fn example(view: &str) -> ObservedEvaluation {
-    let ask = format!("target=evaluate(MapCall.{view},a=@v/A,b=@v/B)");
+fn example() -> ObservedEvaluation {
     let r = evaluate_observed_bytes(
         fixture::input("two", "r1"),
         &[
             "seed=evaluate(MapCall.seed)",
             "prior=check(MapCall.prior)",
-            &ask,
+            "target=evaluate(MapCall.typeEvery,a=@v/A,b=@v/B)",
         ],
         &mut named_call_quiet(),
     )
@@ -56,7 +55,7 @@ fn map_domain(r: &ObservedEvaluation) -> usize {
 }
 #[test]
 fn owned_type_domain_rejects_missing_duplicate_foreign_members_and_scope() {
-    let r = example("typeEvery");
+    let r = example();
     let i = map_domain(&r);
     for duplicate in [false, true] {
         let mut bad = r.nodes[i].clone();
