@@ -414,8 +414,6 @@ fn asks(dir: &Path, requests: &[&str]) -> Run {
         "a.json",
         "--out",
         "out",
-        "--time-ms",
-        "120000",
     ];
     for request in requests {
         args.extend(["--ask", request]);

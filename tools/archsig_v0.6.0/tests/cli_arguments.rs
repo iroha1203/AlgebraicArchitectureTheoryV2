@@ -135,10 +135,6 @@ fn commands_unknown_flags_positionals_and_run_only_flags_are_closed() {
     group("unexpected");
 }
 #[test]
-fn both_budget_flags_reject_nonpositive_noncanonical_and_noninteger_values() {
-    group("invalid_budgets");
-}
-#[test]
 fn invalid_check_and_run_arguments_ignore_output_state_and_preserve_existing_data() {
     let fixture = cases();
     for case in arr(get(&fixture, "out_independent")) {

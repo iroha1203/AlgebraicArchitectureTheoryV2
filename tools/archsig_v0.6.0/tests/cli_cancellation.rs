@@ -8,7 +8,6 @@ use common::cli::*;
 use std::cell::RefCell;
 use std::path::Path;
 use std::rc::Rc;
-use std::time::Instant;
 
 struct NoOutput;
 impl Io for NoOutput {
@@ -94,7 +93,6 @@ fn cancellation_at_each_input_stage_stops_before_delivery() {
                 &mut NoOutput,
                 &mut signals,
                 &args,
-                Instant::now(),
                 &mut control,
             );
             assert_eq!(
@@ -131,7 +129,6 @@ fn cancellation_without_archmap_also_has_no_artifact() {
         &mut NoOutput,
         &mut signals,
         &args,
-        Instant::now(),
         &mut control,
     );
     assert_eq!(
@@ -160,7 +157,6 @@ fn controlled_budget_stop_is_preserved_without_a_signal() {
         &mut NoOutput,
         &mut signals,
         &args,
-        Instant::now(),
         &mut control,
     );
     assert_eq!(
@@ -195,7 +191,6 @@ fn earlier_checkpoint_signal_is_not_replaced_at_finalize() {
             &mut NoOutput,
             &mut signals,
             &args,
-            Instant::now(),
             &mut control,
         );
         assert_eq!(outcome.exit_code, code);

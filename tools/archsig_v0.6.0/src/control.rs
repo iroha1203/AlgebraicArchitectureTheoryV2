@@ -1,7 +1,6 @@
 //! 検査・要求解決・評価で共有する、注入可能な協調中断制御。
 
 use crate::{canonical::Json, result::Signal};
-use std::collections::BTreeMap;
 use std::{cell::RefCell, rc::Rc};
 
 /// 原始演算または有限反復の境界。試験用 probe も同じ境界を受け取る。
@@ -102,27 +101,14 @@ pub enum Checkpoint {
     FiniteIteration,
 }
 
-/// finalize を含まない内部計算の soft limit。
+/// 内部計算の資源の上限。CLI からは設定しない。テストが止める位置を作るために注入する。
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Limits {
     pub time_ms: Option<u128>,
     pub memory_mib: Option<u128>,
 }
 
-impl Limits {
-    pub fn wire(self) -> Json {
-        let mut fields = BTreeMap::new();
-        if let Some(n) = self.time_ms {
-            fields.insert("time_ms".into(), Json::str(n.to_string()));
-        }
-        if let Some(n) = self.memory_mib {
-            fields.insert("memory_mib".into(), Json::str(n.to_string()));
-        }
-        Json::Obj(fields)
-    }
-}
-
-/// 外部probeから注入した単調時計・peak RSS・取消通知の観測。
+/// 外部probeから注入した資源と取消通知の観測。CLI は取消通知だけを供給する。
 /// 値を供給しない欄も既定値になるため、既定値だけから実測ゼロとは判断しない。
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Usage {
@@ -165,7 +151,7 @@ impl StopReason {
         }
     }
 
-    /// 結果仕様 §6 の Issue。要求固有の request/dependencies は呼出し側が付ける。
+    /// 停止理由の Issue。要求固有の request/dependencies は呼出し側が付ける。
     pub fn wire(&self) -> Json {
         let (message, details) = match self {
             Self::BudgetExhausted {
@@ -246,7 +232,7 @@ impl Control {
 
     /// 資源や取消を観測しない内部計算用の制御。OSへの問い合わせは行わない。
     /// usageの既定値は未観測を表す。予算・計測・取消を必要とする呼出し側は
-    /// newでprobeを注入する。CLIの計測・signal捕捉もアプリケーション側が所有する。
+    /// newでprobeを注入する。CLIのsignal捕捉もアプリケーション側が所有する。
     pub fn unlimited() -> Self {
         Self::new(Limits::default(), |_| Usage::default())
     }

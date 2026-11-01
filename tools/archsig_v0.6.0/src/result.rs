@@ -545,8 +545,6 @@ pub struct CheckResult {
     pub primitives: Vec<PrimitiveDeclaration>,
     pub vocabularies: Vec<Vocabulary>,
     pub issues: Vec<ResultIssue>,
-    pub elapsed_ms: u128,
-    pub peak_bytes: u64,
 }
 
 pub fn exit_code(status: Status, signal: Option<Signal>, issues: &[ResultIssue]) -> u8 {
@@ -673,14 +671,6 @@ impl CheckResult {
                         ("rejected", Json::Arr(vec![])),
                     ]),
                 ),
-                (
-                    "usage",
-                    Json::obj([
-                        ("elapsed_ms", Json::str(self.elapsed_ms.to_string())),
-                        ("peak_bytes", Json::str(self.peak_bytes.to_string())),
-                    ]),
-                ),
-                ("limits", Json::Obj(BTreeMap::new())),
             ]
             .map(|(name, value)| (name.to_owned(), value)),
         );

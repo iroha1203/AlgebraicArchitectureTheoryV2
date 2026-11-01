@@ -283,108 +283,13 @@ fn invalid_run_requests_report_usage_without_files() {
 }
 
 #[test]
-fn run_flags_validate_budgets_and_preserve_unbounded_decimal_limits() {
-    for (index, n) in ["0", "01", "+1", "-1", "1.0", "1e2", "", " 1"]
-        .into_iter()
-        .enumerate()
-    {
-        let dir = inputs(&format!("budget-grammar-{index}"), Some("2"), L);
-        let r = without_file_changes(&dir, || run(
-            &dir,
-            &[
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-                "--ask",
-                ASKS[0],
-                "--out",
-                "out",
-                "--time-ms",
-                n,
-            ],
-        ));
-        let receipt = notified(&dir, &r, "invalid", 64);
-        assert_eq!(
-            s(get(
-                get(&arr(get(&receipt, "issues"))[0], "details"),
-                "argument"
-            )),
-            "--time-ms"
-        );
-    }
-    for (index, n) in [
-        "340282366920938463463374607431768211455",
-        "340282366920938463463374607431768211456",
-        "9999999999999999999999999999999999999999999999999999999999999999999",
-    ]
-    .into_iter()
-    .enumerate()
-    {
-        // 予算を実際の計測につなぐのは main なので、実バイナリで確かめる。
-        let dir = inputs(&format!("large-budget-{index}"), Some("2"), L);
-        let r = run_binary(
-            &dir,
-            &[
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-                "--ask",
-                ASKS[0],
-                "--out",
-                "out",
-                "--time-ms",
-                n,
-                "--memory-mib",
-                n,
-            ],
-        );
-        let res = result(&dir, &r, "complete", 0);
-        assert!(!has(&res, "limits"));
-    }
-    // 到達する上限を渡すと、main が実際の計測で止める。
-    let dir = inputs("small-memory-budget", Some("2"), L);
-    let r = without_file_changes(&dir, || {
-        run_binary(
-            &dir,
-            &[
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--law",
-                "l.law",
-                "--archmap",
-                "a.json",
-                "--ask",
-                ASKS[0],
-                "--out",
-                "out",
-                "--memory-mib",
-                "1",
-            ],
-        )
-    });
-    let receipt = notified(&dir, &r, "interrupted", 75);
-    let issue = &arr(get(&receipt, "issues"))[0];
-    assert_eq!(s(get(issue, "code")), "budget_exhausted");
-    assert_eq!(s(get(get(issue, "details"), "resource")), "memory_mib");
-}
-
-#[test]
 fn run_argument_and_input_failures_never_create_failure_files() {
     for (name, extra, expected) in [
         ("duplicate-out", vec!["--out", "other"], "--out"),
         ("duplicate-law", vec!["--law", "other"], "--law"),
         ("unknown-flag", vec!["--bogus"], "--bogus"),
         ("positional", vec!["extra"], "extra"),
-        ("missing-value", vec!["--memory-mib"], "--memory-mib"),
+        ("missing-value", vec!["--reuse"], "--reuse"),
     ] {
         let dir = inputs(name, Some("2"), L);
         let mut args = vec![
@@ -507,8 +412,6 @@ fn run_args(dir: &Path) -> archsig::run::RunArgs {
         },
         asks: ASKS.iter().map(|s| s.to_string()).collect(),
         reuse: None,
-        time_ms: Some("1".parse().unwrap()),
-        memory_mib: None,
     }
 }
 
@@ -519,7 +422,7 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
         input::InputSources,
         observed::evaluate_observed_bytes,
     };
-    use std::{cell::Cell, rc::Rc, time::Instant};
+    use std::{cell::Cell, rc::Rc};
     for reused in [false, true] {
         let map = A.replace("\"value\": \"2\"", "\"value\": \"12\"");
         let count = Rc::new(Cell::new(0usize));
@@ -577,7 +480,6 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
             &mut TestIo,
             &mut signals,
             &args,
-            Instant::now(),
             &mut control,
         );
         assert_eq!(outcome.exit_code, 75);
@@ -616,7 +518,6 @@ fn run_stops_preserve_verified_values_and_refutations_and_skip_empty_artifacts()
         &mut TestIo,
         &mut NoSignal::default(),
         &args,
-        Instant::now(),
         &mut control,
     );
     assert_eq!(outcome.exit_code, 75);
@@ -693,7 +594,7 @@ fn repeated_definitions_and_required_run_flags_are_checked() {
 fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
     use archsig::control::{Checkpoint, Control, Limits, Usage};
     use archsig::result::Signal;
-    use std::{cell::Cell, rc::Rc, time::Instant};
+    use std::{cell::Cell, rc::Rc};
     let dir = inputs("reuse-stop", Some("2"), L);
     let initial = requests(&dir, &ASKS);
     assert_eq!(initial.code, 0);
@@ -718,7 +619,6 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
         &mut TestIo,
         &mut NoSignal::default(),
         &args,
-        Instant::now(),
         &mut control,
     );
     assert_eq!(outcome.exit_code, 0);
@@ -756,7 +656,6 @@ fn reuse_checkpoints_stop_without_empty_artifacts_or_new_probes() {
                 &mut TestIo,
                 &mut signals,
                 &args,
-                Instant::now(),
                 &mut control,
             );
             assert_eq!(outcome.exit_code, code);
@@ -829,13 +728,11 @@ fn run_delivery_failure_cleans_only_its_temp_and_existing_out_is_protected() {
     let dir = inputs("run-write-failure", Some("2"), L);
     std::fs::create_dir(dir.join("existing")).unwrap();
     std::fs::write(dir.join("existing/keep"), b"keep").unwrap();
-    let mut args = run_args(&dir);
-    args.time_ms = None;
+    let args = run_args(&dir);
     let outcome = archsig::run::run_requests(
         &mut WriteFailure,
         &mut NoSignal::default(),
         &args,
-        std::time::Instant::now(),
         &mut archsig::control::Control::unlimited(),
     );
     assert_eq!(outcome.exit_code, 74);

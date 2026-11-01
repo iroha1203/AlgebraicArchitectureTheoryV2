@@ -12,7 +12,6 @@ use std::{
     cell::Cell,
     path::{Path, PathBuf},
     rc::Rc,
-    time::Instant,
 };
 const D: &[u8] = include_bytes!("fixtures/reservations.atoms.json");
 const L: &[u8] = include_bytes!("fixtures/reservations.law");
@@ -32,8 +31,6 @@ fn setup(name: &str) -> (PathBuf, RunArgs) {
         },
         asks: vec![ASK.into()],
         reuse: None,
-        time_ms: None,
-        memory_mib: None,
     };
     (dir, args)
 }
@@ -95,9 +92,7 @@ impl Io for Files {
 #[test]
 fn map_request_resolution_stops_notify_without_starting_output() {
     for mode in 0..4 {
-        let (dir, mut args) = setup(&format!("map-resolver-stop-{mode}"));
-        args.time_ms = (mode == 0).then(|| "1".parse().unwrap());
-        args.memory_mib = (mode == 1).then(|| "1".parse().unwrap());
+        let (dir, args) = setup(&format!("map-resolver-stop-{mode}"));
         let mut control = Control::new(
             Limits {
                 time_ms: (mode == 0).then_some(1),
@@ -122,7 +117,7 @@ fn map_request_resolution_stops_notify_without_starting_output() {
         );
         let mut io = Files::default();
         let mut signals = Finalize::default();
-        let outcome = run_requests(&mut io, &mut signals, &args, Instant::now(), &mut control);
+        let outcome = run_requests(&mut io, &mut signals, &args, &mut control);
         assert_eq!(outcome.status, Status::Interrupted);
         assert_eq!(
             outcome.exit_code,
@@ -163,9 +158,7 @@ fn map_late_stops_publish_only_checked_values_with_consistent_status_and_exit() 
     let total = count.get();
     assert!(total > 20);
     for mode in 0..4 {
-        let (dir, mut args) = setup(&format!("map-late-stop-{mode}"));
-        args.time_ms = (mode == 0).then(|| "1".parse().unwrap());
-        args.memory_mib = (mode == 1).then(|| "1".parse().unwrap());
+        let (dir, args) = setup(&format!("map-late-stop-{mode}"));
         let count = Rc::new(Cell::new(0usize));
         let seen = count.clone();
         let mut control = Control::new(
@@ -195,7 +188,7 @@ fn map_late_stops_publish_only_checked_values_with_consistent_status_and_exit() 
         );
         let mut io = Files::default();
         let mut signals = Finalize::default();
-        let outcome = run_requests(&mut io, &mut signals, &args, Instant::now(), &mut control);
+        let outcome = run_requests(&mut io, &mut signals, &args, &mut control);
         let code = match mode {
             2 => 130,
             3 => 143,
@@ -249,7 +242,6 @@ fn map_write_failures_remove_only_this_runs_temporary_directory() {
             &mut io,
             &mut signals,
             &args,
-            Instant::now(),
             &mut Control::unlimited(),
         );
         assert_eq!(outcome.status, Status::Error);

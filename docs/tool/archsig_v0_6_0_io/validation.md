@@ -272,8 +272,8 @@ y=evaluate(Pair.first,on=$u.object,s=@pair/s)
 核は全解の一意性と元の更新・Law への再代入を確認し、`u.object` は `x=0,y=1`、
 後続 `y` の値は整数0となる。この二問の run は complete/exit0。
 前述の `rebalance` の `d=-1` も各対象への元 Assignment が一意なので修復を返す。
-一意性または再検査の途中で予算が尽きた場合は、確認済みの存在命題を保持し、
-Repair/object を返さず、修復の構成条件は undetermined、run は interrupted/exit75 とする。
+一意性または再検査の途中で中断した場合は、確認済みの存在命題を保持し、
+Repair/object を返さず、修復の構成条件は undetermined、run は interrupted とする。
 
 同じ解集合を表示する特解 `(0,1)` と `(1,0)` は計算用の証人である。
 次の射影は、[意味上の射影](results.md#2-回答条件導出)の表にない `representation` の
@@ -432,7 +432,7 @@ archsig run --atom-definition examples/engine.atoms.json \
 
 上の例をpublic CLIで計算する実装は、[型付き結果](results.md)に従い、
 原式、型、束縛、値、成立判定、証拠、scope、原始入力への参照を再読できる形で出力する。
-未観測、局所可視性不足、未対応算法、予算中断を理由ごとに保持する。
+未観測、局所可視性不足、未対応算法、中断を理由ごとに保持する。
 空虚な成立と通常の成立を、評価件数と量化域から区別できることを確かめる。
 
 再利用候補を改変しても、現在の Atom 定義・Law・ArchMapから得る結論は変わらない。

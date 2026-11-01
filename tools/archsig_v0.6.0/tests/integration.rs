@@ -167,5 +167,4 @@ mod observed_unknown_owned_type;
 mod observed_unused_information;
 mod observed_view_calls;
 mod reference_type_transport;
-mod run_budgets;
 mod shared_inputs;

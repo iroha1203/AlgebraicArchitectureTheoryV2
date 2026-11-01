@@ -53,8 +53,6 @@ fn execute(dir: &std::path::Path, out: &str, asks: &[&str]) -> Run {
         "l.law",
         "--out",
         out,
-        "--time-ms",
-        "120000",
     ];
     for ask in asks {
         args.extend(["--ask", *ask]);
@@ -115,8 +113,6 @@ fn rational_unique_repair_keeps_exact_fraction_and_original_observations() {
         "l.law",
         "--out",
         "out",
-        "--time-ms",
-        "120000",
     ];
     for ask in asks {
         args.extend(["--ask", ask]);
@@ -1175,8 +1171,6 @@ fn quotient_nonempty_guard_on_quotient_coordinate_cli() {
             out,
             "--reuse",
             "out",
-            "--time-ms",
-            "120000",
         ];
         for ask in asks {
             args.extend(["--ask", ask]);

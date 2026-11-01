@@ -96,8 +96,6 @@ fn later_internal_failure_delivers_only_the_validated_prefix_and_no_empty_error_
                     },
                     asks: asks.iter().map(|s| (*s).to_owned()).collect(),
                     reuse: None,
-                    time_ms: None,
-                    memory_mib: None,
                 };
                 let mut io = MemoryIo::default();
                 let mut signals = FinalSignal(signal, 0);

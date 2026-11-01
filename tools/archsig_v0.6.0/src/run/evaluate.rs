@@ -12,7 +12,6 @@ use crate::{
         result::{Decision, ReasonKind},
     },
 };
-use std::time::Instant;
 
 pub fn run_internal_outcome(signals: &mut dyn Signals) -> Outcome {
     failure(signals, "run", "internal failure during computation".to_owned())
@@ -40,7 +39,6 @@ pub fn run_requests(
     io: &mut dyn Io,
     signals: &mut dyn Signals,
     args: &RunArgs,
-    _started: Instant,
     control: &mut Control,
 ) -> Outcome {
     let usage = |argument: &str, message: String| ResultIssue::Usage {

@@ -19,9 +19,7 @@ Result = {
   declarations?:DeclarationInfo[], vocabularies?:{manifest:Vocabulary,digest:Digest,location:Location}[],
   requests:Request[], answers:SavedAnswer[], nodes:SavedNode[], issues:Issue[],
   reuse?:{requested:Bool,accepted_nodes:Nat,recomputed_nodes:Nat,rejected:Issue[]},
-  warnings?:Issue[],
-  usage?:{elapsed_ms:DecimalNat,peak_bytes:DecimalNat},
-  limits?:{time_ms?:DecimalNat,memory_mib?:DecimalNat}
+  warnings?:Issue[]
 }
 RunStatus = "complete"|"partial"|"invalid"|"unsupported"|"interrupted"|"error"
 SavedAnswer = {id:String,status:Decision,outputs:{Field:Ref},claim?:Ref,
@@ -75,8 +73,8 @@ Issue = {code:IssueCode,message:String,location?:Location,request?:String,
          dependencies:Ref[],missing:FactPointer[],details:IssueDetails}
 ```
 
-`command=check`ではproducer・usage・limitsと固定reuse metadataを持ち、answers/nodesは空とする。
-`command=run`ではこれら四欄を持たず、SavedAnswerとSavedNodeを使う。
+`command=check`ではproducerと固定reuse metadataを持ち、answers/nodesは空とする。
+`command=run`ではこれらの欄を持たず、SavedAnswerとSavedNodeを使う。
 保存するのは回答から到達する値・条件・反例とその参照である。
 保存専用のCounterexampleのPayloadはEvidenceのcounterexample・completion_pair・separating_pairの値、
 EvaluationResultのPayloadはEvaluationを下表の欄へ射影した値とする。
@@ -874,7 +872,7 @@ Repair/objectを生成せず不足位置を保持する。neededと後続の未�
   未確定な右辺をsmith.transformed_rhsへ入れず、B/Pが補完で変わる場合にこの規則を使わない。
 
 補完に依存する証人を具体値として捏造しない。具体的な全検査または対応する正確な記号計算で
-判断を確認できなければ、元のmissing/unsupported/budget理由を保持する。
+判断を確認できなければ、元のmissing/unsupported理由を保持する。
 
 | IssueCode | 必須のdetailsと意味 |
 | --- | --- |
@@ -884,7 +882,6 @@ Repair/objectを生成せず不足位置を保持する。neededと後続の未�
 | unsupported_algorithm | `{question:QuestionKind,operand_types:Type[],method:String}`。有効な型付き問いに算法がない |
 | condition_failed | `{condition:Ref,construction:Construction}`。構成条件が反証された |
 | dependency_blocked | `{request:String}`。dependenciesと元理由を推移的に保持 |
-| budget_exhausted | `{resource:"time_ms"\|"memory_mib",limit:DecimalNat,observed:DecimalNat}` |
 | cancelled | `{signal:"SIGINT"\|"SIGTERM"}` |
 | syntax, duplicate_key, duplicate_id, duplicate_fact, type, reference, cycle | typeは`{expected:Type,actual:Type}`。referenceは語彙bindingのnamespace未登録の場合に下記のavailable形式、それ以外は`{}`。入力の位置を必須 |
 | vocabulary_mismatch | digest不一致は`{namespace:String,version:String,found_digest:Digest,expected_digest:Digest}`。binding自体がない場合はfound_digestを省略。指定version未登録は`{namespace:String,version:String,available:{namespace:String,version:String}[]}`。入力の位置を必須 |

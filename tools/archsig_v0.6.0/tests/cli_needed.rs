@@ -416,15 +416,13 @@ fn args(dir: &Path) -> archsig::run::RunArgs {
             "p=needed($n)".into(),
         ],
         reuse: None,
-        time_ms: None,
-        memory_mib: None,
     }
 }
 #[test]
 fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
     use archsig::control::{Checkpoint, Control, Limits, Usage};
     use archsig::result::Signal;
-    use std::{cell::Cell, rc::Rc, time::Instant};
+    use std::{cell::Cell, rc::Rc};
     let count = Rc::new(Cell::new(0usize));
     let seen = count.clone();
     let mut probe = Control::new(Limits::default(), move |p| {
@@ -438,7 +436,6 @@ fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
         &mut TestIo,
         &mut NoSignal::default(),
         &args(&dir),
-        Instant::now(),
         &mut probe,
     );
     assert_eq!(result.exit_code, 0);
@@ -463,7 +460,6 @@ fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
             &mut TestIo,
             &mut signals,
             &args(&dir),
-            Instant::now(),
             &mut control,
         );
         assert_eq!(outcome.exit_code, 130, "{at}");
