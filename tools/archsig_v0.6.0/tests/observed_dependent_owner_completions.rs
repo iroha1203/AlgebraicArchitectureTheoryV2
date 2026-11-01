@@ -575,7 +575,7 @@ fn dependent_owner_later_parameter_discovery_keeps_each_original_slot_and_whole(
     // 後のparameterで見つかるownerの欠測も、元のslotごとに補完して全体で成立を判定する。
     // 既知反例と欠測が混ざる反証は
     // dependent_owner_mixed_bool_and_known_counterexamples_keep_whole_semantics が確かめる。
-    let j = run(fixture::nested(false), &["all=check(Inspect.each)"]);
+    let j = run(fixture::nested(), &["all=check(Inspect.each)"]);
     assert_eq!(
         f(answer(&j, "all"), "status"),
         &Json::str("established"),

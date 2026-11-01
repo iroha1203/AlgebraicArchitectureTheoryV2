@@ -389,7 +389,6 @@ impl Evaluator<'_, '_> {
             scope: all_scope.clone(),
             reasons: vec![],
         })?;
-        self.family_observe("dependent_aggregate", 0);
         self.tick(Checkpoint::FiniteIteration)?;
         let scalar = value
             .map(|b| {

@@ -5113,7 +5113,7 @@ reading R {{
             ));
         }
     }
-    fn scalar_operation_private_example(p: Option<bool>, q: Option<bool>) -> ObservedEvaluation {
+    fn scalar_operation_private_example() -> ObservedEvaluation {
         let definitions=include_str!("../../tests/fixtures/counter.atoms.json").replace("\"fields\": [",
         "\"fields\": [{\"name\":\"other\",\"type\":\"Z\",\"meaning\":\"第二整数。\"},{\"name\":\"p\",\"type\":\"Bool\",\"meaning\":\"第一条件。\"},{\"name\":\"q\",\"type\":\"Bool\",\"meaning\":\"第二条件。\"},");
         let checked =
@@ -5143,10 +5143,8 @@ reading R {{
           law required computed(s: State): s.count + s.other = 10;"#,
             );
         let mut additions=vec![r#"{"id":"other","subject":"s","field":"Counter.State.other","value":"3","origin":"model"}"#.to_owned()];
-        for (field, value) in [("p", p), ("q", q)] {
-            if let Some(value) = value {
-                additions.push(format!(r#"{{"id":"{field}","subject":"s","field":"Counter.State.{field}","value":{value},"origin":"model"}}"#));
-            }
+        for (field, value) in [("p", false), ("q", true)] {
+            additions.push(format!(r#"{{"id":"{field}","subject":"s","field":"Counter.State.{field}","value":{value},"origin":"model"}}"#));
         }
         let additions = additions.join(",");
         let map = include_str!("../../tests/fixtures/counter.archmap.json")
@@ -5186,7 +5184,7 @@ reading R {{
 
     #[test]
     fn rejects_arithmetic_value_and_commutative_argument_substitution() {
-        let result = scalar_operation_private_example(Some(false), Some(true));
+        let result = scalar_operation_private_example();
         assert_eq!(result.status(), "complete");
         let graph = rebuild_for_origin_and_support_recheck(&result, &result.nodes)
             .expect("正常な整数演算DAGを元順で再buildする");
@@ -6195,10 +6193,10 @@ reading Calc {{
             Err(ValidationFailure::Internal(_))
         ));
     }
-    fn named_call_private_example(omitted: &[&str]) -> ObservedEvaluation {
+    fn named_call_private_example() -> ObservedEvaluation {
         evaluate_observed_bytes(
             numeric_recheck_fixture(
-                omitted,
+                &["q"],
                 r#"
  view combine(x: Q, y: Q): Q = x + y;
  view retain(x: Q): Q = x;
@@ -6210,18 +6208,10 @@ reading Calc {{
  view constant(s: Sample): Q = unused(s.q);
 "#,
             ),
-            if omitted.is_empty() {
-                &[
-                    "first=evaluate(Calc.caller,s=@v/sample)",
-                    "again=evaluate(Calc.caller,s=@v/sample)",
-                    "field=evaluate(Calc.field,s=@v/sample)",
-                ]
-            } else {
-                &[
-                    "unknown=evaluate(Calc.unknown,s=@v/sample)",
-                    "constant=evaluate(Calc.constant,s=@v/sample)",
-                ]
-            },
+            &[
+                "unknown=evaluate(Calc.unknown,s=@v/sample)",
+                "constant=evaluate(Calc.constant,s=@v/sample)",
+            ],
             &mut named_call_quiet(),
         )
         .unwrap()
@@ -6246,7 +6236,7 @@ reading Calc {{
     }
     #[test]
     fn named_calls_keep_missing_formals_as_argument_evaluations_in_prefixes() {
-        let result = named_call_private_example(&["q"]);
+        let result = named_call_private_example();
         assert_eq!(result.status(), "partial");
         assert!(!result.answers[0].outputs.contains_key("value"));
         assert!(result.answers[1].outputs.contains_key("value"));
@@ -8116,7 +8106,7 @@ reading Calc {{
             }
             rejects_named_prefix(&result, &changed);
         }
-        let binder = iteration_binder_scalar_for_name(&result, b"bit");
+        let binder = iteration_binder_scalar_for_name(&result);
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=binder]).unwrap();
         let old = result.iterations[0].member.clone();
         result.iterations[0].member = super::super::call::Member::SetElement(Scalar::Bool(true));
@@ -8236,9 +8226,9 @@ reading Calc {{
         finite_instances(&mut changed, proof, bodies);
         rejects_named_prefix(&result, &changed);
     }
-    fn iteration_binder_scalar_for_name(result: &ObservedEvaluation, name: &[u8]) -> usize {
+    fn iteration_binder_scalar_for_name(result: &ObservedEvaluation) -> usize {
         result.nodes.iter().enumerate().find_map(|(index,node)|{
-            (result.contexts[index].iteration==Some(0) && matches!(&node.payload,Some(Payload::Scalar(_))) && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(name))).then_some(index)
+            (result.contexts[index].iteration==Some(0) && matches!(&node.payload,Some(Payload::Scalar(_))) && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if result.prepared.inputs().sources().law().bytes().get(span.0..span.1)==Some(b"bit".as_slice()))).then_some(index)
         }).unwrap()
     }
     #[test]
