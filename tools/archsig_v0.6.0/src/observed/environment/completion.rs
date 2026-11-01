@@ -1,4 +1,5 @@
 //! 元の欠測 slot、補完代入、補完内の whole 評価を照合する。
+use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::law::{ast::Role, model::Signature};
 use crate::{control::CheckFailure, observed::value_equality};
@@ -518,7 +519,7 @@ impl Environment<'_> {
                 continue;
             };
             let context = graph.context_at(reference.0);
-            let previous = self.context.replace(Some(context));
+            let previous = self.context.scoped(Some(context));
             let mut missing_span = *span;
             let analysis = (|| -> Result<Vec<Fact>, ValidationFailure> {
                 if let Some(fields) = self.owned_call_missing_slots(graph, reference)? {
@@ -559,7 +560,7 @@ impl Environment<'_> {
                         .collect())
                 }
             })();
-            self.context.set(previous);
+            previous.restore();
             let fields = analysis?;
             if fields.is_empty() {
                 continue;
@@ -913,9 +914,9 @@ impl Environment<'_> {
             }
             // assignmentの証拠はcase本体より前のcaller prefixだけに属する。
             // 深いcalleeのContext/全称Planを元の欠測slotへ逆流させない。
-            let old_context = self.context.replace(Some(record.caller));
-            let old_limit = self.cutoff.replace(prefix + 1);
-            let old_universal = self.universal_context.replace(None);
+            let old_context = self.context.scoped(Some(record.caller));
+            let old_limit = self.cutoff.scoped(prefix + 1);
+            let old_universal = self.universal_context.scoped(None);
             let result = (|| {
                 let key = self.completion_memo_key(graph, case);
                 let cached = self.cache.borrow().completion_cases.get(&key).cloned();
@@ -931,9 +932,9 @@ impl Environment<'_> {
                     .insert(key, value.clone());
                 Ok(value)
             })();
-            self.universal_context.replace(old_universal);
-            self.cutoff.set(old_limit);
-            self.context.set(old_context);
+            old_universal.restore();
+            old_limit.restore();
+            old_context.restore();
             result
         })
     }

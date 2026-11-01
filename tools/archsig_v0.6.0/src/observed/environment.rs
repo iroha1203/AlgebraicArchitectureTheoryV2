@@ -15,6 +15,8 @@ use crate::{
     input::CheckedInputs,
     result::Signal,
 };
+mod state;
+use state::ScopedReplace;
 mod object_view_family;
 mod object_reading_environment;
 mod law_evaluation;
@@ -415,11 +417,11 @@ impl<'a> Environment<'a> {
     pub(super) fn remember_change_source(&self,source:std::sync::Arc<super::change_result::Source>) { self.cache.borrow_mut().changes.push(source); }
     pub(super) fn local_point(&self, declaration:&crate::law::model::Declaration,bindings:&[(String,Scalar)]) -> Result<(finite_law_valuations::FiniteLawRow,Vec<Fact>,Vec<quotient_evaluation::EvaluationNode>),ValidationFailure> {
         let crate::law::model::Signature::Law{body,guard,..}=declaration.signature else{return Err("局所評価の元Lawがない".into())};
-        let outer=self.missing_slot_reads.replace(Some(BTreeSet::new()));
-        let prior=self.evaluation_capture.replace(Some(quotient_evaluation::EvaluationCapture{selected:std::iter::once(body).chain(guard).collect(),nodes:vec![],roots:vec![],stack:vec![]}));
+        let outer=self.missing_slot_reads.scoped(Some(BTreeSet::new()));
+        let prior=self.evaluation_capture.scoped(Some(quotient_evaluation::EvaluationCapture{selected:std::iter::once(body).chain(guard).collect(),nodes:vec![],roots:vec![],stack:vec![]}));
         let result=finite_law_valuations::evaluate_local_point(self,declaration,bindings);
-        let capture=self.evaluation_capture.replace(prior).ok_or("局所読取りの記録がない")?;
-        let reads=self.missing_slot_reads.replace(outer).ok_or("局所Lawの欠測収集がない")?;
+        let capture=prior.restore().ok_or("局所読取りの記録がない")?;
+        let reads=outer.restore().ok_or("局所Lawの欠測収集がない")?;
         if let Some(outer)=self.missing_slot_reads.borrow_mut().as_mut(){outer.extend(reads.iter().cloned());}
         Ok((result?,reads.into_iter().filter(|f|!self.primitive_valuation.as_ref().is_some_and(|v|v.contains_key(f))).collect(),capture.nodes))
     }
@@ -820,12 +822,12 @@ impl<'a> Environment<'a> {
             if resident && self.cache.borrow().checked.contains(&key) {
                 return Ok(());
             }
-            let previous = self.context.replace(Some(context));
-            let old_cutoff = self.cutoff.replace(limit);
+            let previous = self.context.scoped(Some(context));
+            let old_cutoff = self.cutoff.scoped(limit);
             // 原producerの再検査は、そのnode自身のPlanから始める。呼出し側の
             // 記号分析・数値補完を、別case/旧callerの通常Sourceへ持ち込まない。
-            let previous_universal = self.universal_context.replace(None);
-            let previous_completion = self.completion_values.replace(Vec::new());
+            let previous_universal = self.universal_context.scoped(None);
+            let previous_completion = self.completion_values.scoped(Vec::new());
             let result = (|| {
                 let _architecture = self.enter_architecture(graph)?;
                 if let Some(Payload::Construction(value)) = &node.payload {
@@ -978,10 +980,10 @@ impl<'a> Environment<'a> {
                 }
                 other => other,
             });
-            self.completion_values.replace(previous_completion);
-            self.universal_context.replace(previous_universal);
-            self.cutoff.set(old_cutoff);
-            self.context.set(previous);
+            previous_completion.restore();
+            previous_universal.restore();
+            old_cutoff.restore();
+            previous.restore();
             if resident && result.is_ok() {
                 self.cache.borrow_mut().checked.insert(key);
             }
@@ -1016,9 +1018,9 @@ impl<'a> Environment<'a> {
             if !same {
                 *self.cache.borrow_mut() = ValidationCache::default();
             }
-            self.validation_depth.set(1);
+            let depth_guard = self.validation_depth.scoped(1);
             let result = self.validation_session(run);
-            self.validation_depth.set(0);
+            depth_guard.restore();
             // 停止後に返された完成済みの部分結果は保持し、cacheの追加計算は行わない。
             if result.is_ok() && self.control.stop_reason().is_none() {
                 let saved = (|| {
@@ -1052,9 +1054,9 @@ impl<'a> Environment<'a> {
                 *self.cache.borrow_mut() = ValidationCache::default();
                 self.validation_snapshot.replace(None);
             }
-            self.validation_depth.set(depth + 1);
+            let depth_guard = self.validation_depth.scoped(depth + 1);
             let result = run();
-            self.validation_depth.set(depth);
+            depth_guard.restore();
             // Graphのprefixを確認できないroot解析では、成功も失敗も必ず破棄する。
             if depth == 0 {
                 *self.cache.borrow_mut() = ValidationCache::default();
@@ -2242,10 +2244,10 @@ impl<'a> Environment<'a> {
                     #[cfg(test)]
                     let previous_name_context = self
                         .optional_name_context
-                        .replace(Some(self.current_context(graph)));
+                        .scoped(Some(self.current_context(graph)));
                     let name = self.find_name_token(span);
                     #[cfg(test)]
-                    self.optional_name_context.set(previous_name_context);
+                    previous_name_context.restore();
                     let name = name?;
                     name.map(|name| self.call_parameter(graph, name))
                         .transpose()?
@@ -4235,8 +4237,8 @@ impl<'a> Environment<'a> {
             {
                 return Err("Answer返却評価が現在の元Requestに属さない".into());
             }
-            let previous = self.context.replace(Some(context));
-            let old_cutoff = self.cutoff.replace(graph.nodes.len());
+            let previous = self.context.scoped(Some(context));
+            let old_cutoff = self.cutoff.scoped(graph.nodes.len());
             let result = (|| {
                 let _architecture = self.enter_architecture(graph)?;
                 self.validate_answer_in_context(graph, request, answer)
@@ -4249,8 +4251,8 @@ impl<'a> Environment<'a> {
                     }
                     other => other,
                 });
-            self.cutoff.set(old_cutoff);
-            self.context.set(previous);
+            old_cutoff.restore();
+            previous.restore();
             result
         })
     }
@@ -4264,17 +4266,17 @@ impl<'a> Environment<'a> {
             .original_requests
             .and_then(|rs| rs.iter().position(|r| r == request))
             .ok_or("元Request contextがない")?;
-        let previous = self.context.replace(Some(super::call::Context {
+        let previous = self.context.scoped(Some(super::call::Context {
             request: index,
             frame: None,
             iteration: None,
             instance: None,
             case: None,
         }));
-        let old_cutoff = self.cutoff.replace(graph.nodes.len());
+        let old_cutoff = self.cutoff.scoped(graph.nodes.len());
         let result = run();
-        self.cutoff.set(old_cutoff);
-        self.context.set(previous);
+        old_cutoff.restore();
+        previous.restore();
         result
     }
     fn validate_answer_in_context(
@@ -5852,21 +5854,16 @@ impl<'a> Environment<'a> {
             // 実引数はframe作成より前の不変prefixだけで復元する。
             // 後から生成した別call/Domainを根拠にもcache keyにも混ぜない。
             let prefix = prefix + 1;
-            let old_limit = self.cutoff.replace(prefix);
-            let previous = self.universal_context.borrow().clone();
-            if let Some(active) = &previous {
-                let mut scoped = active.clone();
+            let old_limit = self.cutoff.scoped(prefix);
+            let scoped = self.universal_context.borrow().clone().map(|mut scoped| {
+                scoped.calls.retain(|call| call.callee.frame.is_some_and(|i| i < index));
+                scoped.local_axes.retain(|axis| axis.domain.is_none_or(|r| r.0 < prefix));
                 scoped
-                    .calls
-                    .retain(|call| call.callee.frame.is_some_and(|i| i < index));
-                scoped
-                    .local_axes
-                    .retain(|axis| axis.domain.is_none_or(|r| r.0 < prefix));
-                self.universal_context.replace(Some(scoped));
-            }
+            });
+            let previous = self.universal_context.scoped(scoped);
             let result = self.frame_arguments_inner(graph, index);
-            self.universal_context.replace(previous);
-            self.cutoff.set(old_limit);
+            previous.restore();
+            old_limit.restore();
             result
         })
     }
@@ -5921,7 +5918,7 @@ impl<'a> Environment<'a> {
         if args.len() != frame.arguments.len() || params.len() != args.len() {
             return Err("call引数数が元署名と違う".into());
         }
-        let previous = self.context.replace(Some(frame.caller));
+        let previous = self.context.scoped(Some(frame.caller));
         let result = (|| {
             self.validate_at(graph, graph.get(frame.source)?, frame.source.0)?;
             let mut bindings = Vec::new();
@@ -5983,7 +5980,7 @@ impl<'a> Environment<'a> {
             }
             Ok((bindings, variables, base))
         })();
-        self.context.set(previous);
+        previous.restore();
         if let Ok(value) = &result {
             if let Some(active) = universal {
                 self.cache.borrow_mut().universal_frames.push((
@@ -6292,7 +6289,7 @@ impl<'a> Environment<'a> {
         let span = self.expression_span(graph, record.source)?;
         let id = *self.expressions.get(&span).ok_or("反復元ASTがない")?;
         let (domain, _) = self.iteration_syntax(id)?;
-        let previous = self.context.replace(Some(record.caller));
+        let previous = self.context.scoped(Some(record.caller));
         let result = (|| {
             self.validate_at(graph, graph.get(record.source)?, record.source.0)?;
             if domain.is_none() {
@@ -6411,7 +6408,7 @@ impl<'a> Environment<'a> {
             };
             Ok((record.domain, member, analysis))
         })();
-        self.context.set(previous);
+        previous.restore();
         if let Ok(value) = &result {
             self.cache
                 .borrow_mut()
@@ -6636,16 +6633,16 @@ impl<'a> Environment<'a> {
             if let Some(value) = cached {
                 return Ok(value);
             }
-            let previous = self.scoped_context.replace(Some(context));
-            let previous_completion = self.completion_values.replace(Vec::new());
+            let previous = self.scoped_context.scoped(Some(context));
+            let previous_completion = self.completion_values.scoped(Vec::new());
             let result = (|| {
                 if let Some(case) = context.case {
                     *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
                 }
                 self.analyze_source_uncached(graph, span, bindings)
             })();
-            self.completion_values.replace(previous_completion);
-            self.scoped_context.set(previous);
+            previous_completion.restore();
+            previous.restore();
             let value = result?;
             self.cache.borrow_mut().sources.push((
                 context,
@@ -7180,9 +7177,9 @@ impl<'a> Environment<'a> {
         reading: &str,
         context: Option<super::call::Context>,
     ) -> Result<SourceValue, ValidationFailure> {
-        let previous = self.scoped_context.replace(context);
+        let previous = self.scoped_context.scoped(context);
         let result = self.scoped_ast(id, variables, base, reading);
-        self.scoped_context.set(previous);
+        previous.restore();
         result
     }
     fn scoped_dotted(
@@ -7443,11 +7440,9 @@ impl<'a> Environment<'a> {
                 self.tick()?;
                 return Ok(value);
             }
-            let outer = self.missing_slot_reads.replace(Some(BTreeSet::new()));
+            let outer = self.missing_slot_reads.scoped(Some(BTreeSet::new()));
             let value = self.scoped_ast_uncached(id, variables, base, reading);
-            let missing = self
-                .missing_slot_reads
-                .replace(outer)
+            let missing = outer.restore()
                 .ok_or("評価の不足位置収集がない")?;
             if let Some(reads) = self.missing_slot_reads.borrow_mut().as_mut() {
                 reads.extend(missing.iter().cloned());
@@ -7780,7 +7775,7 @@ impl<'a> Environment<'a> {
                     let (left, right) = if self.value_read.get()
                         && let Some(Scalar::Bool(take)) = condition.known_value.as_ref()
                     {
-                        let outer = self.missing_slot_reads.replace(Some(BTreeSet::new()));
+                        let outer = self.missing_slot_reads.scoped(Some(BTreeSet::new()));
                         let values = (|| -> Result<_, ValidationFailure> {
                             let left = self.scoped_ast(*then_branch, variables, base, reading)?;
                             let left_missing = self.missing_slot_reads.replace(Some(BTreeSet::new()))
@@ -7791,7 +7786,7 @@ impl<'a> Environment<'a> {
                             }
                             Ok((left, right))
                         })();
-                        let missing = self.missing_slot_reads.replace(outer)
+                        let missing = outer.restore()
                             .ok_or("条件式の不足位置収集が消えた")?;
                         if let Some(outer) = self.missing_slot_reads.borrow_mut().as_mut() {
                             outer.extend(missing);

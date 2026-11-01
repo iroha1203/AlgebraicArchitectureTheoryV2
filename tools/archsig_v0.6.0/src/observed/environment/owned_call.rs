@@ -1,4 +1,5 @@
 //! Owned参照とcontainerのcall境界を元署名・実引数・原始owner事実から検査する。
+use crate::observed::environment::state::ScopedReplace;
 use super::super::term::affine::Value as PartialValue;
 use super::*;
 use crate::law::model::{Declaration, Signature};
@@ -656,9 +657,9 @@ impl Environment<'_> {
             return self.owned_call_checks(declaration, arguments, returned, span);
         }
         self.validation_graph_session(graph, || {
-            let previous_context = self.context.replace(Some(graph.active));
-            let previous_cutoff = self.cutoff.replace(graph.nodes.len());
-            let previous_completion = self.completion_values.replace(Vec::new());
+            let previous_context = self.context.scoped(Some(graph.active));
+            let previous_cutoff = self.cutoff.scoped(graph.nodes.len());
+            let previous_completion = self.completion_values.scoped(Vec::new());
             let result = (|| {
                 if let Some(case) = graph.active.case {
                     *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
@@ -668,9 +669,9 @@ impl Environment<'_> {
                 self.tick()?;
                 self.owned_call_checks(declaration, arguments, returned, span)
             })();
-            self.completion_values.replace(previous_completion);
-            self.cutoff.set(previous_cutoff);
-            self.context.set(previous_context);
+            previous_completion.restore();
+            previous_cutoff.restore();
+            previous_context.restore();
             result
         })
     }
@@ -745,7 +746,7 @@ impl Environment<'_> {
             0,
         );
         self.tick()?;
-        let previous = self.completion_values.replace(Vec::new());
+        let previous = self.completion_values.scoped(Vec::new());
         let result = self
             .owned_call_checks(declaration, &arguments, returned.as_ref(), span)
             .map(|checks| {
@@ -755,7 +756,7 @@ impl Environment<'_> {
                     Some(checks.missing)
                 }
             });
-        self.completion_values.replace(previous);
+        previous.restore();
         result
     }
 

@@ -1,4 +1,5 @@
 //! 通常の式評価器から整数changeの作用と選択Lawの線形系を得る。
+use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::law::model::{Declaration, Signature};
 use crate::observed::{
@@ -1054,11 +1055,9 @@ pub(super) fn capture_missing<T>(
     env: &Environment<'_>,
     operation: impl FnOnce() -> T,
 ) -> Result<(T, Vec<Fact>), ValidationFailure> {
-    let outer = env.missing_slot_reads.replace(Some(BTreeSet::new()));
+    let outer = env.missing_slot_reads.scoped(Some(BTreeSet::new()));
     let result = operation();
-    let reads = env
-        .missing_slot_reads
-        .replace(outer)
+    let reads = outer.restore()
         .ok_or("数値式の不足位置収集がない")?;
     if let Some(outer) = env.missing_slot_reads.borrow_mut().as_mut() {
         outer.extend(reads.iter().cloned());

@@ -1,4 +1,5 @@
 //! 明示localの各instanceが公開する直接読取り。依存と読取り権限を分ける。
+use crate::observed::environment::state::ScopedReplace;
 use super::*;
 use crate::observed::{build_result::Builder, change_result, local_result};
 use crate::{
@@ -73,16 +74,12 @@ fn evaluate_read(
     scope: &Scope,
     reading: &str,
 ) -> Result<(SourceValue, Vec<Fact>, Vec<Fact>), ValidationFailure> {
-    let outer_missing = env.missing_slot_reads.replace(Some(BTreeSet::new()));
-    let outer_reads = env.primitive_reads.replace(Some(BTreeSet::new()));
+    let outer_missing = env.missing_slot_reads.scoped(Some(BTreeSet::new()));
+    let outer_reads = env.primitive_reads.scoped(Some(BTreeSet::new()));
     let value = env.scoped_ast(id, variables, scope, reading);
-    let reads = env
-        .primitive_reads
-        .replace(outer_reads)
+    let reads = outer_reads.restore()
         .ok_or("localの読取り収集がない")?;
-    let missing = env
-        .missing_slot_reads
-        .replace(outer_missing)
+    let missing = outer_missing.restore()
         .ok_or("localの欠測収集がない")?;
     if let Some(outer) = env.primitive_reads.borrow_mut().as_mut() {
         outer.extend(reads.iter().cloned());
@@ -108,9 +105,9 @@ fn evaluate_value(
     env: &Environment<'_>, id: usize, variables: &BTreeMap<String, SourceValue>,
     scope: &Scope, reading: &str,
 ) -> Result<(SourceValue, Vec<Fact>, Vec<Fact>), ValidationFailure> {
-    let outer = env.value_read.replace(true);
+    let outer = env.value_read.scoped(true);
     let result = evaluate_read(env, id, variables, scope, reading);
-    env.value_read.set(outer);
+    outer.restore();
     result
 }
 
@@ -1753,8 +1750,8 @@ pub(in crate::observed) fn affine_transport(
     let mut pending = change_affine::Pending::default();
     // The guard compiler can stop before extracting affine coefficients (for
     // example at an unknown conditional). Retain those reads on every exit.
-    let outer_missing = env.missing_slot_reads.replace(Some(BTreeSet::new()));
-    let outer_value = env.value_read.replace(true);
+    let outer_missing = env.missing_slot_reads.scoped(Some(BTreeSet::new()));
+    let outer_value = env.value_read.scoped(true);
     let result = (|| {
         let mut params = vec![];
         let mut guards = vec![];
@@ -1792,9 +1789,9 @@ pub(in crate::observed) fn affine_transport(
                 let Some(id) = guards[side] else { continue };
                 // Keep only observations still needed to decide the guard. In
                 // particular, a known false source has no read obligations.
-                let outer = env.missing_slot_reads.replace(Some(BTreeSet::new()));
+                let outer = env.missing_slot_reads.scoped(Some(BTreeSet::new()));
                 let evaluated = evaluate_value(env, id, vars, &Scope::default(), &declarations[side].reading);
-                let collected = env.missing_slot_reads.replace(outer)
+                let collected = outer.restore()
                     .ok_or("mixed guard missing-read collector is absent")?;
                 let (value, _, missing) = match evaluated {
                     Ok(value) => value,
@@ -1941,10 +1938,8 @@ pub(in crate::observed) fn affine_transport(
         }
         Ok(())
     })();
-    env.value_read.set(outer_value);
-    let missing = env
-        .missing_slot_reads
-        .replace(outer_missing)
+    outer_value.restore();
+    let missing = outer_missing.restore()
         .ok_or("numeric local missing-read collector is absent")?;
     pending.facts.extend(missing.into_iter().filter(|fact| {
         !env.primitive_valuation

@@ -1,4 +1,5 @@
 //! 元署名を左から束縛した実fiber。検査は提示された行でなく元観測から域を再構成する。
+use crate::observed::environment::state::ScopedReplace;
 use super::family::{Plan, family_items, family_type};
 use super::*;
 use crate::law::ast::QuantKind;
@@ -26,20 +27,20 @@ impl Environment<'_> {
         run: impl FnOnce() -> Result<T, ValidationFailure>,
     ) -> Result<T, ValidationFailure> {
         self.validation_graph_session(graph, || {
-            let previous = self.context.replace(Some(context));
-            let old_cutoff = self.cutoff.replace(limit);
-            let previous_universal = self.universal_context.replace(None);
-            let previous_completion = self.completion_values.replace(Vec::new());
+            let previous = self.context.scoped(Some(context));
+            let old_cutoff = self.cutoff.scoped(limit);
+            let previous_universal = self.universal_context.scoped(None);
+            let previous_completion = self.completion_values.scoped(Vec::new());
             let result = (|| {
                 if let Some(case) = context.case {
                     *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
                 }
                 run()
             })();
-            self.completion_values.replace(previous_completion);
-            self.universal_context.replace(previous_universal);
-            self.cutoff.set(old_cutoff);
-            self.context.set(previous);
+            previous_completion.restore();
+            previous_universal.restore();
+            old_cutoff.restore();
+            previous.restore();
             result
         })
     }
@@ -891,8 +892,8 @@ impl Environment<'_> {
             .iter()
             .position(|p| p.span == *span)
             .ok_or("未決ownerの元出現が違う")?;
-        let previous = self.context.replace(Some(context));
-        let old_cutoff = self.cutoff.replace(graph.nodes.len());
+        let previous = self.context.scoped(Some(context));
+        let old_cutoff = self.cutoff.scoped(graph.nodes.len());
         let result = (|| -> Result<(), ValidationFailure> {
             self.validate_at(graph, graph.get(source)?, source.0)?;
             let layout = self.dependent_layout(graph, source, plan, graph.nodes.len(), false)?;
@@ -931,8 +932,8 @@ impl Environment<'_> {
             }
             Ok(())
         })();
-        self.cutoff.set(old_cutoff);
-        self.context.set(previous);
+        old_cutoff.restore();
+        previous.restore();
         result.map(|()| true)
     }
 }

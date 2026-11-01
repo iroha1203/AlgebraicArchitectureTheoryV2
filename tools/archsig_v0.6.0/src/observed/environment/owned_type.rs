@@ -1,4 +1,5 @@
 //! 元TypeAstの添字出現を、現在の実束縛producerと原始所属族へ結ぶ。
+use crate::observed::environment::state::ScopedReplace;
 use super::*;
 
 pub(in crate::observed) struct TypeDomain {
@@ -410,9 +411,9 @@ impl Environment<'_> {
             return self.owned_type_domain(graph, id, bindings, observer);
         }
         self.validation_graph_session(graph, || {
-            let previous_context = self.context.replace(Some(graph.active));
-            let previous_cutoff = self.cutoff.replace(graph.nodes.len());
-            let previous_completion = self.completion_values.replace(Vec::new());
+            let previous_context = self.context.scoped(Some(graph.active));
+            let previous_cutoff = self.cutoff.scoped(graph.nodes.len());
+            let previous_completion = self.completion_values.scoped(Vec::new());
             let result = (|| {
                 if let Some(case) = graph.active.case {
                     *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
@@ -427,9 +428,9 @@ impl Environment<'_> {
                 self.tick()?;
                 self.owned_type_domain(graph, id, bindings, observer)
             })();
-            self.completion_values.replace(previous_completion);
-            self.cutoff.set(previous_cutoff);
-            self.context.set(previous_context);
+            previous_completion.restore();
+            previous_cutoff.restore();
+            previous_context.restore();
             result
         })
     }
@@ -459,7 +460,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         let bindings = self.expression_bindings(graph, source)?;
-        let previous = self.completion_values.replace(Vec::new());
+        let previous = self.completion_values.scoped(Vec::new());
         let result = (|| {
             let domain = self.owned_type_domain(graph, id, bindings, &mut |_, _| {})?;
             #[cfg(test)]
@@ -472,7 +473,7 @@ impl Environment<'_> {
             self.tick()?;
             Ok::<_, ValidationFailure>(domain)
         })();
-        self.completion_values.replace(previous);
+        previous.restore();
         result.map(|domain| {
             (!domain.missing.is_empty()).then_some((domain.missing, domain.type_span))
         })

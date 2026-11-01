@@ -1,4 +1,5 @@
 //! 元の内部arrowから、共通Atom carrier上の1段作用を再構成する。
+use crate::observed::environment::state::ScopedReplace;
 use super::super::path_value::{PathValue, Step};
 use super::*;
 use crate::definition::model::PrimitiveSignature;
@@ -637,18 +638,18 @@ impl Environment<'_> {
     ) -> Result<PathResult, ValidationFailure> {
         self.validation_graph_session(graph, || {
             let actual_context = self.current_context(graph);
-            let context = self.context.replace(Some(actual_context));
-            let cutoff = self.cutoff.replace(graph.nodes.len());
-            let old = self.completion_values.replace(vec![]);
+            let context = self.context.scoped(Some(actual_context));
+            let cutoff = self.cutoff.scoped(graph.nodes.len());
+            let old = self.completion_values.scoped(vec![]);
             let result = (|| {
                 if let Some(case) = actual_context.case {
                     *self.completion_values.borrow_mut() = self.completion_values(graph, case)?;
                 }
                 self.path_operation(id, values)
             })();
-            self.completion_values.replace(old);
-            self.context.set(context);
-            self.cutoff.set(cutoff);
+            old.restore();
+            context.restore();
+            cutoff.restore();
             result
         })
     }
@@ -802,7 +803,7 @@ impl Environment<'_> {
         if !self.is_path(id)? {
             return Ok(None);
         }
-        let previous = self.context.replace(Some(graph.context_at(source.0)));
+        let previous = self.context.scoped(Some(graph.context_at(source.0)));
         let result = (|| {
             let bindings = self.expression_bindings(graph, source)?;
             let ExprKind::Call { args, .. } = &self.inputs.law().exprs[id].kind else {
@@ -824,7 +825,7 @@ impl Environment<'_> {
             }
             Ok(Some(self.internal_path_at(graph, id, &values)?.support))
         })();
-        self.context.set(previous);
+        previous.restore();
         result
     }
 }
