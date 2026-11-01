@@ -240,9 +240,6 @@ pub fn asks(dir: &Path, qs: &[&str]) -> Run {
     run(dir, &args)
 }
 
-pub fn at(ns: &BTreeMap<&str, &Json>, evaluation: &Json) -> (usize, usize) {
-    span(f(val(expression(ns, evaluation)), "location"))
-}
 
 pub fn children<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> Vec<&'a Json> {
     arr(f(part(evaluation), "children"))

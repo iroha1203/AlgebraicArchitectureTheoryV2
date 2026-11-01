@@ -17,7 +17,9 @@ use std::{
     rc::Rc,
 };
 
-use crate::common::helpers::{arr, at, expression, f, fact, live, obj, q, span, target, text, val};
+use crate::common::helpers::{
+    arr, evaluation_span, expression, f, fact, live, obj, q, span, target, text, val,
+};
 use crate::common::quiet;
 fn index(wire: &Json) -> BTreeMap<&str, &Json> {
     arr(f(wire, "nodes"))
@@ -64,7 +66,7 @@ fn evaluations_at<'a>(wire: &'a Json, at_span: (usize, usize)) -> Vec<&'a Json> 
     let ns = index(wire);
     arr(f(wire, "nodes"))
         .iter()
-        .filter(|n| f(n, "type") == &Json::str("Evaluation") && at(&ns, n) == at_span)
+        .filter(|n| f(n, "type") == &Json::str("Evaluation") && evaluation_span(&ns, n) == at_span)
         .collect()
 }
 fn body(checked: &CheckedInputs, name: &str) -> usize {
@@ -320,7 +322,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             .get(1)
             .is_some_and(|r| f(ns[text(f(r, "node"))], "type") == &Json::str("Domain"));
         if !completion_aggregate && f(val(expression), "kind") == &Json::str("source") {
-            let position = at(&ns, n);
+            let position = evaluation_span(&ns, n);
             if let Some((id, expr)) = checked
                 .law()
                 .exprs()
@@ -366,7 +368,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                     if !expected.is_empty() {
                         let actual = arr(f(part, "children"))
                             .iter()
-                            .map(|r| at(&ns, target(&ns, r, &Json::str("Evaluation"))))
+                            .map(|r| evaluation_span(&ns, target(&ns, r, &Json::str("Evaluation"))))
                             .collect::<Vec<_>>();
                         assert_eq!(actual, expected, "元ASTの子を左右・単項・let・ifの順で保持");
                     }
@@ -519,7 +521,7 @@ fn complete_ast(wire: &Json, checked: &CheckedInputs, id: &str, declaration: &st
             continue;
         }
         assert!(
-            reached.iter().any(|e| at(&ns, e) == expr.span),
+            reached.iter().any(|e| evaluation_span(&ns, e) == expr.span),
             "元AST出現 {:?}: {:?}",
             expr.span,
             source(checked, expr.span)
@@ -535,7 +537,7 @@ fn missing_field_evaluations(wire: &Json, checked: &CheckedInputs, field: &str) 
     {
         let expr = expression(&ns, n);
         if f(val(expr), "kind") != &Json::str("source")
-            || source(checked, at(&ns, n)) != format!("s.{field}").as_bytes()
+            || source(checked, evaluation_span(&ns, n)) != format!("s.{field}").as_bytes()
         {
             continue;
         }
@@ -577,7 +579,7 @@ fn affine_scalar(
         .iter()
         .filter(|n| {
             f(n, "type") == &Json::str("Evaluation")
-                && source(checked, at(&ns, n)) == expression_text.as_bytes()
+                && source(checked, evaluation_span(&ns, n)) == expression_text.as_bytes()
         })
         .collect::<Vec<_>>();
     assert!(!nodes.is_empty(), "定数導出の元式: {expression_text}");
@@ -585,10 +587,10 @@ fn affine_scalar(
         let scalar = target(&ns, f(val(n), "value"), &Json::str(ty));
         assert_eq!(val(scalar), &expected);
         assert_eq!(f(f(scalar, "rule"), "kind"), &Json::str("law"));
-        assert_eq!(span(f(f(scalar, "rule"), "location")), at(&ns, n));
+        assert_eq!(span(f(f(scalar, "rule"), "location")), evaluation_span(&ns, n));
         let part = arr(f(val(n), "parts"))
             .iter()
-            .find(|p| span(f(p, "location")) == at(&ns, n))
+            .find(|p| span(f(p, "location")) == evaluation_span(&ns, n))
             .unwrap();
         let mut expected_args = vec![f(val(n), "expression").clone()];
         expected_args.extend(arr(f(part, "children")).iter().cloned());
@@ -929,7 +931,7 @@ fn known_nonlinear_values_and_bool_short_circuits_keep_original_support() {
     assert!(
         live(&ns, root(&wire, "flag"))
             .iter()
-            .any(|e| source(&checked, at(&ns, e)) == b"s.z" && !obj(val(e)).contains_key("value"))
+            .any(|e| source(&checked, evaluation_span(&ns, e)) == b"s.z" && !obj(val(e)).contains_key("value"))
     );
     for (id, name) in [
         ("z", "Calc.integer"),
@@ -983,7 +985,7 @@ fn uncancelled_missing_laws_keep_undetermined_claims_without_fictitious_countere
 }
 
 fn call_children<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &Json) -> Vec<&'a Json> {
-    let position = at(ns, evaluation);
+    let position = evaluation_span(ns, evaluation);
     let part = arr(f(val(evaluation), "parts"))
         .iter()
         .find(|p| span(f(p, "location")) == position)
@@ -1017,7 +1019,7 @@ fn shared_through_call(ty: &str, field: &str, parameter: &str) {
     let calls = live(&ns, root(&wire, "a"))
         .into_iter()
         .filter(|e| {
-            let bytes = source(&checked, at(&ns, e));
+            let bytes = source(&checked, evaluation_span(&ns, e));
             bytes == b"carry(saved)" || bytes == format!("carry(s.{field})").as_bytes()
         })
         .collect::<Vec<_>>();
@@ -1033,12 +1035,12 @@ fn shared_through_call(ty: &str, field: &str, parameter: &str) {
         assert_eq!(children.len(), 2, "実引数Evaluationの後に元view body");
         assert!(producer_ids.insert(text(f(children[0], "id"))));
         assert_eq!(
-            source(&checked, at(&ns, children[1])),
+            source(&checked, evaluation_span(&ns, children[1])),
             format!("let held={parameter} in held").as_bytes()
         );
         let formal_uses = live(&ns, children[1])
             .into_iter()
-            .filter(|e| source(&checked, at(&ns, e)) == parameter.as_bytes())
+            .filter(|e| source(&checked, evaluation_span(&ns, e)) == parameter.as_bytes())
             .collect::<Vec<_>>();
         assert_eq!(formal_uses.len(), 1);
         assert_eq!(
@@ -1077,8 +1079,8 @@ fn unknown_view_argument_can_cancel_inside_the_called_body() {
     let children = call_children(&ns, root(&wire, "a"));
     assert_eq!(children.len(), 2);
     assert!(!obj(val(children[0])).contains_key("value"));
-    assert_eq!(source(&checked, at(&ns, children[0])), b"s.z");
-    assert_eq!(source(&checked, at(&ns, children[1])), b"hz-hz");
+    assert_eq!(source(&checked, evaluation_span(&ns, children[0])), b"s.z");
+    assert_eq!(source(&checked, evaluation_span(&ns, children[1])), b"hz-hz");
     for name_use in call_children(&ns, children[1]) {
         assert_eq!(call_children(&ns, name_use), vec![children[0]]);
         assert!(
@@ -1231,7 +1233,7 @@ fn source_text_is(
     evaluation: &Json,
     text: &str,
 ) -> bool {
-    source(checked, at(ns, evaluation)) == text.as_bytes()
+    source(checked, evaluation_span(ns, evaluation)) == text.as_bytes()
 }
 
 #[test]

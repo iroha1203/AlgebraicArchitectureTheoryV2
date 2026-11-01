@@ -11,7 +11,9 @@ use archsig::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::common::helpers::{arr, at, expression, f, fact, live, obj, q, span, target, text, val};
+use crate::common::helpers::{
+    arr, evaluation_span, expression, f, fact, live, obj, q, span, target, text, val,
+};
 use crate::common::quiet;
 fn index(wire: &Json) -> BTreeMap<&str, &Json> {
     arr(f(wire, "nodes"))
@@ -58,7 +60,7 @@ fn evaluations_at<'a>(wire: &'a Json, at_span: (usize, usize)) -> Vec<&'a Json> 
     let ns = index(wire);
     arr(f(wire, "nodes"))
         .iter()
-        .filter(|n| f(n, "type") == &Json::str("Evaluation") && at(&ns, n) == at_span)
+        .filter(|n| f(n, "type") == &Json::str("Evaluation") && evaluation_span(&ns, n) == at_span)
         .collect()
 }
 fn body(checked: &CheckedInputs, name: &str) -> usize {
@@ -322,7 +324,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
             .get(1)
             .is_some_and(|r| f(ns[text(f(r, "node"))], "type") == &Json::str("Domain"));
         if !completion_aggregate && f(val(expression), "kind") == &Json::str("source") {
-            let position = at(&ns, n);
+            let position = evaluation_span(&ns, n);
             if let Some((id, expr)) = checked
                 .law()
                 .exprs()
@@ -368,7 +370,7 @@ fn audit(wire: &Json, checked: &CheckedInputs) {
                     if !expected.is_empty() {
                         let actual = arr(f(part, "children"))
                             .iter()
-                            .map(|r| at(&ns, target(&ns, r, &Json::str("Evaluation"))))
+                            .map(|r| evaluation_span(&ns, target(&ns, r, &Json::str("Evaluation"))))
                             .collect::<Vec<_>>();
                         assert_eq!(actual, expected, "元ASTの子を左右・単項・let・ifの順で保持");
                     }
@@ -521,7 +523,7 @@ fn complete_ast(wire: &Json, checked: &CheckedInputs, id: &str, declaration: &st
             continue;
         }
         assert!(
-            reached.iter().any(|e| at(&ns, e) == expr.span),
+            reached.iter().any(|e| evaluation_span(&ns, e) == expr.span),
             "元AST出現 {:?}: {:?}",
             expr.span,
             source(checked, expr.span)
@@ -537,7 +539,7 @@ fn missing_field_evaluations(wire: &Json, checked: &CheckedInputs, field: &str) 
     {
         let expr = expression(&ns, n);
         if f(val(expr), "kind") != &Json::str("source")
-            || source(checked, at(&ns, n)) != format!("s.{field}").as_bytes()
+            || source(checked, evaluation_span(&ns, n)) != format!("s.{field}").as_bytes()
         {
             continue;
         }
@@ -570,7 +572,7 @@ fn missing_field_evaluations(wire: &Json, checked: &CheckedInputs, field: &str) 
 fn own_part<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &'a Json) -> &'a Json {
     arr(f(val(evaluation), "parts"))
         .iter()
-        .find(|p| span(f(p, "location")) == at(ns, evaluation))
+        .find(|p| span(f(p, "location")) == evaluation_span(ns, evaluation))
         .unwrap()
 }
 fn children<'a>(ns: &BTreeMap<&str, &'a Json>, evaluation: &'a Json) -> Vec<&'a Json> {
@@ -592,7 +594,7 @@ fn normalization<'a>(
     assert_eq!(operands.len(), 2);
     let original = expression(&ns, comparison);
     assert_eq!(f(val(original), "kind"), &Json::str("source"));
-    let comparison_span = at(&ns, comparison);
+    let comparison_span = evaluation_span(&ns, comparison);
     let (id, ast) = checked
         .law()
         .exprs()
@@ -620,7 +622,7 @@ fn normalization<'a>(
         Json::str(numeric_type)
     );
     for (operand, expr) in operands.iter().zip([*lhs, *rhs]) {
-        assert_eq!(at(&ns, operand), checked.law().exprs()[expr].span);
+        assert_eq!(evaluation_span(&ns, operand), checked.law().exprs()[expr].span);
         assert!(
             !obj(val(operand)).contains_key("value"),
             "元左右の未知値をScalarへ捏造しない"
@@ -1107,7 +1109,7 @@ fn matching_evaluations<'a>(
         .iter()
         .filter(|n| {
             f(n, "type") == &Json::str("Evaluation")
-                && source(checked, at(&ns, n)) == expression_text.as_bytes()
+                && source(checked, evaluation_span(&ns, n)) == expression_text.as_bytes()
         })
         .collect()
 }
@@ -1138,7 +1140,7 @@ fn through_call(numeric_type: &str, field: &str, parameter: &str) {
     let calls = live(&ns, root(&wire, "a"))
         .into_iter()
         .filter(|e| {
-            let bytes = source(&checked, at(&ns, e));
+            let bytes = source(&checked, evaluation_span(&ns, e));
             bytes == b"carry(saved)" || bytes == format!("carry(s.{field})").as_bytes()
         })
         .collect::<Vec<_>>();
@@ -1150,12 +1152,12 @@ fn through_call(numeric_type: &str, field: &str, parameter: &str) {
         assert_eq!(actual.len(), 2);
         assert!(producers.insert(text(f(actual[0], "id"))));
         assert_eq!(
-            source(&checked, at(&ns, actual[1])),
+            source(&checked, evaluation_span(&ns, actual[1])),
             format!("let held={parameter} in held").as_bytes()
         );
         let formal = live(&ns, actual[1])
             .into_iter()
-            .filter(|e| source(&checked, at(&ns, e)) == parameter.as_bytes())
+            .filter(|e| source(&checked, evaluation_span(&ns, e)) == parameter.as_bytes())
             .collect::<Vec<_>>();
         assert_eq!(formal.len(), 1);
         assert_eq!(
@@ -1272,12 +1274,12 @@ fn finite_wholes(wire: &Json, checked: &CheckedInputs, field: &str, expected: &[
             "各caseでwholeを先に判断する"
         );
         let case_nodes = live(&ns, case);
-        assert!(case_nodes.iter().any(|e| source(checked, at(&ns, e))
+        assert!(case_nodes.iter().any(|e| source(checked, evaluation_span(&ns, e))
             == format!("s.{field}").as_bytes()
             && !obj(val(e)).contains_key("value")));
         let mut normalized = 0;
         for equality in case_nodes {
-            let bytes = source(checked, at(&ns, equality));
+            let bytes = source(checked, evaluation_span(&ns, equality));
             let same = bytes == format!("s.{field}+1=s.{field}+1").as_bytes();
             if !same && bytes != format!("s.{field}+1=s.{field}+2").as_bytes() {
                 continue;
