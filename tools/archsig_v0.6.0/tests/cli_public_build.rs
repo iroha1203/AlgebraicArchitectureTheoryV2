@@ -113,6 +113,7 @@ fn explicit_list_count_uses_shape_with_numeric_parameters() {
 #[test]
 fn known_data_payload_match_preserves_numeric_products() {
     // data構成子をhelperのmatchで取り出した係数。
+    // #6070: 最適化なし・2MiB workerでも成立と反証を保持する(common::cli::run)。
     let definition = numeric_data_definition("Z");
     known_numeric_product(
         "data-helper",

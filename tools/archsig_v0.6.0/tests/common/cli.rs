@@ -96,8 +96,8 @@ impl archsig::run::Signals for NoSignal {
     }
 }
 
-/// 実バイナリの主スレッドと同じ大きさのスタック。計算は main と同じ深さの再帰を使う。
-const MAIN_THREAD_STACK: usize = 8 * 1024 * 1024;
+/// 小さいworkerスレッドからの呼出しを検査する。RUST_MIN_STACKにも依存させない。
+const WORKER_THREAD_STACK: usize = 2 * 1024 * 1024;
 
 /// 同じ引数を、プロセスを起動せずに run 層へ渡す。path の引数は `dir` から読む。
 pub fn run(dir: &Path, args: &[&str]) -> Run {
@@ -128,7 +128,7 @@ pub fn run(dir: &Path, args: &[&str]) -> Run {
         (outcome.exit_code, outcome.receipt())
     };
     let (code, receipt) = std::thread::Builder::new()
-        .stack_size(MAIN_THREAD_STACK)
+        .stack_size(WORKER_THREAD_STACK)
         .spawn(execute)
         .unwrap()
         .join()
