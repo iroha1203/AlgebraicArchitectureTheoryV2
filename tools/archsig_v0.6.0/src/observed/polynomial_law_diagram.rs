@@ -2039,7 +2039,7 @@ impl Environment<'_> {
         let D::PolynomialLaw(data) = &value.data else {
             return Ok(());
         };
-        tick(&self.control.clone())?;
+        tick(&self.control)?;
         let Witness::Architecture(a) = &value.witness else {
             return Err("多項式導出の元Architectureがない".into());
         };
@@ -2061,8 +2061,7 @@ impl Environment<'_> {
         {
             return Ok(());
         }
-        data.source
-            .recheck(self.indexes.inputs, a, &self.control.clone())?;
+        data.source.recheck(self.indexes.inputs, a, &self.control)?;
         self.results.remember(data.source.clone());
         Ok(())
     }

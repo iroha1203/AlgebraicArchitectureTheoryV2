@@ -299,17 +299,17 @@ impl<E: InputError> Checker<'_, E> {
         env: &mut Env,
         ctx: &Ctx,
     ) -> CResult<Type, E> {
-        E::checkpoint(&self.control.clone(), Checkpoint::LawChange)?;
+        E::checkpoint(&self.control, Checkpoint::LawChange)?;
         let result = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
             self.check_change_result(body, params, env, ctx)
         });
         // 入力不正も、検査内で発生した取消を確認した後に返す。
-        let t = E::finish(result, &self.control.clone(), Checkpoint::LawChange)?;
+        let t = E::finish(result, &self.control, Checkpoint::LawChange)?;
         if self.expr_types.len() < self.parser.exprs.len() {
             self.expr_types.resize(self.parser.exprs.len(), None);
         }
         self.expr_types[body] = Some(t.clone());
-        E::checkpoint(&self.control.clone(), Checkpoint::LawChange)?;
+        E::checkpoint(&self.control, Checkpoint::LawChange)?;
         Ok(t)
     }
 
@@ -321,7 +321,7 @@ impl<E: InputError> Checker<'_, E> {
         env: &mut Env,
         ctx: &Ctx,
     ) -> CResult<Type, E> {
-        E::checkpoint(&self.control.clone(), Checkpoint::LawChange)?;
+        E::checkpoint(&self.control, Checkpoint::LawChange)?;
         let span = self.parser.exprs[body].span;
         let kind = self.parser.exprs[body].kind.clone();
         let result = match kind {
@@ -350,7 +350,7 @@ impl<E: InputError> Checker<'_, E> {
             _ => None,
         };
         if let Some(t) = result {
-            E::checkpoint(&self.control.clone(), Checkpoint::LawChange)?;
+            E::checkpoint(&self.control, Checkpoint::LawChange)?;
             return Ok(t);
         }
         let ExprKind::With { base, updates } = self.parser.exprs[body].kind.clone() else {
@@ -362,10 +362,10 @@ impl<E: InputError> Checker<'_, E> {
         let first = &params[0];
         let mut target = base;
         while let ExprKind::Group(inner) = self.parser.exprs[target].kind {
-            E::checkpoint(&self.control.clone(), Checkpoint::LawChange)?;
+            E::checkpoint(&self.control, Checkpoint::LawChange)?;
             self.cooperate()?;
             target = inner;
-            E::checkpoint(&self.control.clone(), Checkpoint::LawChange)?;
+            E::checkpoint(&self.control, Checkpoint::LawChange)?;
         }
         let is_first = matches!(&self.parser.exprs[target].kind, ExprKind::Dotted(p) if p.len() == 1 && p[0].name == first.name);
         if !is_first {
@@ -379,7 +379,7 @@ impl<E: InputError> Checker<'_, E> {
         let sig = self.sigs.get(&entity).cloned().expect("entity の署名");
         let mut seen = BTreeSet::new();
         for (field, value) in &updates {
-            E::checkpoint(&self.control.clone(), Checkpoint::LawChange)?;
+            E::checkpoint(&self.control, Checkpoint::LawChange)?;
             self.cooperate()?;
             let Some(f) = self.signature_field(&sig, &field.name)? else {
                 return reference(
@@ -406,7 +406,7 @@ impl<E: InputError> Checker<'_, E> {
             )?;
             self.record(field.span, full(&entity, &[&field.name]));
             self.check(*value, Some(&f.ty), env, ctx)?;
-            E::checkpoint(&self.control.clone(), Checkpoint::LawChange)?;
+            E::checkpoint(&self.control, Checkpoint::LawChange)?;
         }
         let t = Type::Ref(entity);
         if self.expr_types.len() < self.parser.exprs.len() {
@@ -425,13 +425,13 @@ impl<E: InputError> Checker<'_, E> {
             edges.entry(a.clone()).or_default().insert(b.clone());
             first_spans.entry(a.clone()).or_insert(*span);
         }
-        if let Some(n) = find_cycle::<E>(&edges, &self.control.clone())? {
+        if let Some(n) = find_cycle::<E>(&edges, &self.control)? {
             // Capture the original diagnostic while the detected cycle is known.
             // Source spans are indexed before DFS, so no new search is needed
             // after detection; a later cancellation still wins.
             let span = first_spans[&n];
             let failure = cycle(span, format!("cyclic view calls involving `{n}`"));
-            return E::finish(failure, &self.control.clone(), Checkpoint::LawCycle);
+            return E::finish(failure, &self.control, Checkpoint::LawCycle);
         }
         Ok(())
     }
@@ -447,7 +447,7 @@ impl<E: InputError> Checker<'_, E> {
                 .insert(b.to_string());
             first_spans.entry(*a).or_insert(*span);
         }
-        if let Some(n) = find_cycle::<E>(&edges, &self.control.clone())? {
+        if let Some(n) = find_cycle::<E>(&edges, &self.control)? {
             let i: usize = n.parse().expect("reading の位置");
             let span = first_spans[&i];
             let failure = cycle(
@@ -457,7 +457,7 @@ impl<E: InputError> Checker<'_, E> {
                     self.reading_name(i)
                 ),
             );
-            return E::finish(failure, &self.control.clone(), Checkpoint::LawCycle);
+            return E::finish(failure, &self.control, Checkpoint::LawCycle);
         }
         Ok(())
     }

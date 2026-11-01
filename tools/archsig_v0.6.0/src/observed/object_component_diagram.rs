@@ -892,7 +892,7 @@ impl Environment<'_> {
         let D::ObjectComponents(data) = &value.data else {
             return Ok(());
         };
-        tick(&self.control.clone())?;
+        tick(&self.control)?;
         let Witness::Architecture(a) = &value.witness else {
             return Err("対象族のconsumerがArchitectureでない".into());
         };
@@ -913,7 +913,7 @@ impl Environment<'_> {
             return Ok(());
         }
         data.source
-            .recheck(graph, self.indexes.inputs, a, &self.control.clone())?;
+            .recheck(graph, self.indexes.inputs, a, &self.control)?;
         self.results.remember(data.source.clone());
         Ok(())
     }

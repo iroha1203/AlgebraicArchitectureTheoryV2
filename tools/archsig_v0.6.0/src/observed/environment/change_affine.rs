@@ -422,7 +422,7 @@ fn parameter_coefficient_forms(
             env.state.context.get().unwrap_or_default(),
             &values,
             &parameters,
-            &env.control.clone(),
+            &env.control,
         )
         .map_err(|cause| match cause {
             crate::construction::ConstructionFailure::Stopped(stop) => {
@@ -897,11 +897,8 @@ pub(in crate::observed) fn compute(
                 .collect::<Vec<_>>()
         })
         .unwrap_or_default();
-    let mut updated = Environment::with_primitive_valuation(
-        env.indexes.inputs,
-        &assignments,
-        &env.control.clone(),
-    )?;
+    let mut updated =
+        Environment::with_primitive_valuation(env.indexes.inputs, &assignments, &env.control)?;
     updated.indexes.object = env.object_domain();
     updated.indexes.affine_valuation = updates;
     let (mut matrix, rhs) =
@@ -1012,11 +1009,8 @@ pub(in crate::observed) fn state_equations(
     missing: &mut Pending,
 ) -> Result<(Matrix, Vec<Option<Z>>), ValidationFailure> {
     let assignments = env.fixed_values();
-    let mut state = Environment::with_primitive_valuation(
-        env.indexes.inputs,
-        &assignments,
-        &env.control.clone(),
-    )?;
+    let mut state =
+        Environment::with_primitive_valuation(env.indexes.inputs, &assignments, &env.control)?;
     state.indexes.object = env.object_domain();
     for slot in slots {
         env.tick()?;

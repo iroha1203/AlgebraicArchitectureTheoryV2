@@ -782,7 +782,7 @@ fn validate_binding_term(
                 &term.params,
                 &term.returns,
                 &term.body,
-                &e.control.clone(),
+                &e.control,
             )
         } else {
             crate::law::check_reading_term_body::<CheckFailure<Box<crate::issue::Issue>>>(
@@ -792,7 +792,7 @@ fn validate_binding_term(
                 &term.params,
                 &term.returns,
                 &term.body,
-                &e.control.clone(),
+                &e.control,
             )
         };
         let checked = match checked {
@@ -1091,7 +1091,7 @@ fn operands(
     scope: &Scope,
     reading: &str,
 ) -> Result<Option<(Type, Option<Scalar>, Option<Scalar>)>, ValidationFailure> {
-    let Some(eq) = equation(e.indexes.inputs, body, &e.control.clone())? else {
+    let Some(eq) = equation(e.indexes.inputs, body, &e.control)? else {
         return Ok(None);
     };
     let ExprKind::Binary { lhs, rhs, .. } = e.indexes.inputs.law().exprs()[eq].kind else {

@@ -582,13 +582,7 @@ impl Environment<'_> {
             return Ok(());
         }
         let rebuilt = self.with_request_context(g, &d.source.request, || {
-            compute(
-                self,
-                g,
-                &d.source.request,
-                d.source.base,
-                &self.control.clone(),
-            )
+            compute(self, g, &d.source.request, d.source.base, &self.control)
         })?;
         if rebuilt.parts != d.source.parts
             || rebuilt.answer != d.source.answer

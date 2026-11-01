@@ -191,7 +191,7 @@ impl<E: InputError> Checker<'_, E> {
             self.expr_types[id] = Some(t.clone());
             Ok(t)
         })();
-        E::finish(result, &self.control.clone(), self.semantic_point)
+        E::finish(result, &self.control, self.semantic_point)
     }
 
     fn check_bool(&mut self, id: ExprId, env: &mut Env, ctx: &Ctx) -> CResult<(), E> {
@@ -203,7 +203,7 @@ impl<E: InputError> Checker<'_, E> {
         self.cooperate()?;
         let result =
             stacker::maybe_grow(RED_ZONE, STACK_STEP, || self.needs_context_inner(id, env));
-        E::finish(result, &self.control.clone(), self.semantic_point)
+        E::finish(result, &self.control, self.semantic_point)
     }
     fn needs_context_inner(&mut self, id: ExprId, env: &Env) -> CResult<bool, E> {
         Ok(match self.parser.exprs[id].kind.clone() {
@@ -903,8 +903,8 @@ impl<E: InputError> Checker<'_, E> {
     }
 
     fn non_callable_error<T>(&self, span: Span, ty: &Type) -> CResult<T, E> {
-        let wire = ty.wire_controlled::<E>(&self.control.clone(), self.semantic_point)?;
-        let text = wire.canonical_controlled::<E>(&self.control.clone(), self.semantic_point)?;
+        let wire = ty.wire_controlled::<E>(&self.control, self.semantic_point)?;
+        let text = wire.canonical_controlled::<E>(&self.control, self.semantic_point)?;
         syntax(span, format!("value of type {text} cannot be applied"))
     }
 

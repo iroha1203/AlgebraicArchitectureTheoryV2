@@ -786,7 +786,7 @@ impl Environment<'_> {
             return Ok(());
         };
         d.position(at)?;
-        d.recheck(self, g, &self.control.clone())?;
+        d.recheck(self, g, &self.control)?;
         for r in d.arguments() {
             self.tick()?;
             if r.0 >= at {

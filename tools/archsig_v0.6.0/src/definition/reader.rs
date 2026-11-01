@@ -154,7 +154,7 @@ impl<'a, E: InputError> Obj<'a, E> {
         })
     }
     fn get(&self, k: &str) -> R<(&'a JNode, String), E> {
-        let node = find::<E>(self.node, k, &self.control.clone(), None)?.expect("必須欄を確認済み");
+        let node = find::<E>(self.node, k, &self.control, None)?.expect("必須欄を確認済み");
         Ok((node, pointer_push(&self.pointer, k)))
     }
 
@@ -178,7 +178,7 @@ impl<'a, E: InputError> Obj<'a, E> {
     fn name(&self, k: &str) -> R<String, E> {
         let s = self.string(k)?;
         name::<E>(
-            &self.control.clone(),
+            &self.control,
             &s,
             self.input,
             &pointer_push(&self.pointer, k),

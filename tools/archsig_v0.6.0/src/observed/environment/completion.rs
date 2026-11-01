@@ -347,7 +347,7 @@ impl Environment<'_> {
                 &self.indexes.inputs.archmap().snapshots(),
                 &self.indexes.inputs.law().definitions(),
                 &pinned,
-                &self.control.clone(),
+                &self.control,
             ) {
                 Ok(()) => kept.push(value),
                 Err(CheckFailure::Input(issue))

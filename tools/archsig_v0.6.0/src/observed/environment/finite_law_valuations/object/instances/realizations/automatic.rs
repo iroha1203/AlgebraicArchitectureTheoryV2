@@ -343,7 +343,7 @@ impl AutomaticLawValuations {
             let mut positions = vec![];
             for position in tracked.as_ref().ok_or("有限Law実評価の読取り記録がない")?
             {
-                tick(&e.control.clone())?;
+                tick(&e.control)?;
                 positions.push(position.clone());
             }
             Ok(positions)

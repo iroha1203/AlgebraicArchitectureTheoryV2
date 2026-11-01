@@ -238,13 +238,10 @@ fn analyze_inner(
                     return Ok(Analysis::default());
                 };
                 let difference = left
-                    .binary(BinOp::Sub, &right, &env.control.clone())
+                    .binary(BinOp::Sub, &right, &env.control)
                     .map_err(invalid)?;
                 if *op != BinOp::Eq {
-                    if let Some(value) = difference
-                        .evaluate(&[], &env.control.clone())
-                        .map_err(invalid)?
-                    {
+                    if let Some(value) = difference.evaluate(&[], &env.control).map_err(invalid)? {
                         let zero = numeric::zero(&difference.ty, &env.control)?;
                         let Scalar::Bool(holds) =
                             numeric::binary(*op, value.scalar(), &zero, &env.control)?
@@ -310,7 +307,7 @@ fn polynomial(
             return Ok(None);
         }
         if let Some(value @ (Scalar::Z(_) | Scalar::Q(..))) = value.known_value.as_ref() {
-            return Polynomial::constant(value.clone(), &env.control.clone())
+            return Polynomial::constant(value.clone(), &env.control)
                 .map(Some)
                 .map_err(invalid);
         }
@@ -427,7 +424,7 @@ fn polynomial(
                 let Some(right) = polynomial(env, *rhs, vars, base, reading, normalized)? else {
                     return Ok(None);
                 };
-                left.binary(*op, &right, &env.control.clone())
+                left.binary(*op, &right, &env.control)
                     .map(Some)
                     .map_err(invalid)
             }

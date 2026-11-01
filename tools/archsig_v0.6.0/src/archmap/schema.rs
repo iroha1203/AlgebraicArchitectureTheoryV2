@@ -122,7 +122,7 @@ impl<'a, E: InputError> Obj<'a, E> {
         })
     }
     fn get(&self, key: &str) -> Result<Option<(&'a JNode, String)>, E> {
-        step::<E, _>(&self.control.clone(), |control| {
+        step::<E, _>(&self.control, |control| {
             Ok(field::<E>(self.entries, key, control)?
                 .map(|v| (v, pointer_push(&self.pointer, key))))
         })
@@ -131,13 +131,13 @@ impl<'a, E: InputError> Obj<'a, E> {
         Ok(self.get(key)?.expect("必須欄は確認済み"))
     }
     fn string(&self, key: &str) -> Result<String, E> {
-        step::<E, _>(&self.control.clone(), |_| {
+        step::<E, _>(&self.control, |_| {
             let (v, p) = self.req(key)?;
             as_string(v, &p).map_err(E::from)
         })
     }
     fn id(&self, key: &str) -> Result<String, E> {
-        step::<E, _>(&self.control.clone(), |control| {
+        step::<E, _>(&self.control, |control| {
             let (v, p) = self.req(key)?;
             let s = as_string(v, &p)?;
             identifier::<E>(
@@ -150,7 +150,7 @@ impl<'a, E: InputError> Obj<'a, E> {
         })
     }
     fn array(&self, key: &str) -> Result<(&'a [JNode], String), E> {
-        step::<E, _>(&self.control.clone(), |_| {
+        step::<E, _>(&self.control, |_| {
             let (v, p) = self.req(key)?;
             match &v.value {
                 JValue::Arr(items) => Ok((items.as_slice(), p)),

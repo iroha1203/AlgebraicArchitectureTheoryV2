@@ -61,7 +61,7 @@ pub(in super::super) fn zero_indicator(
         return Err("元Lawでない".into());
     };
     row.indicator = Some(0.into());
-    if let Some(eq) = equation(e.indexes.inputs, body, &e.control.clone())? {
+    if let Some(eq) = equation(e.indexes.inputs, body, &e.control)? {
         let ExprKind::Binary { lhs, .. } = e.indexes.inputs.law().exprs()[eq].kind else {
             return Err("元等式がない".into());
         };

@@ -156,7 +156,7 @@ pub(in crate::observed) fn value_type_supported(
     c: &Control,
 ) -> Result<bool, ValidationFailure> {
     Ok(super::super::data::supported(ty, law, c)?
-        && super::super::value_transport::identity_declarations(ty, law, &c.clone())?.is_some())
+        && super::super::value_transport::identity_declarations(ty, law, &c)?.is_some())
 }
 
 /// 全参照作用とscalar恒等写像をTuple/List/Set/Option/Data/Mapへ延長できる型。

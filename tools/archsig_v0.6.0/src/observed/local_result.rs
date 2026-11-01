@@ -1261,13 +1261,7 @@ impl Environment<'_> {
             return Ok(());
         }
         let rebuilt = self.with_request_context(g, &d.source.request, || {
-            compute(
-                self,
-                g,
-                &d.source.request,
-                d.source.base,
-                &self.control.clone(),
-            )
+            compute(self, g, &d.source.request, d.source.base, &self.control)
         })?;
         if let Some(stop) = rebuilt.answer.reasons.iter().find_map(|r| {
             if let ReasonKind::Stop(stop) = &r.kind {
@@ -1349,7 +1343,7 @@ pub(super) fn validate_answer(
     };
     if &d.source.request != request {
         let rebuilt = env.with_request_context(g, request, || {
-            compute(env, g, request, g.nodes.len(), &env.control.clone())
+            compute(env, g, request, g.nodes.len(), &env.control)
         })?;
         if let Some(stop) = rebuilt.answer.reasons.iter().find_map(|r| {
             if let ReasonKind::Stop(stop) = &r.kind {

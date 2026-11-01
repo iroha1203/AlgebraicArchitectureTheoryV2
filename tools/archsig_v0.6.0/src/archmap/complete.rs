@@ -96,7 +96,7 @@ fn or3(a: Option<bool>, b: Option<bool>) -> Option<bool> {
 
 impl<'a, E: InputError> Model<'a, E> {
     fn checkpoint(&self) -> Result<(), E> {
-        E::checkpoint(&self.control.clone(), Checkpoint::Completion)
+        E::checkpoint(&self.control, Checkpoint::Completion)
     }
 
     /// 各意味検査の結果を採用する前にも、共有された停止を確認する。

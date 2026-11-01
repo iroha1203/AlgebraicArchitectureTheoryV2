@@ -21,8 +21,7 @@ fn bad(s: &str) -> ConstructionFailure {
     ConstructionFailure::Inconsistent(s.into())
 }
 fn tick(c: &Control) -> Result<(), ConstructionFailure> {
-    c.checkpoint(Checkpoint::FinitePolynomialEvaluation)
-        .map_err(Into::into)
+    c.checkpoint(Checkpoint::Work).map_err(Into::into)
 }
 fn same_values(
     a: &[NumericTransportValue],
@@ -126,7 +125,7 @@ impl FinitePolynomialEvaluation {
         Ok(FiniteIntegerRing::new(
             &self.owner,
             self.domain.len(),
-            Checkpoint::FinitePolynomialEvaluation,
+            Checkpoint::Work,
         ))
     }
     fn member(&self, v: &FiniteIntegerFunction, c: &Control) -> Result<(), ConstructionFailure> {

@@ -96,7 +96,7 @@ pub fn cycle<T, E: InputError>(span: Span, message: impl Into<String>) -> CResul
 
 impl<'d, E: InputError> Checker<'d, E> {
     pub(super) fn erase_type(&self, ty: &Type) -> CResult<Type, E> {
-        ty.erase_controlled::<E>(&self.control.clone(), self.semantic_point)
+        ty.erase_controlled::<E>(&self.control, self.semantic_point)
     }
     pub(super) fn type_error<T>(
         &self,
@@ -179,7 +179,7 @@ impl<'d, E: InputError> Checker<'d, E> {
     }
 
     pub(super) fn cooperate(&self) -> CResult<(), E> {
-        E::checkpoint(&self.control.clone(), self.semantic_point)
+        E::checkpoint(&self.control, self.semantic_point)
     }
 
     pub fn reading_name(&self, r: usize) -> &str {
@@ -533,7 +533,7 @@ impl<'d, E: InputError> Checker<'d, E> {
             }
             Ok(t)
         })();
-        E::finish(result, &self.control.clone(), self.semantic_point)
+        E::finish(result, &self.control, self.semantic_point)
     }
 
     fn resolve_type_inner(&mut self, ast: &TypeAst, ctx: &TypeCtx) -> CResult<Type, E> {
@@ -547,7 +547,7 @@ impl<'d, E: InputError> Checker<'d, E> {
             },
             TypeAst::Fp { modulus, span } => {
                 let n: BigUint = modulus.parse().expect("字句で10進整数を確認済み");
-                if !is_prime_controlled::<E>(&n, &self.control.clone(), self.semantic_point)? {
+                if !is_prime_controlled::<E>(&n, &self.control, self.semantic_point)? {
                     return syntax(*span, format!("Fp modulus {modulus} is not prime"));
                 }
                 Type::Fp(modulus.clone())
@@ -708,7 +708,7 @@ impl<'d, E: InputError> Checker<'d, E> {
             self.cooperate()?;
             let found = predicate(ty);
             if !matches!(found, Ok(false)) {
-                return E::finish(found, &self.control.clone(), self.semantic_point);
+                return E::finish(found, &self.control, self.semantic_point);
             }
             match ty {
                 Type::Tuple(items) => stack.extend(items),

@@ -367,7 +367,7 @@ mod tests {
         let environment = Environment::with_requests(
             result.prepared.inputs(),
             result.prepared.requests().requests(),
-            &control.clone(),
+            &control,
         )
         .unwrap();
         let original = graph(&result);

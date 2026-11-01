@@ -36,12 +36,8 @@ impl Environment<'_> {
             (NodeType::Evaluation(t), None) => ProjectionType::Evaluation(t.clone()),
             _ => return Err(self.answer_projection_unprovided(span)),
         };
-        match resolve_projection_controlled(
-            self.indexes.inputs.law(),
-            initial,
-            path,
-            &self.control.clone(),
-        ) {
+        match resolve_projection_controlled(self.indexes.inputs.law(), initial, path, &self.control)
+        {
             Ok(_) => {}
             Err(ProjectionFailure::Interrupted(stop)) => return Err(stop.into()),
             Err(ProjectionFailure::Invalid(_)) => {
