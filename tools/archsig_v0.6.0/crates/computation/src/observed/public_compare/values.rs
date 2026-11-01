@@ -317,7 +317,7 @@ impl Calculator<'_> {
         stacker::maybe_grow(128 * 1024, 1024 * 1024, || {
             self.tick()?;
             if a.ty() != b.ty() {
-                return Err("公開値比較の左右型が違う".into());
+                return Err(internal!("公開値比較の左右型が違う").into());
             }
             let source = self.add(Data::Expression { left, right })?;
             let result = if !term::contains(&a.ty(), self.law, self.c)? {
@@ -394,7 +394,7 @@ impl Calculator<'_> {
                             self.sequence(x, y, left, right, source)?
                         }
                     }
-                    _ => return Err("Termを含む原始値比較の値形が違う".into()),
+                    _ => return Err(internal!("Termを含む原始値比較の値形が違う").into()),
                 }
             };
             if root {
@@ -526,13 +526,13 @@ impl Calculator<'_> {
         source: NodeRef,
     ) -> Result<Vec<Binding>, ValidationFailure> {
         if params.len() != row.len() {
-            return Err("Term代入の元parameter数が違う".into());
+            return Err(internal!("Term代入の元parameter数が違う").into());
         }
         let mut out = vec![];
         for ((name, ty), value) in params.iter().zip(row) {
             self.tick()?;
             if *ty != value.ty() {
-                return Err("Term代入の型が違う".into());
+                return Err(internal!("Term代入の型が違う").into());
             }
             out.push(Binding {
                 name: name.clone(),
@@ -556,7 +556,7 @@ impl Calculator<'_> {
                 ty,
                 self.law,
                 self.c,
-                &mut |_| Err("Term比較に参照族を置けない".into()),
+                &mut |_| Err(internal!("Term比較に参照族を置けない").into()),
                 &mut |_| {},
             )?
             .values;
@@ -626,11 +626,11 @@ impl Calculator<'_> {
             let (l, r) = (outputs[0], outputs[1]);
             let lv = match &self.nodes[l.0 - self.base] {
                 Data::Value { value, .. } => value.clone(),
-                _ => return Err("Term適用の左値がない".into()),
+                _ => return Err(internal!("Term適用の左値がない").into()),
             };
             let rv = match &self.nodes[r.0 - self.base] {
                 Data::Value { value, .. } => value.clone(),
-                _ => return Err("Term適用の右値がない".into()),
+                _ => return Err(internal!("Term適用の右値がない").into()),
             };
             let child = self.compare(&lv, &rv, l, r, false)?;
             instances.push(self.add(Data::Claim {

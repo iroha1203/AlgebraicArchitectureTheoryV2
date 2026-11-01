@@ -143,7 +143,7 @@ fn equations(
                     ));
                 };
                 let form = affine::binary(BinOp::Sub, Some(&p.left), Some(&p.right), &env.control)?
-                    .ok_or("有理等式の差がない")?;
+                    .ok_or(internal!("有理等式の差がない"))?;
                 if form.varies_over(&missing.universal, &env.control)? {
                     matrix.push(vec![numeric::zero(&Type::Q, &env.control)?; axes.len()]);
                     rhs.push(Some(numeric::literal("1", &Type::Q, &env.control)?));
@@ -180,7 +180,7 @@ pub(super) fn parameter_guard_domain(
     missing: &mut Pending,
 ) -> Result<(Matrix, Vec<Scalar>, Fiber), ValidationFailure> {
     if axes.iter().any(|axis| axis.kind != NumberType::Q) {
-        return Err("rational guard requires Q parameters".into());
+        return Err(internal!("rational guard requires Q parameters").into());
     }
     let mut matrix = vec![];
     let mut rhs = vec![];
@@ -203,7 +203,7 @@ pub(super) fn parameter_guard_domain(
     let rhs = rhs
         .into_iter()
         .collect::<Option<Vec<_>>>()
-        .ok_or("rational guard constant is undetermined")?;
+        .ok_or(internal!("rational guard constant is undetermined"))?;
     let fiber = field_fiber::solve(&Type::Q, &matrix, axes.len(), &rhs, &env.control)?;
     Ok((matrix, rhs, fiber))
 }
@@ -233,7 +233,7 @@ fn compute_inner(
         body,
     } = &change.signature
     else {
-        return Err("有理候補がchangeでない".into());
+        return Err(internal!("有理候補がchangeでない").into());
     };
     if params.is_empty() || params[1..].iter().any(|p| p.ty != Type::Q) {
         return Err(unsupported(
@@ -367,7 +367,7 @@ fn compute_inner(
                     }
                     break;
                 }
-                _ => return Err("有理changeのwithがない".into()),
+                _ => return Err(internal!("有理changeのwithがない").into()),
             }
         }
     }
@@ -378,13 +378,13 @@ fn compute_inner(
         let (constant, row) = coordinates(env, *body, form, Axes::Parameters(&axes), missing)?;
         slots.push(slot.clone());
         action.push(row);
-        offset.push(constant.ok_or("有理作用の固定項が未確定")?);
+        offset.push(constant.ok_or(internal!("有理作用の固定項が未確定"))?);
     }
 
     let mut guard_rhs = guard_rhs
         .into_iter()
         .collect::<Option<Vec<_>>>()
-        .ok_or("有理guardの固定項が未確定")?;
+        .ok_or(internal!("有理guardの固定項が未確定"))?;
     let guard_fiber = field_fiber::solve(
         &Type::Q,
         &guard_matrix,
@@ -411,7 +411,7 @@ fn compute_inner(
     guard_rhs.extend(
         rhs.into_iter()
             .collect::<Option<Vec<_>>>()
-            .ok_or("有理要求の固定項が未確定")?,
+            .ok_or(internal!("有理要求の固定項が未確定"))?,
     );
     let fiber = field_fiber::solve(
         &Type::Q,
@@ -454,13 +454,15 @@ pub(in crate::observed) fn state_equations(
                 &env.state,
                 &slot.snapshot,
                 &slot.subject,
-                slot.field.as_ref().ok_or("自由位置にfieldがない")?,
+                slot.field
+                    .as_ref()
+                    .ok_or(internal!("自由位置にfieldがない"))?,
             )?
             .ty
             .erase()
             != Type::Q
         {
-            return Err("有理局所状態の自由位置がQでない".into());
+            return Err(internal!("有理局所状態の自由位置がQでない").into());
         }
         state.indexes.affine_valuation.insert(
             slot.clone(),
@@ -488,7 +490,7 @@ fn requirement_equations(
             ..
         } = &law.signature
         else {
-            return Err("有理候補の要求がLawでない".into());
+            return Err(internal!("有理候補の要求がLawでない").into());
         };
         let mut checked = BTreeMap::new();
         let mut checks = owned_call::Checks::default();
@@ -496,7 +498,7 @@ fn requirement_equations(
             let p = law_params
                 .iter()
                 .find(|p| p.name == *name)
-                .ok_or("有理Lawの束縛名が異なる")?;
+                .ok_or(internal!("有理Lawの束縛名が異なる"))?;
             env.owned_call_value_check(
                 &p.ty,
                 &crate::observed::term::affine::Value::Known(v.clone()),

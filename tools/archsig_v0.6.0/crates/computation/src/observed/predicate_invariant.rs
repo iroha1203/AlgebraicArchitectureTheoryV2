@@ -17,12 +17,12 @@ use archsig_input::law::model::Signature;
 use std::sync::Arc;
 fn saved_context(g: &Graph, r: NodeRef) -> Result<super::call::Context, ValidationFailure> {
     if g.contexts.len() != g.nodes.len() {
-        return Err("述語不変量の保存Context表とnode表の長さが違う".into());
+        return Err(internal!("述語不変量の保存Context表とnode表の長さが違う").into());
     }
     g.contexts
         .get(r.0)
         .copied()
-        .ok_or_else(|| "述語不変量の保存Contextがない".into())
+        .ok_or_else(|| internal!("述語不変量の保存Contextがない").into())
 }
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::ObjectEvaluation)?;
@@ -73,10 +73,10 @@ fn components(
 ) -> Result<(Arc<ArchitectureWitness>, NodeRef, Objects), ValidationFailure> {
     let r = t.component_source();
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("述語不変量の元対象表がnativeでない".into());
+        return Err(internal!("述語不変量の元対象表がnativeでない").into());
     };
     let D::ObjectComponents(d) = &v.data else {
-        return Err("述語不変量の元対象表が別構成".into());
+        return Err(internal!("述語不変量の元対象表が別構成").into());
     };
     d.position(r.0)?;
     let (a, reference, objects) = d.retained_components();
@@ -84,7 +84,7 @@ fn components(
         || r != objects.base
         || !Arc::ptr_eq(&a, native::architecture_origin(g, reference, 0)?)
     {
-        return Err("述語不変量の元全対象/Architectureが違う".into());
+        return Err(internal!("述語不変量の元全対象/Architectureが違う").into());
     }
     Ok((a, r, objects))
 }
@@ -102,7 +102,7 @@ fn earlier_table_references(t: &Table, base: usize, c: &Control) -> Result<(), V
     for r in references {
         tick(c)?;
         if r.0 >= base {
-            return Err("述語不変量の元表参照が構成開始より前でない".into());
+            return Err(internal!("述語不変量の元表参照が構成開始より前でない").into());
         }
     }
     Ok(())
@@ -165,7 +165,7 @@ fn evaluation_parts(
                 super::law_inapplicable::Kind::Evaluation { value } => {
                     ((!parameters).then_some(*value), "not_applicable", vec![e])
                 }
-                _ => return Err("述語読取りの非適用評価が別種".into()),
+                _ => return Err(internal!("述語読取りの非適用評価が別種").into()),
             },
             D::LawFamily(d) if parameters => match &d.kind {
                 super::law_family::Kind::Evaluation { rows, .. } => (
@@ -173,11 +173,11 @@ fn evaluation_parts(
                     "applicable",
                     rows.iter().map(|r| r.evaluation).collect(),
                 ),
-                _ => return Err("述語読取りの全parameter評価が別種".into()),
+                _ => return Err(internal!("述語読取りの全parameter評価が別種").into()),
             },
-            _ => return Err("述語読取りの元評価が別構成/parameter署名".into()),
+            _ => return Err(internal!("述語読取りの元評価が別構成/parameter署名").into()),
         },
-        _ => return Err("述語読取りの元Evaluationがない".into()),
+        _ => return Err(internal!("述語読取りの元Evaluationがない").into()),
     };
     if let Some(value) = value {
         g.expect(value, &NodeType::Value(Type::Bool))?;
@@ -198,7 +198,7 @@ fn compute(
 ) -> Result<(Vec<Part>, Vec<Invariant>), ValidationFailure> {
     tick(c)?;
     let ds = t.diagrams()?;
-    let first = ds.first().ok_or("述語不変量に元Law計画がない")?;
+    let first = ds.first().ok_or(internal!("述語不変量に元Law計画がない"))?;
     let templates = first
         .originals
         .iter()
@@ -208,7 +208,7 @@ fn compute(
         || t.objects.len() != objects.objects.len()
         || objects.objects.is_empty()
     {
-        return Err("述語不変量の全Law/全対象coverageが違う".into());
+        return Err(internal!("述語不変量の全Law/全対象coverageが違う").into());
     }
     let mut parts = vec![];
     let mut outputs = vec![];
@@ -218,9 +218,9 @@ fn compute(
             .readings()
             .instances()
             .get(original.instance)
-            .ok_or("述語不変量の元instanceがない")?;
+            .ok_or(internal!("述語不変量の元instanceがない"))?;
         if row.declaration().kind != "law" || t.indices[column] != original.reference {
-            return Err("述語不変量の元Law instance/順序が違う".into());
+            return Err(internal!("述語不変量の元Law instance/順序が違う").into());
         }
         let owner = Witness::Architecture(a.clone());
         let declaration = owner
@@ -228,9 +228,9 @@ fn compute(
             .law()
             .declarations()
             .get(&row.declaration().name)
-            .ok_or("述語不変量の元宣言がない")?;
+            .ok_or(internal!("述語不変量の元宣言がない"))?;
         let Signature::Law { body, .. } = &declaration.signature else {
-            return Err("述語不変量の元宣言がLawでない".into());
+            return Err(internal!("述語不変量の元宣言がLawでない").into());
         };
         let parameters = row
             .parameters()
@@ -239,7 +239,7 @@ fn compute(
             .map(|p| (p.name.clone(), p.ty.erase()))
             .collect::<Vec<_>>();
         if parameters != original.parameters {
-            return Err("述語不変量の元残parameter署名が違う".into());
+            return Err(internal!("述語不変量の元残parameter署名が違う").into());
         }
         let mut values = vec![];
         let mut evaluations = vec![];
@@ -255,45 +255,45 @@ fn compute(
                 .filter(|r| r.instance == original.instance && r.object == object)
                 .collect::<Vec<_>>();
             let [source] = rs.as_slice() else {
-                return Err("述語不変量の対象の元object_readingが一つでない".into());
+                return Err(internal!("述語不変量の対象の元object_readingが一つでない").into());
             };
             if saved_context(g, source.expression)? != saved_context(g, t.architecture)? {
-                return Err("述語の元object_readingの保存Contextが違う".into());
+                return Err(internal!("述語の元object_readingの保存Contextが違う").into());
             }
             let n = g.get(source.expression)?;
             env.recheck_node(g, n, source.expression.0)?;
             g.expect(source.expression, &NodeType::Expression(Type::Bool))?;
             let origin = frames::origin(g, cells.origins[column])?
-                .ok_or("述語不変量の元Law評価由来がない")?;
+                .ok_or(internal!("述語不変量の元Law評価由来がない"))?;
             if origin.object != object
                 || origin.declaration != row.declaration().name
                 || !Arc::ptr_eq(&origin.architecture, a)
                 || objects.objects.get(object) != Some(&cells.object)
                 || objects.architectures.get(object) != Some(&cells.architecture)
             {
-                return Err("述語不変量の対象/宣言/元評価が違う".into());
+                return Err(internal!("述語不変量の対象/宣言/元評価が違う").into());
             }
             // object_reading自身は封印された元対象表にあり、元Law表の参照束縛と照合する。
             let Some(Payload::Construction(v)) = &n.payload else {
-                return Err("述語の元式がnativeでない".into());
+                return Err(internal!("述語の元式がnativeでない").into());
             };
             let D::ObjectComponents(d) = &v.data else {
-                return Err("述語の元式が元対象表にない".into());
+                return Err(internal!("述語の元式が元対象表にない").into());
             };
             let (component_owner, reference, actual) = d.retained_components();
             if !Arc::ptr_eq(&component_owner, a)
                 || reference != t.architecture
                 || actual != *objects
             {
-                return Err("述語の元式が別対象表".into());
+                return Err(internal!("述語の元式が別対象表").into());
             }
             if origin.bindings.len() != original.bindings.len() {
-                return Err("述語の元固定束縛数が違う".into());
+                return Err(internal!("述語の元固定束縛数が違う").into());
             }
             for (x, y) in origin.bindings.iter().zip(&original.bindings) {
                 tick(c)?;
                 if x.name != y.name || x.ty != y.ty || g.scalar(x.value)? != g.scalar(y.value)? {
-                    return Err("述語の元固定束縛が違う".into());
+                    return Err(internal!("述語の元固定束縛が違う").into());
                 }
             }
             let (value, applicability, children) =
@@ -344,7 +344,7 @@ fn compute(
             }
             let evaluation = NodeRef(
                 base.checked_add(parts.len())
-                    .ok_or("述語の生成位置が域外")?,
+                    .ok_or(internal!("述語の生成位置が域外"))?,
             );
             parts.push(Part {
                 ty: NodeType::Evaluation(Type::Bool),
@@ -380,7 +380,7 @@ fn compute(
         reasons.dedup();
         let invariant = NodeRef(
             base.checked_add(parts.len())
-                .ok_or("述語不変量の生成位置が域外")?,
+                .ok_or(internal!("述語不変量の生成位置が域外"))?,
         );
         parts.push(Part {
             ty: NodeType::Construction(T::Invariant),
@@ -428,16 +428,16 @@ impl Data {
             .source
             .base
             .checked_add(self.index)
-            .ok_or("述語不変量のContext位置が域外")?;
+            .ok_or(internal!("述語不変量のContext位置が域外"))?;
         let actual = if at < g.nodes.len() {
             saved_context(g, NodeRef(at))?
         } else if at == g.nodes.len() {
             g.active
         } else {
-            return Err("述語不変量のContextが未生成位置を指す".into());
+            return Err(internal!("述語不変量のContextが未生成位置を指す").into());
         };
         if actual != expected {
-            return Err("述語不変量の元producer Contextが違う".into());
+            return Err(internal!("述語不変量の元producer Contextが違う").into());
         }
         Ok(())
     }
@@ -445,7 +445,7 @@ impl Data {
         if self.source.base.checked_add(self.index) != Some(at)
             || self.arguments().iter().any(|r| r.0 >= at)
         {
-            return Err("述語不変量の元生成位置/既出Refが違う".into());
+            return Err(internal!("述語不変量の元生成位置/既出Refが違う").into());
         }
         Ok(())
     }
@@ -482,14 +482,14 @@ pub(super) fn validate_node(
 ) -> Result<(), ValidationFailure> {
     d.context(g)?;
     let Witness::Architecture(a) = &v.witness else {
-        return Err("述語不変量のconsumerが別種".into());
+        return Err(internal!("述語不変量のconsumerが別種").into());
     };
     if !Arc::ptr_eq(a, &d.source.architecture)
         || d.source.parts.get(d.index) != Some(&d.part)
         || n != &d.node()
         || &d.node() != n
     {
-        return Err("述語不変量の元由来/全対象/metadataが違う".into());
+        return Err(internal!("述語不変量の元由来/全対象/metadataが違う").into());
     }
     for r in d.arguments() {
         g.get(r)?;
@@ -516,7 +516,7 @@ impl Environment<'_> {
             || components != d.source.components
             || objects != d.source.objects
         {
-            return Err("述語不変量の元入力/対象表が違う".into());
+            return Err(internal!("述語不変量の元入力/対象表が違う").into());
         }
         let (parts, outputs) = compute(
             self,
@@ -529,7 +529,7 @@ impl Environment<'_> {
             &c,
         )?;
         if parts != d.source.parts || outputs != d.source.outputs {
-            return Err("述語不変量の元全Law/全域評価/metadataが違う".into());
+            return Err(internal!("述語不変量の元全Law/全域評価/metadataが違う").into());
         }
         Ok(())
     }
@@ -550,7 +550,7 @@ impl super::result_kind::ResultKind for Data {
         let (env, g, t, c) = input;
         tick(c)?;
         if g.active != saved_context(g, t.architecture)? {
-            return Err("述語不変量の生成が元Request Contextでない".into());
+            return Err(internal!("述語不変量の生成が元Request Contextでない").into());
         }
         let base = g.nodes.len();
         earlier_table_references(&t, base, c)?;

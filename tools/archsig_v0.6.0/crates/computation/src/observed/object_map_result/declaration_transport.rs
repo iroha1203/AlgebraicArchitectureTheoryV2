@@ -55,7 +55,9 @@ impl LocalParameter {
         Ok(match self {
             Self::Reference(map) => map.subjects[index].0,
             Self::Finite { sources, .. } => sources[index],
-            Self::Numeric { .. } => return Err("symbolic number has no finite source value".into()),
+            Self::Numeric { .. } => {
+                return Err(internal!("symbolic number has no finite source value").into());
+            }
         })
     }
     fn binding(&self, index: usize, side: usize) -> Result<Scalar, ValidationFailure> {
@@ -80,7 +82,9 @@ impl LocalParameter {
                 };
                 values[index].scalar().clone()
             }
-            Self::Numeric { .. } => return Err("symbolic number has no finite binding".into()),
+            Self::Numeric { .. } => {
+                return Err(internal!("symbolic number has no finite binding").into());
+            }
         })
     }
 }
@@ -220,7 +224,7 @@ fn applicable(
     let mut signatures = vec![];
     for declaration in declarations {
         let Signature::Local { params, guard, .. } = &declaration.signature else {
-            return Err("guardの元宣言がlocalでない".into());
+            return Err(internal!("guardの元宣言がlocalでない").into());
         };
         signatures.push((params, guard));
     }
@@ -456,7 +460,7 @@ fn reference_map(
         &mut vec![],
         c,
     )?
-    .ok_or_else(|| "local参照写像の像型が違う".into())
+    .ok_or_else(|| internal!("local参照写像の像型が違う").into())
 }
 fn checked_reference_map(
     b: &mut Builder<'_>,
@@ -471,7 +475,7 @@ fn checked_reference_map(
     let transport =
         construction::reference_type_transport(inputs, declarations, st, c).map_err(failure)?;
     if transport.target_type() != tt {
-        return Err("local参照写像の終域型が宣言対応と違う".into());
+        return Err(internal!("local参照写像の終域型が宣言対応と違う").into());
     }
     if let Some(construction::ReferenceConditionFailure::ImageType { source, .. }) = transport
         .failures()
@@ -625,7 +629,7 @@ fn value_type_map(
                 }
             }
             Type::Unit | Type::Bool | Type::Fp(_) | Type::Z | Type::Q | Type::Text => {}
-            _ => return Err("値写像の型構造が未対応".into()),
+            _ => return Err(internal!("値写像の型構造が未対応").into()),
         }
     }
     let mut pairs = if references.is_empty() {
@@ -712,7 +716,7 @@ fn expression(
     let ty = inputs
         .law()
         .expr_type(id)
-        .ok_or("local readの元型がない")?
+        .ok_or(internal!("local readの元型がない"))?
         .clone();
     b.push(
         NodeType::Expression(ty),
@@ -786,7 +790,7 @@ pub(super) fn retain(
         if candidate.source().kind != "local" {
             continue;
         }
-        let pair = candidate.pair().ok_or("localの対応署名がない")?;
+        let pair = candidate.pair().ok_or(internal!("localの対応署名がない"))?;
         let source = &inputs.law().declarations()[pair.source()];
         let target = &inputs.law().declarations()[pair.target()];
         let (
@@ -802,10 +806,10 @@ pub(super) fn retain(
             },
         ) = (&source.signature, &target.signature)
         else {
-            return Err("localの対応宣言がlocalでない".into());
+            return Err(internal!("localの対応宣言がlocalでない").into());
         };
         if sp.len() != tp.len() || sr.len() != tr.len() {
-            return Err("参照射影以外のlocal宣言移送は未実装".into());
+            return Err(internal!("参照射影以外のlocal宣言移送は未実装").into());
         }
         let unsupported = |method: &str| Reason {
             kind: ReasonKind::UnsupportedAlgorithm {
@@ -884,7 +888,7 @@ pub(super) fn retain(
                 } else if expression_read {
                     reads.push(Read::Expression);
                 } else {
-                    return Err("異なる引数射影のlocal read移送は未実装".into());
+                    return Err(internal!("異なる引数射影のlocal read移送は未実装").into());
                 }
             } else if let (Some((a, source)), Some((z, target))) =
                 (field_read(inputs, s, sp, c)?, field_read(inputs, t, tp, c)?)
@@ -897,12 +901,12 @@ pub(super) fn retain(
                 } else if expression_read {
                     reads.push(Read::Expression);
                 } else {
-                    return Err("異なる引数のfield read移送は未実装".into());
+                    return Err(internal!("異なる引数のfield read移送は未実装").into());
                 }
             } else if expression_read {
                 reads.push(Read::Expression);
             } else {
-                return Err("local readの式移送は未実装".into());
+                return Err(internal!("local readの式移送は未実装").into());
             }
         }
         let mut parameter_maps = vec![];
@@ -978,7 +982,10 @@ pub(super) fn retain(
                 continue;
             }
             let (Type::Ref(st), Type::Ref(tt)) = (&source.ty, &target.ty) else {
-                return Err("local argument type has no supported finite value transport".into());
+                return Err(internal!(
+                    "local argument type has no supported finite value transport"
+                )
+                .into());
             };
             if let Some(map) = type_maps
                 .iter()
@@ -1023,7 +1030,7 @@ pub(super) fn retain(
             let ty = inputs
                 .law()
                 .expr_type(sr[index])
-                .ok_or("local read型がない")?
+                .ok_or(internal!("local read型がない"))?
                 .erase();
             let finite = super::super::finite::supported(&ty, inputs.law(), c)?;
             let structural = !sp.is_empty()
@@ -1037,7 +1044,7 @@ pub(super) fn retain(
                     inputs
                         .law()
                         .expr_type(sr[index])
-                        .ok_or("local readの元型がない")?,
+                        .ok_or(internal!("local readの元型がない"))?,
                     &declarations.types().iter().cloned().collect(),
                     &pair.parameters().iter().cloned().collect(),
                     c,
@@ -1128,7 +1135,7 @@ pub(super) fn retain(
                 let read_type = inputs
                     .law()
                     .expr_type(s)
-                    .ok_or("local read type missing")?
+                    .ok_or(internal!("local read type missing"))?
                     .erase();
                 let ty = &read_type;
                 let values = value_map(b, [ty, ty], &[], &[], dependencies)?;

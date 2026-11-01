@@ -77,7 +77,7 @@ pub(super) fn law_variables(
                 .iter()
                 .any(|p| p.name == *name && p.ty.erase() == scalar.ty())
         {
-            return Err("Law束縛の名前・型または重複が不正".into());
+            return Err(internal!("Law束縛の名前・型または重複が不正").into());
         }
     }
     let mut vars = BTreeMap::new();
@@ -90,7 +90,7 @@ pub(super) fn law_variables(
             let kind = match p.ty.erase() {
                 Type::Z => NumberType::Z,
                 Type::Q => NumberType::Q,
-                _ => return Err("未束縛の局所Law引数がZ/Qでない".into()),
+                _ => return Err(internal!("未束縛の局所Law引数がZ/Qでない").into()),
             };
             let parameter = Parameter {
                 binder: p.span,
@@ -242,7 +242,7 @@ impl super::conjunction::Interpretation for AffineGuard {
             } else {
                 vec![
                     affine::constant(&Scalar::Z(Z::one()), &env.control)?
-                        .ok_or("偽guardの数値定数がない")?,
+                        .ok_or(internal!("偽guardの数値定数がない"))?,
                 ]
             })));
         }
@@ -379,7 +379,7 @@ impl super::conjunction::Interpretation for IntegerEquations<'_> {
             ));
         };
         let form = affine::binary(BinOp::Sub, Some(&p.left), Some(&p.right), &env.control)?
-            .ok_or("整数等式の差がない")?;
+            .ok_or(internal!("整数等式の差がない"))?;
         if form.varies_over(&self.missing.universal, &env.control)? {
             self.matrix.push(vec![Z::zero(); self.axes.len()]);
             self.rhs.push(Some(Z::one()));
@@ -428,9 +428,11 @@ fn parameter_coefficient_forms(
             crate::construction::ConstructionFailure::Stopped(stop) => {
                 ValidationFailure::Stop(stop)
             }
-            crate::construction::ConstructionFailure::InvalidSelection(message)
-            | crate::construction::ConstructionFailure::Inconsistent(message) => {
-                format!("数値Law係数: {message}").into()
+            crate::construction::ConstructionFailure::InvalidSelection(message) => {
+                internal!(format!("数値Law係数: {message}")).into()
+            }
+            crate::construction::ConstructionFailure::Inconsistent(message) => {
+                internal!(format!("数値Law係数: {message}")).into()
             }
         })?
     else {
@@ -453,7 +455,7 @@ fn parameter_coefficient_forms(
         }
         let subject = env.indexes.subject(&slot.snapshot, &slot.subject)?;
         if slot.field.owner() != Some(subject.ty.as_str()) {
-            return Err("係数のfieldが元subject型と違う".into());
+            return Err(internal!("係数のfieldが元subject型と違う").into());
         }
         let base = value(
             env,
@@ -484,8 +486,8 @@ fn parameter_coefficient_forms(
         if coefficient.terms.is_empty() {
             continue;
         }
-        let mut sum =
-            affine::constant(&Scalar::Z(Z::zero()), &env.control)?.ok_or("係数の零がZでない")?;
+        let mut sum = affine::constant(&Scalar::Z(Z::zero()), &env.control)?
+            .ok_or(internal!("係数の零がZでない"))?;
         for term in &coefficient.terms {
             env.tick()?;
             let Some(mut product) = affine::constant(term.coefficient.scalar(), &env.control)?
@@ -493,7 +495,9 @@ fn parameter_coefficient_forms(
                 return Ok(None);
             };
             for &variable in &term.variables {
-                let field = fields.get(variable).ok_or("係数の記号が範囲外")?;
+                let field = fields
+                    .get(variable)
+                    .ok_or(internal!("係数の記号が範囲外"))?;
                 let Some(next) =
                     affine::binary(BinOp::Mul, Some(&product), Some(field), &env.control)?
                 else {
@@ -502,7 +506,7 @@ fn parameter_coefficient_forms(
                 product = next;
             }
             sum = affine::binary(BinOp::Add, Some(&sum), Some(&product), &env.control)?
-                .ok_or("係数の和がない")?;
+                .ok_or(internal!("係数の和がない"))?;
         }
         forms.push(sum);
     }
@@ -516,9 +520,9 @@ pub(in crate::observed) fn guard_domain(
     missing: &mut Pending,
 ) -> Result<Guard, ValidationFailure> {
     let Signature::Change { params, guard, .. } = &change.signature else {
-        return Err("guardの元宣言がchangeでない".into());
+        return Err(internal!("guardの元宣言がchangeでない").into());
     };
-    let first = params.first().ok_or("changeの第1引数がない")?;
+    let first = params.first().ok_or(internal!("changeの第1引数がない"))?;
     let (vars, axes) = law_variables(env, params, &[(first.name.clone(), subject.clone())])?;
     parameter_guard_domain(env, *guard, &vars, &axes, &change.reading, missing)
 }
@@ -532,7 +536,7 @@ pub(super) fn parameter_guard_domain(
     missing: &mut Pending,
 ) -> Result<Guard, ValidationFailure> {
     if axes.iter().any(|axis| axis.kind != NumberType::Z) {
-        return Err("整数guardのparameter型が違う".into());
+        return Err(internal!("整数guardのparameter型が違う").into());
     }
     let mut matrix = vec![];
     let mut rhs = vec![];
@@ -552,7 +556,7 @@ pub(super) fn parameter_guard_domain(
     let rhs = rhs
         .into_iter()
         .collect::<Option<Vec<_>>>()
-        .ok_or("guard固定項が未確定")?;
+        .ok_or(internal!("guard固定項が未確定"))?;
     let fiber = integer_fiber::solve(&matrix, axes.len(), &rhs, &env.control)?;
     Ok(Guard {
         equations: matrix,
@@ -674,7 +678,7 @@ fn collect_updates(
                 }
                 break;
             }
-            _ => return Err("数値changeのwithがない".into()),
+            _ => return Err(internal!("数値changeのwithがない").into()),
         }
     }
     Ok(())
@@ -688,7 +692,7 @@ pub(in crate::observed) fn compute_update(
     missing: &mut Pending,
 ) -> Result<(Vec<Scalar>, Scalar), ValidationFailure> {
     let Signature::Change { params, body, .. } = &change.signature else {
-        return Err("整数候補がchangeでない".into());
+        return Err(internal!("整数候補がchangeでない").into());
     };
     let ty = params
         .get(1)
@@ -704,7 +708,7 @@ pub(in crate::observed) fn compute_update(
             "数値changeの混合parameter型は未実装",
         ));
     }
-    let ty = ty.ok_or("数値changeの係数型がない")?;
+    let ty = ty.ok_or(internal!("数値changeの係数型がない"))?;
     let bindings = vec![(params[0].name.clone(), subject.clone())];
     let (mut vars, axes) = numeric_parameters::law_variables(env, params, &bindings)?;
     missing.bindings = bindings;
@@ -734,7 +738,10 @@ pub(in crate::observed) fn compute_update(
             value(env, subject.clone())?,
             &env.input_name(&format!(
                 "{}.{}",
-                params[0].ty.ref_target().ok_or("更新対象型がRefでない")?,
+                params[0]
+                    .ty
+                    .ref_target()
+                    .ok_or(internal!("更新対象型がRefでない"))?,
                 field
             ))?,
             &Scope::default(),
@@ -753,7 +760,7 @@ pub(in crate::observed) fn compute_update(
             .integer_coordinates(&axes, &env.control)?
             .map(|(value, row)| (Scalar::Z(value), row.into_iter().map(Scalar::Z).collect())),
         Type::Q => form.rational_coordinates(&axes, &env.control)?,
-        _ => return Err("数値changeの係数型が違う".into()),
+        _ => return Err(internal!("数値changeの係数型が違う").into()),
     };
     let (constant, row) = coordinates.ok_or_else(|| {
         missing.facts.extend(form.missing_facts());
@@ -778,7 +785,7 @@ pub(in crate::observed) fn compute(
         body,
     } = &change.signature
     else {
-        return Err("整数候補がchangeでない".into());
+        return Err(internal!("整数候補がchangeでない").into());
     };
     if params.is_empty() || params[1..].iter().any(|p| p.ty != Type::Z) {
         return Err(unsupported(
@@ -855,12 +862,12 @@ pub(in crate::observed) fn compute(
         let (constant, row) = coordinates(env, *body, form, Axes::Parameters(&axes), missing)?;
         slots.push(slot.clone());
         action.push(row);
-        offset.push(constant.ok_or("作用の固定項が未確定")?);
+        offset.push(constant.ok_or(internal!("作用の固定項が未確定"))?);
     }
     let guard_rhs = guard_rhs
         .into_iter()
         .collect::<Option<Vec<_>>>()
-        .ok_or("guardの固定項が未確定")?;
+        .ok_or(internal!("guardの固定項が未確定"))?;
     let guard = if !guard_matrix.is_empty() {
         let fiber = integer_fiber::solve(&guard_matrix, axes.len(), &guard_rhs, &env.control)?;
         if fiber.particular.is_none() {
@@ -906,12 +913,16 @@ pub(in crate::observed) fn compute(
     let mut rhs = rhs
         .into_iter()
         .collect::<Option<Vec<_>>>()
-        .ok_or("parameter方程式の固定項が未確定")?;
+        .ok_or(internal!("parameter方程式の固定項が未確定"))?;
     let free_count = guard
         .as_ref()
         .map_or(axes.len(), |g| axes.len() - g.fiber.rank);
     if let Some(g) = &guard {
-        let origin = g.fiber.particular.as_ref().ok_or("guardの特解がない")?;
+        let origin = g
+            .fiber
+            .particular
+            .as_ref()
+            .ok_or(internal!("guardの特解がない"))?;
         let shift = apply(&matrix, origin, &env.control)?;
         for (value, shift) in rhs.iter_mut().zip(shift) {
             *value -= shift;
@@ -925,10 +936,12 @@ pub(in crate::observed) fn compute(
             .as_ref()
             .map(|point| {
                 let mut restored = apply(&g.fiber.kernel, point, &env.control)?;
-                for (value, offset) in restored
-                    .iter_mut()
-                    .zip(g.fiber.particular.as_ref().ok_or("guardの特解がない")?)
-                {
+                for (value, offset) in restored.iter_mut().zip(
+                    g.fiber
+                        .particular
+                        .as_ref()
+                        .ok_or(internal!("guardの特解がない"))?,
+                ) {
                     *value += offset;
                 }
                 Ok::<_, ValidationFailure>(restored)
@@ -966,7 +979,7 @@ fn apply(matrix: &Matrix, point: &[Z], c: &Control) -> Result<Vec<Z>, Validation
         .iter()
         .map(|row| {
             if row.len() != point.len() {
-                return Err("復元写像の寸法が違う".into());
+                return Err(internal!("復元写像の寸法が違う").into());
             }
             let mut value = Z::zero();
             for (a, b) in row.iter().zip(point) {
@@ -986,11 +999,11 @@ fn compose(
     let mut result = vec![vec![Z::zero(); cols]; left.len()];
     for (i, row) in left.iter().enumerate() {
         if row.len() != right.len() {
-            return Err("整数写像の合成寸法が違う".into());
+            return Err(internal!("整数写像の合成寸法が違う").into());
         }
         for (k, a) in row.iter().enumerate() {
             if right[k].len() != cols {
-                return Err("整数写像の列数が違う".into());
+                return Err(internal!("整数写像の列数が違う").into());
             }
             for j in 0..cols {
                 c.checkpoint(Checkpoint::PrimitiveValuation)?;
@@ -1020,13 +1033,15 @@ pub(in crate::observed) fn state_equations(
                 &env.state,
                 &slot.snapshot,
                 &slot.subject,
-                slot.field.as_ref().ok_or("自由位置にfieldがない")?,
+                slot.field
+                    .as_ref()
+                    .ok_or(internal!("自由位置にfieldがない"))?,
             )?
             .ty
             .erase()
             != Type::Z
         {
-            return Err("整数局所状態の自由位置がZでない".into());
+            return Err(internal!("整数局所状態の自由位置がZでない").into());
         }
         state
             .indexes
@@ -1052,7 +1067,7 @@ fn requirement_equations(
             ..
         } = &law.signature
         else {
-            return Err("整数候補の要求がLawでない".into());
+            return Err(internal!("整数候補の要求がLawでない").into());
         };
         let mut checked = BTreeMap::new();
         let mut checks = owned_call::Checks::default();
@@ -1060,7 +1075,7 @@ fn requirement_equations(
             let p = law_params
                 .iter()
                 .find(|p| p.name == *name)
-                .ok_or("整数Lawの束縛名が異なる")?;
+                .ok_or(internal!("整数Lawの束縛名が異なる"))?;
             env.owned_call_value_check(
                 &p.ty,
                 &crate::observed::term::affine::Value::Known(v.clone()),
@@ -1183,7 +1198,7 @@ pub(super) fn numeric_guard_domain(
                 rank: fiber.pivots.len(),
             })
         }
-        _ => Err("unsupported guard coefficient type".into()),
+        _ => Err(internal!("unsupported guard coefficient type").into()),
     })
 }
 
@@ -1206,7 +1221,9 @@ pub(super) fn capture_missing<T>(
 ) -> Result<(T, Vec<Fact>), ValidationFailure> {
     let outer = env.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
     let result = operation();
-    let reads = outer.restore().ok_or("数値式の不足位置収集がない")?;
+    let reads = outer
+        .restore()
+        .ok_or(internal!("数値式の不足位置収集がない"))?;
     if let Some(outer) = env.state.missing_slot_reads.borrow_mut().as_mut() {
         outer.extend(reads.iter().cloned());
     }
@@ -1237,7 +1254,7 @@ impl NumericGuard {
             return Ok(None);
         };
         if row.len() != origin.len() {
-            return Err("数値parameterの次元が違う".into());
+            return Err(internal!("数値parameterの次元が違う").into());
         }
         let zero = numeric::zero(&rhs.ty(), &env.control)?;
         let dot = |point: &[Scalar]| -> Result<Scalar, ValidationFailure> {
@@ -1300,9 +1317,9 @@ pub(in crate::observed) fn change_guard_domain(
     ty: &Type,
 ) -> Result<NumericGuard, ValidationFailure> {
     let Signature::Change { params, guard, .. } = &change.signature else {
-        return Err("数値guardの元宣言がchangeでない".into());
+        return Err(internal!("数値guardの元宣言がchangeでない").into());
     };
-    let first = params.first().ok_or("changeの第1引数がない")?;
+    let first = params.first().ok_or(internal!("changeの第1引数がない"))?;
     let (vars, axes) =
         numeric_parameters::law_variables(env, params, &[(first.name.clone(), subject.clone())])?;
     numeric_guard_domain(env, *guard, &vars, &axes, &change.reading, missing, ty)

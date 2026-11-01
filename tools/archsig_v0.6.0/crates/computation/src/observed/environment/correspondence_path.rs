@@ -21,7 +21,7 @@ impl Environment<'_> {
             ..
         } = signature
         else {
-            return Err("Pathの元宣言がcorrespondenceでない".into());
+            return Err(internal!("Pathの元宣言がcorrespondenceでない").into());
         };
         let Scalar::Subject {
             snapshot,
@@ -29,11 +29,11 @@ impl Environment<'_> {
             entity,
         } = generator
         else {
-            return Err("correspondence生成元が原始参照でない".into());
+            return Err(internal!("correspondence生成元が原始参照でない").into());
         };
         let original = self.indexes.subject(snapshot, subject)?;
         if original.ty != *entity {
-            return Err("correspondenceの元型が違う".into());
+            return Err(internal!("correspondenceの元型が違う").into());
         }
         let mut out = PathResult {
             value: None,
@@ -63,7 +63,7 @@ impl Environment<'_> {
             return Ok(out);
         };
         if from.ty() != Type::Ref(ft.clone()) || to.ty() != Type::Ref(tt.clone()) {
-            return Err("correspondenceの実端点型が違う".into());
+            return Err(internal!("correspondenceの実端点型が違う").into());
         }
         let point = |s: &Scalar| -> Result<Point, ValidationFailure> {
             if let Scalar::Subject {
@@ -72,7 +72,7 @@ impl Environment<'_> {
             {
                 Ok((snapshot.clone(), subject.clone()))
             } else {
-                Err("対応表の値が原始参照でない".into())
+                Err(internal!("対応表の値が原始参照でない").into())
             }
         };
         let fp = point(&from)?;
@@ -92,17 +92,17 @@ impl Environment<'_> {
                 continue;
             };
             let Scalar::Map { pairs: entries, .. } = &value else {
-                return Err("correspondenceの元対応表がMapでない".into());
+                return Err(internal!("correspondenceの元対応表がMapでない").into());
             };
             for (a, b) in entries {
                 self.tick()?;
                 if a.ty() != Type::Ref(source_type.clone())
                     || b.ty() != Type::Ref(target_type.clone())
                 {
-                    return Err("correspondenceの対応表row型が違う".into());
+                    return Err(internal!("correspondenceの対応表row型が違う").into());
                 }
                 if moving.insert(point(&a)?, point(&b)?).is_some() {
-                    return Err("correspondenceの対応元が重複".into());
+                    return Err(internal!("correspondenceの対応元が重複").into());
                 }
             }
         }
@@ -179,15 +179,17 @@ impl Environment<'_> {
             let sp = (s.snapshot.clone(), s.id.clone());
             let target_point = moving
                 .get(&sp)
-                .ok_or("correspondenceの全域対応表に元subjectがない")?;
+                .ok_or(internal!("correspondenceの全域対応表に元subjectがない"))?;
             let t = self.indexes.subject(&target_point.0, &target_point.1)?;
             let expected_type = if sp == fp {
                 tt
             } else {
-                by_type.get(s.ty.as_str()).ok_or("対応元の型がない")?
+                by_type
+                    .get(s.ty.as_str())
+                    .ok_or(internal!("対応元の型がない"))?
             };
             if &t.ty != expected_type {
-                return Err("対応先の実subject型が違う".into());
+                return Err(internal!("対応先の実subject型が違う").into());
             }
             let fact = Fact {
                 snapshot: s.snapshot.clone(),
@@ -214,7 +216,7 @@ impl Environment<'_> {
                 } else {
                     fields
                         .get(f.name.as_str())
-                        .ok_or("検査済みfield対応がない")?
+                        .ok_or(internal!("検査済みfield対応がない"))?
                         .clone()
                 };
                 let mut target_field = None;
@@ -242,10 +244,10 @@ impl Environment<'_> {
                 // 像Atomの実在を確認後、候補の参照構造を同じ原始位置で再検査する。
                 let a = self
                     .path_input_value(s, f)?
-                    .ok_or("元correspondence field値がない")?;
+                    .ok_or(internal!("元correspondence field値がない"))?;
                 let b = self
                     .path_input_value(t, target_field)?
-                    .ok_or("correspondenceの像field値がない")?;
+                    .ok_or(internal!("correspondenceの像field値がない"))?;
                 let mut refs = BTreeSet::new();
                 let expected = self.path_shape(a, Some(&moving), &mut refs)?;
                 let actual = self.path_shape(b, None, &mut BTreeSet::new())?;
@@ -299,7 +301,7 @@ impl Environment<'_> {
             let image = if family.contains(&fact) {
                 images
                     .get(&fact)
-                    .ok_or("correspondenceのF上像がない")?
+                    .ok_or(internal!("correspondenceのF上像がない"))?
                     .clone()
             } else {
                 target_root.clone()

@@ -22,7 +22,7 @@ impl AutomaticLawValuations {
     ) -> Result<ObservedLawReading, ValidationFailure> {
         tick(c)?;
         if &self.value.sources != inputs.sources() {
-            return Err("有限Lawの実読取りと元三入力が違う".into());
+            return Err(internal!("有限Lawの実読取りと元三入力が違う").into());
         }
         let mut env = Environment::new(inputs, c)?;
         *env.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
@@ -44,7 +44,10 @@ impl AutomaticLawValuations {
         };
         let mut positions = vec![];
         let tracked = env.state.primitive_reads.borrow();
-        for fact in tracked.as_ref().ok_or("有限Lawの実読取り記録がない")? {
+        for fact in tracked
+            .as_ref()
+            .ok_or(internal!("有限Lawの実読取り記録がない"))?
+        {
             tick(c)?;
             positions.push(fact.clone());
         }

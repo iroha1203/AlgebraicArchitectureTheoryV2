@@ -36,7 +36,7 @@ impl Coordinate {
     fn polynomial(&self) -> Result<&SourceCoordinate, ValidationFailure> {
         match &self.source {
             Source::Polynomial(q) => Ok(q),
-            _ => Err("多項式座標でない".into()),
+            _ => Err(internal!("多項式座標でない").into()),
         }
     }
     pub(super) fn value(&self, reading: Reading) -> Option<NodeRef> {
@@ -133,7 +133,7 @@ fn universe(g: &Graph, architecture: NodeRef) -> Result<(NodeRef, Fact), Validat
     let a = native::architecture_origin(g, architecture, 0)?;
     let anchor = a.construction().root().clone();
     if anchor.field.is_some() || anchor.atom.is_some() {
-        return Err("Observableのrootが存在Atomでない".into());
+        return Err(internal!("Observableのrootが存在Atomでない").into());
     }
     let mut result = None;
     for (i, n) in g.nodes.iter().enumerate().take(architecture.0) {
@@ -144,9 +144,9 @@ fn universe(g: &Graph, architecture: NodeRef) -> Result<(NodeRef, Fact), Validat
             break;
         }
     }
-    let r = result.ok_or("Observableの元AtomUniverseがない")?;
+    let r = result.ok_or(internal!("Observableの元AtomUniverseがない"))?;
     if !a.construction().universe().contains(&anchor) {
-        return Err("Observableのroot存在Atomが共通Uにない".into());
+        return Err(internal!("Observableのroot存在Atomが共通Uにない").into());
     }
     Ok((r, anchor))
 }
@@ -159,7 +159,9 @@ fn compute_polynomial(
     tick(c)?;
     table.recheck(env, g, c)?;
     let diagrams = table.diagrams()?;
-    let base = diagrams.first().ok_or("Observableのbase表示がない")?;
+    let base = diagrams
+        .first()
+        .ok_or(internal!("Observableのbase表示がない"))?;
     let (universe, anchor) = universe(g, table.architecture)?;
     let mut support = table.support.clone();
     let mut scope = table.scope.clone();
@@ -212,12 +214,12 @@ fn compute_polynomial(
                 .originals
                 .iter()
                 .find(|o| o.reference == q.instance)
-                .ok_or("Observableの元Law出現がない")?;
+                .ok_or(internal!("Observableの元Law出現がない"))?;
             if q.position.object != object
                 || q.position.instance != original.instance
                 || q.row != original.row
             {
-                return Err("Observableの元対象/parameter行/出現が違う".into());
+                return Err(internal!("Observableの元対象/parameter行/出現が違う").into());
             }
             let index = base
                 .originals
@@ -227,9 +229,9 @@ fn compute_polynomial(
                         && o.instance == original.instance
                         && o.finite == original.finite
                 })
-                .ok_or("Observableの共通Law添字がない")?;
+                .ok_or(internal!("Observableの共通Law添字がない"))?;
             if !table.indices.contains(&index.reference) {
-                return Err("Observableの座標が共通Law表にない".into());
+                return Err(internal!("Observableの座標が共通Law表にない").into());
             }
             let factor = q
                 .ring
@@ -237,13 +239,13 @@ fn compute_polynomial(
                     factors
                         .iter()
                         .position(|r| *r == ring)
-                        .ok_or("Observableの元環がfactorにない")
+                        .ok_or(internal!("Observableの元環がfactorにない"))
                 })
                 .transpose()?;
             if let Some(ring) = q.ring {
                 if let Some((_, previous)) = types.iter().find(|(ty, _)| *ty == q.ty) {
                     if *previous != ring {
-                        return Err("Observableの同型別共有環が対象間で違う".into());
+                        return Err(internal!("Observableの同型別共有環が対象間で違う").into());
                     }
                 } else {
                     types.push((q.ty.clone(), ring));
@@ -365,7 +367,10 @@ impl Layout {
         c: &Control,
     ) -> Result<(), ValidationFailure> {
         if self.data != compute(env, g, &self.table, &self.plan, c)? {
-            return Err("Observableのfactor/全座標/由来/支持/Scope/完成状態が元計画と違う".into());
+            return Err(internal!(
+                "Observableのfactor/全座標/由来/支持/Scope/完成状態が元計画と違う"
+            )
+            .into());
         }
         tick(c)
     }
@@ -377,10 +382,10 @@ impl Layout {
     ) -> Result<Checked<'a>, ValidationFailure> {
         self.recheck(env, g, c)?;
         let Some(Payload::Construction(v)) = &g.get(self.data.universe)?.payload else {
-            return Err("Observableの共通Uがnativeでない".into());
+            return Err(internal!("Observableの共通Uがnativeでない").into());
         };
         let D::AtomUniverse(atoms) = &v.data else {
-            return Err("Observableの共通Uが別構成".into());
+            return Err(internal!("Observableの共通Uが別構成").into());
         };
         Ok(Checked {
             data: &self.data,
@@ -407,18 +412,18 @@ impl Checked<'_> {
             .data
             .factors
             .get(factor)
-            .ok_or("Observableのfactorが域外")?;
+            .ok_or(internal!("Observableのfactorが域外"))?;
         let row = self
             .data
             .objects
             .get(object)
-            .ok_or("Observableの対象が域外")?;
+            .ok_or(internal!("Observableの対象が域外"))?;
         let q = row
             .coordinates
             .get(coordinate)
-            .ok_or("Observableの座標が域外")?;
+            .ok_or(internal!("Observableの座標が域外"))?;
         if !self.atoms.contains(atom) {
-            return Err("ObservableのAtomが共通U外".into());
+            return Err(internal!("ObservableのAtomが共通U外").into());
         }
         if atom != &self.data.anchor || q.factor.is_some_and(|f| f != factor) {
             return Ok(Placed::Zero { ring });

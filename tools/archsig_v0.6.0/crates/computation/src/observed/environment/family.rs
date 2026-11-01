@@ -58,8 +58,12 @@ impl Environment<'_> {
             .inputs
             .law()
             .declarations()
-            .get(request.declaration().ok_or("元要求に宣言がない")?)
-            .ok_or("族の元Lawがない")?;
+            .get(
+                request
+                    .declaration()
+                    .ok_or(internal!("元要求に宣言がない"))?,
+            )
+            .ok_or(internal!("族の元Lawがない"))?;
         let Signature::Law {
             params,
             guard,
@@ -211,7 +215,7 @@ impl Environment<'_> {
         let request = graph
             .requests
             .get(context.request)
-            .ok_or("族Sourceの元Requestがない")?;
+            .ok_or(internal!("族Sourceの元Requestがない"))?;
         let Some(plan) = self.family_plan(request)? else {
             return Ok(false);
         };
@@ -243,15 +247,15 @@ impl Environment<'_> {
     ) -> Result<(&'g Request, Plan), ValidationFailure> {
         let context = graph.context_at(source.0);
         if context.frame.is_some() || context.iteration.is_some() || context.instance.is_some() {
-            return Err("族Sourceがroot以外にある".into());
+            return Err(internal!("族Sourceがroot以外にある").into());
         }
         let request = graph
             .requests
             .get(context.request)
-            .ok_or("族Sourceの元Requestがない")?;
+            .ok_or(internal!("族Sourceの元Requestがない"))?;
         let plan = self
             .family_plan(request)?
-            .ok_or("元Requestが未束縛Law族でない")?;
+            .ok_or(internal!("元Requestが未束縛Law族でない"))?;
         self.source_matches(graph, source, plan.body)?;
         Ok((request, plan))
     }
@@ -264,20 +268,21 @@ impl Environment<'_> {
         let request = graph
             .requests
             .get(context.request)
-            .ok_or("族Sourceの元Requestがない")?;
+            .ok_or(internal!("族Sourceの元Requestがない"))?;
         let plan = self
             .family_plan(request)?
-            .ok_or("元Requestが未束縛Law族でない")?;
+            .ok_or(internal!("元Requestが未束縛Law族でない"))?;
         let Some(Payload::Expression {
             location: Location::Law { span },
             parameters,
             bindings,
         }) = &node.payload
         else {
-            return Err("族の元Sourceがない".into());
+            return Err(internal!("族の元Sourceがない").into());
         };
-        let d = &self.indexes.inputs.law().declarations()
-            [request.declaration().ok_or("元要求に宣言がない")?];
+        let d = &self.indexes.inputs.law().declarations()[request
+            .declaration()
+            .ok_or(internal!("元要求に宣言がない"))?];
         if context.frame.is_some()
             || context.iteration.is_some()
             || context.instance.is_some()
@@ -300,7 +305,7 @@ impl Environment<'_> {
             || node.judgment.is_some()
             || node.arguments != self.source_arguments(graph, *span, bindings)?
         {
-            return Err("族Sourceの元parameter・出現・辺が違う".into());
+            return Err(internal!("族Sourceの元parameter・出現・辺が違う").into());
         }
         let mut scope = Scope::default();
         scope.readings.insert(d.reading.clone());
@@ -312,7 +317,7 @@ impl Environment<'_> {
             .filter(|p| !plan.free.iter().any(|u| u.name == p.name))
             .collect();
         if bindings.len() != fixed.len() {
-            return Err("族Sourceの固定束縛数が違う".into());
+            return Err(internal!("族Sourceの固定束縛数が違う").into());
         }
         for (p, b) in fixed.iter().zip(bindings) {
             self.tick()?;
@@ -320,13 +325,13 @@ impl Environment<'_> {
                 scope.merge(&graph.get(check)?.scope);
             }
             if p.name != b.name || p.ty.erase() != b.ty {
-                return Err("族Source固定署名が違う".into());
+                return Err(internal!("族Source固定署名が違う").into());
             }
             let selected = request
                 .arguments
                 .iter()
                 .find(|a| a.name == format!("bind.{}", p.name))
-                .ok_or("固定selectorがない")?;
+                .ok_or(internal!("固定selectorがない"))?;
             match &selected.value {
                 selector @ Selector::Answer { .. } => {
                     self.answer_binding_matches(graph, selector, b.value, p.span)?;
@@ -340,13 +345,13 @@ impl Environment<'_> {
                             entity: actual.ty.to_string(),
                         })
                     {
-                        return Err("固定subject identityが違う".into());
+                        return Err(internal!("固定subject identityが違う").into());
                     }
                     if graph.context_at(b.value.0) != context {
-                        return Err("固定bindingが別Request producer".into());
+                        return Err(internal!("固定bindingが別Request producer").into());
                     }
                 }
-                _ => return Err("固定束縛が元subject/Answer selectorでない".into()),
+                _ => return Err(internal!("固定束縛が元subject/Answer selectorでない").into()),
             }
             self.validate_at(graph, graph.get(b.value)?, b.value.0)?;
             scope.merge(&graph.get(b.value)?.scope);
@@ -354,7 +359,7 @@ impl Environment<'_> {
         scope.completions |= context.case.is_some();
         self.family_merge_scope(&plan, &mut scope, &[], context)?;
         if node.scope != scope {
-            return Err("族SourceのScopeが元宣言と違う".into());
+            return Err(internal!("族SourceのScopeが元宣言と違う").into());
         }
         Ok(plan)
     }
@@ -415,7 +420,7 @@ impl Environment<'_> {
                 self.finite_values(ty, observer)?
             } else {
                 self.dynamic_finite_values(ty, observer)?
-                    .ok_or("Law parameter域が有限でない")?
+                    .ok_or(internal!("Law parameter域が有限でない"))?
             };
         let mut domain = super::owned_type::TypeDomain {
             values: Some(enumeration.values),
@@ -427,7 +432,9 @@ impl Environment<'_> {
         };
         self.restrict_object_domain(ty, &mut domain)?;
         Ok(super::super::finite::Enumeration {
-            values: domain.values.ok_or("完成対象のparameter域が未確定")?,
+            values: domain
+                .values
+                .ok_or(internal!("完成対象のparameter域が未確定"))?,
             scope: domain.scope,
             support: domain.support,
         })
@@ -444,7 +451,7 @@ impl Environment<'_> {
             return self.dependent_family_domains(graph, source, domains, plan);
         }
         if domains.len() != plan.unbound.len() {
-            return Err("parameter域の個数が違う".into());
+            return Err(internal!("parameter域の個数が違う").into());
         }
         let mut scope = graph.get(source)?.scope.clone();
         for (p, &domain) in plan.unbound.iter().zip(domains) {
@@ -453,7 +460,7 @@ impl Environment<'_> {
             if !matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if *span==p.span)
                 || node.arguments.first() != Some(&source)
             {
-                return Err("parameter域が元署名の出現と違う".into());
+                return Err(internal!("parameter域が元署名の出現と違う").into());
             }
             self.validate_at(graph, node, domain.0)?;
             scope.merge(&node.scope);
@@ -467,7 +474,10 @@ impl Environment<'_> {
         domain: NodeRef,
     ) -> Result<(NodeRef, Vec<NodeRef>, Plan), ValidationFailure> {
         let node = graph.get(domain)?;
-        let source = *node.arguments.first().ok_or("直積の元Sourceがない")?;
+        let source = *node
+            .arguments
+            .first()
+            .ok_or(internal!("直積の元Sourceがない"))?;
         let (_, plan) = self.family_request(graph, source)?;
         if plan.dependent {
             return self.dependent_family_domain_parts(graph, domain, source, plan);
@@ -478,7 +488,7 @@ impl Environment<'_> {
         } else {
             node.arguments
                 .get(1..1 + count)
-                .ok_or("直積のparameter域がない")?
+                .ok_or(internal!("直積のparameter域がない"))?
                 .to_vec()
         };
         self.validate_at(graph, node, domain.0)?;
@@ -498,24 +508,27 @@ impl Environment<'_> {
         if let Some(inputs) = self.relation_source_inputs(graph, index)? {
             return Ok(inputs);
         }
-        let record = graph.instances.get(index).ok_or("実instanceがない")?;
+        let record = graph
+            .instances
+            .get(index)
+            .ok_or(internal!("実instanceがない"))?;
         if record.caller.instance.is_some()
             || record.caller.frame.is_some()
             || record.caller.iteration.is_some()
             || graph.context_at(record.source.0) != record.caller
             || graph.context_at(record.domain.0) != record.caller
         {
-            return Err("instanceの元Contextが違う".into());
+            return Err(internal!("instanceの元Contextが違う").into());
         }
         let (source, domains, plan) = self.family_domain_parts(graph, record.domain)?;
         if source != record.source {
-            return Err("instanceの元族Sourceが違う".into());
+            return Err(internal!("instanceの元族Sourceが違う").into());
         }
         let Some(Payload::Domain { elements, .. }) = &graph.get(record.domain)?.payload else {
-            return Err("instanceの実直積がない".into());
+            return Err(internal!("instanceの実直積がない").into());
         };
         if !elements.contains(&record.member) {
-            return Err("instance memberが元直積の元でない".into());
+            return Err(internal!("instance memberが元直積の元でない").into());
         }
         let items = family_items(graph.scalar(record.member)?, plan.unbound.len())?;
         let fixed = self.expression_bindings(graph, source)?;
@@ -538,7 +551,7 @@ impl Environment<'_> {
                 continue;
             }
             let value = if let Some(i) = plan.unbound.iter().position(|u| u.name == p.name) {
-                let expected = items.get(i).ok_or("instance tuple位置がない")?;
+                let expected = items.get(i).ok_or(internal!("instance tuple位置がない"))?;
                 let mut found = None;
                 for (id, node) in graph
                     .nodes
@@ -556,17 +569,17 @@ impl Environment<'_> {
                         && matches!(&node.payload,Some(Payload::Scalar(s)) if s==expected)
                     {
                         if found.is_some() {
-                            return Err("同じinstanceの元parameter値が重複".into());
+                            return Err(internal!("同じinstanceの元parameter値が重複").into());
                         }
                         found = Some(NodeRef(id));
                     }
                 }
-                found.ok_or("実instance parameter producerがない")?
+                found.ok_or(internal!("実instance parameter producerがない"))?
             } else {
                 fixed
                     .iter()
                     .find(|b| b.name == p.name)
-                    .ok_or("固定bindingがない")?
+                    .ok_or(internal!("固定bindingがない"))?
                     .value
             };
             let scalar = graph.scalar(value)?.clone();
@@ -574,7 +587,7 @@ impl Environment<'_> {
                 self.validate_at(graph, graph.get(value)?, value.0)?;
             }
             if scalar.ty() != p.ty.erase() {
-                return Err("実instance parameter型が違う".into());
+                return Err(internal!("実instance parameter型が違う").into());
             }
             let b = Binding {
                 name: p.name.clone(),
@@ -623,7 +636,7 @@ impl Environment<'_> {
             let d = &self.indexes.inputs.law().declarations()[graph.requests
                 [graph.context_at(source.0).request]
                 .declaration()
-                .ok_or("元要求に宣言がない")?];
+                .ok_or(internal!("元要求に宣言がない"))?];
             let origin = match &node.rule {
                 Rule::Input {
                     kind: "law",
@@ -636,7 +649,7 @@ impl Environment<'_> {
                 || origin == Some(d.span))
                 && context != graph.context_at(source.0)
             {
-                return Err("族Domain/memberが別Request・instanceに属す".into());
+                return Err(internal!("族Domain/memberが別Request・instanceに属す").into());
             }
             if let Some(Payload::Scalar(value)) = &node.payload {
                 let p = plan.unbound.iter().position(|p| Some(p.span) == origin);
@@ -647,24 +660,29 @@ impl Environment<'_> {
                     if node.arguments.len() == 1 {
                         (enumeration.values, scope, enumeration.support)
                     } else {
-                        let index = context.instance.ok_or("row値にinstance Contextがない")?;
-                        let record = graph.instances.get(index).ok_or("row値のinstanceがない")?;
+                        let index = context
+                            .instance
+                            .ok_or(internal!("row値にinstance Contextがない"))?;
+                        let record = graph
+                            .instances
+                            .get(index)
+                            .ok_or(internal!("row値のinstanceがない"))?;
                         if context.request != record.caller.request
                             || context.frame.is_some()
                             || context.iteration.is_some()
                             || node.arguments != [record.source, record.domain, record.member]
                             || source != record.source
                         {
-                            return Err("row値の元直積辺が違う".into());
+                            return Err(internal!("row値の元直積辺が違う").into());
                         }
                         let (_, domains, _) = self.family_domain_parts(graph, record.domain)?;
                         let Some(Payload::Domain { elements, .. }) =
                             &graph.get(record.domain)?.payload
                         else {
-                            return Err("row域がない".into());
+                            return Err(internal!("row域がない").into());
                         };
                         if !elements.contains(&record.member) {
-                            return Err("rowが元直積にない".into());
+                            return Err(internal!("rowが元直積にない").into());
                         }
                         let items = family_items(graph.scalar(record.member)?, plan.unbound.len())?;
                         (
@@ -674,7 +692,10 @@ impl Environment<'_> {
                         )
                     }
                 } else if origin == Some(d.span) {
-                    let domains = node.arguments.get(1..).ok_or("直積member域辺がない")?;
+                    let domains = node
+                        .arguments
+                        .get(1..)
+                        .ok_or(internal!("直積member域辺がない"))?;
                     let scope = self.family_domains(graph, source, domains, &plan)?;
                     let enumeration = self.family_product(
                         &plan
@@ -686,7 +707,7 @@ impl Environment<'_> {
                     )?;
                     (enumeration.values, scope, enumeration.support)
                 } else {
-                    return Err("族値の元parameter出現が違う".into());
+                    return Err(internal!("族値の元parameter出現が違う").into());
                 };
                 data::check(value, self.indexes.inputs.law(), &self.control)?;
                 if node.ty != NodeType::Value(value.ty())
@@ -697,7 +718,7 @@ impl Environment<'_> {
                     || !node.reasons.is_empty()
                     || node.judgment.is_some()
                 {
-                    return Err("族memberの元型/値/Scope/支持が違う".into());
+                    return Err(internal!("族memberの元型/値/Scope/支持が違う").into());
                 }
                 return Ok(true);
             }
@@ -705,7 +726,7 @@ impl Environment<'_> {
                 let (enumeration, scope, offset) =
                     if let Some(p) = plan.unbound.iter().find(|p| Some(p.span) == origin) {
                         if ty != &p.ty {
-                            return Err("parameter Domain型が違う".into());
+                            return Err(internal!("parameter Domain型が違う").into());
                         }
                         let e = self.family_values(&p.ty, &mut |_, _| {})?;
                         let mut scope = graph.get(source)?.scope.clone();
@@ -714,13 +735,15 @@ impl Environment<'_> {
                     } else if origin == Some(d.span) {
                         let types: Vec<_> = plan.unbound.iter().map(|p| p.ty.clone()).collect();
                         if ty != &family_type(&types) {
-                            return Err("直積Domain型が違う".into());
+                            return Err(internal!("直積Domain型が違う").into());
                         }
                         let count = plan.unbound.len();
                         let scope = self.family_domains(
                             graph,
                             source,
-                            node.arguments.get(1..1 + count).ok_or("直積元域がない")?,
+                            node.arguments
+                                .get(1..1 + count)
+                                .ok_or(internal!("直積元域がない"))?,
                             &plan,
                         )?;
                         (
@@ -729,7 +752,7 @@ impl Environment<'_> {
                             1 + count,
                         )
                     } else {
-                        return Err("族Domainの元parameter出現が違う".into());
+                        return Err(internal!("族Domainの元parameter出現が違う").into());
                     };
                 if node.ty != NodeType::Domain
                     || node.arguments.get(offset..) != Some(elements.as_slice())
@@ -740,19 +763,21 @@ impl Environment<'_> {
                     || node.judgment.is_some()
                     || elements.len() != enumeration.values.len()
                 {
-                    return Err("族Domainの全域/辺/Scope/支持が違う".into());
+                    return Err(internal!("族Domainの全域/辺/Scope/支持が違う").into());
                 }
                 let mut seen = Vec::new();
                 for &r in elements {
                     self.tick()?;
                     if r.0 >= limit {
-                        return Err("族Domain元が未出".into());
+                        return Err(internal!("族Domain元が未出").into());
                     }
                     let member = graph.get(r)?;
                     if member.arguments != node.arguments[..offset]
                         || !matches!((&member.rule,&node.rule),(Rule::Input {kind:"law",location:Location::Law {span:a}},Rule::Input {kind:"law",location:Location::Law {span:b}}) if a==b)
                     {
-                        return Err("族Domainの元memberが別Source/parameter出現に属す".into());
+                        return Err(
+                            internal!("族Domainの元memberが別Source/parameter出現に属す").into(),
+                        );
                     }
                     self.validate_at(graph, member, r.0)?;
                     let v = graph.scalar(r)?;
@@ -760,7 +785,7 @@ impl Environment<'_> {
                         || !data::contains(&enumeration.values, v, &self.control)?
                         || data::contains(&seen, v, &self.control)?
                     {
-                        return Err("族Domainに異型/欠落/重複がある".into());
+                        return Err(internal!("族Domainに異型/欠落/重複がある").into());
                     }
                     seen.push(v.clone());
                 }
@@ -781,7 +806,7 @@ impl Environment<'_> {
             && (graph.context_at(node.arguments[0].0) != context
                 || graph.context_at(node.arguments[1].0) != context)
         {
-            return Err("実rowの結論が別instance producerを消費している".into());
+            return Err(internal!("実rowの結論が別instance producerを消費している").into());
         }
         self.validate_family_application(graph, node, limit)
     }
@@ -802,11 +827,11 @@ pub(in crate::observed) fn family_items(
         Ok(vec![value.clone()])
     } else if let Scalar::Tuple(items) = value {
         if items.len() != count {
-            return Err("実直積の成分数が違う".into());
+            return Err(internal!("実直積の成分数が違う").into());
         }
         Ok(items.clone())
     } else {
-        Err("実直積memberがTupleでない".into())
+        Err(internal!("実直積memberがTupleでない").into())
     }
 }
 
@@ -843,11 +868,12 @@ impl Environment<'_> {
             occurrence,
         }) = &template.payload
         else {
-            return Err("族LawInstanceがない".into());
+            return Err(internal!("族LawInstanceがない").into());
         };
         let (request, plan) = self.family_request(graph, *body)?;
-        let d = &self.indexes.inputs.law().declarations()
-            [request.declaration().ok_or("元要求に宣言がない")?];
+        let d = &self.indexes.inputs.law().declarations()[request
+            .declaration()
+            .ok_or(internal!("元要求に宣言がない"))?];
         let Signature::Law {
             role: expected_role,
             ..
@@ -865,7 +891,7 @@ impl Environment<'_> {
             || bindings != self.expression_bindings(graph, *body)?
             || template.arguments.first() != Some(body)
         {
-            return Err("whole LawInstanceの元宣言/固定bindingが違う".into());
+            return Err(internal!("whole LawInstanceの元宣言/固定bindingが違う").into());
         }
         self.validate_at(graph, graph.get(*body)?, body.0)?;
         let offset = 1 + usize::from(guard.is_some());
@@ -876,28 +902,28 @@ impl Environment<'_> {
                 if template.arguments.get(1) != Some(g)
                     || self.expression_bindings(graph, *g)? != bindings
                 {
-                    return Err("whole guardの元自由parameterが違う".into());
+                    return Err(internal!("whole guardの元自由parameterが違う").into());
                 }
             }
             (None, None) => {}
-            _ => return Err("whole guardが元Lawと違う".into()),
+            _ => return Err(internal!("whole guardが元Lawと違う").into()),
         }
         let domain = *template
             .arguments
             .get(offset)
-            .ok_or("wholeに実直積域がない")?;
+            .ok_or(internal!("wholeに実直積域がない"))?;
         let (source, domains, actual_plan) = self.family_domain_parts(graph, domain)?;
         if source != *body || actual_plan.unbound != plan.unbound {
-            return Err("whole直積が別の族Source".into());
+            return Err(internal!("whole直積が別の族Source").into());
         }
         let Some(Payload::Domain { elements, .. }) = &graph.get(domain)?.payload else {
-            return Err("wholeの有限直積がない".into());
+            return Err(internal!("wholeの有限直積がない").into());
         };
         let count = elements.len();
         let concrete = template
             .arguments
             .get(offset + 1..offset + 1 + count)
-            .ok_or("wholeに実row LawInstanceがない")?;
+            .ok_or(internal!("wholeに実row LawInstanceがない"))?;
         let rows = template.arguments[offset + 1 + count..].to_vec();
         if rows.len() != count
             || concrete
@@ -905,7 +931,7 @@ impl Environment<'_> {
                 .enumerate()
                 .any(|(i, r)| concrete[..i].contains(r))
         {
-            return Err("wholeの実直積coverage件数が違う".into());
+            return Err(internal!("wholeの実直積coverage件数が違う").into());
         }
         let mut scope = self.family_domains(graph, *body, &domains, &plan)?;
         let mut support = graph.get(domain)?.support.clone();
@@ -915,11 +941,13 @@ impl Environment<'_> {
         for (row_index, &row) in rows.iter().enumerate() {
             self.tick()?;
             let context = graph.context_at(row.0);
-            let index = context.instance.ok_or("whole rowにinstanceがない")?;
+            let index = context
+                .instance
+                .ok_or(internal!("whole rowにinstanceがない"))?;
             let record = graph
                 .instances
                 .get(index)
-                .ok_or("whole rowの実instanceがない")?;
+                .ok_or(internal!("whole rowの実instanceがない"))?;
             if context.frame.is_some()
                 || context.iteration.is_some()
                 || context.request != graph.context_at(body.0).request
@@ -929,7 +957,7 @@ impl Environment<'_> {
                 || seen.contains(&record.member)
                 || (plan.dependent && elements.get(row_index) != Some(&record.member))
             {
-                return Err("wholeに別instance/欠落/重複rowがある".into());
+                return Err(internal!("wholeに別instance/欠落/重複rowがある").into());
             }
             seen.push(record.member);
             #[cfg(test)]
@@ -948,21 +976,21 @@ impl Environment<'_> {
                 .filter(|r| graph.context_at(r.0) == context)
                 .collect();
             if candidates.len() != 1 {
-                return Err("whole実rowとLawInstanceが一対一でない".into());
+                return Err(internal!("whole実rowとLawInstanceが一対一でない").into());
             }
             let concrete_instance = candidates[0];
             if plan.dependent && concrete.get(row_index) != Some(&concrete_instance) {
-                return Err("依存wholeの実row LawInstance順が元域と違う".into());
+                return Err(internal!("依存wholeの実row LawInstance順が元域と違う").into());
             }
             self.validate_at(graph, graph.get(concrete_instance)?, concrete_instance.0)?;
             let Some(Payload::LawInstance {
                 bindings: actual, ..
             }) = &graph.get(concrete_instance)?.payload
             else {
-                return Err("whole実rowがLawInstanceでない".into());
+                return Err(internal!("whole実rowがLawInstanceでない").into());
             };
             if actual != bs {
-                return Err("whole実rowとLawInstanceのbindingsが違う".into());
+                return Err(internal!("whole実rowとLawInstanceのbindingsが違う").into());
             }
             let previous = self.state.context.scoped(Some(context));
             let connection = (|| -> Result<(), ValidationFailure> {
@@ -972,14 +1000,14 @@ impl Environment<'_> {
                     if graph.get(concrete_instance)?.arguments.first() != Some(&row)
                         || !self.universal_owned_evaluation(graph, row)?
                     {
-                        return Err("有限族の数値rowが当該全域wholeに接続しない".into());
+                        return Err(internal!("有限族の数値rowが当該全域wholeに接続しない").into());
                     }
                 } else if self
                     .family_skipped(graph, graph.get(concrete_instance)?)?
                     .is_some()
                 {
                     if graph.get(row)?.arguments.first() != Some(&concrete_instance) {
-                        return Err("非適用rowが別LawInstanceに属す".into());
+                        return Err(internal!("非適用rowが別LawInstanceに属す").into());
                     }
                 } else {
                     self.instance_evaluation(graph, concrete_instance, row)?;
@@ -992,7 +1020,7 @@ impl Environment<'_> {
             let inputs = self.family_instance_inputs(graph, index);
             previous.restore();
             if inputs?.0 != *bs {
-                return Err("whole row bindingsが元実直積と違う".into());
+                return Err(internal!("whole row bindingsが元実直積と違う").into());
             }
             let b = graph.boolean(v)?;
             if b == Some(false) {
@@ -1110,7 +1138,7 @@ impl Environment<'_> {
         let request = graph
             .requests
             .get(self.current_context(graph).request)
-            .ok_or("非適用rowのRequestがない")?;
+            .ok_or(internal!("非適用rowのRequestがない"))?;
         let (expected_bindings, body_id, id) = if let Some(index) = context.instance {
             let expected = self.family_instance_inputs(graph, index)?;
             if let Some(inputs) = crate::observed::law_evaluation::instance_inputs(
@@ -1124,27 +1152,30 @@ impl Environment<'_> {
                     .law()
                     .declarations()
                     .get(&inputs.origin.declaration)
-                    .ok_or("元native Law宣言がない")?;
+                    .ok_or(internal!("元native Law宣言がない"))?;
                 let Signature::Law {
                     body,
                     guard: Some(guard),
                     ..
                 } = &declaration.signature
                 else {
-                    return Err("元native Law/guardがない".into());
+                    return Err(internal!("元native Law/guardがない").into());
                 };
                 (expected.0, *body, *guard)
             } else {
-                let plan = self.family_plan(request)?.ok_or("非適用rowの族がない")?;
+                let plan = self
+                    .family_plan(request)?
+                    .ok_or(internal!("非適用rowの族がない"))?;
                 (
                     expected.0,
                     plan.body,
-                    plan.guard.ok_or("非適用rowに元guardがない")?,
+                    plan.guard.ok_or(internal!("非適用rowに元guardがない"))?,
                 )
             }
         } else if context.case.is_some() && context.frame.is_none() && context.iteration.is_none() {
-            let declaration = &self.indexes.inputs.law().declarations()
-                [request.declaration().ok_or("元要求に宣言がない")?];
+            let declaration = &self.indexes.inputs.law().declarations()[request
+                .declaration()
+                .ok_or(internal!("元要求に宣言がない"))?];
             let Signature::Law {
                 params,
                 body,
@@ -1152,7 +1183,7 @@ impl Environment<'_> {
                 ..
             } = &declaration.signature
             else {
-                return Err("補完非適用の元Law/guardがない".into());
+                return Err(internal!("補完非適用の元Law/guardがない").into());
             };
             if params.len() != bindings.len()
                 || request
@@ -1162,7 +1193,7 @@ impl Environment<'_> {
                     .count()
                     != params.len()
             {
-                return Err("補完非適用の明示束縛数が違う".into());
+                return Err(internal!("補完非適用の明示束縛数が違う").into());
             }
             for (parameter, binding) in params.iter().zip(bindings) {
                 self.tick()?;
@@ -1170,9 +1201,9 @@ impl Environment<'_> {
                     .arguments
                     .iter()
                     .find(|argument| argument.name == format!("bind.{}", parameter.name))
-                    .ok_or("補完非適用の元selectorがない")?;
+                    .ok_or(internal!("補完非適用の元selectorがない"))?;
                 let Selector::Subject { snapshot, subject } = &selector.value else {
-                    return Err("補完非適用に未対応selectorがある".into());
+                    return Err(internal!("補完非適用に未対応selectorがある").into());
                 };
                 let producer = graph.get(binding.value)?;
                 if parameter.name != binding.name
@@ -1188,20 +1219,20 @@ impl Environment<'_> {
                     )
                     || !matches!(graph.scalar(binding.value)?,Scalar::Subject {snapshot:actual_snapshot,subject:actual_subject,entity} if actual_snapshot==snapshot && actual_subject==subject && Type::Ref(entity.clone())==binding.ty)
                 {
-                    return Err("補完非適用の固定束縛producerが違う".into());
+                    return Err(internal!("補完非適用の固定束縛producerが違う").into());
                 }
                 self.validate_at(graph, producer, binding.value.0)?;
             }
             (bindings.clone(), *body, *id)
         } else {
-            return Err("非適用rowにinstance/caseがない".into());
+            return Err(internal!("非適用rowにinstance/caseがない").into());
         };
         self.source_matches(graph, *body, body_id)?;
         self.source_matches(graph, *guard, id)?;
         let g = *instance
             .arguments
             .get(1)
-            .ok_or("非適用rowのguard実評価がない")?;
+            .ok_or(internal!("非適用rowのguard実評価がない"))?;
         self.recheck_evaluation(graph, g)?;
         let (expression, bs, value) = self.evaluation(graph, g)?;
         if graph.context_at(body.0) != self.current_context(graph)
@@ -1209,7 +1240,7 @@ impl Environment<'_> {
             || self.expression_bindings(graph, *body)? != bindings
             || !family_clean(instance, "law_instance", &[])
         {
-            return Err("非適用LawInstanceの元producer・規則が違う".into());
+            return Err(internal!("非適用LawInstanceの元producer・規則が違う").into());
         }
         if *guard != expression
             || bs != bindings
@@ -1219,7 +1250,7 @@ impl Environment<'_> {
             || instance.scope != graph.get(g)?.scope
             || instance.support != graph.get(g)?.support
         {
-            return Err("非適用rowが元guardfalse/実bindingsと違う".into());
+            return Err(internal!("非適用rowが元guardfalse/実bindingsと違う").into());
         }
         let declaration = context
             .instance
@@ -1227,14 +1258,14 @@ impl Environment<'_> {
             .transpose()?
             .flatten()
             .or_else(|| request.declaration().map(str::to_owned))
-            .ok_or("元要求に宣言がない")?;
+            .ok_or(internal!("元要求に宣言がない"))?;
         let d = self
             .indexes
             .inputs
             .law()
             .declarations()
             .get(&declaration)
-            .ok_or("元Law宣言がない")?;
+            .ok_or(internal!("元Law宣言がない"))?;
         let Some(Payload::LawInstance {
             name,
             role,
@@ -1255,7 +1286,7 @@ impl Environment<'_> {
                     Role::Optional => "optional",
                 }
         {
-            return Err("非適用rowが元Lawと違う".into());
+            return Err(internal!("非適用rowが元Lawと違う").into());
         }
         self.validate_at(graph, graph.get(*body)?, body.0)?;
         Ok(Some((*body, g)))
@@ -1276,7 +1307,7 @@ impl Environment<'_> {
                     || !node.reasons.is_empty()
                     || !family_clean(node, "law_instance", &[])
                 {
-                    return Err("whole LawInstanceのScope/支持が違う".into());
+                    return Err(internal!("whole LawInstanceのScope/支持が違う").into());
                 }
                 return Ok(true);
             }
@@ -1301,7 +1332,7 @@ impl Environment<'_> {
                 || node.support != a.support
                 || self.current_context(graph) != graph.context_at(instance.0)
             {
-                return Err("whole構成のScope/支持が違う".into());
+                return Err(internal!("whole構成のScope/支持が違う").into());
             }
             match &node.payload {
                 Some(Payload::Scalar(Scalar::Bool(v))) => {
@@ -1313,7 +1344,7 @@ impl Environment<'_> {
                         || !node.evidence.is_empty()
                         || !node.reasons.is_empty()
                     {
-                        return Err("whole値が元row集約と違う".into());
+                        return Err(internal!("whole値が元row集約と違う").into());
                     }
                 }
                 Some(Payload::Evaluation {
@@ -1343,21 +1374,23 @@ impl Environment<'_> {
                         || parts[0].residual.is_some()
                         || node.arguments.get(..2) != expected_args.get(..2)
                         || !family_refs(
-                            node.arguments.get(2..).ok_or("whole row辺がない")?,
+                            node.arguments
+                                .get(2..)
+                                .ok_or(internal!("whole row辺がない"))?,
                             &a.rows,
                         )
                         || graph.boolean(*value)? != a.value
                     {
-                        return Err("whole評価が元族/row/判断と違う".into());
+                        return Err(internal!("whole評価が元族/row/判断と違う").into());
                     }
                     if let Some(v) = value {
                         self.validate_at(graph, graph.get(*v)?, v.0)?;
                         if graph.get(*v)?.arguments.first() != Some(&instance) {
-                            return Err("whole値が別producer".into());
+                            return Err(internal!("whole値が別producer").into());
                         }
                     }
                     if !reasons_equal(&node.reasons, &a.reasons) {
-                        return Err("wholeが既読missingを落とした".into());
+                        return Err(internal!("wholeが既読missingを落とした").into());
                     }
                 }
                 Some(Payload::FiniteExhaustion {
@@ -1365,7 +1398,10 @@ impl Environment<'_> {
                     checked,
                     instances,
                 }) => {
-                    let evaluation = *node.arguments.get(1).ok_or("whole全検査に評価がない")?;
+                    let evaluation = *node
+                        .arguments
+                        .get(1)
+                        .ok_or(internal!("whole全検査に評価がない"))?;
                     self.recheck_evaluation(graph, evaluation)?;
                     if !family_clean(node, "evidence", &[])
                         || node.ty != NodeType::Evidence
@@ -1382,11 +1418,14 @@ impl Environment<'_> {
                         || !node.evidence.is_empty()
                         || !node.reasons.is_empty()
                     {
-                        return Err("whole全検査coverageが元直積と違う".into());
+                        return Err(internal!("whole全検査coverageが元直積と違う").into());
                     }
                 }
                 Some(Payload::Proposition { instance: actual }) => {
-                    let evaluation = *node.arguments.get(1).ok_or("whole命題に評価がない")?;
+                    let evaluation = *node
+                        .arguments
+                        .get(1)
+                        .ok_or(internal!("whole命題に評価がない"))?;
                     self.recheck_evaluation(graph, evaluation)?;
                     if node.ty != NodeType::Proposition
                         || !family_refs(&node.evidence, &node.evidence)
@@ -1401,7 +1440,7 @@ impl Environment<'_> {
                         || node.judgment.as_ref().map(|j| j.status)
                             != Some(family_decision(a.value))
                     {
-                        return Err("whole命題の元族/判断が違う".into());
+                        return Err(internal!("whole命題の元族/判断が違う").into());
                     }
                     graph.validate_proposition_evidence(node)?;
                     for &e in &node.evidence {
@@ -1418,7 +1457,7 @@ impl Environment<'_> {
                         })
                         .count();
                     if full != usize::from(a.value == Some(true)) {
-                        return Err("whole全称判断の全検査証拠が違う".into());
+                        return Err(internal!("whole全称判断の全検査証拠が違う").into());
                     }
                     for &row in &a.rows {
                         self.tick()?;
@@ -1437,12 +1476,12 @@ impl Environment<'_> {
                                 }
                             }
                             if !found {
-                                return Err("wholeが実反例を落とした".into());
+                                return Err(internal!("wholeが実反例を落とした").into());
                             }
                         }
                     }
                 }
-                _ => return Err("wholeに未定のpayload".into()),
+                _ => return Err(internal!("wholeに未定のpayload").into()),
             }
             return Ok(true);
         }
@@ -1459,7 +1498,7 @@ impl Environment<'_> {
                         || node.scope != graph.get(guard)?.scope
                         || node.support != graph.get(guard)?.support
                     {
-                        return Err("非適用値が実guard由来でない".into());
+                        return Err(internal!("非適用値が実guard由来でない").into());
                     }
                 }
                 Some(Payload::Evaluation {
@@ -1478,7 +1517,7 @@ impl Environment<'_> {
                         ..
                     }) = &guard_node.payload
                     else {
-                        return Err("guard Evaluationがない".into());
+                        return Err(internal!("guard Evaluationがない").into());
                     };
 
                     if !family_clean(node, "evaluation", &guard_node.reasons)
@@ -1495,7 +1534,10 @@ impl Environment<'_> {
                                 span: self.expression_span(graph, *guard_source)?,
                             })
                         || parts[0].residual
-                            != guard_parts.last().ok_or("guard partがない")?.residual
+                            != guard_parts
+                                .last()
+                                .ok_or(internal!("guard partがない"))?
+                                .residual
                         || parts[0].value != self.evaluation(graph, guard)?.2
                         || parts[1].location
                             != (Location::Law {
@@ -1508,21 +1550,26 @@ impl Environment<'_> {
                         || node.scope != graph.get(guard)?.scope
                         || node.support != graph.get(guard)?.support
                     {
-                        return Err("非適用rowに架空body/値/範囲がある".into());
+                        return Err(internal!("非適用rowに架空body/値/範囲がある").into());
                     }
-                    let value = value.ok_or("非適用値がない")?;
+                    let value = value.ok_or(internal!("非適用値がない"))?;
                     let producer = graph.get(value)?;
                     // 値自身の正当性に加え、このrowが実際に構成した適用値へ結ぶ。
                     if value.0 >= limit
                         || graph.context_at(value.0) != self.current_context(graph)
                         || producer.arguments != [instance, guard]
                     {
-                        return Err("非適用rowの値が現在instance/guardのproducerでない".into());
+                        return Err(
+                            internal!("非適用rowの値が現在instance/guardのproducerでない").into(),
+                        );
                     }
                     self.validate_at(graph, producer, value.0)?;
                 }
                 Some(Payload::Proposition { instance: actual }) => {
-                    let eval = *node.arguments.get(1).ok_or("非適用命題の元評価がない")?;
+                    let eval = *node
+                        .arguments
+                        .get(1)
+                        .ok_or(internal!("非適用命題の元評価がない"))?;
                     let application = graph.get(eval)?;
                     let Some(Payload::Evaluation {
                         value: Some(value),
@@ -1530,7 +1577,7 @@ impl Environment<'_> {
                         ..
                     }) = &application.payload
                     else {
-                        return Err("非適用命題の根拠が非適用Law評価でない".into());
+                        return Err(internal!("非適用命題の根拠が非適用Law評価でない").into());
                     };
                     if eval.0 >= limit
                         || application.ty != NodeType::Evaluation(Type::Bool)
@@ -1538,7 +1585,10 @@ impl Environment<'_> {
                         || application.arguments != [instance, guard]
                         || graph.scalar(*value)? != &Scalar::Bool(true)
                     {
-                        return Err("非適用命題の根拠が現在instance/guardの適用評価でない".into());
+                        return Err(internal!(
+                            "非適用命題の根拠が現在instance/guardの適用評価でない"
+                        )
+                        .into());
                     }
                     // 元guard/body Source・bindings・parts・値producerの既存照合も通す。
                     self.recheck_evaluation(graph, eval)?;
@@ -1556,10 +1606,10 @@ impl Environment<'_> {
                         || node.judgment.as_ref().map(|j| j.status) != Some(Decision::Established)
                         || !node.evidence.is_empty()
                     {
-                        return Err("非適用命題が元rowと違う".into());
+                        return Err(internal!("非適用命題が元rowと違う").into());
                     }
                 }
-                _ => return Err("非適用rowの未定構成".into()),
+                _ => return Err(internal!("非適用rowの未定構成").into()),
             }
             return Ok(true);
         }
@@ -1582,21 +1632,24 @@ impl Environment<'_> {
         let evaluation = *answer
             .outputs
             .get("evaluation")
-            .ok_or("whole Answer評価がない")?;
+            .ok_or(internal!("whole Answer評価がない"))?;
         let node = graph.get(evaluation)?;
-        let instance = *node.arguments.first().ok_or("whole Answer元Lawがない")?;
+        let instance = *node
+            .arguments
+            .first()
+            .ok_or(internal!("whole Answer元Lawがない"))?;
         if !self.family_template(graph, instance)? {
-            return Err("whole Answerが実rowだけを返した".into());
+            return Err(internal!("whole Answerが実rowだけを返した").into());
         }
         self.recheck_evaluation(graph, evaluation)?;
-        let claim = answer.claim.ok_or("whole Answer命題がない")?;
+        let claim = answer.claim.ok_or(internal!("whole Answer命題がない"))?;
         self.validate_at(graph, graph.get(claim)?, claim.0)?;
         if graph.get(claim)?.arguments != [instance, evaluation]
             || answer.scope != node.scope
             || answer.status
                 != family_decision(graph.boolean(self.evaluation(graph, evaluation)?.2)?)
         {
-            return Err("whole Answerの元族・Scope・判断が違う".into());
+            return Err(internal!("whole Answerの元族・Scope・判断が違う").into());
         }
         Ok(true)
     }
@@ -1636,7 +1689,7 @@ impl Environment<'_> {
         let record = graph
             .instances
             .get(index)
-            .ok_or("有限Lawの実instanceがない")?;
+            .ok_or(internal!("有限Lawの実instanceがない"))?;
         if context
             != (super::super::call::Context {
                 instance: Some(index),
@@ -1663,7 +1716,7 @@ impl Environment<'_> {
         let record = graph
             .instances
             .get(index)
-            .ok_or("有限Lawの実instanceがない")?;
+            .ok_or(internal!("有限Lawの実instanceがない"))?;
         if !self.family_source_root(graph, record.source)? {
             return Ok(None);
         }
@@ -1700,11 +1753,11 @@ impl Environment<'_> {
             if matches!(&graph.get(*expression)?.payload,Some(Payload::Expression{location:Location::Law{span},..}) if *span==guard)
             {
                 if found.replace(NodeRef(at)).is_some() {
-                    return Err("有限Lawの実guard評価が重複".into());
+                    return Err(internal!("有限Lawの実guard評価が重複").into());
                 }
             }
         }
-        let guard = found.ok_or("有限Lawのbodyより先の実guard評価がない")?;
+        let guard = found.ok_or(internal!("有限Lawのbodyより先の実guard評価がない"))?;
         self.validate_at(graph, graph.get(guard)?, guard.0)?;
         Ok(Some((guard, body, producer)))
     }
@@ -1748,7 +1801,7 @@ impl Environment<'_> {
             || bindings != expected
             || self.evaluation(graph, guard)?.1 != bindings
         {
-            return Err("非適用有限Lawのbody出現/束縛/Contextが違う".into());
+            return Err(internal!("非適用有限Lawのbody出現/束縛/Contextが違う").into());
         }
         Ok(Some(SourceAnalysis {
             condition_failed: false,

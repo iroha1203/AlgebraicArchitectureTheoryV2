@@ -95,9 +95,9 @@ impl FiniteValueTransport {
     ) -> Result<Scalar, ConstructionFailure> {
         tick(control)?;
         if self.bijection.is_none() {
-            return Err(ConstructionFailure::Inconsistent(
-                "値の順逆対応が未確認".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "値の順逆対応が未確認"
+            )));
         }
         self.forward_scalar(value, control)
     }
@@ -113,9 +113,9 @@ impl FiniteValueTransport {
             .iter()
             .any(|f| matches!(f, FiniteValueConditionFailure::OutsideTarget { .. }))
         {
-            return Err(ConstructionFailure::Inconsistent(
-                "値の全域移送が不成立".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "値の全域移送が不成立"
+            )));
         }
         for (source, image) in self.source.iter().zip(&self.images) {
             tick(control)?;
@@ -123,9 +123,9 @@ impl FiniteValueTransport {
                 return Ok(image.value.clone());
             }
         }
-        Err(ConstructionFailure::Inconsistent(
-            "実評価値が確認済みの全source域にない".into(),
-        ))
+        Err(ConstructionFailure::Inconsistent(internal!(
+            "実評価値が確認済みの全source域にない"
+        )))
     }
     pub fn operation(&self) -> &ConfigurationOperation {
         self.declarations.operation()
@@ -180,9 +180,9 @@ impl FiniteValueTransport {
                 control,
             )?
         {
-            return Err(ConstructionFailure::Inconsistent(
-                "有限値域・候補像・順逆検査が現在入力と違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "有限値域・候補像・順逆検査が現在入力と違う"
+            )));
         }
         tick(control)
     }
@@ -195,7 +195,7 @@ fn tick(control: &Control) -> Result<(), ConstructionFailure> {
 fn failure(f: ValidationFailure) -> ConstructionFailure {
     match f {
         ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
-        f => ConstructionFailure::Inconsistent(format!("有限値計算の不整合: {f:?}")),
+        f => ConstructionFailure::Inconsistent(internal!(format!("有限値計算の不整合: {f:?}"))),
     }
 }
 pub(super) fn selected_types(
@@ -244,7 +244,9 @@ pub(super) fn selected_types(
                     let alpha = c
                         .pair()
                         .ok_or_else(|| {
-                            ConstructionFailure::Inconsistent("local readの宣言対応がない".into())
+                            ConstructionFailure::Inconsistent(internal!(
+                                "local readの宣言対応がない"
+                            ))
                         })?
                         .parameters()
                         .iter()
@@ -360,7 +362,7 @@ fn shape(
 ) -> Result<Option<String>, ConstructionFailure> {
     match data::check(value, inputs.law(), control) {
         Ok(()) => Ok(None),
-        Err(ValidationFailure::Internal(s)) => Ok(Some(s)),
+        Err(ValidationFailure::Internal(s)) => Ok(Some(s.into_message())),
         Err(f) => Err(failure(f)),
     }
 }
@@ -451,9 +453,9 @@ fn image(
                         subject: to.subject.clone(),
                         entity: actual
                             .ok_or_else(|| {
-                                ConstructionFailure::Inconsistent(format!(
+                                ConstructionFailure::Inconsistent(internal!(format!(
                                     "参照値の像がない: {target_type}"
-                                ))
+                                )))
                             })?
                             .to_string(),
                     }
@@ -557,9 +559,9 @@ fn image(
             | Scalar::Q(..)
             | Scalar::Text(_) => value.clone(),
             _ => {
-                return Err(ConstructionFailure::Inconsistent(
-                    "有限値域に適用外の値が入った".into(),
-                ));
+                return Err(ConstructionFailure::Inconsistent(internal!(
+                    "有限値域に適用外の値が入った"
+                )));
             }
         })
     })
@@ -581,7 +583,7 @@ pub(super) fn candidate_image(
                 fact.clone(),
                 map.image(fact)
                     .ok_or_else(|| {
-                        ConstructionFailure::Inconsistent("参照の候補作用がない".into())
+                        ConstructionFailure::Inconsistent(internal!("参照の候補作用がない"))
                     })?
                     .clone(),
             );
@@ -592,7 +594,7 @@ pub(super) fn candidate_image(
         .iter()
         .find(|candidate| candidate.source().name == declaration)
         .and_then(|candidate| candidate.pair())
-        .ok_or_else(|| ConstructionFailure::Inconsistent("元宣言の値対応がない".into()))?;
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("元宣言の値対応がない")))?;
     let alpha = pair.parameters().iter().cloned().collect();
     image(value, inputs, &mu, &action, &alpha, control)
 }
@@ -629,7 +631,7 @@ pub fn finite_declaration_value_transport(
                 fact.clone(),
                 map.image(fact)
                     .ok_or_else(|| {
-                        ConstructionFailure::Inconsistent("参照の候補作用がない".into())
+                        ConstructionFailure::Inconsistent(internal!("参照の候補作用がない"))
                     })?
                     .clone(),
             );
@@ -692,17 +694,17 @@ pub fn finite_declaration_value_transport(
         for (a, b) in forward.iter().enumerate() {
             tick(control)?;
             if inverse.get(*b) != Some(&a) {
-                return Err(ConstructionFailure::Inconsistent(
-                    "有限値の逆順合成が恒等でない".into(),
-                ));
+                return Err(ConstructionFailure::Inconsistent(internal!(
+                    "有限値の逆順合成が恒等でない"
+                )));
             }
         }
         for (b, a) in inverse.iter().enumerate() {
             tick(control)?;
             if forward.get(*a) != Some(&b) {
-                return Err(ConstructionFailure::Inconsistent(
-                    "有限値の順合成が恒等でない".into(),
-                ));
+                return Err(ConstructionFailure::Inconsistent(internal!(
+                    "有限値の順合成が恒等でない"
+                )));
             }
         }
         Some(FiniteValueBijection { forward, inverse })

@@ -65,7 +65,7 @@ impl<'i> Environment<'i> {
                 return Ok(None);
             };
             if !graph.requests.is_empty() && graph.requests.get(context.request) != Some(request) {
-                return Err("環境選択のRequestが元入力と違う".into());
+                return Err(internal!("環境選択のRequestが元入力と違う").into());
             }
             if !matches!(
                 request.kind,
@@ -105,7 +105,7 @@ impl<'i> Environment<'i> {
         reference: NodeRef,
     ) -> Result<Option<ArchitectureContext>, ValidationFailure> {
         if reference.0 >= self.state.cutoff.get() {
-            return Err("環境が未出のArchitectureを参照した".into());
+            return Err(internal!("環境が未出のArchitectureを参照した").into());
         }
         let node = graph.get(reference)?;
         let Some(Payload::Construction(value)) = &node.payload else {
@@ -125,14 +125,14 @@ impl<'i> Environment<'i> {
         }
         self.validate_at(graph, node, reference.0)?;
         let Witness::Architecture(witness) = &value.witness else {
-            return Err("環境Architectureの元構成がない".into());
+            return Err(internal!("環境Architectureの元構成がない").into());
         };
         let object = match &value.data {
             ConstructionData::Architecture { .. }
             | ConstructionData::Change(_)
             | ConstructionData::Quotient(_) => 0,
             ConstructionData::ObjectComponents(data) => data.architecture_object(reference)?,
-            _ => return Err("環境Architectureの構成が違う".into()),
+            _ => return Err(internal!("環境Architectureの構成が違う").into()),
         };
         let domain = ObjectDomain::from_readings(
             self.indexes.inputs,
@@ -168,11 +168,11 @@ impl<'i> Environment<'i> {
     ) -> Result<(), ValidationFailure> {
         if let Some(Payload::Evaluation { environment, .. }) = &node.payload {
             if *environment != self.state.architecture_ref() {
-                return Err("評価の環境Refが元Requestのonと違う".into());
+                return Err(internal!("評価の環境Refが元Requestのonと違う").into());
             }
             if let Some(r) = environment {
                 if r.0 >= limit {
-                    return Err("評価の環境が既出Architectureでない".into());
+                    return Err(internal!("評価の環境が既出Architectureでない").into());
                 }
                 self.validate_at(graph, graph.get(*r)?, r.0)?;
             }

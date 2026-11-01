@@ -94,7 +94,7 @@ impl Evaluator<'_, '_> {
             let (fields, sources, reasons) =
                 self.environment.completion_slots(self.graph, &roots)?;
             if fields.is_empty() {
-                return Err(Failure::Internal("既読の有限原始補完域が消えた".into()));
+                return Err(Failure::Internal(internal!("既読の有限原始補完域が消えた")));
             }
             let metadata = self.environment.completion_assignment_context(&fields)?;
             let mut scope = self.base.clone();
@@ -126,7 +126,7 @@ impl Evaluator<'_, '_> {
                         .inputs
                         .law()
                         .expr_type(body)
-                        .ok_or_else(|| Failure::Internal("補完元型がない".into()))?
+                        .ok_or_else(|| Failure::Internal(internal!("補完元型がない")))?
                         .clone(),
                 ),
                 payload: Some(Payload::CompletionSeed {
@@ -210,7 +210,7 @@ impl Evaluator<'_, '_> {
                     vec![self.graph.scalar(member)?.clone()]
                 } else {
                     let Scalar::Tuple(values) = self.graph.scalar(member)? else {
-                        return Err(Failure::Internal("補完tupleがない".into()));
+                        return Err(Failure::Internal(internal!("補完tupleがない")));
                     };
                     values.clone()
                 };
@@ -299,7 +299,7 @@ impl Evaluator<'_, '_> {
                 continue;
             }
             if cases.is_empty() {
-                return Err(Failure::Internal("補完case集合が空".into()));
+                return Err(Failure::Internal(internal!("補完case集合が空")));
             }
             all_support.sort();
             all_support.dedup();
@@ -307,7 +307,7 @@ impl Evaluator<'_, '_> {
                 .iter()
                 .map(|r| match &self.graph.get(*r)?.payload {
                     Some(Payload::Evaluation { value, .. }) => Ok(*value),
-                    _ => Err(Failure::Internal("補完caseが評価でない".into())),
+                    _ => Err(Failure::Internal(internal!("補完caseが評価でない"))),
                 })
                 .collect::<Result<_, _>>()?;
             let scalar_values = result_values
@@ -328,7 +328,7 @@ impl Evaluator<'_, '_> {
                             .inputs
                             .law()
                             .expr_type(body)
-                            .ok_or_else(|| Failure::Internal("補完元型がない".into()))?,
+                            .ok_or_else(|| Failure::Internal(internal!("補完元型がない")))?,
                         &location,
                         seed,
                     ),

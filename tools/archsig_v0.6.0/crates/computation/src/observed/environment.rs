@@ -5,6 +5,7 @@ use super::{
     result::*,
 };
 use archsig_common::control::{Checkpoint, Control};
+use archsig_common::internal::InternalError;
 use archsig_common::{issue::Location, types::Type};
 use archsig_input::{
     archmap::{Slot, Subject, Value},
@@ -380,7 +381,7 @@ impl<'a> Environment<'a> {
             .resolved_names()
             .get(name)
             .cloned()
-            .ok_or_else(|| "原始fieldの検査済み名がない".into())
+            .ok_or_else(|| internal!("原始fieldの検査済み名がない").into())
     }
 
     pub(super) fn local_point(
@@ -397,7 +398,7 @@ impl<'a> Environment<'a> {
     > {
         let archsig_input::law::model::Signature::Law { body, guard, .. } = declaration.signature
         else {
-            return Err("局所評価の元Lawがない".into());
+            return Err(internal!("局所評価の元Lawがない").into());
         };
         let outer = self.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
         let prior =
@@ -410,8 +411,10 @@ impl<'a> Environment<'a> {
                     stack: vec![],
                 }));
         let result = finite_law_valuations::evaluate_local_point(self, declaration, bindings);
-        let capture = prior.restore().ok_or("局所読取りの記録がない")?;
-        let reads = outer.restore().ok_or("局所Lawの欠測収集がない")?;
+        let capture = prior.restore().ok_or(internal!("局所読取りの記録がない"))?;
+        let reads = outer
+            .restore()
+            .ok_or(internal!("局所Lawの欠測収集がない"))?;
         if let Some(outer) = self.state.missing_slot_reads.borrow_mut().as_mut() {
             outer.extend(reads.iter().cloned());
         }
@@ -531,7 +534,7 @@ impl<'a> Environment<'a> {
                         observer.borrow_mut()("ref_roster", index)
                     })
             },
-            &mut |_, _| Err("消去型の有限域にOwnedが残った".into()),
+            &mut |_, _| Err(internal!("消去型の有限域にOwnedが残った").into()),
             &mut |index| observer.borrow_mut()("type_enum", index),
         )
         .map(|domain| domain.map(|domain| domain.enumeration))
@@ -543,7 +546,7 @@ impl<'a> Environment<'a> {
             .map_err(ValidationFailure::Stop)
     }
 
-    pub fn fact(&self, f: &Fact) -> Result<(), String> {
+    pub fn fact(&self, f: &Fact) -> Result<(), InternalError> {
         let s = self.indexes.subject(&f.snapshot, &f.subject)?;
         match (&f.field, &f.atom) {
             (None, None) => Ok(()),
@@ -552,10 +555,10 @@ impl<'a> Environment<'a> {
                 match (&field.slot, atom) {
                     (Slot::Missing, None) => Ok(()),
                     (Slot::Known { atom: a, .. }, Some(b)) if a == b => Ok(()),
-                    _ => Err("FactPointer が原始 slot と合わない".into()),
+                    _ => Err(internal!("FactPointer が原始 slot と合わない")),
                 }
             }
-            _ => Err("subject 存在に atom が付いている".into()),
+            _ => Err(internal!("subject 存在に atom が付いている")),
         }
     }
     pub fn validate(&self, graph: &Graph, node: &Node) -> Result<(), ValidationFailure> {
@@ -585,7 +588,7 @@ impl<'a> Environment<'a> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         if self.indexes.primitive_valuation.is_some() {
-            return Err("候補代入の環境を観測Graphの検査へ使えない".into());
+            return Err(internal!("候補代入の環境を観測Graphの検査へ使えない").into());
         }
         self.validation_graph_session(graph, || {
             self.tick()?;
@@ -613,18 +616,18 @@ impl<'a> Environment<'a> {
                         || context.instance.is_some()
                         || context.case.is_some()
                     {
-                        return Err("native構成が元Requestのroot contextでない".into());
+                        return Err(internal!("native構成が元Requestのroot contextでない").into());
                     }
                     let request = graph
                         .requests
                         .get(context.request)
-                        .ok_or("native構成の元Requestがない")?;
+                        .ok_or(internal!("native構成の元Requestがない"))?;
                     if self
                         .indexes
                         .original_requests
                         .is_none_or(|original| original.get(context.request) != Some(request))
                     {
-                        return Err("native構成のRequestが元入力と違う".into());
+                        return Err(internal!("native構成のRequestが元入力と違う").into());
                     }
                     super::public_map::validate_origin(self, graph, request, value)?;
                     super::public_compare::validate_position(value, limit)?;
@@ -647,7 +650,7 @@ impl<'a> Environment<'a> {
                         )
                     {
                         if r.0 >= limit {
-                            return Err("native構成が未出のnodeを参照した".into());
+                            return Err(internal!("native構成が未出のnodeを参照した").into());
                         }
                         self.validate_at(graph, graph.get(*r)?, r.0)?;
                     }
@@ -658,19 +661,19 @@ impl<'a> Environment<'a> {
                     let request = graph
                         .requests
                         .get(context.request)
-                        .ok_or("planの元要求がない")?;
+                        .ok_or(internal!("planの元要求がない"))?;
                     if self
                         .indexes
                         .original_requests
                         .is_some_and(|original| original.get(context.request) != Some(request))
                     {
-                        return Err("planの要求が元の解決済み要求と違う".into());
+                        return Err(internal!("planの要求が元の解決済み要求と違う").into());
                     }
                     for (index, answer) in super::needed::sources(graph, request, &self.control)? {
                         if self.indexes.original_requests.is_some_and(|original| {
                             original.get(index) != graph.requests.get(index)
                         }) {
-                            return Err("planの依存要求が元の解決済み要求と違う".into());
+                            return Err(internal!("planの依存要求が元の解決済み要求と違う").into());
                         }
                         self.validate_answer(graph, &graph.requests[index], answer)?;
                     }
@@ -695,9 +698,9 @@ impl<'a> Environment<'a> {
             })()
             .map_err(|failure| match failure {
                 ValidationFailure::UnsupportedExpression { feature, .. } => {
-                    ValidationFailure::Internal(format!(
+                    ValidationFailure::Internal(internal!(format!(
                         "未対応の元式から生成済みnodeを照合できない: {feature}"
-                    ))
+                    )))
                 }
                 other => other,
             });
@@ -806,7 +809,7 @@ impl<'a> Environment<'a> {
             let request = graph
                 .requests
                 .get(self.current_context(graph).request)
-                .ok_or("欠測Evaluationの元Requestがない")?;
+                .ok_or(internal!("欠測Evaluationの元Requestがない"))?;
             reasons.push(Reason {
                 kind: ReasonKind::Missing,
                 request: request.id.clone(),
@@ -842,7 +845,7 @@ impl<'a> Environment<'a> {
             children,
             match &node.payload {
                 Some(Payload::Evaluation { value, .. }) => *value,
-                _ => return Err("算法理由の対象がEvaluationでない".into()),
+                _ => return Err(internal!("算法理由の対象がEvaluationでない").into()),
             },
         )? {
             reasons.push(reason);
@@ -864,7 +867,7 @@ impl<'a> Environment<'a> {
             let request = graph
                 .requests
                 .get(self.current_context(graph).request)
-                .ok_or("所属欠測の元Requestがない")?;
+                .ok_or(internal!("所属欠測の元Requestがない"))?;
             let span = self.expression_span(graph, expression)?;
             for fact in checks.missing {
                 reasons.push(Reason {
@@ -878,12 +881,12 @@ impl<'a> Environment<'a> {
         }
         sort_reasons(&mut reasons);
         if node.reasons.len() != reasons.len() {
-            return Err("Evaluationの元欠測理由数が違う".into());
+            return Err(internal!("Evaluationの元欠測理由数が違う").into());
         }
         for (actual, expected) in node.reasons.iter().zip(&reasons) {
             self.tick()?;
             if actual.wire() != expected.wire() {
-                return Err("Evaluationの元欠測理由・依存Source・位置が違う".into());
+                return Err(internal!("Evaluationの元欠測理由・依存Source・位置が違う").into());
             }
             self.tick()?;
         }
@@ -913,13 +916,13 @@ impl<'a> Environment<'a> {
                 lhs,
                 rhs,
             } if super::term::contains(
-                law.expr_type(*lhs).ok_or("Term比較元型がない")?,
+                law.expr_type(*lhs).ok_or(internal!("Term比較元型がない"))?,
                 law,
                 &self.control,
             )? =>
             {
                 if children.len() != 2 {
-                    return Err("Term比較の元実引数数が違う".into());
+                    return Err(internal!("Term比較の元実引数数が違う").into());
                 }
                 let a = self.evaluation(graph, children[0])?.2;
                 let b = self.evaluation(graph, children[1])?.2;
@@ -927,8 +930,12 @@ impl<'a> Environment<'a> {
                     return Ok(None);
                 }
                 types.extend([
-                    law.expr_type(*lhs).ok_or("Term左型がない")?.clone(),
-                    law.expr_type(*rhs).ok_or("Term右型がない")?.clone(),
+                    law.expr_type(*lhs)
+                        .ok_or(internal!("Term左型がない"))?
+                        .clone(),
+                    law.expr_type(*rhs)
+                        .ok_or(internal!("Term右型がない"))?
+                        .clone(),
                 ]);
                 "finite enumeration or Z/Q affine normalization for extensional Term equality"
             }
@@ -936,7 +943,7 @@ impl<'a> Environment<'a> {
                 if matches!(law.expr_type(*callee), Some(Type::Term(..))) =>
             {
                 if children.len() != args.len() + 1 {
-                    return Err("Term適用の元実引数数が違う".into());
+                    return Err(internal!("Term適用の元実引数数が違う").into());
                 }
                 if self.evaluation(graph, children[0])?.2.is_none() {
                     return Ok(None);
@@ -958,15 +965,23 @@ impl<'a> Environment<'a> {
                     }
                 } else if !matches!(law.expr_type(id), Some(Type::Z | Type::Q | Type::Bool))
                     && !numeric::is_numeric_type(
-                        law.expr_type(id).ok_or("Term戻り型がない")?,
+                        law.expr_type(id).ok_or(internal!("Term戻り型がない"))?,
                         &self.control,
                     )?
                 {
                     return Ok(None);
                 }
-                types.push(law.expr_type(*callee).ok_or("Term callee型がない")?.clone());
+                types.push(
+                    law.expr_type(*callee)
+                        .ok_or(internal!("Term callee型がない"))?
+                        .clone(),
+                );
                 for arg in args {
-                    types.push(law.expr_type(*arg).ok_or("Term実引数型がない")?.clone())
+                    types.push(
+                        law.expr_type(*arg)
+                            .ok_or(internal!("Term実引数型がない"))?
+                            .clone(),
+                    )
                 }
                 "Z/Q affine normalization over the original Term arguments"
             }
@@ -980,7 +995,7 @@ impl<'a> Environment<'a> {
         let request = graph
             .requests
             .get(self.current_context(graph).request)
-            .ok_or("Term算法の元Requestがない")?;
+            .ok_or(internal!("Term算法の元Requestがない"))?;
         Ok(Some(Reason {
             kind: ReasonKind::UnsupportedAlgorithm {
                 question: request.kind,
@@ -1008,7 +1023,7 @@ impl<'a> Environment<'a> {
                 let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
                 Ok((spec.domain, vec![spec.body]))
             }
-            _ => Err("反復元が内包/In量化でない".into()),
+            _ => Err(internal!("反復元が内包/In量化でない").into()),
         }
     }
     pub(super) fn current_context(&self, graph: &Graph) -> super::call::Context {
@@ -1037,7 +1052,7 @@ impl<'a> Environment<'a> {
         }) = &node.payload
         {
             if value.0 >= limit {
-                return Err("Evaluationの通常値が未出である".into());
+                return Err(internal!("Evaluationの通常値が未出である").into());
             }
             data::check(
                 graph.scalar(*value)?,
@@ -1048,7 +1063,7 @@ impl<'a> Environment<'a> {
         for (index, quantifier) in node.scope.quantifiers.iter().enumerate() {
             self.tick()?;
             if node.scope.quantifiers[..index].contains(quantifier) {
-                return Err("Scopeに同じ実量化descriptorが重複する".into());
+                return Err(internal!("Scopeに同じ実量化descriptorが重複する").into());
             }
         }
         for reference in node
@@ -1060,13 +1075,16 @@ impl<'a> Environment<'a> {
         {
             self.tick()?;
             if reference.0 >= limit {
-                return Err("nodeの元依存/証拠/量化域が既出でない".into());
+                return Err(internal!("nodeの元依存/証拠/量化域が既出でない").into());
             }
             graph.get(reference)?;
         }
         let context = self.current_context(graph);
         if let Some(index) = context.iteration {
-            let iteration = graph.iterations.get(index).ok_or("nodeの反復がない")?;
+            let iteration = graph
+                .iterations
+                .get(index)
+                .ok_or(internal!("nodeの反復がない"))?;
             if iteration.caller.case != context.case
                 || iteration.caller.instance != context.instance
                 || iteration.caller.request != context.request
@@ -1076,7 +1094,7 @@ impl<'a> Environment<'a> {
                     .iteration
                     .is_some_and(|parent| parent >= index)
             {
-                return Err("反復の親Contextが違う".into());
+                return Err(internal!("反復の親Contextが違う").into());
             }
             self.iteration_input(graph, index)?;
             let own_span = match &node.payload {
@@ -1105,74 +1123,77 @@ impl<'a> Environment<'a> {
                         .program()
                         .expressions
                         .get(&comp_span)
-                        .ok_or("反復元ASTがない")?,
+                        .ok_or(internal!("反復元ASTがない"))?,
                 )?;
                 if !bodies.into_iter().any(|child| {
                     let body = self.indexes.inputs.law().exprs()[child].span;
                     body.0 <= span.0 && span.1 <= body.1
                 }) {
-                    return Err("反復nodeの元出現がfilter/elem外にある".into());
+                    return Err(internal!("反復nodeの元出現がfilter/elem外にある").into());
                 }
             }
         }
         if let Some(index) = context.instance {
-            let record = graph.instances.get(index).ok_or("nodeの実instanceがない")?;
+            let record = graph
+                .instances
+                .get(index)
+                .ok_or(internal!("nodeの実instanceがない"))?;
             if record.caller.request != context.request || record.caller.instance.is_some() {
-                return Err("nodeの実instance Requestが違う".into());
+                return Err(internal!("nodeの実instance Requestが違う").into());
             }
         }
         if !graph.requests.is_empty() && graph.requests.get(context.request).is_none() {
-            return Err("nodeの元Requestがない".into());
+            return Err(internal!("nodeの元Requestがない").into());
         }
         if let Some(frame) = context.frame
             && graph
                 .frames
                 .get(frame)
-                .ok_or("node frameがない")?
+                .ok_or(internal!("node frameがない"))?
                 .caller
                 .request
                 != context.request
         {
-            return Err("nodeのRequestがcall元と違う".into());
+            return Err(internal!("nodeのRequestがcall元と違う").into());
         }
         if let Some(frame) = context.frame
             && graph
                 .frames
                 .get(frame)
-                .ok_or("node frameがない")?
+                .ok_or(internal!("node frameがない"))?
                 .caller
                 .instance
                 != context.instance
         {
-            return Err("nodeの実instanceがcall元と違う".into());
+            return Err(internal!("nodeの実instanceがcall元と違う").into());
         }
         if let Some(frame) = context.frame
             && graph
                 .frames
                 .get(frame)
-                .ok_or("node frameがない")?
+                .ok_or(internal!("node frameがない"))?
                 .caller
                 .case
                 != context.case
         {
-            return Err("nodeの補完がcall元と違う".into());
+            return Err(internal!("nodeの補完がcall元と違う").into());
         }
         if let Some(instance) = context.instance
             && graph
                 .instances
                 .get(instance)
-                .ok_or("node instanceがない")?
+                .ok_or(internal!("node instanceがない"))?
                 .caller
                 .case
                 != context.case
         {
-            return Err("nodeの補完がinstance元と違う".into());
+            return Err(internal!("nodeの補完がinstance元と違う").into());
         }
         for f in &node.support {
             self.tick()?;
             self.fact(f)?;
             if f.field.is_some() && f.atom.is_none() {
-                return Err("未観測 slot を support Atom にしている".into());
+                return Err(internal!("未観測 slot を support Atom にしている").into());
             }
             self.tick()?;
         }
@@ -1217,9 +1238,10 @@ impl<'a> Environment<'a> {
                         if !self.native_law_source_allowed(graph, index, *span)?
                             || self.finite_family_skipped_source_ref(graph, *expression)?
                         {
-                            return Err(
-                                "非適用native Lawのbodyを通常/全域評価へ昇格できない".into()
-                            );
+                            return Err(internal!(
+                                "非適用native Lawのbodyを通常/全域評価へ昇格できない"
+                            )
+                            .into());
                         }
                     }
                 }
@@ -1241,7 +1263,7 @@ impl<'a> Environment<'a> {
                 || context.instance.is_some()
                 || context.case.is_some()
             {
-                return Err("有限view parameter producerが元root Contextにない".into());
+                return Err(internal!("有限view parameter producerが元root Contextにない").into());
             }
             return Ok(());
         }
@@ -1297,11 +1319,11 @@ impl<'a> Environment<'a> {
                         entity,
                     } = scalar
                     else {
-                        return Err("subject leaf の値が参照でない".into());
+                        return Err(internal!("subject leaf の値が参照でない").into());
                     };
                     let s = self.indexes.subject(snapshot, subject)?;
                     if pointer != &s.pointer || entity != &s.ty {
-                        return Err("subject leaf が原入力に合わない".into());
+                        return Err(internal!("subject leaf が原入力に合わない").into());
                     }
                 }
                 Rule::Input {
@@ -1317,7 +1339,7 @@ impl<'a> Environment<'a> {
                                 &self.state,
                                 &subject.snapshot,
                                 &subject.id,
-                                f.field.as_ref().ok_or("atom field がない")?,
+                                f.field.as_ref().ok_or(internal!("atom field がない"))?,
                             )?;
                             if let Slot::Known {
                                 value, pointer: p, ..
@@ -1338,7 +1360,7 @@ impl<'a> Environment<'a> {
                         self.tick()?;
                     }
                     if !found {
-                        return Err("Atom 値が元 slot に合わない".into());
+                        return Err(internal!("Atom 値が元 slot に合わない").into());
                     }
                     self.call_field_source(graph, node, limit)?;
                 }
@@ -1356,7 +1378,7 @@ impl<'a> Environment<'a> {
                         .get(span)
                         .copied();
                     if id.is_some_and(|id| law.expr_type(id) != Some(&scalar.ty())) {
-                        return Err("導出値が元式の型に合わない".into());
+                        return Err(internal!("導出値が元式の型に合わない").into());
                     }
                     let computed = if self.chain_field_occurrence(*span)?.is_some() {
                         self.chain_field_source_analysis(graph, node, limit)?.0
@@ -1365,38 +1387,38 @@ impl<'a> Environment<'a> {
                             ExprKind::Family { .. } => self
                                 .owned_family_scalar_analysis(graph, node, limit)?
                                 .known_value
-                                .ok_or("所属族の元集合が確定しない")?,
+                                .ok_or(internal!("所属族の元集合が確定しない"))?,
                             ExprKind::Quant { .. } => self
                                 .quant_scalar(graph, node, limit)?
                                 .known_value
-                                .ok_or("量化値が確定しない")?,
+                                .ok_or(internal!("量化値が確定しない"))?,
                             ExprKind::SetComp { .. } => self
                                 .comprehension_source_analysis(graph, node, limit)?
                                 .known_value
-                                .ok_or("内包値が確定しない")?,
+                                .ok_or(internal!("内包値が確定しない"))?,
                             ExprKind::Call { .. } if self.named_view(id)?.is_some() => self
                                 .call_source_analysis(graph, node, limit)?
                                 .known_value
-                                .ok_or("call結果が確定しない")?,
+                                .ok_or(internal!("call結果が確定しない"))?,
                             ExprKind::Let { .. } | ExprKind::If { .. } | ExprKind::Match { .. } => {
                                 self.lexical_source_analysis(graph, node, limit)?
                                     .known_value
-                                    .ok_or("let/if 値が全補完で確定しない")?
+                                    .ok_or(internal!("let/if 値が全補完で確定しない"))?
                             }
                             ExprKind::Binary { op, .. } if is_boolean_binary(*op) => self
                                 .logic_source_analysis(graph, node, limit)?
                                 .known_value
-                                .ok_or("Bool 論理値が全補完で確定しない")?,
+                                .ok_or(internal!("Bool 論理値が全補完で確定しない"))?,
                             ExprKind::Unary { op: UnOp::Not, .. } => self
                                 .logic_source_analysis(graph, node, limit)?
                                 .known_value
-                                .ok_or("Bool 否定値が確定しない")?,
+                                .ok_or(internal!("Bool 否定値が確定しない"))?,
                             ExprKind::Dotted(_)
                                 if data::expression(law, id, &self.control)?.is_none() =>
                             {
                                 self.lexical_source_analysis(graph, node, limit)?
                                     .known_value
-                                    .ok_or("pattern値が確定しない")?
+                                    .ok_or(internal!("pattern値が確定しない"))?
                             }
                             ExprKind::Dotted(_)
                             | ExprKind::Int(_)
@@ -1415,16 +1437,16 @@ impl<'a> Environment<'a> {
                             | ExprKind::Unary { op: UnOp::Neg, .. } => self
                                 .scalar_source_analysis(graph, node, limit)?
                                 .known_value
-                                .ok_or("元 Source で生成値が確定しない")?,
-                            _ => return Err("元式に対する値検査がない".into()),
+                                .ok_or(internal!("元 Source で生成値が確定しない"))?,
+                            _ => return Err(internal!("元式に対する値検査がない").into()),
                         }
                     } else {
                         self.lexical_source_analysis(graph, node, limit)?
                             .known_value
-                            .ok_or("pattern fragment値がない")?
+                            .ok_or(internal!("pattern fragment値がない"))?
                     };
                     if &computed != scalar {
-                        return Err("生成算術が元式に合わない".into());
+                        return Err(internal!("生成算術が元式に合わない").into());
                     }
                 }
                 Rule::Construction("domain") => self.domain_member(graph, node, limit)?,
@@ -1434,7 +1456,7 @@ impl<'a> Environment<'a> {
                         || node.scope != graph.get(node.arguments[2])?.scope
                         || !node.support.is_empty()
                     {
-                        return Err("量化のtrue要求値が違う".into());
+                        return Err(internal!("量化のtrue要求値が違う").into());
                     }
                 }
                 Rule::Construction("proposition")
@@ -1444,27 +1466,29 @@ impl<'a> Environment<'a> {
                 }
                 Rule::Construction("evaluation") if matches!(scalar, Scalar::Bool(_)) => {
                     if node.arguments.len() != 2 {
-                        return Err("含意値の構成入力数が違う".into());
+                        return Err(internal!("含意値の構成入力数が違う").into());
                     }
                     let instance = node.arguments[0];
                     let expression = node.arguments[1];
                     let expected = self.conditional_value(graph, instance, expression)?;
                     if expected.map(Scalar::Bool).as_ref() != Some(scalar) {
-                        return Err("条件付き Law 値が元 guard/body の全補完と違う".into());
+                        return Err(
+                            internal!("条件付き Law 値が元 guard/body の全補完と違う").into()
+                        );
                     }
                     let (body, guard) = self.application_at(graph, instance)?;
                     if node.scope != self.application_context(graph, body, guard)?.1 {
-                        return Err("含意 Scalar の範囲が元 Law 適用と違う".into());
+                        return Err(internal!("含意 Scalar の範囲が元 Law 適用と違う").into());
                     }
                 }
                 Rule::Construction("evaluation") => {
                     self.residual_source_analysis(graph, node, limit)?;
                 }
-                _ => return Err("値 leaf の導出規則がない".into()),
+                _ => return Err(internal!("値 leaf の導出規則がない").into()),
             }
             let support = self.scalar_support(graph, node, limit)?;
             if node.support != support {
-                return Err("値の支持が元入力・実引数の完全な集合と違う".into());
+                return Err(internal!("値の支持が元入力・実引数の完全な集合と違う").into());
             }
         }
         self.tick()?;
@@ -1488,21 +1512,21 @@ impl<'a> Environment<'a> {
                 || !node.reasons.is_empty()
                 || node.judgment.is_some()
             {
-                return Err("元Sourceの規則・支持・証拠が違う".into());
+                return Err(internal!("元Sourceの規則・支持・証拠が違う").into());
             }
             if let Some(Payload::Expression { bindings, .. }) = &node.payload
                 && node.arguments != self.source_arguments(graph, *span, bindings)?
             {
-                return Err("Sourceの元束縛・call実引数辺が違う".into());
+                return Err(internal!("Sourceの元束縛・call実引数辺が違う").into());
             }
             // この観測経路は元宣言parameterを全て明示束縛する。内部のlet名や
             // 欠測slotを自由parameterとして持ち込むことはできない。
             if !parameters.is_empty() {
-                return Err("全明示束縛の元 Source に自由parameterがある".into());
+                return Err(internal!("全明示束縛の元 Source に自由parameterがある").into());
             }
             let bytes = self.indexes.inputs.sources().law().bytes();
             if span.0 >= span.1 || bytes.get(span.0..span.1).is_none() {
-                return Err("元 byte span の外".into());
+                return Err(internal!("元 byte span の外").into());
             }
             let actual = self
                 .indexes
@@ -1514,18 +1538,20 @@ impl<'a> Environment<'a> {
                 .map(|&id| (id, &self.indexes.inputs.law().exprs()[id]));
             if let Some((id, _)) = actual {
                 let NodeType::Expression(ty) = &node.ty else {
-                    return Err("式の型".into());
+                    return Err(internal!("式の型").into());
                 };
                 if self.indexes.inputs.law().expr_type(id) != Some(ty) {
-                    return Err("Expression の型が元 AST に合わない".into());
+                    return Err(internal!("Expression の型が元 AST に合わない").into());
                 }
             } else {
-                let (id, count) = self.dotted_prefix(*span)?.ok_or("元ASTにない式prefix")?;
+                let (id, count) = self
+                    .dotted_prefix(*span)?
+                    .ok_or(internal!("元ASTにない式prefix"))?;
                 let prefixes = self.dotted_prefixes(id)?;
                 if prefixes[count - 1].0 != *span
                     || node.ty != NodeType::Expression(prefixes[count - 1].1.clone())
                 {
-                    return Err("fragmentの型が元Dotted prefixと違う".into());
+                    return Err(internal!("fragmentの型が元Dotted prefixと違う").into());
                 }
             }
         }
@@ -1536,7 +1562,7 @@ impl<'a> Environment<'a> {
         }) = &node.payload
             && node.scope != self.source_scope(graph, *span, bindings)?
         {
-            return Err("Expression の範囲が元宣言・入力と違う".into());
+            return Err(internal!("Expression の範囲が元宣言・入力と違う").into());
         }
         if matches!(&node.payload, Some(Payload::Transform { .. })) {
             self.transform_scope(graph, node, limit)?;
@@ -1557,7 +1583,7 @@ impl<'a> Environment<'a> {
                 .law()
                 .declarations()
                 .get(name)
-                .ok_or("LawInstance の宣言がない")?;
+                .ok_or(internal!("LawInstance の宣言がない"))?;
             let Signature::Law {
                 role: r,
                 params,
@@ -1565,7 +1591,7 @@ impl<'a> Environment<'a> {
                 body: b,
             } = &d.signature
             else {
-                return Err("LawInstance が Law でない".into());
+                return Err(internal!("LawInstance が Law でない").into());
             };
             if role
                 != &match r {
@@ -1574,15 +1600,15 @@ impl<'a> Environment<'a> {
                 }
                 || occurrence != &(Location::Law { span: d.span })
             {
-                return Err("LawInstance の宣言 metadata 不一致".into());
+                return Err(internal!("LawInstance の宣言 metadata 不一致").into());
             }
             if params.len() != bindings.len() {
-                return Err("LawInstance の未束縛 parameter".into());
+                return Err(internal!("LawInstance の未束縛 parameter").into());
             }
             for (p, b) in params.iter().zip(bindings) {
                 self.tick()?;
                 if p.name != b.name || p.ty.erase() != b.ty {
-                    return Err("LawInstance の束縛署名不一致".into());
+                    return Err(internal!("LawInstance の束縛署名不一致").into());
                 }
                 self.tick()?;
             }
@@ -1590,7 +1616,7 @@ impl<'a> Environment<'a> {
             match (guard, g) {
                 (Some(v), Some(e)) => self.source_matches(graph, *v, *e)?,
                 (None, None) => {}
-                _ => return Err("guard の出現不一致".into()),
+                _ => return Err(internal!("guard の出現不一致").into()),
             }
             self.application(graph, node)?;
         }
@@ -1623,11 +1649,13 @@ impl<'a> Environment<'a> {
                 if let Some(index) = self.current_context(graph).instance {
                     let span = self.expression_span(graph, *expression)?;
                     if !self.native_law_source_allowed(graph, index, span)? {
-                        return Err("未成立guardのnative Law body評価を保持できない".into());
+                        return Err(
+                            internal!("未成立guardのnative Law body評価を保持できない").into()
+                        );
                     }
                 }
                 if *applicability != "applicable" {
-                    return Err("通常式の評価に Law の適用判定を付けている".into());
+                    return Err(internal!("通常式の評価に Law の適用判定を付けている").into());
                 }
                 if self.validate_type_binder_evaluation(graph, node, limit)? {
                     return Ok(());
@@ -1652,7 +1680,7 @@ impl<'a> Environment<'a> {
                     || parts[0].location != (Location::Law { span })
                     || parts[0].value != *value
                 {
-                    return Err("Evaluation の原式・束縛・part が合わない".into());
+                    return Err(internal!("Evaluation の原式・束縛・part が合わない").into());
                 }
                 let mut analysis = self.resolve_analysis(
                     graph,
@@ -1670,7 +1698,7 @@ impl<'a> Environment<'a> {
                 // 子Evaluationの量化Scopeは、この使用位置の評価範囲である。
                 if let Some(original) = self.reused_source_value(graph, span, bindings)? {
                     if *value != Some(original) || original.0 >= limit {
-                        return Err("aliasの値が元ASTの実producerと違う".into());
+                        return Err(internal!("aliasの値が元ASTの実producerと違う").into());
                     }
                     self.validate_at(graph, graph.get(original)?, original.0)?;
                     analysis.scalar_scope = Some(graph.get(original)?.scope.clone());
@@ -1678,7 +1706,7 @@ impl<'a> Environment<'a> {
                 let repaired_field = self.field_owner_span(span)?.is_some()
                     && value.is_some_and(|r| self.state.architecture_has_value(r));
                 if repaired_field {
-                    let r = value.ok_or("修復field値がない")?;
+                    let r = value.ok_or(internal!("修復field値がない"))?;
                     analysis.scalar_scope = Some(graph.get(r)?.scope.clone());
                 }
                 let expected_scope = analysis.scope;
@@ -1688,19 +1716,23 @@ impl<'a> Environment<'a> {
                         .scope
                         .source_compatible(&expected_scope)
                 {
-                    return Err("Evaluation と元式の範囲が元入力と違う".into());
+                    return Err(internal!("Evaluation と元式の範囲が元入力と違う").into());
                 }
                 if node.support != analysis.support {
-                    return Err("Evaluation の支持が元 AST・原始事実の完全な集合と違う".into());
+                    return Err(
+                        internal!("Evaluation の支持が元 AST・原始事実の完全な集合と違う").into(),
+                    );
                 }
                 let mut used_support = Vec::new();
                 if let Some(reference) = value {
                     let expected = analysis
                         .scalar_scope
                         .as_ref()
-                        .ok_or("元式に確定値の範囲がない")?;
+                        .ok_or(internal!("元式に確定値の範囲がない"))?;
                     if &graph.get(*reference)?.scope != expected {
-                        return Err("評価値Scalarの範囲が元Source・束縛・originと違う".into());
+                        return Err(
+                            internal!("評価値Scalarの範囲が元Source・束縛・originと違う").into(),
+                        );
                     }
                     used_support.extend(graph.get(*reference)?.support.iter().cloned());
                 }
@@ -1710,7 +1742,7 @@ impl<'a> Environment<'a> {
                     &[]
                 };
                 if node.evidence != expected_evidence {
-                    return Err("通常Evaluationの証拠が元値と違う".into());
+                    return Err(internal!("通常Evaluationの証拠が元値と違う").into());
                 }
                 let children = &parts[0].children;
                 for &child in children {
@@ -1726,7 +1758,9 @@ impl<'a> Environment<'a> {
                 used_support.sort();
                 used_support.dedup();
                 if node.support != used_support {
-                    return Err("Evaluation の支持が使用した値・子評価の和集合と違う".into());
+                    return Err(
+                        internal!("Evaluation の支持が使用した値・子評価の和集合と違う").into(),
+                    );
                 }
                 let children = &parts[0].children;
                 let ast = self
@@ -1749,7 +1783,7 @@ impl<'a> Environment<'a> {
                                     .program()
                                     .expressions
                                     .get(&span)
-                                    .ok_or("名元ASTがない")?,
+                                    .ok_or(internal!("名元ASTがない"))?,
                                 &self.control,
                             )?
                             .is_some()
@@ -1803,7 +1837,7 @@ impl<'a> Environment<'a> {
                         graph.context_at(reference.0) != self.current_context(graph)
                     })
                 {
-                    return Err("元式の生成Scalarが別call/Request frameに属する".into());
+                    return Err(internal!("元式の生成Scalarが別call/Request frameに属する").into());
                 }
                 // literal/演算はこの出現で新しい値を作る。op・値・引数の一致だけで
                 // 別 AST や固定構成に帰属を付け替えられないよう、生成規則も結ぶ。
@@ -1839,21 +1873,25 @@ impl<'a> Environment<'a> {
                             location: Location::Law { span: source },
                         } if *source == span
                     ) {
-                        return Err("生成値の規則・元 Law 出現が評価元 AST と違う".into());
+                        return Err(
+                            internal!("生成値の規則・元 Law 出現が評価元 AST と違う").into()
+                        );
                     }
                     self.tick()?;
                 }
                 if generated_here
                     && ((ast.is_none() && self.find_name_token(span)?.is_some())
-                        || matches!(ast.map(|e| &e.kind), Some(ExprKind::Dotted(parts)) if parts.len() == 1 || data::expression(self.indexes.inputs.law(), *self.indexes.inputs.law().program().expressions.get(&span).ok_or("名元ASTがない")?, &self.control)?.is_some()))
+                        || matches!(ast.map(|e| &e.kind), Some(ExprKind::Dotted(parts)) if parts.len() == 1 || data::expression(self.indexes.inputs.law(), *self.indexes.inputs.law().program().expressions.get(&span).ok_or(internal!("名元ASTがない"))?, &self.control)?.is_some()))
                     && let Some(value) = value
                     && !matches!(&graph.get(*value)?.rule, Rule::Input { kind: "law", location: Location::Law { span: actual } } if *actual == span)
                 {
-                    return Err("constructor/binderの生成規則・元出現が違う".into());
+                    return Err(internal!("constructor/binderの生成規則・元出現が違う").into());
                 }
                 let expected = match ast.map(|e| &e.kind) {
                     Some(ExprKind::Match { scrutinee, arms }) => {
-                        let input = *children.first().ok_or("match実scrutinee辺がない")?;
+                        let input = *children
+                            .first()
+                            .ok_or(internal!("match実scrutinee辺がない"))?;
                         let known = self
                             .evaluation(graph, input)?
                             .2
@@ -1866,7 +1904,7 @@ impl<'a> Environment<'a> {
                             .program()
                             .expressions
                             .get(&span)
-                            .ok_or("match元ASTがない")?;
+                            .ok_or(internal!("match元ASTがない"))?;
                         let mut spans = vec![self.indexes.inputs.law().exprs()[*scrutinee].span];
                         if let Some(arm) = self.select_match_arm(
                             graph,
@@ -1902,7 +1940,7 @@ impl<'a> Environment<'a> {
                                 .program()
                                 .expressions
                                 .get(&span)
-                                .ok_or("constructor元式がない")?,
+                                .ok_or(internal!("constructor元式がない"))?,
                             &self.control,
                         )?
                         .is_some() =>
@@ -1917,7 +1955,7 @@ impl<'a> Environment<'a> {
                     {
                         let (domain, _) = self
                             .iteration_argument(graph, span, &parts[0].name, bindings)?
-                            .ok_or("反復domainがない")?;
+                            .ok_or(internal!("反復domainがない"))?;
                         vec![self.expression_span(graph, self.evaluation(graph, domain)?.0)?]
                     }
                     Some(ExprKind::Dotted(parts))
@@ -1926,7 +1964,7 @@ impl<'a> Environment<'a> {
                     {
                         let (input, _) = self
                             .pattern_argument(graph, span, &parts[0].name, bindings)?
-                            .ok_or("pattern引数がない")?;
+                            .ok_or(internal!("pattern引数がない"))?;
                         vec![self.expression_span(graph, self.evaluation(graph, input)?.0)?]
                     }
                     Some(ExprKind::Dotted(parts)) if parts.len() == 1 => self
@@ -1962,9 +2000,11 @@ impl<'a> Environment<'a> {
                             .program()
                             .expressions
                             .get(&span)
-                            .ok_or("数値構成の元式がない")?;
+                            .ok_or(internal!("数値構成の元式がない"))?;
                         let mut spans = Vec::new();
-                        for child in self.composite_children(id)?.ok_or("数値構成の子がない")?
+                        for child in self
+                            .composite_children(id)?
+                            .ok_or(internal!("数値構成の子がない"))?
                         {
                             self.tick()?;
                             spans.push(self.indexes.inputs.law().exprs()[child].span);
@@ -1989,7 +2029,7 @@ impl<'a> Environment<'a> {
                             let token = std::str::from_utf8(
                                 &self.indexes.inputs.sources().law().bytes()[span.0..span.1],
                             )
-                            .map_err(|_| "lexical token がUTF8でない")?;
+                            .map_err(|_| internal!("lexical token がUTF8でない"))?;
                             if let Some((input, _)) =
                                 self.iteration_argument(graph, span, token, bindings)?
                             {
@@ -2045,16 +2085,16 @@ impl<'a> Environment<'a> {
                 };
                 if iteration_parameter.is_some() && children.first().copied() != iteration_parameter
                 {
-                    return Err("反復名の実domain Evaluationが違う".into());
+                    return Err(internal!("反復名の実domain Evaluationが違う").into());
                 }
                 if parameter.is_some() && children.first().copied() != parameter {
-                    return Err("callee parameterの実引数Evaluationが違う".into());
+                    return Err(internal!("callee parameterの実引数Evaluationが違う").into());
                 }
                 if lexical_parameter.is_some() && children.first().copied() != lexical_parameter {
-                    return Err("lexical名の元実Evaluationが違う".into());
+                    return Err(internal!("lexical名の元実Evaluationが違う").into());
                 }
                 if children.len() != expected.len() {
-                    return Err("元 AST と子 Evaluation の個数不一致".into());
+                    return Err(internal!("元 AST と子 Evaluation の個数不一致").into());
                 }
                 let mut child_values = Vec::new();
                 for (&child, expected_span) in children.iter().zip(expected) {
@@ -2067,7 +2107,7 @@ impl<'a> Environment<'a> {
                             && (b != bindings
                                 || graph.context_at(child.0) != self.current_context(graph)))
                     {
-                        return Err("元 AST の子出現・束縛不一致".into());
+                        return Err(internal!("元 AST の子出現・束縛不一致").into());
                     }
                     child_values.push(v);
                     self.tick()?;
@@ -2075,7 +2115,7 @@ impl<'a> Environment<'a> {
                 if !matches!(ast.map(|e| &e.kind), Some(ExprKind::Binary { .. }))
                     && parts[0].residual.is_some()
                 {
-                    return Err("比較以外の式に残差がある".into());
+                    return Err(internal!("比較以外の式に残差がある").into());
                 }
                 let failed = analysis.condition_pending
                     || self
@@ -2084,7 +2124,7 @@ impl<'a> Environment<'a> {
                         .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }));
                 if failed {
                     let NodeType::Expression(ty) = &graph.get(*expression)?.ty else {
-                        return Err("不成立構成の元Source型が違う".into());
+                        return Err(internal!("不成立構成の元Source型が違う").into());
                     };
                     let expected: Vec<_> = std::iter::once(*expression)
                         .chain(children.iter().copied())
@@ -2098,7 +2138,9 @@ impl<'a> Environment<'a> {
                         || !node.evidence.is_empty()
                         || node.judgment.is_some()
                     {
-                        return Err("不成立構成を使う元式に通常値・別の型・辺がある".into());
+                        return Err(
+                            internal!("不成立構成を使う元式に通常値・別の型・辺がある").into()
+                        );
                     }
                     self.tick()?;
                     return Ok(());
@@ -2116,7 +2158,11 @@ impl<'a> Environment<'a> {
                                 if graph.scalar(*result)? == &expected
                                     && graph.get(*result)?.arguments == *children => {}
                             (None, None) => {}
-                            _ => return Err("match元scrutinee・選択arm・結果辺が違う".into()),
+                            _ => {
+                                return Err(
+                                    internal!("match元scrutinee・選択arm・結果辺が違う").into()
+                                );
+                            }
                         }
                     }
                     Some(ExprKind::Let { .. } | ExprKind::If { .. }) => {
@@ -2137,7 +2183,11 @@ impl<'a> Environment<'a> {
                                 if graph.scalar(*result)? == &expected
                                     && graph.get(*result)?.arguments == *children => {}
                             (None, None) => {}
-                            _ => return Err("let/if の元子・確定結果・構成引数が違う".into()),
+                            _ => {
+                                return Err(
+                                    internal!("let/if の元子・確定結果・構成引数が違う").into()
+                                );
+                            }
                         }
                     }
                     Some(ExprKind::Int(n)) => {
@@ -2153,17 +2203,17 @@ impl<'a> Environment<'a> {
                                     .program()
                                     .expressions
                                     .get(&span)
-                                    .ok_or("literal元式がない")?,
+                                    .ok_or(internal!("literal元式がない"))?,
                             )
-                            .ok_or("literal型がない")?;
+                            .ok_or(internal!("literal型がない"))?;
                         let expected = numeric::literal(n, ty, &self.control)?;
                         if value.map(|r| graph.scalar(r)).transpose()? != Some(&expected) {
-                            return Err("整数 literal の評価値が元 AST と違う".into());
+                            return Err(internal!("整数 literal の評価値が元 AST と違う").into());
                         }
                     }
                     Some(ExprKind::Bool(b)) => {
                         if value.map(|r| graph.scalar(r)).transpose()? != Some(&Scalar::Bool(*b)) {
-                            return Err("Bool literal の評価値が元 AST と違う".into());
+                            return Err(internal!("Bool literal の評価値が元 AST と違う").into());
                         }
                     }
                     Some(ExprKind::Binary { op, lhs, .. }) => {
@@ -2183,7 +2233,7 @@ impl<'a> Environment<'a> {
                                     .inputs
                                     .law()
                                     .expr_type(*lhs)
-                                    .ok_or("数値演算の元型がない")?,
+                                    .ok_or(internal!("数値演算の元型がない"))?,
                                 &self.control,
                             )?;
                         let affine_comparison = computed.is_none()
@@ -2193,7 +2243,7 @@ impl<'a> Environment<'a> {
                                     .inputs
                                     .law()
                                     .expr_type(*lhs)
-                                    .ok_or("比較の元型がない")?,
+                                    .ok_or(internal!("比較の元型がない"))?,
                                 &self.control,
                             )?
                             && analysis.known_value.is_some();
@@ -2214,10 +2264,10 @@ impl<'a> Environment<'a> {
                                     if result_node.arguments[..3]
                                         != [*expression, children[0], children[1]]
                                     {
-                                        return Err(
+                                        return Err(internal!(
                                             "アフィン比較Boolの元Source・実左右が親評価と違う"
-                                                .into(),
-                                        );
+                                        )
+                                        .into());
                                     }
                                     result_node.arguments.clone()
                                 } else if affine_constant {
@@ -2232,7 +2282,8 @@ impl<'a> Environment<'a> {
                                 } else if is_boolean_binary(*op) {
                                     vec![children[0], children[1]]
                                 } else {
-                                    let (left, right) = pair.ok_or("二項演算の既知左右がない")?;
+                                    let (left, right) =
+                                        pair.ok_or(internal!("二項演算の既知左右がない"))?;
                                     vec![left, right]
                                 };
                                 for reference in &graph.get(result)?.evidence {
@@ -2245,28 +2296,40 @@ impl<'a> Environment<'a> {
                                     ) && graph.get(*reference)?.arguments.get(..3)
                                         != Some(&[*expression, children[0], children[1]][..])
                                     {
-                                        return Err("Term比較証拠が親の元実左右と違う".into());
+                                        return Err(
+                                            internal!("Term比較証拠が親の元実左右と違う").into()
+                                        );
                                     }
                                 }
                                 if graph.scalar(result)? != &expected
                                     || graph.get(result)?.arguments != arguments
                                 {
-                                    return Err("生成演算値の元左右・演算結果が違う".into());
+                                    return Err(
+                                        internal!("生成演算値の元左右・演算結果が違う").into()
+                                    );
                                 }
                             }
                             (None, None) => {}
-                            _ => return Err("部分既知の元演算と結果値の有無が違う".into()),
+                            _ => {
+                                return Err(
+                                    internal!("部分既知の元演算と結果値の有無が違う").into()
+                                );
+                            }
                         }
                         match (op, pair, parts[0].residual) {
                             (BinOp::Eq | BinOp::Ne, _, Some(residual)) if affine_comparison => {
-                                let result = value.ok_or("アフィン比較のBool値がない")?;
+                                let result =
+                                    value.ok_or(internal!("アフィン比較のBool値がない"))?;
                                 if graph.get(result)?.arguments[4] != residual {
-                                    return Err("アフィン比較のpart残差が実差導出と違う".into());
+                                    return Err(internal!(
+                                        "アフィン比較のpart残差が実差導出と違う"
+                                    )
+                                    .into());
                                 }
                                 self.validate_at(graph, graph.get(residual)?, residual.0)?;
                             }
                             (BinOp::Eq | BinOp::Ne, _, None) if affine_comparison => {
-                                return Err("アフィン比較の型付き残差がない".into());
+                                return Err(internal!("アフィン比較の型付き残差がない").into());
                             }
                             (BinOp::Eq, Some((left, right)), residual)
                                 if numeric::is_numeric_type(
@@ -2274,26 +2337,30 @@ impl<'a> Environment<'a> {
                                         .inputs
                                         .law()
                                         .expr_type(*lhs)
-                                        .ok_or("数値等号の型がない")?,
+                                        .ok_or(internal!("数値等号の型がない"))?,
                                     &self.control,
                                 )? =>
                             {
-                                let residual = residual.ok_or("既知 数値等号の残差がない")?;
+                                let residual =
+                                    residual.ok_or(internal!("既知 数値等号の残差がない"))?;
                                 let ty = self
                                     .indexes
                                     .inputs
                                     .law()
                                     .expr_type(*lhs)
-                                    .ok_or("数値等号の型がない")?;
+                                    .ok_or(internal!("数値等号の型がない"))?;
                                 graph.expect(residual, &NodeType::Value(ty.clone()))?;
                                 if !matches!(
                                     graph.get(residual)?.rule,
                                     Rule::Construction("evaluation")
                                 ) {
-                                    return Err("数値等号残差の生成規則が違う".into());
+                                    return Err(internal!("数値等号残差の生成規則が違う").into());
                                 }
                                 if graph.get(residual)?.scope != expected_scope {
-                                    return Err("数値等号残差Scalarの範囲が元等式と違う".into());
+                                    return Err(internal!(
+                                        "数値等号残差Scalarの範囲が元等式と違う"
+                                    )
+                                    .into());
                                 }
                                 let difference = numeric::binary(
                                     BinOp::Sub,
@@ -2304,12 +2371,19 @@ impl<'a> Environment<'a> {
                                 if graph.scalar(residual)? != &difference
                                     || graph.get(residual)?.arguments != [left, right]
                                 {
-                                    return Err("数値等号の残差が元左右の正確な差でない".into());
+                                    return Err(internal!(
+                                        "数値等号の残差が元左右の正確な差でない"
+                                    )
+                                    .into());
                                 }
                                 self.validate_at(graph, graph.get(residual)?, residual.0)?;
                             }
                             (_, _, None) => {}
-                            _ => return Err("数値等号の既知左右以外に整数残差がある".into()),
+                            _ => {
+                                return Err(
+                                    internal!("数値等号の既知左右以外に整数残差がある").into()
+                                );
+                            }
                         }
                     }
                     Some(
@@ -2331,7 +2405,7 @@ impl<'a> Environment<'a> {
                             .program()
                             .expressions
                             .get(&span)
-                            .ok_or("数値構成の元式がない")?;
+                            .ok_or(internal!("数値構成の元式がない"))?;
                         let mut values = Vec::new();
                         let mut arguments = Vec::new();
                         let mut known = true;
@@ -2349,9 +2423,9 @@ impl<'a> Environment<'a> {
                             (true, Some(result)) if self.is_path(id)? => {
                                 let actual = self
                                     .path_scalar_analysis(graph, graph.get(result)?, result.0)?
-                                    .ok_or("Path値の元入力検査がない")?;
+                                    .ok_or(internal!("Path値の元入力検査がない"))?;
                                 if actual.known_value.as_ref() != Some(graph.scalar(result)?) {
-                                    return Err("Pathの実子・値が元入力と違う".into());
+                                    return Err(internal!("Pathの実子・値が元入力と違う").into());
                                 }
                             }
                             (true, Some(result)) => {
@@ -2359,7 +2433,7 @@ impl<'a> Environment<'a> {
                                     != self.composite_value(id, &values)?.as_ref()
                                     || graph.get(result)?.arguments != arguments
                                 {
-                                    return Err("数値構成の元子・結果値が違う".into());
+                                    return Err(internal!("数値構成の元子・結果値が違う").into());
                                 }
                             }
                             (true, None) if self.composite_value(id, &values)?.is_none() => {}
@@ -2370,16 +2444,18 @@ impl<'a> Environment<'a> {
                                 if analysis.known_value.as_ref() != Some(graph.scalar(result)?)
                                     || graph.get(result)?.arguments != edges
                                 {
-                                    return Err("Term相殺値の元Source・実引数が違う".into());
+                                    return Err(
+                                        internal!("Term相殺値の元Source・実引数が違う").into()
+                                    );
                                 }
                             }
                             (false, None) => {}
-                            _ => return Err("未確定の数値構成から値を作っている".into()),
+                            _ => return Err(internal!("未確定の数値構成から値を作っている").into()),
                         }
                     }
                     Some(ExprKind::Group(_)) => {
                         if *value != child_values[0] {
-                            return Err("括弧の評価値不一致".into());
+                            return Err(internal!("括弧の評価値不一致").into());
                         }
                     }
                     Some(ExprKind::Unary { op, .. }) => match (child_values[0], *value) {
@@ -2393,20 +2469,26 @@ impl<'a> Environment<'a> {
                                 != &unary(*op, graph.scalar(operand)?, &self.control)?
                                 || graph.get(result)?.arguments != [argument]
                             {
-                                return Err("単項演算の元 operand・結果値が違う".into());
+                                return Err(internal!("単項演算の元 operand・結果値が違う").into());
                             }
                         }
                         (None, Some(result)) if *op == UnOp::Neg => {
                             self.affine_source_analysis(graph, graph.get(result)?, result.0)?;
                             if graph.scalar(result)?
-                                != analysis.known_value.as_ref().ok_or("負号の定数値がない")?
+                                != analysis
+                                    .known_value
+                                    .as_ref()
+                                    .ok_or(internal!("負号の定数値がない"))?
                                 || graph.get(result)?.arguments != [*expression, children[0]]
                             {
-                                return Err("負号のアフィン定数値・元Source・実子が違う".into());
+                                return Err(internal!(
+                                    "負号のアフィン定数値・元Source・実子が違う"
+                                )
+                                .into());
                             }
                         }
                         (None, None) if analysis.known_value.is_none() => {}
-                        _ => return Err("単項演算の子値と結果値の有無が違う".into()),
+                        _ => return Err(internal!("単項演算の子値と結果値の有無が違う").into()),
                     },
                     Some(ExprKind::Dotted(_))
                         if data::expression(
@@ -2418,7 +2500,7 @@ impl<'a> Environment<'a> {
                                 .program()
                                 .expressions
                                 .get(&span)
-                                .ok_or("constructor元式がない")?,
+                                .ok_or(internal!("constructor元式がない"))?,
                             &self.control,
                         )?
                         .is_some() =>
@@ -2430,11 +2512,11 @@ impl<'a> Environment<'a> {
                             .program()
                             .expressions
                             .get(&span)
-                            .ok_or("constructor元式がない")?;
+                            .ok_or(internal!("constructor元式がない"))?;
                         if value.map(|r| graph.scalar(r)).transpose()?
                             != self.composite_value(id, &[])?.as_ref()
                         {
-                            return Err("零引数constructor値が違う".into());
+                            return Err(internal!("零引数constructor値が違う").into());
                         }
                     }
                     Some(ExprKind::Dotted(parts)) => {
@@ -2480,7 +2562,7 @@ impl<'a> Environment<'a> {
                             let source = std::str::from_utf8(
                                 &self.indexes.inputs.sources().law().bytes()[span.0..span.1],
                             )
-                            .map_err(|_| "parameter token")?;
+                            .map_err(|_| internal!("parameter token"))?;
                             self.check_name(graph, span, bindings, source, *value, &child_values)?;
                         }
                     }
@@ -2524,7 +2606,7 @@ impl<'a> Environment<'a> {
             }) => {
                 let (evaluation, left, right) = self.evidence_operands(graph, node, *instance)?;
                 if *lhs != left || *rhs != right {
-                    return Err("評価証拠が元の左右値を指していない".into());
+                    return Err(internal!("評価証拠が元の左右値を指していない").into());
                 }
                 let Some(Payload::Evaluation { parts, .. }) = &graph.get(evaluation)?.payload
                 else {
@@ -2543,10 +2625,13 @@ impl<'a> Environment<'a> {
                     ) {
                     None
                 } else {
-                    parts.last().ok_or("証拠の評価 part がない")?.residual
+                    parts
+                        .last()
+                        .ok_or(internal!("証拠の評価 part がない"))?
+                        .residual
                 };
                 if *residual != expected {
-                    return Err("証拠の残差が元評価と違う".into());
+                    return Err(internal!("証拠の残差が元評価と違う").into());
                 }
             }
             Some(Payload::Counterexample {
@@ -2555,19 +2640,22 @@ impl<'a> Environment<'a> {
                 right,
                 facts,
             }) => {
-                let instance = *node.arguments.first().ok_or("反例に LawInstance がない")?;
+                let instance = *node
+                    .arguments
+                    .first()
+                    .ok_or(internal!("反例に LawInstance がない"))?;
                 let (evaluation, l, r) = self.evidence_operands(graph, node, instance)?;
                 if *left != l || *right != r {
-                    return Err("反例が元式の左右値を指していない".into());
+                    return Err(internal!("反例が元式の左右値を指していない").into());
                 }
                 let (_, bs, v) = self.evaluation(graph, evaluation)?;
                 if bs != bindings
                     || v.map(|r| graph.scalar(r)).transpose()? != Some(&Scalar::Bool(false))
                 {
-                    return Err("反例の元束縛・false 評価不一致".into());
+                    return Err(internal!("反例の元束縛・false 評価不一致").into());
                 }
                 if facts != &graph.get(evaluation)?.support {
-                    return Err("反例 facts が元評価と違う".into());
+                    return Err(internal!("反例 facts が元評価と違う").into());
                 }
                 for fact in facts {
                     self.tick()?;
@@ -2582,17 +2670,20 @@ impl<'a> Environment<'a> {
                     self.validate_at(graph, graph.get(reference)?, reference.0)?;
                     self.tick()?;
                 }
-                let evaluation = *node.arguments.get(1).ok_or("命題に元評価がない")?;
+                let evaluation = *node
+                    .arguments
+                    .get(1)
+                    .ok_or(internal!("命題に元評価がない"))?;
                 self.instance_evaluation(graph, *instance, evaluation)?;
                 let (_, _, v) = self.evaluation(graph, evaluation)?;
                 let status = match v.map(|r| graph.scalar(r)).transpose()? {
                     Some(Scalar::Bool(true)) => Decision::Established,
                     Some(Scalar::Bool(false)) => Decision::Refuted,
                     None => Decision::Undetermined,
-                    _ => return Err("命題 body の型".into()),
+                    _ => return Err(internal!("命題 body の型").into()),
                 };
                 if node.judgment.as_ref().map(|j| j.status) != Some(status) {
-                    return Err("命題判断が元 body と違う".into());
+                    return Err(internal!("命題判断が元 body と違う").into());
                 }
             }
             _ => {}
@@ -2605,11 +2696,14 @@ impl<'a> Environment<'a> {
                     | Payload::Proposition { .. }
             )
         ) {
-            let evaluation = *node.arguments.get(1).ok_or("結論に適用評価がない")?;
+            let evaluation = *node
+                .arguments
+                .get(1)
+                .ok_or(internal!("結論に適用評価がない"))?;
             if node.support != graph.get(evaluation)?.support
                 || node.scope != graph.get(evaluation)?.scope
             {
-                return Err("結論の支持・範囲が適用評価と合わない".into());
+                return Err(internal!("結論の支持・範囲が適用評価と合わない").into());
             }
         }
         self.tick()?;
@@ -2630,7 +2724,7 @@ impl<'a> Environment<'a> {
                 location: Location::Law { span },
             } = &node.rule
             else {
-                return Err("let/if 値に元出現がない".into());
+                return Err(internal!("let/if 値に元出現がない").into());
             };
             let id = self
                 .indexes
@@ -2648,7 +2742,7 @@ impl<'a> Environment<'a> {
                     .get(domain)?
                     .arguments
                     .first()
-                    .ok_or("型binder Domainの元Sourceがない")?;
+                    .ok_or(internal!("型binder Domainの元Sourceがない"))?;
                 let bindings = self.expression_bindings(graph, source)?;
                 if let Some((actual, expected)) =
                     self.type_iteration_argument(graph, *span, name, bindings)?
@@ -2663,7 +2757,7 @@ impl<'a> Environment<'a> {
                         || !node.evidence.is_empty()
                         || !node.reasons.is_empty()
                     {
-                        return Err("型binderの元型/要素/Domain/Scope/支持が違う".into());
+                        return Err(internal!("型binderの元型/要素/Domain/Scope/支持が違う").into());
                     }
                     return Ok(analysis);
                 }
@@ -2697,7 +2791,7 @@ impl<'a> Environment<'a> {
                         .program()
                         .expressions
                         .get(&self.expression_span(graph, source)?)
-                        .ok_or("反復domain元式がない")?,
+                        .ok_or(internal!("反復domain元式がない"))?,
                 ]
             } else if let Some(id) = id {
                 match self.indexes.inputs.law().exprs()[id].kind {
@@ -2709,7 +2803,7 @@ impl<'a> Environment<'a> {
                         let input = *node
                             .arguments
                             .first()
-                            .ok_or("match生成値にscrutinee辺がない")?;
+                            .ok_or(internal!("match生成値にscrutinee辺がない"))?;
                         let value = self
                             .evaluation(graph, input)?
                             .2
@@ -2724,13 +2818,13 @@ impl<'a> Environment<'a> {
                                 value,
                                 self.evaluation(graph, input)?.0,
                             )?
-                            .ok_or("未知matchに生成値がある")?;
+                            .ok_or(internal!("未知matchに生成値がある"))?;
                         vec![scrutinee, arms[arm].body]
                     }
                     ExprKind::Dotted(ref parts) if parts.len() == 1 => {
                         let (matching, _, _) = self
                             .pattern_binding(*span, &parts[0].name)?
-                            .ok_or("生成値の元patternがない")?;
+                            .ok_or(internal!("生成値の元patternがない"))?;
                         let ExprKind::Match { scrutinee, .. } =
                             self.indexes.inputs.law().exprs()[matching].kind
                         else {
@@ -2743,12 +2837,12 @@ impl<'a> Environment<'a> {
                         then_branch,
                         else_branch,
                     } => vec![cond, then_branch, else_branch],
-                    _ => return Err("let/if 値の元式形が違う".into()),
+                    _ => return Err(internal!("let/if 値の元式形が違う").into()),
                 }
             } else {
                 let (matching, _, _) = self
                     .pattern_binding(*span, self.name_token(*span)?)?
-                    .ok_or("fragmentの元patternがない")?;
+                    .ok_or(internal!("fragmentの元patternがない"))?;
                 let ExprKind::Match { scrutinee, .. } =
                     self.indexes.inputs.law().exprs()[matching].kind
                 else {
@@ -2757,20 +2851,20 @@ impl<'a> Environment<'a> {
                 vec![scrutinee]
             };
             let Some(Payload::Scalar(scalar)) = &node.payload else {
-                return Err("let/if 結果が通常値でない".into());
+                return Err(internal!("let/if 結果が通常値でない").into());
             };
             if node.ty != NodeType::Value(scalar.ty())
                 || id
                     .is_some_and(|id| self.indexes.inputs.law().expr_type(id) != Some(&scalar.ty()))
                 || node.arguments.len() != operands.len()
             {
-                return Err("let/if 値の元型・引数数が違う".into());
+                return Err(internal!("let/if 値の元型・引数数が違う").into());
             }
             let mut bindings = None;
             for (&reference, operand) in node.arguments.iter().zip(operands) {
                 self.tick()?;
                 if reference.0 >= limit {
-                    return Err("let/if の子評価が既出でない".into());
+                    return Err(internal!("let/if の子評価が既出でない").into());
                 }
                 graph.expect(
                     reference,
@@ -2779,7 +2873,7 @@ impl<'a> Environment<'a> {
                             .inputs
                             .law()
                             .expr_type(operand)
-                            .ok_or("let/if 元子の型がない")?
+                            .ok_or(internal!("let/if 元子の型がない"))?
                             .clone(),
                     ),
                 )?;
@@ -2789,18 +2883,18 @@ impl<'a> Environment<'a> {
                     || (binder.is_none()
                         && graph.context_at(reference.0) != self.current_context(graph))
                 {
-                    return Err("let/if子が別frameに属する".into());
+                    return Err(internal!("let/if子が別frameに属する").into());
                 }
                 self.recheck_evaluation(graph, reference)?;
                 let (expression, actual, _) = self.evaluation(graph, reference)?;
                 self.source_matches(graph, expression, operand)?;
                 if bindings.is_some_and(|previous| previous != actual) {
-                    return Err("let/if の子束縛が違う".into());
+                    return Err(internal!("let/if の子束縛が違う").into());
                 }
                 bindings = Some(actual);
                 self.tick()?;
             }
-            let bindings = bindings.ok_or("let/if の子束縛がない")?;
+            let bindings = bindings.ok_or(internal!("let/if の子束縛がない"))?;
             let mut source_found = false;
             for (index, source) in graph.nodes.iter().enumerate().take(limit) {
                 self.tick()?;
@@ -2811,19 +2905,19 @@ impl<'a> Environment<'a> {
                     let candidate = (|| -> Result<(), ValidationFailure> {
                         if !matches!(&source.rule, Rule::Input {kind: "law", location: Location::Law {span: actual}} if actual == span)
                         {
-                            return Err("let/if Source の元規則が違う".into());
+                            return Err(internal!("let/if Source の元規則が違う").into());
                         }
                         let mut arguments = Vec::new();
                         for binding in bindings {
                             self.tick()?;
                             if binding.value.0 >= index {
-                                return Err("let/if Source の束縛が既出でない".into());
+                                return Err(internal!("let/if Source の束縛が既出でない").into());
                             }
                             arguments.push(binding.value);
                             self.tick()?;
                         }
                         if self.source_arguments(graph, *span, bindings)? != source.arguments {
-                            return Err("let/if Source の引数と束縛が違う".into());
+                            return Err(internal!("let/if Source の引数と束縛が違う").into());
                         }
                         self.validate_at(graph, source, index)
                     })();
@@ -2841,7 +2935,7 @@ impl<'a> Environment<'a> {
                 self.tick()?;
             }
             if !source_found {
-                return Err("let/if 値に既出の own Source がない".into());
+                return Err(internal!("let/if 値に既出の own Source がない").into());
             }
             let analysis = self.resolve_analysis(
                 graph,
@@ -2852,7 +2946,7 @@ impl<'a> Environment<'a> {
                 || analysis.support != node.support
                 || analysis.scalar_scope.as_ref() != Some(&node.scope)
             {
-                return Err("let/if 値・支持・Scope が元式・実入力と違う".into());
+                return Err(internal!("let/if 値・支持・Scope が元式・実入力と違う").into());
             }
             self.tick()?;
             Ok(analysis)
@@ -2876,10 +2970,10 @@ impl<'a> Environment<'a> {
                 location: Location::Law { span },
             } = &node.rule
             else {
-                return Err("生成値に元 Law 出現がない".into());
+                return Err(internal!("生成値に元 Law 出現がない").into());
             };
             let Some(Payload::Scalar(scalar)) = &node.payload else {
-                return Err("元 Law の生成値が通常 Scalar でない".into());
+                return Err(internal!("元 Law の生成値が通常 Scalar でない").into());
             };
             if node.arguments.first().is_some_and(|reference| {
                 matches!(
@@ -2896,7 +2990,7 @@ impl<'a> Environment<'a> {
                             .program()
                             .expressions
                             .get(span)
-                            .ok_or("生成Boolの元式がない")?]
+                            .ok_or(internal!("生成Boolの元式がない"))?]
                         .kind,
                         ExprKind::Call { .. } | ExprKind::Index { .. }
                     )
@@ -2912,7 +3006,7 @@ impl<'a> Environment<'a> {
                 .program()
                 .expressions
                 .get(span)
-                .ok_or("生成値の元 AST がない")?;
+                .ok_or(internal!("生成値の元 AST がない"))?;
             let law = self.indexes.inputs.law();
             let operands = match law.exprs()[id].kind {
                 ExprKind::Int(_) | ExprKind::Bool(_) => vec![],
@@ -2933,26 +3027,30 @@ impl<'a> Environment<'a> {
                 | ExprKind::Unit
                 | ExprKind::Str(_)
                 | ExprKind::Index { .. }
-                | ExprKind::Call { .. } => {
-                    self.composite_children(id)?.ok_or("元数値構成の子がない")?
-                }
-                _ => return Err("Scalar 引数から構成できる元式でない".into()),
+                | ExprKind::Call { .. } => self
+                    .composite_children(id)?
+                    .ok_or(internal!("元数値構成の子がない"))?,
+                _ => return Err(internal!("Scalar 引数から構成できる元式でない").into()),
             };
             let ty = scalar.ty();
             if law.expr_type(id) != Some(&ty)
                 || node.ty != NodeType::Value(ty.clone())
                 || node.arguments.len() != operands.len()
             {
-                return Err("生成 Scalar の型・引数数が元 AST と違う".into());
+                return Err(internal!("生成 Scalar の型・引数数が元 AST と違う").into());
             }
             for (&argument, &operand) in node.arguments.iter().zip(&operands) {
                 self.tick()?;
                 if argument.0 >= limit {
-                    return Err("生成値の引数 Scalar が既出でない".into());
+                    return Err(internal!("生成値の引数 Scalar が既出でない").into());
                 }
                 graph.expect(
                     argument,
-                    &NodeType::Value(law.expr_type(operand).ok_or("元子の型がない")?.clone()),
+                    &NodeType::Value(
+                        law.expr_type(operand)
+                            .ok_or(internal!("元子の型がない"))?
+                            .clone(),
+                    ),
                 )?;
                 graph.scalar(argument)?;
                 self.tick()?;
@@ -2977,19 +3075,19 @@ impl<'a> Environment<'a> {
                         || !parameters.is_empty()
                         || !matches!(&source.rule, Rule::Input { kind: "law", location: Location::Law { span: actual } } if actual == span)
                     {
-                        return Err("生成値の own Source の型・出所が違う".into());
+                        return Err(internal!("生成値の own Source の型・出所が違う").into());
                     }
                     let mut arguments = Vec::new();
                     for binding in bindings {
                         self.tick()?;
                         if binding.value.0 >= source_index {
-                            return Err("own Source の束縛が既出でない".into());
+                            return Err(internal!("own Source の束縛が既出でない").into());
                         }
                         arguments.push(binding.value);
                         self.tick()?;
                     }
                     if source.arguments != self.source_arguments(graph, *span, bindings)? {
-                        return Err("own Source の引数と束縛が違う".into());
+                        return Err(internal!("own Source の引数と束縛が違う").into());
                     }
                     self.validate_at(graph, source, source_index)?;
                     let analysis = self.resolve_analysis(
@@ -3001,14 +3099,17 @@ impl<'a> Environment<'a> {
                         || analysis.support != node.support
                         || analysis.scalar_scope.as_ref() != Some(&node.scope)
                     {
-                        return Err("生成値・支持・ScalarScope が own Source の実入力と違う".into());
+                        return Err(internal!(
+                            "生成値・支持・ScalarScope が own Source の実入力と違う"
+                        )
+                        .into());
                     }
                     for (&argument, &operand) in node.arguments.iter().zip(&operands) {
                         self.tick()?;
                         if !self
                             .has_operand_evaluation(graph, limit, operand, bindings, argument)?
                         {
-                            return Err("生成値の引数に元子 Evaluation がない".into());
+                            return Err(internal!("生成値の引数に元子 Evaluation がない").into());
                         }
                         self.tick()?;
                     }
@@ -3030,7 +3131,7 @@ impl<'a> Environment<'a> {
                 self.tick()?;
             }
             self.tick()?;
-            Err("生成 Scalar に既出の own Source・元子評価の証人がない".into())
+            Err(internal!("生成 Scalar に既出の own Source・元子評価の証人がない").into())
         })
     }
     fn tuple_affine_comparison(
@@ -3077,7 +3178,7 @@ impl<'a> Environment<'a> {
                 .program()
                 .expressions
                 .get(&span)
-                .ok_or("比較の元ASTがない")?;
+                .ok_or(internal!("比較の元ASTがない"))?;
             let ExprKind::Binary {
                 op: op @ (BinOp::Eq | BinOp::Ne),
                 lhs,
@@ -3098,7 +3199,7 @@ impl<'a> Environment<'a> {
                 .inputs
                 .law()
                 .expr_type(lhs)
-                .ok_or("比較の元左型がない")?;
+                .ok_or(internal!("比較の元左型がない"))?;
             if matches!(ty, Type::Tuple(_)) && numeric::is_numeric_type(ty, &self.control)? {
                 let symbolic = |v: &SourceAnalysis| {
                     v.known_value
@@ -3139,7 +3240,7 @@ impl<'a> Environment<'a> {
     ) -> Result<AffineComparison, ValidationFailure> {
         self.tick()?;
         if !(own.0 < left.0 && left.0 < right.0 && right.0 < limit) {
-            return Err("アフィン比較の元Source・実左右の既出順が違う".into());
+            return Err(internal!("アフィン比較の元Source・実左右の既出順が違う").into());
         }
         let context = self.current_context(graph);
         let source = graph.get(own)?;
@@ -3149,7 +3250,7 @@ impl<'a> Environment<'a> {
             parameters,
         }) = &source.payload
         else {
-            return Err("アフィン比較の元Sourceが原式でない".into());
+            return Err(internal!("アフィン比較の元Sourceが原式でない").into());
         };
         let law = self.indexes.inputs.law();
         let id = *self
@@ -3159,16 +3260,18 @@ impl<'a> Environment<'a> {
             .program()
             .expressions
             .get(span)
-            .ok_or("アフィン比較の元ASTがない")?;
+            .ok_or(internal!("アフィン比較の元ASTがない"))?;
         let ExprKind::Binary {
             op: op @ (BinOp::Eq | BinOp::Ne),
             lhs,
             rhs,
         } = law.exprs()[id].kind
         else {
-            return Err("アフィン比較の元SourceがEq/Neでない".into());
+            return Err(internal!("アフィン比較の元SourceがEq/Neでない").into());
         };
-        let ty = law.expr_type(lhs).ok_or("アフィン比較の元左型がない")?;
+        let ty = law
+            .expr_type(lhs)
+            .ok_or(internal!("アフィン比較の元左型がない"))?;
         if !numeric::is_numeric_type(ty, &self.control)?
             || law.expr_type(rhs) != Some(ty)
             || law.expr_type(id) != Some(&Type::Bool)
@@ -3178,7 +3281,7 @@ impl<'a> Environment<'a> {
             || source.arguments != self.source_arguments(graph, *span, bindings)?
             || graph.context_at(own.0) != context
         {
-            return Err("アフィン比較の元型・束縛・出所が違う".into());
+            return Err(internal!("アフィン比較の元型・束縛・出所が違う").into());
         }
         self.validate_at(graph, source, own.0)?;
         let mut operands = [own; 2];
@@ -3187,7 +3290,7 @@ impl<'a> Environment<'a> {
             self.tick()?;
             graph.expect(reference, &NodeType::Evaluation(ty.clone()))?;
             if graph.context_at(reference.0) != context {
-                return Err("アフィン比較の実左右が別Contextに属する".into());
+                return Err(internal!("アフィン比較の実左右が別Contextに属する").into());
             }
             self.recheck_evaluation(graph, reference)?;
             let (expression, actual, value) = self.evaluation(graph, reference)?;
@@ -3196,18 +3299,18 @@ impl<'a> Environment<'a> {
                 || graph.context_at(expression.0) != context
                 || actual != bindings
             {
-                return Err("アフィン比較の実左右Source・束縛が違う".into());
+                return Err(internal!("アフィン比較の実左右Source・束縛が違う").into());
             }
             operands[index] = expression;
             known &= value.is_some();
             self.tick()?;
         }
         if known {
-            return Err("通常の既知左右をアフィン比較の証拠へ付け替えている".into());
+            return Err(internal!("通常の既知左右をアフィン比較の証拠へ付け替えている").into());
         }
         let (value, residual) = self
             .affine_comparison(graph, *span, bindings)?
-            .ok_or("アフィン比較の差が元入力から定数にならない")?;
+            .ok_or(internal!("アフィン比較の差が元入力から定数にならない"))?;
         let analysis = self.resolve_analysis(
             graph,
             self.analyze_source(graph, *span, bindings)?,
@@ -3217,7 +3320,7 @@ impl<'a> Environment<'a> {
             || analysis.scalar_scope.as_ref() != Some(&analysis.scope)
             || residual.ty() != *ty
         {
-            return Err("アフィン比較の元式分析と定数残差が違う".into());
+            return Err(internal!("アフィン比較の元式分析と定数残差が違う").into());
         }
         if numeric::binary(
             op,
@@ -3226,7 +3329,7 @@ impl<'a> Environment<'a> {
             &self.control,
         )? != value
         {
-            return Err("アフィン比較のEq/Ne判断が残差零性と違う".into());
+            return Err(internal!("アフィン比較のEq/Ne判断が残差零性と違う").into());
         }
         self.tick()?;
         Ok(AffineComparison {
@@ -3248,10 +3351,10 @@ impl<'a> Environment<'a> {
             bindings,
         }) = &node.payload
         else {
-            return Err("アフィン比較の差Expressionでない".into());
+            return Err(internal!("アフィン比較の差Expressionでない").into());
         };
         let [own, left, right] = node.arguments.as_slice() else {
-            return Err("アフィン比較の差Expressionの元実辺が違う".into());
+            return Err(internal!("アフィン比較の差Expressionの元実辺が違う").into());
         };
         let parts = self.affine_comparison_parts(graph, *own, *left, *right, limit)?;
         if operands.as_slice() != parts.operands
@@ -3264,7 +3367,7 @@ impl<'a> Environment<'a> {
             || !node.reasons.is_empty()
             || node.judgment.is_some()
         {
-            return Err("差Expressionの元左右・型・Scope・構成が違う".into());
+            return Err(internal!("差Expressionの元左右・型・Scope・構成が違う").into());
         }
         Ok(parts)
     }
@@ -3275,16 +3378,16 @@ impl<'a> Environment<'a> {
         limit: usize,
     ) -> Result<AffineComparison, ValidationFailure> {
         let [difference, own, left, right] = node.arguments.as_slice() else {
-            return Err("アフィン比較の残差の元実辺が違う".into());
+            return Err(internal!("アフィン比較の残差の元実辺が違う").into());
         };
         if difference.0 >= limit {
-            return Err("アフィン比較の差Expressionが既出でない".into());
+            return Err(internal!("アフィン比較の差Expressionが既出でない").into());
         }
         let source = graph.get(*difference)?;
         if source.arguments != [*own, *left, *right]
             || graph.context_at(difference.0) != self.current_context(graph)
         {
-            return Err("アフィン比較の残差が別の元比較を指す".into());
+            return Err(internal!("アフィン比較の残差が別の元比較を指す").into());
         }
         self.validate_at(graph, source, difference.0)?;
         let parts = self.affine_difference_analysis(graph, source, difference.0)?;
@@ -3297,7 +3400,7 @@ impl<'a> Environment<'a> {
             || !node.reasons.is_empty()
             || node.judgment.is_some()
         {
-            return Err("アフィン比較の残差値・型・支持・Scopeが元入力と違う".into());
+            return Err(internal!("アフィン比較の残差値・型・支持・Scopeが元入力と違う").into());
         }
         Ok(parts)
     }
@@ -3313,22 +3416,22 @@ impl<'a> Environment<'a> {
             steps,
         }) = &node.payload
         else {
-            return Err("アフィン比較のnormalization証拠でない".into());
+            return Err(internal!("アフィン比較のnormalization証拠でない").into());
         };
         let [own, left, right, difference, residual] = node.arguments.as_slice() else {
-            return Err("normalizationの元実辺が違う".into());
+            return Err(internal!("normalizationの元実辺が違う").into());
         };
         if before != difference
             || after != residual
             || !(difference.0 < residual.0 && residual.0 < limit)
         {
-            return Err("normalizationの差・残差・既出順が違う".into());
+            return Err(internal!("normalizationの差・残差・既出順が違う").into());
         }
         let value = graph.get(*residual)?;
         if value.arguments != [*difference, *own, *left, *right]
             || graph.context_at(residual.0) != self.current_context(graph)
         {
-            return Err("normalizationの残差が別の元比較を指す".into());
+            return Err(internal!("normalizationの残差が別の元比較を指す").into());
         }
         self.validate_at(graph, value, residual.0)?;
         let parts = self.affine_residual_analysis(graph, value, residual.0)?;
@@ -3341,7 +3444,7 @@ impl<'a> Environment<'a> {
             || !node.reasons.is_empty()
             || node.judgment.is_some()
         {
-            return Err("normalizationのsteps・支持・Scope・構成が元入力と違う".into());
+            return Err(internal!("normalizationのsteps・支持・Scope・構成が元入力と違う").into());
         }
         Ok(parts)
     }
@@ -3353,16 +3456,16 @@ impl<'a> Environment<'a> {
     ) -> Result<SourceAnalysis, ValidationFailure> {
         let [own, left, right, difference, residual, normalization] = node.arguments.as_slice()
         else {
-            return Err("アフィン比較Boolの元実辺が違う".into());
+            return Err(internal!("アフィン比較Boolの元実辺が違う").into());
         };
         if normalization.0 >= limit {
-            return Err("アフィン比較Boolのnormalizationが既出でない".into());
+            return Err(internal!("アフィン比較Boolのnormalizationが既出でない").into());
         }
         let evidence = graph.get(*normalization)?;
         if evidence.arguments != [*own, *left, *right, *difference, *residual]
             || graph.context_at(normalization.0) != self.current_context(graph)
         {
-            return Err("アフィン比較Boolが別のnormalizationを指す".into());
+            return Err(internal!("アフィン比較Boolが別のnormalizationを指す").into());
         }
         self.validate_at(graph, evidence, normalization.0)?;
         let parts = self.affine_normalization_analysis(graph, evidence, normalization.0)?;
@@ -3376,7 +3479,9 @@ impl<'a> Environment<'a> {
             || !node.reasons.is_empty()
             || node.judgment.is_some()
         {
-            return Err("アフィン比較Boolの値・型・元演算・支持・Scope・証拠が違う".into());
+            return Err(
+                internal!("アフィン比較Boolの値・型・元演算・支持・Scope・証拠が違う").into(),
+            );
         }
         Ok(parts.analysis)
     }
@@ -3394,10 +3499,10 @@ impl<'a> Environment<'a> {
             location: Location::Law { span },
         } = &node.rule
         else {
-            return Err("アフィン定数値の元 Law 出現がない".into());
+            return Err(internal!("アフィン定数値の元 Law 出現がない").into());
         };
         let Some(Payload::Scalar(scalar)) = &node.payload else {
-            return Err("アフィン定数値が通常 Scalar でない".into());
+            return Err(internal!("アフィン定数値が通常 Scalar でない").into());
         };
         let ty = scalar.ty();
         let law = self.indexes.inputs.law();
@@ -3408,7 +3513,7 @@ impl<'a> Environment<'a> {
             .program()
             .expressions
             .get(span)
-            .ok_or("アフィン定数値の元 AST がない")?;
+            .ok_or(internal!("アフィン定数値の元 AST がない"))?;
         let operands = match law.exprs()[id].kind {
             ExprKind::Unary {
                 op: UnOp::Neg,
@@ -3427,18 +3532,22 @@ impl<'a> Environment<'a> {
                     .collect()
             }
             ExprKind::Index { base, .. } => vec![base],
-            _ => return Err("相殺値が加減算・定数倍・負号・Term適用・射影以外を指す".into()),
+            _ => {
+                return Err(
+                    internal!("相殺値が加減算・定数倍・負号・Term適用・射影以外を指す").into(),
+                );
+            }
         };
         if !(numeric::is_numeric_type(&ty, &self.control)? || ty == Type::Bool)
             || law.expr_type(id) != Some(&ty)
             || node.ty != NodeType::Value(ty.clone())
             || node.arguments.len() != operands.len() + 1
         {
-            return Err("アフィン定数値の型・構成入力数が違う".into());
+            return Err(internal!("アフィン定数値の型・構成入力数が違う").into());
         }
         let own = node.arguments[0];
         if own.0 >= limit || graph.context_at(own.0) != self.current_context(graph) {
-            return Err("アフィン定数値の own Source が既出の同じ実評価でない".into());
+            return Err(internal!("アフィン定数値の own Source が既出の同じ実評価でない").into());
         }
         let source = graph.get(own)?;
         let Some(Payload::Expression {
@@ -3447,7 +3556,7 @@ impl<'a> Environment<'a> {
             bindings,
         }) = &source.payload
         else {
-            return Err("アフィン定数値の own Source が元式でない".into());
+            return Err(internal!("アフィン定数値の own Source が元式でない").into());
         };
         if actual != span
             || !parameters.is_empty()
@@ -3455,7 +3564,7 @@ impl<'a> Environment<'a> {
             || !matches!(&source.rule, Rule::Input { kind: "law", location: Location::Law { span: actual } } if actual == span)
             || source.arguments != self.source_arguments(graph, *span, bindings)?
         {
-            return Err("アフィン定数値の own Source の出現・束縛・型が違う".into());
+            return Err(internal!("アフィン定数値の own Source の出現・束縛・型が違う").into());
         }
         self.validate_at(graph, source, own.0)?;
         let children = &node.arguments[1..];
@@ -3467,9 +3576,13 @@ impl<'a> Environment<'a> {
                 || reference.0 >= limit
                 || graph.context_at(reference.0) != self.current_context(graph)
             {
-                return Err("アフィン定数値の実子 Evaluation の出現順・実評価が違う".into());
+                return Err(
+                    internal!("アフィン定数値の実子 Evaluation の出現順・実評価が違う").into(),
+                );
             }
-            let operand_type = law.expr_type(operand).ok_or("相殺値の元子型がない")?;
+            let operand_type = law
+                .expr_type(operand)
+                .ok_or(internal!("相殺値の元子型がない"))?;
             graph.expect(reference, &NodeType::Evaluation(operand_type.clone()))?;
             self.recheck_evaluation(graph, reference)?;
             let (expression, actual_bindings, value) = self.evaluation(graph, reference)?;
@@ -3478,7 +3591,7 @@ impl<'a> Environment<'a> {
                 || graph.context_at(expression.0) != self.current_context(graph)
                 || expression.0 >= reference.0
             {
-                return Err("アフィン定数値の実子 Source・元束縛が違う".into());
+                return Err(internal!("アフィン定数値の実子 Source・元束縛が違う").into());
             }
             values.push(value.map(|reference| graph.scalar(reference)).transpose()?);
             previous = reference.0;
@@ -3512,7 +3625,7 @@ impl<'a> Environment<'a> {
             _ => unreachable!(),
         };
         if ordinary.is_some() {
-            return Err("通常算術で確定する値にアフィン専用構成を使っている".into());
+            return Err(internal!("通常算術で確定する値にアフィン専用構成を使っている").into());
         }
         let analysis = self.resolve_analysis(
             graph,
@@ -3538,7 +3651,7 @@ impl<'a> Environment<'a> {
             || analysis.support != node.support
             || analysis.scalar_scope.as_ref() != Some(&node.scope)
         {
-            return Err("アフィン定数値・係数相殺・支持・Scope が元入力と違う".into());
+            return Err(internal!("アフィン定数値・係数相殺・支持・Scope が元入力と違う").into());
         }
         self.tick()?;
         Ok(analysis)
@@ -3565,22 +3678,22 @@ impl<'a> Environment<'a> {
                 return Ok(self.affine_residual_analysis(graph, node, limit)?.analysis);
             }
             let Some(Payload::Scalar(residual)) = &node.payload else {
-                return Err("残差が通常 Scalar でない".into());
+                return Err(internal!("残差が通常 Scalar でない").into());
             };
             let ty = residual.ty();
             if !numeric::is_numeric_type(&ty, &self.control)? {
-                return Err("残差が数値型でない".into());
+                return Err(internal!("残差が数値型でない").into());
             }
             if node.ty != NodeType::Value(ty.clone())
                 || !matches!(&node.rule, Rule::Construction("evaluation"))
                 || node.arguments.len() != 2
             {
-                return Err("残差の型・構成規則・引数数が違う".into());
+                return Err(internal!("残差の型・構成規則・引数数が違う").into());
             }
             for &argument in &node.arguments {
                 self.tick()?;
                 if argument.0 >= limit {
-                    return Err("残差の引数 Scalar が既出でない".into());
+                    return Err(internal!("残差の引数 Scalar が既出でない").into());
                 }
                 graph.expect(argument, &NodeType::Value(ty.clone()))?;
                 numeric::check(graph.scalar(argument)?, &self.control)?;
@@ -3589,7 +3702,7 @@ impl<'a> Environment<'a> {
             let left = graph.scalar(node.arguments[0])?;
             let right = graph.scalar(node.arguments[1])?;
             if numeric::binary(BinOp::Sub, left, right, &self.control)? != *residual {
-                return Err("残差が元左右の正確な差でない".into());
+                return Err(internal!("残差が元左右の正確な差でない").into());
             }
             for (source_index, source) in graph.nodes.iter().enumerate().take(limit) {
                 self.tick()?;
@@ -3627,19 +3740,19 @@ impl<'a> Environment<'a> {
                         || !parameters.is_empty()
                         || !matches!(&source.rule, Rule::Input { kind: "law", location: Location::Law { span: actual } } if actual == span)
                     {
-                        return Err("残差の 数値等号 Source の型・出所が違う".into());
+                        return Err(internal!("残差の 数値等号 Source の型・出所が違う").into());
                     }
                     let mut arguments = Vec::new();
                     for binding in bindings {
                         self.tick()?;
                         if binding.value.0 >= source_index {
-                            return Err("数値等号 Source の束縛が既出でない".into());
+                            return Err(internal!("数値等号 Source の束縛が既出でない").into());
                         }
                         arguments.push(binding.value);
                         self.tick()?;
                     }
                     if source.arguments != self.source_arguments(graph, *span, bindings)? {
-                        return Err("数値等号 Source の引数と束縛が違う".into());
+                        return Err(internal!("数値等号 Source の引数と束縛が違う").into());
                     }
                     self.validate_at(graph, source, source_index)?;
                     let analysis = self.resolve_analysis(
@@ -3652,7 +3765,10 @@ impl<'a> Environment<'a> {
                         || analysis.scope != node.scope
                         || analysis.scalar_scope.as_ref() != Some(&node.scope)
                     {
-                        return Err("残差の支持・Scope・等号値が元 Source の実入力と違う".into());
+                        return Err(internal!(
+                            "残差の支持・Scope・等号値が元 Source の実入力と違う"
+                        )
+                        .into());
                     }
                     for (operand, argument) in [lhs, rhs].into_iter().zip(&node.arguments) {
                         self.tick()?;
@@ -3663,7 +3779,9 @@ impl<'a> Environment<'a> {
                                 graph, limit, operand, bindings, *argument,
                             )?
                         {
-                            return Err("残差の左右に同じ束縛・値 Ref の元子評価がない".into());
+                            return Err(
+                                internal!("残差の左右に同じ束縛・値 Ref の元子評価がない").into()
+                            );
                         }
                         self.tick()?;
                     }
@@ -3685,7 +3803,7 @@ impl<'a> Environment<'a> {
                 self.tick()?;
             }
             self.tick()?;
-            Err("残差に既出の 数値等号 Source・元左右評価の証人がない".into())
+            Err(internal!("残差に既出の 数値等号 Source・元左右評価の証人がない").into())
         })
     }
     fn has_operand_evaluation(
@@ -3703,7 +3821,7 @@ impl<'a> Environment<'a> {
             .inputs
             .law()
             .expr_type(operand)
-            .ok_or("元子評価の型がない")?;
+            .ok_or(internal!("元子評価の型がない"))?;
         for (index, node) in graph.nodes.iter().enumerate().take(limit) {
             self.tick()?;
             let Some(Payload::Evaluation {
@@ -3762,7 +3880,7 @@ impl<'a> Environment<'a> {
                 location: Location::Law { span },
             } = &node.rule
             else {
-                return Err("Bool 論理値が元 Law 式を持たない".into());
+                return Err(internal!("Bool 論理値が元 Law 式を持たない").into());
             };
             let id = *self
                 .indexes
@@ -3771,7 +3889,7 @@ impl<'a> Environment<'a> {
                 .program()
                 .expressions
                 .get(span)
-                .ok_or("Bool 論理値の元 AST がない")?;
+                .ok_or(internal!("Bool 論理値の元 AST がない"))?;
             let law = self.indexes.inputs.law();
             let operands = match law.exprs()[id].kind {
                 ExprKind::Unary {
@@ -3779,46 +3897,50 @@ impl<'a> Environment<'a> {
                     operand,
                 } => vec![operand],
                 ExprKind::Binary { op, lhs, rhs } if is_boolean_binary(op) => vec![lhs, rhs],
-                _ => return Err("子 Evaluation から構成できる Bool 演算でない".into()),
+                _ => return Err(internal!("子 Evaluation から構成できる Bool 演算でない").into()),
             };
             if law.expr_type(id) != Some(&Type::Bool)
                 || node.ty != NodeType::Value(Type::Bool)
                 || node.arguments.len() != operands.len()
             {
-                return Err("Bool 論理値の型・引数数が元演算と違う".into());
+                return Err(internal!("Bool 論理値の型・引数数が元演算と違う").into());
             }
             let mut bindings: Option<&[Binding]> = None;
             for (&reference, id) in node.arguments.iter().zip(operands) {
                 self.tick()?;
                 if reference.0 >= limit {
-                    return Err("Bool 論理値の子 Evaluation が既出でない".into());
+                    return Err(internal!("Bool 論理値の子 Evaluation が既出でない").into());
                 }
                 graph.expect(reference, &NodeType::Evaluation(Type::Bool))?;
                 if graph.context_at(reference.0) != self.current_context(graph) {
-                    return Err("Bool子が別frameに属する".into());
+                    return Err(internal!("Bool子が別frameに属する").into());
                 }
                 self.recheck_evaluation(graph, reference)?;
                 let (expression, actual_bindings, _) = self.evaluation(graph, reference)?;
                 self.source_matches(graph, expression, id)?;
                 if bindings.is_some_and(|bindings| bindings != actual_bindings) {
-                    return Err("Bool 論理値の左右で元束縛が違う".into());
+                    return Err(internal!("Bool 論理値の左右で元束縛が違う").into());
                 }
                 bindings = Some(actual_bindings);
                 self.tick()?;
             }
             let analysis = self.resolve_analysis(
                 graph,
-                self.analyze_source(graph, *span, bindings.ok_or("Bool 論理値に子束縛がない")?)?,
+                self.analyze_source(
+                    graph,
+                    *span,
+                    bindings.ok_or(internal!("Bool 論理値に子束縛がない"))?,
+                )?,
                 &node.arguments,
             )?;
             let Some(Payload::Scalar(Scalar::Bool(value))) = &node.payload else {
-                return Err("Bool 論理値が通常 Bool Scalar でない".into());
+                return Err(internal!("Bool 論理値が通常 Bool Scalar でない").into());
             };
             if analysis.known_value.as_ref() != Some(&Scalar::Bool(*value))
                 || analysis.scalar_scope.as_ref() != Some(&node.scope)
                 || analysis.support != node.support
             {
-                return Err("Bool 論理値・支持・Scope が元 AST・実入力と違う".into());
+                return Err(internal!("Bool 論理値・支持・Scope が元 AST・実入力と違う").into());
             }
             self.tick()?;
             Ok(analysis)
@@ -3834,7 +3956,7 @@ impl<'a> Environment<'a> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick()?;
             let Some(Payload::Scalar(value)) = &node.payload else {
-                return Err("支持の依存先が通常値でない".into());
+                return Err(internal!("支持の依存先が通常値でない").into());
             };
             if self.finite_view_input(graph, node)? {
                 return Ok(node.support.clone());
@@ -3842,7 +3964,7 @@ impl<'a> Environment<'a> {
             for reference in &node.arguments {
                 self.tick()?;
                 if reference.0 >= limit {
-                    return Err("値支持の引数が既出でない".into());
+                    return Err(internal!("値支持の引数が既出でない").into());
                 }
                 self.tick()?;
             }
@@ -3857,14 +3979,14 @@ impl<'a> Environment<'a> {
                         entity,
                     } = value
                     else {
-                        return Err("subject支持の値型".into());
+                        return Err(internal!("subject支持の値型").into());
                     };
                     let actual = self.indexes.subject(snapshot, subject)?;
                     if actual.pointer != *pointer
                         || actual.ty != *entity
                         || !node.arguments.is_empty()
                     {
-                        return Err("subject支持の元入力不一致".into());
+                        return Err(internal!("subject支持の元入力不一致").into());
                     }
                     self.subject_support(value)?
                 }
@@ -3876,31 +3998,31 @@ impl<'a> Environment<'a> {
                         .indexes
                         .atoms
                         .get(pointer)
-                        .ok_or("Atom支持の元入力位置がない")?;
+                        .ok_or(internal!("Atom支持の元入力位置がない"))?;
                     let field = self.indexes.field(
                         &self.state,
                         &fact.snapshot,
                         &fact.subject,
-                        fact.field.as_ref().ok_or("Atom fieldがない")?,
+                        fact.field.as_ref().ok_or(internal!("Atom fieldがない"))?,
                     )?;
                     let Slot::Known { value: actual, .. } = &field.slot else {
-                        return Err("Atom支持が欠測slotを指す".into());
+                        return Err(internal!("Atom支持が欠測slotを指す").into());
                     };
                     if scalar_from(actual, &field.ty, self.indexes.inputs.law(), &self.control)?
                         .as_ref()
                         != Some(value)
                         || node.arguments.len() != 1
                     {
-                        return Err("Atom支持の原始値・owner引数数が違う".into());
+                        return Err(internal!("Atom支持の原始値・owner引数数が違う").into());
                     }
                     let Scalar::Subject {
                         snapshot, subject, ..
                     } = graph.scalar(node.arguments[0])?
                     else {
-                        return Err("Atom支持のownerがRefでない".into());
+                        return Err(internal!("Atom支持のownerがRefでない").into());
                     };
                     if snapshot != &fact.snapshot || subject != &fact.subject {
-                        return Err("Atom支持のowner identity不一致".into());
+                        return Err(internal!("Atom支持のowner identity不一致").into());
                     }
                     vec![fact.clone()]
                 }
@@ -3935,7 +4057,7 @@ impl<'a> Environment<'a> {
                                             .program()
                                             .expressions
                                             .get(span)
-                                            .ok_or("call ASTがない")?,
+                                            .ok_or(internal!("call ASTがない"))?,
                                     )?
                                     .is_some() =>
                             {
@@ -3960,7 +4082,7 @@ impl<'a> Environment<'a> {
                                         .program()
                                         .expressions
                                         .get(span)
-                                        .ok_or("constructor元式がない")?,
+                                        .ok_or(internal!("constructor元式がない"))?,
                                     &self.control,
                                 )?
                                 .is_none() =>
@@ -3984,7 +4106,7 @@ impl<'a> Environment<'a> {
                             | ExprKind::Unary { .. } => {
                                 self.scalar_source_analysis(graph, node, limit)?.support
                             }
-                            _ => return Err("値支持の未実装元式".into()),
+                            _ => return Err(internal!("値支持の未実装元式").into()),
                         }
                     } else {
                         self.lexical_source_analysis(graph, node, limit)?.support
@@ -3992,7 +4114,7 @@ impl<'a> Environment<'a> {
                 }
                 Rule::Construction("evaluation") if matches!(value, Scalar::Bool(_)) => {
                     if node.arguments.len() != 2 {
-                        return Err("含意値支持の構成入力数が違う".into());
+                        return Err(internal!("含意値支持の構成入力数が違う").into());
                     }
                     let instance = node.arguments[0];
                     if self
@@ -4001,7 +4123,7 @@ impl<'a> Environment<'a> {
                         .as_ref()
                         != Some(value)
                     {
-                        return Err("含意値支持の元 guard/body 不一致".into());
+                        return Err(internal!("含意値支持の元 guard/body 不一致").into());
                     }
                     let (body, guard) = self.application_at(graph, instance)?;
                     self.application_context(graph, body, guard)?.0
@@ -4018,7 +4140,7 @@ impl<'a> Environment<'a> {
                     vec![]
                 }
                 Rule::Construction("proposition") => vec![],
-                _ => return Err("値支持の導出規則がない".into()),
+                _ => return Err(internal!("値支持の導出規則がない").into()),
             };
             support.sort();
             support.dedup();
@@ -4100,7 +4222,9 @@ impl<'a> Environment<'a> {
             if let Some(expected) = self.unavailable_binding_answer(graph, request)? {
                 graph.validate_answer(answer, request.kind == QuestionKind::Check)?;
                 if answer != &expected {
-                    return Err("依存停止Answerが元Request・未生成出力・元理由と違う".into());
+                    return Err(
+                        internal!("依存停止Answerが元Request・未生成出力・元理由と違う").into(),
+                    );
                 }
                 return Ok(());
             }
@@ -4109,7 +4233,7 @@ impl<'a> Environment<'a> {
                 .iter()
                 .any(|reason| matches!(reason.kind, ReasonKind::DependencyBlocked { .. }))
             {
-                return Err("未生成出力に接続しない依存停止理由".into());
+                return Err(internal!("未生成出力に接続しない依存停止理由").into());
             }
             if answer.outputs.is_empty()
                 && let Some(plan) = self.family_plan(request)?
@@ -4121,25 +4245,25 @@ impl<'a> Environment<'a> {
                         if accepted {
                             Ok(())
                         } else {
-                            Err("依存族の未決Answerに元owner欠測がない".into())
+                            Err(internal!("依存族の未決Answerに元owner欠測がない").into())
                         }
                     });
             }
             let evaluation = *answer
                 .outputs
                 .get("evaluation")
-                .ok_or("完成Answerに元評価がない")?;
+                .ok_or(internal!("完成Answerに元評価がない"))?;
             graph.get(evaluation)?;
             let context = graph.context_at(evaluation.0);
             if context.frame.is_some() || context.iteration.is_some() || context.instance.is_some()
             {
-                return Err("Answerの返却評価がcallee frameに属する".into());
+                return Err(internal!("Answerの返却評価がcallee frameに属する").into());
             }
             if !graph.requests.is_empty()
                 && graph.requests.iter().position(|actual| actual == request)
                     != Some(context.request)
             {
-                return Err("Answer返却評価が現在の元Requestに属さない".into());
+                return Err(internal!("Answer返却評価が現在の元Requestに属さない").into());
             }
             let previous = self.state.context.scoped(Some(context));
             let old_cutoff = self.state.cutoff.scoped(graph.nodes.len());
@@ -4149,9 +4273,9 @@ impl<'a> Environment<'a> {
             })()
             .map_err(|failure| match failure {
                 ValidationFailure::UnsupportedExpression { feature, .. } => {
-                    ValidationFailure::Internal(format!(
+                    ValidationFailure::Internal(internal!(format!(
                         "未対応元式の生成済みAnswerを照合できない: {feature}"
-                    ))
+                    )))
                 }
                 other => other,
             });
@@ -4170,7 +4294,7 @@ impl<'a> Environment<'a> {
             .indexes
             .original_requests
             .and_then(|rs| rs.iter().position(|r| r == request))
-            .ok_or("元Request contextがない")?;
+            .ok_or(internal!("元Request contextがない"))?;
         let previous = self.state.context.scoped(Some(super::call::Context {
             request: index,
             frame: None,
@@ -4192,10 +4316,10 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         graph.validate_answer(answer, request.kind == QuestionKind::Check)?;
         if answer.id != request.id {
-            return Err("Answer ID が元Requestと違う".into());
+            return Err(internal!("Answer ID が元Requestと違う").into());
         }
         let Selector::Declaration { name } = &request.head else {
-            return Err("解決済みRequestのheadが宣言でない".into());
+            return Err(internal!("解決済みRequestのheadが宣言でない").into());
         };
         let declaration = self
             .indexes
@@ -4203,7 +4327,7 @@ impl<'a> Environment<'a> {
             .law()
             .declarations()
             .get(name)
-            .ok_or("Requestの元宣言がない")?;
+            .ok_or(internal!("Requestの元宣言がない"))?;
         let (params, body) = match (&request.kind, &declaration.signature) {
             (
                 QuestionKind::Evaluate,
@@ -4213,7 +4337,7 @@ impl<'a> Environment<'a> {
                 QuestionKind::Check,
                 archsig_input::law::model::Signature::Law { params, body, .. },
             ) => (params, *body),
-            _ => return Err("Request種別と元宣言が違う".into()),
+            _ => return Err(internal!("Request種別と元宣言が違う").into()),
         };
         if self.validate_universal_answer(graph, request, answer)? {
             return Ok(());
@@ -4227,7 +4351,7 @@ impl<'a> Environment<'a> {
         let evaluation = *answer
             .outputs
             .get("evaluation")
-            .ok_or("完成Answerに元評価がない")?;
+            .ok_or(internal!("完成Answerに元評価がない"))?;
         let (expression, bindings, _) = self.evaluation(graph, evaluation)?;
         let source = if request.kind == QuestionKind::Check
             && let Some(&instance) = graph.get(evaluation)?.arguments.first()
@@ -4249,13 +4373,13 @@ impl<'a> Environment<'a> {
                 + self.object_view_binding_count()
                 != params.len()
         {
-            return Err("Requestの明示束縛数がAnswerと違う".into());
+            return Err(internal!("Requestの明示束縛数がAnswerと違う").into());
         }
         for (parameter, binding) in params.iter().zip(bindings) {
             self.tick()?;
             self.require_owned_binding(graph, request, parameter, binding.value)?;
             if parameter.name != binding.name || parameter.ty.erase() != binding.ty {
-                return Err("Requestのparameter署名がAnswerと違う".into());
+                return Err(internal!("Requestのparameter署名がAnswerと違う").into());
             }
             if self.object_view_binding(graph, parameter)?.is_some() {
                 self.object_view_binding_matches(graph, parameter, binding.value)?;
@@ -4267,7 +4391,7 @@ impl<'a> Environment<'a> {
                 self.tick()?;
                 if argument.name == key {
                     if selected.is_some() {
-                        return Err("Requestの束縛名が重複".into());
+                        return Err(internal!("Requestの束縛名が重複").into());
                     }
                     selected = Some(&argument.value);
                 }
@@ -4279,7 +4403,7 @@ impl<'a> Environment<'a> {
                 continue;
             }
             let Some(Selector::Subject { snapshot, subject }) = selected else {
-                return Err("完成Answerの元明示subject束縛がない".into());
+                return Err(internal!("完成Answerの元明示subject束縛がない").into());
             };
             let Scalar::Subject {
                 snapshot: actual_snapshot,
@@ -4287,20 +4411,22 @@ impl<'a> Environment<'a> {
                 entity,
             } = graph.scalar(binding.value)?
             else {
-                return Err("Answer束縛が通常のRef値でない".into());
+                return Err(internal!("Answer束縛が通常のRef値でない").into());
             };
             if actual_snapshot != snapshot
                 || actual_subject != subject
                 || &self.indexes.subject(snapshot, subject)?.ty != entity
             {
-                return Err("Answer束縛がRequestのsubject identityと違う".into());
+                return Err(internal!("Answer束縛がRequestのsubject identityと違う").into());
             }
             self.tick()?;
         }
         if request.kind == QuestionKind::Check {
-            let claim = answer.claim.ok_or("完成check Answerにclaimがない")?;
+            let claim = answer
+                .claim
+                .ok_or(internal!("完成check Answerにclaimがない"))?;
             let Some(Payload::Proposition { instance }) = &graph.get(claim)?.payload else {
-                return Err("Requestのclaimが命題でない".into());
+                return Err(internal!("Requestのclaimが命題でない").into());
             };
             let Some(Payload::LawInstance {
                 name: actual,
@@ -4308,10 +4434,10 @@ impl<'a> Environment<'a> {
                 ..
             }) = &graph.get(*instance)?.payload
             else {
-                return Err("RequestのclaimにLawInstanceがない".into());
+                return Err(internal!("RequestのclaimにLawInstanceがない").into());
             };
             if actual != name || instance_bindings != bindings {
-                return Err("check AnswerのLawInstanceがRequestと違う".into());
+                return Err(internal!("check AnswerのLawInstanceがRequestと違う").into());
             }
             self.instance_evaluation(graph, *instance, evaluation)?;
             self.validate_at(graph, graph.get(claim)?, claim.0)?;
@@ -4364,7 +4490,7 @@ impl<'a> Environment<'a> {
                 if matches!(law.expr_type(*callee), Some(Type::Map(..))) =>
             {
                 if args.len() != 1 {
-                    return Err("Map適用の元引数数が違う".into());
+                    return Err(internal!("Map適用の元引数数が違う").into());
                 }
                 Some(vec![*callee, args[0]])
             }
@@ -4392,14 +4518,14 @@ impl<'a> Environment<'a> {
         let law = self.indexes.inputs.law();
         let children = self
             .composite_children(id)?
-            .ok_or("数値構成の元式が未対応")?;
+            .ok_or(internal!("数値構成の元式が未対応"))?;
         if children.len() != values.len() {
-            return Err("数値構成の引数数が元式と違う".into());
+            return Err(internal!("数値構成の引数数が元式と違う").into());
         }
         for (&child, value) in children.iter().zip(values) {
             self.tick()?;
             if law.expr_type(child) != Some(&value.ty()) {
-                return Err("数値構成の引数型が元式と違う".into());
+                return Err(internal!("数値構成の引数型が元式と違う").into());
             }
             data::check(value, law, &self.control)?;
             self.tick()?;
@@ -4413,7 +4539,7 @@ impl<'a> Environment<'a> {
             && matches!(law.expr_type(*callee), Some(Type::Term(..)))
         {
             let Some(Scalar::Term(term)) = values.first() else {
-                return Err("Term適用calleeの元値が違う".into());
+                return Err(internal!("Term適用calleeの元値が違う").into());
             };
             return Ok(Some(term.apply(&values[1..], law, &self.control).map_err(
                 |failure| match failure {
@@ -4430,8 +4556,9 @@ impl<'a> Environment<'a> {
             )?));
         }
         let value = if let Some((constructor, _)) = data::expression(law, id, &self.control)? {
-            let Type::Data(family) = law.expr_type(id).ok_or("Data構成型がない")? else {
-                return Err("Data構成型が違う".into());
+            let Type::Data(family) = law.expr_type(id).ok_or(internal!("Data構成型がない"))?
+            else {
+                return Err(internal!("Data構成型が違う").into());
             };
             Scalar::Data {
                 family: family.clone(),
@@ -4450,8 +4577,9 @@ impl<'a> Environment<'a> {
                 ExprKind::Str(text) => Scalar::Text(text.clone()),
                 ExprKind::Tuple(_) => Scalar::Tuple(values.to_vec()),
                 ExprKind::ListLit { .. } => {
-                    let Type::List(element) = law.expr_type(id).ok_or("List型がない")? else {
-                        return Err("List構成型が違う".into());
+                    let Type::List(element) = law.expr_type(id).ok_or(internal!("List型がない"))?
+                    else {
+                        return Err(internal!("List構成型が違う").into());
                     };
                     Scalar::List {
                         element: (**element).clone(),
@@ -4459,15 +4587,17 @@ impl<'a> Environment<'a> {
                     }
                 }
                 ExprKind::SetLit { .. } => {
-                    let Type::Set(element) = law.expr_type(id).ok_or("Set型がない")? else {
-                        return Err("Set構成型が違う".into());
+                    let Type::Set(element) = law.expr_type(id).ok_or(internal!("Set型がない"))?
+                    else {
+                        return Err(internal!("Set構成型が違う").into());
                     };
                     data::set((**element).clone(), values, &self.control)?
                 }
                 ExprKind::None(_) | ExprKind::Some(_) => {
-                    let Type::Option(element) = law.expr_type(id).ok_or("Option型がない")?
+                    let Type::Option(element) =
+                        law.expr_type(id).ok_or(internal!("Option型がない"))?
                     else {
-                        return Err("Option構成型が違う".into());
+                        return Err(internal!("Option構成型が違う").into());
                     };
                     Scalar::Option {
                         element: (**element).clone(),
@@ -4476,11 +4606,17 @@ impl<'a> Environment<'a> {
                 }
                 ExprKind::Index { index, .. } => {
                     let Scalar::Tuple(items) = &values[0] else {
-                        return Err("数値射影元が Tuple でない".into());
+                        return Err(internal!("数値射影元が Tuple でない").into());
                     };
-                    items.get(*index).ok_or("数値射影位置の内部不整合")?.clone()
+                    items
+                        .get(*index)
+                        .ok_or(internal!("数値射影位置の内部不整合"))?
+                        .clone()
                 }
-                ExprKind::Call { .. } => match self.builtin(id)?.ok_or("固定演算がない")? {
+                ExprKind::Call { .. } => match self
+                    .builtin(id)?
+                    .ok_or(internal!("固定演算がない"))?
+                {
                     "path" | "then" => {
                         return Ok(self.path_operation(id, values)?.value);
                     }
@@ -4491,34 +4627,34 @@ impl<'a> Environment<'a> {
                             self.tick()?;
                             if declaration.span.0 <= span.0 && span.1 <= declaration.span.1 {
                                 if reading.replace(declaration.reading.as_str()).is_some() {
-                                    return Err("Path 演算の元宣言が一意でない".into());
+                                    return Err(internal!("Path 演算の元宣言が一意でない").into());
                                 }
                             }
                         }
                         super::path_value::construct(
                             name,
-                            reading.ok_or("Path 演算の元 reading がない")?,
+                            reading.ok_or(internal!("Path 演算の元 reading がない"))?,
                             values,
                             &self.control,
                         )?
                     }
                     "rat" => {
                         if values.len() != 2 {
-                            return Err("rat arityが違う".into());
+                            return Err(internal!("rat arityが違う").into());
                         };
                         numeric::rational(&values[0], &values[1], &self.control)?
                     }
                     name => data::aggregate(
                         name,
-                        values.first().ok_or("count/sum引数がない")?,
+                        values.first().ok_or(internal!("count/sum引数がない"))?,
                         &self.control,
                     )?,
                 },
-                _ => return Err("元数値構成がない".into()),
+                _ => return Err(internal!("元数値構成がない").into()),
             }
         };
         if law.expr_type(id) != Some(&value.ty()) {
-            return Err("数値構成の結果型が元式と違う".into());
+            return Err(internal!("数値構成の結果型が元式と違う").into());
         }
         data::check(&value, law, &self.control)?;
         self.tick()?;
@@ -4557,11 +4693,16 @@ impl<'a> Environment<'a> {
     fn dotted_prefixes_uncached(&self, id: usize) -> Result<Vec<DottedPrefix>, ValidationFailure> {
         self.tick()?;
         let law = self.indexes.inputs.law();
-        let expression = law.exprs().get(id).ok_or("prefixの元ASTがない")?;
+        let expression = law
+            .exprs()
+            .get(id)
+            .ok_or(internal!("prefixの元ASTがない"))?;
         let ExprKind::Dotted(parts) = &expression.kind else {
-            return Err("prefixの元ASTがDottedでない".into());
+            return Err(internal!("prefixの元ASTがDottedでない").into());
         };
-        let original_ty = law.expr_type(id).ok_or("prefixの元Dottedが未型検査")?;
+        let original_ty = law
+            .expr_type(id)
+            .ok_or(internal!("prefixの元Dottedが未型検査"))?;
         let &indexed = self
             .indexes
             .inputs
@@ -4569,20 +4710,20 @@ impl<'a> Environment<'a> {
             .program()
             .expressions
             .get(&expression.span)
-            .ok_or("prefixの元出現がspan索引にない")?;
+            .ok_or(internal!("prefixの元出現がspan索引にない"))?;
         // 量化の区切り候補は同じ元token列を複数のarena IDへ構文解析する。
         // 選択ASTのIDとspan索引の代表IDが違っても、name/span/tokを含む
         // Dotted全体と型が完全一致するときだけ同じ元出現として扱う。
         if law.exprs()[indexed].kind != expression.kind
             || law.expr_type(indexed) != Some(original_ty)
         {
-            return Err("prefixの型検査済み元token列・型がspan索引と違う".into());
+            return Err(internal!("prefixの型検査済み元token列・型がspan索引と違う").into());
         }
-        let first = parts.first().ok_or("prefixの元Dottedが空")?;
+        let first = parts.first().ok_or(internal!("prefixの元Dottedが空"))?;
         let lexical = law.program().nodes[id]
             .lexical
             .as_ref()
-            .ok_or("prefixの先頭が元束縛でない")?;
+            .ok_or(internal!("prefixの先頭が元束縛でない"))?;
         let mut result = vec![(first.span, lexical.ty.erase())];
         for projection in &lexical.projections {
             self.tick()?;
@@ -4590,7 +4731,7 @@ impl<'a> Environment<'a> {
             self.tick()?;
         }
         if result.last().map(|(_, ty)| ty) != Some(original_ty) {
-            return Err("prefixの最終型が元Dottedと違う".into());
+            return Err(internal!("prefixの最終型が元Dottedと違う").into());
         }
         self.tick()?;
         Ok(result)
@@ -4658,7 +4799,7 @@ impl<'a> Environment<'a> {
                     let ExprKind::Dotted(previous_parts) =
                         &self.indexes.inputs.law().exprs()[previous].kind
                     else {
-                        return Err("prefixの代表が元Dottedでない".into());
+                        return Err(internal!("prefixの代表が元Dottedでない").into());
                     };
                     // 区切り候補の短いDottedと長いDottedが同じ先頭を
                     // 共有しても、実token列と元型が一致するprefixだけを併合する。
@@ -4667,7 +4808,7 @@ impl<'a> Environment<'a> {
                         || self.dotted_prefixes(previous)?[count - 1].1
                             != self.dotted_prefixes(id)?[count - 1].1
                     {
-                        return Err("prefixの元token列・型が一意でない".into());
+                        return Err(internal!("prefixの元token列・型が一意でない").into());
                     }
                     if previous_parts.len() < parts.len() {
                         found = Some((id, count));
@@ -4684,7 +4825,7 @@ impl<'a> Environment<'a> {
     // 単独名は全体のSource、field読みの先頭名だけがfragmentとして使える。
     fn name_token(&self, span: (usize, usize)) -> Result<&str, ValidationFailure> {
         self.find_name_token(span)?
-            .ok_or_else(|| "fragment が元Dottedの先頭tokenでない".into())
+            .ok_or_else(|| internal!("fragment が元Dottedの先頭tokenでない").into())
     }
     // 非一致だけをNoneとし、停止と元出現の不整合は任意照合でも伝播する。
     fn find_name_token(&self, span: (usize, usize)) -> Result<Option<&str>, ValidationFailure> {
@@ -4712,7 +4853,7 @@ impl<'a> Environment<'a> {
                 && first.span == span
             {
                 if name.is_some_and(|actual| actual != first.name.as_str()) {
-                    return Err("名前tokenの元出現が一意でない".into());
+                    return Err(internal!("名前tokenの元出現が一意でない").into());
                 }
                 name = Some(first.name.as_str());
             }
@@ -4759,7 +4900,7 @@ impl<'a> Environment<'a> {
         name: &str,
     ) -> Result<Option<(usize, usize, data::Binder)>, ValidationFailure> {
         if self.name_token(span)? != name {
-            return Err("pattern binderの実使用tokenが違う".into());
+            return Err(internal!("pattern binderの実使用tokenが違う").into());
         }
         let mut found = None;
         for (actual, origin) in self.lexical_context(span)? {
@@ -4772,7 +4913,7 @@ impl<'a> Environment<'a> {
                 } = origin
             {
                 if found.is_some() {
-                    return Err("pattern binderが重複する".into());
+                    return Err(internal!("pattern binderが重複する").into());
                 }
                 found = Some((matching, arm, binder));
             }
@@ -4791,7 +4932,10 @@ impl<'a> Environment<'a> {
         let mut context = self.current_context(graph);
         while let Some(index) = context.iteration {
             self.tick()?;
-            let record = graph.iterations.get(index).ok_or("lexical反復元がない")?;
+            let record = graph
+                .iterations
+                .get(index)
+                .ok_or(internal!("lexical反復元がない"))?;
             if record.caller.case != context.case
                 || record.caller.instance != context.instance
                 || record.caller.request != context.request
@@ -4801,7 +4945,7 @@ impl<'a> Environment<'a> {
                     .iteration
                     .is_some_and(|parent| parent >= index)
             {
-                return Err("lexical反復の親Request/frame/先行性が違う".into());
+                return Err(internal!("lexical反復の親Request/frame/先行性が違う").into());
             }
             self.iteration_input(graph, index)?;
             let comp = *self
@@ -4811,7 +4955,7 @@ impl<'a> Environment<'a> {
                 .program()
                 .expressions
                 .get(&self.expression_span(graph, record.source)?)
-                .ok_or("lexical反復の元ASTがない")?;
+                .ok_or(internal!("lexical反復の元ASTがない"))?;
             let (_, bodies) = self.iteration_syntax(comp)?;
             if bodies.into_iter().any(|child| {
                 let body = self.indexes.inputs.law().exprs()[child].span;
@@ -4871,12 +5015,12 @@ impl<'a> Environment<'a> {
                     continue;
                 }
                 if found.is_some() {
-                    return Err("同じ元式・Contextの実評価が一意でない".into());
+                    return Err(internal!("同じ元式・Contextの実評価が一意でない").into());
                 }
                 found = Some(NodeRef(index));
             }
         }
-        let reference = found.ok_or("元scrutineeの既出実Evaluationがない")?;
+        let reference = found.ok_or(internal!("元scrutineeの既出実Evaluationがない"))?;
         self.recheck_evaluation(graph, reference)?;
         Ok(reference)
     }
@@ -4909,7 +5053,7 @@ impl<'a> Environment<'a> {
         let value = self
             .evaluation(graph, input)?
             .2
-            .ok_or("未知scrutineeにpattern binderがある")?;
+            .ok_or(internal!("未知scrutineeにpattern binderがある"))?;
         if data::select(
             self.indexes.inputs.law(),
             matching,
@@ -4917,11 +5061,11 @@ impl<'a> Environment<'a> {
             &self.control,
         )? != Some(arm)
         {
-            return Err("binderが選択されないarmに属する".into());
+            return Err(internal!("binderが選択されないarmに属する").into());
         }
         let value = data::project(graph.scalar(value)?, &binder.path, &self.control)?;
         if value.ty() != binder.ty {
-            return Err("binder元型がpathと違う".into());
+            return Err(internal!("binder元型がpathと違う").into());
         }
         Ok(Some((input, value)))
     }
@@ -4939,7 +5083,7 @@ impl<'a> Environment<'a> {
         }
         let ExprKind::Match { scrutinee, arms } = &self.indexes.inputs.law().exprs()[id].kind
         else {
-            return Err("選択元がmatchでない".into());
+            return Err(internal!("選択元がmatchでない").into());
         };
         let analyze = || {
             self.analyze_source(
@@ -4976,7 +5120,7 @@ impl<'a> Environment<'a> {
             .inputs
             .law()
             .expr_type(*scrutinee)
-            .ok_or("matchの元型がない")?;
+            .ok_or(internal!("matchの元型がない"))?;
         Ok(data::binders(
             &arms[arm].pattern,
             ty,
@@ -5025,7 +5169,7 @@ impl<'a> Environment<'a> {
                 ) && self.universal_symbolic_type(
                     law.quantifier_types()[id]
                         .as_ref()
-                        .ok_or("元量化binder型がない")?,
+                        .ok_or(internal!("元量化binder型がない"))?,
                 )?;
                 enclosing.push((
                     expression.span.0,
@@ -5110,7 +5254,8 @@ impl<'a> Environment<'a> {
             };
             for binder in data::binders(
                 &arms[arm].pattern,
-                law.expr_type(*scrutinee).ok_or("pattern元型がない")?,
+                law.expr_type(*scrutinee)
+                    .ok_or(internal!("pattern元型がない"))?,
                 law,
                 &self.control,
             )? {
@@ -5141,7 +5286,7 @@ impl<'a> Environment<'a> {
         name: &str,
     ) -> Result<Option<usize>, ValidationFailure> {
         if self.name_token(span)? != name {
-            return Err("lexical 名の元使用tokenが違う".into());
+            return Err(internal!("lexical 名の元使用tokenが違う").into());
         }
         let mut result = None;
         for (actual, rhs) in self.lexical_context(span)? {
@@ -5150,7 +5295,7 @@ impl<'a> Environment<'a> {
                 && let LexicalOrigin::Let(rhs) = rhs
             {
                 if result.is_some() {
-                    return Err("lexical binder が一意でない".into());
+                    return Err(internal!("lexical binder が一意でない").into());
                 }
                 result = Some(rhs);
             }
@@ -5225,7 +5370,7 @@ impl<'a> Environment<'a> {
     ) -> Result<bool, ValidationFailure> {
         self.tick()?;
         if source.0 >= limit {
-            return Err("fieldの元Sourceが既出でない".into());
+            return Err(internal!("fieldの元Sourceが既出でない").into());
         }
         let Some(Payload::Expression {
             parameters,
@@ -5233,7 +5378,7 @@ impl<'a> Environment<'a> {
             ..
         }) = &graph.get(source)?.payload
         else {
-            return Err("field producerの元SourceがExpressionでない".into());
+            return Err(internal!("field producerの元SourceがExpressionでない").into());
         };
         if !parameters.is_empty() || source_bindings != bindings {
             self.tick()?;
@@ -5281,20 +5426,20 @@ impl<'a> Environment<'a> {
             location: Location::Law { span },
         } = &node.rule
         else {
-            return Err("chain field値に元Law出現がない".into());
+            return Err(internal!("chain field値に元Law出現がない").into());
         };
         let (id, count) = self
             .chain_field_occurrence(*span)?
-            .ok_or("元chain field出現でない")?;
+            .ok_or(internal!("元chain field出現でない"))?;
         let prefixes = self.dotted_prefixes(id)?;
         let [owner, own_source] = node.arguments.as_slice() else {
-            return Err("chain field値の実owner・own Source辺がない".into());
+            return Err(internal!("chain field値の実owner・own Source辺がない").into());
         };
         if owner.0 >= limit
             || own_source.0 >= limit
             || graph.context_at(own_source.0) != self.current_context(graph)
         {
-            return Err("chain fieldのown Source・ownerが既出の実評価でない".into());
+            return Err(internal!("chain fieldのown Source・ownerが既出の実評価でない").into());
         }
         let source = graph.get(*own_source)?;
         let Some(Payload::Expression {
@@ -5303,7 +5448,7 @@ impl<'a> Environment<'a> {
             bindings,
         }) = &source.payload
         else {
-            return Err("chain fieldのown Sourceが元Expressionでない".into());
+            return Err(internal!("chain fieldのown Sourceが元Expressionでない").into());
         };
         if actual != span
             || prefixes[count - 1].0 != *span
@@ -5315,17 +5460,17 @@ impl<'a> Environment<'a> {
             || !node.reasons.is_empty()
             || node.judgment.is_some()
         {
-            return Err("chain fieldの元span・型・束縛・metadataが違う".into());
+            return Err(internal!("chain fieldの元span・型・束縛・metadataが違う").into());
         }
         self.validate_at(graph, source, own_source.0)?;
         if !self.field_source_producer_matches(graph, node, limit, *own_source, bindings)? {
-            return Err("chain fieldの元Sourceは別の実producerで評価済み".into());
+            return Err(internal!("chain fieldの元Sourceは別の実producerで評価済み").into());
         }
         self.validate_at(graph, graph.get(*owner)?, owner.0)?;
         let owner_span = prefixes[count - 2].0;
         let original_owner = self.analyze_source(graph, owner_span, bindings)?;
         if original_owner.known_value.as_ref() != Some(graph.scalar(*owner)?) {
-            return Err("chain fieldの実owner値が元入力と違う".into());
+            return Err(internal!("chain fieldの実owner値が元入力と違う").into());
         }
         let mut actual_owner = false;
         for (index, candidate) in graph.nodes.iter().enumerate().take(limit) {
@@ -5342,7 +5487,7 @@ impl<'a> Environment<'a> {
                 && self.expression_span(graph, *expression)? == owner_span
             {
                 if candidate.ty != NodeType::Evaluation(prefixes[count - 2].1.clone()) {
-                    return Err("chain fieldの元owner Evaluation型が違う".into());
+                    return Err(internal!("chain fieldの元owner Evaluation型が違う").into());
                 }
                 self.recheck_evaluation(graph, NodeRef(index))?;
                 actual_owner = true;
@@ -5352,7 +5497,7 @@ impl<'a> Environment<'a> {
             self.tick()?;
         }
         if !actual_owner {
-            return Err("chain field値に元prefixの実owner Evaluationがない".into());
+            return Err(internal!("chain field値に元prefixの実owner Evaluationがない").into());
         }
         let Scalar::Subject {
             snapshot,
@@ -5360,10 +5505,10 @@ impl<'a> Environment<'a> {
             entity,
         } = graph.scalar(*owner)?
         else {
-            return Err("chain fieldの実ownerがRefでない".into());
+            return Err(internal!("chain fieldの実ownerがRefでない").into());
         };
         let ExprKind::Dotted(parts) = &self.indexes.inputs.law().exprs()[id].kind else {
-            return Err("chain fieldの元token列がDottedでない".into());
+            return Err(internal!("chain fieldの元token列がDottedでない").into());
         };
         let field = self.indexes.field(
             &self.state,
@@ -5372,10 +5517,10 @@ impl<'a> Environment<'a> {
             &format!("{entity}.{}", parts[count - 1].name),
         )?;
         let Slot::Known { value, atom, .. } = &field.slot else {
-            return Err("chain fieldの既知値が欠測slotを指す".into());
+            return Err(internal!("chain fieldの既知値が欠測slotを指す").into());
         };
         let expected = scalar_from(value, &field.ty, self.indexes.inputs.law(), &self.control)?
-            .ok_or("chain fieldの元slotに対応する値がない")?;
+            .ok_or(internal!("chain fieldの元slotに対応する値がない"))?;
         let fact = Fact {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
@@ -5393,7 +5538,7 @@ impl<'a> Environment<'a> {
             || analysis.scalar_scope.as_ref() != Some(&node.scope)
             || node.support != [fact.clone()]
         {
-            return Err("chain field値の元slot・型・支持・Scopeが違う".into());
+            return Err(internal!("chain field値の元slot・型・支持・Scopeが違う").into());
         }
         self.tick()?;
         Ok((expected, fact))
@@ -5406,27 +5551,27 @@ impl<'a> Environment<'a> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         let Some(Payload::Scalar(value)) = &node.payload else {
-            return Err("field値がScalarでない".into());
+            return Err(internal!("field値がScalarでない").into());
         };
         if node.arguments.len() != 1 {
-            return Err("field owner数が違う".into());
+            return Err(internal!("field owner数が違う").into());
         }
         let Rule::Input {
             kind: "atom",
             location: Location::ArchMap { pointer, .. },
         } = &node.rule
         else {
-            return Err("fieldの原始値に元Atom位置がない".into());
+            return Err(internal!("fieldの原始値に元Atom位置がない").into());
         };
         let input_fact = self
             .indexes
             .atoms
             .get(pointer)
-            .ok_or("fieldの元Atom位置がない")?;
+            .ok_or(internal!("fieldの元Atom位置がない"))?;
         let input_field = input_fact
             .field
             .as_ref()
-            .ok_or("fieldの元Atomにfieldがない")?;
+            .ok_or(internal!("fieldの元Atomにfieldがない"))?;
         let input_owner = self
             .indexes
             .subject(&input_fact.snapshot, &input_fact.subject)?;
@@ -5465,7 +5610,7 @@ impl<'a> Environment<'a> {
             }
             let (owner_span, field_name) = match &self.indexes.inputs.law().exprs()[id].kind {
                 ExprKind::Dotted(parts) if prefix.is_some_and(|(_, count)| count > 1) => {
-                    let count = prefix.ok_or("callee fieldの元prefixがない")?.1;
+                    let count = prefix.ok_or(internal!("callee fieldの元prefixがない"))?.1;
                     (
                         (parts[0].span.0, parts[count - 2].span.1),
                         parts[count - 1].name.as_str(),
@@ -5531,7 +5676,7 @@ impl<'a> Environment<'a> {
                     entity,
                 } = graph.scalar(node.arguments[0])?
                 else {
-                    return Err("callee fieldの実ownerがRefでない".into());
+                    return Err(internal!("callee fieldの実ownerがRefでない").into());
                 };
                 let field = self.indexes.field(
                     &self.state,
@@ -5557,7 +5702,7 @@ impl<'a> Environment<'a> {
                 return Ok(());
             }
         }
-        Err("callee field Scalarに同frameの元field・実owner評価がない".into())
+        Err(internal!("callee field Scalarに同frameの元field・実owner評価がない").into())
     }
     fn call_parts(
         &self,
@@ -5573,40 +5718,42 @@ impl<'a> Environment<'a> {
             .program()
             .expressions
             .get(&span)
-            .ok_or("call元ASTがない")?;
-        let declaration = self.named_view(id)?.ok_or("call静的targetがない")?;
+            .ok_or(internal!("call元ASTがない"))?;
+        let declaration = self
+            .named_view(id)?
+            .ok_or(internal!("call静的targetがない"))?;
         let archsig_input::law::model::Signature::View { body, params, .. } =
             &declaration.signature
         else {
             unreachable!()
         };
         if children.len() != params.len() + 1 {
-            return Err("call子Evaluation数が元署名と違う".into());
+            return Err(internal!("call子Evaluation数が元署名と違う").into());
         }
         for child in children {
             if child.0 >= limit {
-                return Err("call子Evaluationが既出でない".into());
+                return Err(internal!("call子Evaluationが既出でない").into());
             }
         }
-        let body_ref = *children.last().ok_or("call bodyがない")?;
+        let body_ref = *children.last().ok_or(internal!("call bodyがない"))?;
         let context = graph.context_at(body_ref.0);
         let frame = graph
             .frames
-            .get(context.frame.ok_or("callee bodyのframeがない")?)
-            .ok_or("callee frameがない")?;
+            .get(context.frame.ok_or(internal!("callee bodyのframeがない"))?)
+            .ok_or(internal!("callee frameがない"))?;
         if frame.caller != self.current_context(graph)
             || frame.arguments != children[..params.len()]
             || self.expression_span(graph, frame.source)? != span
             || frame.source.0 >= limit
         {
-            return Err("call子と元call frameが違う".into());
+            return Err(internal!("call子と元call frameが違う").into());
         }
         self.frame_arguments(graph, context.frame.unwrap())?;
         self.recheck_evaluation(graph, body_ref)?;
         let (body_source, _, value) = self.evaluation(graph, body_ref)?;
         self.source_matches(graph, body_source, *body)?;
         if graph.context_at(body_source.0) != context {
-            return Err("callee body Sourceのframeが違う".into());
+            return Err(internal!("callee body Sourceのframeが違う").into());
         }
         let bindings = self.expression_bindings(graph, frame.source)?;
         let analysis =
@@ -5616,7 +5763,7 @@ impl<'a> Environment<'a> {
             .is_some_and(|checks| checks.failure.is_some() || checks.blocked);
         let value = if failed { None } else { value };
         if value.map(|r| graph.scalar(r)).transpose()? != analysis.known_value.as_ref() {
-            return Err("call body値が元入力展開と違う".into());
+            return Err(internal!("call body値が元入力展開と違う").into());
         }
         Ok((frame.source, analysis, value))
     }
@@ -5631,14 +5778,14 @@ impl<'a> Environment<'a> {
             location: Location::Law { span },
         } = &node.rule
         else {
-            return Err("call Scalar元規則が違う".into());
+            return Err(internal!("call Scalar元規則が違う").into());
         };
         let (_, analysis, _) = self.call_parts(graph, *span, &node.arguments, limit)?;
         if !matches!(&node.payload, Some(Payload::Scalar(value)) if analysis.known_value.as_ref() == Some(value))
             || node.support != analysis.support
             || analysis.scalar_scope.as_ref() != Some(&node.scope)
         {
-            return Err("call Scalarが元call値・支持・Scopeと違う".into());
+            return Err(internal!("call Scalarが元call値・支持・Scopeと違う").into());
         }
         Ok(analysis)
     }
@@ -5683,7 +5830,7 @@ impl<'a> Environment<'a> {
                     .inputs
                     .law()
                     .expr_type(id)
-                    .ok_or("内包元型がない")?
+                    .ok_or(internal!("内包元型がない"))?
                     .clone(),
             )
             || parts.len() != 1
@@ -5694,7 +5841,7 @@ impl<'a> Environment<'a> {
             || bindings != self.expression_bindings(graph, *expression)?
             || graph.context_at(expression.0) != self.current_context(graph)
         {
-            return Err("call Evaluationの元Source・partが違う".into());
+            return Err(internal!("call Evaluationの元Source・partが違う").into());
         }
         let (source, analysis, body_value) =
             self.call_parts(graph, span, &parts[0].children, limit)?;
@@ -5710,27 +5857,27 @@ impl<'a> Environment<'a> {
             || node.scope != analysis.scope
             || !graph.get(source)?.scope.source_compatible(&analysis.scope)
         {
-            return Err("call Evaluationの元出現・支持・Scopeが違う".into());
+            return Err(internal!("call Evaluationの元出現・支持・Scopeが違う").into());
         }
         match (*value, body_value) {
             (Some(result), Some(body)) if graph.scalar(result)? == graph.scalar(body)? => {
                 if result.0 >= limit || graph.context_at(result.0) != self.current_context(graph) {
-                    return Err("call値のframeが違う".into());
+                    return Err(internal!("call値のframeが違う").into());
                 }
                 self.validate_at(graph, graph.get(result)?, result.0)?;
                 if graph.get(result)?.arguments != parts[0].children {
-                    return Err("call値の元子Evaluationが違う".into());
+                    return Err(internal!("call値の元子Evaluationが違う").into());
                 }
             }
             (None, None) => {}
-            _ => return Err("call値がcallee bodyの既知性と違う".into()),
+            _ => return Err(internal!("call値がcallee bodyの既知性と違う").into()),
         }
         let expected: Vec<_> = std::iter::once(*expression)
             .chain(parts[0].children.iter().copied())
             .chain(*value)
             .collect();
         if node.arguments != expected {
-            return Err("call Evaluationの導出辺が違う".into());
+            return Err(internal!("call Evaluationの導出辺が違う").into());
         }
         Ok(true)
     }
@@ -5750,7 +5897,7 @@ impl<'a> Environment<'a> {
         let declaration = law
             .declarations()
             .get(target)
-            .ok_or("calleeの静的解決先がない")?;
+            .ok_or(internal!("calleeの静的解決先がない"))?;
         let archsig_input::law::model::Signature::View {
             params, returns, ..
         } = &declaration.signature
@@ -5807,15 +5954,18 @@ impl<'a> Environment<'a> {
     ) -> Result<FrameInputs, ValidationFailure> {
         self.validation_graph_session(graph, || {
             self.tick()?;
-            let frame = graph.frames.get(index).ok_or("call frameがない")?;
+            let frame = graph
+                .frames
+                .get(index)
+                .ok_or(internal!("call frameがない"))?;
             let limit = self.state.cutoff.get().min(graph.nodes.len());
             let prefix = std::iter::once(frame.source)
                 .chain(frame.arguments.iter().copied())
                 .map(|r| r.0)
                 .max()
-                .ok_or("callの元producerがない")?;
+                .ok_or(internal!("callの元producerがない"))?;
             if prefix >= limit {
-                return Err("call frameに未出producerがある".into());
+                return Err(internal!("call frameに未出producerがある").into());
             }
             // 実引数はframe作成より前の不変prefixだけで復元する。
             // 後から生成した別call/Domainを根拠にもcache keyにも混ぜない。
@@ -5872,12 +6022,15 @@ impl<'a> Environment<'a> {
         {
             return Ok(value);
         }
-        let frame = graph.frames.get(index).ok_or("call frameがない")?;
+        let frame = graph
+            .frames
+            .get(index)
+            .ok_or(internal!("call frameがない"))?;
         if frame.caller.frame.is_some_and(|parent| parent >= index) {
-            return Err("call frameの親が先行しない".into());
+            return Err(internal!("call frameの親が先行しない").into());
         }
         if graph.context_at(frame.source.0) != frame.caller {
-            return Err("call Sourceがcaller frameと違う".into());
+            return Err(internal!("call Sourceがcaller frameと違う").into());
         }
         let span = self.expression_span(graph, frame.source)?;
         let id = *self
@@ -5887,8 +6040,10 @@ impl<'a> Environment<'a> {
             .program()
             .expressions
             .get(&span)
-            .ok_or("call frameの元ASTがない")?;
-        let d = self.named_view(id)?.ok_or("call frameがnamed viewでない")?;
+            .ok_or(internal!("call frameの元ASTがない"))?;
+        let d = self
+            .named_view(id)?
+            .ok_or(internal!("call frameがnamed viewでない"))?;
         let archsig_input::law::model::Signature::View { params, .. } = &d.signature else {
             unreachable!()
         };
@@ -5896,7 +6051,7 @@ impl<'a> Environment<'a> {
             unreachable!()
         };
         if args.len() != frame.arguments.len() || params.len() != args.len() {
-            return Err("call引数数が元署名と違う".into());
+            return Err(internal!("call引数数が元署名と違う").into());
         }
         let previous = self.state.context.scoped(Some(frame.caller));
         let result = (|| {
@@ -5908,13 +6063,13 @@ impl<'a> Environment<'a> {
             for ((parameter, &arg), &reference) in params.iter().zip(args).zip(&frame.arguments) {
                 self.tick()?;
                 if reference.0 <= frame.source.0 || graph.context_at(reference.0) != frame.caller {
-                    return Err("call実引数が元callerの既出評価でない".into());
+                    return Err(internal!("call実引数が元callerの既出評価でない").into());
                 }
                 self.recheck_evaluation(graph, reference)?;
                 let (expression, actual, value) = self.evaluation(graph, reference)?;
                 self.source_matches(graph, expression, arg)?;
                 if graph.context_at(expression.0) != frame.caller {
-                    return Err("実引数Sourceのframeが違う".into());
+                    return Err(internal!("実引数Sourceのframeが違う").into());
                 }
                 let mut analysis = self.analyze_source(
                     graph,
@@ -5930,7 +6085,7 @@ impl<'a> Environment<'a> {
                     scope.merge_quantifiers(&graph.get(value)?.scope);
                 }
                 if value.map(|r| graph.scalar(r)).transpose()? != analysis.known_value.as_ref() {
-                    return Err("call実引数が元入力の値と違う".into());
+                    return Err(internal!("call実引数が元入力の値と違う").into());
                 }
                 if let Some(value) = value {
                     bindings.push(Binding {
@@ -5996,7 +6151,7 @@ impl<'a> Environment<'a> {
             .program()
             .expressions
             .get(&span)
-            .ok_or("内包元ASTがない")?;
+            .ok_or(internal!("内包元ASTがない"))?;
         let ExprKind::SetComp {
             elem,
             domain,
@@ -6004,13 +6159,13 @@ impl<'a> Environment<'a> {
             ..
         } = self.indexes.inputs.law().exprs()[id].kind
         else {
-            return Err("内包元式が違う".into());
+            return Err(internal!("内包元式が違う").into());
         };
-        let input = *children.first().ok_or("内包domain子がない")?;
+        let input = *children.first().ok_or(internal!("内包domain子がない"))?;
         if children.iter().any(|child| child.0 >= limit)
             || graph.context_at(input.0) != self.current_context(graph)
         {
-            return Err("内包子の既出性/親Contextが違う".into());
+            return Err(internal!("内包子の既出性/親Contextが違う").into());
         }
         self.recheck_evaluation(graph, input)?;
         let (domain_source, bindings, value) = self.evaluation(graph, input)?;
@@ -6026,14 +6181,14 @@ impl<'a> Environment<'a> {
                 break;
             }
         }
-        let own = own.ok_or("内包値の既出own Sourceがない")?;
+        let own = own.ok_or(internal!("内包値の既出own Sourceがない"))?;
         let analysis =
             self.resolve_analysis(graph, self.analyze_source(graph, span, bindings)?, children)?;
         let items = match value.map(|r| graph.scalar(r)).transpose()? {
             Some(Scalar::List { items, .. }) => Some((items, true)),
             Some(Scalar::Set { items, .. }) => Some((items, false)),
             None => None,
-            _ => return Err("実内包域がList/Setでない".into()),
+            _ => return Err(internal!("実内包域がList/Setでない").into()),
         };
         let mut cursor = 1;
         let mut seen = Vec::new();
@@ -6044,10 +6199,17 @@ impl<'a> Environment<'a> {
         if let Some((items, is_list)) = items {
             for position in 0..items.len() {
                 self.tick()?;
-                let first = *children.get(cursor).ok_or("内包に反復漏れがある")?;
+                let first = *children
+                    .get(cursor)
+                    .ok_or(internal!("内包に反復漏れがある"))?;
                 let context = graph.context_at(first.0);
-                let index = context.iteration.ok_or("内包子に反復Contextがない")?;
-                let record = graph.iterations.get(index).ok_or("内包反復元がない")?;
+                let index = context
+                    .iteration
+                    .ok_or(internal!("内包子に反復Contextがない"))?;
+                let record = graph
+                    .iterations
+                    .get(index)
+                    .ok_or(internal!("内包反復元がない"))?;
                 if record.caller != self.current_context(graph)
                     || record.source != own
                     || record.domain != input
@@ -6056,27 +6218,33 @@ impl<'a> Environment<'a> {
                     || context.instance != record.caller.instance
                     || context.request != record.caller.request
                 {
-                    return Err("内包子の元Source/domain/親Contextが違う".into());
+                    return Err(internal!("内包子の元Source/domain/親Contextが違う").into());
                 }
                 let (_, member, _) = self.iteration_input(graph, index)?;
                 match (&record.member, is_list) {
                     (super::call::Member::ListPosition(actual), true) if *actual == position => {}
                     (super::call::Member::SetElement(_), false)
                         if !data::contains(&seen, &member, &self.control)? => {}
-                    _ => return Err("内包走査のList位置/Set要素が重複または不一致".into()),
+                    _ => {
+                        return Err(
+                            internal!("内包走査のList位置/Set要素が重複または不一致").into()
+                        );
+                    }
                 }
                 seen.push(member);
                 let mut consume = |expected: usize| -> Result<Option<NodeRef>, ValidationFailure> {
-                    let reference = *children.get(cursor).ok_or("内包の必要子がない")?;
+                    let reference = *children
+                        .get(cursor)
+                        .ok_or(internal!("内包の必要子がない"))?;
                     cursor += 1;
                     if graph.context_at(reference.0) != context {
-                        return Err("内包子が別反復に属する".into());
+                        return Err(internal!("内包子が別反復に属する").into());
                     }
                     self.recheck_evaluation(graph, reference)?;
                     let (source, actual, value) = self.evaluation(graph, reference)?;
                     self.source_matches(graph, source, expected)?;
                     if actual != bindings {
-                        return Err("内包子の宣言束縛が違う".into());
+                        return Err(internal!("内包子の宣言束縛が違う").into());
                     }
                     used_support.extend(graph.get(reference)?.support.iter().cloned());
                     scope.merge(&graph.get(reference)?.scope);
@@ -6086,7 +6254,7 @@ impl<'a> Environment<'a> {
                     match consume(filter)?.map(|r| graph.scalar(r)).transpose()? {
                         Some(Scalar::Bool(value)) => Some(*value),
                         None => None,
-                        _ => return Err("内包filter実値がBoolでない".into()),
+                        _ => return Err(internal!("内包filter実値がBoolでない").into()),
                     }
                 } else {
                     Some(true)
@@ -6105,7 +6273,7 @@ impl<'a> Environment<'a> {
             }
         }
         if cursor != children.len() {
-            return Err("内包に余分な反復/除外elemがある".into());
+            return Err(internal!("内包に余分な反復/除外elemがある").into());
         }
         used_support.sort();
         used_support.dedup();
@@ -6114,9 +6282,9 @@ impl<'a> Environment<'a> {
             .inputs
             .law()
             .expr_type(id)
-            .ok_or("内包型がない")?
+            .ok_or(internal!("内包型がない"))?
         else {
-            return Err("内包型がSetでない".into());
+            return Err(internal!("内包型がSetでない").into());
         };
         let computed = if known {
             Some(data::set((**element).clone(), &collected, &self.control)?)
@@ -6127,7 +6295,7 @@ impl<'a> Environment<'a> {
             || scope != analysis.scope
             || used_support != analysis.support
         {
-            return Err("内包の元domain/filter/採用値・支持・範囲が違う".into());
+            return Err(internal!("内包の元domain/filter/採用値・支持・範囲が違う").into());
         }
         Ok((own, analysis))
     }
@@ -6142,14 +6310,14 @@ impl<'a> Environment<'a> {
             location: Location::Law { span },
         } = &node.rule
         else {
-            return Err("内包Scalarの元規則がない".into());
+            return Err(internal!("内包Scalarの元規則がない").into());
         };
         let (_, analysis) = self.comprehension_parts(graph, *span, &node.arguments, limit)?;
         if !matches!(&node.payload,Some(Payload::Scalar(value)) if analysis.known_value.as_ref()==Some(value))
             || node.support != analysis.support
             || analysis.scalar_scope.as_ref() != Some(&node.scope)
         {
-            return Err("内包Scalarが元入力/値/支持/Scopeと違う".into());
+            return Err(internal!("内包Scalarが元入力/値/支持/Scopeと違う").into());
         }
         Ok(analysis)
     }
@@ -6187,7 +6355,7 @@ impl<'a> Environment<'a> {
             || *applicability != "applicable"
             || graph.context_at(expression.0) != self.current_context(graph)
         {
-            return Err("内包Evaluationの元出現/型/partが違う".into());
+            return Err(internal!("内包Evaluationの元出現/型/partが違う").into());
         }
         let (own, analysis) = self.comprehension_parts(graph, span, &parts[0].children, limit)?;
         if own != *expression
@@ -6195,14 +6363,14 @@ impl<'a> Environment<'a> {
             || node.scope != analysis.scope
             || node.support != analysis.support
         {
-            return Err("内包Evaluationが元Source/支持/Scopeと違う".into());
+            return Err(internal!("内包Evaluationが元Source/支持/Scopeと違う").into());
         }
         let arguments: Vec<_> = std::iter::once(*expression)
             .chain(parts[0].children.iter().copied())
             .chain(*value)
             .collect();
         if node.arguments != arguments {
-            return Err("内包Evaluationの構成辺が違う".into());
+            return Err(internal!("内包Evaluationの構成辺が違う").into());
         }
         let mut reasons = Vec::new();
         for child in &parts[0].children {
@@ -6211,13 +6379,13 @@ impl<'a> Environment<'a> {
         }
         sort_reasons(&mut reasons);
         if node.reasons.len() != reasons.len() {
-            return Err("内包Evaluationの元欠測理由数が違う".into());
+            return Err(internal!("内包Evaluationの元欠測理由数が違う").into());
         }
         for (actual, expected) in node.reasons.iter().zip(&reasons) {
             self.tick()?;
             // canonical理由の既存dedupと同じ、全wire欄の同一性を照合する。
             if actual.wire() != expected.wire() {
-                return Err("内包Evaluationの元欠測理由が違う".into());
+                return Err(internal!("内包Evaluationの元欠測理由が違う").into());
             }
         }
         match (value, &analysis.known_value) {
@@ -6228,12 +6396,12 @@ impl<'a> Environment<'a> {
                     || scalar.arguments != parts[0].children
                     || !matches!(&scalar.rule,Rule::Input {kind:"law",location:Location::Law {span:actual}} if *actual==span)
                 {
-                    return Err("内包の生成値の元出現/反復辺が違う".into());
+                    return Err(internal!("内包の生成値の元出現/反復辺が違う").into());
                 }
                 self.validate_at(graph, scalar, value.0)?;
             }
             (None, None) => {}
-            _ => return Err("未知の内包を通常値へ変えている".into()),
+            _ => return Err(internal!("未知の内包を通常値へ変えている").into()),
         }
         Ok(true)
     }
@@ -6245,7 +6413,10 @@ impl<'a> Environment<'a> {
         let mut current = self.current_context(graph).iteration;
         while let Some(index) = current {
             self.tick()?;
-            let record = graph.iterations.get(index).ok_or("反復索引がない")?;
+            let record = graph
+                .iterations
+                .get(index)
+                .ok_or(internal!("反復索引がない"))?;
             if self.expression_span(graph, record.source)?
                 == self.indexes.inputs.law().exprs()[comp].span
             {
@@ -6256,7 +6427,7 @@ impl<'a> Environment<'a> {
                 .iteration
                 .is_some_and(|parent| parent >= index)
             {
-                return Err("反復の親が先行しない".into());
+                return Err(internal!("反復の親が先行しない").into());
             }
             current = record.caller.iteration;
         }
@@ -6279,7 +6450,10 @@ impl<'a> Environment<'a> {
         {
             return Ok(value);
         }
-        let record = graph.iterations.get(index).ok_or("反復元がない")?;
+        let record = graph
+            .iterations
+            .get(index)
+            .ok_or(internal!("反復元がない"))?;
         if record
             .caller
             .iteration
@@ -6287,12 +6461,12 @@ impl<'a> Environment<'a> {
             || record.source.0 >= record.domain.0
             || record.domain.0 >= self.state.cutoff.get().min(graph.nodes.len())
         {
-            return Err("反復元Source/domain/親の先行性が違う".into());
+            return Err(internal!("反復元Source/domain/親の先行性が違う").into());
         }
         if graph.context_at(record.source.0) != record.caller
             || graph.context_at(record.domain.0) != record.caller
         {
-            return Err("反復元が親Contextに属さない".into());
+            return Err(internal!("反復元が親Contextに属さない").into());
         }
         let span = self.expression_span(graph, record.source)?;
         let id = *self
@@ -6302,33 +6476,33 @@ impl<'a> Environment<'a> {
             .program()
             .expressions
             .get(&span)
-            .ok_or("反復元ASTがない")?;
+            .ok_or(internal!("反復元ASTがない"))?;
         let (domain, _) = self.iteration_syntax(id)?;
         let previous = self.state.context.scoped(Some(record.caller));
         let result = (|| {
             self.validate_at(graph, graph.get(record.source)?, record.source.0)?;
             if domain.is_none() {
-                let finite = record.finite.ok_or("型量化反復にDomainがない")?;
+                let finite = record.finite.ok_or(internal!("型量化反復にDomainがない"))?;
                 if record.domain != finite {
-                    return Err("型量化の元域が型Domainでない".into());
+                    return Err(internal!("型量化の元域が型Domainでない").into());
                 }
                 self.validate_at(graph, graph.get(finite)?, finite.0)?;
                 let node = graph.get(finite)?;
                 if node.arguments.first() != Some(&record.source) {
-                    return Err("型量化Domainの元Sourceが違う".into());
+                    return Err(internal!("型量化Domainの元Sourceが違う").into());
                 }
                 let Some(Payload::Domain { ty, elements }) = &node.payload else {
-                    return Err("型量化の有限域がない".into());
+                    return Err(internal!("型量化の有限域がない").into());
                 };
                 let super::call::Member::SetElement(member) = &record.member else {
-                    return Err("型量化binderが要素でない".into());
+                    return Err(internal!("型量化binderが要素でない").into());
                 };
                 if member.ty() != *ty
                     || !elements
                         .iter()
                         .any(|r| graph.scalar(*r).is_ok_and(|value| value == member))
                 {
-                    return Err("型量化binderが実型域に属さない".into());
+                    return Err(internal!("型量化binderが実型域に属さない").into());
                 }
                 let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
                 let mut scope = node.scope.clone();
@@ -6350,12 +6524,12 @@ impl<'a> Environment<'a> {
                     },
                 ));
             }
-            let domain = domain.ok_or("反復元collectionASTがない")?;
+            let domain = domain.ok_or(internal!("反復元collectionASTがない"))?;
             self.recheck_evaluation(graph, record.domain)?;
             let (source, bindings, value) = self.evaluation(graph, record.domain)?;
             self.source_matches(graph, source, domain)?;
             if self.expression_bindings(graph, record.source)? != bindings {
-                return Err("反復元の実束縛が違う".into());
+                return Err(internal!("反復元の実束縛が違う").into());
             }
             let mut analysis = self.analyze_source(
                 graph,
@@ -6363,23 +6537,23 @@ impl<'a> Environment<'a> {
                 bindings,
             )?;
             if value.map(|r| graph.scalar(r)).transpose()? != analysis.known_value.as_ref() {
-                return Err("反復域値が元入力と違う".into());
+                return Err(internal!("反復域値が元入力と違う").into());
             }
             analysis
                 .scope
                 .merge_quantifiers(&graph.get(record.domain)?.scope);
-            let value = graph.scalar(value.ok_or("未知domainに反復がある")?)?;
+            let value = graph.scalar(value.ok_or(internal!("未知domainに反復がある"))?)?;
             let quantified = matches!(
                 self.indexes.inputs.law().exprs()[id].kind,
                 ExprKind::Quant { .. }
             );
             if quantified {
-                let finite = record.finite.ok_or("量化反復にDomainがない")?;
+                let finite = record.finite.ok_or(internal!("量化反復にDomainがない"))?;
                 self.validate_at(graph, graph.get(finite)?, finite.0)?;
                 if graph.get(finite)?.arguments.get(..2)
                     != Some([record.source, record.domain].as_slice())
                 {
-                    return Err("量化反復Domainの元辺が違う".into());
+                    return Err(internal!("量化反復Domainの元辺が違う").into());
                 }
                 let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
                 let mut scope = Scope::default();
@@ -6389,7 +6563,7 @@ impl<'a> Environment<'a> {
                     .scope
                     .order_quantifiers_like(&graph.get(record.source)?.scope);
             } else if record.finite.is_some() {
-                return Err("内包反復に量化Domainがある".into());
+                return Err(internal!("内包反復に量化Domainがある").into());
             }
             let member = match (&record.member, value) {
                 (
@@ -6400,23 +6574,26 @@ impl<'a> Environment<'a> {
                     && data::contains(items, member, &self.control)? =>
                 {
                     let Some(Payload::Domain { elements, .. }) = &graph
-                        .get(record.finite.ok_or("量化反復にDomainがない")?)?
+                        .get(record.finite.ok_or(internal!("量化反復にDomainがない"))?)?
                         .payload
                     else {
-                        return Err("量化反復の有限域がない".into());
+                        return Err(internal!("量化反復の有限域がない").into());
                     };
                     if !elements
                         .iter()
                         .any(|r| graph.scalar(*r).is_ok_and(|value| value == member))
                     {
-                        return Err("量化binderが実Domain要素でない".into());
+                        return Err(internal!("量化binderが実Domain要素でない").into());
                     }
                     member.clone()
                 }
                 (super::call::Member::ListPosition(position), Scalar::List { items, .. })
                     if !quantified =>
                 {
-                    items.get(*position).ok_or("List反復位置が域外")?.clone()
+                    items
+                        .get(*position)
+                        .ok_or(internal!("List反復位置が域外"))?
+                        .clone()
                 }
                 (super::call::Member::SetElement(member), Scalar::Set { element, items })
                     if !quantified
@@ -6425,7 +6602,7 @@ impl<'a> Environment<'a> {
                 {
                     member.clone()
                 }
-                _ => return Err("List位置/Set要素が元domainと違う".into()),
+                _ => return Err(internal!("List位置/Set要素が元domainと違う").into()),
             };
             Ok((record.domain, member, analysis))
         })();
@@ -6447,7 +6624,7 @@ impl<'a> Environment<'a> {
         bindings: &[Binding],
     ) -> Result<Option<(NodeRef, Scalar)>, ValidationFailure> {
         if self.name_token(span)? != name {
-            return Err("反復名の元使用tokenが違う".into());
+            return Err(internal!("反復名の元使用tokenが違う").into());
         }
         let mut result = None;
         for (actual, origin) in self.lexical_context(span)? {
@@ -6457,14 +6634,14 @@ impl<'a> Environment<'a> {
             {
                 let index = self
                     .iteration_for(graph, comp)?
-                    .ok_or("反復binderの実Contextがない")?;
+                    .ok_or(internal!("反復binderの実Contextがない"))?;
                 let record = &graph.iterations[index];
                 if self.expression_bindings(graph, record.source)? != bindings {
-                    return Err("反復binderの宣言束縛が違う".into());
+                    return Err(internal!("反復binderの宣言束縛が違う").into());
                 }
                 let (domain, member, _) = self.iteration_input(graph, index)?;
                 if result.replace((domain, member)).is_some() {
-                    return Err("反復binderが一意でない".into());
+                    return Err(internal!("反復binderが一意でない").into());
                 }
             }
         }
@@ -6509,9 +6686,9 @@ impl<'a> Environment<'a> {
             let request = graph
                 .requests
                 .get(context.request)
-                .ok_or("Sourceの元Requestがない")?;
+                .ok_or(internal!("Sourceの元Requestがない"))?;
             let Selector::Declaration { name } = &request.head else {
-                return Err("Sourceの元Request headが宣言でない".into());
+                return Err(internal!("Sourceの元Request headが宣言でない").into());
             };
             let declaration = self
                 .indexes
@@ -6519,11 +6696,11 @@ impl<'a> Environment<'a> {
                 .law()
                 .declarations()
                 .get(name)
-                .ok_or("Sourceの元Request宣言がない")?;
+                .ok_or(internal!("Sourceの元Request宣言がない"))?;
             let params = match &declaration.signature {
                 archsig_input::law::model::Signature::View { params, .. }
                 | archsig_input::law::model::Signature::Law { params, .. } => params,
-                _ => return Err("Sourceの元署名がない".into()),
+                _ => return Err(internal!("Sourceの元署名がない").into()),
             };
             for p in params {
                 if let Some(binding) = bindings.iter().find(|b| b.name == p.name)
@@ -6535,12 +6712,18 @@ impl<'a> Environment<'a> {
             }
         }
         if let Some(index) = self.current_context(graph).frame {
-            let frame = graph.frames.get(index).ok_or("Sourceのcall frameがない")?;
+            let frame = graph
+                .frames
+                .get(index)
+                .ok_or(internal!("Sourceのcall frameがない"))?;
             arguments.push(frame.source);
             arguments.extend(&frame.arguments);
         }
         if let Some(index) = self.current_context(graph).iteration {
-            let record = graph.iterations.get(index).ok_or("Sourceの反復がない")?;
+            let record = graph
+                .iterations
+                .get(index)
+                .ok_or(internal!("Sourceの反復がない"))?;
             arguments.extend([record.source, record.domain]);
             if record.finite != Some(record.domain) {
                 arguments.extend(record.finite);
@@ -6548,12 +6731,12 @@ impl<'a> Environment<'a> {
             if let Some(domain) = record.finite {
                 let (_, member, _) = self.iteration_input(graph, index)?;
                 let Some(Payload::Domain { elements, .. }) = &graph.get(domain)?.payload else {
-                    return Err("量化SourceのDomain要素がない".into());
+                    return Err(internal!("量化SourceのDomain要素がない").into());
                 };
                 let reference = *elements
                     .iter()
                     .find(|r| graph.scalar(**r).is_ok_and(|v| v == &member))
-                    .ok_or("量化Sourceの実memberがない")?;
+                    .ok_or(internal!("量化Sourceの実memberがない"))?;
                 arguments.push(reference);
             }
         }
@@ -6561,11 +6744,14 @@ impl<'a> Environment<'a> {
             let record = graph
                 .instances
                 .get(index)
-                .ok_or("Sourceの実instanceがない")?;
+                .ok_or(internal!("Sourceの実instanceがない"))?;
             arguments.extend([record.source, record.domain, record.member]);
         }
         if let Some(case) = self.current_context(graph).case {
-            let record = graph.cases.get(case).ok_or("Sourceの補完がない")?;
+            let record = graph
+                .cases
+                .get(case)
+                .ok_or(internal!("Sourceの補完がない"))?;
             arguments.extend([record.seed, record.domain, record.member]);
             arguments.extend(record.values.iter().copied());
         }
@@ -6589,7 +6775,7 @@ impl<'a> Environment<'a> {
                 self.evaluation(graph, input)?.0,
             )? != Some(arm)
             {
-                return Err("Sourceが実選択armに属さない".into());
+                return Err(internal!("Sourceが実選択armに属さない").into());
             }
             arguments.push(input);
         }
@@ -6630,7 +6816,10 @@ impl<'a> Environment<'a> {
         let Some(index) = self.current_context(graph).frame else {
             return Ok(None);
         };
-        let frame = graph.frames.get(index).ok_or("parameterのframeがない")?;
+        let frame = graph
+            .frames
+            .get(index)
+            .ok_or(internal!("parameterのframeがない"))?;
         let span = self.expression_span(graph, frame.source)?;
         let d = self
             .named_view(
@@ -6641,14 +6830,14 @@ impl<'a> Environment<'a> {
                     .program()
                     .expressions
                     .get(&span)
-                    .ok_or("call ASTがない")?,
+                    .ok_or(internal!("call ASTがない"))?,
             )?
-            .ok_or("call targetがない")?;
+            .ok_or(internal!("call targetがない"))?;
         let archsig_input::law::model::Signature::View { params, .. } = &d.signature else {
             unreachable!()
         };
         if frame.arguments.len() != params.len() {
-            return Err("call引数数が元署名と違う".into());
+            return Err(internal!("call引数数が元署名と違う").into());
         }
         Ok(params
             .iter()
@@ -6724,13 +6913,13 @@ impl<'a> Environment<'a> {
             self.tick()?;
             if d.span.0 <= span.0 && span.1 <= d.span.1 {
                 if declaration.is_some() {
-                    return Err("原式を所有する宣言が一意でない".into());
+                    return Err(internal!("原式を所有する宣言が一意でない").into());
                 }
                 declaration = Some(d);
             }
             self.tick()?;
         }
-        let declaration = declaration.ok_or("原式を所有する宣言がない")?;
+        let declaration = declaration.ok_or(internal!("原式を所有する宣言がない"))?;
         if let Some(index) = self.current_context(graph).instance {
             if !self.native_law_source_allowed(graph, index, span)? {
                 if let Some(source) =
@@ -6738,7 +6927,7 @@ impl<'a> Environment<'a> {
                 {
                     return Ok(source);
                 }
-                return Err("未成立guardのnative Law bodyは評価できない".into());
+                return Err(internal!("未成立guardのnative Law bodyは評価できない").into());
             }
         }
         if let Some(index) = self.current_context(graph).instance {
@@ -6753,11 +6942,11 @@ impl<'a> Environment<'a> {
             let index = self
                 .current_context(graph)
                 .instance
-                .ok_or("元relation instanceがない")?;
+                .ok_or(internal!("元relation instanceがない"))?;
             if !crate::observed::public_compare::relation_sources::source_allowed(
                 graph, index, span,
             )? {
-                return Err("未成立guardのrelation bodyは評価できない".into());
+                return Err(internal!("未成立guardのrelation bodyは評価できない").into());
             }
         }
         let params = match &declaration.signature {
@@ -6775,10 +6964,13 @@ impl<'a> Environment<'a> {
             {
                 params
             }
-            _ => return Err("評価範囲の元宣言が view/Law でない".into()),
+            _ => return Err(internal!("評価範囲の元宣言が view/Law でない").into()),
         };
         let (mut base, mut variables) = if let Some(index) = self.current_context(graph).frame {
-            let frame = graph.frames.get(index).ok_or("元式のframeがない")?;
+            let frame = graph
+                .frames
+                .get(index)
+                .ok_or(internal!("元式のframeがない"))?;
             let call_span = self.expression_span(graph, frame.source)?;
             let target = self
                 .named_view(
@@ -6789,36 +6981,36 @@ impl<'a> Environment<'a> {
                         .program()
                         .expressions
                         .get(&call_span)
-                        .ok_or("callの元ASTがない")?,
+                        .ok_or(internal!("callの元ASTがない"))?,
                 )?
-                .ok_or("call targetがない")?;
+                .ok_or(internal!("call targetがない"))?;
             if target.span != declaration.span {
-                return Err("callee元式が静的targetのbodyでない".into());
+                return Err(internal!("callee元式が静的targetのbodyでない").into());
             }
             let (expected, variables, base) = self.frame_arguments(graph, index)?;
             if expected != bindings {
-                return Err("calleeの既知束縛が実引数と違う".into());
+                return Err(internal!("calleeの既知束縛が実引数と違う").into());
             }
             (base, variables)
         } else if let Some(index) = self.current_context(graph).instance {
             let request = graph
                 .requests
                 .get(self.current_context(graph).request)
-                .ok_or("実instance元Requestがない")?;
+                .ok_or(internal!("実instance元Requestがない"))?;
             if request.declaration() != Some(declaration.name.as_str())
                 && self.instance_source_declaration(graph, index)?.as_deref()
                     != Some(declaration.name.as_str())
             {
-                return Err("instance Sourceが別宣言".into());
+                return Err(internal!("instance Sourceが別宣言").into());
             }
             let (expected, variables, base) = self.family_instance_inputs(graph, index)?;
             if expected != bindings {
-                return Err("Sourceの実instance bindingsが元直積と違う".into());
+                return Err(internal!("Sourceの実instance bindingsが元直積と違う").into());
             }
             (base, variables)
         } else {
             if params.len() != bindings.len() && self.state.universal_context.borrow().is_none() {
-                return Err("評価範囲のparameter束縛数が違う".into());
+                return Err(internal!("評価範囲のparameter束縛数が違う").into());
             }
             if !params
                 .iter()
@@ -6832,7 +7024,7 @@ impl<'a> Environment<'a> {
                     parameter.name == binding.name && parameter.ty.erase() == binding.ty
                 })
             {
-                return Err("評価範囲の元parameter順・署名が違う".into());
+                return Err(internal!("評価範囲の元parameter順・署名が違う").into());
             }
             if bindings.iter().enumerate().any(|(index, binding)| {
                 bindings[..index]
@@ -6842,7 +7034,7 @@ impl<'a> Environment<'a> {
                         parameter.name == binding.name && parameter.ty.erase() == binding.ty
                     })
             }) {
-                return Err("評価範囲の固定parameterが重複・余分・異型である".into());
+                return Err(internal!("評価範囲の固定parameterが重複・余分・異型である").into());
             }
             let mut base = Scope::default();
             base.readings.insert(declaration.reading.clone());
@@ -6864,13 +7056,13 @@ impl<'a> Environment<'a> {
                     continue;
                 };
                 if parameter.name != binding.name || parameter.ty.erase() != binding.ty {
-                    return Err("評価範囲の元parameter署名が違う".into());
+                    return Err(internal!("評価範囲の元parameter署名が違う").into());
                 }
                 let value = graph.scalar(binding.value)?;
                 let request = graph
                     .requests
                     .get(self.current_context(graph).request)
-                    .ok_or("元束縛Requestがない")?;
+                    .ok_or(internal!("元束縛Requestがない"))?;
                 let check = self.require_owned_binding(graph, request, parameter, binding.value)?;
                 if let Some(check) = check {
                     base.merge(&graph.get(check)?.scope);
@@ -6890,7 +7082,7 @@ impl<'a> Environment<'a> {
                 if let Some(selector @ Selector::Answer { .. }) = selector {
                     self.answer_binding_matches(graph, selector, binding.value, parameter.span)?;
                     if value.ty() != binding.ty {
-                        return Err("元SourceのAnswer束縛のproducer・型が違う".into());
+                        return Err(internal!("元SourceのAnswer束縛のproducer・型が違う").into());
                     }
                     let original = graph.get(binding.value)?;
                     base.merge(&original.scope);
@@ -6938,15 +7130,15 @@ impl<'a> Environment<'a> {
                     entity,
                 } = value
                 else {
-                    return Err("未実装の値parameterを評価範囲へ持ち込んでいる".into());
+                    return Err(internal!("未実装の値parameterを評価範囲へ持ち込んでいる").into());
                 };
                 let actual = self.indexes.subject(snapshot, subject)?;
                 if &actual.ty != entity || value.ty() != binding.ty {
-                    return Err("評価範囲の束縛subject型が違う".into());
+                    return Err(internal!("評価範囲の束縛subject型が違う").into());
                 }
                 let subject_scope = self.indexes.scope(actual, &declaration.reading, None)?;
                 if graph.get(binding.value)?.scope != subject_scope {
-                    return Err("束縛subject値の範囲が元宣言・subject由来と違う".into());
+                    return Err(internal!("束縛subject値の範囲が元宣言・subject由来と違う").into());
                 }
                 base.merge(&subject_scope);
                 variables.insert(
@@ -6968,13 +7160,13 @@ impl<'a> Environment<'a> {
 
             if let Some(request) = graph.requests.get(self.current_context(graph).request) {
                 if request.declaration() != Some(declaration.name.as_str()) {
-                    return Err("元SourceがRequest宣言と違う".into());
+                    return Err(internal!("元SourceがRequest宣言と違う").into());
                 }
                 for binding in bindings {
                     let parameter = params
                         .iter()
                         .find(|p| p.name == binding.name)
-                        .ok_or("元Sourceのparameterがない")?;
+                        .ok_or(internal!("元Sourceのparameterがない"))?;
                     if self.object_view_binding(graph, parameter)?.is_some() {
                         self.object_view_binding_matches(graph, parameter, binding.value)?;
                         continue;
@@ -6983,13 +7175,13 @@ impl<'a> Environment<'a> {
                         .arguments
                         .iter()
                         .find(|a| a.name == format!("bind.{}", binding.name))
-                        .ok_or("Requestの元束縛がない")?;
+                        .ok_or(internal!("Requestの元束縛がない"))?;
                     match (&arg.value, graph.scalar(binding.value)?) {
                         (selector @ Selector::Answer { .. }, _) => {
                             let parameter = params
                                 .iter()
                                 .find(|p| p.name == binding.name)
-                                .ok_or("元Source束縛のparameterがない")?;
+                                .ok_or(internal!("元Source束縛のparameterがない"))?;
                             self.answer_binding_matches(
                                 graph,
                                 selector,
@@ -7005,7 +7197,7 @@ impl<'a> Environment<'a> {
                                 ..
                             },
                         ) if snapshot == s && subject == v => {}
-                        _ => return Err("元Source束縛がRequest実入力と違う".into()),
+                        _ => return Err(internal!("元Source束縛がRequest実入力と違う").into()),
                     }
                 }
             }
@@ -7022,7 +7214,7 @@ impl<'a> Environment<'a> {
             let request = graph
                 .requests
                 .get(self.current_context(graph).request)
-                .ok_or("数値rowの元Requestがない")?;
+                .ok_or(internal!("数値rowの元Requestがない"))?;
             if let Some(plan) = self.family_plan(request)? {
                 self.family_order_scope(&plan, &mut base)?;
             }
@@ -7043,7 +7235,7 @@ impl<'a> Environment<'a> {
                     };
                     let ty = self.indexes.inputs.law().quantifier_types()[id]
                         .as_ref()
-                        .ok_or("全域binderの型がない")?;
+                        .ok_or(internal!("全域binderの型がない"))?;
                     self.universal_parameter_value(var.span, &var.name, ty, &base)?
                 }
                 LexicalOrigin::Let(rhs) => self.scoped_ast_at(
@@ -7056,7 +7248,7 @@ impl<'a> Environment<'a> {
                 LexicalOrigin::Iteration(comp) => {
                     let index = self
                         .iteration_for(graph, comp)?
-                        .ok_or("元内包binderに実反復がない")?;
+                        .ok_or(internal!("元内包binderに実反復がない"))?;
                     let (_, member, analysis) = self.iteration_input(graph, index)?;
                     base.merge(&analysis.scope);
                     for value in variables.values_mut() {
@@ -7098,7 +7290,7 @@ impl<'a> Environment<'a> {
                         &self.control,
                     )? != Some(arm)
                     {
-                        return Err("Sourceが実選択armに属さない".into());
+                        return Err(internal!("Sourceが実選択armに属さない").into());
                     }
                     input.known_value = input
                         .known_value
@@ -7117,7 +7309,7 @@ impl<'a> Environment<'a> {
                 }
             };
             if variables.insert(name, value).is_some() {
-                return Err("lexical 名が元parameterと重複する".into());
+                return Err(internal!("lexical 名が元parameterと重複する").into());
             }
             self.tick()?;
         }
@@ -7153,7 +7345,7 @@ impl<'a> Environment<'a> {
             };
             let direct_field = match &self.indexes.inputs.law().exprs()[id].kind {
                 ExprKind::Dotted(parts) if dotted.is_some_and(|(_, count)| count > 1) => {
-                    let count = dotted.ok_or("元prefixの長さがない")?.1;
+                    let count = dotted.ok_or(internal!("元prefixの長さがない"))?.1;
                     Some((
                         self.scoped_dotted(id, count - 1, &variables, &base, &declaration.reading)?
                             .known_value,
@@ -7228,7 +7420,7 @@ impl<'a> Environment<'a> {
                 scalar_scope,
             });
         }
-        Err("評価範囲に元AST/prefix以外のfragmentがある".into())
+        Err(internal!("評価範囲に元AST/prefix以外のfragmentがある").into())
     }
     fn subject_support(&self, value: &Scalar) -> Result<Vec<Fact>, ValidationFailure> {
         let Scalar::Subject {
@@ -7237,10 +7429,10 @@ impl<'a> Environment<'a> {
             entity,
         } = value
         else {
-            return Err("支持の元parameterがRefでない".into());
+            return Err(internal!("支持の元parameterがRefでない").into());
         };
         if self.indexes.subject(snapshot, subject)?.ty != *entity {
-            return Err("支持の元subject型が違う".into());
+            return Err(internal!("支持の元subject型が違う").into());
         }
         Ok(vec![Fact {
             snapshot: snapshot.clone(),
@@ -7287,13 +7479,13 @@ impl<'a> Environment<'a> {
         let lexical = expression
             .lexical
             .as_ref()
-            .ok_or("範囲検査の未知lexical名")?;
+            .ok_or(internal!("範囲検査の未知lexical名"))?;
         if count == 0 || count > lexical.projections.len() + 1 {
-            return Err("範囲検査のprefix長が違う".into());
+            return Err(internal!("範囲検査のprefix長が違う").into());
         }
         let mut result = variables
             .get(&lexical.name)
-            .ok_or("範囲検査の未知lexical名")?
+            .ok_or(internal!("範囲検査の未知lexical名"))?
             .clone();
         let projects = match lexical.source {
             archsig_input::law::ir::BindingSource::Parameter
@@ -7355,9 +7547,13 @@ impl<'a> Environment<'a> {
             } => match self.symbolic_source(*input, variables, base, reading)? {
                 Value::Tuple(ref v) => v
                     .get(*index)
-                    .ok_or("アフィン実引数のTuple位置が違う")?
+                    .ok_or(internal!("アフィン実引数のTuple位置が違う"))?
                     .clone(),
-                _ => Value::Unsupported(law.expr_type(id).ok_or("実引数型がない")?.clone()),
+                _ => Value::Unsupported(
+                    law.expr_type(id)
+                        .ok_or(internal!("実引数型がない"))?
+                        .clone(),
+                ),
             },
             ExprKind::Call { callee, .. }
                 if matches!(law.expr_type(*callee), Some(Type::Term(..))) =>
@@ -7366,7 +7562,7 @@ impl<'a> Environment<'a> {
             }
             _ => Value::Unsupported(
                 law.expr_type(id)
-                    .ok_or("アフィン実引数の元型がない")?
+                    .ok_or(internal!("アフィン実引数の元型がない"))?
                     .clone(),
             ),
         })
@@ -7382,12 +7578,14 @@ impl<'a> Environment<'a> {
         self.tick()?;
         let law = self.indexes.inputs.law();
         let ExprKind::Call { callee, args } = &law.program().nodes[id].kind else {
-            return Err("Term元callがない".into());
+            return Err(internal!("Term元callがない").into());
         };
         let f = self.scoped_ast(*callee, variables, base, reading)?;
         let Some(Scalar::Term(ref f)) = f.known_value else {
             return Ok(Value::Unsupported(
-                law.expr_type(id).ok_or("Term元戻り型がない")?.clone(),
+                law.expr_type(id)
+                    .ok_or(internal!("Term元戻り型がない"))?
+                    .clone(),
             ));
         };
         let args = args
@@ -7406,7 +7604,7 @@ impl<'a> Environment<'a> {
         let ExprKind::Match { scrutinee, arms } =
             &self.indexes.inputs.law().program().nodes[id].kind
         else {
-            return Err("束縛の元式がmatchでない".into());
+            return Err(internal!("束縛の元式がmatchでない").into());
         };
         use super::term::affine::Value;
         let selection = if let Some(value) = &input.known_value {
@@ -7426,7 +7624,7 @@ impl<'a> Environment<'a> {
                 .inputs
                 .law()
                 .expr_type(*scrutinee)
-                .ok_or("検査済matchの元型がない")?;
+                .ok_or(internal!("検査済matchの元型がない"))?;
             let value = input
                 .symbolic
                 .as_deref()
@@ -7470,7 +7668,7 @@ impl<'a> Environment<'a> {
                 )
                 .is_some()
             {
-                return Err("pattern名が重複する".into());
+                return Err(internal!("pattern名が重複する").into());
             }
         }
         Ok(Some((arm, local)))
@@ -7495,13 +7693,13 @@ impl<'a> Environment<'a> {
             .evaluation_capture
             .borrow_mut()
             .as_mut()
-            .ok_or("評価出現収集がない")?
+            .ok_or(internal!("評価出現収集がない"))?
             .stack
             .push(quotient_evaluation::EvaluationFrame::default());
         let result = self.scoped_ast_cached(id, variables, base, reading);
         let mut capture = self.state.evaluation_capture.borrow_mut();
-        let capture = capture.as_mut().ok_or("評価出現収集が消えた")?;
-        let frame = capture.stack.pop().ok_or("評価出現の親がない")?;
+        let capture = capture.as_mut().ok_or(internal!("評価出現収集が消えた"))?;
+        let frame = capture.stack.pop().ok_or(internal!("評価出現の親がない"))?;
         let children = frame.children;
         if let Ok(value) = &result {
             let residual = if let ExprKind::Binary {
@@ -7515,7 +7713,7 @@ impl<'a> Environment<'a> {
                     .inputs
                     .law()
                     .expr_type(lhs)
-                    .ok_or("残差の元型がない")?;
+                    .ok_or(internal!("残差の元型がない"))?;
                 if numeric::is_numeric_type(ty, &self.control)? {
                     let child_value = |id| {
                         children
@@ -7608,7 +7806,9 @@ impl<'a> Environment<'a> {
             }
             let outer = self.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
             let value = self.scoped_ast_uncached(id, variables, base, reading);
-            let missing = outer.restore().ok_or("評価の不足位置収集がない")?;
+            let missing = outer
+                .restore()
+                .ok_or(internal!("評価の不足位置収集がない"))?;
             if let Some(reads) = self.state.missing_slot_reads.borrow_mut().as_mut() {
                 reads.extend(missing.iter().cloned());
             }
@@ -7650,7 +7850,7 @@ impl<'a> Environment<'a> {
                             .inputs
                             .law()
                             .expr_type(id)
-                            .ok_or("literal の型がない")?,
+                            .ok_or(internal!("literal の型がない"))?,
                         &self.control,
                     )?),
                     support: vec![],
@@ -7688,7 +7888,10 @@ impl<'a> Environment<'a> {
                 }
                 ExprKind::Field { base: owner, .. } => self.scoped_field(
                     self.scoped_ast(*owner, variables, base, reading)?,
-                    expression.field.as_ref().ok_or("元fieldの静的解決がない")?,
+                    expression
+                        .field
+                        .as_ref()
+                        .ok_or(internal!("元fieldの静的解決がない"))?,
                     base,
                     reading,
                     expression.span,
@@ -7705,7 +7908,7 @@ impl<'a> Environment<'a> {
                         .inputs
                         .law()
                         .expr_type(id)
-                        .ok_or("単項元式の型がない")?;
+                        .ok_or(internal!("単項元式の型がない"))?;
                     if !((*op == UnOp::Neg && numeric::is_numeric_type(ty, &self.control)?)
                         || (*op == UnOp::Not && ty == &Type::Bool))
                     {
@@ -7764,7 +7967,7 @@ impl<'a> Environment<'a> {
                             .inputs
                             .law()
                             .expr_type(id)
-                            .ok_or("内包結果型がない")?,
+                            .ok_or(internal!("内包結果型がない"))?,
                         self.indexes.inputs.law(),
                         &self.control,
                     )? {
@@ -7787,7 +7990,7 @@ impl<'a> Environment<'a> {
                     };
                     let items = match container {
                         Scalar::List { items, .. } | Scalar::Set { items, .. } => items,
-                        _ => return Err("内包元域がList/Setでない".into()),
+                        _ => return Err(internal!("内包元域がList/Setでない").into()),
                     };
                     let mut condition_failed = input.condition_failed;
                     let mut condition_pending = input.condition_pending;
@@ -7818,7 +8021,7 @@ impl<'a> Environment<'a> {
                             )
                             .is_some()
                         {
-                            return Err("内包binderが重複する".into());
+                            return Err(internal!("内包binderが重複する").into());
                         }
                         let condition = if let Some(filter) = filter {
                             let value =
@@ -7830,7 +8033,7 @@ impl<'a> Environment<'a> {
                             match value.known_value.as_ref() {
                                 Some(Scalar::Bool(b)) => Some(*b),
                                 None => None,
-                                _ => return Err("内包filterがBoolでない".into()),
+                                _ => return Err(internal!("内包filterがBoolでない").into()),
                             }
                         } else {
                             Some(true)
@@ -7861,9 +8064,9 @@ impl<'a> Environment<'a> {
                         .inputs
                         .law()
                         .expr_type(id)
-                        .ok_or("内包結果型がない")?
+                        .ok_or(internal!("内包結果型がない"))?
                     else {
-                        return Err("内包結果型がSetでない".into());
+                        return Err(internal!("内包結果型がSetでない").into());
                     };
                     let known_value = if known {
                         Some(data::set((**element).clone(), &values, &self.control)?)
@@ -7917,7 +8120,7 @@ impl<'a> Environment<'a> {
                     let rhs = self.scoped_ast(*value, variables, base, reading)?;
                     let mut local = self.copy_variables(variables)?;
                     if local.insert(name.name.clone(), rhs.clone()).is_some() {
-                        return Err("let 名が重複する".into());
+                        return Err(internal!("let 名が重複する").into());
                     }
                     let body = self.scoped_ast(*body, &local, base, reading)?;
                     let condition_failed = rhs.condition_failed || body.condition_failed;
@@ -7962,14 +8165,16 @@ impl<'a> Environment<'a> {
                                 .state
                                 .missing_slot_reads
                                 .replace(Some(BTreeSet::new()))
-                                .ok_or("条件式の不足位置収集がない")?;
+                                .ok_or(internal!("条件式の不足位置収集がない"))?;
                             let right = self.scoped_ast(*else_branch, variables, base, reading)?;
                             if *take {
                                 self.state.missing_slot_reads.replace(Some(left_missing));
                             }
                             Ok((left, right))
                         })();
-                        let missing = outer.restore().ok_or("条件式の不足位置収集が消えた")?;
+                        let missing = outer
+                            .restore()
+                            .ok_or(internal!("条件式の不足位置収集が消えた"))?;
                         if let Some(outer) = self.state.missing_slot_reads.borrow_mut().as_mut() {
                             outer.extend(missing);
                         }
@@ -8048,7 +8253,7 @@ impl<'a> Environment<'a> {
                     }
                 }
                 ExprKind::Call { args, .. } if self.named_view(id)?.is_some() => {
-                    let declaration = self.named_view(id)?.ok_or("named viewがない")?;
+                    let declaration = self.named_view(id)?.ok_or(internal!("named viewがない"))?;
                     let archsig_input::law::model::Signature::View {
                         params,
                         body,
@@ -8216,7 +8421,7 @@ impl<'a> Environment<'a> {
                                             .inputs
                                             .law()
                                             .expr_type(child_id)
-                                            .ok_or("constructor引数の元型がない")?
+                                            .ok_or(internal!("constructor引数の元型がない"))?
                                             .clone(),
                                     )
                                 });
@@ -8257,9 +8462,11 @@ impl<'a> Environment<'a> {
                         } = &expression.kind
                         {
                             match self.symbolic_source(*input, variables, base, reading)? {
-                                super::term::affine::Value::Tuple(ref v) => {
-                                    Some(v.get(*index).ok_or("Term結果のTuple位置が違う")?.clone())
-                                }
+                                super::term::affine::Value::Tuple(ref v) => Some(
+                                    v.get(*index)
+                                        .ok_or(internal!("Term結果のTuple位置が違う"))?
+                                        .clone(),
+                                ),
                                 _ => None,
                             }
                         } else {
@@ -8329,7 +8536,7 @@ impl<'a> Environment<'a> {
                     .inputs
                     .law()
                     .expr_type(id)
-                    .ok_or("記号成分の元型がない")?;
+                    .ok_or(internal!("記号成分の元型がない"))?;
                 let symbolic = match &expression.kind {
                     ExprKind::Tuple(items) => Some(Value::Tuple(
                         items
@@ -8339,7 +8546,7 @@ impl<'a> Environment<'a> {
                     )),
                     ExprKind::ListLit { items, .. } => {
                         let Type::List(element) = ty else {
-                            return Err("部分Listの元型が違う".into());
+                            return Err(internal!("部分Listの元型が違う").into());
                         };
                         Some(Value::List {
                             element: (**element).clone(),
@@ -8351,7 +8558,7 @@ impl<'a> Environment<'a> {
                     }
                     ExprKind::SetLit { items, .. } => {
                         let Type::Set(element) = ty else {
-                            return Err("部分Setの元型が違う".into());
+                            return Err(internal!("部分Setの元型が違う").into());
                         };
                         Some(Value::SetLiteral {
                             element: (**element).clone(),
@@ -8363,7 +8570,7 @@ impl<'a> Environment<'a> {
                     }
                     ExprKind::Some(item) => {
                         let Type::Option(element) = ty else {
-                            return Err("部分Optionの元型が違う".into());
+                            return Err(internal!("部分Optionの元型が違う").into());
                         };
                         Some(Value::Option {
                             element: (**element).clone(),
@@ -8459,7 +8666,7 @@ impl<'a> Environment<'a> {
                     .inputs
                     .law()
                     .expr_type(*lhs)
-                    .ok_or("二項元式の型がない")?,
+                    .ok_or(internal!("二項元式の型がない"))?,
                 self.indexes.inputs.law(),
                 &self.control,
             )? {
@@ -8554,7 +8761,7 @@ impl<'a> Environment<'a> {
             }
         };
         let law = self.indexes.inputs.law();
-        let ty = law.expr_type(*lhs).ok_or("二項元型がない")?;
+        let ty = law.expr_type(*lhs).ok_or(internal!("二項元型がない"))?;
         if result.known_value.is_none()
             && matches!(op, BinOp::Eq | BinOp::Ne)
             && matches!(ty, Type::Tuple(_))
@@ -8612,7 +8819,7 @@ impl<'a> Environment<'a> {
                         Some(items.clone())
                     }
                     None => None,
-                    _ => return Err("量化域がList/Setでない".into()),
+                    _ => return Err(internal!("量化域がList/Setでない").into()),
                 };
                 (input, members)
             } else {
@@ -8700,7 +8907,7 @@ impl<'a> Environment<'a> {
                     )
                     .is_some()
                 {
-                    return Err("量化binderが重複する".into());
+                    return Err(internal!("量化binderが重複する").into());
                 }
                 let body = self.scoped_ast_at(spec.body, &local, &scope, reading, None)?;
                 condition_failed |= body.condition_failed;
@@ -8710,7 +8917,7 @@ impl<'a> Environment<'a> {
                 values.push(match body.known_value {
                     Some(Scalar::Bool(value)) => Some(value),
                     None => None,
-                    _ => return Err("量化本体がBoolでない".into()),
+                    _ => return Err(internal!("量化本体がBoolでない").into()),
                 });
                 self.tick()?;
             }
@@ -8781,15 +8988,15 @@ impl<'a> Environment<'a> {
             entity,
         }) = known_value.as_ref()
         else {
-            return Err("範囲検査のfield ownerがRef以外".into());
+            return Err(internal!("範囲検査のfield ownerがRef以外").into());
         };
         let (snapshot, subject, entity) = (snapshot.clone(), subject.clone(), entity.clone());
         let owner = self.indexes.subject(&snapshot, &subject)?;
         if owner.ty != entity {
-            return Err("範囲検査のfield owner型不一致".into());
+            return Err(internal!("範囲検査のfield owner型不一致").into());
         }
         if name.owner() != Some(entity.as_str()) {
-            return Err("範囲検査のfield owner型不一致".into());
+            return Err(internal!("範囲検査のfield owner型不一致").into());
         }
         let field = self.indexes.field(&self.state, &snapshot, &subject, name)?;
         let position = Fact {
@@ -8820,7 +9027,7 @@ impl<'a> Environment<'a> {
             .as_ref()
             .and_then(|values| values.get(&position));
         let (known_value, scalar_scope) = if assigned.is_none() && repaired.is_some() {
-            let (_, value) = repaired.ok_or("修復slot値がない")?;
+            let (_, value) = repaired.ok_or(internal!("修復slot値がない"))?;
             scope.merge(&self.state.architecture_scope());
             (Some(value), self.state.architecture_scalar_scope(&position))
         } else if let Some(value) = assigned {
@@ -8902,7 +9109,7 @@ impl<'a> Environment<'a> {
                         if !self.completion_type_supported(&field.ty)?
                             || assigned.ty() != field.ty.erase()
                         {
-                            return Err("補完slotの元有限型が違う".into());
+                            return Err(internal!("補完slotの元有限型が違う").into());
                         }
                         let mut scalar_scope = request_base.clone();
                         scalar_scope.merge(&owner_scope);
@@ -8968,7 +9175,7 @@ impl<'a> Environment<'a> {
                 bindings,
             }) = &node.payload
             else {
-                return Err("Bool 固定変換でない".into());
+                return Err(internal!("Bool 固定変換でない").into());
             };
             if *operation == TransformOp::Difference {
                 return Ok(self
@@ -8984,18 +9191,18 @@ impl<'a> Environment<'a> {
                 || !node.reasons.is_empty()
                 || node.judgment.is_some()
             {
-                return Err("Bool 固定変換の型・構成条件が違う".into());
+                return Err(internal!("Bool 固定変換の型・構成条件が違う").into());
             }
             let mut arguments = Vec::new();
             let mut scope = Scope::default();
             for &reference in operands {
                 self.tick()?;
                 if reference.0 >= limit {
-                    return Err("Bool 変換の operand が既出でない".into());
+                    return Err(internal!("Bool 変換の operand が既出でない").into());
                 }
                 graph.expect(reference, &NodeType::Expression(Type::Bool))?;
                 if self.expression_bindings(graph, reference)? != bindings {
-                    return Err("Bool 変換の元 operand 束縛が違う".into());
+                    return Err(internal!("Bool 変換の元 operand 束縛が違う").into());
                 }
                 let operand = graph.get(reference)?;
                 let original_scope = match &operand.payload {
@@ -9014,7 +9221,7 @@ impl<'a> Environment<'a> {
                                 .program()
                                 .expressions
                                 .get(span)
-                                .ok_or("変換元量化ASTがない")?;
+                                .ok_or(internal!("変換元量化ASTがない"))?;
                             let actual = self.actual_evaluation(graph, id, bindings)?;
                             scope.merge_quantifiers(&graph.get(actual)?.scope);
                         }
@@ -9023,7 +9230,7 @@ impl<'a> Environment<'a> {
                     Some(Payload::Transform { .. }) => {
                         self.transform_scope(graph, operand, reference.0)?
                     }
-                    _ => return Err("Bool 変換が元式・固定変換以外に依存する".into()),
+                    _ => return Err(internal!("Bool 変換が元式・固定変換以外に依存する").into()),
                 };
                 scope.merge(&original_scope);
                 arguments.push(reference);
@@ -9032,14 +9239,14 @@ impl<'a> Environment<'a> {
             for binding in bindings {
                 self.tick()?;
                 if binding.value.0 >= limit {
-                    return Err("Bool 変換の束縛が既出でない".into());
+                    return Err(internal!("Bool 変換の束縛が既出でない").into());
                 }
                 graph.expect(binding.value, &NodeType::Value(binding.ty.clone()))?;
                 arguments.push(binding.value);
                 self.tick()?;
             }
             if node.arguments != arguments || node.scope != scope {
-                return Err("Bool 変換の依存・範囲が元式と違う".into());
+                return Err(internal!("Bool 変換の依存・範囲が元式と違う").into());
             }
             self.tick()?;
             Ok(scope)
@@ -9059,13 +9266,13 @@ impl<'a> Environment<'a> {
             bindings: actual_bindings,
         }) = &graph.get(expression)?.payload
         else {
-            return Err("含意の native Bool 変換がない".into());
+            return Err(internal!("含意の native Bool 変換がない").into());
         };
         if *actual != operation
             || operands.len() != operation.arity()
             || actual_bindings != bindings
         {
-            return Err("含意の変換・束縛が元 Law と違う".into());
+            return Err(internal!("含意の変換・束縛が元 Law と違う").into());
         }
         self.tick()?;
         Ok(operands)
@@ -9079,29 +9286,29 @@ impl<'a> Environment<'a> {
     ) -> Result<Option<bool>, ValidationFailure> {
         self.tick()?;
         let (body, guard) = self.application_at(graph, instance)?;
-        let guard = guard.ok_or("省略 guard に含意変換を作っている")?;
+        let guard = guard.ok_or(internal!("省略 guard に含意変換を作っている"))?;
         let (body_expression, bindings, body_value) = self.evaluation(graph, body)?;
         let (guard_expression, _, guard_value) = self.evaluation(graph, guard)?;
         let guard_value = graph.boolean(guard_value)?;
         if guard_value == Some(true) {
-            return Err("既知 true guard の適用は元 body を評価する".into());
+            return Err(internal!("既知 true guard の適用は元 body を評価する").into());
         }
         self.transform_scope(graph, graph.get(expression)?, expression.0)?;
         let violation = self.transform_operands(graph, expression, TransformOp::Not, bindings)?[0];
         let conjunction = self.transform_operands(graph, violation, TransformOp::And, bindings)?;
         if conjunction[0] != guard_expression {
-            return Err("含意の guard が元出現と違う".into());
+            return Err(internal!("含意の guard が元出現と違う").into());
         }
         let negated_body =
             self.transform_operands(graph, conjunction[1], TransformOp::Not, bindings)?;
         if negated_body != [body_expression] {
-            return Err("含意の body が元出現と違う".into());
+            return Err(internal!("含意の body が元出現と違う").into());
         }
         let value = conditional_bool(guard_value, graph.boolean(body_value)?);
         self.tick()?;
         Ok(value)
     }
-    fn expression_span(&self, graph: &Graph, r: NodeRef) -> Result<(usize, usize), String> {
+    fn expression_span(&self, graph: &Graph, r: NodeRef) -> Result<(usize, usize), InternalError> {
         match &graph.get(r)?.payload {
             Some(
                 Payload::Expression {
@@ -9113,14 +9320,14 @@ impl<'a> Environment<'a> {
                     ..
                 },
             ) => Ok(*span),
-            _ => Err("元式 span がない".into()),
+            _ => Err(internal!("元式 span がない")),
         }
     }
     fn expression_bindings<'g>(
         &self,
         graph: &'g Graph,
         r: NodeRef,
-    ) -> Result<&'g [Binding], String> {
+    ) -> Result<&'g [Binding], InternalError> {
         match &graph.get(r)?.payload {
             Some(
                 Payload::Expression { bindings, .. }
@@ -9128,14 +9335,14 @@ impl<'a> Environment<'a> {
                 | Payload::Transform { bindings, .. }
                 | Payload::ParameterizedTransform { bindings, .. },
             ) => Ok(bindings),
-            _ => Err("式束縛がない".into()),
+            _ => Err(internal!("式束縛がない")),
         }
     }
     fn evaluation<'g>(
         &self,
         graph: &'g Graph,
         r: NodeRef,
-    ) -> Result<(NodeRef, &'g [Binding], Option<NodeRef>), String> {
+    ) -> Result<(NodeRef, &'g [Binding], Option<NodeRef>), InternalError> {
         match &graph.get(r)?.payload {
             Some(Payload::Evaluation {
                 expression,
@@ -9143,7 +9350,7 @@ impl<'a> Environment<'a> {
                 value,
                 ..
             }) => Ok((*expression, bindings, *value)),
-            _ => Err("Evaluation でない".into()),
+            _ => Err(internal!("Evaluation でない")),
         }
     }
     fn check_name(
@@ -9162,7 +9369,7 @@ impl<'a> Environment<'a> {
                 || value.map(|r| graph.scalar(r)).transpose()? != Some(&expected)
                 || value.is_none_or(|r| graph.get(r).map_or(true, |node| node.arguments != [input]))
             {
-                return Err("反復binder値・元位置/要素・domain辺が違う".into());
+                return Err(internal!("反復binder値・元位置/要素・domain辺が違う").into());
             }
         } else if let Some((input, expected)) =
             self.pattern_argument(graph, span, name, bindings)?
@@ -9172,21 +9379,21 @@ impl<'a> Environment<'a> {
                 || value.map(|r| graph.scalar(r)).transpose()? != Some(&expected)
                 || value.is_none_or(|r| graph.get(r).map_or(true, |n| n.arguments != [input]))
             {
-                return Err("pattern binderの元path・値・実scrutinee辺が違う".into());
+                return Err(internal!("pattern binderの元path・値・実scrutinee辺が違う").into());
             }
         } else if let Some(input) = self.lexical_argument(graph, span, name, bindings)? {
             if children.len() != 1
                 || value != self.evaluation(graph, input)?.2
                 || value != children[0]
             {
-                return Err("lexical 名が実右辺の値を参照していない".into());
+                return Err(internal!("lexical 名が実右辺の値を参照していない").into());
             }
         } else if let Some(argument) = self.call_parameter(graph, name)? {
             if children.len() != 1
                 || value != self.evaluation(graph, argument)?.2
                 || value != children[0]
             {
-                return Err("callee parameterが実引数値を保持しない".into());
+                return Err(internal!("callee parameterが実引数値を保持しない").into());
             }
         } else {
             self.check_parameter(graph, bindings, name, value)?;
@@ -9209,10 +9416,10 @@ impl<'a> Environment<'a> {
             }
             self.tick()?;
         }
-        let b = binding.ok_or("元 parameter 束縛がない")?;
+        let b = binding.ok_or(internal!("元 parameter 束縛がない"))?;
         graph.expect(b.value, &NodeType::Value(b.ty.clone()))?;
         if value != Some(b.value) {
-            return Err("parameter の値 Ref 不一致".into());
+            return Err(internal!("parameter の値 Ref 不一致").into());
         }
         Ok(())
     }
@@ -9228,14 +9435,14 @@ impl<'a> Environment<'a> {
         let chained = self.dotted_prefix(span)?.is_some_and(|(id, count)| {
             count > 1 && matches!(&self.indexes.inputs.law().exprs()[id].kind, ExprKind::Dotted(parts) if parts.len() > 2)
         });
-        let base = base.ok_or("field の base が未確定")?;
+        let base = base.ok_or(internal!("field の base が未確定"))?;
         let Scalar::Subject {
             snapshot,
             subject,
             entity,
         } = graph.scalar(base)?
         else {
-            return Err("field の base 型不一致".into());
+            return Err(internal!("field の base 型不一致").into());
         };
         let field =
             self.indexes
@@ -9248,7 +9455,7 @@ impl<'a> Environment<'a> {
         };
         if let Some((assigned, _)) = self.state.architecture_value(&fact) {
             if value != Some(assigned) {
-                return Err("field評価が修復Architectureの値を読まない".into());
+                return Err(internal!("field評価が修復Architectureの値を読まない").into());
             }
             self.validate_at(graph, graph.get(assigned)?, assigned.0)?;
             return Ok(());
@@ -9263,7 +9470,7 @@ impl<'a> Environment<'a> {
                 };
                 let assigned = self
                     .completion_slot(graph, &fact)?
-                    .ok_or("元slotの補完代入がない")?;
+                    .ok_or(internal!("元slotの補完代入がない"))?;
                 let node = graph.get(actual)?;
                 if node.arguments.len() != 3
                     || node.arguments[0] != expression
@@ -9272,7 +9479,7 @@ impl<'a> Environment<'a> {
                     || graph.scalar(actual)? != graph.scalar(assigned)?
                     || graph.context_at(actual.0) != self.current_context(graph)
                 {
-                    return Err("field値が元補完producerと違う".into());
+                    return Err(internal!("field値が元補完producerと違う").into());
                 }
                 self.validate_at(graph, node, actual.0)?;
                 Ok(())
@@ -9303,7 +9510,7 @@ impl<'a> Environment<'a> {
             {
                 Ok(())
             }
-            _ => Err("field の元 slot と導出値が合わない".into()),
+            _ => Err(internal!("field の元 slot と導出値が合わない").into()),
         }
     }
     fn recheck_evaluation(&self, graph: &Graph, root: NodeRef) -> Result<(), ValidationFailure> {
@@ -9337,7 +9544,7 @@ impl<'a> Environment<'a> {
             for argument in &node.arguments {
                 self.tick()?;
                 if argument.0 >= reference.0 {
-                    return Err("再検査する評価の引数が既出でない".into());
+                    return Err(internal!("再検査する評価の引数が既出でない").into());
                 }
                 self.tick()?;
             }
@@ -9349,7 +9556,7 @@ impl<'a> Environment<'a> {
                 ..
             }) = &node.payload
             else {
-                return Err("再検査対象が Evaluation でない".into());
+                return Err(internal!("再検査対象が Evaluation でない").into());
             };
             // Bool Scalar は子 Evaluation を使う。値の再検査へ入る前に payload の
             // 全ての計算辺も既出と確認し、未来の Scalar を経由する循環を拒否する。
@@ -9359,7 +9566,7 @@ impl<'a> Environment<'a> {
             {
                 self.tick()?;
                 if dependency.0 >= reference.0 {
-                    return Err("再検査する評価 payload の参照が既出でない".into());
+                    return Err(internal!("再検査する評価 payload の参照が既出でない").into());
                 }
                 graph.get(dependency)?;
                 self.tick()?;
@@ -9374,7 +9581,7 @@ impl<'a> Environment<'a> {
                 {
                     self.tick()?;
                     if dependency.0 >= reference.0 {
-                        return Err("再検査する評価 part の参照が既出でない".into());
+                        return Err(internal!("再検査する評価 part の参照が既出でない").into());
                     }
                     graph.get(*dependency)?;
                     self.tick()?;
@@ -9460,7 +9667,7 @@ impl<'a> Environment<'a> {
                 for &child in &part.children {
                     self.tick()?;
                     if child.0 >= reference.0 {
-                        return Err("再検査する子評価が既出でない".into());
+                        return Err(internal!("再検査する子評価が既出でない").into());
                     }
                     pending.push(child);
                     support.extend(graph.get(child)?.support.iter().cloned());
@@ -9480,7 +9687,7 @@ impl<'a> Environment<'a> {
             support.sort();
             support.dedup();
             if node.support != support {
-                return Err("評価の支持が元値・子評価に合わない".into());
+                return Err(internal!("評価の支持が元値・子評価に合わない").into());
             }
             self.tick()?;
         }
@@ -9501,7 +9708,7 @@ impl<'a> Environment<'a> {
             ..
         }) = &instance.payload
         else {
-            return Err("LawInstance がない".into());
+            return Err(internal!("LawInstance がない").into());
         };
         let declaration = self
             .indexes
@@ -9509,24 +9716,24 @@ impl<'a> Environment<'a> {
             .law()
             .declarations()
             .get(name)
-            .ok_or("適用の Law 宣言がない")?;
+            .ok_or(internal!("適用の Law 宣言がない"))?;
         let archsig_input::law::model::Signature::Law {
             body: source_body,
             guard: source_guard,
             ..
         } = &declaration.signature
         else {
-            return Err("適用対象が Law でない".into());
+            return Err(internal!("適用対象が Law でない").into());
         };
         self.source_matches(graph, *body, *source_body)?;
         match (guard, source_guard) {
             (Some(expression), Some(id)) => self.source_matches(graph, *expression, *id)?,
             (None, None) => {}
-            _ => return Err("適用 guard の元宣言不一致".into()),
+            _ => return Err(internal!("適用 guard の元宣言不一致").into()),
         }
         let count = 1 + usize::from(guard.is_some());
         if instance.arguments.len() != count + bindings.len() {
-            return Err("LawInstance の適用引数数が違う".into());
+            return Err(internal!("LawInstance の適用引数数が違う").into());
         }
         let body_evaluation = instance.arguments[0];
         let (expression, body_bindings, _) = self.evaluation(graph, body_evaluation)?;
@@ -9534,7 +9741,7 @@ impl<'a> Environment<'a> {
             || body_bindings != bindings
             || self.expression_bindings(graph, expression)? != bindings
         {
-            return Err("LawInstance の元 body 評価・束縛不一致".into());
+            return Err(internal!("LawInstance の元 body 評価・束縛不一致").into());
         }
         self.recheck_evaluation(graph, body_evaluation)?;
         let guard_evaluation = if let Some(guard) = guard {
@@ -9544,7 +9751,7 @@ impl<'a> Environment<'a> {
                 || guard_bindings != bindings
                 || self.expression_bindings(graph, expression)? != bindings
             {
-                return Err("guard 評価の元出現・束縛不一致".into());
+                return Err(internal!("guard 評価の元出現・束縛不一致").into());
             }
             graph.boolean(value)?;
             self.recheck_evaluation(graph, reference)?;
@@ -9555,14 +9762,14 @@ impl<'a> Environment<'a> {
         for (binding, &argument) in bindings.iter().zip(&instance.arguments[count..]) {
             self.tick()?;
             if binding.value != argument {
-                return Err("適用根拠の parameter identity 不一致".into());
+                return Err(internal!("適用根拠の parameter identity 不一致").into());
             }
             self.tick()?;
         }
         let (support, scope) =
             self.application_context(graph, body_evaluation, guard_evaluation)?;
         if instance.support != support || instance.scope != scope {
-            return Err("LawInstance の適用支持・範囲不一致".into());
+            return Err(internal!("LawInstance の適用支持・範囲不一致").into());
         }
         Ok((body_evaluation, guard_evaluation))
     }
@@ -9593,7 +9800,7 @@ impl<'a> Environment<'a> {
         for reference in &node.arguments {
             self.tick()?;
             if reference.0 >= instance.0 {
-                return Err("LawInstanceの適用引数が既出でない".into());
+                return Err(internal!("LawInstanceの適用引数が既出でない").into());
             }
             self.tick()?;
         }
@@ -9606,9 +9813,9 @@ impl<'a> Environment<'a> {
         instance: NodeRef,
     ) -> Result<(), ValidationFailure> {
         let (body, guard) = self.application_at(graph, instance)?;
-        let guard = guard.ok_or("省略 guard に適用集約評価を作っている")?;
+        let guard = guard.ok_or(internal!("省略 guard に適用集約評価を作っている"))?;
         if node.arguments != [instance, body, guard] {
-            return Err("適用評価の元引数不一致".into());
+            return Err(internal!("適用評価の元引数不一致").into());
         }
         let Some(Payload::Evaluation {
             expression,
@@ -9619,7 +9826,7 @@ impl<'a> Environment<'a> {
             ..
         }) = &node.payload
         else {
-            return Err("適用評価でない".into());
+            return Err(internal!("適用評価でない").into());
         };
         let (body_expression, body_bindings, body_value) = self.evaluation(graph, body)?;
         let guard_value = graph.boolean(self.evaluation(graph, guard)?.2)?;
@@ -9630,23 +9837,25 @@ impl<'a> Environment<'a> {
         };
         if bindings != body_bindings || *applicability != expected_applicability || parts.len() != 2
         {
-            return Err("適用評価の元束縛・適用表示不一致".into());
+            return Err(internal!("適用評価の元束縛・適用表示不一致").into());
         }
         if guard_value == Some(true) {
             if *expression != body_expression || *value != body_value {
-                return Err("既知 true guard の元 body 評価不一致".into());
+                return Err(internal!("既知 true guard の元 body 評価不一致").into());
             }
         } else {
             let expected = self.conditional_value(graph, instance, *expression)?;
             if graph.boolean(*value)? != expected {
-                return Err("条件付き Law 評価が全補完での含意値と違う".into());
+                return Err(internal!("条件付き Law 評価が全補完での含意値と違う").into());
             }
             if let Some(value) = value {
                 let scalar = graph.get(*value)?;
                 if !matches!(&scalar.rule, Rule::Construction("evaluation"))
                     || scalar.arguments != [instance, *expression]
                 {
-                    return Err("条件付き Law 値が当該の元式・適用から導出されていない".into());
+                    return Err(
+                        internal!("条件付き Law 値が当該の元式・適用から導出されていない").into(),
+                    );
                 }
                 self.validate_at(graph, scalar, value.0)?;
             }
@@ -9665,16 +9874,20 @@ impl<'a> Environment<'a> {
                     span: self.expression_span(graph, expression)?,
                 })
                 || part.value != value
-                || part.residual != original.last().ok_or("元評価 part がない")?.residual
+                || part.residual
+                    != original
+                        .last()
+                        .ok_or(internal!("元評価 part がない"))?
+                        .residual
                 || part.children != [evaluation]
             {
-                return Err("適用評価 part の出現・値・子評価不一致".into());
+                return Err(internal!("適用評価 part の出現・値・子評価不一致").into());
             }
             self.tick()?;
         }
         let (support, scope) = self.application_context(graph, body, Some(guard))?;
         if node.support != support || node.scope != scope {
-            return Err("適用評価の支持・範囲不一致".into());
+            return Err(internal!("適用評価の支持・範囲不一致").into());
         }
         Ok(())
     }
@@ -9688,7 +9901,7 @@ impl<'a> Environment<'a> {
         if guard.is_some() {
             self.validate_law_evaluation(graph, graph.get(evaluation)?, instance)?;
         } else if evaluation != body {
-            return Err("省略 guard の元 body 評価不一致".into());
+            return Err(internal!("省略 guard の元 body 評価不一致").into());
         }
         Ok(body)
     }
@@ -9699,7 +9912,7 @@ impl<'a> Environment<'a> {
         instance: NodeRef,
     ) -> Result<(NodeRef, NodeRef, NodeRef), ValidationFailure> {
         if node.arguments.len() != 2 || node.arguments[0] != instance {
-            return Err("証拠の構成入力不一致".into());
+            return Err(internal!("証拠の構成入力不一致").into());
         }
         let evaluation = node.arguments[1];
         let body = self.instance_evaluation(graph, instance, evaluation)?;
@@ -9712,7 +9925,7 @@ impl<'a> Environment<'a> {
             .program()
             .expressions
             .get(&span)
-            .ok_or("証拠の元 AST がない")?];
+            .ok_or(internal!("証拠の元 AST がない"))?];
         let (law_expression, _, law_value) = self.evaluation(graph, evaluation)?;
         let conditional = matches!(
             &graph.get(law_expression)?.payload,
@@ -9723,54 +9936,58 @@ impl<'a> Environment<'a> {
                 unreachable!()
             };
             if parts[0].children.len() != 2 {
-                return Err("比較証拠の子評価数".into());
+                return Err(internal!("比較証拠の子評価数").into());
             }
             let (_, _, left) = self.evaluation(graph, parts[0].children[0])?;
             let (_, _, right) = self.evaluation(graph, parts[0].children[1])?;
             if left.is_none() || right.is_none() {
-                let result = value.ok_or("未知左右の比較に確定Boolがない")?;
+                let result = value.ok_or(internal!("未知左右の比較に確定Boolがない"))?;
                 let scalar = graph.get(result)?;
                 self.affine_comparison_source_analysis(graph, scalar, result.0)?;
                 if scalar.arguments[..3] != [expression, parts[0].children[0], parts[0].children[1]]
                     || parts[0].residual != Some(scalar.arguments[4])
                     || graph.get(body)?.evidence != scalar.evidence
                 {
-                    return Err("未知左右の比較証拠が元実左右・残差・normalizationと違う".into());
+                    return Err(internal!(
+                        "未知左右の比較証拠が元実左右・残差・normalizationと違う"
+                    )
+                    .into());
                 }
                 return Ok((evaluation, parts[0].children[0], parts[0].children[1]));
             }
             Ok((
                 evaluation,
-                left.ok_or("左辺が未確定")?,
-                right.ok_or("右辺が未確定")?,
+                left.ok_or(internal!("左辺が未確定"))?,
+                right.ok_or(internal!("右辺が未確定"))?,
             ))
         } else {
-            let left = if conditional { law_value } else { value }.ok_or("Bool Law が未確定")?;
+            let left = if conditional { law_value } else { value }
+                .ok_or(internal!("Bool Law が未確定"))?;
             let supplied_right = match &node.payload {
                 Some(Payload::Counterexample { right, .. }) => *right,
                 Some(Payload::EvaluationEvidence { rhs, .. }) => *rhs,
-                _ => return Err("証拠 payload の種類".into()),
+                _ => return Err(internal!("証拠 payload の種類").into()),
             };
             if graph.scalar(supplied_right)? != &Scalar::Bool(true)
                 || graph.get(supplied_right)?.arguments != [instance]
             {
-                return Err("Bool 証拠の true 要求が違う".into());
+                return Err(internal!("Bool 証拠の true 要求が違う").into());
             }
             let (body, guard) = self.application_at(graph, instance)?;
             let expected = self.application_context(graph, body, guard)?.1;
             if graph.get(supplied_right)?.scope != expected {
-                return Err("固定true Scalarの範囲が元Law適用と違う".into());
+                return Err(internal!("固定true Scalarの範囲が元Law適用と違う").into());
             }
             Ok((evaluation, left, supplied_right))
         }
     }
-    fn source_matches(&self, graph: &Graph, r: NodeRef, id: usize) -> Result<(), String> {
+    fn source_matches(&self, graph: &Graph, r: NodeRef, id: usize) -> Result<(), InternalError> {
         match &graph.get(r)?.payload {
             Some(Payload::Expression {
                 location: Location::Law { span },
                 ..
             }) if *span == self.indexes.inputs.law().exprs()[id].span => Ok(()),
-            _ => Err("元式との出現不一致".into()),
+            _ => Err(internal!("元式との出現不一致")),
         }
     }
     fn validate_type_binder_evaluation(
@@ -9798,7 +10015,7 @@ impl<'a> Environment<'a> {
         else {
             return Ok(false);
         };
-        let value = value.ok_or("型binder Evalの値がない")?;
+        let value = value.ok_or(internal!("型binder Evalの値がない"))?;
         if expression.0 >= limit
             || value.0 >= limit
             || domain.0 >= limit
@@ -9819,7 +10036,7 @@ impl<'a> Environment<'a> {
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
         {
-            return Err("型binder Evaluationの元出現/値/Domain/Contextが違う".into());
+            return Err(internal!("型binder Evaluationの元出現/値/Domain/Contextが違う").into());
         }
         self.validate_at(graph, graph.get(*expression)?, expression.0)?;
         self.validate_at(graph, graph.get(value)?, value.0)?;
@@ -9828,7 +10045,7 @@ impl<'a> Environment<'a> {
             || node.support != analysis.support
             || analysis.known_value.as_ref() != Some(&expected)
         {
-            return Err("型binder Evaluationの元Scope/支持が違う".into());
+            return Err(internal!("型binder Evaluationの元Scope/支持が違う").into());
         }
         Ok(true)
     }
@@ -9844,7 +10061,7 @@ impl<'a> Environment<'a> {
             || graph.context_at(source.0) != self.current_context(graph)
             || input.is_some_and(|input| graph.context_at(input.0) != self.current_context(graph))
         {
-            return Err("量化元Source/collectionの既出性・Contextが違う".into());
+            return Err(internal!("量化元Source/collectionの既出性・Contextが違う").into());
         }
         let id = *self
             .indexes
@@ -9853,12 +10070,12 @@ impl<'a> Environment<'a> {
             .program()
             .expressions
             .get(&self.expression_span(graph, source)?)
-            .ok_or("量化元ASTがない")?;
+            .ok_or(internal!("量化元ASTがない"))?;
         let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
         self.validate_at(graph, graph.get(source)?, source.0)?;
         let Some(input) = input else {
             if spec.domain.is_some() {
-                return Err("In量化のcollection辺がない".into());
+                return Err(internal!("In量化のcollection辺がない").into());
             }
             let values = self.owned_type_domain(
                 graph,
@@ -9869,7 +10086,9 @@ impl<'a> Environment<'a> {
             return Ok((
                 spec,
                 super::finite::Enumeration {
-                    values: values.values.ok_or("未知ownerから完全型Domainを生成した")?,
+                    values: values
+                        .values
+                        .ok_or(internal!("未知ownerから完全型Domainを生成した"))?,
                     scope: values.scope,
                     support: values.support,
                 },
@@ -9880,10 +10099,11 @@ impl<'a> Environment<'a> {
         self.source_matches(
             graph,
             actual,
-            spec.domain.ok_or("型量化にcollection元式を付けた")?,
+            spec.domain
+                .ok_or(internal!("型量化にcollection元式を付けた"))?,
         )?;
         if self.expression_bindings(graph, source)? != bindings {
-            return Err("量化collectionの宣言束縛が違う".into());
+            return Err(internal!("量化collectionの宣言束縛が違う").into());
         }
         let items = match value.map(|r| graph.scalar(r)).transpose()? {
             Some(Scalar::List { element, items } | Scalar::Set { element, items })
@@ -9891,7 +10111,7 @@ impl<'a> Environment<'a> {
             {
                 items
             }
-            _ => return Err("量化の既知collection/typeがない".into()),
+            _ => return Err(internal!("量化の既知collection/typeがない").into()),
         };
         let Scalar::Set { ref items, .. } = data::set(spec.element.clone(), items, &self.control)?
         else {
@@ -9913,7 +10133,7 @@ impl<'a> Environment<'a> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         if node.arguments.is_empty() || !matches!(&node.rule, Rule::Construction("domain")) {
-            return Err("Domain要素の元辺が違う".into());
+            return Err(internal!("Domain要素の元辺が違う").into());
         }
         let source = node.arguments[0];
         let id = *self
@@ -9923,7 +10143,7 @@ impl<'a> Environment<'a> {
             .program()
             .expressions
             .get(&self.expression_span(graph, source)?)
-            .ok_or("Domain要素の元ASTがない")?;
+            .ok_or(internal!("Domain要素の元ASTがない"))?;
         let original = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
         let mut expected = vec![source];
         if original.domain.is_some() {
@@ -9931,7 +10151,7 @@ impl<'a> Environment<'a> {
                 *node
                     .arguments
                     .get(1)
-                    .ok_or("In Domain要素にcollection辺がない")?,
+                    .ok_or(internal!("In Domain要素にcollection辺がない"))?,
             );
         } else {
             expected.extend(self.owned_type_arguments(
@@ -9941,7 +10161,7 @@ impl<'a> Environment<'a> {
             )?);
         }
         if node.arguments != expected {
-            return Err("Domain要素の元owner producer列が違う".into());
+            return Err(internal!("Domain要素の元owner producer列が違う").into());
         }
         let (spec, enumeration) = self.quant_input(
             graph,
@@ -9950,7 +10170,7 @@ impl<'a> Environment<'a> {
             limit,
         )?;
         let Some(Payload::Scalar(value)) = &node.payload else {
-            return Err("Domain要素が通常値でない".into());
+            return Err(internal!("Domain要素が通常値でない").into());
         };
         let input = graph.get(if spec.domain.is_some() {
             node.arguments[1]
@@ -9966,7 +10186,7 @@ impl<'a> Environment<'a> {
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
         {
-            return Err("Domain要素が元collection/型/支持/Scopeと違う".into());
+            return Err(internal!("Domain要素が元collection/型/支持/Scopeと違う").into());
         }
         Ok(())
     }
@@ -9977,9 +10197,12 @@ impl<'a> Environment<'a> {
         limit: usize,
     ) -> Result<(), ValidationFailure> {
         let Some(Payload::Domain { ty, elements }) = &node.payload else {
-            return Err("Domain payloadがない".into());
+            return Err(internal!("Domain payloadがない").into());
         };
-        let source = *node.arguments.first().ok_or("Domainの元Sourceがない")?;
+        let source = *node
+            .arguments
+            .first()
+            .ok_or(internal!("Domainの元Sourceがない"))?;
         let spec = quantifier::spec(
             self.indexes.inputs.law(),
             *self
@@ -9989,7 +10212,7 @@ impl<'a> Environment<'a> {
                 .program()
                 .expressions
                 .get(&self.expression_span(graph, source)?)
-                .ok_or("Domain元ASTがない")?,
+                .ok_or(internal!("Domain元ASTがない"))?,
             &self.control,
         )?;
         let offset = 1 + usize::from(spec.domain.is_some()) + spec.owners.len();
@@ -9999,7 +10222,7 @@ impl<'a> Environment<'a> {
                 *node
                     .arguments
                     .get(1)
-                    .ok_or("In Domainにcollection辺がない")?,
+                    .ok_or(internal!("In Domainにcollection辺がない"))?,
             );
         } else {
             expected.extend(
@@ -10012,7 +10235,7 @@ impl<'a> Environment<'a> {
                         .program()
                         .expressions
                         .get(&self.expression_span(graph, source)?)
-                        .ok_or("型Domain元ASTがない")?,
+                        .ok_or(internal!("型Domain元ASTがない"))?,
                     self.expression_bindings(graph, source)?,
                 )?,
             );
@@ -10023,7 +10246,7 @@ impl<'a> Environment<'a> {
             || node.arguments[offset..] != *elements
             || node.arguments.get(..offset) != Some(expected.as_slice())
         {
-            return Err("Domainの型/規則/元辺が違う".into());
+            return Err(internal!("Domainの型/規則/元辺が違う").into());
         }
         let (spec, enumeration) = self.quant_input(
             graph,
@@ -10036,7 +10259,7 @@ impl<'a> Environment<'a> {
             limit,
         )?;
         if *ty != spec.element || elements.len() != enumeration.values.len() {
-            return Err("Domainの元型/全要素数が違う".into());
+            return Err(internal!("Domainの元型/全要素数が違う").into());
         }
         let mut seen = Vec::new();
         for reference in elements {
@@ -10052,18 +10275,18 @@ impl<'a> Environment<'a> {
             self.tick()?;
             if reference.0 >= limit || graph.context_at(reference.0) != self.current_context(graph)
             {
-                return Err("Domain要素の既出Contextが違う".into());
+                return Err(internal!("Domain要素の既出Contextが違う").into());
             }
             let member = graph.get(*reference)?;
             self.validate_at(graph, member, reference.0)?;
             if member.arguments != node.arguments[..offset] {
-                return Err("Domain要素が別collection出現に属する".into());
+                return Err(internal!("Domain要素が別collection出現に属する").into());
             }
             let value = graph.scalar(*reference)?;
             if !data::contains(&enumeration.values, value, &self.control)?
                 || data::contains(&seen, value, &self.control)?
             {
-                return Err("Domain要素の漏れ/重複/別値".into());
+                return Err(internal!("Domain要素の漏れ/重複/別値").into());
             }
             seen.push(value.clone());
         }
@@ -10077,7 +10300,7 @@ impl<'a> Environment<'a> {
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
         {
-            return Err("DomainのScope/支持/証拠が違う".into());
+            return Err(internal!("DomainのScope/支持/証拠が違う").into());
         }
         Ok(())
     }
@@ -10089,13 +10312,15 @@ impl<'a> Environment<'a> {
         claimed: &Scope,
         limit: usize,
     ) -> Result<(SourceAnalysis, Option<NodeRef>), ValidationFailure> {
-        let input = *children.first().ok_or("量化collection辺がない")?;
+        let input = *children
+            .first()
+            .ok_or(internal!("量化collection辺がない"))?;
         if source.0 >= limit
             || input.0 >= limit
             || graph.context_at(source.0) != self.current_context(graph)
             || graph.context_at(input.0) != self.current_context(graph)
         {
-            return Err("量化元の既出Contextが違う".into());
+            return Err(internal!("量化元の既出Contextが違う").into());
         }
         let span = self.expression_span(graph, source)?;
         let id = *self
@@ -10105,7 +10330,7 @@ impl<'a> Environment<'a> {
             .program()
             .expressions
             .get(&span)
-            .ok_or("量化ASTがない")?;
+            .ok_or(internal!("量化ASTがない"))?;
         let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
         self.validate_at(graph, graph.get(source)?, source.0)?;
         let (bindings, known) = if let Some(domain) = spec.domain {
@@ -10118,17 +10343,17 @@ impl<'a> Environment<'a> {
             (self.expression_bindings(graph, source)?, true)
         };
         if self.expression_bindings(graph, source)? != bindings {
-            return Err("量化元束縛が違う".into());
+            return Err(internal!("量化元束縛が違う").into());
         }
         let mut own = claimed
             .quantifiers
             .iter()
             .filter(|q| q.occurrence == span && q.context == Some(self.current_context(graph)));
-        let descriptor = own.next().ok_or("量化Scopeがない")?;
+        let descriptor = own.next().ok_or(internal!("量化Scopeがない"))?;
         if own.next().is_some()
             || *descriptor != spec.descriptor(descriptor.domain, Some(self.current_context(graph)))
         {
-            return Err("量化Scopeのkind/name/type/元出現が違う".into());
+            return Err(internal!("量化Scopeのkind/name/type/元出現が違う").into());
         }
         let mut scope = graph.get(input)?.scope.clone();
         scope.add_quantifier(descriptor.clone());
@@ -10140,13 +10365,13 @@ impl<'a> Environment<'a> {
         match known {
             false => {
                 if finite.is_some() || children.len() != 1 {
-                    return Err("未知collectionに域/instanceがある".into());
+                    return Err(internal!("未知collectionに域/instanceがある").into());
                 }
             }
             true => {
-                let domain = finite.ok_or("既知量化に有限Domainがない")?;
+                let domain = finite.ok_or(internal!("既知量化に有限Domainがない"))?;
                 if domain.0 >= limit || graph.context_at(domain.0) != self.current_context(graph) {
-                    return Err("量化Domainの既出Contextが違う".into());
+                    return Err(internal!("量化Domainの既出Contextが違う").into());
                 }
                 self.validate_at(graph, graph.get(domain)?, domain.0)?;
                 if if spec.domain.is_some() {
@@ -10154,22 +10379,27 @@ impl<'a> Environment<'a> {
                 } else {
                     domain != input || graph.get(domain)?.arguments.first() != Some(&source)
                 } {
-                    return Err("量化Domainが別元collectionに属する".into());
+                    return Err(internal!("量化Domainが別元collectionに属する").into());
                 }
                 let Some(Payload::Domain { elements, .. }) = &graph.get(domain)?.payload else {
-                    return Err("量化域が有限でない".into());
+                    return Err(internal!("量化域が有限でない").into());
                 };
                 if children.len() != 1 + elements.len() {
-                    return Err("量化instance全coverageの件数が違う".into());
+                    return Err(internal!("量化instance全coverageの件数が違う").into());
                 }
                 for body in &children[1..] {
                     self.tick()?;
                     if body.0 >= limit {
-                        return Err("量化bodyが未来を指す".into());
+                        return Err(internal!("量化bodyが未来を指す").into());
                     }
                     let context = graph.context_at(body.0);
-                    let index = context.iteration.ok_or("量化bodyにbinderContextがない")?;
-                    let record = graph.iterations.get(index).ok_or("量化binder元がない")?;
+                    let index = context
+                        .iteration
+                        .ok_or(internal!("量化bodyにbinderContextがない"))?;
+                    let record = graph
+                        .iterations
+                        .get(index)
+                        .ok_or(internal!("量化binder元がない"))?;
                     if record.caller != self.current_context(graph)
                         || record.source != source
                         || record.domain != input
@@ -10179,7 +10409,7 @@ impl<'a> Environment<'a> {
                         || context.request != record.caller.request
                         || context.frame != record.caller.frame
                     {
-                        return Err("量化bodyの元域/binder/親Contextが違う".into());
+                        return Err(internal!("量化bodyの元域/binder/親Contextが違う").into());
                     }
                     let (_, member, _) = self.iteration_input(graph, index)?;
                     if !matches!(record.member, super::call::Member::SetElement(_))
@@ -10188,14 +10418,14 @@ impl<'a> Environment<'a> {
                             .iter()
                             .any(|r| graph.scalar(*r).is_ok_and(|v| v == &member))
                     {
-                        return Err("量化binderの漏れ/重複/別要素".into());
+                        return Err(internal!("量化binderの漏れ/重複/別要素").into());
                     }
                     seen.push(member);
                     self.recheck_evaluation(graph, *body)?;
                     let (expression, actual, value) = self.evaluation(graph, *body)?;
                     self.source_matches(graph, expression, spec.body)?;
                     if actual != bindings {
-                        return Err("量化bodyの元宣言束縛が違う".into());
+                        return Err(internal!("量化bodyの元宣言束縛が違う").into());
                     }
                     results.push(graph.boolean(value)?);
                     scope.merge(&graph.get(*body)?.scope);
@@ -10226,7 +10456,7 @@ impl<'a> Environment<'a> {
             || !analysis.scope.source_compatible(&scope)
             || !graph.get(source)?.scope.source_compatible(&scope)
         {
-            return Err("量化の元AST/Bool集約/支持/Scopeが違う".into());
+            return Err(internal!("量化の元AST/Bool集約/支持/Scopeが違う").into());
         }
         Ok((
             SourceAnalysis {
@@ -10255,7 +10485,7 @@ impl<'a> Environment<'a> {
             location: Location::Law { span },
         } = &node.rule
         else {
-            return Err("量化Scalarの元規則がない".into());
+            return Err(internal!("量化Scalarの元規則がない").into());
         };
         let mut descriptors =
             node.scope.quantifiers.iter().filter(|q| {
@@ -10263,18 +10493,20 @@ impl<'a> Environment<'a> {
             });
         let descriptor = descriptors
             .next()
-            .ok_or("量化Scalarに自身の量化Scopeがない")?;
+            .ok_or(internal!("量化Scalarに自身の量化Scopeがない"))?;
         if descriptors.next().is_some() {
-            return Err("量化Scalarに自身の域が複数ある".into());
+            return Err(internal!("量化Scalarに自身の域が複数ある").into());
         }
-        let finite = descriptor.domain.ok_or("量化Scalarの実Domainがない")?;
+        let finite = descriptor
+            .domain
+            .ok_or(internal!("量化Scalarの実Domainがない"))?;
         let source = *graph
             .get(finite)?
             .arguments
             .first()
-            .ok_or("量化ScalarのDomain元Sourceがない")?;
+            .ok_or(internal!("量化ScalarのDomain元Sourceがない"))?;
         if self.expression_span(graph, source)? != *span {
-            return Err("量化Scalarが別元出現のDomainを指す".into());
+            return Err(internal!("量化Scalarが別元出現のDomainを指す").into());
         }
         let spec = quantifier::spec(
             self.indexes.inputs.law(),
@@ -10285,7 +10517,7 @@ impl<'a> Environment<'a> {
                 .program()
                 .expressions
                 .get(span)
-                .ok_or("量化Scalarの元ASTがない")?,
+                .ok_or(internal!("量化Scalarの元ASTがない"))?,
             &self.control,
         )?;
         if !spec.owners.is_empty()
@@ -10297,7 +10529,7 @@ impl<'a> Environment<'a> {
                 self.expression_bindings(graph, source)?,
             )?
         {
-            return Err("Owned型量化Scalarが元Sourceの実producerと違う".into());
+            return Err(internal!("Owned型量化Scalarが元Sourceの実producerと違う").into());
         }
         let (analysis, domain) =
             self.quant_parts(graph, source, &node.arguments, &node.scope, limit)?;
@@ -10305,7 +10537,7 @@ impl<'a> Environment<'a> {
             || node.scope != analysis.scope
             || node.support != analysis.support
         {
-            return Err("量化Scalarの値/元Scope/支持が違う".into());
+            return Err(internal!("量化Scalarの値/元Scope/支持が違う").into());
         }
         self.quant_evidence(
             graph,
@@ -10351,7 +10583,7 @@ impl<'a> Environment<'a> {
             || *applicability != "applicable"
             || self.expression_bindings(graph, *expression)? != bindings
         {
-            return Err("量化Evaluationの元part/束縛が違う".into());
+            return Err(internal!("量化Evaluationの元part/束縛が違う").into());
         }
         let spec = quantifier::spec(self.indexes.inputs.law(), *id, &self.control)?;
         if spec.domain.is_none()
@@ -10368,7 +10600,7 @@ impl<'a> Environment<'a> {
                 .iter()
                 .find(|q| q.occurrence == span && q.context == Some(self.current_context(graph)))
                 .and_then(|q| q.domain)
-                .ok_or("型量化EvalのDomainがない")?;
+                .ok_or(internal!("型量化EvalのDomainがない"))?;
             children.insert(0, domain);
         }
         let (analysis, domain) =
@@ -10377,25 +10609,25 @@ impl<'a> Environment<'a> {
             || node.support != analysis.support
             || value.map(|r| graph.scalar(r)).transpose() != Ok(analysis.known_value.as_ref())
         {
-            return Err("量化Evaluationの値/Scope/支持が違う".into());
+            return Err(internal!("量化Evaluationの値/Scope/支持が違う").into());
         }
         let expected: Vec<_> = std::iter::once(*expression)
             .chain(parts[0].children.iter().copied())
             .chain(*value)
             .collect();
         if node.arguments != expected {
-            return Err("量化Evaluationの元依存辺が違う".into());
+            return Err(internal!("量化Evaluationの元依存辺が違う").into());
         }
         if let Some(value) = value {
             if value.0 >= limit
                 || graph.context_at(value.0) != self.current_context(graph)
                 || graph.get(*value)?.arguments != children
             {
-                return Err("量化結果のproducerが違う".into());
+                return Err(internal!("量化結果のproducerが違う").into());
             }
             self.validate_at(graph, graph.get(*value)?, value.0)?;
             if graph.get(*value)?.evidence != node.evidence {
-                return Err("量化Scalar/Evaluationの証拠が違う".into());
+                return Err(internal!("量化Scalar/Evaluationの証拠が違う").into());
             }
         }
         self.quant_evidence(
@@ -10418,7 +10650,7 @@ impl<'a> Environment<'a> {
                 .zip(&reasons)
                 .any(|(a, b)| a.wire() != b.wire())
         {
-            return Err("量化が元missing/理由を捨てている".into());
+            return Err(internal!("量化が元missing/理由を捨てている").into());
         }
         Ok(true)
     }
@@ -10438,7 +10670,7 @@ impl<'a> Environment<'a> {
             .program()
             .expressions
             .get(&self.expression_span(graph, source)?)
-            .ok_or("証拠量化ASTがない")?;
+            .ok_or(internal!("証拠量化ASTがない"))?;
         let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
         let exhaustive = matches!(
             (&analysis.known_value, spec.kind),
@@ -10466,7 +10698,7 @@ impl<'a> Environment<'a> {
                     && graph.get(*reference)?.arguments.first() == Some(&source) =>
                 {
                     if full {
-                        return Err("全検査証拠が重複する".into());
+                        return Err(internal!("全検査証拠が重複する").into());
                     }
                     full = true;
                 }
@@ -10479,17 +10711,17 @@ impl<'a> Environment<'a> {
                         .get(*reference)?
                         .arguments
                         .get(2)
-                        .ok_or("量化反例のbodyがない")?;
+                        .ok_or(internal!("量化反例のbodyがない"))?;
                     if !bodies.contains(&body) || false_bodies.contains(&body) {
-                        return Err("量化反例が別body/重複である".into());
+                        return Err(internal!("量化反例が別body/重複である").into());
                     }
                     false_bodies.push(body);
                 }
-                _ => return Err("量化に別の証拠を添付している".into()),
+                _ => return Err(internal!("量化に別の証拠を添付している").into()),
             }
         }
         if full != exhaustive {
-            return Err("全域判断に対応する全検査証拠がない/余分".into());
+            return Err(internal!("全域判断に対応する全検査証拠がない/余分").into());
         }
         if spec.kind == archsig_input::law::ast::QuantKind::Forall {
             for body in bodies {
@@ -10497,7 +10729,7 @@ impl<'a> Environment<'a> {
                 if graph.boolean(self.evaluation(graph, *body)?.2)? == Some(false)
                     && !false_bodies.contains(body)
                 {
-                    return Err("既知falseinstanceの反例を落としている".into());
+                    return Err(internal!("既知falseinstanceの反例を落としている").into());
                 }
             }
         }
@@ -10512,15 +10744,18 @@ impl<'a> Environment<'a> {
         let mut current = context.iteration;
         while let Some(index) = current {
             self.tick()?;
-            let record = graph.iterations.get(index).ok_or("反例binder元がない")?;
+            let record = graph
+                .iterations
+                .get(index)
+                .ok_or(internal!("反例binder元がない"))?;
             if record.caller.iteration.is_some_and(|p| p >= index) {
-                return Err("反例binderの親が先行しない".into());
+                return Err(internal!("反例binderの親が先行しない").into());
             }
             records.push(index);
             current = record.caller.iteration;
         }
         records.reverse();
-        let first = *records.last().ok_or("量化反例に反復がない")?;
+        let first = *records.last().ok_or(internal!("量化反例に反復がない"))?;
         let mut bindings = self
             .expression_bindings(graph, graph.iterations[first].source)?
             .to_vec();
@@ -10537,17 +10772,17 @@ impl<'a> Environment<'a> {
                         .program()
                         .expressions
                         .get(&self.expression_span(graph, record.source)?)
-                        .ok_or("binder量化ASTがない")?,
+                        .ok_or(internal!("binder量化ASTがない"))?,
                     &self.control,
                 )?;
                 let Some(Payload::Domain { elements, .. }) = &graph.get(domain)?.payload else {
-                    return Err("binderDomainがない".into());
+                    return Err(internal!("binderDomainがない").into());
                 };
                 let (_, member, _) = self.iteration_input(graph, index)?;
                 let value = *elements
                     .iter()
                     .find(|r| graph.scalar(**r).is_ok_and(|v| v == &member))
-                    .ok_or("反例binder要素がDomainにない")?;
+                    .ok_or(internal!("反例binder要素がDomainにない"))?;
                 bindings.push(Binding {
                     name: spec.name.into(),
                     ty: spec.element,
@@ -10564,18 +10799,22 @@ impl<'a> Environment<'a> {
         limit: usize,
     ) -> Result<(Vec<Binding>, NodeRef), ValidationFailure> {
         let [source, domain, body] = node.arguments.as_slice() else {
-            return Err("量化反例の元依存辺数が違う".into());
+            return Err(internal!("量化反例の元依存辺数が違う").into());
         };
         if node.arguments.iter().any(|r| r.0 >= limit) {
-            return Err("量化反例が未来を参照する".into());
+            return Err(internal!("量化反例が未来を参照する").into());
         }
         self.validate_at(graph, graph.get(*domain)?, domain.0)?;
         self.recheck_evaluation(graph, *body)?;
         let context = graph.context_at(body.0);
         let record = graph
             .iterations
-            .get(context.iteration.ok_or("量化反例のbinderContextがない")?)
-            .ok_or("量化反例の反復がない")?;
+            .get(
+                context
+                    .iteration
+                    .ok_or(internal!("量化反例のbinderContextがない"))?,
+            )
+            .ok_or(internal!("量化反例の反復がない"))?;
         if self.current_context(graph) != context
             || record.source != *source
             || record.finite != Some(*domain)
@@ -10585,7 +10824,7 @@ impl<'a> Environment<'a> {
                 graph.get(*domain)?.arguments.get(..2) != Some([*source, record.domain].as_slice())
             }
         {
-            return Err("量化反例が元Domain/body/binderに属さない".into());
+            return Err(internal!("量化反例が元Domain/body/binderに属さない").into());
         }
         let spec = quantifier::spec(
             self.indexes.inputs.law(),
@@ -10596,17 +10835,17 @@ impl<'a> Environment<'a> {
                 .program()
                 .expressions
                 .get(&self.expression_span(graph, *source)?)
-                .ok_or("反例量化ASTがない")?,
+                .ok_or(internal!("反例量化ASTがない"))?,
             &self.control,
         )?;
         if spec.kind != archsig_input::law::ast::QuantKind::Forall {
-            return Err("forall以外のfalsebodyを全称反例にしている".into());
+            return Err(internal!("forall以外のfalsebodyを全称反例にしている").into());
         }
         let (expression, _, value) = self.evaluation(graph, *body)?;
         self.source_matches(graph, expression, spec.body)?;
-        let left = value.ok_or("未知bodyに反例がある")?;
+        let left = value.ok_or(internal!("未知bodyに反例がある"))?;
         if graph.scalar(left)? != &Scalar::Bool(false) {
-            return Err("量化反例のbodyがfalseでない".into());
+            return Err(internal!("量化反例のbodyがfalseでない").into());
         }
         Ok((self.quant_bindings(graph, context)?, left))
     }
@@ -10621,7 +10860,7 @@ impl<'a> Environment<'a> {
             || !node.evidence.is_empty()
             || node.judgment.is_some()
         {
-            return Err("量化反例の型/規則/証拠が違う".into());
+            return Err(internal!("量化反例の型/規則/証拠が違う").into());
         }
         let (expected, left) = self.quant_counter_parts(graph, node, limit)?;
         let Some(Payload::Counterexample {
@@ -10631,7 +10870,7 @@ impl<'a> Environment<'a> {
             facts,
         }) = &node.payload
         else {
-            return Err("量化反例payloadがない".into());
+            return Err(internal!("量化反例payloadがない").into());
         };
         let body = graph.get(node.arguments[2])?;
         let mut support = graph.get(node.arguments[1])?.support.clone();
@@ -10647,7 +10886,7 @@ impl<'a> Environment<'a> {
             || node.scope != body.scope
             || !node.reasons.is_empty()
         {
-            return Err("量化反例の実binder/falsebody/要求/支持/Scopeが違う".into());
+            return Err(internal!("量化反例の実binder/falsebody/要求/支持/Scopeが違う").into());
         }
         self.validate_at(graph, graph.get(*right)?, right.0)?;
         Ok(())
@@ -10662,7 +10901,7 @@ impl<'a> Environment<'a> {
             || !matches!(&node.rule, Rule::Construction("evidence"))
             || node.judgment.is_some()
         {
-            return Err("全検査証拠の型/規則が違う".into());
+            return Err(internal!("全検査証拠の型/規則が違う").into());
         }
         let Some(Payload::FiniteExhaustion {
             domain,
@@ -10670,9 +10909,12 @@ impl<'a> Environment<'a> {
             instances,
         }) = &node.payload
         else {
-            return Err("全検査payloadがない".into());
+            return Err(internal!("全検査payloadがない").into());
         };
-        let source = *node.arguments.first().ok_or("全検査元Sourceがない")?;
+        let source = *node
+            .arguments
+            .first()
+            .ok_or(internal!("全検査元Sourceがない"))?;
         let spec = quantifier::spec(
             self.indexes.inputs.law(),
             *self
@@ -10682,7 +10924,7 @@ impl<'a> Environment<'a> {
                 .program()
                 .expressions
                 .get(&self.expression_span(graph, source)?)
-                .ok_or("全検査元量化がない")?,
+                .ok_or(internal!("全検査元量化がない"))?,
             &self.control,
         )?;
         let input = if spec.domain.is_none() {
@@ -10692,7 +10934,7 @@ impl<'a> Environment<'a> {
                 .get(*domain)?
                 .arguments
                 .get(1)
-                .ok_or("全検査元域Evalがない")?
+                .ok_or(internal!("全検査元域Evalがない"))?
         };
         let children: Vec<_> = std::iter::once(input)
             .chain(instances.iter().copied())
@@ -10707,7 +10949,7 @@ impl<'a> Environment<'a> {
                 .program()
                 .expressions
                 .get(&self.expression_span(graph, source)?)
-                .ok_or("全検査元量化がない")?,
+                .ok_or(internal!("全検査元量化がない"))?,
             &self.control,
         )?;
         if actual != Some(*domain)
@@ -10732,7 +10974,7 @@ impl<'a> Environment<'a> {
                 )
             )
         {
-            return Err("全検査証拠の元域/coverage/body/件数/判断が違う".into());
+            return Err(internal!("全検査証拠の元域/coverage/body/件数/判断が違う").into());
         }
         Ok(())
     }
@@ -10776,7 +11018,7 @@ pub(crate) fn conditional_branch(
         None => {
             let equal = if let Some((left, right)) = left.zip(right) {
                 if left.ty() != right.ty() {
-                    return Err("if の既知両枝の型が違う".into());
+                    return Err(internal!("if の既知両枝の型が違う").into());
                 }
                 if super::path_value::contains_path(&left.ty(), control)? {
                     same_scalar_identity(left, right, control)?
@@ -10788,7 +11030,7 @@ pub(crate) fn conditional_branch(
             };
             if equal { left.cloned() } else { None }
         }
-        _ => return Err("if の条件が Bool でない".into()),
+        _ => return Err(internal!("if の条件が Bool でない").into()),
     };
     control
         .checkpoint(Checkpoint::FiniteIteration)
@@ -10851,9 +11093,9 @@ pub(crate) fn partial_binary(
                         Scalar::List { items, .. } | Scalar::Set { items, .. } => {
                             super::value_equality::contains(items, a, law, control)?
                         }
-                        _ => return Err("Term所属の右辺が有限containerでない".into()),
+                        _ => return Err(internal!("Term所属の右辺が有限containerでない").into()),
                     },
-                    _ => return Err("Termを未対応の二項演算へ渡した".into()),
+                    _ => return Err(internal!("Termを未対応の二項演算へ渡した").into()),
                 };
                 return Ok(value.map(Scalar::Bool));
             }
@@ -10865,7 +11107,9 @@ pub(crate) fn partial_binary(
     }
     let boolean = |value: &Scalar| match value {
         Scalar::Bool(value) => Ok(*value),
-        _ => Err(ValidationFailure::from("Bool 論理演算の値が Bool でない")),
+        _ => Err(ValidationFailure::from(internal!(
+            "Bool 論理演算の値が Bool でない"
+        ))),
     };
     let left = left.map(boolean).transpose()?;
     let right = right.map(boolean).transpose()?;
@@ -10900,10 +11144,10 @@ pub(crate) fn binary(
     if op == BinOp::In {
         let (element, items) = match right {
             Scalar::List { element, items } | Scalar::Set { element, items } => (element, items),
-            _ => return Err("inの右辺がList/Setでない".into()),
+            _ => return Err(internal!("inの右辺がList/Setでない").into()),
         };
         if &left.ty() != element {
-            return Err("in要素型が違う".into());
+            return Err(internal!("in要素型が違う").into());
         };
         return Ok(Scalar::Bool(
             super::value_equality::contains(items, left, law, control)?.ok_or_else(unsupported)?,
@@ -10921,7 +11165,7 @@ pub(crate) fn binary(
             BinOp::And => *a && *b,
             BinOp::Or => *a || *b,
             BinOp::Implies => !*a || *b,
-            _ => return Err("未実装の Bool 演算".into()),
+            _ => return Err(internal!("未実装の Bool 演算").into()),
         };
         return Ok(Scalar::Bool(value));
     }

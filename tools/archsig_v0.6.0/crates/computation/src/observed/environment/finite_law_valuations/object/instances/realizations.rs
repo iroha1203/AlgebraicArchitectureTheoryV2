@@ -54,14 +54,14 @@ impl FiniteParameterRealizations {
     ) -> Result<(), ParameterRealizationFailure> {
         if inputs.sources() != &self.sources || readings != &self.readings {
             return Err(ParameterRealizationFailure {
-                cause: "parameter代入族の元三入力またはreadingsが違う".into(),
+                cause: internal!("parameter代入族の元三入力またはreadingsが違う").into(),
                 partial: None,
             });
         }
         let expected = compute(inputs, readings, self.law_dependencies, c)?;
         if self != &expected {
             return Err(ParameterRealizationFailure {
-                cause: "parameter代入族が元対象・instance・型域・直積と違う".into(),
+                cause: internal!("parameter代入族が元対象・instance・型域・直積と違う").into(),
                 partial: None,
             });
         }
@@ -107,7 +107,9 @@ fn populate_realizations(
                     &template.state,
                     &p.snapshot,
                     &p.subject,
-                    p.field.as_deref().ok_or("parameter依存位置のfieldがない")?,
+                    p.field
+                        .as_deref()
+                        .ok_or(internal!("parameter依存位置のfieldがない"))?,
                 )?;
                 type_dependencies(&template, p, &field.ty, &mut expanded)?;
             }
@@ -124,7 +126,9 @@ fn populate_realizations(
                         &template.state,
                         &p.snapshot,
                         &p.subject,
-                        p.field.as_deref().ok_or("parameter依存fieldがない")?,
+                        p.field
+                            .as_deref()
+                            .ok_or(internal!("parameter依存fieldがない"))?,
                     )?;
                     result.state = ParameterRealizationState::OutsideFinite {
                         position: p.clone(),
@@ -133,7 +137,7 @@ fn populate_realizations(
                     return Ok(());
                 }
             }
-            return Err("parameter代入族の非有限位置が特定できない".into());
+            return Err(internal!("parameter代入族の非有限位置が特定できない").into());
         };
         let mut discovered = positions.clone();
         let mut admissible = vec![];
@@ -193,12 +197,14 @@ fn populate_realizations(
             &template.state,
             &p.snapshot,
             &p.subject,
-            p.field.as_deref().ok_or("元parameter依存fieldがない")?,
+            p.field
+                .as_deref()
+                .ok_or(internal!("元parameter依存fieldがない"))?,
         )?;
         match &field.slot {
             Slot::Known { value, .. } => observed.push(
                 scalar_from(value, &field.ty, inputs.law(), c)?
-                    .ok_or("元parameter依存値が読めない")?,
+                    .ok_or(internal!("元parameter依存値が読めない"))?,
             ),
             Slot::Missing => all_known = false,
         }
@@ -211,7 +217,7 @@ fn populate_realizations(
                 equal &= data::equal(a, b, c)?;
             }
             if equal && result.observed_point.replace(point).is_some() {
-                return Err("parameter代入族の元観測点が重複".into());
+                return Err(internal!("parameter代入族の元観測点が重複").into());
             }
         }
     }

@@ -139,9 +139,9 @@ impl MapCandidate {
     ) -> Result<(), ConstructionFailure> {
         let (candidate, _) = self.recompute(inputs, control)?;
         if candidate.as_ref() != Some(self) {
-            return Err(ConstructionFailure::Inconsistent(
-                "候補作用が現在の入力・readingと違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "候補作用が現在の入力・readingと違う"
+            )));
         }
         check(control)
     }
@@ -209,9 +209,9 @@ impl ConfigurationMap {
     ) -> Result<(), ConstructionFailure> {
         let (_, map) = self.candidate.recompute(inputs, control)?;
         if map.as_ref() != Some(self) {
-            return Err(ConstructionFailure::Inconsistent(
-                "保存済みmapが現在の入力・readingと違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "保存済みmapが現在の入力・readingと違う"
+            )));
         }
         check(control)
     }
@@ -329,9 +329,9 @@ impl CorrespondenceResult {
         control: &Control,
     ) -> Result<(), ConstructionFailure> {
         if self != &correspondence(inputs, snapshot, subject, reading, to_reading, control)? {
-            return Err(ConstructionFailure::Inconsistent(
-                "対応候補・作用・保存結果が現在入力と違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "対応候補・作用・保存結果が現在入力と違う"
+            )));
         }
         check(control)
     }
@@ -379,9 +379,9 @@ fn key(value: &Value) -> Result<SubjectKey, ConstructionFailure> {
     if let Value::Ref { snapshot, subject } = value {
         Ok((snapshot.clone(), subject.clone()))
     } else {
-        Err(ConstructionFailure::Inconsistent(
-            "対応表の元が原始参照でない".into(),
-        ))
+        Err(ConstructionFailure::Inconsistent(internal!(
+            "対応表の元が原始参照でない"
+        )))
     }
 }
 fn endpoint(
@@ -390,8 +390,9 @@ fn endpoint(
     missing: &mut BTreeSet<FactPointer>,
     control: &Control,
 ) -> Result<Option<SubjectKey>, ConstructionFailure> {
-    let f = field(holder, name, control)?
-        .ok_or_else(|| ConstructionFailure::Inconsistent(format!("原始候補の{name} slotがない")))?;
+    let f = field(holder, name, control)?.ok_or_else(|| {
+        ConstructionFailure::Inconsistent(internal!(format!("原始候補の{name} slotがない")))
+    })?;
     match &f.slot {
         Slot::Known { value, .. } => Ok(Some(key(value)?)),
         Slot::Missing => {
@@ -460,7 +461,7 @@ fn reference_shape(
             Work::Visit(_) => values.push(None),
             Work::Join(tag, n, sort) => {
                 let at = values.len().checked_sub(n).ok_or_else(|| {
-                    ConstructionFailure::Inconsistent("参照構造の構成stackが不足".into())
+                    ConstructionFailure::Inconsistent(internal!("参照構造の構成stackが不足"))
                 })?;
                 let mut children = values.split_off(at);
                 if children.iter().all(Option::is_none) {
@@ -487,9 +488,9 @@ fn reference_shape(
     }
     check(control)?;
     if values.len() != 1 {
-        return Err(ConstructionFailure::Inconsistent(
-            "参照構造の構成stackが不整合".into(),
-        ));
+        return Err(ConstructionFailure::Inconsistent(internal!(
+            "参照構造の構成stackが不整合"
+        )));
     }
     Ok(values.pop().flatten())
 }
@@ -684,17 +685,19 @@ fn typed_reference_constraints_violation(
                 break;
             }
         }
-        let (name, target_type) = selected
-            .ok_or_else(|| ConstructionFailure::Inconsistent("未決subjectの型対応がない".into()))?;
+        let (name, target_type) = selected.ok_or_else(|| {
+            ConstructionFailure::Inconsistent(internal!("未決subjectの型対応がない"))
+        })?;
         let map_field = field(holder, name, control)?
-            .ok_or_else(|| ConstructionFailure::Inconsistent("原始Map slotがない".into()))?;
+            .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("原始Map slotがない")))?;
         let mut images = Vec::new();
         if matches!(map_field.slot, Slot::Known { .. }) {
             // 既知全域表のkeyにないsubjectは、ownerが未観測でも始域外。
             images.push(None);
         } else {
-            let owner = field(source, "owner", control)?
-                .ok_or_else(|| ConstructionFailure::Inconsistent("始域owner slotがない".into()))?;
+            let owner = field(source, "owner", control)?.ok_or_else(|| {
+                ConstructionFailure::Inconsistent(internal!("始域owner slotがない"))
+            })?;
             if owner.slot == Slot::Missing {
                 images.push(None);
             }
@@ -706,7 +709,7 @@ fn typed_reference_constraints_violation(
                         continue;
                     }
                     let owner = field(target, "owner", control)?.ok_or_else(|| {
-                        ConstructionFailure::Inconsistent("終域owner slotがない".into())
+                        ConstructionFailure::Inconsistent(internal!("終域owner slotがない"))
                     })?;
                     if matches!(&owner.slot, Slot::Known { value, .. } if &key(value)? != to) {
                         continue;
@@ -800,11 +803,11 @@ fn typed_reference_constraints_violation(
                 }
                 let source = subject(inputs, &k.0, &k.1, control)?;
                 let image = trial.get(&k).ok_or_else(|| {
-                    ConstructionFailure::Inconsistent("補完したholderの像がない".into())
+                    ConstructionFailure::Inconsistent(internal!("補完したholderの像がない"))
                 })?;
                 let target = subject(inputs, &image.0, &image.1, control)?;
                 let source_field = fact.field.as_ref().ok_or_else(|| {
-                    ConstructionFailure::Inconsistent("参照条件にfieldがない".into())
+                    ConstructionFailure::Inconsistent(internal!("参照条件にfieldがない"))
                 })?;
                 let name = field_map
                     .get(source_field.as_str())
@@ -815,9 +818,9 @@ fn typed_reference_constraints_violation(
                     break;
                 };
                 let Some(sf) = field(source, source_field, control)? else {
-                    return Err(ConstructionFailure::Inconsistent(
-                        "参照条件の元fieldがない".into(),
-                    ));
+                    return Err(ConstructionFailure::Inconsistent(internal!(
+                        "参照条件の元fieldがない"
+                    )));
                 };
                 if let (Slot::Known { value: a, .. }, Slot::Known { value: b, .. }) =
                     (&sf.slot, &tf.slot)
@@ -836,7 +839,7 @@ fn typed_reference_constraints_violation(
             for (name, _, _) in maps {
                 check(control)?;
                 let map_field = field(holder, name, control)?.ok_or_else(|| {
-                    ConstructionFailure::Inconsistent("原始Map slotがない".into())
+                    ConstructionFailure::Inconsistent(internal!("原始Map slotがない"))
                 })?;
                 if map_field.slot != Slot::Missing {
                     continue;
@@ -876,7 +879,7 @@ fn typed_reference_constraints_violation(
                 Err(CheckFailure::Input(issue))
                     if issue.code == archsig_common::issue::Code::InconsistentObservation => {}
                 Err(CheckFailure::Input(issue)) => {
-                    return Err(ConstructionFailure::Inconsistent(issue.message));
+                    return Err(ConstructionFailure::Inconsistent(internal!(issue.message)));
                 }
                 Err(CheckFailure::Stopped(reason)) => return Err(reason.into()),
             }
@@ -997,7 +1000,7 @@ pub fn correspondence_retained(
         .definitions()
         .declarations()
         .get(holder.ty.as_str())
-        .ok_or_else(|| ConstructionFailure::Inconsistent("対応の元定義がない".into()))?;
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("対応の元定義がない")))?;
     let PrimitiveSignature::Correspondence {
         from,
         to,
@@ -1052,7 +1055,7 @@ pub fn correspondence_retained(
         for (name, _, _) in maps {
             check(control)?;
             let f = field(holder, name, control)?
-                .ok_or_else(|| ConstructionFailure::Inconsistent("対応表slotがない".into()))?;
+                .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("対応表slotがない")))?;
             match &f.slot {
                 Slot::Missing => {
                     missing.insert(slot(holder, &f.name));
@@ -1067,9 +1070,9 @@ pub fn correspondence_retained(
                     }
                 }
                 _ => {
-                    return Err(ConstructionFailure::Inconsistent(
-                        "原始対応表の型がMapでない".into(),
-                    ));
+                    return Err(ConstructionFailure::Inconsistent(internal!(
+                        "原始対応表の型がMapでない"
+                    )));
                 }
             }
         }
@@ -1085,9 +1088,9 @@ pub fn correspondence_retained(
             return Ok(());
         };
         if source.universe() != target.universe() {
-            return Err(ConstructionFailure::Inconsistent(
-                "始終域の共通Uが違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "始終域の共通Uが違う"
+            )));
         }
         let source_config = source.base().known();
         let target_config = target.base().known();
@@ -1111,7 +1114,7 @@ pub fn correspondence_retained(
                     continue;
                 }
                 let owner = field(s, "owner", control)?.ok_or_else(|| {
-                    ConstructionFailure::Inconsistent("対応域のownerがない".into())
+                    ConstructionFailure::Inconsistent(internal!("対応域のownerがない"))
                 })?;
                 match &owner.slot {
                     Slot::Missing => {
@@ -1199,16 +1202,16 @@ pub fn correspondence_retained(
                             ..slot(image_subject, &tf.name)
                         };
                         let sf = field(original, source_field, control)?.ok_or_else(|| {
-                            ConstructionFailure::Inconsistent("始域のfieldがない".into())
+                            ConstructionFailure::Inconsistent(internal!("始域のfieldがない"))
                         })?;
                         let Slot::Known {
                             value: source_value,
                             ..
                         } = &sf.slot
                         else {
-                            return Err(ConstructionFailure::Inconsistent(
-                                "始域のAtom値がない".into(),
-                            ));
+                            return Err(ConstructionFailure::Inconsistent(internal!(
+                                "始域のAtom値がない"
+                            )));
                         };
                         let mut unresolved = false;
                         for (snapshot, id) in references(source_value, control)? {

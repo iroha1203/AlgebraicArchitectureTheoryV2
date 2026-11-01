@@ -49,7 +49,7 @@ fn differential(
                 .tuples
                 .iter()
                 .position(|t| *t == face)
-                .ok_or("Čechの面がない")?;
+                .ok_or(internal!("Čechの面がない"))?;
             let pair = &diagram.restrictions[&(to.contexts[i], from.contexts[j])];
             let map = if semantic { &pair.1 } else { &pair.0 };
             for r in 0..states[to.contexts[i]].rank {
@@ -80,7 +80,7 @@ pub(in crate::observed::local_result) fn diagnose(
         a.name == "side" && matches!(&a.value,Selector::Enum { value } if value == "semantic")
     });
     if semantic && diagram.equation_only {
-        return Err("有限意味状態を整数係数の診断へ渡せない".into());
+        return Err(internal!("有限意味状態を整数係数の診断へ渡せない").into());
     }
     let states = if semantic {
         &diagram.semantic
@@ -95,7 +95,7 @@ pub(in crate::observed::local_result) fn diagnose(
     for _ in 0..=degree {
         c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
         let mut tuples = vec![];
-        for tuple in &levels.last().ok_or("Čechの次数がない")?.tuples {
+        for tuple in &levels.last().ok_or(internal!("Čechの次数がない"))?.tuples {
             for patch in &diagram.patches {
                 c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
                 let mut next = tuple.clone();
@@ -321,15 +321,15 @@ pub(in crate::observed::local_result) fn diagnose(
                 local_sections.push(wire::vector(
                     &mut b,
                     ambient,
-                    states[*i].origin.as_ref().ok_or("局所特解がない")?,
+                    states[*i].origin.as_ref().ok_or(internal!("局所特解がない"))?,
                     c,
                 )?);
             }
             let mut cocycle = vec![Z::zero(); levels[1].rank];
             for (i, tuple) in levels[1].tuples.iter().enumerate() {
                 let context = levels[1].contexts[i];
-                let left = states[tuple[0]].origin.as_ref().ok_or("局所特解がない")?;
-                let right = states[tuple[1]].origin.as_ref().ok_or("局所特解がない")?;
+                let left = states[tuple[0]].origin.as_ref().ok_or(internal!("局所特解がない"))?;
+                let right = states[tuple[1]].origin.as_ref().ok_or(internal!("局所特解がない"))?;
                 let left =
                     linear::apply(&diagram.state_restrictions[&(context, tuple[0])], left, c)?;
                 let right =
@@ -350,7 +350,7 @@ pub(in crate::observed::local_result) fn diagnose(
                 .iter()
                 .any(|v| !v.is_zero())
             {
-                return Err("局所差がcocycleでない".into());
+                return Err(internal!("局所差がcocycleでない").into());
             }
             let cycle_coordinates = linear::coordinates(
                 &cohomology.cycles,
@@ -395,7 +395,7 @@ pub(in crate::observed::local_result) fn diagnose(
             evidence.push(certificate);
             let zero = values.iter().all(Z::is_zero);
             if zero != correction.particular.is_some() {
-                return Err("商座標とcoboundary判定が一致しない".into());
+                return Err(internal!("商座標とcoboundary判定が一致しない").into());
             }
             status = if zero {
                 Decision::Established
@@ -444,7 +444,7 @@ pub(in crate::observed::local_result) fn diagnose(
             b.parts[proposition.0 - base]
                 .judgment
                 .as_mut()
-                .ok_or("類の判断がない")?
+                .ok_or(internal!("類の判断がない"))?
                 .evidence = evidence.clone();
             claim = Some(proposition);
         }
@@ -571,7 +571,7 @@ fn gluing(
         let values = states[*i]
             .origin
             .as_ref()
-            .ok_or("補正の局所特解がない")?
+            .ok_or(internal!("補正の局所特解がない"))?
             .iter()
             .zip(adjustment)
             .map(|(x, y)| x - y)
@@ -583,11 +583,11 @@ fn gluing(
     }
     let global_values = integer_fiber::solve(&equations, diagram.slots.len(), &rhs, c)?
         .particular
-        .ok_or("補正した局所族の大域持上げがない")?;
+        .ok_or(internal!("補正した局所族の大域持上げがない"))?;
     let origin = states[0]
         .origin
         .as_ref()
-        .ok_or("貼り合わせ先の大域fiberが空")?;
+        .ok_or(internal!("貼り合わせ先の大域fiberが空"))?;
     let delta = global_values
         .iter()
         .zip(origin)
@@ -615,7 +615,7 @@ fn gluing(
         &assignments.into_iter().collect::<Vec<_>>(),
         c,
     )?
-    .ok_or("貼り合わせ証人の元代入が不適合")?;
+    .ok_or(internal!("貼り合わせ証人の元代入が不適合"))?;
     evaluated.select_local_object(witness, c)?;
     let mut rechecks = vec![];
     for ((name, bindings), law) in diagram.requirements.iter().zip(&diagram.law_refs) {
@@ -628,7 +628,7 @@ fn gluing(
                 && (row.guard == Some(false)
                     || (row.guard == Some(true) && row.predicate == Some(true))));
         if !missing.is_empty() || !row.application_missing.is_empty() || !holds {
-            return Err("貼り合わせ証人が元Lawの再検査を満たさない".into());
+            return Err(internal!("貼り合わせ証人が元Lawの再検査を満たさない").into());
         }
         let check = b.proposition("law_holds", vec![*law], vec![], Decision::Established)?;
         b.parts[check.0 - b.base].arguments.push(global);

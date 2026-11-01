@@ -19,10 +19,11 @@ pub(super) fn compute(
 ) -> Result<Source, ValidationFailure> {
     let image = quotient_affine::compute(env, g, &input, request, c)?;
     let ty = &image.ty;
-    let declaration = &env.indexes.inputs.law().declarations()
-        [request.declaration().ok_or("アフィン商のViewがない")?];
+    let declaration = &env.indexes.inputs.law().declarations()[request
+        .declaration()
+        .ok_or(internal!("アフィン商のViewがない"))?];
     let Signature::View { body, .. } = &declaration.signature else {
-        return Err("アフィン商のView署名が違う".into());
+        return Err(internal!("アフィン商のView署名が違う").into());
     };
     let mut b = Builder {
         g,
@@ -37,7 +38,7 @@ pub(super) fn compute(
                 .arguments
                 .iter()
                 .find(|a| a.name == format!("bind.{name}"))
-                .ok_or("アフィン商の束縛がない")?
+                .ok_or(internal!("アフィン商の束縛がない"))?
                 .value;
             let r = if matches!(selector, Selector::Answer { .. }) {
                 match env.answer_binding(g, selector, (0, 0))? {
@@ -47,9 +48,11 @@ pub(super) fn compute(
                         .iter()
                         .position(|n| *n == node)
                         .map(NodeRef)
-                        .ok_or("アフィン商の公開束縛が保持されていない")?,
+                        .ok_or(internal!("アフィン商の公開束縛が保持されていない"))?,
                     AnswerBinding::Inapplicable(_) => {
-                        return Err(ValidationFailure::from("アフィン商の束縛射影が不適合"));
+                        return Err(ValidationFailure::from(internal!(
+                            "アフィン商の束縛射影が不適合"
+                        )));
                     }
                 }
             } else {
@@ -69,7 +72,7 @@ pub(super) fn compute(
     let law_expression = if let Some(law) = &image.law {
         let declaration = &env.indexes.inputs.law().declarations()[&law.name];
         let Signature::Law { body, params, .. } = &declaration.signature else {
-            return Err("アフィン商のLaw署名がない".into());
+            return Err(internal!("アフィン商のLaw署名がない").into());
         };
         let bindings = bindings
             .iter()
@@ -140,7 +143,7 @@ pub(super) fn compute(
                 ("kind", Json::str("solutions")),
                 ("solutions", reference.wire()),
             ]),
-            _ => return Err("アフィン商の元domain型が違う".into()),
+            _ => return Err(internal!("アフィン商の元domain型が違う").into()),
         },
         vec![reference, expression],
         None,
@@ -179,7 +182,10 @@ pub(super) fn compute(
                     &Type::Tuple(vec![law.value_type.clone(); 2]),
                 )?,
                 &[],
-                &[reference, law_expression.ok_or("アフィン商のLaw式がない")?],
+                &[
+                    reference,
+                    law_expression.ok_or(internal!("アフィン商のLaw式がない"))?,
+                ],
             )?;
             descent = Some(b.push(
                 NodeType::Construction(T::StateMap),
@@ -243,7 +249,7 @@ pub(super) fn compute(
             (kernel, kernel_generators),
         ] {
             let Json::Obj(wire) = &mut b.parts[r.0 - base].wire else {
-                return Err("アフィン商の加群がrecordでない".into());
+                return Err(internal!("アフィン商の加群がrecordでない").into());
             };
             wire.insert("generators".into(), Json::Arr(generators));
         }
@@ -310,7 +316,7 @@ pub(super) fn compute(
                 &image,
                 reference,
                 request,
-                law_expression.ok_or("アフィン商のLaw式がない")?,
+                law_expression.ok_or(internal!("アフィン商のLaw式がない"))?,
                 ring,
                 actual_image,
                 classes,
@@ -341,7 +347,11 @@ pub(super) fn compute(
             ("domain", reference.wire()),
             (
                 "view",
-                Json::str(request.declaration().ok_or("アフィン商のViewがない")?),
+                Json::str(
+                    request
+                        .declaration()
+                        .ok_or(internal!("アフィン商のViewがない"))?,
+                ),
             ),
             (
                 "bindings",
@@ -368,7 +378,7 @@ pub(super) fn compute(
     let mut claim = None;
     if let Some(law) = &image.law {
         let Json::Obj(wire) = &mut b.parts[quotient.0 - base].wire else {
-            return Err("アフィン商のrecordがない".into());
+            return Err(internal!("アフィン商のrecordがない").into());
         };
         wire.insert("law".into(), Json::str(&law.name));
         if let Some(descent) = descent {
@@ -382,7 +392,7 @@ pub(super) fn compute(
         part.evidence = evidence.clone();
         part.judgment
             .as_mut()
-            .ok_or("アフィン商の十分性判断がない")?
+            .ok_or(internal!("アフィン商の十分性判断がない"))?
             .evidence = evidence.clone();
         outputs.insert("proposition".into(), proposition);
         claim = Some(proposition);
@@ -421,7 +431,10 @@ fn law_descent(
     c: &Control,
 ) -> Result<(Option<NodeRef>, Vec<NodeRef>, Vec<NodeRef>), ValidationFailure> {
     let ty = &image.ty;
-    let law = image.law.as_ref().ok_or("アフィン商のLawがない")?;
+    let law = image
+        .law
+        .as_ref()
+        .ok_or(internal!("アフィン商のLawがない"))?;
     let free = image.dimensions - fiber.rank;
     let differences = coefficients::multiply(ty, &law.matrix, &fiber.kernel, free, c)?;
     let zero = numeric::zero(ty, c)?;
@@ -437,7 +450,7 @@ fn law_descent(
                 let origin = domain
                     .particular
                     .as_ref()
-                    .ok_or("商の非空guardの解がない")?;
+                    .ok_or(internal!("商の非空guardの解がない"))?;
                 if let Some(j) =
                     (0..free).find(|j| guard_differences.iter().any(|row| row[*j] != zero))
                 {
@@ -489,7 +502,7 @@ fn law_descent(
             evaluations.extend(checked);
         }
         if checked_views[0] != checked_views[1] || checked_families[0] == checked_families[1] {
-            return Err("商の通常評価で反例対を確認できない".into());
+            return Err(internal!("商の通常評価で反例対を確認できない").into());
         }
         let evidence = b.push(
             NodeType::Evidence,
@@ -622,7 +635,7 @@ fn law_descent(
         let Signature::Law { params, .. } =
             &env.indexes.inputs.law().declarations()[&law.name].signature
         else {
-            return Err("商のLaw署名がない".into());
+            return Err(internal!("商のLaw署名がない").into());
         };
         let key_type = Type::Tuple(params.iter().map(|p| p.ty.erase()).collect());
         let mut items = law
@@ -665,7 +678,7 @@ fn law_descent(
         }
     }
     let Json::Obj(wire) = &mut b.parts[family.0 - b.base].wire else {
-        return Err("アフィン商の評価族加群がrecordでない".into());
+        return Err(internal!("アフィン商の評価族加群がrecordでない").into());
     };
     wire.insert("generators".into(), Json::Arr(generators));
     if let Some(pattern) = applicability {

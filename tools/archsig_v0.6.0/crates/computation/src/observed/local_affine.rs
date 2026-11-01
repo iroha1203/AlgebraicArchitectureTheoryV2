@@ -59,16 +59,16 @@ fn analyze(
             ("using", Selector::Declaration { name }) => Some(name),
             _ => None,
         })
-        .ok_or("整数局所changeがない")?;
+        .ok_or(internal!("整数局所changeがない"))?;
     let change = &env.indexes.inputs.law().declarations()[name];
     let Signature::Change { params, body, .. } = &change.signature else {
-        return Err("整数局所changeの署名がない".into());
+        return Err(internal!("整数局所changeの署名がない").into());
     };
     let reading = witness.construction().reading();
     if change.reading != reading {
         return Err(unsupported("整数局所changeのreadingが異なる"));
     }
-    let first = params.first().ok_or("整数changeの対象引数がない")?;
+    let first = params.first().ok_or(internal!("整数changeの対象引数がない"))?;
     let mut missing = vec![];
     let mut subjects = change_search::domain(env, &first.ty, first.span, &mut missing)?
         .ok_or_else(|| {
@@ -110,7 +110,7 @@ fn analyze(
             )
     }) {
         let Signature::Law { params, body, .. } = &law.signature else {
-            return Err("整数局所Lawの署名がない".into());
+            return Err(internal!("整数局所Lawの署名がない").into());
         };
         let mut rows = vec![vec![]];
         for p in params {
@@ -153,7 +153,7 @@ fn analyze(
     for (name, bindings) in &requirements {
         let declaration = &env.indexes.inputs.law().declarations()[name];
         let Signature::Law { body, guard, params, .. } = &declaration.signature else {
-            return Err("整数局所Lawでない".into());
+            return Err(internal!("整数局所Lawでない").into());
         };
         pending.expression = Some(*body);
         pending.bindings = bindings.clone();
@@ -268,7 +268,7 @@ fn reading_from(
                         .slots
                         .iter()
                         .position(|f| f == slot)
-                        .ok_or("読取りの更新位置がない")?;
+                        .ok_or(internal!("読取りの更新位置がない"))?;
                     result[i] = read_coefficient(value)?;
                 }
                 Ok(result)
@@ -317,7 +317,7 @@ fn fibers(
                     .enumerate()
                     .any(|(j, x)| !x.is_zero() && !positions.contains(&j))
                 {
-                    return Err("局所Lawが可視座標を通じて因子分解しない".into());
+                    return Err(internal!("局所Lawが可視座標を通じて因子分解しない").into());
                 }
                 d.push(positions.iter().map(|j| row[*j].clone()).collect());
             }
@@ -390,7 +390,7 @@ pub(super) fn compute(
     .map(|(f, _, v)| (f, v))
     .collect::<Vec<_>>();
     let mut fixed = Environment::try_primitive_valuation(env.indexes.inputs, &assignments, c)?
-        .ok_or("整数局所系の元代入が不適合")?;
+        .ok_or(internal!("整数局所系の元代入が不適合"))?;
     fixed.select_local_object(&witness, c)?;
     let mut pending = change_affine::Pending::default();
     let mut missing_domain = false;
@@ -414,7 +414,7 @@ pub(super) fn compute(
         Err(ValidationFailure::UnsupportedExpression { location, .. })
             if !pending.facts.is_empty() =>
         {
-            let id = pending.expression.ok_or("整数局所欠測の原式がない")?;
+            let id = pending.expression.ok_or(internal!("整数局所欠測の原式がない"))?;
             let bindings = pending
                 .bindings
                 .iter()
@@ -481,7 +481,7 @@ pub(super) fn compute(
                 body, guard, role, ref params,
             } = declaration.signature
             else {
-                return Err("整数局所Lawの署名がない".into());
+                return Err(internal!("整数局所Lawの署名がない").into());
             };
             let bindings = bindings
                 .iter()
@@ -542,7 +542,7 @@ pub(super) fn compute(
         if expressions.is_empty() {
             let declaration = &env.indexes.inputs.law().declarations()[&model.change];
             let Signature::Change { body, params, .. } = &declaration.signature else {
-                return Err("change署名がない".into());
+                return Err(internal!("change署名がない").into());
             };
             expressions.push(change_result::source_expression(
                 &mut b,
@@ -909,7 +909,7 @@ pub(super) fn compute(
                         break;
                     }
                 }
-                intersections[i][j] = found.ok_or("整数局所の交わりがない")?;
+                intersections[i][j] = found.ok_or(internal!("整数局所の交わりがない"))?;
             }
         }
         let mut arrows = BTreeMap::new();
@@ -986,7 +986,7 @@ pub(super) fn compute(
                             .iter()
                             .position(|y| x == y)
                             .map(|i| Json::Nat(i as u64))
-                            .ok_or("contextの包含像がない")
+                            .ok_or(internal!("contextの包含像がない"))
                     })
                     .collect::<Result<Vec<_>, _>>()?;
                 let arrow = b.push(
@@ -1352,7 +1352,7 @@ fn emit_system(
     let mut saved = System {
         parameters: states[0].parameters,
         laws,
-        expression: Some(*expressions.first().ok_or("整数局所Lawがない")?),
+        expression: Some(*expressions.first().ok_or(internal!("整数局所Lawがない"))?),
         semantic: states[0].semantic,
         equation: states[0].equation,
         domain: states[0].semantic_domain,

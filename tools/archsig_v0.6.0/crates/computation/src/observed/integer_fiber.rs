@@ -66,7 +66,7 @@ pub(super) fn multiply(
     c: &Control,
 ) -> Result<Matrix, ValidationFailure> {
     if a.iter().any(|r| r.len() != b.len()) || b.iter().any(|r| r.len() != cols) {
-        return Err("整数行列の積の次元が違う".into());
+        return Err(internal!("整数行列の積の次元が違う").into());
     }
     let mut out = vec![];
     for row in a {
@@ -92,7 +92,7 @@ pub(super) fn solve(
 ) -> Result<Fiber, ValidationFailure> {
     tick(c)?;
     if a.len() != rhs.len() || a.iter().any(|r| r.len() != cols) {
-        return Err("整数系の行列・右辺の次元が違う".into());
+        return Err(internal!("整数系の行列・右辺の次元が違う").into());
     }
     let rows = a.len();
     let mut diagonal = a.clone();

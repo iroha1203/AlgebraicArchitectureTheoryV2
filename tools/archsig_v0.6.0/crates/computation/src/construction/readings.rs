@@ -112,9 +112,9 @@ impl ObjectReadingInstances {
     ) -> Result<(), ConstructionFailure> {
         let actual = object_reading_instances(inputs, &self.construction, control)?;
         if self != &actual {
-            return Err(ConstructionFailure::Inconsistent(
-                "対象別instanceが現在の入力・原宣言・参照束縛と違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "対象別instanceが現在の入力・原宣言・参照束縛と違う"
+            )));
         }
         checkpoint(control)
     }
@@ -141,9 +141,9 @@ fn subject<'a>(
             }
         }
     }
-    Err(ConstructionFailure::Inconsistent(
-        "instanceの原始subjectがない".into(),
-    ))
+    Err(ConstructionFailure::Inconsistent(internal!(
+        "instanceの原始subjectがない"
+    )))
 }
 /// 条件は同じslotごとに共有する。互いに違う値を要求する連言は採用しない。
 fn merge_conditions(
@@ -214,14 +214,14 @@ fn owner_condition(
                 slot: slot(candidate, &field.name),
                 owner: owner.clone(),
             }])),
-            _ => Err(ConstructionFailure::Inconsistent(
-                "Owned instanceのownerが原始参照でない".into(),
-            )),
+            _ => Err(ConstructionFailure::Inconsistent(internal!(
+                "Owned instanceのownerが原始参照でない"
+            ))),
         };
     }
-    Err(ConstructionFailure::Inconsistent(
-        "Owned instanceのowner slotがない".into(),
-    ))
+    Err(ConstructionFailure::Inconsistent(internal!(
+        "Owned instanceのowner slotがない"
+    )))
 }
 fn choices(
     inputs: &CheckedInputs,
@@ -330,7 +330,7 @@ pub fn object_reading_instances(
     // baseを先頭にし、部分対象は原始identity順。未確定所属の候補も別行に保つ。
     objects
         .get_mut(1..)
-        .ok_or_else(|| ConstructionFailure::Inconsistent("base対象がない".into()))?
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("base対象がない")))?
         .sort_by(|a, b| a.identity.subject().cmp(b.identity.subject()));
     checkpoint(control)?;
     let mut declarations = Vec::new();
@@ -349,7 +349,9 @@ pub fn object_reading_instances(
             .infos()
             .iter()
             .find(|info| info.name == declaration.name)
-            .ok_or_else(|| ConstructionFailure::Inconsistent("元Law/view metadataがない".into()))?
+            .ok_or_else(|| {
+                ConstructionFailure::Inconsistent(internal!("元Law/view metadataがない"))
+            })?
             .clone();
         declarations.push(metadata.clone());
         let mut anchored = false;
@@ -399,9 +401,9 @@ pub fn object_reading_instances(
                             .iter()
                             .find(|b| &b.parameter.name == owner)
                             .ok_or_else(|| {
-                                ConstructionFailure::Inconsistent(
-                                    "Owned parameterの先行参照ownerがない".into(),
-                                )
+                                ConstructionFailure::Inconsistent(internal!(
+                                    "Owned parameterの先行参照ownerがない"
+                                ))
                             })?;
                         let Some(required) = owner_condition(
                             construction,
@@ -441,9 +443,9 @@ pub fn object_reading_instances(
                 for binding in &row.bindings {
                     checkpoint(control)?;
                     let (Type::Ref(ty) | Type::Owned(ty, _)) = &binding.parameter.ty else {
-                        return Err(ConstructionFailure::Inconsistent(
-                            "参照束縛の元parameterが参照型でない".into(),
-                        ));
+                        return Err(ConstructionFailure::Inconsistent(internal!(
+                            "参照束縛の元parameterが参照型でない"
+                        )));
                     };
                     if local_types.contains(ty)
                         && !base

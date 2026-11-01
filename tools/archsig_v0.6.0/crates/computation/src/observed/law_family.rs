@@ -114,7 +114,7 @@ impl Data {
     }
     pub fn position(&self, limit: usize) -> Result<(), ValidationFailure> {
         if self.arguments().iter().any(|r| r.0 >= limit) {
-            return Err("元Law族の依存が既出Refでない".into());
+            return Err(internal!("元Law族の依存が既出Refでない").into());
         }
         Ok(())
     }
@@ -132,24 +132,24 @@ fn plan(
     architecture: NodeRef,
 ) -> Result<Option<FamilyInputs>, ValidationFailure> {
     let Some(Payload::Construction(v)) = &g.get(template)?.payload else {
-        return Err("元Law族templateがnativeでない".into());
+        return Err(internal!("元Law族templateがnativeでない").into());
     };
     let D::PolynomialLaw(d) = &v.data else {
-        return Err("元Law族templateが元の記号的Lawでない".into());
+        return Err(internal!("元Law族templateが元の記号的Lawでない").into());
     };
     let Some(p) = d.family_inputs(template)? else {
         return Ok(None);
     };
     if p.template.parameters != p.base.parameters {
-        return Err("元Law族の元parameter宣言順が違う".into());
+        return Err(internal!("元Law族の元parameter宣言順が違う").into());
     }
     for r in p.base_rows.iter().chain(&p.target_rows) {
-        let row = frames::origin(g, *r)?.ok_or("元Law族の完全行に由来がない")?;
+        let row = frames::origin(g, *r)?.ok_or(internal!("元Law族の完全行に由来がない"))?;
         if !row.ready && !row.outside {
             return Ok(None);
         }
     }
-    let origin = frames::origin(g, template)?.ok_or("元Law族の原式がない")?;
+    let origin = frames::origin(g, template)?.ok_or(internal!("元Law族の原式がない"))?;
     frames::check_architecture(g, architecture, &origin)?;
     if p.target_rows.is_empty() && !p.base_rows.is_empty() && !origin.outside {
         return Ok(None);
@@ -157,7 +157,7 @@ fn plan(
 
     let context = g.context_at(template.0);
     if context != g.context_at(architecture.0) {
-        return Err("元Law族のRequest Contextが違う".into());
+        return Err(internal!("元Law族のRequest Contextが違う").into());
     }
     Ok(Some(p))
 }
@@ -179,12 +179,12 @@ fn coordinates(g: &Graph, p: &FamilyInputs) -> Result<Vec<Vec<NodeRef>>, Validat
         keys = next;
     }
     if keys.len() != p.base_rows.len() {
-        return Err("元Law族の全直積とbase実row数が違う".into());
+        return Err(internal!("元Law族の全直積とbase実row数が違う").into());
     }
     for (key, r) in keys.iter().zip(&p.base_rows) {
-        let b = frames::origin(g, *r)?.ok_or("元Law族のbase実rowがない")?;
+        let b = frames::origin(g, *r)?.ok_or(internal!("元Law族のbase実rowがない"))?;
         if !b.ready || b.object != 0 || !Arc::ptr_eq(&b.architecture, &p.architecture) {
-            return Err("元Law族のbase行が完全束縛でない".into());
+            return Err(internal!("元Law族のbase行が完全束縛でない").into());
         }
         matching(g, p, key, &b.bindings)?;
     }
@@ -197,7 +197,7 @@ fn matching(
     bindings: &[Binding],
 ) -> Result<(), ValidationFailure> {
     if bindings.len() != p.template.bindings.len() + p.parameters.len() {
-        return Err("元Law族の全parameter数が違う".into());
+        return Err(internal!("元Law族の全parameter数が違う").into());
     }
     for fixed in &p.template.bindings {
         g.tick()?;
@@ -206,10 +206,10 @@ fn matching(
             .filter(|b| b.name == fixed.name)
             .collect::<Vec<_>>();
         let [actual] = candidates.as_slice() else {
-            return Err("元Law族の固定束縛が欠落/重複".into());
+            return Err(internal!("元Law族の固定束縛が欠落/重複").into());
         };
         if actual.ty != fixed.ty || g.scalar(actual.value)? != g.scalar(fixed.value)? {
-            return Err("元Law族の固定束縛が違う".into());
+            return Err(internal!("元Law族の固定束縛が違う").into());
         }
     }
     for (parameter, value) in p.parameters.iter().zip(key) {
@@ -219,42 +219,42 @@ fn matching(
             .filter(|b| b.name == parameter.name)
             .collect::<Vec<_>>();
         let [actual] = matches.as_slice() else {
-            return Err("元Law族の残parameterが欠落/重複".into());
+            return Err(internal!("元Law族の残parameterが欠落/重複").into());
         };
         if actual.ty != parameter.ty || g.scalar(actual.value)? != g.scalar(*value)? {
-            return Err("元Law族の直積順・値・型が違う".into());
+            return Err(internal!("元Law族の直積順・値・型が違う").into());
         }
     }
     Ok(())
 }
 fn same(g: &Graph, d: &Data, r: NodeRef) -> Result<Data, ValidationFailure> {
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("元Law族の依存がnativeでない".into());
+        return Err(internal!("元Law族の依存がnativeでない").into());
     };
     let D::LawFamily(child) = &v.data else {
-        return Err("元Law族の依存が別の構成".into());
+        return Err(internal!("元Law族の依存が別の構成").into());
     };
     if child.template != d.template
         || child.architecture != d.architecture
         || child.parameters != d.parameters
     {
-        return Err("元Law族の依存が別の元Law/対象".into());
+        return Err(internal!("元Law族の依存が別の元Law/対象").into());
     }
     Ok(child.clone())
 }
 fn domain(g: &Graph, d: &Data, r: NodeRef, keys: &[Vec<NodeRef>]) -> Result<(), ValidationFailure> {
     let child = same(g, d, r)?;
     let Kind::Domain { members } = &child.kind else {
-        return Err("元Law族の実直積Domainがない".into());
+        return Err(internal!("元Law族の実直積Domainがない").into());
     };
     if members.len() != keys.len() {
-        return Err("元Law族の直積member数が違う".into());
+        return Err(internal!("元Law族の直積member数が違う").into());
     }
     for (i, r) in members.iter().enumerate() {
         g.tick()?;
         let m = same(g, d, *r)?;
         if !matches!(&m.kind,Kind::Member{position,values,..} if *position==i && values==&keys[i]) {
-            return Err("元Law族の直積memberの順序・由来が違う".into());
+            return Err(internal!("元Law族の直積memberの順序・由来が違う").into());
         }
     }
     Ok(())
@@ -276,7 +276,7 @@ fn rows(
 ) -> Result<Aggregate, ValidationFailure> {
     domain(g, d, domain_ref, keys)?;
     if rs.len() != keys.len() {
-        return Err("元Law族の全行と実直積のcoverageが違う".into());
+        return Err(internal!("元Law族の全行と実直積のcoverageが違う").into());
     }
     let (mut support, mut scope) = base_metadata(g, d, p)?;
     let mut evidence: Vec<NodeRef> = vec![];
@@ -285,15 +285,15 @@ fn rows(
     let mut false_row = false;
     for (key, row) in keys.iter().zip(rs) {
         g.tick()?;
-        let origin = frames::origin(g, row.law)?.ok_or("元Law族の実rowに由来がない")?;
+        let origin = frames::origin(g, row.law)?.ok_or(internal!("元Law族の実rowに由来がない"))?;
         if origin.object != p.object
             || origin.declaration
                 != frames::origin(g, d.template)?
-                    .ok_or("元Law族templateがない")?
+                    .ok_or(internal!("元Law族templateがない"))?
                     .declaration
             || !Arc::ptr_eq(&origin.architecture, &p.architecture)
         {
-            return Err("元Law族の実rowが別の対象/宣言".into());
+            return Err(internal!("元Law族の実rowが別の対象/宣言").into());
         }
         matching(g, p, key, &origin.bindings)?;
         g.expect(row.evaluation, &NodeType::Evaluation(Type::Bool))?;
@@ -303,51 +303,54 @@ fn rows(
         match &prop.payload {
             Some(Payload::Construction(v)) => {
                 let D::OutsideLaw(data) = &v.data else {
-                    return Err("元Law族の非適用命題が別の構成".into());
+                    return Err(internal!("元Law族の非適用命題が別の構成").into());
                 };
                 if data.origin != row.law
                     || data.architecture != d.architecture
                     || !matches!(data.kind,super::law_inapplicable::Kind::Proposition{evaluation} if evaluation==row.evaluation)
                 {
-                    return Err("元Law族の非適用命題が別の行/対象".into());
+                    return Err(internal!("元Law族の非適用命題が別の行/対象").into());
                 }
             }
             Some(Payload::Proposition { .. }) => {
                 let context = g.context_at(row.proposition.0);
                 let index = context
                     .instance
-                    .ok_or("元Law族の通常命題に実instanceがない")?;
-                let record = g.instances.get(index).ok_or("元Law族の実instanceがない")?;
+                    .ok_or(internal!("元Law族の通常命題に実instanceがない"))?;
+                let record = g
+                    .instances
+                    .get(index)
+                    .ok_or(internal!("元Law族の実instanceがない"))?;
                 if record.source != row.law
                     || record.caller != g.context_at(d.architecture.0)
                     || g.context_at(row.evaluation.0) != context
                     || prop.arguments.get(1) != Some(&row.evaluation)
                 {
-                    return Err("元Law族の通常命題が別の行/評価".into());
+                    return Err(internal!("元Law族の通常命題が別の行/評価").into());
                 }
                 if frames::architecture(g, index, g.nodes.len())? != Some(d.architecture) {
-                    return Err("元Law族の実行環境が違う".into());
+                    return Err(internal!("元Law族の実行環境が違う").into());
                 }
             }
-            _ => return Err("元Law族の行命題がない".into()),
+            _ => return Err(internal!("元Law族の行命題がない").into()),
         }
         let status = prop
             .judgment
             .as_ref()
-            .ok_or("元Law族の行判断がない")?
+            .ok_or(internal!("元Law族の行判断がない"))?
             .status;
         let value = match &eval.payload {
             Some(Payload::Evaluation { value, .. }) => g.boolean(*value)?,
             Some(Payload::Construction(v)) => {
                 let D::OutsideLaw(data) = &v.data else {
-                    return Err("元Law族の行評価が別の構成".into());
+                    return Err(internal!("元Law族の行評価が別の構成").into());
                 };
                 let super::law_inapplicable::Kind::Evaluation { value } = &data.kind else {
-                    return Err("元Law族の非適用行評価がない".into());
+                    return Err(internal!("元Law族の非適用行評価がない").into());
                 };
                 g.boolean(Some(*value))?
             }
-            _ => return Err("元Law族の行Evaluationがない".into()),
+            _ => return Err(internal!("元Law族の行Evaluationがない").into()),
         };
         let expected = match value {
             Some(true) => Decision::Established,
@@ -355,7 +358,7 @@ fn rows(
             None => Decision::Undetermined,
         };
         if status != expected {
-            return Err("元Law族の実評価と行判断が違う".into());
+            return Err(internal!("元Law族の実評価と行判断が違う").into());
         }
         all &= value == Some(true);
         false_row |= value == Some(false);
@@ -396,7 +399,7 @@ fn base_metadata(
     let mut scope = frames::base_scope(
         &p.architecture,
         &frames::origin(g, d.template)?
-            .ok_or("元Law族の由来がない")?
+            .ok_or(internal!("元Law族の由来がない"))?
             .declaration,
     )?;
     scope.merge(&g.get(d.architecture)?.scope);
@@ -421,9 +424,10 @@ fn ref_array(rs: &[NodeRef]) -> Json {
     Json::Arr(rs.iter().map(|r| r.wire()).collect())
 }
 fn expected(g: &Graph, d: &Data) -> Result<(Arc<ArchitectureWitness>, Data), ValidationFailure> {
-    let p = plan(g, d.template, d.architecture)?.ok_or("元Law族の完全な有限parameter域がない")?;
+    let p = plan(g, d.template, d.architecture)?
+        .ok_or(internal!("元Law族の完全な有限parameter域がない"))?;
     if d.parameters != p.parameters.iter().map(|p| p.reference).collect::<Vec<_>>() {
-        return Err("元Law族のparameter域順が違う".into());
+        return Err(internal!("元Law族のparameter域順が違う").into());
     }
     let keys = coordinates(g, &p)?;
     let (support, scope) = base_metadata(g, d, &p)?;
@@ -447,7 +451,7 @@ fn expected(g: &Graph, d: &Data) -> Result<(Arc<ArchitectureWitness>, Data), Val
             wire,
         } => {
             if keys.get(*position) != Some(values) {
-                return Err("元Law族のmember位置/束縛が違う".into());
+                return Err(internal!("元Law族のmember位置/束縛が違う").into());
             }
             let vs = values
                 .iter()
@@ -460,18 +464,18 @@ fn expected(g: &Graph, d: &Data) -> Result<(Arc<ArchitectureWitness>, Data), Val
             };
             let actual_wire = g.scalar_wire(&actual, values)?;
             if scalar != &actual || wire != &actual_wire {
-                return Err("元Law族のmember型/値/表示が違う".into());
+                return Err(internal!("元Law族のmember型/値/表示が違う").into());
             }
             actual_wire
         }
         Kind::Domain { members } => {
             if members.len() != keys.len() {
-                return Err("元Law族の実直積Domainが全域でない".into());
+                return Err(internal!("元Law族の実直積Domainが全域でない").into());
             }
             for (i, r) in members.iter().enumerate() {
                 let m = same(g, d, *r)?;
                 if !matches!(m.kind,Kind::Member{position,..} if position==i) {
-                    return Err("元Law族のDomain member順が違う".into());
+                    return Err(internal!("元Law族のDomain member順が違う").into());
                 }
             }
             Json::obj([
@@ -487,7 +491,7 @@ fn expected(g: &Graph, d: &Data) -> Result<(Arc<ArchitectureWitness>, Data), Val
         } => {
             let a = rows(g, d, &p, &keys, *domain, rs)?;
             if a.value.map(Scalar::Bool).as_ref() != Some(scalar) {
-                return Err("元Law族の全称集約値が違う".into());
+                return Err(internal!("元Law族の全称集約値が違う").into());
             }
             out.support = a.support;
             out.scope = a.scope;
@@ -505,23 +509,23 @@ fn expected(g: &Graph, d: &Data) -> Result<(Arc<ArchitectureWitness>, Data), Val
                     let actual = same(g, d, *v)?;
                     if !matches!(&actual.kind,Kind::Value{domain:vd,rows:vr,scalar:Scalar::Bool(vb)} if vd==domain && vr==rs && vb==&b)
                     {
-                        return Err("元Law族の全称値が別の族/直積".into());
+                        return Err(internal!("元Law族の全称値が別の族/直積").into());
                     }
                 }
                 (None, None) => (),
-                _ => return Err("元Law族の未決値を補完した".into()),
+                _ => return Err(internal!("元Law族の未決値を補完した").into()),
             }
             out.support = a.support;
             out.scope = a.scope;
             out.reasons = a.reasons;
-            let origin = frames::origin(g, d.template)?.ok_or("元Law族のbodyがない")?;
+            let origin = frames::origin(g, d.template)?.ok_or(internal!("元Law族のbodyがない"))?;
             let location = Location::Law {
                 span: Witness::Architecture(p.architecture.clone())
                     .inputs()
                     .law()
                     .exprs()
                     .get(origin.body)
-                    .ok_or("元Law族のbody式がない")?
+                    .ok_or(internal!("元Law族のbody式がない"))?
                     .span,
             };
             let mut w = Json::obj([
@@ -572,11 +576,11 @@ fn expected(g: &Graph, d: &Data) -> Result<(Arc<ArchitectureWitness>, Data), Val
                 domain, rows: rs, ..
             } = &e.kind
             else {
-                return Err("元Law族の全検査元評価がない".into());
+                return Err(internal!("元Law族の全検査元評価がない").into());
             };
             let a = rows(g, d, &p, &keys, *domain, rs)?;
             if a.value != Some(true) {
-                return Err("元Law族の全検査が成立でない".into());
+                return Err(internal!("元Law族の全検査が成立でない").into());
             }
             out.support = a.support;
             out.scope = a.scope;
@@ -596,21 +600,21 @@ fn expected(g: &Graph, d: &Data) -> Result<(Arc<ArchitectureWitness>, Data), Val
                 domain, rows: rs, ..
             } = &e.kind
             else {
-                return Err("元Law族の判断元評価がない".into());
+                return Err(internal!("元Law族の判断元評価がない").into());
             };
             let mut a = rows(g, d, &p, &keys, *domain, rs)?;
             if a.value == Some(true) {
                 let Some(last) = evidence.last() else {
-                    return Err("元Law族の全検査証拠がない".into());
+                    return Err(internal!("元Law族の全検査証拠がない").into());
                 };
                 let proof = same(g, d, *last)?;
                 if !matches!(proof.kind,Kind::Exhaustion{evaluation:e} if e==*evaluation) {
-                    return Err("元Law族の全検査証拠が別評価".into());
+                    return Err(internal!("元Law族の全検査証拠が別評価").into());
                 }
                 a.evidence.push(*last)
             }
             if evidence != &a.evidence {
-                return Err("元Law族の判断証拠が実row/全検査と違う".into());
+                return Err(internal!("元Law族の判断証拠が実row/全検査と違う").into());
             }
             let status = match a.value {
                 Some(true) => Decision::Established,
@@ -646,7 +650,7 @@ pub(super) fn validate_node(
 ) -> Result<(), ValidationFailure> {
     let (a, e) = expected(g, d)?;
     let Witness::Architecture(w) = &v.witness else {
-        return Err("元Law族のArchitecture証拠がない".into());
+        return Err(internal!("元Law族のArchitecture証拠がない").into());
     };
     if !Arc::ptr_eq(w, &a)
         || d != &e
@@ -659,7 +663,7 @@ pub(super) fn validate_node(
         || n.reasons != d.reasons
         || n.judgment != d.judgment
     {
-        return Err("元Law族の型/全域/全行/判断/表示/metadataが違う".into());
+        return Err(internal!("元Law族の型/全域/全行/判断/表示/metadataが違う").into());
     }
     Ok(())
 }
@@ -721,7 +725,7 @@ impl super::result_kind::ResultKind for Data {
         let (env, g, template, architecture, c) = input;
         tick(c)?;
         if g.active != g.context_at(template.0) {
-            return Err("元Law族の生成が元Request Contextでない".into());
+            return Err(internal!("元Law族の生成が元Request Contextでない").into());
         }
         env.recheck_law_evaluation_inputs(g, template, architecture)?;
         let Some(p) = plan(g, template, architecture)? else {
@@ -729,7 +733,7 @@ impl super::result_kind::ResultKind for Data {
         };
         let keys = coordinates(g, &p)?;
         if !p.target_rows.is_empty() && p.target_rows.len() != keys.len() {
-            return Err("元Law族の対象全row数が違う".into());
+            return Err(internal!("元Law族の対象全row数が違う").into());
         }
         let d = Data {
             template,
@@ -774,30 +778,30 @@ impl super::result_kind::ResultKind for Data {
         for (position, (key, base)) in keys.iter().zip(&p.base_rows).enumerate() {
             tick(c)?;
             let law = if let Some(target) = p.target_rows.get(position) {
-                let row = frames::origin(g, *target)?.ok_or("元Law族の対象rowがない")?;
+                let row = frames::origin(g, *target)?.ok_or(internal!("元Law族の対象rowがない"))?;
                 matching(g, &p, key, &row.bindings)?;
                 *target
             } else {
                 super::law_instantiation::instantiate(env, g, *base, template, architecture, c)?
             };
             let answer = if frames::origin(g, law)?
-                .ok_or("元Law族の実rowがない")?
+                .ok_or(internal!("元Law族の実rowがない"))?
                 .outside
             {
                 super::law_inapplicable::check(env, g, law, architecture, c)?
-                    .ok_or("元Law族の非適用行評価がない")?
+                    .ok_or(internal!("元Law族の非適用行評価がない"))?
             } else {
                 super::law_proposition::check(env, g, law, architecture, c)?
                     .answer
-                    .ok_or("元Law族の実行が未完成")?
+                    .ok_or(internal!("元Law族の実行が未完成"))?
             };
             rs.push(Row {
                 law,
                 evaluation: *answer
                     .outputs
                     .get("evaluation")
-                    .ok_or("元Law族の行Evaluationがない")?,
-                proposition: answer.claim.ok_or("元Law族の行判断がない")?,
+                    .ok_or(internal!("元Law族の行Evaluationがない"))?,
+                proposition: answer.claim.ok_or(internal!("元Law族の行判断がない"))?,
             });
         }
         tick(c)?;
@@ -845,12 +849,15 @@ impl super::result_kind::ResultKind for Data {
         )?;
         tick(c)?;
         let n = g.get(proposition)?;
-        let judgment = n.judgment.as_ref().ok_or("元Law族の判断がない")?;
+        let judgment = n
+            .judgment
+            .as_ref()
+            .ok_or(internal!("元Law族の判断がない"))?;
         Ok(Some(Answer {
             id: g
                 .requests
                 .get(g.active.request)
-                .ok_or("元Law族のRequestがない")?
+                .ok_or(internal!("元Law族のRequestがない"))?
                 .id
                 .clone(),
             status: judgment.status,

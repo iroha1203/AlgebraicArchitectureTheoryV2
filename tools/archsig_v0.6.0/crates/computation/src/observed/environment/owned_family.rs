@@ -40,7 +40,7 @@ impl Environment<'_> {
             ..
         } = owner
         else {
-            return Err("依存parameterのownerがRefでない".into());
+            return Err(internal!("依存parameterのownerがRefでない").into());
         };
         let owner_subject_input = self.indexes.subject(owner_snapshot, owner_subject)?;
         result
@@ -114,7 +114,7 @@ impl Environment<'_> {
                         ..
                     } = assigned
                     else {
-                        return Err("候補の原始owner値がRefでない".into());
+                        return Err(internal!("候補の原始owner値がRefでない").into());
                     };
                     result.enumeration.scope.assignments = true;
                     result.enumeration.support.push(position);
@@ -176,11 +176,13 @@ impl Environment<'_> {
                                 entity: target_entity,
                             } = &completed
                             else {
-                                return Err("所属補完の原始owner値がRefでない".into());
+                                return Err(internal!("所属補完の原始owner値がRefでない").into());
                             };
                             let target = self.indexes.subject(target_snapshot, target_subject)?;
                             if target.ty != *target_entity || completed.ty() != field.ty {
-                                return Err("所属補完の原始owner型が元fieldと違う".into());
+                                return Err(
+                                    internal!("所属補完の原始owner型が元fieldと違う").into()
+                                );
                             }
                             if target_snapshot == owner_snapshot && target_subject == owner_subject
                             {
@@ -190,7 +192,7 @@ impl Environment<'_> {
                             result.missing.push(fact);
                         }
                     }
-                    _ => return Err("元owner slotがRef型でない".into()),
+                    _ => return Err(internal!("元owner slotがRef型でない").into()),
                 }
                 self.tick()?;
             }
@@ -222,9 +224,9 @@ impl Environment<'_> {
     ) -> Result<(String, usize), ValidationFailure> {
         self.tick()?;
         let law = self.indexes.inputs.law();
-        let expression = law.exprs().get(id).ok_or("元Family ASTがない")?;
+        let expression = law.exprs().get(id).ok_or(internal!("元Family ASTがない"))?;
         let ExprKind::Family { name, owner } = &expression.kind else {
-            return Err("元式がFamilyでない".into());
+            return Err(internal!("元式がFamilyでない").into());
         };
         let mut resolved = None;
         for info in law.infos() {
@@ -236,11 +238,11 @@ impl Environment<'_> {
                         .replace(target.clone())
                         .is_some_and(|old| old != *target)
                 {
-                    return Err("元Familyの静的解決名が一意でない".into());
+                    return Err(internal!("元Familyの静的解決名が一意でない").into());
                 }
             }
         }
-        let target = resolved.ok_or("元Family名の静的解決がない")?;
+        let target = resolved.ok_or(internal!("元Family名の静的解決がない"))?;
         let root = match law
             .definitions()
             .declarations()
@@ -253,12 +255,12 @@ impl Environment<'_> {
                 }
                 | PrimitiveSignature::Arrow { owner: root, .. },
             ) => root,
-            _ => return Err("元Familyがownerを持つentity・arrowでない".into()),
+            _ => return Err(internal!("元Familyがownerを持つentity・arrowでない").into()),
         };
         if law.expr_type(id) != Some(&Type::Set(Box::new(Type::Ref(target.clone()))))
             || law.expr_type(*owner).map(Type::erase) != Some(Type::Ref(root.clone()))
         {
-            return Err("元Family・ownerの検査済み型が解決名と違う".into());
+            return Err(internal!("元Family・ownerの検査済み型が解決名と違う").into());
         }
         Ok((target, *owner))
     }
@@ -280,7 +282,7 @@ impl Environment<'_> {
                 d.span.0 <= self.indexes.inputs.law().exprs()[id].span.0
                     && self.indexes.inputs.law().exprs()[id].span.1 <= d.span.1
             })
-            .ok_or("元Familyの宣言がない")?;
+            .ok_or(internal!("元Familyの宣言がない"))?;
         let mut result = if let Some(owner) = owner {
             if Some(owner.ty())
                 != self
@@ -290,7 +292,7 @@ impl Environment<'_> {
                     .expr_type(owner_id)
                     .map(Type::erase)
             {
-                return Err("元Family owner値型が違う".into());
+                return Err(internal!("元Family owner値型が違う").into());
             }
             self.owned_members(&entity, owner, None, &declaration.reading, observer)?
         } else {
@@ -427,7 +429,7 @@ impl Environment<'_> {
             || graph.context_at(source.0) != context
             || graph.context_at(owner_evaluation.0) != context
         {
-            return Err("Familyの元Source・owner評価が既出同Contextでない".into());
+            return Err(internal!("Familyの元Source・owner評価が既出同Contextでない").into());
         }
         let own = graph.get(source)?;
         let Some(Payload::Expression {
@@ -436,7 +438,7 @@ impl Environment<'_> {
             bindings,
         }) = &own.payload
         else {
-            return Err("Familyに元Sourceがない".into());
+            return Err(internal!("Familyに元Sourceがない").into());
         };
         if *own_span != span
             || !parameters.is_empty()
@@ -447,11 +449,11 @@ impl Environment<'_> {
                         .inputs
                         .law()
                         .expr_type(id)
-                        .ok_or("元Family型がない")?
+                        .ok_or(internal!("元Family型がない"))?
                         .clone(),
                 )
         {
-            return Err("Familyのown Source・元束縛・型が違う".into());
+            return Err(internal!("Familyのown Source・元束縛・型が違う").into());
         }
         self.validate_at(graph, own, source.0)?;
         let (owner_source, owner_bindings, value) = self.evaluation(graph, owner_evaluation)?;
@@ -464,12 +466,12 @@ impl Environment<'_> {
                         .inputs
                         .law()
                         .expr_type(owner_id)
-                        .ok_or("元owner型がない")?
+                        .ok_or(internal!("元owner型がない"))?
                         .clone(),
                 )
             || self.actual_evaluation(graph, owner_id, bindings)? != owner_evaluation
         {
-            return Err("Familyの実owner子評価が元AST・producer・束縛と違う".into());
+            return Err(internal!("Familyの実owner子評価が元AST・producer・束縛と違う").into());
         }
         let original_owner = self.analyze_source(
             graph,
@@ -478,7 +480,7 @@ impl Environment<'_> {
         )?;
         let actual_owner = value.map(|r| graph.scalar(r)).transpose()?;
         if original_owner.known_value.as_ref() != actual_owner {
-            return Err("Familyの実owner値が元入力と違う".into());
+            return Err(internal!("Familyの実owner値が元入力と違う").into());
         }
         self.resolve_analysis(
             graph,
@@ -498,7 +500,7 @@ impl Environment<'_> {
             location: Location::Law { span },
         } = &node.rule
         else {
-            return Err("Family Scalarに元Law出現がない".into());
+            return Err(internal!("Family Scalarに元Law出現がない").into());
         };
         let id = *self
             .indexes
@@ -507,9 +509,9 @@ impl Environment<'_> {
             .program()
             .expressions
             .get(span)
-            .ok_or("Family Scalarの元ASTがない")?;
+            .ok_or(internal!("Family Scalarの元ASTがない"))?;
         let [source, owner_evaluation] = node.arguments.as_slice() else {
-            return Err("Family Scalarの元Source・実owner評価辺がない".into());
+            return Err(internal!("Family Scalarの元Source・実owner評価辺がない").into());
         };
         let analysis = self.owned_family_inputs(graph, *source, *owner_evaluation, id, limit)?;
         let bindings = self.expression_bindings(graph, *source)?;
@@ -521,7 +523,7 @@ impl Environment<'_> {
                         .inputs
                         .law()
                         .expr_type(id)
-                        .ok_or("元Family型がない")?
+                        .ok_or(internal!("元Family型がない"))?
                         .clone(),
                 )
             || node.support != analysis.support
@@ -530,7 +532,7 @@ impl Environment<'_> {
             || !node.reasons.is_empty()
             || node.judgment.is_some()
         {
-            return Err("Family Scalarの元集合・支持・Scope・実producerが違う".into());
+            return Err(internal!("Family Scalarの元集合・支持・Scope・実producerが違う").into());
         }
         Ok(analysis)
     }
@@ -577,7 +579,7 @@ impl Environment<'_> {
             || *applicability != "applicable"
             || bindings != self.expression_bindings(graph, *expression)?
         {
-            return Err("Family評価の元part・束縛・owner子が違う".into());
+            return Err(internal!("Family評価の元part・束縛・owner子が違う").into());
         }
         let owner_evaluation = parts[0].children[0];
         let analysis = self.owned_family_inputs(graph, *expression, owner_evaluation, id, limit)?;
@@ -593,7 +595,7 @@ impl Environment<'_> {
                         .inputs
                         .law()
                         .expr_type(id)
-                        .ok_or("元Family型がない")?
+                        .ok_or(internal!("元Family型がない"))?
                         .clone(),
                 )
             || node.scope != analysis.scope
@@ -605,7 +607,7 @@ impl Environment<'_> {
             || !node.evidence.is_empty()
             || node.judgment.is_some()
         {
-            return Err("Family評価の元規則・型・Scope・支持・辺が違う".into());
+            return Err(internal!("Family評価の元規則・型・Scope・支持・辺が違う").into());
         }
         match (value, analysis.known_value.as_ref()) {
             (Some(reference), Some(expected)) => {
@@ -615,12 +617,14 @@ impl Environment<'_> {
                     || graph.scalar(*reference)? != expected
                     || !matches!(&graph.get(*reference)?.rule,Rule::Input {kind:"law",location:Location::Law {span:actual}} if *actual==span)
                 {
-                    return Err("Family評価の集合値が元出現・owner評価に接続しない".into());
+                    return Err(
+                        internal!("Family評価の集合値が元出現・owner評価に接続しない").into(),
+                    );
                 }
                 self.validate_at(graph, graph.get(*reference)?, reference.0)?;
             }
             (None, None) => {}
-            _ => return Err("Family評価の確定・欠測が元入力と違う".into()),
+            _ => return Err(internal!("Family評価の確定・欠測が元入力と違う").into()),
         }
         let (_, _, owner_value) = self.evaluation(graph, owner_evaluation)?;
         let members = self.owned_expression_members(
@@ -631,7 +635,7 @@ impl Environment<'_> {
         let request = graph
             .requests
             .get(self.current_context(graph).request)
-            .ok_or("Family評価の元Requestがない")?;
+            .ok_or(internal!("Family評価の元Requestがない"))?;
         let mut reasons = graph.get(owner_evaluation)?.reasons.clone();
         if !members.missing.is_empty() {
             reasons.push(Reason {
@@ -651,7 +655,7 @@ impl Environment<'_> {
                             .inputs
                             .law()
                             .expr_type(id)
-                            .ok_or("元Family型がない")?
+                            .ok_or(internal!("元Family型がない"))?
                             .clone(),
                     ],
                     method: "unresolved_owned_expression_family".into(),
@@ -664,7 +668,7 @@ impl Environment<'_> {
         }
         sort_reasons(&mut reasons);
         if !reasons_equal(&node.reasons, &reasons) {
-            return Err("Family評価が元owner欠測・未実装理由を保持しない".into());
+            return Err(internal!("Family評価が元owner欠測・未実装理由を保持しない").into());
         }
         Ok(true)
     }

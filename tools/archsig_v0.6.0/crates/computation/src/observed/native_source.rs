@@ -13,12 +13,12 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
 
 pub(super) fn saved_context(g: &Graph, r: NodeRef) -> Result<Context, ValidationFailure> {
     if g.contexts.len() != g.nodes.len() {
-        return Err("native構成のnode表と保存Context表の長さが違う".into());
+        return Err(internal!("native構成のnode表と保存Context表の長さが違う").into());
     }
     g.contexts
         .get(r.0)
         .copied()
-        .ok_or_else(|| "native構成の元nodeに保存Contextがない".into())
+        .ok_or_else(|| internal!("native構成の元nodeに保存Contextがない").into())
 }
 
 /// 構成開始より前の元入力だけを保持する。計算結果の正しさは各構成の検査器が担う。
@@ -45,7 +45,7 @@ impl Boundary {
             || producer.iteration.is_some()
             || producer.case.is_some()
         {
-            return Err("native構成の生成が元Architectureのroot Contextでない".into());
+            return Err(internal!("native構成の生成が元Architectureのroot Contextでない").into());
         }
         let boundary = Self {
             start: g.nodes.len(),
@@ -79,19 +79,19 @@ impl Boundary {
             } else if at == g.nodes.len() && g.contexts.len() == g.nodes.len() {
                 g.active
             } else {
-                return Err("native構成の保存位置またはContextがない".into());
+                return Err(internal!("native構成の保存位置またはContextがない").into());
             };
             if self.start > at
                 || actual != self.producer
                 || saved_context(g, self.architecture)? != self.producer
             {
-                return Err("native構成の開始位置または元producerが違う".into());
+                return Err(internal!("native構成の開始位置または元producerが違う").into());
             }
             // 全参照を検査してから再帰する。後続wrapperや自己参照へ再入しない。
             for r in std::iter::once(&self.architecture).chain(&self.inputs) {
                 tick(c)?;
                 if r.0 >= self.start {
-                    return Err("native構成の元入力が構成開始より前でない".into());
+                    return Err(internal!("native構成の元入力が構成開始より前でない").into());
                 }
                 saved_context(g, *r)?;
             }

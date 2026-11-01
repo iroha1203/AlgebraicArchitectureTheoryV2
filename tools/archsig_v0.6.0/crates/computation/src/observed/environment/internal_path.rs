@@ -174,10 +174,10 @@ impl Environment<'_> {
                 && span.1 <= d.span.1
                 && reading.replace(d.reading.as_str()).is_some()
             {
-                return Err("Pathの元宣言が一意でない".into());
+                return Err(internal!("Pathの元宣言が一意でない").into());
             }
         }
-        reading.ok_or_else(|| "Pathの元readingがない".into())
+        reading.ok_or_else(|| internal!("Pathの元readingがない").into())
     }
     // 観測値がnone/空であっても、元型が参照を含み得るなら値依存を残す。
     fn path_reads_value(&self, ty: &Type) -> Result<bool, ValidationFailure> {
@@ -219,7 +219,7 @@ impl Environment<'_> {
                     .get(&(owner.snapshot.clone(), owner.id.clone(), name.clone()))
             })
             .copied()
-            .ok_or_else(|| "Path構造の元fieldがない".into())
+            .ok_or_else(|| internal!("Path構造の元fieldがない").into())
     }
     pub(super) fn path_structure_slot(
         &self,
@@ -390,7 +390,7 @@ impl Environment<'_> {
         span: (usize, usize),
     ) -> Result<PathResult, ValidationFailure> {
         let [generator @ Scalar::Subject { entity, .. }] = values else {
-            return Err("pathの元引数が原始参照1個でない".into());
+            return Err(internal!("pathの元引数が原始参照1個でない").into());
         };
         let declaration = self
             .indexes
@@ -398,7 +398,7 @@ impl Environment<'_> {
             .definitions()
             .declarations()
             .get(entity)
-            .ok_or("pathの原始宣言がない")?;
+            .ok_or(internal!("pathの原始宣言がない"))?;
         if matches!(
             &declaration.signature,
             PrimitiveSignature::Correspondence { .. }
@@ -431,7 +431,7 @@ impl Environment<'_> {
             },
         ] = values
         else {
-            return Err("pathの元引数が原始参照1個でない".into());
+            return Err(internal!("pathの元引数が原始参照1個でない").into());
         };
         let declaration = self
             .indexes
@@ -439,13 +439,13 @@ impl Environment<'_> {
             .definitions()
             .declarations()
             .get(entity)
-            .ok_or("pathの原始宣言がない")?;
+            .ok_or(internal!("pathの原始宣言がない"))?;
         let PrimitiveSignature::Arrow { endpoint, .. } = &declaration.signature else {
-            return Err("pathの元宣言がarrow/correspondenceでない".into());
+            return Err(internal!("pathの元宣言がarrow/correspondenceでない").into());
         };
         let arrow = self.indexes.subject(snapshot, subject)?;
         if arrow.ty != *entity {
-            return Err("pathの元arrow型が違う".into());
+            return Err(internal!("pathの元arrow型が違う").into());
         }
         let from = self.path_slot(
             arrow,
@@ -468,7 +468,7 @@ impl Environment<'_> {
             return Ok(out);
         };
         if from.ty() != Type::Ref(endpoint.clone()) || to.ty() != Type::Ref(endpoint.clone()) {
-            return Err("pathの実端点型が元arrowと違う".into());
+            return Err(internal!("pathの実端点型が元arrowと違う").into());
         }
         let Scalar::Subject {
             snapshot: fs,
@@ -489,7 +489,7 @@ impl Environment<'_> {
         let source = self.indexes.subject(fs, fp)?;
         let target = self.indexes.subject(ts, tp)?;
         if source.ty != *fe || target.ty != *te {
-            return Err("pathの端点subjectが元入力と違う".into());
+            return Err(internal!("pathの端点subjectが元入力と違う").into());
         }
         // Uは選択した端点のsnapshotだけへ縮めず、全入力の原始identityで構成する。
         let mut universe = BTreeSet::new();
@@ -567,10 +567,10 @@ impl Environment<'_> {
             let moving = BTreeMap::from([((fs.clone(), fp.clone()), (ts.clone(), tp.clone()))]);
             let value = self
                 .path_input_value(source, field)?
-                .ok_or("元Pathのfield値がない")?;
+                .ok_or(internal!("元Pathのfield値がない"))?;
             let target_value = self
                 .path_input_value(target, target_field)?
-                .ok_or("Pathの像field値がない")?;
+                .ok_or(internal!("Pathの像field値がない"))?;
             let expected = self.path_shape(value, Some(&moving), &mut refs)?;
             let actual = self.path_shape(target_value, None, &mut BTreeSet::new())?;
             if !self.path_shape_same(&expected, &actual)? {
@@ -611,7 +611,7 @@ impl Environment<'_> {
                 && fact.subject == *fp
                 && image != target_fact
             {
-                return Err("pathの端点像が標準規則と違う".into());
+                return Err(internal!("pathの端点像が標準規則と違う").into());
             }
             carrier.push(fact);
             action.push(image);
@@ -708,7 +708,7 @@ impl Environment<'_> {
         );
         self.tick()?;
         let Some(Payload::Scalar(Scalar::Path(path))) = &node.payload else {
-            return Err("元path式の結果値がPathでない".into());
+            return Err(internal!("元path式の結果値がPathでない").into());
         };
         if node.ty != NodeType::Value(Scalar::Path(path.clone()).ty())
             || self.indexes.inputs.law().expr_type(id) != Some(&Scalar::Path(path.clone()).ty())
@@ -716,13 +716,13 @@ impl Environment<'_> {
             || node.judgment.is_some()
             || !node.reasons.is_empty()
         {
-            return Err("Pathの元型・証拠・理由が違う".into());
+            return Err(internal!("Pathの元型・証拠・理由が違う").into());
         }
         let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs()[id].kind else {
             unreachable!()
         };
         if node.arguments.len() != args.len() + 2 {
-            return Err("Pathの元引数と既出端点が揃わない".into());
+            return Err(internal!("Pathの元引数と既出端点が揃わない").into());
         }
         let (operands, endpoints) = node.arguments.split_at(args.len());
         let [from, to] = endpoints else {
@@ -734,12 +734,12 @@ impl Environment<'_> {
             if r.0 >= limit
                 || (i >= args.len() && graph.context_at(r.0) != self.current_context(graph))
             {
-                return Err("Pathの依存が既出・同Contextでない".into());
+                return Err(internal!("Pathの依存が既出・同Contextでない").into());
             }
             self.validate_at(graph, graph.get(*r)?, r.0)?;
         }
         if graph.scalar(*from)? != &path.object() || graph.scalar(*to)? != &path.target() {
-            return Err("Pathの既出Refと実端点が違う".into());
+            return Err(internal!("Pathの既出Refと実端点が違う").into());
         }
         for (i, source) in graph.nodes.iter().enumerate().take(limit) {
             self.tick()?;
@@ -758,7 +758,7 @@ impl Environment<'_> {
                 self.validate_at(graph, source, i)?;
                 for (&arg, &value) in args.iter().zip(operands) {
                     if !self.has_operand_evaluation(graph, limit, arg, bindings, value)? {
-                        return Err("Pathの実引数が元実子の値でない".into());
+                        return Err(internal!("Pathの実引数が元実子の値でない").into());
                     }
                 }
                 let analysis = self.analyze_source(graph, *span, bindings)?;
@@ -766,7 +766,7 @@ impl Environment<'_> {
                     || analysis.support != node.support
                     || analysis.scalar_scope.as_ref() != Some(&node.scope)
                 {
-                    return Err("Pathの値・支持・Scopeが元三入力と違う".into());
+                    return Err(internal!("Pathの値・支持・Scopeが元三入力と違う").into());
                 }
                 Ok::<_, ValidationFailure>(analysis)
             })();
@@ -776,7 +776,7 @@ impl Environment<'_> {
                 Err(e) => return Err(e),
             }
         }
-        Err("Path値の元Sourceと実子評価がない".into())
+        Err(internal!("Path値の元Sourceと実子評価がない").into())
     }
     pub(super) fn path_missing_slots(
         &self,
@@ -837,13 +837,13 @@ impl Environment<'_> {
                 unreachable!()
             };
             if children.len() != args.len() {
-                return Err("Path支持の元実子数が違う".into());
+                return Err(internal!("Path支持の元実子数が違う").into());
             }
             let mut values = Vec::new();
             for (&arg, &child) in args.iter().zip(children) {
                 self.tick()?;
                 if self.actual_evaluation(graph, arg, bindings)? != child {
-                    return Err("Path支持の実子が元producerでない".into());
+                    return Err(internal!("Path支持の実子が元producerでない").into());
                 }
                 let Some(value) = self.evaluation(graph, child)?.2 else {
                     return Ok(Some(vec![]));

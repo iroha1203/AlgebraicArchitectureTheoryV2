@@ -70,7 +70,9 @@ pub(in crate::observed) fn evaluate_on_fields(
         .missing_slot_reads
         .scoped(Some(BTreeSet::new()));
     let result = evaluate_inner(environment, declaration, bindings, fields);
-    let missing = outer.restore().ok_or("changeの不足位置収集がない")?;
+    let missing = outer
+        .restore()
+        .ok_or(internal!("changeの不足位置収集がない"))?;
     if let Some(reads) = environment.state.missing_slot_reads.borrow_mut().as_mut() {
         reads.extend(missing.iter().cloned());
     }
@@ -103,10 +105,10 @@ fn evaluate_inner(
         body,
     } = &declaration.signature
     else {
-        return Err("更新の元宣言がchangeでない".into());
+        return Err(internal!("更新の元宣言がchangeでない").into());
     };
     if params.len() != bindings.len() || params.is_empty() {
-        return Err("changeの元parameter数が違う".into());
+        return Err(internal!("changeの元parameter数が違う").into());
     }
     let mut vars = BTreeMap::new();
     let mut checked = BTreeMap::new();
@@ -114,7 +116,7 @@ fn evaluate_inner(
     for (parameter, (name, value)) in params.iter().zip(bindings) {
         environment.tick()?;
         if parameter.name != *name || parameter.ty.erase() != value.ty() {
-            return Err("changeの元parameter名または型が違う".into());
+            return Err(internal!("changeの元parameter名または型が違う").into());
         }
         data::check(
             value,
@@ -162,7 +164,7 @@ fn evaluate_inner(
                 return Ok(result);
             }
             Some(Scalar::Bool(true)) => {}
-            _ => return Err("change guardの型がBoolでない".into()),
+            _ => return Err(internal!("change guardの型がBoolでない").into()),
         }
     }
     let mut current = *body;
@@ -196,7 +198,7 @@ fn evaluate_inner(
                 current = match condition.known_value {
                     Some(Scalar::Bool(true)) => *then_branch,
                     Some(Scalar::Bool(false)) => *else_branch,
-                    _ => return Err("changeの分岐条件がBoolでない".into()),
+                    _ => return Err(internal!("changeの分岐条件がBoolでない").into()),
                 };
             }
             ExprKind::With {
@@ -212,7 +214,7 @@ fn evaluate_inner(
                 }) = &target.known_value
                 else {
                     if result.state == State::Ready {
-                        return Err("changeの更新先がsubjectでない".into());
+                        return Err(internal!("changeの更新先がsubjectでない").into());
                     }
                     break;
                 };
@@ -262,7 +264,7 @@ fn evaluate_inner(
                 }
                 break;
             }
-            _ => return Err("検査済みchangeの結果がwith更新でない".into()),
+            _ => return Err(internal!("検査済みchangeの結果がwith更新でない").into()),
         }
     }
     result.values.sort_by(|a, b| a.0.cmp(&b.0));
@@ -297,7 +299,7 @@ pub(in crate::observed) fn update_shape(
     declaration: &Declaration,
 ) -> Result<(usize, Vec<String>), ValidationFailure> {
     let Signature::Change { body, .. } = &declaration.signature else {
-        return Err("更新座標の宣言がchangeでない".into());
+        return Err(internal!("更新座標の宣言がchangeでない").into());
     };
     let mut pending = vec![*body];
     let mut fields = BTreeSet::new();
@@ -319,11 +321,11 @@ pub(in crate::observed) fn update_shape(
                 base.get_or_insert(*target);
                 fields.extend(updates.iter().map(|(field, _)| field.name.clone()));
             }
-            _ => return Err("検査済みchangeの更新座標がない".into()),
+            _ => return Err(internal!("検査済みchangeの更新座標がない").into()),
         }
     }
     Ok((
-        base.ok_or("changeの更新先出現がない")?,
+        base.ok_or(internal!("changeの更新先出現がない"))?,
         fields.into_iter().collect(),
     ))
 }
@@ -349,9 +351,11 @@ pub(in crate::observed) fn candidates(
     };
     let computed = (|| -> Result<(), ValidationFailure> {
         let Signature::Change { params, .. } = &declaration.signature else {
-            return Err("候補域の元宣言がchangeでない".into());
+            return Err(internal!("候補域の元宣言がchangeでない").into());
         };
-        let first = params.first().ok_or("changeの第一parameterがない")?;
+        let first = params
+            .first()
+            .ok_or(internal!("changeの第一parameterがない"))?;
         let mut seen = BTreeSet::new();
         for subject in subjects {
             environment.tick()?;
@@ -361,10 +365,10 @@ pub(in crate::observed) fn candidates(
                 ..
             } = subject
             else {
-                return Err("change instanceがsubjectでない".into());
+                return Err(internal!("change instanceがsubjectでない").into());
             };
             if subject.ty() != first.ty.erase() || !seen.insert((snapshot, name)) {
-                return Err("change instanceの型が違うか重複している".into());
+                return Err(internal!("change instanceの型が違うか重複している").into());
             }
             for parameter in params.iter().skip(1) {
                 if !super::super::finite::completion_supported(
@@ -386,7 +390,7 @@ pub(in crate::observed) fn candidates(
             &Type::Tuple(result.parameter_types.clone()),
             environment.indexes.inputs.law(),
             &environment.control,
-            &mut |_| Err("change値parameterに参照域がある".into()),
+            &mut |_| Err(internal!("change値parameterに参照域がある").into()),
             &mut |_| {},
         )?;
         for point in domain.values {
@@ -394,7 +398,7 @@ pub(in crate::observed) fn candidates(
                 .control
                 .checkpoint(Checkpoint::PrimitiveValuation)?;
             let Scalar::Tuple(parameters) = &point else {
-                return Err("change parameterの直積がTupleでない".into());
+                return Err(internal!("change parameterの直積がTupleでない").into());
             };
             result
                 .rows
@@ -420,11 +424,13 @@ pub(in crate::observed) fn candidate(
     parameters: &[Scalar],
 ) -> Result<Candidate, ValidationFailure> {
     let Signature::Change { params, .. } = &declaration.signature else {
-        return Err("候補の元宣言がchangeでない".into());
+        return Err(internal!("候補の元宣言がchangeでない").into());
     };
-    let first = params.first().ok_or("changeの第一parameterがない")?;
+    let first = params
+        .first()
+        .ok_or(internal!("changeの第一parameterがない"))?;
     if parameters.len() != subjects.len() * (params.len() - 1) {
-        return Err("元parameter点の次元が違う".into());
+        return Err(internal!("元parameter点の次元が違う").into());
     }
     let mut update = Update {
         state: State::Ready,
@@ -476,7 +482,7 @@ pub(in crate::observed) fn candidate(
                 entity,
             } = subject
             else {
-                return Err("候補の変更対象がsubjectでない".into());
+                return Err(internal!("候補の変更対象がsubjectでない").into());
             };
             for name in &fields {
                 environment.tick()?;
@@ -491,7 +497,7 @@ pub(in crate::observed) fn candidate(
                 }
                 let old = environment.scoped_field(
                     known(subject.clone()),
-                    fact.field.as_ref().ok_or("変更元fieldがない")?,
+                    fact.field.as_ref().ok_or(internal!("変更元fieldがない"))?,
                     &Scope::default(),
                     &declaration.reading,
                     declaration.span,
@@ -570,14 +576,16 @@ pub(in crate::observed) fn solution_row(
             .law()
             .declarations()
             .get(name)
-            .ok_or("候補の元Lawがない")?;
+            .ok_or(internal!("候補の元Lawがない"))?;
         let outer = updated
             .state
             .missing_slot_reads
             .scoped(Some(BTreeSet::new()));
         let evaluated =
             finite_law_valuations::evaluate_change_point(&updated, declaration, bindings, point);
-        let missing = outer.restore().ok_or("候補Lawの不足位置収集がない")?;
+        let missing = outer
+            .restore()
+            .ok_or(internal!("候補Lawの不足位置収集がない"))?;
         if let Some(reads) = updated.state.missing_slot_reads.borrow_mut().as_mut() {
             reads.extend(missing.iter().cloned());
         }

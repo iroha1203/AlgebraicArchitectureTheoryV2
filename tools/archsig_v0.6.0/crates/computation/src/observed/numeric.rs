@@ -62,18 +62,18 @@ pub(crate) fn is_numeric_type(ty: &Type, control: &Control) -> Result<bool, Vali
 fn natural(text: &str, control: &Control) -> Result<BigInt, ValidationFailure> {
     controlled(control, || {
         if text.is_empty() || (text.len() > 1 && text.starts_with('0')) {
-            return Err("数値の10進表記が正規形でない".into());
+            return Err(internal!("数値の10進表記が正規形でない").into());
         }
         for byte in text.bytes() {
             tick(control)?;
             let digit = byte.is_ascii_digit();
             tick(control)?;
             if !digit {
-                return Err("数値の10進表記に数字以外を含む".into());
+                return Err(internal!("数値の10進表記に数字以外を含む").into());
             }
         }
         text.parse()
-            .map_err(|_| ValidationFailure::Internal("数値の10進表記を読めない".into()))
+            .map_err(|_| ValidationFailure::Internal(internal!("数値の10進表記を読めない")))
     })
 }
 
@@ -81,7 +81,7 @@ fn modulus(text: &str, control: &Control) -> Result<BigInt, ValidationFailure> {
     controlled(control, || {
         let p = natural(text, control)?;
         if !p.is_positive() {
-            return Err("Fp の法が正でない".into());
+            return Err(internal!("Fp の法が正でない").into());
         }
         Ok(p)
     })
@@ -107,7 +107,7 @@ fn gcd(n: &BigInt, d: &BigInt, control: &Control) -> Result<BigInt, ValidationFa
 fn reduced(n: BigInt, d: BigInt, control: &Control) -> Result<Scalar, ValidationFailure> {
     controlled(control, || {
         if !d.is_positive() {
-            return Err("Q の分母が正でない".into());
+            return Err(internal!("Q の分母が正でない").into());
         }
         let divisor = gcd(&n, &d, control)?;
         Ok(Scalar::Q(n / &divisor, d / divisor))
@@ -119,14 +119,14 @@ fn numeric_check(value: &Scalar, control: &Control) -> Result<(), ValidationFail
         Scalar::Z(_) => Ok(()),
         Scalar::Q(n, d) => {
             if !d.is_positive() || !gcd(n, d, control)?.is_one() {
-                return Err("Q の値が正分母の既約形でない".into());
+                return Err(internal!("Q の値が正分母の既約形でない").into());
             }
             Ok(())
         }
         Scalar::Fp { modulus: p, value } => {
             let p = modulus(p, control)?;
             if value.is_negative() || value >= &p {
-                return Err("Fp の値が法の正規剰余でない".into());
+                return Err(internal!("Fp の値が法の正規剰余でない").into());
             }
             Ok(())
         }
@@ -138,7 +138,7 @@ fn numeric_check(value: &Scalar, control: &Control) -> Result<(), ValidationFail
             }
             Ok(())
         }
-        _ => Err("数値Tupleに数値以外の成分がある".into()),
+        _ => Err(internal!("数値Tupleに数値以外の成分がある").into()),
     })
 }
 
@@ -161,14 +161,14 @@ pub(crate) fn literal(
             Type::Q => Ok(Scalar::Q(n, BigInt::one())),
             Type::Fp(p) => {
                 if n >= modulus(p, control)? {
-                    return Err("整数literalがFpの範囲外".into());
+                    return Err(internal!("整数literalがFpの範囲外").into());
                 }
                 Ok(Scalar::Fp {
                     modulus: p.clone(),
                     value: n,
                 })
             }
-            _ => Err("整数literalの期待型がZ/Q/Fpでない".into()),
+            _ => Err(internal!("整数literalの期待型がZ/Q/Fpでない").into()),
         }
     })
 }
@@ -180,7 +180,7 @@ pub(crate) fn rational(
 ) -> Result<Scalar, ValidationFailure> {
     controlled(control, || match (n, d) {
         (Scalar::Z(n), Scalar::Z(d)) => reduced(n.clone(), d.clone(), control),
-        _ => Err("ratの引数がZでない".into()),
+        _ => Err(internal!("ratの引数がZでない").into()),
     })
 }
 
@@ -191,7 +191,7 @@ pub(crate) fn unary(
 ) -> Result<Scalar, ValidationFailure> {
     controlled(control, || {
         if op != UnOp::Neg {
-            return Err("数値の単項演算が負号でない".into());
+            return Err(internal!("数値の単項演算が負号でない").into());
         }
         numeric_check(value, control)?;
         negate(value, control)
@@ -222,7 +222,7 @@ fn negate(value: &Scalar, control: &Control) -> Result<Scalar, ValidationFailure
             }
             Ok(Scalar::Tuple(result))
         }
-        _ => Err("数値以外の負号".into()),
+        _ => Err(internal!("数値以外の負号").into()),
     })
 }
 
@@ -294,14 +294,14 @@ fn binary_inner_retained(
             },
         ) => {
             if ap != bp {
-                return Err("Fp演算の法が異なる".into());
+                return Err(internal!("Fp演算の法が異なる").into());
             }
             let raw = match op {
                 BinOp::Add => a + b,
                 BinOp::Sub => a - b,
                 BinOp::Mul => a * b,
                 BinOp::Eq | BinOp::Ne => return comparison(op, a, b),
-                _ => return Err("Fpに順序・論理演算を適用できない".into()),
+                _ => return Err(internal!("Fpに順序・論理演算を適用できない").into()),
             };
             let p = modulus(ap, control)?;
             let mut value = raw % &p;
@@ -315,7 +315,7 @@ fn binary_inner_retained(
         }
         (Scalar::Tuple(a), Scalar::Tuple(b)) => {
             if a.len() != b.len() {
-                return Err("数値Tuple演算の成分数が異なる".into());
+                return Err(internal!("数値Tuple演算の成分数が異なる").into());
             }
             match op {
                 BinOp::Add | BinOp::Sub | BinOp::Mul => {
@@ -333,16 +333,16 @@ fn binary_inner_retained(
                         tick(control)?;
                         match binary_inner(BinOp::Eq, left, right, control)? {
                             Scalar::Bool(item_equal) => equal &= item_equal,
-                            _ => return Err("数値等値の戻り値がBoolでない".into()),
+                            _ => return Err(internal!("数値等値の戻り値がBoolでない").into()),
                         }
                         tick(control)?;
                     }
                     Ok(Scalar::Bool(if op == BinOp::Eq { equal } else { !equal }))
                 }
-                _ => Err("数値Tupleに順序・論理演算を適用できない".into()),
+                _ => Err(internal!("数値Tupleに順序・論理演算を適用できない").into()),
             }
         }
-        _ => Err("数値演算の型またはTupleの形が異なる".into()),
+        _ => Err(internal!("数値演算の型またはTupleの形が異なる").into()),
     })
 }
 
@@ -354,7 +354,7 @@ fn comparison(op: BinOp, left: &BigInt, right: &BigInt) -> Result<Scalar, Valida
         BinOp::Le => left <= right,
         BinOp::Gt => left > right,
         BinOp::Ge => left >= right,
-        _ => return Err("数値の比較演算でない".into()),
+        _ => return Err(internal!("数値の比較演算でない").into()),
     }))
 }
 
@@ -383,7 +383,7 @@ fn input_numeric(value: &Value, ty: &Type, control: &Control) -> Result<Scalar, 
         }),
         (Value::Tuple(values), Type::Tuple(types)) => {
             if values.len() != types.len() {
-                return Err("原始数値Tupleの成分数と型が異なる".into());
+                return Err(internal!("原始数値Tupleの成分数と型が異なる").into());
             }
             let mut result = Vec::with_capacity(values.len());
             for (value, ty) in values.iter().zip(types) {
@@ -393,7 +393,7 @@ fn input_numeric(value: &Value, ty: &Type, control: &Control) -> Result<Scalar, 
             }
             Ok(Scalar::Tuple(result))
         }
-        _ => Err("原始数値の値と宣言型が異なる".into()),
+        _ => Err(internal!("原始数値の値と宣言型が異なる").into()),
     })
 }
 
@@ -417,6 +417,6 @@ pub(crate) fn zero(ty: &Type, control: &Control) -> Result<Scalar, ValidationFai
             }
             Ok(Scalar::Tuple(items))
         }
-        _ => Err("sumの要素型が数値型でない".into()),
+        _ => Err(internal!("sumの要素型が数値型でない").into()),
     })
 }

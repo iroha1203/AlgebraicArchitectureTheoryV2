@@ -24,7 +24,7 @@ fn tick(control: &Control) -> Result<(), ValidationFailure> {
 fn failure(cause: ConstructionFailure) -> ValidationFailure {
     match cause {
         ConstructionFailure::Stopped(stop) => stop.into(),
-        other => ValidationFailure::Internal(format!("native Architecture: {other:?}")),
+        other => ValidationFailure::Internal(internal!(format!("native Architecture: {other:?}"))),
     }
 }
 fn field(name: &str) -> Vec<P> {
@@ -198,7 +198,7 @@ fn architecture_with_root(
                 body = Some(r);
             }
         }
-        let body = body.ok_or("Law instanceの元bodyがない")?;
+        let body = body.ok_or(internal!("Law instanceの元bodyがない"))?;
         let pending = native::missing(witness.request(), native::instance_missing(row));
         let law = if pending.is_empty() {
             put(
@@ -207,7 +207,7 @@ fn architecture_with_root(
                 D::LawInstance {
                     instance,
                     name: row.declaration().name.clone(),
-                    role: row.declaration().role.ok_or("Lawのroleがない")?,
+                    role: row.declaration().role.ok_or(internal!("Lawのroleがない"))?,
                     occurrence: Location::Law {
                         span: row.declaration().span,
                     },
@@ -291,7 +291,7 @@ fn request_reading<'a>(
     request: &'a Request,
 ) -> Result<&'a str, ValidationFailure> {
     let Selector::Declaration { name } = &request.head else {
-        return Err("Architectureの元headが宣言でない".into());
+        return Err(internal!("Architectureの元headが宣言でない").into());
     };
     match request.kind {
         QuestionKind::Build => Ok(name),
@@ -300,8 +300,8 @@ fn request_reading<'a>(
             .declarations()
             .get(name)
             .map(|d| d.reading.as_str())
-            .ok_or_else(|| "変更対象の元Lawがない".into()),
-        _ => Err("Architectureの元要求が対象構成でない".into()),
+            .ok_or_else(|| internal!("変更対象の元Lawがない").into()),
+        _ => Err(internal!("Architectureの元要求が対象構成でない").into()),
     }
 }
 pub(super) fn build(
@@ -319,7 +319,7 @@ pub(super) fn build(
         || graph.active.instance.is_some()
         || graph.active.case.is_some()
     {
-        return Err("build生成が元三入力・Requestのroot contextでない".into());
+        return Err(internal!("build生成が元三入力・Requestのroot contextでない").into());
     }
     environment.with_request_context(graph, request, || Ok(()))?;
     let root = selected_build(environment, graph, request)?;
@@ -330,7 +330,7 @@ pub(super) fn build(
         .arguments
         .iter()
         .find(|a| a.name == "on")
-        .ok_or("対象構成のonがない")?
+        .ok_or(internal!("対象構成のonがない"))?
         .value;
     let selected_root = match on {
         selector @ Selector::Answer { .. } => {
@@ -340,7 +340,9 @@ pub(super) fn build(
                     environment.validate(graph, &node)?;
                     graph.push(node)?
                 }
-                AnswerBinding::Inapplicable(_) => return Err("buildのroot射影が不適合".into()),
+                AnswerBinding::Inapplicable(_) => {
+                    return Err(internal!("buildのroot射影が不適合").into());
+                }
             })
         }
         _ => None,
@@ -356,11 +358,13 @@ fn selected_root_reference(
     if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair) {
         if let Some(Payload::Construction(v)) = &graph.get(r)?.payload {
             if graph.get(r)?.ty == NodeType::Construction(T::Architecture) {
-                let law = request.declaration().ok_or("changeのLawがない")?;
+                let law = request
+                    .declaration()
+                    .ok_or(internal!("changeのLawがない"))?;
                 let reading = &v.witness.inputs().law().declarations()[law].reading;
                 if let Witness::Architecture(w) = &v.witness {
                     if w.construction().reading() != reading {
-                        return Err("changeと元Architectureのreadingが違う".into());
+                        return Err(internal!("changeと元Architectureのreadingが違う").into());
                     }
                 }
                 if let Some((root, 1)) = v.project(&[P::Field("root".into())]) {
@@ -379,10 +383,10 @@ pub(super) fn selected_build(
 ) -> Result<Fact, ValidationFailure> {
     let reading = request_reading(environment.indexes.inputs, request)?;
     let mut on = request.arguments.iter().filter(|a| a.name == "on");
-    let argument = on.next().ok_or("buildのonがない")?;
+    let argument = on.next().ok_or(internal!("buildのonがない"))?;
     if on.next().is_some() || (request.kind == QuestionKind::Build && request.arguments.len() != 1)
     {
-        return Err("buildの固定引数がon一件でない".into());
+        return Err(internal!("buildの固定引数がon一件でない").into());
     }
     let root = match &argument.value {
         Selector::Subject { snapshot, subject } => Fact {
@@ -399,17 +403,19 @@ pub(super) fn selected_build(
                 }
                 AnswerBinding::Projection(node) => {
                     let Some(Payload::Scalar(value)) = &node.payload else {
-                        return Err("buildのroot射影が原始値でない".into());
+                        return Err(internal!("buildのroot射影が原始値でない").into());
                     };
                     value
                 }
-                AnswerBinding::Inapplicable(_) => return Err("buildのroot射影が不適合".into()),
+                AnswerBinding::Inapplicable(_) => {
+                    return Err(internal!("buildのroot射影が不適合").into());
+                }
             };
             let Scalar::Subject {
                 snapshot, subject, ..
             } = value
             else {
-                return Err("buildのonが原始root参照でない".into());
+                return Err(internal!("buildのonが原始root参照でない").into());
             };
             Fact {
                 snapshot: snapshot.clone(),
@@ -418,7 +424,7 @@ pub(super) fn selected_build(
                 atom: None,
             }
         }
-        _ => return Err("buildのonが原始rootか公開Handleでない".into()),
+        _ => return Err(internal!("buildのonが原始rootか公開Handleでない").into()),
     };
     let subject = environment.indexes.subject(&root.snapshot, &root.subject)?;
     let declaration = environment
@@ -427,7 +433,7 @@ pub(super) fn selected_build(
         .definitions()
         .declarations()
         .get(subject.ty.as_str())
-        .ok_or("buildのroot型がない")?;
+        .ok_or(internal!("buildのroot型がない"))?;
     let visible = crate::construction::reading_namespaces(
         environment.indexes.inputs.law(),
         reading,
@@ -440,7 +446,7 @@ pub(super) fn selected_build(
             archsig_input::definition::PrimitiveSignature::Entity { owner: None, .. }
         )
     {
-        return Err("buildのonがreading内のownerなしentityでない".into());
+        return Err(internal!("buildのonがreading内のownerなしentityでない").into());
     }
     Ok(root)
 }
@@ -454,10 +460,10 @@ pub(super) fn validate_build_origin(
     if value.witness.request() != request
         || value.witness.inputs().sources() != environment.indexes.inputs.sources()
     {
-        return Err("build構成が元三入力・Requestに属さない".into());
+        return Err(internal!("build構成が元三入力・Requestに属さない").into());
     }
     let Witness::Architecture(a) = &value.witness else {
-        return Err("build構成の元Architectureがない".into());
+        return Err(internal!("build構成の元Architectureがない").into());
     };
     let root = selected_build(environment, graph, request)?;
     let reading = request_reading(environment.indexes.inputs, request)?;
@@ -465,7 +471,7 @@ pub(super) fn validate_build_origin(
         .arguments
         .iter()
         .find(|a| a.name == "on")
-        .ok_or("対象構成の元onがない")?
+        .ok_or(internal!("対象構成の元onがない"))?
         .value;
     if let Selector::Answer { .. } = on {
         let reference = match &value.data {
@@ -485,7 +491,7 @@ pub(super) fn validate_build_origin(
                     environment.answer_binding(graph, on, (0, 0))?
                 {
                     if selected_root_reference(graph, original, request)? != reference {
-                        return Err("changeの元root参照が違う".into());
+                        return Err(internal!("changeの元root参照が違う").into());
                     }
                 } else {
                     environment.answer_binding_matches(graph, on, reference, (0, 0))?;
@@ -505,11 +511,11 @@ pub(super) fn validate_build_origin(
         )
         .map_err(failure)?;
         if **a != *regenerated {
-            return Err("owner補完Architectureの再構成が違う".into());
+            return Err(internal!("owner補完Architectureの再構成が違う").into());
         }
     }
     if a.construction().root() != &root || a.construction().reading() != reading {
-        return Err("build構成が元root・readingに属さない".into());
+        return Err(internal!("build構成が元root・readingに属さない").into());
     }
     Ok(())
 }

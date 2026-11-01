@@ -23,7 +23,7 @@ pub(in crate::observed::local_result) fn read_coefficient(
 ) -> Result<Z, crate::observed::result::ValidationFailure> {
     match v {
         crate::observed::result::Scalar::Z(v) => Ok(v.clone()),
-        _ => Err("整数読取りの係数がZでない".into()),
+        _ => Err(internal!("整数読取りの係数がZでない").into()),
     }
 }
 fn reduce_torsion(v: &mut Z, m: &Z) {

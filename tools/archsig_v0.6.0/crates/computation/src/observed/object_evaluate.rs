@@ -34,7 +34,10 @@ impl ObjectDomain {
         object: usize,
         control: &Control,
     ) -> Result<Self, ValidationFailure> {
-        let selected = readings.objects().get(object).ok_or("対象の添字がない")?;
+        let selected = readings
+            .objects()
+            .get(object)
+            .ok_or(internal!("対象の添字がない"))?;
         let c = readings.construction();
         let base = selected.identity().subject() == c.root();
         let mut known = Vec::new();
@@ -61,7 +64,7 @@ impl ObjectDomain {
                     .iter()
                     .find(|s| s.id == member.subject().snapshot)
                     .and_then(|s| s.subjects.iter().find(|s| s.id == member.subject().subject))
-                    .ok_or("条件付きsubjectがない")?
+                    .ok_or(internal!("条件付きsubjectがない"))?
                     .ty
                     .clone();
                 conditional.push((
@@ -150,7 +153,7 @@ impl ObjectDomain {
                     ..
                 } = value
                 else {
-                    return Err("補完したownerが参照でない".into());
+                    return Err(internal!("補完したownerが参照でない").into());
                 };
                 let root = self.identity.root();
                 if snapshot == &root.snapshot && owner == &root.subject {
@@ -180,10 +183,10 @@ impl ObjectDomain {
                     entity: actual,
                 } = &value
                 else {
-                    return Err("対象量化の元が参照でない".into());
+                    return Err(internal!("対象量化の元が参照でない").into());
                 };
                 if actual != entity {
-                    return Err("対象量化の元型が違う".into());
+                    return Err(internal!("対象量化の元型が違う").into());
                 }
                 if allowed
                     .iter()
@@ -293,7 +296,7 @@ pub fn evaluate_object_instance(
     let application = row
         .applications()
         .get(object)
-        .ok_or_else(|| ConstructionFailure::Inconsistent("対象別適用の行がない".into()))?;
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("対象別適用の行がない")))?;
     let outcome = match application {
         InstanceApplication::NotApplicable => ObjectEvaluationOutcome::NotApplicable,
         InstanceApplication::Applicable { conditions } if !conditions.is_empty() => {
@@ -315,9 +318,9 @@ pub fn evaluate_object_instance(
                 "view" => "evaluate",
                 "law" => "check",
                 _ => {
-                    return Err(ConstructionFailure::Inconsistent(
-                        "対象読取りがLaw/viewでない".into(),
-                    )
+                    return Err(ConstructionFailure::Inconsistent(internal!(
+                        "対象読取りがLaw/viewでない"
+                    ))
                     .into());
                 }
             };
@@ -341,7 +344,7 @@ pub fn evaluate_object_instance(
                 domain: ObjectDomain::from_readings(&prepared.inputs, readings, object, control)
                     .map_err(|f| match f {
                         ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
-                        other => ConstructionFailure::Inconsistent(format!("{other:?}")),
+                        other => ConstructionFailure::Inconsistent(internal!(format!("{other:?}"))),
                     })?,
                 instance: row.clone(),
                 values: None,

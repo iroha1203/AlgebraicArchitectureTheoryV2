@@ -136,19 +136,19 @@ impl Data {
 fn family(w: &CompareWitness) -> Result<&Family, ValidationFailure> {
     w.relation_family
         .as_deref()
-        .ok_or("relationの元instance族がない".into())
+        .ok_or(internal!("relationの元instance族がない").into())
 }
 fn declaration(w: &CompareWitness, index: usize) -> Result<&Declaration, ValidationFailure> {
     family(w)?
         .table
         .declarations
         .get(index)
-        .ok_or("元relation宣言の位置がない".into())
+        .ok_or(internal!("元relation宣言の位置がない").into())
 }
 fn params(d: &Declaration) -> Result<&[archsig_input::law::model::Param], ValidationFailure> {
     match &d.signature {
         Signature::Relation { params, .. } => Ok(params),
-        _ => Err("元宣言がrelationでない".into()),
+        _ => Err(internal!("元宣言がrelationでない").into()),
     }
 }
 fn owner_index(w: &CompareWitness, instance: usize) -> Result<usize, ValidationFailure> {
@@ -157,12 +157,12 @@ fn owner_index(w: &CompareWitness, instance: usize) -> Result<usize, ValidationF
         .table
         .instances
         .get(instance)
-        .ok_or("元relation instanceがない")?;
+        .ok_or(internal!("元relation instanceがない"))?;
     f.table
         .declarations
         .iter()
         .position(|d| d.name == row.declaration)
-        .ok_or("instanceの元宣言がない".into())
+        .ok_or(internal!("instanceの元宣言がない").into())
 }
 pub(super) fn source_data<'a>(
     graph: &'a Graph,
@@ -171,17 +171,17 @@ pub(super) fn source_data<'a>(
 ) -> Result<&'a Data, ValidationFailure> {
     let value = value(graph, source)?;
     let Witness::Compare(original) = &value.witness else {
-        return Err("relation Sourceの元検査が違う".into());
+        return Err(internal!("relation Sourceの元検査が違う").into());
     };
     if original.request != w.request
         || original.inputs.sources() != w.inputs.sources()
         || original.relation_family != w.relation_family
     {
-        return Err("relation Sourceの元入力・要求・族が違う".into());
+        return Err(internal!("relation Sourceの元入力・要求・族が違う").into());
     }
     match &value.data {
         D::Comparison(Part::RelationSource(data)) => Ok(data),
-        _ => Err("relationの型付きSourceでない".into()),
+        _ => Err(internal!("relationの型付きSourceでない").into()),
     }
 }
 fn template(
@@ -192,23 +192,23 @@ fn template(
 ) -> Result<(), ValidationFailure> {
     if !matches!(&source_data(graph,source,w)?.kind,Kind::Template{declaration,..} if *declaration==expected)
     {
-        return Err("relationの元templateが違う".into());
+        return Err(internal!("relationの元templateが違う").into());
     }
     Ok(())
 }
 fn caller(graph: &Graph, w: &CompareWitness) -> Result<Context, ValidationFailure> {
     if w.kind != "relation"
         || super::super::request::comparison::kind(&w.request)
-            .map_err(|e| ValidationFailure::Internal(format!("relation kind: {e:?}")))?
+            .map_err(|e| ValidationFailure::Internal(internal!(format!("relation kind: {e:?}"))))?
             != "relation"
     {
-        return Err("relationの元要求kindが違う".into());
+        return Err(internal!("relationの元要求kindが違う").into());
     }
     let request = graph
         .requests
         .iter()
         .position(|r| r == &w.request)
-        .ok_or("relationの元Requestがない")?;
+        .ok_or(internal!("relationの元Requestがない"))?;
     Ok(Context {
         request,
         ..Context::default()
@@ -284,11 +284,11 @@ pub(in crate::observed) fn validate_node(
         || w.value_plan.is_some()
         || w.relation_plan.is_some()
     {
-        return Err("元relation Sourceの証人に比較結論を混入した".into());
+        return Err(internal!("元relation Sourceの証人に比較結論を混入した").into());
     }
     let path = relations::operand_path(graph, w.left)?;
     if family(w)?.table.reading() != path.reading {
-        return Err("relation族が比較operandのreadingと違う".into());
+        return Err(internal!("relation族が比較operandのreadingと違う").into());
     }
     let (support, scope) = metadata(graph, w, &data.kind)?;
     if n.ty != data.ty()
@@ -302,7 +302,7 @@ pub(in crate::observed) fn validate_node(
         || !n.evidence.is_empty()
         || !n.reasons.is_empty()
     {
-        return Err("relation Sourceの型・辺・支持・Scopeが違う".into());
+        return Err(internal!("relation Sourceの型・辺・支持・Scopeが違う").into());
     }
     let f = family(w)?;
     match &data.kind {
@@ -315,7 +315,7 @@ pub(in crate::observed) fn validate_node(
         } => {
             let d = declaration(w, *index)?;
             let Signature::Relation { params, left, .. } = &d.signature else {
-                return Err("relation templateの署名が違う".into());
+                return Err(internal!("relation templateの署名が違う").into());
             };
             let law = w.inputs.law();
             if expression != left
@@ -330,7 +330,7 @@ pub(in crate::observed) fn validate_node(
                         .map(|p| (p.name.clone(), p.ty.erase()))
                         .collect::<Vec<_>>()
             {
-                return Err("relation templateが元式・parameterと違う".into());
+                return Err(internal!("relation templateが元式・parameterと違う").into());
             }
         }
         Kind::Parameter {
@@ -340,15 +340,22 @@ pub(in crate::observed) fn validate_node(
             inputs,
             value: scalar,
         } => {
-            let row = f.table.instances.get(*instance).ok_or("元instanceがない")?;
-            let (_, expected) = row.bindings.get(*parameter).ok_or("元parameterがない")?;
+            let row = f
+                .table
+                .instances
+                .get(*instance)
+                .ok_or(internal!("元instanceがない"))?;
+            let (_, expected) = row
+                .bindings
+                .get(*parameter)
+                .ok_or(internal!("元parameterがない"))?;
             template(graph, *source, w, owner_index(w, *instance)?)?;
             if scalar != expected {
-                return Err("relation parameterが元域のmemberでない".into());
+                return Err(internal!("relation parameterが元域のmemberでない").into());
             }
             for r in inputs {
                 if !matches!(graph.scalar(*r)?, Scalar::Subject { .. }) {
-                    return Err("parameterの参照支持が原始参照でない".into());
+                    return Err(internal!("parameterの参照支持が原始参照でない").into());
                 }
             }
             let mut actual = vec![];
@@ -388,9 +395,9 @@ pub(in crate::observed) fn validate_node(
                         subject,
                         entity,
                     } => Ok((snapshot.clone(), subject.clone(), entity.clone())),
-                    _ => Err(ValidationFailure::Internal(
-                        "parameterの原始参照が違う".into(),
-                    )),
+                    _ => Err(ValidationFailure::Internal(internal!(
+                        "parameterの原始参照が違う"
+                    ))),
                 })
                 .collect::<Result<Vec<_>, _>>()?;
             if actual.len() != expected.len()
@@ -400,7 +407,7 @@ pub(in crate::observed) fn validate_node(
                     .collect::<std::collections::BTreeSet<_>>()
                     != expected
             {
-                return Err("parameterの原始参照支持が完全な集合でない".into());
+                return Err(internal!("parameterの原始参照支持が完全な集合でない").into());
             }
         }
         Kind::Member {
@@ -409,10 +416,14 @@ pub(in crate::observed) fn validate_node(
             parameters,
             value: scalar,
         } => {
-            let row = f.table.instances.get(*instance).ok_or("元instanceがない")?;
+            let row = f
+                .table
+                .instances
+                .get(*instance)
+                .ok_or(internal!("元instanceがない"))?;
             template(graph, *source, w, owner_index(w, *instance)?)?;
             if parameters.len() != row.bindings.len() {
-                return Err("relation memberのparameter数が違う".into());
+                return Err(internal!("relation memberのparameter数が違う").into());
             }
             let values = parameters
                 .iter()
@@ -423,7 +434,7 @@ pub(in crate::observed) fn validate_node(
                 .zip(&row.bindings)
                 .all(|(v, (_, expected))| v == expected)
             {
-                return Err("relation memberの全束縛が元instanceと違う".into());
+                return Err(internal!("relation memberの全束縛が元instanceと違う").into());
             }
             let expected = match values.as_slice() {
                 [] => Scalar::Unit,
@@ -431,7 +442,7 @@ pub(in crate::observed) fn validate_node(
                 _ => Scalar::Tuple(values),
             };
             if scalar != &expected {
-                return Err("relation memberの元値が違う".into());
+                return Err(internal!("relation memberの元値が違う").into());
             }
         }
         Kind::Domain {
@@ -444,7 +455,7 @@ pub(in crate::observed) fn validate_node(
             let d = declaration(w, *index)?;
             template(graph, *source, w, *index)?;
             if *finite != complete_domain(&f.table, &d.name) {
-                return Err("relationの型域と完成した有限域を取り違えた".into());
+                return Err(internal!("relationの型域と完成した有限域を取り違えた").into());
             }
             let ps = params(d)?;
             let expected = match ps {
@@ -461,12 +472,12 @@ pub(in crate::observed) fn validate_node(
                 .map(|(i, _)| i)
                 .collect::<Vec<_>>();
             if ty != &expected || members.len() != rows.len() {
-                return Err("relationの全instance域が元署名・全件数と違う".into());
+                return Err(internal!("relationの全instance域が元署名・全件数と違う").into());
             }
             for (r, index) in members.iter().zip(rows) {
                 if !matches!(&source_data(graph,*r,w)?.kind,Kind::Member{instance,source:actual,..} if *instance==index && actual==source)
                 {
-                    return Err("relation域の元instance・順序が違う".into());
+                    return Err(internal!("relation域の元instance・順序が違う").into());
                 }
             }
         }
@@ -498,7 +509,7 @@ pub(in crate::observed) fn instance_declaration(
     let record = graph
         .instances
         .get(index)
-        .ok_or("relation instance索引がない")?;
+        .ok_or(internal!("relation instance索引がない"))?;
     let Some((w, data)) = source_witness(graph, record.domain)? else {
         return Ok(None);
     };
@@ -523,7 +534,7 @@ pub(in crate::observed) fn instance_bindings(
     let record = graph
         .instances
         .get(index)
-        .ok_or("relation instance索引がない")?;
+        .ok_or(internal!("relation instance索引がない"))?;
     let Some((w, data)) = source_witness(graph, record.domain)? else {
         return Ok(None);
     };
@@ -534,7 +545,7 @@ pub(in crate::observed) fn instance_bindings(
         || graph.context_at(record.source.0) != record.caller
         || graph.context_at(record.domain.0) != record.caller
     {
-        return Err("relation instanceの元Context・既出位置が違う".into());
+        return Err(internal!("relation instanceの元Context・既出位置が違う").into());
     }
     let Kind::Domain {
         declaration: decl,
@@ -543,10 +554,10 @@ pub(in crate::observed) fn instance_bindings(
         ..
     } = &data.kind
     else {
-        return Err("relation域がない".into());
+        return Err(internal!("relation域がない").into());
     };
     if source != &record.source || !members.contains(&record.member) {
-        return Err("relation instanceが元Domainのmemberでない".into());
+        return Err(internal!("relation instanceが元Domainのmemberでない").into());
     }
     let member = source_data(graph, record.member, w)?;
     let Kind::Member {
@@ -555,21 +566,21 @@ pub(in crate::observed) fn instance_bindings(
         ..
     } = &member.kind
     else {
-        return Err("relationの全束縛memberがない".into());
+        return Err(internal!("relationの全束縛memberがない").into());
     };
     let row = family(w)?
         .table
         .instances
         .get(*instance)
-        .ok_or("relation rowがない")?;
+        .ok_or(internal!("relation rowがない"))?;
     if row.state == RelationState::OutsideDomain || row.declaration != declaration(w, *decl)?.name {
-        return Err("relation rowが別宣言である".into());
+        return Err(internal!("relation rowが別宣言である").into());
     }
     let ps = params(declaration(w, *decl)?)?;
     let mut bindings = vec![];
     for (p, r) in ps.iter().zip(parameters) {
         if r.0 >= limit {
-            return Err("relation parameterが未出である".into());
+            return Err(internal!("relation parameterが未出である").into());
         }
         bindings.push(Binding {
             name: p.name.clone(),
@@ -610,7 +621,7 @@ fn subject_value(
         snapshot, subject, ..
     } = value
     else {
-        return Err("元parameterが原始参照でない".into());
+        return Err(internal!("元parameterが原始参照でない").into());
     };
     let node = subject_node(
         env,
@@ -637,7 +648,7 @@ fn parameter(
         .instances
         .get(instance)
         .and_then(|row| row.bindings.get(index))
-        .ok_or("元parameterがない")?
+        .ok_or(internal!("元parameterがない"))?
         .1
         .clone();
     if matches!(scalar, Scalar::Subject { .. }) {
@@ -707,18 +718,18 @@ pub(in crate::observed) fn domains(
     };
     let caller = caller(graph, w)?;
     if graph.active != caller {
-        return Err("relation域の構成Contextが元要求と違う".into());
+        return Err(internal!("relation域の構成Contextが元要求と違う").into());
     }
     for (decl, d) in f.table.declarations.iter().enumerate() {
         c.checkpoint(Checkpoint::FiniteIteration)?;
         let Signature::Relation { params, left, .. } = &d.signature else {
-            return Err("元relation署名がない".into());
+            return Err(internal!("元relation署名がない").into());
         };
         let ty = w
             .inputs
             .law()
             .expr_type(*left)
-            .ok_or("relation左式の元型がない")?
+            .ok_or(internal!("relation左式の元型がない"))?
             .clone();
         let source = put_source(
             graph,
@@ -837,18 +848,18 @@ pub(in crate::observed) fn source_allowed(
     let record = graph
         .instances
         .get(index)
-        .ok_or("元relation instanceがない")?;
+        .ok_or(internal!("元relation instanceがない"))?;
     let Some((w, _)) = source_witness(graph, record.domain)? else {
         return Ok(true);
     };
     let Kind::Member { instance, .. } = &source_data(graph, record.member, w)?.kind else {
-        return Err("元relation memberがない".into());
+        return Err(internal!("元relation memberがない").into());
     };
     let row = family(w)?
         .table
         .instances
         .get(*instance)
-        .ok_or("元relation rowがない")?;
+        .ok_or(internal!("元relation rowがない"))?;
     let d = declaration(w, owner_index(w, *instance)?)?;
     if row.state == RelationState::OutsideDomain {
         return Ok(false);

@@ -140,9 +140,9 @@ impl PrimitiveValueIdentity {
     fn image(&self, value: &Scalar, c: &Control) -> Result<Scalar, ConstructionFailure> {
         tick(c)?;
         if value.ty() != self.ty {
-            return Err(ConstructionFailure::Inconsistent(
-                "原始値の恒等写像と実値の型が違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "原始値の恒等写像と実値の型が違う"
+            )));
         }
         // 参照を含まない値とconstructorの型構造。型の全元を順逆とも固定する。
         Ok(value.clone())
@@ -193,7 +193,7 @@ impl StructuralValueEquivalence {
             .find(|candidate| candidate.source().name == declaration)
             .and_then(|candidate| candidate.pair())
             .ok_or_else(|| {
-                ConstructionFailure::Inconsistent("構造値写像の宣言対応がない".into())
+                ConstructionFailure::Inconsistent(internal!("構造値写像の宣言対応がない"))
             })?;
         let mu = declarations.types().iter().cloned().collect();
         let alpha = pair.parameters().iter().cloned().collect();
@@ -235,9 +235,9 @@ impl StructuralValueEquivalence {
         c: &Control,
     ) -> Result<Scalar, ConstructionFailure> {
         if !self.complete || value.ty() != self.source.erase() {
-            return Err(ConstructionFailure::Inconsistent(
-                "構造値の順逆写像と元値が一致しない".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "構造値の順逆写像と元値が一致しない"
+            )));
         }
         let image = super::value_transport::candidate_image(
             inputs,
@@ -247,9 +247,9 @@ impl StructuralValueEquivalence {
             c,
         )?;
         if image.ty() != self.target.erase() {
-            return Err(ConstructionFailure::Inconsistent(
-                "構造値の像が終域型と一致しない".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "構造値の像が終域型と一致しない"
+            )));
         }
         data::check(&image, inputs.law(), c).map_err(invalid)?;
         Ok(image)
@@ -484,9 +484,9 @@ impl ObjectViewTransport {
             Err(failure) => return Err(failure.into()),
         };
         if !equal {
-            return Err(ConstructionFailure::Inconsistent(
-                "対象viewの対応・実評価・値可換性が現在入力と違う".into(),
-            )
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "対象viewの対応・実評価・値可換性が現在入力と違う"
+            ))
             .into());
         }
         Ok(())
@@ -500,7 +500,7 @@ fn tick(c: &Control) -> Result<(), ConstructionFailure> {
 fn invalid(f: ValidationFailure) -> ConstructionFailure {
     match f {
         ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
-        f => ConstructionFailure::Inconsistent(format!("view値の比較: {f:?}")),
+        f => ConstructionFailure::Inconsistent(internal!(format!("view値の比較: {f:?}"))),
     }
 }
 fn scalar(e: &ObjectEvaluation) -> Result<Option<Scalar>, ConstructionFailure> {
@@ -515,7 +515,7 @@ pub(super) fn scalar_evaluation(
     let a = e
         .answers
         .first()
-        .ok_or_else(|| ConstructionFailure::Inconsistent("view評価の回答がない".into()))?;
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("view評価の回答がない")))?;
     if a.status != Decision::Established {
         return Ok(None);
     }
@@ -524,9 +524,9 @@ pub(super) fn scalar_evaluation(
     };
     match e.nodes.get(reference.0).and_then(|n| n.payload.as_ref()) {
         Some(Payload::Scalar(v)) => Ok(Some(v.clone())),
-        _ => Err(ConstructionFailure::Inconsistent(
-            "viewの確定値が型付き値でない".into(),
-        )),
+        _ => Err(ConstructionFailure::Inconsistent(internal!(
+            "viewの確定値が型付き値でない"
+        ))),
     }
 }
 fn not_implemented(
@@ -542,7 +542,7 @@ fn not_implemented(
             .declaration()
             .returns
             .clone()
-            .ok_or_else(|| ConstructionFailure::Inconsistent("viewの戻り型がない".into()))?,
+            .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("viewの戻り型がない")))?,
     })
 }
 /// 単一の全束縛view instanceを対応対象へ運び、実評価との可換性を計算する。
@@ -763,9 +763,9 @@ fn checked_view_transport(
                             ViewTransportOutcome::Refuted(ViewConditionFailure::Value)
                         }
                         Comparison::Unsupported => {
-                            return Err(ConstructionFailure::Inconsistent(
-                                "数値viewの正規形が数値比較に未対応".into(),
-                            )
+                            return Err(ConstructionFailure::Inconsistent(internal!(
+                                "数値viewの正規形が数値比較に未対応"
+                            ))
                             .into());
                         }
                     }
@@ -783,12 +783,10 @@ fn checked_view_transport(
             tick(c)?;
             return Ok(());
         }
-        let returns = r
-            .instance()
-            .declaration()
-            .returns
-            .as_ref()
-            .ok_or_else(|| ConstructionFailure::Inconsistent("viewの戻り型がない".into()))?;
+        let returns =
+            r.instance().declaration().returns.as_ref().ok_or_else(|| {
+                ConstructionFailure::Inconsistent(internal!("viewの戻り型がない"))
+            })?;
         r.equivalence = Some(if numeric::is_numeric_type(returns, c).map_err(invalid)? {
             ViewValueEquivalence::Numeric(Box::new(numeric_declaration_value_transport(
                 &inputs,
@@ -858,7 +856,9 @@ fn checked_view_transport(
         }
         tick(c)?;
         let (Some(source), Some(target)) = (&r.source, &r.target) else {
-            return Err(ConstructionFailure::Inconsistent("view実評価の行がない".into()).into());
+            return Err(
+                ConstructionFailure::Inconsistent(internal!("view実評価の行がない")).into(),
+            );
         };
         let source_na = matches!(source.outcome(), ObjectEvaluationOutcome::NotApplicable);
         let target_na = matches!(target.outcome(), ObjectEvaluationOutcome::NotApplicable);

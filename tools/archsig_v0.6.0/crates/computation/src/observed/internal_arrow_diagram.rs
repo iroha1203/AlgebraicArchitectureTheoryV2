@@ -25,7 +25,7 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
 fn failure(e: ConstructionFailure) -> ValidationFailure {
     match e {
         ConstructionFailure::Stopped(s) => s.into(),
-        e => format!("内部arrowのnative接続: {e:?}").into(),
+        e => internal!(format!("内部arrowのnative接続: {e:?}")).into(),
     }
 }
 fn refs(rs: &[NodeRef]) -> Json {
@@ -381,7 +381,7 @@ impl Data {
         if self.index >= self.source.parts.len()
             || self.source.base.checked_add(self.index) != Some(at)
         {
-            return Err("内部arrowの生成位置が元計画と違う".into());
+            return Err(internal!("内部arrowの生成位置が元計画と違う").into());
         }
         Ok(())
     }
@@ -395,7 +395,7 @@ fn push(
     tick(c)?;
     let at = base
         .checked_add(parts.len())
-        .ok_or("内部arrowの生成番号が範囲外")?;
+        .ok_or(internal!("内部arrowの生成番号が範囲外"))?;
     parts.push(part);
     Ok(NodeRef(at))
 }
@@ -406,10 +406,10 @@ fn original<'a>(
     universe: NodeRef,
 ) -> Result<(&'a Arc<ArchitectureWitness>, Objects), ValidationFailure> {
     let Some(Payload::Construction(v)) = &graph.get(reference)?.payload else {
-        return Err("内部arrowの元Architectureがない".into());
+        return Err(internal!("内部arrowの元Architectureがない").into());
     };
     let (Witness::Architecture(a), D::Architecture { .. }) = (&v.witness, &v.data) else {
-        return Err("内部arrowの元Architectureが完成構成でない".into());
+        return Err(internal!("内部arrowの元Architectureが完成構成でない").into());
     };
     let context = graph.context_at(reference.0);
     if context.frame.is_some()
@@ -418,17 +418,17 @@ fn original<'a>(
         || context.case.is_some()
         || graph.requests.get(context.request) != Some(Witness::Architecture(a.clone()).request())
     {
-        return Err("内部arrowの元Requestが違う".into());
+        return Err(internal!("内部arrowの元Requestが違う").into());
     }
     let (owner, objects) = objects::original_family(graph, base)?;
     if owner != reference {
-        return Err("内部arrowの対象表が別Architectureに属する".into());
+        return Err(internal!("内部arrowの対象表が別Architectureに属する").into());
     }
     let Some(Payload::Construction(u)) = &graph.get(universe)?.payload else {
-        return Err("内部arrowのUがnativeでない".into());
+        return Err(internal!("内部arrowのUがnativeでない").into());
     };
     if !matches!(&u.data,D::AtomUniverse(atoms) if atoms==a.construction().universe()) {
-        return Err("内部arrowのUが元共有集合でない".into());
+        return Err(internal!("内部arrowのUが元共有集合でない").into());
     }
     Ok((a, objects))
 }
@@ -442,7 +442,7 @@ fn plan(
     c: &Control,
 ) -> Result<(Vec<Part>, Diagram), ValidationFailure> {
     if !core.is_complete() || core.construction() != a.construction() {
-        return Err("内部arrowの元構成または全件検査が違う".into());
+        return Err(internal!("内部arrowの元構成または全件検査が違う").into());
     }
     let mut parts = vec![];
     let mut rows = vec![];
@@ -450,13 +450,13 @@ fn plan(
         if identity.root() != a.construction().root()
             || identity.reading() != a.construction().reading()
         {
-            return Err("内部arrowの包含root・readingが違う".into());
+            return Err(internal!("内部arrowの包含root・readingが違う").into());
         }
         let index = a.readings().objects().iter()
             .position(|o| o.identity() == identity)
-            .ok_or("内部arrowの端点が元対象表にない")?;
+            .ok_or(internal!("内部arrowの端点が元対象表にない"))?;
         objects.architectures.get(index).copied()
-            .ok_or_else(|| "内部arrowの実Architectureがない".into())
+            .ok_or_else(|| internal!("内部arrowの実Architectureがない").into())
     };
     for row in core.arrows() {
         tick(c)?;
@@ -467,7 +467,7 @@ fn plan(
             .iter()
             .find(|s| s.id == f.snapshot)
             .and_then(|s| s.subjects.iter().find(|s| s.id == f.subject))
-            .ok_or("内部arrowの原始subjectがない")?;
+            .ok_or(internal!("内部arrowの原始subjectがない"))?;
         let subject = push(
             &mut parts,
             base,
@@ -485,7 +485,7 @@ fn plan(
                 || candidate.subject() != Some(row.arrow())
                 || candidate.images().len() != candidate.universe().len()
             {
-                return Err("内部arrowの元候補・総作用が違う".into());
+                return Err(internal!("内部arrowの元候補・総作用が違う").into());
             }
             let source = endpoint(&candidate.source_object())?;
             let target = endpoint(&candidate.target_object())?;
@@ -517,7 +517,7 @@ fn plan(
                     || endpoint(&op.source())? != source
                     || endpoint(&op.target())? != target
                 {
-                    return Err("内部arrowの生成操作が元候補と違う".into());
+                    return Err(internal!("内部arrowの生成操作が元候補と違う").into());
                 }
                 let map = push(&mut parts, base, Part::Map { candidate }, c)?;
                 operation = Some(push(
@@ -536,18 +536,18 @@ fn plan(
                 )?);
             }
         } else if row.map().is_some() {
-            return Err("内部arrowが候補なしで保存済みになった".into());
+            return Err(internal!("内部arrowが候補なしで保存済みになった").into());
         }
         let mut evidence = vec![];
         for counterexample in row.counterexamples() {
             tick(c)?;
             let endpoint_component = |component: Option<&crate::construction::ObjectComponent>| -> Result<NodeRef, ValidationFailure> {
-                let component = component.ok_or("内部arrow反例の元端点が未確定")?;
+                let component = component.ok_or(internal!("内部arrow反例の元端点が未確定"))?;
                 let index = a.readings().objects().iter()
                     .position(|o| o.identity().subject() == component.subject())
-                    .ok_or("内部arrow反例の端点が元対象表にない")?;
+                    .ok_or(internal!("内部arrow反例の端点が元対象表にない"))?;
                 objects.architectures.get(index).copied()
-                    .ok_or_else(|| "内部arrow反例の実Architectureがない".into())
+                    .ok_or_else(|| internal!("内部arrow反例の実Architectureがない").into())
             };
             let left = endpoint_component(row.source())?;
             let right = endpoint_component(row.target())?;
@@ -612,7 +612,7 @@ impl Source {
             || !Arc::ptr_eq(a, &self.architecture)
             || objects != self.objects
         {
-            return Err("内部arrowの元三入力・consumer・対象表が違う".into());
+            return Err(internal!("内部arrowの元三入力・consumer・対象表が違う").into());
         }
         self.core.recheck(inputs, c).map_err(failure)?;
         let (parts, outputs) = plan(inputs, a, &objects, self.universe, self.base, &self.core, c)?;
@@ -622,7 +622,7 @@ impl Source {
             || support != self.support
             || scope != self.scope
         {
-            return Err("内部arrowの全計画・元検査・支持・scopeが違う".into());
+            return Err(internal!("内部arrowの全計画・元検査・支持・scopeが違う").into());
         }
         tick(c)
     }
@@ -649,12 +649,12 @@ pub(super) fn validate_node(
         .source
         .parts
         .get(data.index)
-        .ok_or("内部arrowの元計画添字がない")?;
+        .ok_or(internal!("内部arrowの元計画添字がない"))?;
     let Some(Payload::Construction(v)) = &node.payload else {
-        return Err("内部arrowのpayloadがない".into());
+        return Err(internal!("内部arrowのpayloadがない").into());
     };
     let Witness::Architecture(a) = &v.witness else {
-        return Err("内部arrowのconsumerがArchitectureでない".into());
+        return Err(internal!("内部arrowのconsumerがArchitectureでない").into());
     };
     let (current, objects) = original(
         graph,
@@ -675,7 +675,7 @@ pub(super) fn validate_node(
         || !node.evidence.is_empty()
         || node.judgment.is_some()
     {
-        return Err("内部arrowの型・辺・元由来・支持・scopeが違う".into());
+        return Err(internal!("内部arrowの型・辺・元由来・支持・scopeが違う").into());
     }
     for r in part.arguments() {
         if r == data.source.reference
@@ -686,16 +686,16 @@ pub(super) fn validate_node(
             continue;
         }
         let Some(Payload::Construction(v)) = &graph.get(r)?.payload else {
-            return Err("内部arrowの引数がnativeでない".into());
+            return Err(internal!("内部arrowの引数がnativeでない").into());
         };
         let D::InternalArrows(other) = &v.data else {
-            return Err("内部arrowの引数が別由来".into());
+            return Err(internal!("内部arrowの引数が別由来").into());
         };
         if !Arc::ptr_eq(&other.source, &data.source)
             || other.index >= data.index
             || data.source.base.checked_add(other.index) != Some(r.0)
         {
-            return Err("内部arrowの引数が元計画の既出値でない".into());
+            return Err(internal!("内部arrowの引数が元計画の既出値でない").into());
         }
     }
     Ok(())
@@ -710,7 +710,7 @@ impl Environment<'_> {
             return Ok(());
         };
         let Witness::Architecture(a) = &value.witness else {
-            return Err("内部arrowのconsumerがArchitectureでない".into());
+            return Err(internal!("内部arrowのconsumerがArchitectureでない").into());
         };
         let (current, objects) = original(
             graph,
@@ -722,7 +722,7 @@ impl Environment<'_> {
             || !Arc::ptr_eq(a, &data.source.architecture)
             || objects != data.source.objects
         {
-            return Err("内部arrowのconsumerが元対象族と違う".into());
+            return Err(internal!("内部arrowのconsumerが元対象族と違う").into());
         }
         if self
             .results
@@ -756,13 +756,13 @@ impl super::result_kind::ResultKind for Data {
         let (graph, inputs, reference, objects, universe, c) = input;
         tick(c)?;
         if graph.active != graph.context_at(reference.0) {
-            return Err("内部arrowの生成が元Requestでない".into());
+            return Err(internal!("内部arrowの生成が元Requestでない").into());
         }
         let (a, current) = original(graph, reference, objects.base, universe)?;
         if &current != objects
             || inputs.sources() != Witness::Architecture(a.clone()).inputs().sources()
         {
-            return Err("内部arrowの入力または対象表が違う".into());
+            return Err(internal!("内部arrowの入力または対象表が違う").into());
         }
         let core = internal_arrows(
             &inputs,

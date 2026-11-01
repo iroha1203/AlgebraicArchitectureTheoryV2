@@ -243,17 +243,17 @@ impl Part {
 fn cv(graph: &Graph, r: NodeRef) -> Result<&ConstructionValue, ValidationFailure> {
     match &graph.get(r)?.payload {
         Some(Payload::Construction(v)) => Ok(v),
-        _ => Err("Path合成のnative値がない".into()),
+        _ => Err(internal!("Path合成のnative値がない").into()),
     }
 }
 fn part<'a>(graph: &'a Graph, r: NodeRef, w: &PathWitness) -> Result<&'a Part, ValidationFailure> {
     let v = cv(graph, r)?;
     if !matches!(&v.witness,Witness::PathCompose(c) if c.as_ref()==w) {
-        return Err("Path合成の元検査が違う".into());
+        return Err(internal!("Path合成の元検査が違う").into());
     }
     match &v.data {
         D::PathComposition(p) => Ok(p),
-        _ => Err("Path合成の型付き値でない".into()),
+        _ => Err(internal!("Path合成の型付き値でない").into()),
     }
 }
 fn selector<'a>(r: &'a Request, key: &str) -> Result<&'a Selector, ValidationFailure> {
@@ -264,7 +264,7 @@ fn selector<'a>(r: &'a Request, key: &str) -> Result<&'a Selector, ValidationFai
             .iter()
             .find(|a| a.name == key)
             .map(|a| &a.value)
-            .ok_or_else(|| "Path合成のthenがない".into())
+            .ok_or_else(|| internal!("Path合成のthenがない").into())
     }
 }
 fn selected(
@@ -279,7 +279,7 @@ fn selected(
             env.validate(graph, &n)?;
             graph.push(n)
         }
-        AnswerBinding::Inapplicable(_) => Err("不適合なPath射影を合成へ渡した".into()),
+        AnswerBinding::Inapplicable(_) => Err(internal!("不適合なPath射影を合成へ渡した").into()),
     }
 }
 fn origin_ref(
@@ -306,7 +306,7 @@ pub(super) fn validate_origin(
         || !origin_ref(env, graph, selector(r, "head")?, w.left)?
         || !origin_ref(env, graph, selector(r, "then")?, w.right)?
     {
-        return Err("Path合成が現在の三入力・要求・元Refと違う".into());
+        return Err(internal!("Path合成が現在の三入力・要求・元Refと違う").into());
     }
     Ok(())
 }
@@ -332,7 +332,7 @@ pub(super) fn validate_failure(
         construction: "composition",
     } = r.kind
     else {
-        return Err("Path合成の条件理由でない".into());
+        return Err(internal!("Path合成の条件理由でない").into());
     };
     if w.value.is_some()
         || r != &failed(&w.request, condition)
@@ -341,7 +341,7 @@ pub(super) fn validate_failure(
             Part::Endpoints { .. } | Part::Visibility { .. }
         )
     {
-        return Err("Path合成の反証理由が違う".into());
+        return Err(internal!("Path合成の反証理由が違う").into());
     }
     validate_node(graph, graph.get(condition)?, w)
 }
@@ -351,7 +351,7 @@ pub(super) fn validate_node(
     w: &PathWitness,
 ) -> Result<(), ValidationFailure> {
     let Some(Payload::Construction(v)) = &n.payload else {
-        return Err("Path合成のpayloadがない".into());
+        return Err(internal!("Path合成のpayloadがない").into());
     };
     if n.ty != v.ty()
         || n.rule != v.rule()
@@ -360,7 +360,7 @@ pub(super) fn validate_node(
         || n.scope != w.scope
         || !n.reasons.is_empty()
     {
-        return Err("Path合成の型・規則・支持・Scopeが違う".into());
+        return Err(internal!("Path合成の型・規則・支持・Scopeが違う").into());
     }
     for r in n
         .arguments
@@ -370,7 +370,8 @@ pub(super) fn validate_node(
     {
         graph.get(*r)?;
     }
-    let fail = || ValidationFailure::Internal("Path合成の値・条件・由来が現在の計算と違う".into());
+    let fail =
+        || ValidationFailure::Internal(internal!("Path合成の値・条件・由来が現在の計算と違う"));
     if let D::ConstructionLabel(s) = &v.data {
         return if s == &Scalar::Text("composition".into())
             && n.judgment.is_none()
@@ -547,21 +548,24 @@ pub(super) fn validate_answer(
     w: &PathWitness,
 ) -> Result<(), ValidationFailure> {
     validate_origin(env, graph, r, w)?;
-    let claim = a.claim.ok_or("Path合成の命題がない")?;
+    let claim = a.claim.ok_or(internal!("Path合成の命題がない"))?;
     validate_node(graph, graph.get(claim)?, w)?;
     if !matches!(part(graph, claim, w)?, Part::Claim { .. }) {
-        return Err("Path合成のclaimが違う".into());
+        return Err(internal!("Path合成のclaimが違う").into());
     }
     let j = graph
         .get(claim)?
         .judgment
         .as_ref()
-        .ok_or("Path合成の判断がない")?;
+        .ok_or(internal!("Path合成の判断がない"))?;
     let mut outputs = BTreeMap::from([("proposition".into(), claim)]);
     if w.value.is_some() {
-        let path = *a.outputs.get("operation").ok_or("合成Pathがない")?;
+        let path = *a
+            .outputs
+            .get("operation")
+            .ok_or(internal!("合成Pathがない"))?;
         if !matches!(part(graph,path,w)?,Part::Path{condition,..} if *condition==claim) {
-            return Err("Path出力の構成条件が違う".into());
+            return Err(internal!("Path出力の構成条件が違う").into());
         }
         outputs.insert("operation".into(), path);
     }
@@ -577,7 +581,7 @@ pub(super) fn validate_answer(
         || a.reasons != reasons
         || a.scope != w.scope
     {
-        return Err("Path合成回答が現在の元導出と違う".into());
+        return Err(internal!("Path合成回答が現在の元導出と違う").into());
     }
     Ok(())
 }
@@ -600,7 +604,7 @@ pub(super) fn reference(
         }
         pending.extend(n.arguments.iter().copied());
     }
-    Err("Path端点・生成元の既出Refがない".into())
+    Err(internal!("Path端点・生成元の既出Refがない").into())
 }
 fn put(
     graph: &mut Graph,
@@ -644,7 +648,7 @@ pub(super) fn evaluate(
     let left = selected(env, graph, r, "head")?;
     let right = selected(env, graph, r, "then")?;
     let (Scalar::Path(a), Scalar::Path(b)) = (graph.scalar(left)?, graph.scalar(right)?) else {
-        return Err("composeの元実値がPath二つでない".into());
+        return Err(internal!("composeの元実値がPath二つでない").into());
     };
     let source = reference(graph, &[left], &a.object(), control)?;
     let target = reference(graph, &[right], &b.target(), control)?;
@@ -670,7 +674,7 @@ pub(super) fn evaluate(
                 crate::construction::ConstructionFailure::Stopped(stop) => {
                     ValidationFailure::Stop(stop)
                 }
-                other => ValidationFailure::Internal(format!("Path reading: {other:?}")),
+                other => ValidationFailure::Internal(internal!(format!("Path reading: {other:?}"))),
             })?;
     let mut invisible = None;
     for r in [source, middle_left, middle_right, target]
@@ -679,7 +683,7 @@ pub(super) fn evaluate(
     {
         control.checkpoint(Checkpoint::FiniteIteration)?;
         let Scalar::Subject { entity, .. } = graph.scalar(r)? else {
-            return Err("Pathの端点・生成元が原始参照でない".into());
+            return Err(internal!("Pathの端点・生成元が原始参照でない").into());
         };
         let declaration = prepared
             .inputs()
@@ -687,7 +691,7 @@ pub(super) fn evaluate(
             .definitions()
             .declarations()
             .get(entity)
-            .ok_or("Pathの原始宣言がない")?;
+            .ok_or(internal!("Pathの原始宣言がない"))?;
         if !namespaces.contains(&declaration.namespace) {
             invisible = Some(r);
             break;

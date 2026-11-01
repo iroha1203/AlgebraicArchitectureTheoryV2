@@ -144,7 +144,10 @@ fn observation(
                 lhs,
                 rhs,
             } => {
-                let ty = law.expr_type(*lhs).ok_or("商の等式値型がない")?.clone();
+                let ty = law
+                    .expr_type(*lhs)
+                    .ok_or(internal!("商の等式値型がない"))?
+                    .clone();
                 if !exact_type(&ty, law, c)? {
                     return Err(unsupported("商の等式値型が未対応"));
                 }
@@ -157,7 +160,7 @@ fn observation(
             ExprKind::Match { scrutinee, arms } => {
                 let ty = law
                     .expr_type(*scrutinee)
-                    .ok_or("match判別値型がない")?
+                    .ok_or(internal!("match判別値型がない"))?
                     .clone();
                 if !exact_type(&ty, law, c)? {
                     return Err(unsupported("このmatch判別値型の商は未実装"));
@@ -332,19 +335,23 @@ pub(in crate::observed) fn compute(
             "この係数体のアフィン商の公開配送は未実装",
         ));
     }
-    let candidates = input.search.candidates.as_ref().ok_or("商の候補表がない")?;
+    let candidates = input
+        .search
+        .candidates
+        .as_ref()
+        .ok_or(internal!("商の候補表がない"))?;
     if !input.search.complete || !candidates.complete {
         return Err(unsupported(request, "商の有限候補全域が未確定"));
     }
     let declaration = &original.indexes.inputs.law().declarations()
-        [request.declaration().ok_or("商のviewがない")?];
+        [request.declaration().ok_or(internal!("商のviewがない"))?];
     let Signature::View {
         params,
         returns,
         body,
     } = &declaration.signature
     else {
-        return Err("商のheadがviewでない".into());
+        return Err(internal!("商のheadがviewでない").into());
     };
     if !exact_type(returns, original.indexes.inputs.law(), c)? {
         return Err(unsupported(request, "このview型の有限商の等値は未実装"));
@@ -356,7 +363,7 @@ pub(in crate::observed) fn compute(
                 .arguments
                 .iter()
                 .find(|a| a.name == format!("bind.{}", p.name))
-                .ok_or("商のview束縛がない")?;
+                .ok_or(internal!("商のview束縛がない"))?;
             Ok((
                 p.name.clone(),
                 change_search::selector(original, graph, &arg.value)?,
@@ -369,12 +376,12 @@ pub(in crate::observed) fn compute(
         .find(|a| a.name == "law")
         .map(|a| {
             let Selector::Declaration { name } = &a.value else {
-                return Err(ValidationFailure::from("商のLaw名がない"));
+                return Err(ValidationFailure::from(internal!("商のLaw名がない")));
             };
             let Signature::Law { body, .. } =
                 &original.indexes.inputs.law().declarations()[name].signature
             else {
-                return Err(ValidationFailure::from("商のLaw署名がない"));
+                return Err(ValidationFailure::from(internal!("商のLaw署名がない")));
             };
             let (ty, _) = observation(original.indexes.inputs.law(), *body, None, &[], c)?;
             Ok((name.clone(), ty))
@@ -442,7 +449,7 @@ pub(in crate::observed) fn compute(
         let assignments = assignments.into_iter().collect::<Vec<_>>();
         let mut env =
             Environment::try_primitive_valuation(original.indexes.inputs, &assignments, c)?
-                .ok_or("商の候補代入が不適合")?;
+                .ok_or(internal!("商の候補代入が不適合"))?;
         env.indexes.object = Some(domain.clone());
         env.state.missing_slot_reads.replace(Some(BTreeSet::new()));
         let mut checked = BTreeMap::new();
@@ -491,7 +498,7 @@ pub(in crate::observed) fn compute(
                 .state
                 .missing_slot_reads
                 .replace(None)
-                .ok_or("商の不足位置収集がない")?;
+                .ok_or(internal!("商の不足位置収集がない"))?;
             if !reads.is_empty() {
                 missing.extend(reads);
                 continue;
@@ -559,7 +566,7 @@ pub(in crate::observed) fn compute(
                     .state
                     .evaluation_capture
                     .replace(None)
-                    .ok_or("商の通常評価出現がない")?;
+                    .ok_or(internal!("商の通常評価出現がない"))?;
                 let evaluated = evaluated?;
                 scope.merge(&evaluated.scope);
                 if evaluated.application == Some(false) {
@@ -640,7 +647,7 @@ pub(in crate::observed) fn compute(
             assignments: if law.is_some() { assignments } else { vec![] },
             laws,
             parameters: Scalar::Tuple(candidate.parameters.clone()),
-            image: value.known_value.ok_or("検査済みview値がない")?,
+            image: value.known_value.ok_or(internal!("検査済みview値がない"))?,
         });
     }
     let mut bindings = bindings;

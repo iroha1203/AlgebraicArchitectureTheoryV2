@@ -234,12 +234,12 @@ fn selector<'a>(r: &'a Request, key: &str) -> Result<&'a Selector, ValidationFai
             .iter()
             .find(|a| a.name == key)
             .map(|a| &a.value)
-            .ok_or_else(|| "比較のtoがない".into())
+            .ok_or_else(|| internal!("比較のtoがない").into())
     }
 }
 fn subject_node(env: &Environment<'_>, s: &Selector) -> Result<Node, ValidationFailure> {
     let Selector::Subject { snapshot, subject } = s else {
-        return Err("比較のsubjectでない".into());
+        return Err(internal!("比較のsubjectでない").into());
     };
     let source = env.indexes.subject(snapshot, subject)?;
     let scalar = Scalar::Subject {
@@ -288,7 +288,7 @@ fn selected(
             env.validate(graph, &n)?;
             graph.push(n)
         }
-        AnswerBinding::Inapplicable(_) => Err("比較へ不適合な射影を渡した".into()),
+        AnswerBinding::Inapplicable(_) => Err(internal!("比較へ不適合な射影を渡した").into()),
     }
 }
 fn origin_ref(
@@ -310,7 +310,7 @@ fn origin_ref(
 fn value(graph: &Graph, r: NodeRef) -> Result<&ConstructionValue, ValidationFailure> {
     match &graph.get(r)?.payload {
         Some(Payload::Construction(v)) => Ok(v),
-        _ => Err("比較のnative値がない".into()),
+        _ => Err(internal!("比較のnative値がない").into()),
     }
 }
 fn part<'a>(
@@ -320,11 +320,11 @@ fn part<'a>(
 ) -> Result<&'a Part, ValidationFailure> {
     let v = value(graph, r)?;
     if !matches!(&v.witness,Witness::Compare(c) if c.as_ref()==w) {
-        return Err("比較の元検査が違う".into());
+        return Err(internal!("比較の元検査が違う").into());
     }
     match &v.data {
         D::Comparison(p) => Ok(p),
-        _ => Err("比較の型付き値でない".into()),
+        _ => Err(internal!("比較の型付き値でない").into()),
     }
 }
 fn failed(r: &Request, c: NodeRef) -> Reason {
@@ -345,8 +345,9 @@ pub(super) fn validate_origin(
     r: &Request,
     w: &CompareWitness,
 ) -> Result<(), ValidationFailure> {
-    let kind = super::request::comparison::kind(r)
-        .map_err(|error| ValidationFailure::Internal(format!("元比較kind: {error:?}")))?;
+    let kind = super::request::comparison::kind(r).map_err(|error| {
+        ValidationFailure::Internal(internal!(format!("元比較kind: {error:?}")))
+    })?;
     if kind != w.kind
         || r.kind != QuestionKind::Compare
         || r != &w.request
@@ -354,7 +355,7 @@ pub(super) fn validate_origin(
         || !origin_ref(env, graph, selector(r, "head")?, w.left)?
         || !origin_ref(env, graph, selector(r, "to")?, w.right)?
     {
-        return Err("比較が現在の三入力・要求・元Refと違う".into());
+        return Err(internal!("比較が現在の三入力・要求・元Refと違う").into());
     }
     if w.kind == "relation" && w.relation_plan.is_none() && w.relation_family.is_none() {
         relations::validate_incompatible(graph, w)?;
@@ -368,17 +369,25 @@ pub(super) fn validate_position(
     if let (Witness::Compare(w), D::Comparison(Part::RelationDerived { index, .. })) =
         (&value.witness, &value.data)
     {
-        let base = w.relation_plan.as_ref().ok_or("元relation導出がない")?.base;
+        let base = w
+            .relation_plan
+            .as_ref()
+            .ok_or(internal!("元relation導出がない"))?
+            .base;
         if base.checked_add(*index) != Some(position) {
-            return Err("元relation導出の生成位置が違う".into());
+            return Err(internal!("元relation導出の生成位置が違う").into());
         }
     }
     if let (Witness::Compare(w), D::Comparison(Part::Derived { index, .. })) =
         (&value.witness, &value.data)
     {
-        let base = w.value_plan.as_ref().ok_or("比較の導出元がない")?.base;
+        let base = w
+            .value_plan
+            .as_ref()
+            .ok_or(internal!("比較の導出元がない"))?
+            .base;
         if base.checked_add(*index) != Some(position) {
-            return Err("比較の導出が元の生成位置と違う".into());
+            return Err(internal!("比較の導出が元の生成位置と違う").into());
         }
     }
     Ok(())
@@ -389,7 +398,7 @@ pub(super) fn validate_node(
     w: &CompareWitness,
 ) -> Result<(), ValidationFailure> {
     let Some(Payload::Construction(v)) = &n.payload else {
-        return Err("比較のpayloadがない".into());
+        return Err(internal!("比較のpayloadがない").into());
     };
     if let D::Comparison(Part::RelationSource(data)) = &v.data {
         return relation_sources::validate_node(graph, n, w, data);
@@ -398,7 +407,7 @@ pub(super) fn validate_node(
         return relations::validate_node(graph, n, w);
     }
     if w.kind == "relation" && w.relation_family.is_some() {
-        return Err("元relation Sourceを比較の結論として使えない".into());
+        return Err(internal!("元relation Sourceを比較の結論として使えない").into());
     }
     if n.ty != v.ty()
         || n.rule != v.rule()
@@ -407,7 +416,7 @@ pub(super) fn validate_node(
         || n.scope != w.scope
         || !n.reasons.is_empty()
     {
-        return Err("比較の型・規則・支持・Scopeが違う".into());
+        return Err(internal!("比較の型・規則・支持・Scopeが違う").into());
     }
     for r in n
         .arguments
@@ -417,7 +426,7 @@ pub(super) fn validate_node(
     {
         graph.get(*r)?;
     }
-    let fail = || ValidationFailure::Internal("比較の値・条件・由来が現在の計算と違う".into());
+    let fail = || ValidationFailure::Internal(internal!("比較の値・条件・由来が現在の計算と違う"));
     if let D::ConstructionLabel(s) = &v.data {
         return if w.incompatible.is_some()
             && s == &Scalar::Text("comparison".into())
@@ -597,11 +606,11 @@ pub(super) fn validate_failure(graph: &Graph, r: &Reason) -> Result<(), Validati
         construction: "comparison",
     } = r.kind
     else {
-        return Err("比較の条件理由でない".into());
+        return Err(internal!("比較の条件理由でない").into());
     };
     let v = value(graph, condition)?;
     let Witness::Compare(w) = &v.witness else {
-        return Err("比較の元検査がない".into());
+        return Err(internal!("比較の元検査がない").into());
     };
     if w.relation_plan.is_some() {
         return relations::validate_failure(graph, r, condition, w);
@@ -610,7 +619,7 @@ pub(super) fn validate_failure(graph: &Graph, r: &Reason) -> Result<(), Validati
         || r != &failed(&w.request, condition)
         || !matches!(part(graph, condition, w)?, Part::Endpoints { .. })
     {
-        return Err("比較の反証理由が違う".into());
+        return Err(internal!("比較の反証理由が違う").into());
     }
     validate_node(graph, graph.get(condition)?, w)
 }
@@ -625,25 +634,25 @@ pub(super) fn validate_answer(
     }
     if let Some(expected) = super::public_map::unavailable(env, graph, r)? {
         if a != &expected {
-            return Err("比較の依存停止回答が違う".into());
+            return Err(internal!("比較の依存停止回答が違う").into());
         }
         return Ok(());
     }
-    let claim = a.claim.ok_or("比較命題がない")?;
+    let claim = a.claim.ok_or(internal!("比較命題がない"))?;
     let v = value(graph, claim)?;
     let Witness::Compare(w) = &v.witness else {
-        return Err("比較の元検査がない".into());
+        return Err(internal!("比較の元検査がない").into());
     };
     validate_origin(env, graph, r, w)?;
     validate_node(graph, graph.get(claim)?, w)?;
     let Part::Claim { comparison, .. } = part(graph, claim, w)? else {
-        return Err("比較のclaimが違う".into());
+        return Err(internal!("比較のclaimが違う").into());
     };
     let j = graph
         .get(claim)?
         .judgment
         .as_ref()
-        .ok_or("比較の判断がない")?;
+        .ok_or(internal!("比較の判断がない"))?;
     let mut outputs = BTreeMap::from([("proposition".into(), claim)]);
     if let Some(c) = comparison {
         outputs.insert("comparison".into(), *c);
@@ -660,7 +669,7 @@ pub(super) fn validate_answer(
         || a.reasons != reasons
         || a.scope != w.scope
     {
-        return Err("比較回答が元導出と違う".into());
+        return Err(internal!("比較回答が元導出と違う").into());
     }
     Ok(())
 }
@@ -714,23 +723,23 @@ fn path_difference(
     };
     if let (Some(a), Some(b)) = (&a.step, &b.step) {
         if a.carrier.len() != b.carrier.len() {
-            return Err("Path比較の共通carrierの件数が違う".into());
+            return Err(internal!("Path比較の共通carrierの件数が違う").into());
         }
         for (x, y) in a.carrier.iter().zip(&b.carrier) {
             control.checkpoint(Checkpoint::FiniteIteration)?;
             if x != y {
-                return Err("Path比較の共通carrierが違う".into());
+                return Err(internal!("Path比較の共通carrierが違う").into());
             }
         }
     }
     for (i, fact) in step.carrier.iter().enumerate() {
         control.checkpoint(Checkpoint::FiniteIteration)?;
         let left = match &a.step {
-            Some(s) => s.images.get(i).ok_or("左作用の像がない")?,
+            Some(s) => s.images.get(i).ok_or(internal!("左作用の像がない"))?,
             None => fact,
         };
         let right = match &b.step {
-            Some(s) => s.images.get(i).ok_or("右作用の像がない")?,
+            Some(s) => s.images.get(i).ok_or(internal!("右作用の像がない"))?,
             None => fact,
         };
         if left != right {
@@ -753,9 +762,9 @@ fn completed_operation<T>(
             }
             None => Err(ValidationFailure::Stop(s)),
         },
-        Err(other) => Err(ValidationFailure::Internal(format!(
+        Err(other) => Err(ValidationFailure::Internal(internal!(format!(
             "Operation比較: {other:?}"
-        ))),
+        )))),
     }
 }
 // 同じModuleの表示ベクトルの差が、関係の生成する部分加群に入るかを解く。
@@ -767,10 +776,10 @@ fn vector_equal(
 ) -> Result<bool, ValidationFailure> {
     use num_bigint::BigInt as Z;
     let NodeType::Vector(module) = graph.get(left)?.ty else {
-        return Err("比較のVector型がない".into());
+        return Err(internal!("比較のVector型がない").into());
     };
     if graph.get(right)?.ty != NodeType::Vector(module) {
-        return Err("比較のModuleが違う".into());
+        return Err(internal!("比較のModuleが違う").into());
     }
     let scalar = |owner: NodeRef, wire: &Json| -> Result<Z, ValidationFailure> {
         let r = graph
@@ -778,40 +787,40 @@ fn vector_equal(
             .arguments
             .iter()
             .find(|r| r.wire() == *wire)
-            .ok_or("Vector比較の座標参照がない")?;
+            .ok_or(internal!("Vector比較の座標参照がない"))?;
         let Scalar::Z(z) = graph.scalar(*r)? else {
-            return Err("整数Moduleの座標がZでない".into());
+            return Err(internal!("整数Moduleの座標がZでない").into());
         };
         Ok(z.clone())
     };
     let coordinates = |r| -> Result<Vec<Z>, ValidationFailure> {
         let Json::Obj(ref wire) = value(graph, r)?.wire() else {
-            return Err("Vector表示がない".into());
+            return Err(internal!("Vector表示がない").into());
         };
         let Some(Json::Arr(xs)) = wire.get("coordinates") else {
-            return Err("Vector座標がない".into());
+            return Err(internal!("Vector座標がない").into());
         };
         xs.iter().map(|x| scalar(r, x)).collect()
     };
     let a = coordinates(left)?;
     let b = coordinates(right)?;
     if a.len() != b.len() {
-        return Err("同じModuleの座標数が違う".into());
+        return Err(internal!("同じModuleの座標数が違う").into());
     }
     let Json::Obj(ref wire) = value(graph, module)?.wire() else {
-        return Err("Module表示がない".into());
+        return Err(internal!("Module表示がない").into());
     };
     let Some(Json::Arr(relations)) = wire.get("relations") else {
-        return Err("Module関係がない".into());
+        return Err(internal!("Module関係がない").into());
     };
     let mut matrix = vec![vec![]; a.len()];
     for relation in relations {
         c.checkpoint(Checkpoint::FiniteIteration)?;
         let Json::Arr(row) = relation else {
-            return Err("Module関係が座標列でない".into());
+            return Err(internal!("Module関係が座標列でない").into());
         };
         if row.len() != a.len() {
-            return Err("Module関係の座標数が違う".into());
+            return Err(internal!("Module関係の座標数が違う").into());
         }
         for (i, x) in row.iter().enumerate() {
             matrix[i].push(scalar(module, x)?);
@@ -842,7 +851,7 @@ pub(super) fn evaluate(
     let left = selected(env, graph, r, "head")?;
     let right = selected(env, graph, r, "to")?;
     let kind = super::request::comparison::kind(r)
-        .map_err(|e| ValidationFailure::Internal(format!("比較kind: {e:?}")))?
+        .map_err(|e| ValidationFailure::Internal(internal!(format!("比較kind: {e:?}"))))?
         .to_owned();
     if kind == "relation" {
         let a = relations::operand_path(graph, left)?;
@@ -898,7 +907,7 @@ pub(super) fn evaluate(
         })
     } else if let Ok(Scalar::Path(a)) = graph.scalar(left) {
         let Scalar::Path(b) = graph.scalar(right)? else {
-            return Err("Path比較へ別型を渡した".into());
+            return Err(internal!("Path比較へ別型を渡した").into());
         };
         a.check(control)?;
         b.check(control)?;
@@ -1019,7 +1028,7 @@ pub(super) fn evaluate(
             None,
         )?;
         if w.incompatible != Some((x, y)) {
-            return Err("reading条件の転記位置が違う".into());
+            return Err(internal!("reading条件の転記位置が違う").into());
         }
     }
     if let Some(plan) = &w.value_plan {
@@ -1035,7 +1044,7 @@ pub(super) fn evaluate(
                 data.judgment(),
             )?;
             if reference.0 != plan.base + index {
-                return Err("値比較の完成証拠の転記順が違う".into());
+                return Err(internal!("値比較の完成証拠の転記順が違う").into());
             }
         }
     }

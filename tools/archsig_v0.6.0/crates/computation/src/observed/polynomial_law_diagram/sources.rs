@@ -15,14 +15,14 @@ impl Builder<'_> {
         self.inputs
             .law()
             .expr_type(expression)
-            .ok_or("多項式operandの元型がない")?
+            .ok_or(internal!("多項式operandの元型がない"))?
             .erase_controlled::<archsig_common::control::CheckFailure<Box<archsig_common::issue::Issue>>>(
                 self.control,
                 Checkpoint::EquationPresentation,
             )
             .map_err(|e| match e {
                 archsig_common::control::CheckFailure::Stopped(s) => ValidationFailure::Stop(s),
-                archsig_common::control::CheckFailure::Input(_) => "多項式operandの原始型がない".into(),
+                archsig_common::control::CheckFailure::Input(_) => internal!("多項式operandの原始型がない").into(),
             })
     }
     fn put(&mut self, part: Part) -> Result<NodeRef, ValidationFailure> {
@@ -40,7 +40,7 @@ impl Builder<'_> {
             .law()
             .exprs()
             .get(expression)
-            .ok_or("多項式operandの元式がない")?
+            .ok_or(internal!("多項式operandの元式がない"))?
             .span;
         let source = self.put(Part::Source {
             quantifiers: self.original.quantifiers.clone(),
@@ -86,7 +86,7 @@ impl Builder<'_> {
         expression: usize,
     ) -> Result<(), ValidationFailure> {
         if locals.iter().any(|b| b.name == name) {
-            return Err("多項式operandのlexical束縛名が重複する".into());
+            return Err(internal!("多項式operandのlexical束縛名が重複する").into());
         }
         let (value, ty) = self.closed(expression, locals)?;
         locals.push(Binding {
@@ -136,7 +136,7 @@ impl Builder<'_> {
                 .law()
                 .exprs()
                 .get(current)
-                .ok_or("多項式operandの外側式がない")?
+                .ok_or(internal!("多項式operandの外側式がない"))?
                 .kind
             {
                 ExprKind::Group(child) => current = *child,
@@ -144,7 +144,7 @@ impl Builder<'_> {
                     let Some((params, body, args)) =
                         super::super::object_law_residuals::predicate_call(self.inputs, current)
                     else {
-                        return Err("多項式operandの述語呼出しがない".into());
+                        return Err(internal!("多項式operandの述語呼出しがない").into());
                     };
                     let params = params.to_vec();
                     let args = args.to_vec();
@@ -176,9 +176,9 @@ impl Builder<'_> {
                         crate::construction::ConstructionFailure::Stopped(s) => {
                             ValidationFailure::Stop(s)
                         }
-                        other => format!("多項式operandの束縛match: {other:?}").into(),
+                        other => internal!(format!("多項式operandの束縛match: {other:?}")).into(),
                     })?
-                    .ok_or("多項式operandのmatchが単一束縛でない")?;
+                    .ok_or(internal!("多項式operandのmatchが単一束縛でない"))?;
                     let source = *scrutinee;
                     match &arms[0].pattern {
                         Pattern::Name(name) => {
@@ -188,7 +188,7 @@ impl Builder<'_> {
                         Pattern::Wild(_) => {
                             self.closed(source, &locals)?;
                         }
-                        _ => return Err("多項式operandのmatch patternが違う".into()),
+                        _ => return Err(internal!("多項式operandのmatch patternが違う").into()),
                     }
                     current = next;
                 }
@@ -201,19 +201,19 @@ impl Builder<'_> {
                         current,
                         eq,
                     )
-                    .ok_or("多項式operandの連言に等式がない")?
+                    .ok_or(internal!("多項式operandの連言に等式がない"))?
                     .0;
                 }
-                _ => return Err("多項式operandの元等式までの束縛が違う".into()),
+                _ => return Err(internal!("多項式operandの元等式までの束縛が違う").into()),
             }
         }
         let ExprKind::Binary { lhs, rhs, .. } = self.inputs.law().exprs()[eq].kind else {
-            return Err("多項式operandの元等式がない".into());
+            return Err(internal!("多項式operandの元等式がない").into());
         };
         let left = self.closed(lhs, &locals)?;
         let right = self.closed(rhs, &locals)?;
         if left.1 != right.1 {
-            return Err("多項式operandの左右の型が違う".into());
+            return Err(internal!("多項式operandの左右の型が違う").into());
         }
         Ok((left, right))
     }
@@ -226,11 +226,11 @@ impl Builder<'_> {
         for &position in path {
             tick(self.control)?;
             let Type::Tuple(items) = &ty else {
-                return Err("多項式operandの成分元がTupleでない".into());
+                return Err(internal!("多項式operandの成分元がTupleでない").into());
             };
             let target = items
                 .get(position)
-                .ok_or("多項式operandの成分が範囲外")?
+                .ok_or(internal!("多項式operandの成分が範囲外"))?
                 .clone();
             value = self.put(Part::Transform {
                 quantifiers: self.original.quantifiers.clone(),
@@ -253,7 +253,9 @@ fn erased(ty: &Type, c: &Control) -> Result<Type, ValidationFailure> {
     )
     .map_err(|e| match e {
         archsig_common::control::CheckFailure::Stopped(s) => ValidationFailure::Stop(s),
-        archsig_common::control::CheckFailure::Input(_) => "多項式Lawの元parameter型がない".into(),
+        archsig_common::control::CheckFailure::Input(_) => {
+            internal!("多項式Lawの元parameter型がない").into()
+        }
     })
 }
 fn original(
@@ -283,12 +285,12 @@ fn original_bound(
     let original = readings
         .instances()
         .get(instance)
-        .ok_or("多項式Lawの元instanceがない")?;
+        .ok_or(internal!("多項式Lawの元instanceがない"))?;
     let declaration = inputs
         .law()
         .declarations()
         .get(&original.declaration().name)
-        .ok_or("多項式Lawの元宣言がない")?;
+        .ok_or(internal!("多項式Lawの元宣言がない"))?;
     let Signature::Law {
         role,
         params,
@@ -296,7 +298,7 @@ fn original_bound(
         body,
     } = &declaration.signature
     else {
-        return Err("多項式の元宣言がLawでない".into());
+        return Err(internal!("多項式の元宣言がLawでない").into());
     };
     let mut bindings = vec![];
     let mut parameters = vec![];
@@ -318,7 +320,7 @@ fn original_bound(
         let (value, ty) =
             if let Some((_, value)) = finite.iter().find(|(name, _)| name == &parameter.name) {
                 if parameter.ty.erase() != value.ty() || !refs.is_empty() || !values.is_empty() {
-                    return Err("有限ケースの束縛型または重複が不正".into());
+                    return Err(internal!("有限ケースの束縛型または重複が不正").into());
                 }
                 (Some(value.clone()), value.ty())
             } else {
@@ -326,7 +328,7 @@ fn original_bound(
                     ([binding], []) => {
                         let entity = match &parameter.ty {
                             Type::Ref(t) | Type::Owned(t, _) => t.clone(),
-                            _ => return Err("多項式Lawの参照束縛型が違う".into()),
+                            _ => return Err(internal!("多項式Lawの参照束縛型が違う").into()),
                         };
                         let fact = binding.subject();
                         (
@@ -341,18 +343,18 @@ fn original_bound(
                     ([], [(_, value)]) => {
                         let ty = erased(&parameter.ty, c)?;
                         if value.ty() != ty {
-                            return Err("多項式Lawの値束縛型が違う".into());
+                            return Err(internal!("多項式Lawの値束縛型が違う").into());
                         };
                         (Some(value.scalar().clone()), ty)
                     }
                     ([], []) => {
                         let ty = erased(&parameter.ty, c)?;
                         if actual.is_some() {
-                            return Err("多項式Lawの実行の値束縛がない".into());
+                            return Err(internal!("多項式Lawの実行の値束縛がない").into());
                         };
                         (None, ty)
                     }
-                    _ => return Err("多項式Lawの束縛が重複した".into()),
+                    _ => return Err(internal!("多項式Lawの束縛が重複した").into()),
                 }
             };
         if let Some(value) = value {
@@ -387,13 +389,13 @@ fn original_bound(
     let mut source = |expression: usize| -> Result<NodeRef, ValidationFailure> {
         tick(c)?;
         if inputs.law().expr_type(expression) != Some(&Type::Bool) {
-            return Err("多項式Lawのbody/guard型がBoolでない".into());
+            return Err(internal!("多項式Lawのbody/guard型がBoolでない").into());
         }
         let ast = inputs
             .law()
             .exprs()
             .get(expression)
-            .ok_or("多項式Lawの元式がない")?;
+            .ok_or(internal!("多項式Lawの元式がない"))?;
         push(
             parts,
             base,
@@ -455,7 +457,7 @@ fn original_bound(
         ..
     } = declaration.signature
     else {
-        return Err("多項式Lawの元bodyがない".into());
+        return Err(internal!("多項式Lawの元bodyがない").into());
     };
     let pair = builder.pair(body_expression)?;
     result.operands = Some(pair);
@@ -500,7 +502,7 @@ pub(super) fn append(
                 let ty = erased(&parameter.ty, c)?;
                 if expected != &(parameter.name.clone(), ty.clone()) || !domain.missing().is_empty()
                 {
-                    return Err("元Law族のparameter型域が違う".into());
+                    return Err(internal!("元Law族のparameter型域が違う").into());
                 }
                 let mut values = vec![];
                 for value in domain.values() {
@@ -551,7 +553,7 @@ pub(super) fn append(
         let original = originals
             .iter()
             .find(|o| (o.instance, o.row) == key)
-            .ok_or("多項式座標の元Law行がない")?;
+            .ok_or(internal!("多項式座標の元Law行がない"))?;
         let mut b = Builder {
             inputs,
             original,
@@ -564,11 +566,11 @@ pub(super) fn append(
             .evaluations()
             .iter()
             .find(|e| e.position == q.position)
-            .ok_or("多項式の元Law成分がない")?
+            .ok_or(internal!("多項式の元Law成分がない"))?
             .shape;
         let (term, path) = shape
             .component(&q.component)
-            .ok_or("多項式の連言成分がない")?;
+            .ok_or(internal!("多項式の連言成分がない"))?;
         let (left, right) = if matches!(
             shape,
             super::super::object_law_residuals::LawNumericShape::Conjunction { .. }
@@ -579,11 +581,14 @@ pub(super) fn append(
                 ..
             } = term
             else {
-                return Err("多項式の連言成分が等式でない".into());
+                return Err(internal!("多項式の連言成分が等式でない").into());
             };
             b.pair_at(*body, Some(*equality))?
         } else {
-            original.operands.clone().ok_or("多項式の元左右式がない")?
+            original
+                .operands
+                .clone()
+                .ok_or(internal!("多項式の元左右式がない"))?
         };
         let lhs = b.project(left.0, left.1, path)?;
         let rhs = b.project(right.0, right.1, path)?;

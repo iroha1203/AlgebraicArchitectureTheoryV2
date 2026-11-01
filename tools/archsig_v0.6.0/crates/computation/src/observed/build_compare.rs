@@ -31,7 +31,7 @@ fn evaluation(
         let l = g.get(left)?;
         let r = g.get(right)?;
         if l.ty != r.ty {
-            return Err("build互換性の評価型が違う".into());
+            return Err(internal!("build互換性の評価型が違う").into());
         }
         let parts = |n: &Node| -> Result<
             (&'static str, Option<NodeRef>, Vec<NodeRef>),
@@ -56,7 +56,7 @@ fn evaluation(
                         super::law_inapplicable::Kind::Evaluation { value } => {
                             Ok(("not_applicable", Some(value), vec![]))
                         }
-                        _ => Err("build互換性の非適用評価が別種".into()),
+                        _ => Err(internal!("build互換性の非適用評価が別種").into()),
                     },
                     D::LawFamily(d) => match &d.kind {
                         super::law_family::Kind::Evaluation { rows, .. } => Ok((
@@ -64,11 +64,11 @@ fn evaluation(
                             None,
                             rows.iter().map(|r| r.evaluation).collect(),
                         )),
-                        _ => Err("build互換性の全域評価が別種".into()),
+                        _ => Err(internal!("build互換性の全域評価が別種").into()),
                     },
-                    _ => Err("build互換性の元Evaluationが別構成".into()),
+                    _ => Err(internal!("build互換性の元Evaluationが別構成").into()),
                 },
-                _ => Err("build互換性の元Evaluationがない".into()),
+                _ => Err(internal!("build互換性の元Evaluationがない").into()),
             }
         };
         let (la, lv, lc) = parts(l)?;
@@ -91,7 +91,7 @@ fn evaluation(
             return Ok(None);
         }
         if lc.len() != rc.len() {
-            return Err("build互換性の全row数が違う".into());
+            return Err(internal!("build互換性の全row数が違う").into());
         }
         // 有限族の全rowを比較する。集約Boolだけで関数を比較しない。
         let mut checked = vec![];
@@ -112,7 +112,7 @@ fn residual(
     let (Some(Payload::Construction(l)), Some(Payload::Construction(r))) =
         (&g.get(left)?.payload, &g.get(right)?.payload)
     else {
-        return Err("build互換性の残差がnative環の値でない".into());
+        return Err(internal!("build互換性の残差がnative環の値でない").into());
     };
     match (&l.data, &r.data) {
         (D::PolynomialLaw(l), D::PolynomialLaw(r)) => {
@@ -122,30 +122,30 @@ fn residual(
             match (l.parameter_difference(c)?, r.parameter_difference(c)?) {
                 (Some((lr, left)), Some((rr, right))) => {
                     if lr != rr {
-                        return Err("build互換性の数値族が別環に属する".into());
+                        return Err(internal!("build互換性の数値族が別環に属する").into());
                     }
                     return Ok(Some(left == right));
                 }
                 (Some((ring, _)), None) => {
                     if r.polynomial().map(|p| p.0) != Some(ring) {
-                        return Err("build互換性の残差が別環に属する".into());
+                        return Err(internal!("build互換性の残差が別環に属する").into());
                     }
                     return Ok(Some(false));
                 }
                 (None, Some((ring, _))) => {
                     if l.polynomial().map(|p| p.0) != Some(ring) {
-                        return Err("build互換性の残差が別環に属する".into());
+                        return Err(internal!("build互換性の残差が別環に属する").into());
                     }
                     return Ok(Some(false));
                 }
                 (None, None) => (),
             }
             let ((lr, ls), (rr, rs)) = (
-                l.polynomial().ok_or("左残差が多項式でない")?,
-                r.polynomial().ok_or("右残差が多項式でない")?,
+                l.polynomial().ok_or(internal!("左残差が多項式でない"))?,
+                r.polynomial().ok_or(internal!("右残差が多項式でない"))?,
             );
             if lr != rr {
-                return Err("build互換性の残差が別環に属する".into());
+                return Err(internal!("build互換性の残差が別環に属する").into());
             }
             if ls.len() != rs.len() {
                 return Ok(Some(false));
@@ -167,11 +167,13 @@ fn residual(
         }
         (D::FiniteLaw(l), D::FiniteLaw(r)) => {
             let ((lr, ls), (rr, rs)) = (
-                l.function_values().ok_or("左残差が有限関数でない")?,
-                r.function_values().ok_or("右残差が有限関数でない")?,
+                l.function_values()
+                    .ok_or(internal!("左残差が有限関数でない"))?,
+                r.function_values()
+                    .ok_or(internal!("右残差が有限関数でない"))?,
             );
             if lr != rr || ls.len() != rs.len() {
-                return Err("build互換性の有限残差域が違う".into());
+                return Err(internal!("build互換性の有限残差域が違う").into());
             }
             let mut values = vec![];
             for (&l, &r) in ls.iter().zip(rs) {
@@ -185,7 +187,7 @@ fn residual(
             }
             Ok(all(values))
         }
-        _ => Err("build互換性の残差表示が違う".into()),
+        _ => Err(internal!("build互換性の残差表示が違う").into()),
     }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -202,26 +204,35 @@ pub(super) fn compare(
     c: &Control,
 ) -> Result<Vec<Comparison>, ValidationFailure> {
     plan.boundary.recheck(env, g, plan.boundary.start(), c)?;
-    let objects = plan.objects.as_ref().ok_or("build互換性に全対象族がない")?;
+    let objects = plan
+        .objects
+        .as_ref()
+        .ok_or(internal!("build互換性に全対象族がない"))?;
     let patterns = plan
         .patterns
         .as_ref()
-        .ok_or("build互換性に完全patternがない")?;
-    let laws = plan.laws.as_ref().ok_or("build互換性に全Law表がない")?;
-    let views = plan.views.as_ref().ok_or("build互換性に関数不変量がない")?;
+        .ok_or(internal!("build互換性に完全patternがない"))?;
+    let laws = plan
+        .laws
+        .as_ref()
+        .ok_or(internal!("build互換性に全Law表がない"))?;
+    let views = plan
+        .views
+        .as_ref()
+        .ok_or(internal!("build互換性に関数不変量がない"))?;
     let layout = plan
         .polynomial
         .as_ref()
         .filter(|l| l.data.complete)
         .or_else(|| plan.finite.as_ref().filter(|l| l.data.complete))
-        .ok_or("build互換性に全域残差の表示がない")?;
+        .ok_or(internal!("build互換性に全域残差の表示がない"))?;
     layout.recheck(env, g, c)?;
     let pattern = |r: NodeRef| {
         let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-            return Err("build patternがnativeでない".to_string());
+            return Err(internal!("build patternがnativeでない"));
         };
         let D::CircuitPattern(d) = &v.data else {
-            return Err("build patternが別構成".to_string());
+            return Err(internal!("build patternが別構成"));
         };
         Ok(d)
     };
@@ -232,12 +243,12 @@ pub(super) fn compare(
             let pa = patterns
                 .rows
                 .get(a)
-                .ok_or("buildの元patternがない")?
+                .ok_or(internal!("buildの元patternがない"))?
                 .pattern;
             let pb = patterns
                 .rows
                 .get(b)
-                .ok_or("buildの先patternがない")?
+                .ok_or(internal!("buildの先patternがない"))?
                 .pattern;
             if !pattern(pa)?.same_pattern(pattern(pb)?) {
                 continue;
@@ -277,14 +288,14 @@ pub(super) fn compare(
                                 .coordinates
                                 .iter()
                                 .find(|q| q.index == index)
-                                .ok_or("数値族の元座標がない")?;
+                                .ok_or(internal!("数値族の元座標がない"))?;
                             let super::observable_layout::Source::Polynomial(q) =
                                 &coordinate.source
                             else {
-                                return Err("数値族が多項式の座標でない".into());
+                                return Err(internal!("数値族が多項式の座標でない").into());
                             };
                             let origin = super::law_evaluation::origin(g, q.instance)?
-                                .ok_or("数値族の元束縛がない")?;
+                                .ok_or(internal!("数値族の元束縛がない"))?;
                             let instance = &readings.instances()[q.position.instance];
                             origin
                                 .bindings
@@ -311,7 +322,7 @@ pub(super) fn compare(
                         crate::construction::ConstructionFailure::Stopped(s) => {
                             ValidationFailure::Stop(s)
                         }
-                        e => format!("数値guardの全域互換性: {e:?}").into(),
+                        e => internal!(format!("数値guardの全域互換性: {e:?}")).into(),
                     })?;
                     return Ok(Some(family));
                 }
@@ -321,21 +332,33 @@ pub(super) fn compare(
             let mut values = vec![];
             for axis in &views.axes {
                 let Some(Payload::Construction(v)) = &g.get(axis.invariant)?.payload else {
-                    return Err("buildの関数不変量がない".into());
+                    return Err(internal!("buildの関数不変量がない").into());
                 };
                 let D::ViewInvariant(d) = &v.data else {
-                    return Err("buildの関数不変量が別構成".into());
+                    return Err(internal!("buildの関数不変量が別構成").into());
                 };
-                let left = *d.evaluations().get(a).ok_or("buildの元view評価がない")?;
-                let right = *d.evaluations().get(b).ok_or("buildの先view評価がない")?;
+                let left = *d
+                    .evaluations()
+                    .get(a)
+                    .ok_or(internal!("buildの元view評価がない"))?;
+                let right = *d
+                    .evaluations()
+                    .get(b)
+                    .ok_or(internal!("buildの先view評価がない"))?;
                 inputs.extend([axis.invariant, left, right]);
                 values.push(evaluation(env, g, left, right, c)?);
             }
             if !views.pending.is_empty() {
                 values.push(None)
             }
-            let left = laws.objects.get(a).ok_or("buildの元Law行がない")?;
-            let right = laws.objects.get(b).ok_or("buildの先Law行がない")?;
+            let left = laws
+                .objects
+                .get(a)
+                .ok_or(internal!("buildの元Law行がない"))?;
+            let right = laws
+                .objects
+                .get(b)
+                .ok_or(internal!("buildの先Law行がない"))?;
             for (column, (&l, &r)) in left.evaluations.iter().zip(&right.evaluations).enumerate() {
                 inputs.extend([l, r]);
                 let mut equal = evaluation(env, g, l, r, c)?;
@@ -352,12 +375,12 @@ pub(super) fn compare(
             let left = &layout.data.objects[a].coordinates;
             let right = &layout.data.objects[b].coordinates;
             if left.len() != right.len() {
-                return Err("build互換性の全残差座標数が違う".into());
+                return Err(internal!("build互換性の全残差座標数が違う").into());
             }
             for (l, r) in left.iter().zip(right) {
                 tick(c)?;
                 if l.index != r.index || l.factor != r.factor {
-                    return Err("build互換性の残差添字が違う".into());
+                    return Err(internal!("build互換性の残差添字が違う").into());
                 }
                 match (l.value(Reading::Residual), r.value(Reading::Residual)) {
                     (Some(left), Some(right)) => {

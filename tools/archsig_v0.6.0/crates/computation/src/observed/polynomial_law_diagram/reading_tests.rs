@@ -50,15 +50,17 @@ fn replay(
     for (index, node) in nodes.iter().enumerate() {
         g.active = original.contexts[index];
         env.validate(&g, node).map_err(|e| {
-            ValidationFailure::Internal(format!(
+            ValidationFailure::Internal(internal!(
                 "replay env {index} {:?} {:?}: {e:?}",
-                node.ty, node.rule
+                node.ty,
+                node.rule
             ))
         })?;
         g.push(node.clone()).map_err(|e| {
-            ValidationFailure::Internal(format!(
+            ValidationFailure::Internal(internal!(
                 "replay graph {index} {:?} {:?}: {e:?}",
-                node.ty, node.rule
+                node.ty,
+                node.rule
             ))
         })?;
     }

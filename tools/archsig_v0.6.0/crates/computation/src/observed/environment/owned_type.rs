@@ -40,13 +40,13 @@ impl Environment<'_> {
             self.tick()?;
             let value = variables
                 .get(&leaf.name)
-                .ok_or("元Owned添字の現在束縛がない")?;
+                .ok_or(internal!("元Owned添字の現在束縛がない"))?;
             if value
                 .known_value
                 .as_ref()
                 .is_some_and(|v| v.ty() != Type::Ref(leaf.root.clone()))
             {
-                return Err("元Owned添字の現在owner型が違う".into());
+                return Err(internal!("元Owned添字の現在owner型が違う").into());
             }
             if value.known_value.is_none() {
                 unresolved.set(true);
@@ -72,11 +72,13 @@ impl Environment<'_> {
                     .owners
                     .iter()
                     .find(|leaf| leaf.entity == entity && leaf.name == name)
-                    .ok_or("元Owned型leafと列挙が違う")?;
-                let value = variables.get(name).ok_or("元Owned添字値がない")?;
+                    .ok_or(internal!("元Owned型leafと列挙が違う"))?;
+                let value = variables
+                    .get(name)
+                    .ok_or(internal!("元Owned添字値がない"))?;
                 if let Some(owner) = &value.known_value {
                     if owner.ty() != Type::Ref(leaf.root.clone()) {
-                        return Err("元Ownedの根owner型が違う".into());
+                        return Err(internal!("元Ownedの根owner型が違う").into());
                     }
                     let roster =
                         self.owned_members(entity, owner, None, reading, &mut |phase, i| {
@@ -111,7 +113,7 @@ impl Environment<'_> {
             support,
             missing,
             owners: vec![],
-            type_span: spec.type_span.ok_or("元Owned型位置がない")?,
+            type_span: spec.type_span.ok_or(internal!("元Owned型位置がない"))?,
         };
         // 明示された外部ownerの族は選択対象へ交差しない。
         // 同じrootを添字に持つ直接量化だけを、その対象の域へ制限する。
@@ -146,7 +148,9 @@ impl Environment<'_> {
                     &self.state,
                     &slot.snapshot,
                     &slot.subject,
-                    slot.field.as_deref().ok_or("対象所属条件のfieldがない")?,
+                    slot.field
+                        .as_deref()
+                        .ok_or(internal!("対象所属条件のfieldがない"))?,
                 )?;
             }
             object.restrict(
@@ -222,13 +226,13 @@ impl Environment<'_> {
             if !(leaf.type_span.0 <= leaf.span.0 && leaf.span.1 <= leaf.type_span.1)
                 || bytes.get(leaf.span.0..leaf.span.1) != Some(leaf.name.as_bytes())
             {
-                return Err("元Owned添字のname・byte spanが違う".into());
+                return Err(internal!("元Owned添字のname・byte spanが違う").into());
             }
             let mut lexical = None;
             for (name, origin) in self.lexical_context(leaf.span)? {
                 self.tick()?;
                 if name == leaf.name && lexical.replace(origin).is_some() {
-                    return Err("元Owned添字のlexical束縛が一意でない".into());
+                    return Err(internal!("元Owned添字のlexical束縛が一意でない").into());
                 }
             }
             let (producer, known, scope, support) = if let Some(origin) = lexical {
@@ -251,13 +255,13 @@ impl Environment<'_> {
                         let ExprKind::Match { scrutinee, .. } =
                             self.indexes.inputs.law().exprs()[matching].kind
                         else {
-                            return Err("元pattern添字のASTが違う".into());
+                            return Err(internal!("元pattern添字のASTが違う").into());
                         };
                         let producer = self.actual_evaluation(graph, scrutinee, bindings)?;
                         let value = self
                             .evaluation(graph, producer)?
                             .2
-                            .ok_or("未知patternからownerを束縛した")?;
+                            .ok_or(internal!("未知patternからownerを束縛した"))?;
                         if data::select(
                             self.indexes.inputs.law(),
                             matching,
@@ -265,12 +269,12 @@ impl Environment<'_> {
                             &self.control,
                         )? != Some(arm)
                         {
-                            return Err("元Owned添字のpattern armが違う".into());
+                            return Err(internal!("元Owned添字のpattern armが違う").into());
                         }
                         let known =
                             data::project(graph.scalar(value)?, &binder.path, &self.control)?;
                         if known.ty() != binder.ty {
-                            return Err("元Owned添字のpattern path型が違う".into());
+                            return Err(internal!("元Owned添字のpattern path型が違う").into());
                         }
                         let node = graph.get(producer)?;
                         (
@@ -283,29 +287,29 @@ impl Environment<'_> {
                     LexicalOrigin::Iteration(comp) => {
                         let index = self
                             .iteration_for(graph, comp)?
-                            .ok_or("元Owned添字の実反復がない")?;
+                            .ok_or(internal!("元Owned添字の実反復がない"))?;
                         let record = &graph.iterations[index];
                         if self.expression_bindings(graph, record.source)? != bindings {
-                            return Err("元Owned添字の反復元束縛が違う".into());
+                            return Err(internal!("元Owned添字の反復元束縛が違う").into());
                         }
                         let (input, known, analysis) = self.iteration_input(graph, index)?;
                         let producer = if let Some(finite) = record.finite {
                             let Some(Payload::Domain { elements, .. }) =
                                 &graph.get(finite)?.payload
                             else {
-                                return Err("元Owned添字の反復Domainがない".into());
+                                return Err(internal!("元Owned添字の反復Domainがない").into());
                             };
                             *elements
                                 .iter()
                                 .find(|r| graph.scalar(**r).is_ok_and(|v| v == &known))
-                                .ok_or("元Owned添字の実Domain memberがない")?
+                                .ok_or(internal!("元Owned添字の実Domain memberがない"))?
                         } else {
                             input
                         };
                         (producer, Some(known), analysis.scope, analysis.support)
                     }
                     LexicalOrigin::Universal(_) => {
-                        return Err("数値全域binderをOwned根ownerへ使った".into());
+                        return Err(internal!("数値全域binderをOwned根ownerへ使った").into());
                     }
                 }
             } else if let Some(producer) = self.call_parameter(graph, &leaf.name)? {
@@ -321,13 +325,13 @@ impl Environment<'_> {
                 let binding = bindings
                     .iter()
                     .find(|b| b.name == leaf.name)
-                    .ok_or("元Owned添字の宣言parameter束縛がない")?;
+                    .ok_or(internal!("元Owned添字の宣言parameter束縛がない"))?;
                 if binding.ty != Type::Ref(leaf.root.clone()) {
-                    return Err("元Owned添字のparameter型が違う".into());
+                    return Err(internal!("元Owned添字のparameter型が違う").into());
                 }
                 if graph.context_at(binding.value.0).request != self.current_context(graph).request
                 {
-                    return Err("元Owned添字parameterが別Requestのproducerである".into());
+                    return Err(internal!("元Owned添字parameterが別Requestのproducerである").into());
                 }
                 self.validate_at(graph, graph.get(binding.value)?, binding.value.0)?;
                 let node = graph.get(binding.value)?;
@@ -339,13 +343,13 @@ impl Environment<'_> {
                 )
             };
             if producer.0 >= self.state.cutoff.get().min(graph.nodes.len()) {
-                return Err("元Owned添字producerが既出でない".into());
+                return Err(internal!("元Owned添字producerが既出でない").into());
             }
             if known
                 .as_ref()
                 .is_some_and(|v| v.ty() != Type::Ref(leaf.root.clone()))
             {
-                return Err("元Owned添字の根owner値型が違う".into());
+                return Err(internal!("元Owned添字の根owner値型が違う").into());
             }
             for reason in &graph.get(producer)?.reasons {
                 self.tick()?;
@@ -381,7 +385,7 @@ impl Environment<'_> {
     ) -> Result<TypeDomain, ValidationFailure> {
         let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
         if spec.domain.is_some() {
-            return Err("In量化をOwned型域として列挙した".into());
+            return Err(internal!("In量化をOwned型域として列挙した").into());
         }
         let (owners, variables, missing) = self.owned_type_producers(graph, &spec, bindings)?;
         let declaration = self
@@ -391,7 +395,7 @@ impl Environment<'_> {
             .declarations()
             .values()
             .find(|d| d.span.0 <= spec.span.0 && spec.span.1 <= d.span.1)
-            .ok_or("元Owned型量化の宣言がない")?;
+            .ok_or(internal!("元Owned型量化の宣言がない"))?;
         let mut domain =
             self.owned_type_values(&spec, &variables, &declaration.reading, observer)?;
         domain.owners = owners;
@@ -534,7 +538,7 @@ impl Environment<'_> {
             || self.expression_span(graph, *expression)? != spec.span
             || self.expression_bindings(graph, *expression)? != bindings
         {
-            return Err("未知Owned型量化の元Source・束縛・Contextが違う".into());
+            return Err(internal!("未知Owned型量化の元Source・束縛・Contextが違う").into());
         }
         self.validate_at(graph, graph.get(*expression)?, expression.0)?;
         let mut scope = graph.get(*expression)?.scope.clone();
@@ -560,12 +564,12 @@ impl Environment<'_> {
             || !node.evidence.is_empty()
             || node.judgment.is_some()
         {
-            return Err("未知Owned域を完全Domain・body・通常値・証拠へ昇格した".into());
+            return Err(internal!("未知Owned域を完全Domain・body・通常値・証拠へ昇格した").into());
         }
         let request = graph
             .requests
             .get(self.current_context(graph).request)
-            .ok_or("未知Owned量化の元Requestがない")?;
+            .ok_or(internal!("未知Owned量化の元Requestがない"))?;
         let mut reasons = Vec::new();
         if !domain.missing.is_empty() {
             reasons.push(Reason {
@@ -595,7 +599,7 @@ impl Environment<'_> {
         }
         sort_reasons(&mut reasons);
         if !reasons_equal(&node.reasons, &reasons) {
-            return Err("未知Owned型量化の元欠測・型付き未実装理由が違う".into());
+            return Err(internal!("未知Owned型量化の元欠測・型付き未実装理由が違う").into());
         }
         Ok(true)
     }

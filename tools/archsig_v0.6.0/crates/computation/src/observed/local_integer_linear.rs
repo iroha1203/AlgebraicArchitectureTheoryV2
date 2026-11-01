@@ -74,9 +74,9 @@ pub(in crate::observed::local_result) fn coordinates(
         c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
         let rhs = values.iter().map(|r| r[j].clone()).collect::<Vec<_>>();
         let fiber = integer_fiber::solve(basis, rank, &rhs, c)?;
-        let point = fiber.particular.ok_or("局所制限が係数の像に入らない")?;
+        let point = fiber.particular.ok_or(internal!("局所制限が係数の像に入らない"))?;
         if fiber.rank != rank {
-            return Err("局所係数の座標基底が独立でない".into());
+            return Err(internal!("局所係数の座標基底が独立でない").into());
         }
         for i in 0..rank {
             result[i][j] = point[i].clone();
@@ -132,7 +132,7 @@ pub(in crate::observed::local_result) fn cohomology(
 ) -> Result<Cohomology, ValidationFailure> {
     let composite = integer_fiber::multiply(next, previous, previous_cols, c)?;
     if composite.iter().flatten().any(|v| !v.is_zero()) {
-        return Err("局所複体の連続する微分の合成が零でない".into());
+        return Err(internal!("局所複体の連続する微分の合成が零でない").into());
     }
     let cycles = solve(next, degree_rank, &vec![Z::zero(); next.len()], c)?;
     let boundary_coordinates = coordinates(&cycles.basis, cycles.rank, previous, previous_cols, c)?;
@@ -199,12 +199,12 @@ pub(in crate::observed::local_result) fn glues(
                 integer_fiber::multiply(right_map, &states[*j].basis, states[*j].rank, c)?;
             let left = apply(
                 left_map,
-                states[*i].origin.as_ref().ok_or("局所特解がない")?,
+                states[*i].origin.as_ref().ok_or(internal!("局所特解がない"))?,
                 c,
             )?;
             let right = apply(
                 right_map,
-                states[*j].origin.as_ref().ok_or("局所特解がない")?,
+                states[*j].origin.as_ref().ok_or(internal!("局所特解がない"))?,
                 c,
             )?;
             for k in 0..left.len() {
@@ -240,7 +240,7 @@ pub(in crate::observed::local_result) fn glues(
             states[target].rank,
             c,
         )?);
-        let local = states[*i].origin.as_ref().ok_or("局所特解がない")?;
+        let local = states[*i].origin.as_ref().ok_or(internal!("局所特解がない"))?;
         let restricted = apply(restriction, global, c)?;
         let delta = restricted
             .iter()
@@ -313,7 +313,7 @@ impl Reading {
     }
     pub fn restriction(&self, to: &Self, c: &Control) -> Result<Matrix, ValidationFailure> {
         if !self.contains(to, c)? {
-            return Err("読取り制限が元の公開情報を通じて因子分解しない".into());
+            return Err(internal!("読取り制限が元の公開情報を通じて因子分解しない").into());
         }
         integer_fiber::multiply(&to.map, &self.lift, self.map.len(), c)
     }

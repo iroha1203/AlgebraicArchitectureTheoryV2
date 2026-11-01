@@ -457,7 +457,7 @@ fn shared_source_check_still_rejects_changed_descendant_values() {
     // The source Arc is unchanged: the child value must still be independently checked.
     assert!(Arc::ptr_eq(&d.source, &frame(&g, domain).unwrap().source));
     assert!(
-        matches!(frame(&bad, domain).unwrap().checked(&bad), Err(ValidationFailure::Internal(message)) if message == "view parameterの元型/値が違う")
+        matches!(frame(&bad, domain).unwrap().checked(&bad), Err(ValidationFailure::Internal(message)) if message.message() == "view parameterの元型/値が違う")
     );
 }
 

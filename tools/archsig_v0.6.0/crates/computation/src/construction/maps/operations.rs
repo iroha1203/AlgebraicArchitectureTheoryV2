@@ -115,9 +115,9 @@ impl ConfigurationOperation {
         tick(control)?;
         self.map.recheck(inputs, control)?;
         if self != &from_verified_map(self.map.clone(), control)? {
-            return Err(ConstructionFailure::Inconsistent(
-                "操作の語・構成由来が現在のmapと違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "操作の語・構成由来が現在のmapと違う"
+            )));
         }
         tick(control)
     }
@@ -273,9 +273,9 @@ impl IdentityConstruction {
         control: &Control,
     ) -> Result<(), ConstructionFailure> {
         if self != &identity_object(inputs, &self.object, control)? {
-            return Err(ConstructionFailure::Inconsistent(
-                "恒等の対象・構成が現在入力と違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "恒等の対象・構成が現在入力と違う"
+            )));
         }
         tick(control)
     }
@@ -286,7 +286,7 @@ fn tick(control: &Control) -> Result<(), ConstructionFailure> {
         .map_err(Into::into)
 }
 fn overflow() -> ConstructionFailure {
-    ConstructionFailure::Inconsistent("操作の構成indexが大きすぎる".into())
+    ConstructionFailure::Inconsistent(internal!("操作の構成indexが大きすぎる"))
 }
 fn raw_step(map: &ConfigurationMap) -> Option<OperationStep> {
     let candidate = &map.candidate;
@@ -313,13 +313,13 @@ fn from_verified_map_retained(
     control: &Control,
 ) -> Result<ConfigurationOperation, OperationFailure> {
     tick(control)?;
-    let steps = match &map.candidate.origin {
-        MapOrigin::Derived(origin) => origin.steps.clone(),
-        _ => vec![
-            raw_step(&map)
-                .ok_or_else(|| ConstructionFailure::Inconsistent("原始mapの由来がない".into()))?,
-        ],
-    };
+    let steps =
+        match &map.candidate.origin {
+            MapOrigin::Derived(origin) => origin.steps.clone(),
+            _ => vec![raw_step(&map).ok_or_else(|| {
+                ConstructionFailure::Inconsistent(internal!("原始mapの由来がない"))
+            })?],
+        };
     let word = word(&steps, control)?;
     let operation = ConfigurationOperation { map, steps, word };
     match tick(control) {
@@ -333,7 +333,9 @@ fn from_verified_map_retained(
 fn validate_steps(steps: &[OperationStep], control: &Control) -> Result<(), ConstructionFailure> {
     tick(control)?;
     if steps.is_empty() {
-        return Err(ConstructionFailure::Inconsistent("操作の構成表が空".into()));
+        return Err(ConstructionFailure::Inconsistent(internal!(
+            "操作の構成表が空"
+        )));
     }
     let mut seen = vec![false; steps.len()];
     let mut pending = vec![steps.len() - 1];
@@ -345,9 +347,9 @@ fn validate_steps(steps: &[OperationStep], control: &Control) -> Result<(), Cons
         seen[i] = true;
         if let OperationStep::Compose { first, then } = steps[i] {
             if first >= i || then >= i {
-                return Err(ConstructionFailure::Inconsistent(
-                    "合成の元操作が既出でない".into(),
-                ));
+                return Err(ConstructionFailure::Inconsistent(internal!(
+                    "合成の元操作が既出でない"
+                )));
             }
             pending.push(first);
             pending.push(then);
@@ -356,9 +358,9 @@ fn validate_steps(steps: &[OperationStep], control: &Control) -> Result<(), Cons
     for visited in seen {
         tick(control)?;
         if !visited {
-            return Err(ConstructionFailure::Inconsistent(
-                "操作の構成に未使用行がある".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "操作の構成に未使用行がある"
+            )));
         }
     }
     Ok(())
@@ -425,11 +427,11 @@ fn compose_data(a: &Data, b: &Data, control: &Control) -> Result<Data, Construct
         tick(control)?;
         let i = *index
             .get(intermediate)
-            .ok_or_else(|| ConstructionFailure::Inconsistent("中間像が共通Uにない".into()))?;
+            .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("中間像が共通Uにない")))?;
         images.push(
             b.images
                 .get(i)
-                .ok_or_else(|| ConstructionFailure::Inconsistent("総作用の像がない".into()))?
+                .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("総作用の像がない")))?
                 .clone(),
         );
     }
@@ -630,30 +632,30 @@ pub(super) fn recompute(
                     .map
                 }
                 .ok_or_else(|| {
-                    ConstructionFailure::Inconsistent(
-                        "元の操作のConfiguration保存が現在未確認".into(),
-                    )
+                    ConstructionFailure::Inconsistent(internal!(
+                        "元の操作のConfiguration保存が現在未確認"
+                    ))
                 })?;
                 if raw_step(&map).as_ref() != Some(step) {
-                    return Err(ConstructionFailure::Inconsistent(
-                        "元の操作の選択・readingが現在入力と違う".into(),
-                    ));
+                    return Err(ConstructionFailure::Inconsistent(internal!(
+                        "元の操作の選択・readingが現在入力と違う"
+                    )));
                 }
                 Data::from_map(&map)
             }
             OperationStep::Identity { object } => {
                 let identity = identity_object(inputs, object, control)?;
                 let operation = identity.operation.ok_or_else(|| {
-                    ConstructionFailure::Inconsistent("恒等の対象が現在未決".into())
+                    ConstructionFailure::Inconsistent(internal!("恒等の対象が現在未決"))
                 })?;
                 Data::from_map(&operation.map)
             }
             OperationStep::Compose { first, then } => {
                 let a = values.get(*first).ok_or_else(|| {
-                    ConstructionFailure::Inconsistent("合成の始操作が既出でない".into())
+                    ConstructionFailure::Inconsistent(internal!("合成の始操作が既出でない"))
                 })?;
                 let b = values.get(*then).ok_or_else(|| {
-                    ConstructionFailure::Inconsistent("合成の終操作が既出でない".into())
+                    ConstructionFailure::Inconsistent(internal!("合成の終操作が既出でない"))
                 })?;
                 compose_data(a, b, control)?
             }
@@ -663,7 +665,7 @@ pub(super) fn recompute(
     tick(control)?;
     let data = values
         .pop()
-        .ok_or_else(|| ConstructionFailure::Inconsistent("操作の構成が空".into()))?;
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("操作の構成が空")))?;
     Ok(derived_map(data, steps.to_vec()))
 }
 

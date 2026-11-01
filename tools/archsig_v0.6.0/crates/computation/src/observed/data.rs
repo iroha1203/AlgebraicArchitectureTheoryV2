@@ -77,11 +77,11 @@ pub(super) fn constructors<'a>(
         .definitions()
         .declarations()
         .get(family)
-        .ok_or("Data定義がない")?
+        .ok_or(internal!("Data定義がない"))?
         .signature
     {
         PrimitiveSignature::Data { constructors } => Ok(constructors),
-        _ => Err("Data familyがData定義でない".into()),
+        _ => Err(internal!("Data familyがData定義でない").into()),
     }
 }
 pub(super) fn supported(
@@ -165,7 +165,7 @@ pub(super) fn constructor<'a>(
             return Ok(ctor);
         }
     }
-    Err("正規constructorが元familyにない".into())
+    Err(internal!("正規constructorが元familyにない").into())
 }
 pub(super) fn resolved(
     law: &CheckedLaw,
@@ -186,7 +186,7 @@ pub(super) fn resolved(
         {
             constructor(law, family, target, control)?;
             if found.as_ref().is_some_and(|previous| previous != target) {
-                return Err("constructor静的解決が一意でない".into());
+                return Err(internal!("constructor静的解決が一意でない").into());
             }
             found = Some(target.clone());
         }
@@ -208,12 +208,12 @@ pub(super) fn expression(
             };
             let ctor = constructors(law, family)?
                 .get(*index)
-                .ok_or("constructor元indexがない")?;
+                .ok_or(internal!("constructor元indexがない"))?;
             let full = format!("{family}.{}", ctor.name);
             let target = law
                 .resolved_names()
                 .get(&full)
-                .ok_or("constructor検査済み名がない")?
+                .ok_or(internal!("constructor検査済み名がない"))?
                 .clone();
             (target, args.clone())
         }
@@ -225,17 +225,20 @@ pub(super) fn expression(
         }
         _ => return Ok(None),
     };
-    let Type::Data(family) = law.expr_type(id).ok_or("constructor元型がない")? else {
-        return Err("constructor元型がDataでない".into());
+    let Type::Data(family) = law
+        .expr_type(id)
+        .ok_or(internal!("constructor元型がない"))?
+    else {
+        return Err(internal!("constructor元型がDataでない").into());
     };
     let ctor = constructor(law, family, &target, control)?;
     if args.len() != ctor.arguments.len() {
-        return Err("constructor元arityが違う".into());
+        return Err(internal!("constructor元arityが違う").into());
     }
     for (&arg, ty) in args.iter().zip(&ctor.arguments) {
         tick(control)?;
         if law.expr_type(arg) != Some(ty) {
-            return Err("constructor元payload型が違う".into());
+            return Err(internal!("constructor元payload型が違う").into());
         }
     }
     Ok(Some((target, args)))
@@ -257,16 +260,16 @@ pub(super) fn check(
                 args,
             } => {
                 if !supported(&Type::Data(family.clone()), law, control)? {
-                    return Err("未対応Data payloadの生成値".into());
+                    return Err(internal!("未対応Data payloadの生成値").into());
                 }
                 let ctor = constructor(law, family, name, control)?;
                 if args.len() != ctor.arguments.len() {
-                    return Err("Data値のarityが違う".into());
+                    return Err(internal!("Data値のarityが違う").into());
                 }
                 for (arg, ty) in args.iter().zip(&ctor.arguments) {
                     tick(control)?;
                     if &arg.ty() != ty {
-                        return Err("Data値のpayload型が違う".into());
+                        return Err(internal!("Data値のpayload型が違う").into());
                     }
                     check(arg, law, control)?;
                 }
@@ -275,7 +278,7 @@ pub(super) fn check(
             Scalar::Tuple(items) | Scalar::List { items, .. } | Scalar::Set { items, .. } => {
                 check_shape(value, control)?;
                 if !supported(&value.ty(), law, control)? {
-                    return Err("一般値の要素型が未対応".into());
+                    return Err(internal!("一般値の要素型が未対応").into());
                 }
                 for item in items {
                     tick(control)?;
@@ -286,7 +289,7 @@ pub(super) fn check(
             Scalar::Option { value: item, .. } => {
                 check_shape(value, control)?;
                 if !supported(&value.ty(), law, control)? {
-                    return Err("Optionの要素型が未対応".into());
+                    return Err(internal!("Optionの要素型が未対応").into());
                 }
                 if let Some(item) = item {
                     check(item, law, control)?;
@@ -351,7 +354,7 @@ pub(super) fn input_json(
                 term.check(control)?;
                 term.wire()
             }
-            Scalar::Path(_) => return Err("原始fieldの値でない".into()),
+            Scalar::Path(_) => return Err(internal!("原始fieldの値でない").into()),
         };
         tick(control)?;
         Ok(json)
@@ -378,10 +381,10 @@ pub(super) fn from_input(
                     #[cfg(test)]
                     observe_iteration("map_input", _index);
                     tick(control)?;
-                    let key =
-                        from_input(key, &domain, law, control)?.ok_or("Mapの元key型が未対応")?;
+                    let key = from_input(key, &domain, law, control)?
+                        .ok_or(internal!("Mapの元key型が未対応"))?;
                     let value = from_input(value, &codomain, law, control)?
-                        .ok_or("Mapの元value型が未対応")?;
+                        .ok_or(internal!("Mapの元value型が未対応"))?;
                     values.push((key, value));
                     tick(control)?;
                 }
@@ -395,13 +398,15 @@ pub(super) fn from_input(
             (Value::Text(text), Type::Text) => Scalar::Text(text.clone()),
             (Value::Tuple(items), Type::Tuple(types)) => {
                 if items.len() != types.len() {
-                    return Err("原始Tupleの要素数が違う".into());
+                    return Err(internal!("原始Tupleの要素数が違う").into());
                 }
                 let mut result = Vec::new();
                 for (item, ty) in items.iter().zip(types) {
                     tick(control)?;
-                    result
-                        .push(from_input(item, ty, law, control)?.ok_or("原始Tuple要素が未対応")?);
+                    result.push(
+                        from_input(item, ty, law, control)?
+                            .ok_or(internal!("原始Tuple要素が未対応"))?,
+                    );
                 }
                 Scalar::Tuple(result)
             }
@@ -411,7 +416,7 @@ pub(super) fn from_input(
                     tick(control)?;
                     result.push(
                         from_input(item, element, law, control)?
-                            .ok_or("原始container要素が未対応")?,
+                            .ok_or(internal!("原始container要素が未対応"))?,
                     );
                 }
                 if matches!(ty, Type::List(_)) {
@@ -434,7 +439,9 @@ pub(super) fn from_input(
                     .as_ref()
                     .map(|item| {
                         from_input(item, element, law, control)
-                            .and_then(|value| value.ok_or_else(|| "原始Option要素が未対応".into()))
+                            .and_then(|value| {
+                                value.ok_or_else(|| internal!("原始Option要素が未対応").into())
+                            })
                             .map(Box::new)
                     })
                     .transpose()?,
@@ -448,13 +455,14 @@ pub(super) fn from_input(
             ) => {
                 let ctor = constructor(law, family, name, control)?;
                 if args.len() != ctor.arguments.len() {
-                    return Err("原始Dataのarityが違う".into());
+                    return Err(internal!("原始Dataのarityが違う").into());
                 }
                 let mut values = Vec::new();
                 for (arg, ty) in args.iter().zip(&ctor.arguments) {
                     tick(control)?;
                     values.push(
-                        from_input(arg, ty, law, control)?.ok_or("対応Dataのpayload値がない")?,
+                        from_input(arg, ty, law, control)?
+                            .ok_or(internal!("対応Dataのpayload値がない"))?,
                     );
                 }
                 Scalar::Data {
@@ -516,13 +524,14 @@ pub(super) fn binders(
                 }
                 Pattern::Ctor { name, args, .. } => (name.span(), args.as_slice()),
             };
-            let target = resolved(law, span, control)?.ok_or("pattern正規constructorがない")?;
+            let target =
+                resolved(law, span, control)?.ok_or(internal!("pattern正規constructorがない"))?;
             let Type::Data(family) = ty else {
-                return Err("constructor pattern型がDataでない".into());
+                return Err(internal!("constructor pattern型がDataでない").into());
             };
             let ctor = constructor(law, family, &target, control)?;
             if ctor.arguments.len() != args.len() {
-                return Err("pattern元arityが違う".into());
+                return Err(internal!("pattern元arityが違う").into());
             }
             for (index, (arg, ty)) in args.iter().zip(&ctor.arguments).enumerate() {
                 path.push(index);
@@ -553,18 +562,19 @@ pub(super) fn matches(
             },
             Pattern::Ctor { name, args, .. } => (name.span(), args.as_slice()),
         };
-        let target = resolved(law, span, control)?.ok_or("patternの静的constructorがない")?;
+        let target =
+            resolved(law, span, control)?.ok_or(internal!("patternの静的constructorがない"))?;
         let Scalar::Data {
             constructor, args, ..
         } = value
         else {
-            return Err("constructor照合値がDataでない".into());
+            return Err(internal!("constructor照合値がDataでない").into());
         };
         if constructor != &target {
             return Ok(false);
         }
         if args.len() != patterns.len() {
-            return Err("patternと実Dataのarityが違う".into());
+            return Err(internal!("patternと実Dataのarityが違う").into());
         }
         for (p, value) in patterns.iter().zip(args) {
             if !matches(p, value, law, control)? {
@@ -581,7 +591,7 @@ pub(super) fn select(
     control: &Control,
 ) -> Result<Option<usize>, ValidationFailure> {
     let ExprKind::Match { arms, .. } = &law.exprs()[id].kind else {
-        return Err("選択元がmatchでない".into());
+        return Err(internal!("選択元がmatchでない").into());
     };
     let Some(value) = value else {
         return Ok(None);
@@ -593,7 +603,7 @@ pub(super) fn select(
             return Ok(Some(index));
         }
     }
-    Err("既知matchに選択armがない".into())
+    Err(internal!("既知matchに選択armがない").into())
 }
 /// constructorだけが既知でも、payloadを元の記号値として束縛する。
 /// 枝の一致が未確定なら後続armを勝手に選ばない。
@@ -625,14 +635,15 @@ pub(super) fn select_partial<T: Clone>(
                 Pattern::Wild(_) => return Ok(Some(true)),
                 Pattern::Name(name) if resolve(name.span, control)?.is_none() => {
                     if bound.insert(name.name.clone(), value.clone()).is_some() {
-                        return Err("部分matchの束縛名が重複する".into());
+                        return Err(internal!("部分matchの束縛名が重複する").into());
                     }
                     return Ok(Some(true));
                 }
                 Pattern::Name(name) => (name.span, &[][..]),
                 Pattern::Ctor { name, args, .. } => (name.span(), args.as_slice()),
             };
-            let target = resolve(span, control)?.ok_or("部分matchのconstructor参照がない")?;
+            let target =
+                resolve(span, control)?.ok_or(internal!("部分matchのconstructor参照がない"))?;
             let Some((constructor, values)) = parts(value, control)? else {
                 return Ok(None);
             };
@@ -640,7 +651,7 @@ pub(super) fn select_partial<T: Clone>(
                 return Ok(Some(false));
             }
             if patterns.len() != values.len() {
-                return Err("部分matchのconstructor arityが違う".into());
+                return Err(internal!("部分matchのconstructor arityが違う").into());
             }
             let mut known = true;
             for (pattern, value) in patterns.iter().zip(&values) {
@@ -662,7 +673,7 @@ pub(super) fn select_partial<T: Clone>(
             None => return Ok(None),
         }
     }
-    Err("既知constructorのmatch枝がない".into())
+    Err(internal!("既知constructorのmatch枝がない").into())
 }
 pub(super) fn project(
     value: &Scalar,
@@ -673,9 +684,9 @@ pub(super) fn project(
     for &index in path {
         tick(control)?;
         let Scalar::Data { args, .. } = value else {
-            return Err("binder path中間値がDataでない".into());
+            return Err(internal!("binder path中間値がDataでない").into());
         };
-        value = args.get(index).ok_or("binder pathがarity外")?;
+        value = args.get(index).ok_or(internal!("binder pathがarity外"))?;
     }
     Ok(value.clone())
 }
@@ -687,18 +698,19 @@ pub(super) fn bindings(
     control: &Control,
 ) -> Result<BTreeMap<String, Scalar>, ValidationFailure> {
     let ExprKind::Match { scrutinee, arms } = &law.exprs()[id].kind else {
-        return Err("binder元がmatchでない".into());
+        return Err(internal!("binder元がmatchでない").into());
     };
     let mut result = BTreeMap::new();
     for binder in binders(
-        &arms.get(arm).ok_or("binder armがない")?.pattern,
-        law.expr_type(*scrutinee).ok_or("scrutinee型がない")?,
+        &arms.get(arm).ok_or(internal!("binder armがない"))?.pattern,
+        law.expr_type(*scrutinee)
+            .ok_or(internal!("scrutinee型がない"))?,
         law,
         control,
     )? {
         let projected = project(value, &binder.path, control)?;
         if projected.ty() != binder.ty || result.insert(binder.name, projected).is_some() {
-            return Err("binder名・投影型が元patternと違う".into());
+            return Err(internal!("binder名・投影型が元patternと違う").into());
         }
     }
     Ok(result)
@@ -805,7 +817,7 @@ fn equal_with_retained(
             return if candidates {
                 Ok(false)
             } else {
-                Err("構造等値の元型が違う".into())
+                Err(internal!("構造等値の元型が違う").into())
             };
         }
         let equal = match (left, right) {
@@ -882,7 +894,7 @@ fn equal_with_retained(
                         return if candidates {
                             Ok(false)
                         } else {
-                            Err("同constructorのarityが違う".into())
+                            Err(internal!("同constructorのarityが違う").into())
                         };
                     }
                     equal_sequence(c, f, control, candidates, &mut retain, true)?
@@ -991,21 +1003,21 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
                 pairs,
             } => {
                 if !matches!(domain, Type::Ref(_)) || !matches!(codomain, Type::Ref(_)) {
-                    return Err("Mapの両端型が参照でない".into());
+                    return Err(internal!("Mapの両端型が参照でない").into());
                 }
                 for (index, (key, value)) in pairs.iter().enumerate() {
                     #[cfg(test)]
                     observe_iteration("map_check", index);
                     tick(control)?;
                     if key.ty() != *domain || value.ty() != *codomain {
-                        return Err("Mapのkey/value型が違う".into());
+                        return Err(internal!("Mapのkey/value型が違う").into());
                     }
                     check_shape(key, control)?;
                     check_shape(value, control)?;
                     for (previous, _) in &pairs[..index] {
                         tick(control)?;
                         if equal(key, previous, control)? {
-                            return Err("Mapに重複keyがある".into());
+                            return Err(internal!("Mapに重複keyがある").into());
                         }
                     }
                     tick(control)?;
@@ -1026,29 +1038,29 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
                 } else {
                     super::path_value::result_type(element, control)?
                 }) {
-                    return Err("containerの要素型が原始対応型でない".into());
+                    return Err(internal!("containerの要素型が原始対応型でない").into());
                 }
                 for (index, item) in items.iter().enumerate() {
                     tick(control)?;
                     if &item.ty() != element {
-                        return Err("containerの要素型が違う".into());
+                        return Err(internal!("containerの要素型が違う").into());
                     }
                     check_shape(item, control)?;
                     if matches!(value, Scalar::Set { .. })
                         && contains(&items[..index], item, control)?
                     {
-                        return Err("Set値に意味上の重複がある".into());
+                        return Err(internal!("Set値に意味上の重複がある").into());
                     }
                 }
                 Ok(())
             }
             Scalar::Option { element, value } => {
                 if !super::path_value::result_type(element, control)? {
-                    return Err("Optionの要素型が原始対応型でない".into());
+                    return Err(internal!("Optionの要素型が原始対応型でない").into());
                 }
                 if let Some(value) = value {
                     if &value.ty() != element {
-                        return Err("someの要素型が違う".into());
+                        return Err(internal!("someの要素型が違う").into());
                     }
                     check_shape(value, control)?;
                 }
@@ -1065,12 +1077,12 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
                 if family.is_empty()
                     || name.is_none_or(|name| name.is_empty() || name.contains('.'))
                 {
-                    return Err("Data値のfamily・正規constructor形式が違う".into());
+                    return Err(internal!("Data値のfamily・正規constructor形式が違う").into());
                 }
                 for arg in args {
                     tick(control)?;
                     if super::path_value::contains_path(&arg.ty(), control)? {
-                        return Err("Dataのpayloadに非原始の結果型がある".into());
+                        return Err(internal!("Dataのpayloadに非原始の結果型がある").into());
                     }
                     check_shape(arg, control)?;
                     tick(control)?;
@@ -1140,7 +1152,7 @@ pub(super) fn set(
         remaining = rest;
         tick(control)?;
         if item.ty() != element {
-            return Err("Set構成要素の型が違う".into());
+            return Err(internal!("Set構成要素の型が違う").into());
         }
         if !contains(&result, item, control)? {
             result.push(item.clone());
@@ -1159,14 +1171,14 @@ pub(super) fn aggregate(
 ) -> Result<Scalar, ValidationFailure> {
     let (element, items) = match value {
         Scalar::List { element, items } | Scalar::Set { element, items } => (element, items),
-        _ => return Err("count/sumの元値がList/Setでない".into()),
+        _ => return Err(internal!("count/sumの元値がList/Setでない").into()),
     };
     tick(control)?;
     if name == "count" {
         return Ok(Scalar::Z(items.len().into()));
     }
     if name != "sum" {
-        return Err("containerの固定演算名が違う".into());
+        return Err(internal!("containerの固定演算名が違う").into());
     }
     let mut result = numeric::zero(element, control)?;
     let mut remaining = items.as_slice();
@@ -1197,10 +1209,10 @@ pub(super) fn map_apply(
         pairs,
     } = map
     else {
-        return Err("Map適用のcalleeがMap値でない".into());
+        return Err(internal!("Map適用のcalleeがMap値でない").into());
     };
     if key.ty() != *domain {
-        return Err("Map適用の実key型が始域型と違う".into());
+        return Err(internal!("Map適用の実key型が始域型と違う").into());
     }
     let mut selected = None;
     for (_index, (candidate, image)) in pairs.iter().enumerate() {
@@ -1209,7 +1221,7 @@ pub(super) fn map_apply(
         tick(control)?;
         if equal(candidate, key, control)? {
             if selected.is_some() || image.ty() != *codomain {
-                return Err("Map適用の像が一意・型付きでない".into());
+                return Err(internal!("Map適用の像が一意・型付きでない").into());
             }
             selected = Some(image.clone());
         }

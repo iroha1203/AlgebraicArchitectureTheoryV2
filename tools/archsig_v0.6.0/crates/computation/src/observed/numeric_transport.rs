@@ -45,7 +45,7 @@ impl NumericValueMap {
         let value = numeric::from_input(value, &self.ty, control)
             .map_err(invalid_value)?
             .ok_or_else(|| {
-                ConstructionFailure::Inconsistent("数値写像の型が数値型でない".into())
+                ConstructionFailure::Inconsistent(internal!("数値写像の型が数値型でない"))
             })?;
         tick(control)?;
         Ok(NumericTransportValue { value })
@@ -130,9 +130,9 @@ impl NumericValueTransport {
                 control,
             )?
         {
-            return Err(ConstructionFailure::Inconsistent(
-                "数値型の全域対応が現在入力と違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "数値型の全域対応が現在入力と違う"
+            )));
         }
         tick(control)
     }
@@ -173,9 +173,9 @@ pub fn numeric_declaration_value_transport(
         ));
     }
     if source != target {
-        return Err(ConstructionFailure::Inconsistent(
-            "対応済みの数値型が一致しない".into(),
-        ));
+        return Err(ConstructionFailure::Inconsistent(internal!(
+            "対応済みの数値型が一致しない"
+        )));
     }
     let result = NumericValueTransport {
         declarations: declarations.clone(),

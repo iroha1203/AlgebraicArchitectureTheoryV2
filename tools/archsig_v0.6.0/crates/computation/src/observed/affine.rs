@@ -152,14 +152,14 @@ fn fact_check(fact: &Fact) -> Result<(), ValidationFailure> {
         || fact.field.as_ref().is_none_or(|name| name.is_empty())
         || fact.atom.is_some()
     {
-        return Err("アフィン欠測slotの元Factがfieldのidentityでない".into());
+        return Err(internal!("アフィン欠測slotの元Factがfieldのidentityでない").into());
     }
     Ok(())
 }
 
 fn parameter_check(parameter: &Parameter) -> Result<(), ValidationFailure> {
     if parameter.name.is_empty() || parameter.binder.0 >= parameter.binder.1 {
-        return Err("アフィンparameterに元binderの名前・出現がない".into());
+        return Err(internal!("アフィンparameterに元binderの名前・出現がない").into());
     }
     Ok(())
 }
@@ -170,7 +170,7 @@ fn scalar_check(value: &Scalar, ty: &Type, control: &Control) -> Result<(), Vali
             (value, ty),
             (Scalar::Z(_), Type::Z) | (Scalar::Q(_, _), Type::Q)
         ) {
-            return Err("アフィン係数または定数項の型がZ/Qの宣言型と異なる".into());
+            return Err(internal!("アフィン係数または定数項の型がZ/Qの宣言型と異なる").into());
         }
         numeric::check(value, control)
     })
@@ -179,7 +179,7 @@ fn scalar_check(value: &Scalar, ty: &Type, control: &Control) -> Result<(), Vali
 fn is_zero(value: &Scalar) -> Result<bool, ValidationFailure> {
     match value {
         Scalar::Z(n) | Scalar::Q(n, _) => Ok(n.is_zero()),
-        _ => Err("アフィン係数または定数項がZ/Qでない".into()),
+        _ => Err(internal!("アフィン係数または定数項がZ/Qでない").into()),
     }
 }
 
@@ -250,7 +250,7 @@ impl Form {
         fact_check(position)?;
         tick(c)?;
         if !matches!(ty, Type::Z | Type::Q) {
-            return Err("自由状態の係数型がZ/Qでない".into());
+            return Err(internal!("自由状態の係数型がZ/Qでない").into());
         }
         Ok(Self {
             ty: ty.clone(),
@@ -286,7 +286,7 @@ impl Form {
                 match self.coefficients.get(&Symbol::State(position.clone())) {
                     Some(Scalar::Z(value)) => value.clone(),
                     None => BigInt::zero(),
-                    _ => return Err("整数自由状態の係数がZでない".into()),
+                    _ => return Err(internal!("整数自由状態の係数がZでない").into()),
                 },
             );
         }
@@ -355,7 +355,7 @@ impl Form {
                 match self.coefficients.get(&Symbol::Parameter(axis.clone())) {
                     Some(Scalar::Z(value)) => value.clone(),
                     None => BigInt::zero(),
-                    _ => return Err("整数式の係数がZでない".into()),
+                    _ => return Err(internal!("整数式の係数がZでない").into()),
                 },
             );
         }
@@ -383,7 +383,7 @@ impl Form {
                 match self.coefficients.get(&Symbol::Parameter(axis.clone())) {
                     Some(value @ Scalar::Q(_, _)) => value.clone(),
                     None => numeric::zero(&Type::Q, c)?,
-                    _ => return Err("有理式の係数がQでない".into()),
+                    _ => return Err(internal!("有理式の係数がQでない").into()),
                 },
             );
         }
@@ -399,10 +399,10 @@ impl Form {
         for key in self.coefficients.keys() {
             tick(c)?;
             let Symbol::TermArgument(axis) = key else {
-                return Err("Term正規形に別種の記号がある".into());
+                return Err(internal!("Term正規形に別種の記号がある").into());
             };
             if !axes.contains(axis) {
-                return Err("Term正規形の元引数軸がない".into());
+                return Err(internal!("Term正規形の元引数軸がない").into());
             }
         }
         let mut items = Vec::new();
@@ -437,30 +437,30 @@ impl Form {
                     Symbol::Missing(key) => {
                         fact_check(&key.fact)?;
                         if key.kind.ty() != self.ty {
-                            return Err("欠測成分の数値型が違う".into());
+                            return Err(internal!("欠測成分の数値型が違う").into());
                         }
                     }
                     Symbol::State(position) => {
                         fact_check(position)?;
                         if !matches!(self.ty, Type::Z | Type::Q) {
-                            return Err("自由状態の係数型がZ/Qでない".into());
+                            return Err(internal!("自由状態の係数型がZ/Qでない").into());
                         }
                     }
                     Symbol::TermArgument(argument) => {
                         if argument.kind.ty() != self.ty {
-                            return Err("Term引数座標の型が係数型と違う".into());
+                            return Err(internal!("Term引数座標の型が係数型と違う").into());
                         }
                     }
                     Symbol::Parameter(parameter) => {
                         parameter_check(parameter)?;
                         if parameter.kind.ty() != self.ty {
-                            return Err("アフィンparameterの型が係数型と違う".into());
+                            return Err(internal!("アフィンparameterの型が係数型と違う").into());
                         }
                     }
                 }
                 scalar_check(coefficient, &self.ty, control)?;
                 if is_zero(coefficient)? {
-                    return Err("アフィン正規形に零係数が残っている".into());
+                    return Err(internal!("アフィン正規形に零係数が残っている").into());
                 }
                 tick(control)?;
             }
@@ -516,7 +516,7 @@ pub(crate) fn missing(
         let one = match ty {
             Type::Z => Scalar::Z(One::one()),
             Type::Q => Scalar::Q(One::one(), One::one()),
-            _ => return Err("アフィン欠測slotの型がZ/Qでない".into()),
+            _ => return Err(internal!("アフィン欠測slotの型がZ/Qでない").into()),
         };
         let mut coefficients = BTreeMap::new();
         tick(control)?;
@@ -554,7 +554,7 @@ pub(crate) fn missing_component(
     for (symbol, value) in coefficients {
         tick(control)?;
         let Symbol::Missing(mut key) = symbol else {
-            return Err("成分の元記号が欠測でない".into());
+            return Err(internal!("成分の元記号が欠測でない").into());
         };
         key.component = component.to_vec();
         form.coefficients.insert(Symbol::Missing(key), value);
@@ -573,7 +573,7 @@ pub(crate) fn parameter(
         }
         parameter_check(key)?;
         if &key.kind.ty() != ty {
-            return Err("アフィンparameterの宣言型と記号型が違う".into());
+            return Err(internal!("アフィンparameterの宣言型と記号型が違う").into());
         }
         let one = numeric::literal("1", ty, control)?;
         let mut coefficients = BTreeMap::new();
@@ -672,7 +672,7 @@ pub(crate) fn binary(
         left.check(control)?;
         right.check(control)?;
         if left.ty != right.ty {
-            return Err("アフィン演算の左右の型が異なる".into());
+            return Err(internal!("アフィン演算の左右の型が異なる").into());
         }
         if op == BinOp::Mul {
             return if left.coefficients.is_empty() {
@@ -765,7 +765,7 @@ pub(crate) fn partial_forall(
                 .insert((parameter.binder, parameter.context), parameter)
                 .is_some()
             {
-                return Err("部分全称の元binder・Contextが重複する".into());
+                return Err(internal!("部分全称の元binder・Contextが重複する").into());
             }
             tick(control)?;
         }
@@ -774,13 +774,15 @@ pub(crate) fn partial_forall(
             for symbol in form.coefficients.keys() {
                 tick(control)?;
                 if matches!(symbol, Symbol::TermArgument(_) | Symbol::State(_)) {
-                    return Err("Term外延座標を部分全称のbinderにできない".into());
+                    return Err(internal!("Term外延座標を部分全称のbinderにできない").into());
                 }
                 if let Symbol::Parameter(parameter) = symbol
                     && let Some(expected) = declared.get(&(parameter.binder, parameter.context))
                     && *expected != parameter
                 {
-                    return Err("部分全称の元binderの名前・型が元左右の記号と違う".into());
+                    return Err(
+                        internal!("部分全称の元binderの名前・型が元左右の記号と違う").into(),
+                    );
                 }
                 tick(control)?;
             }
@@ -795,7 +797,7 @@ pub(crate) fn partial_forall(
                 && let Some(expected) = declared.get(&(parameter.binder, parameter.context))
             {
                 if *expected != parameter {
-                    return Err("部分全称の元binderの名前・型が記号と違う".into());
+                    return Err(internal!("部分全称の元binderの名前・型が記号と違う").into());
                 }
                 if nonzero_bound.is_none() {
                     nonzero_bound = Some((parameter.clone(), coefficient.clone()));
@@ -815,7 +817,7 @@ pub(crate) fn partial_forall(
                     let zero = numeric::zero(&difference.ty, control)?;
                     match numeric::binary(BinOp::Eq, &residual, &zero, control)? {
                         Scalar::Bool(value) => Some(value),
-                        _ => return Err("部分全称の定数残差の比較がBoolでない".into()),
+                        _ => return Err(internal!("部分全称の定数残差の比較がBoolでない").into()),
                     }
                 }
                 None => None,
@@ -870,10 +872,10 @@ fn rational_quotient(
 ) -> Result<Scalar, ValidationFailure> {
     controlled(control, || {
         let (Scalar::Q(an, ad), Scalar::Q(bn, bd)) = (numerator, denominator) else {
-            return Err("有理解の除算がQでない".into());
+            return Err(internal!("有理解の除算がQでない").into());
         };
         if bn.is_zero() {
-            return Err("有理解で零係数を除数にした".into());
+            return Err(internal!("有理解で零係数を除数にした").into());
         }
         let mut n = an * bd;
         let mut d = ad * bn;
@@ -895,7 +897,7 @@ fn missing_arithmetic(
 ) -> Result<MissingArithmetic, ValidationFailure> {
     controlled(control, || {
         if missing.is_empty() {
-            return Err("欠測可解性に非零欠測係数がない".into());
+            return Err(internal!("欠測可解性に非零欠測係数がない").into());
         }
         match (ty, constant) {
             (Type::Q, Scalar::Q(_, _)) => {
@@ -923,7 +925,7 @@ fn missing_arithmetic(
                 for (_, coefficient) in missing {
                     tick(control)?;
                     let Scalar::Z(coefficient) = coefficient else {
-                        return Err("Zの欠測係数がZでない".into());
+                        return Err(internal!("Zの欠測係数がZでない").into());
                     };
                     let (next_gcd, x, y) = extended_gcd(&gcd, coefficient, control)?;
                     for previous in &mut bezout {
@@ -936,7 +938,7 @@ fn missing_arithmetic(
                     tick(control)?;
                 }
                 if !gcd.is_positive() {
-                    return Err("非零欠測係数のgcdが正でない".into());
+                    return Err(internal!("非零欠測係数のgcdが正でない").into());
                 }
                 let mut remainder = c % &gcd;
                 if remainder.is_negative() {
@@ -961,14 +963,14 @@ fn missing_arithmetic(
                 for ((_, coefficient), value) in missing.iter().zip(bezout) {
                     tick(control)?;
                     let Scalar::Z(coefficient) = coefficient else {
-                        return Err("Bezoutの元係数がZでない".into());
+                        return Err(internal!("Bezoutの元係数がZでない").into());
                     };
                     pairing += coefficient * &value;
                     coefficients.push(Scalar::Z(value));
                     tick(control)?;
                 }
                 if pairing != gcd {
-                    return Err("欠測係数とBezout係数の内積がgcdでない".into());
+                    return Err(internal!("欠測係数とBezout係数の内積がgcdでない").into());
                 }
                 Ok(MissingArithmetic::Integer {
                     gcd: Scalar::Z(gcd),
@@ -977,7 +979,7 @@ fn missing_arithmetic(
                     solution,
                 })
             }
-            _ => Err("欠測可解性の宣言型と定数項がZ/Qで一致しない".into()),
+            _ => Err(internal!("欠測可解性の宣言型と定数項がZ/Qで一致しない").into()),
         }
     })
 }
@@ -991,20 +993,20 @@ fn check_missing_solution(
 ) -> Result<(), ValidationFailure> {
     controlled(control, || {
         if missing.len() != values.len() {
-            return Err("欠測解と元係数のslot数が違う".into());
+            return Err(internal!("欠測解と元係数のslot数が違う").into());
         }
         let mut residual = constant.clone();
         for ((fact, coefficient), (assigned, value)) in missing.iter().zip(values) {
             tick(control)?;
             if fact != assigned {
-                return Err("欠測解のslot順序が元係数と違う".into());
+                return Err(internal!("欠測解のslot順序が元係数と違う").into());
             }
             let term = numeric::binary(BinOp::Mul, coefficient, value, control)?;
             residual = numeric::binary(BinOp::Add, &residual, &term, control)?;
             tick(control)?;
         }
         if is_zero(&residual)? != expected_zero {
-            return Err("生成した欠測補完の残差が指定した真偽と違う".into());
+            return Err(internal!("生成した欠測補完の残差が指定した真偽と違う").into());
         }
         Ok(())
     })
@@ -1043,7 +1045,7 @@ pub(crate) fn substitute_parameters(
             parameter_check(parameter)?;
             scalar_check(value, &parameter.kind.ty(), control)?;
             if assignments.insert(parameter, value).is_some() {
-                return Err("parameterの具体代入が重複する".into());
+                return Err(internal!("parameterの具体代入が重複する").into());
             }
             tick(control)?;
         }
@@ -1110,7 +1112,7 @@ fn common_counterexample(
                     tick(control)?;
                 }
                 if !found {
-                    return Err("非零係数のparameterが元全域binder列にない".into());
+                    return Err(internal!("非零係数のparameterが元全域binder列にない").into());
                 }
             }
             let residual = substitute_parameters(difference, &values, control)?;
@@ -1159,7 +1161,7 @@ pub(crate) fn universal_equality(
             tick(control)?;
             parameter_check(parameter)?;
             if !declared.insert(parameter) {
-                return Err("全域parameterの元binderが重複する".into());
+                return Err(internal!("全域parameterの元binderが重複する").into());
             }
             tick(control)?;
         }
@@ -1170,11 +1172,11 @@ pub(crate) fn universal_equality(
             match symbol {
                 Symbol::Missing(fact) => missing.push((fact.clone(), coefficient.clone())),
                 Symbol::TermArgument(_) | Symbol::State(_) => {
-                    return Err("外延・自由状態座標を観測の全称binderにできない".into());
+                    return Err(internal!("外延・自由状態座標を観測の全称binderにできない").into());
                 }
                 Symbol::Parameter(parameter) => {
                     if !declared.contains(parameter) {
-                        return Err("アフィン差のparameterが元全域binder列にない".into());
+                        return Err(internal!("アフィン差のparameterが元全域binder列にない").into());
                     }
                     active.push((parameter.clone(), coefficient.clone()));
                 }
@@ -1306,11 +1308,12 @@ pub(super) fn term_difference(
     c: &Control,
 ) -> Result<TermDifference, ValidationFailure> {
     controlled(c, || {
-        let d = binary(BinOp::Sub, Some(a), Some(b), c)?.ok_or("Term差の型が数値アフィンでない")?;
+        let d = binary(BinOp::Sub, Some(a), Some(b), c)?
+            .ok_or(internal!("Term差の型が数値アフィンでない"))?;
         for key in d.coefficients.keys() {
             tick(c)?;
             if !matches!(key, Symbol::TermArgument(_)) {
-                return Err("Term外延比較へ観測の記号が混入した".into());
+                return Err(internal!("Term外延比較へ観測の記号が混入した").into());
             }
         }
         if !is_zero(&d.constant)? {
@@ -1336,7 +1339,7 @@ pub(super) fn term_point(
         for (key, coefficient) in &f.coefficients {
             tick(c)?;
             let Symbol::TermArgument(key) = key else {
-                return Err("Term反例点へ観測の記号が混入した".into());
+                return Err(internal!("Term反例点へ観測の記号が混入した").into());
             };
             if Some(key) == unit {
                 value = numeric::binary(BinOp::Add, &value, coefficient, c)?;

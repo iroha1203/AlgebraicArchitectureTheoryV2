@@ -58,7 +58,7 @@ impl Data {
     }
     pub fn position(&self, limit: usize) -> Result<(), ValidationFailure> {
         if self.arguments().iter().any(|r| r.0 >= limit) {
-            return Err("対象外Lawの由来・依存が既出Refでない".into());
+            return Err(internal!("対象外Lawの由来・依存が既出Refでない").into());
         }
         Ok(())
     }
@@ -115,27 +115,27 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
 }
 fn original_body(graph: &Graph, origin: NodeRef) -> Result<NodeRef, ValidationFailure> {
     Ok(frames::origin(graph, origin)?
-        .ok_or("対象外Lawの元行がない")?
+        .ok_or(internal!("対象外Lawの元行がない"))?
         .body_reference)
 }
 fn expected(
     graph: &Graph,
     d: &Data,
 ) -> Result<(frames::Origin, Vec<Fact>, Scope), ValidationFailure> {
-    let row = frames::origin(graph, d.origin)?.ok_or("対象外Lawの検査済み元行がない")?;
+    let row = frames::origin(graph, d.origin)?.ok_or(internal!("対象外Lawの検査済み元行がない"))?;
     frames::check_architecture(graph, d.architecture, &row)?;
     if !row.outside || row.ready {
-        return Err("元Law行の対象外適用が確認されていない".into());
+        return Err(internal!("元Law行の対象外適用が確認されていない").into());
     }
     if graph.context_at(d.origin.0) != graph.context_at(d.architecture.0) {
-        return Err("対象外Lawの元Request Contextが違う".into());
+        return Err(internal!("対象外Lawの元Request Contextが違う").into());
     }
     if d.body != original_body(graph, d.origin)? || d.bindings != row.bindings {
-        return Err("対象外Lawの元body・全束縛が違う".into());
+        return Err(internal!("対象外Lawの元body・全束縛が違う").into());
     }
     let body = graph.get(d.body)?;
     if body.ty != NodeType::Expression(Type::Bool) {
-        return Err("対象外Lawのbody型がBoolでない".into());
+        return Err(internal!("対象外Lawのbody型がBoolでない").into());
     }
     let location = Location::Law {
         span: Witness::Architecture(row.architecture.clone())
@@ -143,11 +143,11 @@ fn expected(
             .law()
             .exprs()
             .get(row.body)
-            .ok_or("対象外Lawの元body式がない")?
+            .ok_or(internal!("対象外Lawの元body式がない"))?
             .span,
     };
     if d.location != location {
-        return Err("対象外Lawの元body出現が違う".into());
+        return Err(internal!("対象外Lawの元body出現が違う").into());
     }
     let mut support = graph.get(d.origin)?.support.clone();
     support.extend(graph.get(d.architecture)?.support.clone());
@@ -165,7 +165,7 @@ pub(crate) fn validate_node(
 ) -> Result<(), ValidationFailure> {
     let (row, support, scope) = expected(graph, d)?;
     let Witness::Architecture(w) = &v.witness else {
-        return Err("対象外Lawの元Architecture証拠がない".into());
+        return Err(internal!("対象外Lawの元Architecture証拠がない").into());
     };
     if !Arc::ptr_eq(w, &row.architecture)
         || n.ty != d.ty()
@@ -178,7 +178,7 @@ pub(crate) fn validate_node(
         || !n.evidence.is_empty()
         || !n.reasons.is_empty()
     {
-        return Err("対象外Lawの型・由来・支持・Scopeが違う".into());
+        return Err(internal!("対象外Lawの型・由来・支持・Scopeが違う").into());
     }
     let judgment = match d.kind {
         Kind::Proposition { .. } => Some(Judgment {
@@ -189,14 +189,14 @@ pub(crate) fn validate_node(
         _ => None,
     };
     if n.judgment != judgment {
-        return Err("対象外Lawの条件付き成立判断が違う".into());
+        return Err(internal!("対象外Lawの条件付き成立判断が違う").into());
     }
     let dependency = |r: NodeRef| -> Result<&Data, ValidationFailure> {
         let Some(Payload::Construction(child)) = &graph.get(r)?.payload else {
-            return Err("対象外Lawの依存がnativeでない".into());
+            return Err(internal!("対象外Lawの依存がnativeでない").into());
         };
         let D::OutsideLaw(child_data) = &child.data else {
-            return Err("対象外Lawの依存が別の構成".into());
+            return Err(internal!("対象外Lawの依存が別の構成").into());
         };
         if child_data.origin != d.origin
             || child_data.architecture != d.architecture
@@ -206,7 +206,7 @@ pub(crate) fn validate_node(
             || child_data.support != support
             || child_data.scope != scope
         {
-            return Err("対象外Lawの依存が別行・別対象である".into());
+            return Err(internal!("対象外Lawの依存が別行・別対象である").into());
         }
         validate_node(graph, graph.get(r)?, child, child_data)?;
         Ok(child_data)
@@ -223,7 +223,7 @@ pub(crate) fn validate_node(
         {
             ()
         }
-        _ => return Err("対象外Lawの未評価body・値・評価依存が違う".into()),
+        _ => return Err(internal!("対象外Lawの未評価body・値・評価依存が違う").into()),
     }
     Ok(())
 }
@@ -286,10 +286,10 @@ impl super::result_kind::ResultKind for Data {
         let (env, graph, origin, architecture, c) = input;
         tick(c)?;
         env.recheck_law_evaluation_inputs(graph, origin, architecture)?;
-        let row = frames::origin(graph, origin)?.ok_or("対象外Lawの元行がない")?;
+        let row = frames::origin(graph, origin)?.ok_or(internal!("対象外Lawの元行がない"))?;
         frames::check_architecture(graph, architecture, &row)?;
         if graph.active != graph.context_at(origin.0) {
-            return Err("対象外Lawの元Request Contextが違う".into());
+            return Err(internal!("対象外Lawの元Request Contextが違う").into());
         }
         if !row.outside {
             return Ok(None);
@@ -306,7 +306,7 @@ impl super::result_kind::ResultKind for Data {
                     .law()
                     .exprs()
                     .get(row.body)
-                    .ok_or("対象外Lawの元式がない")?
+                    .ok_or(internal!("対象外Lawの元式がない"))?
                     .span,
             },
             kind: Kind::Value(Scalar::Bool(true)),
@@ -329,7 +329,7 @@ impl super::result_kind::ResultKind for Data {
             id: graph
                 .requests
                 .get(graph.active.request)
-                .ok_or("対象外Lawの元Requestがない")?
+                .ok_or(internal!("対象外Lawの元Requestがない"))?
                 .id
                 .clone(),
             status: Decision::Established,

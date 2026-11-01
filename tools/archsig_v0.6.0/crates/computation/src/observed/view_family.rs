@@ -41,25 +41,25 @@ fn parameters(
 ) -> Result<(Arc<ArchitectureWitness>, ViewOrigin, Vec<Parameter>), ValidationFailure> {
     let (a, o) = reading::origin(g, expression)?;
     if o.parameters.is_empty() {
-        return Err("有限view族には残るparameterが必要".into());
+        return Err(internal!("有限view族には残るparameterが必要").into());
     }
     let row = a
         .readings()
         .instances()
         .get(o.instance_index)
-        .ok_or("元view instanceの位置がない")?;
+        .ok_or(internal!("元view instanceの位置がない"))?;
     if row.declaration().name != o.declaration
         || row.applications().get(o.object_index) != Some(&o.application)
     {
-        return Err("元view族の対象/宣言が違う".into());
+        return Err(internal!("元view族の対象/宣言が違う").into());
     }
     let mut out = vec![];
     for (name, ty) in &o.parameters {
         tick(c)?;
         let mut ps = row.parameters().iter().filter(|p| p.name == *name);
-        let p = ps.next().ok_or("元viewのparameter署名がない")?;
+        let p = ps.next().ok_or(internal!("元viewのparameter署名がない"))?;
         if ps.next().is_some() || p.ty.erase() != *ty {
-            return Err("元viewのparameter位置/型が違う".into());
+            return Err(internal!("元viewのparameter位置/型が違う").into());
         }
         let d = env.object_parameter_domain(p, row)?;
         let values = d
@@ -80,7 +80,7 @@ fn parameters(
         });
     }
     if out.len() != row.parameters().len() {
-        return Err("元viewの残parameter全体がない".into());
+        return Err(internal!("元viewの残parameter全体がない").into());
     }
     Ok((a, o, out))
 }
@@ -200,7 +200,7 @@ impl Data {
         self.source
             .parts
             .get(self.index)
-            .ok_or_else(|| "有限viewの構成位置が域外".into())
+            .ok_or_else(|| internal!("有限viewの構成位置が域外").into())
     }
     pub(super) fn scalar(&self) -> Option<&Scalar> {
         match self.source.parts.get(self.index) {
@@ -246,7 +246,7 @@ impl Data {
         if self.source.base.checked_add(self.index) != Some(at)
             || self.arguments().iter().any(|r| r.0 >= at)
         {
-            return Err("有限view構成の元位置/既出辺が違う".into());
+            return Err(internal!("有限view構成の元位置/既出辺が違う").into());
         }
         Ok(())
     }
@@ -258,7 +258,7 @@ impl Data {
         match self.part()? {
             Part::Row { origin, .. } => {
                 if origin.expression != r {
-                    return Err("具体view行の元式位置が違う".into());
+                    return Err(internal!("具体view行の元式位置が違う").into());
                 }
                 Ok(Some((self.source.architecture.clone(), origin.clone())))
             }
@@ -276,7 +276,7 @@ impl Data {
             || o != self.source.origin
             || ps != self.source.parameters
         {
-            return Err("有限viewの元入力/対象/署名/全域が違う".into());
+            return Err(internal!("有限viewの元入力/対象/署名/全域が違う").into());
         }
         let expected = build_source(g, a, o, ps, self.source.base, c)?;
         if expected.parts != self.source.parts
@@ -286,7 +286,7 @@ impl Data {
             || expected.support != self.source.support
             || expected.scope != self.source.scope
         {
-            return Err("有限viewの全構成/順序/支持/Scopeが違う".into());
+            return Err(internal!("有限viewの全構成/順序/支持/Scopeが違う").into());
         }
         Ok(())
     }
@@ -300,7 +300,7 @@ fn push(
     tick(c)?;
     let at = base
         .checked_add(parts.len())
-        .ok_or("有限view構成位置が範囲外")?;
+        .ok_or(internal!("有限view構成位置が範囲外"))?;
     parts.push(p);
     Ok(NodeRef(at))
 }
@@ -323,7 +323,7 @@ fn value(
                 }
                 Scalar::Option { value: Some(v), .. } => children.push(value(parts, base, v, c)?),
                 Scalar::Option { value: None, .. } => (),
-                _ => return Err("有限view域の非原始値を既出Refで表示できない".into()),
+                _ => return Err(internal!("有限view域の非原始値を既出Refで表示できない").into()),
             }
         }
         let wire = if !contains {
@@ -334,9 +334,12 @@ fn value(
                 Scalar::Option { value: None, .. } => Json::obj([("none", Json::Bool(true))]),
                 Scalar::Option { value: Some(_), .. } => Json::obj([(
                     "some",
-                    children.first().ok_or("有限viewのOption成分がない")?.wire(),
+                    children
+                        .first()
+                        .ok_or(internal!("有限viewのOption成分がない"))?
+                        .wire(),
                 )]),
-                _ => return Err("有限view値の表示型が違う".into()),
+                _ => return Err(internal!("有限view値の表示型が違う").into()),
             }
         };
         push(
@@ -372,7 +375,7 @@ fn build_source(
     for p in &ps {
         tick(c)?;
         if !p.missing.is_empty() {
-            return Err("有限view域の所属が欠測".into());
+            return Err(internal!("有限view域の所属が欠測").into());
         }
         support.extend(p.support.iter().cloned());
         scope.merge(&p.scope);
@@ -382,11 +385,11 @@ fn build_source(
         let vs = p
             .values
             .as_ref()
-            .ok_or("view parameter型が有限全域でない")?;
+            .ok_or(internal!("view parameter型が有限全域でない"))?;
         let mut elements = vec![];
         for v in vs {
             if v.ty() != p.declaration.ty.erase() {
-                return Err("有限view域の実値型が違う".into());
+                return Err(internal!("有限view域の実値型が違う").into());
             }
             elements.push(value(&mut parts, base, v, c)?);
         }
@@ -430,7 +433,7 @@ fn build_source(
                 .iter()
                 .map(|r| match parts.get(r.0 - base) {
                     Some(Part::Value { scalar, .. }) => Ok(scalar.clone()),
-                    _ => Err("有限view直積の実値がない".into()),
+                    _ => Err(internal!("有限view直積の実値がない").into()),
                 })
                 .collect::<Result<Vec<_>, ValidationFailure>>()?;
             let scalar = Scalar::Tuple(vs);
@@ -467,9 +470,9 @@ fn build_source(
         .law()
         .declarations()
         .get(&o.declaration)
-        .ok_or("元view宣言がない")?;
+        .ok_or(internal!("元view宣言がない"))?;
     let Signature::View { params, .. } = &declaration.signature else {
-        return Err("元宣言がviewでない".into());
+        return Err(internal!("元宣言がviewでない").into());
     };
     let mut rows = vec![];
     for (key, member) in keys.iter().zip(members) {
@@ -491,17 +494,20 @@ fn build_source(
                     .iter()
                     .filter(|p| !symbolic(p))
                     .position(|x| x.declaration == *p)
-                    .ok_or("具体viewの元parameter位置がない")?;
+                    .ok_or(internal!("具体viewの元parameter位置がない"))?;
                 bindings.push(Binding {
                     name: p.name.clone(),
                     ty: p.ty.erase(),
                     value: key[i],
                 });
             } else {
-                return Err("具体viewの固定束縛が重複する".into());
+                return Err(internal!("具体viewの固定束縛が重複する").into());
             }
         }
-        let expression = NodeRef(base.checked_add(parts.len()).ok_or("view行位置が範囲外")?);
+        let expression = NodeRef(
+            base.checked_add(parts.len())
+                .ok_or(internal!("view行位置が範囲外"))?,
+        );
         let mut row = o.clone();
         row.expression = expression;
         row.parameters
@@ -540,10 +546,10 @@ pub(super) fn validate_node(
 ) -> Result<(), ValidationFailure> {
     let (a, o) = reading::origin(g, d.source.origin.expression)?;
     let Witness::Architecture(w) = &v.witness else {
-        return Err("有限viewのArchitecture証拠がない".into());
+        return Err(internal!("有限viewのArchitecture証拠がない").into());
     };
     if !Arc::ptr_eq(&a, w) || !Arc::ptr_eq(w, &d.source.architecture) || o != d.source.origin {
-        return Err("有限viewの元式/Architectureが違う".into());
+        return Err(internal!("有限viewの元式/Architectureが違う").into());
     }
     if n.ty != d.ty()
         || n.rule != Rule::Construction(d.construction())
@@ -554,30 +560,30 @@ pub(super) fn validate_node(
         || !n.evidence.is_empty()
         || n.judgment.is_some()
     {
-        return Err("有限view構成の型/辺/metadataが違う".into());
+        return Err(internal!("有限view構成の型/辺/metadataが違う").into());
     }
     for r in d.part()?.refs() {
         if r.0 < d.source.base {
             if !d.source.origin.bindings.iter().any(|b| b.value == r) {
-                return Err("具体view行に別の固定束縛がある".into());
+                return Err(internal!("具体view行に別の固定束縛がある").into());
             }
             continue;
         }
         let Some(Payload::Construction(child)) = &g.get(r)?.payload else {
-            return Err("有限view構成の依存がnativeでない".into());
+            return Err(internal!("有限view構成の依存がnativeでない").into());
         };
         let D::ViewFamily(child) = &child.data else {
-            return Err("有限view構成の依存が別構成".into());
+            return Err(internal!("有限view構成の依存が別構成").into());
         };
         child.position(r.0)?;
         if !Arc::ptr_eq(&child.source, &d.source) {
-            return Err("有限view構成の依存が別族".into());
+            return Err(internal!("有限view構成の依存が別族").into());
         }
     }
     if let Some(scalar) = d.scalar() {
         let wire = g.scalar_wire(scalar, &d.arguments())?;
         if wire != d.wire() {
-            return Err("有限view値の既出Ref表示が違う".into());
+            return Err(internal!("有限view値の既出Ref表示が違う").into());
         }
     }
     Ok(())
@@ -602,16 +608,16 @@ pub(super) enum Outcome {
 }
 fn source_at(g: &Graph, r: NodeRef) -> Result<&Data, ValidationFailure> {
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("有限view族の実Domainがない".into());
+        return Err(internal!("有限view族の実Domainがない").into());
     };
     let D::ViewFamily(d) = &v.data else {
-        return Err("有限view族のDomainが別構成".into());
+        return Err(internal!("有限view族のDomainが別構成").into());
     };
     Ok(d)
 }
 fn family_node(g: &Graph, s: &Source, rows: &[NodeRef]) -> Result<Node, ValidationFailure> {
     if rows.len() != s.rows.len() {
-        return Err("有限view族の全row評価がない".into());
+        return Err(internal!("有限view族の全row評価がない").into());
     }
     let mut support = s.support.clone();
     let mut scope = s.scope.clone();
@@ -630,13 +636,13 @@ fn family_node(g: &Graph, s: &Source, rows: &[NodeRef]) -> Result<Node, Validati
     for (expression, r) in s.rows.iter().zip(rows) {
         let n = g.get(*r)?;
         let Some(Payload::Evaluation { expression: e, .. }) = &n.payload else {
-            return Err("有限viewのrowが通常Evaluationでない".into());
+            return Err(internal!("有限viewのrowが通常Evaluationでない").into());
         };
         if e != expression
             || n.ty != NodeType::Evaluation(s.origin.returns.clone())
             || g.context_at(r.0) != g.context_at(s.origin.expression.0)
         {
-            return Err("有限view rowの元式/型/Contextが違う".into());
+            return Err(internal!("有限view rowの元式/型/Contextが違う").into());
         }
         whole::validate(g, n, r.0)?;
         support.extend(n.support.iter().cloned());
@@ -662,7 +668,7 @@ fn family_node(g: &Graph, s: &Source, rows: &[NodeRef]) -> Result<Node, Validati
             .law()
             .exprs()
             .get(s.origin.body)
-            .ok_or("元view bodyの出現がない")?
+            .ok_or(internal!("元view bodyの出現がない"))?
             .span,
     };
     Ok(Node {
@@ -727,7 +733,7 @@ pub(super) fn validate_family(g: &Graph, n: &Node, at: usize) -> Result<(), Vali
         expression, parts, ..
     }) = &n.payload
     else {
-        return Err("全view族が通常Evaluationでない".into());
+        return Err(internal!("全view族が通常Evaluationでない").into());
     };
     if reading::numeric_parameters(&reading::origin(g, *expression)?.1)
         && !n
@@ -738,7 +744,7 @@ pub(super) fn validate_family(g: &Graph, n: &Node, at: usize) -> Result<(), Vali
         return whole::validate(g, n, at);
     }
     let [part] = parts.as_slice() else {
-        return Err("全view族の元body出現がない".into());
+        return Err(internal!("全view族の元body出現がない").into());
     };
     let candidates = n
         .arguments
@@ -747,18 +753,18 @@ pub(super) fn validate_family(g: &Graph, n: &Node, at: usize) -> Result<(), Vali
         .filter(|(r, d)| *r == d.source.product)
         .collect::<Vec<_>>();
     let [(product, d)] = candidates.as_slice() else {
-        return Err("全view族に唯一の元直積がない".into());
+        return Err(internal!("全view族に唯一の元直積がない").into());
     };
     d.position(product.0)?;
     if d.source.origin.expression != *expression {
-        return Err("全view族が別の元式".into());
+        return Err(internal!("全view族が別の元式").into());
     }
     if whole::dependencies(g, n)?.iter().any(|r| r.0 >= at) {
-        return Err("全view族に自己未来Refがある".into());
+        return Err(internal!("全view族に自己未来Refがある").into());
     }
     let expected = family_node(g, &d.source, &part.children)?;
     if n != &expected {
-        return Err("全view族の全row/順序/支持/Scope/式が違う".into());
+        return Err(internal!("全view族の全row/順序/支持/Scope/式が違う").into());
     }
     Ok(())
 }
@@ -786,7 +792,7 @@ impl Environment<'_> {
         for r in d.arguments() {
             self.tick()?;
             if r.0 >= at {
-                return Err("有限view族の依存が既出でない".into());
+                return Err(internal!("有限view族の依存が既出でない").into());
             }
             self.validate_at(g, g.get(r)?, r.0)?;
         }
@@ -804,7 +810,7 @@ impl super::result_kind::ResultKind for Data {
         let (env, g, expression, c) = input;
         tick(c)?;
         if g.active != g.context_at(expression.0) {
-            return Err("有限view族の生成が元Request Contextでない".into());
+            return Err(internal!("有限view族の生成が元Request Contextでない").into());
         }
         env.recheck_node(g, g.get(expression)?, expression.0)?;
         let (a, o, ps) = parameters(env, g, expression, c)?;
@@ -838,7 +844,7 @@ impl super::result_kind::ResultKind for Data {
             tick(c)?;
             let whole::Outcome::Evaluation { evaluation, .. } = whole::evaluate(env, g, *r, c)?
             else {
-                return Err("完全束縛view行にparameterが残る".into());
+                return Err(internal!("完全束縛view行にparameterが残る").into());
             };
             evaluations.push(evaluation);
         }

@@ -11,10 +11,10 @@ impl Environment<'_> {
             return self.internal_path(id, values);
         }
         if self.builtin(id)? != Some("then") {
-            return Err("Path構成の元演算が違う".into());
+            return Err(internal!("Path構成の元演算が違う").into());
         }
         let [Scalar::Path(left), Scalar::Path(right)] = values else {
-            return Err("thenの元実引数がPath2個でない".into());
+            return Err(internal!("thenの元実引数がPath2個でない").into());
         };
         let reading = self.path_reading(id)?;
         let result = super::super::path_compose::compose_retained(

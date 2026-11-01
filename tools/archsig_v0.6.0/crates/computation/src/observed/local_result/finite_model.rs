@@ -88,20 +88,22 @@ pub(super) fn analyze(
             ("using", Selector::Declaration { name }) => Some(name),
             _ => None,
         })
-        .ok_or("局所系のchange名がない")?;
+        .ok_or(internal!("局所系のchange名がない"))?;
     let change = &env.indexes.inputs.law().declarations()[change_name];
     let Signature::Change { params, .. } = &change.signature else {
-        return Err("局所changeの署名がない".into());
+        return Err(internal!("局所changeの署名がない").into());
     };
     if change.reading != reading {
         return Err(unsupported("局所changeと対象readingが異なる"));
     }
     let mut fixed =
         Environment::try_primitive_valuation(env.indexes.inputs, &env.fixed_values(), c)?
-            .ok_or("局所対象の値が不適合")?;
+            .ok_or(internal!("局所対象の値が不適合"))?;
     fixed.select_local_object(witness, c)?;
     let mut missing = vec![];
-    let first = params.first().ok_or("changeの対象parameterがない")?;
+    let first = params
+        .first()
+        .ok_or(internal!("changeの対象parameterがない"))?;
     let subjects = change_search::domain(&fixed, &first.ty, first.span, &mut missing)?;
     if !missing.is_empty() {
         return Ok((None, missing));
@@ -109,7 +111,7 @@ pub(super) fn analyze(
     if subjects.is_none() {
         return Err(unsupported("有限changeの対象域が未確定"));
     }
-    let mut subjects = subjects.ok_or("changeの対象域がない")?;
+    let mut subjects = subjects.ok_or(internal!("changeの対象域がない"))?;
     let construction = witness.construction();
     subjects.retain(|v| match v {
         Scalar::Subject {
@@ -130,7 +132,7 @@ pub(super) fn analyze(
             entity,
         } = subject
         else {
-            return Err("更新対象が参照でない".into());
+            return Err(internal!("更新対象が参照でない").into());
         };
         for field in &fields {
             slots.push(Fact {
@@ -155,7 +157,7 @@ pub(super) fn analyze(
                 &fixed.state,
                 &slot.snapshot,
                 &slot.subject,
-                slot.field.as_ref().ok_or("更新fieldがない")?,
+                slot.field.as_ref().ok_or(internal!("更新fieldがない"))?,
             )?
             .ty
             .erase();
@@ -184,7 +186,7 @@ pub(super) fn analyze(
                         &fixed.state,
                         &slot.snapshot,
                         &slot.subject,
-                        slot.field.as_ref().ok_or("fieldがない")?,
+                        slot.field.as_ref().ok_or(internal!("fieldがない"))?,
                     )?;
                     if let archsig_input::archmap::Slot::Known { value, .. } = &field.slot {
                         values.push(
@@ -194,7 +196,7 @@ pub(super) fn analyze(
                                 env.indexes.inputs.law(),
                                 c,
                             )?
-                            .ok_or("数値観測値がない")?,
+                            .ok_or(internal!("数値観測値がない"))?,
                         );
                     } else {
                         missing.push(slot.clone());
@@ -263,7 +265,7 @@ pub(super) fn analyze(
         })
     {
         let Signature::Law { params, .. } = &law.signature else {
-            return Err("局所Lawの署名がない".into());
+            return Err(internal!("局所Lawの署名がない").into());
         };
         let mut rows = vec![vec![]];
         for p in params {
@@ -348,7 +350,7 @@ pub(super) fn analyze(
                     points
                         .iter()
                         .position(|p| *p == point)
-                        .ok_or("許可作用の像が全自由状態にない")?,
+                        .ok_or(internal!("許可作用の像が全自由状態にない"))?,
                 ));
             }
             State::Undetermined => {
@@ -445,7 +447,7 @@ pub(super) fn analyze(
                 ..
             } = law.signature
             else {
-                return Err("局所Lawの署名がない".into());
+                return Err(internal!("局所Lawの署名がない").into());
             };
             let parameters = params
                 .iter()
@@ -501,7 +503,7 @@ pub(super) fn analyze(
                         support: empty_support(),
                         values: vec![],
                     });
-                    readings.last_mut().ok_or("読取りの追加失敗")?
+                    readings.last_mut().ok_or(internal!("読取りの追加失敗"))?
                 };
                 r.support.carrier.extend(carrier);
                 r.support.positions.extend(positions);

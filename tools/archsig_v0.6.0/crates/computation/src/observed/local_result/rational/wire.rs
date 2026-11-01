@@ -46,7 +46,7 @@ pub(in crate::observed::local_result) fn certificate(
     let (kind, data) = if let Some(p) = &f.particular {
         let applied = linear::apply(a, p, c)?;
         if applied != rhs {
-            return Err("有理局所解が元の方程式を満たさない".into());
+            return Err(internal!("有理局所解が元の方程式を満たさない").into());
         }
         let point = vector(b, parameters, p, c)?;
         let lhs = vector(b, equations_module, &applied, c)?;
@@ -67,7 +67,9 @@ pub(in crate::observed::local_result) fn certificate(
             ]),
         )
     } else {
-        let i = f.obstruction.ok_or("有理局所空解の矛盾行がない")?;
+        let i = f
+            .obstruction
+            .ok_or(internal!("有理局所空解の矛盾行がない"))?;
         let annihilator = &f.left[i];
         let zero = integer_fiber::multiply(&vec![annihilator.clone()], a, n, c)?;
         let pairing = linear::apply(&vec![annihilator.clone()], rhs, c)?;
@@ -75,7 +77,7 @@ pub(in crate::observed::local_result) fn certificate(
             || pairing[0].is_zero()
             || pairing[0] != f.transformed_rhs[i]
         {
-            return Err("有理局所空解の左零化子が不正".into());
+            return Err(internal!("有理局所空解の左零化子が不正").into());
         }
         let coefficients = vector(b, equations_module, annihilator, c)?;
         let paired = change_result::value(b, &pairing[0].scalar())?;

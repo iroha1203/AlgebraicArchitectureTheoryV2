@@ -26,13 +26,13 @@ pub(super) fn mapped_instance(
             .parameters()
             .iter()
             .find(|(name, _)| name == &b.parameter().name)
-            .ok_or_else(|| ConstructionFailure::Inconsistent("対応parameterがない".into()))?;
+            .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("対応parameterがない")))?;
         let f = b.subject();
         let image = if objects.action().source_configuration().family().contains(f) {
             objects
                 .action()
                 .image(f)
-                .ok_or_else(|| ConstructionFailure::Inconsistent("参照束縛の像がない".into()))?
+                .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("参照束縛の像がない")))?
         } else {
             f
         };
@@ -112,9 +112,9 @@ pub(super) fn same_evaluation_controlled(
                         super::result::ValidationFailure::Stop(reason) => {
                             ConstructionFailure::Stopped(reason)
                         }
-                        other => {
-                            ConstructionFailure::Inconsistent(format!("view族の再照合: {other:?}"))
-                        }
+                        other => ConstructionFailure::Inconsistent(internal!(format!(
+                            "view族の再照合: {other:?}"
+                        ))),
                     }
                 })
             }

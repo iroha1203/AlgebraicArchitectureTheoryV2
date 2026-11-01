@@ -19,18 +19,18 @@ pub(super) fn origin(
     r: NodeRef,
 ) -> Result<(Arc<ArchitectureWitness>, ViewOrigin), ValidationFailure> {
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("元view式がnativeでない".into());
+        return Err(internal!("元view式がnativeでない").into());
     };
     if let D::ViewFamily(d) = &v.data {
         return d
             .view_origin(r)?
-            .ok_or_else(|| "有限view行が元読取り式でない".into());
+            .ok_or_else(|| internal!("有限view行が元読取り式でない").into());
     }
     let D::ObjectComponents(d) = &v.data else {
-        return Err("元view式が元対象表にない".into());
+        return Err(internal!("元view式が元対象表にない").into());
     };
     d.view_origin(r)?
-        .ok_or_else(|| "元式がviewのobject_readingでない".into())
+        .ok_or_else(|| internal!("元式がviewのobject_readingでない").into())
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum Kind {
@@ -161,13 +161,15 @@ impl Data {
         let offset = match &self.kind {
             Kind::Parameter { position, .. } if *position < n => *position,
             Kind::Member { .. } => n,
-            Kind::Domain { .. } => n.checked_add(1).ok_or("view frameの位置が域外")?,
-            _ => return Err("view parameterの位置が域外".into()),
+            Kind::Domain { .. } => n
+                .checked_add(1)
+                .ok_or(internal!("view frameの位置が域外"))?,
+            _ => return Err(internal!("view parameterの位置が域外").into()),
         };
         if self.source.base.checked_add(offset) != Some(at)
             || self.arguments().iter().any(|r| r.0 >= at)
         {
-            return Err("view frameの元位置/既出参照が違う".into());
+            return Err(internal!("view frameの元位置/既出参照が違う").into());
         };
         Ok(())
     }
@@ -179,10 +181,10 @@ impl Data {
             || !matches!(&o.application,InstanceApplication::Applicable{conditions} if conditions.is_empty())
             || g.context_at(o.expression.0) != g.context_at(o.architecture.0)
         {
-            return Err("view frameの元対象/式/閉じた適用が違う".into());
+            return Err(internal!("view frameの元対象/式/閉じた適用が違う").into());
         }
         if !metadata_matches(g, &o, &self.source.support, &self.source.scope)? {
-            return Err("view frameの支持/Scopeが違う".into());
+            return Err(internal!("view frameの支持/Scopeが違う").into());
         }
         self.checked_kind(g)
     }
@@ -194,9 +196,12 @@ impl Data {
         let o = &self.source.origin;
         match &self.kind {
             Kind::Parameter { position, value } => {
-                let b = o.bindings.get(*position).ok_or("view parameterがない")?;
+                let b = o
+                    .bindings
+                    .get(*position)
+                    .ok_or(internal!("view parameterがない"))?;
                 if value != g.scalar(b.value)? || value.ty() != b.ty {
-                    return Err("view parameterの元型/値が違う".into());
+                    return Err(internal!("view parameterの元型/値が違う").into());
                 }
             }
             Kind::Member { bindings, .. } => {
@@ -208,7 +213,7 @@ impl Data {
                     }
                 ) || bindings.len() != o.bindings.len()
                 {
-                    return Err("view memberの全束縛がない".into());
+                    return Err(internal!("view memberの全束縛がない").into());
                 }
                 for (i, r) in bindings.iter().enumerate() {
                     let d = frame(g, *r)?;
@@ -216,7 +221,7 @@ impl Data {
                     if !Arc::ptr_eq(&d.source, &self.source)
                         || !matches!(&d.kind,Kind::Parameter{position,..} if *position==i)
                     {
-                        return Err("view memberの束縛順/元由来が違う".into());
+                        return Err(internal!("view memberの束縛順/元由来が違う").into());
                     }
                     d.checked_kind(g)?;
                 }
@@ -225,7 +230,7 @@ impl Data {
                 let d = frame(g, *member)?;
                 d.position(member.0)?;
                 if !Arc::ptr_eq(&d.source, &self.source) || !matches!(d.kind, Kind::Member { .. }) {
-                    return Err("viewの元memberが違う".into());
+                    return Err(internal!("viewの元memberが違う").into());
                 };
                 d.checked_kind(g)?;
             }
@@ -235,10 +240,10 @@ impl Data {
 }
 fn frame(g: &Graph, r: NodeRef) -> Result<&Data, ValidationFailure> {
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("view frameがnativeでない".into());
+        return Err(internal!("view frameがnativeでない").into());
     };
     let D::ObjectReadingFrame(d) = &v.data else {
-        return Err("view frameが別構成".into());
+        return Err(internal!("view frameが別構成").into());
     };
     Ok(d)
 }
@@ -250,7 +255,7 @@ pub(super) fn validate_node(
 ) -> Result<(), ValidationFailure> {
     d.checked(g)?;
     let Witness::Architecture(a) = &v.witness else {
-        return Err("view frameのArchitectureがない".into());
+        return Err(internal!("view frameのArchitectureがない").into());
     };
     if !Arc::ptr_eq(a, &d.source.architecture)
         || n.ty != d.ty()
@@ -262,7 +267,7 @@ pub(super) fn validate_node(
         || !n.reasons.is_empty()
         || n.judgment.is_some()
     {
-        return Err("view frameの元由来/型/辺/metadataが違う".into());
+        return Err(internal!("view frameの元由来/型/辺/metadataが違う").into());
     };
     Ok(())
 }
@@ -275,7 +280,10 @@ pub(super) fn instance_inputs(
     index: usize,
     limit: usize,
 ) -> Result<Option<Inputs>, ValidationFailure> {
-    let record = g.instances.get(index).ok_or("view instanceがない")?;
+    let record = g
+        .instances
+        .get(index)
+        .ok_or(internal!("view instanceがない"))?;
     let Some(Payload::Construction(v)) = &g.get(record.domain)?.payload else {
         return Ok(None);
     };
@@ -283,7 +291,7 @@ pub(super) fn instance_inputs(
         return Ok(None);
     };
     let Kind::Domain { member } = &d.kind else {
-        return Err("view instanceの元Domainが違う".into());
+        return Err(internal!("view instanceの元Domainが違う").into());
     };
     let o = &d.source.origin;
     d.checked(g)?;
@@ -299,11 +307,11 @@ pub(super) fn instance_inputs(
             .iter()
             .any(|r| r.0 >= limit || g.context_at(r.0) != record.caller)
     {
-        return Err("view instanceの元式/Context/既出参照が違う".into());
+        return Err(internal!("view instanceの元式/Context/既出参照が違う").into());
     }
     let m = frame(g, *member)?;
     let Kind::Member { bindings, .. } = &m.kind else {
-        return Err("viewの実memberがない".into());
+        return Err(internal!("viewの実memberがない").into());
     };
     let mut actual = vec![];
     for (i, r) in bindings.iter().enumerate() {
@@ -311,9 +319,9 @@ pub(super) fn instance_inputs(
         d.position(r.0)?;
         if r.0 >= limit || g.context_at(r.0) != record.caller || !Arc::ptr_eq(&d.source, &m.source)
         {
-            return Err("view実束縛のContext/由来が違う".into());
+            return Err(internal!("view実束縛のContext/由来が違う").into());
         }
-        let b = o.bindings.get(i).ok_or("view実束縛が域外")?;
+        let b = o.bindings.get(i).ok_or(internal!("view実束縛が域外"))?;
         actual.push(Binding {
             name: b.name.clone(),
             ty: b.ty.clone(),
@@ -404,7 +412,7 @@ impl super::result_kind::ResultKind for Data {
         let (env, g, expression, c) = input;
         tick(c)?;
         if g.active != g.context_at(expression.0) {
-            return Err("view body生成が元Request Contextでない".into());
+            return Err(internal!("view body生成が元Request Contextでない").into());
         }
         env.recheck_node(g, g.get(expression)?, expression.0)?;
         let (a, o) = origin(g, expression)?;
@@ -455,7 +463,7 @@ impl super::result_kind::ResultKind for Data {
         let request = g
             .requests
             .get(g.active.request)
-            .ok_or("元view Requestがない")?
+            .ok_or(internal!("元view Requestがない"))?
             .clone();
         let declaration = env
             .indexes
@@ -463,16 +471,16 @@ impl super::result_kind::ResultKind for Data {
             .law()
             .declarations()
             .get(&o.declaration)
-            .ok_or("元view宣言がない")?;
+            .ok_or(internal!("元view宣言がない"))?;
         let side =
             super::evaluate::instance_expression(env, g, c, &request, declaration, index, o.body)?;
         let Type::Option(body_type) = &o.returns else {
-            return Err("元view読取りの型がOptionでない".into());
+            return Err(internal!("元view読取りの型がOptionでない").into());
         };
         if g.get(side.expression)?.ty != NodeType::Expression((**body_type).clone())
             || g.get(side.evaluation)?.ty != NodeType::Evaluation((**body_type).clone())
         {
-            return Err("view bodyの元の戻り型が違う".into());
+            return Err(internal!("view bodyの元の戻り型が違う").into());
         }
         tick(c)?;
         Ok(Outcome::Body {

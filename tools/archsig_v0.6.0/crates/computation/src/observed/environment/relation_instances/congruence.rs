@@ -70,7 +70,7 @@ fn reference(v: &Scalar) -> Result<Reference, ValidationFailure> {
             subject,
             entity,
         } => Ok((snapshot.clone(), subject.clone(), entity.clone())),
-        _ => Err("合同語の生成元・端点が原始参照でない".into()),
+        _ => Err(internal!("合同語の生成元・端点が原始参照でない").into()),
     }
 }
 impl Word {
@@ -93,13 +93,13 @@ impl Word {
 fn root(classes: &[usize], mut n: usize, c: &Control) -> Result<usize, ValidationFailure> {
     for _ in 0..classes.len() {
         tick(c)?;
-        let next = *classes.get(n).ok_or("合同類の位置がない")?;
+        let next = *classes.get(n).ok_or(internal!("合同類の位置がない"))?;
         if next == n {
             return Ok(n);
         }
         n = next;
     }
-    Err("合同類に循環がある".into())
+    Err(internal!("合同類に循環がある").into())
 }
 impl Congruence {
     pub fn complete(&self) -> bool {
@@ -168,7 +168,7 @@ impl Congruence {
             let (from, step) = previous
                 .get(&at)
                 .and_then(|p| p.as_ref())
-                .ok_or("同じ合同類の導出がない")?;
+                .ok_or(internal!("同じ合同類の導出がない"))?;
             proof.push(step.clone());
             at = *from;
         }
@@ -187,7 +187,7 @@ impl Congruence {
     ) -> Result<(), CongruenceFailure> {
         if &self.sources != inputs.sources() {
             return Err(CongruenceFailure {
-                cause: "合同成分の元三入力が違う".into(),
+                cause: internal!("合同成分の元三入力が違う").into(),
                 partial: Box::new(self.clone()),
             });
         }
@@ -195,7 +195,7 @@ impl Congruence {
         let result = (|| {
             tick(c)?;
             if self != &expected {
-                return Err("合同成分が元関係・到達語・導出と違う".into());
+                return Err(internal!("合同成分が元関係・到達語・導出と違う").into());
             }
             Ok(())
         })();
@@ -227,7 +227,10 @@ struct Rule {
     right: Word,
 }
 fn closure(out: &mut Congruence, c: &Control) -> Result<(), ValidationFailure> {
-    let table = out.relations.as_ref().ok_or("元relation表がない")?;
+    let table = out
+        .relations
+        .as_ref()
+        .ok_or(internal!("元relation表がない"))?;
     let mut rules = vec![];
     for (instance, row) in table.instances.iter().enumerate() {
         tick(c)?;
@@ -235,12 +238,12 @@ fn closure(out: &mut Congruence, c: &Control) -> Result<(), ValidationFailure> {
             continue;
         }
         let (Some(Scalar::Path(a)), Some(Scalar::Path(b))) = (&row.left, &row.right) else {
-            return Err("成立relationの元Pathがない".into());
+            return Err(internal!("成立relationの元Pathがない").into());
         };
         let left = Word::from_path(a, c)?;
         let right = Word::from_path(b, c)?;
         if left.source != right.source || left.target != right.target {
-            return Err("成立relationの実端点が違う".into());
+            return Err(internal!("成立relationの実端点が違う").into());
         }
         rules.push(Rule {
             instance,
@@ -266,7 +269,7 @@ fn closure(out: &mut Congruence, c: &Control) -> Result<(), ValidationFailure> {
     for query in out.queries.clone() {
         tick(c)?;
         if query.path.reading != out.reading {
-            return Err("追加Pathのreadingが元関係と違う".into());
+            return Err(internal!("追加Pathのreadingが元関係と違う").into());
         }
         let word = Word::from_path(&query.path, c)?;
         let at = out.insert(word, &mut index, c)?;

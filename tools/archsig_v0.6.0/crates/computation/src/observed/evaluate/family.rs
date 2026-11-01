@@ -85,7 +85,7 @@ impl Evaluator<'_, '_> {
         let plan = self
             .environment
             .family_plan(self.request)?
-            .ok_or_else(|| Failure::Internal("有限Law族の計画がない".into()))?;
+            .ok_or_else(|| Failure::Internal(internal!("有限Law族の計画がない")))?;
         if plan.dependent {
             return self.dependent_family_answer(plan, guard, body, role);
         }
@@ -227,7 +227,7 @@ impl Evaluator<'_, '_> {
             })?
         };
         let Some(Payload::Domain { elements, .. }) = &self.graph.get(product)?.payload else {
-            return Err(Failure::Internal("実直積Domainがない".into()));
+            return Err(Failure::Internal(internal!("実直積Domainがない")));
         };
         let members = elements.clone();
         let domain_scope = all_scope.clone();
@@ -281,7 +281,7 @@ impl Evaluator<'_, '_> {
                         fixed_bindings
                             .iter()
                             .find(|b| b.name == p.name)
-                            .ok_or_else(|| Failure::Internal("固定bindingがない".into()))?
+                            .ok_or_else(|| Failure::Internal(internal!("固定bindingがない")))?
                             .value
                     };
                     self.bindings.push(Binding {
@@ -306,13 +306,13 @@ impl Evaluator<'_, '_> {
             let proposition = row.outputs["proposition"];
             let Some(Payload::Proposition { instance }) = &self.graph.get(proposition)?.payload
             else {
-                return Err(Failure::Internal("実rowのLawInstanceがない".into()));
+                return Err(Failure::Internal(internal!("実rowのLawInstanceがない")));
             };
             row_instances.push(*instance);
 
             let Some(Payload::Evaluation { value: v, .. }) = &self.graph.get(evaluation)?.payload
             else {
-                return Err(Failure::Internal("実row適用評価がない".into()));
+                return Err(Failure::Internal(internal!("実row適用評価がない")));
             };
             let b = self.graph.boolean(*v)?;
             if b == Some(false) {
@@ -342,7 +342,7 @@ impl Evaluator<'_, '_> {
             ty: NodeType::LawInstance,
             payload: Some(Payload::LawInstance {
                 name: self.declaration.name.clone(),
-                role: match role.ok_or_else(|| Failure::Internal("族Lawのroleがない".into()))?
+                role: match role.ok_or_else(|| Failure::Internal(internal!("族Lawのroleがない")))?
                 {
                     Role::Required => "required",
                     Role::Optional => "optional",
@@ -476,7 +476,7 @@ impl Evaluator<'_, '_> {
             ty: NodeType::LawInstance,
             payload: Some(Payload::LawInstance {
                 name: self.declaration.name.clone(),
-                role: match role.ok_or_else(|| Failure::Internal("row roleがない".into()))? {
+                role: match role.ok_or_else(|| Failure::Internal(internal!("row roleがない")))? {
                     Role::Required => "required",
                     Role::Optional => "optional",
                 },

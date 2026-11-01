@@ -17,8 +17,9 @@ use archsig_common::control::{Checkpoint, Control};
 use archsig_common::types::Type;
 use archsig_input::input::CheckedInputs;
 use std::sync::Arc;
+#[track_caller]
 fn bad(s: &str) -> ConstructionFailure {
-    ConstructionFailure::Inconsistent(s.into())
+    ConstructionFailure::Inconsistent(internal!(s))
 }
 fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectLawCircuits)

@@ -62,16 +62,16 @@ impl Environment<'_> {
         let record = graph
             .instances
             .get(index)
-            .ok_or("relationの元instanceがない")?;
+            .ok_or(internal!("relationの元instanceがない"))?;
         let limit = self.state.cutoff.get().min(graph.nodes.len());
         for r in [record.source, record.domain, record.member] {
             if r.0 >= limit {
-                return Err("relation instanceが未出の元域を参照した".into());
+                return Err(internal!("relation instanceが未出の元域を参照した").into());
             }
             self.validate_at(graph, graph.get(r)?, r.0)?;
         }
         let Some(inputs) = relation_sources::instance_bindings(self, graph, index, limit)? else {
-            return Err("relationの元域が変わった".into());
+            return Err(internal!("relationの元域が変わった").into());
         };
         let mut variables = BTreeMap::new();
         for binding in &inputs.bindings {
@@ -79,7 +79,7 @@ impl Environment<'_> {
             self.validate_at(graph, graph.get(binding.value)?, binding.value.0)?;
             let scalar = graph.scalar(binding.value)?.clone();
             if scalar.ty() != binding.ty {
-                return Err("relation instanceの元parameter型が違う".into());
+                return Err(internal!("relation instanceの元parameter型が違う").into());
             }
             variables.insert(
                 binding.name.clone(),

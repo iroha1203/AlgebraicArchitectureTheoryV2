@@ -10,33 +10,39 @@ fn matching(
     if template.instance != original.instance
         || template.bindings.len() + template.parameters.len() != original.bindings.len()
     {
-        return Err("有限配置の元添字/全parameter束縛数が違う".into());
+        return Err(internal!("有限配置の元添字/全parameter束縛数が違う").into());
     }
-    let base = frames::origin(g, template.reference)?.ok_or("有限配置の共通Law由来がない")?;
-    let target = frames::origin(g, original.row)?.ok_or("有限配置の具体Law由来がない")?;
+    let base =
+        frames::origin(g, template.reference)?.ok_or(internal!("有限配置の共通Law由来がない"))?;
+    let target =
+        frames::origin(g, original.row)?.ok_or(internal!("有限配置の具体Law由来がない"))?;
     if base.declaration != target.declaration
         || !Arc::ptr_eq(&base.architecture, &target.architecture)
         || target.object != object
     {
-        return Err("有限配置の宣言/入力/対象が違う".into());
+        return Err(internal!("有限配置の宣言/入力/対象が違う").into());
     }
     for binding in &template.bindings {
         g.tick()?;
         let mut found = original.bindings.iter().filter(|b| b.name == binding.name);
-        let actual = found.next().ok_or("有限配置の元参照束縛がない")?;
+        let actual = found
+            .next()
+            .ok_or(internal!("有限配置の元参照束縛がない"))?;
         if found.next().is_some()
             || actual.ty != binding.ty
             || g.scalar(actual.value)? != g.scalar(binding.value)?
         {
-            return Err("有限配置の元参照束縛/型/値が違う".into());
+            return Err(internal!("有限配置の元参照束縛/型/値が違う").into());
         }
     }
     for (name, ty) in &template.parameters {
         g.tick()?;
         let mut found = original.bindings.iter().filter(|b| &b.name == name);
-        let actual = found.next().ok_or("有限配置の値parameter束縛がない")?;
+        let actual = found
+            .next()
+            .ok_or(internal!("有限配置の値parameter束縛がない"))?;
         if found.next().is_some() || &actual.ty != ty || &g.scalar(actual.value)?.ty() != ty {
-            return Err("有限配置の値parameter束縛/型が違う".into());
+            return Err(internal!("有限配置の値parameter束縛/型が違う").into());
         }
     }
     Ok(())
@@ -53,10 +59,12 @@ pub(super) fn compute(
     plan.recheck(env, g, table.architecture, c)?;
     let ds = plan.diagrams()?;
     let templates = table.diagrams()?;
-    let canonical = templates.first().ok_or("有限配置の元Law計画がない")?;
-    let base = ds.first().ok_or("有限配置のbase表示がない")?;
+    let canonical = templates
+        .first()
+        .ok_or(internal!("有限配置の元Law計画がない"))?;
+    let base = ds.first().ok_or(internal!("有限配置のbase表示がない"))?;
     if ds.len() != table.objects.len() {
-        return Err("有限配置の全対象数が違う".into());
+        return Err(internal!("有限配置の全対象数が違う").into());
     }
     let (universe, anchor) = universe(g, table.architecture)?;
     let mut support = table.support.clone();
@@ -87,11 +95,11 @@ pub(super) fn compute(
             || d.nu.len() != d.components.len()
             || d.nu.len() != d.witnesses.len()
         {
-            return Err("有限配置の共有D/環/全成分のcoverageが違う".into());
+            return Err(internal!("有限配置の共有D/環/全成分のcoverageが違う").into());
         }
         let reference = d
             .presentation
-            .ok_or("有限配置の元EquationPresentationがない")?;
+            .ok_or(internal!("有限配置の元EquationPresentationがない"))?;
         check_refs(
             env,
             g,
@@ -102,10 +110,10 @@ pub(super) fn compute(
             c,
         )?;
         let Some(Payload::Construction(v)) = &g.get(reference)?.payload else {
-            return Err("有限配置の元表示がnativeでない".into());
+            return Err(internal!("有限配置の元表示がnativeでない").into());
         };
         let D::FiniteLaw(data) = &v.data else {
-            return Err("有限配置の元表示が有限表示でない".into());
+            return Err(internal!("有限配置の元表示が有限表示でない").into());
         };
         let Some(E::Presentation {
             domain,
@@ -117,7 +125,7 @@ pub(super) fn compute(
             ..
         }) = data.equation_part()
         else {
-            return Err("有限配置の元表示が別構成".into());
+            return Err(internal!("有限配置の元表示が別構成").into());
         };
         if *domain != d.domain
             || *ring != d.ring
@@ -125,7 +133,7 @@ pub(super) fn compute(
             || witnesses != &d.witnesses
             || Some(*context) != d.context
         {
-            return Err("有限配置の元表示/全座標/証拠が違う".into());
+            return Err(internal!("有限配置の元表示/全座標/証拠が違う").into());
         }
         // 元Presentationのoptional εはoperandの実読取りだけを公開する。
         // 有限νの実代入は既存の恒値関数であり、非適用/guard=falseでも生bodyを読まず得られる。
@@ -139,20 +147,22 @@ pub(super) fn compute(
                 .originals
                 .iter()
                 .find(|o| o.row.is_none() && o.instance == original.instance)
-                .ok_or("有限配置の共通Law添字がない")?;
+                .ok_or(internal!("有限配置の共通Law添字がない"))?;
             matching(g, template, original, object)?;
             let at = table
                 .indices
                 .iter()
                 .position(|r| *r == template.reference)
-                .ok_or("有限配置の元Lawが共通表にない")?;
+                .ok_or(internal!("有限配置の元Lawが共通表にない"))?;
             let mut readings = d
                 .readings
                 .iter()
                 .filter(|r| r.instance == original.row && r.column == original.column);
-            let reading = readings.next().ok_or("有限配置の元Law実読取りがない")?;
+            let reading = readings
+                .next()
+                .ok_or(internal!("有限配置の元Law実読取りがない"))?;
             if readings.next().is_some() {
-                return Err("有限配置の元Law読取りが重複".into());
+                return Err(internal!("有限配置の元Law読取りが重複").into());
             }
             complete &= !reading.reading.condition_failed && !reading.reading.condition_pending;
             judgments[at].push(reading.reading.holds);
@@ -177,41 +187,52 @@ pub(super) fn compute(
                 .map(|j| &j.status)
                 != Some(&actual)
             {
-                return Err("有限配置の全列の原式判断が実EvaluatorのLaw表と違う".into());
+                return Err(internal!("有限配置の全列の原式判断が実EvaluatorのLaw表と違う").into());
             }
         }
         let mut output = vec![];
         for (i, q) in coordinates.iter().enumerate() {
             tick(c)?;
-            let column = *d.columns.get(i).ok_or("有限配置のcolumnがない")?;
-            let (instance, component) = d.components.get(i).ok_or("有限配置の元成分がない")?;
+            let column = *d
+                .columns
+                .get(i)
+                .ok_or(internal!("有限配置のcolumnがない"))?;
+            let (instance, component) = d
+                .components
+                .get(i)
+                .ok_or(internal!("有限配置の元成分がない"))?;
             let original = d
                 .originals
                 .iter()
                 .find(|o| o.column == column && o.instance == *instance && o.row == q.instance)
-                .ok_or("有限配置の元Law/columnが違う")?;
+                .ok_or(internal!("有限配置の元Law/columnが違う"))?;
             let expected = match component {
                 Some(component) => component.as_slice(),
                 None => &[],
             };
             if q.component != expected || Some(&q.nu) != d.nu.get(i) {
-                return Err("有限配置の元成分/νが違う".into());
+                return Err(internal!("有限配置の元成分/νが違う").into());
             }
             let template = canonical
                 .originals
                 .iter()
                 .find(|o| o.row.is_none() && o.instance == original.instance)
-                .ok_or("有限配置の元添字がない")?;
+                .ok_or(internal!("有限配置の元添字がない"))?;
             let factor = factors
                 .iter()
                 .position(|r| *r == d.ring)
-                .ok_or("有限配置の共有環がfactorにない")?;
-            let witness = *witnesses.get(i).ok_or("有限配置の成分証拠がない")?;
+                .ok_or(internal!("有限配置の共有環がfactorにない"))?;
+            let witness = *witnesses
+                .get(i)
+                .ok_or(internal!("有限配置の成分証拠がない"))?;
             refs.extend([q.instance, q.lhs, q.rhs, q.nu, witness]);
             refs.extend(q.epsilon);
-            let epsilon = *d.epsilon.get(i).ok_or("有限配置の実代入欄がない")?;
+            let epsilon = *d
+                .epsilon
+                .get(i)
+                .ok_or(internal!("有限配置の実代入欄がない"))?;
             if q.epsilon.is_some() && q.epsilon != epsilon {
-                return Err("有限配置のoperand実読取りとindicator代入が違う".into());
+                return Err(internal!("有限配置のoperand実読取りとindicator代入が違う").into());
             }
             refs.extend(epsilon);
             output.push(Coordinate {

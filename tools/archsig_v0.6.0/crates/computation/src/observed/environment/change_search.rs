@@ -286,11 +286,13 @@ pub(in crate::observed) fn selector(
             AnswerBinding::Reference(r) => graph.scalar(r)?.clone(),
             AnswerBinding::Projection(node) => match node.payload {
                 Some(Payload::Scalar(value)) => value,
-                _ => return Err("変更候補の束縛射影が通常値でない".into()),
+                _ => return Err(internal!("変更候補の束縛射影が通常値でない").into()),
             },
-            AnswerBinding::Inapplicable(_) => return Err("変更候補の束縛射影が不適合".into()),
+            AnswerBinding::Inapplicable(_) => {
+                return Err(internal!("変更候補の束縛射影が不適合").into());
+            }
         },
-        _ => return Err("変更候補の束縛がHandleでない".into()),
+        _ => return Err(internal!("変更候補の束縛がHandleでない").into()),
     })
 }
 
@@ -353,46 +355,50 @@ pub(in crate::observed) fn search_with_completions(
         let inputs = original.indexes.inputs;
         let mut environment =
             Environment::try_primitive_valuation(inputs, &result.valuation, control)?
-                .ok_or("元修復Architectureの代入が不適合")?;
+                .ok_or(internal!("元修復Architectureの代入が不適合"))?;
         environment.indexes.object = Some(Arc::new(ObjectDomain::from_readings(
             inputs,
             witness.readings(),
             0,
             control,
         )?));
-        let law_name = request.declaration().ok_or("solveの元Lawがない")?;
+        let law_name = request
+            .declaration()
+            .ok_or(internal!("solveの元Lawがない"))?;
         let law = inputs
             .law()
             .declarations()
             .get(law_name)
-            .ok_or("solveの元Law宣言がない")?;
+            .ok_or(internal!("solveの元Law宣言がない"))?;
         let Signature::Law { params, .. } = &law.signature else {
-            return Err("solveのheadがLawでない".into());
+            return Err(internal!("solveのheadがLawでない").into());
         };
         let using = request
             .arguments
             .iter()
             .find(|a| a.name == "using")
-            .ok_or("solveのusingがない")?;
+            .ok_or(internal!("solveのusingがない"))?;
         let Selector::Declaration { name } = &using.value else {
-            return Err("solveのusingが宣言名でない".into());
+            return Err(internal!("solveのusingが宣言名でない").into());
         };
         let change = inputs
             .law()
             .declarations()
             .get(name)
-            .ok_or("solveのchange宣言がない")?;
+            .ok_or(internal!("solveのchange宣言がない"))?;
         let Signature::Change {
             params: change_params,
             ..
         } = &change.signature
         else {
-            return Err("solveのusingがchangeでない".into());
+            return Err(internal!("solveのusingがchangeでない").into());
         };
         if law.reading != change.reading || witness.construction().reading() != law.reading {
-            return Err("変更候補のLaw・change・対象readingが違う".into());
+            return Err(internal!("変更候補のLaw・change・対象readingが違う").into());
         }
-        let first = change_params.first().ok_or("changeの第一parameterがない")?;
+        let first = change_params
+            .first()
+            .ok_or(internal!("changeの第一parameterがない"))?;
         let Some(mut subjects) = domain(&environment, &first.ty, first.span, &mut result.missing)?
         else {
             return Ok(());
@@ -576,7 +582,7 @@ pub(in crate::observed) fn search_with_completions(
         for (point, candidate) in result
             .candidates
             .as_ref()
-            .ok_or("候補表がない")?
+            .ok_or(internal!("候補表がない"))?
             .rows
             .iter()
             .enumerate()
@@ -615,15 +621,21 @@ pub(in crate::observed) fn verify_point(
     control.checkpoint(Checkpoint::ChangeWitness)?;
     let mut environment =
         Environment::try_primitive_valuation(original.indexes.inputs, &search.valuation, control)?
-            .ok_or("元修復Architectureの代入が不適合")?;
+            .ok_or(internal!("元修復Architectureの代入が不適合"))?;
     environment.indexes.object = Some(Arc::new(ObjectDomain::from_readings(
         original.indexes.inputs,
         witness.readings(),
         0,
         control,
     )?));
-    let candidates = search.candidates.as_ref().ok_or("再代入の候補表がない")?;
-    let candidate = candidates.rows.get(point).ok_or("再代入の候補点がない")?;
+    let candidates = search
+        .candidates
+        .as_ref()
+        .ok_or(internal!("再代入の候補表がない"))?;
+    let candidate = candidates
+        .rows
+        .get(point)
+        .ok_or(internal!("再代入の候補点がない"))?;
     let origin = crate::observed::construction_result::Witness::Architecture(Arc::clone(witness));
     let change = origin
         .request()
@@ -633,7 +645,7 @@ pub(in crate::observed) fn verify_point(
             ("using", Selector::Declaration { name }) => Some(name),
             _ => None,
         })
-        .ok_or("再代入の元changeがない")?;
+        .ok_or(internal!("再代入の元changeがない"))?;
     let rebuilt = change_evaluation::candidate(
         &environment,
         &original.indexes.inputs.law().declarations()[change],
@@ -641,12 +653,12 @@ pub(in crate::observed) fn verify_point(
         &candidate.parameters,
     )?;
     if rebuilt != *candidate {
-        return Err("再代入のguard・同時更新が元候補と違う".into());
+        return Err(internal!("再代入のguard・同時更新が元候補と違う").into());
     }
     let row =
         change_evaluation::solution_row(&environment, candidate, point, &search.requirements)?;
     if row.member != Some(true) {
-        return Err("整数全解の点が元change/Lawへの再代入を満たさない".into());
+        return Err(internal!("整数全解の点が元change/Lawへの再代入を満たさない").into());
     }
     Ok(())
 }

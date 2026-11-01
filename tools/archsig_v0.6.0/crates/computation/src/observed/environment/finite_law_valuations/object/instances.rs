@@ -79,7 +79,7 @@ impl ObjectLawInstances {
         c: &Control,
     ) -> Result<(), ValidationFailure> {
         if inputs.sources() != &self.sources {
-            return Err("Law instance添字族の元三入力が違う".into());
+            return Err(internal!("Law instance添字族の元三入力が違う").into());
         }
         self.selection.recheck(inputs, c)?;
         let mut expected = ObjectLawInstances {
@@ -95,7 +95,9 @@ impl ObjectLawInstances {
         };
         populate_with_environment(inputs, &mut expected, c, &env)?;
         if self != &expected {
-            return Err("Law instance添字族が元宣言・参照束縛・parameter域と違う".into());
+            return Err(
+                internal!("Law instance添字族が元宣言・参照束縛・parameter域と違う").into(),
+            );
         }
         Ok(())
     }
@@ -108,7 +110,7 @@ impl ObjectLawInstances {
     ) -> Result<(), ValidationFailure> {
         let selected = Selection::compute(inputs, readings, object, c)?;
         if selected != self.selection {
-            return Err("Law instance添字族が消費先の対象に由来しない".into());
+            return Err(internal!("Law instance添字族が消費先の対象に由来しない").into());
         }
         self.recheck(inputs, c)
     }
@@ -139,7 +141,7 @@ fn populate_with_environment(
         let application = original
             .applications()
             .get(result.selection.object)
-            .ok_or("Law instanceの対象別適用行がない")?
+            .ok_or(internal!("Law instanceの対象別適用行がない"))?
             .clone();
         result.entries.push(InstanceParameters {
             instance: index,
@@ -155,7 +157,7 @@ fn populate_with_environment(
         let entry = result
             .entries
             .last_mut()
-            .ok_or("追加したLaw instanceがない")?;
+            .ok_or(internal!("追加したLaw instanceがない"))?;
         let mut fixed = vec![
             result.selection.identity().root(),
             result.selection.identity().subject(),
@@ -250,7 +252,12 @@ fn populate_with_environment(
         for d in &entry.domains {
             let mut next = vec![];
             for previous in product {
-                for index in 0..d.values.as_ref().ok_or("有限parameter域がない")?.len() {
+                for index in 0..d
+                    .values
+                    .as_ref()
+                    .ok_or(internal!("有限parameter域がない"))?
+                    .len()
+                {
                     c.checkpoint(Checkpoint::FiniteIteration)?;
                     let mut coordinates = previous.clone();
                     coordinates.push(index);
@@ -263,9 +270,9 @@ fn populate_with_environment(
             .law()
             .declarations()
             .get(&original.declaration().name)
-            .ok_or("Law instanceの元宣言がない")?;
+            .ok_or(internal!("Law instanceの元宣言がない"))?;
         let Signature::Law { params, .. } = &declaration.signature else {
-            return Err("Law instanceの署名がLawでない".into());
+            return Err(internal!("Law instanceの署名がLawでない").into());
         };
         for coordinates in product {
             c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
@@ -287,11 +294,11 @@ fn populate_with_environment(
                         .domains
                         .iter()
                         .position(|d| &d.parameter == p)
-                        .ok_or("元Law parameterの域がない")?;
+                        .ok_or(internal!("元Law parameterの域がない"))?;
                     entry.domains[index]
                         .values
                         .as_ref()
-                        .ok_or("元Law parameterが有限でない")?[coordinates[index]]
+                        .ok_or(internal!("元Law parameterが有限でない"))?[coordinates[index]]
                         .clone()
                 };
                 bindings.push((p.name.clone(), value));

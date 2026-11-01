@@ -31,7 +31,7 @@ pub(in crate::observed) fn axes(
     context: super::super::call::Context,
     c: &Control,
 ) -> Result<Vec<affine::Parameter>, ValidationFailure> {
-    let (kind, width) = numeric_shape(&p.ty).ok_or("数値引数の成分型がない")?;
+    let (kind, width) = numeric_shape(&p.ty).ok_or(internal!("数値引数の成分型がない"))?;
     let kind = if kind == Type::Z {
         affine::NumberType::Z
     } else {
@@ -71,7 +71,7 @@ pub(in crate::observed) fn restore<T>(
                 Ok(tuple(parts))
             }
             Type::Z | Type::Q => leaf(),
-            _ => Err("数値引数の復元型が違う".into()),
+            _ => Err(internal!("数値引数の復元型が違う").into()),
         }
     })
 }
@@ -121,7 +121,7 @@ pub(in crate::observed) fn tuple_variables(
             e.tick()?;
             let v = variables
                 .get(&format!("{}.{index}", p.name))
-                .ok_or("数値Tupleの軸がない")?;
+                .ok_or(internal!("数値Tupleの軸がない"))?;
             aggregate.scope.merge(&v.scope);
             aggregate.support.extend(v.support.iter().cloned());
             aggregate.condition_failed |= v.condition_failed;
@@ -131,14 +131,18 @@ pub(in crate::observed) fn tuple_variables(
             } else if let Some(value) = &v.known_value {
                 Value::Known(value.clone())
             } else {
-                return Err("数値Tupleの成分がない".into());
+                return Err(internal!("数値Tupleの成分がない").into());
             });
         }
         let mut parts = parts.into_iter();
         let symbolic = restore(
             &p.ty,
             &e.control,
-            &mut || parts.next().ok_or_else(|| "数値Tupleの成分がない".into()),
+            &mut || {
+                parts
+                    .next()
+                    .ok_or_else(|| internal!("数値Tupleの成分がない").into())
+            },
             &Value::Tuple,
         )?;
         aggregate.known_value = symbolic.known(&e.control)?;
@@ -198,15 +202,15 @@ pub(in crate::observed) fn point_value(
             found = true;
             break;
         }
-        offset += numeric_width(&p.ty).ok_or("数値反例の引数型が違う")?;
+        offset += numeric_width(&p.ty).ok_or(internal!("数値反例の引数型が違う"))?;
     }
     if !found {
-        return Err("数値反例の元引数がない".into());
+        return Err(internal!("数値反例の元引数がない").into());
     }
-    let width = numeric_width(&parameter.ty).ok_or("数値反例の引数幅がない")?;
+    let width = numeric_width(&parameter.ty).ok_or(internal!("数値反例の引数幅がない"))?;
     let coordinates = point
         .get(offset..offset + width)
-        .ok_or("数値反例の座標がない")?;
+        .ok_or(internal!("数値反例の座標がない"))?;
     let mut coordinates = coordinates.iter();
     restore(
         &parameter.ty,
@@ -215,7 +219,7 @@ pub(in crate::observed) fn point_value(
             coordinates
                 .next()
                 .cloned()
-                .ok_or_else(|| "数値反例の座標がない".into())
+                .ok_or_else(|| internal!("数値反例の座標がない").into())
         },
         &Scalar::Tuple,
     )

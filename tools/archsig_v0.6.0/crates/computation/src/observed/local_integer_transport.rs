@@ -275,27 +275,27 @@ fn coordinates(
 }
 pub(in crate::observed::local_result) fn dependencies(g: &Graph, context: NodeRef) -> Result<Vec<Fact>, ValidationFailure> {
     let Some(Json::Arr(values)) = record(g, context)?.get("dependencies") else {
-        return Err("contextの依存位置がない".into());
+        return Err(internal!("contextの依存位置がない").into());
     };
     values
         .iter()
         .map(|v| {
             let Json::Obj(fields) = v else {
-                return Err("contextの依存位置がrecordでない".into());
+                return Err(internal!("contextの依存位置がrecordでない").into());
             };
             let subject = reference_value(
                 g,
                 context,
-                fields.get("subject").ok_or("位置のsubjectがない")?,
+                fields.get("subject").ok_or(internal!("位置のsubjectがない"))?,
             )?;
             let Scalar::Subject {
                 snapshot, subject, ..
             } = g.scalar(subject)?
             else {
-                return Err("位置がsubjectでない".into());
+                return Err(internal!("位置がsubjectでない").into());
             };
             let Some(Json::Str(field)) = fields.get("field") else {
-                return Err("位置のfieldがない".into());
+                return Err(internal!("位置のfieldがない").into());
             };
             Ok(Fact {
                 snapshot: snapshot.clone(),
@@ -373,9 +373,9 @@ fn cochains(
                 .tuples
                 .iter()
                 .position(|t| *t == image)
-                .ok_or("移送先のpatch tupleがない")?;
+                .ok_or(internal!("移送先のpatch tupleがない"))?;
             if b.contexts[j] != contexts[a.contexts[i]] {
-                return Err("移送と交わりが可換でない".into());
+                return Err(internal!("移送と交わりが可換でない").into());
             }
             for (r, row) in coefficients[a.contexts[i]].iter().enumerate() {
                 for (s, x) in row.iter().enumerate() {
@@ -469,7 +469,7 @@ pub(in crate::observed::local_result) fn between(
     let mut inverses = vec![];
     for (i, context) in a.contexts.iter().enumerate() {
         let Some(Json::Arr(carrier)) = record(g, *context)?.get("carrier") else {
-            return Err("contextのcarrierがない".into());
+            return Err(internal!("contextのcarrierがない").into());
         };
         let Some(mut carrier) = carrier
             .iter()
@@ -496,12 +496,12 @@ pub(in crate::observed::local_result) fn between(
                     .map(|k| b.law_refs[laws[k]].0)
             })
             .collect::<Option<BTreeSet<_>>>()
-            .ok_or("局所Lawの元がない")?;
+            .ok_or(internal!("局所Lawの元がない"))?;
         let mut matches = vec![];
         for (j, target) in b.contexts.iter().enumerate() {
             c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
             let Some(Json::Arr(other)) = record(g, *target)?.get("carrier") else {
-                return Err("contextのcarrierがない".into());
+                return Err(internal!("contextのcarrierがない").into());
             };
             let mut other = other.clone();
             other.sort_by_key(Json::canonical);
@@ -565,7 +565,7 @@ pub(in crate::observed::local_result) fn between(
         if matches.len() != 1 {
             return Ok(None);
         }
-        let (j, f, v) = matches.pop().ok_or("contextの像がない")?;
+        let (j, f, v) = matches.pop().ok_or(internal!("contextの像がない"))?;
         if context_map.contains(&j) {
             return Ok(None);
         }

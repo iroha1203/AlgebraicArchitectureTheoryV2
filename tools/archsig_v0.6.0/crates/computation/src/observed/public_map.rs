@@ -24,7 +24,7 @@ fn tick(control: &Control) -> Result<(), ValidationFailure> {
 fn failure(cause: ConstructionFailure) -> ValidationFailure {
     match cause {
         ConstructionFailure::Stopped(stop) => stop.into(),
-        other => ValidationFailure::Internal(format!("native map: {other:?}")),
+        other => ValidationFailure::Internal(internal!(format!("native map: {other:?}"))),
     }
 }
 fn field(name: &str) -> Vec<P> {
@@ -74,7 +74,7 @@ pub(super) fn selected(
         .arguments
         .iter()
         .find(|a| a.name == "on")
-        .ok_or("mapのonがない")?
+        .ok_or(internal!("mapのonがない"))?
         .value;
     let (snapshot, subject) = match selector {
         Selector::Subject { snapshot, subject } => (snapshot.clone(), subject.clone()),
@@ -84,23 +84,23 @@ pub(super) fn selected(
                 AnswerBinding::Reference(r) => graph.scalar(*r)?,
                 AnswerBinding::Projection(node) => {
                     let Some(Payload::Scalar(value)) = &node.payload else {
-                        return Err("mapのonの射影が原始値でない".into());
+                        return Err(internal!("mapのonの射影が原始値でない").into());
                     };
                     value
                 }
                 AnswerBinding::Inapplicable(_) => {
-                    return Err("mapのonが原始correspondence参照を提供しない".into());
+                    return Err(internal!("mapのonが原始correspondence参照を提供しない").into());
                 }
             };
             let Scalar::Subject {
                 snapshot, subject, ..
             } = value
             else {
-                return Err("mapのonが原始参照でない".into());
+                return Err(internal!("mapのonが原始参照でない").into());
             };
             (snapshot.clone(), subject.clone())
         }
-        _ => return Err("mapのonがHandleでない".into()),
+        _ => return Err(internal!("mapのonがHandleでない").into()),
     };
     let fact = Fact {
         snapshot,
@@ -110,10 +110,10 @@ pub(super) fn selected(
     };
     let original = environment.indexes.subject(&fact.snapshot, &fact.subject)?;
     let Selector::Declaration { name } = &request.head else {
-        return Err("mapのheadが宣言でない".into());
+        return Err(internal!("mapのheadが宣言でない").into());
     };
     if &original.ty != name {
-        return Err("mapのonと原始correspondenceの型が違う".into());
+        return Err(internal!("mapのonと原始correspondenceの型が違う").into());
     }
     Ok(fact)
 }
@@ -165,7 +165,7 @@ pub(super) fn validate_origin(
             let family = c
                 .relation_family
                 .as_ref()
-                .ok_or("relation Sourceの元族がない")?;
+                .ok_or(internal!("relation Sourceの元族がない"))?;
             environment.recheck_relation_source(family, data.scalar())?;
         }
         if c.relation_plan.is_some() {
@@ -180,7 +180,7 @@ pub(super) fn validate_origin(
         || value.witness.request() != request
         || value.witness.inputs().sources() != environment.indexes.inputs.sources()
     {
-        return Err("native構成が現在の三入力・map要求に属さない".into());
+        return Err(internal!("native構成が現在の三入力・map要求に属さない").into());
     }
     let on = selected(environment, graph, request)?;
     let selected_ref = match &value.data {
@@ -210,7 +210,7 @@ pub(super) fn validate_origin(
                 || m.result().reading() != native::reading_name(request, "reading")?
                 || m.result().to_reading() != native::reading_name(request, "to_reading")?
             {
-                return Err("候補が現在のon・readingに属さない".into());
+                return Err(internal!("候補が現在のon・readingに属さない").into());
             }
         }
         Witness::Architecture(a) => {
@@ -232,7 +232,7 @@ pub(super) fn validate_origin(
                 }
             }
             if !matches {
-                return Err("Architectureが現在の対応の始終root・readingでない".into());
+                return Err(internal!("Architectureが現在の対応の始終root・readingでない").into());
             }
         }
     }
@@ -246,30 +246,30 @@ pub(super) fn validate_configuration_answer(
 ) -> Result<(), ValidationFailure> {
     if let Some(expected) = unavailable(environment, graph, request)? {
         if answer != &expected {
-            return Err("mapの依存停止回答が元出力・理由と違う".into());
+            return Err(internal!("mapの依存停止回答が元出力・理由と違う").into());
         }
         return Ok(());
     }
     if answer.id != request.id {
-        return Err("map回答のIDが違う".into());
+        return Err(internal!("map回答のIDが違う").into());
     }
     let candidate = *answer
         .outputs
         .get("candidate")
-        .ok_or("map回答に元候補がない")?;
+        .ok_or(internal!("map回答に元候補がない"))?;
     let claim = *answer
         .outputs
         .get("proposition")
-        .ok_or("map回答に保存命題がない")?;
+        .ok_or(internal!("map回答に保存命題がない"))?;
     let Some(Payload::Construction(c)) = &graph.get(candidate)?.payload else {
-        return Err("map候補がnative構成でない".into());
+        return Err(internal!("map候補がnative構成でない").into());
     };
     let Witness::Map(m) = &c.witness else {
-        return Err("map候補の元検査がない".into());
+        return Err(internal!("map候補の元検査がない").into());
     };
     validate_origin(environment, graph, request, c)?;
     let Some(Payload::Construction(p)) = &graph.get(claim)?.payload else {
-        return Err("保存命題がnative構成でない".into());
+        return Err(internal!("保存命題がnative構成でない").into());
     };
     let linked = match &p.data {
         D::Preservation { candidate: r } => *r == candidate,
@@ -279,13 +279,13 @@ pub(super) fn validate_configuration_answer(
         _ => false,
     };
     if !linked || p.witness != c.witness || answer.claim != Some(claim) {
-        return Err("保存命題が元候補に属さない".into());
+        return Err(internal!("保存命題が元候補に属さない").into());
     }
     let judgment = graph
         .get(claim)?
         .judgment
         .as_ref()
-        .ok_or("保存命題に判断がない")?;
+        .ok_or(internal!("保存命題に判断がない"))?;
     let mut expected_outputs = BTreeMap::from([
         ("candidate".into(), candidate),
         ("proposition".into(), claim),
@@ -302,27 +302,30 @@ pub(super) fn validate_configuration_answer(
         match v.data {
             D::ConfigurationMap { candidate: r, .. } if r == candidate => {
                 if map_ref.replace(NodeRef(i)).is_some() {
-                    return Err("mapが重複している".into());
+                    return Err(internal!("mapが重複している").into());
                 }
             }
             D::Operation { candidate: r, .. } if r == candidate => {
                 if op_ref.replace(NodeRef(i)).is_some() {
-                    return Err("Operationが重複している".into());
+                    return Err(internal!("Operationが重複している").into());
                 }
             }
             _ => {}
         }
     }
     if !c.is_blocked() && m.result().map().is_some() {
-        expected_outputs.insert("map".into(), map_ref.ok_or("確認済みmapを落とした")?);
+        expected_outputs.insert(
+            "map".into(),
+            map_ref.ok_or(internal!("確認済みmapを落とした"))?,
+        );
         if m.operation().is_some() {
             expected_outputs.insert(
                 "operation".into(),
-                op_ref.ok_or("確認済みOperationを落とした")?,
+                op_ref.ok_or(internal!("確認済みOperationを落とした"))?,
             );
         }
     } else if map_ref.is_some() || op_ref.is_some() {
-        return Err("未決・反証候補からmap/Operationを公開した".into());
+        return Err(internal!("未決・反証候補からmap/Operationを公開した").into());
     }
     let reasons = if c.is_blocked() {
         graph.get(candidate)?.reasons.clone()
@@ -335,7 +338,7 @@ pub(super) fn validate_configuration_answer(
         || answer.reasons != reasons
         || answer.scope != graph.get(claim)?.scope
     {
-        return Err("map回答の出力・判断・証拠・理由・Scopeが元検査と違う".into());
+        return Err(internal!("map回答の出力・判断・証拠・理由・Scopeが元検査と違う").into());
     }
     Ok(())
 }
@@ -348,7 +351,7 @@ pub(super) fn unavailable(
         .requests
         .iter()
         .position(|r| r == request)
-        .ok_or("元Requestがない")?;
+        .ok_or(internal!("元Requestがない"))?;
     let mut reasons = vec![];
     let mut scope = Scope::default();
     if let Some(name) = request.declaration() {
@@ -381,7 +384,7 @@ pub(super) fn unavailable(
             .requests
             .iter()
             .position(|r| &r.id == id)
-            .ok_or("依存元Requestがない")?;
+            .ok_or(internal!("依存元Requestがない"))?;
         if !request
             .arguments
             .iter()
@@ -482,7 +485,7 @@ pub(super) fn evaluate_configuration(
                 Some(graph.push(node)?)
             }
             AnswerBinding::Inapplicable(_) => {
-                return Err("不適合なmap射影を通常計算へ渡した".into());
+                return Err(internal!("不適合なmap射影を通常計算へ渡した").into());
             }
         }
     } else {
@@ -497,7 +500,7 @@ pub(super) fn evaluate_configuration(
             .fields
             .iter()
             .find(|f| f.name.short() == key)
-            .ok_or("correspondenceの端点slotがない")?;
+            .ok_or(internal!("correspondenceの端点slotがない"))?;
         if let Slot::Known {
             value: Value::Ref { snapshot, subject },
             ..
@@ -564,8 +567,8 @@ pub(super) fn evaluate_configuration(
     };
     let mut evidence = vec![];
     for (index, counterexample) in m.result().counterexamples().iter().enumerate() {
-        let left = source.ok_or("反例の元Architectureがない")?.root;
-        let right = target.ok_or("反例の先Architectureがない")?.root;
+        let left = source.ok_or(internal!("反例の元Architectureがない"))?.root;
+        let right = target.ok_or(internal!("反例の先Architectureがない"))?.root;
         evidence.push(put(
             graph,
             &witness,
@@ -593,8 +596,12 @@ pub(super) fn evaluate_configuration(
                 data: D::CandidateCondition {
                     name,
                     subject,
-                    source: source.ok_or("構成反証の元Architectureがない")?.reference,
-                    target: target.ok_or("構成反証の先Architectureがない")?.reference,
+                    source: source
+                        .ok_or(internal!("構成反証の元Architectureがない"))?
+                        .reference,
+                    target: target
+                        .ok_or(internal!("構成反証の先Architectureがない"))?
+                        .reference,
                 },
             },
             vec![],
@@ -632,7 +639,7 @@ pub(super) fn evaluate_configuration(
                 subject,
                 source: source.unwrap().reference,
                 target: target.unwrap().reference,
-                action: action.ok_or("完成候補の総作用がない")?,
+                action: action.ok_or(internal!("完成候補の総作用がない"))?,
             },
             vec![],
         )?
@@ -648,7 +655,7 @@ pub(super) fn evaluate_configuration(
             parts.push((field("action"), a));
         }
         if reasons.is_empty() {
-            return Err("候補が未完成だが元理由がない".into());
+            return Err(internal!("候補が未完成だが元理由がない").into());
         }
         put(
             graph,

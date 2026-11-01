@@ -75,8 +75,12 @@ fn evaluate_read(
     let outer_missing = env.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
     let outer_reads = env.state.primitive_reads.scoped(Some(BTreeSet::new()));
     let value = env.scoped_ast(id, variables, scope, reading);
-    let reads = outer_reads.restore().ok_or("localの読取り収集がない")?;
-    let missing = outer_missing.restore().ok_or("localの欠測収集がない")?;
+    let reads = outer_reads
+        .restore()
+        .ok_or(internal!("localの読取り収集がない"))?;
+    let missing = outer_missing
+        .restore()
+        .ok_or(internal!("localの欠測収集がない"))?;
     if let Some(outer) = env.state.primitive_reads.borrow_mut().as_mut() {
         outer.extend(reads.iter().cloned());
     }
@@ -137,7 +141,7 @@ pub(in crate::observed) fn guard_value(
         match value.known_value.as_ref() {
             Some(Scalar::Bool(value)) => Some(*value),
             None => None,
-            _ => return Err("local guardがBoolでない".into()),
+            _ => return Err(internal!("local guardがBoolでない").into()),
         }
     };
     // 評価cacheの有無に依存しない、型付き結果の支持を保持する。
@@ -203,13 +207,13 @@ pub(in crate::observed) fn read_value(
         .inputs
         .law()
         .expr_type(id)
-        .ok_or("local readの型がない")?
+        .ok_or(internal!("local readの型がない"))?
         .erase();
     if !value_type_supported(&ty, env.indexes.inputs.law(), &env.control)?
         && !super::super::finite::supported(&ty, env.indexes.inputs.law(), &env.control)?
         && !reference_value_type_supported(&ty, env.indexes.inputs.law(), &env.control)?
     {
-        return Err("local readの値型は既存の評価域外".into());
+        return Err(internal!("local readの値型は既存の評価域外").into());
     }
     let variables = bindings
         .iter()
@@ -230,7 +234,7 @@ pub(in crate::observed) fn read_value(
         value.known_value
     };
     if result.as_ref().is_some_and(|value| value.ty() != ty) {
-        return Err("local readの評価値の型が元式と違う".into());
+        return Err(internal!("local readの評価値の型が元式と違う").into());
     }
     let mut support = value.support;
     support.sort();
@@ -260,7 +264,7 @@ pub(in crate::observed) fn implicit_support_with_parameters(
     variables.extend(bindings.iter().map(|(n, v)| (n.clone(), known(v.clone()))));
     let (value, reads, missing) = evaluate_read(env, id, &variables, &Scope::default(), reading)?;
     if !missing.is_empty() {
-        return Err("確定した暗黙読取りに欠測がある".into());
+        return Err(internal!("確定した暗黙読取りに欠測がある").into());
     }
     let mut carrier = vec![];
     for (_, value) in bindings {
@@ -352,7 +356,7 @@ fn projections(
             }
             _ if field_path(env, id)?.is_some_and(|(_, fields)| fields.len() > 1) => {
                 let slots = visible_slots(env, id, bindings, reading)?;
-                let slot = slots.first().ok_or("参照経路の末端slotがない")?;
+                let slot = slots.first().ok_or(internal!("参照経路の末端slotがない"))?;
                 let owner = env.indexes.subject(&slot.snapshot, &slot.subject)?;
                 let subject = Scalar::Subject {
                     snapshot: slot.snapshot.clone(),
@@ -364,7 +368,7 @@ fn projections(
                 let (params, fields) = declaration
                     .signature
                     .record_fields()
-                    .ok_or("末端fieldのrecordがない")?;
+                    .ok_or(internal!("末端fieldのrecordがない"))?;
                 let field = params
                     .iter()
                     .chain(fields)
@@ -374,7 +378,7 @@ fn projections(
                                 && name.short() == f.name.as_str()
                         })
                     })
-                    .ok_or("末端fieldの宣言がない")?;
+                    .ok_or(internal!("末端fieldの宣言がない"))?;
                 let mut carrier = vec![];
                 subject_carrier(value, &mut carrier, c)?;
                 out.push(local_result::geometry::Projection {
@@ -430,7 +434,7 @@ fn field_path<'a>(
                     expression
                         .field
                         .as_ref()
-                        .ok_or("局所fieldの静的解決がない")?,
+                        .ok_or(internal!("局所fieldの静的解決がない"))?,
                 );
                 id = *base;
             }
@@ -496,7 +500,7 @@ fn visible_slots(
             ));
         };
         if last.owner() != Some(entity.as_str()) {
-            return Err("局所fieldのowner型が違う".into());
+            return Err(internal!("局所fieldのowner型が違う").into());
         }
         visible.push(Fact {
             snapshot: snapshot.clone(),
@@ -636,7 +640,10 @@ fn state_visibility_inner(
                         atom: None,
                     });
                     subject_carrier(
-                        owner.known_value.as_ref().ok_or("局所読取り元がない")?,
+                        owner
+                            .known_value
+                            .as_ref()
+                            .ok_or(internal!("局所読取り元がない"))?,
                         &mut carrier,
                         c,
                     )?;
@@ -727,7 +734,7 @@ pub(in crate::observed) fn materialize_with_free(
     c: &Control,
 ) -> Result<Vec<Context>, ValidationFailure> {
     let Signature::Local { params, .. } = &declaration.signature else {
-        return Err("local署名がない".into());
+        return Err(internal!("local署名がない").into());
     };
     let mut assignments = vec![vec![]];
     let mut missing = vec![];
@@ -808,18 +815,20 @@ fn free_coefficient(env: &Environment<'_>, slots: &[Fact]) -> Result<Type, Valid
                 &env.state,
                 &slot.snapshot,
                 &slot.subject,
-                slot.field.as_ref().ok_or("自由位置にfieldがない")?,
+                slot.field
+                    .as_ref()
+                    .ok_or(internal!("自由位置にfieldがない"))?,
             )?
             .ty
             .erase();
         if !matches!(ty, Type::Z | Type::Q)
             || coefficient.as_ref().is_some_and(|prior| prior != &ty)
         {
-            return Err("局所読取りの自由座標の係数型が混在する".into());
+            return Err(internal!("局所読取りの自由座標の係数型が混在する").into());
         }
         coefficient = Some(ty);
     }
-    coefficient.ok_or_else(|| "局所読取りの自由座標がない".into())
+    coefficient.ok_or_else(|| internal!("局所読取りの自由座標がない").into())
 }
 pub(in crate::observed) fn read_kernel(
     ty: &Type,
@@ -834,7 +843,9 @@ pub(in crate::observed) fn read_kernel(
                 row.iter()
                     .map(|v| match v {
                         Scalar::Z(v) => Ok(v.clone()),
-                        _ => Err(ValidationFailure::from("整数読取りの係数がZでない")),
+                        _ => Err(ValidationFailure::from(internal!(
+                            "整数読取りの係数がZでない"
+                        ))),
                     })
                     .collect()
             })
@@ -897,7 +908,9 @@ fn affine_read_image(
                         &env.state,
                         &slot.snapshot,
                         &slot.subject,
-                        slot.field.as_ref().ok_or("自由位置にfieldがない")?,
+                        slot.field
+                            .as_ref()
+                            .ok_or(internal!("自由位置にfieldがない"))?,
                     )?
                     .ty
                     .erase(),
@@ -1003,7 +1016,11 @@ fn affine_read_image(
             ("subject", subject.wire()),
             (
                 "field",
-                Json::str(slot.field.as_ref().ok_or("読取り位置のfieldがない")?),
+                Json::str(
+                    slot.field
+                        .as_ref()
+                        .ok_or(internal!("読取り位置のfieldがない"))?,
+                ),
             ),
         ]));
     }
@@ -1143,17 +1160,20 @@ pub(in crate::observed) fn materialize_positions(
             subject: slot.subject.clone(),
             entity: owner.ty.to_string(),
         };
-        let name = slot.field.as_ref().ok_or("暗黙読取りのfieldがない")?;
+        let name = slot
+            .field
+            .as_ref()
+            .ok_or(internal!("暗黙読取りのfieldがない"))?;
         let declaration = &env.indexes.inputs.definitions().declarations()[owner.ty.as_str()];
         let (params, fields) = declaration
             .signature
             .record_fields()
-            .ok_or("暗黙読取りのrecordがない")?;
+            .ok_or(internal!("暗黙読取りのrecordがない"))?;
         let field = params
             .iter()
             .chain(fields)
             .find(|f| name == &format!("{}.{}", owner.ty, f.name))
-            .ok_or("暗黙読取りのfield宣言がない")?;
+            .ok_or(internal!("暗黙読取りのfield宣言がない"))?;
         let subject_ref = change_result::value(b, &subject)?;
         let ty = env
             .indexes
@@ -1251,7 +1271,7 @@ fn materialize_instance(
         reads,
     } = &declaration.signature
     else {
-        return Err("局所読取りの元宣言がlocalでない".into());
+        return Err(internal!("局所読取りの元宣言がlocalでない").into());
     };
     let mut out = Context {
         locals: vec![],
@@ -1365,7 +1385,9 @@ fn materialize_instance(
                                     &env.state,
                                     &slot.snapshot,
                                     &slot.subject,
-                                    slot.field.as_ref().ok_or("自由位置にfieldがない")?,
+                                    slot.field
+                                        .as_ref()
+                                        .ok_or(internal!("自由位置にfieldがない"))?,
                                 )?
                                 .ty
                                 .erase(),
@@ -1442,7 +1464,7 @@ fn materialize_instance(
                 return Ok(());
             }
             if value.known_value != Some(Scalar::Bool(true)) {
-                return Err("local guardがBoolでない".into());
+                return Err(internal!("local guardがBoolでない").into());
             }
         }
         let states = if states.is_empty() {
@@ -1516,7 +1538,7 @@ fn materialize_instance(
                     }
                     continue;
                 }
-                let value = read.known_value.ok_or("localの確定値がない")?;
+                let value = read.known_value.ok_or(internal!("localの確定値がない"))?;
                 subject_carrier(&value, &mut carrier, c)?;
                 projections(
                     state,
@@ -1539,7 +1561,7 @@ fn materialize_instance(
                 continue;
             }
             let NodeType::Expression(ty) = &b.parts[expression.0 - b.base].ty else {
-                return Err("local読取りの型が式でない".into());
+                return Err(internal!("local読取りの型が式でない").into());
             };
             let ty = ty.clone();
             let information_before = information.len();
@@ -1564,7 +1586,7 @@ fn materialize_instance(
                     let (image, slots, matrix) = affine_read_image(
                         env,
                         b,
-                        target.ok_or("整数読取りの基底がない")?,
+                        target.ok_or(internal!("整数読取りの基底がない"))?,
                         expression,
                         *id,
                         bindings,
@@ -1653,7 +1675,7 @@ fn materialize_instance(
                         expanded[slots
                             .iter()
                             .position(|f| f == slot)
-                            .ok_or("読取りの自由位置がない")?] = value.clone();
+                            .ok_or(internal!("読取りの自由位置がない"))?] = value.clone();
                     }
                     matrix.push(expanded);
                 }
@@ -1678,18 +1700,21 @@ fn materialize_instance(
                     subject: slot.subject.clone(),
                     entity: owner.ty.to_string(),
                 };
-                let name = slot.field.as_ref().ok_or("復元するfieldがない")?;
+                let name = slot
+                    .field
+                    .as_ref()
+                    .ok_or(internal!("復元するfieldがない"))?;
                 let definition =
                     &env.indexes.inputs.definitions().declarations()[owner.ty.as_str()];
                 let (params, fields) = definition
                     .signature
                     .record_fields()
-                    .ok_or("復元するrecordがない")?;
+                    .ok_or(internal!("復元するrecordがない"))?;
                 let field = params
                     .iter()
                     .chain(fields)
                     .find(|f| name == &format!("{}.{}", owner.ty, f.name))
-                    .ok_or("復元するfield宣言がない")?;
+                    .ok_or(internal!("復元するfield宣言がない"))?;
                 let value = env
                     .scoped_field(
                         known(subject.clone()),
@@ -1920,7 +1945,7 @@ pub(in crate::observed) fn affine_transport(
                 params: p, guard, ..
             } = &declaration.signature
             else {
-                return Err("numeric transport requires local declarations".into());
+                return Err(internal!("numeric transport requires local declarations").into());
             };
             params.push(p);
             guards.push(*guard);
@@ -1942,7 +1967,7 @@ pub(in crate::observed) fn affine_transport(
                     t.name.clone(),
                     source
                         .get(&s.name)
-                        .ok_or("source numeric coordinate missing")?
+                        .ok_or(internal!("source numeric coordinate missing"))?
                         .clone(),
                 );
             }
@@ -1963,7 +1988,7 @@ pub(in crate::observed) fn affine_transport(
                 );
                 let collected = outer
                     .restore()
-                    .ok_or("mixed guard missing-read collector is absent")?;
+                    .ok_or(internal!("mixed guard missing-read collector is absent"))?;
                 let (value, _, missing) = match evaluated {
                     Ok(value) => value,
                     Err(error) => {
@@ -2076,7 +2101,7 @@ pub(in crate::observed) fn affine_transport(
                         .integer_coordinates(&axes, &env.control)?
                         .map(|(c, row)| (Scalar::Z(c), row.into_iter().map(Scalar::Z).collect()))),
                     Type::Q => f.rational_coordinates(&axes, &env.control),
-                    _ => Err("unsupported local coefficient type".into()),
+                    _ => Err(internal!("unsupported local coefficient type").into()),
                 })
                 .transpose()?
                 .flatten()
@@ -2101,7 +2126,7 @@ pub(in crate::observed) fn affine_transport(
                     if axis.kind.ty() == *ty {
                         coordinates
                             .next()
-                            .ok_or_else(|| "local witness coordinate missing".into())
+                            .ok_or_else(|| internal!("local witness coordinate missing").into())
                     } else {
                         numeric::zero(&axis.kind.ty(), &env.control)
                     }
@@ -2130,7 +2155,7 @@ pub(in crate::observed) fn affine_transport(
     outer_value.restore();
     let missing = outer_missing
         .restore()
-        .ok_or("numeric local missing-read collector is absent")?;
+        .ok_or(internal!("numeric local missing-read collector is absent"))?;
     pending.facts.extend(missing.into_iter().filter(|fact| {
         !env.indexes
             .primitive_valuation

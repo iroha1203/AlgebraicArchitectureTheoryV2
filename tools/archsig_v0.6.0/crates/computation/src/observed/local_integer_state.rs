@@ -32,7 +32,7 @@ pub(super) fn position(
             ("subject", r.wire()),
             (
                 "field",
-                Json::str(f.field.as_ref().ok_or("状態のfieldがない")?),
+                Json::str(f.field.as_ref().ok_or(internal!("状態のfieldがない"))?),
             ),
         ]),
         r,
@@ -314,7 +314,7 @@ pub(super) fn build(
         .collect::<Result<Vec<_>, ValidationFailure>>()?;
     let declaration = &env.indexes.inputs.law().declarations()[&model.change];
     let Signature::Change { params, guard, .. } = &declaration.signature else {
-        return Err("change署名がない".into());
+        return Err(internal!("change署名がない").into());
     };
     let mut guards = vec![];
     if let Some(guard) = guard {
@@ -532,7 +532,7 @@ fn fiber_action(
     for j in 0..image.rank {
         let mut unit = vec![Z::zero(); image.rank]; unit[j] = Z::from(1);
         if integer_fiber::solve(&coordinates, fiber.rank, &unit, c)?.particular.is_none() {
-            return Err("局所作用の有効像への商射影が全射でない".into());
+            return Err(internal!("局所作用の有効像への商射影が全射でない").into());
         }
     }
     let inhabited = b.proposition("inhabited", vec![solutions], vec![], Decision::Established)?;

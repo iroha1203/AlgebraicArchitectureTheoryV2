@@ -1,4 +1,5 @@
 //! 明示束縛の参照・原始 field と Z/Bool 演算を原 AST から評価する。
+use archsig_common::internal::InternalError;
 mod term_comparison_evaluate;
 use super::{
     PreparedObserved, data,
@@ -43,7 +44,7 @@ pub fn evaluate_observed_bytes(
 #[derive(Debug)]
 enum Failure {
     Stop(Signal),
-    Internal(String),
+    Internal(InternalError),
     NotImplemented { location: Location, feature: String },
 }
 impl From<ValidationFailure> for Failure {
@@ -57,8 +58,8 @@ impl From<ValidationFailure> for Failure {
         }
     }
 }
-impl From<String> for Failure {
-    fn from(s: String) -> Self {
+impl From<InternalError> for Failure {
+    fn from(s: InternalError) -> Self {
         Self::Internal(s)
     }
 }
@@ -101,7 +102,7 @@ pub(in crate::observed) fn instance_expression<'a>(
     let record = graph
         .instances
         .get(instance)
-        .ok_or("relation評価の元instanceがない")?;
+        .ok_or(internal!("relation評価の元instanceがない"))?;
     graph.active = super::call::Context {
         instance: Some(instance),
         ..record.caller
@@ -170,7 +171,7 @@ pub(in crate::observed) fn instance_law<'a>(
     let record = graph
         .instances
         .get(instance)
-        .ok_or("Law判断の元instanceがない")?;
+        .ok_or(internal!("Law判断の元instanceがない"))?;
     graph.active = super::call::Context {
         instance: Some(instance),
         ..record.caller
@@ -183,7 +184,7 @@ pub(in crate::observed) fn instance_law<'a>(
             role,
         } = &declaration.signature
         else {
-            return Err("Law判断の元宣言がLawでない".into());
+            return Err(internal!("Law判断の元宣言がLawでない").into());
         };
         let _architecture = environment.enter_architecture(graph)?;
         let (bindings, base) = environment.instance_evaluation_bindings(graph, instance)?;
@@ -351,12 +352,12 @@ impl Evaluator<'_, '_> {
             .sources
             .get(&span)
             .cloned()
-            .ok_or_else(|| Failure::Internal("算術の元Sourceがない".into()))?;
+            .ok_or_else(|| Failure::Internal(internal!("算術の元Sourceがない")))?;
         let Some(known) = source.known_value else {
             return Ok(None);
         };
         if known.ty() != *ty {
-            return Err(Failure::Internal("元算術の確定値の型が違う".into()));
+            return Err(Failure::Internal(internal!("元算術の確定値の型が違う")));
         }
         let mut scope = source.scope;
         let mut support = vec![];
@@ -399,7 +400,7 @@ impl Evaluator<'_, '_> {
             .sources
             .get(&span)
             .cloned()
-            .ok_or_else(|| Failure::Internal("アフィン比較の元Sourceがない".into()))?;
+            .ok_or_else(|| Failure::Internal(internal!("アフィン比較の元Sourceがない")))?;
         let Some(known @ Scalar::Bool(_)) = source.known_value else {
             return Ok(None);
         };
@@ -407,10 +408,14 @@ impl Evaluator<'_, '_> {
             self.environment
                 .affine_comparison(self.graph, span, &self.bindings)?
         else {
-            return Err(Failure::Internal("元比較の定数残差が再構成できない".into()));
+            return Err(Failure::Internal(internal!(
+                "元比較の定数残差が再構成できない"
+            )));
         };
         if known != expected || residual.ty() != *ty {
-            return Err(Failure::Internal("元比較の定数残差・Bool型が違う".into()));
+            return Err(Failure::Internal(internal!(
+                "元比較の定数残差・Bool型が違う"
+            )));
         }
         let own = source.expression;
         let mut scope = source.scope;
@@ -529,7 +534,7 @@ impl Evaluator<'_, '_> {
                         entity: s.ty.to_string(),
                     };
                     if scalar.ty() != p.ty.erase() {
-                        return Err(Failure::Internal("解決済み束縛の型が合わない".into()));
+                        return Err(Failure::Internal(internal!("解決済み束縛の型が合わない")));
                     }
                     // 動的 owner が残る入力を、確認済みの所属として消費しない。
                     for constraint in &self.request.constraints {
@@ -637,9 +642,9 @@ impl Evaluator<'_, '_> {
                     });
                 }
                 Selector::Declaration { .. } | Selector::Enum { .. } | Selector::Degree { .. } => {
-                    return Err(Failure::Internal(
-                        "parameter に宣言 selector が残っている".into(),
-                    ));
+                    return Err(Failure::Internal(internal!(
+                        "parameter に宣言 selector が残っている"
+                    )));
                 }
             }
             self.tick(Checkpoint::FiniteIteration)?;
@@ -721,7 +726,7 @@ impl Evaluator<'_, '_> {
         self.sources
             .get(&span)
             .cloned()
-            .ok_or_else(|| Failure::Internal("Source commit cache がない".into()))
+            .ok_or_else(|| Failure::Internal(internal!("Source commit cache がない")))
     }
     /// 対応済みの式だけを子→親で構成する。各 field は直ちに個別 commit する。
     fn prepare_source(&mut self, id: ExprId) -> Result<SourceHandle, Failure> {
@@ -734,7 +739,7 @@ impl Evaluator<'_, '_> {
                 .inputs
                 .law()
                 .expr_type(id)
-                .ok_or_else(|| Failure::Internal("元式の型がない".into()))?
+                .ok_or_else(|| Failure::Internal(internal!("元式の型がない")))?
                 .clone();
             if let Some(source) = self.sources.get(&span) {
                 self.graph
@@ -760,7 +765,7 @@ impl Evaluator<'_, '_> {
                 ExprKind::Dotted(parts) => {
                     let first = parts
                         .first()
-                        .ok_or_else(|| Failure::Internal("空のドット式".into()))?;
+                        .ok_or_else(|| Failure::Internal(internal!("空のドット式")))?;
                     let lexical = expr.lexical.as_ref().ok_or_else(|| {
                         self.unsupported(span, "束縛変数以外を先頭とするドット式")
                     })?;
@@ -867,7 +872,7 @@ impl Evaluator<'_, '_> {
                         .inputs
                         .law()
                         .expr_type(*lhs)
-                        .ok_or_else(|| Failure::Internal("二項演算の型".into()))?;
+                        .ok_or_else(|| Failure::Internal(internal!("二項演算の型")))?;
                     if !supports_binary(
                         *op,
                         input_ty,
@@ -983,13 +988,13 @@ impl Evaluator<'_, '_> {
             .sources
             .get(&span)
             .cloned()
-            .ok_or_else(|| Failure::Internal("評価前の Source がない".into()))?;
+            .ok_or_else(|| Failure::Internal(internal!("評価前の Source がない")))?;
         self.graph
             .expect(source.expression, &NodeType::Expression(ty.clone()))?;
         if source.missing.as_ref().and_then(|r| r.missing.first()) != missing.as_ref() {
-            return Err(Failure::Internal(
-                "元 slot と commit 済み欠測理由が違う".into(),
-            ));
+            return Err(Failure::Internal(internal!(
+                "元 slot と commit 済み欠測理由が違う"
+            )));
         }
         let mut scope = source.scope;
         for child in &children {
@@ -1026,7 +1031,7 @@ impl Evaluator<'_, '_> {
         sort_reasons(&mut reasons);
         let evidence = if let Some(value) = value {
             if !partial_evidence.is_empty() {
-                return Err(Failure::Internal("確定値に部分証拠を重ねている".into()));
+                return Err(Failure::Internal(internal!("確定値に部分証拠を重ねている")));
             }
             self.graph.get(value)?.evidence.clone()
         } else {
@@ -1134,7 +1139,7 @@ impl Evaluator<'_, '_> {
             .inputs
             .law()
             .expr_type(id)
-            .ok_or_else(|| Failure::Internal("原式の型がない".into()))?
+            .ok_or_else(|| Failure::Internal(internal!("原式の型がない")))?
             .clone();
         match &expr.kind {
             ExprKind::Int(n) if matches!(ty, Type::Z | Type::Q | Type::Fp(_)) => {
@@ -1171,7 +1176,7 @@ impl Evaluator<'_, '_> {
             }
             ExprKind::Dotted(parts) => {
                 let Some(first) = parts.first() else {
-                    return Err(Failure::Internal("空のドット式".into()));
+                    return Err(Failure::Internal(internal!("空のドット式")));
                 };
                 let lexical = expr
                     .lexical
@@ -1234,7 +1239,7 @@ impl Evaluator<'_, '_> {
                     let scope = self
                         .sources
                         .get(&first.span)
-                        .ok_or_else(|| Failure::Internal("型binderの元Sourceがない".into()))?
+                        .ok_or_else(|| Failure::Internal(internal!("型binderの元Sourceがない")))?
                         .scope
                         .clone();
                     let ty = known.ty();
@@ -1270,7 +1275,7 @@ impl Evaluator<'_, '_> {
                     let NodeType::Evaluation(parameter_ty) =
                         &self.graph.get(argument.evaluation)?.ty
                     else {
-                        return Err(Failure::Internal("実引数がEvaluationでない".into()));
+                        return Err(Failure::Internal(internal!("実引数がEvaluationでない")));
                     };
                     self.finish(
                         first.span,
@@ -1324,7 +1329,7 @@ impl Evaluator<'_, '_> {
                     Ok(current)
                 } else {
                     if self.graph.get(current.expression)?.ty != NodeType::Expression(ty) {
-                        return Err(Failure::Internal("ドット式の解決型が違う".into()));
+                        return Err(Failure::Internal(internal!("ドット式の解決型が違う")));
                     }
                     Ok(current)
                 }
@@ -1335,7 +1340,7 @@ impl Evaluator<'_, '_> {
                     base,
                     expr.field
                         .as_ref()
-                        .ok_or_else(|| Failure::Internal("元fieldの静的解決がない".into()))?,
+                        .ok_or_else(|| Failure::Internal(internal!("元fieldの静的解決がない")))?,
                     span,
                     false,
                 )
@@ -1378,7 +1383,7 @@ impl Evaluator<'_, '_> {
                     .insert(name.name.clone(), rhs.clone())
                     .is_some()
                 {
-                    return Err(Failure::Internal("let の名前が重複する".into()));
+                    return Err(Failure::Internal(internal!("let の名前が重複する")));
                 }
                 let result = self.eval(*body);
                 self.lexical.remove(&name.name);
@@ -1449,7 +1454,7 @@ impl Evaluator<'_, '_> {
                     .inputs
                     .law()
                     .expr_type(*lhs)
-                    .ok_or_else(|| Failure::Internal("二項演算の型".into()))?;
+                    .ok_or_else(|| Failure::Internal(internal!("二項演算の型")))?;
                 if !supports_binary(
                     *op,
                     input_ty,
@@ -1508,7 +1513,7 @@ impl Evaluator<'_, '_> {
                         vec![left.evaluation, right.evaluation]
                     } else {
                         let (l, r) = pair.ok_or_else(|| {
-                            Failure::Internal("既知二項演算の左右値がない".into())
+                            Failure::Internal(internal!("既知二項演算の左右値がない"))
                         })?;
                         vec![l, r]
                     };
@@ -1590,7 +1595,7 @@ impl Evaluator<'_, '_> {
             expression, value, ..
         }) = &node.payload
         else {
-            return Err(Failure::Internal("反復元がEvaluationでない".into()));
+            return Err(Failure::Internal(internal!("反復元がEvaluationでない")));
         };
         Ok(Evaluated {
             expression: *expression,
@@ -1636,7 +1641,7 @@ impl Evaluator<'_, '_> {
         let source = self
             .sources
             .get(&spec.span)
-            .ok_or_else(|| Failure::Internal("量化元Sourceがない".into()))?
+            .ok_or_else(|| Failure::Internal(internal!("量化元Sourceがない")))?
             .expression;
         let mut children: Vec<_> = input.iter().cloned().collect();
         let mut evidence = Vec::new();
@@ -1659,7 +1664,7 @@ impl Evaluator<'_, '_> {
                     let (Scalar::List { items, .. } | Scalar::Set { items, .. }) =
                         self.graph.scalar(value)?
                     else {
-                        return Err(Failure::Internal("量化域がList/Setでない".into()));
+                        return Err(Failure::Internal(internal!("量化域がList/Setでない")));
                     };
                     let value = data::set(spec.element.clone(), items, self.control)?;
                     let Scalar::Set { items, .. } = &value else {
@@ -1929,7 +1934,7 @@ impl Evaluator<'_, '_> {
         let source = self
             .sources
             .get(&span)
-            .ok_or_else(|| Failure::Internal("内包元Sourceがない".into()))?
+            .ok_or_else(|| Failure::Internal(internal!("内包元Sourceがない")))?
             .expression;
         let mut children = vec![input.clone()];
         let Some(value) = input.value else {
@@ -1939,7 +1944,7 @@ impl Evaluator<'_, '_> {
         let (members, is_list) = match &container {
             Scalar::List { items, .. } => (items, true),
             Scalar::Set { items, .. } => (items, false),
-            _ => return Err(Failure::Internal("内包域がList/Setでない".into())),
+            _ => return Err(Failure::Internal(internal!("内包域がList/Setでない"))),
         };
         let mut values = Vec::new();
         let mut known = true;
@@ -1990,7 +1995,7 @@ impl Evaluator<'_, '_> {
             self.tick(Checkpoint::FiniteIteration)?;
         }
         let Type::Set(element) = &ty else {
-            return Err(Failure::Internal("内包結果型がSetでない".into()));
+            return Err(Failure::Internal(internal!("内包結果型がSetでない")));
         };
         let value = if known {
             #[cfg(test)]
@@ -2072,14 +2077,14 @@ impl Evaluator<'_, '_> {
                 let source = self
                     .sources
                     .get(&span)
-                    .ok_or_else(|| Failure::Internal("Map適用の元Sourceがない".into()))?
+                    .ok_or_else(|| Failure::Internal(internal!("Map適用の元Sourceがない")))?
                     .expression;
                 let children: Vec<_> = evaluated.iter().map(|e| e.evaluation).collect();
                 let condition = self
                     .environment
                     .map_condition(self.graph, source, &children, self.graph.nodes.len())?
                     .ok_or_else(|| {
-                        Failure::Internal("値のない既知構成に反証済み条件がない".into())
+                        Failure::Internal(internal!("値のない既知構成に反証済み条件がない"))
                     })?;
                 let edges = vec![source, children[0], children[1]];
                 let actual = self.value(
@@ -2174,7 +2179,7 @@ impl Evaluator<'_, '_> {
         let declaration = self
             .environment
             .named_view(id)?
-            .ok_or_else(|| Failure::Internal("named view targetがない".into()))?;
+            .ok_or_else(|| Failure::Internal(internal!("named view targetがない")))?;
         let Signature::View { params, body, .. } = &declaration.signature else {
             unreachable!()
         };
@@ -2233,7 +2238,7 @@ impl Evaluator<'_, '_> {
         let source = self
             .sources
             .get(&span)
-            .ok_or_else(|| Failure::Internal("call Sourceがない".into()))?
+            .ok_or_else(|| Failure::Internal(internal!("call Sourceがない")))?
             .clone();
         let caller = self.graph.active;
         let frame = self.graph.frames.len();
@@ -2371,9 +2376,9 @@ impl Evaluator<'_, '_> {
                 let source = self
                     .sources
                     .get(&span)
-                    .ok_or_else(|| Failure::Internal("失敗fieldの元Sourceがない".into()))?;
+                    .ok_or_else(|| Failure::Internal(internal!("失敗fieldの元Sourceがない")))?;
                 let NodeType::Expression(ty) = &self.graph.get(source.expression)?.ty else {
-                    return Err(Failure::Internal("失敗fieldの元Source型がない".into()));
+                    return Err(Failure::Internal(internal!("失敗fieldの元Source型がない")));
                 };
                 let ty = ty.clone();
                 return self.lexical_result(span, ty, None, vec![base]);
@@ -2391,10 +2396,10 @@ impl Evaluator<'_, '_> {
         let (snapshot, subject, entity) = (snapshot.clone(), subject.clone(), entity.clone());
         let s = self.environment.indexes.subject(&snapshot, &subject)?;
         if s.ty != entity {
-            return Err(Failure::Internal("field owner 型が合わない".into()));
+            return Err(Failure::Internal(internal!("field owner 型が合わない")));
         }
         if name.owner() != Some(entity.as_str()) {
-            return Err(Failure::Internal("field owner 型が合わない".into()));
+            return Err(Failure::Internal(internal!("field owner 型が合わない")));
         }
         let field =
             self.environment
@@ -2434,14 +2439,14 @@ impl Evaluator<'_, '_> {
             let source = self
                 .sources
                 .get(&span)
-                .ok_or_else(|| Failure::Internal("補完fieldの元Sourceがない".into()))?
+                .ok_or_else(|| Failure::Internal(internal!("補完fieldの元Sourceがない")))?
                 .expression;
             let analysis = self
                 .environment
                 .analyze_source(self.graph, span, &self.bindings)?;
             let scope = analysis
                 .scalar_scope
-                .ok_or_else(|| Failure::Internal("補完fieldの値Scopeがない".into()))?;
+                .ok_or_else(|| Failure::Internal(internal!("補完fieldの値Scopeがない")))?;
             let value = self.value(
                 self.graph.scalar(assigned)?.clone(),
                 Rule::Input {
@@ -2492,7 +2497,9 @@ impl Evaluator<'_, '_> {
                     arguments.push(
                         self.sources
                             .get(&span)
-                            .ok_or_else(|| Failure::Internal("chain fieldの元Sourceがない".into()))?
+                            .ok_or_else(|| {
+                                Failure::Internal(internal!("chain fieldの元Sourceがない"))
+                            })?
                             .expression,
                     );
                 }
@@ -2693,7 +2700,8 @@ impl Evaluator<'_, '_> {
             ty: NodeType::LawInstance,
             payload: Some(Payload::LawInstance {
                 name: self.declaration.name.clone(),
-                role: match role.ok_or_else(|| Failure::Internal("Law role がない".into()))? {
+                role: match role.ok_or_else(|| Failure::Internal(internal!("Law role がない")))?
+                {
                     Role::Required => "required",
                     Role::Optional => "optional",
                 },
@@ -2794,7 +2802,7 @@ impl Evaluator<'_, '_> {
             Some(Scalar::Bool(true)) => Decision::Established,
             Some(Scalar::Bool(false)) => Decision::Refuted,
             None => Decision::Undetermined,
-            _ => return Err(Failure::Internal("Law body が Bool でない".into())),
+            _ => return Err(Failure::Internal(internal!("Law body が Bool でない"))),
         };
         let mut evidence = Vec::new();
         if let Some(value) = law_value {
@@ -3210,7 +3218,7 @@ fn evaluate_observed_with_validator(
             let result = match result {
                 Err(Failure::NotImplemented { location, feature }) => {
                     not_implemented = Some((declaration.name.clone(), location, feature.clone()));
-                    Err(Failure::Internal(format!(
+                    Err(Failure::Internal(internal!(
                         "{} evaluation (not implemented)",
                         request.kind.wire()
                     )))
@@ -3388,9 +3396,9 @@ pub fn evaluate_observed_with_rejected_answer(
     evaluate_observed_with_validator(prepared, control, |env, graph, request, answer| {
         env.validate_answer(graph, request, answer)?;
         if request.id == rejected {
-            Err(ValidationFailure::Internal(
-                "injected final answer validation failure".into(),
-            ))
+            Err(ValidationFailure::Internal(internal!(
+                "injected final answer validation failure"
+            )))
         } else {
             Ok(())
         }
@@ -4104,7 +4112,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         assert!(control.stop_reason().is_none());
         assert_eq!(validated, ["amount", "bounded", "fault"]);
         assert_eq!(
-            original_failure.as_deref(),
+            original_failure.as_ref().map(|error| error.message()),
             Some("Answer ID が元Requestと違う")
         );
         assert_eq!(result.answers.len(), 4);
@@ -10215,5 +10223,26 @@ reading Calc {{
             let before = probes.get();
             assert_eq!(probes.get(), before);
         }
+    }
+}
+
+#[cfg(test)]
+mod internal_error_location_tests {
+    use super::{Failure, ValidationFailure};
+
+    #[test]
+    fn validation_to_evaluation_preserves_the_original_error_location() {
+        let line = line!() + 1;
+        let error = internal!("元の内部エラー");
+        let location = error.location();
+        assert_eq!(location.file(), file!());
+        assert_eq!(location.line(), line);
+        let failure = Failure::from(ValidationFailure::from(error));
+        assert_eq!(format!("{failure:?}"), "Internal(\"元の内部エラー\")");
+        let Failure::Internal(error) = failure else {
+            panic!("内部エラーが別の失敗になった")
+        };
+        assert_eq!(error.location(), location);
+        assert_eq!(error.message(), "元の内部エラー");
     }
 }

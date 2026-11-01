@@ -151,7 +151,7 @@ fn tick(c: &Control) -> Result<(), ConstructionFailure> {
         .map_err(Into::into)
 }
 fn inconsistent(message: &str) -> ConstructionFailure {
-    ConstructionFailure::Inconsistent(message.into())
+    ConstructionFailure::Inconsistent(internal!(message))
 }
 fn required(row: &ObjectInstance) -> Result<bool, ConstructionFailure> {
     match row.declaration().role {
@@ -282,9 +282,9 @@ fn reading(e: &ObjectEvaluation, c: &Control) -> Result<LawBooleanReading, Const
             return Ok(r);
         }
         ObjectEvaluationOutcome::FiniteView(_) => {
-            return Err(ConstructionFailure::Inconsistent(
-                "Law読取りにviewの関数族がある".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "Law読取りにviewの関数族がある"
+            )));
         }
         ObjectEvaluationOutcome::Evaluated(e) => e,
     };

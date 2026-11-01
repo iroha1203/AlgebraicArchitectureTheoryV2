@@ -11,8 +11,9 @@ fn tick(c: &Control) -> Result<(), ConstructionFailure> {
     c.checkpoint(Checkpoint::ObjectViewTransportFamily)
         .map_err(Into::into)
 }
+#[track_caller]
 fn bad(message: &str) -> ConstructionFailure {
-    ConstructionFailure::Inconsistent(message.into())
+    ConstructionFailure::Inconsistent(internal!(message))
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]

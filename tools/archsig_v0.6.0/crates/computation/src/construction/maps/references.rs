@@ -76,9 +76,9 @@ impl ReferenceTypeTransport {
         if self
             != &reference_type_transport(inputs, &self.declarations, &self.source_type, control)?
         {
-            return Err(ConstructionFailure::Inconsistent(
-                "参照値の全域・像・順逆検査が現在入力と違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "参照値の全域・像・順逆検査が現在入力と違う"
+            )));
         }
         tick(control)
     }
@@ -168,15 +168,14 @@ pub fn reference_type_transport(
         tick(control)?;
         // Atom の F 外を root に送る全域化を値の移送には使わない。
         let b = if family.contains(a) {
-            action
-                .get(a)
-                .copied()
-                .ok_or_else(|| ConstructionFailure::Inconsistent("参照の対応作用がない".into()))?
+            action.get(a).copied().ok_or_else(|| {
+                ConstructionFailure::Inconsistent(internal!("参照の対応作用がない"))
+            })?
         } else {
             a
         };
         let actual = types.get(b).ok_or_else(|| {
-            ConstructionFailure::Inconsistent("参照値の像が原始subjectでない".into())
+            ConstructionFailure::Inconsistent(internal!("参照値の像が原始subjectでない"))
         })?;
         if **actual != target_type {
             failures.push(ReferenceConditionFailure::ImageType {
@@ -215,17 +214,17 @@ pub fn reference_type_transport(
         for a in &source {
             tick(control)?;
             if forward.get(a).and_then(|b| inverse.get(b)) != Some(a) {
-                return Err(ConstructionFailure::Inconsistent(
-                    "参照の逆順合成が恒等でない".into(),
-                ));
+                return Err(ConstructionFailure::Inconsistent(internal!(
+                    "参照の逆順合成が恒等でない"
+                )));
             }
         }
         for b in &target {
             tick(control)?;
             if inverse.get(b).and_then(|a| forward.get(a)) != Some(b) {
-                return Err(ConstructionFailure::Inconsistent(
-                    "参照の順合成が恒等でない".into(),
-                ));
+                return Err(ConstructionFailure::Inconsistent(internal!(
+                    "参照の順合成が恒等でない"
+                )));
             }
         }
         Some(ReferenceBijection { forward, inverse })

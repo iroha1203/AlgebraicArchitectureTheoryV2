@@ -304,7 +304,9 @@ impl Evaluator<'_, '_> {
                         fixed_bindings
                             .iter()
                             .find(|b| b.name == parameter.name)
-                            .ok_or_else(|| Failure::Internal("依存rowの固定bindingがない".into()))?
+                            .ok_or_else(|| {
+                                Failure::Internal(internal!("依存rowの固定bindingがない"))
+                            })?
                             .value
                     };
                     self.bindings.push(Binding {
@@ -328,13 +330,13 @@ impl Evaluator<'_, '_> {
             let proposition = row.outputs["proposition"];
             let Some(Payload::Proposition { instance }) = &self.graph.get(proposition)?.payload
             else {
-                return Err(Failure::Internal("依存rowのLawInstanceがない".into()));
+                return Err(Failure::Internal(internal!("依存rowのLawInstanceがない")));
             };
             row_instances.push(*instance);
             let Some(Payload::Evaluation { value: actual, .. }) =
                 &self.graph.get(evaluation)?.payload
             else {
-                return Err(Failure::Internal("依存rowの適用評価がない".into()));
+                return Err(Failure::Internal(internal!("依存rowの適用評価がない")));
             };
             let actual = self.graph.boolean(*actual)?;
             if actual == Some(false) {
@@ -364,7 +366,8 @@ impl Evaluator<'_, '_> {
             ty: NodeType::LawInstance,
             payload: Some(Payload::LawInstance {
                 name: self.declaration.name.clone(),
-                role: match role.ok_or_else(|| Failure::Internal("依存Lawのroleがない".into()))?
+                role: match role
+                    .ok_or_else(|| Failure::Internal(internal!("依存Lawのroleがない")))?
                 {
                     Role::Required => "required",
                     Role::Optional => "optional",

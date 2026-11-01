@@ -362,7 +362,7 @@ fn candidate_environment_cannot_validate_observation_graph_nodes() {
         g.active = r.contexts[index];
         original.validate(&g, node).unwrap();
         assert!(
-            matches!(candidate.validate(&g,node),Err(ValidationFailure::Internal(s)) if s=="候補代入の環境を観測Graphの検査へ使えない")
+            matches!(candidate.validate(&g,node),Err(ValidationFailure::Internal(s)) if s.message()=="候補代入の環境を観測Graphの検査へ使えない")
         );
         g.push(node.clone()).unwrap();
     }

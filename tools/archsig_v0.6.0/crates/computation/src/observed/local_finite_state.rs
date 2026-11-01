@@ -8,10 +8,10 @@ fn project(
 ) -> Result<Scalar, ValidationFailure> {
     if let (Some(a), Some(z)) = (&from.reading, &to.reading) {
         let Scalar::Tuple(values) = value else {
-            return Err("整数読取り状態がTupleでない".into());
+            return Err(internal!("整数読取り状態がTupleでない").into());
         };
         if values.len() != a.map.len() {
-            return Err("整数読取り状態の次元が違う".into());
+            return Err(internal!("整数読取り状態の次元が違う").into());
         }
         let values = values
             .iter()
@@ -28,10 +28,10 @@ fn project(
         return Ok(Scalar::Unit);
     }
     let Scalar::Tuple(values) = value else {
-        return Err("有限状態がTupleでない".into());
+        return Err(internal!("有限状態がTupleでない").into());
     };
     if values.len() != from.free.len() {
-        return Err("有限状態の座標数が違う".into());
+        return Err(internal!("有限状態の座標数が違う").into());
     }
     Ok(Scalar::Tuple(
         to.free
@@ -41,7 +41,7 @@ fn project(
                     .iter()
                     .position(|x| x == f)
                     .map(|i| values[i].clone())
-                    .ok_or_else(|| ValidationFailure::from("制限先の自由位置がない"))
+                    .ok_or_else(|| ValidationFailure::from(internal!("制限先の自由位置がない")))
             })
             .collect::<Result<Vec<_>, _>>()?,
     ))
@@ -67,7 +67,7 @@ pub(super) fn restriction(
             .iter()
             .find(|(v, _)| *v == image)
             .map(|(_, r)| *r)
-            .ok_or("有限状態の制限が局所Lawを保たない")?;
+            .ok_or(internal!("有限状態の制限が局所Lawを保たない"))?;
         pairs.push((*r, target));
     }
     Ok(pairs)
@@ -112,7 +112,7 @@ pub(super) fn summary(
                 .collect::<Result<Vec<_>, _>>()?,
         );
         if !matching.contains(&image) {
-            return Err("大域状態の制限がmatching familyでない".into());
+            return Err(internal!("大域状態の制限がmatching familyでない").into());
         }
         restriction.push((*r, image));
     }
@@ -301,12 +301,12 @@ pub(super) fn build(
                 .iter()
                 .find(|(x, _)| x == p)
                 .map(|(_, r)| *r)
-                .ok_or("候補parameterがない")?;
+                .ok_or(internal!("候補parameterがない"))?;
             let v = image_values
                 .iter()
                 .find(|(x, _)| x == v)
                 .map(|(_, r)| *r)
-                .ok_or("候補状態がない")?;
+                .ok_or(internal!("候補状態がない"))?;
             Ok((p, v))
         })
         .collect::<Result<Vec<_>, ValidationFailure>>()?;
@@ -331,7 +331,11 @@ pub(super) fn build(
             ("subject", r.wire()),
             (
                 "field",
-                Json::str(slot.field.as_ref().ok_or("局所位置のfieldがない")?),
+                Json::str(
+                    slot.field
+                        .as_ref()
+                        .ok_or(internal!("局所位置のfieldがない"))?,
+                ),
             ),
         ]);
         slot_values.push(wire.clone());
@@ -377,7 +381,7 @@ pub(super) fn build(
     )?;
     let declaration = &env.indexes.inputs.law().declarations()[&model.change];
     let Signature::Change { params, guard, .. } = &declaration.signature else {
-        return Err("局所changeの署名がない".into());
+        return Err(internal!("局所changeの署名がない").into());
     };
     let mut subjects = vec![];
     let mut guards = vec![];
@@ -494,7 +498,7 @@ pub(super) fn build(
                     .iter()
                     .find(|(v, _)| v == p)
                     .map(|(_, r)| *r)
-                    .ok_or_else(|| ValidationFailure::from("局所解parameterがない"))
+                    .ok_or_else(|| ValidationFailure::from(internal!("局所解parameterがない")))
             })
             .collect::<Result<Vec<_>, _>>()?;
         semantic_pairs.extend(parameters.iter().map(|p| (*p, *r)));
@@ -527,7 +531,7 @@ pub(super) fn build(
             (solution, domain, vec![], Some(state))
         } else {
             let (equation_domain, equation_values) =
-                finite_equation.ok_or("有限方程式の列挙がない")?;
+                finite_equation.ok_or(internal!("有限方程式の列挙がない"))?;
             let equation = b.push(
                 NodeType::Construction(T::EquationSolutionSet),
                 "equation_solutions",
@@ -562,7 +566,7 @@ pub(super) fn build(
                     .iter()
                     .find(|(w, _)| w == v)
                     .map(|(_, s)| *s)
-                    .ok_or("許可作用の解が方程式解にない")?
+                    .ok_or(internal!("許可作用の解が方程式解にない"))?
             };
             Ok((*r, image))
         })

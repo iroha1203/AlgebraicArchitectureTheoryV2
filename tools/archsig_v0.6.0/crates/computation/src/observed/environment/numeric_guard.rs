@@ -19,7 +19,10 @@ fn constant_guard(value: bool, control: &Control) -> Result<Analysis, Validation
         forms: Some(if value {
             vec![]
         } else {
-            vec![affine::constant(&Scalar::Z(1.into()), control)?.ok_or("偽guardの定数がない")?]
+            vec![
+                affine::constant(&Scalar::Z(1.into()), control)?
+                    .ok_or(internal!("偽guardの定数がない"))?,
+            ]
         }),
         ..Analysis::default()
     })
@@ -72,7 +75,7 @@ struct Normalized {
 fn invalid(error: ConstructionFailure) -> ValidationFailure {
     match error {
         ConstructionFailure::Stopped(reason) => reason.into(),
-        error => format!("数値guardの正規化: {error:?}").into(),
+        error => internal!(format!("数値guardの正規化: {error:?}")).into(),
     }
 }
 /// 既存の線形解析を優先し、その外側では正確な数値多項式だけを分類する。
@@ -246,7 +249,7 @@ fn analyze_inner(
                         let Scalar::Bool(holds) =
                             numeric::binary(*op, value.scalar(), &zero, &env.control)?
                         else {
-                            return Err("数値比較がBoolでない".into());
+                            return Err(internal!("数値比較がBoolでない").into());
                         };
                         return constant_guard(holds, &env.control);
                     }
@@ -262,11 +265,11 @@ fn analyze_inner(
                     });
                 }
                 let zero = numeric::zero(&difference.ty, &env.control)?;
-                let mut form =
-                    affine::constant(&zero, &env.control)?.ok_or("数値guardの零形式がない")?;
+                let mut form = affine::constant(&zero, &env.control)?
+                    .ok_or(internal!("数値guardの零形式がない"))?;
                 for term in difference.terms {
                     let coefficient = affine::constant(term.coefficient.scalar(), &env.control)?
-                        .ok_or("数値guardの係数がない")?;
+                        .ok_or(internal!("数値guardの係数がない"))?;
                     let value = if let Some(index) = term.variables.first() {
                         let argument = normalized.basis[*index].clone();
                         affine::binary(
@@ -275,12 +278,12 @@ fn analyze_inner(
                             Some(&argument),
                             &env.control,
                         )?
-                        .ok_or("数値guardの一次項がない")?
+                        .ok_or(internal!("数値guardの一次項がない"))?
                     } else {
                         coefficient
                     };
                     form = affine::binary(BinOp::Add, Some(&form), Some(&value), &env.control)?
-                        .ok_or("数値guardの和がない")?;
+                        .ok_or(internal!("数値guardの和がない"))?;
                 }
                 Ok(Analysis {
                     forms: Some(vec![form]),
@@ -326,7 +329,7 @@ fn polynomial(
                     .map(|(parameter, coefficient)| {
                         Ok((
                             affine::parameter(&parameter.kind.ty(), &parameter, &env.control)?
-                                .ok_or("数値binderの形式がない")?,
+                                .ok_or(internal!("数値binderの形式がない"))?,
                             coefficient,
                         ))
                     })
@@ -495,13 +498,13 @@ fn selected_body(
     };
     let archsig_input::law::model::Signature::View { params, body, .. } = &declaration.signature
     else {
-        return Err("数値guardのcalleeがviewでない".into());
+        return Err(internal!("数値guardのcalleeがviewでない").into());
     };
     let ExprKind::Call { args, .. } = &env.indexes.inputs.law().exprs()[id].kind else {
-        return Err("数値guardの呼出し式がない".into());
+        return Err(internal!("数値guardの呼出し式がない").into());
     };
     if params.len() != args.len() {
-        return Err("数値guardの呼出し引数数が違う".into());
+        return Err(internal!("数値guardの呼出し引数数が違う").into());
     }
     let mut variables = BTreeMap::new();
     let mut bindings = BTreeMap::new();

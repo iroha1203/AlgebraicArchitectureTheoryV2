@@ -52,7 +52,7 @@ pub(super) fn basis_from_rings<'a>(
     for ring in rings {
         tick(c)?;
         if !matches!(ring.ty, Type::Z | Type::Q | Type::Fp(_)) {
-            return Err("共有多項式の係数型がscalarでない".into());
+            return Err(internal!("共有多項式の係数型がscalarでない").into());
         }
         let at = match groups.iter().position(|g| g.0 == ring.ty) {
             Some(at) => at,
@@ -67,7 +67,7 @@ pub(super) fn basis_from_rings<'a>(
             let v = variable(symbol, &ring.ty);
             if let Some((_, previous)) = slots.iter().find(|(s, _)| s == &v) {
                 if previous != &symbol.value {
-                    return Err("共有原始slotの実観測値が対象で違う".into());
+                    return Err(internal!("共有原始slotの実観測値が対象で違う").into());
                 }
             } else {
                 slots.push((v, symbol.value.clone()));
@@ -106,7 +106,9 @@ pub(super) fn basis_from_rings<'a>(
             let mut images = vec![];
             for (_, value) in &slots {
                 tick(c)?;
-                let value = value.as_ref().ok_or("共有評価の実観測値がない")?;
+                let value = value
+                    .as_ref()
+                    .ok_or(internal!("共有評価の実観測値がない"))?;
                 let p = EquationPolynomial::constant(value.scalar().clone(), c)
                     .map_err(|e| construction_failure(&e))?;
                 images.push(super::polynomial(parts, base, &p, scalar, &ty, 0, c)?);
@@ -152,9 +154,9 @@ pub(super) fn polynomial(
     let basis = shared
         .iter()
         .find(|b| b.ty == *ty)
-        .ok_or("多項式の共有係数環がない")?;
+        .ok_or(internal!("多項式の共有係数環がない"))?;
     if basis.ring != ring {
-        return Err("多項式が別の共有環を参照した".into());
+        return Err(internal!("多項式が別の共有環を参照した").into());
     }
     let mut mapping = vec![];
     for symbol in &original.symbols {
@@ -165,14 +167,16 @@ pub(super) fn polynomial(
                 .variables
                 .iter()
                 .position(|s| s == &v)
-                .ok_or("元原始slotの共有記号がない")?,
+                .ok_or(internal!("元原始slotの共有記号がない"))?,
         );
     }
     let mut mapped = p.clone();
     for term in &mut mapped.terms {
         for v in &mut term.variables {
             tick(c)?;
-            *v = *mapping.get(*v).ok_or("元多項式の局所記号が域外")?;
+            *v = *mapping
+                .get(*v)
+                .ok_or(internal!("元多項式の局所記号が域外"))?;
         }
         term.variables.sort_unstable();
     }
@@ -188,14 +192,14 @@ impl Source {
     ) -> Result<Self, ValidationFailure> {
         tick(c)?;
         if inputs.sources() != Witness::Architecture(a.clone()).inputs().sources() {
-            return Err("共有多項式族の元三入力とArchitectureが違う".into());
+            return Err(internal!("共有多項式族の元三入力とArchitectureが違う").into());
         }
         if let Some(equations) = parameters::sources(&inputs, &a, c)? {
             let mut parts = vec![];
             let mut outputs =
                 parameters::plans(&inputs, &a, reference, &equations, &mut parts, base, c)?;
             if outputs.is_empty() {
-                return Err("数値族のbase対象がない".into());
+                return Err(internal!("数値族のbase対象がない").into());
             }
             let first = outputs.remove(0);
             let (support, scope) = metadata(&inputs, &a, None, c)?;
@@ -244,12 +248,12 @@ impl Source {
                 (None, Some(reason)) => {
                     let at = base
                         .checked_add(parts.len())
-                        .ok_or("共有多項式の生成位置が域外")?;
+                        .ok_or(internal!("共有多項式の生成位置が域外"))?;
                     let (extra, out) = symbolic_plan(&inputs, &a, reason.clone(), at, c)?;
                     parts.extend(extra);
                     out
                 }
-                _ => return Err("共有多項式族の元計算状態が不正".into()),
+                _ => return Err(internal!("共有多項式族の元計算状態が不正").into()),
             };
             let (facts, s) = metadata(&inputs, &a, core.as_deref(), c)?;
             support.extend(facts);
@@ -259,7 +263,7 @@ impl Source {
         support.sort_by_key(|f| f.wire().canonical());
         support.dedup();
         if outputs.is_empty() {
-            return Err("共有多項式族のbase対象がない".into());
+            return Err(internal!("共有多項式族のbase対象がない").into());
         }
         let first = outputs.remove(0);
         let core = cores.first().and_then(|(core, _)| core.clone());

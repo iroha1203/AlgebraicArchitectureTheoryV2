@@ -138,7 +138,7 @@ fn output(layout: &Layout, c: &Control) -> Result<Option<Output>, ValidationFail
         .data
         .objects
         .first()
-        .ok_or("EquationFamilyのbase対象がない")?;
+        .ok_or(internal!("EquationFamilyのbase対象がない"))?;
     let mut coordinates = vec![];
     for q in &base.coordinates {
         tick(c)?;
@@ -146,12 +146,14 @@ fn output(layout: &Layout, c: &Control) -> Result<Option<Output>, ValidationFail
             CoordinateSource::Polynomial(q) => (q.instance, q.component.clone()),
             CoordinateSource::Finite(q) => (q.value.instance, q.value.component.clone()),
         };
-        let factor = q.factor.ok_or("EquationFamilyの座標factorが未生成")?;
+        let factor = q
+            .factor
+            .ok_or(internal!("EquationFamilyの座標factorが未生成"))?;
         if coordinates
             .iter()
             .any(|p: &Coordinate| p.instance == instance && p.component == component)
         {
-            return Err("EquationFamilyの元instance/component座標が重複".into());
+            return Err(internal!("EquationFamilyの元instance/component座標が重複").into());
         }
         coordinates.push(Coordinate {
             instance,
@@ -167,7 +169,7 @@ fn output(layout: &Layout, c: &Control) -> Result<Option<Output>, ValidationFail
             .iter()
             .copied()
             .collect::<Option<Vec<_>>>()
-            .ok_or("EquationFamilyの型別表示が未生成")?;
+            .ok_or(internal!("EquationFamilyの型別表示が未生成"))?;
         objects.push(Object {
             object: row.object,
             evaluations: row.evaluations.clone(),
@@ -203,7 +205,7 @@ impl Data {
     }
     pub(super) fn position(&self, at: usize) -> Result<(), ValidationFailure> {
         if at != self.source.position || self.arguments().iter().any(|r| r.0 >= at) {
-            return Err("EquationFamilyの生成位置/既出参照が違う".into());
+            return Err(internal!("EquationFamilyの生成位置/既出参照が違う").into());
         }
         Ok(())
     }
@@ -218,10 +220,10 @@ pub(super) fn retain(
 }
 pub(super) fn validate_node(g: &Graph, n: &Node, data: &Data) -> Result<(), ValidationFailure> {
     let Some(Payload::Construction(value)) = &n.payload else {
-        return Err("EquationFamilyのnative値がない".into());
+        return Err(internal!("EquationFamilyのnative値がない").into());
     };
     let Witness::Architecture(a) = &value.witness else {
-        return Err("EquationFamilyの元Architectureがない".into());
+        return Err(internal!("EquationFamilyの元Architectureがない").into());
     };
     let current = native::architecture_origin(g, data.source.layout.data.architecture, 0)?;
     let (support, scope) = data.metadata();
@@ -237,7 +239,7 @@ pub(super) fn validate_node(g: &Graph, n: &Node, data: &Data) -> Result<(), Vali
         || !n.evidence.is_empty()
         || n.judgment.is_some()
     {
-        return Err("EquationFamilyの元計画/型/辺/metadata/判断が違う".into());
+        return Err(internal!("EquationFamilyの元計画/型/辺/metadata/判断が違う").into());
     }
     for r in data.arguments() {
         g.tick()?;
@@ -255,16 +257,16 @@ impl Environment<'_> {
             return Ok(());
         };
         let Witness::Architecture(a) = &value.witness else {
-            return Err("EquationFamilyのconsumerが別種".into());
+            return Err(internal!("EquationFamilyのconsumerが別種").into());
         };
         let current = native::architecture_origin(g, data.source.layout.data.architecture, 0)?;
         if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
-            return Err("EquationFamilyのconsumerが元Architectureと違う".into());
+            return Err(internal!("EquationFamilyのconsumerが元Architectureと違う").into());
         }
         let c = self.control.clone();
         data.source.layout.recheck(self, g, &c)?;
         if output(&data.source.layout, &c)?.as_ref() != Some(&data.source.output) {
-            return Err("EquationFamilyの全添字/対象/座標が元計画と違う".into());
+            return Err(internal!("EquationFamilyの全添字/対象/座標が元計画と違う").into());
         }
         tick(&c)
     }
@@ -285,7 +287,7 @@ impl super::result_kind::ResultKind for Data {
         let (env, g, layout, c) = input;
         tick(c)?;
         if g.active != g.context_at(layout.data.architecture.0) {
-            return Err("EquationFamilyの生成が元ArchitectureのRequestでない".into());
+            return Err(internal!("EquationFamilyの生成が元ArchitectureのRequestでない").into());
         }
         layout.recheck(env, g, c)?;
         let Some(output) = output(&layout, c)? else {

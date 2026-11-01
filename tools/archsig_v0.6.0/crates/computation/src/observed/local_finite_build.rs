@@ -17,7 +17,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
         if model.requirements.is_empty() {
             let declaration = &env.indexes.inputs.law().declarations()[&model.change];
             let Signature::Change { params, body, .. } = &declaration.signature else {
-                return Err("局所changeの署名がない".into());
+                return Err(internal!("局所changeの署名がない").into());
             };
             let expression = change_result::source_expression(
                 &mut b, env, *body, &[],
@@ -51,7 +51,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
                 role, body, guard, ..
             } = law.signature
             else {
-                return Err("有限局所Lawの署名がない".into());
+                return Err(internal!("有限局所Lawの署名がない").into());
             };
             let bindings = bindings
                 .iter()
@@ -152,7 +152,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
             let expression =
                 change_result::source_expression(&mut b, env, read.expression, &bindings,
                     &read.parameters.iter().map(|p| (p.name.clone(), p.ty.clone())).collect::<Vec<_>>())?;
-            let ty = read.values.first().ok_or("有限読取りの値域が空")?.ty();
+            let ty = read.values.first().ok_or(internal!("有限読取りの値域が空"))?.ty();
             let values = read
                 .values
                 .iter()
@@ -188,11 +188,11 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
             };
             let subject_ref = change_result::value(&mut b, &value)?;
             let declaration = &env.indexes.inputs.definitions().declarations()[subject.ty.as_str()];
-            let (parameters, fields) = declaration.signature.record_fields().ok_or("singletonの原始recordがない")?;
-            let field_name = slot.field.as_ref().ok_or("singletonのfieldがない")?;
+            let (parameters, fields) = declaration.signature.record_fields().ok_or(internal!("singletonの原始recordがない"))?;
+            let field_name = slot.field.as_ref().ok_or(internal!("singletonのfieldがない"))?;
             let field = parameters.iter().chain(fields).find(|field| {
                 format!("{}.{}", subject.ty, field.name) == *field_name
-            }).ok_or("singletonの原始field宣言がない")?;
+            }).ok_or(internal!("singletonの原始field宣言がない"))?;
             let ty = model.slot_types[position].clone();
             // 未出現の候補位置は、原始field宣言の読取りをsingleton座標とする。
             let expression = b.push(
@@ -419,7 +419,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
         reasons: vec![],
         scope: b.parts[proposition.0 - base].scope.clone(),
     };
-    let expression = *expressions.first().ok_or("有限局所構成の原式がない")?;
+    let expression = *expressions.first().ok_or(internal!("有限局所構成の原式がない"))?;
     let inhabited = built
         .finite
         .as_ref()

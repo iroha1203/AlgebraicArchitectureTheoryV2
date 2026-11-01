@@ -41,7 +41,7 @@ impl Data {
             .chain(&self.arguments)
             .any(|r| r.0 >= limit)
         {
-            return Err("元Law特殊化の依存が既出Refでない".into());
+            return Err(internal!("元Law特殊化の依存が既出Refでない").into());
         }
         Ok(())
     }
@@ -53,12 +53,12 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
 // 再帰的な特殊化を許さず、元三入力から構成したnative行を直接たどる。
 fn leaf(graph: &Graph, r: NodeRef) -> Result<frames::Origin, ValidationFailure> {
     let Some(Payload::Construction(v)) = &graph.get(r)?.payload else {
-        return Err("元Law特殊化の行がnativeでない".into());
+        return Err(internal!("元Law特殊化の行がnativeでない").into());
     };
     if !matches!(v.data, D::FiniteLaw(_) | D::PolynomialLaw(_)) {
-        return Err("元Law特殊化の行が元の有限/多項式行でない".into());
+        return Err(internal!("元Law特殊化の行が元の有限/多項式行でない").into());
     }
-    frames::origin(graph, r)?.ok_or_else(|| "元Law特殊化の元行がない".into())
+    frames::origin(graph, r)?.ok_or_else(|| internal!("元Law特殊化の元行がない").into())
 }
 fn expected(
     graph: &Graph,
@@ -78,12 +78,12 @@ fn expected(
         || source.body != target.body
         || source.guard != target.guard
     {
-        return Err("元Law特殊化のbase完全束縛・対象外テンプレートが違う".into());
+        return Err(internal!("元Law特殊化のbase完全束縛・対象外テンプレートが違う").into());
     }
     frames::check_architecture(graph, architecture, &target)?;
     let context = graph.context_at(base.0);
     if graph.context_at(template.0) != context || graph.context_at(architecture.0) != context {
-        return Err("元Law特殊化のRequest Contextが違う".into());
+        return Err(internal!("元Law特殊化のRequest Contextが違う").into());
     }
     for fixed in &target.bindings {
         graph.tick()?;
@@ -91,9 +91,9 @@ fn expected(
             .bindings
             .iter()
             .find(|b| b.name == fixed.name)
-            .ok_or("元Law特殊化の固定parameterがない")?;
+            .ok_or(internal!("元Law特殊化の固定parameterがない"))?;
         if bound.ty != fixed.ty || graph.scalar(bound.value)? != graph.scalar(fixed.value)? {
-            return Err("元Law特殊化の固定束縛の型・値が違う".into());
+            return Err(internal!("元Law特殊化の固定束縛の型・値が違う").into());
         }
     }
     let base_node = graph.get(base)?;
@@ -140,7 +140,7 @@ pub(super) fn validate_node(
 ) -> Result<(), ValidationFailure> {
     let (row, expected) = expected(graph, d.base, d.template, d.architecture)?;
     let Witness::Architecture(w) = &v.witness else {
-        return Err("元Law特殊化のArchitecture証拠がない".into());
+        return Err(internal!("元Law特殊化のArchitecture証拠がない").into());
     };
     if !Arc::ptr_eq(w, &row.architecture)
         || d != &expected
@@ -153,7 +153,7 @@ pub(super) fn validate_node(
         || !n.reasons.is_empty()
         || n.judgment.is_some()
     {
-        return Err("元Law特殊化の原式・全束縛・型・由来・metadataが違う".into());
+        return Err(internal!("元Law特殊化の原式・全束縛・型・由来・metadataが違う").into());
     }
     Ok(())
 }
@@ -192,7 +192,7 @@ impl super::result_kind::ResultKind for Data {
         let (env, graph, base, template, architecture, c) = input;
         tick(c)?;
         if graph.active != graph.context_at(base.0) {
-            return Err("元Law特殊化の生成が元Request Contextでない".into());
+            return Err(internal!("元Law特殊化の生成が元Request Contextでない").into());
         }
         env.recheck_law_evaluation_inputs(graph, base, architecture)?;
         env.recheck_law_evaluation_inputs(graph, template, architecture)?;

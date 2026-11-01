@@ -113,7 +113,7 @@ pub(super) fn build(
             applied.push(sum);
         }
         if applied != linear.rhs {
-            return Err("有理全解の特解が元の線形系を満たさない".into());
+            return Err(internal!("有理全解の特解が元の線形系を満たさない").into());
         }
         let lhs = vector(b, em, &applied, c)?;
         let recheck = b.proposition(
@@ -159,7 +159,7 @@ pub(super) fn build(
         let row = linear
             .fiber
             .obstruction
-            .ok_or("有理不整合の左零化子がない")?;
+            .ok_or(internal!("有理不整合の左零化子がない"))?;
         let coefficients = &linear.fiber.left[row];
         let zero = numeric::zero(&Type::Q, c)?;
         for column in 0..n {
@@ -173,7 +173,7 @@ pub(super) fn build(
                 )?;
             }
             if sum != zero {
-                return Err("有理空解の左零化子が元行列を零化しない".into());
+                return Err(internal!("有理空解の左零化子が元行列を零化しない").into());
             }
         }
         let mut paired = zero.clone();
@@ -186,7 +186,7 @@ pub(super) fn build(
             )?;
         }
         if paired == zero || paired != linear.fiber.transformed_rhs[row] {
-            return Err("有理空解の左零化子と元右辺の非零積が不一致".into());
+            return Err(internal!("有理空解の左零化子と元右辺の非零積が不一致").into());
         }
         let annihilator = vector(b, em, coefficients, c)?;
         let pairing = value(b, &paired)?;

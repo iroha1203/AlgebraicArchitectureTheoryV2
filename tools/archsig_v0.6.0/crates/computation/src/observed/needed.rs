@@ -50,7 +50,7 @@ fn target(request: &Request) -> Result<&str, ValidationFailure> {
         {
             Ok(id)
         }
-        _ => Err("ObservationPlanの元要求がneeded($Id)でない".into()),
+        _ => Err(internal!("ObservationPlanの元要求がneeded($Id)でない").into()),
     }
 }
 pub(super) fn sources<'a>(
@@ -62,14 +62,14 @@ pub(super) fn sources<'a>(
     for (index, candidate) in graph.requests.iter().enumerate() {
         tick(control)?;
         if requests.insert(candidate.id.as_str(), index).is_some() {
-            return Err("ObservationPlanの元要求IDが重複する".into());
+            return Err(internal!("ObservationPlanの元要求IDが重複する").into());
         }
     }
     let mut answers = BTreeMap::new();
     for (index, candidate) in &graph.checked_answers {
         tick(control)?;
         if answers.insert(*index, candidate).is_some() {
-            return Err("ObservationPlanの元回答IDが重複する".into());
+            return Err(internal!("ObservationPlanの元回答IDが重複する").into());
         }
     }
     let mut pending = vec![target(request)?.to_owned()];
@@ -81,16 +81,16 @@ pub(super) fn sources<'a>(
             continue;
         }
         if id == request.id {
-            return Err("ObservationPlanの元要求が循環する".into());
+            return Err(internal!("ObservationPlanの元要求が循環する").into());
         }
         let index = *requests
             .get(id.as_str())
-            .ok_or("ObservationPlanの元要求がない")?;
+            .ok_or(internal!("ObservationPlanの元要求がない"))?;
         let answer = *answers
             .get(&index)
-            .ok_or("ObservationPlanの元回答が未生成")?;
+            .ok_or(internal!("ObservationPlanの元回答が未生成"))?;
         if answer.id != id {
-            return Err("ObservationPlanの元回答IDが不整合".into());
+            return Err(internal!("ObservationPlanの元回答IDが不整合").into());
         }
         result.insert(index, answer);
         for dependency in &graph.requests[index].dependencies {
@@ -119,7 +119,7 @@ fn expected(
         for reference in answer.outputs.values().chain(answer.claim.iter()) {
             tick(control)?;
             if reference.0 >= cutoff {
-                return Err("planの元回答が既出でない".into());
+                return Err(internal!("planの元回答が既出でない").into());
             }
             let node = graph.get(*reference)?;
             for reason in node
@@ -146,7 +146,7 @@ fn expected(
                 if !matches!(reason.kind, ReasonKind::DependencyBlocked { .. })
                     && !original_reasons.contains(&reason.wire().canonical())
                 {
-                    return Err("ObservationPlanの理由が元の型付き出力にない".into());
+                    return Err(internal!("ObservationPlanの理由が元の型付き出力にない").into());
                 }
             }
         }
@@ -159,7 +159,7 @@ fn expected(
         {
             tick(control)?;
             if reference.0 >= cutoff {
-                return Err("ObservationPlanの元回答が既出でない".into());
+                return Err(internal!("ObservationPlanの元回答が既出でない").into());
             }
             let node = graph.get(*reference)?;
             support.extend(node.support.iter().cloned());
@@ -194,7 +194,7 @@ fn expected(
             for reference in &reason.dependencies {
                 tick(control)?;
                 if reference.0 >= cutoff {
-                    return Err("ObservationPlanの元理由が既出でない".into());
+                    return Err(internal!("ObservationPlanの元理由が既出でない").into());
                 }
                 let node = graph.get(*reference)?;
                 entry.dependents.push(*reference);
@@ -206,7 +206,7 @@ fn expected(
         for reference in &reason.dependencies {
             tick(control)?;
             if reference.0 >= cutoff {
-                return Err("ObservationPlanの理由依存が既出でない".into());
+                return Err(internal!("ObservationPlanの理由依存が既出でない").into());
             }
             let node = graph.get(*reference)?;
             arguments.insert(reference.0);
@@ -249,12 +249,12 @@ fn producer<'a>(graph: &'a Graph, limit: usize) -> Result<&'a Request, Validatio
         || context.instance.is_some()
         || context.case.is_some()
     {
-        return Err("ObservationPlanが元要求のcontextに属さない".into());
+        return Err(internal!("ObservationPlanが元要求のcontextに属さない").into());
     }
     graph
         .requests
         .get(context.request)
-        .ok_or_else(|| "ObservationPlanの生成要求がない".into())
+        .ok_or_else(|| internal!("ObservationPlanの生成要求がない").into())
 }
 pub(super) fn validate_node(
     graph: &Graph,
@@ -265,7 +265,9 @@ pub(super) fn validate_node(
     let request = producer(graph, limit)?;
     let original = expected(graph, request, limit, control)?;
     if node != &original {
-        return Err("ObservationPlanのslot・依存・位置・理由・由来が元回答と違う".into());
+        return Err(
+            internal!("ObservationPlanのslot・依存・位置・理由・由来が元回答と違う").into(),
+        );
     }
     tick(control)
 }
@@ -277,7 +279,7 @@ pub(super) fn validate_answer(
     control: &Control,
 ) -> Result<(), ValidationFailure> {
     let Some(reference) = answer.outputs.get("plan") else {
-        return Err("neededのplan出力がない".into());
+        return Err(internal!("neededのplan出力がない").into());
     };
     let node = graph.get(*reference)?;
     if producer(graph, reference.0)? != request
@@ -289,10 +291,10 @@ pub(super) fn validate_answer(
         || !answer.reasons.is_empty()
         || answer.scope != node.scope
     {
-        return Err("needed回答が元planと一致しない".into());
+        return Err(internal!("needed回答が元planと一致しない").into());
     }
     if node.ty != NodeType::ObservationPlan {
-        return Err("neededの出力がObservationPlanでない".into());
+        return Err(internal!("neededの出力がObservationPlanでない").into());
     }
     tick(control)
 }
@@ -324,7 +326,7 @@ pub(super) fn evaluate(
         )),
         (Err(ValidationFailure::Stop(reason)), Some(answer)) => Ok((answer, Some(reason))),
         (Err(failure), _) => Err(failure),
-        _ => Err("ObservationPlanの確定callbackがない".into()),
+        _ => Err(internal!("ObservationPlanの確定callbackがない").into()),
     }
 }
 

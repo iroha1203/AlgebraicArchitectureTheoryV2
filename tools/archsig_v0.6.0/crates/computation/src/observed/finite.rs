@@ -133,7 +133,7 @@ pub(super) fn values(
         law,
         control,
         roster,
-        &mut |_, _| Err("有限全域でない型を列挙した".into()),
+        &mut |_, _| Err(internal!("有限全域でない型を列挙した").into()),
         visitor,
     )
 }
@@ -174,7 +174,7 @@ pub(super) fn field_candidates_if_finite(
         law,
         control,
         roster,
-        &mut |_, _| Err("field候補に消去前のOwned型がある".into()),
+        &mut |_, _| Err(internal!("field候補に消去前のOwned型がある").into()),
         &mut |_| {},
         true,
         true,
@@ -217,7 +217,7 @@ fn enumerate_values(
         false,
     )?
     .map(|domain| domain.enumeration)
-    .ok_or_else(|| "有限全域でない型を列挙した".into())
+    .ok_or_else(|| internal!("有限全域でない型を列挙した").into())
 }
 fn enumerate_values_maybe(
     ty: &Type,
@@ -492,7 +492,7 @@ fn enumerate_values_maybe(
                 Type::Fp(modulus) => {
                     let prime = modulus
                         .parse::<BigInt>()
-                        .map_err(|_| "有限型Fpの素数が不正")?;
+                        .map_err(|_| internal!("有限型Fpの素数が不正"))?;
                     let mut value = BigInt::from(0);
                     let mut values = Vec::new();
                     while value < prime {
@@ -678,7 +678,7 @@ fn enumerate_values_maybe(
                                         constructor: law
                                             .resolved_names()
                                             .get(&format!("{family}.{}", ctor.name))
-                                            .ok_or("constructorの検査済み名がない")?
+                                            .ok_or(internal!("constructorの検査済み名がない"))?
                                             .clone(),
                                         args,
                                     },
@@ -699,7 +699,7 @@ fn enumerate_values_maybe(
                     values
                 }
                 _ if allow_degenerate => return Ok(None),
-                _ => return Err("有限全域でない型を列挙した".into()),
+                _ => return Err(internal!("有限全域でない型を列挙した").into()),
             };
             tick(control)?;
             Ok(Some(values))

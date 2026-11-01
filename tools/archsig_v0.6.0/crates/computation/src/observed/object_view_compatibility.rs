@@ -35,8 +35,9 @@ fn invalid(f: ValidationFailure) -> ConstructionFailure {
         other => bad(&format!("view互換性の型付き比較: {other:?}")),
     }
 }
+#[track_caller]
 fn bad(message: &str) -> ConstructionFailure {
-    ConstructionFailure::Inconsistent(message.into())
+    ConstructionFailure::Inconsistent(internal!(message))
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ViewCompatibilityCondition {

@@ -19,17 +19,17 @@ pub(in super::super) fn validate_selection(
     let object = objects
         .columns
         .get(column)
-        .ok_or("元instanceの列対象がない")?;
+        .ok_or(internal!("元instanceの列対象がない"))?;
     let original = objects
         .readings
         .instances()
         .get(instance)
-        .ok_or("元Law instanceが範囲外")?;
+        .ok_or(internal!("元Law instanceが範囲外"))?;
     if original.declaration().kind != "law"
         || original.declaration().name != law
         || original.applications().get(object.object).is_none()
     {
-        return Err("選択した列が元Law instance・対象の組でない".into());
+        return Err(internal!("選択した列が元Law instance・対象の組でない").into());
     }
     let e = Environment::new(inputs, c)?;
     for fixed in original.bindings() {
@@ -46,7 +46,7 @@ pub(in super::super) fn validate_selection(
             .find(|(name, _)| name == &fixed.parameter().name)
             .is_none_or(|(_, value)| value != &expected)
         {
-            return Err("元Law instanceの参照束縛を差し替えた".into());
+            return Err(internal!("元Law instanceの参照束縛を差し替えた").into());
         }
     }
     Ok(())
@@ -58,19 +58,19 @@ pub(in super::super) fn zero_indicator(
     row: &mut FiniteLawRow,
 ) -> Result<(), ValidationFailure> {
     let Signature::Law { body, .. } = decl.signature else {
-        return Err("元Lawでない".into());
+        return Err(internal!("元Lawでない").into());
     };
     row.indicator = Some(0.into());
     if let Some(eq) = equation(e.indexes.inputs, body, &e.control)? {
         let ExprKind::Binary { lhs, .. } = e.indexes.inputs.law().exprs()[eq].kind else {
-            return Err("元等式がない".into());
+            return Err(internal!("元等式がない").into());
         };
         let ty = e
             .indexes
             .inputs
             .law()
             .expr_type(lhs)
-            .ok_or("元等式の型がない")?;
+            .ok_or(internal!("元等式の型がない"))?;
         let mut leaves = components(e, ty, &None, &None, Some(false), false)?;
         for leaf in &mut leaves {
             tick(&e.control)?;
@@ -120,7 +120,7 @@ pub(super) fn initial(
     match original
         .applications()
         .get(object.object)
-        .ok_or("元instanceの適用先がない")?
+        .ok_or(internal!("元instanceの適用先がない"))?
     {
         InstanceApplication::NotApplicable => row.application = Some(false),
         InstanceApplication::Applicable { conditions } => {
@@ -133,7 +133,10 @@ pub(super) fn initial(
                     &e.state,
                     &position.snapshot,
                     &position.subject,
-                    position.field.as_deref().ok_or("元所属条件のfieldがない")?,
+                    position
+                        .field
+                        .as_deref()
+                        .ok_or(internal!("元所属条件のfieldがない"))?,
                 )?;
                 let subject = e.indexes.subject(&position.snapshot, &position.subject)?;
                 let value = if let Some(value) = e
@@ -178,7 +181,7 @@ pub(super) fn initial(
                         false_condition |=
                             snapshot != &expected.snapshot || subject != &expected.subject;
                     }
-                    Some(_) => return Err("元所属条件のownerがRefでない".into()),
+                    Some(_) => return Err(internal!("元所属条件のownerがRefでない").into()),
                     None => unknown = true,
                 }
             }
@@ -200,7 +203,7 @@ pub(super) fn initial(
             .law()
             .declarations()
             .get(&original.declaration().name)
-            .ok_or("元instanceの署名がない")?;
+            .ok_or(internal!("元instanceの署名がない"))?;
         let mut fixed = BTreeMap::new();
         for binding in original.bindings() {
             tick(&e.control)?;
@@ -224,7 +227,7 @@ pub(super) fn initial(
             tick(&e.control)?;
             let value = fixed
                 .get(binding.parameter().name.as_str())
-                .ok_or("元instanceの固定参照がない")?;
+                .ok_or(internal!("元instanceの固定参照がない"))?;
             e.owned_call_value_check(
                 &binding.parameter().ty,
                 &crate::observed::term::affine::Value::Known(value.clone()),
@@ -291,7 +294,10 @@ impl FiniteLawFamilyValuations {
         column: usize,
         point: usize,
     ) -> Result<Probe, ValidationFailure> {
-        let selected = self.columns.get(column).ok_or("元Lawの列がない")?;
+        let selected = self
+            .columns
+            .get(column)
+            .ok_or(internal!("元Lawの列がない"))?;
         let Some(instance) = selected.source_instance else {
             return probe(e, &selected.declaration, &selected.bindings, point);
         };
@@ -299,12 +305,12 @@ impl FiniteLawFamilyValuations {
             .column_objects
             .as_ref()
             .and_then(|objects| objects.columns.get(column))
-            .ok_or("元Law列の対象がない")?;
+            .ok_or(internal!("元Law列の対象がない"))?;
         let original = object
             .readings
             .instances()
             .get(instance)
-            .ok_or("元Law instanceがない")?;
+            .ok_or(internal!("元Law instanceがない"))?;
         probe_instance(
             e,
             object,
@@ -339,7 +345,7 @@ impl FiniteLawFamilyValuations {
                 .any(|(column, (_, instance))| column.source_instance != Some(*instance))
         {
             return Err(FiniteLawFamilyFailure {
-                cause: "元Law族が消費先instanceに由来しない".into(),
+                cause: internal!("元Law族が消費先instanceに由来しない").into(),
                 partial: None,
             });
         }
@@ -379,7 +385,7 @@ pub(in crate::observed) fn finite_instance_law_family_valuations(
                 .instances()
                 .get(*instance)
                 .ok_or_else(|| FiniteLawFamilyFailure {
-                    cause: "元Law instanceの選択が範囲外".into(),
+                    cause: internal!("元Law instanceの選択が範囲外").into(),
                     partial: None,
                 })?;
         planned.push((

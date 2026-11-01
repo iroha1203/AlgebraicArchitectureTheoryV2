@@ -94,16 +94,18 @@ impl DeclarationCorrespondence {
             .definitions()
             .declarations()
             .get(holder.ty.as_str())
-            .ok_or_else(|| ConstructionFailure::Inconsistent("field対応の元定義がない".into()))?;
+            .ok_or_else(|| {
+                ConstructionFailure::Inconsistent(internal!("field対応の元定義がない"))
+            })?;
         let PrimitiveSignature::Correspondence {
             implicit,
             alignments,
             ..
         } = &declaration.signature
         else {
-            return Err(ConstructionFailure::Inconsistent(
-                "field対応の元がcorrespondenceでない".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "field対応の元がcorrespondenceでない"
+            )));
         };
         for pair in alignments {
             tick(control)?;
@@ -137,9 +139,9 @@ impl DeclarationCorrespondence {
         control: &Control,
     ) -> Result<(), ConstructionFailure> {
         if self != &declaration_correspondence(inputs, self.operation.map(), control)? {
-            return Err(ConstructionFailure::Inconsistent(
-                "宣言候補・署名の対応が現在入力と違う".into(),
-            ));
+            return Err(ConstructionFailure::Inconsistent(internal!(
+                "宣言候補・署名の対応が現在入力と違う"
+            )));
         }
         tick(control)
     }
@@ -205,9 +207,9 @@ fn metadata(
             return Ok(info.clone());
         }
     }
-    Err(ConstructionFailure::Inconsistent(
-        "元宣言のmetadataがない".into(),
-    ))
+    Err(ConstructionFailure::Inconsistent(internal!(
+        "元宣言のmetadataがない"
+    )))
 }
 /// 保存済み原始対応を使い、選択readingの全宣言候補の署名を検査する。
 pub fn declaration_correspondence(
@@ -227,11 +229,11 @@ pub fn declaration_correspondence(
         .definitions()
         .declarations()
         .get(holder.ty.as_str())
-        .ok_or_else(|| ConstructionFailure::Inconsistent("原始対応の定義がない".into()))?;
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("原始対応の定義がない")))?;
     let PrimitiveSignature::Correspondence { from, to, maps, .. } = &declaration.signature else {
-        return Err(ConstructionFailure::Inconsistent(
-            "原始対応の型が違う".into(),
-        ));
+        return Err(ConstructionFailure::Inconsistent(internal!(
+            "原始対応の型が違う"
+        )));
     };
     let mut mu = BTreeMap::new();
     mu.insert(from.clone(), to.clone());
@@ -253,7 +255,7 @@ pub fn declaration_correspondence(
         let short = declaration
             .name
             .strip_prefix(&prefix)
-            .ok_or_else(|| ConstructionFailure::Inconsistent("宣言名とreadingが違う".into()))?;
+            .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("宣言名とreadingが違う")))?;
         let name = format!("{}.{short}", c.to_reading());
         let source = metadata(inputs, &declaration.name, control)?;
         let target = if inputs
@@ -302,7 +304,7 @@ pub fn declaration_correspondence(
                 }
                 if kind == "view" {
                     let returns = source.returns.as_ref().ok_or_else(|| {
-                        ConstructionFailure::Inconsistent("viewの元戻り型がない".into())
+                        ConstructionFailure::Inconsistent(internal!("viewの元戻り型がない"))
                     })?;
                     let expected = moved_type(returns, &mu, &alpha, control)?;
                     if target.returns.as_ref() != Some(&expected) {
@@ -322,7 +324,7 @@ pub fn declaration_correspondence(
                 target: target
                     .as_ref()
                     .ok_or_else(|| {
-                        ConstructionFailure::Inconsistent("確認済みの終域宣言がない".into())
+                        ConstructionFailure::Inconsistent(internal!("確認済みの終域宣言がない"))
                     })?
                     .name
                     .clone(),

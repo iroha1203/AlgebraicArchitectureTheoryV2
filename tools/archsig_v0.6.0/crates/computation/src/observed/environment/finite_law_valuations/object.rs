@@ -16,7 +16,7 @@ pub(super) struct Selection {
 pub(super) fn failure(cause: ConstructionFailure) -> ValidationFailure {
     match cause {
         ConstructionFailure::Stopped(reason) => reason.into(),
-        other => format!("有限Law族の対象選択: {other:?}").into(),
+        other => internal!(format!("有限Law族の対象選択: {other:?}")).into(),
     }
 }
 impl Selection {
@@ -36,7 +36,7 @@ impl Selection {
                 reading_span = Some(info.span);
             }
         }
-        let reading_span = reading_span.ok_or("有限Law族の元reading位置がない")?;
+        let reading_span = reading_span.ok_or(internal!("有限Law族の元reading位置がない"))?;
         let mut positions = BTreeSet::new();
         for condition in readings.objects()[object].conditions() {
             c.checkpoint(Checkpoint::ObjectEvaluation)?;
@@ -82,7 +82,7 @@ impl Selection {
     ) -> Result<(), ValidationFailure> {
         let expected = Self::compute(inputs, &self.readings, self.object, c)?;
         if self != &expected {
-            return Err("有限Law族の対象参照域が元構成と違う".into());
+            return Err(internal!("有限Law族の対象参照域が元構成と違う").into());
         }
         Ok(())
     }
@@ -120,7 +120,7 @@ impl FiniteLawFamilyValuations {
         })?;
         if self.object.as_deref() != Some(&expected) {
             return Err(FiniteLawFamilyFailure {
-                cause: "有限Law族が消費先の選択対象に由来しない".into(),
+                cause: internal!("有限Law族が消費先の選択対象に由来しない").into(),
                 partial: None,
             });
         }
@@ -163,7 +163,12 @@ impl FiniteLawFamilyValuations {
         column: usize,
     ) -> Result<(), ValidationFailure> {
         let selection = match &self.column_objects {
-            Some(objects) => Some(objects.columns.get(column).ok_or("有限Law列の対象がない")?),
+            Some(objects) => Some(
+                objects
+                    .columns
+                    .get(column)
+                    .ok_or(internal!("有限Law列の対象がない"))?,
+            ),
             None => self.object.as_ref(),
         };
         // Graphを読まない元ASTの評価でも、対象域は分析Contextの一部。
@@ -212,15 +217,21 @@ impl FiniteLawFamilyValuations {
             .recheck(inputs, c)
             .map_err(|cause| fail(failure(cause)))?;
         let Some(columns) = &self.column_objects else {
-            return Err(fail("有限Law族が複数対象の選択に由来しない".into()));
+            return Err(fail(
+                internal!("有限Law族が複数対象の選択に由来しない").into(),
+            ));
         };
         if &columns.readings != readings || columns.columns.len() != objects.len() {
-            return Err(fail("有限Law族の消費先readingsまたは対象列数が違う".into()));
+            return Err(fail(
+                internal!("有限Law族の消費先readingsまたは対象列数が違う").into(),
+            ));
         }
         for (selected, &object) in columns.columns.iter().zip(objects) {
             let expected = Selection::compute(inputs, readings, object, c).map_err(fail)?;
             if selected.as_ref() != &expected {
-                return Err(fail("有限Law列が消費先の対象に由来しない".into()));
+                return Err(fail(
+                    internal!("有限Law列が消費先の対象に由来しない").into(),
+                ));
             }
         }
         self.recheck(inputs, c)
@@ -269,7 +280,7 @@ fn multi_selection(
         }
         columns.push(Arc::clone(domains.get(object).ok_or_else(|| {
             FiniteLawFamilyFailure {
-                cause: "有限Law列の元対象域がない".into(),
+                cause: internal!("有限Law列の元対象域がない").into(),
                 partial: None,
             }
         })?));

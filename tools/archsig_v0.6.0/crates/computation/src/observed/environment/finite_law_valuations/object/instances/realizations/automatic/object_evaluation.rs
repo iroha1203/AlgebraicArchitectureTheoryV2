@@ -10,7 +10,7 @@ fn step(c: &Control) -> Result<(), ValidationFailure> {
 fn ring_failure(failure: ConstructionFailure) -> ValidationFailure {
     match failure {
         ConstructionFailure::Stopped(reason) => reason.into(),
-        other => format!("有限環の対象評価: {other:?}").into(),
+        other => internal!(format!("有限環の対象評価: {other:?}")).into(),
     }
 }
 pub(in crate::observed) struct FiniteLawObjectEvaluation<'a> {
@@ -63,7 +63,7 @@ impl FiniteLawObjectEvaluation<'_> {
             || self.point >= self.family.domain().len()
             || self.basis_images.len() != self.family.domain().len()
         {
-            return Err("有限環の対象評価が完成した元Dの観測点に対応しない".into());
+            return Err(internal!("有限環の対象評価が完成した元Dの観測点に対応しない").into());
         }
         let mut unit = BigInt::zero();
         for (index, value) in self.basis_images.iter().enumerate() {
@@ -74,12 +74,12 @@ impl FiniteLawObjectEvaluation<'_> {
                 BigInt::zero()
             };
             if value != &expected {
-                return Err("有限環の特性関数の像が対象点の0/1値でない".into());
+                return Err(internal!("有限環の特性関数の像が対象点の0/1値でない").into());
             }
             unit += value;
         }
         if !unit.is_one() {
-            return Err("有限環の対象評価が単位を保存しない".into());
+            return Err(internal!("有限環の対象評価が単位を保存しない").into());
         }
         // 一つだけ1で他は0なので像は直交冪等元で、その和は1。
         // applyはその整数線形拡張であり、点ごとの和・差・積と単位を保存する。
@@ -124,7 +124,7 @@ impl FiniteLawObjectEvaluation<'_> {
     ) -> Result<(), ValidationFailure> {
         step(c)?;
         if !std::ptr::eq(self.family, family) {
-            return Err("対象評価が消費先の共有有限環に由来しない".into());
+            return Err(internal!("対象評価が消費先の共有有限環に由来しない").into());
         }
         family.recheck(inputs, readings, c)?;
         self.check(c)

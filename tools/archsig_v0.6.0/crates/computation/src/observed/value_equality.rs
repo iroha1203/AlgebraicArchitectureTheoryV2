@@ -88,7 +88,7 @@ fn equal_with_retained(
     stacker::maybe_grow(128 * 1024, 1024 * 1024, || {
         tick(c)?;
         if a.ty() != b.ty() {
-            return Err("数学的等値の左右型が違う".into());
+            return Err(internal!("数学的等値の左右型が違う").into());
         }
         if !term::contains(&a.ty(), law, c)? {
             return if let Some(retain) = retain.take() {
@@ -117,7 +117,7 @@ fn equal_with_retained(
                         ty,
                         law,
                         c,
-                        &mut |_| Err("Term比較に参照族を置けない".into()),
+                        &mut |_| Err(internal!("Term比較に参照族を置けない").into()),
                         &mut |_| {},
                     )?
                     .values;
@@ -209,7 +209,7 @@ fn equal_with_retained(
                     sequence(x, y, law, c, &mut retain)?
                 }
             }
-            _ => return Err("Termを含む等値の値形が違う".into()),
+            _ => return Err(internal!("Termを含む等値の値形が違う").into()),
         };
         publish(&mut retain, answer);
         tick(c)?;

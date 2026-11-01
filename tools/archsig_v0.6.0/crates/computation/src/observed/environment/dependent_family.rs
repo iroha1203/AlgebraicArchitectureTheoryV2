@@ -76,7 +76,7 @@ impl Environment<'_> {
         let request = graph
             .requests
             .get(context.request)
-            .ok_or("依存族の元Requestがない")?;
+            .ok_or(internal!("依存族の元Requestがない"))?;
         let Some(plan) = self.family_plan(request)? else {
             return Ok(None);
         };
@@ -120,8 +120,9 @@ impl Environment<'_> {
         else {
             return Ok(None);
         };
-        let declaration = &self.indexes.inputs.law().declarations()
-            [request.declaration().ok_or("元要求に宣言がない")?];
+        let declaration = &self.indexes.inputs.law().declarations()[request
+            .declaration()
+            .ok_or(internal!("元要求に宣言がない"))?];
         let mut enumeration = super::super::finite::Enumeration::default();
         match &argument.value {
             Selector::Subject { snapshot, subject } => {
@@ -143,27 +144,27 @@ impl Environment<'_> {
                 let archsig_input::law::model::Signature::Law { params, .. } =
                     &declaration.signature
                 else {
-                    return Err("固定fiberの元Law署名がない".into());
+                    return Err(internal!("固定fiberの元Law署名がない").into());
                 };
                 let parameter = params
                     .iter()
                     .find(|p| p.name == name)
-                    .ok_or("固定fiberの元parameterがない")?;
+                    .ok_or(internal!("固定fiberの元parameterがない"))?;
                 let node = match self.answer_binding(graph, selector, parameter.span)? {
                     AnswerBinding::Reference(r) => graph.get(r)?.clone(),
                     AnswerBinding::Projection(node) => node,
                     AnswerBinding::Inapplicable(_) => {
-                        return Err("不適合Answerが固定fiberに到達した".into());
+                        return Err(internal!("不適合Answerが固定fiberに到達した").into());
                     }
                 };
                 let Some(Payload::Scalar(value)) = node.payload else {
-                    return Err("固定fiberの元Answerが値でない".into());
+                    return Err(internal!("固定fiberの元Answerが値でない").into());
                 };
                 enumeration.values.push(value);
                 enumeration.scope = node.scope;
                 enumeration.support = node.support;
             }
-            _ => return Err("固定fiberが元subject/Answer selectorでない".into()),
+            _ => return Err(internal!("固定fiberが元subject/Answer selectorでない").into()),
         }
         Ok(Some(enumeration))
     }
@@ -177,31 +178,34 @@ impl Environment<'_> {
         observer: &mut dyn FnMut(&'static str, usize),
     ) -> Result<DependentStep, ValidationFailure> {
         self.tick()?;
-        let plan = self.family_plan(request)?.ok_or("依存族の元署名がない")?;
+        let plan = self
+            .family_plan(request)?
+            .ok_or(internal!("依存族の元署名がない"))?;
         if !plan.dependent {
-            return Err("非依存族をfiberとして列挙した".into());
+            return Err(internal!("非依存族をfiberとして列挙した").into());
         }
         let p = plan
             .parameters
             .get(parameter)
-            .ok_or("fiberの元parameterがない")?;
+            .ok_or(internal!("fiberの元parameterがない"))?;
         let prior: Vec<_> = plan.parameters[..parameter]
             .iter()
             .filter(|p| plan.unbound.iter().any(|free| free.name == p.name))
             .collect();
         if prefix.len() != prior.len() {
-            return Err("fiberの先行自由束縛数が違う".into());
+            return Err(internal!("fiberの先行自由束縛数が違う").into());
         }
         for (p, (name, value)) in prior.iter().zip(prefix) {
             self.tick()?;
             if p.name != *name || p.ty.erase() != value.ty() {
-                return Err("fiberの先行自由束縛型・順が違う".into());
+                return Err(internal!("fiberの先行自由束縛型・順が違う").into());
             }
             data::check(value, self.indexes.inputs.law(), &self.control)?;
         }
         let fixed = self.dependent_fixed_value(graph, request, &p.name)?;
-        let reading = &self.indexes.inputs.law().declarations()
-            [request.declaration().ok_or("元要求に宣言がない")?]
+        let reading = &self.indexes.inputs.law().declarations()[request
+            .declaration()
+            .ok_or(internal!("元要求に宣言がない"))?]
         .reading;
         let mut result = DependentStep {
             enumeration: super::super::finite::Enumeration::default(),
@@ -215,7 +219,7 @@ impl Environment<'_> {
                 .or(self
                     .dependent_fixed_value(graph, request, owner_name)?
                     .and_then(|mut e| e.values.pop()))
-                .ok_or("依存parameterの先行ownerがない")?;
+                .ok_or(internal!("依存parameterの先行ownerがない"))?;
             let roster = self.owned_members(
                 entity,
                 &owner,
@@ -227,7 +231,7 @@ impl Environment<'_> {
             result.missing = roster.missing;
         } else if let Some(enumeration) = fixed {
             if enumeration.values.len() != 1 || enumeration.values[0].ty() != p.ty.erase() {
-                return Err("固定fiber型が元署名と違う".into());
+                return Err(internal!("固定fiber型が元署名と違う").into());
             }
             result.enumeration = enumeration;
             if p.ty != p.ty.erase() {
@@ -244,7 +248,7 @@ impl Environment<'_> {
                             .or(self
                                 .dependent_fixed_value(graph, request, &prior.name)?
                                 .and_then(|mut e| e.values.pop()))
-                            .ok_or("固定複合fiberの先行ownerがない")?;
+                            .ok_or(internal!("固定複合fiberの先行ownerがない"))?;
                         owners.insert(prior.name.as_str(), value);
                     }
                     self.tick()?;
@@ -315,7 +319,7 @@ impl Environment<'_> {
                         .or(self
                             .dependent_fixed_value(graph, request, owner_name)?
                             .and_then(|mut e| e.values.pop()))
-                        .ok_or("複合依存parameterの先行ownerがない")?;
+                        .ok_or(internal!("複合依存parameterの先行ownerがない"))?;
                     let roster =
                         self.owned_members(entity, &owner, None, reading, &mut |phase, i| {
                             observer.borrow_mut()(phase, i)
@@ -403,7 +407,7 @@ impl Environment<'_> {
         limit: usize,
     ) -> Result<Vec<(String, Scalar)>, ValidationFailure> {
         if path.len() != count * 2 {
-            return Err("fiberの実先行path件数が違う".into());
+            return Err(internal!("fiberの実先行path件数が違う").into());
         }
         let indices = self.dependent_indices(plan);
         let context = graph.context_at(source.0);
@@ -416,12 +420,12 @@ impl Environment<'_> {
                 || graph.context_at(domain.0) != context
                 || graph.context_at(selected.0) != context
             {
-                return Err("fiberの先行Domain・選択が既出の同Contextでない".into());
+                return Err(internal!("fiberの先行Domain・選択が既出の同Contextでない").into());
             }
             let p = &plan.parameters[indices[position]];
             let node = graph.get(domain)?;
             let Some(Payload::Domain { ty, elements }) = &node.payload else {
-                return Err("fiberの先行Domainがない".into());
+                return Err(internal!("fiberの先行Domainがない").into());
             };
             let expected: Vec<_> = std::iter::once(source)
                 .chain(path[..position * 2].iter().copied())
@@ -432,7 +436,7 @@ impl Environment<'_> {
                 || !elements.contains(&selected)
                 || graph.get(selected)?.arguments != expected
             {
-                return Err("fiberの先行Domain・選択producerが元prefixと違う".into());
+                return Err(internal!("fiberの先行Domain・選択producerが元prefixと違う").into());
             }
             self.validate_at(graph, node, domain.0)?;
             if plan.unbound.iter().any(|u| u.name == p.name) {
@@ -455,7 +459,7 @@ impl Environment<'_> {
         let count = indices
             .iter()
             .position(|i| *i == parameter)
-            .ok_or("fiberの実parameter位置がない")?;
+            .ok_or(internal!("fiberの実parameter位置がない"))?;
         let prefix = self.dependent_path(graph, source, plan, path, count, limit)?;
         let request = &graph.requests[graph.context_at(source.0).request];
         let mut step =
@@ -511,7 +515,7 @@ impl Environment<'_> {
                 && let Some(parameter) = indices.iter().find(|&&i| plan.parameters[i].span == *span)
             {
                 if graph.context_at(id) != context {
-                    return Err("実prefixDomainが別Contextに属す".into());
+                    return Err(internal!("実prefixDomainが別Contextに属す").into());
                 }
                 candidates.push((*parameter, NodeRef(id)));
             }
@@ -551,7 +555,7 @@ impl Environment<'_> {
                 break;
             }
             let [domain] = found.as_slice() else {
-                return Err("実prefixDomainの欠落・重複がある".into());
+                return Err(internal!("実prefixDomainの欠落・重複がある").into());
             };
             let domain = *domain;
             self.validate_at(graph, graph.get(domain)?, domain.0)?;
@@ -561,7 +565,7 @@ impl Environment<'_> {
                 .support
                 .extend(graph.get(domain)?.support.iter().cloned());
             let Some(Payload::Domain { elements, .. }) = &graph.get(domain)?.payload else {
-                return Err("実fiberがDomainでない".into());
+                return Err(internal!("実fiberがDomainでない").into());
             };
             for &selected in elements.iter().rev() {
                 self.tick()?;
@@ -571,7 +575,7 @@ impl Environment<'_> {
             }
         }
         if layout.domains != candidates {
-            return Err("実prefixDomainの元順・coverageが違う".into());
+            return Err(internal!("実prefixDomainの元順・coverageが違う").into());
         }
         self.dependent_merge_scope(plan, &mut layout.scope, &layout.domains, context)?;
         layout.support.sort();
@@ -613,7 +617,7 @@ impl Environment<'_> {
     ) -> Result<Scope, ValidationFailure> {
         let layout = self.dependent_layout(graph, source, plan, self.state.cutoff.get(), true)?;
         if layout.domains.iter().map(|(_, r)| *r).collect::<Vec<_>>() != domains {
-            return Err("依存族の実prefix域一覧が違う".into());
+            return Err(internal!("依存族の実prefix域一覧が違う").into());
         }
         Ok(layout.scope)
     }
@@ -627,17 +631,17 @@ impl Environment<'_> {
     ) -> Result<(NodeRef, Vec<NodeRef>, Plan), ValidationFailure> {
         let node = graph.get(domain)?;
         let Some(Payload::Domain { elements, .. }) = &node.payload else {
-            return Err("依存族の総Domainがない".into());
+            return Err(internal!("依存族の総Domainがない").into());
         };
         let end = node
             .arguments
             .len()
             .checked_sub(elements.len())
-            .ok_or("依存族総Domain辺数が違う")?;
+            .ok_or(internal!("依存族総Domain辺数が違う"))?;
         let domains = node
             .arguments
             .get(1..end)
-            .ok_or("依存族総Domainの実prefix域がない")?
+            .ok_or(internal!("依存族総Domainの実prefix域がない"))?
             .to_vec();
         self.validate_at(graph, node, domain.0)?;
         Ok((source, domains, plan))
@@ -671,18 +675,18 @@ impl Environment<'_> {
         let d = &self.indexes.inputs.law().declarations()[graph.requests
             [graph.context_at(source.0).request]
             .declaration()
-            .ok_or("元要求に宣言がない")?];
+            .ok_or(internal!("元要求に宣言がない"))?];
         let context = self.current_context(graph);
         if let Some(index) = context.instance {
             let record = graph
                 .instances
                 .get(index)
-                .ok_or("依存rowの元instanceがない")?;
+                .ok_or(internal!("依存rowの元instanceがない"))?;
             let parameter = plan
                 .unbound
                 .iter()
                 .position(|p| p.span == *span)
-                .ok_or("依存row値の元自由parameterがない")?;
+                .ok_or(internal!("依存row値の元自由parameterがない"))?;
             if record.source != source
                 || node.arguments != [source, record.domain, record.member]
                 || context
@@ -694,14 +698,14 @@ impl Environment<'_> {
                 || graph.context_at(record.domain.0) != record.caller
                 || graph.context_at(record.member.0) != record.caller
             {
-                return Err("依存row値の元instance辺・Contextが違う".into());
+                return Err(internal!("依存row値の元instance辺・Contextが違う").into());
             }
             self.validate_at(graph, graph.get(record.domain)?, record.domain.0)?;
             let Some(Payload::Domain { elements, .. }) = &graph.get(record.domain)?.payload else {
-                return Err("依存row総Domainがない".into());
+                return Err(internal!("依存row総Domainがない").into());
             };
             if !elements.contains(&record.member) {
-                return Err("依存rowが総Domainにない".into());
+                return Err(internal!("依存rowが総Domainにない").into());
             }
             let items = family_items(graph.scalar(record.member)?, plan.unbound.len())?;
             self.dependent_clean_scalar(
@@ -713,28 +717,28 @@ impl Environment<'_> {
             return Ok(true);
         }
         if context != graph.context_at(source.0) {
-            return Err("依存族値・Domainが別Contextに属す".into());
+            return Err(internal!("依存族値・Domainが別Contextに属す").into());
         }
         if let Some(parameter) = plan.parameters.iter().position(|p| p.span == *span) {
             let count = self
                 .dependent_indices(&plan)
                 .iter()
                 .position(|i| *i == parameter)
-                .ok_or("依存fiberのparameter位置がない")?;
+                .ok_or(internal!("依存fiberのparameter位置がない"))?;
             let end = 1 + 2 * count;
             let path = node
                 .arguments
                 .get(1..end)
-                .ok_or("依存fiberの元先行pathがない")?;
+                .ok_or(internal!("依存fiberの元先行pathがない"))?;
             let step = self.dependent_step_context(graph, source, &plan, parameter, path, limit)?;
             if !step.missing.is_empty() {
-                return Err("未観測ownerから確定fiberを生成した".into());
+                return Err(internal!("未観測ownerから確定fiberを生成した").into());
             }
             if let Some(Payload::Scalar(value)) = &node.payload {
                 if node.arguments.len() != end
                     || !data::contains(&step.enumeration.values, value, &self.control)?
                 {
-                    return Err("fiber値が元実域にない".into());
+                    return Err(internal!("fiber値が元実域にない").into());
                 }
                 self.dependent_clean_scalar(
                     node,
@@ -753,7 +757,7 @@ impl Environment<'_> {
                     || !node.reasons.is_empty()
                     || node.judgment.is_some()
                 {
-                    return Err("fiberの元型・全域・Scope・支持が違う".into());
+                    return Err(internal!("fiberの元型・全域・Scope・支持が違う").into());
                 }
                 for (r, expected) in elements.iter().zip(&step.enumeration.values) {
                     self.tick()?;
@@ -763,28 +767,31 @@ impl Environment<'_> {
                         || !matches!(&graph.get(*r)?.rule, Rule::Input {kind:"law",location:Location::Law {span:member_span}} if member_span == span)
                         || graph.scalar(*r)? != expected
                     {
-                        return Err("fiberの元選択producer・順・値が違う".into());
+                        return Err(internal!("fiberの元選択producer・順・値が違う").into());
                     }
                     self.validate_at(graph, graph.get(*r)?, r.0)?;
                 }
             } else {
-                return Err("fiberのpayloadが値・Domainでない".into());
+                return Err(internal!("fiberのpayloadが値・Domainでない").into());
             }
             return Ok(true);
         }
         if *span != d.span {
-            return Err("依存族の元parameter・宣言出現が違う".into());
+            return Err(internal!("依存族の元parameter・宣言出現が違う").into());
         }
         let layout = self.dependent_layout(graph, source, &plan, limit, true)?;
         if let Some(Payload::Scalar(value)) = &node.payload {
-            let path = node.arguments.get(1..).ok_or("依存rowの実pathがない")?;
+            let path = node
+                .arguments
+                .get(1..)
+                .ok_or(internal!("依存rowの実pathがない"))?;
             if !layout.paths.iter().any(|expected| expected == path) {
-                return Err("依存rowの元実pathが違う".into());
+                return Err(internal!("依存rowの元実pathが違う").into());
             }
             let expected = self.dependent_row_value(graph, &plan, path)?;
             self.dependent_clean_scalar(node, &expected, &layout.scope, &layout.support)?;
             if value != &expected {
-                return Err("依存row値が元宣言順と違う".into());
+                return Err(internal!("依存row値が元宣言順と違う").into());
             }
         } else if let Some(Payload::Domain { ty, elements }) = &node.payload {
             let types: Vec<_> = plan.unbound.iter().map(|p| p.ty.erase()).collect();
@@ -808,7 +815,7 @@ impl Environment<'_> {
                 || !node.reasons.is_empty()
                 || node.judgment.is_some()
             {
-                return Err("依存総Domainのcoverage・型・Scope・支持が違う".into());
+                return Err(internal!("依存総Domainのcoverage・型・Scope・支持が違う").into());
             }
             for (&r, path) in elements.iter().zip(&layout.paths) {
                 self.tick()?;
@@ -821,12 +828,12 @@ impl Environment<'_> {
                     || !matches!(&graph.get(r)?.rule, Rule::Input {kind:"law",location:Location::Law {span:member_span}} if member_span == span)
                     || graph.scalar(r)? != &self.dependent_row_value(graph, &plan, path)?
                 {
-                    return Err("依存総Domainの実row順・producerが違う".into());
+                    return Err(internal!("依存総Domainの実row順・producerが違う").into());
                 }
                 self.validate_at(graph, graph.get(r)?, r.0)?;
             }
         } else {
-            return Err("依存総域のpayloadが違う".into());
+            return Err(internal!("依存総域のpayloadが違う").into());
         }
         Ok(true)
     }
@@ -847,7 +854,7 @@ impl Environment<'_> {
             || !node.reasons.is_empty()
             || node.judgment.is_some()
         {
-            return Err("依存族値の型・元値・Scope・支持が違う".into());
+            return Err(internal!("依存族値の型・元値・Scope・支持が違う").into());
         }
         Ok(())
     }
@@ -867,18 +874,18 @@ impl Environment<'_> {
             .requests
             .iter()
             .position(|actual| actual == request)
-            .ok_or("未決依存族の元Requestがない")?;
+            .ok_or(internal!("未決依存族の元Requestがない"))?;
         if answer.id != request.id
             || answer.status != Decision::Undetermined
             || answer.claim.is_some()
             || !answer.evidence.is_empty()
             || answer.reasons.len() != 1
         {
-            return Err("未決依存族が結論・証拠を持つか元Requestと違う".into());
+            return Err(internal!("未決依存族が結論・証拠を持つか元Requestと違う").into());
         }
         let first = &answer.reasons[0];
         let [source] = first.dependencies.as_slice() else {
-            return Err("未決依存族の理由が元Source一件への依存でない".into());
+            return Err(internal!("未決依存族の理由が元Source一件への依存でない").into());
         };
         let source = *source;
         let context = graph.context_at(source.0);
@@ -887,20 +894,20 @@ impl Environment<'_> {
             || context.iteration.is_some()
             || context.instance.is_some()
         {
-            return Err("未決依存族Sourceが別実Contextに属す".into());
+            return Err(internal!("未決依存族Sourceが別実Contextに属す").into());
         }
         let (_, actual_plan) = self.family_request(graph, source)?;
         if !actual_plan.dependent {
-            return Err("未決依存族が元依存署名でない".into());
+            return Err(internal!("未決依存族が元依存署名でない").into());
         }
         let Some(Location::Law { span }) = &first.location else {
-            return Err("未決依存族の元parameter位置がない".into());
+            return Err(internal!("未決依存族の元parameter位置がない").into());
         };
         let parameter = plan
             .parameters
             .iter()
             .position(|p| p.span == *span)
-            .ok_or("未決ownerの元出現が違う")?;
+            .ok_or(internal!("未決ownerの元出現が違う"))?;
         let previous = self.state.context.scoped(Some(context));
         let old_cutoff = self.state.cutoff.scoped(graph.nodes.len());
         let result = (|| -> Result<(), ValidationFailure> {
@@ -909,9 +916,9 @@ impl Environment<'_> {
             let (expected_parameter, path) = layout
                 .next
                 .as_ref()
-                .ok_or("未決ownerに元列挙の未完了prefixがない")?;
+                .ok_or(internal!("未決ownerに元列挙の未完了prefixがない"))?;
             if *expected_parameter != parameter {
-                return Err("未決ownerが元列挙の未完了parameterと違う".into());
+                return Err(internal!("未決ownerが元列挙の未完了parameterと違う").into());
             }
             let step = self.dependent_step_context(
                 graph,
@@ -922,7 +929,7 @@ impl Environment<'_> {
                 graph.nodes.len(),
             )?;
             if step.missing.is_empty() {
-                return Err("未決ownerに元欠測がない".into());
+                return Err(internal!("未決ownerに元欠測がない").into());
             }
             let mut scope = layout.scope;
             scope.merge(&step.enumeration.scope);
@@ -937,7 +944,7 @@ impl Environment<'_> {
             let mut reasons = vec![missing];
             sort_reasons(&mut reasons);
             if answer.scope != scope || !reasons_equal(&answer.reasons, &reasons) {
-                return Err("未決依存族の元欠測・Scopeが違う".into());
+                return Err(internal!("未決依存族の元欠測・Scopeが違う").into());
             }
             Ok(())
         })();

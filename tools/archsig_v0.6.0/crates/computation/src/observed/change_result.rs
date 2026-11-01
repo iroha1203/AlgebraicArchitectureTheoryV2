@@ -209,13 +209,13 @@ pub(super) fn source_expression(
         .law()
         .exprs()
         .get(expression)
-        .ok_or("changeの元式がない")?;
+        .ok_or(internal!("changeの元式がない"))?;
     let ty = environment
         .indexes
         .inputs
         .law()
         .expr_type(expression)
-        .ok_or("changeの元式型がない")?
+        .ok_or(internal!("changeの元式型がない"))?
         .clone();
     b.push(
         NodeType::Expression(ty),
@@ -301,7 +301,9 @@ fn compute_inner(
                     let expression = source_expression(
                         &mut b,
                         env,
-                        pending.expression.ok_or("整数欠測の元式がない")?,
+                        pending
+                            .expression
+                            .ok_or(internal!("整数欠測の元式がない"))?,
                         &bindings,
                         &pending.parameters,
                     )?;
@@ -405,7 +407,10 @@ pub(super) fn render_search(
     c: &Control,
     search: change_search::Search,
 ) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
-    let candidates = search.candidates.as_ref().ok_or("有限候補表がない")?;
+    let candidates = search
+        .candidates
+        .as_ref()
+        .ok_or(internal!("有限候補表がない"))?;
     let change_name = request
         .arguments
         .iter()
@@ -420,10 +425,10 @@ pub(super) fn render_search(
                 None
             }
         })
-        .ok_or("change名がない")?;
+        .ok_or(internal!("change名がない"))?;
     let declaration = &env.indexes.inputs.law().declarations()[change_name];
     let Signature::Change { params, guard, .. } = &declaration.signature else {
-        return Err("change署名がない".into());
+        return Err(internal!("change署名がない").into());
     };
     let mut b = Builder {
         g,
@@ -453,7 +458,7 @@ pub(super) fn render_search(
             params: law_params,
         } = &law.signature
         else {
-            return Err("候補の元Lawがない".into());
+            return Err(internal!("候補の元Lawがない").into());
         };
         let bindings = bindings
             .iter()
@@ -551,7 +556,7 @@ pub(super) fn render_search(
             entity,
         } = subject
         else {
-            return Err("変更対象がsubjectでない".into());
+            return Err(internal!("変更対象がsubjectでない").into());
         };
         for name in &names {
             slots.push(Fact {
@@ -659,7 +664,10 @@ pub(super) fn render_search(
             },
         )?;
         state_args.push(r);
-        let field = slot.field.as_ref().ok_or("更新slotのfieldがない")?;
+        let field = slot
+            .field
+            .as_ref()
+            .ok_or(internal!("更新slotのfieldがない"))?;
         state_types.push(
             env.indexes
                 .field(&env.state, &slot.snapshot, &slot.subject, field)?
@@ -828,7 +836,7 @@ pub(super) fn render_search(
     b.parts[claim.0 - base]
         .judgment
         .as_mut()
-        .ok_or("解存在の判断がない")?
+        .ok_or(internal!("解存在の判断がない"))?
         .evidence
         .push(certificate);
     let mut outputs = BTreeMap::from([
@@ -912,7 +920,7 @@ pub(super) fn render_search(
             b.parts[unequal.0 - base]
                 .judgment
                 .as_mut()
-                .ok_or("割当ての不等判断がない")?
+                .ok_or(internal!("割当ての不等判断がない"))?
                 .evidence
                 .push(counter);
             unique_arguments.extend([counter, unequal]);
@@ -928,7 +936,7 @@ pub(super) fn render_search(
         b.parts[unique.0 - base]
             .judgment
             .as_mut()
-            .ok_or("一意性判断がない")?
+            .ok_or(internal!("一意性判断がない"))?
             .evidence = unique_evidence.clone();
         let mut conditions = vec![unique];
         let mut assignment = None;
@@ -939,7 +947,7 @@ pub(super) fn render_search(
                 .solutions
                 .iter()
                 .find(|r| r.member == Some(true))
-                .ok_or("唯一の解の元割当てがない")?
+                .ok_or(internal!("唯一の解の元割当てがない"))?
                 .candidate;
             let row = &candidates.rows[row_index];
             let mut entries = vec![];
@@ -990,7 +998,7 @@ pub(super) fn render_search(
                 let updated = value(&mut b, scalar)?;
                 updates.push((
                     subject,
-                    fact.field.clone().ok_or("更新fieldがない")?,
+                    fact.field.clone().ok_or(internal!("更新fieldがない"))?,
                     updated,
                 ));
             }
@@ -1016,28 +1024,31 @@ pub(super) fn render_search(
         b.parts[claim.0 - base]
             .judgment
             .as_mut()
-            .ok_or("修復構成判断がない")?
+            .ok_or(internal!("修復構成判断がない"))?
             .evidence = unique_evidence;
         outputs.insert("proposition".into(), claim);
         if let Some(parameters) = assignment {
             let Some(Payload::Construction(original)) = &g.get(architecture.reference)?.payload
             else {
-                return Err("修復元Architectureがnativeでない".into());
+                return Err(internal!("修復元Architectureがnativeでない").into());
             };
             let mut original_wire = original.wire();
             let Json::Obj(wire) = &mut original_wire else {
-                return Err("修復元Architecture recordがない".into());
+                return Err(internal!("修復元Architecture recordがない").into());
             };
             let Some(Json::Arr(previous)) = wire.get_mut("overrides") else {
-                return Err("修復元の更新表がない".into());
+                return Err(internal!("修復元の更新表がない").into());
             };
             let mut overrides = BTreeMap::new();
             for row in std::mem::take(previous) {
                 let Json::Obj(fields) = &row else {
-                    return Err("修復元slotがrecordでない".into());
+                    return Err(internal!("修復元slotがrecordでない").into());
                 };
                 overrides.insert(
-                    fields.get("slot").ok_or("修復元slotがない")?.canonical(),
+                    fields
+                        .get("slot")
+                        .ok_or(internal!("修復元slotがない"))?
+                        .canonical(),
                     row,
                 );
             }
@@ -1053,7 +1064,7 @@ pub(super) fn render_search(
                     b.parts[subject.0 - base]
                         .scalar
                         .as_ref()
-                        .ok_or("更新subject値がない")?
+                        .ok_or(internal!("更新subject値がない"))?
                 };
                 overrides.retain(|_, row| {
                     let Json::Obj(row) = row else {
@@ -1127,7 +1138,7 @@ pub(super) fn render_search(
             b.parts[claim.0 - base]
                 .judgment
                 .as_mut()
-                .ok_or("repair判断がない")?
+                .ok_or(internal!("repair判断がない"))?
                 .reasons
                 .push(reason);
         }
@@ -1163,7 +1174,7 @@ pub(super) fn validate_node(
     d: &Data,
 ) -> Result<(), ValidationFailure> {
     let Witness::Architecture(w) = &v.witness else {
-        return Err("changeの元Architectureがない".into());
+        return Err(internal!("changeの元Architectureがない").into());
     };
     let p = d.part();
     if !Arc::ptr_eq(w, &d.source.architecture.witness)
@@ -1176,7 +1187,7 @@ pub(super) fn validate_node(
         || n.evidence != p.evidence
         || n.judgment != p.judgment
     {
-        return Err("changeの元構成・辺・判断が違う".into());
+        return Err(internal!("changeの元構成・辺・判断が違う").into());
     }
     for r in &p.arguments {
         g.get(*r)?;
@@ -1197,7 +1208,7 @@ impl Environment<'_> {
             || at != d.source.base + d.index
             || d.arguments().iter().any(|r| r.0 >= at)
         {
-            return Err("changeの位置・既出参照が違う".into());
+            return Err(internal!("changeの位置・既出参照が違う").into());
         }
         let c = self.control.clone();
         d.source.boundary.recheck(self, g, at, &c)?;
@@ -1224,7 +1235,7 @@ impl Environment<'_> {
             }
         }
         if parts != d.source.parts || answer != d.source.answer {
-            return Err("changeの再構成が違う".into());
+            return Err(internal!("changeの再構成が違う").into());
         }
         self.results.remember(d.source.clone());
         Ok(())
@@ -1240,7 +1251,7 @@ pub(super) fn validate_answer(
         return if answer == &expected {
             Ok(())
         } else {
-            Err("change依存停止が違う".into())
+            Err(internal!("change依存停止が違う").into())
         };
     }
     let r = answer
@@ -1251,17 +1262,17 @@ pub(super) fn validate_answer(
                 .iter()
                 .find_map(|r| r.dependencies.first().copied())
         })
-        .ok_or("solveの存在命題・未決の元式がない")?;
+        .ok_or(internal!("solveの存在命題・未決の元式がない"))?;
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
-        return Err("solveの存在命題がnativeでない".into());
+        return Err(internal!("solveの存在命題がnativeでない").into());
     };
     let D::Change(d) = &v.data else {
-        return Err("solveの存在命題が別種".into());
+        return Err(internal!("solveの存在命題が別種").into());
     };
     architecture_result::validate_build_origin(env, g, request, v)?;
     env.recheck_change(g, v, r.0)?;
     if answer != &d.source.answer {
-        return Err("solve回答が元全解と違う".into());
+        return Err(internal!("solve回答が元全解と違う").into());
     }
     Ok(())
 }
@@ -1272,21 +1283,21 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
         construction: "repair",
     } = reason.kind
     else {
-        return Err("修復反証が別種".into());
+        return Err(internal!("修復反証が別種").into());
     };
     let n = g.get(condition)?;
     let Some(Payload::Construction(v)) = &n.payload else {
-        return Err("修復反証がnativeでない".into());
+        return Err(internal!("修復反証がnativeでない").into());
     };
     let D::Change(d) = &v.data else {
-        return Err("修復反証が別構成".into());
+        return Err(internal!("修復反証が別構成").into());
     };
     if n.judgment.as_ref().map(|j| j.status) != Some(Decision::Refuted)
         || !d.source.answer.reasons.contains(reason)
         || reason.dependencies != [condition]
         || !reason.missing.is_empty()
     {
-        return Err("修復反証の元全解が違う".into());
+        return Err(internal!("修復反証の元全解が違う").into());
     }
     validate_node(g, n, v, d)
 }
@@ -1306,16 +1317,16 @@ pub(super) fn candidate_input(
 ) -> Result<CandidateInput, ValidationFailure> {
     let node = g.get(reference)?;
     let Some(Payload::Construction(v)) = &node.payload else {
-        return Err("商の候補域がnativeでない".into());
+        return Err(internal!("商の候補域がnativeでない").into());
     };
     let D::Change(d) = &v.data else {
-        return Err("商の候補域がchange由来でない".into());
+        return Err(internal!("商の候補域がchange由来でない").into());
     };
     if !matches!(
         d.ty(),
         NodeType::Construction(T::CandidateSpace | T::SolutionSet)
     ) {
-        return Err("商の候補域の型が違う".into());
+        return Err(internal!("商の候補域の型が違う").into());
     }
     env.recheck_node(g, node, reference.0)?;
     let origin = Witness::Architecture(d.source.architecture.witness.clone());
@@ -1330,7 +1341,9 @@ pub(super) fn candidate_input(
             witness: d.source.architecture.witness.clone(),
             assignments,
             search,
-            domain_type: d.projection_type().ok_or("商の候補域の公開型がない")?,
+            domain_type: d
+                .projection_type()
+                .ok_or(internal!("商の候補域の公開型がない"))?,
         })
     })
 }
@@ -1340,40 +1353,40 @@ pub(super) fn architecture_overrides(
     part: &Part,
 ) -> Result<Vec<(Fact, NodeRef, Scalar)>, ValidationFailure> {
     if part.ty != NodeType::Construction(T::Architecture) {
-        return Err("修復対象がArchitectureでない".into());
+        return Err(internal!("修復対象がArchitectureでない").into());
     }
     let Json::Obj(wire) = &part.wire else {
-        return Err("修復対象のrecordがない".into());
+        return Err(internal!("修復対象のrecordがない").into());
     };
     let Some(Json::Arr(rows)) = wire.get("overrides") else {
-        return Err("修復対象の更新表がない".into());
+        return Err(internal!("修復対象の更新表がない").into());
     };
     let reference = |wire: &Json| {
         part.arguments
             .iter()
             .copied()
             .find(|r| r.wire() == *wire)
-            .ok_or_else(|| ValidationFailure::Internal("更新の型付き辺がない".into()))
+            .ok_or_else(|| ValidationFailure::Internal(internal!("更新の型付き辺がない")))
     };
     let mut result = vec![];
     for row in rows {
         let Json::Obj(row) = row else {
-            return Err("更新recordがない".into());
+            return Err(internal!("更新recordがない").into());
         };
         let Some(Json::Obj(slot)) = row.get("slot") else {
-            return Err("更新slotがない".into());
+            return Err(internal!("更新slotがない").into());
         };
-        let subject = reference(slot.get("subject").ok_or("更新subjectがない")?)?;
+        let subject = reference(slot.get("subject").ok_or(internal!("更新subjectがない"))?)?;
         let Some(Json::Str(field)) = slot.get("field") else {
-            return Err("更新fieldがない".into());
+            return Err(internal!("更新fieldがない").into());
         };
         let Scalar::Subject {
             snapshot, subject, ..
         } = g.scalar(subject)?
         else {
-            return Err("更新subjectが参照でない".into());
+            return Err(internal!("更新subjectが参照でない").into());
         };
-        let updated = reference(row.get("value").ok_or("更新値がない")?)?;
+        let updated = reference(row.get("value").ok_or(internal!("更新値がない"))?)?;
         result.push((
             Fact {
                 snapshot: snapshot.clone(),
@@ -1448,7 +1461,7 @@ impl super::result_kind::ResultKind for Data {
                     .iter()
                     .find_map(|r| r.dependencies.first().copied())
             })
-            .ok_or("changeの存在命題・未決の元式がない")?;
+            .ok_or(internal!("changeの存在命題・未決の元式がない"))?;
         for index in 0..source.parts.len() {
             // 完了済みnative構成の転送だけを行う。停止後に新しい導出はしない。
 

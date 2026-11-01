@@ -155,7 +155,7 @@ impl Environment<'_> {
                         pending.push((ty, Member::Partial(value)));
                     }
                 }
-                _ => return Err("Owned callの複合memberが元署名型と違う".into()),
+                _ => return Err(internal!("Owned callの複合memberが元署名型と違う").into()),
             }
             if checks.failure.is_some() {
                 break;
@@ -176,7 +176,7 @@ impl Environment<'_> {
         assignment: Option<&BTreeMap<Fact, Scalar>>,
     ) -> Result<(), ValidationFailure> {
         let Type::Owned(entity, owner_name) = ty else {
-            return Err("Map所属域の元型がOwnedでない".into());
+            return Err(internal!("Map所属域の元型がOwnedでない").into());
         };
         self.tick()?;
         let Some(owner) = values.get(owner_name.as_str()).and_then(|v| *v) else {
@@ -260,9 +260,9 @@ impl Environment<'_> {
                         .program()
                         .expressions
                         .get(&self.expression_span(graph, source)?)
-                        .ok_or("部分引数の元式がない")?,
+                        .ok_or(internal!("部分引数の元式がない"))?,
                 )
-                .ok_or("部分引数の元型がない")?,
+                .ok_or(internal!("部分引数の元型がない"))?,
         ))
     }
 
@@ -380,10 +380,10 @@ impl Environment<'_> {
             entity: actual_entity,
         } = value
         else {
-            return Err("Owned callの実値が参照でない".into());
+            return Err(internal!("Owned callの実値が参照でない").into());
         };
         if actual_entity != entity {
-            return Err("Owned callの参照型が元署名と違う".into());
+            return Err(internal!("Owned callの参照型が元署名と違う").into());
         }
         let root = match &self
             .indexes
@@ -392,17 +392,17 @@ impl Environment<'_> {
             .definitions()
             .declarations()
             .get(entity)
-            .ok_or("Owned callの原始型がない")?
+            .ok_or(internal!("Owned callの原始型がない"))?
             .signature
         {
             archsig_input::definition::PrimitiveSignature::Entity {
                 owner: Some(root), ..
             }
             | archsig_input::definition::PrimitiveSignature::Arrow { owner: root, .. } => root,
-            _ => return Err("Owned callの型がowned entity/arrowでない".into()),
+            _ => return Err(internal!("Owned callの型がowned entity/arrowでない").into()),
         };
         if expected.ty() != Type::Ref(root.clone()) {
-            return Err("Owned callの実owner型が元署名と違う".into());
+            return Err(internal!("Owned callの実owner型が元署名と違う").into());
         }
         let Scalar::Subject {
             snapshot: os,
@@ -410,7 +410,7 @@ impl Environment<'_> {
             ..
         } = expected
         else {
-            return Err("Owned callのownerが参照でない".into());
+            return Err(internal!("Owned callのownerが参照でない").into());
         };
         let subject_input = self.indexes.subject(snapshot, subject)?;
         checks
@@ -454,12 +454,12 @@ impl Environment<'_> {
                 entity: actual_root,
             } = actual
             else {
-                return Err("候補ownerがRefでない".into());
+                return Err(internal!("候補ownerがRefでない").into());
             };
             if actual_root != root
                 || self.indexes.subject(actual_snapshot, actual_subject)?.ty != *root
             {
-                return Err("候補owner型が元署名と違う".into());
+                return Err(internal!("候補owner型が元署名と違う").into());
             }
             checks.scope.assignments = true;
             checks.scope.merge(&self.indexes.scope(
@@ -521,12 +521,12 @@ impl Environment<'_> {
                     entity,
                 } = actual
                 else {
-                    return Err("補完ownerがRefでない".into());
+                    return Err(internal!("補完ownerがRefでない").into());
                 };
                 if entity != root
                     || self.indexes.subject(actual_snapshot, actual_subject)?.ty != *root
                 {
-                    return Err("補完owner型が元署名と違う".into());
+                    return Err(internal!("補完owner型が元署名と違う").into());
                 }
                 checks.scope.merge(&self.indexes.scope(
                     self.indexes.subject(actual_snapshot, actual_subject)?,
@@ -605,7 +605,7 @@ impl Environment<'_> {
             params, returns, ..
         } = &declaration.signature
         else {
-            return Err("Owned callの元宣言がviewでない".into());
+            return Err(internal!("Owned callの元宣言がviewでない").into());
         };
         let mut owned = self.call_type_has_owned(returns)?;
         for parameter in params {
@@ -615,7 +615,7 @@ impl Environment<'_> {
             return Ok(Checks::default());
         }
         if params.len() != arguments.len() {
-            return Err("Owned callの引数数が元署名と違う".into());
+            return Err(internal!("Owned callの引数数が元署名と違う").into());
         }
         let mut values = BTreeMap::new();
         let mut checks = Checks::default();
@@ -642,7 +642,7 @@ impl Environment<'_> {
                 )
                 .is_some()
             {
-                return Err("Owned callの元parameter名が重複する".into());
+                return Err(internal!("Owned callの元parameter名が重複する").into());
             }
         }
         if checks.failure.is_none()
@@ -719,7 +719,7 @@ impl Environment<'_> {
             return Ok(None);
         }
         let ExprKind::Call { args, .. } = &self.indexes.inputs.law().exprs()[id].kind else {
-            return Err("所属slotの元式がcallでない".into());
+            return Err(internal!("所属slotの元式がcallでない").into());
         };
         let bindings = self.expression_bindings(graph, source)?;
         let limit = self.state.cutoff.get().min(graph.nodes.len());
@@ -743,15 +743,17 @@ impl Environment<'_> {
                     || parts[0].location != (Location::Law { span })
                     || children.replace(parts[0].children.clone()).is_some()
                 {
-                    return Err("所属slotの元call実評価が一意でない".into());
+                    return Err(internal!("所属slotの元call実評価が一意でない").into());
                 }
             }
         }
-        let children = children.ok_or("所属slotの元call実評価がない")?;
+        let children = children.ok_or(internal!("所属slotの元call実評価がない"))?;
         // 現caseの実frame/bodyと引数を先に照合し、その後だけ元Missingへ戻る。
         self.owned_call_inputs(graph, source, &children, limit)?
-            .ok_or("所属slotの元call検査がない")?;
-        let declaration = self.named_view(id)?.ok_or("所属slotの元viewがない")?;
+            .ok_or(internal!("所属slotの元call検査がない"))?;
+        let declaration = self
+            .named_view(id)?
+            .ok_or(internal!("所属slotの元viewがない"))?;
         let arguments = children[..args.len()]
             .iter()
             .map(|child| self.owned_call_argument(graph, *child))
@@ -833,7 +835,7 @@ impl Environment<'_> {
             || source.0 >= limit
             || graph.context_at(source.0) != self.current_context(graph)
         {
-            return Err("Owned callの元引数数・Source Contextが違う".into());
+            return Err(internal!("Owned callの元引数数・Source Contextが違う").into());
         }
         let mut inherited_failure = false;
         let mut inherited_pending = false;
@@ -857,14 +859,14 @@ impl Environment<'_> {
         for (&id, &child) in args.iter().zip(children) {
             self.tick()?;
             if child.0 >= limit || graph.context_at(child.0) != self.current_context(graph) {
-                return Err("Owned callの実引数が既出同callerでない".into());
+                return Err(internal!("Owned callの実引数が既出同callerでない").into());
             }
             self.recheck_evaluation(graph, child)?;
             let (expression, actual_bindings, _) = self.evaluation(graph, child)?;
             self.source_matches(graph, expression, id)?;
             if actual_bindings != bindings || self.actual_evaluation(graph, id, bindings)? != child
             {
-                return Err("Owned callの引数producer・束縛が元出現と違う".into());
+                return Err(internal!("Owned callの引数producer・束縛が元出現と違う").into());
             }
             values.push(self.owned_call_argument(graph, child)?);
             scope.merge(&graph.get(child)?.scope);
@@ -881,15 +883,20 @@ impl Environment<'_> {
         checks.blocked |= inherited_pending;
         if children.len() == args.len() + 1 {
             if checks.failure.is_some() || checks.blocked {
-                return Err("所属不適合・未確定のcallee bodyを評価した".into());
+                return Err(internal!("所属不適合・未確定のcallee bodyを評価した").into());
             }
             let child = children[args.len()];
             if child.0 >= limit {
-                return Err("Owned call bodyが未出".into());
+                return Err(internal!("Owned call bodyが未出").into());
             }
             let context = graph.context_at(child.0);
-            let index = context.frame.ok_or("Owned call bodyにframeがない")?;
-            let frame = graph.frames.get(index).ok_or("Owned call frameがない")?;
+            let index = context
+                .frame
+                .ok_or(internal!("Owned call bodyにframeがない"))?;
+            let frame = graph
+                .frames
+                .get(index)
+                .ok_or(internal!("Owned call frameがない"))?;
             if frame.source != source
                 || frame.caller != self.current_context(graph)
                 || frame.arguments != children[..args.len()]
@@ -900,7 +907,7 @@ impl Environment<'_> {
                         ..frame.caller
                     })
             {
-                return Err("Owned call bodyと元frameが違う".into());
+                return Err(internal!("Owned call bodyと元frameが違う").into());
             }
             if self.universal_source_root(graph, source)?.is_none() {
                 self.frame_arguments(graph, index)?;
@@ -911,14 +918,14 @@ impl Environment<'_> {
             let (expression, _, _) = self.evaluation(graph, child)?;
             self.source_matches(graph, expression, *body)?;
             if graph.context_at(expression.0) != context {
-                return Err("Owned body SourceのContextが違う".into());
+                return Err(internal!("Owned body SourceのContextが違う").into());
             }
             let partial = self.owned_call_argument(graph, child)?;
             checks = self.owned_call_checks(declaration, &values, Some(&partial), span)?;
             scope.merge(&graph.get(child)?.scope);
             support.extend(graph.get(child)?.support.iter().cloned());
         } else if checks.failure.is_none() && !checks.blocked {
-            return Err("所属適合callに元body評価がない".into());
+            return Err(internal!("所属適合callに元body評価がない").into());
         }
         scope.merge(&checks.scope);
         support.extend(checks.support);
@@ -953,10 +960,10 @@ impl Environment<'_> {
             _ => return Ok(false),
         };
         let Some(n) = node.arguments.len().checked_sub(extra) else {
-            return Err("Owned条件の元辺が不足".into());
+            return Err(internal!("Owned条件の元辺が不足").into());
         };
         if n == 0 {
-            return Err("Owned条件に元Sourceがない".into());
+            return Err(internal!("Owned条件に元Sourceがない").into());
         }
         let source = node.arguments[0];
         if !matches!(
@@ -969,44 +976,44 @@ impl Environment<'_> {
             if extra == 0 {
                 return Ok(false);
             }
-            return Err("Owned条件に元call Sourceがない".into());
+            return Err(internal!("Owned条件に元call Sourceがない").into());
         }
         if self.family_source_root(graph, source)? {
             if extra == 0 {
                 return Ok(false);
             }
-            return Err("whole族Sourceをcall所属条件に転用した".into());
+            return Err(internal!("whole族Sourceをcall所属条件に転用した").into());
         }
         let Some(checks) = self.owned_call_inputs(graph, source, &node.arguments[1..n], limit)?
         else {
             if extra == 0 {
                 return Ok(false);
             }
-            return Err("Owned条件の元署名が違う".into());
+            return Err(internal!("Owned条件の元署名が違う").into());
         };
         let Some((actual, required)) = checks.failure else {
             if extra == 0 {
                 return Ok(false);
             }
-            return Err("Owned条件に元所属不適合がない".into());
+            return Err(internal!("Owned条件に元所属不適合がない").into());
         };
         if node.scope != checks.scope || node.support != checks.support || !node.reasons.is_empty()
         {
-            return Err("Owned条件の元Scope・支持・理由が違う".into());
+            return Err(internal!("Owned条件の元Scope・支持・理由が違う").into());
         }
         match &node.payload {
             Some(Payload::Scalar(value)) => {
                 let expected = match node.rule {
                     Rule::Construction("evaluation") => &actual,
                     Rule::Construction("domain") => &required,
-                    _ => return Err("Owned条件owner値の規則が違う".into()),
+                    _ => return Err(internal!("Owned条件owner値の規則が違う").into()),
                 };
                 if value != expected
                     || node.ty != NodeType::Value(expected.ty())
                     || !node.evidence.is_empty()
                     || node.judgment.is_some()
                 {
-                    return Err("Owned条件owner値が原始所属・実引数と違う".into());
+                    return Err(internal!("Owned条件owner値が原始所属・実引数と違う").into());
                 }
             }
             Some(Payload::OwnedCallCounterexample {
@@ -1019,28 +1026,28 @@ impl Environment<'_> {
                 if bindings != self.expression_bindings(graph, source)?
                     || node.arguments[n..] != [*left, *right]
                 {
-                    return Err("Owned反例の元束縛・辺が違う".into());
+                    return Err(internal!("Owned反例の元束縛・辺が違う").into());
                 }
                 for r in [*left, *right] {
                     self.validate_at(graph, graph.get(r)?, r.0)?;
                 }
                 if graph.scalar(*left)? != &actual || graph.scalar(*right)? != &required {
-                    return Err("Owned反例が元owner不等でない".into());
+                    return Err(internal!("Owned反例が元owner不等でない").into());
                 }
             }
             Some(Payload::OwnedCallCondition { left, right }) => {
                 if node.ty != NodeType::Proposition || node.arguments[n..n + 2] != [*left, *right] {
-                    return Err("Owned条件命題の型・辺が違う".into());
+                    return Err(internal!("Owned条件命題の型・辺が違う").into());
                 }
                 graph.validate_proposition_evidence(node)?;
                 for r in [*left, *right, node.arguments[n + 2]] {
                     self.validate_at(graph, graph.get(r)?, r.0)?;
                 }
                 if graph.scalar(*left)? != &actual || graph.scalar(*right)? != &required {
-                    return Err("Owned条件命題の実ownerが違う".into());
+                    return Err(internal!("Owned条件命題の実ownerが違う").into());
                 }
             }
-            _ => return Err("Owned条件payloadが違う".into()),
+            _ => return Err(internal!("Owned条件payloadが違う").into()),
         }
         Ok(true)
     }
@@ -1070,15 +1077,15 @@ impl Environment<'_> {
             {
                 self.validate_at(graph, node, i)?;
                 if found.replace(NodeRef(i)).is_some() {
-                    return Err("元callの所属条件命題が重複".into());
+                    return Err(internal!("元callの所属条件命題が重複").into());
                 }
             }
         }
-        let condition = found.ok_or("元callの反証済み所属条件がない")?;
+        let condition = found.ok_or(internal!("元callの反証済み所属条件がない"))?;
         let request = graph
             .requests
             .get(self.current_context(graph).request)
-            .ok_or("Owned条件の元requestがない")?;
+            .ok_or(internal!("Owned条件の元requestがない"))?;
         Ok(Some(Reason {
             kind: ReasonKind::ConditionFailed {
                 condition,
@@ -1165,7 +1172,7 @@ impl Environment<'_> {
                         .inputs
                         .law()
                         .expr_type(id)
-                        .ok_or("Owned callの元型がない")?
+                        .ok_or(internal!("Owned callの元型がない"))?
                         .clone(),
                 )
             || node.support != checks.support
@@ -1174,7 +1181,7 @@ impl Environment<'_> {
             || node.judgment.is_some()
             || !matches!(node.rule, Rule::Construction("evaluation"))
         {
-            return Err("所属不適合call評価の元辺・値・型・Scopeが違う".into());
+            return Err(internal!("所属不適合call評価の元辺・値・型・Scopeが違う").into());
         }
         self.evaluation_missing_reasons(graph, node, source, children, None)?;
         Ok(true)

@@ -20,7 +20,7 @@ pub(super) fn compute(
     .map(|(f, _, v)| (f, v))
     .collect::<Vec<_>>();
     let mut fixed = Environment::try_primitive_valuation(env.indexes.inputs, &assignments, c)?
-        .ok_or("有限局所系の元Architectureが不適合")?;
+        .ok_or(internal!("有限局所系の元Architectureが不適合"))?;
     fixed.select_local_object(&witness, c)?;
     let (model, missing) = finite_model::analyze(env, &fixed, g, &witness, request, c)?;
     let Some(model) = model else {
@@ -31,10 +31,10 @@ pub(super) fn compute(
                 ("using", Selector::Declaration { name }) => Some(name),
                 _ => None,
             })
-            .ok_or("欠測した局所change名がない")?;
+            .ok_or(internal!("欠測した局所change名がない"))?;
         let declaration = &env.indexes.inputs.law().declarations()[using];
         let Signature::Change { params, body, .. } = &declaration.signature else {
-            return Err("局所changeの署名がない".into());
+            return Err(internal!("局所changeの署名がない").into());
         };
         let mut b = Builder {
             g,
@@ -116,9 +116,12 @@ pub(super) fn diagnose(
             ("side", Selector::Enum { value }) => Some(value.as_str()),
             _ => None,
         })
-        .ok_or("有限診断のsideがない")?;
+        .ok_or(internal!("有限診断のsideがない"))?;
     let selected = if side == "equation" {
-        finite.equation.as_ref().ok_or("有限の方程式状態がない")?
+        finite
+            .equation
+            .as_ref()
+            .ok_or(internal!("有限の方程式状態がない"))?
     } else {
         &finite.semantic
     };
@@ -145,7 +148,7 @@ pub(super) fn diagnose(
                 .iter()
                 .find(|(w, _)| *w == v)
                 .map(|(_, s)| (*r, *s))
-                .ok_or_else(|| ValidationFailure::from("matching像がない"))
+                .ok_or_else(|| ValidationFailure::from(internal!("matching像がない")))
         })
         .collect::<Result<Vec<_>, _>>()?;
     let restriction = state_map(&mut b, selected.domain, matching, &pairs)?;
@@ -265,7 +268,7 @@ pub(super) fn diagnose(
         b.parts[proposition.0 - base]
             .judgment
             .as_mut()
-            .ok_or("診断の判断がない")?
+            .ok_or(internal!("診断の判断がない"))?
             .evidence = evidence.clone();
         outputs.insert("proposition".into(), proposition);
         Some(proposition)

@@ -43,7 +43,7 @@ pub(super) fn base_scope(
         .law()
         .declarations()
         .get(name)
-        .ok_or("元Law宣言がない")?;
+        .ok_or(internal!("元Law宣言がない"))?;
     scope.readings.insert(declaration.reading.clone());
     Ok(scope)
 }
@@ -124,10 +124,10 @@ fn frame_value(
     r: NodeRef,
 ) -> Result<(&ConstructionValue, &Data), ValidationFailure> {
     let Some(Payload::Construction(v)) = &graph.get(r)?.payload else {
-        return Err("元Law frameの値がnativeでない".into());
+        return Err(internal!("元Law frameの値がnativeでない").into());
     };
     let D::LawFrame(d) = &v.data else {
-        return Err("元Law frameの値が別の構成である".into());
+        return Err(internal!("元Law frameの値が別の構成である").into());
     };
     Ok((v, d))
 }
@@ -139,26 +139,30 @@ pub(super) fn check_architecture(
     if row.object != 0
         && matches!(&graph.get(reference)?.payload,Some(Payload::Construction(v)) if matches!(v.data,D::Architecture {..}))
     {
-        return Err("部分対象のLaw評価へbase Architectureを渡した".into());
+        return Err(internal!("部分対象のLaw評価へbase Architectureを渡した").into());
     }
     let a = native::architecture_origin(graph, reference, row.object)?;
     if !Arc::ptr_eq(a, &row.architecture) {
-        return Err("元Law frameのArchitectureが別の構成である".into());
+        return Err(internal!("元Law frameのArchitectureが別の構成である").into());
     }
     Ok(())
 }
 fn checked_origin(graph: &Graph, d: &Data) -> Result<Origin, ValidationFailure> {
-    let row = origin(graph, d.origin)?.ok_or("元Law frameが検査済み行でない")?;
+    let row = origin(graph, d.origin)?.ok_or(internal!("元Law frameが検査済み行でない"))?;
     check_architecture(graph, d.architecture, &row)?;
     if !row.ready {
-        return Err("元Law frameの対象・適用条件が違う".into());
+        return Err(internal!("元Law frameの対象・適用条件が違う").into());
     }
     Ok(row)
 }
 fn support(graph: &Graph, row: &Origin, kind: &Kind) -> Result<Vec<Fact>, ValidationFailure> {
     let selected: Vec<_> = match kind {
         Kind::Parameter { position, .. } => {
-            vec![row.bindings.get(*position).ok_or("元parameter位置がない")?]
+            vec![
+                row.bindings
+                    .get(*position)
+                    .ok_or(internal!("元parameter位置がない"))?,
+            ]
         }
         _ => row.bindings.iter().collect(),
     };
@@ -205,7 +209,7 @@ pub(super) fn validate_node(
 ) -> Result<(), ValidationFailure> {
     let row = checked_origin(graph, d)?;
     let Witness::Architecture(w) = &v.witness else {
-        return Err("元Law frameの証人がない".into());
+        return Err(internal!("元Law frameの証人がない").into());
     };
     if !Arc::ptr_eq(w, &row.architecture)
         || n.ty != d.ty()
@@ -218,25 +222,25 @@ pub(super) fn validate_node(
         || n.judgment.is_some()
         || d.scope != row.scope
     {
-        return Err("元Law frameの型・由来・metadataが違う".into());
+        return Err(internal!("元Law frameの型・由来・metadataが違う").into());
     }
     let original_support = support(graph, &row, &d.kind)?;
     if d.support != original_support {
-        return Err("元Law frameの支持が違う".into());
+        return Err(internal!("元Law frameの支持が違う").into());
     }
     match &d.kind {
         Kind::Parameter { position, value } => {
             let binding = row
                 .bindings
                 .get(*position)
-                .ok_or("元Law parameter位置がない")?;
+                .ok_or(internal!("元Law parameter位置がない"))?;
             if value.ty() != binding.ty || graph.scalar(binding.value)? != value {
-                return Err("元Law parameterの型・値が違う".into());
+                return Err(internal!("元Law parameterの型・値が違う").into());
             }
         }
         Kind::Member { bindings, value } => {
             if bindings.len() != row.bindings.len() || value != &Scalar::Unit {
-                return Err("元Lawの完全束縛memberが違う".into());
+                return Err(internal!("元Lawの完全束縛memberが違う").into());
             }
             for (position, r) in bindings.iter().enumerate() {
                 let (_, p) = frame_value(graph, *r)?;
@@ -244,7 +248,7 @@ pub(super) fn validate_node(
                     || p.architecture != d.architecture
                     || !matches!(p.kind,Kind::Parameter {position:i,..} if i==position)
                 {
-                    return Err("元Law memberのparameter由来が違う".into());
+                    return Err(internal!("元Law memberのparameter由来が違う").into());
                 }
             }
         }
@@ -254,7 +258,7 @@ pub(super) fn validate_node(
                 || m.architecture != d.architecture
                 || !matches!(m.kind, Kind::Member { .. })
             {
-                return Err("元Lawの束縛済み域のmemberが違う".into());
+                return Err(internal!("元Lawの束縛済み域のmemberが違う").into());
             }
         }
     }
@@ -273,7 +277,10 @@ pub(super) fn instance_inputs(
     index: usize,
     limit: usize,
 ) -> Result<Option<Inputs>, ValidationFailure> {
-    let record = graph.instances.get(index).ok_or("元Law instanceがない")?;
+    let record = graph
+        .instances
+        .get(index)
+        .ok_or(internal!("元Law instanceがない"))?;
     let Some(Payload::Construction(v)) = &graph.get(record.domain)?.payload else {
         return Ok(None);
     };
@@ -281,7 +288,7 @@ pub(super) fn instance_inputs(
         return Ok(None);
     };
     let Kind::Domain { member } = &d.kind else {
-        return Err("元Law instanceの域が違う".into());
+        return Err(internal!("元Law instanceの域が違う").into());
     };
     if record.source != d.origin
         || record.member != *member
@@ -294,23 +301,23 @@ pub(super) fn instance_inputs(
             .iter()
             .any(|r| r.0 >= limit || graph.context_at(r.0) != record.caller)
     {
-        return Err("元Law instanceの元行・member・既出Contextが違う".into());
+        return Err(internal!("元Law instanceの元行・member・既出Contextが違う").into());
     }
     let row = checked_origin(graph, d)?;
     let (_, m) = frame_value(graph, *member)?;
     if m.origin != d.origin || m.architecture != d.architecture {
-        return Err("元Law memberが別対象である".into());
+        return Err(internal!("元Law memberが別対象である").into());
     }
     let Kind::Member { bindings, .. } = &m.kind else {
-        return Err("元Lawの完全束縛がない".into());
+        return Err(internal!("元Lawの完全束縛がない").into());
     };
     if bindings.len() != row.bindings.len() {
-        return Err("元Lawの全parameterが揃わない".into());
+        return Err(internal!("元Lawの全parameterが揃わない").into());
     }
     let mut result = vec![];
     for (position, (actual, expected)) in bindings.iter().zip(&row.bindings).enumerate() {
         if actual.0 >= limit || graph.context_at(actual.0) != record.caller {
-            return Err("元Law parameterのContextが違う".into());
+            return Err(internal!("元Law parameterのContextが違う").into());
         }
         let (_, p) = frame_value(graph, *actual)?;
         if p.origin != d.origin
@@ -318,7 +325,7 @@ pub(super) fn instance_inputs(
             || !matches!(p.kind,Kind::Parameter {position:i,..} if i==position)
             || graph.scalar(*actual)? != graph.scalar(expected.value)?
         {
-            return Err("元Lawのparameter順・値・由来が違う".into());
+            return Err(internal!("元Lawのparameter順・値・由来が違う").into());
         }
         result.push(Binding {
             name: expected.name.clone(),
@@ -359,7 +366,7 @@ pub(super) fn body_guard(
     let body = law
         .exprs()
         .get(i.origin.body)
-        .ok_or("元Law body式がない")?
+        .ok_or(internal!("元Law body式がない"))?
         .span;
     if !(body.0 <= span.0 && span.1 <= body.1) {
         return Ok((true, None));
@@ -367,7 +374,11 @@ pub(super) fn body_guard(
     let Some(guard) = i.origin.guard else {
         return Ok((true, None));
     };
-    let expected = law.exprs().get(guard).ok_or("元Law guard式がない")?.span;
+    let expected = law
+        .exprs()
+        .get(guard)
+        .ok_or(internal!("元Law guard式がない"))?
+        .span;
     let record = &graph.instances[index];
     let mut found = None;
     for (at, node) in graph.nodes.iter().enumerate().take(limit) {
@@ -394,13 +405,13 @@ pub(super) fn body_guard(
         if matches!(&graph.get(*expression)?.payload,Some(Payload::Expression {location:archsig_common::issue::Location::Law {span},..}) if *span==expected)
         {
             if found.replace(NodeRef(at)).is_some() {
-                return Err("元Law guardの完成評価が重複".into());
+                return Err(internal!("元Law guardの完成評価が重複").into());
             }
         }
     }
     Ok((
         i.origin.body_allowed,
-        Some(found.ok_or("元Law bodyより先のguard評価がない")?),
+        Some(found.ok_or(internal!("元Law bodyより先のguard評価がない"))?),
     ))
 }
 
@@ -446,12 +457,12 @@ pub(super) fn prepare_instance(
     tick(c)?;
     env.recheck_law_evaluation_inputs(graph, origin, architecture)?;
     let Some(row) = self::origin(graph, origin)? else {
-        return Err("評価する元native Law行がない".into());
+        return Err(internal!("評価する元native Law行がない").into());
     };
     check_architecture(graph, architecture, &row)?;
     let caller = graph.active;
     if caller != graph.context_at(origin.0) {
-        return Err("Law評価の元Request Contextが違う".into());
+        return Err(internal!("Law評価の元Request Contextが違う").into());
     }
     if !row.ready {
         return Ok(None);
@@ -553,7 +564,7 @@ impl super::result_kind::ResultKind for Data {
         let request = graph
             .requests
             .get(caller.request)
-            .ok_or("元Law評価Requestがない")?
+            .ok_or(internal!("元Law評価Requestがない"))?
             .clone();
         let declaration = env
             .indexes
@@ -561,7 +572,7 @@ impl super::result_kind::ResultKind for Data {
             .law()
             .declarations()
             .get(&row.declaration)
-            .ok_or("元Law宣言がない")?;
+            .ok_or(internal!("元Law宣言がない"))?;
         let guard = row
             .guard
             .map(|id| {
@@ -580,7 +591,7 @@ impl super::result_kind::ResultKind for Data {
         let guard_false = guard
             .map(|r| -> Result<bool, ValidationFailure> {
                 let Some(Payload::Evaluation { value, .. }) = &graph.get(r)?.payload else {
-                    return Err("元guardが通常評価でない".into());
+                    return Err(internal!("元guardが通常評価でない").into());
                 };
                 Ok(graph.boolean(*value)? == Some(false))
             })
