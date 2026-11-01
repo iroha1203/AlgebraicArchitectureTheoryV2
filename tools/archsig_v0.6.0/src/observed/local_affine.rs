@@ -577,7 +577,7 @@ pub(super) fn compute(
                     let value = Scalar::Subject {
                         snapshot: slot.snapshot.clone(),
                         subject: slot.subject.clone(),
-                        entity: subject.ty.clone(),
+                        entity: subject.ty.to_string(),
                     };
                     support.carrier.push(Json::obj([
                         ("type", value.ty().wire()),
@@ -595,7 +595,7 @@ pub(super) fn compute(
                 let value = Scalar::Subject {
                     snapshot: slot.snapshot.clone(),
                     subject: slot.subject.clone(),
-                    entity: subject.ty.clone(),
+                    entity: subject.ty.to_string(),
                 };
                 supports.push(geometry::Support {
                     carrier: vec![Json::obj([

@@ -204,7 +204,7 @@ fn update_value<'a>(
         .find(|(f, _)| {
             f.field
                 .as_ref()
-                .is_some_and(|field| field.rsplit('.').next() == Some(name))
+                .is_some_and(|field| field.short() == name)
         })
         .ok_or_else(|| ValidationFailure::from("change移送の名前付き更新先がない"))
 }
@@ -435,12 +435,12 @@ pub(super) fn retain(
         let moved = correspondence.field_target(inputs, &format!("{st}.{}", field.name), c)
             .map_err(failure)?;
         let target = moved.as_deref().and_then(|name| name.strip_prefix(&format!("{tt}.")));
-        if items[0].fields.contains(&field.name)
+        if items[0].fields.iter().any(|name| name == field.name.as_str())
             || target.is_some_and(|name| items[1].fields.iter().any(|field| field == name))
         {
             let target = target.ok_or_else(|| unsupported(inputs, bodies[0],
                 "missing field correspondence for the change update target"))?;
-            names.push([field.name.clone(), target.to_owned()]);
+            names.push([field.name.to_string(), target.to_owned()]);
         }
     }
     if items[1].fields.iter().any(|field| !names.iter().any(|pair| &pair[1] == field)) {

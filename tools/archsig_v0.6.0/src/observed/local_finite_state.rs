@@ -256,7 +256,7 @@ pub(super) fn build(
             &Scalar::Subject {
                 snapshot: slot.snapshot.clone(),
                 subject: slot.subject.clone(),
-                entity: subject.ty.clone(),
+                entity: subject.ty.to_string(),
             },
         )?;
         slot_subjects.push(r);

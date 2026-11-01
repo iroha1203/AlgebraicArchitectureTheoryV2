@@ -217,9 +217,9 @@ fn exists(subject: &Subject) -> FactPointer {
         atom: None,
     }
 }
-fn slot(subject: &Subject, field: &str) -> FactPointer {
+fn slot(subject: &Subject, field: &crate::names::QualifiedName) -> FactPointer {
     FactPointer {
-        field: Some(field.into()),
+        field: Some(field.clone()),
         ..exists(subject)
     }
 }
@@ -546,7 +546,7 @@ fn construct_with_owners(
         inputs
             .definitions()
             .declarations
-            .get(&selected.ty)
+            .get(selected.ty.as_str())
             .map(|d| &d.signature),
         Some(PrimitiveSignature::Entity { owner: None, .. })
     ) {
@@ -566,7 +566,7 @@ fn construct_with_owners(
         let signature = inputs
             .definitions()
             .declarations
-            .get(&subject.ty)
+            .get(subject.ty.as_str())
             .ok_or_else(|| ConstructionFailure::Inconsistent("subjectの元定義がない".into()))?;
         let (owner, is_entity) = match &signature.signature {
             PrimitiveSignature::Entity {
@@ -581,7 +581,7 @@ fn construct_with_owners(
         let mut owner_field = None;
         for field in &subject.fields {
             tick(control)?;
-            if field.name.rsplit('.').next() == Some("owner") {
+            if field.name.is_owner() {
                 owner_field = Some(field);
             }
         }

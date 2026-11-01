@@ -89,7 +89,7 @@ impl Signature {
             for field in fs {
                 E::checkpoint(control, point)?;
                 fields.push(Param {
-                    name: field.name.clone(),
+                    name: field.name.to_string(),
                     ty: field.ty.clone(),
                     span: (0, 0),
                 });

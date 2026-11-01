@@ -210,7 +210,7 @@ fn internal_arrow_checked(
     let signature = inputs
         .definitions()
         .declarations
-        .get(&holder.ty)
+        .get(holder.ty.as_str())
         .ok_or_else(|| ConstructionFailure::Inconsistent("arrowの元定義がない".into()))?;
     let PrimitiveSignature::Arrow { owner, .. } = &signature.signature else {
         return Err(ConstructionFailure::InvalidSelection(
@@ -311,7 +311,7 @@ fn internal_arrow_checked(
             continue;
         };
         let source_subject = subject(inputs, &fact.snapshot, &fact.subject, control)?;
-        let name = source_field.rsplit('.').next().unwrap_or(source_field);
+        let name = source_field.short();
         let target_field = format!("{}.{}", target_subject.ty, name);
         let Some(tf) = field(target_subject, &target_field, control)? else {
             result.counterexamples.push(Counterexample::Field {
@@ -427,7 +427,7 @@ pub fn internal_arrows(
                 let Some(PrimitiveSignature::Arrow { owner, .. }) = inputs
                     .definitions()
                     .declarations
-                    .get(&holder.ty)
+                    .get(holder.ty.as_str())
                     .map(|d| &d.signature)
                 else {
                     continue;

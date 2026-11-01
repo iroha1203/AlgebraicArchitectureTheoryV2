@@ -78,7 +78,7 @@ fn public_paths_keep_all_46_atom_images_and_named_generators() {
                     expected.push(Fact {
                         snapshot: snapshot.into(),
                         subject: subject.into(),
-                        field: Some(format!("Paths.{entity}.{field}")),
+                        field: Some(format!("Paths.{entity}.{field}").into()),
                         atom: Some(format!("{subject}-{field}")),
                     });
                 }

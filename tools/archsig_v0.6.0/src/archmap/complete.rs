@@ -109,7 +109,7 @@ impl<'a, E: InputError> Model<'a, E> {
         self.checkpoint()?;
         for (i, f) in self.subjects[g].fields.iter().enumerate() {
             self.checkpoint()?;
-            if f.name.rsplit('.').next() == Some(name) {
+            if f.name.short() == name {
                 return self.done(i);
             }
             self.checkpoint()?;
@@ -622,12 +622,12 @@ fn check_valuation_inner<E: InputError>(
         E::checkpoint(control, Checkpoint::Completion)?;
         let mut owner = None;
         if matches!(
-            definitions.declarations[&s.ty].signature,
+            definitions.declarations[s.ty.as_str()].signature,
             PrimitiveSignature::Entity { .. } | PrimitiveSignature::Arrow { .. }
         ) {
             for (f, field) in s.fields.iter().enumerate() {
                 E::checkpoint(control, Checkpoint::Completion)?;
-                if field.name.rsplit('.').next() == Some("owner") {
+                if field.name.is_owner() {
                     owner = Some(f);
                     break;
                 }
@@ -675,10 +675,7 @@ fn check_valuation_inner<E: InputError>(
         if (!replace_known && field.slot != Slot::Missing) || m.pinned.contains_key(&(g, f)) {
             return Err(fail().into());
         }
-        let namespace = m.subjects[g]
-            .ty
-            .rsplit_once('.')
-            .map_or("", |(namespace, _)| namespace);
+        let namespace = m.subjects[g].ty.namespace();
         let value = value::check_assignment::<E>(
             &assignment.value,
             &field.ty,

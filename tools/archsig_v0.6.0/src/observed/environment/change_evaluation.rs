@@ -222,7 +222,7 @@ fn evaluate_inner(
                             Fact {
                                 snapshot: snapshot.clone(),
                                 subject: subject.clone(),
-                                field: Some(format!("{entity}.{}", field.name)),
+                                field: Some(environment.input_name(&format!("{entity}.{}", field.name))?),
                                 atom: None,
                             },
                             value,
@@ -241,7 +241,7 @@ fn evaluate_inner(
                     if let Some(value) = value.known_value {
                         result.values.push((Fact {
                             snapshot: snapshot.clone(), subject: subject.clone(),
-                            field: Some(format!("{entity}.{name}")), atom: None,
+                            field: Some(environment.input_name(&format!("{entity}.{name}"))?), atom: None,
                         }, value));
                     }
                 }
@@ -464,7 +464,7 @@ pub(in crate::observed) fn candidate(
                 let fact = Fact {
                     snapshot: snapshot.clone(),
                     subject: id.clone(),
-                    field: Some(format!("{entity}.{name}")),
+                    field: Some(environment.input_name(&format!("{entity}.{name}"))?),
                     atom: None,
                 };
                 if values.contains_key(&fact) {

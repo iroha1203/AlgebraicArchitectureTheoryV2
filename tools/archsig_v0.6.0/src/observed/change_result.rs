@@ -126,13 +126,13 @@ impl Data {
             .ty
             .clone();
         match self.ty() {
-            NodeType::Construction(T::CandidateSpace) => Some(ProjectionType::CandidateSpace(ty)),
-            NodeType::Construction(T::SolutionSet) => Some(ProjectionType::SolutionSet(ty)),
-            NodeType::Construction(T::StateSpace) => Some(ProjectionType::StateSpace(ty)),
+            NodeType::Construction(T::CandidateSpace) => Some(ProjectionType::CandidateSpace(ty.into())),
+            NodeType::Construction(T::SolutionSet) => Some(ProjectionType::SolutionSet(ty.into())),
+            NodeType::Construction(T::StateSpace) => Some(ProjectionType::StateSpace(ty.into())),
             NodeType::Construction(T::StateMap) => Some(ProjectionType::StateMap),
-            NodeType::Construction(T::Architecture) => Some(ProjectionType::ArchitectureRoot(ty)),
-            NodeType::Construction(T::Repair) => Some(ProjectionType::Repair(ty)),
-            NodeType::Construction(T::Assignment) => Some(ProjectionType::Assignment(ty)),
+            NodeType::Construction(T::Architecture) => Some(ProjectionType::ArchitectureRoot(ty.into())),
+            NodeType::Construction(T::Repair) => Some(ProjectionType::Repair(ty.into())),
+            NodeType::Construction(T::Assignment) => Some(ProjectionType::Assignment(ty.into())),
             NodeType::Domain => Some(ProjectionType::Domain),
             _ => None,
         }
@@ -510,7 +510,7 @@ pub(super) fn render_search(
             slots.push(Fact {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
-                field: Some(format!("{entity}.{name}")),
+                field: Some(env.input_name(&format!("{entity}.{name}"))?),
                 atom: None,
             });
         }
@@ -578,7 +578,7 @@ pub(super) fn render_search(
             &Scalar::Subject {
                 snapshot: slot.snapshot.clone(),
                 subject: slot.subject.clone(),
-                entity: subject.ty.clone(),
+                entity: subject.ty.to_string(),
             },
         )?;
         state_args.push(r);
@@ -886,7 +886,7 @@ pub(super) fn render_search(
                     &Scalar::Subject {
                         snapshot: fact.snapshot.clone(),
                         subject: fact.subject.clone(),
-                        entity: subject.ty.clone(),
+                        entity: subject.ty.to_string(),
                     },
                 )?;
                 let updated = value(&mut b, scalar)?;
@@ -1313,7 +1313,7 @@ pub(super) fn architecture_overrides(g: &Graph, part: &Part) -> Result<Vec<(Fact
                 Fact {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),
-                    field: Some(field.clone()),
+                    field: Some(field.clone().into()),
                     atom: None,
                 },
                 updated,

@@ -180,7 +180,7 @@ impl Environment<'_> {
                     scalar: Scalar::Subject {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
-                        entity: s.ty.clone(),
+                        entity: s.ty.to_string(),
                     },
                     scope: self.scope(s, reading, None)?,
                     support: vec![Fact {

@@ -111,7 +111,7 @@ fn state(
             &Scalar::Subject {
                 snapshot: position.snapshot.clone(),
                 subject: position.subject.clone(),
-                entity: subject.ty.clone(),
+                entity: subject.ty.to_string(),
             },
         )?;
         slot_subjects.push(reference);

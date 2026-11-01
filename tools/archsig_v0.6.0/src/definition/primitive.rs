@@ -938,7 +938,7 @@ fn check_correspondence<E: InputError>(
                 "duplicate mapping for the same type",
             );
         }
-        maps.push((m.name.clone(), e, f));
+        maps.push((m.name.to_string(), e, f));
         E::checkpoint(control, Checkpoint::DefinitionDependency)?;
     }
     if domain.keys().cloned().collect::<BTreeSet<_>>() != owned_types::<E>(defs, &source, control)?
@@ -1018,7 +1018,7 @@ fn check_correspondence<E: InputError>(
                 );
             };
             alpha.insert(
-                sf.name.clone(),
+                sf.name.to_string(),
                 t.rsplit('.').next().expect("field 完全名").to_owned(),
             );
             E::checkpoint(control, Checkpoint::DefinitionDependency)?;
@@ -1039,7 +1039,7 @@ fn check_correspondence<E: InputError>(
             E::checkpoint(control, Checkpoint::DefinitionDependency)?;
             let tf = super::model::find_field_controlled::<E>(
                 target_fields.iter().copied(),
-                &alpha[&sf.name],
+                &alpha[sf.name.as_str()],
                 control,
                 Checkpoint::DefinitionSemantics,
             )?

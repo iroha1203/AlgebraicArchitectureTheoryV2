@@ -63,7 +63,7 @@ pub enum Slot {
 #[derive(Debug, PartialEq)]
 pub struct Field {
     /// field の完全名。
-    pub name: String,
+    pub name: crate::names::QualifiedName,
     pub ty: Type,
     pub slot: Slot,
 }
@@ -73,7 +73,7 @@ pub struct Field {
 pub struct Fact {
     pub snapshot: String,
     pub subject: String,
-    pub field: Option<String>,
+    pub field: Option<crate::names::QualifiedName>,
     pub atom: Option<String>,
 }
 impl Fact {
@@ -97,7 +97,7 @@ pub struct Subject {
     pub snapshot: String,
     pub id: String,
     /// 宣言の完全名。
-    pub ty: String,
+    pub ty: crate::names::QualifiedName,
     pub origin: String,
     /// 宣言順(括弧内、body の順)の全 field。
     pub fields: Vec<Field>,

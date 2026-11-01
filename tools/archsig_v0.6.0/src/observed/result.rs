@@ -116,7 +116,7 @@ pub(crate) enum Scalar {
     Tuple(Vec<Scalar>),
     Data {
         family: String,
-        constructor: String,
+        constructor: crate::names::QualifiedName,
         args: Vec<Scalar>,
     },
     Bool(bool),
@@ -176,7 +176,7 @@ impl Scalar {
             } => Json::obj([
                 (
                     "tag",
-                    Json::str(constructor.rsplit('.').next().unwrap_or(constructor)),
+                    Json::str(constructor.short()),
                 ),
                 ("args", Json::Arr(args.iter().map(Scalar::wire).collect())),
             ]),

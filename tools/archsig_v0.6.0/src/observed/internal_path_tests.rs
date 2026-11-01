@@ -46,7 +46,7 @@ fn fact(snapshot: &str, subject: &str, field: Option<&str>) -> Fact {
     Fact {
         snapshot: snapshot.into(),
         subject: subject.into(),
-        field: field.map(|f| format!("Paths.Node.{f}")),
+        field: field.map(|f| format!("Paths.Node.{f}").into()),
         atom: field.map(|f| format!("{subject}-{f}")),
     }
 }
@@ -86,7 +86,7 @@ fn internal_path_action_is_exact_on_all_42_original_atoms_and_external_identity(
                 expected.push(Fact {
                     snapshot: snapshot.into(),
                     subject: subject.into(),
-                    field: Some(format!("Paths.{entity}.{field}")),
+                    field: Some(format!("Paths.{entity}.{field}").into()),
                     atom: Some(format!("{subject}-{field}")),
                 });
             }

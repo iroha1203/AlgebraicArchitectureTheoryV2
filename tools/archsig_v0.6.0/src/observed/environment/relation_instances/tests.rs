@@ -61,7 +61,7 @@ fn slot(namespace: &str, subject: &str, field: &str) -> Fact {
     Fact {
         snapshot: "v".into(),
         subject: subject.into(),
-        field: Some(format!("{namespace}.{field}")),
+        field: Some(format!("{namespace}.{field}").into()),
         atom: None,
     }
 }

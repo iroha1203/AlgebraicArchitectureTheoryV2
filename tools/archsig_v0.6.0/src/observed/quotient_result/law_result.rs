@@ -119,7 +119,7 @@ pub(super) fn row(
             &Scalar::Subject {
                 snapshot: fact.snapshot.clone(),
                 subject: fact.subject.clone(),
-                entity: subject.ty.clone(),
+                entity: subject.ty.to_string(),
             },
         )?;
         let value = change_result::value(b, scalar)?;

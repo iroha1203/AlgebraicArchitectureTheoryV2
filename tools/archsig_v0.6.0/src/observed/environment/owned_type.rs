@@ -169,7 +169,7 @@ impl Environment<'_> {
                     self.inputs
                         .definitions()
                         .declarations
-                        .get(&subject.ty)
+                        .get(subject.ty.as_str())
                         .map(|d| &d.signature),
                     Some(
                         PrimitiveSignature::Entity { owner: Some(_), .. }
@@ -182,7 +182,7 @@ impl Environment<'_> {
                     self.control
                         .clone()
                         .checkpoint(Checkpoint::ObjectEvaluation)?;
-                    if field.name.rsplit('.').next() != Some("owner") {
+                    if !field.name.is_owner() {
                         continue;
                     }
                     if let Slot::Known { atom, origin, .. } = &field.slot {

@@ -242,7 +242,7 @@ fn subject_node(env: &Environment<'_>, s: &Selector) -> Result<Node, ValidationF
     let scalar = Scalar::Subject {
         snapshot: snapshot.clone(),
         subject: subject.clone(),
-        entity: source.ty.clone(),
+        entity: source.ty.to_string(),
     };
     Ok(Node {
         ty: NodeType::Value(scalar.ty()),

@@ -348,7 +348,7 @@ fn field<'a>(
 ) -> Result<Option<&'a Field>, ConstructionFailure> {
     for f in &subject.fields {
         check(control)?;
-        if f.name == name || f.name.rsplit('.').next() == Some(name) {
+        if f.name == name || f.name.short() == name {
             return Ok(Some(f));
         }
     }
@@ -720,7 +720,7 @@ fn typed_reference_constraints_violation(
         }
         variables.push(MappingVariable {
             source: k.clone(),
-            field: map_field.name.clone(),
+            field: map_field.name.to_string(),
             images,
         });
     }
@@ -803,17 +803,17 @@ fn typed_reference_constraints_violation(
                     ConstructionFailure::Inconsistent("補完したholderの像がない".into())
                 })?;
                 let target = subject(inputs, &image.0, &image.1, control)?;
-                let source_field = fact.field.as_deref().ok_or_else(|| {
+                let source_field = fact.field.as_ref().ok_or_else(|| {
                     ConstructionFailure::Inconsistent("参照条件にfieldがない".into())
                 })?;
                 let name = field_map
-                    .get(source_field)
+                    .get(source_field.as_str())
                     .map(|s| s.to_string())
                     .unwrap_or_else(|| {
                         format!(
                             "{}.{}",
                             target.ty,
-                            source_field.rsplit('.').next().unwrap_or(source_field)
+                            source_field.short()
                         )
                     });
                 let Some(tf) = field(target, &name, control)? else {
@@ -865,7 +865,7 @@ fn typed_reference_constraints_violation(
                 assignments.push(crate::archmap::FieldAssignment {
                     snapshot: holder.snapshot.clone(),
                     subject: holder.id.clone(),
-                    field: map_field.name.clone(),
+                    field: map_field.name.to_string(),
                     value: Json::Arr(rows),
                 });
             }
@@ -1002,7 +1002,7 @@ pub fn correspondence_retained(
     let declaration = inputs
         .definitions()
         .declarations
-        .get(&holder.ty)
+        .get(holder.ty.as_str())
         .ok_or_else(|| ConstructionFailure::Inconsistent("対応の元定義がない".into()))?;
     let PrimitiveSignature::Correspondence {
         from,
@@ -1188,7 +1188,7 @@ pub fn correspondence_retained(
                         format!(
                             "{}.{}",
                             image_subject.ty,
-                            source_field.rsplit('.').next().unwrap_or(source_field)
+                            source_field.short()
                         )
                     });
                 let Some(tf) = field(image_subject, &target_field, control)? else {

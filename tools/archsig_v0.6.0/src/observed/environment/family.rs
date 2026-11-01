@@ -329,7 +329,7 @@ impl Environment<'_> {
                         != &(Scalar::Subject {
                             snapshot: snapshot.clone(),
                             subject: subject.clone(),
-                            entity: actual.ty.clone(),
+                            entity: actual.ty.to_string(),
                         })
                     {
                         return Err("固定subject identityが違う".into());

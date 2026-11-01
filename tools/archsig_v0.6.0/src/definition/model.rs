@@ -22,7 +22,7 @@ impl Binding {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Field {
-    pub name: String,
+    pub name: crate::names::QualifiedName,
     pub ty: Type,
     pub meaning: String,
     pub location: Location,

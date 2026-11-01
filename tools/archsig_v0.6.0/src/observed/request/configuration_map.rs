@@ -55,7 +55,7 @@ pub(super) fn resolve(
     for (candidate, d) in &law.definitions.declarations {
         phase(control, Checkpoint::RequestBinding)?;
         if candidate == name
-            || (!name.contains('.') && candidate.rsplit('.').next() == Some(name.as_str()))
+            || (!name.contains('.') && law.resolved_names.get(candidate).is_some_and(|parts| parts.short() == name))
         {
             found.push((candidate, d));
         }

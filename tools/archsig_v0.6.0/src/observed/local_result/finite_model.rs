@@ -127,7 +127,7 @@ pub(super) fn analyze(
             slots.push(Fact {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
-                field: Some(format!("{entity}.{field}")),
+                field: Some(env.input_name(&format!("{entity}.{field}"))?),
                 atom: None,
             });
         }
@@ -367,7 +367,7 @@ pub(super) fn analyze(
                     &Scalar::Subject {
                         snapshot: fact.snapshot.clone(),
                         subject: fact.subject.clone(),
-                        entity: subject.ty.clone(),
+                        entity: subject.ty.to_string(),
                     },
                     c,
                 )?;

@@ -689,7 +689,7 @@ impl ConstructionValue {
                         .iter()
                         .find(|s| s.id == a.construction.root().subject)?
                         .ty
-                        .clone(),
+                        .to_string(),
                 ))
             }
             (D::ObjectComponents(data), Witness::Architecture(a))
@@ -705,7 +705,7 @@ impl ConstructionValue {
                         .iter()
                         .find(|s| s.id == a.construction.root().subject)?
                         .ty
-                        .clone(),
+                        .to_string(),
                 ))
             }
             (D::InternalArrows(data), Witness::Architecture(_)) => data.projection_type(),
@@ -726,7 +726,7 @@ impl ConstructionValue {
                         .iter()
                         .find(|s| s.id == a.construction.root().subject)?
                         .ty
-                        .clone(),
+                        .to_string(),
                 ))
             }
             (D::MapCandidate { .. }, Witness::Map(m)) => {
@@ -1128,7 +1128,7 @@ impl ArchitectureWitness {
             control.checkpoint(crate::control::Checkpoint::ObjectInstances)?;
             let subject = find_subject(&inputs, fact).map_err(ConstructionFailure::Inconsistent)?;
             if matches!(
-                inputs.definitions().declarations[&subject.ty].signature,
+                inputs.definitions().declarations[subject.ty.as_str()].signature,
                 crate::definition::PrimitiveSignature::Arrow { .. }
             ) {
                 arrows.push(fact.clone());
@@ -1145,7 +1145,7 @@ impl ArchitectureWitness {
         for snapshot in &inputs.archmap().snapshots {
             for subject in &snapshot.subjects {
                 control.checkpoint(crate::control::Checkpoint::ObjectInstances)?;
-                let declaration = &inputs.definitions().declarations[&subject.ty];
+                let declaration = &inputs.definitions().declarations[subject.ty.as_str()];
                 let owner = match &declaration.signature {
                     crate::definition::PrimitiveSignature::Entity {
                         owner: Some(owner), ..
@@ -1164,7 +1164,7 @@ impl ArchitectureWitness {
                     atom: None,
                 });
                 for field in &subject.fields {
-                    if field.name.rsplit('.').next() != Some("owner") {
+                    if !field.name.is_owner() {
                         continue;
                     }
                     if let crate::archmap::Slot::Known { atom, .. } = &field.slot {
@@ -1186,7 +1186,7 @@ impl ArchitectureWitness {
                     let subject = find_subject(&inputs, binding.subject())
                         .map_err(ConstructionFailure::Inconsistent)?;
                     for field in &subject.fields {
-                        if field.name.rsplit('.').next() == Some("owner")
+                        if field.name.is_owner()
                             && let crate::archmap::Slot::Known { atom, .. } = &field.slot
                         {
                             support.push(Fact {
@@ -1385,7 +1385,7 @@ pub fn subject_value(
 ) -> Result<ConstructionValue, ValidationFailure> {
     let subject = find_subject(witness.inputs(), fact)?;
     let value = Scalar::Subject {
-        entity: subject.ty.clone(),
+        entity: subject.ty.to_string(),
         snapshot: subject.snapshot.clone(),
         subject: subject.id.clone(),
     };
@@ -1886,7 +1886,7 @@ fn validate_partial(
                 }) = holder
                     .fields
                     .iter()
-                    .find(|f| f.name.rsplit('.').next() == Some(endpoint))
+                    .find(|f| f.name.short() == endpoint)
                 {
                     let r = part(parts, name, None)?;
                     let av = value(graph, r)?;

@@ -138,7 +138,7 @@ impl Environment<'_> {
                 }
                 if (s.snapshot.as_str(), s.id.as_str()) == (fp.0.as_str(), fp.1.as_str()) {
                     members.push(s);
-                } else if by_type.contains_key(&s.ty) {
+                } else if by_type.contains_key(s.ty.as_str()) {
                     let owner = self.path_slot(
                         s,
                         self.field(&s.snapshot, &s.id, &format!("{}.owner", s.ty))?,
@@ -174,7 +174,7 @@ impl Environment<'_> {
             let expected_type = if sp == fp {
                 tt
             } else {
-                by_type.get(&s.ty).ok_or("対応元の型がない")?
+                by_type.get(s.ty.as_str()).ok_or("対応元の型がない")?
             };
             if &t.ty != expected_type {
                 return Err("対応先の実subject型が違う".into());
@@ -203,11 +203,11 @@ impl Environment<'_> {
                     format!(
                         "{}.{}",
                         t.ty,
-                        f.name.rsplit('.').next().ok_or("root field名がない")?
+                        f.name.short()
                     )
                 } else {
                     fields
-                        .get(&f.name)
+                        .get(f.name.as_str())
                         .ok_or("検査済みfield対応がない")?
                         .clone()
                 };

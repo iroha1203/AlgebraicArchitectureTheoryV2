@@ -24,7 +24,7 @@ pub(super) fn position(
         &Scalar::Subject {
             snapshot: f.snapshot.clone(),
             subject: f.subject.clone(),
-            entity: subject.ty.clone(),
+            entity: subject.ty.to_string(),
         },
     )?;
     Ok((

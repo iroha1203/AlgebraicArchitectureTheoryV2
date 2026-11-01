@@ -969,7 +969,7 @@ fn declaration(
     let mut found = None;
     for (index, candidate) in law.declarations.keys().enumerate() {
         phase(control, Checkpoint::RequestBinding)?;
-        let matches = candidate.rsplit('.').next() == Some(name);
+        let matches = law.resolved_names.get(candidate).is_some_and(|name_parts| name_parts.short() == name);
         if matches {
             if found.is_some() {
                 return finish_request(Err(missing()), control, Checkpoint::RequestBinding);
@@ -1143,7 +1143,7 @@ fn selector_type(
         } => {
             let s = subject(map, snapshot, id, control, context)?;
             ProjectionPlan {
-                ty: ProjectionType::Law(Type::Ref(s.ty.clone())),
+                ty: ProjectionType::Law(Type::Ref(s.ty.to_string())),
                 conditional: false,
             }
         }
@@ -1489,7 +1489,7 @@ fn owner_check(
     let s = subject(map, snapshot, id, control, (request, argument))?;
     let field = checked_find(
         &s.fields,
-        |f| f.name.rsplit('.').next() == Some("owner"),
+        |f| f.name.is_owner(),
         control,
         Checkpoint::RequestBinding,
     )?;

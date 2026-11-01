@@ -90,7 +90,7 @@ fn fact(id: &str, field: Option<&str>) -> Fact {
     Fact {
         snapshot: "v".into(),
         subject: id.into(),
-        field: field.map(|f| format!("Flow.{ty}.{f}")),
+        field: field.map(|f| format!("Flow.{ty}.{f}").into()),
         atom: field.map(|f| format!("{id}-{f}")),
     }
 }

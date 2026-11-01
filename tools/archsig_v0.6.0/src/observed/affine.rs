@@ -152,7 +152,7 @@ fn controlled<T>(
 fn fact_check(fact: &Fact) -> Result<(), ValidationFailure> {
     if fact.snapshot.is_empty()
         || fact.subject.is_empty()
-        || fact.field.as_ref().is_none_or(String::is_empty)
+        || fact.field.as_ref().is_none_or(|name| name.is_empty())
         || fact.atom.is_some()
     {
         return Err("アフィン欠測slotの元Factがfieldのidentityでない".into());

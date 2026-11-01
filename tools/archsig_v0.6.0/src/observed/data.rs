@@ -172,14 +172,14 @@ pub(super) fn resolved(
     law: &CheckedLaw,
     span: Span,
     control: &Control,
-) -> Result<Option<String>, ValidationFailure> {
+) -> Result<Option<crate::names::QualifiedName>, ValidationFailure> {
     let mut found = None;
     for info in &law.infos {
         tick(control)?;
         for (at, target) in &info.references {
             tick(control)?;
             if *at == span
-                && let Some((family, _)) = target.rsplit_once('.')
+                && let Some(family) = law.resolved_names.get(target).and_then(|name| name.owner())
                 && matches!(
                     law.definitions
                         .declarations
@@ -192,7 +192,7 @@ pub(super) fn resolved(
                 if found.as_ref().is_some_and(|previous| previous != target) {
                     return Err("constructor静的解決が一意でない".into());
                 }
-                found = Some(target.clone());
+                found = law.resolved_names.get(target).cloned();
             }
         }
     }
@@ -202,7 +202,7 @@ pub(super) fn expression(
     law: &CheckedLaw,
     id: usize,
     control: &Control,
-) -> Result<Option<(String, Vec<usize>)>, ValidationFailure> {
+) -> Result<Option<(crate::names::QualifiedName, Vec<usize>)>, ValidationFailure> {
     let (mut name, args) = match &law.exprs[id].kind {
         ExprKind::Call { callee, args } => (*callee, args.clone()),
         ExprKind::Dotted(_) => (id, vec![]),
@@ -337,10 +337,7 @@ pub(super) fn input_json(
                 (
                     "tag",
                     Json::str(
-                        constructor
-                            .rsplit('.')
-                            .next()
-                            .ok_or("補完constructorがない")?,
+                        constructor.short(),
                     ),
                 ),
                 ("args", Json::Arr(children(args)?)),
@@ -600,12 +597,12 @@ pub(super) fn select_partial<T: Clone>(
     value: &T,
     control: &Control,
     parts: &impl Fn(&T, &Control) -> Result<Option<(String, Vec<T>)>, ValidationFailure>,
-    resolve: &impl Fn(Span, &Control) -> Result<Option<String>, ValidationFailure>,
+    resolve: &impl Fn(Span, &Control) -> Result<Option<crate::names::QualifiedName>, ValidationFailure>,
 ) -> Result<Option<(usize, BTreeMap<String, T>)>, ValidationFailure> {
     fn walk<T: Clone>(
         pattern: &Pattern, value: &T, control: &Control,
         parts: &impl Fn(&T, &Control) -> Result<Option<(String, Vec<T>)>, ValidationFailure>,
-        resolve: &impl Fn(Span, &Control) -> Result<Option<String>, ValidationFailure>,
+        resolve: &impl Fn(Span, &Control) -> Result<Option<crate::names::QualifiedName>, ValidationFailure>,
         bound: &mut BTreeMap<String, T>,
     ) -> Result<Option<bool>, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {

@@ -264,7 +264,7 @@ impl Environment<'_> {
             let owner = Scalar::Subject {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
-                entity: self.subject(snapshot, subject)?.ty.clone(),
+                entity: self.subject(snapshot, subject)?.ty.to_string(),
             };
             let members = self.owned_members(entity, &owner, None, "", observer)?;
             if !members.missing.is_empty() {
@@ -320,7 +320,7 @@ impl Environment<'_> {
                 pinned.push(crate::archmap::FieldAssignment {
                     snapshot: fact.snapshot.clone(),
                     subject: fact.subject.clone(),
-                    field: fact.field.clone().ok_or("補完に元fieldがない")?,
+                    field: fact.field.clone().ok_or("補完に元fieldがない")?.into(),
                     value: data::input_json(&value, &self.control)?,
                 });
             }
@@ -1131,7 +1131,7 @@ impl Environment<'_> {
             let expected = Scalar::Subject {
                 snapshot: subject.snapshot.clone(),
                 subject: subject.id.clone(),
-                entity: subject.ty.clone(),
+                entity: subject.ty.to_string(),
             };
             let producer = graph.get(binding.value)?;
             if graph.scalar(binding.value)? != &expected
@@ -1783,7 +1783,7 @@ impl Environment<'_> {
                         != &(Scalar::Subject {
                             snapshot: snapshot.clone(),
                             subject: subject.clone(),
-                            entity: actual.ty.clone(),
+                            entity: actual.ty.to_string(),
                         })
                 {
                     return Err("補完Seed固定subjectが元Requestと違う".into());

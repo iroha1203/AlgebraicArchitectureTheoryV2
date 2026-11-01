@@ -462,7 +462,7 @@ fn plan(
                 Part::Subject(Scalar::Subject {
                     snapshot: fact.snapshot.clone(),
                     subject: fact.subject.clone(),
-                    entity: original.ty.clone(),
+                    entity: original.ty.to_string(),
                 }),
                 c,
             )?;
