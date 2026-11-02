@@ -8,7 +8,7 @@ use archsig_computation::observed::{
     request::ResolveFailure,
 };
 use archsig_input::input::{InputSources, InputStatus};
-use archsig_input::result::{ResultIssue, Signal, Status, exit_code};
+use archsig_input::result::{ResultIssue, Status, exit_code};
 
 pub fn run_internal_outcome(signals: &mut dyn Signals) -> Outcome {
     failure(
@@ -148,8 +148,8 @@ pub(super) fn run_requests_validated(
             );
         }
     };
-    let (rejected, reuse_stop) = candidate.verify(&evaluation, control);
-    deliver(io, signals, args, evaluation, rejected, reuse_stop, control)
+    let verification = candidate.verify(&evaluation, control);
+    deliver(io, signals, args, evaluation, verification, control)
 }
 
 fn deliver(
@@ -157,10 +157,14 @@ fn deliver(
     signals: &mut dyn Signals,
     args: &RunArgs,
     evaluation: ObservedEvaluation,
-    rejected: Vec<Json>,
-    reuse_stop: Option<Signal>,
+    verification: super::reuse::Verification,
     control: &Control,
 ) -> Outcome {
+    let super::reuse::Verification {
+        rejected,
+        stop: reuse_stop,
+        replay,
+    } = verification;
     let (mut status, mut code) = match evaluation.status() {
         "complete" => (Status::Complete, u8::from(evaluation.has_refuted_answer())),
         "partial" => (Status::Partial, 2),
@@ -230,7 +234,7 @@ fn deliver(
         });
     }
     // 型付き結果の最終表示。以後このJSONから値・命題を評価しない。
-    let mut wire = evaluation.result_wire();
+    let mut wire = replay.unwrap_or_else(|| evaluation.result_wire());
     let Json::Obj(document) = &mut wire else {
         unreachable!("結果表示はobject")
     };
