@@ -403,7 +403,8 @@ fn branched_history_keeps_reference_targets_and_put_resets_inheritance() {
         full("branch", Some("2"), false),
     ];
     for id in ["put", "last"] {
-        let J::Obj(mut snapshot) = full(id, Some("2"), false) else {
+        let mut value = full(id, Some("2"), false);
+        let J::Obj(snapshot) = &mut value else {
             unreachable!()
         };
         let J::Arr(atoms) = snapshot.get_mut("atoms").unwrap() else {
@@ -420,7 +421,7 @@ fn branched_history_keeps_reference_targets_and_put_resets_inheritance() {
                 );
             }
         }
-        expanded.push(J::Obj(snapshot));
+        expanded.push(value);
     }
     let expected = check(&document(expanded)).unwrap();
     assert_eq!(archmap::model_json(&actual), archmap::model_json(&expected));
