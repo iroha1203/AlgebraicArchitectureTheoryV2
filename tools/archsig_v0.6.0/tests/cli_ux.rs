@@ -156,3 +156,32 @@ fn input_failures_are_machine_readable_on_stderr() {
         assert_eq!(s(get(&arr(get(&notification, "issues"))[0], "code")), issue);
     }
 }
+
+#[test]
+fn broken_stderr_after_stdout_failure_reports_broken_pipe_and_keeps_saved_result() {
+    use std::os::fd::OwnedFd;
+    use std::os::unix::net::UnixStream;
+    for save in [false, true] {
+        let dir = setup();
+        let (reader, writer) = UnixStream::pair().unwrap();
+        drop(reader);
+        let mut command = bin();
+        command.current_dir(&dir).args(RUN);
+        if save {
+            command.args(["--out", "saved"]);
+        }
+        command.stdout(Stdio::from(
+            std::fs::File::open(dir.join("d.json")).unwrap(),
+        ));
+        command.stderr(Stdio::from(OwnedFd::from(writer)));
+        let mut child = command.spawn().unwrap();
+        let (status, timed_out) = watchdog::wait(&mut child, Duration::from_secs(10)).unwrap();
+        assert!(!timed_out);
+        assert_eq!(status.code(), Some(141));
+        if save {
+            let result = parse(&std::fs::read(dir.join("saved/result.json")).unwrap()).unwrap();
+            assert_eq!(s(get(&result, "status")), "complete");
+            assert_eq!(num(get(&result, "exit_code")), 0);
+        }
+    }
+}

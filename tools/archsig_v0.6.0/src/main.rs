@@ -197,7 +197,11 @@ fn finish(outcome: Option<Outcome>, information: &str) -> ! {
                         .wire(),
                     ],
                 };
-                let _ = write_line(&mut std::io::stderr().lock(), &diagnostic.receipt());
+                if let Err(error) = write_line(&mut std::io::stderr().lock(), &diagnostic.receipt())
+                    && error.kind() == std::io::ErrorKind::BrokenPipe
+                {
+                    std::process::exit(141);
+                }
             }
             74
         }
