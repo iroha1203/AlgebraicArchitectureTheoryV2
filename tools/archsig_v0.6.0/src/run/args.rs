@@ -94,8 +94,18 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
         }
         Some("check") => false,
         Some("run") => true,
-        Some(other) => return Err(usage(other, "expected command check, run, or version")),
-        None => return Err(usage("", "specify command check, run, or version")),
+        Some(other) => {
+            return Err(usage(
+                other,
+                "expected command check, run, evidence, law-fibers, or version",
+            ));
+        }
+        None => {
+            return Err(usage(
+                "",
+                "specify command check, run, evidence, law-fibers, or version",
+            ));
+        }
     };
     let mut singles = BTreeMap::new();
     let mut definitions = Vec::new();

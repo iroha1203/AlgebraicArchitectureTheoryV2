@@ -22,11 +22,13 @@ pub const VERSION_LINE: &str =
     r#"{"product":"archsig","version":"0.6.0","semantics":["archsig/0.6.0"]}"#;
 
 pub const HELP: &str = "ArchSig: check inputs and answer questions from Atom definitions, Law and ArchMap.
-Usage: archsig <run|check|version> [options]
+Usage: archsig <run|check|evidence|law-fibers|version> [options]
   run      Compute answers; saving is optional
   check    Validate inputs without computing questions; saving is optional
+  evidence Verify selected atoms against local source bytes
+  law-fibers Check an explicitly enumerated finite evaluation table
   version  Print product and semantics versions as JSON
-Use archsig help run or archsig help check for options.
+Use archsig help COMMAND for options.
 Example (no files are written):
   archsig run --atom-definition counter.atoms.json --law counter.law --archmap counter.archmap.json --ask 'n=evaluate(CountCheck.amount,s=@v/s)'
 --help, -h: show help; --version: show version.";

@@ -31,6 +31,7 @@ mod cli_map;
 mod cli_map_delivery;
 mod cli_needed;
 mod cli_object_algebra_map;
+mod cli_observe;
 mod cli_path_compose;
 mod cli_path_compose_delivery;
 mod cli_public_build;

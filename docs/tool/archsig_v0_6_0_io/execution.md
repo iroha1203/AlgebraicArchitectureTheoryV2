@@ -6,10 +6,12 @@
 archsig check --atom-definition D [--atom-definition D ...] --law L [--archmap A] [--out NEW_DIRECTORY]
 archsig run --atom-definition D [--atom-definition D ...] --law L --archmap A --ask 'ID=QUESTION' [--ask 'ID=QUESTION' ...]
             [--out NEW_DIRECTORY] [--reuse OLD_DIRECTORY]
+archsig evidence --archmap A --atom SNAPSHOT/ATOM [--atom SNAPSHOT/ATOM ...] [--source ID=FILE ...]
+archsig law-fibers --table TABLE
 archsig version | --version
 archsig --help | -h | help
-archsig help run | help check | help version
-archsig run --help | check --help | version --help
+archsig help run | help check | help evidence | help law-fibers | help version
+archsig run --help | check --help | evidence --help | law-fibers --help | version --help
 ```
 
 これが全コマンドと全flagである。`--atom-definition`と`--ask`を反復でき、問い ID の重複を拒否する。
@@ -433,3 +435,64 @@ JSONの正規化・列挙順・表示用特解の選択を、解の選好や一�
 
 内部計画の自由とその検査は[意味を保つ計算計画](computations.md#10-意味を保つ計算計画)に従う。
 中断までにどこまで完了するかは計画や再利用の有無で変わり得るが、確定した値と条件をそのscopeの下で保つ。
+
+## 8. 観測補助
+
+`evidence` は観測側のArchMapと明示したローカルファイルを照合する。
+`law-fibers` は観測側で読解・評価して列挙した値の等号を有限表上で比較する。
+この二つの補助結果は `check` / `run` の三入力・Law評価・診断結果へ供給しない。
+両コマンドはファイル保存、Python、追加設定を要求しない。入力は通常ファイルだけを読み、symlinkは解決する。
+
+### evidence
+
+`--archmap` は一つ、`--atom` は相異なる非空の `snapshot/atom` を一つ以上、
+`--source` は相異なるsource IDと非空ファイルパスの `ID=FILE` を指定する。
+パスに `=` を含む場合は最初の `=` だけを区切りとする。
+対象のsource digestが一ファイルの全bytesを指す場合に使う。
+JSON全体の重複key、sources/origins/snapshotsの重複ID、選択snapshot内の重複Atom IDを拒否する。
+IDは非空文字列。選択したAtomから明示されたorigin・locations・sourceを辿り、必要な参照・bindingの欠落を拒否する。
+使用するsourceについてファイル全体のUTF-8とSHA256を照合する。
+spanは二つの非負整数による半開byte区間で、始点≦終点≦ファイル長、両端はUTF-8文字境界とする。
+span省略時は全bytes。空区間を許す。値・位置・sourceメタデータを保持し、各locationへ `resolved_span` と `excerpt` を追加する。
+Atomの `snapshot`、locationの `resolved_span` / `excerpt` は実際の選択・照合結果で置き換える。
+Atom配列は選択順、origin/source配列は初出順で共有参照を一度だけ返す。
+未選択Atomの参照・意味や全ArchMapのschemaは `check` と読解の対象であり、この補助は選択箇所を照合する。
+
+出力は `atoms`、`origins`、`sources`、`verification` を持つJSON。
+`verification` はローカルbytesと宣言digest/spanの一致を示し、revisionの真正性・観測の網羅性・意味・Law忠実性は読解側で確認する。
+ローカルの `--source` パスは出力に追加しない。
+
+### law-fibers
+
+入力は次の五欄をちょうど持つJSON object。
+
+```json
+{"scope":"二つの候補モデルの保持条件", "sources":["a","b"], "laws":["preserves"],
+ "q":{"a":"same","b":"same"}, "v":{"a":{"preserves":"yes"},"b":{"preserves":"no"}}}
+```
+
+`scope` は非空文字列、`sources` / `laws` は相異なる非空文字列の配列。
+`q` / `v` のkeyはsourcesと一致し、各v行のkeyはlawsと一致する。
+q/vの値は等号を保つと読解側で確認した非空文字列token。未確定値をtokenで代用しない。
+余分な欄、欠落、重複key/name、非文字列値を拒否する。空のsources / lawsは許す。
+完全列挙と値の忠実性は利用側の前提であり、CLIは与えられた表の全対を比較する。
+
+出力は `scope`、`source_count`、`law_count`、`adequate_on_table`、`vacuous`、
+`q_partition`、`joint_law_partition`、`counterexamples`。
+同じq値の組でvのいずれかの列が異なると `left` / `right` / `laws` の反例を返す。
+partitionはsourcesの初出順、反例はq群の初出順・群内のsources順、差分Lawはlaws順。
+反例がなければ `descent` にq値→Law値objectを追加する。空族・空Lawは十分かつ `vacuous=true`。
+これは表の等号から計算する指定Law値の保存であり、Law DSL評価や診断保存の証明へ読み替えない。
+
+### 配送・終了コードと旧補助からの移行
+
+結果は一行のUTF-8 JSONをstdoutへ、失敗は既存の `archsig.receipt/1` をstderrへ返す。
+成功は0、有限表の反例は1。usageは64、入力不正は65、内部障害は70、I/Oは74、
+SIGINT/SIGTERMは130/143、broken pipeは141。読み取り専用のため中断時の部分結果は保存しない。
+`archsig help evidence` / `archsig help law-fibers` と各 `--help` / `-h` は入力を読まず0を返す。
+
+旧Python補助の正常結果の欄と配列順を維持する。空白・object key順・Unicode escapeの綴りは固定しない。
+Atom内のJSON数値は元の綴りで保持する。不正入力の旧終了2を65、引数不正を64、I/Oを74へ分ける。
+非標準JSONのNaN/Infinity、空ID、型不正を入力不正として扱う。
+旧補助がAtomに供給された `snapshot` で選択元を上書きしていた場合も、CLIは実際の選択元を返す。
+旧実装はGit履歴で参照でき、実行用スクリプトと二重のテスト実装は同梱しない。

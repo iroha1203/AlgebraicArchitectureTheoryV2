@@ -178,7 +178,7 @@ fn missing_command_message_has_no_leading_separator() {
     assert_eq!(s(get(get(issue, "details"), "argument")), "");
     assert_eq!(
         s(get(issue, "message")),
-        "specify command check, run, or version"
+        "specify command check, run, evidence, law-fibers, or version"
     );
 }
 
