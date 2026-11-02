@@ -16,13 +16,58 @@ pub struct RawSubject {
     pub pointer: String,
 }
 
+/// An uninterrupted inheritance path; each delta shares its predecessor.
+#[derive(Clone, Default)]
+pub struct Rebases(Option<std::rc::Rc<Rebase>>);
+struct Rebase {
+    from: String,
+    to: String,
+    previous: Rebases,
+}
+impl Rebases {
+    pub(super) fn inherit(&self, from: &str, to: &str) -> Self {
+        Self(Some(std::rc::Rc::new(Rebase {
+            from: from.into(),
+            to: to.into(),
+            previous: self.clone(),
+        })))
+    }
+    pub(super) fn resolve<E: InputError>(&self, snapshot: &str, c: &Control) -> Result<String, E> {
+        let Some(latest) = &self.0 else {
+            return Ok(snapshot.into());
+        };
+        let mut node = self.0.as_deref();
+        while let Some(step) = node {
+            E::checkpoint(c, Checkpoint::ArchMapIteration)?;
+            // Along this path every later step rebases the previous destination.
+            if snapshot == step.from {
+                return Ok(latest.to.clone());
+            }
+            node = step.previous.0.as_deref();
+        }
+        Ok(snapshot.into())
+    }
+}
+impl Drop for Rebases {
+    fn drop(&mut self) {
+        // Deep delta inputs must not turn shared-history cleanup into recursion.
+        let mut next = self.0.take();
+        while let Some(node) = next {
+            match std::rc::Rc::try_unwrap(node) {
+                Ok(mut node) => next = node.previous.0.take(),
+                Err(_) => break,
+            }
+        }
+    }
+}
+
 #[derive(Clone)]
 pub struct RawAtom<'a> {
     pub id: String,
     pub subject: String,
     pub field: String,
     pub value: &'a JNode,
-    pub rebases: Vec<(String, String)>,
+    pub rebases: Rebases,
     pub origin: String,
     pub pointer: String,
 }

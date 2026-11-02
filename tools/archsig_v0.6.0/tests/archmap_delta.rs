@@ -373,3 +373,55 @@ fn cli_accepts_delta_and_returns_the_same_values_and_missing_as_full_input() {
         );
     }
 }
+
+#[test]
+fn branched_history_keeps_reference_targets_and_put_resets_inheritance() {
+    let mut snapshots = vec![full("v", Some("2"), false)];
+    for (id, base) in [("w", "v"), ("x", "w"), ("branch", "v")] {
+        snapshots.push(delta(id, base, empty(), empty()));
+    }
+    snapshots.push(delta(
+        "put",
+        "x",
+        empty(),
+        J::obj([(
+            "put",
+            J::Arr(vec![atom(
+                "rp",
+                "p",
+                "Pattern.Part.related",
+                J::Arr(vec![pair("v", "root"), pair("put", "root")]),
+            )]),
+        )]),
+    ));
+    snapshots.push(delta("last", "put", empty(), empty()));
+    let actual = check(&document(snapshots)).unwrap();
+    let mut expanded = vec![
+        full("v", Some("2"), false),
+        full("w", Some("2"), false),
+        full("x", Some("2"), false),
+        full("branch", Some("2"), false),
+    ];
+    for id in ["put", "last"] {
+        let J::Obj(mut snapshot) = full(id, Some("2"), false) else {
+            unreachable!()
+        };
+        let J::Arr(atoms) = snapshot.get_mut("atoms").unwrap() else {
+            unreachable!()
+        };
+        for entry in atoms {
+            let J::Obj(fields) = entry else {
+                unreachable!()
+            };
+            if fields["id"] == J::str("rp") {
+                fields.insert(
+                    "value".into(),
+                    J::Arr(vec![pair("v", "root"), pair(id, "root")]),
+                );
+            }
+        }
+        expanded.push(J::Obj(snapshot));
+    }
+    let expected = check(&document(expanded)).unwrap();
+    assert_eq!(archmap::model_json(&actual), archmap::model_json(&expected));
+}
