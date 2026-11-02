@@ -327,6 +327,30 @@ impl super::conjunction::Interpretation for IntegerEquations<'_> {
             }
             return Ok(Some(()));
         }
+        if let ExprKind::Binary {
+            op: BinOp::Eq,
+            lhs,
+            rhs,
+        } = env.indexes.inputs.law().exprs()[id].kind
+            && let Some(ty @ Type::Tuple(_)) = env.indexes.inputs.law().expr_type(lhs)
+            && numeric::is_numeric_type(ty, &env.control)?
+        {
+            let difference = super::super::term::affine::operation(
+                BinOp::Sub,
+                &env.symbolic_source(lhs, vars, &v.scope, reading)?,
+                &env.symbolic_source(rhs, vars, &v.scope, reading)?,
+                ty,
+                env.indexes.inputs.law(),
+                env.indexes.inputs.law().exprs()[id].span,
+                &env.control,
+            )?;
+            if let Some(forms) = tuple_forms(env, &difference)? {
+                for form in forms {
+                    self.add_form(env, id, &form)?;
+                }
+                return Ok(Some(()));
+            }
+        }
         if v.comparison.is_none()
             && let Some(forms) =
                 parameter_coefficient_forms(env, id, vars, reading, &self.missing.universal)?
@@ -380,6 +404,16 @@ impl super::conjunction::Interpretation for IntegerEquations<'_> {
         };
         let form = affine::binary(BinOp::Sub, Some(&p.left), Some(&p.right), &env.control)?
             .ok_or(internal!("整数等式の差がない"))?;
+        self.add_form(env, id, &form)
+    }
+}
+impl IntegerEquations<'_> {
+    fn add_form(
+        &mut self,
+        env: &Environment<'_>,
+        id: usize,
+        form: &Form,
+    ) -> Result<(), ValidationFailure> {
         if form.varies_over(&self.missing.universal, &env.control)? {
             self.matrix.push(vec![Z::zero(); self.axes.len()]);
             self.rhs.push(Some(Z::one()));
@@ -390,6 +424,43 @@ impl super::conjunction::Interpretation for IntegerEquations<'_> {
         self.rhs.push(constant.map(|v| -v));
         Ok(())
     }
+}
+
+fn tuple_forms(
+    env: &Environment<'_>,
+    value: &super::super::term::affine::Value,
+) -> Result<Option<Vec<Form>>, ValidationFailure> {
+    use super::super::term::affine::Value;
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        env.tick()?;
+        match value {
+            Value::Number(form) => Ok(Some(vec![form.clone()])),
+            Value::Known(Scalar::Tuple(items)) => {
+                let mut forms = vec![];
+                for item in items {
+                    let Some(next) = tuple_forms(env, &Value::Known(item.clone()))? else {
+                        return Ok(None);
+                    };
+                    forms.extend(next);
+                }
+                Ok(Some(forms))
+            }
+            Value::Known(value) => {
+                Ok(affine::constant(value, &env.control)?.map(|form| vec![form]))
+            }
+            Value::Tuple(items) => {
+                let mut forms = vec![];
+                for item in items {
+                    let Some(next) = tuple_forms(env, item)? else {
+                        return Ok(None);
+                    };
+                    forms.extend(next);
+                }
+                Ok(Some(forms))
+            }
+            _ => Ok(None),
+        }
+    })
 }
 
 fn parameter_coefficient_forms(

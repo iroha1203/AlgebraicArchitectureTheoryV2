@@ -2111,3 +2111,163 @@ fn numeric_conditions_outside_affine_fibers_keep_their_original_unknown_reason()
         );
     }
 }
+
+#[test]
+fn reservations_finite_forall_repairs_each_mapped_state() {
+    use crate::common::{RESERVATIONS, RESERVATIONS_DEFINITION, RESERVATIONS_MAP};
+    for repairable in [false, true] {
+        let dir = workdir(if repairable {
+            "reservations-repairable"
+        } else {
+            "reservations-unrepairable"
+        });
+        let mut map = RESERVATIONS_MAP.to_owned();
+        if repairable {
+            for (id, before, after) in [
+                ("r-free", "4", "1"),
+                ("r-held", "0", "1"),
+                ("s-free", "3", "0"),
+                ("s-held", "1", "2"),
+            ] {
+                let old = map
+                    .lines()
+                    .find(|line| line.contains(&format!("\"id\": \"{id}\"")))
+                    .unwrap()
+                    .to_owned();
+                let new = old.replace(
+                    &format!("\"value\": \"{before}\""),
+                    &format!("\"value\": \"{after}\""),
+                );
+                assert_ne!(old, new);
+                map = map.replace(&old, &new);
+            }
+        }
+        for (name, content) in [
+            ("d.json", RESERVATIONS_DEFINITION),
+            ("a.json", &map),
+            ("l.law", RESERVATIONS),
+        ] {
+            std::fs::write(dir.join(name), content).unwrap();
+        }
+        let mut asks = vec![
+            "s=solve(Reservations.retained,using=Reservations.rebalance,on=@v/B,m=@v/m)",
+            "r=repair(Reservations.retained,using=Reservations.rebalance,on=@v/B,m=@v/m)",
+        ];
+        if repairable {
+            asks.extend([
+                "a=evaluate(Reservations.holdings,on=$r.object,s=@v/r)",
+                "b=evaluate(Reservations.holdings,on=$r.object,s=@v/s)",
+                "c=check(Reservations.retained,on=$r.object,m=@v/m)",
+            ]);
+        }
+        let result = execute(&dir, "out", &asks);
+        assert_eq!(
+            result.code,
+            if repairable { 0 } else { 1 },
+            "{}",
+            result.stdout
+        );
+        let j = result_json(&dir, &result);
+        for index in 0..2 {
+            assert_eq!(
+                s(get(&arr(get(&j, "answers"))[index], "status")),
+                if repairable { "established" } else { "refuted" }
+            );
+        }
+        if repairable {
+            for (index, expected) in [(2, ["2", "0"]), (3, ["1", "1"])] {
+                let values = arr(get(output(&j, index, "value"), "value"));
+                assert_eq!(values.iter().map(s).collect::<Vec<_>>(), expected);
+            }
+            assert_eq!(s(get(&arr(get(&j, "answers"))[4], "status")), "established");
+        }
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+
+#[test]
+fn finite_forall_integer_conditions_preserve_domains_and_bindings() {
+    for (label, predicate, expected) in [
+        ("list", "forall k in list<Z>[1,1,1] . s.x=k", Some("1")),
+        (
+            "nested",
+            "forall k in list<Z>[1] . forall j in list<Z>[2] . (s.x,s.y)=(k,j-j)",
+            Some("1"),
+        ),
+        (
+            "let",
+            "let ks=list<Z>[1,1] in forall k in ks . (s.x,s.y)=(k,0)",
+            Some("1"),
+        ),
+        ("inconsistent", "forall k in list<Z>[1,2] . s.x=k", None),
+        (
+            "empty",
+            "(forall k in list<Z>[] . s.x=k) and s.x=1",
+            Some("1"),
+        ),
+        ("bool", "forall b:Bool . s.x=1", Some("1")),
+    ] {
+        let dir = product_input(
+            label,
+            "change setpair(s:State,a:Z)=s with{x=a,y=0};",
+            "",
+            predicate,
+            false,
+        );
+        let mut asks = vec!["r=repair(Pair.total,using=Pair.setpair,on=@pair/s)"];
+        if expected.is_some() {
+            asks.push("x=evaluate(Pair.first,on=$r.object,s=@pair/s)");
+        }
+        let r = execute(&dir, "out", &asks);
+        assert_eq!(
+            r.code,
+            if expected.is_some() { 0 } else { 1 },
+            "{label}: {}",
+            r.stdout
+        );
+        let j = result_json(&dir, &r);
+        if let Some(expected) = expected {
+            assert_eq!(s(get(output(&j, 1, "value"), "value")), expected);
+        } else {
+            assert_eq!(
+                s(get(get(output(&j, 0, "existence"), "judgment"), "status")),
+                "refuted"
+            );
+        }
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+}
+
+#[test]
+fn finite_forall_missing_field_keeps_required_observation() {
+    let dir = product_input(
+        "finite-missing",
+        "change setpair(s:State,a:Z)=s with{x=a};",
+        "",
+        "forall k in list<Z>[1] . (s.x,s.y)=(k,0)",
+        true,
+    );
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "r=repair(Pair.total,using=Pair.setpair,on=@pair/s)",
+            "n=needed($r)",
+        ],
+    );
+    assert_eq!(r.code, 2, "{}", r.stdout);
+    let j = result_json(&dir, &r);
+    assert!(!has(get(&arr(get(&j, "answers"))[0], "outputs"), "object"));
+    assert!(
+        arr(get(&arr(get(&j, "answers"))[0], "reasons"))
+            .iter()
+            .any(|reason| s(get(reason, "code")) == "missing_observation")
+    );
+    let plan = get(output(&j, 1, "plan"), "value");
+    assert!(
+        arr(get(plan, "requirements"))
+            .iter()
+            .any(|r| s(get(get(r, "field"), "field")) == "Pair.State.y")
+    );
+    std::fs::remove_dir_all(dir).unwrap();
+}

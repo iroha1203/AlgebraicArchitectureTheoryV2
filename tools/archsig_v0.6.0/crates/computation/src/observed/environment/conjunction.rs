@@ -46,6 +46,50 @@ pub(super) fn walk<I: Interpretation>(
         }
         match &env.indexes.inputs.law().program().nodes[id].kind {
             ExprKind::Group(body) => walk(interpreter, env, *body, vars, base, reading),
+            ExprKind::Quant {
+                kind: archsig_input::law::ast::QuantKind::Forall,
+                ..
+            } => {
+                let spec = quantifier::spec(env.indexes.inputs.law(), id, &env.control)?;
+                let (input, members) = env.scoped_quantifier_domain(&spec, vars, base, reading)?;
+                if input.condition_failed || input.condition_pending {
+                    return Ok(interpreter.unavailable());
+                }
+                let Some(members) = members else {
+                    return interpreter.leaf(env, id, &value);
+                };
+                let mut scope = value.scope.clone();
+                scope.merge(&input.scope);
+                let mut output = None;
+                for item in members {
+                    env.tick()?;
+                    let mut local = env.copy_variables(vars)?;
+                    for v in local.values_mut() {
+                        v.scope.merge(&scope);
+                    }
+                    local.insert(
+                        spec.name.into(),
+                        SourceValue {
+                            condition_failed: false,
+                            condition_pending: false,
+                            symbolic: None,
+                            comparison: None,
+                            affine: None,
+                            scope: scope.clone(),
+                            known_value: Some(item),
+                            support: input.support.clone(),
+                            scalar_scope: Some(scope.clone()),
+                        },
+                    );
+                    let next = walk(interpreter, env, spec.body, &local, &scope, reading)?;
+                    output = Some(match output {
+                        None => next,
+                        Some(previous) => interpreter.combine(previous, next),
+                    });
+                }
+                // Empty domains are already discharged by the evaluated true value.
+                output.ok_or_else(|| internal!("空の有限量化が真として評価されていない").into())
+            }
             ExprKind::Let { name, value, body } => {
                 let Some(local) = interpreter.bind(env, *value, &name.name, vars, base, reading)?
                 else {
