@@ -46,14 +46,7 @@ workspaceの`default-members`は4 packageすべてです。既存のmanifest指�
 
 ## 実行
 
-Atom 定義・Law・ArchMap を検査します。`--out` には、既存ディレクトリの下にある
-未使用のパスを指定してください。
-
-```bash
-archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/counter.atoms.json \
-  --law tools/archsig_v0.6.0/tests/fixtures/counter.law \
-  --archmap tools/archsig_v0.6.0/tests/fixtures/counter.archmap.json --out result-check
-```
+`archsig --help`と`archsig help run`で引数と例を確認できます。
 
 `run` では、値を読む問いと要求を確かめる問いをまとめて渡せます。
 
@@ -63,24 +56,30 @@ archsig run --atom-definition tools/archsig_v0.6.0/tests/fixtures/counter.atoms.
   --archmap tools/archsig_v0.6.0/tests/fixtures/counter.archmap.json \
   --ask 'n=evaluate(CountCheck.amount,s=@v/s)' \
   --ask 'ok=check(CountCheck.nonnegative,s=@v/s)' \
-  --ask 'audit=check(CountAudit.bounded,s=@v/s)' --out result-counter
+  --ask 'audit=check(CountAudit.bounded,s=@v/s)'
 ```
 
 ## 結果を読む
 
-標準出力に一行の receipt、指定したディレクトリに `result.json` と入力コピーを保存します。
-回答は `answers`、型と根拠を持つ値は `nodes` にあり、回答の `outputs` から参照できます。
-次の表示例は `jq` を使用します。
+標準出力に一行のJSON summaryを返します。`answers`から値・状態・反例・未決理由を読めます。
+次の表示例は`jq`を使用します。上のコマンドに`| jq '.answers[] | {id, status, outputs}'`を付けて確認できます。
+
+全量の値と入力を保存する場合は、上のコマンドへ`--out result-counter`を追加します。
+標準出力の回答と警告は同じまま、`result`欄に保存先が加わります。
+保存先には既存ディレクトリの下の未使用パスを指定します。
+`result-counter/result.json`の`answers`から、型付きの値を持つ`nodes`を参照できます。
+
+検査だけなら次を繰り返し実行できます。保存する場合だけ`--out`を加えます。
 
 ```bash
-jq '.answers[] | {id, status}' result-counter/result.json
-jq -r '. as $r | .answers[] | select(.id == "n") | .outputs.value.node as $id
-  | $r.nodes[] | select(.id == $id) | .value' result-counter/result.json
+archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/counter.atoms.json \
+  --law tools/archsig_v0.6.0/tests/fixtures/counter.law \
+  --archmap tools/archsig_v0.6.0/tests/fixtures/counter.archmap.json
 ```
 
 この例は3件とも `established`、値は2、終了コードは0です。
 要求が成り立たない回答は `refuted`、入力から決まらない回答は `undetermined` と理由を返します。
-実行失敗は標準出力の具体的なエラーと終了コードで確認できます。
+実行失敗は標準エラー出力の機械可読JSONと終了コードで確認できます。
 終了コードと中断時の扱いは実行仕様を参照してください。
 
 ## 仕様

@@ -142,10 +142,10 @@ fn actual_double_quoted_shell_expansion_gets_the_hint() {
             "archsig-shell-hint", env!("CARGO_BIN_EXE_archsig")])
         .output().unwrap();
     assert_eq!(output.status.code(), Some(64));
-    assert!(output.stderr.is_empty());
-    let stdout = String::from_utf8(output.stdout).unwrap();
-    assert_eq!(stdout.matches('\n').count(), 1);
-    let receipt = archsig_common::json::parse(stdout.trim_end().as_bytes()).unwrap();
+    assert!(output.stdout.is_empty());
+    let stderr = String::from_utf8(output.stderr).unwrap();
+    assert_eq!(stderr.matches('\n').count(), 1);
+    let receipt = archsig_common::json::parse(stderr.trim_end().as_bytes()).unwrap();
     let issue = &arr(get(&receipt, "issues"))[0];
     assert_eq!(s(get(issue, "code")), "usage");
     assert_eq!(s(get(get(issue, "details"), "argument")), "n=needed()");

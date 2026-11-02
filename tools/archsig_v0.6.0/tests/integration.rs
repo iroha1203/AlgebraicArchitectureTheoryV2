@@ -168,3 +168,5 @@ mod observed_unused_information;
 mod observed_view_calls;
 mod reference_type_transport;
 mod shared_inputs;
+
+mod cli_ux;

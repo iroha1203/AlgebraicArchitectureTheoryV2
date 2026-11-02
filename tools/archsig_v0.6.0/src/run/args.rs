@@ -31,9 +31,6 @@ pub(super) fn validate_check(args: &CheckArgs) -> Result<(), UsageError> {
             "at least one --atom-definition is required",
         ));
     }
-    if args.out.is_none() {
-        return Err(raw_usage("--out", "check requires --out"));
-    }
     validate_output(args.out.as_deref())
 }
 
@@ -71,8 +68,24 @@ fn raw_usage(argument: &str, message: impl Into<String>) -> UsageError {
 
 /// 既知flagの次の語を値として読む。pathはOS文字列、問いはUTF-8で扱う。
 pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
+    let words: Vec<_> = args.iter().map(|a| a.to_str()).collect();
+    match words.as_slice() {
+        [Some("--help" | "-h" | "help")] => return Ok(Command::Help(super::HELP)),
+        [Some("run"), Some("--help" | "-h")] | [Some("help"), Some("run")] => {
+            return Ok(Command::Help(super::RUN_HELP));
+        }
+        [Some("check"), Some("--help" | "-h")] | [Some("help"), Some("check")] => {
+            return Ok(Command::Help(super::CHECK_HELP));
+        }
+        [Some("version"), Some("--help" | "-h")] | [Some("help"), Some("version")] => {
+            return Ok(Command::Help(
+                "Usage: archsig version (or archsig --version)\nPrint product and semantics versions as JSON.",
+            ));
+        }
+        _ => {}
+    }
     let running = match args.first().and_then(|a| a.to_str()) {
-        Some("version") if args.len() == 1 => return Ok(Command::Version),
+        Some("version" | "--version") if args.len() == 1 => return Ok(Command::Version),
         Some("version") => {
             return Err(usage(
                 &args[1].to_string_lossy(),
@@ -137,9 +150,6 @@ pub fn parse_args(args: &[OsString]) -> Result<Command, UsageError> {
         return Err(usage("--ask", "run requires at least one --ask"));
     }
     let out = singles.remove("--out").map(PathBuf::from);
-    if !running && out.is_none() {
-        return Err(usage("--out", "check requires --out"));
-    }
     let inputs = CheckArgs {
         atom_definitions: definitions,
         law: PathBuf::from(law),
