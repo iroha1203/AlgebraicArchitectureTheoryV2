@@ -121,12 +121,28 @@ fn main() {
     std::panic::set_hook(Box::new(|_| {}));
     let args: Vec<std::ffi::OsString> = std::env::args_os().skip(1).collect();
     let mut signals = ProcessSignals::new();
+    if archsig::observe::handles(&args) {
+        // Read-only helpers publish no files: interruption may exit immediately.
+        DELIVERY.store(0, Ordering::SeqCst);
+        let prior = signals.first.load(Ordering::SeqCst);
+        if prior != 0 {
+            std::process::exit(128 + prior);
+        }
+        match archsig::observe::execute(&args) {
+            Ok(response) => finish_with_code(None, &response.text, response.code),
+            Err(outcome) => finish(Some(outcome), ""),
+        }
+    }
     let (outcome, version) = execute(&args, &mut signals);
     finish(outcome, version);
 }
 
 fn finish(outcome: Option<Outcome>, information: &str) -> ! {
-    let code = outcome.as_ref().map_or(0, |o| o.exit_code);
+    finish_with_code(outcome, information, 0)
+}
+
+fn finish_with_code(outcome: Option<Outcome>, information: &str, success_code: u8) -> ! {
+    let code = outcome.as_ref().map_or(success_code, |o| o.exit_code);
     // Only the atomic publication is protected. Delivery can block on either stream.
     DELIVERY.store(
         if matches!(code, 130 | 143) {

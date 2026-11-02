@@ -87,3 +87,17 @@ archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/counter.atom
 - [I/O 仕様](../../docs/tool/archsig_v0_6_0_io/README.md): Atom 定義・Law・ArchMap と問いの全体像。
 - [実行仕様](../../docs/tool/archsig_v0_6_0_io/execution.md): コマンド、問い、出力と終了コード。
 - [型付き結果](../../docs/tool/archsig_v0_6_0_io/results.md): 回答、値、根拠と入力の元位置。
+
+## 観測の補助
+
+同梱の `skills/archsig-observe/SKILL.md` が使う根拠照合と有限表計算は、同じRust実行ファイルで完結します。利用時にPythonを要求しません。
+
+```sh
+archsig evidence --archmap observation.json --atom snapshot/atom --source code=source.rs
+archsig law-fibers --table table.json
+```
+
+`evidence` は既存参照を辿り、ローカルファイルのSHA256・UTF-8 byte spanと抜粋を照合します。
+`law-fibers` は完全列挙した有限表の等号から反例対・partition・descentを計算します。
+両者の入力と出力、読解側の前提は[観測補助の実行仕様](../../docs/tool/archsig_v0_6_0_io/execution.md#8-観測補助)に従います。
+結果は標準出力JSON、エラーは標準エラー出力JSONです。保存先の指定は不要です。

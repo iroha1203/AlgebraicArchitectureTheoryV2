@@ -12,8 +12,8 @@ description: Read a repository's implementation and requirement sources to creat
 ## バンドルを使う
 
 展開したバンドルから、利用者が指定した CLI と、本ファイルを含む SKILL ディレクトリの
-本体・assets・scripts を使う。
-補助には Python 3.9 以降と標準ライブラリが必要。CLI は利用環境の OS/CPU に対応した
+本体・assets を使う。根拠照合と有限表計算も同じ CLI で実行する。
+CLI は利用環境の OS/CPU に対応した
 0.6.0 の実行可能ファイルを使う。対象ソースと生成物の保存先はバンドルとは別に指定する。
 
 本ファイルの実際の配置から skill ディレクトリを特定する。以下は CLI を `bin/archsig`、
@@ -27,6 +27,8 @@ work='/path/to/observation-output'
 skill="$bundle/skills/archsig-observe"
 cli="$bundle/bin/archsig"
 "$cli" version
+"$cli" evidence --help
+"$cli" law-fibers --help
 ```
 
 返る `product` が `archsig`、`version` が `0.6.0`、`semantics` が
@@ -187,7 +189,7 @@ snapshot と所属 subject/atom の mode を一致させ、候補や仕様を別
 根拠を読み返すときは、保存した Atom の既存参照を展開して内容 digest と位置を照合する。
 
 ```sh
-python3 "$skill/scripts/evidence.py" "$work/observation.json" --atom snapshot/atom \
+"$cli" evidence --archmap "$work/observation.json" --atom snapshot/atom \
   --source "code=/path/to/target/source-file"
 ```
 
@@ -332,9 +334,10 @@ view 値の十分性はその読取りについて述べ、別の Law の成立�
  "v":{"a":{"preserves":"yes"},"b":{"preserves":"no"}}}
 ```
 
-`python3 "$skill/scripts/law_fibers.py" "$work/table.json"` は全 q fiber の全対を検査し、
+`"$cli" law-fibers --table "$work/table.json"` は全 q fiber の全対を検査し、
 反例対、全 Law 値による partition、十分なら q 上への descent を返す。
-終了コードは十分=0、反例あり=1、不正/不完全な表=2。空族の空虚性も出力する。
+終了コードは十分=0、反例あり=1、使い方=64、不正/不完全な表=65、I/O=74。
+結果は標準出力JSON、エラーは標準エラー出力のreceipt JSON。空族・空Lawの空虚性も出力する。
 q と v の値は**等号を保つと確認した非空文字列 token**。未知を `"unknown"` 等の token にせず、
 未確定の評価があれば表を完成扱いしない。異なる表現の同じ意味は読解側で対応づける。
 この表は補助計算の入力であり、ArchSig の三入力や計算結果の代用にはしない。
