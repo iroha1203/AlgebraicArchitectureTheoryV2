@@ -274,7 +274,7 @@ struct Reader<'a, 'b, E> {
     roster: &'b Roster<'b>,
     /// 値を読む field が属する宣言の namespace。Term の本体の名前の解決に使う。
     namespace: &'a str,
-    rebases: &'b [(String, String)],
+    rebases: &'b super::schema::Rebases,
 }
 
 impl<E: InputError> Reader<'_, '_, E> {
@@ -362,13 +362,10 @@ impl<E: InputError> Reader<'_, '_, E> {
             Type::Text => Value::Text(string()?),
             Type::Ref(e) | Type::Owned(e, _) => {
                 let items = arr(2)?;
-                let mut snapshot = as_string(&items[0], &pointer_push(ptr, "0"))?;
-                for (from, to) in self.rebases {
-                    E::checkpoint(&self.control, Checkpoint::ArchMapIteration)?;
-                    if &snapshot == from {
-                        snapshot = to.clone();
-                    }
-                }
+                let snapshot = self.rebases.resolve::<E>(
+                    &as_string(&items[0], &pointer_push(ptr, "0"))?,
+                    &self.control,
+                )?;
                 let subject = as_string(&items[1], &pointer_push(ptr, "1"))?;
                 let Some(actual) = self
                     .roster
@@ -712,7 +709,7 @@ pub fn check_assignment<E: InputError>(
         definitions,
         roster,
         namespace,
-        rebases: &[],
+        rebases: &super::schema::Rebases::default(),
     }
     .read(&node, ty, "")
 }

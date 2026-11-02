@@ -103,7 +103,7 @@ fn atoms<'a, E: InputError>(
             subject: o.id("subject")?,
             field,
             value: o.req("value")?.0,
-            rebases: vec![],
+            rebases: Rebases::default(),
             origin: o.id("origin")?,
             pointer: p,
         });
@@ -281,7 +281,7 @@ pub(super) fn read_snapshots<'a, E: InputError>(
                         continue;
                     }
                     let mut atom = atom.clone();
-                    atom.rebases.push((base.clone(), id.clone()));
+                    atom.rebases = atom.rebases.inherit(&base, &id);
                     atom_table.insert(atom.id.clone(), atom);
                 }
                 for name in atoms.remove {
@@ -362,5 +362,45 @@ mod tests {
                 "checkpoint {at}"
             );
         }
+    }
+}
+
+#[cfg(test)]
+mod history_tests {
+    use super::*;
+
+    #[test]
+    fn deep_shared_history_rebases_ancestors_and_drops_on_a_small_stack() {
+        std::thread::Builder::new()
+            .stack_size(256 * 1024)
+            .spawn(|| {
+                let control = Control::unlimited();
+                let mut path = Rebases::default();
+                for i in 0..20_000 {
+                    path = path.inherit(&format!("v{i}"), &format!("v{}", i + 1));
+                }
+                assert_eq!(
+                    path.resolve::<Box<Issue>>("v0", &control).unwrap(),
+                    "v20000"
+                );
+                assert_eq!(
+                    path.resolve::<Box<Issue>>("v15000", &control).unwrap(),
+                    "v20000"
+                );
+                assert_eq!(
+                    path.resolve::<Box<Issue>>("external", &control).unwrap(),
+                    "external"
+                );
+                let branch = path.inherit("v20000", "branch");
+                drop(path);
+                assert_eq!(
+                    branch.resolve::<Box<Issue>>("v0", &control).unwrap(),
+                    "branch"
+                );
+                drop(branch);
+            })
+            .unwrap()
+            .join()
+            .unwrap();
     }
 }
