@@ -124,6 +124,13 @@ fn each_required_flag_missing_is_reported_without_files() {
             assert_eq!(s(get(value, "type")), "Z");
             assert_eq!(s(get(value, "value")), "2");
             assert_eq!(tree(&dir), before, "通常実行がfile/directoryを変更した");
+        } else if s(get(case, "argument")) == "--out" {
+            let before = tree(&dir);
+            let r = run(&dir, &args);
+            assert_eq!(r.code, 0);
+            assert_eq!(s(get(&r.receipt, "status")), "complete");
+            assert!(!has(&r.receipt, "result"));
+            assert_eq!(tree(&dir), before);
         } else {
             usage(&dir, &args, case);
         }

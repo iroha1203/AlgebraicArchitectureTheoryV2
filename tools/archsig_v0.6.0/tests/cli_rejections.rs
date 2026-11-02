@@ -252,7 +252,6 @@ fn cli_misuse_is_usage() {
     write(&dir, "d.json", DEFINITION.as_bytes());
     write(&dir, "l.law", LAW.as_bytes());
     for mut args in [
-        vec!["check", "--law", "l.law"],
         vec!["check", "--law", "l.law", "--law", "l.law", "--out", "o1"],
         vec!["check", "--law", "l.law", "--out", "o2", "--time-ms", "5"],
         vec!["check", "--law", "l.law", "--out", "o3", "extra"],

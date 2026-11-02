@@ -21,6 +21,38 @@ use std::path::{Path, PathBuf};
 pub const VERSION_LINE: &str =
     r#"{"product":"archsig","version":"0.6.0","semantics":["archsig/0.6.0"]}"#;
 
+pub const HELP: &str = "ArchSig: check inputs and answer questions from Atom definitions, Law and ArchMap.
+Usage: archsig <run|check|version> [options]
+  run      Compute answers; saving is optional
+  check    Validate inputs without computing questions; saving is optional
+  version  Print product and semantics versions as JSON
+Use archsig help run or archsig help check for options.
+Example (no files are written):
+  archsig run --atom-definition counter.atoms.json --law counter.law --archmap counter.archmap.json --ask 'n=evaluate(CountCheck.amount,s=@v/s)'
+--help, -h: show help; --version: show version.";
+pub const RUN_HELP: &str = "Usage: archsig run --atom-definition D --law L --archmap A --ask 'ID=QUESTION' [options]
+  --atom-definition D  Atom definition file (required, repeatable)
+  --law L              Law file (required)
+  --archmap A          Observations file (required)
+  --ask 'ID=QUESTION'   Question (required, repeatable; quote $ references)
+  --out NEW_DIRECTORY  Save full result and inputs (optional; never overwrite)
+  --reuse DIRECTORY    Recheck an earlier result (optional)
+  --help, -h           Show this help
+Answers and warnings: one JSON summary on stdout; execution errors: JSON on stderr.
+Exit: 0 established, 1 refuted, 2 undetermined, 64 usage, 65 invalid input,
+69 unsupported version, 70 internal, 74 I/O, 130 SIGINT, 141 broken pipe, 143 SIGTERM.
+Example:
+  archsig run --atom-definition counter.atoms.json --law counter.law --archmap counter.archmap.json --ask 'n=evaluate(CountCheck.amount,s=@v/s)'";
+pub const CHECK_HELP: &str =
+    "Usage: archsig check --atom-definition D --law L [--archmap A] [--out NEW_DIRECTORY]
+  --atom-definition D  Atom definition file (required, repeatable)
+  --law L              Law file (required)
+  --archmap A          Observations file (optional)
+  --out NEW_DIRECTORY  Save checked declarations and inputs (optional; never overwrite)
+  --help, -h           Show this help
+Validation status: JSON on stdout; execution errors: JSON on stderr.
+Example: archsig check --atom-definition counter.atoms.json --law counter.law";
+
 /// 出力のファイル操作。テストで失敗を差し込めるように分ける。
 pub trait Io {
     fn create_dir(&mut self, path: &Path) -> std::io::Result<()>;
@@ -87,6 +119,7 @@ pub enum Command {
     Check(Checked<CheckArgs>),
     Run(Checked<RunArgs>),
     Version,
+    Help(&'static str),
 }
 
 /// CLI の不正。成果物を生成せず receipt へ返す。
@@ -97,7 +130,7 @@ pub struct UsageError {
     pub(super) prefix_argument: bool,
 }
 
-/// 実行の結果。stdout の receipt と終了コード。
+/// 実行の結果。CLI通知と計算の終了コード。
 #[derive(Debug)]
 pub struct Outcome {
     pub status: Status,
@@ -110,6 +143,10 @@ pub struct Outcome {
 impl Outcome {
     pub fn receipt(&self) -> String {
         if let Some(summary) = &self.summary {
+            let mut summary = summary.clone();
+            if let (Some(result), Json::Obj(fields)) = (&self.result, &mut summary) {
+                fields.insert("result".into(), Json::str(result.to_string_lossy()));
+            }
             return summary.canonical();
         }
         let mut entries = vec![
@@ -155,7 +192,7 @@ pub fn usage_outcome(_io: &mut dyn Io, signals: &mut dyn Signals, err: UsageErro
     )
 }
 
-/// 内部障害を stdout へ返す。失敗記録ファイルは生成しない。
+/// 内部障害の通知を返す。失敗記録ファイルは生成しない。
 pub fn internal_outcome(_io: &mut dyn Io, signals: &mut dyn Signals, _args: &CheckArgs) -> Outcome {
     output::without_result(
         signals,
@@ -186,7 +223,7 @@ fn run_check_validated(
     args: &CheckArgs,
     control: &Control,
 ) -> Outcome {
-    let out = args.out.as_ref().expect("検査済みcheckの出力先");
+    let out = args.out.as_deref();
     // 開始時に明示された全入力を読み切る。検査中に再読しない。
     let mut issues = Vec::new();
     let definition_bytes: Vec<_> = args
@@ -351,18 +388,18 @@ pub fn execute_command(
     signals: &mut dyn Signals,
     control: &Control,
 ) -> Option<Outcome> {
-    if matches!(command, Command::Version) {
+    if matches!(command, Command::Version | Command::Help(_)) {
         return None;
     }
     let outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| match command {
         Command::Check(args) => run_check_validated(io, signals, args, control),
         Command::Run(args) => evaluate::run_requests_validated(io, signals, args, control),
-        Command::Version => unreachable!("versionは実行前に返す"),
+        Command::Version | Command::Help(_) => unreachable!("versionは実行前に返す"),
     }));
     Some(outcome.unwrap_or_else(|_| match command {
         Command::Check(args) => internal_outcome(io, signals, args),
         Command::Run(_) => run_internal_outcome(signals),
-        Command::Version => unreachable!("versionは実行前に返す"),
+        Command::Version | Command::Help(_) => unreachable!("versionは実行前に返す"),
     }))
 }
 

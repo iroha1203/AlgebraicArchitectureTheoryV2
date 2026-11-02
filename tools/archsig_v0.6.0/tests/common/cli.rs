@@ -122,7 +122,7 @@ pub fn run(dir: &Path, args: &[&str]) -> Run {
         let outcome = match parse_args(&words) {
             Ok(Command::Check(check)) => run_check(io, signals, &check, &Control::unlimited()),
             Ok(Command::Run(request)) => run_requests(io, signals, &request, &Control::unlimited()),
-            Ok(Command::Version) => panic!("version は run_binary で確かめる"),
+            Ok(Command::Version | Command::Help(_)) => panic!("version は run_binary で確かめる"),
             Err(error) => usage_outcome(io, signals, error),
         };
         (outcome.exit_code, outcome.receipt())
@@ -157,15 +157,17 @@ pub fn run_binary_with_deadline(dir: &Path, args: &[&str], deadline: Duration) -
     );
     let out = captured.output;
     let stdout = String::from_utf8(out.stdout).unwrap();
-    assert_eq!(stdout.matches('\n').count(), 1, "stdout は一行: {stdout:?}");
+    let stderr = String::from_utf8(out.stderr).unwrap();
+    let line = if stdout.is_empty() { &stderr } else { &stdout };
+    assert_eq!(line.matches('\n').count(), 1, "JSON通知は一行: {line:?}");
     BinaryRun {
         run: Run {
             code: out.status.code().unwrap(),
-            receipt: parse(stdout.trim_end().as_bytes()).unwrap(),
+            receipt: parse(line.trim_end().as_bytes()).unwrap(),
             stdout,
             files_unchanged: false,
         },
-        stderr: String::from_utf8(out.stderr).unwrap(),
+        stderr,
     }
 }
 
@@ -277,8 +279,13 @@ pub fn consistent(dir: &Path, r: &Run, status: &str, code: i32) -> JNode {
 /// 実行失敗は非空の stdout issues を返し、失敗成果物を作らない。
 pub fn notified(_dir: &Path, r: &impl Executed, status: &str, code: i32) -> JNode {
     if let Some(stderr) = r.stderr() {
-        assert!(stderr.is_empty(), "エラーは stdout のみ: {stderr}");
+        assert!(!stderr.is_empty(), "実行失敗は stderr へ通知する");
+        assert!(r.result().stdout.is_empty(), "実行失敗はstdoutを汚さない");
     }
+    let notification = r
+        .stderr()
+        .filter(|s| !s.is_empty())
+        .unwrap_or(&r.result().stdout);
     let r = r.result();
     assert!(r.files_unchanged, "失敗実行はwithout_file_changesで囲む");
     assert_eq!(r.code, code, "{}", r.stdout);
@@ -293,7 +300,7 @@ pub fn notified(_dir: &Path, r: &impl Executed, status: &str, code: i32) -> JNod
         assert!(arr(get(issue, "dependencies")).is_empty());
         assert!(arr(get(issue, "missing")).is_empty());
     }
-    parse(r.stdout.trim_end().as_bytes()).unwrap()
+    parse(notification.trim_end().as_bytes()).unwrap()
 }
 pub fn warnings(result: &JNode) -> &[JNode] {
     if has(result, "warnings") {

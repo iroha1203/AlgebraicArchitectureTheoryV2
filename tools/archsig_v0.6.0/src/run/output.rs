@@ -128,7 +128,7 @@ pub(super) fn sort_issues(issues: &mut [Json]) {
 pub(super) fn finalize(
     io: &mut dyn Io,
     signals: &mut dyn Signals,
-    out: &Path,
+    out: Option<&Path>,
     mut result: CheckResult,
     copies: &[(&str, &[u8])],
 ) -> Outcome {
@@ -149,9 +149,12 @@ pub(super) fn finalize(
     let outcome = Outcome {
         status: result.status,
         exit_code: result.exit_code,
-        result: Some(out.join("result.json")),
+        result: out.map(|out| out.join("result.json")),
         summary: None,
         issues: result.issues.iter().map(ResultIssue::wire).collect(),
+    };
+    let Some(out) = out else {
+        return outcome;
     };
     let mut document = result.wire();
     input_positions(&mut document, copies);

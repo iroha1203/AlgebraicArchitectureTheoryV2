@@ -87,55 +87,28 @@ fn full_stdout() -> (UnixStream, OwnedFd, usize) {
 }
 
 #[test]
-fn signals_after_publication_keep_result_receipt_and_exit_frozen() {
-    let dir = setup("after-publication");
-    std::fs::write(
-        dir.join("a.json"),
-        A.replace("\"value\": \"2\"", "\"value\": \"12\""),
-    )
-    .unwrap();
-    let (mut reader, writer, count) = full_stdout();
-    let mut command = command(&dir);
-    command.args(["--ask", "audit=check(CountAudit.bounded,s=@v/s)"]);
-    let mut child = Running(command.stdout(Stdio::from(writer)).spawn().unwrap());
-    drop(command);
-    wait_for(&mut child.0, || dir.join("out/result.json").exists());
-    assert!(
-        child.0.try_wait().unwrap().is_none(),
-        "receiptは満杯stdoutで待機中"
-    );
-    send(&child.0, Signal::SIGTERM);
-    send(&child.0, Signal::SIGINT);
-    let (status, timed_out, bytes) = std::thread::scope(|scope| {
-        let mut child = child;
-        let output = scope.spawn(move || {
-            let mut bytes = Vec::new();
-            reader.read_to_end(&mut bytes).unwrap();
-            bytes
-        });
-        let (status, timed_out) = watchdog::wait(&mut child.0, Duration::from_secs(30)).unwrap();
-        (status, timed_out, output.join().unwrap())
-    });
-    assert!(!timed_out, "child did not exit after receipt delivery");
-    assert!(bytes[..count].iter().all(|b| *b == b'x'));
-    let line = std::str::from_utf8(&bytes[count..]).unwrap();
-    assert_eq!(line.matches('\n').count(), 1);
-    let receipt = parse(line.trim_end().as_bytes()).unwrap();
-    let result = parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
-    assert_eq!(status.code(), Some(1));
-    for doc in [&receipt, &result] {
-        assert_eq!(s(get(doc, "status")), "complete");
-        assert_eq!(num(get(doc, "exit_code")), 1);
+fn signals_after_publication_interrupt_delivery_and_preserve_result() {
+    for (signal, code) in [(Signal::SIGINT, 130), (Signal::SIGTERM, 143)] {
+        let dir = setup(&format!("after-publication-{code}"));
+        let (_reader, writer, _) = full_stdout();
+        let mut command = command(&dir);
+        let mut child = Running(command.stdout(Stdio::from(writer)).spawn().unwrap());
+        drop(command);
+        wait_for(&mut child.0, || dir.join("out/result.json").exists());
+        let before = std::fs::read(dir.join("out/result.json")).unwrap();
+        send(&child.0, signal);
+        let (status, timed_out) = watchdog::wait(&mut child.0, Duration::from_secs(5)).unwrap();
+        assert!(!timed_out, "delivery must stop without draining stdout");
+        assert_eq!(status.code(), Some(code));
+        assert_eq!(std::fs::read(dir.join("out/result.json")).unwrap(), before);
+        let result = parse(&before).unwrap();
+        assert_eq!(s(get(&result, "status")), "complete");
+        assert_eq!(num(get(&result, "exit_code")), 0);
     }
-    assert!(!has(&receipt, "issues"));
-    assert_eq!(
-        s(get(&arr(get(&result, "answers"))[1], "status")),
-        "refuted"
-    );
 }
 
 #[test]
-fn broken_stdout_after_publication_keeps_partial_result_and_exit_code() {
+fn broken_stdout_after_publication_keeps_partial_result_and_reports_delivery_failure() {
     let dir = setup("broken-stdout");
     let missing = A.replace("{\"id\": \"count\", \"subject\": \"s\", \"field\": \"Counter.State.count\", \"value\": \"2\", \"origin\": \"model\"}", "");
     std::fs::write(dir.join("a.json"), missing).unwrap();
@@ -154,7 +127,7 @@ fn broken_stdout_after_publication_keeps_partial_result_and_exit_code() {
         (status, timed_out, output.join().unwrap())
     });
     assert!(!timed_out, "child did not exit after broken stdout");
-    assert_eq!(status.code(), Some(2));
+    assert_eq!(status.code(), Some(141));
     assert!(stderr.is_empty());
     let result = parse(&std::fs::read(dir.join("out/result.json")).unwrap()).unwrap();
     assert_eq!(s(get(&result, "status")), "partial");

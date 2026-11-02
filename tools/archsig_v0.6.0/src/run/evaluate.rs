@@ -197,18 +197,24 @@ fn deliver(
         }
     }
     output::sort_issues(&mut issues);
+    let mut summary = evaluation.summary_wire(status.wire(), code, &issues);
+    if !rejected.is_empty()
+        && let Json::Obj(fields) = &mut summary
+    {
+        fields.insert("warnings".into(), Json::Arr(rejected.clone()));
+    }
     let Some(out) = &args.inputs.out else {
-        let mut summary = evaluation.summary_wire(status.wire(), code, &issues);
-        if !rejected.is_empty()
-            && let Json::Obj(fields) = &mut summary
+        let mut notifications = evaluation.failure_notifications();
+        if let Some(signal) = control.stop_reason().or(frozen)
+            && !notifications.iter().any(|issue| issue == &signal.issue())
         {
-            fields.insert("warnings".into(), Json::Arr(rejected));
+            notifications.push(signal.issue());
         }
         return Outcome {
             status,
             exit_code: code,
             result: None,
-            issues: Vec::new(),
+            issues: notifications,
             summary: Some(summary),
         };
     };
@@ -283,7 +289,7 @@ fn deliver(
             status,
             exit_code: code,
             result: Some(out.join("result.json")),
-            summary: None,
+            summary: Some(summary),
             issues: receipt_issues,
         },
     )

@@ -4,12 +4,15 @@ use archsig::run::{
     FileIo, Outcome, Signals, VERSION_LINE, execute_command, parse_args, usage_outcome,
 };
 use archsig_input::result::Signal;
+#[cfg(test)]
 use std::io::Write;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, AtomicI32, Ordering};
 
-/// handlerで最初のSIGINT/SIGTERMを記録する。finalizeでは呼出しthreadをblockし、
-/// 捕捉済みとpendingを一度だけ含める。CLIはthreadを追加せず、終了までblockを保つ。
+// -1: computation/publication, 0: delivery, positive: already captured interruption.
+static DELIVERY: AtomicI32 = AtomicI32::new(-1);
+
+/// 保存中はsignalをblockし、配送開始時に解除する。
 struct ProcessSignals {
     first: Arc<AtomicI32>,
     int: Arc<AtomicBool>,
@@ -31,6 +34,12 @@ impl ProcessSignals {
                 signal_hook::low_level::register(signal, move || {
                     let _ = seen.compare_exchange(0, signal, Ordering::SeqCst, Ordering::SeqCst);
                     flag.store(true, Ordering::SeqCst);
+                    let delivery = DELIVERY.load(Ordering::SeqCst);
+                    if delivery >= 0 {
+                        // SAFETY: _exit is async-signal-safe. Publication has finished;
+                        // no temporary artifact or buffered file needs cleanup here.
+                        nix::libc::_exit(if delivery > 0 { delivery } else { 128 + signal });
+                    }
                 })
             }
             .expect("SIGINT/SIGTERMのhandlerを登録できる");
@@ -116,19 +125,104 @@ fn main() {
     finish(outcome, version);
 }
 
-fn finish(outcome: Option<Outcome>, version: &str) -> ! {
-    let mut stdout = std::io::stdout().lock();
-    let line = match &outcome {
-        Some(o) => o.receipt(),
-        None => version.to_owned(),
+fn finish(outcome: Option<Outcome>, information: &str) -> ! {
+    let code = outcome.as_ref().map_or(0, |o| o.exit_code);
+    // Only the atomic publication is protected. Delivery can block on either stream.
+    DELIVERY.store(
+        if matches!(code, 130 | 143) {
+            i32::from(code)
+        } else {
+            0
+        },
+        Ordering::SeqCst,
+    );
+    use nix::sys::signal::{SigSet, SigmaskHow, Signal as OsSignal, pthread_sigmask};
+    let mut mask = SigSet::empty();
+    mask.add(OsSignal::SIGINT);
+    mask.add(OsSignal::SIGTERM);
+    pthread_sigmask(SigmaskHow::SIG_UNBLOCK, Some(&mask), None)
+        .expect("配送前にSIGINT/SIGTERMを解除できる");
+    let line = outcome
+        .as_ref()
+        .map_or_else(|| information.to_owned(), Outcome::receipt);
+    let failed = outcome.as_ref().is_some_and(|o| {
+        matches!(
+            o.status,
+            archsig_input::result::Status::Invalid
+                | archsig_input::result::Status::Unsupported
+                | archsig_input::result::Status::Error
+                | archsig_input::result::Status::Interrupted
+        )
+    });
+    // Verified partial answers remain useful even when execution was interrupted.
+    let has_answers = outcome.as_ref().is_some_and(|o| o.summary.is_some());
+    if failed && has_answers {
+        let o = outcome.as_ref().expect("failure has an outcome");
+        let diagnostic = Outcome {
+            status: o.status,
+            exit_code: o.exit_code,
+            result: o.result.clone(),
+            summary: None,
+            issues: o.issues.clone(),
+        };
+        if let Err(error) = write_line(&mut std::io::stderr().lock(), &diagnostic.receipt()) {
+            std::process::exit(if error.kind() == std::io::ErrorKind::BrokenPipe {
+                141
+            } else {
+                74
+            });
+        }
+    }
+    let result = if failed && !has_answers {
+        write_line(&mut std::io::stderr().lock(), &line)
+    } else {
+        write_line(&mut std::io::stdout().lock(), &line)
     };
-    // 閉じた pipe には通知できない。計算で確定した終了コードを保つ。
-    let _ = writeln!(stdout, "{line}").and_then(|_| stdout.flush());
-    let code = match outcome {
-        Some(o) => o.exit_code,
-        None => 0,
+    let exit = match result {
+        Ok(()) => code,
+        Err(error) if error.kind() == std::io::ErrorKind::BrokenPipe => 141,
+        Err(error) => {
+            if !failed || has_answers {
+                let diagnostic = Outcome {
+                    status: archsig_input::result::Status::Error,
+                    exit_code: 74,
+                    result: outcome.as_ref().and_then(|o| o.result.clone()),
+                    summary: None,
+                    issues: vec![
+                        archsig_input::result::ResultIssue::Io {
+                            operation: "write",
+                            path: "stdout".into(),
+                            message: format!("cannot deliver stdout: {error}"),
+                        }
+                        .wire(),
+                    ],
+                };
+                if let Err(error) = write_line(&mut std::io::stderr().lock(), &diagnostic.receipt())
+                    && error.kind() == std::io::ErrorKind::BrokenPipe
+                {
+                    std::process::exit(141);
+                }
+            }
+            74
+        }
     };
-    std::process::exit(i32::from(code));
+    std::process::exit(i32::from(exit));
+}
+
+fn write_line(writer: &mut impl std::os::fd::AsFd, line: &str) -> std::io::Result<()> {
+    // std::io::Stdout suppresses EBADF for a closed descriptor. Use unbuffered
+    // descriptor writes so a missing or read-only destination is a real failure.
+    for mut bytes in [line.as_bytes(), b"\n".as_slice()] {
+        while !bytes.is_empty() {
+            match rustix::io::write(&*writer, bytes) {
+                Ok(0) => return Err(std::io::ErrorKind::WriteZero.into()),
+                Ok(written) => bytes = &bytes[written..],
+                Err(rustix::io::Errno::INTR) => continue,
+                Err(error) => return Err(error.into()),
+            }
+        }
+    }
+    Ok(())
 }
 
 fn execute(
@@ -137,6 +231,7 @@ fn execute(
 ) -> (Option<Outcome>, &'static str) {
     let mut io = FileIo;
     match parse_args(args) {
+        Ok(archsig::run::Command::Help(text)) => (None, text),
         Ok(command) => {
             let control = signals.control();
             (
@@ -403,6 +498,7 @@ mod tests {
                     // Drop the child before scope joins readers on a synchronization failure.
                     let mut child = child;
                     let mut stdout = BufReader::new(child.0.stdout.take().unwrap());
+                    let mut stderr = child.0.stderr.take().unwrap();
                     let (ready, received) = std::sync::mpsc::sync_channel(1);
                     let reader = scope.spawn(move || {
                         loop {
@@ -414,7 +510,7 @@ mod tests {
                         }
                         ready.send(()).unwrap();
                         let mut receipt = String::new();
-                        stdout.read_to_string(&mut receipt).unwrap();
+                        stderr.read_to_string(&mut receipt).unwrap();
                         receipt
                     });
                     received

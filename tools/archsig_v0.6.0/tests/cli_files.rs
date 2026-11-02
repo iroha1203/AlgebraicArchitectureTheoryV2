@@ -133,7 +133,8 @@ fn existing_outputs_are_never_overwritten() {
         )
     });
     assert_eq!(r.code, 64);
-    assert!(r.stderr.is_empty());
+    assert!(!r.stderr.is_empty());
+    assert!(r.stdout.is_empty());
     assert!(!has(&r.receipt, "result"));
     assert_eq!(
         std::fs::read_to_string(dir.join("o/keep.txt")).unwrap(),
@@ -269,7 +270,8 @@ fn unreadable_inputs_are_io_errors() {
         .output()
         .unwrap();
     assert_eq!(out.status.code(), Some(74));
-    let receipt = archsig_common::json::parse(&out.stdout).unwrap();
+    assert!(out.stdout.is_empty());
+    let receipt = archsig_common::json::parse(&out.stderr).unwrap();
     assert_eq!(s(get(&receipt, "status")), "error");
     assert!(!has(&receipt, "result"));
     assert!(!dir.join("o3").exists());
