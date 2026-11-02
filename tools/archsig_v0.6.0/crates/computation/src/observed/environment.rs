@@ -8794,6 +8794,48 @@ impl<'a> Environment<'a> {
         }
         Ok(result)
     }
+    fn scoped_quantifier_domain(
+        &self,
+        spec: &quantifier::Spec<'_>,
+        variables: &BTreeMap<String, SourceValue>,
+        base: &Scope,
+        reading: &str,
+    ) -> Result<(SourceValue, Option<Vec<Scalar>>), ValidationFailure> {
+        let result = if let Some(domain) = spec.domain {
+            let input = self.scoped_ast(domain, variables, base, reading)?;
+            let members = match &input.known_value {
+                Some(Scalar::List { items, .. } | Scalar::Set { items, .. }) => {
+                    let value = data::set(spec.element.clone(), items, &self.control)?;
+                    let Scalar::Set { items, .. } = &value else {
+                        unreachable!()
+                    };
+                    Some(items.clone())
+                }
+                None => None,
+                _ => return Err(internal!("量化域がList/Setでない").into()),
+            };
+            (input, members)
+        } else {
+            let enumeration = self.owned_type_values(&spec, variables, reading, &mut |_, _| {})?;
+            let mut scope = base.clone();
+            scope.merge(&enumeration.scope);
+            (
+                SourceValue {
+                    condition_failed: false,
+                    condition_pending: false,
+                    symbolic: None,
+                    comparison: None,
+                    affine: None,
+                    scope,
+                    known_value: None,
+                    support: enumeration.support,
+                    scalar_scope: None,
+                },
+                enumeration.values,
+            )
+        };
+        Ok(result)
+    }
     fn scoped_quantified(
         &self,
         id: usize,
@@ -8808,40 +8850,8 @@ impl<'a> Environment<'a> {
                 return Ok(value);
             }
             let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
-            let (input, members) = if let Some(domain) = spec.domain {
-                let input = self.scoped_ast(domain, variables, base, reading)?;
-                let members = match &input.known_value {
-                    Some(Scalar::List { items, .. } | Scalar::Set { items, .. }) => {
-                        let value = data::set(spec.element.clone(), items, &self.control)?;
-                        let Scalar::Set { items, .. } = &value else {
-                            unreachable!()
-                        };
-                        Some(items.clone())
-                    }
-                    None => None,
-                    _ => return Err(internal!("量化域がList/Setでない").into()),
-                };
-                (input, members)
-            } else {
-                let enumeration =
-                    self.owned_type_values(&spec, variables, reading, &mut |_, _| {})?;
-                let mut scope = base.clone();
-                scope.merge(&enumeration.scope);
-                (
-                    SourceValue {
-                        condition_failed: false,
-                        condition_pending: false,
-                        symbolic: None,
-                        comparison: None,
-                        affine: None,
-                        scope,
-                        known_value: None,
-                        support: enumeration.support,
-                        scalar_scope: None,
-                    },
-                    enumeration.values,
-                )
-            };
+            let (input, members) =
+                self.scoped_quantifier_domain(&spec, variables, base, reading)?;
             // 親/lexical値が既に持つ出現はその由来順を保つ。
             // このdomain式で新たに現れる量化は自身より後に置く。
             let mut inherited = base.clone();
