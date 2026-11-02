@@ -77,7 +77,7 @@ archsig check --atom-definition tools/archsig_v0.6.0/tests/fixtures/counter.atom
   --archmap tools/archsig_v0.6.0/tests/fixtures/counter.archmap.json
 ```
 
-この例は3件とも `established`、値は2、終了コードは0です。
+上の `run` の例は3件とも `established`、値は2、終了コードは0です。
 要求が成り立たない回答は `refuted`、入力から決まらない回答は `undetermined` と理由を返します。
 実行失敗は標準エラー出力の機械可読JSONと終了コードで確認できます。
 終了コードと中断時の扱いは実行仕様を参照してください。
