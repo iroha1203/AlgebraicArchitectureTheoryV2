@@ -1,6 +1,7 @@
 use super::*;
 use crate::run::CheckArgs;
 use archsig_common::json::{JNode, JValue};
+use archsig_input::result::Signal;
 use std::{
     collections::BTreeMap,
     path::{Path, PathBuf},
@@ -103,8 +104,7 @@ fn later_internal_failure_delivers_only_the_validated_prefix_and_no_empty_error_
                     &mut signals,
                     &args,
                     evaluation,
-                    vec![],
-                    None,
+                    super::super::reuse::Verification::default(),
                     &control,
                 );
                 assert_eq!(
@@ -157,6 +157,88 @@ fn later_internal_failure_delivers_only_the_validated_prefix_and_no_empty_error_
                             .all(|r| text(field(r, "code")) == "internal")
                     );
                 }
+            }
+        }
+    }
+    std::fs::remove_dir(&directory).unwrap();
+}
+
+#[test]
+fn generated_replay_and_fresh_rendering_deliver_identical_bytes() {
+    use super::super::reuse::Verification;
+    let directory =
+        std::env::temp_dir().join(format!("archsig-replay-delivery-{}", std::process::id()));
+    std::fs::create_dir(&directory).unwrap();
+    for save in [false, true] {
+        for signal in [None, Some(Signal::Int)] {
+            for reuse_stop in [None, Some(Signal::Term)] {
+                let args = RunArgs {
+                    inputs: CheckArgs {
+                        atom_definitions: vec![],
+                        law: PathBuf::new(),
+                        archmap: None,
+                        out: save.then(|| directory.join("out")),
+                    },
+                    asks: vec!["n=evaluate(CountCheck.amount,s=@v/s)".into()],
+                    reuse: None,
+                };
+                let mut results = Vec::new();
+                for keep_replay in [false, true] {
+                    let control = Control::unlimited();
+                    let prepared = prepare_observed(
+                        InputSources::from_bytes(
+                            vec![
+                                include_bytes!("../../../tests/fixtures/counter.atoms.json")
+                                    .to_vec(),
+                            ],
+                            include_bytes!("../../../tests/fixtures/counter.law").to_vec(),
+                            include_bytes!("../../../tests/fixtures/counter.archmap.json").to_vec(),
+                        ),
+                        &[args.asks[0].as_str()],
+                        &control,
+                    )
+                    .unwrap();
+                    let evaluation = evaluate_observed(prepared, &control).unwrap();
+                    let replay = keep_replay.then(|| evaluation.result_wire());
+                    let verification = Verification {
+                        rejected: vec![
+                            ResultIssue::Usage {
+                                argument: "--reuse".into(),
+                                message: "rejected candidate".into(),
+                            }
+                            .wire(),
+                        ],
+                        stop: reuse_stop,
+                        replay,
+                    };
+                    let mut io = MemoryIo::default();
+                    let mut signals = FinalSignal(signal, 0);
+                    let outcome = deliver(
+                        &mut io,
+                        &mut signals,
+                        &args,
+                        evaluation,
+                        verification,
+                        &control,
+                    );
+                    assert_eq!(signals.1, 1);
+                    assert_eq!(
+                        outcome.exit_code,
+                        if signal.is_some() {
+                            130
+                        } else if reuse_stop.is_some() {
+                            75
+                        } else {
+                            0
+                        }
+                    );
+                    assert_eq!(io.0.len(), if save { 4 } else { 0 });
+                    results.push((outcome.receipt(), io.0));
+                }
+                assert_eq!(
+                    results[0], results[1],
+                    "save={save}, signal={signal:?}, reuse_stop={reuse_stop:?}"
+                );
             }
         }
     }

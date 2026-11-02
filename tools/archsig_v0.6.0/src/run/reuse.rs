@@ -16,6 +16,13 @@ pub(super) struct Candidate {
     document: Option<JNode>,
     rejected: Vec<Json>,
 }
+/// 照合通知と、現在入力から生成済みの保存表示。
+#[derive(Default)]
+pub(super) struct Verification {
+    pub rejected: Vec<Json>,
+    pub stop: Option<Signal>,
+    pub replay: Option<Json>,
+}
 impl Candidate {
     fn reject(&mut self, message: String) {
         self.rejected.push(
@@ -31,17 +38,30 @@ impl Candidate {
         mut self,
         evaluation: &ObservedEvaluation,
         control: &Control,
-    ) -> (Vec<Json>, Option<Signal>) {
+    ) -> Verification {
+        let mut replay = None;
+        let mut stop = None;
         if let Some(document) = &self.document
             && matches!(evaluation.status(), "complete" | "partial")
         {
-            match verify(document, evaluation, control) {
+            let checked = (|| {
+                control.checkpoint(Checkpoint::Reuse)?;
+                let current = evaluation.result_wire_controlled(control, Checkpoint::Reuse)?;
+                let result = verify(document, &current, evaluation, control);
+                replay = Some(current);
+                result
+            })();
+            match checked {
                 Ok(()) => {}
                 Err(Failure::Rejected(message)) => self.reject(message),
-                Err(Failure::Stopped(reason)) => return (self.rejected, Some(reason)),
+                Err(Failure::Stopped(reason)) => stop = Some(reason),
             }
         }
-        (self.rejected, None)
+        Verification {
+            rejected: self.rejected,
+            stop,
+            replay,
+        }
     }
 }
 pub(super) fn inspect(path: Option<&Path>, control: &Control) -> Result<Candidate, Signal> {
@@ -336,9 +356,12 @@ fn node_content(mut node: Json, control: &Control) -> Checked<String> {
     fields.remove("id");
     encoding(&node, control)
 }
-fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &Control) -> Checked<()> {
-    control.checkpoint(Checkpoint::Reuse)?;
-    let replay = evaluation.result_wire_controlled(control, Checkpoint::Reuse)?;
+fn verify(
+    document: &JNode,
+    replay: &Json,
+    evaluation: &ObservedEvaluation,
+    control: &Control,
+) -> Checked<()> {
     let empty = BTreeMap::new();
     // 元byte列のidentityと解決済み要求を照合する。宣言・型は現在の三入力から再検査する。
     // 候補が別の入力/問いのものでも、通常評価は既に現在入力から実行済みである。
@@ -368,12 +391,12 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &Control) 
         }
         fields.remove("path");
     }
-    if inputs != *wire_field(&replay, "inputs")? {
+    if inputs != *wire_field(replay, "inputs")? {
         return Err(invalid("current input identity does not match"));
     }
     for name in ["requests", "status"] {
         let candidate = normalized_candidate(field(document, name)?, &empty, control)?;
-        if candidate != *wire_field(&replay, name)? {
+        if candidate != *wire_field(replay, name)? {
             return Err(invalid(format!(
                 "cannot verify {name} against the current checked result"
             )));
@@ -381,7 +404,7 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &Control) 
     }
     let mut native_ids = BTreeMap::new();
     let mut verified = BTreeMap::new();
-    let Json::Arr(nodes) = wire_field(&replay, "nodes")? else {
+    let Json::Arr(nodes) = wire_field(replay, "nodes")? else {
         return Err(invalid("missing recomputed nodes"));
     };
     for (index, node) in nodes.iter().enumerate() {
@@ -412,13 +435,13 @@ fn verify(document: &JNode, evaluation: &ObservedEvaluation, control: &Control) 
     // node番号・順序・共有を意味にしない。各Refを検査済みの導出内容へ正規化する。
     // digest一致で済ませず、payload・型・全依存・元位置を含むcanonical全文を照合する。
     let answers = normalized_candidate(field(document, "answers")?, &candidate_ids, control)?;
-    if answers != normalized_wire(wire_field(&replay, "answers")?, &native_ids, control)? {
+    if answers != normalized_wire(wire_field(replay, "answers")?, &native_ids, control)? {
         return Err(invalid(
             "cannot verify answers against the current checked derivation",
         ));
     }
     let issues = normalized_candidate(field(document, "issues")?, &candidate_ids, control)?;
-    if issues != normalized_wire(wire_field(&replay, "issues")?, &native_ids, control)? {
+    if issues != normalized_wire(wire_field(replay, "issues")?, &native_ids, control)? {
         return Err(invalid(
             "cannot verify issues against the current checked derivation",
         ));
