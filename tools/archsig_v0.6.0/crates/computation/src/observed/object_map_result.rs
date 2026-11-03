@@ -323,18 +323,30 @@ fn compute_inner(
                 .objects()
                 .iter()
                 .any(|r| r.condition_failure().is_some())
-            && !transport
-                .generators()
-                .iter()
-                .any(|r| r.condition_failure().is_some())
+            && !transport.generators().iter().any(|r| {
+                r.condition_failure().is_some()
+                    || matches!(
+                        r.naturality(),
+                        Some(construction::Naturality::Refuted { .. })
+                    )
+            })
         {
             return Err(internal!("ObjectAlgebra mapの保存反例配送は未実装").into());
         }
+        let aa = a.arrows.as_ref().ok_or(internal!("元生成元族がない"))?;
+        let za = z.arrows.as_ref().ok_or(internal!("先生成元族がない"))?;
+        let Some(Payload::Construction(cv)) = &g.get(candidate)?.payload else {
+            return Err(internal!("元候補がない").into());
+        };
+        let D::MapCandidate {
+            subject, action, ..
+        } = cv.data
+        else {
+            return Err(internal!("元候補の作用がない").into());
+        };
         if preserved {
             let ao = a.objects.as_ref().ok_or(internal!("元対象族がない"))?;
             let zo = z.objects.as_ref().ok_or(internal!("先対象族がない"))?;
-            let aa = a.arrows.as_ref().ok_or(internal!("元生成元族がない"))?;
-            let za = z.arrows.as_ref().ok_or(internal!("先生成元族がない"))?;
             if transport.objects().len() != ao.objects.len()
                 || transport.generators().len() != aa.rows.len()
             {
@@ -349,15 +361,6 @@ fn compute_inner(
                     .iter()
                     .map(|v| v.subject()),
             );
-            let Some(Payload::Construction(cv)) = &g.get(candidate)?.payload else {
-                return Err(internal!("元候補がない").into());
-            };
-            let D::MapCandidate {
-                subject, action, ..
-            } = cv.data
-            else {
-                return Err(internal!("元候補の作用がない").into());
-            };
             for (i, row) in transport.objects().iter().enumerate() {
                 tick(c)?;
                 let target = row.target().ok_or(internal!("保存済み対象の像がない"))?;
@@ -405,74 +408,131 @@ fn compute_inner(
                 ]));
                 dependencies.extend([ao.objects[i], zo.objects[j]]);
             }
-            let mu = map.candidate();
-            for (i, row) in transport.generators().iter().enumerate() {
-                tick(c)?;
-                let j = transport
-                    .target()
-                    .arrows()
-                    .iter()
-                    .position(|r| r.arrow() == row.target())
-                    .ok_or(internal!("生成元像が終域にない"))?;
-                let e = transport.source().arrows()[i]
-                    .map()
-                    .ok_or(internal!("元生成元の保存がない"))?
-                    .candidate();
-                let f = transport.target().arrows()[j]
-                    .map()
-                    .ok_or(internal!("先生成元の保存がない"))?
-                    .candidate();
-                let compose = |first: &construction::MapCandidate,
-                               second: &construction::MapCandidate,
-                               c: &Control|
-                 -> Result<Vec<Fact>, ValidationFailure> {
-                    let mut action = std::collections::BTreeMap::new();
-                    for (subject, image) in second.universe().iter().zip(second.images()) {
-                        tick(c)?;
-                        action.insert(subject, image);
-                    }
-                    let mut images = vec![];
-                    for subject in first.images() {
-                        tick(c)?;
-                        images.push(
-                            (*action
-                                .get(subject)
-                                .ok_or(internal!("総写像の合成位置がない"))?)
-                            .clone(),
-                        );
-                    }
-                    Ok(images)
-                };
-                let mut maps = vec![];
-                let source_op = aa.rows[i]
-                    .operation
-                    .ok_or(internal!("元生成元Operationがない"))?;
-                let target_op = za.rows[j]
-                    .operation
-                    .ok_or(internal!("先生成元Operationがない"))?;
-                for images in [compose(e, mu, c)?, compose(mu, f, c)?] {
-                    tick(c)?;
-                    maps.push(b.push(
-                        NodeType::Construction(T::AtomMap),
-                        "atom_map",
-                        Json::obj([
-                            ("universe", a.architecture.universe.wire()),
-                            ("images", Json::Arr(images.iter().map(Fact::wire).collect())),
-                        ]),
-                        vec![a.architecture.universe, action, source_op, target_op],
-                        None,
-                        None,
-                    )?);
-                }
-                let naturality =
-                    b.proposition("naturality", maps, vec![], Decision::Established)?;
-                dependencies.extend([source_op, target_op, naturality]);
-                operation_rows.push(Json::obj([
-                    ("source", source_op.wire()),
-                    ("target", target_op.wire()),
-                    ("naturality", naturality.wire()),
-                ]));
+        }
+        let mu = map.candidate();
+        for (i, row) in transport.generators().iter().enumerate() {
+            tick(c)?;
+            if row.naturality().is_none() {
+                continue;
             }
+            let j = transport
+                .target()
+                .arrows()
+                .iter()
+                .position(|r| r.arrow() == row.target())
+                .ok_or(internal!("生成元像が終域にない"))?;
+            let e = transport.source().arrows()[i]
+                .map()
+                .ok_or(internal!("元生成元の保存がない"))?
+                .candidate();
+            let f = transport.target().arrows()[j]
+                .map()
+                .ok_or(internal!("先生成元の保存がない"))?
+                .candidate();
+            let compose = |first: &construction::MapCandidate,
+                           second: &construction::MapCandidate,
+                           c: &Control|
+             -> Result<Vec<Fact>, ValidationFailure> {
+                let mut action = std::collections::BTreeMap::new();
+                for (subject, image) in second.universe().iter().zip(second.images()) {
+                    tick(c)?;
+                    action.insert(subject, image);
+                }
+                let mut images = vec![];
+                for subject in first.images() {
+                    tick(c)?;
+                    images.push(
+                        (*action
+                            .get(subject)
+                            .ok_or(internal!("総写像の合成位置がない"))?)
+                        .clone(),
+                    );
+                }
+                Ok(images)
+            };
+            let mut maps = vec![];
+            let source_op = aa.rows[i]
+                .operation
+                .ok_or(internal!("元生成元Operationがない"))?;
+            let target_op = za.rows[j]
+                .operation
+                .ok_or(internal!("先生成元Operationがない"))?;
+            for images in [compose(e, mu, c)?, compose(mu, f, c)?] {
+                tick(c)?;
+                maps.push(b.push(
+                    NodeType::Construction(T::AtomMap),
+                    "atom_map",
+                    Json::obj([
+                        ("universe", a.architecture.universe.wire()),
+                        ("images", Json::Arr(images.iter().map(Fact::wire).collect())),
+                    ]),
+                    vec![a.architecture.universe, action, source_op, target_op],
+                    None,
+                    None,
+                )?);
+            }
+            let counterexample = match row.naturality() {
+                Some(construction::Naturality::Refuted { fact, left, right }) => {
+                    let proof = b.push(
+                        NodeType::Evidence,
+                        "evidence",
+                        Json::obj([
+                            ("kind", Json::str("counterexample")),
+                            (
+                                "data",
+                                Json::obj([
+                                    ("bindings", Json::Arr(vec![])),
+                                    ("paths", Json::Arr(vec![])),
+                                    ("left", maps[0].wire()),
+                                    ("right", maps[1].wire()),
+                                    (
+                                        "facts",
+                                        Json::Arr(
+                                            [fact, left, right]
+                                                .into_iter()
+                                                .map(Fact::wire)
+                                                .collect(),
+                                        ),
+                                    ),
+                                ]),
+                            ),
+                        ]),
+                        maps.clone(),
+                        None,
+                        None,
+                    )?;
+                    declaration_evidence.push(proof);
+                    Some(proof)
+                }
+                _ => None,
+            };
+            let naturality = b.proposition(
+                "naturality",
+                maps,
+                counterexample.into_iter().collect(),
+                if counterexample.is_some() {
+                    Decision::Refuted
+                } else {
+                    Decision::Established
+                },
+            )?;
+            if let Some(proof) = counterexample {
+                let part = &mut b.parts[naturality.0 - base];
+                part.evidence.push(proof);
+                part.judgment
+                    .as_mut()
+                    .ok_or(internal!("自然性の判断がない"))?
+                    .evidence
+                    .push(proof);
+            }
+            dependencies.extend([source_op, target_op, naturality]);
+            operation_rows.push(Json::obj([
+                ("source", source_op.wire()),
+                ("target", target_op.wire()),
+                ("naturality", naturality.wire()),
+            ]));
+        }
+        if preserved {
             let def = inputs
                 .definitions()
                 .declarations()
