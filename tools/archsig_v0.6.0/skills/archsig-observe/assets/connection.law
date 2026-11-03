@@ -1,0 +1,9 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Wiring {
+  use vocabulary Connection version "1" digest "sha256:c6e3cedde79dbca9c8a54730c7b88e2efd1ffcbd03a8bcdeccfb00b85a7836ef";
+  law required direct(link: Link): link.producer.output = link.consumer.input;
+  law optional quantified(link: Link):
+    forall step in Step[link.owner] . step = link.consumer implies link.producer.output = step.input;
+  law optional candidateExists(link: Link):
+    exists step in Step[link.owner] . link.producer.output = step.input;
+}

@@ -1,0 +1,131 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Connection",
+      "version": "1",
+      "dependencies": [
+
+      ],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Connection.Pipeline",
+          "meaning": "正常に変換が完了し、後続処理へ進む一つの静的経路。",
+          "parameters": [
+
+          ],
+          "fields": [
+
+          ],
+          "alignments": [
+
+          ]
+        },
+        {
+          "kind": "entity",
+          "name": "Connection.Value",
+          "meaning": "プログラムの値。文字列内容の偶然の一致ではなく、定義元と変換を経た値の同一性で区別する。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Connection.Pipeline"
+              ],
+              "meaning": "この値・操作・接続が属する静的な処理経路。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "token",
+              "type": "Text",
+              "meaning": "同じ経路の同じ値を表す識別子。変換前rawと変換後encodedは別値。別名だけなら同じValueを参照する。"
+            }
+          ],
+          "alignments": [
+
+          ]
+        },
+        {
+          "kind": "entity",
+          "name": "Connection.Step",
+          "meaning": "経路上の変換または値の受渡し。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Connection.Pipeline"
+              ],
+              "meaning": "この値・操作・接続が属する静的な処理経路。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "input",
+              "type": [
+                "Owned",
+                "Connection.Value",
+                "owner"
+              ],
+              "meaning": "この操作へ渡される値。"
+            },
+            {
+              "name": "output",
+              "type": [
+                "Owned",
+                "Connection.Value",
+                "owner"
+              ],
+              "meaning": "この操作から後続へ渡される値。"
+            }
+          ],
+          "alignments": [
+
+          ]
+        },
+        {
+          "kind": "entity",
+          "name": "Connection.Link",
+          "meaning": "先行操作から後続操作への接続。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Connection.Pipeline"
+              ],
+              "meaning": "この値・操作・接続が属する静的な処理経路。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "producer",
+              "type": [
+                "Owned",
+                "Connection.Step",
+                "owner"
+              ],
+              "meaning": "先に完了する操作。"
+            },
+            {
+              "name": "consumer",
+              "type": [
+                "Owned",
+                "Connection.Step",
+                "owner"
+              ],
+              "meaning": "その後に呼ぶ操作。"
+            }
+          ],
+          "alignments": [
+
+          ]
+        }
+      ]
+    }
+  ]
+}
