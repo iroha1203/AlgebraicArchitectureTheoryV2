@@ -174,15 +174,16 @@ struct ScopedKey {
     universal: Option<universal::AnalysisContext>,
     completions: CompletionValues,
 }
-// 前回と同じnode prefix identityと全隠しregistryの場合だけ成功を再利用する。
-// node内容は複製せず、可変アクセス・clone後は内容が同値でも再検査する。
+// node/Contextの不変prefix identityと全隠しregistryを照合して成功を再利用する。
+// 旧prefixの内容は複製せず、可変アクセス・clone後は内容が同値でも再検査する。
 // nodeの追加は既出DAGの意味を変えない。新frameも旧prefixから必ず除外される
 // producerを持つ場合だけ許す。新iteration/caseも同じprefix境界を守る。
 // 既存metadataの改変は全て失効させる。
 struct ValidationSnapshot {
     node_identity: std::rc::Rc<()>,
     node_len: usize,
-    contexts: Vec<super::call::Context>,
+    context_identity: std::rc::Rc<()>,
+    context_len: usize,
     frames: Vec<super::call::Frame>,
     iterations: Vec<super::call::Iteration>,
     instances: Vec<super::call::Instance>,
@@ -251,7 +252,7 @@ impl ValidationSnapshot {
     ) -> Result<bool, ValidationFailure> {
         Self::tick(control)?;
         if self.node_len > g.nodes.len()
-            || self.contexts.len() != self.node_len
+            || self.context_len != self.node_len
             || g.contexts.len() != g.nodes.len()
             || g.frames.len() < self.frames.len()
             || g.cases.len() < self.cases.len()
@@ -260,11 +261,12 @@ impl ValidationSnapshot {
         {
             return Ok(false);
         }
-        if !std::rc::Rc::ptr_eq(&self.node_identity, &g.nodes.prefix_identity()) {
+        if !std::rc::Rc::ptr_eq(&self.node_identity, &g.nodes.prefix_identity())
+            || !std::rc::Rc::ptr_eq(&self.context_identity, &g.contexts.prefix_identity())
+        {
             return Ok(false);
         }
-        if !Self::same(&g.contexts[..self.contexts.len()], &self.contexts, control)?
-            || !Self::same(&g.frames[..self.frames.len()], &self.frames, control)?
+        if !Self::same(&g.frames[..self.frames.len()], &self.frames, control)?
             || !Self::same(&g.cases[..self.cases.len()], &self.cases, control)?
             || !Self::same(
                 &g.instances[..self.instances.len()],
@@ -336,7 +338,8 @@ impl ValidationSnapshot {
         Ok(Self {
             node_identity: g.nodes.prefix_identity(),
             node_len: g.nodes.len(),
-            contexts: Self::copy(&g.contexts, control)?,
+            context_identity: g.contexts.prefix_identity(),
+            context_len: g.contexts.len(),
             frames: Self::copy(&g.frames, control)?,
             iterations: Self::copy(&g.iterations, control)?,
             instances: Self::copy(&g.instances, control)?,
@@ -351,9 +354,9 @@ impl ValidationSnapshot {
     fn extend_matching(&mut self, g: &Graph, control: &Control) -> Result<(), ValidationFailure> {
         Self::tick(control)?;
         self.node_identity = g.nodes.prefix_identity();
+        self.context_identity = g.contexts.prefix_identity();
         self.node_len = g.nodes.len();
-        self.contexts
-            .extend(Self::copy(&g.contexts[self.contexts.len()..], control)?);
+        self.context_len = g.contexts.len();
         self.frames
             .extend(Self::copy(&g.frames[self.frames.len()..], control)?);
         self.instances
