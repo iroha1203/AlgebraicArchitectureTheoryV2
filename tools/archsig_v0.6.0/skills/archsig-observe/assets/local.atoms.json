@@ -1,0 +1,39 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Coordinates",
+      "version": "1",
+      "dependencies": [
+
+      ],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Coordinates.State",
+          "meaning": "二つの整数座標を持つ状態。",
+          "parameters": [
+
+          ],
+          "fields": [
+            {
+              "name": "x",
+              "type": "Z",
+              "meaning": "第一座標。"
+            },
+            {
+              "name": "y",
+              "type": "Z",
+              "meaning": "第二座標。"
+            }
+          ],
+          "alignments": [
+
+          ]
+        }
+      ]
+    }
+  ]
+}

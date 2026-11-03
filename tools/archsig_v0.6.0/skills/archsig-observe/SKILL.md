@@ -50,7 +50,8 @@ SKILL だけを別の場所へインストールした場合は、元バンド�
 共有文脈は「初期値・既定値・名前の binding／公開する値と変更手段／それを使う場所」、
 要求は「求める関係／適用範囲／根拠」を読む。同じ箇所の複数の役割は対応を残す。
 呼出しへ渡す値・参照と戻り値の使い方を対応づけ、binding・継承先を経た作用を同じ対象についてつなぐ。
-途中の失敗でどの作用まで到達するかも確かめる。
+途中の失敗でどの作用まで到達するかも確かめる。別名による受渡しと変換後の別値は、
+下の「値の受渡しと変換をつなぐ」の例のように区別する。
 この単位は読解の整理であり、新しい schema や必須レポートではない。
 条件・対象・順序が異なる意味を潰さず、同じ意味を件数のために分割しない。
 実装に記述された I/O の役割・順序・状態変化も対象にする。
@@ -281,6 +282,111 @@ reading Bootstrap {}
 複数の定義ファイルは依存分も `--atom-definition` を繰り返して明示指定する。
 形式エラーを直した後も、修正前後の定義・Law・観測を照合し、宣言や要求が消えていないことを確認する。
 
+### 値の受渡しと変換をつなぐ
+
+[接続の例の定義](assets/connection.atoms.json)・[Law](assets/connection.law)・
+[ArchMap](assets/connection.archmap.json) は、次の架空の正常経路を表す。
+
+```text
+raw → encode → encoded → alias → send
+                       ↘ sendRaw(raw) は別の接続候補
+```
+
+`encode` が成功して後続へ進む経路だけを扱う。失敗時の経路にはこの接続を流用しない。
+`alias` は `encoded` の別名なので同じ Value を参照する。`encode` の前後は別の Value とし、
+操作の `input` と `output` に原始の変換関係を記録する。`Link` は先行・後続の操作を指し、
+その出力と入力が一致するという要求は `Wiring.direct` が検査する。
+`connected` は `send(encoded)`、`bypassed` は `sendRaw(raw)` を接続する。
+
+Value の `token` は同じ処理経路内の同じ定義元・変換結果を表す名前であり、値の文字列内容ではない。
+名前を正規化するときは binding を追い、別名だけを同じ Value にまとめる。
+`raw` と `encoded` を同じ token として参照まで統合すると、変換を迂回した後続も通る誤入力になる。
+実入力では変換前後を区別する根拠を読んでから、この対応を作る。
+
+```sh
+"$cli" check --atom-definition "$skill/assets/connection.atoms.json" --law "$skill/assets/connection.law" --archmap "$skill/assets/connection.archmap.json" --out "$work/connection-check"
+"$cli" run --atom-definition "$skill/assets/connection.atoms.json" --law "$skill/assets/connection.law" --archmap "$skill/assets/connection.archmap.json" \
+  --ask 'd=check(Wiring.direct,bind.link=@v/connected)' \
+  --ask 'q=check(Wiring.quantified,bind.link=@v/connected)' \
+  --ask 'bad=check(Wiring.direct,bind.link=@v/bypassed)' \
+  --ask 'badq=check(Wiring.quantified,bind.link=@v/bypassed)' \
+  --ask 'found=check(Wiring.candidateExists,bind.link=@v/bypassed)' --out "$work/connection-run"
+```
+
+`d/q` は成立、`bad/badq` は反証、`found` は成立する（終了1）。
+量化版は `Step[link.owner]` の中で、`link.consumer` と同じ操作への接続を検査する。
+`consumer` は同じ owner に属する Step を指す必須の参照なので、この例では参照版と同じ問いになる。
+他の owner の操作を混ぜたり、対象を選ぶ条件を落としたりしない。
+一方 `candidateExists` は同じ owner 内の候補を探す。`bypassed` の選択先は不適合でも、
+別の候補 `send` があるため成立する。存在の問いを一つの対象への `bind` へ変えてはいけない。
+値の判定が一致しても、式の支持・局所の読取り・診断の保存は別に確かめる。
+
+### 既存例を編集する
+
+[operation の定義](assets/operation.atoms.json)・[Law](assets/operation.law)・
+[ArchMap](assets/operation.archmap.json) を `work` の `definitions.json`、`laws.law`、
+`observation.json` へコピーし、出口を Bool から名前付きの二つの値へ変更する。
+
+```sh
+mkdir -p "$work"
+cp "$skill/assets/operation.atoms.json" "$work/definitions.json"
+cp "$skill/assets/operation.law" "$work/laws.law"
+cp "$skill/assets/operation.archmap.json" "$work/observation.json"
+```
+
+編集後は [定義](assets/operation-edited.atoms.json)・[Law](assets/operation-edited.law)・
+[ArchMap](assets/operation-edited.archmap.json) と比較できる。
+
+| 編集箇所 | 変更 |
+| --- | --- |
+| vocabulary | `version` を `1` から `2` へ |
+| Branch の field | `returnsNormally: Bool` を `exit: ["Data","OperationModel.Exit"]` へ。meaning は静的経路の出口と各値の意味へ |
+| 新しい data 宣言 | `OperationModel.Exit` に引数なしの `Returned`（return）と `Raised`（throw）を追加 |
+| Law の読取り | `branch.returnsNormally` を `(branch.exit = Exit.Returned)` へ |
+| ArchMap の出口 Atom | field を `OperationModel.Branch.exit` へ。true は `{"tag":"Returned","args":[]}`、false は `{"tag":"Raised","args":[]}` へ |
+
+Branch の `parameters: []` と `alignments: []`、既存の二つの条件・更新 field、origin、
+subject と他の Atom は保持する。data 宣言の必須欄は上の文法に従う。
+宣言・束縛名は予約語表と照合し、ここでは `Exit/Returned/Raised/exit` を使う。
+上の bootstrap を編集した `definitions.json` に実行し、返った version/digest を
+`laws.law` と `observation.json` の両方へ反映する。古い digest をそのまま残さない。
+
+```sh
+"$cli" check --atom-definition "$work/definitions.json" --law "$work/laws.law" --archmap "$work/observation.json" --out "$work/edited-check"
+"$cli" run --atom-definition "$work/definitions.json" --law "$work/laws.law" --archmap "$work/observation.json" \
+  --ask 'v=evaluate(OperationReading.normalExit,bind.branch=@v/rejected)' \
+  --ask 'c=check(OperationReading.guardedUpdate,bind.branch=@v/rejected)' \
+  --ask 'h=check(OperationReading.rejectedReturnsNormally)' --out "$work/edited-run"
+```
+
+出口の値 false、更新の要求成立、追加仮説の反証が編集前後で一致する（終了1）。
+形式エラー（65）は必須欄や参照を直して再検査する。要求・観測を削って通さない。
+受理された入力の欠測による未決は読足し、反証は要求と事実の関係へ戻って判断する。
+
+### 合計と各成分を読む
+
+[座標の定義](assets/local.atoms.json)・[Law](assets/local.law)・[ArchMap](assets/local.archmap.json) は、
+整数座標 `x=1,y=-1` と要求 `x+y=0` を持つ。同じ状態・要求を `Sum` は合計、`Tuple` は各成分で読む。
+`move` は二つの整数を独立に変更する。この候補域では `(1,-1)` と `(2,-2)` の合計は同じでも
+各成分は異なるので、合計から各加数を一般には回復できない。Tuple は `.0/.1` で射影できる。
+
+```sh
+"$cli" check --atom-definition "$skill/assets/local.atoms.json" --law "$skill/assets/local.law" --archmap "$skill/assets/local.archmap.json" --out "$work/local-check"
+"$cli" run --atom-definition "$skill/assets/local.atoms.json" --law "$skill/assets/local.law" --archmap "$skill/assets/local.archmap.json" \
+  --ask 's=build(Sum,on=@v/state)' --ask 't=build(Tuple,on=@v/state)' \
+  --ask 'sum=localize($s.object,using=Sum.move)' --ask 'tuple=localize($t.object,using=Tuple.move)' \
+  --ask 'fixedSum=localize($s.object)' --ask 'fixedTuple=localize($t.object)' --out "$work/local-run"
+```
+
+`using` を指定した二つの問いは変更候補上で読む。`sum` は必要な座標を覆えず
+`visibility_insufficient`、`tuple` は成立する。式が両 field に依存することと、
+各 field を個別に読めることを分ける。
+`using` を省いた二つの問いは元の固定状態を読む。この例の `fixedSum` は複合読取りの
+`unsupported_algorithm`、`fixedTuple` は成立する（全体の終了2）。
+これはこの固定読取りに対応する算法がないという理由で、Law の反証でも欠測でもない。
+`missing_observation` なら不足 slot を読み足し、`refuted` なら反例を要求と照合する。
+`visibility_insufficient` では必要な公開情報を見直し、`unsupported_algorithm` では未決の理由を保つ。
+
 ## 計算へ渡し、更新する
 
 バンドルの CLI で入力を検査する。まず同梱例を確認できる。
@@ -306,7 +412,9 @@ CLI が未提供・非対応なら三入力とソース照合を進め、接続�
 終了0は検査成功又は全問い確定・反証なし、1は全問い確定・反証あり、2は未決を含む。
 64は使い方、65は入力、69は版非対応、70/74はinternal/io、130/143は中断。
 終了コードだけで意味を判定せず、receipt と保存結果の理由・位置を確認する。
-実行時間を区切るときは SIGINT/SIGTERM を送る。再利用は `--reuse OLD_DIRECTORY`。
+実行時間を区切るときは SIGINT/SIGTERM を送り、終了130/143と receipt・保存結果の有無を確認する。
+中断した初回は未完了として扱う。再実行では元の対象域・owner・接続条件を保ち、新しい出力先を使う。
+再利用は `--reuse OLD_DIRECTORY`。
 再利用先も利用者の保存結果を明示し、旧入力を新しい観測へ読み替えない。
 
 コード変更は該当する使用箇所と、その値を使う呼出し元・呼出し先を再読解する。

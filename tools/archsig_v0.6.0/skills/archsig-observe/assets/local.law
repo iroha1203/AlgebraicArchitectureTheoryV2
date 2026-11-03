@@ -1,0 +1,13 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Sum {
+  use vocabulary Coordinates version "1" digest "sha256:f866fb391c33d7663fbd195521ea632005c8dc2cb1d039ba038cc4b3fab1659a";
+  law required balanced(s: State): s.x + s.y = 0;
+  local total(s: State) reads s.x + s.y;
+  change move(s: State, a: Z, b: Z) = s with {x = a, y = b};
+}
+reading Tuple {
+  use vocabulary Coordinates version "1" digest "sha256:f866fb391c33d7663fbd195521ea632005c8dc2cb1d039ba038cc4b3fab1659a";
+  law required balanced(s: State): s.x + s.y = 0;
+  local pair(s: State) reads (s.x, s.y);
+  change move(s: State, a: Z, b: Z) = s with {x = a, y = b};
+}

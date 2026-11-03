@@ -275,6 +275,9 @@ V→W の読取り制限では、状態の実射影 ρ_X と残差座標の射�
 
 ## 3. 読取りの圏と cover
 
+合計と Tuple の公開情報を同じ入力で比較する実行例は、
+[同梱 SKILL「合計と各成分を読む」](../../../tools/archsig_v0.6.0/skills/archsig-observe/SKILL.md#合計と各成分を読む)にある。
+
 `localize` は指定 Law 族と許す change を固定する。Law 省略時は reading の全 required、
 change の選択と binder の指定は実行仕様に従う。Law の外部 binder は固定参照として保持する。
 各 `local` を選択対象へ束縛し、公開参照、読める値座標、その出現を持つ context を生成する。

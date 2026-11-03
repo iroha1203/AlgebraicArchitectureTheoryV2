@@ -124,6 +124,8 @@ Expr とし、左右それぞれの型を Path に限定する。通常の等号
 - `local` は束縛参照の同一性と reads の値を公開する。field の参照値から参照先の全 field を
   読めることにはしない。view を展開した依存 slot、項の左右・出現は由来として保持するが、
   依存の記録は読取り権限ではない。合計を公開しても各加数を公開せず、Tuple の成分射影は許す。
+  [同梱 SKILL の実行例](../../../tools/archsig_v0.6.0/skills/archsig-observe/SKILL.md#合計と各成分を読む)で、
+  合計と Tuple、固定状態と変更候補を比較できる。
 - `change` の第1引数は owned entity または根 entity、残りは参照を含まない値型。
   Path と、参照を含む data/container も残りの引数型には含めない。
   結果は第1引数と同じ entity の `with` 更新である。body の結果の位置(括弧の中、if の両枝、

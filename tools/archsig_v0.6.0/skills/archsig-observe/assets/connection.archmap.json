@@ -1,0 +1,259 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "Connection",
+      "version": "1",
+      "digest": "sha256:c6e3cedde79dbca9c8a54730c7b88e2efd1ffcbd03a8bcdeccfb00b85a7836ef"
+    }
+  ],
+  "sources": [
+
+  ],
+  "origins": [
+    {
+      "id": "model",
+      "mode": "specification",
+      "method": "小さい仕様モデル",
+      "locations": [
+
+      ],
+      "note": "仕様モデル。encodeはrawをencodedへ変換する。sendはencodedの別名を受け取り、sendRawはrawを受け取る。どの接続もencodeが成功した正常経路に限る。"
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "v",
+      "origin": "model",
+      "subjects": [
+        {
+          "id": "pipeline",
+          "type": "Connection.Pipeline",
+          "origin": "model"
+        },
+        {
+          "id": "raw",
+          "type": "Connection.Value",
+          "origin": "model"
+        },
+        {
+          "id": "encoded",
+          "type": "Connection.Value",
+          "origin": "model"
+        },
+        {
+          "id": "encode",
+          "type": "Connection.Step",
+          "origin": "model"
+        },
+        {
+          "id": "send",
+          "type": "Connection.Step",
+          "origin": "model"
+        },
+        {
+          "id": "sendRaw",
+          "type": "Connection.Step",
+          "origin": "model"
+        },
+        {
+          "id": "connected",
+          "type": "Connection.Link",
+          "origin": "model"
+        },
+        {
+          "id": "bypassed",
+          "type": "Connection.Link",
+          "origin": "model"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "raw.owner",
+          "subject": "raw",
+          "field": "Connection.Value.owner",
+          "value": [
+            "v",
+            "pipeline"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "raw.token",
+          "subject": "raw",
+          "field": "Connection.Value.token",
+          "value": "raw",
+          "origin": "model"
+        },
+        {
+          "id": "encoded.owner",
+          "subject": "encoded",
+          "field": "Connection.Value.owner",
+          "value": [
+            "v",
+            "pipeline"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "encoded.token",
+          "subject": "encoded",
+          "field": "Connection.Value.token",
+          "value": "encoded",
+          "origin": "model"
+        },
+        {
+          "id": "encode.owner",
+          "subject": "encode",
+          "field": "Connection.Step.owner",
+          "value": [
+            "v",
+            "pipeline"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "encode.input",
+          "subject": "encode",
+          "field": "Connection.Step.input",
+          "value": [
+            "v",
+            "raw"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "encode.output",
+          "subject": "encode",
+          "field": "Connection.Step.output",
+          "value": [
+            "v",
+            "encoded"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "send.owner",
+          "subject": "send",
+          "field": "Connection.Step.owner",
+          "value": [
+            "v",
+            "pipeline"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "send.input",
+          "subject": "send",
+          "field": "Connection.Step.input",
+          "value": [
+            "v",
+            "encoded"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "send.output",
+          "subject": "send",
+          "field": "Connection.Step.output",
+          "value": [
+            "v",
+            "encoded"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "sendRaw.owner",
+          "subject": "sendRaw",
+          "field": "Connection.Step.owner",
+          "value": [
+            "v",
+            "pipeline"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "sendRaw.input",
+          "subject": "sendRaw",
+          "field": "Connection.Step.input",
+          "value": [
+            "v",
+            "raw"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "sendRaw.output",
+          "subject": "sendRaw",
+          "field": "Connection.Step.output",
+          "value": [
+            "v",
+            "raw"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "connected.owner",
+          "subject": "connected",
+          "field": "Connection.Link.owner",
+          "value": [
+            "v",
+            "pipeline"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "connected.producer",
+          "subject": "connected",
+          "field": "Connection.Link.producer",
+          "value": [
+            "v",
+            "encode"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "connected.consumer",
+          "subject": "connected",
+          "field": "Connection.Link.consumer",
+          "value": [
+            "v",
+            "send"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "bypassed.owner",
+          "subject": "bypassed",
+          "field": "Connection.Link.owner",
+          "value": [
+            "v",
+            "pipeline"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "bypassed.producer",
+          "subject": "bypassed",
+          "field": "Connection.Link.producer",
+          "value": [
+            "v",
+            "encode"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "bypassed.consumer",
+          "subject": "bypassed",
+          "field": "Connection.Link.consumer",
+          "value": [
+            "v",
+            "sendRaw"
+          ],
+          "origin": "model"
+        }
+      ]
+    }
+  ]
+}

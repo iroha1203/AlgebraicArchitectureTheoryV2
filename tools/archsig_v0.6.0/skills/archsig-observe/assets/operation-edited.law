@@ -1,0 +1,7 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading OperationReading {
+  use vocabulary OperationModel version "2" digest "sha256:17608ba34f7710e9f4eb64886a3d8897ea578b7c8c4297be03b441205c90c937";
+  view normalExit(branch: Branch): Bool = (branch.exit = Exit.Returned);
+  law required guardedUpdate(branch: Branch) when not branch.conditionHolds: not branch.updateReached;
+  law optional rejectedReturnsNormally(branch: Branch): not branch.conditionHolds implies (branch.exit = Exit.Returned);
+}

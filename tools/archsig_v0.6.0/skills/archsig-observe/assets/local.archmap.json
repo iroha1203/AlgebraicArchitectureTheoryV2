@@ -1,0 +1,54 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "Coordinates",
+      "version": "1",
+      "digest": "sha256:f866fb391c33d7663fbd195521ea632005c8dc2cb1d039ba038cc4b3fab1659a"
+    }
+  ],
+  "sources": [
+
+  ],
+  "origins": [
+    {
+      "id": "model",
+      "mode": "specification",
+      "method": "小さい仕様モデル",
+      "locations": [
+
+      ],
+      "note": "仕様モデル。固定状態はx=1,y=-1。moveは二つの整数座標を独立に変更する。"
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "v",
+      "origin": "model",
+      "subjects": [
+        {
+          "id": "state",
+          "type": "Coordinates.State",
+          "origin": "model"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "state.x",
+          "subject": "state",
+          "field": "Coordinates.State.x",
+          "value": "1",
+          "origin": "model"
+        },
+        {
+          "id": "state.y",
+          "subject": "state",
+          "field": "Coordinates.State.y",
+          "value": "-1",
+          "origin": "model"
+        }
+      ]
+    }
+  ]
+}

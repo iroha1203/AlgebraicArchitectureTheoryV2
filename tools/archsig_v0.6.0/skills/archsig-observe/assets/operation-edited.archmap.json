@@ -1,0 +1,97 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "OperationModel",
+      "version": "2",
+      "digest": "sha256:17608ba34f7710e9f4eb64886a3d8897ea578b7c8c4297be03b441205c90c937"
+    }
+  ],
+  "sources": [
+
+  ],
+  "origins": [
+    {
+      "id": "model",
+      "mode": "specification",
+      "method": "架空の操作を入力条件の成立・不成立の二経路で記述する。",
+      "locations": [
+
+      ],
+      "note": "要求は入力条件が不成立なら更新に到達しないこと。提示モデルは成立側で更新してreturn、不成立側で更新せずthrowする。throwはこのモデルの選択であり要求ではない。「拒否側も正常returnする」は未採用の追加仮説。実コードの観測や実行の実測ではない。"
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "v",
+      "origin": "model",
+      "subjects": [
+        {
+          "id": "accepted",
+          "type": "OperationModel.Branch",
+          "origin": "model"
+        },
+        {
+          "id": "rejected",
+          "type": "OperationModel.Branch",
+          "origin": "model"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "accepted.conditionHolds",
+          "subject": "accepted",
+          "field": "OperationModel.Branch.conditionHolds",
+          "value": true,
+          "origin": "model"
+        },
+        {
+          "id": "accepted.updateReached",
+          "subject": "accepted",
+          "field": "OperationModel.Branch.updateReached",
+          "value": true,
+          "origin": "model"
+        },
+        {
+          "id": "accepted.exit",
+          "subject": "accepted",
+          "field": "OperationModel.Branch.exit",
+          "value": {
+            "tag": "Returned",
+            "args": [
+
+            ]
+          },
+          "origin": "model"
+        },
+        {
+          "id": "rejected.conditionHolds",
+          "subject": "rejected",
+          "field": "OperationModel.Branch.conditionHolds",
+          "value": false,
+          "origin": "model"
+        },
+        {
+          "id": "rejected.updateReached",
+          "subject": "rejected",
+          "field": "OperationModel.Branch.updateReached",
+          "value": false,
+          "origin": "model"
+        },
+        {
+          "id": "rejected.exit",
+          "subject": "rejected",
+          "field": "OperationModel.Branch.exit",
+          "value": {
+            "tag": "Raised",
+            "args": [
+
+            ]
+          },
+          "origin": "model"
+        }
+      ]
+    }
+  ]
+}
