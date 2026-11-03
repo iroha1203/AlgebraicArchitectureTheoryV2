@@ -9,7 +9,7 @@ commit=$(git -C "$repo" rev-parse --verify "$1^{commit}")
 [ "$commit" = "$1" ] || { echo 'SOURCE_COMMIT must be a full commit hash' >&2; exit 64; }
 [ ! -e "$2" ] || { echo 'output already exists' >&2; exit 64; }
 mkdir -p "$2"
-out=$(cd "$2" && pwd)
+out=$(cd "$2" && pwd -P)
 # Keep the exact source archive for independent rebuilds and provenance checks.
 git -C "$repo" archive --format=tar "$commit" tools/archsig_v0.6.0 docs/tool/archsig_v0_6_0_io > "$out/source.tar"
 mkdir "$out/source"
@@ -22,13 +22,23 @@ host=$(rustc -vV | sed -n 's/^host: //p')
 name="archsig-0.6.0-$host-candidate"
 bundle="$out/$name"
 mkdir -p "$bundle/bin" "$bundle/skills" "$bundle/docs"
-# Explicit target and path remapping prevent build-directory paths in the CLI.
+# Build without debug/incremental data and remap source, cache and toolchain paths.
 # Cargo validates reused cache entries against these archived inputs.
 mkdir -p "${CARGO_TARGET_DIR:-$out/target}"
-CARGO_TARGET_DIR=$(cd "${CARGO_TARGET_DIR:-$out/target}" && pwd)
+CARGO_TARGET_DIR=$(cd "${CARGO_TARGET_DIR:-$out/target}" && pwd -P)
 export CARGO_TARGET_DIR
-export RUSTFLAGS="--remap-path-prefix=$out/source=/archsig-source"
-unset CARGO_ENCODED_RUSTFLAGS
+cargo_home=$(cd "${CARGO_HOME:-$HOME/.cargo}" && pwd -P)
+sysroot=$(rustc --print sysroot)
+# Encoded flags preserve spaces in paths. Later, more specific mappings take priority.
+CARGO_ENCODED_RUSTFLAGS=$(printf '%s\037%s\037%s\037%s\037%s' \
+    "--remap-path-prefix=$HOME=/archsig-home" \
+    "--remap-path-prefix=$sysroot=/archsig-toolchain" \
+    "--remap-path-prefix=$cargo_home=/archsig-cargo" \
+    "--remap-path-prefix=$CARGO_TARGET_DIR=/archsig-target" \
+    "--remap-path-prefix=$out/source=/archsig-source")
+export CARGO_ENCODED_RUSTFLAGS
+unset RUSTFLAGS
+export CARGO_PROFILE_DEV_DEBUG=0 CARGO_PROFILE_DEV_INCREMENTAL=false
 cargo build --locked --manifest-path "$src/Cargo.toml" --target "$host" --bin archsig -j 1
 cp "$CARGO_TARGET_DIR/$host/debug/archsig" "$bundle/bin/archsig"
 cp -R "$src/skills/archsig-observe" "$bundle/skills/"
@@ -52,7 +62,9 @@ sha() { shasum -a 256 "$1" | cut -d ' ' -f 1; }
     echo "target=$host"
     echo 'profile=dev'
     echo 'command=cargo build --locked --target TARGET --bin archsig -j 1'
-    echo 'rustflags=--remap-path-prefix=SOURCE_DIRECTORY=/archsig-source'
+    echo 'profile.dev.debug=0'
+    echo 'profile.dev.incremental=false'
+    echo 'rustflags=--remap-path-prefix=HOME=/archsig-home --remap-path-prefix=SYSROOT=/archsig-toolchain --remap-path-prefix=CARGO_HOME=/archsig-cargo --remap-path-prefix=TARGET_DIRECTORY=/archsig-target --remap-path-prefix=SOURCE_DIRECTORY=/archsig-source'
     rustc -vV
     cargo -V
 } > "$bundle/PROVENANCE.txt"

@@ -18,9 +18,11 @@ sh tools/archsig_v0.6.0/scripts/bundle-candidate.sh "$source_commit" /tmp/archsi
 未コミットの変更は入力に入りません。ビルド入力は保存された `source.tar` の内容だけです。
 既存の実行ファイルを包装するオプションはありません。
 `CARGO_TARGET_DIR` に既存 cache を指定できます。Cargo は archive から展開したソースを使って
-必要な再コンパイルを行います。profile は dev、target は `rustc -vV` の host、依存は `--locked`。
+必要な再コンパイルを行います。profile は dev（debug=0、incremental=false）、target は `rustc -vV` の host、依存は `--locked`。
 外部依存の初回取得にはネットワーク接続が必要です。ビルドに失敗した出力先は再使用せず、
-新しい出力先を指定します。外から指定された `RUSTFLAGS` は source path remap で置換します。
+新しい出力先を指定します。外から指定された `RUSTFLAGS` / `CARGO_ENCODED_RUSTFLAGS` は、source・target cache・Cargo home・
+Rust sysroot・home を安定パスへ移す remap で置換します。パス中の空白は encoded flags で保持します。
+配布前には実際の binary bytes に環境固有パスが残っていないかを検査します。
 
 出力には次を含みます。
 
