@@ -7793,16 +7793,15 @@ impl<'a> Environment<'a> {
             };
             let cached = {
                 let values = self.results.scoped_values.borrow();
-                let mut found = None;
-                for (candidate, value, missing) in values.iter() {
-                    if validation_identity::key(candidate, &key, &self.control)? {
-                        found = Some((value.clone(), missing.clone()));
-                        break;
+                match values.get(&id) {
+                    Some((candidate, value, missing))
+                        if validation_identity::key(candidate, &key, &self.control)? =>
+                    {
+                        Some((value.clone(), missing.clone()))
                     }
+                    _ => None,
                 }
-                found
             };
-            let previously_cached = cached.is_some();
             let recording = self
                 .state
                 .evaluation_capture
@@ -7828,12 +7827,10 @@ impl<'a> Environment<'a> {
             }
             let value = value?;
             self.tick()?;
-            if !previously_cached {
-                self.results
-                    .scoped_values
-                    .borrow_mut()
-                    .push((key, value.clone(), missing));
-            }
+            self.results
+                .scoped_values
+                .borrow_mut()
+                .insert(id, (key, value.clone(), missing));
             Ok(value)
         })
     }

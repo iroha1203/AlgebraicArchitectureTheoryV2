@@ -57,7 +57,9 @@ pub(crate) struct ResultStore {
     pub(super) dotted_inputs: RefCell<DottedInputCache>,
     // 純粋AST計算の入力値と全分析Contextだけをキーにする。Graphを読まず、
     // producer/証拠の照合成功は保存しない。それらは各不変借用で再検査する。
-    pub(super) scoped_values: RefCell<Vec<(ScopedKey, SourceValue, BTreeSet<Fact>)>>,
+    // 各元式の直近の完全入力だけを保持し、終了した量化文脈を蓄積しない。
+    // 置換された入力は純粋ASTから再計算する。Graphの照合成功とは共有しない。
+    pub(super) scoped_values: RefCell<BTreeMap<usize, (ScopedKey, SourceValue, BTreeSet<Fact>)>>,
     pub(super) cache: RefCell<ValidationCache>,
     pub(super) validation_snapshot: RefCell<Option<ValidationSnapshot>>,
 }

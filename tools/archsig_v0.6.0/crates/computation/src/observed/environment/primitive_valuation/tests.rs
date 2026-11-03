@@ -1176,3 +1176,60 @@ fn moved_constructor_name_span_rejects_a_different_executable_candidate() {
         "実行先が変わるconstructor参照位置の改変を拒否する"
     );
 }
+
+#[test]
+fn scoped_memo_retains_only_latest_inputs_per_expression_without_crossing_contexts() {
+    let inputs = fixture::with_body(
+        fixture::MAP,
+        "view value(c:Part):Fp(2)=c.quantity;view missing(c:Part):Fp(3)=c.third;",
+    );
+    let c = quiet();
+    let e = Environment::new(&inputs, &c).unwrap();
+    for index in 0..inputs.law().exprs().len() * 2 {
+        e.state.context.set(Some(crate::observed::call::Context {
+            request: index,
+            ..Default::default()
+        }));
+        let subject = if index % 2 == 0 { "p" } else { "q" };
+        let owner = Scalar::Subject {
+            snapshot: "v".into(),
+            subject: subject.into(),
+            entity: "Pattern.Part".into(),
+        };
+        let variables = BTreeMap::from([("c".into(), source(owner))]);
+        for name in ["Selected.value", "Selected.missing"] {
+            let Signature::View { body, .. } = &inputs.law().declarations()[name].signature else {
+                panic!("view")
+            };
+            let old_reads = e.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
+            let actual = e
+                .scoped_ast(*body, &variables, &Scope::default(), "Selected")
+                .unwrap();
+            let missing = old_reads.restore().unwrap();
+            if name == "Selected.value" {
+                assert_eq!(actual.known_value, Some(fp("2", (index % 2) as i32)));
+                assert!(missing.is_empty());
+                assert!(actual.support.iter().any(|fact| fact.subject == subject
+                    && fact.field.as_deref() == Some("Pattern.Part.quantity")));
+            } else {
+                assert_eq!(actual.known_value, None);
+                assert!(missing.iter().any(|fact| fact.subject == subject
+                    && fact.field.as_deref() == Some("Pattern.Part.third")));
+                let again_reads = e.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
+                let again = e
+                    .scoped_ast(*body, &variables, &Scope::default(), "Selected")
+                    .unwrap();
+                assert!(again == actual, "memo hit must preserve all source fields");
+                assert_eq!(
+                    again_reads.restore().unwrap(),
+                    missing,
+                    "memo hit must replay missing reads"
+                );
+            }
+        }
+    }
+    assert!(
+        e.results.scoped_values.borrow().len() <= inputs.law().exprs().len(),
+        "pure memo must be bounded by syntax, not iteration contexts"
+    );
+}
