@@ -101,3 +101,8 @@ archsig law-fibers --table table.json
 `law-fibers` は完全列挙した有限表の等号から反例対・partition・descentを計算します。
 両者の入力と出力、読解側の前提は[観測補助の実行仕様](../../docs/tool/archsig_v0_6_0_io/execution.md#8-観測補助)に従います。
 結果は標準出力JSON、エラーは標準エラー出力JSONです。保存先の指定は不要です。
+
+## ローカル候補バンドル
+
+固定 commit から CLI・SKILL/assets・利用仕様と SHA-256・出所記録を作る入口は
+[候補バンドル作成](scripts/README.md)にあります。展開後は同梱 README から利用できます。
