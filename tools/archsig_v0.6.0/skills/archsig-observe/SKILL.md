@@ -288,8 +288,9 @@ reading Bootstrap {}
 [ArchMap](assets/connection.archmap.json) は、次の架空の正常経路を表す。
 
 ```text
-raw → encode → encoded → alias → send
-                       ↘ sendRaw(raw) は別の接続候補
+encode(raw) → encoded
+connected: send(alias = encoded)
+bypassed:  sendRaw(raw)
 ```
 
 `encode` が成功して後続へ進む経路だけを扱う。失敗時の経路にはこの接続を流用しない。
@@ -297,8 +298,10 @@ raw → encode → encoded → alias → send
 操作の `input` と `output` に原始の変換関係を記録する。`Link` は先行・後続の操作を指し、
 その出力と入力が一致するという要求は `Wiring.direct` が検査する。
 `connected` は `send(encoded)`、`bypassed` は `sendRaw(raw)` を接続する。
+この例の `send/sendRaw` は受け取った値をそのまま次へ渡す操作。
 
-Value の `token` は同じ処理経路内の同じ定義元・変換結果を表す名前であり、値の文字列内容ではない。
+Law の等号は Value への参照を比較する。`token` は読者向けの識別名で、同じ処理経路内の
+同じ定義元・変換結果を表し、値の文字列内容ではない。
 名前を正規化するときは binding を追い、別名だけを同じ Value にまとめる。
 `raw` と `encoded` を同じ token として参照まで統合すると、変換を迂回した後続も通る誤入力になる。
 実入力では変換前後を区別する根拠を読んでから、この対応を作る。
