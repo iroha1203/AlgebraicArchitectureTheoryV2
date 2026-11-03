@@ -22,6 +22,88 @@ fn input(label: &str) -> PathBuf {
 }
 
 #[test]
+fn syntax_and_duplicate_keys_or_ids_precede_input_errors() {
+    let dir = input("syntax-before-inputs");
+    let bad_asks: &[&[&str]] = &[
+        &["bad=evaluate(CountCheck.amount,s=@v)"],
+        &["bad=needed(.value)"],
+        &["bad=evaluate(CountCheck.amount,s=@v/s,s=@v/s)"],
+        &["same=needed($other)", "same=needed($other)"],
+    ];
+    for missing in [true, false] {
+        if !missing {
+            std::fs::write(dir.join("bad.json"), "{\"format\":false}").unwrap();
+        }
+        for asks in bad_asks {
+            let mut args = vec![
+                "run",
+                "--atom-definition",
+                "bad.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--out",
+                "out",
+            ];
+            for ask in *asks {
+                args.extend(["--ask", ask]);
+            }
+            let result = without_file_changes(&dir, || run_binary(&dir, &args));
+            assert_eq!(result.code, 64, "{}", result.stderr);
+            assert!(result.stdout.is_empty());
+            let issue = &arr(get(&result.receipt, "issues"))[0];
+            assert_eq!(s(get(issue, "code")), "usage");
+            assert!(!has(issue, "location"));
+            assert!(!dir.join("out").exists());
+        }
+        // 宣言名の解決は入力検査後なので、同じ入力の失敗が先に返る。
+        let result = run_binary(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "bad.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--ask",
+                "q=check(Unknown.rule,s=@v/s)",
+            ],
+        );
+        assert_eq!(result.code, if missing { 74 } else { 65 });
+        assert!(result.stdout.is_empty());
+    }
+    let result = run_binary(
+        &dir,
+        &[
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--ask",
+            "q=evaluate(CountCheck.amount,s=@v/s)",
+        ],
+    );
+    assert_eq!(result.code, 0);
+    assert!(result.stderr.is_empty());
+    assert_eq!(
+        s(get(
+            get(
+                get(&arr(get(&result.receipt, "answers"))[0], "outputs"),
+                "value"
+            ),
+            "value"
+        )),
+        "2"
+    );
+}
+
+#[test]
 fn missing_handle_shapes_suggest_single_quotes_without_changing_the_error() {
     let dir = input("shell-hint-shapes");
     for ask in [

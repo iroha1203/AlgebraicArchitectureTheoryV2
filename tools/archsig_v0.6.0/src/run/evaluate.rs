@@ -5,7 +5,7 @@ use archsig_common::canonical::Json;
 use archsig_common::control::Control;
 use archsig_computation::observed::{
     EvaluationFailure, ObservedEvaluation, PrepareFailure, evaluate_observed, prepare_observed,
-    request::ResolveFailure,
+    request::{ResolveFailure, check_request_syntax},
 };
 use archsig_input::input::{InputSources, InputStatus};
 use archsig_input::result::{ResultIssue, Status, exit_code};
@@ -47,6 +47,10 @@ pub(super) fn run_requests_validated(
     args: &RunArgs,
     control: &Control,
 ) -> Outcome {
+    let texts: Vec<_> = args.asks.iter().map(String::as_str).collect();
+    if let Err(error) = check_request_syntax(&texts, control) {
+        return request_failure(signals, error, control);
+    }
     let map_path = args.inputs.archmap.as_ref().expect("検査済みrunのArchMap");
     let mut issues = Vec::new();
     let definitions: Vec<_> = args
@@ -65,7 +69,6 @@ pub(super) fn run_requests_validated(
         law.expect("読込成功を確認したLaw"),
         map.expect("読込成功を確認したArchMap"),
     );
-    let texts: Vec<_> = args.asks.iter().map(String::as_str).collect();
     let prepared = match prepare_observed(sources, &texts, control) {
         Ok(prepared) => prepared,
         Err(PrepareFailure::Inputs(failure)) => {
@@ -83,47 +86,9 @@ pub(super) fn run_requests_validated(
                 failure.issues().to_vec(),
             );
         }
-        Err(PrepareFailure::Requests {
-            failure: request_failure,
-            ..
-        }) => match request_failure {
-            ResolveFailure::Invalid { issues, .. } => {
-                return output::notify(
-                    signals,
-                    Status::Invalid,
-                    64,
-                    control.stop_reason(),
-                    issues.iter().map(|i| i.wire()).collect(),
-                );
-            }
-            ResolveFailure::Interrupted { reason } => {
-                return output::notify(
-                    signals,
-                    Status::Interrupted,
-                    75,
-                    control.stop_reason(),
-                    vec![reason.issue()],
-                );
-            }
-            ResolveFailure::NotApplicable {
-                request,
-                kind,
-                architecture_environment,
-            } => {
-                return failure(
-                    signals,
-                    "run",
-                    format!(
-                        "computation for request `{request}` of kind `{kind}`{} is not implemented",
-                        if architecture_environment {
-                            " (Architecture environment)"
-                        } else {
-                            ""
-                        }
-                    ),
-                );
-            }
-        },
+        Err(PrepareFailure::Requests { failure: error, .. }) => {
+            return request_failure(signals, error, control);
+        }
     };
     let candidate = match super::reuse::inspect(args.reuse.as_deref(), control) {
         Ok(rejected) => rejected,
@@ -150,6 +115,41 @@ pub(super) fn run_requests_validated(
     };
     let verification = candidate.verify(&evaluation, control);
     deliver(io, signals, args, evaluation, verification, control)
+}
+
+fn request_failure(signals: &mut dyn Signals, error: ResolveFailure, control: &Control) -> Outcome {
+    match error {
+        ResolveFailure::Invalid { issues, .. } => output::notify(
+            signals,
+            Status::Invalid,
+            64,
+            control.stop_reason(),
+            issues.iter().map(|i| i.wire()).collect(),
+        ),
+        ResolveFailure::Interrupted { reason } => output::notify(
+            signals,
+            Status::Interrupted,
+            75,
+            control.stop_reason(),
+            vec![reason.issue()],
+        ),
+        ResolveFailure::NotApplicable {
+            request,
+            kind,
+            architecture_environment,
+        } => failure(
+            signals,
+            "run",
+            format!(
+                "computation for request `{request}` of kind `{kind}`{} is not implemented",
+                if architecture_environment {
+                    " (Architecture environment)"
+                } else {
+                    ""
+                }
+            ),
+        ),
+    }
 }
 
 fn deliver(

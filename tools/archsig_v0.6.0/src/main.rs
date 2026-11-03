@@ -265,6 +265,9 @@ fn execute(
 mod test_watchdog;
 
 #[cfg(test)]
+mod delivery_tests;
+
+#[cfg(test)]
 mod tests {
     use super::*;
     use archsig_common::control::Checkpoint;

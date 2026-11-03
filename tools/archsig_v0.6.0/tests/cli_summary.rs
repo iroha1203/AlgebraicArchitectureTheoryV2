@@ -18,6 +18,57 @@ fn counter(name: &str, count: Option<&str>) -> PathBuf {
     std::fs::write(dir.join("a.json"), map).unwrap();
     dir
 }
+
+#[test]
+fn real_cli_keeps_computed_summary_when_os_rejects_file_writes() {
+    let dir = counter("summary-file-limit", Some("2"));
+    // 子だけにfile-size上限を課す。SIGXFSZを無視してwriteのOSエラーを返させる。
+    let mut command = std::process::Command::new("/bin/sh");
+    command.current_dir(&dir).args([
+        "-c",
+        "trap '' XFSZ; ulimit -f 1; exec \"$@\"",
+        "sh",
+        env!("CARGO_BIN_EXE_archsig"),
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--law",
+        "l.law",
+        "--archmap",
+        "a.json",
+        "--ask",
+        "q=evaluate(CountCheck.amount,s=@v/s)",
+        "--out",
+        "out",
+    ]);
+    let captured =
+        crate::common::watchdog::output(&mut command, std::time::Duration::from_secs(30)).unwrap();
+    assert!(!captured.timed_out);
+    let output = captured.output;
+    assert_eq!(
+        output.status.code(),
+        Some(74),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let summary = archsig_common::json::parse(&output.stdout).unwrap();
+    assert_eq!(s(get(&summary, "format")), "archsig.summary/1");
+    assert_eq!(
+        s(get(
+            get(get(&arr(get(&summary, "answers"))[0], "outputs"), "value"),
+            "value"
+        )),
+        "2"
+    );
+    assert!(!has(&summary, "result"));
+    let receipt = archsig_common::json::parse(&output.stderr).unwrap();
+    assert_eq!(s(get(&receipt, "status")), "error");
+    let issue = &arr(get(&receipt, "issues"))[0];
+    assert_eq!(s(get(issue, "code")), "io");
+    assert_eq!(s(get(get(issue, "details"), "operation")), "write");
+    assert!(!dir.join("out").exists());
+    assert_eq!(std::fs::read_dir(&dir).unwrap().count(), 3);
+}
 fn execute(dir: &Path, asks: &[&str], extra: &[&str]) -> Run {
     let mut args = vec![
         "run",
