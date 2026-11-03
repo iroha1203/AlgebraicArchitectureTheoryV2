@@ -126,59 +126,6 @@ pub(super) fn scalar(a: &Scalar, b: &Scalar, c: &Control) -> Result<bool, Valida
         Ok(same)
     })
 }
-fn payload(
-    a: &Option<Payload>,
-    b: &Option<Payload>,
-    c: &Control,
-) -> Result<bool, ValidationFailure> {
-    Ok(match (a, b) {
-        (None, None) => true,
-        (Some(Payload::Scalar(a)), Some(Payload::Scalar(b))) => scalar(a, b, c)?,
-        (
-            Some(
-                Payload::Construction(_)
-                | Payload::CompletionSeed { .. }
-                | Payload::CompletionInstance { .. }
-                | Payload::CompletionPair { .. }
-                | Payload::TypeDomain { .. }
-                | Payload::Domain { .. }
-                | Payload::FiniteExhaustion { .. }
-                | Payload::Expression { .. }
-                | Payload::Transform { .. }
-                | Payload::ParameterizedTransform { .. }
-                | Payload::Evaluation { .. }
-                | Payload::LawInstance { .. }
-                | Payload::Proposition { .. }
-                | Payload::PathCondition { .. }
-                | Payload::PathCounterexample { .. }
-                | Payload::MapDomainCondition { .. }
-                | Payload::OwnedCallCondition { .. }
-                | Payload::OwnedCallCounterexample { .. }
-                | Payload::EvaluationEvidence { .. }
-                | Payload::TermComparison { .. }
-                | Payload::TermCounterexample { .. }
-                | Payload::Normalization { .. }
-                | Payload::Counterexample { .. },
-            ),
-            _,
-        ) => a == b,
-        _ => false,
-    })
-}
-pub(super) fn node(a: &Node, b: &Node, c: &Control) -> Result<bool, ValidationFailure> {
-    tick(c)?;
-    let same = a.ty == b.ty
-        && a.rule == b.rule
-        && a.arguments == b.arguments
-        && a.support == b.support
-        && a.evidence == b.evidence
-        && a.judgment == b.judgment
-        && scope(&a.scope, &b.scope)
-        && a.reasons == b.reasons
-        && payload(&a.payload, &b.payload, c)?;
-    tick(c)?;
-    Ok(same)
-}
 pub(super) fn iteration(
     a: &super::super::call::Iteration,
     b: &super::super::call::Iteration,

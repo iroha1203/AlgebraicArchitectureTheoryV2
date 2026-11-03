@@ -165,13 +165,14 @@ struct ScopedKey {
     universal: Option<universal::AnalysisContext>,
     completions: CompletionValues,
 }
-// 前回のGraphのnode prefixと全隠しregistryが同じ場合だけ成功を再利用する。
+// 前回と同じnode prefix identityと全隠しregistryの場合だけ成功を再利用する。
+// node内容は複製せず、可変アクセス・clone後は内容が同値でも再検査する。
 // nodeの追加は既出DAGの意味を変えない。新frameも旧prefixから必ず除外される
 // producerを持つ場合だけ許す。新iteration/caseも同じprefix境界を守る。
 // 既存metadataの改変は全て失効させる。
 struct ValidationSnapshot {
     node_identity: std::rc::Rc<()>,
-    nodes: Vec<Node>,
+    node_len: usize,
     contexts: Vec<super::call::Context>,
     frames: Vec<super::call::Frame>,
     iterations: Vec<super::call::Iteration>,
@@ -231,8 +232,8 @@ impl ValidationSnapshot {
     }
     fn matches(&self, g: &Graph, control: &Control) -> Result<bool, ValidationFailure> {
         Self::tick(control)?;
-        if self.nodes.len() > g.nodes.len()
-            || self.contexts.len() != self.nodes.len()
+        if self.node_len > g.nodes.len()
+            || self.contexts.len() != self.node_len
             || g.contexts.len() != g.nodes.len()
             || g.frames.len() < self.frames.len()
             || g.cases.len() < self.cases.len()
@@ -242,11 +243,7 @@ impl ValidationSnapshot {
             return Ok(false);
         }
         if !std::rc::Rc::ptr_eq(&self.node_identity, &g.nodes.prefix_identity()) {
-            for (a, b) in g.nodes[..self.nodes.len()].iter().zip(&self.nodes) {
-                if !validation_identity::node(a, b, control)? {
-                    return Ok(false);
-                }
-            }
+            return Ok(false);
         }
         if !Self::same(&g.contexts[..self.contexts.len()], &self.contexts, control)?
             || !Self::same(&g.frames[..self.frames.len()], &self.frames, control)?
@@ -270,7 +267,7 @@ impl ValidationSnapshot {
         for frame in &g.frames[self.frames.len()..] {
             if !Self::after(
                 std::iter::once(frame.source).chain(frame.arguments.iter().copied()),
-                self.nodes.len(),
+                self.node_len,
                 control,
             )? {
                 return Ok(false);
@@ -282,7 +279,7 @@ impl ValidationSnapshot {
         for iteration in &g.iterations[self.iterations.len()..] {
             if !Self::after(
                 [iteration.source, iteration.domain].into_iter(),
-                self.nodes.len(),
+                self.node_len,
                 control,
             )? {
                 return Ok(false);
@@ -293,7 +290,7 @@ impl ValidationSnapshot {
         for instance in &g.instances[self.instances.len()..] {
             if !Self::after(
                 [instance.source, instance.domain, instance.member].into_iter(),
-                self.nodes.len(),
+                self.node_len,
                 control,
             )? {
                 return Ok(false);
@@ -304,7 +301,7 @@ impl ValidationSnapshot {
                 std::iter::once(case.seed)
                     .chain([case.domain, case.member])
                     .chain(case.values.iter().copied()),
-                self.nodes.len(),
+                self.node_len,
                 control,
             )? {
                 return Ok(false);
@@ -316,7 +313,7 @@ impl ValidationSnapshot {
     fn from_graph(g: &Graph, control: &Control) -> Result<Self, ValidationFailure> {
         Ok(Self {
             node_identity: g.nodes.prefix_identity(),
-            nodes: Self::copy(&g.nodes, control)?,
+            node_len: g.nodes.len(),
             contexts: Self::copy(&g.contexts, control)?,
             frames: Self::copy(&g.frames, control)?,
             iterations: Self::copy(&g.iterations, control)?,
@@ -327,13 +324,12 @@ impl ValidationSnapshot {
             answers: Self::copy(&g.checked_answers, control)?,
         })
     }
-    // matches成功後の同じ不変Graph借用でだけ呼ぶ。可変アクセス後は全既存内容を照合する。
-    // 変更できた表は末尾追加だけなので、既存nodeを毎回複製し直す必要はない。
+    // matches成功後の同じ不変Graph借用でだけ呼ぶ。node表は同じidentityの
+    // 検査済末尾追加だけを許し、metadataは既存内容の照合後に延長する。
     fn extend_matching(&mut self, g: &Graph, control: &Control) -> Result<(), ValidationFailure> {
         Self::tick(control)?;
         self.node_identity = g.nodes.prefix_identity();
-        self.nodes
-            .extend(Self::copy(&g.nodes[self.nodes.len()..], control)?);
+        self.node_len = g.nodes.len();
         self.contexts
             .extend(Self::copy(&g.contexts[self.contexts.len()..], control)?);
         self.frames
