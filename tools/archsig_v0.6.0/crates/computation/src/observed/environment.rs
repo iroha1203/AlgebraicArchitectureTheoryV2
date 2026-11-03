@@ -371,6 +371,13 @@ struct ValidationCache {
 #[cfg(test)]
 type NameTokenObserver = Box<dyn FnMut((usize, usize), super::call::Context)>;
 
+// 同じ親Domainの検査中だけ借用する。再入先のvalidate_atには伝播しない。
+#[derive(Clone, Copy)]
+struct DomainEnumeration<'a> {
+    arguments: &'a [NodeRef],
+    enumeration: &'a super::finite::Enumeration,
+}
+
 pub(crate) struct Environment<'a> {
     pub(super) indexes: InputIndexes<'a>,
     pub(super) results: ResultStore,
@@ -595,6 +602,15 @@ impl<'a> Environment<'a> {
         node: &Node,
         limit: usize,
     ) -> Result<(), ValidationFailure> {
+        self.validate_at_with_domain(graph, node, limit, None)
+    }
+    fn validate_at_with_domain(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+        domain: Option<DomainEnumeration<'_>>,
+    ) -> Result<(), ValidationFailure> {
         if self.indexes.primitive_valuation.is_some() {
             return Err(internal!("候補代入の環境を観測Graphの検査へ使えない").into());
         }
@@ -699,9 +715,11 @@ impl<'a> Environment<'a> {
                         self.completion_values(graph, case)?;
                 }
                 if let Some(active) = self.universal_node_context(graph, node, limit)? {
-                    self.with_universal(active, || self.validate_in_context(graph, node, limit))
+                    self.with_universal(active, || {
+                        self.validate_in_context(graph, node, limit, domain)
+                    })
                 } else {
-                    self.validate_in_context(graph, node, limit)
+                    self.validate_in_context(graph, node, limit, domain)
                 }
             })()
             .map_err(|failure| match failure {
@@ -1042,6 +1060,7 @@ impl<'a> Environment<'a> {
         graph: &Graph,
         node: &Node,
         limit: usize,
+        domain: Option<DomainEnumeration<'_>>,
     ) -> Result<(), ValidationFailure> {
         self.tick()?;
         if self.validate_owned_binding(graph, node, limit)? {
@@ -1281,7 +1300,7 @@ impl<'a> Environment<'a> {
         if self.validate_family_node(graph, node, limit)? {
             return Ok(());
         }
-        self.validate_native_node(graph, node, limit)
+        self.validate_native_node_with_domain(graph, node, limit, domain)
     }
     fn validate_native_node(
         &self,
@@ -1289,9 +1308,18 @@ impl<'a> Environment<'a> {
         node: &Node,
         limit: usize,
     ) -> Result<(), ValidationFailure> {
+        self.validate_native_node_with_domain(graph, node, limit, None)
+    }
+    fn validate_native_node_with_domain(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+        domain: Option<DomainEnumeration<'_>>,
+    ) -> Result<(), ValidationFailure> {
         // 専用全域/補完のdispatchから、従来payloadの大きな局所値を分離する。
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || match &node.payload {
-            Some(Payload::Scalar(_)) => self.validate_native_scalar(graph, node, limit),
+            Some(Payload::Scalar(_)) => self.validate_native_scalar(graph, node, limit, domain),
             Some(
                 Payload::Expression { .. }
                 | Payload::Transform { .. }
@@ -1306,6 +1334,7 @@ impl<'a> Environment<'a> {
         graph: &Graph,
         node: &Node,
         limit: usize,
+        domain: Option<DomainEnumeration<'_>>,
     ) -> Result<(), ValidationFailure> {
         if let Some(Payload::Scalar(scalar)) = &node.payload {
             data::check(scalar, self.indexes.inputs.law(), &self.control)?;
@@ -1496,7 +1525,7 @@ impl<'a> Environment<'a> {
                 }
                 _ => return Err(internal!("値 leaf の導出規則がない").into()),
             }
-            let support = self.scalar_support(graph, node, limit)?;
+            let support = self.scalar_support(graph, node, limit, domain)?;
             if node.support != support {
                 return Err(internal!("値の支持が元入力・実引数の完全な集合と違う").into());
             }
@@ -3962,6 +3991,7 @@ impl<'a> Environment<'a> {
         graph: &Graph,
         node: &Node,
         limit: usize,
+        domain: Option<DomainEnumeration<'_>>,
     ) -> Result<Vec<Fact>, ValidationFailure> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
             self.tick()?;
@@ -4142,7 +4172,7 @@ impl<'a> Environment<'a> {
                     self.residual_source_analysis(graph, node, limit)?.support
                 }
                 Rule::Construction("domain") => {
-                    self.domain_member(graph, node, limit)?;
+                    self.domain_member(graph, node, limit, domain)?;
                     node.support.clone()
                 }
                 Rule::Construction("evidence") => {
@@ -10066,13 +10096,29 @@ impl<'a> Environment<'a> {
         }
         Ok(true)
     }
-    fn quant_input(
+    fn can_borrow_domain(&self) -> bool {
+        self.state
+            .context
+            .get()
+            .is_none_or(|context| context.case.is_none())
+            && self.state.universal_context.borrow().is_none()
+            && self.state.completion_values.borrow().is_empty()
+            && self.state.architecture.borrow().is_none()
+            && self.indexes.object.is_none()
+            && self.indexes.object_instance.is_none()
+            && self.indexes.object_values.is_none()
+            && self.indexes.primitive_valuation.is_none()
+            && self.state.primitive_reads.borrow().is_none()
+            && self.state.missing_slot_reads.borrow().is_none()
+    }
+
+    fn quant_input_source(
         &self,
         graph: &Graph,
         source: NodeRef,
         input: Option<NodeRef>,
         limit: usize,
-    ) -> Result<(quantifier::Spec<'_>, super::finite::Enumeration), ValidationFailure> {
+    ) -> Result<(archsig_input::law::ast::ExprId, quantifier::Spec<'_>), ValidationFailure> {
         if source.0 >= limit
             || input.is_some_and(|input| input.0 >= limit)
             || graph.context_at(source.0) != self.current_context(graph)
@@ -10090,6 +10136,16 @@ impl<'a> Environment<'a> {
             .ok_or(internal!("量化元ASTがない"))?;
         let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
         self.validate_at(graph, graph.get(source)?, source.0)?;
+        Ok((id, spec))
+    }
+    fn quant_input(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+        input: Option<NodeRef>,
+        limit: usize,
+    ) -> Result<(quantifier::Spec<'_>, super::finite::Enumeration), ValidationFailure> {
+        let (id, spec) = self.quant_input_source(graph, source, input, limit)?;
         let Some(input) = input else {
             if spec.domain.is_some() {
                 return Err(internal!("In量化のcollection辺がない").into());
@@ -10148,6 +10204,7 @@ impl<'a> Environment<'a> {
         graph: &Graph,
         node: &Node,
         limit: usize,
+        domain: Option<DomainEnumeration<'_>>,
     ) -> Result<(), ValidationFailure> {
         if node.arguments.is_empty() || !matches!(&node.rule, Rule::Construction("domain")) {
             return Err(internal!("Domain要素の元辺が違う").into());
@@ -10180,12 +10237,25 @@ impl<'a> Environment<'a> {
         if node.arguments != expected {
             return Err(internal!("Domain要素の元owner producer列が違う").into());
         }
-        let (spec, enumeration) = self.quant_input(
-            graph,
-            source,
-            original.domain.and_then(|_| node.arguments.get(1).copied()),
-            limit,
-        )?;
+        let borrowed = domain.filter(|domain| {
+            original.domain.is_none()
+                && domain.arguments == node.arguments
+                && self.can_borrow_domain()
+        });
+        let owned;
+        let (spec, enumeration) = if let Some(domain) = borrowed {
+            let (_, spec) = self.quant_input_source(graph, source, None, limit)?;
+            (spec, domain.enumeration)
+        } else {
+            let (spec, enumeration) = self.quant_input(
+                graph,
+                source,
+                original.domain.and_then(|_| node.arguments.get(1).copied()),
+                limit,
+            )?;
+            owned = enumeration;
+            (spec, &owned)
+        };
         let Some(Payload::Scalar(value)) = &node.payload else {
             return Err(internal!("Domain要素が通常値でない").into());
         };
@@ -10295,7 +10365,12 @@ impl<'a> Environment<'a> {
                 return Err(internal!("Domain要素の既出Contextが違う").into());
             }
             let member = graph.get(*reference)?;
-            self.validate_at(graph, member, reference.0)?;
+            let domain =
+                (spec.domain.is_none() && self.can_borrow_domain()).then_some(DomainEnumeration {
+                    arguments: &node.arguments[..offset],
+                    enumeration: &enumeration,
+                });
+            self.validate_at_with_domain(graph, member, reference.0, domain)?;
             if member.arguments != node.arguments[..offset] {
                 return Err(internal!("Domain要素が別collection出現に属する").into());
             }

@@ -668,65 +668,71 @@ fn owned_type_domain_member_checks_value_origin_scope_and_support_before_success
         )
         .unwrap()
     };
-    for mutation in [
-        "value",
-        "value_type",
-        "source",
-        "owner",
-        "scope",
-        "support",
-        "evidence",
-        "reason",
-        "context",
-    ] {
-        let mut graph =
-            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=member]).unwrap();
-        let warm = environment();
-        warm.validate_at(&graph, &graph.nodes[member], member)
-            .unwrap();
-        let mut bad = original.clone();
-        match mutation {
-            "value" => {
-                let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut bad.payload
-                else {
-                    panic!("owned Ref member")
-                };
-                *subject = "r".into();
+    for target in [member, domain] {
+        for mutation in [
+            "value",
+            "value_type",
+            "source",
+            "future_source",
+            "future_owner",
+            "owner",
+            "scope",
+            "support",
+            "evidence",
+            "reason",
+            "context",
+        ] {
+            let mut graph =
+                rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
+            let warm = environment();
+            warm.validate_at(&graph, &graph.nodes[target], target)
+                .unwrap();
+            let mut bad = original.clone();
+            match mutation {
+                "value" => {
+                    let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut bad.payload
+                    else {
+                        panic!("owned Ref member")
+                    };
+                    *subject = "r".into();
+                }
+                "value_type" => bad.payload = Some(Payload::Scalar(Scalar::Bool(true))),
+                "source" => bad.arguments[0] = bad.arguments[1],
+                "future_source" => bad.arguments[0] = NodeRef(domain),
+                "future_owner" => bad.arguments[1] = NodeRef(domain),
+                "owner" => bad.arguments[1] = bad.arguments[0],
+                "scope" => bad.scope.completions = !bad.scope.completions,
+                "support" => bad.support.clear(),
+                "evidence" => bad.evidence.push(bad.arguments[0]),
+                "reason" => bad
+                    .reasons
+                    .push(Reason::stopped("every", archsig_input::result::Signal::Int)),
+                "context" => graph.contexts[member].request = usize::MAX,
+                _ => unreachable!(),
             }
-            "value_type" => bad.payload = Some(Payload::Scalar(Scalar::Bool(true))),
-            "source" => bad.arguments[0] = bad.arguments[1],
-            "owner" => bad.arguments[1] = bad.arguments[0],
-            "scope" => bad.scope.completions = !bad.scope.completions,
-            "support" => bad.support.clear(),
-            "evidence" => bad.evidence.push(bad.arguments[0]),
-            "reason" => bad
-                .reasons
-                .push(Reason::stopped("every", archsig_input::result::Signal::Int)),
-            "context" => graph.contexts[member].request = usize::MAX,
-            _ => unreachable!(),
-        }
-        graph.nodes[member] = bad;
-        // A failed value/support check must not publish checked success: retry
-        // the same resident node without another Graph mutation.
-        for _ in 0..2 {
+            graph.nodes[member] = bad;
+            // A failed value/support check must not publish checked success: retry
+            // the same resident node without another Graph mutation.
+            for _ in 0..2 {
+                assert!(
+                    matches!(
+                        warm.validate_at(&graph, &graph.nodes[target], target),
+                        Err(ValidationFailure::Internal(_))
+                    ),
+                    "warm {mutation}"
+                );
+            }
             assert!(
                 matches!(
-                    warm.validate_at(&graph, &graph.nodes[member], member),
+                    environment().validate_at(&graph, &graph.nodes[target], target),
                     Err(ValidationFailure::Internal(_))
                 ),
-                "warm {mutation}"
+                "cold {mutation}"
             );
+            graph.nodes[member] = original.clone();
+            graph.contexts[member] = result.contexts[member];
+            warm.validate_at(&graph, &graph.nodes[target], target)
+                .unwrap();
         }
-        assert!(
-            matches!(
-                environment().validate_at(&graph, &graph.nodes[member], member),
-                Err(ValidationFailure::Internal(_))
-            ),
-            "cold {mutation}"
-        );
-        graph.nodes[member] = original.clone();
-        graph.contexts[member] = result.contexts[member];
-        warm.validate_at(&graph, &graph.nodes[member], member)
-            .unwrap();
     }
 }
