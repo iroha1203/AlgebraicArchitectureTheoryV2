@@ -24,7 +24,9 @@ bundle="$out/$name"
 mkdir -p "$bundle/bin" "$bundle/skills" "$bundle/docs"
 # Explicit target and path remapping prevent build-directory paths in the CLI.
 # Cargo validates reused cache entries against these archived inputs.
-export CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$out/target}"
+mkdir -p "${CARGO_TARGET_DIR:-$out/target}"
+CARGO_TARGET_DIR=$(cd "${CARGO_TARGET_DIR:-$out/target}" && pwd)
+export CARGO_TARGET_DIR
 export RUSTFLAGS="--remap-path-prefix=$out/source=/archsig-source"
 unset CARGO_ENCODED_RUSTFLAGS
 cargo build --locked --manifest-path "$src/Cargo.toml" --target "$host" --bin archsig -j 1
@@ -56,7 +58,7 @@ sha() { shasum -a 256 "$1" | cut -d ' ' -f 1; }
 } > "$bundle/PROVENANCE.txt"
 # Stable member order, ownership, timestamps and gzip header for the same payload.
 find "$bundle" -exec touch -t 197001010000 {} +
-(cd "$out" && find "$name" -print | sort > members.txt && 
+(cd "$out" && find "$name" -print | sort > members.txt &&
     COPYFILE_DISABLE=1 tar --format=ustar --uid 0 --gid 0 --uname root --gname root \
         --no-recursion -cf "$name.tar" -T members.txt && gzip -n "$name.tar")
 (cd "$out" && shasum -a 256 source.tar "$name.tar.gz" > SHA256SUMS)
