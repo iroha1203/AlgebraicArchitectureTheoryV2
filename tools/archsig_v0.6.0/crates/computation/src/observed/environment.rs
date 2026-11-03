@@ -239,7 +239,16 @@ impl ValidationSnapshot {
         }
         Ok(false)
     }
+    #[cfg(test)]
     fn matches(&self, g: &Graph, control: &Control) -> Result<bool, ValidationFailure> {
+        self.matches_with_registry(g, control, true)
+    }
+    fn matches_with_registry(
+        &self,
+        g: &Graph,
+        control: &Control,
+        registry_read: bool,
+    ) -> Result<bool, ValidationFailure> {
         Self::tick(control)?;
         if self.node_len > g.nodes.len()
             || self.contexts.len() != self.node_len
@@ -273,25 +282,29 @@ impl ValidationSnapshot {
                 return Ok(false);
             }
         }
-        for frame in &g.frames[self.frames.len()..] {
-            if !Self::after(
-                std::iter::once(frame.source).chain(frame.arguments.iter().copied()),
-                self.node_len,
-                control,
-            )? {
-                return Ok(false);
+        // 全registryの不在・一意性を読んだ成功だけが、旧producerを使う
+        // 兄弟の追加に依存する。旧recordの全内容照合は常に上で実施する。
+        if registry_read {
+            for frame in &g.frames[self.frames.len()..] {
+                if !Self::after(
+                    std::iter::once(frame.source).chain(frame.arguments.iter().copied()),
+                    self.node_len,
+                    control,
+                )? {
+                    return Ok(false);
+                }
             }
-        }
-        // 既存iterationの全内容は上で照合済み。universal_graph_contextと同じ
-        // source/domainのcutoffで旧prefixから除外される追加だけを許す。
-        // finiteだけが新しい反復は旧registryへ入るため、成功を失効させる。
-        for iteration in &g.iterations[self.iterations.len()..] {
-            if !Self::after(
-                [iteration.source, iteration.domain].into_iter(),
-                self.node_len,
-                control,
-            )? {
-                return Ok(false);
+            // 既存iterationの全内容は上で照合済み。universal_graph_contextと同じ
+            // source/domainのcutoffで旧prefixから除外される追加だけを許す。
+            // finiteだけが新しい反復は旧registryへ入るため、成功を失効させる。
+            for iteration in &g.iterations[self.iterations.len()..] {
+                if !Self::after(
+                    [iteration.source, iteration.domain].into_iter(),
+                    self.node_len,
+                    control,
+                )? {
+                    return Ok(false);
+                }
             }
         }
         // 既存instanceの全内容は上で照合済み。新しいmember/domainを参照する
@@ -356,6 +369,9 @@ impl ValidationSnapshot {
 
 #[derive(Default)]
 struct ValidationCache {
+    // このcache内の成功が一度でも全Frame/Iteration registryを読んだ事実。
+    // snapshot延長や内側guardでは戻さず、cacheの破棄と同時にだけ消す。
+    registry_read: bool,
     checked: BTreeSet<NodeRefKey>,
     rechecked: BTreeSet<NodeRefKey>,
     sources: Vec<SourceCacheEntry>,
@@ -760,12 +776,13 @@ impl<'a> Environment<'a> {
         stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
             self.tick()?;
             graph.tick()?;
+            let registry_read = self.results.cache.borrow().registry_read;
             let same = self
                 .results
                 .validation_snapshot
                 .borrow()
                 .as_ref()
-                .map(|s| s.matches(graph, &self.control))
+                .map(|s| s.matches_with_registry(graph, &self.control, registry_read))
                 .transpose();
             let same = match same {
                 Ok(value) => value.unwrap_or(false),
