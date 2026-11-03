@@ -550,19 +550,22 @@ impl PartialEq for Scope {
             && self.modes == other.modes
             && self.completions == other.completions
             && self.assignments == other.assignments
-            && occurrences(self) == occurrences(other)
-            && self.quantifiers.len() == other.quantifiers.len()
-            && self.quantifiers.iter().all(|q| {
-                self.quantifiers
-                    .iter()
-                    .filter(|actual| *actual == q)
-                    .count()
-                    == other
-                        .quantifiers
-                        .iter()
-                        .filter(|actual| *actual == q)
-                        .count()
-            })
+            // 完全に同じ列なら、初出occurrence順も各要素の重複数も一致する。
+            // 列が異なる場合の順序独立な比較は従来通り行う。
+            && (self.quantifiers == other.quantifiers
+                || (occurrences(self) == occurrences(other)
+                    && self.quantifiers.len() == other.quantifiers.len()
+                    && self.quantifiers.iter().all(|q| {
+                        self.quantifiers
+                            .iter()
+                            .filter(|actual| *actual == q)
+                            .count()
+                            == other
+                                .quantifiers
+                                .iter()
+                                .filter(|actual| *actual == q)
+                                .count()
+                    })))
     }
 }
 impl Eq for Scope {}
@@ -5014,6 +5017,100 @@ impl Graph {
 #[cfg(test)]
 mod invariant_tests {
     use super::*;
+
+    fn quantified_scope(quantifiers: Vec<Quantifier>) -> Scope {
+        Scope {
+            readings: BTreeSet::from(["observed".into()]),
+            snapshots: BTreeSet::from(["snapshot".into()]),
+            modes: BTreeSet::from(["finite".into()]),
+            quantifiers,
+            ..Scope::default()
+        }
+    }
+
+    #[test]
+    fn scope_equality_preserves_occurrence_order_multiplicity_and_quantifier_identity() {
+        let a = Quantifier {
+            kind: archsig_input::law::ast::QuantKind::Forall,
+            name: "a".into(),
+            ty: Type::Bool,
+            domain: Some(NodeRef(1)),
+            occurrence: (10, 20),
+            context: Some(super::super::call::Context::default()),
+        };
+        let a_other_domain = Quantifier {
+            domain: Some(NodeRef(2)),
+            ..a.clone()
+        };
+        let b = Quantifier {
+            name: "b".into(),
+            occurrence: (30, 40),
+            ..a.clone()
+        };
+        let original = quantified_scope(vec![a.clone(), a_other_domain.clone(), b.clone()]);
+        assert_eq!(original, original.clone());
+        // 同じoccurrence内の並替えは初出順と多重集合を保つ。
+        let reordered = quantified_scope(vec![a_other_domain.clone(), a.clone(), b.clone()]);
+        assert_eq!(original, reordered);
+        assert_eq!(reordered, original);
+        let different_occurrence_order =
+            quantified_scope(vec![b.clone(), a.clone(), a_other_domain]);
+        assert_ne!(original, different_occurrence_order);
+        assert_ne!(different_occurrence_order, original);
+        let duplicate_a = quantified_scope(vec![a.clone(), a.clone(), b.clone()]);
+        let duplicate_b = quantified_scope(vec![a.clone(), b.clone(), b]);
+        assert_ne!(duplicate_a, duplicate_b);
+        assert_ne!(duplicate_b, duplicate_a);
+        for case in 0..6 {
+            let mut changed = a.clone();
+            match case {
+                0 => changed.kind = archsig_input::law::ast::QuantKind::Exists,
+                1 => changed.name = "different".into(),
+                2 => changed.ty = Type::Unit,
+                3 => changed.domain = None,
+                4 => changed.occurrence = (50, 60),
+                5 => changed.context.as_mut().unwrap().request = 1,
+                _ => unreachable!(),
+            }
+            assert_ne!(
+                quantified_scope(vec![a.clone()]),
+                quantified_scope(vec![changed])
+            );
+        }
+        assert_eq!(Scope::default(), Scope::default());
+    }
+
+    #[test]
+    fn equal_quantifier_sequences_do_not_hide_scope_metadata_changes() {
+        let original = quantified_scope(vec![Quantifier {
+            kind: archsig_input::law::ast::QuantKind::Forall,
+            name: "member".into(),
+            ty: Type::Bool,
+            domain: None,
+            occurrence: (10, 20),
+            context: None,
+        }]);
+        for case in 0..5 {
+            let mut changed = original.clone();
+            match case {
+                0 => {
+                    changed.readings.insert("other".into());
+                }
+                1 => {
+                    changed.snapshots.insert("other".into());
+                }
+                2 => {
+                    changed.modes.insert("other".into());
+                }
+                3 => changed.completions = true,
+                4 => changed.assignments = true,
+                _ => unreachable!(),
+            }
+            assert_eq!(original.quantifiers, changed.quantifiers);
+            assert_ne!(original, changed);
+            assert_ne!(changed, original);
+        }
+    }
 
     fn bool_set(values: &[bool]) -> Scalar {
         Scalar::Set {
