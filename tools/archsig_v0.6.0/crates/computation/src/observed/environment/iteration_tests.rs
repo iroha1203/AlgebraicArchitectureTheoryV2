@@ -319,3 +319,29 @@ fn typed_iteration_universal_completion_and_capture_switch_to_cutoff_entries() {
     })
     .unwrap();
 }
+
+#[test]
+fn changing_an_owned_iteration_result_keeps_other_callers_and_memo_unchanged() {
+    for collection in [false, true] {
+        let result = example(collection);
+        let control = quiet();
+        let g = graph(&result, &control);
+        let env = Environment::with_prepared(&result.prepared, &control).unwrap();
+        env.validation_graph_session(&g, || {
+            let original = input(&env, &g, g.nodes.len())?;
+            let mut edited = input(&env, &g, g.nodes.len())?;
+            let owned = std::rc::Rc::make_mut(&mut edited);
+            owned.2.scope.readings.insert("caller-local".into());
+            owned.2.support.clear();
+            owned.1 = Scalar::Bool(true);
+            assert!(!original.2.scope.readings.contains("caller-local"));
+            let warm = input(&env, &g, g.nodes.len())?;
+            same(&original, &warm);
+            env.results.clear_validation();
+            let cold = input(&env, &g, g.nodes.len())?;
+            same(&original, &cold);
+            Ok(())
+        })
+        .unwrap();
+    }
+}
