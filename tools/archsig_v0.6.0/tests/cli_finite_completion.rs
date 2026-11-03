@@ -459,3 +459,128 @@ fn finite_branch_updates_preserve_unchanged_coordinates_in_each_candidate() {
     parameters.sort();
     assert_eq!(parameters, vec![false, true]);
 }
+
+#[test]
+fn data_returning_view_checks_missing_bool_completions() {
+    for (name, term_body, via_view, known_term, slot, expected) in [
+        ("data-view", "M.D.Yes", true, true, None, 0),
+        ("bool-view", "true", true, true, None, 0),
+        ("data-inline", "M.D.Yes", false, true, None, 0),
+        ("data-known", "M.D.Yes", true, true, Some("true"), 0),
+        ("data-refuted", "M.D.No", true, true, None, 1),
+        (
+            "data-dependent",
+            "if x then M.D.Yes else M.D.No",
+            true,
+            true,
+            None,
+            2,
+        ),
+        (
+            "invalid-bool",
+            "M.D.Yes",
+            true,
+            true,
+            Some(r#""invalid""#),
+            65,
+        ),
+        ("data-missing-term", "M.D.Yes", true, false, None, 2),
+    ] {
+        let (result_type, result_value, ty) = if name == "bool-view" {
+            (r#""Bool""#, "true", "Bool")
+        } else {
+            (r#"["Data","M.D"]"#, "M.D.Yes", "M.D")
+        };
+        let dir = workdir(name);
+        let definition = format!(
+            r#"{{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{{"semantics":"archsig/0.6.0","namespace":"M","version":"1","dependencies":[],"declarations":[{{"kind":"data","name":"M.D","meaning":"Result","constructors":[{{"name":"Yes","arguments":[],"meaning":"yes"}},{{"name":"No","arguments":[],"meaning":"no"}}]}},{{"kind":"entity","name":"M.E","meaning":"Model","parameters":[],"fields":[{{"name":"slot","type":"Bool","meaning":"Input"}},{{"name":"constant","type":["Term",["Bool"],{result_type}],"meaning":"Constant function"}}],"alignments":[]}}]}}]}}"#
+        );
+        let checked =
+            archsig_input::definition::check_definitions(&[("definition0", definition.as_bytes())])
+                .unwrap();
+        let digest = &checked.vocabularies()["M"].digest;
+        let mut atoms = vec![];
+        if known_term {
+            atoms.push(format!(r#"{{"id":"constant","subject":"e","field":"M.E.constant","origin":"spec","value":{{"params":["x"],"body":"{term_body}"}}}}"#));
+        }
+        if let Some(slot) = slot {
+            atoms.push(format!(
+                r#"{{"id":"slot","subject":"e","field":"M.E.slot","origin":"spec","value":{slot}}}"#
+            ));
+        }
+        let atoms = atoms.join(",");
+        let map = format!(
+            r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"M","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"spec","mode":"specification","method":"Constant function over Bool completions","locations":[],"note":"Synthetic constant-function model"}}],"snapshots":[{{"id":"s","origin":"spec","subjects":[{{"id":"e","type":"M.E","origin":"spec"}}],"atoms":[{atoms}]}}]}}"#
+        );
+        let expression = if via_view {
+            "v(p)"
+        } else {
+            "p.constant(p.slot)"
+        };
+        let law = format!(
+            "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading R {{ use vocabulary M version \"1\" digest \"{digest}\"; view v(p:M.E):{ty}=p.constant(p.slot); law required ok(p:M.E):{expression}={result_value}; }}"
+        );
+        std::fs::write(dir.join("d.json"), definition).unwrap();
+        std::fs::write(dir.join("a.json"), map).unwrap();
+        std::fs::write(dir.join("l.law"), law).unwrap();
+        let checked = run_binary(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+            ],
+        );
+        if expected == 65 {
+            assert_eq!(checked.code, 65, "{name}: {}", checked.stderr);
+            continue;
+        }
+        assert_eq!(checked.code, 0, "{name}: {}", checked.stderr);
+        let result = run_binary(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--ask",
+                "c=check(R.ok,bind.p=@s/e)",
+                "--ask",
+                "n=needed($c)",
+                "--out",
+                "out",
+            ],
+        );
+        assert_eq!(
+            result.code, expected,
+            "{name}: {} {}",
+            result.stdout, result.stderr
+        );
+        let saved = result_json(&dir, &result);
+        let answers = arr(get(&saved, "answers"));
+        assert_eq!(
+            s(get(&answers[0], "status")),
+            match expected {
+                0 => "established",
+                1 => "refuted",
+                _ => "undetermined",
+            },
+            "{name}"
+        );
+        assert_eq!(s(get(&answers[1], "status")), "established", "{name}");
+        if expected != 2 {
+            let plan = node(&saved, get(get(&answers[1], "outputs"), "plan"));
+            assert!(
+                arr(get(get(plan, "value"), "requirements")).is_empty(),
+                "{name}"
+            );
+        }
+    }
+}
