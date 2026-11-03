@@ -647,7 +647,7 @@ fn reading_metadata(
     source: &Node,
     c: &Control,
 ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
-    let mut support = source.support.clone();
+    let mut support = source.support.clone().into_vec();
     let mut scope = source.scope.clone();
     let env = Environment::new(inputs, c)?;
     for row in a.readings().instances() {

@@ -365,7 +365,7 @@ fn build_source(
     let mut parts = vec![];
     let mut domains = vec![];
     let mut axes = vec![];
-    let mut support = g.get(o.expression)?.support.clone();
+    let mut support = g.get(o.expression)?.support.clone().into_vec();
     let mut scope = g.get(o.architecture)?.scope.clone();
     scope.merge(&g.get(o.component)?.scope);
     for b in &o.bindings {
@@ -675,7 +675,7 @@ fn family_node(g: &Graph, s: &Source, rows: &[NodeRef]) -> Result<Node, Validati
         ty: NodeType::Evaluation(s.origin.returns.clone()),
         rule: Rule::Construction("evaluation"),
         arguments,
-        support,
+        support: support.into(),
         scope,
         evidence: vec![],
         reasons,

@@ -396,7 +396,7 @@ fn queries(
             let path = operand_path(graph, r)?;
             Ok(QueryPath {
                 path,
-                support: node.support.clone(),
+                support: node.support.to_vec(),
                 scope: node.scope.clone(),
             })
         })
@@ -1317,7 +1317,7 @@ pub(in crate::observed) fn validate_incompatible(
     {
         return Err(internal!("relationの不適合条件が変わった").into());
     }
-    let mut support = graph.get(w.left)?.support.clone();
+    let mut support = graph.get(w.left)?.support.clone().into_vec();
     support.extend(graph.get(w.right)?.support.iter().cloned());
     support.sort();
     support.dedup();

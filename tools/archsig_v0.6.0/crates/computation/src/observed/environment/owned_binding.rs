@@ -214,7 +214,7 @@ impl Environment<'_> {
                 Ok(Selected {
                     scalar,
                     scope: node.scope,
-                    support: node.support,
+                    support: node.support.to_vec(),
                     root: Some(root),
                     producer: Some(id.clone()),
                 })
@@ -249,7 +249,7 @@ impl Environment<'_> {
                 },
             },
             arguments: vec![],
-            support: selected.support.clone(),
+            support: selected.support.clone().into(),
             scope: selected.scope.clone(),
             evidence: vec![],
             judgment: None,
@@ -524,7 +524,7 @@ impl Environment<'_> {
             payload: Some(Payload::Scalar(Scalar::Bool(true))),
             rule: Rule::OwnedBinding(p.name.clone()),
             arguments,
-            support: plan.checks.support,
+            support: plan.checks.support.into(),
             scope: plan.checks.scope,
             evidence: vec![],
             judgment: None,

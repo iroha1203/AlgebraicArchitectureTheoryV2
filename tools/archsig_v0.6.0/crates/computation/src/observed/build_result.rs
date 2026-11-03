@@ -143,10 +143,10 @@ impl Builder<'_> {
             }
             let (s, q, why) = if input.0 < self.base {
                 let n = self.g.get(*input)?;
-                (&n.support, &n.scope, &n.reasons)
+                (n.support.as_slice(), &n.scope, &n.reasons)
             } else {
                 let p = &self.parts[input.0 - self.base];
-                (&p.support, &p.scope, &p.reasons)
+                (p.support.as_slice(), &p.scope, &p.reasons)
             };
             support.extend(s.iter().cloned());
             scope.merge(q);

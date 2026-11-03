@@ -543,7 +543,7 @@ fn current_inputs_consumers_positions_and_cached_root_requests_are_rechecked() {
         match field {
             0 => n.ty = NodeType::Construction(T::Architecture),
             1 => n.arguments.reverse(),
-            2 => n.support.clear(),
+            2 => n.support.make_owned().clear(),
             _ => n.scope.assignments = true,
         }
         assert!(env.recheck_node(&g, &n, da.objects[1].0).is_err());

@@ -394,7 +394,7 @@ fn base_metadata(
     d: &Data,
     p: &FamilyInputs,
 ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
-    let mut support = g.get(d.template)?.support.clone();
+    let mut support = g.get(d.template)?.support.clone().into_vec();
     support.extend(g.get(d.architecture)?.support.iter().cloned());
     let mut scope = frames::base_scope(
         &p.architecture,
@@ -680,7 +680,7 @@ fn put(
         ty: d.ty(),
         rule: Rule::Construction(d.construction()),
         arguments: d.arguments(),
-        support: d.support.clone(),
+        support: d.support.clone().into(),
         scope: d.scope.clone(),
         evidence: d.evidence.clone(),
         reasons: d.reasons.clone(),

@@ -1,4 +1,5 @@
 //! 明示束縛の参照・原始 field と Z/Bool 演算を原 AST から評価する。
+use super::result::Support;
 use archsig_common::internal::InternalError;
 mod term_comparison_evaluate;
 use super::{
@@ -74,7 +75,7 @@ struct Evaluated {
     evaluation: NodeRef,
     value: Option<NodeRef>,
     scope: Scope,
-    support: Vec<Fact>,
+    support: Support,
     reasons: Vec<Reason>,
     comparison: Option<(NodeRef, NodeRef)>,
     residual: Option<NodeRef>,
@@ -144,7 +145,7 @@ pub(in crate::observed) fn instance_expression<'a>(
                 expression: value.expression,
                 evaluation: value.evaluation,
                 value: value.value,
-                support: value.support,
+                support: value.support.to_vec(),
                 scope: value.scope,
                 reasons: value.reasons,
             }),
@@ -322,7 +323,7 @@ impl Evaluator<'_, '_> {
         value: Scalar,
         rule: Rule,
         arguments: Vec<NodeRef>,
-        support: Vec<Fact>,
+        support: impl Into<Support>,
         scope: Scope,
     ) -> Result<NodeRef, Failure> {
         let ty = value.ty();
@@ -331,7 +332,7 @@ impl Evaluator<'_, '_> {
             payload: Some(Payload::Scalar(value)),
             rule,
             arguments,
-            support,
+            support: support.into(),
             evidence: vec![],
             judgment: None,
             scope,
@@ -366,6 +367,7 @@ impl Evaluator<'_, '_> {
         }
         support.sort();
         support.dedup();
+        let support = Support::from(support);
         let arguments = std::iter::once(source.expression)
             .chain(children.iter().map(|child| child.evaluation))
             .collect();
@@ -418,10 +420,11 @@ impl Evaluator<'_, '_> {
         let mut scope = source.scope;
         scope.merge(&left.scope);
         scope.merge(&right.scope);
-        let mut support = left.support.clone();
+        let mut support = left.support.clone().into_vec();
         support.extend(right.support.iter().cloned());
         support.sort();
         support.dedup();
+        let support = Support::from(support);
         let difference = self.push(Node {
             ty: NodeType::Expression(ty.clone()),
             payload: Some(Payload::Transform {
@@ -675,7 +678,7 @@ impl Evaluator<'_, '_> {
             arguments: self
                 .environment
                 .source_arguments(self.graph, span, &self.bindings)?,
-            support: vec![],
+            support: vec![].into(),
             evidence: vec![],
             judgment: None,
             scope: analysis.scope.clone(),
@@ -1015,6 +1018,7 @@ impl Evaluator<'_, '_> {
         )?);
         support.sort();
         support.dedup();
+        let support = Support::from(support);
         if let Some(reason) = source.missing {
             reasons.push(reason);
         }
@@ -1256,7 +1260,7 @@ impl Evaluator<'_, '_> {
                         ty,
                         Some(value),
                         vec![],
-                        support,
+                        support.to_vec(),
                         None,
                         None,
                         None,
@@ -1290,7 +1294,7 @@ impl Evaluator<'_, '_> {
                         binding.ty.clone(),
                         Some(binding.value),
                         vec![],
-                        self.graph.get(binding.value)?.support.clone(),
+                        self.graph.get(binding.value)?.support.to_vec(),
                         None,
                         None,
                         None,
@@ -1478,10 +1482,11 @@ impl Evaluator<'_, '_> {
                 }
                 let mut scope = left.scope.clone();
                 scope.merge(&right.scope);
-                let mut support = left.support.clone();
+                let mut support = left.support.clone().into_vec();
                 support.extend(right.support.iter().cloned());
                 support.sort();
                 support.dedup();
+                let support = Support::from(support);
                 let pair = left.value.zip(right.value);
                 let mut comparison = pair.filter(|_| is_comparison(*op));
                 #[cfg(test)]
@@ -1550,7 +1555,7 @@ impl Evaluator<'_, '_> {
                             )?,
                             Rule::Construction("evaluation"),
                             vec![l, r],
-                            support,
+                            support.clone(),
                             scope,
                         )?)
                     } else {
@@ -1683,7 +1688,7 @@ impl Evaluator<'_, '_> {
                 },
             )?;
             owners = enumeration.owners;
-            domain_support = enumeration.support;
+            domain_support = enumeration.support.into();
             scope.merge(&enumeration.scope);
             if enumeration.values.is_none() {
                 #[cfg(test)]
@@ -1783,7 +1788,7 @@ impl Evaluator<'_, '_> {
                         let bindings = this
                             .environment
                             .quant_bindings(this.graph, this.graph.active)?;
-                        let mut counter_support = domain_support.clone();
+                        let mut counter_support = domain_support.clone().into_vec();
                         counter_support.extend(body.support.iter().cloned());
                         counter_support.sort();
                         counter_support.dedup();
@@ -1793,11 +1798,11 @@ impl Evaluator<'_, '_> {
                                 bindings,
                                 left: body.value.expect("falsebody"),
                                 right,
-                                facts: counter_support.clone(),
+                                facts: counter_support.to_vec(),
                             }),
                             rule: Rule::Construction("evidence"),
                             arguments,
-                            support: counter_support,
+                            support: counter_support.into(),
                             evidence: vec![],
                             judgment: None,
                             scope: body.scope.clone(),
@@ -1831,7 +1836,7 @@ impl Evaluator<'_, '_> {
         } else {
             None
         };
-        let mut support = domain_support.clone();
+        let mut support = domain_support.clone().into_vec();
         for child in &children {
             self.tick(Checkpoint::FiniteIteration)?;
             scope.merge(&child.scope);
@@ -1839,6 +1844,7 @@ impl Evaluator<'_, '_> {
         }
         support.sort();
         support.dedup();
+        let support = Support::from(support);
         if matches!(
             (spec.kind, known),
             (archsig_input::law::ast::QuantKind::Forall, Some(true))
@@ -1907,7 +1913,7 @@ impl Evaluator<'_, '_> {
             Type::Bool,
             value,
             children,
-            domain_support,
+            domain_support.to_vec(),
             None,
             None,
             None,
@@ -2038,6 +2044,7 @@ impl Evaluator<'_, '_> {
         }
         support.sort();
         support.dedup();
+        let support = Support::from(support);
         if self.environment.is_path(id)? {
             return self.path_construct(id, span, ty, evaluated, values, known);
         }
@@ -2111,7 +2118,7 @@ impl Evaluator<'_, '_> {
                     }),
                     rule: Rule::Construction("evidence"),
                     arguments: edges.iter().copied().chain([actual, required]).collect(),
-                    support: condition.support.clone(),
+                    support: condition.support.clone().into(),
                     scope: condition.scope.clone(),
                     evidence: vec![],
                     judgment: None,
@@ -2128,7 +2135,7 @@ impl Evaluator<'_, '_> {
                         .into_iter()
                         .chain([actual, required, evidence])
                         .collect(),
-                    support: condition.support,
+                    support: condition.support.into(),
                     scope: condition.scope,
                     evidence: vec![evidence],
                     judgment: Some(Judgment {
@@ -2327,6 +2334,7 @@ impl Evaluator<'_, '_> {
         }
         support.sort();
         support.dedup();
+        let support = Support::from(support);
         let source = self.source(span, ty.clone())?;
         let failed = source.condition_pending
             || self
@@ -2566,7 +2574,7 @@ impl Evaluator<'_, '_> {
             }),
             rule: Rule::Construction("expression"),
             arguments,
-            support: vec![],
+            support: vec![].into(),
             evidence: vec![],
             judgment: None,
             scope,
@@ -2664,7 +2672,7 @@ impl Evaluator<'_, '_> {
         if let Some(g) = &guard {
             scope.merge(&g.scope);
         }
-        let mut support = body.support.clone();
+        let mut support = body.support.clone().into_vec();
         if let Some(g) = &guard {
             self.tick(Checkpoint::FiniteIteration)?;
             support.extend(g.support.iter().cloned());
@@ -2672,6 +2680,7 @@ impl Evaluator<'_, '_> {
         }
         support.sort();
         support.dedup();
+        let support = Support::from(support);
         let mut reasons = body.reasons.clone();
         if let Some(g) = &guard {
             reasons.extend(g.reasons.iter().cloned());
@@ -2857,7 +2866,7 @@ impl Evaluator<'_, '_> {
                         bindings: self.bindings.clone(),
                         left,
                         right,
-                        facts: support.clone(),
+                        facts: support.to_vec(),
                     }),
                     rule: Rule::Construction("evidence"),
                     arguments: vec![instance, evaluation],
@@ -4863,7 +4872,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         let (mut evaluation_evidence, mut counterexample) = (false, false);
         for index in affected {
             assert!(changed[index].support.contains(&count_fact));
-            changed[index].support.clear();
+            changed[index].support.make_owned().clear();
             match &mut changed[index].payload {
                 Some(Payload::EvaluationEvidence { .. }) => evaluation_evidence = true,
                 Some(Payload::Counterexample {
@@ -4907,7 +4916,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 .iter()
                 .any(|f| f.field.as_deref() == Some("Counter.State.count"))
         );
-        changed[amount.0].support.clear();
+        changed[amount.0].support.make_owned().clear();
         assert!(
             matches!(
                 rebuild_for_origin_and_support_recheck(&values, &changed),
@@ -6026,7 +6035,7 @@ reading Calc {{
                 match mutation {
                     0 => changed[residual.0].payload = Some(Payload::Scalar(Scalar::Z(0.into()))),
                     1 => changed[residual.0].arguments.swap(0, 1),
-                    2 => changed[residual.0].support.clear(),
+                    2 => changed[residual.0].support.make_owned().clear(),
                     _ => changed[residual.0].scope.modes = ["specification".to_owned()].into(),
                 }
                 assert!(matches!(
@@ -6870,7 +6879,8 @@ reading Calc {{
             subject: "sample".into(),
             field: Some(field.name.clone()),
             atom: Some(atom.clone()),
-        }];
+        }]
+        .into();
         // 同型同値・同owner・同Scopeでも、元callee field x.qをq2へ変えない。
         rejects_named_prefix(&result, &changed);
     }
@@ -7278,7 +7288,7 @@ reading Calc {{
             if mutation == 0 {
                 changed[binder].scope.readings.insert("Foreign".into());
             } else {
-                changed[binder].support.push(Fact {
+                changed[binder].support.make_owned().push(Fact {
                     snapshot: "v".into(),
                     subject: "sample".into(),
                     field: None,
@@ -7823,7 +7833,7 @@ reading Calc {{
                     changed[source].scope.readings.insert("Foreign".into());
                 }
                 1 => {
-                    changed[binder].support.push(Fact {
+                    changed[binder].support.make_owned().push(Fact {
                         snapshot: "v".into(),
                         subject: "sample".into(),
                         field: None,
@@ -8153,7 +8163,7 @@ reading Calc {{
                     changed[proof].scope.modes.remove("observed");
                 }
                 _ => {
-                    changed[proof].support.clear();
+                    changed[proof].support.make_owned().clear();
                 }
             }
             rejects_named_prefix(&result, &changed);

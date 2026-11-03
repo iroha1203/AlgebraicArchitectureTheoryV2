@@ -18,7 +18,7 @@ impl Evaluator<'_, '_> {
             payload: Some(payload),
             rule: Rule::Construction(rule),
             arguments,
-            support: support.to_vec(),
+            support: support.to_vec().into(),
             scope: scope.clone(),
             evidence: vec![],
             judgment: None,

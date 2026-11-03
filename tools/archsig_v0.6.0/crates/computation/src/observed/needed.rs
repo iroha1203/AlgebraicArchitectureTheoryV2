@@ -235,7 +235,7 @@ fn expected(
         }),
         rule: Rule::Construction("observation_plan"),
         arguments: arguments.into_iter().map(NodeRef).collect(),
-        support: support.into_iter().collect(),
+        support: support.into_iter().collect::<Vec<_>>().into(),
         evidence: vec![],
         judgment: None,
         scope,
@@ -412,7 +412,7 @@ mod tests {
                 "scope" => {
                     changed.scope.readings.insert("Forged".into());
                 }
-                "support" => changed.support.push(Fact {
+                "support" => changed.support.make_owned().push(Fact {
                     snapshot: "v".into(),
                     subject: "forged".into(),
                     field: None,

@@ -112,7 +112,7 @@ impl Environment<'_> {
                         location: None,
                         inputs: vec![ConditionInput::Reference(root)],
                         scope: original.scope.clone(),
-                        support: original.support.clone(),
+                        support: original.support.to_vec(),
                     });
                 }
             }
@@ -173,7 +173,7 @@ impl Environment<'_> {
                     location: None,
                     inputs: vec![ConditionInput::Reference(root)],
                     scope: original.scope.clone(),
-                    support: original.support.clone(),
+                    support: original.support.to_vec(),
                 });
             }
         }
@@ -234,7 +234,7 @@ impl Environment<'_> {
                     }),
                     inputs: vec![ConditionInput::Reference(root)],
                     scope: original.scope.clone(),
-                    support: original.support.clone(),
+                    support: original.support.to_vec(),
                 });
             }
             self.tick()?;
@@ -310,7 +310,7 @@ impl Environment<'_> {
         if left == right {
             return Ok(None);
         }
-        let mut support = graph.get(a)?.support.clone();
+        let mut support = graph.get(a)?.support.clone().into_vec();
         support.extend(graph.get(b)?.support.iter().cloned());
         support.sort();
         support.dedup();
@@ -491,7 +491,7 @@ impl Environment<'_> {
                 part,
             },
             arguments: dependencies.clone(),
-            support: plan.support.clone(),
+            support: plan.support.clone().into(),
             scope: plan.scope.clone(),
             evidence: vec![],
             judgment: None,

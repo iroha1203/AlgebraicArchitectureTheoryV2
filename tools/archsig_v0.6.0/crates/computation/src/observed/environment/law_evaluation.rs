@@ -195,7 +195,7 @@ impl Environment<'_> {
             known_value: None,
             affine: None,
             missing: None,
-            support: vec![],
+            support: vec![].into(),
             scalar_scope: None,
         }))
     }

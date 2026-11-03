@@ -150,12 +150,14 @@ fn expected(
         return Err(internal!("対象外Lawの元body出現が違う").into());
     }
     let mut support = graph.get(d.origin)?.support.clone();
-    support.extend(graph.get(d.architecture)?.support.clone());
-    support.sort();
-    support.dedup();
+    support
+        .make_owned()
+        .extend(graph.get(d.architecture)?.support.clone().into_vec());
+    support.make_owned().sort();
+    support.make_owned().dedup();
     let mut scope = graph.get(d.origin)?.scope.clone();
     scope.merge(&graph.get(d.architecture)?.scope);
-    Ok((row, support, scope))
+    Ok((row, support.into_vec(), scope))
 }
 pub(crate) fn validate_node(
     graph: &Graph,
@@ -237,7 +239,7 @@ fn put(
         ty: data.ty(),
         rule: Rule::Construction(data.construction()),
         arguments: data.arguments(),
-        support: data.support.clone(),
+        support: data.support.clone().into(),
         scope: data.scope.clone(),
         evidence: vec![],
         reasons: vec![],

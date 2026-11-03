@@ -307,7 +307,7 @@ fn changed_inputs_requests_plans_metadata_and_edges_are_rejected() {
         let mut nodes = g.nodes.clone();
         match mode {
             0 => nodes[r.0].arguments.swap(3, 4),
-            1 => nodes[r.0].support.clear(),
+            1 => nodes[r.0].support.make_owned().clear(),
             2 => nodes[r.0].scope = Scope::default(),
             3 => {
                 let Some(Payload::Construction(v)) = &mut nodes[r.0].payload else {

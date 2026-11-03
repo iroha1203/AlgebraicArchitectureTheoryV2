@@ -403,7 +403,7 @@ fn cached_owned_source_rejects_changed_consumer_index_origin_and_node_metadata()
         let n = &mut nodes[d.ring.0];
         match mode {
             0 => n.arguments[0] = fb.architectures[1],
-            1 => n.support.clear(),
+            1 => n.support.make_owned().clear(),
             2 => n.scope.assignments = false,
             3 => n.ty = NodeType::Construction(T::Ideal),
             _ => {
@@ -604,7 +604,7 @@ fn cache_hit_still_checks_the_actual_owned_architecture_node_and_root_request() 
     for mode in 0..5 {
         let mut changed = replay(&e, &g.nodes, &g.contexts).unwrap();
         match mode {
-            0 => changed.nodes[owned.0].support.clear(),
+            0 => changed.nodes[owned.0].support.make_owned().clear(),
             1 => changed.nodes[owned.0].scope.assignments = true,
             2 => changed.nodes[owned.0].arguments.reverse(),
             3 => changed.nodes[owned.0].ty = NodeType::Construction(T::ObjectComponent),

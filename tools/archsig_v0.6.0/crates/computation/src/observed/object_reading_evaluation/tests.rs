@@ -389,7 +389,7 @@ fn frame_payload_edges_metadata_and_actual_instance_cannot_be_rebound() {
         match mode {
             0 => n.arguments.clear(),
             1 => n.arguments.push(r),
-            2 => n.support.clear(),
+            2 => n.support.make_owned().clear(),
             3 => n.scope = Scope::default(),
             4 => n.ty = NodeType::Value(Type::Bool),
             _ => n.rule = Rule::Construction("domain"),

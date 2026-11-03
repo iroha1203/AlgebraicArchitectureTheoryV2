@@ -447,7 +447,7 @@ fn altered_queries_source_tables_positions_edges_and_metadata_are_rejected() {
             2 => n.arguments.clear(),
             3 => n.arguments.push(r),
             4 => n.scope = Scope::default(),
-            5 => n.support.clear(),
+            5 => n.support.make_owned().clear(),
             6 => n.evidence.push(r),
             7 => {
                 n.reasons.push(Reason {

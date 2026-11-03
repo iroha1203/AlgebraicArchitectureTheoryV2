@@ -445,7 +445,7 @@ fn edit(g: &mut Graph, r: NodeRef, f: impl FnOnce(&mut Data)) {
     let n = &mut g.nodes[r.0];
     n.ty = d.ty();
     n.arguments = d.arguments();
-    n.support = d.support;
+    n.support = d.support.into();
     n.scope = d.scope;
     n.reasons = d.reasons;
     n.evidence = d.evidence;

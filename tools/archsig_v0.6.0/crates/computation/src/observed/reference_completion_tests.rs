@@ -332,6 +332,6 @@ fn reference_completion_owner_expression_keeps_known_fiber_and_original_missing_
         items.pop();
     });
     completion_mutation(&r, domain, |ns| {
-        ns[domain].support.clear();
+        ns[domain].support.make_owned().clear();
     });
 }

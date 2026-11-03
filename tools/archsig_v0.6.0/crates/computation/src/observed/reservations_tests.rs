@@ -171,10 +171,10 @@ fn reservations_chain_prefixes_recheck_original_tokens_types_owners_and_children
         *value += 1;
     });
     completion_mutation(&result, scalar, |nodes| {
-        nodes[scalar].support[0].subject = "p".into();
+        nodes[scalar].support.make_owned()[0].subject = "p".into();
     });
     completion_mutation(&result, scalar, |nodes| {
-        nodes[scalar].support[0].field = Some("Reservations.State.held".into());
+        nodes[scalar].support.make_owned()[0].field = Some("Reservations.State.held".into());
     });
     completion_mutation(&result, scalar, |nodes| {
         nodes[scalar].arguments[0] = result.nodes[owner_scalar].arguments[0];
@@ -196,7 +196,7 @@ fn reservations_chain_prefixes_recheck_original_tokens_types_owners_and_children
         nodes[evaluation].scope.completions = true;
     });
     completion_mutation(&result, evaluation, |nodes| {
-        nodes[evaluation].support.pop();
+        nodes[evaluation].support.make_owned().pop();
     });
 }
 

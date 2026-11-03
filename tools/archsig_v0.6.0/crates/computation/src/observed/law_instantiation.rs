@@ -103,7 +103,7 @@ fn expected(
     let wire = v.wire();
     let mut arguments = vec![base, template, architecture];
     arguments.extend(&base_node.arguments);
-    let mut support = base_node.support.clone();
+    let mut support = base_node.support.clone().into_vec();
     support.extend(graph.get(template)?.support.iter().cloned());
     support.extend(graph.get(architecture)?.support.iter().cloned());
     support.sort();
@@ -202,7 +202,7 @@ impl super::result_kind::ResultKind for Data {
             ty: d.ty(),
             rule: Rule::Construction(d.construction()),
             arguments: d.arguments.clone(),
-            support: d.support.clone(),
+            support: d.support.clone().into(),
             scope: d.scope.clone(),
             evidence: vec![],
             reasons: vec![],

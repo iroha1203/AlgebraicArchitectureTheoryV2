@@ -226,7 +226,7 @@ fn read(
         }
         Source::Value(value) => *value,
     };
-    facts.extend(value.support);
+    facts.extend(value.support.into_vec());
     facts.sort();
     facts.dedup();
     let incomplete = |missing| {

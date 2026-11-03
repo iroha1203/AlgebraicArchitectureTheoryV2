@@ -1207,7 +1207,7 @@ impl Environment<'_> {
                 affine: None,
                 scope: base.clone(),
                 known_value: None,
-                support: vec![],
+                support: vec![].into(),
                 scalar_scope: None,
             });
         }
@@ -1224,7 +1224,7 @@ impl Environment<'_> {
                 .map(Box::new),
             scope: base.clone(),
             known_value: None,
-            support: Vec::new(),
+            support: Vec::new().into(),
             scalar_scope: None,
         })
     }
@@ -1955,9 +1955,12 @@ impl Environment<'_> {
                     });
                     if let Some(guard) = &guard_analysis {
                         analysis.scope.merge(&guard.scope);
-                        analysis.support.extend(guard.support.iter().cloned());
-                        analysis.support.sort();
-                        analysis.support.dedup();
+                        analysis
+                            .support
+                            .make_owned()
+                            .extend(guard.support.iter().cloned());
+                        analysis.support.make_owned().sort();
+                        analysis.support.make_owned().dedup();
                     }
                     analysis.known_value = value.map(Scalar::Bool);
                     analysis.scalar_scope = value.map(|_| analysis.scope.clone());

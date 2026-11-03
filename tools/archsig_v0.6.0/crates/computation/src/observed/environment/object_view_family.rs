@@ -43,7 +43,7 @@ impl Environment<'_> {
                 location: Location::Law { span: p.span },
             },
             arguments: vec![],
-            support,
+            support: support.into(),
             evidence: vec![],
             judgment: None,
             scope,

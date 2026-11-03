@@ -315,7 +315,7 @@ fn outside_law_rejects_inside_origin_other_object_truth_scope_binding_and_reques
             let support = d.support.clone();
             let scope = d.scope.clone();
             bad.nodes[r.0].arguments = args;
-            bad.nodes[r.0].support = support;
+            bad.nodes[r.0].support = support.into();
             bad.nodes[r.0].scope = scope;
         }
         assert!(replay(&p, &bad).is_err(), "mode {mode}");

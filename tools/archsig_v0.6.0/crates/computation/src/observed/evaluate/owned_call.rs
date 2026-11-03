@@ -80,7 +80,7 @@ impl Evaluator<'_, '_> {
                 }),
                 rule: Rule::Construction("evidence"),
                 arguments: edges.iter().copied().chain([left, right]).collect(),
-                support: support.clone(),
+                support: support.clone().into(),
                 scope: scope.clone(),
                 evidence: vec![],
                 judgment: None,
@@ -95,7 +95,7 @@ impl Evaluator<'_, '_> {
                     .copied()
                     .chain([left, right, evidence])
                     .collect(),
-                support: support.clone(),
+                support: support.clone().into(),
                 scope: scope.clone(),
                 evidence: vec![evidence],
                 judgment: Some(Judgment {

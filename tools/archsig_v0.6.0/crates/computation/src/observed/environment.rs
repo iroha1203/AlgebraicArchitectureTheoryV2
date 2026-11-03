@@ -1,4 +1,5 @@
 //! 不変の原始観測表からの参照・slot 読取りと、生成 leaf の元入力照合。
+use super::result::Support;
 use super::{
     data, numeric, quantifier,
     request::{QuestionKind, Request, Selector},
@@ -79,7 +80,7 @@ pub(crate) struct SourceAnalysis {
     pub known_value: Option<Scalar>,
     pub affine: Option<Box<super::affine::Form>>,
     pub missing: Option<PendingMissing>,
-    pub support: Vec<Fact>,
+    pub support: Support,
     pub scalar_scope: Option<Scope>,
 }
 
@@ -94,7 +95,7 @@ struct SourceValue {
     scope: Scope,
     known_value: Option<Scalar>,
     affine: Option<Box<super::affine::Form>>,
-    support: Vec<Fact>,
+    support: Support,
     scalar_scope: Option<Scope>,
 }
 
@@ -4029,7 +4030,7 @@ impl<'a> Environment<'a> {
                 return Err(internal!("支持の依存先が通常値でない").into());
             };
             if self.finite_view_input(graph, node)? {
-                return Ok(node.support.clone());
+                return Ok(node.support.to_vec());
             }
             for reference in &node.arguments {
                 self.tick()?;
@@ -4106,17 +4107,17 @@ impl<'a> Environment<'a> {
                         self.indexes.inputs.law().program().expressions.get(span)
                     {
                         match self.indexes.inputs.law().exprs()[id].kind {
-                            ExprKind::Family { .. } => {
-                                self.owned_family_scalar_analysis(graph, node, limit)?
-                                    .support
-                            }
+                            ExprKind::Family { .. } => self
+                                .owned_family_scalar_analysis(graph, node, limit)?
+                                .support
+                                .into_vec(),
                             ExprKind::Quant { .. } => {
-                                self.quant_scalar(graph, node, limit)?.support
+                                self.quant_scalar(graph, node, limit)?.support.into_vec()
                             }
-                            ExprKind::SetComp { .. } => {
-                                self.comprehension_source_analysis(graph, node, limit)?
-                                    .support
-                            }
+                            ExprKind::SetComp { .. } => self
+                                .comprehension_source_analysis(graph, node, limit)?
+                                .support
+                                .into_vec(),
                             ExprKind::Call { .. }
                                 if self
                                     .named_view(
@@ -4131,17 +4132,23 @@ impl<'a> Environment<'a> {
                                     )?
                                     .is_some() =>
                             {
-                                self.call_source_analysis(graph, node, limit)?.support
+                                self.call_source_analysis(graph, node, limit)?
+                                    .support
+                                    .into_vec()
                             }
                             ExprKind::Let { .. } | ExprKind::If { .. } | ExprKind::Match { .. } => {
-                                self.lexical_source_analysis(graph, node, limit)?.support
+                                self.lexical_source_analysis(graph, node, limit)?
+                                    .support
+                                    .into_vec()
                             }
-                            ExprKind::Binary { op, .. } if is_boolean_binary(op) => {
-                                self.logic_source_analysis(graph, node, limit)?.support
-                            }
-                            ExprKind::Unary { op: UnOp::Not, .. } => {
-                                self.logic_source_analysis(graph, node, limit)?.support
-                            }
+                            ExprKind::Binary { op, .. } if is_boolean_binary(op) => self
+                                .logic_source_analysis(graph, node, limit)?
+                                .support
+                                .into_vec(),
+                            ExprKind::Unary { op: UnOp::Not, .. } => self
+                                .logic_source_analysis(graph, node, limit)?
+                                .support
+                                .into_vec(),
                             ExprKind::Dotted(_)
                                 if data::expression(
                                     self.indexes.inputs.law(),
@@ -4157,7 +4164,9 @@ impl<'a> Environment<'a> {
                                 )?
                                 .is_none() =>
                             {
-                                self.lexical_source_analysis(graph, node, limit)?.support
+                                self.lexical_source_analysis(graph, node, limit)?
+                                    .support
+                                    .into_vec()
                             }
                             ExprKind::Dotted(_)
                             | ExprKind::Int(_)
@@ -4173,13 +4182,16 @@ impl<'a> Environment<'a> {
                             | ExprKind::Str(_)
                             | ExprKind::Index { .. }
                             | ExprKind::Call { .. }
-                            | ExprKind::Unary { .. } => {
-                                self.scalar_source_analysis(graph, node, limit)?.support
-                            }
+                            | ExprKind::Unary { .. } => self
+                                .scalar_source_analysis(graph, node, limit)?
+                                .support
+                                .into_vec(),
                             _ => return Err(internal!("値支持の未実装元式").into()),
                         }
                     } else {
-                        self.lexical_source_analysis(graph, node, limit)?.support
+                        self.lexical_source_analysis(graph, node, limit)?
+                            .support
+                            .into_vec()
                     }
                 }
                 Rule::Construction("evaluation") if matches!(value, Scalar::Bool(_)) => {
@@ -4198,12 +4210,13 @@ impl<'a> Environment<'a> {
                     let (body, guard) = self.application_at(graph, instance)?;
                     self.application_context(graph, body, guard)?.0
                 }
-                Rule::Construction("evaluation") => {
-                    self.residual_source_analysis(graph, node, limit)?.support
-                }
+                Rule::Construction("evaluation") => self
+                    .residual_source_analysis(graph, node, limit)?
+                    .support
+                    .into_vec(),
                 Rule::Construction("domain") => {
                     self.domain_member(graph, node, limit, domain)?;
-                    node.support.clone()
+                    node.support.to_vec()
                 }
                 Rule::Construction("evidence") => {
                     self.quant_counter_parts(graph, node, limit)?;
@@ -5606,7 +5619,7 @@ impl<'a> Environment<'a> {
             || !matches!(&node.payload, Some(Payload::Scalar(value)) if value == &expected)
             || analysis.known_value.as_ref() != Some(&expected)
             || analysis.scalar_scope.as_ref() != Some(&node.scope)
-            || node.support != [fact.clone()]
+            || *node.support != [fact.clone()]
         {
             return Err(internal!("chain field値の元slot・型・支持・Scopeが違う").into());
         }
@@ -5764,7 +5777,7 @@ impl<'a> Environment<'a> {
                     atom: Some(atom.clone()),
                 };
                 if !matches!(&node.rule, Rule::Input {kind: "atom", location: Location::ArchMap {pointer: actual, ..}} if actual == pointer)
-                    || node.support != [expected]
+                    || *node.support != [expected]
                 {
                     continue;
                 }
@@ -6262,7 +6275,7 @@ impl<'a> Environment<'a> {
         };
         let mut cursor = 1;
         let mut seen = Vec::new();
-        let mut used_support = graph.get(input)?.support.clone();
+        let mut used_support = graph.get(input)?.support.clone().into_vec();
         let mut scope = graph.get(input)?.scope.clone();
         let mut collected = Vec::new();
         let mut known = items.is_some();
@@ -7256,7 +7269,7 @@ impl<'a> Environment<'a> {
                         affine: None,
                         scope: base.clone(),
                         known_value: Some(value.clone()),
-                        support: self.subject_support(value)?,
+                        support: self.subject_support(value)?.into(),
                         scalar_scope: Some(subject_scope),
                     },
                 );
@@ -7957,7 +7970,7 @@ impl<'a> Environment<'a> {
                             .ok_or(internal!("literal の型がない"))?,
                         &self.control,
                     )?),
-                    support: vec![],
+                    support: vec![].into(),
                     scalar_scope: Some(base.clone()),
                 },
                 ExprKind::Bool(b) => SourceValue {
@@ -7968,7 +7981,7 @@ impl<'a> Environment<'a> {
                     affine: None,
                     scope: base.clone(),
                     known_value: Some(Scalar::Bool(*b)),
-                    support: vec![],
+                    support: vec![].into(),
                     scalar_scope: Some(base.clone()),
                 },
                 ExprKind::Dotted(_)
@@ -7983,7 +7996,7 @@ impl<'a> Environment<'a> {
                         affine: None,
                         scope: base.clone(),
                         known_value: self.composite_value(id, &[])?,
-                        support: vec![],
+                        support: vec![].into(),
                         scalar_scope: Some(base.clone()),
                     }
                 }
@@ -8133,7 +8146,7 @@ impl<'a> Environment<'a> {
                             condition_failed |= value.condition_failed;
                             condition_pending |= value.condition_pending;
                             scope.merge(&value.scope);
-                            support.extend(value.support);
+                            support.make_owned().extend(value.support.into_vec());
                             match value.known_value.as_ref() {
                                 Some(Scalar::Bool(b)) => Some(*b),
                                 None => None,
@@ -8149,7 +8162,7 @@ impl<'a> Environment<'a> {
                                 condition_failed |= value.condition_failed;
                                 condition_pending |= value.condition_pending;
                                 scope.merge(&value.scope);
-                                support.extend(value.support);
+                                support.make_owned().extend(value.support.into_vec());
                                 if let Some(value) = value.known_value {
                                     values.push(value);
                                 } else {
@@ -8161,8 +8174,8 @@ impl<'a> Environment<'a> {
                         }
                         self.tick()?;
                     }
-                    support.sort();
-                    support.dedup();
+                    support.make_owned().sort();
+                    support.make_owned().dedup();
                     let Type::Set(element) = self
                         .indexes
                         .inputs
@@ -8205,9 +8218,9 @@ impl<'a> Environment<'a> {
                     let mut scope = input.scope;
                     scope.merge(&body.scope);
                     let mut support = input.support;
-                    support.extend(body.support);
-                    support.sort();
-                    support.dedup();
+                    support.make_owned().extend(body.support.into_vec());
+                    support.make_owned().sort();
+                    support.make_owned().dedup();
                     SourceValue {
                         condition_failed: input.condition_failed || body.condition_failed,
                         condition_pending: input.condition_pending || body.condition_pending,
@@ -8232,9 +8245,9 @@ impl<'a> Environment<'a> {
                     let mut scope = rhs.scope;
                     scope.merge(&body.scope);
                     let mut support = rhs.support;
-                    support.extend(body.support);
-                    support.sort();
-                    support.dedup();
+                    support.make_owned().extend(body.support.into_vec());
+                    support.make_owned().sort();
+                    support.make_owned().dedup();
                     let symbolic = body.symbolic;
                     let affine = body.affine;
                     let comparison = body.comparison;
@@ -8339,10 +8352,10 @@ impl<'a> Environment<'a> {
                     scope.merge(&left.scope);
                     scope.merge(&right.scope);
                     let mut support = condition.support;
-                    support.extend(left.support);
-                    support.extend(right.support);
-                    support.sort();
-                    support.dedup();
+                    support.make_owned().extend(left.support.into_vec());
+                    support.make_owned().extend(right.support.into_vec());
+                    support.make_owned().sort();
+                    support.make_owned().dedup();
                     let scalar_scope = known_value.as_ref().map(|_| scope.clone());
                     SourceValue {
                         condition_failed,
@@ -8413,7 +8426,7 @@ impl<'a> Environment<'a> {
                             scalar_scope: None,
                             scope: call_base,
                             known_value: None,
-                            support,
+                            support: support.into(),
                         });
                     }
                     for value in local.values_mut() {
@@ -8427,7 +8440,7 @@ impl<'a> Environment<'a> {
                         self.universal_call_context(id),
                     )?;
                     call_base.merge(&body.scope);
-                    support.extend(body.support);
+                    support.extend(body.support.into_vec());
                     let returned = Self::owned_source_argument(
                         &body.known_value,
                         body.symbolic.as_deref(),
@@ -8457,7 +8470,7 @@ impl<'a> Environment<'a> {
                         },
                         scope: call_base,
                         known_value: if failed { None } else { body.known_value },
-                        support,
+                        support: support.into(),
                     }
                 }
                 ExprKind::Fn { .. }
@@ -8500,7 +8513,7 @@ impl<'a> Environment<'a> {
                         condition_failed |= child.condition_failed;
                         condition_pending |= child.condition_pending;
                         scope.merge(&child.scope);
-                        support.extend(child.support);
+                        support.extend(child.support.into_vec());
                         if let Some(value) = child.known_value {
                             match &mut symbolic_arguments {
                                 Some(args) => args.push(SymbolicValue::Known(value)),
@@ -8611,7 +8624,7 @@ impl<'a> Environment<'a> {
                         comparison: None,
                         affine,
                         scope,
-                        support,
+                        support: support.into(),
                         known_value,
                         scalar_scope,
                     }
@@ -8792,9 +8805,9 @@ impl<'a> Environment<'a> {
             } = self.scoped_ast(*lhs, variables, base, reading)?;
             let right = self.scoped_ast(*rhs, variables, base, reading)?;
             scope.merge(&right.scope);
-            support.extend(right.support);
-            support.sort();
-            support.dedup();
+            support.make_owned().extend(right.support.into_vec());
+            support.make_owned().sort();
+            support.make_owned().dedup();
             let affine = super::affine::binary(
                 *op,
                 left_affine.as_deref(),
@@ -8932,7 +8945,7 @@ impl<'a> Environment<'a> {
                     affine: None,
                     scope,
                     known_value: None,
-                    support: enumeration.support,
+                    support: enumeration.support.into(),
                     scalar_scope: None,
                 },
                 enumeration.values,
@@ -8996,7 +9009,7 @@ impl<'a> Environment<'a> {
             }
             let mut condition_failed = input.condition_failed;
             let mut condition_pending = input.condition_pending;
-            let mut support = input.support.clone();
+            let mut support = input.support.clone().into_vec();
             let mut values = Vec::new();
             for item in items {
                 self.tick()?;
@@ -9027,7 +9040,7 @@ impl<'a> Environment<'a> {
                 condition_failed |= body.condition_failed;
                 condition_pending |= body.condition_pending;
                 scope.merge(&body.scope);
-                support.extend(body.support);
+                support.extend(body.support.into_vec());
                 values.push(match body.known_value {
                     Some(Scalar::Bool(value)) => Some(value),
                     None => None,
@@ -9048,7 +9061,7 @@ impl<'a> Environment<'a> {
                 scalar_scope: known_value.as_ref().map(|_| scope.clone()),
                 scope,
                 known_value,
-                support,
+                support: support.into(),
             }
         };
         if result.condition_failed || result.condition_pending {
@@ -9152,7 +9165,7 @@ impl<'a> Environment<'a> {
             scalar_scope.merge(&owner_scope);
             scalar_scope.assignments = true;
             // 同じslotの元Atomがあっても、別の候補値の観測証拠に使わない。
-            support.push(position);
+            support.make_owned().push(position);
             (Some(value.clone()), Some(scalar_scope))
         } else {
             match &field.slot {
@@ -9166,7 +9179,7 @@ impl<'a> Environment<'a> {
                     scope.merge(&owner_scope);
                     let mut scalar_scope = request_base.clone();
                     scalar_scope.merge(&owner_scope);
-                    support.push(Fact {
+                    support.make_owned().push(Fact {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
                         field: Some(field.name.clone()),
@@ -9260,8 +9273,8 @@ impl<'a> Environment<'a> {
         } else {
             None
         };
-        support.sort();
-        support.dedup();
+        support.make_owned().sort();
+        support.make_owned().dedup();
         Ok(SourceValue {
             condition_failed: false,
             condition_pending: false,
@@ -9893,7 +9906,7 @@ impl<'a> Environment<'a> {
         body: NodeRef,
         guard: Option<NodeRef>,
     ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
-        let mut support = graph.get(body)?.support.clone();
+        let mut support = graph.get(body)?.support.clone().into_vec();
         let mut scope = graph.get(body)?.scope.clone();
         if let Some(guard) = guard {
             self.tick()?;
@@ -10262,7 +10275,7 @@ impl<'a> Environment<'a> {
             super::finite::Enumeration {
                 values: items.clone(),
                 scope: graph.get(input)?.scope.clone(),
-                support: graph.get(input)?.support.clone(),
+                support: graph.get(input)?.support.to_vec(),
             },
         ))
     }
@@ -10517,7 +10530,7 @@ impl<'a> Environment<'a> {
         let mut scope = graph.get(input)?.scope.clone();
         scope.add_quantifier(descriptor.clone());
         scope.order_quantifiers_like(&graph.get(source)?.scope);
-        let mut support = graph.get(input)?.support.clone();
+        let mut support = graph.get(input)?.support.clone().into_vec();
         let mut results = Vec::new();
         let mut seen = Vec::new();
         let finite = descriptor.domain;
@@ -10628,7 +10641,7 @@ impl<'a> Environment<'a> {
                 scalar_scope: computed.as_ref().map(|_| scope.clone()),
                 scope,
                 known_value: computed,
-                support,
+                support: support.into(),
                 missing: None,
             },
             finite,
@@ -11034,7 +11047,7 @@ impl<'a> Environment<'a> {
             return Err(internal!("量化反例payloadがない").into());
         };
         let body = graph.get(node.arguments[2])?;
-        let mut support = graph.get(node.arguments[1])?.support.clone();
+        let mut support = graph.get(node.arguments[1])?.support.clone().into_vec();
         support.extend(body.support.iter().cloned());
         support.sort();
         support.dedup();

@@ -29,7 +29,7 @@ fn known(value: Scalar) -> SourceValue {
         affine: None,
         scope: Scope::default(),
         known_value: Some(value),
-        support: vec![],
+        support: vec![].into(),
         scalar_scope: Some(Scope::default()),
     }
 }
@@ -503,7 +503,7 @@ pub(in crate::observed) fn candidate(
                     declaration.span,
                 )?;
                 update.retain(&old);
-                update.support.extend(old.support);
+                update.support.extend(old.support.into_vec());
                 if let Some(value) = old.known_value {
                     values.insert(fact, value);
                 } else {

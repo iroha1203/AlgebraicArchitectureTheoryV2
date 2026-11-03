@@ -54,7 +54,7 @@ fn known_map_rechecks_original_pairs_types_support_and_scope() {
         *codomain = Type::Ref("Maps.Void".into());
     });
     completion_mutation(&r, t, |nodes| {
-        nodes[t].support.clear();
+        nodes[t].support.make_owned().clear();
     });
     completion_mutation(&r, t, |nodes| {
         nodes[t].scope.modes.clear();
@@ -204,7 +204,7 @@ fn owned_map_wrapper_values_recheck_original_nested_types_and_owner_sources() {
         *snapshot = "other".into();
     });
     completion_mutation(&result, target, |nodes| {
-        nodes[target].support.clear();
+        nodes[target].support.make_owned().clear();
     });
     completion_mutation(&result, target, |nodes| {
         nodes[target].scope.snapshots.clear();

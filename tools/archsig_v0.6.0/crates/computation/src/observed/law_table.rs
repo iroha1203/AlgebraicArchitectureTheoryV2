@@ -226,7 +226,7 @@ impl Table {
             return Err(internal!("全Law表の元全添字/順序が違う").into());
         }
         refs(env, g, self.indices.iter().copied(), c)?;
-        let mut support = g.get(self.architecture)?.support.clone();
+        let mut support = g.get(self.architecture)?.support.clone().into_vec();
         let mut scope = g.get(self.architecture)?.scope.clone();
         let mut reasons = vec![];
         for (object, (actual, diagram)) in self.objects.iter().zip(&ds).enumerate() {
@@ -313,7 +313,7 @@ pub(super) fn retain(
         return Err(internal!("全Law表の元対象計画数が違う").into());
     }
     let mut rows = vec![];
-    let mut support = g.get(architecture)?.support.clone();
+    let mut support = g.get(architecture)?.support.clone().into_vec();
     let mut scope = g.get(architecture)?.scope.clone();
     let mut reasons = vec![];
     for (object, d) in ds.iter().enumerate() {

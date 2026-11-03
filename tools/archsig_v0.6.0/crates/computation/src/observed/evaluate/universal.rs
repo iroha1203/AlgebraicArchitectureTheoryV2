@@ -121,7 +121,7 @@ impl Evaluator<'_, '_> {
                 arguments: std::iter::once(template)
                     .chain(self.bindings.iter().map(|binding| binding.value))
                     .collect(),
-                support: support.to_vec(),
+                support: support.to_vec().into(),
                 evidence: vec![],
                 judgment: None,
                 scope: scope.clone(),
@@ -193,7 +193,7 @@ impl Evaluator<'_, '_> {
                     .chain(references.iter().copied())
                     .chain([value])
                     .collect(),
-                support: support.to_vec(),
+                support: support.to_vec().into(),
                 evidence: vec![],
                 judgment: None,
                 scope: scope.clone(),
@@ -222,7 +222,7 @@ impl Evaluator<'_, '_> {
                 .into_iter()
                 .chain(assignments.into_iter().flatten())
                 .collect(),
-            support: support.to_vec(),
+            support: support.to_vec().into(),
             evidence: vec![],
             judgment: None,
             scope,
@@ -491,7 +491,7 @@ impl Evaluator<'_, '_> {
             arguments: self
                 .environment
                 .source_arguments(self.graph, span, &self.bindings)?,
-            support: vec![],
+            support: vec![].into(),
             evidence: vec![],
             judgment: None,
             scope: analyzed.analysis.scope,
@@ -521,7 +521,7 @@ impl Evaluator<'_, '_> {
                 .into_iter()
                 .chain(self.bindings.iter().map(|binding| binding.value))
                 .collect(),
-            support: support.to_vec(),
+            support: support.to_vec().into(),
             evidence: vec![],
             judgment: None,
             scope: scope.clone(),
@@ -546,7 +546,7 @@ impl Evaluator<'_, '_> {
         let parameters = parameters.clone();
         let mut scope = self.graph.get(body)?.scope.clone();
         scope.merge(&self.graph.get(guard)?.scope);
-        let mut support = guard_analysis.support;
+        let mut support = (guard_analysis.support).into_vec();
         if guard_analysis.known_value != Some(Scalar::Bool(false)) {
             support.extend(body_analysis.support.iter().cloned());
         }
@@ -639,7 +639,7 @@ impl Evaluator<'_, '_> {
                     },
                 },
                 arguments: vec![template],
-                support: vec![],
+                support: vec![].into(),
                 evidence: vec![],
                 judgment: None,
                 scope: self.graph.get(template)?.scope.clone(),
@@ -1015,7 +1015,7 @@ impl Evaluator<'_, '_> {
                     bindings,
                     left,
                     right,
-                    facts: support.clone(),
+                    facts: support.to_vec(),
                 }),
                 rule: Rule::Construction("evidence"),
                 arguments,
@@ -1184,7 +1184,7 @@ impl Evaluator<'_, '_> {
                         .source_arguments(self.graph, span, &self.bindings)?,
                 )
                 .collect(),
-            support: vec![],
+            support: vec![].into(),
             evidence: vec![],
             judgment: None,
             scope: analysis.scope.clone(),
@@ -1219,7 +1219,7 @@ impl Evaluator<'_, '_> {
         })?;
         Ok((
             source.ok_or_else(|| Failure::Internal(internal!("全域元Sourceのcommitがない")))?,
-            support,
+            support.to_vec(),
         ))
     }
 
@@ -1232,6 +1232,7 @@ impl Evaluator<'_, '_> {
         mut comparison: Option<(usize, Evaluated, Evaluated, NodeRef)>,
         local_domain: Option<NodeRef>,
     ) -> Result<SymbolicEvaluation, Failure> {
+        let support = Support::from(support);
         let child_reasons = self.environment.evaluation_child_reasons(
             self.graph,
             source.expression,
@@ -1629,7 +1630,7 @@ impl Evaluator<'_, '_> {
                             },
                         },
                         arguments: vec![source.expression],
-                        support: vec![],
+                        support: vec![].into(),
                         evidence: vec![],
                         judgment: None,
                         scope: source.scope.clone(),

@@ -1164,10 +1164,12 @@ impl Environment<'_> {
         } else {
             let mut support = guard_analysis.support;
             if guard_analysis.known_value != Some(Scalar::Bool(false)) {
-                support.extend(body_analysis.support);
+                support
+                    .make_owned()
+                    .extend(body_analysis.support.into_vec());
             }
-            support.sort();
-            support.dedup();
+            support.make_owned().sort();
+            support.make_owned().dedup();
             support
         };
         if node.arguments
@@ -2306,7 +2308,7 @@ impl Environment<'_> {
         {
             if node.arguments.len() != 5
                 || analysis.value != Some(false)
-                || facts != analysis.analysis.support
+                || facts != *analysis.analysis.support
                 || !node.evidence.is_empty()
             {
                 return Err(internal!("全域具体反例の元導出・全域判断が違う").into());
@@ -2405,7 +2407,7 @@ impl Environment<'_> {
         if node.arguments.len() != 3
             || bindings != self.universal_source_fields(graph, template)?.1
             || analysis.value != Some(false)
-            || facts != analysis.analysis.support
+            || facts != *analysis.analysis.support
             || !node.evidence.is_empty()
         {
             return Err(internal!("全域反例の元束縛・全域反証・事実が違う").into());
@@ -3406,7 +3408,7 @@ impl Environment<'_> {
         self.tick()?;
         if node.ty != ty
             || node.scope != *scope
-            || node.support != support
+            || *node.support != support
             || !reasons_equal(&node.reasons, reasons)
             || !matches!(node.rule,Rule::Construction(actual) if actual==rule)
             || node.judgment.is_some()
@@ -3427,7 +3429,7 @@ impl Environment<'_> {
         self.tick()?;
         if node.ty != ty
             || node.scope != *scope
-            || node.support != support
+            || *node.support != support
             || !node.reasons.is_empty()
             || !node.evidence.is_empty()
             || node.judgment.is_some()

@@ -36,7 +36,7 @@ fn source(value: Scalar) -> SourceValue {
         affine: None,
         scope: Scope::default(),
         known_value: Some(value),
-        support: vec![],
+        support: vec![].into(),
         scalar_scope: Some(Scope::default()),
     }
 }

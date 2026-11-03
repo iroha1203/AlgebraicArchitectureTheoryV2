@@ -65,7 +65,7 @@ fn recursive_tree_rechecks_original_constructor_payload_support_and_scope() {
         recursive_tree_private_change_leaf(value);
     });
     completion_mutation(&result, target, |nodes| {
-        nodes[target].support.clear();
+        nodes[target].support.make_owned().clear();
     });
     completion_mutation(&result, target, |nodes| {
         nodes[target].scope.modes.clear();

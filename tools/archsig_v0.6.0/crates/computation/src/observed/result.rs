@@ -6,6 +6,7 @@ use super::{PrepareFailure, PreparedObserved};
 use archsig_common::control::{Checkpoint, Control};
 use archsig_common::{canonical::Json, issue::Location, types::Type};
 pub(crate) use archsig_input::archmap::Fact;
+
 use archsig_input::result::Signal;
 use archsig_input::result::location_wire;
 use num_bigint::BigInt;
@@ -13,6 +14,67 @@ mod completion_graph;
 mod semantic_result;
 pub(super) use semantic_result::concise_reasons;
 use std::collections::{BTreeMap, BTreeSet};
+
+/// 確定した支持。加工する側は所有 Vec を明示的に取り出す。
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub(crate) struct Support(std::rc::Rc<Vec<Fact>>);
+impl Support {
+    /// 共有先を変えずに加工するため、この値の Vec を一意所有にする。
+    pub(crate) fn make_owned(&mut self) -> &mut Vec<Fact> {
+        std::rc::Rc::make_mut(&mut self.0)
+    }
+    pub(crate) fn into_vec(self) -> Vec<Fact> {
+        std::rc::Rc::try_unwrap(self.0).unwrap_or_else(|shared| (*shared).clone())
+    }
+}
+impl From<Vec<Fact>> for Support {
+    fn from(facts: Vec<Fact>) -> Self {
+        Self(std::rc::Rc::new(facts))
+    }
+}
+impl std::ops::Deref for Support {
+    type Target = Vec<Fact>;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl PartialEq<Vec<Fact>> for Support {
+    fn eq(&self, other: &Vec<Fact>) -> bool {
+        self.as_slice() == other.as_slice()
+    }
+}
+impl PartialEq<Support> for Vec<Fact> {
+    fn eq(&self, other: &Support) -> bool {
+        self.as_slice() == other.as_slice()
+    }
+}
+impl<'a> IntoIterator for &'a Support {
+    type Item = &'a Fact;
+    type IntoIter = std::slice::Iter<'a, Fact>;
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+#[cfg(test)]
+#[test]
+fn owned_support_edits_leave_shared_facts_unchanged() {
+    let original = Support::from(vec![Fact {
+        snapshot: "snapshot".into(),
+        subject: "subject".into(),
+        field: Some("Example.Entity.field".into()),
+        atom: Some("known".into()),
+    }]);
+    let expected = original.to_vec();
+    let mut edited = original.clone();
+    edited.make_owned()[0].subject = "caller-local".into();
+    edited.make_owned().clear();
+    assert!(edited.is_empty());
+    assert_eq!(original, expected);
+    let mut extracted = original.clone().into_vec();
+    extracted[0].atom = Some("different".into());
+    assert_eq!(original, expected);
+}
 
 #[derive(Debug)]
 pub enum EvaluationFailure {
@@ -1420,7 +1482,7 @@ pub(crate) struct Node {
     pub payload: Option<Payload>,
     pub rule: Rule,
     pub arguments: Vec<NodeRef>,
-    pub support: Vec<Fact>,
+    pub support: Support,
     pub evidence: Vec<NodeRef>,
     pub judgment: Option<Judgment>,
     pub scope: Scope,
@@ -2503,7 +2565,7 @@ impl Graph {
         let Some(quantifier) = quantifier else {
             return Ok(false);
         };
-        let mut support = self.get(*domain)?.support.clone();
+        let mut support = self.get(*domain)?.support.clone().into_vec();
         support.extend(self.get(*body)?.support.iter().cloned());
         support.sort();
         support.dedup();
@@ -5168,7 +5230,7 @@ mod invariant_tests {
             payload: Some(Payload::Scalar(Scalar::Z(2.into()))),
             rule: Rule::Construction("evaluation"),
             arguments: vec![],
-            support: vec![],
+            support: vec![].into(),
             evidence: vec![],
             judgment: None,
             scope: Scope::default(),
@@ -5214,7 +5276,7 @@ mod invariant_tests {
             }),
             rule: Rule::Construction("expression"),
             arguments: vec![],
-            support: vec![],
+            support: vec![].into(),
             evidence: vec![],
             judgment: None,
             scope: Scope::default(),

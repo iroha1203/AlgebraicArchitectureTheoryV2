@@ -454,7 +454,7 @@ impl Data {
             ty: self.ty(),
             rule: Rule::Construction(self.construction()),
             arguments: self.arguments(),
-            support: self.part.support.clone(),
+            support: self.part.support.clone().into(),
             scope: self.part.scope.clone(),
             reasons: self.part.reasons.clone(),
             evidence: vec![],
