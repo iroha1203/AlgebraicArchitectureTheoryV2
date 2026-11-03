@@ -71,7 +71,12 @@ fn unchanged_node_identity_does_not_hide_context_changes() {
     assert!(std::rc::Rc::ptr_eq(&identity, &g.nodes.prefix_identity()));
     assert!(!saved.matches(&g, &c).unwrap());
     g.contexts[0] = Default::default();
-    assert!(saved.matches(&g, &c).unwrap());
+    assert!(
+        !saved.matches(&g, &c).unwrap(),
+        "復元しても旧identityは戻らない"
+    );
+    let refreshed = ValidationSnapshot::from_graph(&g, &c).unwrap();
+    assert!(refreshed.matches(&g, &c).unwrap());
     g.contexts.clear();
     assert!(!saved.matches(&g, &c).unwrap());
 }
@@ -270,4 +275,85 @@ fn node_identity_changes_invalidate_even_an_equal_prefix() {
         let refreshed = ValidationSnapshot::from_graph(&g, &c).unwrap();
         assert!(refreshed.matches(&g, &c).unwrap());
     }
+}
+
+#[test]
+fn checked_context_append_keeps_the_prefix_but_all_mutable_paths_invalidate_it() {
+    let c = quiet();
+    let mut g = Graph::new(&c);
+    g.push(node(1)).unwrap();
+    let mut saved = ValidationSnapshot::from_graph(&g, &c).unwrap();
+    g.active.request = 1;
+    g.push(node(2)).unwrap();
+    assert!(saved.matches(&g, &c).unwrap());
+    saved.extend_matching(&g, &c).unwrap();
+    assert!(saved.matches(&g, &c).unwrap());
+
+    for access in [
+        "index",
+        "slice",
+        "deref",
+        "iter_mut",
+        "into_iter_mut",
+        "clear",
+        "truncate",
+        "replace",
+        "clone",
+    ] {
+        let mut g = Graph::new(&c);
+        g.push(node(1)).unwrap();
+        g.push(node(2)).unwrap();
+        let saved = ValidationSnapshot::from_graph(&g, &c).unwrap();
+        let original = g.contexts.to_vec();
+        match access {
+            "index" => {
+                g.contexts[0].request = 9;
+                g.contexts[0] = original[0];
+            }
+            "slice" => {
+                g.contexts.as_mut_slice()[0] = original[0];
+            }
+            "deref" => {
+                let values: &mut Vec<super::super::call::Context> = &mut g.contexts;
+                values[0] = original[0];
+            }
+            "iter_mut" => {
+                g.contexts.iter_mut().for_each(|v| v.request = 0);
+            }
+            "into_iter_mut" => {
+                for v in &mut g.contexts {
+                    v.request = 0;
+                }
+            }
+            "clear" => {
+                g.contexts.clear();
+                g.contexts.extend(original.iter().copied());
+            }
+            "truncate" => {
+                g.contexts.truncate(1);
+                g.contexts.push(original[1]);
+            }
+            "replace" => {
+                g.contexts = original.clone().into();
+            }
+            "clone" => {
+                g.contexts = g.contexts.clone();
+            }
+            _ => unreachable!(),
+        }
+        assert_eq!(g.contexts.as_slice(), original.as_slice());
+        assert!(!saved.matches(&g, &c).unwrap(), "mutable access {access}");
+    }
+}
+
+#[test]
+fn context_prefix_identity_does_not_hide_node_context_length_mismatch() {
+    let c = quiet();
+    let mut g = Graph::new(&c);
+    g.push(node(1)).unwrap();
+    let saved = ValidationSnapshot::from_graph(&g, &c).unwrap();
+    g.contexts.push(super::super::call::Context::default());
+    assert!(!saved.matches(&g, &c).unwrap());
+    let malformed = ValidationSnapshot::from_graph(&g, &c).unwrap();
+    assert!(!malformed.matches(&g, &c).unwrap());
 }

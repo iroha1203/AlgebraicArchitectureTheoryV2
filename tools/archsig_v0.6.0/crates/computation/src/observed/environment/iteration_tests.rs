@@ -386,3 +386,31 @@ fn ordinary_sibling_append_keeps_success_and_registry_dependency_stays_sticky() 
     assert!(!std::rc::Rc::ptr_eq(&saved, &after));
     assert!(!env.results.cache.borrow().registry_read);
 }
+
+#[test]
+fn changed_context_rejects_warm_result_and_restored_context_rechecks_like_cold() {
+    let result = example(false);
+    let control = quiet();
+    let mut g = graph(&result, &control);
+    let env = Environment::with_prepared(&result.prepared, &control).unwrap();
+    let expected = env
+        .validation_graph_session(&g, || input(&env, &g, g.nodes.len()))
+        .unwrap();
+    let source = g.iterations[0].source.0;
+    let original = g.contexts[source];
+    g.contexts[source].request += 1;
+    assert!(
+        env.validation_graph_session(&g, || input(&env, &g, g.nodes.len()))
+            .is_err()
+    );
+    g.contexts[source] = original;
+    let restored = env
+        .validation_graph_session(&g, || input(&env, &g, g.nodes.len()))
+        .unwrap();
+    same(&expected, &restored);
+    let cold = Environment::with_prepared(&result.prepared, &control).unwrap();
+    let checked = cold
+        .validation_graph_session(&g, || input(&cold, &g, g.nodes.len()))
+        .unwrap();
+    same(&restored, &checked);
+}

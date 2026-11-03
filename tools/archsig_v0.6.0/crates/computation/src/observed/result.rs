@@ -1578,7 +1578,7 @@ pub struct ObservedEvaluation {
     pub(crate) issues: Vec<Reason>,
     pub(crate) status: &'static str,
     #[cfg(test)]
-    pub(super) contexts: Vec<super::call::Context>,
+    pub(super) contexts: GraphEntries<super::call::Context>,
     #[cfg(test)]
     pub(super) frames: Vec<super::call::Frame>,
     #[cfg(test)]
@@ -1722,80 +1722,87 @@ impl ObservedEvaluation {
     }
 }
 
-#[derive(Debug, Default)]
-// node表への可変アクセスは保存済prefixを失効させる。検査済の末尾追加だけは
-// 既存nodeを変えない。複製した表は別々に追記できるため、新しいidentityを持つ。
-pub(crate) struct GraphNodes {
-    values: Vec<Node>,
+// nodeとContextの表は、正当な末尾追加だけが旧prefix identityを保つ。
+// 可変アクセス・表の複製では、内容が同じでも保存済みprefixを失効させる。
+#[derive(Debug)]
+pub(crate) struct GraphEntries<T> {
+    values: Vec<T>,
     identity: std::rc::Rc<()>,
 }
-impl From<Vec<Node>> for GraphNodes {
-    fn from(values: Vec<Node>) -> Self {
+type GraphNodes = GraphEntries<Node>;
+impl<T> Default for GraphEntries<T> {
+    fn default() -> Self {
+        Vec::new().into()
+    }
+}
+impl<T> From<Vec<T>> for GraphEntries<T> {
+    fn from(values: Vec<T>) -> Self {
         Self {
             values,
             identity: std::rc::Rc::new(()),
         }
     }
 }
-impl Clone for GraphNodes {
+impl<T: Clone> Clone for GraphEntries<T> {
     fn clone(&self) -> Self {
         self.values.clone().into()
     }
 }
-impl std::ops::Deref for GraphNodes {
-    type Target = Vec<Node>;
+impl<T> std::ops::Deref for GraphEntries<T> {
+    type Target = Vec<T>;
     fn deref(&self) -> &Self::Target {
         &self.values
     }
 }
-impl std::ops::DerefMut for GraphNodes {
+impl<T> std::ops::DerefMut for GraphEntries<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.identity = std::rc::Rc::new(());
         &mut self.values
     }
 }
-impl AsRef<[Node]> for GraphNodes {
-    fn as_ref(&self) -> &[Node] {
+impl<T> AsRef<[T]> for GraphEntries<T> {
+    fn as_ref(&self) -> &[T] {
         &self.values
     }
 }
-impl<T: AsRef<[Node]> + ?Sized> PartialEq<T> for GraphNodes {
-    fn eq(&self, other: &T) -> bool {
+impl<T: PartialEq, U: AsRef<[T]> + ?Sized> PartialEq<U> for GraphEntries<T> {
+    fn eq(&self, other: &U) -> bool {
         self.values.as_slice() == other.as_ref()
     }
 }
-impl PartialEq<GraphNodes> for &[Node] {
-    fn eq(&self, other: &GraphNodes) -> bool {
+impl<T: PartialEq> PartialEq<GraphEntries<T>> for &[T] {
+    fn eq(&self, other: &GraphEntries<T>) -> bool {
         *self == other.values.as_slice()
     }
 }
-impl PartialEq<GraphNodes> for [Node] {
-    fn eq(&self, other: &GraphNodes) -> bool {
+impl<T: PartialEq> PartialEq<GraphEntries<T>> for [T] {
+    fn eq(&self, other: &GraphEntries<T>) -> bool {
         self == other.values.as_slice()
     }
 }
-impl<'a> IntoIterator for &'a GraphNodes {
-    type Item = &'a Node;
-    type IntoIter = std::slice::Iter<'a, Node>;
+impl<'a, T> IntoIterator for &'a GraphEntries<T> {
+    type Item = &'a T;
+    type IntoIter = std::slice::Iter<'a, T>;
     fn into_iter(self) -> Self::IntoIter {
         self.values.iter()
     }
 }
-impl<'a> IntoIterator for &'a mut GraphNodes {
-    type Item = &'a mut Node;
-    type IntoIter = std::slice::IterMut<'a, Node>;
+impl<'a, T> IntoIterator for &'a mut GraphEntries<T> {
+    type Item = &'a mut T;
+    type IntoIter = std::slice::IterMut<'a, T>;
     fn into_iter(self) -> Self::IntoIter {
         std::ops::DerefMut::deref_mut(self).iter_mut()
     }
 }
-impl GraphNodes {
+impl<T> GraphEntries<T> {
     pub(super) fn prefix_identity(&self) -> std::rc::Rc<()> {
         self.identity.clone()
     }
-    fn append_checked(&mut self, node: Node) {
-        self.values.push(node);
+    // このmoduleのGraph構築入口だけが旧prefixを変更しない追加を行える。
+    fn append_checked(&mut self, value: T) {
+        self.values.push(value);
     }
-    pub(super) fn into_vec(self) -> Vec<Node> {
+    pub(super) fn into_vec(self) -> Vec<T> {
         self.values
     }
 }
@@ -1803,7 +1810,7 @@ impl GraphNodes {
 #[derive(Debug, Default)]
 pub(crate) struct Graph {
     pub nodes: GraphNodes,
-    pub(super) contexts: Vec<super::call::Context>,
+    pub(super) contexts: GraphEntries<super::call::Context>,
     pub(super) frames: Vec<super::call::Frame>,
     pub(super) iterations: Vec<super::call::Iteration>,
     pub(super) instances: Vec<super::call::Instance>,
@@ -1859,7 +1866,7 @@ impl Graph {
         }
         let r = NodeRef(self.nodes.len());
         self.nodes.append_checked(node);
-        self.contexts.push(self.active);
+        self.contexts.append_checked(self.active);
         let _ = self.control.checkpoint(Checkpoint::NativeResultNode);
         Ok(r)
     }
@@ -1912,7 +1919,7 @@ impl Graph {
     pub fn new(control: &Control) -> Self {
         Self {
             nodes: Vec::new().into(),
-            contexts: vec![],
+            contexts: Vec::new().into(),
             frames: vec![],
             iterations: vec![],
             instances: vec![],
@@ -4827,7 +4834,7 @@ impl Graph {
         }
         let r = NodeRef(self.nodes.len());
         self.nodes.append_checked(node);
-        self.contexts.push(self.active);
+        self.contexts.append_checked(self.active);
         committed(r);
         self.tick()?;
         Ok(r)
