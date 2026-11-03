@@ -138,7 +138,8 @@ type SourceCacheEntry = (
 );
 type FrameInputs = (Vec<Binding>, BTreeMap<String, SourceValue>, Scope);
 type NodeRefKey = (super::call::Context, usize);
-type IterationInputs = (NodeRef, Scalar, SourceAnalysis);
+// 同じ検査epochの成功値は不変。利用側が必要とする部分だけをコピーする。
+type IterationInputs = std::rc::Rc<(NodeRef, Scalar, SourceAnalysis)>;
 
 // 検査済み型反復は同じGraphのepochでだけcutoffを跨ぐ。通常経路の成功と混ぜない。
 // Graphのアドレスは同一性の比較専用で、参照解除しない。epochの失効でentryも破棄する。
@@ -6269,7 +6270,8 @@ impl<'a> Environment<'a> {
                 {
                     return Err(internal!("内包子の元Source/domain/親Contextが違う").into());
                 }
-                let (_, member, _) = self.iteration_input(graph, index)?;
+                let inputs = self.iteration_input(graph, index)?;
+                let member = inputs.1.clone();
                 match (&record.member, is_list) {
                     (super::call::Member::ListPosition(actual), true) if *actual == position => {}
                     (super::call::Member::SetElement(_), false)
@@ -6686,6 +6688,7 @@ impl<'a> Environment<'a> {
             };
             Ok((record.domain, member, analysis))
         })();
+        let result = result.map(std::rc::Rc::new);
         previous.restore();
         if let Ok(value) = &result {
             self.results
@@ -6719,7 +6722,8 @@ impl<'a> Environment<'a> {
                 if self.expression_bindings(graph, record.source)? != bindings {
                     return Err(internal!("反復binderの宣言束縛が違う").into());
                 }
-                let (domain, member, _) = self.iteration_input(graph, index)?;
+                let inputs = self.iteration_input(graph, index)?;
+                let (domain, member) = (inputs.0, inputs.1.clone());
                 if result.replace((domain, member)).is_some() {
                     return Err(internal!("反復binderが一意でない").into());
                 }
@@ -6809,13 +6813,14 @@ impl<'a> Environment<'a> {
                 arguments.extend(record.finite);
             }
             if let Some(domain) = record.finite {
-                let (_, member, _) = self.iteration_input(graph, index)?;
+                let inputs = self.iteration_input(graph, index)?;
+                let member = &inputs.1;
                 let Some(Payload::Domain { elements, .. }) = &graph.get(domain)?.payload else {
                     return Err(internal!("量化SourceのDomain要素がない").into());
                 };
                 let reference = *elements
                     .iter()
-                    .find(|r| graph.scalar(**r).is_ok_and(|v| v == &member))
+                    .find(|r| graph.scalar(**r).is_ok_and(|v| v == member))
                     .ok_or(internal!("量化Sourceの実memberがない"))?;
                 arguments.push(reference);
             }
@@ -7329,7 +7334,9 @@ impl<'a> Environment<'a> {
                     let index = self
                         .iteration_for(graph, comp)?
                         .ok_or(internal!("元内包binderに実反復がない"))?;
-                    let (_, member, analysis) = self.iteration_input(graph, index)?;
+                    let inputs = self.iteration_input(graph, index)?;
+                    let member = inputs.1.clone();
+                    let analysis = &inputs.2;
                     base.merge(&analysis.scope);
                     for value in variables.values_mut() {
                         value.scope.merge(&base);
@@ -7342,7 +7349,7 @@ impl<'a> Environment<'a> {
                         affine: super::affine::constant(&member, &self.control)?.map(Box::new),
                         scope: base.clone(),
                         known_value: Some(member),
-                        support: analysis.support,
+                        support: analysis.support.clone(),
                         scalar_scope: Some(base.clone()),
                     }
                 }
@@ -10543,7 +10550,8 @@ impl<'a> Environment<'a> {
                     {
                         return Err(internal!("量化bodyの元域/binder/親Contextが違う").into());
                     }
-                    let (_, member, _) = self.iteration_input(graph, index)?;
+                    let inputs = self.iteration_input(graph, index)?;
+                    let member = inputs.1.clone();
                     if !matches!(record.member, super::call::Member::SetElement(_))
                         || data::contains(&seen, &member, &self.control)?
                         || !elements
@@ -10910,10 +10918,11 @@ impl<'a> Environment<'a> {
                 let Some(Payload::Domain { elements, .. }) = &graph.get(domain)?.payload else {
                     return Err(internal!("binderDomainがない").into());
                 };
-                let (_, member, _) = self.iteration_input(graph, index)?;
+                let inputs = self.iteration_input(graph, index)?;
+                let member = &inputs.1;
                 let value = *elements
                     .iter()
-                    .find(|r| graph.scalar(**r).is_ok_and(|v| v == &member))
+                    .find(|r| graph.scalar(**r).is_ok_and(|v| v == member))
                     .ok_or(internal!("反例binder要素がDomainにない"))?;
                 bindings.push(Binding {
                     name: spec.name.into(),

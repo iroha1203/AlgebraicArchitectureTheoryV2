@@ -292,7 +292,8 @@ impl Environment<'_> {
                         if self.expression_bindings(graph, record.source)? != bindings {
                             return Err(internal!("元Owned添字の反復元束縛が違う").into());
                         }
-                        let (input, known, analysis) = self.iteration_input(graph, index)?;
+                        let inputs = self.iteration_input(graph, index)?;
+                        let (input, known, analysis) = (inputs.0, &inputs.1, &inputs.2);
                         let producer = if let Some(finite) = record.finite {
                             let Some(Payload::Domain { elements, .. }) =
                                 &graph.get(finite)?.payload
@@ -301,12 +302,17 @@ impl Environment<'_> {
                             };
                             *elements
                                 .iter()
-                                .find(|r| graph.scalar(**r).is_ok_and(|v| v == &known))
+                                .find(|r| graph.scalar(**r).is_ok_and(|v| v == known))
                                 .ok_or(internal!("元Owned添字の実Domain memberがない"))?
                         } else {
                             input
                         };
-                        (producer, Some(known), analysis.scope, analysis.support)
+                        (
+                            producer,
+                            Some(known.clone()),
+                            analysis.scope.clone(),
+                            analysis.support.clone(),
+                        )
                     }
                     LexicalOrigin::Universal(_) => {
                         return Err(internal!("数値全域binderをOwned根ownerへ使った").into());
