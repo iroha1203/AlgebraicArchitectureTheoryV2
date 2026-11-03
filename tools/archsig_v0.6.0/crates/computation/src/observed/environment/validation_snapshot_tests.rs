@@ -27,6 +27,11 @@ fn appended_nodes_keep_prefix_but_mutation_removal_and_replacement_are_checked()
     g.nodes[0] = node(9);
     assert!(!saved.matches(&g, &c).unwrap());
     g.nodes[0] = original;
+    assert!(
+        !saved.matches(&g, &c).unwrap(),
+        "restoring values does not restore identity"
+    );
+    saved = ValidationSnapshot::from_graph(&g, &c).unwrap();
     assert!(saved.matches(&g, &c).unwrap());
     g.nodes.truncate(1);
     g.contexts.truncate(1);
@@ -48,7 +53,12 @@ fn cloned_tables_that_append_different_nodes_do_not_share_a_prefix_identity() {
     let saved = ValidationSnapshot::from_graph(&a, &c).unwrap();
     assert!(!saved.matches(&b, &c).unwrap());
     b.nodes[1] = node(2);
-    assert!(saved.matches(&b, &c).unwrap());
+    assert!(
+        !saved.matches(&b, &c).unwrap(),
+        "equal contents of a cloned table are rechecked"
+    );
+    let refreshed = ValidationSnapshot::from_graph(&b, &c).unwrap();
+    assert!(refreshed.matches(&b, &c).unwrap());
 }
 #[test]
 fn unchanged_node_identity_does_not_hide_context_changes() {
@@ -206,6 +216,8 @@ fn extended_iteration_snapshot_checks_clone_divergence_and_stop() {
     saved.extend_matching(&a, &c).unwrap();
     assert!(!saved.matches(&b, &c).unwrap());
     b.nodes[1] = node(2);
+    assert!(!saved.matches(&b, &c).unwrap());
+    saved = ValidationSnapshot::from_graph(&b, &c).unwrap();
     assert!(saved.matches(&b, &c).unwrap());
     b.iterations[0].member = crate::observed::call::Member::ListPosition(1);
     assert!(!saved.matches(&b, &c).unwrap());
@@ -230,4 +242,32 @@ fn finite_only_iteration_producer_does_not_preserve_the_checked_prefix() {
         !saved.matches(&g, &c).unwrap(),
         "finite is not part of universal registry cutoff filtering"
     );
+}
+
+#[test]
+fn node_identity_changes_invalidate_even_an_equal_prefix() {
+    let c = quiet();
+    for access in ["index", "slice", "iteration", "clone"] {
+        let mut g = Graph::new(&c);
+        g.push(node(1)).unwrap();
+        let saved = ValidationSnapshot::from_graph(&g, &c).unwrap();
+        match access {
+            "index" => {
+                let same = g.nodes[0].clone();
+                g.nodes[0] = same;
+            }
+            "slice" => {
+                let _same = &mut g.nodes[..];
+            }
+            "iteration" => for _same in &mut g.nodes {},
+            "clone" => g.nodes = g.nodes.clone(),
+            _ => unreachable!(),
+        }
+        assert!(
+            !saved.matches(&g, &c).unwrap(),
+            "{access} must invalidate identity even when all values are equal"
+        );
+        let refreshed = ValidationSnapshot::from_graph(&g, &c).unwrap();
+        assert!(refreshed.matches(&g, &c).unwrap());
+    }
 }

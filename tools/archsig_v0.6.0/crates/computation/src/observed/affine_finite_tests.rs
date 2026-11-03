@@ -239,3 +239,36 @@ fn finite_only_iteration_append_cannot_hide_invalid_caller_from_warm_recheck() {
         "warm recheck must reject the same invalid caller: warm={cached:?}, cold={cold:?}"
     );
 }
+
+#[test]
+fn node_identity_revalidation_keeps_warm_and_cold_judgments_equal() {
+    let r = result();
+    let at = evaluation(&r);
+    let c = quiet();
+    let warm = Environment::with_prepared(&r.prepared, &c).unwrap();
+    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    warm.recheck_node(&g, &g.nodes[at], at).unwrap();
+    let original = g.nodes[at].clone();
+    for access in ["index", "slice", "iteration", "clone"] {
+        match access {
+            "index" => g.nodes[at] = original.clone(),
+            "slice" => {
+                let _same = &mut g.nodes[..];
+            }
+            "iteration" => for _same in &mut g.nodes {},
+            "clone" => g.nodes = g.nodes.clone(),
+            _ => unreachable!(),
+        }
+        let cold = Environment::with_prepared(&r.prepared, &c).unwrap();
+        cold.recheck_node(&g, &g.nodes[at], at).unwrap();
+        warm.recheck_node(&g, &g.nodes[at], at).unwrap();
+    }
+    g.nodes[at].arguments.clear();
+    let cold = Environment::with_prepared(&r.prepared, &c).unwrap();
+    assert!(cold.recheck_node(&g, &g.nodes[at], at).is_err());
+    assert!(warm.recheck_node(&g, &g.nodes[at], at).is_err());
+    g.nodes[at] = original;
+    let cold = Environment::with_prepared(&r.prepared, &c).unwrap();
+    cold.recheck_node(&g, &g.nodes[at], at).unwrap();
+    warm.recheck_node(&g, &g.nodes[at], at).unwrap();
+}
