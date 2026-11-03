@@ -338,16 +338,13 @@ impl Evaluator<'_, '_> {
             reasons: vec![],
         })
     }
-    /// 欠測を含む元算術が定数になる場合だけ、元出現と実子評価から通常値を作る。
+    /// 欠測を含む算術・Term適用・射影が定数になる場合、元出現と実子評価から値を作る。
     fn affine_constant(
         &mut self,
         span: (usize, usize),
         ty: &Type,
         children: &[&Evaluated],
     ) -> Result<Option<NodeRef>, Failure> {
-        if !(numeric::is_numeric_type(ty, self.control)? || *ty == Type::Bool) {
-            return Ok(None);
-        }
         let source = self
             .sources
             .get(&span)

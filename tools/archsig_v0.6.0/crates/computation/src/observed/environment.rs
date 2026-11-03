@@ -3538,8 +3538,8 @@ impl<'a> Environment<'a> {
                 );
             }
         };
-        if !(numeric::is_numeric_type(&ty, &self.control)? || ty == Type::Bool)
-            || law.expr_type(id) != Some(&ty)
+        // Term適用・射影はDataなども定数になり、元式の再計算で値を照合する。
+        if law.expr_type(id) != Some(&ty)
             || node.ty != NodeType::Value(ty.clone())
             || node.arguments.len() != operands.len() + 1
         {
