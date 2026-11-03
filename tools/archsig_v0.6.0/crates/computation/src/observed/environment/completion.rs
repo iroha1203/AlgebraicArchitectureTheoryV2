@@ -25,6 +25,7 @@ pub(super) type SlotsKey = (usize, super::super::call::Context, usize, Vec<usize
 pub(super) type SlotCollection = (Vec<Fact>, Vec<NodeRef>, Vec<Reason>);
 type EvaluationParts = (NodeRef, NodeRef, Vec<NodeRef>, Vec<NodeRef>);
 struct Aggregate {
+    applicability: &'static str,
     seed: Seed,
     evaluations: Vec<NodeRef>,
     scope: Scope,
@@ -1257,6 +1258,7 @@ impl Environment<'_> {
         let mut reasons = seed.reasons.clone();
         let mut seen = Vec::new();
         let mut case_values = Vec::new();
+        let mut applicability = None;
         for &evaluation in evaluations {
             self.tick()?;
             let context = graph.context_at(evaluation.0);
@@ -1327,6 +1329,18 @@ impl Environment<'_> {
             self.source_matches(graph, raw_source, body)?;
             self.completion_case_bindings(graph, &seed, raw_source, bindings, context)?;
             case_values.push(v.map(|v| graph.scalar(v)).transpose()?);
+            let Some(Payload::Evaluation {
+                applicability: case_applicability,
+                ..
+            }) = &graph.get(evaluation)?.payload
+            else {
+                return Err(internal!("補完caseが評価でない").into());
+            };
+            applicability = Some(match applicability {
+                None => *case_applicability,
+                Some(previous) if previous == *case_applicability => previous,
+                Some(_) => "undetermined",
+            });
             scope.merge(&graph.get(evaluation)?.scope);
             support.extend(graph.get(evaluation)?.support.iter().cloned());
             reasons.extend(graph.get(evaluation)?.reasons.iter().cloned());
@@ -1366,6 +1380,7 @@ impl Environment<'_> {
         }
         canonical_reasons(&mut reasons, &self.control)?;
         Ok(Aggregate {
+            applicability: applicability.ok_or(internal!("補完case集合が空"))?,
             seed,
             evaluations: evaluations.to_vec(),
             scope,
@@ -1746,7 +1761,7 @@ impl Environment<'_> {
                 || parts[0].location != a.seed.location
                 || parts[0].residual.is_some()
                 || parts[0].value != *value
-                || *applicability != "applicable"
+                || *applicability != a.applicability
                 || node.scope != a.scope
                 || node.support != a.support
                 || !reasons_equal(&node.reasons, &a.reasons)

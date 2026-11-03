@@ -459,3 +459,74 @@ fn finite_branch_updates_preserve_unchanged_coordinates_in_each_candidate() {
     parameters.sort();
     assert_eq!(parameters, vec![false, true]);
 }
+
+#[test]
+fn guarded_bool_completions_preserve_public_applicability() {
+    for (gate, body, decision, applicability, code, needed) in [
+        (Some(false), None, "established", "not_applicable", 0, 0),
+        (Some(true), None, "undetermined", "applicable", 2, 1),
+        (None, Some(true), "established", "undetermined", 0, 0),
+        (None, Some(false), "undetermined", "undetermined", 2, 1),
+        (
+            Some(false),
+            Some(false),
+            "established",
+            "not_applicable",
+            0,
+            0,
+        ),
+        (Some(true), Some(false), "refuted", "applicable", 1, 0),
+    ] {
+        let dir = workdir("guarded-bool-completions");
+        let definition = br#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"Guard","version":"1","dependencies":[],"declarations":[{"kind":"entity","name":"Guard.Row","meaning":"Guarded input","parameters":[],"fields":[{"name":"gate","type":"Bool","meaning":"Applicability"},{"name":"body","type":"Bool","meaning":"Required value"}],"alignments":[]}]}]}"#;
+        let checked =
+            archsig_input::definition::check_definitions(&[("definition0", definition)]).unwrap();
+        let digest = &checked.vocabularies()["Guard"].digest;
+        let atoms = [("gate", gate), ("body", body)].into_iter().filter_map(|(field, value)| value.map(|value| format!(r#"{{"id":"{field}","subject":"row","field":"Guard.Row.{field}","value":{value},"origin":"spec"}}"#))).collect::<Vec<_>>().join(",");
+        let map = format!(
+            r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"Guard","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"spec","mode":"specification","method":"Boolean guard model","locations":[],"note":"Finite guard and body"}}],"snapshots":[{{"id":"v","origin":"spec","subjects":[{{"id":"row","type":"Guard.Row","origin":"spec"}}],"atoms":[{atoms}]}}]}}"#
+        );
+        let law = format!(
+            r#"law "archsig.law/2" semantics "archsig/0.6.0"; reading G {{use vocabulary Guard version "1" digest "{digest}"; law required guarded(x: Guard.Row) when x.gate: x.body;}}"#
+        );
+        std::fs::write(dir.join("d.json"), definition).unwrap();
+        std::fs::write(dir.join("a.json"), map).unwrap();
+        std::fs::write(dir.join("l.law"), law).unwrap();
+        let run = run(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--ask",
+                "c=check(G.guarded,bind.x=@v/row)",
+                "--ask",
+                "n=needed($c)",
+                "--out",
+                "out",
+            ],
+        );
+        assert_eq!(run.code, code, "{}", run.stdout);
+        let saved = result_json(&dir, &run);
+        for result in [&run.receipt, &saved] {
+            let answer = &arr(get(result, "answers"))[0];
+            assert_eq!(s(get(answer, "status")), decision);
+            assert_eq!(
+                s(get(answer, "applicability")),
+                applicability,
+                "gate={gate:?}, body={body:?}"
+            );
+        }
+        let needed_answer = &arr(get(&saved, "answers"))[1];
+        let plan = get(
+            node(&saved, get(get(needed_answer, "outputs"), "plan")),
+            "value",
+        );
+        assert_eq!(arr(get(plan, "requirements")).len(), needed);
+        assert!(arr(get(plan, "blockers")).is_empty());
+    }
+}
