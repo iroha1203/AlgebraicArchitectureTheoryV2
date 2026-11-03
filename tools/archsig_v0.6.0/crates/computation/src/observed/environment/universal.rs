@@ -354,6 +354,9 @@ impl Environment<'_> {
         domains: &[NodeRef],
         completions: Vec<(Fact, Scalar)>,
     ) -> Result<AnalysisContext, ValidationFailure> {
+        // 空走査・一意性の失敗も依存。再帰やtickの前に記録し、戻さない。
+        self.results.cache.borrow_mut().registry_read = true;
+
         let mut result = AnalysisContext {
             plan: plan.clone(),
             template: Some(template),
@@ -2334,5 +2337,81 @@ impl Environment<'_> {
             )?;
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod registry_epoch_tests {
+    use super::*;
+    use archsig_common::control::quiet;
+    use archsig_input::input::InputSources;
+
+    #[test]
+    fn registry_empty_search_and_caught_failure_mark_the_cache_until_reset() {
+        let law = include_str!("../../../../../tests/fixtures/counter.law").replace(
+            "view amount(s: State): Z = s.count;",
+            "view ident(x:Z):Z=x; view amount(s:State):Bool=forall x:Z . CountCheck.ident(x)=x;",
+        );
+        let result = crate::observed::evaluate_observed_bytes(
+            InputSources::from_bytes(
+                vec![include_bytes!("../../../../../tests/fixtures/counter.atoms.json").to_vec()],
+                law.into_bytes(),
+                include_bytes!("../../../../../tests/fixtures/counter.archmap.json").to_vec(),
+            ),
+            &["all=evaluate(CountCheck.amount,s=@v/s)"],
+            &quiet(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        let control = quiet();
+        let env = Environment::with_prepared(&result.prepared, &control).unwrap();
+        let mut g = Graph::new(&control);
+        g.nodes = result.nodes.clone().into();
+        g.contexts = result.contexts.clone();
+        g.requests = result.prepared.requests().requests().to_vec();
+        g.frames = result.frames.clone();
+        let id = result
+            .prepared
+            .inputs()
+            .law()
+            .exprs()
+            .iter()
+            .position(|e| matches!(e.kind, ExprKind::Quant { .. }))
+            .unwrap();
+        let plan = env.universal_quantifier_plan(&g, id, &[]).unwrap().unwrap();
+        let template = g
+            .nodes
+            .iter()
+            .find_map(|n| {
+                matches!(n.payload, Some(Payload::TypeDomain { .. })).then(|| n.arguments[0])
+            })
+            .unwrap();
+        let _cutoff = env.state.cutoff.scoped(g.nodes.len());
+        // 実在templateだが、検索対象registryが空でも不在に依存する。
+        let frames = std::mem::take(&mut g.frames);
+        env.validation_graph_session(&g, || {
+            env.universal_graph_context(&g, &plan, template, &[], vec![])?;
+            Ok(())
+        })
+        .unwrap();
+        assert!(env.results.cache.borrow().registry_read);
+        env.results.clear_validation();
+        assert!(!env.results.cache.borrow().registry_read);
+        g.frames = frames;
+        assert!(!g.frames.is_empty());
+        g.frames.push(g.frames[0].clone());
+        env.validation_graph_session(&g, || {
+            assert!(
+                env.universal_graph_context(&g, &plan, template, &[], vec![])
+                    .is_err()
+            );
+            Ok(())
+        })
+        .unwrap();
+        assert!(env.results.cache.borrow().registry_read);
+        let failure: Result<(), ValidationFailure> =
+            env.validation_graph_session(&g, || Err(internal!("injected root failure").into()));
+        assert!(failure.is_err());
+        assert!(!env.results.cache.borrow().registry_read);
     }
 }

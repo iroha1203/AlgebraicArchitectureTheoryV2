@@ -345,3 +345,44 @@ fn changing_an_owned_iteration_result_keeps_other_callers_and_memo_unchanged() {
         .unwrap();
     }
 }
+
+#[test]
+fn ordinary_sibling_append_keeps_success_and_registry_dependency_stays_sticky() {
+    let result = example(false);
+    let control = quiet();
+    let mut g = graph(&result, &control);
+    let env = Environment::with_prepared(&result.prepared, &control).unwrap();
+    let first = env
+        .validation_graph_session(&g, || input(&env, &g, g.nodes.len()))
+        .unwrap();
+    assert!(!env.results.cache.borrow().registry_read);
+    g.iterations.push(g.iterations[0].clone());
+    let warm = env
+        .validation_graph_session(&g, || input(&env, &g, g.nodes.len()))
+        .unwrap();
+    same(&first, &warm);
+    assert!(std::rc::Rc::ptr_eq(&first, &warm));
+    env.results.clear_validation();
+    let cold = env
+        .validation_graph_session(&g, || input(&env, &g, g.nodes.len()))
+        .unwrap();
+    same(&first, &cold);
+
+    // 明示的なregistry依存のあるepochを作り、安全な延長でも事実を戻さない。
+    env.results.cache.borrow_mut().registry_read = true;
+    let old = g.nodes.len();
+    let fresh = g.push(g.nodes[0].clone()).unwrap();
+    assert_eq!(fresh.0, old);
+    env.validation_graph_session(&g, || Ok(())).unwrap();
+    assert!(env.results.cache.borrow().registry_read);
+    let saved = env
+        .validation_graph_session(&g, || input(&env, &g, g.nodes.len()))
+        .unwrap();
+    g.iterations.push(g.iterations[0].clone());
+    let after = env
+        .validation_graph_session(&g, || input(&env, &g, g.nodes.len()))
+        .unwrap();
+    same(&saved, &after);
+    assert!(!std::rc::Rc::ptr_eq(&saved, &after));
+    assert!(!env.results.cache.borrow().registry_read);
+}
