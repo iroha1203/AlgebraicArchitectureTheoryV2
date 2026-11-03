@@ -1457,7 +1457,9 @@ impl<'a> Environment<'a> {
                         return Err(internal!("生成算術が元式に合わない").into());
                     }
                 }
-                Rule::Construction("domain") => self.domain_member(graph, node, limit)?,
+                // scalar_support below checks the full Domain member claim,
+                // including its value, origin, scope and support, once.
+                Rule::Construction("domain") => {}
                 Rule::Construction("evidence") => {
                     self.quant_counter_parts(graph, node, limit)?;
                     if scalar != &Scalar::Bool(true)

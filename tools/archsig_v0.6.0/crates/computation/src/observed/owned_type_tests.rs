@@ -645,3 +645,88 @@ fn owned_type_quantification_option_tag_changes_are_legal_members_but_rejected_i
         });
     }
 }
+
+#[test]
+fn owned_type_domain_member_checks_value_origin_scope_and_support_before_success() {
+    let result = owned_private_example(
+        OWNED_TYPE_VIEW,
+        &["every=evaluate(Reservations.every,a=@v/A)"],
+        None,
+        false,
+    );
+    let domain = owned_type_private_domains(&result, 0)[0];
+    let member = owned_type_private_elements(&result, domain)[0].0;
+    let original = &result.nodes[member];
+    assert!(!original.support.is_empty());
+    assert!(original.arguments.len() >= 2);
+    let control = quiet();
+    let environment = || {
+        Environment::with_requests(
+            result.prepared.inputs(),
+            result.prepared.requests().requests(),
+            &control,
+        )
+        .unwrap()
+    };
+    for mutation in [
+        "value",
+        "value_type",
+        "source",
+        "owner",
+        "scope",
+        "support",
+        "evidence",
+        "reason",
+        "context",
+    ] {
+        let mut graph =
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=member]).unwrap();
+        let warm = environment();
+        warm.validate_at(&graph, &graph.nodes[member], member)
+            .unwrap();
+        let mut bad = original.clone();
+        match mutation {
+            "value" => {
+                let Some(Payload::Scalar(Scalar::Subject { subject, .. })) = &mut bad.payload
+                else {
+                    panic!("owned Ref member")
+                };
+                *subject = "r".into();
+            }
+            "value_type" => bad.payload = Some(Payload::Scalar(Scalar::Bool(true))),
+            "source" => bad.arguments[0] = bad.arguments[1],
+            "owner" => bad.arguments[1] = bad.arguments[0],
+            "scope" => bad.scope.completions = !bad.scope.completions,
+            "support" => bad.support.clear(),
+            "evidence" => bad.evidence.push(bad.arguments[0]),
+            "reason" => bad
+                .reasons
+                .push(Reason::stopped("every", archsig_input::result::Signal::Int)),
+            "context" => graph.contexts[member].request = usize::MAX,
+            _ => unreachable!(),
+        }
+        graph.nodes[member] = bad;
+        // A failed value/support check must not publish checked success: retry
+        // the same resident node without another Graph mutation.
+        for _ in 0..2 {
+            assert!(
+                matches!(
+                    warm.validate_at(&graph, &graph.nodes[member], member),
+                    Err(ValidationFailure::Internal(_))
+                ),
+                "warm {mutation}"
+            );
+        }
+        assert!(
+            matches!(
+                environment().validate_at(&graph, &graph.nodes[member], member),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "cold {mutation}"
+        );
+        graph.nodes[member] = original.clone();
+        graph.contexts[member] = result.contexts[member];
+        warm.validate_at(&graph, &graph.nodes[member], member)
+            .unwrap();
+    }
+}
