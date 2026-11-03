@@ -249,7 +249,7 @@ pub(super) fn publish(
                 status: Status::Error,
                 exit_code: 74,
                 result: None,
-                summary: None,
+                summary: outcome.summary,
                 issues: vec![issue.wire()],
             }
         }

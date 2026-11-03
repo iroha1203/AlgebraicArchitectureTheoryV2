@@ -326,6 +326,24 @@ pub fn resolve_observed_requests(
     resolve_observed_requests_controlled(law, map, texts, &Control::unlimited())
 }
 
+/// CLI が入力読込み前に検査できる構文と、入力非依存の重複だけを検査する。
+/// 型・宣言・参照の解決は検査済み入力に対して別途行う。
+pub fn check_request_syntax(texts: &[&str], control: &Control) -> Result<(), ResolveFailure> {
+    let mut ids = BTreeSet::new();
+    for text in texts {
+        let raw = Parser::new(text, control).parse()?;
+        if !ids.insert(raw.id.clone()) {
+            return Err(invalid(problem(
+                RequestIssueCode::DuplicateId,
+                &raw.id,
+                &raw.id,
+                "duplicate request ID",
+            )));
+        }
+    }
+    Ok(())
+}
+
 /// 入力検査と同じ中断制御で、構文・束縛・公開射影・循環を意味計算前に検査する。
 pub fn resolve_observed_requests_controlled(
     law: &CheckedLaw,

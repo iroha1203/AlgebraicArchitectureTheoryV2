@@ -220,7 +220,11 @@ fn map_write_failures_remove_only_this_runs_temporary_directory() {
         }
         let receipt = archsig_common::json::parse(outcome.receipt().as_bytes()).unwrap();
         assert!(!has(&receipt, "result"));
-        assert_eq!(s(get(&arr(get(&receipt, "issues"))[0], "code")), "io");
+        assert_eq!(s(get(&receipt, "format")), "archsig.summary/1");
+        assert!(!arr(get(&receipt, "answers")).is_empty());
+        assert_eq!(outcome.issues.len(), 1);
+        let issue = archsig_common::json::parse(outcome.issues[0].canonical().as_bytes()).unwrap();
+        assert_eq!(s(get(&issue, "code")), "io");
         std::fs::remove_dir_all(dir).unwrap();
     }
 }

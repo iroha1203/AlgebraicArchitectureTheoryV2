@@ -694,14 +694,12 @@ fn run_delivery_failure_cleans_only_its_temp_and_existing_out_is_protected() {
     }));
     let receipt = archsig_common::json::parse(outcome.receipt().as_bytes()).unwrap();
     assert!(!has(&receipt, "result"));
-    assert_eq!(s(get(&arr(get(&receipt, "issues"))[0], "code")), "io");
-    assert_eq!(
-        s(get(
-            get(&arr(get(&receipt, "issues"))[0], "details"),
-            "operation"
-        )),
-        "write"
-    );
+    assert_eq!(s(get(&receipt, "format")), "archsig.summary/1");
+    assert!(!arr(get(&receipt, "answers")).is_empty());
+    assert_eq!(outcome.issues.len(), 1);
+    let issue = archsig_common::json::parse(outcome.issues[0].canonical().as_bytes()).unwrap();
+    assert_eq!(s(get(&issue, "code")), "io");
+    assert_eq!(s(get(get(&issue, "details"), "operation")), "write");
     std::fs::create_dir(dir.join("out")).unwrap();
     std::fs::write(dir.join("out/keep"), b"keep").unwrap();
     let r = without_file_changes(&dir, || requests(&dir, &ASKS));

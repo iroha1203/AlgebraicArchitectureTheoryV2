@@ -29,7 +29,10 @@ help以外の短縮flag、stdin、暗黙のファイル探索、環境変数に�
 省略したguard、同名fieldの対応、local宣言の有無による構成方式を、
 [型付き結果](results.md)の規則名と元のLocationから確認できる。
 問いの計算は始めず、実際の対象・context・cover・候補域は生成しない。欠測fieldは有効入力である。
-`run`は同じ検査の後、問いの参照を解決し、依存順に必要な構成と計算を行う。
+`run`は入力読込み前に問いの字句・区切り・Handle構文、同じ綴りの引数keyの重複と問いIDの重複を検査し、
+不正なら`usage`を返す。入力I/O・schema・型の不正もある場合は、この問い構文の診断を先に返す。
+その後、`check`と同じ入力検査を行い、問いの種類・宣言名・型・参照・束縛を解決し、依存順に必要な構成と計算を行う。
+短形と`bind.`形の同じparameterへの二重指定は、宣言と固定引数名を使う束縛解決で検査する。
 [検査の段階](definitions.md#4-検査と責務)に従い、選択の外側も構文・schema・型・明示参照を検査する。
 未使用の定義・語彙・import・dependency・宣言は受理する。計算は選択した問いとその依存から進める。
 全 Atom 定義と Law 全体の静的検査が完了した場合だけ、宣言と語彙の全件を出力する。
@@ -317,6 +320,8 @@ outputsは直接読める型と値を示す。構造値の選択された欄を�
 summaryの理由と通知はIssueからdependenciesと導出参照を除いた形とする。
 solveで具体的な状態値が未確定でも存在判断を完了した場合は、回答のstatusと別にexistenceを示す。要約は候補域や解集合を縮小せず、内部の全量計算と後続参照を維持する。
 `run`で保存した場合はsummaryへresult pathを付加し、回答と再利用拒否のwarningsをそのまま返す。
+保存に失敗した場合も、計算済みのsummaryとwarningsをstdoutへ返し、result pathを付加しない。
+このsummaryのstatus/exit_codeは計算状態を保ち、保存失敗はstderrのerror/74 receiptとプロセス終了コード74で知らせる。
 `--out`付きrunをパスのみのreceiptとして読む従来の呼出し側は、`archsig.summary/1`の
 `result`欄を読むよう更新する。実行失敗をstdoutから読む呼出し側はstderrを読むよう更新する。
 保存形式`archsig.result/4`と数学的な判断規則は同じである。
@@ -373,7 +378,8 @@ status/exit_codeを確定する。両方がpendingで受信順を取得できな
 既に中断を捕捉して計算状態を確定している場合は、その最初のsignalの終了コードを保つ。
 保存済みresultのstatus/exit_codeは変更しない。配送中断時には完全なJSON通知を保証しない。
 公開前のwrite/flush/rename失敗は最終resultを公開せず、result欄のないerror/74 receiptにioのissuesを入れ、
-stderrへ出して74で終了する。
+stderrへ出して74で終了する。runの計算済みsummaryはstdoutへ返し、回答の成立・反証・未決とwarningsを保持する。
+入力検査や問い解決など計算前の失敗ではsummaryを生成しない。
 stdoutのwrite/flush失敗は計算状態と分けて扱う。BrokenPipe（後段による早期終了を含む）は追加通知なしで141、
 それ以外はerror/74の機械可読receiptをstderrへ通知し74で終了する。保存済みresultは保持し、通知にpathを付ける。
 stderr自体の配送失敗も非成功終了とし、BrokenPipeは141、その他は74とする。通知の再送は行わない。
