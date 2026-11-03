@@ -9765,6 +9765,43 @@ reading Calc {{
         rejects_named_prefix(result, &full);
     }
     #[test]
+    fn bool_completion_rechecks_aggregate_applicability() {
+        for (body, expected) in [
+            (
+                "law required guarded(s:Sample) when false: s.p;",
+                "not_applicable",
+            ),
+            (
+                "law required guarded(s:Sample) when true: s.p;",
+                "applicable",
+            ),
+            (
+                "law required guarded(s:Sample) when s.p: true;",
+                "undetermined",
+            ),
+        ] {
+            let result = completion_private_example(body, &["c=check(Calc.guarded,s=@v/sample)"]);
+            let root = result.answers[0].outputs["evaluation"].0;
+            let Some(Payload::Evaluation { applicability, .. }) = &result.nodes[root].payload
+            else {
+                panic!("completion evaluation");
+            };
+            assert_eq!(*applicability, expected);
+            for forged in ["applicable", "not_applicable", "undetermined"] {
+                if forged == expected {
+                    continue;
+                }
+                completion_mutation(&result, root, |nodes| {
+                    let Some(Payload::Evaluation { applicability, .. }) = &mut nodes[root].payload
+                    else {
+                        unreachable!();
+                    };
+                    *applicability = forged;
+                });
+            }
+        }
+    }
+    #[test]
     fn bool_completion_domains_recheck_slots_assignments_and_sources() {
         let result = completion_private_example(
             "view stable(s:Sample):Bool=s.p or not s.p;",
