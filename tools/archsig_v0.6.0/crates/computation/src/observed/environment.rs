@@ -167,7 +167,7 @@ struct ScopedKey {
 }
 // 前回のGraphのnode prefixと全隠しregistryが同じ場合だけ成功を再利用する。
 // nodeの追加は既出DAGの意味を変えない。新frameも旧prefixから必ず除外される
-// producerを持つ場合だけ許す。新caseも同じprefix境界を守る。
+// producerを持つ場合だけ許す。新iteration/caseも同じprefix境界を守る。
 // 既存metadataの改変は全て失効させる。
 struct ValidationSnapshot {
     node_identity: std::rc::Rc<()>,
@@ -237,6 +237,7 @@ impl ValidationSnapshot {
             || g.frames.len() < self.frames.len()
             || g.cases.len() < self.cases.len()
             || g.instances.len() < self.instances.len()
+            || g.iterations.len() < self.iterations.len()
         {
             return Ok(false);
         }
@@ -261,9 +262,6 @@ impl ValidationSnapshot {
         {
             return Ok(false);
         }
-        if g.iterations.len() != self.iterations.len() {
-            return Ok(false);
-        }
         for (a, b) in g.iterations.iter().zip(&self.iterations) {
             if !validation_identity::iteration(a, b, control)? {
                 return Ok(false);
@@ -272,6 +270,20 @@ impl ValidationSnapshot {
         for frame in &g.frames[self.frames.len()..] {
             if !Self::after(
                 std::iter::once(frame.source).chain(frame.arguments.iter().copied()),
+                self.nodes.len(),
+                control,
+            )? {
+                return Ok(false);
+            }
+        }
+        // 既存iterationの全内容は上で照合済み。source/domain/finiteの少なくとも
+        // 一つが旧prefix後のproducerを持つ追加だけを許す。既存producerだけを
+        // 使う次memberは保守的に失効させ、未知のiterationを旧prefixへ補わない。
+        for iteration in &g.iterations[self.iterations.len()..] {
+            if !Self::after(
+                [iteration.source, iteration.domain]
+                    .into_iter()
+                    .chain(iteration.finite),
                 self.nodes.len(),
                 control,
             )? {
@@ -332,7 +344,9 @@ impl ValidationSnapshot {
             .extend(Self::copy(&g.instances[self.instances.len()..], control)?);
         self.cases
             .extend(Self::copy(&g.cases[self.cases.len()..], control)?);
-        // iterations/witnesses/requests/answersはmatchesで長さと全内容が一致済み。
+        self.iterations
+            .extend(Self::copy(&g.iterations[self.iterations.len()..], control)?);
+        // witnesses/requests/answersはmatchesで長さと全内容が一致済み。
         Self::tick(control)
     }
 }

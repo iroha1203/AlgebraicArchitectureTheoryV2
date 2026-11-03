@@ -87,3 +87,131 @@ fn prefix_identity_fast_path_keeps_stop_and_freezes_the_probe() {
     ));
     assert_eq!(calls.get(), 1);
 }
+
+fn iteration(source: usize, domain: usize) -> crate::observed::call::Iteration {
+    crate::observed::call::Iteration {
+        caller: Default::default(),
+        source: NodeRef(source),
+        domain: NodeRef(domain),
+        member: crate::observed::call::Member::ListPosition(0),
+        finite: Some(NodeRef(domain)),
+    }
+}
+
+#[test]
+fn fresh_iteration_producer_keeps_snapshot_and_checks_the_extended_prefix() {
+    let c = quiet();
+    let mut g = Graph::new(&c);
+    g.push(node(1)).unwrap();
+    g.iterations.push(iteration(0, 0));
+    let mut saved = ValidationSnapshot::from_graph(&g, &c).unwrap();
+    g.push(node(2)).unwrap();
+    g.iterations.push(iteration(0, 1));
+    assert!(
+        saved.matches(&g, &c).unwrap(),
+        "fresh domain must preserve checked prefix"
+    );
+    saved.extend_matching(&g, &c).unwrap();
+    assert_eq!(saved.iterations, g.iterations);
+    let original = g.iterations[1].clone();
+    g.iterations[1].member = crate::observed::call::Member::ListPosition(1);
+    assert!(!saved.matches(&g, &c).unwrap());
+    g.iterations[1] = original.clone();
+    g.iterations[1].caller.iteration = Some(0);
+    assert!(!saved.matches(&g, &c).unwrap());
+    g.iterations[1] = original.clone();
+    g.iterations[1].source = NodeRef(1);
+    assert!(!saved.matches(&g, &c).unwrap());
+    g.iterations[1] = original.clone();
+    g.iterations[1].domain = NodeRef(0);
+    assert!(!saved.matches(&g, &c).unwrap());
+    g.iterations[1] = original.clone();
+    g.iterations[1].finite = None;
+    assert!(!saved.matches(&g, &c).unwrap());
+    g.iterations[1] = original;
+    assert!(saved.matches(&g, &c).unwrap());
+    g.iterations.remove(0);
+    assert!(!saved.matches(&g, &c).unwrap());
+}
+
+#[test]
+fn iteration_append_without_fresh_producer_and_changed_old_prefix_are_rejected() {
+    let c = quiet();
+    let mut g = Graph::new(&c);
+    g.push(node(1)).unwrap();
+    g.iterations.push(iteration(0, 0));
+    let saved = ValidationSnapshot::from_graph(&g, &c).unwrap();
+    g.iterations.push(iteration(0, 0));
+    assert!(!saved.matches(&g, &c).unwrap());
+    g.push(node(2)).unwrap();
+    g.iterations[1].domain = NodeRef(1);
+    assert!(saved.matches(&g, &c).unwrap());
+    g.iterations[0].member = crate::observed::call::Member::ListPosition(2);
+    assert!(!saved.matches(&g, &c).unwrap());
+    g.iterations[0] = iteration(0, 0);
+    g.nodes[0] = node(9);
+    assert!(!saved.matches(&g, &c).unwrap());
+}
+
+#[allow(dead_code)]
+mod fixture {
+    include!("../../../../../tests/common/primitive_valuation_data.rs");
+}
+
+#[test]
+fn validation_session_reuses_checked_entries_only_across_safe_iteration_append() {
+    let c = quiet();
+    let inputs = fixture::inputs();
+    let environment = Environment::new(&inputs, &c).unwrap();
+    let mut g = Graph::new(&c);
+    g.push(node(1)).unwrap();
+    let key = (crate::observed::call::Context::default(), 0);
+    environment
+        .validation_graph_session(&g, || {
+            environment.results.cache.borrow_mut().checked.insert(key);
+            Ok(())
+        })
+        .unwrap();
+    g.push(node(2)).unwrap();
+    g.iterations.push(iteration(0, 1));
+    environment
+        .validation_graph_session(&g, || {
+            assert!(environment.results.cache.borrow().checked.contains(&key));
+            Ok(())
+        })
+        .unwrap();
+    g.iterations[0].domain = NodeRef(0);
+    environment
+        .validation_graph_session(&g, || {
+            assert!(!environment.results.cache.borrow().checked.contains(&key));
+            Ok(())
+        })
+        .unwrap();
+}
+
+#[test]
+fn extended_iteration_snapshot_checks_clone_divergence_and_stop() {
+    let c = quiet();
+    let mut a = Graph::new(&c);
+    a.push(node(1)).unwrap();
+    let mut saved = ValidationSnapshot::from_graph(&a, &c).unwrap();
+    let mut b = Graph::new(&c);
+    b.nodes = a.nodes.clone();
+    b.contexts = a.contexts.clone();
+    a.push(node(2)).unwrap();
+    b.push(node(3)).unwrap();
+    a.iterations.push(iteration(0, 1));
+    b.iterations.push(iteration(0, 1));
+    assert!(saved.matches(&a, &c).unwrap());
+    saved.extend_matching(&a, &c).unwrap();
+    assert!(!saved.matches(&b, &c).unwrap());
+    b.nodes[1] = node(2);
+    assert!(saved.matches(&b, &c).unwrap());
+    b.iterations[0].member = crate::observed::call::Member::ListPosition(1);
+    assert!(!saved.matches(&b, &c).unwrap());
+    let stopped = Control::new(|_| Some(Signal::Int));
+    assert!(matches!(
+        saved.matches(&a, &stopped),
+        Err(ValidationFailure::Stop(_))
+    ));
+}
