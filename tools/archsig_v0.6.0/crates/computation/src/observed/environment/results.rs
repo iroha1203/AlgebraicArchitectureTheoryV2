@@ -51,6 +51,8 @@ result_table! {
     #[cfg(test)] session test_i32: Arc<i32>,
 }
 
+type ScopedMemoEntry = (ScopedKey, SourceValue, BTreeSet<Fact>);
+
 #[derive(Default)]
 pub(crate) struct ResultStore {
     verified: VerifiedResults,
@@ -59,7 +61,7 @@ pub(crate) struct ResultStore {
     // producer/証拠の照合成功は保存しない。それらは各不変借用で再検査する。
     // 各元式の直近の完全入力だけを保持し、終了した量化文脈を蓄積しない。
     // 置換された入力は純粋ASTから再計算する。Graphの照合成功とは共有しない。
-    pub(super) scoped_values: RefCell<BTreeMap<usize, (ScopedKey, SourceValue, BTreeSet<Fact>)>>,
+    pub(super) scoped_values: RefCell<BTreeMap<usize, ScopedMemoEntry>>,
     pub(super) cache: RefCell<ValidationCache>,
     pub(super) validation_snapshot: RefCell<Option<ValidationSnapshot>>,
 }
