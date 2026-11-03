@@ -4591,3 +4591,115 @@ reading After {{{vocabulary} view choice(s: State, keep: Bool): Z = if keep then
     assert!(has(get(answer(&result, "m"), "outputs"), "operation"));
     assert!(!has(get(answer(&result, "m"), "outputs"), "map"));
 }
+
+#[test]
+fn naturality_counterexample_is_refuted_and_keeps_operation() {
+    for bad in [false, true] {
+        let dir = inputs("naturality-counterexample");
+        let mut map = include_str!("fixtures/object-configuration-map.archmap.json").to_owned();
+        // Equal values isolate preservation of identities and operation composition.
+        for number in ["1", "2", "3", "4", "19", "23"] {
+            map = map.replace(&format!(r#""value":"{number}""#), r#""value":"0""#);
+        }
+        let map = if bad {
+            map.replace(r#"[["v","u"],["v","w"]]"#, r#"[["v","u"],["v","r"]]"#)
+        } else {
+            map.to_owned()
+        };
+        std::fs::write(dir.join("a.json"), map).unwrap();
+        std::fs::write(
+            dir.join("l.law"),
+            include_str!("fixtures/configuration-operation.law"),
+        )
+        .unwrap();
+        let checked = run_binary(
+            &dir,
+            &[
+                "check",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+            ],
+        );
+        assert_eq!(checked.code, 0, "{}", checked.stdout);
+        let run = run_binary(
+            &dir,
+            &[
+                "run",
+                "--atom-definition",
+                "d.json",
+                "--law",
+                "l.law",
+                "--archmap",
+                "a.json",
+                "--out",
+                "out",
+                "--ask",
+                "retained=check(Reservations.retained,bind.m=@v/m)",
+                "--ask",
+                "c=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=configuration)",
+                "--ask",
+                "m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)",
+                "--ask",
+                "same=compare($c.operation,to=$m.operation,kind=action)",
+                "--ask",
+                "n=needed($m)",
+                "--ask",
+                "v=evaluate(Reservations.holdings,bind.s=@v/p)",
+            ],
+        );
+        assert_eq!(
+            run.code,
+            if bad { 1 } else { 0 },
+            "{} {:?}",
+            run.stdout,
+            run.stderr()
+        );
+        let result = result_json(&dir, &run);
+        for id in ["retained", "c", "same", "n", "v"] {
+            assert_eq!(s(get(answer(&result, id), "status")), "established", "{id}");
+        }
+        let map = answer(&result, "m");
+        assert_eq!(
+            s(get(map, "status")),
+            if bad { "refuted" } else { "established" }
+        );
+        assert!(has(get(map, "outputs"), "operation"));
+        assert_eq!(has(get(map, "outputs"), "map"), !bad);
+        if bad {
+            let isolated = run_binary(
+                &dir,
+                &[
+                    "run",
+                    "--atom-definition",
+                    "d.json",
+                    "--law",
+                    "l.law",
+                    "--archmap",
+                    "a.json",
+                    "--ask",
+                    "m=map(Reservations.Migration,on=@v/m,reading=Alternative,kind=object_algebra)",
+                ],
+            );
+            assert_eq!(isolated.code, 1, "{}", isolated.stdout);
+            assert_eq!(s(get(answer(&isolated.receipt, "m"), "status")), "refuted");
+            let evidence = arr(get(map, "evidence"));
+            assert_eq!(evidence.len(), 1);
+            let data = get(value(&result, &evidence[0]), "data");
+            let facts = arr(get(data, "facts"));
+            assert_json(&facts[0], r#"{"snapshot":"v","subject":"u"}"#);
+            assert_json(&facts[1], r#"{"snapshot":"v","subject":"r"}"#);
+            assert_json(&facts[2], r#"{"snapshot":"v","subject":"s"}"#);
+            assert_ne!(
+                value(&result, get(data, "left")).value,
+                value(&result, get(data, "right")).value
+            );
+            let needed = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+            assert!(arr(get(needed, "requirements")).is_empty());
+            assert!(arr(get(needed, "blockers")).is_empty());
+        }
+    }
+}

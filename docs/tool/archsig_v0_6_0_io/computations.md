@@ -69,6 +69,8 @@ correspondence による object algebra の対象写像は base→base、p→対
 この対応を語へ順に延長することで、全有限語の操作写像と恒等・合成の保存を構成する。
 source F 外では対応写像の像が target root であり、target の内部操作はその root を固定する。
 source F 内の衝突や共有参照に起因する不一致は、この全域自然性の検査に残る。
+自然性が反証された場合は、二通りの合成作用と最初の不一致の原始位置・左右の像を
+counterexample として返す。object algebra map は構成せず、確認済みの configuration Operation を保持する。
 
 原始型と Law 宣言は、次の別々の規則で対応させる。
 
