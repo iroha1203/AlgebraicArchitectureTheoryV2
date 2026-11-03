@@ -7,7 +7,7 @@ fn node(value: i32) -> Node {
         payload: Some(Payload::Scalar(Scalar::Z(value.into()))),
         rule: Rule::Construction("evaluation"),
         arguments: vec![],
-        support: vec![],
+        support: vec![].into(),
         evidence: vec![],
         judgment: None,
         scope: Scope::default(),

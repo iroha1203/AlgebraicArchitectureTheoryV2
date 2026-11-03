@@ -263,7 +263,8 @@ fn subject_node(env: &Environment<'_>, s: &Selector) -> Result<Node, ValidationF
             subject: subject.clone(),
             field: None,
             atom: None,
-        }],
+        }]
+        .into(),
         scope: env.indexes.subject_scope(source)?,
         evidence: vec![],
         judgment: None,
@@ -860,7 +861,7 @@ pub(super) fn evaluate(
             return relations::evaluate(prepared, env, graph, r, left, right, control);
         }
     }
-    let mut support = graph.get(left)?.support.clone();
+    let mut support = graph.get(left)?.support.clone().into_vec();
     support.extend(graph.get(right)?.support.iter().cloned());
     support.sort();
     support.dedup();
@@ -993,7 +994,7 @@ pub(super) fn evaluate(
     let w = Arc::new(CompareWitness {
         inputs: prepared.shared_inputs(),
         request: r.clone(),
-        support,
+        support: support.to_vec(),
         scope,
         left,
         right,

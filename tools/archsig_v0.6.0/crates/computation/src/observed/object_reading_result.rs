@@ -68,7 +68,7 @@ impl Plan {
             ty,
             rule: Rule::Construction("evaluation"),
             arguments,
-            support: self.support.clone(),
+            support: self.support.clone().into(),
             scope: self.scope.clone(),
             reasons: self.reasons.clone(),
             evidence: vec![],

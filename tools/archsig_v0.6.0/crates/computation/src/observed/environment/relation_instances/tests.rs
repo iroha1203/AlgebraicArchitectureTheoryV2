@@ -844,7 +844,7 @@ fn local_conditional_missing_cache_is_separate_from_full_evaluation_records() {
             scope: Scope::default(),
             known_value: Some(subject.clone()),
             affine: None,
-            support: vec![],
+            support: vec![].into(),
             scalar_scope: Some(Scope::default()),
         },
     )]);

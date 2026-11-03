@@ -463,7 +463,7 @@ mod tests {
                 }
                 1 => nodes[value].payload = Some(Payload::Scalar(Scalar::Bool(false))),
                 2 => {
-                    nodes[domain].support.clear();
+                    nodes[domain].support.make_owned().clear();
                 }
                 3 => {
                     nodes[domain].scope.readings.insert("Foreign".into());
@@ -480,6 +480,7 @@ mod tests {
                     let before = nodes[domain].support.len();
                     nodes[domain]
                         .support
+                        .make_owned()
                         .retain(|fact| fact.atom.as_deref() != Some("p-owner"));
                     assert!(nodes[domain].support.len() < before);
                 }

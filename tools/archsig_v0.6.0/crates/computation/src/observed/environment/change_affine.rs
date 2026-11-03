@@ -59,7 +59,7 @@ fn value(env: &Environment<'_>, scalar: Scalar) -> Result<SourceValue, Validatio
         affine: affine::constant(&scalar, &env.control)?.map(Box::new),
         scope: Scope::default(),
         known_value: Some(scalar),
-        support: vec![],
+        support: vec![].into(),
         scalar_scope: Some(Scope::default()),
     })
 }

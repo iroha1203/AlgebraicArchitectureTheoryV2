@@ -386,7 +386,7 @@ impl Environment<'_> {
         let mut scope = owner.scope;
         scope.readings.insert(reading.into());
         scope.merge(&roster.enumeration.scope);
-        let mut support = owner.support;
+        let mut support = (owner.support).into_vec();
         support.extend(roster.enumeration.support);
         support.sort();
         support.dedup();
@@ -408,7 +408,7 @@ impl Environment<'_> {
             affine: None,
             scope,
             known_value,
-            support,
+            support: support.into(),
             scalar_scope,
         })
     }

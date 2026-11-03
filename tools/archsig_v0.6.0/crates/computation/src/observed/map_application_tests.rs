@@ -38,7 +38,7 @@ fn map_application_rechecks_value_key_image_type_support_scope_and_source() {
         };
         *entity = "Reservations.System".into();
     });
-    completion_mutation(&r, t, |nodes| nodes[t].support.clear());
+    completion_mutation(&r, t, |nodes| nodes[t].support.make_owned().clear());
     completion_mutation(&r, t, |nodes| {
         nodes[t].scope.snapshots.remove("v");
     });
@@ -86,7 +86,7 @@ fn map_application_rechecks_condition_sets_counterexample_and_exact_failure_reas
         completion_mutation(&r, t, |nodes| {
             nodes[t].payload = replacement.clone();
         });
-        completion_mutation(&r, t, |nodes| nodes[t].support.clear());
+        completion_mutation(&r, t, |nodes| nodes[t].support.make_owned().clear());
         completion_mutation(&r, t, |nodes| {
             nodes[t].scope.snapshots.clear();
         });

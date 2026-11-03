@@ -41,7 +41,7 @@ impl Evaluator<'_, '_> {
             arguments: self
                 .environment
                 .source_arguments(self.graph, span, &self.bindings)?,
-            support: vec![],
+            support: vec![].into(),
             evidence: vec![],
             judgment: None,
             scope: scope.clone(),
@@ -155,7 +155,7 @@ impl Evaluator<'_, '_> {
                     location: Location::Law { span: p.span },
                 },
                 arguments,
-                support: enumeration.support.clone(),
+                support: enumeration.support.clone().into(),
                 evidence: vec![],
                 judgment: None,
                 scope: scope.clone(),
@@ -219,7 +219,7 @@ impl Evaluator<'_, '_> {
                     .chain(domains.iter().copied())
                     .chain(elements)
                     .collect(),
-                support: all_support.clone(),
+                support: all_support.clone().into(),
                 evidence: vec![],
                 judgment: None,
                 scope: all_scope.clone(),
@@ -361,7 +361,7 @@ impl Evaluator<'_, '_> {
                 .chain(row_instances.iter().copied())
                 .chain(rows.iter().copied())
                 .collect(),
-            support: all_support.clone(),
+            support: all_support.clone().into(),
             evidence: vec![],
             judgment: None,
             scope: all_scope.clone(),
@@ -404,7 +404,7 @@ impl Evaluator<'_, '_> {
                 .chain(std::iter::once(product))
                 .chain(rows.iter().copied())
                 .collect(),
-            support: all_support.clone(),
+            support: all_support.clone().into(),
             evidence: vec![],
             judgment: None,
             scope: all_scope.clone(),
@@ -423,7 +423,7 @@ impl Evaluator<'_, '_> {
                 }),
                 rule: Rule::Construction("evidence"),
                 arguments: vec![template, evaluation],
-                support: all_support.clone(),
+                support: all_support.clone().into(),
                 evidence: vec![],
                 judgment: None,
                 scope: all_scope.clone(),
@@ -437,7 +437,7 @@ impl Evaluator<'_, '_> {
             payload: Some(Payload::Proposition { instance: template }),
             rule: Rule::Construction("proposition"),
             arguments: vec![template, evaluation],
-            support: all_support,
+            support: all_support.into(),
             evidence: evidence.clone(),
             judgment: Some(Judgment {
                 status,

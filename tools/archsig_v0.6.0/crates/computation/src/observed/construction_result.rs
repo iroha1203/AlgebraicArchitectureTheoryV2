@@ -1741,7 +1741,7 @@ pub fn retain(
         rule: value.rule(),
         arguments: value.arguments(),
         payload: Some(Payload::Construction(Box::new(value))),
-        support,
+        support: support.into(),
         scope,
         reasons,
         evidence,

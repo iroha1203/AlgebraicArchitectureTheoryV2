@@ -471,7 +471,7 @@ pub(in crate::observed) fn compute(
                     known_value: Some(value.clone()),
                     scalar_scope: Some(Scope::default()),
                     scope: Scope::default(),
-                    support: vec![],
+                    support: vec![].into(),
                     condition_failed: false,
                     condition_pending: false,
                     symbolic: None,

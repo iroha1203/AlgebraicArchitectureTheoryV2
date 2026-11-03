@@ -657,7 +657,7 @@ fn whole_evaluation_value_body_and_original_view_cannot_be_rebound() {
             2 => {
                 n.arguments.pop();
             }
-            3 => n.support.clear(),
+            3 => n.support.make_owned().clear(),
             4 => n.scope.assignments = !n.scope.assignments,
             5 => n.scope.readings.clear(),
             6 => n.evidence.push(v0),
@@ -717,7 +717,7 @@ fn whole_evaluation_value_body_and_original_view_cannot_be_rebound() {
                 }))
             }
             1 => n.arguments.push(v0),
-            2 => n.support.clear(),
+            2 => n.support.make_owned().clear(),
             3 => n.scope.assignments = !n.scope.assignments,
             4 => n.ty = NodeType::Value(Type::Bool),
             5 => n.arguments[0] = r1,

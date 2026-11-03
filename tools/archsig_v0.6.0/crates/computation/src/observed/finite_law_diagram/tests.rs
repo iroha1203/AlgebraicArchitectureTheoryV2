@@ -368,7 +368,7 @@ fn diagram_recheck_rejects_plan_values_generators_scope_provenance_and_consumer_
         match change {
             0 => n.arguments.clear(),
             1 => n.scope.assignments = false,
-            2 => n.support.clear(),
+            2 => n.support.make_owned().clear(),
             3 => n.ty = NodeType::Construction(T::Ideal),
             _ => {
                 let Some(Payload::Construction(v)) = &mut n.payload else {

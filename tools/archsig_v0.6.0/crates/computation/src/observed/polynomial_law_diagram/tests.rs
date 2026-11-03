@@ -585,7 +585,7 @@ fn cached_native_validation_rejects_foreign_consumer_input_witness_request_and_n
             0 => n.arguments.clear(),
             1 => n.arguments[0] = b,
             2 => n.ty = NodeType::Construction(T::Ideal),
-            3 => n.support.clear(),
+            3 => n.support.make_owned().clear(),
             4 => n.scope.assignments = false,
             _ => {
                 let Some(Payload::Construction(v)) = &mut n.payload else {

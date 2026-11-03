@@ -327,7 +327,7 @@ fn concrete(
     let value_scalar = value.known_value.ok_or_else(|| {
         ConstructionFailure::Inconsistent(internal!("数値反例の元bodyへの再代入値がない"))
     })?;
-    Ok((value_scalar, value.support))
+    Ok((value_scalar, value.support.to_vec()))
 }
 pub(in crate::observed) fn counterexample(
     inputs: &CheckedInputs,

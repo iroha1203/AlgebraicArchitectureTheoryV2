@@ -38,7 +38,7 @@ fn value(env: &Environment<'_>, scalar: Scalar) -> Result<SourceValue, Validatio
         affine: affine::constant(&scalar, &env.control)?.map(Box::new),
         scope: Scope::default(),
         known_value: Some(scalar),
-        support: vec![],
+        support: vec![].into(),
         scalar_scope: Some(Scope::default()),
     })
 }
@@ -187,7 +187,7 @@ pub(super) fn parameter_guard_domain(
     if let Some(id) = guard {
         missing.expression = Some(id);
         let value = env.scoped_ast(id, vars, &Scope::default(), reading)?;
-        missing.support.extend(value.support);
+        missing.support.extend(value.support.into_vec());
         missing.scope.merge(&value.scope);
         equations(
             env,

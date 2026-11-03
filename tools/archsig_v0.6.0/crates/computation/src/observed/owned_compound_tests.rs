@@ -69,7 +69,7 @@ fn owned_compound_domains_recheck_original_fibers_members_types_support_and_scop
         };
         *codomain = Type::Ref("Reservations.System".into());
     });
-    completion_mutation(&r, t, |nodes| nodes[t].support.clear());
+    completion_mutation(&r, t, |nodes| nodes[t].support.make_owned().clear());
     completion_mutation(&r, d, |nodes| {
         nodes[d].scope.snapshots.remove("v");
     });

@@ -688,7 +688,7 @@ impl Environment<'_> {
                         (
                             vec![items[p].clone()],
                             self.family_domains(graph, source, &domains, &plan)?,
-                            graph.get(record.domain)?.support.clone(),
+                            graph.get(record.domain)?.support.to_vec(),
                         )
                     }
                 } else if origin == Some(d.span) {
@@ -934,7 +934,7 @@ impl Environment<'_> {
             return Err(internal!("wholeの実直積coverage件数が違う").into());
         }
         let mut scope = self.family_domains(graph, *body, &domains, &plan)?;
-        let mut support = graph.get(domain)?.support.clone();
+        let mut support = graph.get(domain)?.support.clone().into_vec();
         let mut reasons = Vec::new();
         let mut seen = Vec::new();
         let mut value = Some(true);
@@ -1812,7 +1812,7 @@ impl Environment<'_> {
             known_value: None,
             affine: None,
             missing: None,
-            support: vec![],
+            support: vec![].into(),
             scalar_scope: None,
         }))
     }

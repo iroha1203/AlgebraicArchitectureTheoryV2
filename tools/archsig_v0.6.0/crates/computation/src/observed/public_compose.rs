@@ -767,7 +767,7 @@ pub(super) fn evaluate(
     let (middle_right, target, _, right_word) = components(graph, right)?;
     word.extend(right_word);
     let universe = universe(graph, action)?;
-    let mut support = graph.get(left)?.support.clone();
+    let mut support = graph.get(left)?.support.clone().into_vec();
     support.extend(graph.get(right)?.support.iter().cloned());
     support.sort_by_key(|f| f.wire().canonical());
     support.dedup();
@@ -812,7 +812,7 @@ pub(super) fn evaluate(
     let c = Arc::new(ComposeWitness {
         inputs: prepared.shared_inputs(),
         request: request.clone(),
-        support,
+        support: support.to_vec(),
         scope,
         left,
         right,

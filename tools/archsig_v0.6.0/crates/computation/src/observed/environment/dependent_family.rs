@@ -162,7 +162,7 @@ impl Environment<'_> {
                 };
                 enumeration.values.push(value);
                 enumeration.scope = node.scope;
-                enumeration.support = node.support;
+                enumeration.support = node.support.to_vec();
             }
             _ => return Err(internal!("固定fiberが元subject/Answer selectorでない").into()),
         }
@@ -849,7 +849,7 @@ impl Environment<'_> {
         if node.ty != NodeType::Value(expected.ty())
             || !matches!(&node.payload,Some(Payload::Scalar(value)) if value == expected)
             || node.scope != *scope
-            || node.support != support
+            || *node.support != support
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
             || node.judgment.is_some()

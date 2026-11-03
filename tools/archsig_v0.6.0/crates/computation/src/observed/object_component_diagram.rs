@@ -647,7 +647,7 @@ fn reading_metadata(
     source: &Node,
     c: &Control,
 ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
-    let mut support = source.support.clone();
+    let mut support = source.support.clone().into_vec();
     let mut scope = source.scope.clone();
     let env = Environment::new(inputs, c)?;
     for row in a.readings().instances() {
@@ -669,7 +669,7 @@ fn reading_metadata(
     support.sort_by_key(|f| f.wire().canonical());
     support.dedup();
     tick(c)?;
-    Ok((support, scope))
+    Ok((support.to_vec(), scope))
 }
 fn origin<'a>(
     graph: &'a Graph,

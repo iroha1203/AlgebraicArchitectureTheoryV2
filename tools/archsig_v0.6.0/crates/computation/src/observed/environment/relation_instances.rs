@@ -181,7 +181,7 @@ fn known(
         scope,
         known_value: Some(value),
         affine: None,
-        support,
+        support: support.into(),
     })
 }
 fn difference(

@@ -329,12 +329,27 @@ fn changing_an_owned_iteration_result_keeps_other_callers_and_memo_unchanged() {
         let env = Environment::with_prepared(&result.prepared, &control).unwrap();
         env.validation_graph_session(&g, || {
             let original = input(&env, &g, g.nodes.len())?;
+            let graph_support: Vec<_> = g.nodes.iter().map(|node| node.support.clone()).collect();
             let mut edited = input(&env, &g, g.nodes.len())?;
             let owned = std::rc::Rc::make_mut(&mut edited);
             owned.2.scope.readings.insert("caller-local".into());
-            owned.2.support.clear();
+            owned.2.support.make_owned().push(Fact {
+                snapshot: "caller-local".into(),
+                subject: "caller-local".into(),
+                field: None,
+                atom: None,
+            });
+            assert_ne!(owned.2.support, original.2.support);
+            owned.2.support.make_owned().clear();
             owned.1 = Scalar::Bool(true);
             assert!(!original.2.scope.readings.contains("caller-local"));
+            assert_eq!(
+                g.nodes
+                    .iter()
+                    .map(|node| node.support.clone())
+                    .collect::<Vec<_>>(),
+                graph_support
+            );
             let warm = input(&env, &g, g.nodes.len())?;
             same(&original, &warm);
             env.results.clear_validation();

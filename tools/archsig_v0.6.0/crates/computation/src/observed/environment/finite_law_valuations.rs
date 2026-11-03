@@ -84,7 +84,7 @@ fn source(value: Scalar) -> SourceValue {
         affine: None,
         scope: Scope::default(),
         known_value: Some(value),
-        support: vec![],
+        support: vec![].into(),
         scalar_scope: Some(Scope::default()),
     }
 }
@@ -1317,7 +1317,7 @@ fn probe_local_mode(
             .is_none_or(|g| !g.condition_failed && !g.condition_pending)
     {
         if let Some(g) = g {
-            row.support.extend(g.support);
+            row.support.extend(g.support.into_vec());
             row.scope.merge(&g.scope);
         }
         object::instance::zero_indicator(e, decl, &mut row)?;

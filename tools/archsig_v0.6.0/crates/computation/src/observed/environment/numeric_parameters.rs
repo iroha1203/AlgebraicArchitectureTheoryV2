@@ -116,14 +116,17 @@ pub(in crate::observed) fn tuple_variables(
         };
         let mut parts = vec![];
         let mut aggregate = variables[&format!("{}.0", p.name)].clone();
-        aggregate.support.clear();
+        aggregate.support.make_owned().clear();
         for index in 0..width {
             e.tick()?;
             let v = variables
                 .get(&format!("{}.{index}", p.name))
                 .ok_or(internal!("数値Tupleの軸がない"))?;
             aggregate.scope.merge(&v.scope);
-            aggregate.support.extend(v.support.iter().cloned());
+            aggregate
+                .support
+                .make_owned()
+                .extend(v.support.iter().cloned());
             aggregate.condition_failed |= v.condition_failed;
             aggregate.condition_pending |= v.condition_pending;
             parts.push(if let Some(form) = &v.affine {

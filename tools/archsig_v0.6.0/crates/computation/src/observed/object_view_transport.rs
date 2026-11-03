@@ -1149,6 +1149,7 @@ mod tests {
                         .find(|n| !n.support.is_empty())
                         .unwrap()
                         .support
+                        .make_owned()
                         .clear();
                 }
             }

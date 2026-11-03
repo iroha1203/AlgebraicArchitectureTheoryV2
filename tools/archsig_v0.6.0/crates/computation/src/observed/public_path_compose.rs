@@ -662,7 +662,7 @@ pub(super) fn evaluate(
             }
         }
     }
-    let mut support = graph.get(left)?.support.clone();
+    let mut support = graph.get(left)?.support.clone().into_vec();
     support.extend(graph.get(right)?.support.iter().cloned());
     support.sort();
     support.dedup();
@@ -721,7 +721,7 @@ pub(super) fn evaluate(
     let w = Arc::new(PathWitness {
         inputs: prepared.shared_inputs(),
         request: r.clone(),
-        support,
+        support: support.to_vec(),
         scope,
         left,
         right,

@@ -589,13 +589,13 @@ fn metadata(
 ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     let architecture = graph.get(reference)?;
     let universe = graph.get(universe)?;
-    let mut support = architecture.support.clone();
+    let mut support = architecture.support.clone().into_vec();
     support.extend_from_slice(&universe.support);
     support.sort_by_key(|f| f.wire().canonical());
     support.dedup();
     let mut scope = architecture.scope.clone();
     scope.merge(&universe.scope);
-    Ok((support, scope))
+    Ok((support.to_vec(), scope))
 }
 impl Source {
     fn recheck(

@@ -35,7 +35,7 @@ fn known(value: Scalar) -> SourceValue {
         scope: Scope::default(),
         known_value: Some(value),
         affine: None,
-        support: vec![],
+        support: vec![].into(),
         scalar_scope: Some(Scope::default()),
     }
 }
@@ -145,7 +145,7 @@ pub(in crate::observed) fn guard_value(
         }
     };
     // 評価cacheの有無に依存しない、型付き結果の支持を保持する。
-    let mut support = value.support.clone();
+    let mut support = value.support.clone().into_vec();
     support.sort();
     support.dedup();
     Ok((result, support, value.scope, missing))
@@ -236,7 +236,7 @@ pub(in crate::observed) fn read_value(
     if result.as_ref().is_some_and(|value| value.ty() != ty) {
         return Err(internal!("local readの評価値の型が元式と違う").into());
     }
-    let mut support = value.support;
+    let mut support = (value.support).into_vec();
     support.sort();
     support.dedup();
     Ok((result, support, value.scope, missing))

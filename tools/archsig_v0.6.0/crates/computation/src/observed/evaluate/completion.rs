@@ -147,7 +147,7 @@ impl Evaluator<'_, '_> {
                     .chain(roots.iter().copied())
                     .chain(sources.iter().copied())
                     .collect(),
-                support: vec![],
+                support: vec![].into(),
                 evidence: vec![],
                 judgment: None,
                 scope: scope.clone(),
@@ -190,7 +190,7 @@ impl Evaluator<'_, '_> {
                 arguments: std::iter::once(seed)
                     .chain(members.iter().copied())
                     .collect(),
-                support: support.clone(),
+                support: support.clone().into(),
                 evidence: vec![],
                 judgment: None,
                 scope: scope.clone(),
@@ -369,7 +369,7 @@ impl Evaluator<'_, '_> {
                             .chain([domain])
                             .chain(cases.iter().copied())
                             .collect(),
-                        support: all_support.clone(),
+                        support: all_support.clone().into(),
                         evidence: vec![],
                         judgment: None,
                         scope: all_scope.clone(),
@@ -396,7 +396,7 @@ impl Evaluator<'_, '_> {
                                 .chain(case_values[i].iter().copied())
                                 .chain(case_values[j].iter().copied())
                                 .collect(),
-                            support: all_support.clone(),
+                            support: all_support.clone().into(),
                             evidence: vec![],
                             judgment: None,
                             scope: all_scope.clone(),
@@ -417,7 +417,7 @@ impl Evaluator<'_, '_> {
                             .chain([domain])
                             .chain(cases.iter().copied())
                             .collect(),
-                        support: all_support.clone(),
+                        support: all_support.clone().into(),
                         evidence: evidence.clone(),
                         judgment: None,
                         scope: all_scope.clone(),
@@ -455,7 +455,7 @@ impl Evaluator<'_, '_> {
                     .chain(cases.iter().copied())
                     .chain(propositions.iter().copied())
                     .collect(),
-                support: all_support.clone(),
+                support: all_support.clone().into(),
                 evidence: evidence.clone(),
                 judgment: None,
                 scope: all_scope.clone(),
@@ -507,7 +507,7 @@ impl Evaluator<'_, '_> {
                                 .chain(roots.iter().copied())
                                 .chain(sources.iter().copied())
                                 .collect(),
-                            support: vec![],
+                            support: vec![].into(),
                             evidence: vec![],
                             judgment: None,
                             scope: scope.clone(),
@@ -535,7 +535,7 @@ impl Evaluator<'_, '_> {
                         .chain(guard)
                         .chain(propositions)
                         .collect(),
-                    support: all_support.clone(),
+                    support: all_support.clone().into(),
                     evidence: vec![],
                     judgment: None,
                     scope: all_scope.clone(),
@@ -546,7 +546,7 @@ impl Evaluator<'_, '_> {
                     payload: Some(Payload::Proposition { instance }),
                     rule: Rule::Construction("proposition"),
                     arguments: vec![instance, evaluation],
-                    support: all_support,
+                    support: all_support.into(),
                     evidence: evidence.clone(),
                     judgment: Some(Judgment {
                         status,
