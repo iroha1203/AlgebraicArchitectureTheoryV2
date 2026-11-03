@@ -215,3 +215,19 @@ fn extended_iteration_snapshot_checks_clone_divergence_and_stop() {
         Err(ValidationFailure::Stop(_))
     ));
 }
+
+#[test]
+fn finite_only_iteration_producer_does_not_preserve_the_checked_prefix() {
+    let c = quiet();
+    let mut g = Graph::new(&c);
+    g.push(node(1)).unwrap();
+    let saved = ValidationSnapshot::from_graph(&g, &c).unwrap();
+    let fresh = g.push(node(2)).unwrap();
+    let mut extra = iteration(0, 0);
+    extra.finite = Some(fresh);
+    g.iterations.push(extra);
+    assert!(
+        !saved.matches(&g, &c).unwrap(),
+        "finite is not part of universal registry cutoff filtering"
+    );
+}

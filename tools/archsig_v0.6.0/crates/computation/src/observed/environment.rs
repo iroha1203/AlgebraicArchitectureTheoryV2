@@ -276,14 +276,12 @@ impl ValidationSnapshot {
                 return Ok(false);
             }
         }
-        // 既存iterationの全内容は上で照合済み。source/domain/finiteの少なくとも
-        // 一つが旧prefix後のproducerを持つ追加だけを許す。既存producerだけを
-        // 使う次memberは保守的に失効させ、未知のiterationを旧prefixへ補わない。
+        // 既存iterationの全内容は上で照合済み。universal_graph_contextと同じ
+        // source/domainのcutoffで旧prefixから除外される追加だけを許す。
+        // finiteだけが新しい反復は旧registryへ入るため、成功を失効させる。
         for iteration in &g.iterations[self.iterations.len()..] {
             if !Self::after(
-                [iteration.source, iteration.domain]
-                    .into_iter()
-                    .chain(iteration.finite),
+                [iteration.source, iteration.domain].into_iter(),
                 self.nodes.len(),
                 control,
             )? {

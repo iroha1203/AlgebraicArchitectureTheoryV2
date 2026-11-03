@@ -13,8 +13,7 @@ const ASK: &[&str] = &[
     "quant=evaluate(Walk.quantified,n=@v/p)",
 ];
 fn result() -> ObservedEvaluation {
-    let r =
-        evaluate_observed_bytes(fixture::input(SCRIPT, "Z", &[], "r1"), ASK, &quiet()).unwrap();
+    let r = evaluate_observed_bytes(fixture::input(SCRIPT, "Z", &[], "r1"), ASK, &quiet()).unwrap();
     assert_eq!(r.status(), "complete", "{:?}", r.issues);
     r
 }
@@ -207,4 +206,36 @@ fn affine_comprehension_actual_iteration_stop_keeps_verified_results() {
         assert_eq!(a["details"], b["details"]);
     }
     rebuild_for_origin_and_support_recheck(&stopped, &stopped.nodes).unwrap();
+}
+
+#[test]
+fn finite_only_iteration_append_cannot_hide_invalid_caller_from_warm_recheck() {
+    let r = result();
+    let at = evaluation(&r);
+    let c = quiet();
+    let warm = Environment::with_prepared(&r.prepared, &c).unwrap();
+    let mut g = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
+    warm.recheck_node(&g, &g.nodes[at], at).unwrap();
+    let mut extra = g
+        .iterations
+        .iter()
+        .find(|record| record.caller.request == 2 && record.source.0 < at && record.domain.0 < at)
+        .expect("universal expression has an earlier finite iteration")
+        .clone();
+    let fresh_finite = g.push(g.get(extra.domain).unwrap().clone()).unwrap();
+    extra.finite = Some(fresh_finite);
+    extra.caller.request = usize::MAX;
+    g.iterations.push(extra);
+    let cold = Environment::with_prepared(&r.prepared, &c)
+        .unwrap()
+        .recheck_node(&g, &g.nodes[at], at);
+    assert!(
+        cold.is_err(),
+        "cold recheck must reject the invalid registry caller"
+    );
+    let cached = warm.recheck_node(&g, &g.nodes[at], at);
+    assert!(
+        cached.is_err(),
+        "warm recheck must reject the same invalid caller: warm={cached:?}, cold={cold:?}"
+    );
 }
