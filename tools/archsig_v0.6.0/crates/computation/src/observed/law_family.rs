@@ -418,7 +418,7 @@ fn base_metadata(
     }
     support.sort();
     support.dedup();
-    Ok((support.to_vec(), scope))
+    Ok((support, scope))
 }
 fn ref_array(rs: &[NodeRef]) -> Json {
     Json::Arr(rs.iter().map(|r| r.wire()).collect())

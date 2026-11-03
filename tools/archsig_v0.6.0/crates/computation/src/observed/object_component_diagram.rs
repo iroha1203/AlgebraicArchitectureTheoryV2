@@ -669,7 +669,7 @@ fn reading_metadata(
     support.sort_by_key(|f| f.wire().canonical());
     support.dedup();
     tick(c)?;
-    Ok((support.to_vec(), scope))
+    Ok((support, scope))
 }
 fn origin<'a>(
     graph: &'a Graph,

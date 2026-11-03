@@ -121,7 +121,7 @@ fn expected(
         architecture,
         wire,
         arguments,
-        support: support.to_vec(),
+        support,
         scope,
     };
     Ok((source, data))

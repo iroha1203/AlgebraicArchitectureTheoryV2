@@ -393,7 +393,7 @@ pub(super) fn retain(
         architecture,
         indices,
         objects: rows,
-        support: support.to_vec(),
+        support,
         scope,
         reasons,
         component_source: objects.base,

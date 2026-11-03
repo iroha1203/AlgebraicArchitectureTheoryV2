@@ -812,7 +812,7 @@ pub(super) fn evaluate(
     let c = Arc::new(ComposeWitness {
         inputs: prepared.shared_inputs(),
         request: request.clone(),
-        support: support.to_vec(),
+        support,
         scope,
         left,
         right,

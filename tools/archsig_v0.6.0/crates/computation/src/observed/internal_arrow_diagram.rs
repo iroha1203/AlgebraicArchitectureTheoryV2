@@ -595,7 +595,7 @@ fn metadata(
     support.dedup();
     let mut scope = architecture.scope.clone();
     scope.merge(&universe.scope);
-    Ok((support.to_vec(), scope))
+    Ok((support, scope))
 }
 impl Source {
     fn recheck(

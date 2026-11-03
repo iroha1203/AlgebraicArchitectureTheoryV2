@@ -534,7 +534,7 @@ fn build_source(
         domains,
         product,
         rows,
-        support: support.to_vec(),
+        support,
         scope,
     })
 }

@@ -157,7 +157,7 @@ fn expected(
     support.make_owned().dedup();
     let mut scope = graph.get(d.origin)?.scope.clone();
     scope.merge(&graph.get(d.architecture)?.scope);
-    Ok((row, support.to_vec(), scope))
+    Ok((row, support.into_vec(), scope))
 }
 pub(crate) fn validate_node(
     graph: &Graph,

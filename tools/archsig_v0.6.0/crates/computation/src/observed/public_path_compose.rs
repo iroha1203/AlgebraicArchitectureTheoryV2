@@ -721,7 +721,7 @@ pub(super) fn evaluate(
     let w = Arc::new(PathWitness {
         inputs: prepared.shared_inputs(),
         request: r.clone(),
-        support: support.to_vec(),
+        support,
         scope,
         left,
         right,
