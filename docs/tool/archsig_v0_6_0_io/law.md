@@ -283,6 +283,8 @@ Law の識別は完全名、role、束縛、guard、原式、AST 内位置の組
 補完には Law の成立を条件として課さない。
 
 値が全補完で同じなら確定値、命題が全補完で真なら established、全補完で偽なら refuted。
+適用状態も全補完で一致する場合に確定する。すべて適用なら `applicable`、すべて不適用なら
+`not_applicable`、適用状態が混在するか未決なら `undetermined` とする。
 この確認を完了できなければ依存 slot と理由を保持する。if/guard/所有者が不明なら、
 複数の分岐・族を条件付きで保持し、一方を勝手に捨てない。
 Bool の false and x、true or x、同じ未知整数 h の h−h は補完によらず確定できる。

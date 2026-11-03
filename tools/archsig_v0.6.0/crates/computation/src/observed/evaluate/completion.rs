@@ -199,6 +199,7 @@ impl Evaluator<'_, '_> {
             let mut cases = Vec::new();
             let mut propositions = Vec::new();
             let mut case_values = Vec::new();
+            let mut applicability = None;
             let mut added = false;
             let mut all_scope = scope.clone();
             let mut all_support = support.clone();
@@ -290,6 +291,18 @@ impl Evaluator<'_, '_> {
                     all_support.extend(node.support.iter().cloned());
                     all_reasons.extend(node.reasons.iter().cloned());
                 }
+                let Some(Payload::Evaluation {
+                    applicability: case_applicability,
+                    ..
+                }) = &self.graph.get(evaluation)?.payload
+                else {
+                    return Err(Failure::Internal(internal!("補完caseが評価でない")));
+                };
+                applicability = Some(match applicability {
+                    None => *case_applicability,
+                    Some(previous) if previous == *case_applicability => previous,
+                    Some(_) => "undetermined",
+                });
                 cases.push(evaluation);
                 propositions.extend(answer.claim);
                 case_values.push(refs);
@@ -433,7 +446,8 @@ impl Evaluator<'_, '_> {
                         children: cases.clone(),
                     }],
                     value,
-                    applicability: "applicable",
+                    applicability: applicability
+                        .ok_or_else(|| Failure::Internal(internal!("補完case集合が空")))?,
                 }),
                 rule: Rule::Construction("evaluation"),
                 arguments: std::iter::once(seed)

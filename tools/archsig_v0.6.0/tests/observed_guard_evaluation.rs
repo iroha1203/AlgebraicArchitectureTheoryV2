@@ -256,7 +256,14 @@ fn completion_cases(
     assert_eq!(&root_args[2..2 + cases.len()], cases);
     let propositions = &root_args[2 + cases.len()..];
     assert_eq!(propositions.len(), cases.len());
-    assert_eq!(f(payload(root), "applicability"), &Json::str("applicable"));
+    assert_eq!(
+        f(payload(root), "applicability"),
+        &Json::str(match gate {
+            Some(true) => "applicable",
+            Some(false) => "not_applicable",
+            None => "undetermined",
+        })
+    );
     assert_eq!(f(payload(seed), "kind"), &Json::str("source"));
     assert_eq!(span(f(payload(seed), "location")), body_span);
     assert_eq!(
