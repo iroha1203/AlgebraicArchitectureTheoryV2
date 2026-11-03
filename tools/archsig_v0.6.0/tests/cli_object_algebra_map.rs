@@ -4686,13 +4686,22 @@ fn naturality_counterexample_is_refuted_and_keeps_operation() {
             );
             assert_eq!(isolated.code, 1, "{}", isolated.stdout);
             assert_eq!(s(get(answer(&isolated.receipt, "m"), "status")), "refuted");
-            let evidence = arr(get(map, "evidence"));
+            let evidence = arr(get(map, "counterexamples"));
             assert_eq!(evidence.len(), 1);
             let data = get(value(&result, &evidence[0]), "data");
             let facts = arr(get(data, "facts"));
-            assert_json(&facts[0], r#"{"snapshot":"v","subject":"u"}"#);
-            assert_json(&facts[1], r#"{"snapshot":"v","subject":"r"}"#);
-            assert_json(&facts[2], r#"{"snapshot":"v","subject":"s"}"#);
+            assert_json(
+                &facts[0],
+                r#"{"atom":"u-free","field":"Reservations.State.free","snapshot":"v","subject":"u"}"#,
+            );
+            assert_json(
+                &facts[1],
+                r#"{"atom":"r-free","field":"Reservations.State.free","snapshot":"v","subject":"r"}"#,
+            );
+            assert_json(
+                &facts[2],
+                r#"{"atom":"s-free","field":"Reservations.State.free","snapshot":"v","subject":"s"}"#,
+            );
             assert_ne!(
                 value(&result, get(data, "left")).value,
                 value(&result, get(data, "right")).value
