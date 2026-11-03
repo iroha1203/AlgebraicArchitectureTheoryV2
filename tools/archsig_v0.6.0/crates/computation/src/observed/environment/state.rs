@@ -55,6 +55,8 @@ pub(crate) struct EvaluationState {
     pub(super) missing_slot_reads: RefCell<Option<BTreeSet<Fact>>>,
     pub(super) evaluation_capture: RefCell<Option<quotient_evaluation::EvaluationCapture>>,
     pub(super) scoped_context: Cell<Option<crate::observed::call::Context>>,
+    // rootの不変Graph借用でだけ設定する。depthだけでは別Graphの再入を区別できない。
+    pub(super) validation_graph: Cell<Option<*const Graph>>,
     pub(super) validation_depth: Cell<usize>,
     pub(super) cutoff: Cell<usize>,
     pub(super) answer_rechecks: RefCell<BTreeSet<usize>>,
@@ -103,6 +105,7 @@ impl Default for EvaluationState {
             missing_slot_reads: RefCell::new(None),
             evaluation_capture: RefCell::new(None),
             scoped_context: Cell::new(None),
+            validation_graph: Cell::new(None),
             validation_depth: Cell::new(0),
             cutoff: Cell::new(usize::MAX),
             answer_rechecks: RefCell::new(BTreeSet::new()),
