@@ -139,6 +139,14 @@ type SourceCacheEntry = (
 type FrameInputs = (Vec<Binding>, BTreeMap<String, SourceValue>, Scope);
 type NodeRefKey = (super::call::Context, usize);
 type IterationInputs = (NodeRef, Scalar, SourceAnalysis);
+
+// 検査済み型反復は同じGraphのepochでだけcutoffを跨ぐ。通常経路の成功と混ぜない。
+// Graphのアドレスは同一性の比較専用で、参照解除しない。epochの失効でentryも破棄する。
+#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+enum IterationKey {
+    Cutoff(usize, usize),
+    Typed { graph: *const Graph, index: usize },
+}
 type CompletionValues = Vec<(Fact, NodeRef, Scalar)>;
 type DottedPrefix = ((usize, usize), Type);
 type DottedOccurrence = (usize, usize);
@@ -361,7 +369,7 @@ struct ValidationCache {
         universal::AnalysisContext,
         SourceAnalysis,
     )>,
-    iterations: BTreeMap<(usize, usize), IterationInputs>,
+    iterations: BTreeMap<IterationKey, IterationInputs>,
     completion_seeds: BTreeMap<completion::MemoKey, completion::Seed>,
     completion_domains: BTreeMap<completion::DomainKey, Vec<NodeRef>>,
     completion_cases: BTreeMap<completion::MemoKey, CompletionValues>,
@@ -769,6 +777,7 @@ impl<'a> Environment<'a> {
             if !same {
                 self.results.clear_validation();
             }
+            let _graph_guard = self.state.validation_graph.scoped(Some(graph));
             let depth_guard = self.state.validation_depth.scoped(1);
             let result = self.state.validation_session(&self.results, run);
             depth_guard.restore();
@@ -6479,14 +6488,25 @@ impl<'a> Environment<'a> {
         index: usize,
     ) -> Result<IterationInputs, ValidationFailure> {
         self.tick()?;
-        let cache_key = (index, self.state.cutoff.get().min(graph.nodes.len()));
-        if let Some(value) = self
-            .results
-            .cache
-            .borrow()
-            .iterations
-            .get(&cache_key)
-            .cloned()
+        let mut cache_key =
+            IterationKey::Cutoff(index, self.state.cutoff.get().min(graph.nodes.len()));
+        let typed_environment = self.state.validation_graph.get() == Some(graph as *const Graph)
+            && graph
+                .iterations
+                .get(index)
+                .is_some_and(|record| record.caller.case.is_none())
+            && self.can_borrow_domain()
+            && self.indexes.affine_valuation.is_empty()
+            && self.indexes.primitive_input_valuation.is_none()
+            && self.state.evaluation_capture.borrow().is_none();
+        if !typed_environment
+            && let Some(value) = self
+                .results
+                .cache
+                .borrow()
+                .iterations
+                .get(&cache_key)
+                .cloned()
         {
             return Ok(value);
         }
@@ -6518,6 +6538,26 @@ impl<'a> Environment<'a> {
             .get(&span)
             .ok_or(internal!("反復元ASTがない"))?;
         let (domain, _) = self.iteration_syntax(id)?;
+        // 先行性・親Context・元ASTはcallごとに確認済み。immutable Graphの同じ
+        // 検査epochで、動的環境も読取り収集もない型枝の成功だけを再利用する。
+        // source/Domainの成功checkedとこのmemoはclear_validationで同時失効する。
+        // 型枝の値・Scope・支持は固定Law、record、照合済みDomainだけから決まり、
+        // caller cutoffは上の先行性検査にだけ残る。collectionの分析は共有しない。
+        if typed_environment {
+            if domain.is_none() {
+                cache_key = IterationKey::Typed { graph, index };
+            }
+            if let Some(value) = self
+                .results
+                .cache
+                .borrow()
+                .iterations
+                .get(&cache_key)
+                .cloned()
+            {
+                return Ok(value);
+            }
+        }
         let previous = self.state.context.scoped(Some(record.caller));
         let result = (|| {
             self.validate_at(graph, graph.get(record.source)?, record.source.0)?;
@@ -11273,6 +11313,8 @@ pub(super) fn same_scalar_identity(
     validation_identity::scalar(a, b, control)
 }
 
+#[cfg(test)]
+mod iteration_tests;
 #[cfg(test)]
 mod validation_snapshot_tests;
 
