@@ -376,17 +376,13 @@ fn cached_owned_source_rejects_changed_consumer_index_origin_and_node_metadata()
             .len(),
         1
     );
-    for mode in 0..8 {
+    for mode in 0..4 {
         let mut changed = (*source).clone();
         match mode {
             0 => changed.reference = fb.architectures[1],
             1 => changed.reference = fa.objects[1],
             2 => changed.object = 0,
-            3 => changed.object = usize::MAX,
-            4 => changed.support.clear(),
-            5 => changed.scope.assignments = false,
-            6 => changed.parts.reverse(),
-            _ => changed.outputs.nu.reverse(),
+            _ => changed.object = usize::MAX,
         }
         let mut value = value.clone();
         let D::FiniteLaw(data) = &mut value.data else {

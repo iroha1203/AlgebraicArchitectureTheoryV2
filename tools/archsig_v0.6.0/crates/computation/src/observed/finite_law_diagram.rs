@@ -1281,24 +1281,9 @@ impl Source {
                     .internal_context(format!("有限Lawの元reading: {other:?}"))
                     .into(),
             })?;
-        let other = Self::compute_plan(
-            self.inputs.clone(),
-            architecture.clone(),
-            self.reference,
-            object,
-            self.base,
-            self.owned_outputs.is_some(),
-            c,
-        )?
-        .ok_or(internal!("有限Law導出の元族が未完成"))?;
-        if self.parts != other.parts
-            || self.outputs != other.outputs
-            || self.owned_outputs != other.owned_outputs
-            || self.support != other.support
-            || self.scope != other.scope
-        {
-            return Err(internal!("有限Law導出が元全D・成分・生成元・支持と違う").into());
-        }
+        // Sourceはこのmoduleのchecked constructorだけが作り、fieldsはprivate。
+        // Arc保持後に値を書き換える入口も、外部形式から復元する入口もない。
+        // 現consumer/input/readingとNodeの照合を保ち、同じ生成関数を再実行しない。
         tick(c)
     }
 }

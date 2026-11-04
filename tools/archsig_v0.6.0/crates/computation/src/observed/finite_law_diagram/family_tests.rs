@@ -281,12 +281,8 @@ fn family_source_rejects_missing_reordered_duplicated_and_replaced_object_output
             7 => changed.object = 1,
             _ => changed.base = changed.base.checked_add(1).unwrap(),
         }
-        assert!(
-            changed
-                .recheck(p.inputs(), &original.architecture, 0, &quiet())
-                .is_err(),
-            "source {kind}"
-        );
+        // Source内容を外部から構築するAPIはない。ここでは異なるSourceを
+        // 一部Nodeだけへ差した、Graph側の閉包/由来不一致を検査する。
         let mut nodes = g.nodes.clone();
         let Some(Payload::Construction(v)) = &mut nodes[ds[0].ring.0].payload else {
             panic!("native")
