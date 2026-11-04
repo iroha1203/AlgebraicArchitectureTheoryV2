@@ -2539,3 +2539,4 @@ ResearchLean.AG.SpecifiedRepairLifting.PresentedProduct	ResearchLean/AG/Specifie
 ResearchLean.AG.SpecifiedRepairLifting.FiniteLifting	ResearchLean/AG/SpecifiedRepairLifting/FiniteLifting.lean
 ResearchLean.AG.SpecifiedRepairLifting.FiniteRepresentation	ResearchLean/AG/SpecifiedRepairLifting/FiniteRepresentation.lean
 ResearchLean.AG.SpecifiedRepairLifting.FiniteValidation	ResearchLean/AG/SpecifiedRepairLifting/FiniteValidation.lean
+ResearchLean.AG.SpecifiedRepairLifting.FreeWitnesses	ResearchLean/AG/SpecifiedRepairLifting/FreeWitnesses.lean
