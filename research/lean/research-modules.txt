@@ -2532,3 +2532,4 @@ ResearchLean.AG.SpecifiedRepairLifting.SquareNaturality	ResearchLean/AG/Specifie
 ResearchLean.AG.SpecifiedRepairLifting.ActualCechComplex	ResearchLean/AG/SpecifiedRepairLifting/ActualCechComplex.lean
 ResearchLean.AG.SpecifiedRepairLifting.ActualCechLifting	ResearchLean/AG/SpecifiedRepairLifting/ActualCechLifting.lean
 ResearchLean.AG.SpecifiedRepairLifting.ActualCechReading	ResearchLean/AG/SpecifiedRepairLifting/ActualCechReading.lean
+ResearchLean.AG.SpecifiedRepairLifting.IntegerElimination	ResearchLean/AG/SpecifiedRepairLifting/IntegerElimination.lean
