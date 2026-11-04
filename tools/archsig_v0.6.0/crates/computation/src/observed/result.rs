@@ -28,7 +28,8 @@ impl Support {
     }
 }
 impl From<Vec<Fact>> for Support {
-    fn from(facts: Vec<Fact>) -> Self {
+    fn from(mut facts: Vec<Fact>) -> Self {
+        facts.shrink_to_fit();
         Self(std::rc::Rc::new(facts))
     }
 }
@@ -59,13 +60,17 @@ impl<'a> IntoIterator for &'a Support {
 #[cfg(test)]
 #[test]
 fn owned_support_edits_leave_shared_facts_unchanged() {
-    let original = Support::from(vec![Fact {
+    let fact = Fact {
         snapshot: "snapshot".into(),
         subject: "subject".into(),
         field: Some("Example.Entity.field".into()),
         atom: Some("known".into()),
-    }]);
-    let expected = original.to_vec();
+    };
+    let expected = vec![fact.clone()];
+    let mut facts = Vec::with_capacity(64);
+    facts.push(fact);
+    let original = Support::from(facts);
+    assert_eq!(original, expected);
     let mut edited = original.clone();
     edited.make_owned()[0].subject = "caller-local".into();
     edited.make_owned().clear();
