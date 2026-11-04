@@ -325,7 +325,7 @@ fn owned_expression_family_enumeration_cancel_preserves_owner_prefix_and_prior_a
         format!("{:?}", &normal.frames[..stopped.frames.len()])
     );
     assert_eq!(
-        format!("{:?}", &stopped.iterations),
+        format!("{:?}", stopped.iterations.as_slice()),
         format!("{:?}", &normal.iterations[..stopped.iterations.len()])
     );
     assert_eq!(

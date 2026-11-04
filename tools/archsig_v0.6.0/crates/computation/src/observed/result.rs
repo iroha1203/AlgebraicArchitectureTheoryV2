@@ -1647,7 +1647,7 @@ pub struct ObservedEvaluation {
     #[cfg(test)]
     pub(super) frames: Vec<super::call::Frame>,
     #[cfg(test)]
-    pub(super) iterations: Vec<super::call::Iteration>,
+    pub(super) iterations: GraphEntries<super::call::Iteration>,
     #[cfg(test)]
     pub(super) instances: Vec<super::call::Instance>,
     #[cfg(test)]
@@ -1879,7 +1879,7 @@ pub(crate) struct Graph {
     pub nodes: GraphNodes,
     pub(super) contexts: GraphEntries<super::call::Context>,
     pub(super) frames: Vec<super::call::Frame>,
-    pub(super) iterations: Vec<super::call::Iteration>,
+    pub(super) iterations: GraphEntries<super::call::Iteration>,
     pub(super) instances: Vec<super::call::Instance>,
     pub(super) cases: Vec<super::call::CompletionCase>,
     pub(super) universal_witnesses: Vec<UniversalWitness>,
@@ -1988,7 +1988,7 @@ impl Graph {
             nodes: Vec::new().into(),
             contexts: Vec::new().into(),
             frames: vec![],
-            iterations: vec![],
+            iterations: Vec::new().into(),
             instances: vec![],
             cases: vec![],
             universal_witnesses: vec![],

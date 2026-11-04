@@ -127,7 +127,9 @@ fn fresh_iteration_producer_keeps_snapshot_and_checks_the_extended_prefix() {
         "fresh domain must preserve checked prefix"
     );
     saved.extend_matching(&g, &c).unwrap();
-    assert_eq!(saved.iterations, g.iterations);
+    assert_eq!(saved.iterations.as_slice(), g.iterations.as_slice());
+    assert!(saved.matches(&g, &c).unwrap());
+    saved.extend_matching(&g, &c).unwrap();
     let original = g.iterations[1].clone();
     g.iterations[1].member = crate::observed::call::Member::ListPosition(1);
     assert!(!saved.matches(&g, &c).unwrap());
@@ -356,4 +358,60 @@ fn context_prefix_identity_does_not_hide_node_context_length_mismatch() {
     assert!(!saved.matches(&g, &c).unwrap());
     let malformed = ValidationSnapshot::from_graph(&g, &c).unwrap();
     assert!(!malformed.matches(&g, &c).unwrap());
+}
+
+fn non_reflexive_path_iteration(source: usize, domain: usize) -> crate::observed::call::Iteration {
+    let path = crate::observed::path_value::PathValue {
+        reading: "r".into(),
+        snapshot: "s".into(),
+        subject: "u".into(),
+        entity: "E".into(),
+        step: Some(Box::new(crate::observed::path_value::Step {
+            generator: Scalar::Z(0.into()),
+            word_tail: vec![],
+            target: Scalar::Z(0.into()),
+            carrier: vec![],
+            images: vec![],
+        })),
+    };
+    crate::observed::call::Iteration {
+        member: crate::observed::call::Member::SetElement(Scalar::Path(Box::new(path))),
+        ..iteration(source, domain)
+    }
+}
+
+#[test]
+fn newly_copied_non_reflexive_iteration_still_requires_comparison() {
+    let c = quiet();
+    let mut g = Graph::new(&c);
+    g.push(node(1)).unwrap();
+    g.iterations.push(non_reflexive_path_iteration(0, 0));
+    let saved = ValidationSnapshot::from_graph(&g, &c).unwrap();
+    assert!(
+        !saved.matches(&g, &c).unwrap(),
+        "copying an invalid Path must not certify it"
+    );
+}
+
+#[test]
+fn appended_uncompared_iteration_is_not_certified_by_snapshot_extension() {
+    let c = quiet();
+    let mut g = Graph::new(&c);
+    g.push(node(1)).unwrap();
+    g.iterations.push(iteration(0, 0));
+    let mut saved = ValidationSnapshot::from_graph(&g, &c).unwrap();
+    assert!(saved.matches(&g, &c).unwrap());
+    saved.extend_matching(&g, &c).unwrap();
+    let fresh = g.push(node(2)).unwrap();
+    g.iterations
+        .push(non_reflexive_path_iteration(fresh.0, fresh.0));
+    assert!(
+        saved.matches(&g, &c).unwrap(),
+        "fresh source/domain preserves old prefix"
+    );
+    saved.extend_matching(&g, &c).unwrap();
+    assert!(
+        !saved.matches(&g, &c).unwrap(),
+        "new suffix must pass comparison before reuse"
+    );
 }

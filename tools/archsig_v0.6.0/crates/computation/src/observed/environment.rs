@@ -182,6 +182,8 @@ struct ValidationSnapshot {
     context_len: usize,
     frames: Vec<super::call::Frame>,
     iterations: Vec<super::call::Iteration>,
+    // Someは保存表全体が従来比較を通過済みのidentity。copyだけでは認証しない。
+    iteration_identity: Option<std::rc::Rc<()>>,
     instances: Vec<super::call::Instance>,
     cases: Vec<super::call::CompletionCase>,
     witnesses: Vec<super::result::UniversalWitness>,
@@ -275,9 +277,15 @@ impl ValidationSnapshot {
         {
             return Ok(false);
         }
-        for (a, b) in g.iterations.iter().zip(&self.iterations) {
-            if !validation_identity::iteration(a, b, control)? {
-                return Ok(false);
+        if !self
+            .iteration_identity
+            .as_ref()
+            .is_some_and(|saved| std::rc::Rc::ptr_eq(saved, &g.iterations.prefix_identity()))
+        {
+            for (a, b) in g.iterations.iter().zip(&self.iterations) {
+                if !validation_identity::iteration(a, b, control)? {
+                    return Ok(false);
+                }
             }
         }
         // 全registryの不在・一意性を読んだ成功だけが、旧producerを使う
@@ -338,6 +346,7 @@ impl ValidationSnapshot {
             context_len: g.contexts.len(),
             frames: Self::copy(&g.frames, control)?,
             iterations: Self::copy(&g.iterations, control)?,
+            iteration_identity: None,
             instances: Self::copy(&g.instances, control)?,
             cases: Self::copy(&g.cases, control)?,
             witnesses: Self::copy(&g.universal_witnesses, control)?,
@@ -349,6 +358,9 @@ impl ValidationSnapshot {
     // 検査済末尾追加だけを許し、metadataは既存内容の照合後に延長する。
     fn extend_matching(&mut self, g: &Graph, control: &Control) -> Result<(), ValidationFailure> {
         Self::tick(control)?;
+        // 新suffixはcopyしただけでは未照合。全保存表を比較できた場合だけ候補にする。
+        let iteration_identity =
+            (self.iterations.len() == g.iterations.len()).then(|| g.iterations.prefix_identity());
         self.node_identity = g.nodes.prefix_identity();
         self.context_identity = g.contexts.prefix_identity();
         self.node_len = g.nodes.len();
@@ -362,7 +374,9 @@ impl ValidationSnapshot {
         self.iterations
             .extend(Self::copy(&g.iterations[self.iterations.len()..], control)?);
         // witnesses/requests/answersはmatchesで長さと全内容が一致済み。
-        Self::tick(control)
+        Self::tick(control)?;
+        self.iteration_identity = iteration_identity;
+        Ok(())
     }
 }
 
