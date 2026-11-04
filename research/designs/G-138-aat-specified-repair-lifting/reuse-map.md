@@ -70,17 +70,3 @@ G-130 [FiniteElimination.lean](../../lean/ResearchLean/AG/RelativeRepairComposit
   非空なLiftの加法作用・差と既存instance条件を対応させる。
 - `Submodule`、`QuotientAddGroup`の核・像・商API：元の加法商と標準homologyの同定。
   有理線形商を忘却した場合も代表元評価を証明する。
-
-## 5. Rust側の対応は用途・設計の参照
-
-調査版の `tools/archsig_v0.6.0/crates/computation/src/observed/` には次がある。
-
-| 実装 | 現在の責務 | 本GOALとの関係 |
-| --- | --- | --- |
-| `integer_fiber.rs`の`solve`、`change_result/linear_result.rs` | 整数系の特解・核・SNF表示 | Eの用途と算法設計の参照。RustをLean証拠としてimportしない |
-| `local_integer_cech.rs`の`gluing` | 補正された局所値の同時方程式を解き、大域値を復元 | 持ち上げ計算の既存例。候補18で初めて可能になる機能ではない |
-| `local_affine_compare.rs` | cochain可換性・H上の写像・核余核・類輸送 | 指定bのfiberへの将来の接続点 |
-| `change_result.rs` | 元Assignmentの解・一意性とrepair条件 | W6の区別を保持する必要がある |
-
-ArchSigの入力生成・再検査・出力仕様はToolingの責務とする。
-今回のカードはRust変更・既存solverの再実装・キャッシュ改善を完了条件にしない。
