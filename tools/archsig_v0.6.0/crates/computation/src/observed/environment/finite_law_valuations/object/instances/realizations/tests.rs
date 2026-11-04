@@ -586,3 +586,30 @@ fn owned_binder_alone_discovers_owner_axes_without_a_dependent_value_parameter()
         f.recheck(&i, &r, &quiet()).unwrap();
     }
 }
+
+#[test]
+fn candidate_fibers_share_immutable_origins_and_keep_value_verification() {
+    let i = fixture::with_body(fixture::MAP, OWNED);
+    let r = reading(&i, "root");
+    let f = result(&i, &r);
+    assert_eq!(f.rows.len(), 4);
+    let first = &f.rows[0].objects[0];
+    for row in &f.rows {
+        for (index, object) in row.objects.iter().enumerate() {
+            assert!(Arc::ptr_eq(&first.sources, &object.sources));
+            assert!(Arc::ptr_eq(
+                &f.rows[0].objects[index].selection,
+                &object.selection
+            ));
+        }
+    }
+    // 同じ値を別allocationへ移しても、由来・完全束縛の検証を通る。
+    let mut separate = first.clone();
+    separate.sources = Arc::new(first.sources.as_ref().clone());
+    separate.selection = Arc::new(first.selection.as_ref().clone());
+    assert_eq!(&separate, first);
+    separate.recheck(&i, &quiet()).unwrap();
+    // 一候補の値改変を共有由来の一致で見逃さない。
+    separate.entries.clear();
+    assert!(separate.recheck(&i, &quiet()).is_err());
+}

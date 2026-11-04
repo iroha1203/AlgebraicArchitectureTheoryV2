@@ -2130,3 +2130,27 @@ fn a_false_finite_guard_does_not_turn_missing_operands_into_observations() {
         replay(&e, &g.nodes, &g.contexts).unwrap();
     }
 }
+
+#[test]
+fn integer_function_keeps_every_ordered_point_with_shared_equal_literals() {
+    let mut parts = vec![];
+    let values = [0, 1, 0, 1].map(num_bigint::BigInt::from);
+    let result = function(&mut parts, 1, NodeRef(0), &values, &[3, 0, 1, 2], &quiet()).unwrap();
+    assert_eq!(parts.len(), 3);
+    let Part::Function { ring, values } = &parts[result.0 - 1] else {
+        panic!("function")
+    };
+    assert_eq!(*ring, NodeRef(0));
+    assert_eq!(values.len(), 4);
+    assert_eq!(values[0], values[2]);
+    assert_eq!(values[1], values[3]);
+    assert_ne!(values[0], values[1]);
+    let actual = values
+        .iter()
+        .map(|r| match &parts[r.0 - 1] {
+            Part::Scalar(Scalar::Z(v)) => v.clone(),
+            _ => panic!("integer literal"),
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(actual, [1, 0, 1, 0].map(num_bigint::BigInt::from));
+}

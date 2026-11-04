@@ -70,7 +70,8 @@ impl FiniteParameterRealizations {
 }
 fn evaluated_objects(
     inputs: &CheckedInputs,
-    selections: &[Selection],
+    sources: &Arc<InputSources>,
+    selections: &[Arc<Selection>],
     values: &[(Fact, Scalar)],
     e: &Environment<'_>,
     c: &Control,
@@ -79,7 +80,7 @@ fn evaluated_objects(
     for selection in selections {
         tick(c)?;
         let mut object = ObjectLawInstances {
-            sources: inputs.sources().clone(),
+            sources: sources.clone(),
             selection: selection.clone(),
             valuation: Some(values.to_vec()),
             entries: vec![],
@@ -93,10 +94,11 @@ fn evaluated_objects(
 fn populate_realizations(
     inputs: &CheckedInputs,
     result: &mut FiniteParameterRealizations,
-    selections: &[Selection],
+    selections: &[Arc<Selection>],
     c: &Control,
 ) -> Result<(), ValidationFailure> {
     let template = Environment::new(inputs, c)?;
+    let sources = Arc::new(inputs.sources().clone());
     let mut positions: BTreeSet<Fact> = BTreeSet::new();
     loop {
         tick(c)?;
@@ -152,7 +154,7 @@ fn populate_realizations(
                 .collect();
             let mut e = Environment::primitive_dependency_probe(inputs, &values, c)?;
             *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
-            let mut evaluated = evaluated_objects(inputs, selections, &values, &e, c);
+            let mut evaluated = evaluated_objects(inputs, &sources, selections, &values, &e, c);
             if result.law_dependencies {
                 if let Ok(objects) = &evaluated {
                     if let Err(cause) =
@@ -230,7 +232,7 @@ fn populate_realizations(
             .zip(candidate.iter().cloned())
             .collect();
         let e = Environment::with_primitive_valuation(inputs, &values, c)?;
-        let objects = evaluated_objects(inputs, selections, &values, &e, c)?;
+        let objects = evaluated_objects(inputs, &sources, selections, &values, &e, c)?;
         result.rows.push(ParameterRealization { point, objects });
         c.checkpoint(Checkpoint::FiniteLawRequired)?;
     }
@@ -268,7 +270,9 @@ fn compute(
         .map_err(|cause| fail(super::super::failure(cause)))?;
     let mut selections = vec![];
     for object in 0..readings.objects().len() {
-        selections.push(Selection::compute(inputs, readings, object, c).map_err(fail)?);
+        selections.push(Arc::new(
+            Selection::compute(inputs, readings, object, c).map_err(fail)?,
+        ));
     }
     let mut result = FiniteParameterRealizations {
         sources: inputs.sources().clone(),

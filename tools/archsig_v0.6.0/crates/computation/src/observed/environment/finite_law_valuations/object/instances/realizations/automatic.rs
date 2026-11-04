@@ -76,7 +76,7 @@ impl FiniteAutomaticLawFamily {
 /// 候補を原始制約で枝刈りする前に、全typed parameter行の元bodyを同じ核で読む。
 pub(super) fn discover_law_reads(
     inputs: &CheckedInputs,
-    selections: &[Selection],
+    selections: &[Arc<Selection>],
     objects: &[ObjectLawInstances],
     e: &mut Environment<'_>,
     c: &Control,

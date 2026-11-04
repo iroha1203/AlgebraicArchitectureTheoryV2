@@ -489,6 +489,20 @@ fn push(parts: &mut Vec<Part>, base: usize, part: Part) -> Result<NodeRef, Valid
     parts.push(part);
     Ok(NodeRef(index))
 }
+// 同じ有限表示の確定支持・Scopeを持つ整数literalだけを、配列内で共有する。
+fn integer_literal(
+    parts: &mut Vec<Part>,
+    base: usize,
+    value: &num_bigint::BigInt,
+    scalars: &mut std::collections::BTreeMap<num_bigint::BigInt, NodeRef>,
+) -> Result<NodeRef, ValidationFailure> {
+    if let Some(reference) = scalars.get(value) {
+        return Ok(*reference);
+    }
+    let reference = push(parts, base, Part::Scalar(Scalar::Z(value.clone())))?;
+    scalars.insert(value.clone(), reference);
+    Ok(reference)
+}
 fn function(
     parts: &mut Vec<Part>,
     base: usize,
@@ -498,6 +512,7 @@ fn function(
     c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let mut elements = vec![];
+    let mut scalars = std::collections::BTreeMap::new();
     if points.len() != values.len() {
         return Err(internal!("有限Lawの公開順と関数の次元が違う").into());
     }
@@ -506,7 +521,7 @@ fn function(
         let v = values
             .get(*point)
             .ok_or(internal!("有限Lawの元関数座標が範囲外"))?;
-        elements.push(push(parts, base, Part::Scalar(Scalar::Z(v.clone())))?);
+        elements.push(integer_literal(parts, base, v, &mut scalars)?);
     }
     push(
         parts,
@@ -778,13 +793,14 @@ fn basis(
     let target = push(parts, base, Part::IntegerRing)?;
     let evaluation = if let Some(ev) = f.object_evaluation(c)? {
         let mut images = vec![];
+        let mut scalars = std::collections::BTreeMap::new();
         for point in &points {
             tick(c)?;
             let v = ev
                 .basis_images()
                 .get(*point)
                 .ok_or(internal!("有限Lawの元評価座標が範囲外"))?;
-            images.push(push(parts, base, Part::Scalar(Scalar::Z(v.clone())))?);
+            images.push(integer_literal(parts, base, v, &mut scalars)?);
         }
         Some(push(
             parts,
