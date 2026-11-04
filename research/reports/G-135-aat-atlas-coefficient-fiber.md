@@ -6,7 +6,30 @@ GOALは `dc6a46a993561233a824848c75ba547b23ddf863` の
 `05d1c6c5cbdbb299d8d7120376135917b44f6fa1`、既存宣言は
 `53b6a674a29807605a943b6f6304e7b17c2da0d6`。
 
-## 現proof state（Cycle 25）
+## 証明状態と根拠
+
+固定T0・A–E・Wの19条項、全8前提台帳、完了条件1–3はResearchで
+`target-theorem-proved` と認定されている。
+[正式完了台帳](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5318#issuecomment-6078269788)は
+統合判定 `No major findings`、別の全GOAL独立数学2本・Lean2本と全15gateのpass、
+残るResearch証明義務・blocker・中心未確認が空であることを記録する。
+
+証拠版は `3f4524e2f01dfb924c063478bd3161c8a3683db2`。
+[標準PR受入監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5318#issuecomment-6077728887)、
+[全GOAL final packet](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/5318#issuecomment-6077753512)、
+[main同期記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/5290#issuecomment-6078348119)
+を対応する根拠とする。PR #5318のmergeは
+`ed16acc02229fdfe3846303de341d600878f03dc`。
+
+全4043所有宣言と外部bridge2の個別公理・source・実出力の対応、必要なfocused検証、
+固定headとmerge版のCI成功は上記記録にある。Research全体buildは未実施であり、
+CIのFormal実build・kernel・premise検査はskipされている。
+Formalへの移植状態は `unported (Research-proved)` として区別する。
+
+以下のcycle selection/result proposalと完了候補の記述は各固定headでの履歴である。
+全目標の証明状態は上記の正式完了台帳に従う。
+
+## Cycle 25完了判定前の証拠対応（履歴）
 
 Cycle 1の有限incidence・一般極限・carrier対象/端点APIはPR #5292で受理済み。
 Cycle 2の実M→carrier→右Kan→有限次元P→ηはPR #5293で受理済み。
@@ -29,7 +52,7 @@ Cycle 15の面複製はPR #5306で受理・merge済み。原P/η/ε・全A/任�
 Cycle 16の原τ消滅・全A/発生label有限検査はPR #5307で受理・merge済み。正式再査読の中心0、非中心F3は一文限定修正と新規直接確認四資格全PASSで解消した。
 Cycle 17の有理表からの商座標と両逆はPR #5309で受理・merge済み。Cycle18の原P/Q全三次数座標・微分・二射はPR #5310、Cycle19の原a/T/R/τ/J全元表示はPR #5312、Cycle20の原κ・成分手順・全A/label保存判定はPR #5313で受理・merge済み。Cycle21のW1a・W1b全指定評価はPR #5314で受理・merge済み。Cycle22のW2全指定評価はPR #5315で受理・merge済み。Cycle23のW3面ありとmだけ除くpairedの全指定評価はPR #5316で受理・merge済み。Cycle24の同G134原表W4全指定評価はPR #5317で受理・merge済み。新規正式再査読数学2/Lean2とrootは全No major findings、reruns1/2。Cycle25の固定W5全数学要求は下記のLean実装・全215個別公理に対応したcompletion candidate。標準PRゲート・実CIと別全目標最終四査読は未実施。全目標はtarget-proof-checkpoint、Formalは未移植。
 
-以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。現在のdelta・未放電行は末尾のCycle25台帳で追跡する。
+以下の各selection/result proposalは当時の履歴であり、受理状態は後続受理節へ対応させる。当時のdelta・未放電行は末尾のCycle25台帳に記録されている。
 
 ## Cycle 1 selection
 
