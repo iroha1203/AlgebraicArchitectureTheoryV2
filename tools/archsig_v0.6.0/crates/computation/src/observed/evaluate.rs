@@ -6019,6 +6019,60 @@ reading Calc {{
         )
     }
 
+    #[test]
+    fn ordinary_evaluation_support_keeps_exact_union_of_overlapping_children() {
+        let result = evaluate_observed_bytes(
+            numeric_recheck_fixture(&[], "view facts(s: Sample): (Q,Fp(5),Q) = (s.q,s.f,s.q);"),
+            &["facts=evaluate(Calc.facts,s=@v/sample)"],
+            &quiet(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        let root = result.answers[0].outputs["evaluation"].0;
+        let support = &result.nodes[root].support;
+        assert_eq!(support.len(), 3);
+        assert_eq!(
+            support
+                .iter()
+                .map(|f| f.field.as_deref())
+                .collect::<Vec<_>>(),
+            vec![None, Some("Numeric.Sample.f"), Some("Numeric.Sample.q")],
+        );
+        let Some(Payload::Evaluation { parts, .. }) = &result.nodes[root].payload else {
+            panic!("tupleの元Evaluationがある")
+        };
+        assert_eq!(
+            parts[0]
+                .children
+                .iter()
+                .filter(|child| { result.nodes[child.0].support.contains(&support[2]) })
+                .count(),
+            2,
+            "同じq支持を二つの実子が使う",
+        );
+        for mutation in 0..4 {
+            recheck_mutation(&result, |nodes| {
+                let facts = nodes[root].support.make_owned();
+                match mutation {
+                    0 => {
+                        facts.pop();
+                    }
+                    1 => {
+                        let mut extra = facts[0].clone();
+                        extra.subject = "other".into();
+                        facts.push(extra);
+                        facts.sort();
+                    }
+                    2 => {
+                        facts.push(facts[1].clone());
+                    }
+                    3 => facts.swap(0, 1),
+                    _ => unreachable!(),
+                }
+            });
+        }
+    }
+
     fn numeric_recheck_example() -> ObservedEvaluation {
         evaluate_observed_bytes(
             numeric_recheck_fixture(
