@@ -1298,3 +1298,75 @@ fn required_numeric_tuple_empty_guard_skips_unobserved_body() {
     let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
     assert!(arr(get(plan, "requirements")).is_empty());
 }
+
+#[test]
+fn unbounded_primitive_list_keeps_its_raw_type_location_and_ordinary_object() {
+    let definition = DEFINITION.replace(r#""type":"Z""#, r#""type":["List","Bool"]"#);
+    let dir = files_with_definition(
+        "build-list-boundary",
+        "law required all(c:Part):forall x in c.quantity . x;",
+        false,
+        &definition,
+    );
+    let path = dir.join("a.json");
+    let map = std::fs::read_to_string(&path)
+        .unwrap()
+        .replace(r#""value":"0""#, r#""value":[true]"#)
+        .replace(r#""value":"1""#, r#""value":[]"#);
+    std::fs::write(path, map).unwrap();
+    let run = asks(
+        &dir,
+        &[
+            "b=build(R,on=@v/root)",
+            "c=check(R.all,on=$b.object,c=@v/p)",
+        ],
+    );
+    let result = saved(&dir, &run, "partial", 2);
+    let b = answer(&result, "b");
+    assert_eq!(s(get(b, "status")), "undetermined");
+    assert!(has(get(b, "outputs"), "object"));
+    assert!(!has(get(b, "outputs"), "algebra"));
+    let reasons = arr(get(b, "reasons"));
+    assert_eq!(reasons.len(), 1);
+    let reason = &reasons[0];
+    assert_eq!(s(get(reason, "code")), "unsupported_algorithm");
+    assert_eq!(
+        s(get(get(reason, "details"), "method")),
+        "finite_primitive_domain"
+    );
+    let ty = &arr(get(get(reason, "details"), "operand_types"))[0];
+    assert_eq!(s(&arr(ty)[0]), "List");
+    assert_eq!(s(&arr(ty)[1]), "Bool");
+    let location = get(reason, "location");
+    assert_eq!(s(get(location, "input")), "archmap");
+    assert_eq!(s(get(location, "pointer")), "/snapshots/0/atoms/2/value");
+    let observation =
+        archsig_common::json::parse(&std::fs::read(dir.join("a.json")).unwrap()).unwrap();
+    let raw_atom = &arr(get(&arr(get(&observation, "snapshots"))[0], "atoms"))[2];
+    assert_eq!(s(get(raw_atom, "subject")), "p");
+    assert_eq!(s(get(raw_atom, "field")), "Build.Part.quantity");
+    // 公開semantic resultは内部Node依存を除き、入力の型と位置を保持する。
+    assert!(arr(get(reason, "dependencies")).is_empty());
+    assert!(arr(get(reason, "missing")).is_empty());
+    assert_eq!(s(get(answer(&result, "c"), "status")), "established");
+    std::fs::remove_dir_all(dir).unwrap();
+}
+
+#[test]
+fn missing_polynomial_evaluation_is_not_an_algorithm_boundary() {
+    let dir = files("missing-polynomial-boundary", BODY, true);
+    let run = asks(&dir, &["b=build(R,on=@v/root)"]);
+    let result = saved(&dir, &run, "partial", 2);
+    let reasons = arr(get(answer(&result, "b"), "reasons"));
+    assert!(
+        reasons
+            .iter()
+            .any(|r| s(get(r, "code")) == "missing_observation")
+    );
+    assert!(
+        reasons
+            .iter()
+            .all(|r| s(get(r, "code")) != "unsupported_algorithm")
+    );
+    std::fs::remove_dir_all(dir).unwrap();
+}

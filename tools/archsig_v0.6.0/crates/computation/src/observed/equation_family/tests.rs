@@ -42,6 +42,7 @@ fn start(p: &PreparedObserved, finite: bool) -> (Graph, Arc<Layout>) {
     let layout = if finite {
         observable_layout::retain_finite(&env, &mut g, table, p.shared_inputs(), &quiet())
             .unwrap()
+            .into_option()
             .unwrap()
     } else {
         observable_layout::retain(&env, &g, table, &quiet()).unwrap()

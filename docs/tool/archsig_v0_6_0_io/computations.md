@@ -275,6 +275,13 @@ V→W の読取り制限では、状態の実射影 ρ_X と残差座標の射�
 非対応はその realization を求めた計算に記録する。方程式表示の環、修復係数、
 状態集合、Čech 複体は別の型を持つ。
 
+多項式表示を得られず、依存する原始fieldの全型域が有限列挙の範囲外と確認された場合、
+`build` は `unsupported_algorithm` の `method: finite_primitive_domain` を返す。
+`operand_types` は元fieldの型を、位置は既知AtomのArchMap位置（未観測なら定義位置）を保持する。
+例えば要素型が有限でも長さを制限しないListの全域はこの範囲外である。
+この場合も構成済みの `object` は後続の `check` や `evaluate` へ渡せる。
+未観測値への依存と中断は、それぞれの理由として区別する。
+
 ## 3. 読取りの圏と cover
 
 合計と Tuple の公開情報を同じ入力で比較する実行例は、

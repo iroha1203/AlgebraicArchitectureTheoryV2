@@ -1,5 +1,6 @@
 use super::*;
 use crate::observed::{PreparedObserved, request::resolve_native_for_test};
+use archsig_common::types::Type;
 use archsig_input::input::CheckedInputs;
 #[allow(dead_code)]
 mod fixture {
@@ -73,6 +74,7 @@ fn sample(missing: bool, body: &str) -> (PreparedObserved, Graph, Layout) {
     let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let l = retain_finite(&env, &mut g, t, p.shared_inputs(), &quiet())
         .unwrap()
+        .into_option()
         .unwrap();
     (p, g, l)
 }
@@ -347,10 +349,33 @@ fn an_unavailable_finite_plan_does_not_change_the_table_or_create_a_completed_la
     let contexts = g.contexts.clone();
     let active = g.active;
     let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let finite_law_diagram::FiniteAttempt::OutsideFinite(boundary) =
+        retain_finite(&env, &mut g, t.clone(), p.shared_inputs(), &quiet()).unwrap()
+    else {
+        panic!("explicit nonfinite primitive domain")
+    };
+    assert_eq!(boundary.ty(), &Type::Z);
+    assert_eq!(boundary.position().snapshot, "v");
+    assert_eq!(
+        boundary.position().field.as_deref(),
+        Some("Family.Part.quantity")
+    );
+    boundary.recheck(&g, t.architecture, &quiet()).unwrap();
+    let other = prepared(polynomial_fixture::inputs(
+        false,
+        false,
+        "law required zero(c:Part):c.quantity=0;",
+    ));
+    let (foreign, foreign_table) = start(&other);
     assert!(
-        retain_finite(&env, &mut g, t, p.shared_inputs(), &quiet())
-            .unwrap()
-            .is_none()
+        boundary
+            .recheck(&foreign, foreign_table.architecture, &quiet())
+            .is_err()
+    );
+    let stop = archsig_input::result::Signal::Term;
+    let stopped = Control::new(move |_| Some(stop));
+    assert!(
+        matches!(boundary.recheck(&g, t.architecture, &stopped), Err(ValidationFailure::Stop(s)) if s == stop)
     );
     assert_eq!(g.nodes, before);
     assert_eq!(g.contexts, contexts);
@@ -366,6 +391,7 @@ fn an_empty_law_family_keeps_the_empty_block_product_and_all_objects_without_a_f
     let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let l = retain_finite(&env, &mut g, t, p.shared_inputs(), &quiet())
         .unwrap()
+        .into_option()
         .unwrap();
     assert_eq!(g.nodes, before);
     assert!(l.data.factors.is_empty() && l.data.indices.is_empty());
@@ -394,6 +420,7 @@ fn finite_construction_interrupt_keeps_the_exact_finished_node_prefix_and_reques
     let mut full = copy(&initial, &c);
     retain_finite(&env, &mut full, t.clone(), p.shared_inputs(), &c)
         .unwrap()
+        .into_option()
         .unwrap();
     let total = seen.get();
     assert!(total > 4);
@@ -482,6 +509,7 @@ fn boolean_fields_use_the_finite_indicator_with_original_boolean_operands() {
     let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let l = retain_finite(&env, &mut g, t, p.shared_inputs(), &quiet())
         .unwrap()
+        .into_option()
         .unwrap();
     assert!(l.checked(&env, &g, &quiet()).unwrap().is_complete());
     assert_eq!(l.data.factors.len(), 1);
@@ -515,4 +543,75 @@ fn boolean_fields_use_the_finite_indicator_with_original_boolean_operands() {
         }
     }
     replay(&p, &g);
+}
+
+#[test]
+fn missing_finite_bool_is_not_a_nonfinite_primitive_domain() {
+    let base = fixture::inputs(true, "law required yes(c:Part):c.quantity=0;");
+    let sources = base.sources();
+    let definition = String::from_utf8(sources.definitions()[0].bytes().to_vec())
+        .unwrap()
+        .replace(r#"["Fp","2"]"#, r#""Bool""#);
+    let defs =
+        archsig_input::definition::check_definitions(&[("definition0", definition.as_bytes())])
+            .unwrap();
+    let digest = &defs.vocabularies()["Family"].digest;
+    let law = format!(
+        "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Family version \"1\" digest \"{digest}\";law required yes(c:Part):c.quantity;}}"
+    );
+    let map = String::from_utf8(sources.archmap().bytes().to_vec())
+        .unwrap()
+        .replace(&base.definitions().vocabularies()["Family"].digest, digest)
+        .replace(r#""value":"0""#, r#""value":false"#);
+    let i = Arc::new(
+        archsig_input::input::check_inputs(
+            archsig_input::input::InputSources::from_bytes(
+                vec![definition.into_bytes()],
+                law.into_bytes(),
+                map.into_bytes(),
+            ),
+            &quiet(),
+        )
+        .unwrap(),
+    );
+    let p = prepared(i);
+    let (mut g, t) = start(&p);
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let finite_law_diagram::FiniteAttempt::Available(layout) =
+        retain_finite(&env, &mut g, t, p.shared_inputs(), &quiet()).unwrap()
+    else {
+        panic!("finite Bool domain")
+    };
+    assert!(!layout.data.complete);
+    assert!(
+        layout
+            .data
+            .reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::Missing))
+    );
+    assert!(
+        layout
+            .data
+            .reasons
+            .iter()
+            .all(|r| !matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+    );
+}
+
+#[test]
+fn nonfinite_parameter_without_a_nonfinite_primitive_keeps_incomplete_separate() {
+    let p = prepared(polynomial_fixture::inputs(
+        false,
+        false,
+        "law required loose(c:Part,n:Z):true;",
+    ));
+    let (mut g, t) = start(&p);
+    let before = g.nodes.len();
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    assert!(matches!(
+        retain_finite(&env, &mut g, t, p.shared_inputs(), &quiet()).unwrap(),
+        finite_law_diagram::FiniteAttempt::Incomplete
+    ));
+    assert_eq!(g.nodes.len(), before);
 }
