@@ -56,8 +56,8 @@ G-125の実比較・整数消去はこのDAGへ未接続。Formalへの移植も
 
 ## 残る固定証明義務
 
-Cの全自然性・同型、Dの同じ実Čech比較とreading、
-Eの整数全入力の停止算法・商での全解、指定W1–W6は未完了。
+Dの同じ実Čech比較とreading、Eの整数全入力の停止算法・商での全解、
+指定W1–W6は未完了。
 これらをAの一般定理や非空虚性例で完了扱いしない。
 
 ## Cycle 1 ledger
@@ -295,4 +295,91 @@ audits:
   validation_refs: [PR記載のfocused検証と全宣言公理監査]
   blocking_findings: [独立レビュー未実施]
   next_obligation: Cの実平方に沿った障害・余核・短完全列・全解作用の自然性
+```
+
+
+## Cの平方自然性と同型
+
+[SquareNaturality.lean](../lean/ResearchLean/AG/SpecifiedRepairLifting/SquareNaturality.lean)は
+任意cochain平方の元の成分を使う。依存はcycle 3のhead
+`d6a7111271bfab58a82e3682a90e9778c52ca25a`、
+[独立査読・直接対応・受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/6197#issuecomment-6636378313)
+を参照する。PR #6197はmerge済み。
+
+| 固定Cの要求 | 宣言 | 実体 |
+| --- | --- | --- |
+| 適合入力と実Liftの輸送 | `square_component`、`square_closed`、`square_compatible`、`squareLiftMap` | 元のα⁰で補正を送り、両方の厳密等式を保持 |
+| kの核・余核 | `zeroCyclesMap`、`cycleComparison_square`、`squareKernelMap`、`squareCokernelMap` | 実cycleの制限と同じ像商への降下 |
+| 標準錐と障害 | `zeroExtension_square`、`squareConeMap`、`squareConeMap_coordinates`、`squareObstructionMap`、`obstruction_naturality` | mathlibのmappingCone.mapとhomologyMap。座標は同じβ⁰,α¹ |
+| j,pと可換 | `cokernelInclusion_naturality`、`coneProjection_naturality`、`squareH1KernelMap`、`coneKernelProjection_naturality` | 余核・標準H⁰・元の標準H¹kernelの同じ写像 |
+| 作用・差・残差 | `squareLiftMap_addKernel`、`squareLiftMap_difference`、`square_correction`、`residualClass_naturality` | 元cochainの加法・差、輸送したa₀による同じ残差 |
+| 恒等・合成 | `squareLiftMap_id/comp`、`squareKernelMap_id/comp`、`squareCokernelMap_id/comp`、`squareConeMap_id/comp`、`squareObstructionMap_id/comp`、`squareH1KernelMap_id/comp` | 全ての輸送に同じcochain平方の恒等と合成を適用 |
+| 同型時の両方向 | `square_inverse_comm`、`squareLiftEquiv`、`squareKernelEquiv`、`squareCokernelEquiv`、`squareConeIso`、`squareObstructionEquiv`、`squareH1KernelEquiv` | 元のcochain逆射から逆輸送を生成し両逆を証明 |
+| 同型時の作用と零性 | `squareLiftEquiv_addKernel`、`obstruction_zero_iff_of_iso`、`lift_nonempty_iff_of_iso` | 同じ補正の同値と作用の対応、障害零性と持ち上げ存在の両方向 |
+| 一般平方の保存のみ | `obstruction_zero_preserved`、`integer_square_nonreflection` | 非同型平方では非零障害が零に送られる実整数例を保持 |
+| 非自明な同型輸送 | `integerNegationIso`、`integer_negation_lift` | 元整数複体の符号反転で補正1を−1へ送る |
+
+平方可換性はCが許す入力であり、同型は両方向主張だけの方向仮定。
+零延長の平方、実核・余核の所属と降下、標準障害の輸送、逆平方と両逆は構成する。
+自然性・逆向きの証明書を外部引数として受け取らない。
+`he`は元のcochain平方の可換性で、零延長、核・余核、障害、実Liftに使用する。
+同型のinverseは同じcochain同型の実逆射である。
+一般平方での反映やLift全射は主張しない。Dでは既存readingからこの入力平方を生成する必要が残る。
+整数例はCの非空虚性であり、W1–W6の代替ではない。
+
+## Cycle 4 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-138-aat-specified-repair-lifting
+cycle: 4
+goal_blob_sha: 64dd19a5f4959437649748306100bd023b4f029e
+base_oid: d6a7111271bfab58a82e3682a90e9778c52ca25a
+tracking_issue: 6191
+report_path: research/reports/G-138-aat-specified-repair-lifting.md
+selection:
+  proof_state_ref: '#6191 / issuecomment-6636382253'
+  proof_dag_predecessors: [cycle1の標準錐, cycle2の実Liftとkernel作用, cycle3の余核とj,p]
+  milestone: Cの一般平方自然性・恒等合成・同型輸送
+  proof_obligations: [実Lift輸送, 核余核輸送, 標準錐障害輸送, jとpの自然性, 作用差残差, 恒等合成, 同型の両逆]
+  exit_criteria: [任意cochain平方, 同じ実成分と標準誘導射, 一般平方で保存のみ, 同型時の両方向, 非空虚性, focused検証と公理監査]
+  selection_reason: 一般理論の表示変更を閉じ、Dの実readingとEの表示変更へ接続する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/SpecifiedRepairLifting/SquareNaturality.lean]
+  risks: [一般平方へ同型条件を追加, 零性反映の過大主張, 自然性certificateの入力化, 元補正の厳密一致を喪失]
+  unchecked: [独立レビュー]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 上記Cの平方自然性と同型の対応表を構成
+  exit_criteria_status: [上記対応表とPR記載のfocused検証]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [ResearchLean/AG/SpecifiedRepairLifting/SquareNaturality.lean]
+  evidence: [obstruction_naturality, cokernelInclusion_naturality, coneKernelProjection_naturality, squareLiftEquiv_addKernel]
+  claim_mapping:
+    theorem_names: [上記Cの対応表]
+    source_labels: [C]
+    conjuncts: [全実対象の輸送と自然性, 恒等合成, 同型時の両逆]
+    undischarged_assumptions: []
+    acceptance_point: 固定Cの一般理論。D–EとWは未完了
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [零延長平方, 核余核の誘導射, 標準錐との座標一致, jとpの自然性, 逆平方と両逆]
+    remaining: [D–E, W]
+  certificate_provenance:
+    discharged: [元cochain成分, 標準mappingCone.map, 標準homologyMap, 元の同型逆射]
+    unresolved: []
+  proof_use:
+    used: [平方可換性は実Liftと核余核と障害, 同型逆射は両方向だけ]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [PR記載のfocused検証と全宣言公理監査]
+  blocking_findings: [独立レビュー未実施]
+  next_obligation: DのG-125実比較と元のH¹・readingへの接続
 ```

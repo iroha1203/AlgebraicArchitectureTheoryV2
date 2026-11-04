@@ -2528,3 +2528,4 @@ ResearchLean.AG.SafeCoarseningOrder.W2FiniteEvaluation	ResearchLean/AG/SafeCoars
 ResearchLean.AG.SpecifiedRepairLifting.AdditiveCone	ResearchLean/AG/SpecifiedRepairLifting/AdditiveCone.lean
 ResearchLean.AG.SpecifiedRepairLifting.LiftTorsor	ResearchLean/AG/SpecifiedRepairLifting/LiftTorsor.lean
 ResearchLean.AG.SpecifiedRepairLifting.ResidualExact	ResearchLean/AG/SpecifiedRepairLifting/ResidualExact.lean
+ResearchLean.AG.SpecifiedRepairLifting.SquareNaturality	ResearchLean/AG/SpecifiedRepairLifting/SquareNaturality.lean
