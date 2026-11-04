@@ -563,12 +563,12 @@ impl Evaluator<'_, '_> {
                             },
                         },
                         vec![],
-                        vec![Fact {
+                        vec![Fact::from(archsig_input::archmap::FactData {
                             snapshot: snapshot.clone(),
                             subject: subject.clone(),
                             field: None,
                             atom: None,
-                        }],
+                        })],
                         scope,
                     )?;
                     if let Some(node) =
@@ -2419,12 +2419,12 @@ impl Evaluator<'_, '_> {
         {
             return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
         }
-        let fact = Fact {
+        let fact = Fact::from(archsig_input::archmap::FactData {
             snapshot,
             subject,
             field: Some(field.name.clone()),
             atom: None,
-        };
+        });
         if let Some((assigned, _)) = self.environment.state.architecture_value(&fact) {
             return self.finish(
                 span,
@@ -3933,21 +3933,23 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         assert_eq!(data_scalar_at(&result, right.0), &Scalar::Z(1.into()));
         assert_eq!(
             facts,
-            &[Fact {
+            &[Fact::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: "sample".into(),
                 field: None,
                 atom: None,
-            }]
+            })]
         );
         assert!(result.answers[2].reasons.iter().any(|reason| {
             matches!(reason.kind, ReasonKind::Missing)
-                && reason.missing.contains(&Fact {
-                    snapshot: "v".into(),
-                    subject: "sample".into(),
-                    field: Some("Affine.Sample.z".into()),
-                    atom: None,
-                })
+                && reason
+                    .missing
+                    .contains(&Fact::from(archsig_input::archmap::FactData {
+                        snapshot: "v".into(),
+                        subject: "sample".into(),
+                        field: Some("Affine.Sample.z".into()),
+                        atom: None,
+                    }))
         }));
         completion_mutation(&result, counterexample, |nodes| {
             let Some(Payload::Counterexample { facts, .. }) = &mut nodes[counterexample].payload
@@ -4176,12 +4178,12 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             graph.scalar(amount.outputs["value"]).unwrap(),
             &Scalar::Z(12.into())
         );
-        let count = Fact {
+        let count = Fact::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: "s".into(),
             field: Some("Counter.State.count".into()),
             atom: Some("count".into()),
-        };
+        });
         assert!(
             graph
                 .get(amount.outputs["evaluation"])
@@ -6968,12 +6970,12 @@ reading Calc {{
                 span: None,
             },
         };
-        changed[scalar].support = vec![Fact {
+        changed[scalar].support = vec![Fact::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: "sample".into(),
             field: Some(field.name.clone()),
             atom: Some(atom.clone()),
-        }]
+        })]
         .into();
         // 同型同値・同owner・同Scopeでも、元callee field x.qをq2へ変えない。
         rejects_named_prefix(&result, &changed);
@@ -7382,12 +7384,14 @@ reading Calc {{
             if mutation == 0 {
                 changed[binder].scope.readings.insert("Foreign".into());
             } else {
-                changed[binder].support.make_owned().push(Fact {
-                    snapshot: "v".into(),
-                    subject: "sample".into(),
-                    field: None,
-                    atom: None,
-                });
+                changed[binder].support.make_owned().push(Fact::from(
+                    archsig_input::archmap::FactData {
+                        snapshot: "v".into(),
+                        subject: "sample".into(),
+                        field: None,
+                        atom: None,
+                    },
+                ));
             }
             rejects_named_prefix(&result, &changed);
         }
@@ -7927,12 +7931,14 @@ reading Calc {{
                     changed[source].scope.readings.insert("Foreign".into());
                 }
                 1 => {
-                    changed[binder].support.make_owned().push(Fact {
-                        snapshot: "v".into(),
-                        subject: "sample".into(),
-                        field: None,
-                        atom: None,
-                    });
+                    changed[binder].support.make_owned().push(Fact::from(
+                        archsig_input::archmap::FactData {
+                            snapshot: "v".into(),
+                            subject: "sample".into(),
+                            field: None,
+                            atom: None,
+                        },
+                    ));
                 }
                 _ => {
                     changed[source].arguments.pop();

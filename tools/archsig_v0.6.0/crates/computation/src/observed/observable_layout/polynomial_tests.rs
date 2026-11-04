@@ -168,12 +168,12 @@ fn mixed_z_q_fp_components_share_factors_and_place_only_at_the_root_atom() {
     assert!(checked.is_complete()); // 対象外の生差は未評価のまま、記号表示と条件付き零を保持。
     assert_eq!(
         l.data.anchor,
-        Fact {
+        Fact::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: "root".into(),
             field: None,
             atom: None
-        }
+        })
     );
     for (object, row) in l.data.objects.iter().enumerate() {
         assert_eq!(row.object, t.objects[object].object);
@@ -425,9 +425,11 @@ fn checked_placement_rejects_foreign_atoms_indices_and_coordinates() {
     );
     let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let checked = l.checked(&env, &g, &quiet()).unwrap();
-    let foreign = Fact {
-        snapshot: "other".into(),
-        ..l.data.anchor.clone()
+    let foreign = {
+        let aat_field_0 = "other".into();
+        let mut aat_fact = l.data.anchor.clone();
+        aat_fact.snapshot = aat_field_0;
+        aat_fact
     };
     assert!(
         checked

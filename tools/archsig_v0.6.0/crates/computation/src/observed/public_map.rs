@@ -104,12 +104,12 @@ pub(super) fn selected(
         }
         _ => return Err(internal!("mapのonがHandleでない").into()),
     };
-    let fact = Fact {
+    let fact = Fact::from(archsig_input::archmap::FactData {
         snapshot,
         subject,
         field: None,
         atom: None,
-    };
+    });
     let original = environment.indexes.subject(&fact.snapshot, &fact.subject)?;
     let Selector::Declaration { name } = &request.head else {
         return Err(internal!("mapのheadが宣言でない").into());
@@ -508,12 +508,12 @@ pub(super) fn evaluate_configuration(
             ..
         } = &endpoint.slot
         {
-            let root = Fact {
+            let root = Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
                 field: None,
                 atom: None,
-            };
+            });
             let reading =
                 native::reading_name(request, if i == 0 { "reading" } else { "to_reading" })?;
             let witness = ArchitectureWitness::compute(

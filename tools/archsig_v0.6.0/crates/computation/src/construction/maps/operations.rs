@@ -479,18 +479,20 @@ pub fn identity(
             "root自身はbaseとして選び、部分対象にはowned entityを指定する".into(),
         ));
     }
-    let root = FactPointer {
+    let root = FactPointer::from(archsig_input::archmap::FactData {
         snapshot: root_snapshot.into(),
         subject: root.into(),
         field: None,
         atom: None,
-    };
+    });
     let subject = component
-        .map(|(s, id)| FactPointer {
-            snapshot: s.into(),
-            subject: id.into(),
-            field: None,
-            atom: None,
+        .map(|(s, id)| {
+            FactPointer::from(archsig_input::archmap::FactData {
+                snapshot: s.into(),
+                subject: id.into(),
+                field: None,
+                atom: None,
+            })
         })
         .unwrap_or_else(|| root.clone());
     identity_object(

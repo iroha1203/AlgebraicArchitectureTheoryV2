@@ -6,12 +6,12 @@ fn missing_map() -> String {
     map
 }
 fn owner() -> Fact {
-    Fact {
+    Fact::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: "q".into(),
         field: Some("Pattern.Part.owner".into()),
         atom: None,
-    }
+    })
 }
 fn root_value(subject: &str) -> Scalar {
     Scalar::Subject {

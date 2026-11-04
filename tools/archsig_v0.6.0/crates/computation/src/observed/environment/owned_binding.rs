@@ -183,12 +183,12 @@ impl Environment<'_> {
                         entity: s.ty.to_string(),
                     },
                     scope: self.indexes.scope(s, reading, None)?,
-                    support: vec![Fact {
+                    support: vec![Fact::from(archsig_input::archmap::FactData {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
                         field: None,
                         atom: None,
-                    }],
+                    })],
                     root: None,
                     producer: None,
                 })

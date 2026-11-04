@@ -196,12 +196,14 @@ impl Environment<'_> {
                             object.identity.reading(),
                             Some(origin),
                         )?);
-                        domain.support.push(Fact {
-                            snapshot: subject.snapshot.clone(),
-                            subject: subject.id.clone(),
-                            field: Some(field.name.clone()),
-                            atom: Some(atom.clone()),
-                        });
+                        domain
+                            .support
+                            .push(Fact::from(archsig_input::archmap::FactData {
+                                snapshot: subject.snapshot.clone(),
+                                subject: subject.id.clone(),
+                                field: Some(field.name.clone()),
+                                atom: Some(atom.clone()),
+                            }));
                     }
                 }
             }

@@ -43,12 +43,12 @@ fn path_index(r: &ObservedEvaluation) -> usize {
         .unwrap()
 }
 fn fact(snapshot: &str, subject: &str, field: Option<&str>) -> Fact {
-    Fact {
+    Fact::from(archsig_input::archmap::FactData {
         snapshot: snapshot.into(),
         subject: subject.into(),
         field: field.map(|f| format!("Paths.Node.{f}").into()),
         atom: field.map(|f| format!("{subject}-{f}")),
-    }
+    })
 }
 #[test]
 fn internal_path_action_is_exact_on_all_42_original_atoms_and_external_identity() {
@@ -68,12 +68,12 @@ fn internal_path_action_is_exact_on_all_42_original_atoms_and_external_identity(
         ("w", vec!["A", "p"]),
     ] {
         for subject in subjects {
-            expected.push(Fact {
+            expected.push(Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.into(),
                 subject: subject.into(),
                 field: None,
                 atom: None,
-            });
+            }));
             if subject == "A" {
                 continue;
             }
@@ -83,12 +83,12 @@ fn internal_path_action_is_exact_on_all_42_original_atoms_and_external_identity(
                 ("Hop", vec!["owner", "from", "to"])
             };
             for field in fields {
-                expected.push(Fact {
+                expected.push(Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.into(),
                     subject: subject.into(),
                     field: Some(format!("Paths.{entity}.{field}").into()),
                     atom: Some(format!("{subject}-{field}")),
-                });
+                }));
             }
         }
     }
@@ -96,12 +96,12 @@ fn internal_path_action_is_exact_on_all_42_original_atoms_and_external_identity(
     assert_eq!(step.carrier, expected);
     for (a, b) in step.carrier.iter().zip(&step.images) {
         let image = if a.snapshot == "v" && a.subject == "p" {
-            Fact {
+            Fact::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: "q".into(),
                 field: a.field.clone(),
                 atom: a.atom.as_ref().map(|s| s.replacen("p-", "q-", 1)),
-            }
+            })
         } else {
             a.clone()
         };

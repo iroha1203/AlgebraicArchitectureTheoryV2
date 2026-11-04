@@ -1050,12 +1050,12 @@ fn subject_fact(graph: &Graph, r: NodeRef) -> Result<Fact, ValidationFailure> {
     match graph.scalar(r)? {
         Scalar::Subject {
             snapshot, subject, ..
-        } => Ok(Fact {
+        } => Ok(Fact::from(archsig_input::archmap::FactData {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
             field: None,
             atom: None,
-        }),
+        })),
         _ => Err(internal!("native構成のsubject参照が原始参照でない").into()),
     }
 }
@@ -1177,23 +1177,23 @@ impl ArchitectureWitness {
                     continue;
                 }
                 // 別root所属として除外した根拠も支持へ残す。
-                support.push(Fact {
+                support.push(Fact::from(archsig_input::archmap::FactData {
                     snapshot: subject.snapshot.clone(),
                     subject: subject.id.clone(),
                     field: None,
                     atom: None,
-                });
+                }));
                 for field in &subject.fields {
                     if !field.name.is_owner() {
                         continue;
                     }
                     if let archsig_input::archmap::Slot::Known { atom, .. } = &field.slot {
-                        support.push(Fact {
+                        support.push(Fact::from(archsig_input::archmap::FactData {
                             snapshot: subject.snapshot.clone(),
                             subject: subject.id.clone(),
                             field: Some(field.name.clone()),
                             atom: Some(atom.clone()),
-                        });
+                        }));
                     }
                 }
             }
@@ -1209,12 +1209,12 @@ impl ArchitectureWitness {
                         if field.name.is_owner()
                             && let archsig_input::archmap::Slot::Known { atom, .. } = &field.slot
                         {
-                            support.push(Fact {
+                            support.push(Fact::from(archsig_input::archmap::FactData {
                                 snapshot: subject.snapshot.clone(),
                                 subject: subject.id.clone(),
                                 field: Some(field.name.clone()),
                                 atom: Some(atom.clone()),
-                            });
+                            }));
                         }
                     }
                 }
@@ -1566,24 +1566,24 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
                 ..
             },
             _,
-        ) => vec![Fact {
+        ) => vec![Fact::from(archsig_input::archmap::FactData {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
             field: None,
             atom: None,
-        }],
+        })],
         (_, Witness::Architecture(a)) => a.support.clone(),
         (_, Witness::Map(m)) => {
             let mut facts = m.universe.clone();
             facts.push(m.subject.clone());
             for f in &find_subject(inputs, &m.subject)?.fields {
                 if let archsig_input::archmap::Slot::Known { atom, .. } = &f.slot {
-                    facts.push(Fact {
+                    facts.push(Fact::from(archsig_input::archmap::FactData {
                         snapshot: m.subject.snapshot.clone(),
                         subject: m.subject.subject.clone(),
                         field: Some(f.name.clone()),
                         atom: Some(atom.clone()),
-                    });
+                    }));
                 }
             }
             facts
@@ -1710,12 +1710,12 @@ pub fn retain(
     for reason in &reasons {
         if matches!(reason.kind, ReasonKind::Missing) && reason.dependencies.is_empty() {
             for fact in &reason.missing {
-                let root = Fact {
+                let root = Fact::from(archsig_input::archmap::FactData {
                     snapshot: fact.snapshot.clone(),
                     subject: fact.subject.clone(),
                     field: None,
                     atom: None,
-                };
+                });
                 if missing_reference(graph, &value.witness, &root).is_none() {
                     retain(
                         graph,
@@ -1775,12 +1775,12 @@ fn connected_reasons(
     for reason in &mut reasons {
         if matches!(reason.kind, ReasonKind::Missing) && reason.dependencies.is_empty() {
             for fact in &reason.missing {
-                let root = Fact {
+                let root = Fact::from(archsig_input::archmap::FactData {
                     snapshot: fact.snapshot.clone(),
                     subject: fact.subject.clone(),
                     field: None,
                     atom: None,
-                };
+                });
                 reason.dependencies.push(
                     missing_reference(graph, witness, &root)
                         .ok_or(internal!("native欠測の元subject参照がない"))?,
@@ -2143,12 +2143,12 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
             };
             let original = find_subject(
                 v.witness.inputs(),
-                &Fact {
+                &Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),
                     field: None,
                     atom: None,
-                },
+                }),
             )?;
             require!(
                 *entity == original.ty

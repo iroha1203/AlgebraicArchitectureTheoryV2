@@ -75,12 +75,12 @@ pub(crate) fn determined_owners(
         };
         owners.push((
             field.clone(),
-            result::Fact {
+            result::Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
                 field: None,
                 atom: None,
-            },
+            }),
         ));
     }
     let mut scope = all.scope;

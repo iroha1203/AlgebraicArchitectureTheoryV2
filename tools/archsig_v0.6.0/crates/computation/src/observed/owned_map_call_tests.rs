@@ -151,12 +151,12 @@ fn missing_owned_map_uses_complete_original_fibers_before_candidate_tables() {
         .finite_values(&Type::Ref("Reservations.State".into()), &mut |_, _| {})
         .unwrap();
     assert_eq!(roster.values.len(), 8);
-    let fields = [Fact {
+    let fields = [Fact::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: "m".into(),
         field: Some("Reservations.Migration.states".into()),
         atom: None,
-    }];
+    })];
     let mut phases = std::collections::BTreeMap::new();
     let all = env
         .completion_assignments(&fields, &mut |phase, index| {

@@ -38,12 +38,12 @@ fn fact(id: &str, field: Option<&str>) -> FactPointer {
         "x" => "External",
         _ => panic!("fixture subject"),
     };
-    FactPointer {
+    FactPointer::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: id.into(),
         field: field.map(|f| format!("Profile.{ty}.{f}").into()),
         atom: field.map(|f| format!("{id}-{f}")),
-    }
+    })
 }
 fn slot(id: &str, field: &str) -> FactPointer {
     let mut f = fact(id, Some(field));

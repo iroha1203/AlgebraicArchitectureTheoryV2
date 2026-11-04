@@ -1149,9 +1149,11 @@ pub fn correspondence_retained(
                 check(control)?;
                 if let Slot::Known { atom, value, .. } = &f.slot {
                     if !references(value, control)?.is_empty() {
-                        unresolved_fields.push(FactPointer {
-                            atom: Some(atom.clone()),
-                            ..slot(source, &f.name)
+                        unresolved_fields.push({
+                            let aat_field_0 = Some(atom.clone());
+                            let mut aat_fact = slot(source, &f.name);
+                            aat_fact.atom = aat_field_0;
+                            aat_fact
                         });
                     }
                 }
@@ -1197,9 +1199,11 @@ pub fn correspondence_retained(
                         absent = true;
                     }
                     Slot::Known { atom, value, .. } => {
-                        let image = FactPointer {
-                            atom: Some(atom.clone()),
-                            ..slot(image_subject, &tf.name)
+                        let image = {
+                            let aat_field_0 = Some(atom.clone());
+                            let mut aat_fact = slot(image_subject, &tf.name);
+                            aat_fact.atom = aat_field_0;
+                            aat_fact
                         };
                         let sf = field(original, source_field, control)?.ok_or_else(|| {
                             ConstructionFailure::Inconsistent(internal!("始域のfieldがない"))

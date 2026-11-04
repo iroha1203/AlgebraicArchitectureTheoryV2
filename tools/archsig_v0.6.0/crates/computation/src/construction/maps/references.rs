@@ -133,12 +133,12 @@ pub fn reference_type_transport(
         tick(control)?;
         for subject in &snapshot.subjects {
             tick(control)?;
-            let fact = FactPointer {
+            let fact = FactPointer::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.id.clone(),
                 subject: subject.id.clone(),
                 field: None,
                 atom: None,
-            };
+            });
             if subject.ty == source_type {
                 source.push(fact.clone());
             }

@@ -99,12 +99,12 @@ fn fact(id: &str, field: Option<&str>) -> Fact {
         "x" => "External",
         _ => panic!(),
     };
-    Fact {
+    Fact::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: id.into(),
         field: field.map(|f| format!("Profile.{ty}.{f}").into()),
         atom: field.map(|f| format!("{id}-{f}")),
-    }
+    })
 }
 fn expected() -> (Vec<Fact>, BTreeSet<Fact>, BTreeSet<(Fact, Fact)>) {
     let mut universe = vec![
@@ -258,9 +258,11 @@ fn missing_quantity_keeps_required_slots_and_uses_only_known_atoms_in_the_patter
     for row in &d.rows {
         let data = data(&g, row.pattern);
         assert_eq!(data.output.queries, qs);
-        let slot = Fact {
-            atom: None,
-            ..fact("p", Some("quantity"))
+        let slot = {
+            let aat_field_0 = None;
+            let mut aat_fact = fact("p", Some("quantity"));
+            aat_fact.atom = aat_field_0;
+            aat_fact
         };
         assert!(
             data.source.profiles.profiles().iter().all(|p| p
@@ -675,12 +677,12 @@ fn shared_external_references_preserve_identity_and_do_not_import_external_field
         } else {
             "Node"
         };
-        Fact {
+        Fact::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: subject.into(),
             field: field.map(|f| format!("Flow.{ty}.{f}").into()),
             atom: field.map(|f| format!("{subject}-{f}")),
-        }
+        })
     };
     for (index, row) in d.rows.iter().enumerate() {
         let data = data(&g, row.pattern);

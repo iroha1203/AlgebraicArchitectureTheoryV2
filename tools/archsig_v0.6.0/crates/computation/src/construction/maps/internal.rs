@@ -332,9 +332,11 @@ fn internal_arrow_checked(
             absent = true;
             continue;
         };
-        let image = FactPointer {
-            atom: Some(atom.clone()),
-            ..slot(target_subject, &tf.name)
+        let image = {
+            let aat_field_0 = Some(atom.clone());
+            let mut aat_fact = slot(target_subject, &tf.name);
+            aat_fact.atom = aat_field_0;
+            aat_fact
         };
         let sf = field(source_subject, source_field, control)?.ok_or_else(|| {
             ConstructionFailure::Inconsistent(internal!("内部作用の始域fieldがない"))

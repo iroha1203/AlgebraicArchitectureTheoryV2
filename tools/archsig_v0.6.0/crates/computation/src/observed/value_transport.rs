@@ -311,12 +311,14 @@ fn domain(
                             subject: subject.id.clone(),
                             entity: name.into(),
                         });
-                        result.support.push(Fact {
-                            snapshot: snapshot.id.clone(),
-                            subject: subject.id.clone(),
-                            field: None,
-                            atom: None,
-                        });
+                        result
+                            .support
+                            .push(Fact::from(archsig_input::archmap::FactData {
+                                snapshot: snapshot.id.clone(),
+                                subject: subject.id.clone(),
+                                field: None,
+                                atom: None,
+                            }));
                         for origin in inputs.archmap().origins() {
                             control.checkpoint(Checkpoint::FiniteValueTransport)?;
                             if origin.id == subject.origin {
@@ -429,12 +431,12 @@ fn image(
                 subject,
                 entity,
             } => {
-                let original = Fact {
+                let original = Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),
                     field: None,
                     atom: None,
-                };
+                });
                 if let Some(to) = action.get(&original) {
                     let target_type = mu.get(entity).unwrap_or(entity);
                     // F内の外部参照も原始mapで固定される。実subjectの型を保持する。

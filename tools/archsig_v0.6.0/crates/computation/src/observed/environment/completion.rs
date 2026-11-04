@@ -185,24 +185,26 @@ impl Environment<'_> {
                 self.tick()?;
                 all.scope.merge(&self.indexes.scope(subject, "", None)?);
                 all.scope.readings.remove("");
-                all.support.push(Fact {
-                    snapshot: snapshot.id.clone(),
-                    subject: subject.id.clone(),
-                    field: None,
-                    atom: None,
-                });
+                all.support
+                    .push(Fact::from(archsig_input::archmap::FactData {
+                        snapshot: snapshot.id.clone(),
+                        subject: subject.id.clone(),
+                        field: None,
+                        atom: None,
+                    }));
                 for field in &subject.fields {
                     self.tick()?;
                     if let Slot::Known { atom, origin, .. } = &field.slot {
                         all.scope
                             .modes
                             .insert(self.indexes.origin_mode(origin)?.into());
-                        all.support.push(Fact {
-                            snapshot: snapshot.id.clone(),
-                            subject: subject.id.clone(),
-                            field: Some(field.name.clone()),
-                            atom: Some(atom.clone()),
-                        });
+                        all.support
+                            .push(Fact::from(archsig_input::archmap::FactData {
+                                snapshot: snapshot.id.clone(),
+                                subject: subject.id.clone(),
+                                field: Some(field.name.clone()),
+                                atom: Some(atom.clone()),
+                            }));
                     }
                 }
             }

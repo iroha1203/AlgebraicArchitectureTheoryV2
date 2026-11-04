@@ -559,12 +559,12 @@ pub(super) fn render_search(
             return Err(internal!("変更対象がsubjectでない").into());
         };
         for name in &names {
-            slots.push(Fact {
+            slots.push(Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
                 field: Some(env.input_name(&format!("{entity}.{name}"))?),
                 atom: None,
-            });
+            }));
         }
     }
     slots.sort();
@@ -1388,12 +1388,12 @@ pub(super) fn architecture_overrides(
         };
         let updated = reference(row.get("value").ok_or(internal!("更新値がない"))?)?;
         result.push((
-            Fact {
+            Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
                 field: Some(field.clone().into()),
                 atom: None,
-            },
+            }),
             updated,
             g.scalar(updated)?.clone(),
         ));

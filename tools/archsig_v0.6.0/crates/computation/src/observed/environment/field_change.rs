@@ -347,12 +347,12 @@ fn compute_inner(
                             unsupported(env, *id, "有理changeの更新式がQアフィンでない")
                         })?;
                         coordinates(env, *id, &form, Axes::Parameters(&axes), missing)?;
-                        let position = Fact {
+                        let position = Fact::from(archsig_input::archmap::FactData {
                             snapshot: snapshot.clone(),
                             subject: subject.clone(),
                             field: Some(env.input_name(&format!("{entity}.{}", field.name))?),
                             atom: None,
-                        };
+                        });
                         if let Some(prior) = updates.get(&position) {
                             if prior != form.as_ref() {
                                 return Err(unsupported(

@@ -447,10 +447,7 @@ fn compute(
                     .support
                     .iter()
                     .filter(|f| f.field.is_some())
-                    .map(|f| Fact {
-                        atom: None,
-                        ..f.clone()
-                    })
+                    .map(|f| { let aat_field_0 = None; let mut aat_fact = f.clone(); aat_fact.atom = aat_field_0; aat_fact })
                     .collect::<Vec<_>>();
                 positions.sort();
                 positions.dedup();
@@ -825,12 +822,12 @@ fn compute(
             let [Json::Str(snapshot), Json::Str(subject)] = value.as_slice() else {
                 return Err(internal!("局所carrierが原始参照でない").into());
             };
-            fixed_positions.push(Fact {
+            fixed_positions.push(Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
                 field: None,
                 atom: None,
-            });
+            }));
         }
         let expression = expressions.first().copied();
         let built = match geometry::build(

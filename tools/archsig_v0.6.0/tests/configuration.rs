@@ -29,7 +29,7 @@ fn fact(subject: &str, field: Option<&str>, atom: bool) -> FactPointer {
         "x" | "y" | "z" => "External",
         _ => panic!("fixture subject"),
     };
-    FactPointer {
+    FactPointer::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: subject.into(),
         field: field.map(|s| format!("Mesh.{ty}.{s}").into()),
@@ -38,7 +38,7 @@ fn fact(subject: &str, field: Option<&str>, atom: bool) -> FactPointer {
         } else {
             None
         },
-    }
+    })
 }
 fn set<T: Ord + Clone>(items: &[T]) -> BTreeSet<T> {
     items.iter().cloned().collect()

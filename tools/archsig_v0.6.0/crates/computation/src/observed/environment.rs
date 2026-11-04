@@ -5609,12 +5609,12 @@ impl<'a> Environment<'a> {
         };
         let expected = scalar_from(value, &field.ty, self.indexes.inputs.law(), &self.control)?
             .ok_or(internal!("chain fieldの元slotに対応する値がない"))?;
-        let fact = Fact {
+        let fact = Fact::from(archsig_input::archmap::FactData {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
             field: Some(field.name.clone()),
             atom: Some(atom.clone()),
-        };
+        });
         let analysis = self.resolve_analysis(
             graph,
             self.analyze_source(graph, *span, bindings)?,
@@ -5777,12 +5777,12 @@ impl<'a> Environment<'a> {
                 let Slot::Known { pointer, atom, .. } = &field.slot else {
                     continue;
                 };
-                let expected = Fact {
+                let expected = Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),
                     field: Some(field.name.clone()),
                     atom: Some(atom.clone()),
-                };
+                });
                 if !matches!(&node.rule, Rule::Input {kind: "atom", location: Location::ArchMap {pointer: actual, ..}} if actual == pointer)
                     || *node.support != [expected]
                 {
@@ -7501,12 +7501,12 @@ impl<'a> Environment<'a> {
                     subject,
                     &format!("{entity}.{name}"),
                 )?;
-                let fact = Fact {
+                let fact = Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),
                     field: Some(field.name.clone()),
                     atom: None,
-                };
+                });
                 if matches!(&field.slot, Slot::Missing)
                     && self.state.architecture_value(&fact).is_none()
                 {
@@ -7561,12 +7561,12 @@ impl<'a> Environment<'a> {
         if self.indexes.subject(snapshot, subject)?.ty != *entity {
             return Err(internal!("支持の元subject型が違う").into());
         }
-        Ok(vec![Fact {
+        Ok(vec![Fact::from(archsig_input::archmap::FactData {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
             field: None,
             atom: None,
-        }])
+        })])
     }
     fn copy_variables(
         &self,
@@ -9133,12 +9133,12 @@ impl<'a> Environment<'a> {
             return Err(internal!("範囲検査のfield owner型不一致").into());
         }
         let field = self.indexes.field(&self.state, &snapshot, &subject, name)?;
-        let position = Fact {
+        let position = Fact::from(archsig_input::archmap::FactData {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
             field: Some(field.name.clone()),
             atom: None,
-        };
+        });
         if let Some(form) = self.indexes.affine_valuation.get(&position) {
             scope.assignments = true;
             let known_value = form.value(&self.control)?;
@@ -9186,12 +9186,14 @@ impl<'a> Environment<'a> {
                     scope.merge(&owner_scope);
                     let mut scalar_scope = request_base.clone();
                     scalar_scope.merge(&owner_scope);
-                    support.make_owned().push(Fact {
-                        snapshot: snapshot.clone(),
-                        subject: subject.clone(),
-                        field: Some(field.name.clone()),
-                        atom: Some(atom.clone()),
-                    });
+                    support
+                        .make_owned()
+                        .push(Fact::from(archsig_input::archmap::FactData {
+                            snapshot: snapshot.clone(),
+                            subject: subject.clone(),
+                            field: Some(field.name.clone()),
+                            atom: Some(atom.clone()),
+                        }));
                     (
                         Some(
                             scalar_from(
@@ -9215,12 +9217,12 @@ impl<'a> Environment<'a> {
                     scope.merge(&owner_scope);
                     scope.completions = true;
                     let numeric_assigned = self.universal_missing_value(
-                        &Fact {
+                        &Fact::from(archsig_input::archmap::FactData {
                             snapshot: snapshot.clone(),
                             subject: subject.clone(),
                             field: Some(field.name.clone()),
                             atom: None,
-                        },
+                        }),
                         &field.ty,
                     )?;
                     let assigned = self
@@ -9255,12 +9257,12 @@ impl<'a> Environment<'a> {
                 }
             }
         };
-        let fact = Fact {
+        let fact = Fact::from(archsig_input::archmap::FactData {
             snapshot,
             subject,
             field: Some(field.name.clone()),
             atom: None,
-        };
+        });
         let affine = if let Some(value) = &known_value {
             super::affine::constant(value, &self.control)?
         } else {
@@ -9581,12 +9583,12 @@ impl<'a> Environment<'a> {
         let field =
             self.indexes
                 .field(&self.state, snapshot, subject, &format!("{entity}.{name}"))?;
-        let fact = Fact {
+        let fact = Fact::from(archsig_input::archmap::FactData {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
             field: Some(field.name.clone()),
             atom: None,
-        };
+        });
         if let Some((assigned, _)) = self.state.architecture_value(&fact) {
             if value != Some(assigned) {
                 return Err(internal!("field評価が修復Architectureの値を読まない").into());
@@ -9596,12 +9598,12 @@ impl<'a> Environment<'a> {
         }
         match (&field.slot, value) {
             (Slot::Missing, Some(actual)) if self.completion_type_supported(&field.ty)? => {
-                let fact = Fact {
+                let fact = Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),
                     field: Some(field.name.clone()),
                     atom: None,
-                };
+                });
                 let assigned = self
                     .completion_slot(graph, &fact)?
                     .ok_or(internal!("元slotの補完代入がない"))?;

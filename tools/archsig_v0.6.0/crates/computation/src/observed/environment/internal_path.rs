@@ -31,12 +31,12 @@ impl Environment<'_> {
             self.tick()?;
             if let Value::Ref { snapshot, subject } = value {
                 self.indexes.subject(snapshot, subject)?;
-                references.insert(Fact {
+                references.insert(Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.clone(),
                     subject: subject.clone(),
                     field: None,
                     atom: None,
-                });
+                }));
                 let point = moving
                     .and_then(|mapping| mapping.get(&(snapshot.clone(), subject.clone())))
                     .cloned()
@@ -233,12 +233,12 @@ impl Environment<'_> {
             self.path_slot(owner, field, reading, out)?;
             return Ok(());
         }
-        let position = Fact {
+        let position = Fact::from(archsig_input::archmap::FactData {
             snapshot: owner.snapshot.clone(),
             subject: owner.id.clone(),
             field: Some(field.name.clone()),
             atom: None,
-        };
+        });
         match &field.slot {
             Slot::Known { atom, origin, .. } => {
                 out.scope
@@ -269,12 +269,12 @@ impl Environment<'_> {
             self.indexes
                 .field(&self.state, &owner.snapshot, &owner.id, &field.name)?;
         }
-        let position = Fact {
+        let position = Fact::from(archsig_input::archmap::FactData {
             snapshot: owner.snapshot.clone(),
             subject: owner.id.clone(),
             field: Some(field.name.clone()),
             atom: None,
-        };
+        });
         if let Some(value) = self
             .indexes
             .primitive_input_valuation
@@ -312,12 +312,12 @@ impl Environment<'_> {
         self.tick()?;
         self.indexes
             .field(&self.state, &owner.snapshot, &owner.id, &field.name)?;
-        let position = Fact {
+        let position = Fact::from(archsig_input::archmap::FactData {
             snapshot: owner.snapshot.clone(),
             subject: owner.id.clone(),
             field: Some(field.name.clone()),
             atom: None,
-        };
+        });
         if let Some(value) = self
             .indexes
             .primitive_valuation
@@ -342,23 +342,24 @@ impl Environment<'_> {
             } => {
                 out.scope
                     .merge(&self.indexes.scope(owner, reading, Some(origin))?);
-                out.support.push(Fact {
-                    snapshot: owner.snapshot.clone(),
-                    subject: owner.id.clone(),
-                    field: Some(field.name.clone()),
-                    atom: Some(atom.clone()),
-                });
+                out.support
+                    .push(Fact::from(archsig_input::archmap::FactData {
+                        snapshot: owner.snapshot.clone(),
+                        subject: owner.id.clone(),
+                        field: Some(field.name.clone()),
+                        atom: Some(atom.clone()),
+                    }));
                 scalar_from(value, &field.ty, self.indexes.inputs.law(), &self.control)
             }
             Slot::Missing => {
                 out.scope.merge(&self.indexes.scope(owner, reading, None)?);
                 out.scope.completions = true;
-                let fact = Fact {
+                let fact = Fact::from(archsig_input::archmap::FactData {
                     snapshot: owner.snapshot.clone(),
                     subject: owner.id.clone(),
                     field: Some(field.name.clone()),
                     atom: None,
-                };
+                });
                 out.missing.push(fact.clone());
                 Ok(self
                     .state
@@ -498,39 +499,39 @@ impl Environment<'_> {
             for s in &snapshot.subjects {
                 self.tick()?;
                 out.scope.merge(&self.indexes.scope(s, reading, None)?);
-                universe.insert(Fact {
+                universe.insert(Fact::from(archsig_input::archmap::FactData {
                     snapshot: s.snapshot.clone(),
                     subject: s.id.clone(),
                     field: None,
                     atom: None,
-                });
+                }));
                 for f in &s.fields {
                     self.tick()?;
                     if let Slot::Known { atom, origin, .. } = &f.slot {
                         out.scope
                             .merge(&self.indexes.scope(s, reading, Some(origin))?);
-                        universe.insert(Fact {
+                        universe.insert(Fact::from(archsig_input::archmap::FactData {
                             snapshot: s.snapshot.clone(),
                             subject: s.id.clone(),
                             field: Some(f.name.clone()),
                             atom: Some(atom.clone()),
-                        });
+                        }));
                     }
                 }
             }
         }
-        let source_fact = Fact {
+        let source_fact = Fact::from(archsig_input::archmap::FactData {
             snapshot: fs.clone(),
             subject: fp.clone(),
             field: None,
             atom: None,
-        };
-        let target_fact = Fact {
+        });
+        let target_fact = Fact::from(archsig_input::archmap::FactData {
             snapshot: ts.clone(),
             subject: tp.clone(),
             field: None,
             atom: None,
-        };
+        });
         let mut images = BTreeMap::new();
         images.insert(source_fact.clone(), target_fact.clone());
         let mut family = BTreeSet::from([source_fact]);
@@ -551,18 +552,18 @@ impl Environment<'_> {
                 missing_field = true;
                 continue;
             };
-            let fact = Fact {
+            let fact = Fact::from(archsig_input::archmap::FactData {
                 snapshot: fs.clone(),
                 subject: fp.clone(),
                 field: Some(field.name.clone()),
                 atom: Some(atom.clone()),
-            };
-            let image = Fact {
+            });
+            let image = Fact::from(archsig_input::archmap::FactData {
                 snapshot: ts.clone(),
                 subject: tp.clone(),
                 field: Some(target_field.name.clone()),
                 atom: Some(target_atom.clone()),
-            };
+            });
             let mut refs = BTreeSet::new();
             let moving = BTreeMap::from([((fs.clone(), fp.clone()), (ts.clone(), tp.clone()))]);
             let value = self

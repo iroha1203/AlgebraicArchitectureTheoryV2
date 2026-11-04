@@ -1403,12 +1403,12 @@ mod tests {
     }
 
     fn slot(name: &str) -> Fact {
-        Fact {
+        Fact::from(archsig_input::archmap::FactData {
             snapshot: "s".into(),
             subject: "x".into(),
             field: Some(name.into()),
             atom: None,
-        }
+        })
     }
 
     fn z(n: i64) -> Scalar {

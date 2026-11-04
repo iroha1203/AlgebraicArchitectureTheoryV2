@@ -422,26 +422,26 @@ impl Environment<'_> {
                 .scope(self.indexes.subject(os, oi)?, reading, None)?,
         );
         checks.support.extend([
-            Fact {
+            Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
                 field: None,
                 atom: None,
-            },
-            Fact {
+            }),
+            Fact::from(archsig_input::archmap::FactData {
                 snapshot: os.clone(),
                 subject: oi.clone(),
                 field: None,
                 atom: None,
-            },
+            }),
         ]);
         let field = format!("{entity}.owner");
-        let position = Fact {
+        let position = Fact::from(archsig_input::archmap::FactData {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
             field: Some(self.input_name(&field)?),
             atom: None,
-        };
+        });
         if let Some(actual) = self
             .indexes
             .primitive_valuation
@@ -468,12 +468,14 @@ impl Environment<'_> {
                 None,
             )?);
             checks.support.push(position);
-            checks.support.push(Fact {
-                snapshot: actual_snapshot.clone(),
-                subject: actual_subject.clone(),
-                field: None,
-                atom: None,
-            });
+            checks
+                .support
+                .push(Fact::from(archsig_input::archmap::FactData {
+                    snapshot: actual_snapshot.clone(),
+                    subject: actual_subject.clone(),
+                    field: None,
+                    atom: None,
+                }));
             if snapshot != os {
                 checks.failure = Some((Scalar::Text(snapshot.clone()), Scalar::Text(os.clone())));
             } else if actual != expected {
@@ -497,12 +499,12 @@ impl Environment<'_> {
             .slot
         else {
             checks.scope.completions = true;
-            let fact = Fact {
+            let fact = Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
                 field: Some(self.input_name(&field)?),
                 atom: None,
-            };
+            });
             let completed = assignment
                 .and_then(|values| values.get(&fact))
                 .cloned()
@@ -533,12 +535,14 @@ impl Environment<'_> {
                     reading,
                     None,
                 )?);
-                checks.support.push(Fact {
-                    snapshot: actual_snapshot.clone(),
-                    subject: actual_subject.clone(),
-                    field: None,
-                    atom: None,
-                });
+                checks
+                    .support
+                    .push(Fact::from(archsig_input::archmap::FactData {
+                        snapshot: actual_snapshot.clone(),
+                        subject: actual_subject.clone(),
+                        field: None,
+                        atom: None,
+                    }));
                 if snapshot != os {
                     checks.failure =
                         Some((Scalar::Text(snapshot.clone()), Scalar::Text(os.clone())));
@@ -556,12 +560,14 @@ impl Environment<'_> {
         checks
             .scope
             .merge(&self.indexes.scope(subject_input, reading, Some(origin))?);
-        checks.support.push(Fact {
-            snapshot: snapshot.clone(),
-            subject: subject.clone(),
-            field: Some(self.input_name(&field)?),
-            atom: Some(atom.clone()),
-        });
+        checks
+            .support
+            .push(Fact::from(archsig_input::archmap::FactData {
+                snapshot: snapshot.clone(),
+                subject: subject.clone(),
+                field: Some(self.input_name(&field)?),
+                atom: Some(atom.clone()),
+            }));
         let actual = Scalar::Subject {
             snapshot: actual_snapshot.clone(),
             subject: actual_subject.clone(),
@@ -572,12 +578,14 @@ impl Environment<'_> {
             reading,
             None,
         )?);
-        checks.support.push(Fact {
-            snapshot: actual_snapshot.clone(),
-            subject: actual_subject.clone(),
-            field: None,
-            atom: None,
-        });
+        checks
+            .support
+            .push(Fact::from(archsig_input::archmap::FactData {
+                snapshot: actual_snapshot.clone(),
+                subject: actual_subject.clone(),
+                field: None,
+                atom: None,
+            }));
         if snapshot != os {
             checks.failure = Some((Scalar::Text(snapshot.clone()), Scalar::Text(os.clone())));
         } else if actual != *expected {

@@ -332,11 +332,13 @@ pub(super) fn operand_path(
             entity: subject.ty.to_string(),
         })
     };
-    let fact = |p: &archsig_input::archmap::Fact| Fact {
-        snapshot: p.snapshot.clone(),
-        subject: p.subject.clone(),
-        field: p.field.clone(),
-        atom: p.atom.clone(),
+    let fact = |p: &archsig_input::archmap::Fact| {
+        Fact::from(archsig_input::archmap::FactData {
+            snapshot: p.snapshot.clone(),
+            subject: p.subject.clone(),
+            field: p.field.clone(),
+            atom: p.atom.clone(),
+        })
     };
     let source = operation.source();
     let target = operation.target();

@@ -156,12 +156,14 @@ fn reference_and_composite_values_use_value_maps_instead_of_atom_outside_action(
             assert_eq!(
                 r.objects()
                     .action()
-                    .image(&archsig_input::archmap::Fact {
-                        snapshot: "v".into(),
-                        subject: "m".into(),
-                        field: None,
-                        atom: None
-                    })
+                    .image(&archsig_input::archmap::Fact::from(
+                        archsig_input::archmap::FactData {
+                            snapshot: "v".into(),
+                            subject: "m".into(),
+                            field: None,
+                            atom: None
+                        }
+                    ))
                     .unwrap()
                     .subject,
                 "b"

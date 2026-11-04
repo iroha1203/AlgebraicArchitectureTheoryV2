@@ -100,12 +100,12 @@ fn states(g: &Graph, system: NodeRef, semantic: bool) -> Result<Vec<State>, Vali
                 return Err(internal!("有限状態の座標が観測fieldでない").into());
             }
             let f = object(member(position, "field")?)?;
-            slots.push(Fact {
+            slots.push(Fact::from(archsig_input::archmap::FactData {
                 snapshot: text(member(f, "snapshot")?)?.into(),
                 subject: text(member(f, "subject")?)?.into(),
                 field: Some(text(member(f, "field")?)?.into()),
                 atom: None,
-            });
+            }));
         }
         let values = if semantic
             || local(g, system)?

@@ -258,12 +258,12 @@ fn subject_node(env: &Environment<'_>, s: &Selector) -> Result<Node, ValidationF
             },
         },
         arguments: vec![],
-        support: vec![Fact {
+        support: vec![Fact::from(archsig_input::archmap::FactData {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
             field: None,
             atom: None,
-        }]
+        })]
         .into(),
         scope: env.indexes.subject_scope(source)?,
         evidence: vec![],

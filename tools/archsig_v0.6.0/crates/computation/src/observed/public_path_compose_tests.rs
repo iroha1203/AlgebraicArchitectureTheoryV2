@@ -60,12 +60,12 @@ fn public_paths_keep_all_46_atom_images_and_named_generators() {
             ("w", vec!["A", "p"]),
         ] {
             for subject in subjects {
-                expected.push(Fact {
+                expected.push(Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.into(),
                     subject: subject.into(),
                     field: None,
                     atom: None,
-                });
+                }));
                 if subject == "A" {
                     continue;
                 }
@@ -75,12 +75,12 @@ fn public_paths_keep_all_46_atom_images_and_named_generators() {
                     ("Hop", vec!["owner", "from", "to"])
                 };
                 for field in fields {
-                    expected.push(Fact {
+                    expected.push(Fact::from(archsig_input::archmap::FactData {
                         snapshot: snapshot.into(),
                         subject: subject.into(),
                         field: Some(format!("Paths.{entity}.{field}").into()),
                         atom: Some(format!("{subject}-{field}")),
-                    });
+                    }));
                 }
             }
         }
@@ -88,7 +88,7 @@ fn public_paths_keep_all_46_atom_images_and_named_generators() {
         assert_eq!(step.carrier, expected);
         for (a, b) in step.carrier.iter().zip(&step.images) {
             let expected = if a.snapshot == "v" && ["p", "q"].contains(&a.subject.as_str()) {
-                Fact {
+                Fact::from(archsig_input::archmap::FactData {
                     snapshot: "v".into(),
                     subject: "r".into(),
                     field: a.field.clone(),
@@ -96,7 +96,7 @@ fn public_paths_keep_all_46_atom_images_and_named_generators() {
                         .atom
                         .as_ref()
                         .map(|id| format!("r-{}", id.split_once('-').unwrap().1)),
-                }
+                })
             } else {
                 a.clone()
             };

@@ -275,12 +275,12 @@ fn typed_iteration_universal_completion_and_capture_switch_to_cutoff_entries() {
         );
         universal.restore();
         let completion = env.state.completion_values.scoped(vec![(
-            Fact {
+            Fact::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: "s".into(),
                 field: Some("Counter.State.count".into()),
                 atom: None,
-            },
+            }),
             NodeRef(g.nodes.iter().position(|node| matches!(&node.payload, Some(Payload::Scalar(Scalar::Z(value))) if *value == 2.into())).expect("元countの値")),
             Scalar::Z(2.into()),
         )]);
@@ -333,12 +333,16 @@ fn changing_an_owned_iteration_result_keeps_other_callers_and_memo_unchanged() {
             let mut edited = input(&env, &g, g.nodes.len())?;
             let owned = std::rc::Rc::make_mut(&mut edited);
             owned.2.scope.readings.insert("caller-local".into());
-            owned.2.support.make_owned().push(Fact {
-                snapshot: "caller-local".into(),
-                subject: "caller-local".into(),
-                field: None,
-                atom: None,
-            });
+            owned
+                .2
+                .support
+                .make_owned()
+                .push(Fact::from(archsig_input::archmap::FactData {
+                    snapshot: "caller-local".into(),
+                    subject: "caller-local".into(),
+                    field: None,
+                    atom: None,
+                }));
             assert_ne!(owned.2.support, original.2.support);
             owned.2.support.make_owned().clear();
             owned.1 = Scalar::Bool(true);

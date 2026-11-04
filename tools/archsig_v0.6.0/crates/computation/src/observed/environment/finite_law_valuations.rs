@@ -895,12 +895,12 @@ fn type_dependencies(
                     &holder.id,
                     &format!("{}.{}", holder.ty, name),
                 )?;
-                found.insert(Fact {
+                found.insert(Fact::from(archsig_input::archmap::FactData {
                     snapshot: holder.snapshot.clone(),
                     subject: holder.id.clone(),
                     field: Some(field.name.clone()),
                     atom: None,
-                });
+                }));
                 for s in e.indexes.subjects.values().filter(|s| s.ty == *entity) {
                     tick(&e.control)?;
                     let field = e.indexes.field(
@@ -909,12 +909,12 @@ fn type_dependencies(
                         &s.id,
                         &format!("{}.owner", s.ty),
                     )?;
-                    found.insert(Fact {
+                    found.insert(Fact::from(archsig_input::archmap::FactData {
                         snapshot: s.snapshot.clone(),
                         subject: s.id.clone(),
                         field: Some(field.name.clone()),
                         atom: None,
-                    });
+                    }));
                 }
             }
             Type::Tuple(items) => pending.extend(items.iter().cloned()),
@@ -960,12 +960,13 @@ fn domains(
                         subject: s.id.clone(),
                         entity: s.ty.to_string(),
                     });
-                    out.support.push(Fact {
-                        snapshot: s.snapshot.clone(),
-                        subject: s.id.clone(),
-                        field: None,
-                        atom: None,
-                    });
+                    out.support
+                        .push(Fact::from(archsig_input::archmap::FactData {
+                            snapshot: s.snapshot.clone(),
+                            subject: s.id.clone(),
+                            field: None,
+                            atom: None,
+                        }));
                 }
                 Ok(out)
             },

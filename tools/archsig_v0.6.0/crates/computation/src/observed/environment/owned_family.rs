@@ -47,12 +47,15 @@ impl Environment<'_> {
             .enumeration
             .scope
             .merge(&self.indexes.scope(owner_subject_input, reading, None)?);
-        result.enumeration.support.push(Fact {
-            snapshot: owner_snapshot.clone(),
-            subject: owner_subject.clone(),
-            field: None,
-            atom: None,
-        });
+        result
+            .enumeration
+            .support
+            .push(Fact::from(archsig_input::archmap::FactData {
+                snapshot: owner_snapshot.clone(),
+                subject: owner_subject.clone(),
+                field: None,
+                atom: None,
+            }));
         let field_name = format!("{entity}.owner");
         for (snapshot_index, snapshot) in
             self.indexes.inputs.archmap().snapshots().iter().enumerate()
@@ -87,21 +90,24 @@ impl Environment<'_> {
                     .enumeration
                     .scope
                     .merge(&self.indexes.scope(subject, reading, None)?);
-                result.enumeration.support.push(Fact {
-                    snapshot: snapshot.id.clone(),
-                    subject: subject.id.clone(),
-                    field: None,
-                    atom: None,
-                });
+                result
+                    .enumeration
+                    .support
+                    .push(Fact::from(archsig_input::archmap::FactData {
+                        snapshot: snapshot.id.clone(),
+                        subject: subject.id.clone(),
+                        field: None,
+                        atom: None,
+                    }));
                 let field =
                     self.indexes
                         .field(&self.state, &snapshot.id, &subject.id, &field_name)?;
-                let position = Fact {
+                let position = Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.id.clone(),
                     subject: subject.id.clone(),
                     field: Some(field.name.clone()),
                     atom: None,
-                };
+                });
                 if let Some(assigned) = self
                     .indexes
                     .primitive_valuation
@@ -140,24 +146,26 @@ impl Environment<'_> {
                             reading,
                             Some(origin),
                         )?);
-                        result.enumeration.support.push(Fact {
-                            snapshot: snapshot.id.clone(),
-                            subject: subject.id.clone(),
-                            field: Some(field.name.clone()),
-                            atom: Some(atom.clone()),
-                        });
+                        result.enumeration.support.push(Fact::from(
+                            archsig_input::archmap::FactData {
+                                snapshot: snapshot.id.clone(),
+                                subject: subject.id.clone(),
+                                field: Some(field.name.clone()),
+                                atom: Some(atom.clone()),
+                            },
+                        ));
                         if target_snapshot == owner_snapshot && target_subject == owner_subject {
                             result.enumeration.values.push(value);
                         }
                     }
                     Slot::Missing => {
                         result.enumeration.scope.completions = true;
-                        let fact = Fact {
+                        let fact = Fact::from(archsig_input::archmap::FactData {
                             snapshot: snapshot.id.clone(),
                             subject: subject.id.clone(),
                             field: Some(field.name.clone()),
                             atom: None,
-                        };
+                        });
                         let completed = assignment
                             .and_then(|values| values.get(&fact))
                             .cloned()
@@ -208,12 +216,15 @@ impl Environment<'_> {
                 .enumeration
                 .scope
                 .merge(&self.indexes.scope(s, reading, None)?);
-            result.enumeration.support.push(Fact {
-                snapshot: snapshot.clone(),
-                subject: subject.clone(),
-                field: None,
-                atom: None,
-            });
+            result
+                .enumeration
+                .support
+                .push(Fact::from(archsig_input::archmap::FactData {
+                    snapshot: snapshot.clone(),
+                    subject: subject.clone(),
+                    field: None,
+                    atom: None,
+                }));
         }
         Ok(result)
     }

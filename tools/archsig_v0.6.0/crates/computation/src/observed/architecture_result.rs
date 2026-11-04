@@ -391,12 +391,12 @@ pub(super) fn selected_build(
         return Err(internal!("buildの固定引数がon一件でない").into());
     }
     let root = match &argument.value {
-        Selector::Subject { snapshot, subject } => Fact {
+        Selector::Subject { snapshot, subject } => Fact::from(archsig_input::archmap::FactData {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
             field: None,
             atom: None,
-        },
+        }),
         selector @ Selector::Answer { .. } => {
             let binding = environment.answer_binding(graph, selector, (0, 0))?;
             let value = match &binding {
@@ -419,12 +419,12 @@ pub(super) fn selected_build(
             else {
                 return Err(internal!("buildのonが原始root参照でない").into());
             };
-            Fact {
+            Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
                 field: None,
                 atom: None,
-            }
+            })
         }
         _ => return Err(internal!("buildのonが原始rootか公開Handleでない").into()),
     };
