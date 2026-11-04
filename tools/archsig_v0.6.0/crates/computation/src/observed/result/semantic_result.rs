@@ -167,6 +167,120 @@ pub(in crate::observed) fn concise_reasons(reasons: &mut Vec<Json>) {
         seen.insert(reason.canonical())
     });
 }
+fn cleaned_node(
+    native: &[Node],
+    index: usize,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<Json, Signal> {
+    control.checkpoint(point)?;
+    // Path/compound の既出 Ref 解決には元の全 prior と arguments を使う。
+    let mut node = native[index].wire_with_support(index, &native[..index], false);
+    control.checkpoint(point)?;
+    clean_reasons(&mut node);
+    Ok(node)
+}
+fn public_raw_node(
+    native: &[Node],
+    index: usize,
+    proofs: &BTreeSet<String>,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<Json, Signal> {
+    let mut node = cleaned_node(native, index, control, point)?;
+    remove_proof_refs(&mut node, proofs);
+    Ok(node)
+}
+fn law_claim(
+    reference: &Json,
+    native: &[Node],
+    proofs: &BTreeSet<String>,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<bool, Signal> {
+    let Json::Obj(reference) = reference else {
+        return Ok(false);
+    };
+    let Some(Json::Str(id)) = reference.get("node") else {
+        return Ok(false);
+    };
+    let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
+    let node = public_raw_node(native, index, proofs, control, point)?;
+    let Json::Obj(fields) = &node else {
+        return Ok(false);
+    };
+    let Some(Json::Obj(value)) = fields.get("value") else {
+        return Ok(false);
+    };
+    Ok(matches!(value.get("predicate"), Some(Json::Str(predicate)) if predicate == "law_holds"))
+}
+fn project_node(
+    native: &[Node],
+    index: usize,
+    proofs: &BTreeSet<String>,
+    examples: &BTreeSet<String>,
+    completions: &BTreeSet<String>,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<Json, Signal> {
+    let mut node = public_raw_node(native, index, proofs, control, point)?;
+    let Json::Obj(fields) = &mut node else {
+        unreachable!()
+    };
+    for key in ["rule", "arguments", "evidence", "scope", "support"] {
+        fields.remove(key);
+    }
+    if let Some(Json::Obj(judgment)) = fields.get_mut("judgment") {
+        retain_evidence(judgment, examples, completions);
+    }
+    if examples.contains(&format!("n{index}")) {
+        fields.insert("type".into(), Json::str("Counterexample"));
+    }
+    if matches!(native[index].ty, NodeType::Evaluation(_)) {
+        fields.insert("type".into(), Json::str("EvaluationResult"));
+    }
+    if let Some(Json::Obj(value)) = fields.get_mut("value") {
+        match native[index].ty {
+            NodeType::Evaluation(_) => {
+                // 適用可否、引数、値、後続要求が使う環境だけが結果。
+                // 子評価や式の出現位置は内部の検査用グラフに留める。
+                value.retain(|key, _| {
+                    matches!(
+                        key.as_str(),
+                        "applicability" | "bindings" | "value" | "environment"
+                    )
+                });
+            }
+            NodeType::LawInstance => {
+                if let Some(Json::Obj(body)) = value.get("body") {
+                    let Some(Json::Str(id)) = body.get("node") else {
+                        unreachable!()
+                    };
+                    let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
+                    if let Some(payload) = &native[index].payload
+                        && let Json::Obj(body) = &payload.wire()
+                        && let Some(parameters) = body.get("parameters")
+                    {
+                        value.insert("parameters".into(), parameters.clone());
+                    }
+                }
+                value.retain(|key, _| {
+                    matches!(key.as_str(), "name" | "role" | "bindings" | "parameters")
+                });
+            }
+            NodeType::Construction(_) => {
+                value.remove("construction");
+            }
+            NodeType::Evidence => {
+                value.remove("evaluation");
+            }
+            _ => {}
+        }
+    }
+    control.checkpoint(point)?;
+    Ok(node)
+}
+
 #[cfg(test)]
 mod notice_tests {
     use super::*;
@@ -273,58 +387,45 @@ pub(super) fn compact(
     let Json::Obj(document) = result else {
         unreachable!()
     };
-    let mut old = document.remove("nodes").unwrap();
-    let Json::Arr(old) = &mut old else {
-        unreachable!()
-    };
-    let examples: BTreeSet<_> = old
-        .iter()
-        .enumerate()
-        .filter_map(|(index, node)| {
-            if native[index].ty != NodeType::Evidence {
-                return None;
+    let mut examples = BTreeSet::new();
+    let mut completions = BTreeSet::new();
+    let mut proofs = BTreeSet::new();
+    // 分類は未到達の証拠も含むが、表示は一つずつ読み、保持しない。
+    for (index, node) in native.iter().enumerate() {
+        control.checkpoint(point)?;
+        if node.ty != NodeType::Evidence {
+            continue;
+        }
+        let wire = cleaned_node(native, index, control, point)?;
+        let Json::Obj(fields) = &wire else {
+            unreachable!()
+        };
+        let kind = match fields.get("value") {
+            Some(Json::Obj(value)) => value.get("kind"),
+            _ => None,
+        };
+        let id = format!("n{index}");
+        match kind {
+            Some(Json::Str(kind))
+                if matches!(
+                    kind.as_str(),
+                    "counterexample" | "completion_pair" | "separating_pair"
+                ) =>
+            {
+                examples.insert(id);
             }
-            let Json::Obj(fields) = node else {
-                unreachable!()
-            };
-            let Some(Json::Obj(value)) = fields.get("value") else {
-                return None;
-            };
-            matches!(value.get("kind"), Some(Json::Str(kind)) if matches!(kind.as_str(),
-            "counterexample" | "completion_pair" | "separating_pair"))
-            .then(|| format!("n{index}"))
-        })
-        .collect();
-    // completion_fibersは解族そのものの有限な証拠値。導出木を復元せず保存する。
-    let completions: BTreeSet<_> = old
-        .iter()
-        .enumerate()
-        .filter_map(|(index, node)| {
-            let Json::Obj(fields) = node else { return None };
-            let Some(Json::Obj(value)) = fields.get("value") else {
-                return None;
-            };
-            (native[index].ty == NodeType::Evidence
-                && value.get("kind") == Some(&Json::str("completion_fibers")))
-            .then(|| format!("n{index}"))
-        })
-        .collect();
-    let proofs = native
-        .iter()
-        .enumerate()
-        .filter_map(|(index, node)| {
-            let id = format!("n{index}");
-            (node.ty == NodeType::Evidence && !examples.contains(&id) && !completions.contains(&id))
-                .then_some(id)
-        })
-        .collect();
+            Some(Json::Str(kind)) if kind == "completion_fibers" => {
+                completions.insert(id);
+            }
+            _ => {
+                proofs.insert(id);
+            }
+        }
+    }
     // 証明への参照は evidence 欄以外（例: 解集合の certificate）にもある。
     // ノード型で全経路を除き、実値の反例だけを残す。
     for value in document.values_mut() {
         remove_proof_refs(value, &proofs);
-    }
-    for node in old.iter_mut() {
-        remove_proof_refs(node, &proofs);
     }
     let Json::Arr(answers) = document.get_mut("answers").unwrap() else {
         unreachable!()
@@ -334,105 +435,37 @@ pub(super) fn compact(
             unreachable!()
         };
         retain_evidence(answer, &examples, &completions);
-        let law_claim = |reference: &Json| {
-            let Json::Obj(reference) = reference else {
-                return false;
-            };
-            let Some(Json::Str(id)) = reference.get("node") else {
-                return false;
-            };
-            let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
-            let Json::Obj(node) = &old[index] else {
-                return false;
-            };
-            let Some(Json::Obj(value)) = node.get("value") else {
-                return false;
-            };
-            matches!(value.get("predicate"), Some(Json::Str(predicate)) if predicate == "law_holds")
-        };
-        if answer.get("claim").is_some_and(law_claim) {
+        if let Some(reference) = answer.get("claim")
+            && law_claim(reference, native, &proofs, control, point)?
+        {
             answer.remove("claim");
         }
         let Some(Json::Obj(outputs)) = answer.get_mut("outputs") else {
             unreachable!()
         };
-        if outputs.get("proposition").is_some_and(law_claim) {
+        if let Some(reference) = outputs.get("proposition")
+            && law_claim(reference, native, &proofs, control, point)?
+        {
             outputs.remove("proposition");
         }
         let evaluation = outputs.remove("evaluation");
         let mut applicability = None;
-        if let Some(Json::Obj(reference)) = &evaluation {
-            if let Some(Json::Str(id)) = reference.get("node") {
-                let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
-                if let Json::Obj(node) = &old[index] {
-                    if let Some(Json::Obj(value)) = node.get("value") {
-                        applicability = value.get("applicability").cloned();
-                        if let Some(environment) = value.get("environment") {
-                            outputs.insert("environment".into(), environment.clone());
-                        }
-                    }
+        if let Some(Json::Obj(reference)) = &evaluation
+            && let Some(Json::Str(id)) = reference.get("node")
+        {
+            let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
+            let node = public_raw_node(native, index, &proofs, control, point)?;
+            if let Json::Obj(node) = &node
+                && let Some(Json::Obj(value)) = node.get("value")
+            {
+                applicability = value.get("applicability").cloned();
+                if let Some(environment) = value.get("environment") {
+                    outputs.insert("environment".into(), environment.clone());
                 }
             }
         }
         if let Some(applicability) = applicability {
             answer.insert("applicability".into(), applicability);
-        }
-    }
-    for (index, node) in old.iter_mut().enumerate() {
-        control.checkpoint(point)?;
-        let Json::Obj(fields) = node else {
-            unreachable!()
-        };
-        for key in ["rule", "arguments", "evidence", "scope", "support"] {
-            fields.remove(key);
-        }
-        if let Some(Json::Obj(judgment)) = fields.get_mut("judgment") {
-            retain_evidence(judgment, &examples, &completions);
-        }
-        if examples.contains(&format!("n{index}")) {
-            fields.insert("type".into(), Json::str("Counterexample"));
-        }
-        if matches!(native[index].ty, NodeType::Evaluation(_)) {
-            fields.insert("type".into(), Json::str("EvaluationResult"));
-        }
-        if let Some(Json::Obj(value)) = fields.get_mut("value") {
-            match native[index].ty {
-                NodeType::Evaluation(_) => {
-                    // 適用可否、引数、値、後続要求が使う環境だけが結果。
-                    // 子評価や式の出現位置は内部の検査用グラフに留める。
-                    value.retain(|key, _| {
-                        matches!(
-                            key.as_str(),
-                            "applicability" | "bindings" | "value" | "environment"
-                        )
-                    });
-                }
-                NodeType::LawInstance => {
-                    if let Some(Json::Obj(body)) = value.get("body") {
-                        let Some(Json::Str(id)) = body.get("node") else {
-                            unreachable!()
-                        };
-                        let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
-                        if let Some(payload) = &native[index].payload {
-                            if let Json::Obj(body) = &payload.wire() {
-                                if let Some(parameters) = body.get("parameters") {
-                                    value.insert("parameters".into(), parameters.clone());
-                                }
-                            }
-                        }
-                    }
-                    value.retain(|key, _| {
-                        matches!(key.as_str(), "name" | "role" | "bindings" | "parameters")
-                    });
-                }
-                NodeType::Construction(_) => {
-                    value.remove("construction");
-                }
-                NodeType::Evidence => {
-                    value.remove("evaluation");
-                }
-                _ => {}
-            }
         }
     }
     let mut reachable = BTreeSet::new();
@@ -441,17 +474,29 @@ pub(super) fn compact(
     }
     // 部分結果の理由には後続の診断への参照もある。到達順を計算順と同一視しない。
     let mut pending: Vec<_> = reachable.iter().cloned().collect();
+    // 旧全ノード JSON 配列を、到達した表示だけの呼出し内作業領域へ置き換える。
+    let mut projected = BTreeMap::new();
     while let Some(id) = pending.pop() {
         control.checkpoint(point)?;
         let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
         let mut children = BTreeSet::new();
-        refs(&old[index], &mut children);
+        let node = project_node(
+            native,
+            index,
+            &proofs,
+            &examples,
+            &completions,
+            control,
+            point,
+        )?;
+        refs(&node, &mut children);
         if matches!(
             native[index].ty,
             NodeType::Construction(super::super::construction_result::ConstructionType::Quotient)
         ) {
-            quotient_maps(&old[index], native, &mut children, control, point)?;
+            quotient_maps(&node, native, &mut children, control, point)?;
         }
+        projected.insert(index, node);
         for child in children {
             if reachable.insert(child.clone()) {
                 pending.push(child);
@@ -464,12 +509,10 @@ pub(super) fn compact(
         .collect();
     let mut values = BTreeMap::<String, String>::new();
     let mut nodes = Vec::new();
-    for (index, mut node) in std::mem::take(old).into_iter().enumerate() {
+    // 到達順でなく元の数値 index 順が canonical 共有の代表と番号を決める。
+    for (index, mut node) in projected {
         control.checkpoint(point)?;
         let old_id = format!("n{index}");
-        if !reachable.contains(&old_id) {
-            continue;
-        }
         rename(&mut node, &ids);
         // 環・基底・関係を含む表示全体の一致だけを共有する。同型は推測しない。
         let shared = matches!(

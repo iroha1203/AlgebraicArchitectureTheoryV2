@@ -1758,19 +1758,21 @@ impl ObservedEvaluation {
                     .collect::<Result<_, Signal>>()?,
             ),
         );
-        wire.insert(
-            "nodes".into(),
-            Json::Arr(
-                self.nodes
-                    .iter()
-                    .enumerate()
-                    .map(|(i, n)| {
-                        control.checkpoint(point)?;
-                        Ok(n.wire_with_support(i, &self.nodes[..i], inspection))
-                    })
-                    .collect::<Result<_, Signal>>()?,
-            ),
-        );
+        if inspection {
+            wire.insert(
+                "nodes".into(),
+                Json::Arr(
+                    self.nodes
+                        .iter()
+                        .enumerate()
+                        .map(|(i, n)| {
+                            control.checkpoint(point)?;
+                            Ok(n.wire_with_support(i, &self.nodes[..i], inspection))
+                        })
+                        .collect::<Result<_, Signal>>()?,
+                ),
+            );
+        }
         wire.insert(
             "issues".into(),
             Json::Arr(self.issues.iter().map(Reason::wire).collect()),
