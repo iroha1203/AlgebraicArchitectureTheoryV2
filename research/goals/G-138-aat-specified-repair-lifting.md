@@ -1,7 +1,7 @@
 # G-138-aat-specified-repair-lifting — 指定補正の持ち上げ障害と全解の分類
 
 - `id`: `G-138-aat-specified-repair-lifting`
-- `status`: `active`
+- `status`: `completed`
 - `research mode`: `target-theorem`
 - `tracking issue`: [#6191](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6191)
 - `source note`: [n1016 §4.8・候補18](../../docs/note/n1016_rising_sea_v2_paper_plan.md)
