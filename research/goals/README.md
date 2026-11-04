@@ -15,8 +15,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## active
 
-- [G-138-aat-specified-repair-lifting](G-138-aat-specified-repair-lifting.md)
-  (指定補正の錐障害、全解のtorsor、実Čech比較への接続、有限表示整数判定)
 - [G-132-aat-visible-cycle-reflection](G-132-aat-visible-cycle-reflection.md)
   (可視閉路による既存修復障害の零性反映、整数補正と実貼り合わせ、有限判定と失敗入力)
 - [G-sft-conway-01](G-sft-conway-01.md)
@@ -30,6 +28,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## completed
 
+- [G-138-aat-specified-repair-lifting](G-138-aat-specified-repair-lifting.md)
+  (指定補正の錐障害、全解のtorsor、実Čech比較への接続、有限表示整数判定)
 - [G-137-aat-safe-coarsening-order](G-137-aat-safe-coarsening-order.md)
   (全安全粗化の因子化順序、最粗元・join閉性・自然な極大元選択の存在判定)
 - [G-136-aat-atlas-gluing-width](G-136-aat-atlas-gluing-width.md)

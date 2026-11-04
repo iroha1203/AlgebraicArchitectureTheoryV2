@@ -54,12 +54,23 @@ namespaceは`AAT.AG.SpecifiedRepairLifting`。一般錐の座標APIは可換環R
 依存DAGは、零延長→標準錐座標→指定閉元→標準H⁰→微分証人→Lift→元の非負Lift。
 G-125の実比較はD節、整数消去はE節でこのDAGへ接続する。Formalへの移植は未実施。
 
-## 残る固定証明義務
+## 証明結果と検証根拠
 
-A–EとW2–W6はcycle 1–10で受理された。cycle 11でW1の実G-125実現と指定障害を構成する。
-現在はcycle 11の標準PR監査および固定GOAL全体の独立最終累積査読が残る。
-以下の各cycle ledgerはその提出時の記録であり、後続の受理と進捗は後の節とIssueで追跡する。
-最終累積査読前にGOAL完了とは判定しない。
+固定targetのT0・A–E・W1–W6は `target-theorem-proved`。
+一般アーベル群、厳密な指定補正の等号、捩れを含む有限表示、実G-125比較を保って証明した。
+未完の固定証明義務・未放電の必須前提・中心claimの未確認事項はない。
+成果は `unported (Research-proved)` であり、Formalへの移植は未実施。
+
+- 証拠の固定head: `862e940453b1870fd51718068a5d4490b5502215`。
+- [累積証拠packet](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/6205#issuecomment-6640561253):
+  24 Lean module・795名前付き宣言の公理監査、全条項・前提・依存・回帰の対応。
+- [完了監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/6205#issuecomment-6640747785):
+  独立した数学2本・Lean2本と統合判定がすべて `No major findings`。
+- [受理・マージ記録](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6191#issuecomment-6640834150):
+  最終証拠のmerge commitは `db2060d0efaf1989498e075d4fbcaa57c13a2067`。
+
+以下の各cycle ledgerは提出時の証拠と未確認事項の記録である。
+後続の放電・受理および最終判定は、上記packetと完了監査から追跡できる。
 
 ## Cycle 1 ledger
 
