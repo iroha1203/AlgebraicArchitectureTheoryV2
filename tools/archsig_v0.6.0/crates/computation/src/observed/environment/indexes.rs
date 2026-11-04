@@ -8,11 +8,8 @@ pub(crate) struct InputIndexes<'a> {
     pub(super) object_instance: Option<&'a crate::construction::readings::ObjectInstance>,
     pub(super) object_values: Option<&'a crate::observed::object_view_family::FiniteViewAssignment>,
     pub(super) original_requests: Option<&'a [Request]>,
-    pub(super) subjects: BTreeMap<(String, String), &'a Subject>,
-    pub(super) fields: BTreeMap<
-        (String, String, archsig_common::names::QualifiedName),
-        &'a archsig_input::archmap::Field,
-    >,
+    pub(super) subjects: BTreeMap<(&'a str, &'a str), &'a Subject>,
+    pub(super) fields: BTreeMap<(&'a str, &'a str, &'a str), &'a archsig_input::archmap::Field>,
     pub(super) atoms: BTreeMap<String, Fact>,
     pub(super) modes: BTreeMap<String, &'static str>,
     pub(super) snapshot_origins: BTreeMap<String, String>,
@@ -26,7 +23,7 @@ pub(crate) struct InputIndexes<'a> {
 impl<'a> InputIndexes<'a> {
     pub fn subject(&self, snapshot: &str, id: &str) -> Result<&'a Subject, InternalError> {
         self.subjects
-            .get(&(snapshot.into(), id.into()))
+            .get(&(snapshot, id))
             .copied()
             .ok_or_else(|| internal!("検査済み subject が見つからない"))
     }
@@ -45,7 +42,7 @@ impl<'a> InputIndexes<'a> {
     ) -> Result<&'a archsig_input::archmap::Field, InternalError> {
         let field = self
             .fields
-            .get(&(snapshot.into(), subject.into(), name.into()))
+            .get(&(snapshot, subject, name))
             .copied()
             .ok_or_else(|| internal!("field がない"))?;
         if matches!(field.slot, Slot::Missing)
@@ -121,11 +118,11 @@ impl<'a> InputIndexes<'a> {
             snapshot_origins.insert(snapshot.id.clone(), snapshot.origin.clone());
             for s in &snapshot.subjects {
                 control.checkpoint(Checkpoint::FiniteIteration)?;
-                subjects.insert((s.snapshot.clone(), s.id.clone()), s);
+                subjects.insert((s.snapshot.as_str(), s.id.as_str()), s);
                 for field in &s.fields {
                     control.checkpoint(Checkpoint::FiniteIteration)?;
                     fields.insert(
-                        (s.snapshot.clone(), s.id.clone(), field.name.clone()),
+                        (s.snapshot.as_str(), s.id.as_str(), field.name.as_str()),
                         field,
                     );
                     if let Slot::Known { atom, pointer, .. } = &field.slot {
@@ -224,3 +221,6 @@ impl InputIndexes<'_> {
         Ok(family)
     }
 }
+
+#[cfg(test)]
+mod tests;

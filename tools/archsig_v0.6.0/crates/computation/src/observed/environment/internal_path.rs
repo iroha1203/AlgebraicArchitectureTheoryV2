@@ -214,9 +214,11 @@ impl Environment<'_> {
             .resolved_names()
             .get(name)
             .and_then(|name| {
-                self.indexes
-                    .fields
-                    .get(&(owner.snapshot.clone(), owner.id.clone(), name.clone()))
+                self.indexes.fields.get(&(
+                    owner.snapshot.as_str(),
+                    owner.id.as_str(),
+                    name.as_str(),
+                ))
             })
             .copied()
             .ok_or_else(|| internal!("Path構造の元fieldがない").into())
