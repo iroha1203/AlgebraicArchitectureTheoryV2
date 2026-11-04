@@ -4,6 +4,14 @@ import Mathlib.GroupTheory.QuotientGroup.Basic
 
 実零次比較の余核で残差を比較する。元の補正の選択を追加の構造へ隠さず、
 任意二つの補正から差のcycleを生成する。
+
+Implementation notes: mathlibの標準homologyを保持し、実kernel/range商との
+既存同型を介して加法写像を降ろす。これによりjの(b,0)とpのsource成分を
+全ての元のcycleで評価でき、同じ代表元から符号と完全性を検証できる。
+短完全列を外部の構造fieldとして受け取る方式や独自のH¹商を終域にする方式は、
+固定targetの標準比較との一致を別途必要にするため採らない。
+categoryの抽象exactnessだけから結論を得る方式より、必要な補正証人を
+元のcochainへ直接戻せる具体商の降下を用いる。
 -/
 noncomputable section
 open CategoryTheory HomologicalComplex
