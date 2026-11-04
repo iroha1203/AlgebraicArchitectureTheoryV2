@@ -541,14 +541,14 @@ Euclid型候補単体の完全性・計算量の上界・実用的効率は主�
 公理依存のClassical.choiceは存在・商の証明にも現れるが、実行時のデータ選択に使われない。
 
 実行例10件は全てtrue: 0×0、scalar 2の可解/不能、非対角rank1の変換・可解・不能、0×2、2×0、負係数の一意解、rank1の非一意解。
-これらをGOAL指定W2–W5の代替と数えない。元整数解の一意性と商での補正の一意性も混同しない。
-Formal未移植。以下55名前付き宣言が全spine（探索候補の内部構成を含む）、使い捨てscaffoldなし。
+`zero_data_not_valid` は一次元全零変換表の不成立例を提供する。これらをGOAL指定W2–W5の代替と数えない。元整数解の一意性と商での補正の一意性も混同しない。
+Formal未移植。以下56名前付き宣言が全spine（探索候補の内部構成を含む）、使い捨てscaffoldなし。
 
-`Vec`, `Mat`, `matrixEncodable`, `Data`, `dataEquiv`, `dataEncodable`, `Valid`, `validDecidable`, `transformed`, `Divisible`, `divisibleDecidable`, `particular`, `solution_divisible`, `particular_correct`, `divisible_iff_solution`, `no_solution_of_not_dvd`, `kernelMatrix`, `kernelMatrix_killed`, `kernelMatrix_fixed`, `kernelMatrix_apply`, `kernelParam`, `kernelParam_val`, `kernelParam_surjective`, `kernelParam_ker`, `kernelPresentationEquiv`, `kernelPresentationEquiv_mk`, `all_solutions`, `exists_valid`, `diagonalCandidate`, `State`, `initialState`, `swapRows`, `swapCols`, `reduceRow`, `reduceCol`, `diagonalize`, `stateCandidate`, `euclideanCandidate`, `produce`, `produce_valid`, `failingRows_nonempty`, `failureRow`, `failureRow_spec`, `solve`, `solve_solution`, `solve_failure`, `solve_no_solution`, `solve_failure_kind`, `solve_complete`, `producedKernelEquiv`, `producedKernelEquiv_mk`, `solve_all_solutions`, `unique_solution_iff`, `unique`, `unique_correct`。
+`Vec`, `Mat`, `matrixEncodable`, `Data`, `dataEquiv`, `dataEncodable`, `Valid`, `validDecidable`, `transformed`, `Divisible`, `divisibleDecidable`, `particular`, `solution_divisible`, `particular_correct`, `divisible_iff_solution`, `no_solution_of_not_dvd`, `kernelMatrix`, `kernelMatrix_killed`, `kernelMatrix_fixed`, `kernelMatrix_apply`, `kernelParam`, `kernelParam_val`, `kernelParam_surjective`, `kernelParam_ker`, `kernelPresentationEquiv`, `kernelPresentationEquiv_mk`, `all_solutions`, `exists_valid`, `diagonalCandidate`, `State`, `initialState`, `swapRows`, `swapCols`, `reduceRow`, `reduceCol`, `diagonalize`, `stateCandidate`, `euclideanCandidate`, `produce`, `produce_valid`, `failingRows_nonempty`, `failureRow`, `failureRow_spec`, `solve`, `solve_solution`, `solve_failure`, `solve_no_solution`, `solve_failure_kind`, `solve_complete`, `producedKernelEquiv`, `producedKernelEquiv_mk`, `solve_all_solutions`, `unique_solution_iff`, `unique`, `unique_correct`, `zero_data_not_valid`。
 
 focused検証は `lake env lean -o .lake/build/lib/lean/ResearchLean/AG/SpecifiedRepairLifting/IntegerElimination.olean ResearchLean/AG/SpecifiedRepairLifting/IntegerElimination.lean`、exit 0、警告なし。
-55名前付き宣言の全printと生成含む88宣言のnamespace監査は標準公理のみ。
-ログSHA256: `2bba603c6872abc96ef9f0ef43a0211aa51ec0a28f9448c2a743918dd09d6513`。
+56名前付き宣言の全printと生成含む89宣言のnamespace監査は標準公理のみ。
+ログSHA256: `10feb22f4e359f4cabb4cdfff6708a5cf7ff38d4f3da5345ded61238d46d18aa`。
 Research全体・aggregate・全ファイルelaborationは実施していない。
 
 ## Cycle 6 ledger
@@ -581,7 +581,7 @@ result:
   lean_artifacts: [IntegerElimination.lean]
   evidence: [produce_valid, solve_complete, solve_failure_kind, producedKernelEquiv, solve_all_solutions, unique_correct]
   claim_mapping:
-    theorem_names: [上記55名前付き全spine]
+    theorem_names: [上記56名前付き全spine]
     source_labels: [Eの原始整数算法]
     conjuncts: [全原始入力の停止と有限検査, 特解と不能証拠, 実整数kernel有限表示, 全整数解復元]
     undischarged_assumptions: []

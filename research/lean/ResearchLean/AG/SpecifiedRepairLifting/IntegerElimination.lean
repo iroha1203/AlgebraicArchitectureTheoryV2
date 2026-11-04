@@ -456,6 +456,10 @@ theorem unique_correct (A : Mat m n) (b : Vec m) :
     unique A b = true ↔ ∃! x : Vec n, A *ᵥ x = b := by
   rw [unique, decide_eq_true_eq, unique_solution_iff]
 
+/-- 全零の変換表は一次元で逆行列条件を満たさない。 -/
+theorem zero_data_not_valid : ¬ Valid (0 : Mat 1 1) (⟨0,0,0,0,0⟩ : Data 1 1) := by
+  decide
+
 -- Primitive-input executions; these are not the required W2–W5 evaluations.
 #eval decide (Valid (0 : Mat 0 0) (produce 0))
 #eval match solve (fun _ _ => (2 : ℤ) : Mat 1 1) (fun _ => 4) with
@@ -532,4 +536,5 @@ end AAT.AG.SpecifiedRepairLifting.IntegerElimination
 #print axioms AAT.AG.SpecifiedRepairLifting.IntegerElimination.unique_solution_iff
 #print axioms AAT.AG.SpecifiedRepairLifting.IntegerElimination.unique
 #print axioms AAT.AG.SpecifiedRepairLifting.IntegerElimination.unique_correct
+#print axioms AAT.AG.SpecifiedRepairLifting.IntegerElimination.zero_data_not_valid
 #assert_standard_axioms_only AAT.AG.SpecifiedRepairLifting.IntegerElimination
