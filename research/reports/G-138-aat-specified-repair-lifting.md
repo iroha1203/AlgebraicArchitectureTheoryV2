@@ -946,3 +946,101 @@ audits:
   blocking_findings: [独立レビュー未実施]
   next_obligation: W3とW4のtorsion不能非一意性および元修復不能の標準障害とE評価
 ```
+
+
+## 固定W3・W4のtorsionと元修復不能
+
+cycle9は [PR #6203監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/6203#issuecomment-6639362403) で受理、merge `343ba1850e364e215ab2906987706070ff7d79b8`。
+cycle10は実装前の [selection](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6191#issuecomment-6639291374) に従う。
+一般A/B/Eと固定GOALは変更せず、W3・W4の同じ原始整数表から条件と結論を生成する。
+
+| 固定要求 | 同じ対象のLean証拠 |
+| --- | --- |
+| W3のC⁰=D⁰=Z/4、比較2倍、正次数零 | `cyclicPresentation 4` は一生成元・関係[4]、`w3C/w3Comparison` の原始表。`cyclic_relations` は剰余射の実核が関係像と一致、`cyclicEquiv/class` は同じ元商とZMod4を両方向に同定 |
+| W3全入力のT0と厳密Lift | `w3_input_one/two`、`w3_map_coordinates`、`w3_lift_iff`。元群の二式は同じ剰余で2a=bと同値 |
+| b=1の不能と非零障害 | `w3_one_no_lift`、`w3_obstruction_one_ne_zero`。同じBの余核は `w3CokernelEquiv` でZ/2、`w3_residual_one_coordinates/ne_zero` は同じ残差が非零元1 |
+| b=2の全Lift={1,3} | `w3LiftOne/Three`、`w3_lifts_distinct`、`w3_all_lifts`。同じA/Bの障害は `w3_obstruction_two_zero/residual_two_zero` |
+| 実核{0,2}≅Z/2と自由推移作用 | `w3KernelEquiv/coordinates`、`w3_kernel_coordinates`、`w3_action_one`、`w3AllSolutions/apply/zero/one`。Bの実kernel作用から全解との両逆を生成 |
+| 同じ原始Eの両結果 | `w3_algorithm_distinguishes`、`w3_solver_failure/divisibility_certificate`、`w3_decoded_two`、`w3ComputedKernelEquiv`、`w3_computed_action`。b=1は非零対角への整除違反、b=2の出力は同じ二解で核作用も一致 |
+| rankや有理化では差を再現できない | `w3_four_smul`、`w3_rank_zero`、`w3_rationalization_zero` は元群の4-torsion・整数rank零・実TensorProductの全元零。`w3_rational_map_zero` と `w3_rational_diagnostic_loses_decision` は有理値の全射影がb1,b2を同一視する一方、実Liftの有無は異なることを示す |
+| W4のC⁰=0,C¹=Z,D=0,z=1,b=0 | `w4C/w4D/w4Comparison/w4_input_valid` は固定表からT0を生成。`w4_no_repair/no_lift` は元修復も実Liftも不存在 |
+| W4の標準H⁰Cone≅Z | `w4CycleCoordinate` は標準錐の元座標のsource成分、`w4_class_injective` は実C⁰零から標準類写像の単射性を得る。`w4ConeEquiv/class` は標準homologyと整数群の両方向群同型 |
+| W4の同じo=-1とp(o)非零 | `w4_obstruction_coordinates/ne_zero`、`w4_oneClass_ne_zero`、`w4_projection_obstruction/ne_zero`。標準障害の整数座標は-1、同じBのpは元標準H¹の-[z]へ送り非零 |
+| W4のE不能証拠 | `w4_solver_failure`、`w4_zero_row_certificate`。原始算法の実出力は行0、対角零かつ変換右辺非零 |
+
+再利用はAの標準錐、Bの標準cycle類・射影・実kernel作用、Eの入力生成・復元・核表示、cycle9の自由商同型。
+接続は巡回原始商とZModの同型、およびW4の標準錐cycle座標から標準homologyを経由する整数同型。
+新規証明は固定torsion入力の不能・全二解・実核/余核・作用と有理化、および元修復不能入力の標準障害とEの零行証拠。
+有限ZModでの判定を元商へ戻す両方向同型を明示し、元群を自由群へ置換しない。
+W4の標準錐・H¹・pは既存A/Bそのもので、独自障害群を定義して一致義務を消していない。
+元修復a₀はW3の残差で0を構成し、W4のA適用では存在を要求しない。
+
+全103名前付き宣言が主spine（補助API含む）。別scaffoldなし。
+
+- `TorsionWitness` 71宣言: `cyclicPresentation`, `residueLinear`, `residueLinear_apply`, `cyclic_relations`, `cyclicMap`, `cyclicMap_class`, `cyclicMap_injective`, `cyclicMap_surjective`, `cyclicEquiv`, `cyclicEquiv_class`, `w3C`, `w3Comparison`, `w3_input_one`, `w3_input_two`, `w3Map`, `W3Lift`, `w3_d_apply`, `w3_map_coordinates`, `w3_lift_iff`, `w3_one_no_lift`, `w3LiftOne`, `w3LiftThree`, `w3_lifts_distinct`, `w3_all_lifts`, `w3_d_zero`, `w3CyclesEquiv`, `w3CyclesEquiv_apply`, `w3CyclesEquiv_symm_coordinates`, `w3_cycle_comparison`, `evenEmbed`, `evenEmbed_injective`, `evenEmbed_range`, `w3KernelHom`, `w3KernelHom_coordinates`, `w3KernelHom_injective`, `w3KernelHom_surjective`, `w3KernelEquiv`, `w3KernelEquiv_coordinates`, `w3_action_one`, `w3AllSolutions`, `parity4`, `parity4_zero_iff`, `parity4_surjective`, `w3Parity`, `w3Parity_apply`, `w3_comparison_range`, `w3Parity_surjective`, `w3CokernelEquiv`, `w3CokernelEquiv_class`, `w3_obstruction_one_ne_zero`, `w3_obstruction_two_zero`, `w3CokernelEquiv_residual`, `w3_residual_one_coordinates`, `w3_residual_one_ne_zero`, `w3_residual_two_zero`, `w3_four_smul`, `w3_rational_map_zero`, `w3_algorithm_distinguishes`, `w3_decoded_two`, `w3ComputedKernelEquiv`, `w3_rank_zero`, `w3_rationalization_zero`, `w3_rational_diagnostic_loses_decision`, `w3_computed_action`, `w3_kernel_coordinates`, `w3AllSolutions_apply`, `w3AllSolutions_zero`, `w3AllSolutions_one`, `w3FailureRow`, `w3_solver_failure`, `w3_divisibility_certificate`。
+- `NoRepairWitness` 32宣言: `w4C`, `w4D`, `w4Comparison`, `w4_input_valid`, `w4Map`, `w4_source_zero`, `w4_target_zero`, `w4_d_zero`, `w4_z_ne_zero`, `w4_no_repair`, `w4_no_lift`, `W4Cone`, `W4Cycles`, `w4CycleCoordinate`, `w4CycleCoordinate_apply`, `w4CycleCoordinate_injective`, `w4_closed`, `w4_compatible`, `w4CycleCoordinate_surjective`, `w4_class_injective`, `w4ConeEquiv`, `w4ConeEquiv_class`, `w4Obstruction`, `w4Obstruction_class`, `w4_obstruction_coordinates`, `w4_obstruction_ne_zero`, `w4_oneClass_ne_zero`, `w4_projection_obstruction`, `w4_projection_ne_zero`, `w4FailureRow`, `w4_solver_failure`, `w4_zero_row_certificate`。
+
+対象それぞれの `lake env lean ResearchLean/AG/SpecifiedRepairLifting/<module>.lean` はexit0警告なし。
+103名前付き宣言のsource/printを突合し、namespaceの103宣言も標準公理のみ。
+6評価全true（W3不能・成功・非一意、W4入力受理・不能・非一意判定）。
+ログSHA256はTorsionWitness `b0b6ef0e1e6a219c15112909540dce272e260fea457edcea0ecb93f1c282d22a`、NoRepairWitness `d9c262bc17e654075669c478b1bf75a7e671242f7e4e5d8c48e2eccd1c22376f`。
+必要なmathlibのDimension.Torsion.FiniteとTensorProduct.Basicだけをtargeted buildした。Research全体buildなし。
+既存A/B/Eとcycle9の受理済みsourceはbaseから変更なし。
+W1（実G-125実現を含む）と最終累積4本は未完。Formal未移植、G-138完了候補ではない。
+
+## Cycle 10 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-138-aat-specified-repair-lifting
+cycle: 10
+goal_blob_sha: 64dd19a5f4959437649748306100bd023b4f029e
+base_oid: 343ba1850e364e215ab2906987706070ff7d79b8
+tracking_issue: 6191
+report_path: research/reports/G-138-aat-specified-repair-lifting.md
+selection:
+  proof_state_ref: '#6191 / issuecomment-6639291374'
+  proof_dag_predecessors: [A標準錐, B実核余核射影, E有限表示, cycle9自由商同型]
+  milestone: 固定W3のtorsionとW4の元修復不能を同じA/B/Eで評価
+  proof_obligations: [W3不能と余核Z2障害, W3全二解と実核Z2作用, W3同じEとrank有理化, W4T0と元修復不能, W4標準H0ConeZとo符号とp非零, W4E零行証拠]
+  exit_criteria: [両固定表で全条件同時成立, 一般A/Bとの同定, E同じ原始表で評価, focused全公理監査]
+  selection_reason: torsionを保持する算法とa0不要の一般障害を指定例で検証する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [TorsionWitness.lean, NoRepairWitness.lean]
+  risks: [torsion自由群化, 類障害と原始失敗の分離, 全二解未証明, 標準錐H1の代用品, 隠れa0前提]
+  unchecked: [独立レビュー]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: W3とW4の全指定条件を同じ入力から証明
+  exit_criteria_status: [上記対応表とfocused全公理監査]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [TorsionWitness.lean, NoRepairWitness.lean]
+  evidence: [w3_all_lifts, w3KernelEquiv, w3CokernelEquiv, w3_residual_one_coordinates, w3_rationalization_zero, w3_algorithm_distinguishes, w4_no_repair, w4ConeEquiv, w4_obstruction_coordinates, w4_projection_ne_zero, w4_zero_row_certificate]
+  claim_mapping:
+    theorem_names: [上記103宣言]
+    source_labels: [W3, W4]
+    conjuncts: [torsion不能非一意性と核余核, rank有理化の情報損失, 元修復不能と標準錐符号, E同じ不能証拠]
+    undischarged_assumptions: []
+    acceptance_point: 固定二入力の全要求の同時成立
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [原始表の全検査, 巡回商同型, 実核余核の全元分類, W4標準homology同型, 原始不能行の証拠]
+    remaining: [W1実G125実現含む, 最終累積査読]
+  certificate_provenance:
+    discharged: [関係4と比較2の原始表, W4零次零と一次Zの表, 同じ整数solverの返す行]
+    unresolved: []
+  proof_use:
+    used: [原始検査はnative比較T0, 巡回同型は厳密Lift分類, 実kernelは作用, parity実核は余核同型, W4C0零は標準類単射, 同じ錐座標は符号, Eの原始行は不能]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [2focused exit0, 全103公理監査, 6評価true]
+  blocking_findings: [独立レビュー未実施]
+  next_obligation: W1の整数有理差と実G125三点構成および最終累積査読
+```
