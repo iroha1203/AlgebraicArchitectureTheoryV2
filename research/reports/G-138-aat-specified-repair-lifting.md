@@ -56,7 +56,7 @@ G-125の実比較・整数消去はこのDAGへ未接続。Formalへの移植も
 
 ## 残る固定証明義務
 
-Bの短完全列・余核類・選択独立性・AddTorsor・全射単射の全量化、Cの全自然性・同型、
+Bの短完全列・余核類・選択独立性、Cの全自然性・同型、
 Dの同じ実Čech比較とreading、Eの整数全入力の停止算法・商での全解、指定W1–W6は未完了。
 これらをAの一般定理や非空虚性例で完了扱いしない。
 
@@ -115,4 +115,94 @@ audits:
   validation_refs: [PR記載のfocused検証と全宣言公理監査]
   blocking_findings: [独立レビュー未実施]
   next_obligation: Bのkφと余核障害・短完全列・全解の分類
+```
+
+
+## Bの全解分類
+
+[LiftTorsor.lean](../lean/ResearchLean/AG/SpecifiedRepairLifting/LiftTorsor.lean)は元の非負複体の
+`NonnegativeLift`を直接用いる。cycle 1の依存宣言はcommit
+`2e13b143c28a0a06db9c879ef08eb38e9943828f`、
+[独立4査読と受理判定](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/6195#issuecomment-6635534502)
+で解決する。CIとmergeの状態はtracking Issueに記録する。
+
+| Bの要求 | 宣言 | 生成経路 |
+| --- | --- | --- |
+| kφ | `zeroCycles`、`cycleComparison`、`cycleComparison_apply` | 元のd⁰のAddMonoidHom kernelとφ⁰の制限。cochain性から閉性を生成 |
+| ker kφ | `CorrectionKernel`、`correctionKernel_d/f` | 同じkの実AddSubgroup kernel |
+| 実解への作用と差 | `addKernel`、`liftDifference`、`addKernel_difference`、`difference_addKernel` | 元C⁰の加法・差から二等式を再証明 |
+| AddTorsor | `liftAddTorsor`、`lift_vadd_val`、`lift_vsub_val` | 非空な実Liftだけに既存mathlib構造を与え、元cochainで評価 |
+| 全解・作用元の一意性 | `kernelEquivLift`、`kernelEquivLift_val`、`existsUnique_addKernel` | a*+hとa−a*の両逆 |
+| 元補正から指定補正へ | `residualCycle`、`residualCycle_val`、`lift_of_cycleComparison_surjective` | b−φa₀の閉性を生成し、kの全射性から補正を構成 |
+| 全射性の同値 | `cycleComparison_surjective_iff` | 全ての閉z・元補正存在・適合bを量化。逆方向はz=0と任意Z⁰D |
+| 単射性の同値 | `lift_subsingleton_of_injective`、`cycleComparison_injective_iff` | 解の差が核に入る。逆方向はz=0の実fiber |
+| 非空fiberの一意性 | `correctionKernel_subsingleton_iff`、`nonempty_lift_unique_iff_kernel_zero` | 実解を基点とした全解同値と実kernel=⊥ |
+| 非空虚性 | `integerZeroLift`、`integer_difference_action`、`integer_two_lifts_ne`、`integer_difference_ne_zero`、`integer_identity_cycle_injective`、`integer_identity_unique` | 同じ整数複体の零比較で二つの異なる解と非零の実作用、恒等比較で一意な補正 |
+
+前提はC,D,fがT0由来、z,bとその適合条件が本文由来。`hs`や`hi`はBの同値の
+方向仮定であり、逆方向も証明する。a₀とその補正等式はBで許された方向仮定。
+`liftAddTorsor`のNonemptyと`kernelEquivLift`の基点a*はBで明示された条件。
+これらをAの外部入力へ追加していない。cycle・kernel・実作用・実差・両逆は構成義務として
+元の射の加法性とcochain性から生成する。
+
+全射性・単射性同値で量化したhzやhbが各方向で直接必要とは限らない。
+全射性の十分方向ではa₀の存在からzの閉性が従い、単射性の十分方向はすべての実fiberに
+成立する。より強い補助定理を用いながら、主定理では固定targetの全量化域を保持している。
+余核の類と標準錐短完全列への接続、指定Wの評価は別の未完義務として残る。
+
+## Cycle 2 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-138-aat-specified-repair-lifting
+cycle: 2
+goal_blob_sha: 64dd19a5f4959437649748306100bd023b4f029e
+base_oid: 2e13b143c28a0a06db9c879ef08eb38e9943828f
+tracking_issue: 6191
+report_path: research/reports/G-138-aat-specified-repair-lifting.md
+selection:
+  proof_state_ref: '#6191 / issuecomment-6635545238'
+  proof_dag_predecessors: [cycle1のNonnegativeLift, mathlibのAddTorsorとAddSubgroup]
+  milestone: Bの実Liftへの核の作用と全解・一意性の分類
+  proof_obligations: [kの制限, 実kernel, 作用と差, AddTorsor, 基点による両逆, 全射単射同値, 非空fiberの一意性]
+  exit_criteria: [全適合入力の量化, 非空のときだけAddTorsor, 実作用と両逆, 全射単射の両方向, 非空虚性, focused検証と公理監査]
+  selection_reason: Aの実Liftを分類し、Bの短完全列とD・Eの全解に接続する
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/SpecifiedRepairLifting/LiftTorsor.lean]
+  risks: [空fiberで一意性を誤判定, kの全射性を像へ限定, パラメータ表示と補正の混同]
+  unchecked: [独立レビュー, 先行PRのCIとmerge]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Bの全解分類表の宣言を構成
+  exit_criteria_status: [上記対応表とPR記載のfocused検証]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [ResearchLean/AG/SpecifiedRepairLifting/LiftTorsor.lean]
+  evidence: [kernelEquivLift, liftAddTorsor, cycleComparison_surjective_iff, cycleComparison_injective_iff, nonempty_lift_unique_iff_kernel_zero]
+  claim_mapping:
+    theorem_names: [上記Bの全解分類表]
+    source_labels: [B]
+    conjuncts: [kの核による実作用, 全解同値, 全射単射条件, 非空fiberの一意性]
+    undischarged_assumptions: []
+    acceptance_point: 選定したBの全解分類。余核・短完全列とGOAL全体は未完了
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [kの閉性, 核の作用, 解の差, AddTorsor則, 残差の閉性, 全条件の逆方向]
+    remaining: [Bの余核と短完全列, C–E, W]
+  certificate_provenance:
+    discharged: [元d⁰のkernel, 実φ⁰の制限, 元cochainの加法と差]
+    unresolved: []
+  proof_use:
+    used: [cochain性はkと残差の閉性, 基点は全解同値, 非空性はAddTorsor]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [PR記載のfocused検証と全宣言公理監査]
+  blocking_findings: [独立レビュー未実施, 先行PRのCI未完了]
+  next_obligation: Bの余核障害の選択独立性と標準錐の実短完全列
 ```

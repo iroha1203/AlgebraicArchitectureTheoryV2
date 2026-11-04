@@ -2526,3 +2526,4 @@ ResearchLean.AG.SafeCoarseningOrder.W2UpperBounds	ResearchLean/AG/SafeCoarsening
 ResearchLean.AG.SafeCoarseningOrder.W2LawEvaluation	ResearchLean/AG/SafeCoarseningOrder/W2LawEvaluation.lean
 ResearchLean.AG.SafeCoarseningOrder.W2FiniteEvaluation	ResearchLean/AG/SafeCoarseningOrder/W2FiniteEvaluation.lean
 ResearchLean.AG.SpecifiedRepairLifting.AdditiveCone	ResearchLean/AG/SpecifiedRepairLifting/AdditiveCone.lean
+ResearchLean.AG.SpecifiedRepairLifting.LiftTorsor	ResearchLean/AG/SpecifiedRepairLifting/LiftTorsor.lean
