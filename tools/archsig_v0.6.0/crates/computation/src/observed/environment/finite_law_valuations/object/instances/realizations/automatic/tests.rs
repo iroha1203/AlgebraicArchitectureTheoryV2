@@ -263,7 +263,9 @@ fn body_positions_are_discovered_before_constraints_prune_a_parameter_only_assig
     let parameters = finite_parameter_realizations(&i, &a, &quiet()).unwrap();
     assert_eq!(parameters.positions.len(), 2);
     assert_eq!(parameters.domain.len(), 2); // fixed cross-links require equal owners.
+    super::super::tests::assert_checked_rows(&i, &a, &parameters);
     let result = run(&i, &a);
+    super::super::tests::assert_checked_rows(&i, &a, result.parameters());
     let f = result.family().unwrap();
     assert!(result.is_complete());
     assert_eq!(f.positions().len(), 4);

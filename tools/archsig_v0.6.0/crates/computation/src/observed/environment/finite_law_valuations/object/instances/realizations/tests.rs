@@ -613,3 +613,122 @@ fn candidate_fibers_share_immutable_origins_and_keep_value_verification() {
     separate.entries.clear();
     assert!(separate.recheck(&i, &quiet()).is_err());
 }
+
+// 旧後段と同じ、制約を検査済みの新しい環境で全行を独立に再構築する。
+pub(super) fn assert_checked_rows(
+    i: &CheckedInputs,
+    r: &ObjectReadingInstances,
+    f: &FiniteParameterRealizations,
+) {
+    let c = quiet();
+    let sources = Arc::new(i.sources().clone());
+    let selections = (0..r.objects().len())
+        .map(|object| Arc::new(Selection::compute(i, r, object, &c).unwrap()))
+        .collect::<Vec<_>>();
+    assert!(f.domain_complete);
+    assert_eq!(f.rows.len(), f.domain.len());
+    for (point, candidate) in f.domain.iter().enumerate() {
+        let values = f
+            .positions
+            .iter()
+            .cloned()
+            .zip(candidate.iter().cloned())
+            .collect::<Vec<_>>();
+        let e = Environment::with_primitive_valuation(i, &values, &c).unwrap();
+        let expected = evaluated_objects(i, &sources, &selections, &values, &e, &c).unwrap();
+        assert_eq!(f.rows[point].point, point);
+        assert_eq!(f.rows[point].objects, expected, "point {point}");
+        for (actual, checked) in f.rows[point].objects.iter().zip(&expected) {
+            for (actual, checked) in actual.entries.iter().zip(&checked.entries) {
+                assert_eq!(actual.scope.quantifiers, checked.scope.quantifiers);
+                for (actual, checked) in actual.domains.iter().zip(&checked.domains) {
+                    assert_eq!(actual.scope.quantifiers, checked.scope.quantifiers);
+                }
+            }
+        }
+    }
+}
+#[test]
+fn stable_rows_match_checked_reconstruction_with_owned_and_missing_parameters() {
+    let missing = fixture::MAP.replace(r#",{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"}"#, "");
+    assert_ne!(missing, fixture::MAP);
+    for (map, body) in [
+        (fixture::MAP, OWNED),
+        (missing.as_str(), OWNED),
+        (
+            fixture::MAP,
+            "law required tables(r:Root,x:Map<Part[r],Part[r]>):true;",
+        ),
+    ] {
+        let i = fixture::with_body(map, body);
+        let r = reading(&i, "root");
+        let f = result(&i, &r);
+        assert_eq!(f.domain.len(), 4);
+        assert_eq!(f.observed_point.is_none(), map == missing.as_str());
+        assert_checked_rows(&i, &r, &f);
+    }
+}
+#[test]
+fn growing_body_dependencies_keep_only_final_valuation_rows() {
+    let i = fixture::with_body(
+        fixture::MAP,
+        "law required branch(c:Part):if c.flag then c.quantity=0 else c.other=0;",
+    );
+    let r = reading(&i, "root");
+    let f = compute(&i, &r, true, &quiet()).unwrap();
+    assert!(f.is_complete());
+    for subject in ["p", "q"] {
+        for field in ["flag", "quantity", "other"] {
+            let field = format!("Pattern.Part.{field}");
+            assert!(
+                f.positions
+                    .iter()
+                    .any(|p| p.subject == subject && p.field.as_deref() == Some(field.as_str()))
+            );
+        }
+    }
+    assert_checked_rows(&i, &r, &f);
+}
+#[test]
+fn candidate_iteration_interrupt_keeps_only_a_verified_completed_prefix() {
+    use archsig_input::result::Signal;
+    use std::{cell::Cell, rc::Rc};
+    let i = fixture::with_body(fixture::MAP, OWNED);
+    let r = reading(&i, "root");
+    let count = Rc::new(Cell::new(0));
+    let seen = count.clone();
+    let c = Control::new(move |p| {
+        if p == Checkpoint::FiniteIteration {
+            seen.set(seen.get() + 1);
+        }
+        None
+    });
+    let completed = finite_parameter_realizations(&i, &r, &c).unwrap();
+    assert_eq!(completed.domain.len(), 4);
+    let last = count.get();
+    assert!(last > 1);
+    let seen = Rc::new(Cell::new(0));
+    let c = Control::new(move |p| {
+        if p == Checkpoint::FiniteIteration {
+            seen.set(seen.get() + 1);
+        }
+        (seen.get() >= last).then_some(Signal::Term)
+    });
+    let failure = finite_parameter_realizations(&i, &r, &c).unwrap_err();
+    assert!(matches!(failure.cause, ValidationFailure::Stop(_)));
+    let partial = failure.partial.unwrap();
+    assert_eq!(partial.positions.len(), 2);
+    assert!(!partial.is_complete());
+    if !partial.domain_complete {
+        assert!(partial.domain.is_empty());
+        assert!(partial.rows.is_empty());
+    } else {
+        assert!(partial.rows.len() <= partial.domain.len());
+        for (point, row) in partial.rows.iter().enumerate() {
+            assert_eq!(row.point, point);
+            for object in &row.objects {
+                object.recheck(&i, &quiet()).unwrap();
+            }
+        }
+    }
+}
