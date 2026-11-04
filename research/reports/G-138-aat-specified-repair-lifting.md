@@ -508,3 +508,102 @@ Dの最終focused検証は3ファイルともexit 0、警告なし。
 `6b4402d25127822b9da2ae24bd86024b73fe2409da84e6dba6d11698b8247aba`。
 検証に必要なG-125依存2モジュールだけのtargeted buildもexit 0。
 Research全体・aggregate・全ファイルelaborationは実施していない。
+
+
+## Eの原始整数行列solver
+
+Dの受理は [PR #6199監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/6199#issuecomment-6637595621)、merge `6b3dd2c583b41b50371dfa74f99e59cbf6e71fac`。
+
+cycle 6 は実装前の [selection](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6191#issuecomment-6637411229) の到達点を扱う。
+任意の自然数m,n（零を含む）、任意の整数行列Aと右辺bから、元整数方程式Ax=bを解く。
+これはEの基礎算法部分であり、有限表示群の商へのdecode、補助変数除去、同じ実CorrectionKernelとA/B/Cへの接続、W2–W5評価は後続義務として残す。
+
+`IntegerElimination` の `produce A` は原始Aだけから整数変換表を生成する。
+直接対角候補と有限燃料のEuclid型候補を検査し、不合格なら符号化された有限整数表を構成的に探索する。
+全入力での停止は `exists_valid` のSmith像基底の存在と `Encodable.choose` の探索定理から得る。
+Smith形・基底・変換行列は外部から渡さない。存在証明内のClassical.choiceは実行部から消去される。
+Euclid型候補単体の完全性・計算量の上界・実用的効率は主張せず、有限燃料が尽きても完全な探索に進む。
+
+| 到達点の要求 | 証拠 |
+| --- | --- |
+| 有限検査可能な整数変換 | `Valid` の二つの逆行列等式、UA=diag(d)V、AB=U⁻¹diag(d)、dの零行におけるVの零性。全成分の整数等式で決定 |
+| 全原始入力から生成・停止 | `exists_valid` が像のSmith基底とその原像から表の存在を構成。`produce` は実行可能な候補検査と構成的探索。`produce_valid` は全入力でValidを放電 |
+| 特解と完全性 | `solve_solution`、`solve_complete`。整除時の特解B((Ub)/d)は元Ax=bを厳密に満たす |
+| 不能証拠 | `failureRow_spec`、`solve_failure`、`solve_no_solution`、`solve_failure_kind`。返した行の不整除または零行の非零右辺が元解不存在を証明 |
+| 実整数kernelの有限表示 | K=I−BV、`kernelMatrix_killed`、`kernelMatrix_fixed`。`producedKernelEquiv` はZ^n/im(BV)と実ker(A)の同型、`producedKernelEquiv_mk` は代表をKtへ送る |
+| 同じ全解と一意性 | `solve_all_solutions` は返した特解xについてAx'=b iff ∃t,x'=x+Kt。`unique_correct` は計算可能な判定と元の存在一意性の同値 |
+
+再利用はmathlibの自由加群のSmith像基底、有限関数の符号化、構成的探索、商の第一同型定理。
+接続は元の行列成分と有限表の等式。新規証明は全表条件の存在、原始入力producer、整除による元解復元、実核の商表示、全解と一意性。
+`Valid` は補助定理で入力されるが、公開producer経路では `produce_valid` が必ず生成する。
+原始A,bに追加の可解性、階数、対角形、非零次元、有限探索範囲の仮定はない。
+計算可能性はdefのLean検査と実行でも確認し、非計算的な宣言は二つの商同型だけ。
+公理依存のClassical.choiceは存在・商の証明にも現れるが、実行時のデータ選択に使われない。
+
+実行例10件は全てtrue: 0×0、scalar 2の可解/不能、非対角rank1の変換・可解・不能、0×2、2×0、負係数の一意解、rank1の非一意解。
+`zero_data_not_valid` は一次元全零変換表の不成立例を提供する。これらをGOAL指定W2–W5の代替と数えない。元整数解の一意性と商での補正の一意性も混同しない。
+Formal未移植。以下56名前付き宣言が全spine（探索候補の内部構成を含む）、使い捨てscaffoldなし。
+
+`Vec`, `Mat`, `matrixEncodable`, `Data`, `dataEquiv`, `dataEncodable`, `Valid`, `validDecidable`, `transformed`, `Divisible`, `divisibleDecidable`, `particular`, `solution_divisible`, `particular_correct`, `divisible_iff_solution`, `no_solution_of_not_dvd`, `kernelMatrix`, `kernelMatrix_killed`, `kernelMatrix_fixed`, `kernelMatrix_apply`, `kernelParam`, `kernelParam_val`, `kernelParam_surjective`, `kernelParam_ker`, `kernelPresentationEquiv`, `kernelPresentationEquiv_mk`, `all_solutions`, `exists_valid`, `diagonalCandidate`, `State`, `initialState`, `swapRows`, `swapCols`, `reduceRow`, `reduceCol`, `diagonalize`, `stateCandidate`, `euclideanCandidate`, `produce`, `produce_valid`, `failingRows_nonempty`, `failureRow`, `failureRow_spec`, `solve`, `solve_solution`, `solve_failure`, `solve_no_solution`, `solve_failure_kind`, `solve_complete`, `producedKernelEquiv`, `producedKernelEquiv_mk`, `solve_all_solutions`, `unique_solution_iff`, `unique`, `unique_correct`, `zero_data_not_valid`。
+
+focused検証は `lake env lean -o .lake/build/lib/lean/ResearchLean/AG/SpecifiedRepairLifting/IntegerElimination.olean ResearchLean/AG/SpecifiedRepairLifting/IntegerElimination.lean`、exit 0、警告なし。
+56名前付き宣言の全printと生成含む89宣言のnamespace監査は標準公理のみ。
+ログSHA256: `10feb22f4e359f4cabb4cdfff6708a5cf7ff38d4f3da5345ded61238d46d18aa`。
+Research全体・aggregate・全ファイルelaborationは実施していない。
+
+## Cycle 6 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-138-aat-specified-repair-lifting
+cycle: 6
+goal_blob_sha: 64dd19a5f4959437649748306100bd023b4f029e
+base_oid: 6b3dd2c583b41b50371dfa74f99e59cbf6e71fac
+tracking_issue: 6191
+report_path: research/reports/G-138-aat-specified-repair-lifting.md
+selection:
+  proof_state_ref: '#6191 / issuecomment-6637411229'
+  proof_dag_predecessors: [固定Eの整数表示, mathlibのSmith像基底と構成的探索]
+  milestone: Eの原始整数行列からの停止solverと実整数kernelの有限表示
+  proof_obligations: [全入力からの変換生成, 停止と有限検査, 整除判定と特解, 不能証拠, 実kernelの有限表示, 全解復元]
+  exit_criteria: [全m,nと全整数A,b, 外部対角形なし, producer停止正当性完全性, 整除違反と零行矛盾, 特解と全kernel復元, focused検証と公理監査]
+  selection_reason: 商の持ち上げ問題へ接続する前に原始整数入力からの算法を閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [IntegerElimination.lean]
+  risks: [実行部の非計算的choice, 外部certificateだけ, 補助未知数と実補正の混同, 有限探索の過大表示]
+  unchecked: [独立レビュー]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 原始行列だけから停止solver・不能証拠・特解・実kernel有限表示・全解を構成
+  exit_criteria_status: [上記対応表とfocused検証]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [IntegerElimination.lean]
+  evidence: [produce_valid, solve_complete, solve_failure_kind, producedKernelEquiv, solve_all_solutions, unique_correct]
+  claim_mapping:
+    theorem_names: [上記56名前付き全spine]
+    source_labels: [Eの原始整数算法]
+    conjuncts: [全原始入力の停止と有限検査, 特解と不能証拠, 実整数kernel有限表示, 全整数解復元]
+    undischarged_assumptions: []
+    acceptance_point: E基礎算法の選定到達点。E全体とWは未完了
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [Validは全Aからproduce_valid, 探索停止は全Aのexists_valid, 整除は実行判定, kernel関係はkernelParam_ker]
+    remaining: [Eの商decodeと補助変数除去と実CorrectionKernel接続, 表示不変性, W]
+  certificate_provenance:
+    discharged: [原始Aからproduce, 原始bから特解またはfailureRow, 原始Aからkernel行列と関係行列]
+    unresolved: []
+  proof_use:
+    used: [逆行列は元解復元, UAとABは整除とkernel, 零対角行はkernel固定, Smith像基底は全域探索停止だけ]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [上記focused検証と全宣言公理監査]
+  blocking_findings: [独立レビュー未実施]
+  next_obligation: 有限表示群の元関係からのdecodeと実補正kernelおよびA/B/C接続とW
+```
