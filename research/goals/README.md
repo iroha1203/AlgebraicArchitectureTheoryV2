@@ -23,6 +23,9 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 ## draft（人間の確認待ち）
 
+- [G-138-aat-specified-repair-lifting](G-138-aat-specified-repair-lifting.md)
+  (指定補正の錐障害、全解のtorsor、実Čech比較への接続、有限表示整数判定)
+
 - [G-aat-quality-surface-03](G-aat-quality-surface-03.md)
 - [G-sft-law-transport-01](G-sft-law-transport-01.md)
 - [G-sft-deformation-01](G-sft-deformation-01.md)
