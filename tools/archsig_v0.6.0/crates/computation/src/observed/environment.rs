@@ -1804,7 +1804,7 @@ impl<'a> Environment<'a> {
                             internal!("評価値Scalarの範囲が元Source・束縛・originと違う").into(),
                         );
                     }
-                    used_support.extend(graph.get(*reference)?.support.iter().cloned());
+                    used_support.extend(graph.get(*reference)?.support.iter());
                 }
                 let expected_evidence = if let Some(value) = value {
                     graph.get(*value)?.evidence.as_slice()
@@ -1817,17 +1817,17 @@ impl<'a> Environment<'a> {
                 let children = &parts[0].children;
                 for &child in children {
                     self.tick()?;
-                    used_support.extend(graph.get(child)?.support.iter().cloned());
+                    used_support.extend(graph.get(child)?.support.iter());
                     self.tick()?;
                 }
-                if let Some(support) =
-                    self.path_used_support(graph, *expression, &parts[0].children)?
-                {
+                let path_support =
+                    self.path_used_support(graph, *expression, &parts[0].children)?;
+                if let Some(support) = &path_support {
                     used_support.extend(support)
                 }
                 used_support.sort();
                 used_support.dedup();
-                if node.support != used_support {
+                if !node.support.iter().eq(used_support) {
                     return Err(
                         internal!("Evaluation の支持が使用した値・子評価の和集合と違う").into(),
                     );
