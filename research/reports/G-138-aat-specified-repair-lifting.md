@@ -607,3 +607,109 @@ audits:
   blocking_findings: [独立レビュー未実施]
   next_obligation: 有限表示群の元関係からのdecodeと実補正kernelおよびA/B/C接続とW
 ```
+
+
+## Eの有限表示群上の逆像と実kernel
+
+cycle 6受理は [PR #6200監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/6200#issuecomment-6638150317)、merge `cef7b278f190ea485e34f782c3cb18bf098e7e30`。
+`IntegerElimination` はこの受理版から変更なし。cycle 7は実装前の
+[selection](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6191#issuecomment-6637990516)の到達点を扱う。
+
+任意の有限表示P=(n,r,R)、Q=(m,s,S)、原始整数行列Aについて、元群をP=Z^n/imR、Q=Z^m/imSとして保持する。
+`MapValid` はARの全列がimSに入ることを原始solverの整除で有限検査する。
+`mapValid_iff` が検査と商射条件の必要十分性、`map` と `map_class` が同じ商射の構成・代表評価を与える。
+`class_zero_iff` と `class_eq_iff` は元関係を法とする商等号を元整数証人へ両方向に戻す。
+有限性やtorsionの消去は追加せず、零個の生成元・関係も許す。
+
+| 到達点の要求 | 宣言・構成 |
+| --- | --- |
+| 原始関係保存を有限検査 | `MapValid`、`mapValidDecidable`、`relation_preserved`、`mapValid_iff` |
+| 同じ元商群と射 | `Presentation`、`relationSpace`、`Group`、`quotientClass`、`class_surjective`、`class_eq_iff`、`map_class` |
+| 指定逆像と整数系の両方向 | `equationMatrix` は[A,−S]、`equationMatrix_mulVec`、`map_class_eq_iff`、`fiber_nonempty_iff` |
+| 原始入力から特解・不能証拠 | `solvePresented`、`solvePresented_solution`、`solvePresented_no_solution`、`solvePresented_complete`、`solvePresented_failure_kind` |
+| 実商kernelの全生成 | 拡大行列MのK=I−BVの前半行G=`generatorMatrix`。`generatorMatrix_killed`と`generatorMatrix_surjective`が元商射kernelとの一致を証明 |
+| パラメータの全関係 | 二つ目の原始整数系[G,−R]の整数核を前半へ射影した `relationMatrix`。`relationMatrix_range` がその像とt↦[Gt]のkernelの両方向一致を証明 |
+| 計算した有限表示と実kernel | `kernelPresentation`、`kernelParam_ker`、`kernelEquiv`、`kernelEquiv_class`。自由パラメータを計算した全関係で割り、元商射の実kernelへ同型 |
+| 全商解と作用 | `all_solutions`、`Fiber`、`fiberEquiv`、`fiberEquiv_class`。指定逆像aから生成核表示の全類をa+[Gt]へ送る両方向同値 |
+| 元商解の一意性 | `kernelZero_correct`、`unique_fiber_iff`、`uniquePresented_correct`。全G列の元関係membershipで実kernel零性を判定し、可解性と組み合わせる |
+| 代表変更 | `solvePresented_rep_independent`、`uniquePresented_rep_independent`。同じ終域元の代表が変わっても存在判定と一意性は同じ |
+
+補助未知数uと元代表xの変動は、自由パラメータのまま全解の異なる元と数えない。
+実kernel表示の関係を二つ目の原始整数solverから生成するので、整数系の核が非零でも商解が一意になる場合を正しく扱う。
+`fiberEquiv` の逆は元商解の差を実kernelへ戻してから生成表示の同型の逆を適用する。
+表示の等号は字面の整数代表ではなく、入力が定める元群の等号である。
+
+再利用は受理済み原始整数solverと実整数kernel、mathlibの商と第一同型定理。
+接続は入力関係行列と商等号、整数系への関係証人の追加。
+新規証明は全商逆像の双方向還元、実商kernelへの射影の全射性、二つ目の系による全関係、全解同値と正しい一意性。
+Material premiseは全自然数と整数表がambient入力、MapValidが有限検査条件。
+その内容を供給証明としてだけ扱わず、決定可能な全列検査と商射条件の同値を証明する。
+kernel全射・関係・表示同型・不能性は入力証明fieldに置かず、全て原始solverの証明から生成する。
+
+focused検証と実行9件は全て成功: Z/4→Z/2の関係保存、逆方向の不成立、Z/4の零性/非零性、2倍の不能/可解/非一意、恒等射の一意、零表示の一意、自由整数群から零写像の非一意。
+これらを指定W全要件の証明と数えない。
+このcycleは一般有限表示射の逆像までであり、Eの六群の複体・cochain・T0全検査、同じA/B/CとCorrectionKernelへの接続、表示同型によるC輸送、指定Wと最終累積査読は未完了。
+Formal未移植。全spineは次の59名前付き宣言で、使い捨てscaffoldなし。
+
+`join`, `first`, `second`, `first_join`, `second_join`, `join_parts`, `beside`, `beside_mulVec`, `firstMap`, `Presentation`, `relationSpace`, `Group`, `quotientClass`, `class_surjective`, `class_zero_iff`, `class_eq_iff`, `isZero`, `isZero_correct`, `MapValid`, `mapValidDecidable`, `relation_preserved`, `map`, `map_class`, `equationMatrix`, `equationMatrix_mulVec`, `map_class_eq_iff`, `fiber_nonempty_iff`, `solvePresented`, `solvePresented_solution`, `solvePresented_failure`, `solvePresented_no_solution`, `solvePresented_complete`, `topRows`, `topRows_mulVec`, `generatorMatrix`, `generatorMatrix_killed`, `generatorMatrix_surjective`, `kernelParam`, `kernelParam_val`, `kernelParam_surjective`, `relationMatrix`, `relationMatrix_range`, `kernelPresentation`, `kernelParam_ker`, `kernelEquiv`, `kernelEquiv_class`, `all_solutions`, `kernelZero`, `kernelZero_correct`, `Fiber`, `fiberEquiv`, `fiberEquiv_class`, `unique_fiber_iff`, `uniquePresented`, `uniquePresented_correct`, `solvePresented_failure_kind`, `mapValid_iff`, `solvePresented_rep_independent`, `uniquePresented_rep_independent`。
+
+検証は `lake env lean -o .lake/build/lib/lean/ResearchLean/AG/SpecifiedRepairLifting/PresentedGroups.olean ResearchLean/AG/SpecifiedRepairLifting/PresentedGroups.lean`、exit0警告なし。
+全59名前付きprintと生成含む74宣言のnamespace監査は標準公理のみ。
+ログSHA256: `68a2eefecca04aa4279f03cfa01c3c3f437489f2483f7a6c179e12976079f77f`。Research全体・aggregate・全file elaborationは実施していない。
+
+## Cycle 7 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-138-aat-specified-repair-lifting
+cycle: 7
+goal_blob_sha: 64dd19a5f4959437649748306100bd023b4f029e
+base_oid: cef7b278f190ea485e34f782c3cb18bf098e7e30
+tracking_issue: 6191
+report_path: research/reports/G-138-aat-specified-repair-lifting.md
+selection:
+  proof_state_ref: '#6191 / issuecomment-6637990516'
+  proof_dag_predecessors: [cycle6原始整数solverと実整数核]
+  milestone: 有限表示群上の射・指定逆像・実商kernelの有限表示と全解
+  proof_obligations: [関係保存の有限検査, 元商射decode, 商等号と整数証人, 特解と不能証拠, 実商kernelの全生成と全関係, 全商解同値, 元商解一意性]
+  exit_criteria: [全原始表示とtorsion零次元, 関係検査と商射条件の両方向, 元商逆像の正当性完全性, 補助変数を除いた実kernel表示, 全解と一意性, focusedと公理検証]
+  selection_reason: 整数solverを実補正の属する商群に接続し補助自由度を除く
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [PresentedGroups.lean]
+  risks: [関係保存の外部証明化, 補助自由度の偽非一意性, torsion零表示除外, 元商元と代表の混同]
+  unchecked: [独立レビュー]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 全有限表示射から実商kernel有限表示と全逆像分類を構成
+  exit_criteria_status: [上記全対応表とfocused検証]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [PresentedGroups.lean]
+  evidence: [mapValid_iff, solvePresented_complete, relationMatrix_range, kernelEquiv, fiberEquiv, uniquePresented_correct]
+  claim_mapping:
+    theorem_names: [上記59名前付き全spine]
+    source_labels: [Eの有限表示群のdecodeと全商解]
+    conjuncts: [商射の有限検査, 指定逆像還元, 実商kernel表示, 特解と全解と一意性]
+    undischarged_assumptions: []
+    acceptance_point: 一般有限表示射の選定到達点。六群とA/B/C接続とWは後続義務
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [商射条件は全列検査, 原始系の可解性はproducer, 実kernel全射と関係は二つの原始系, 元商一意性は全生成列の関係membership]
+    remaining: [E六群と複体cochainT0全検査, A/B/C接続, 表示変更, W]
+  certificate_provenance:
+    discharged: [原始関係行列, equationMatrix, generatorMatrix, relationMatrix, kernelPresentation]
+    unresolved: []
+  proof_use:
+    used: [MapValidは商射構成, 商等号は関係証人, 元整数核固定は全商kernel生成, 二つ目の原始系は全パラメータ関係, 実kernelは全解と一意性]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [上記focused検証と全宣言公理監査]
+  blocking_findings: [独立レビュー未実施]
+  next_obligation: Eの六群・複体・cochain・T0の有限検査とA/B/C接続およびW
+```
