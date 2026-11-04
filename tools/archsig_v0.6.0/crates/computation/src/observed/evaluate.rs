@@ -3565,6 +3565,46 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         result
     }
 
+    #[test]
+    fn public_projection_cancellation_keeps_first_signal_and_evaluation_unchanged() {
+        use std::{cell::Cell, rc::Rc};
+        let result = affine_private_example(
+            "law required mixed(s:Sample):s.p and (s.z+1=s.z+2);",
+            &["mixed=check(Calc.mixed,s=@v/sample)"],
+        );
+        let inspection = result.wire();
+        let probes = Rc::new(Cell::new(0));
+        let count = probes.clone();
+        let measuring = Control::new(move |_| {
+            count.set(count.get() + 1);
+            None
+        });
+        let expected = result
+            .result_wire_controlled(&measuring, Checkpoint::Expression)
+            .unwrap();
+        // 実際の表示処理の入口・途中・末尾で止め、固定probe回数へ依存しない。
+        for signal in [Signal::Int, Signal::Term] {
+            for stop in [1, probes.get() / 2, probes.get()] {
+                let count = Cell::new(0);
+                let control = Control::new(move |_| {
+                    count.set(count.get() + 1);
+                    (count.get() >= stop).then_some(signal)
+                });
+                assert_eq!(
+                    result.result_wire_controlled(&control, Checkpoint::Expression),
+                    Err(signal)
+                );
+                assert_eq!(control.stop_reason(), Some(signal));
+                assert_eq!(
+                    result.result_wire_controlled(&control, Checkpoint::Expression),
+                    Err(signal)
+                );
+                assert_eq!(result.result_wire(), expected);
+                assert_eq!(result.wire(), inspection);
+            }
+        }
+    }
+
     // own Source, 実左右、差Expression、残差、正規化、比較Bool。
     fn affine_comparison_chain(result: &ObservedEvaluation, normalization: usize) -> [usize; 7] {
         let node = &result.nodes[normalization];
