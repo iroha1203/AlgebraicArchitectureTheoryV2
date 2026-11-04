@@ -1,6 +1,7 @@
 //! 検査済み入力から構築する索引と固定した評価入力。
 use super::*;
 use archsig_common::internal::InternalError;
+use std::collections::HashMap;
 
 pub(crate) struct InputIndexes<'a> {
     pub inputs: &'a CheckedInputs,
@@ -9,7 +10,7 @@ pub(crate) struct InputIndexes<'a> {
     pub(super) object_values: Option<&'a crate::observed::object_view_family::FiniteViewAssignment>,
     pub(super) original_requests: Option<&'a [Request]>,
     pub(super) subjects: BTreeMap<(&'a str, &'a str), &'a Subject>,
-    pub(super) fields: BTreeMap<(&'a str, &'a str, &'a str), &'a archsig_input::archmap::Field>,
+    pub(super) fields: HashMap<(&'a str, &'a str, &'a str), &'a archsig_input::archmap::Field>,
     pub(super) atoms: BTreeMap<String, Fact>,
     pub(super) modes: BTreeMap<String, &'static str>,
     pub(super) snapshot_origins: BTreeMap<String, String>,
@@ -103,7 +104,7 @@ impl<'a> InputIndexes<'a> {
 impl<'a> InputIndexes<'a> {
     pub fn new(inputs: &'a CheckedInputs, control: &Control) -> Result<Self, Signal> {
         let mut subjects = BTreeMap::new();
-        let mut fields = BTreeMap::new();
+        let mut fields = HashMap::new();
         let mut atoms = BTreeMap::new();
         let mut modes = BTreeMap::new();
         let mut snapshot_origins = BTreeMap::new();

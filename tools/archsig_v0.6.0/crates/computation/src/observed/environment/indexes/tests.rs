@@ -7,7 +7,7 @@ mod fixture {
 }
 
 #[test]
-fn borrowed_keys_keep_input_storage_order_and_short_lived_queries() {
+fn borrowed_keys_keep_subject_order_field_identity_and_short_lived_queries() {
     let inputs = fixture::inputs();
     let indexes = InputIndexes::new(&inputs, &quiet()).unwrap();
     let mut subjects = BTreeMap::new();
@@ -37,23 +37,14 @@ fn borrowed_keys_keep_input_storage_order_and_short_lived_queries() {
         .map(|((s, id), value)| (*s, *id, std::ptr::from_ref(*value)))
         .collect();
     assert_eq!(actual_subjects, expected_subjects);
-    let expected_fields: Vec<_> = fields
-        .iter()
-        .map(|((s, id, name), value)| {
-            (
-                s.as_str(),
-                id.as_str(),
-                name.as_str(),
-                std::ptr::from_ref(*value),
-            )
-        })
-        .collect();
-    let actual_fields: Vec<_> = indexes
-        .fields
-        .iter()
-        .map(|((s, id, name), value)| (*s, *id, *name, std::ptr::from_ref(*value)))
-        .collect();
-    assert_eq!(actual_fields, expected_fields);
+    assert_eq!(indexes.fields.len(), fields.len());
+    for ((snapshot, id, name), expected) in &fields {
+        let actual = indexes
+            .fields
+            .get(&(snapshot.as_str(), id.as_str(), name.as_str()))
+            .unwrap();
+        assert!(std::ptr::eq(*actual, *expected));
+    }
     for ((snapshot, id), subject) in &indexes.subjects {
         assert_eq!(snapshot.as_ptr(), subject.snapshot.as_ptr());
         assert_eq!(id.as_ptr(), subject.id.as_ptr());
