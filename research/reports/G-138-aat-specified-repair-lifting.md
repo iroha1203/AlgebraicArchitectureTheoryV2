@@ -736,14 +736,14 @@ A/B/Cの再利用sourceは同じbaseの `AdditiveCone`、`LiftTorsor`、`Residua
 | 同じ比較とT0の生成 | `comparisonDegree_comm`、`comparison`、`comparison_apply0/1/2`、`input_closed`、`input_compatible` |
 | 二式を束ねる元群の直積 | `product` は元関係のブロック対角、`productEquiv` と `productEquiv_class` は二つの元商との同型。`above_valid/map` が同じ二射を束ねる |
 | 固定設計の拡大整数系 | `jointMatrix`、`jointValue`、`finiteEquation_first/second` がd_C x−R_C u、φ⁰x−R_D vを元原始成分で評価 |
-| 同じ実Lift | `jointEquation` は二つの元群での厳密等号。`liftFiberEquiv` の両逆と `liftFiberEquiv_val` は元C⁰の補正を保持 |
+| 同じ実Lift | `joint_equation` は二つの元群での厳密等号。`liftFiberEquiv` の両逆と `liftFiberEquiv_val` は元C⁰の補正を保持 |
 | 空非空・特解・不能証拠 | `finiteSolve_complete`、`decodedSolution/val`、`finiteSolve_no_solution/failure_kind`。元の実Liftへ両方向、不能行は同じ原始系の整除違反または零行矛盾 |
 | A/Bの同じ障害 | `finiteSolve_obstruction` は標準錐の同じoの零性と計算判定の同値。元補正a₀がある場合だけ `finiteSolve_residual` が同じBの余核残差へ同定 |
-| 同じ実CorrectionKernel | `jointZero`、`jointKernelEquiv/val`、`correctionPresentation`、`computedKernelEquiv/class`。計算した有限表示とBの実核の群同型、元C⁰の代表評価を保持 |
+| 同じ実CorrectionKernel | `joint_zero`、`jointKernelEquiv/val`、`correctionPresentation`、`computedKernelEquiv/class`。計算した有限表示とBの実核の群同型、元C⁰の代表評価を保持 |
 | 全解と同じ作用 | `computedLiftEquiv` は生成表示からBの `kernelEquivLift` へ合成。`computedLiftEquiv_class` は元C⁰のa*+[Gt]、実Lift全体への両方向同値 |
 | 補正自体の一意性 | `finiteUnique_correct`、`finiteUnique_lift`、`finiteUnique_kernel`。存在一意性、非空かつSubsingleton、非空時の同じ実kernel零性が一致 |
 | 表示変更の原始順逆行列 | `IsoData` は順逆の原始三行列だけ。`InverseValid`、`IsoValid` が全関係・cochain・両合成恒等を検査、`comparison_inverse` と `nativeIso` がCの実cochain同型を生成 |
-| 原始平方と輸送先入力 | `SquareValid`、`nativeSquare`、`transportedInput`。全三成分の平方を検査し、輸送した原始代表のT0も生成。一般平方に同型条件を追加しない |
+| 原始平方と輸送先入力 | `SquareValid`、`native_square`、`transported_input`。全三成分の平方を検査し、輸送した原始代表のT0も生成。一般平方に同型条件を追加しない |
 | Cの同じ解・作用・障害の同値 | `representationLiftEquiv/val`、`finiteSolve_representation`、`finiteUnique_representation`、`representationKernelEquiv/comm`、`representation_action`、`representation_obstruction` |
 
 同型は有限表示群そのものの同型であり、原始生成元の個数が等しいことや自由群行列の可逆性を要求しない。
@@ -758,7 +758,7 @@ A/B/Cの再利用sourceは同じbaseの `AdditiveCone`、`LiftTorsor`、`Residua
 各Validは有限原始検査そのもの。`checkedSolve` はこの検査を先行し、成立時にdecodeする。
 a₀は余核残差の条件付き記述だけ、特解は非空全解分類だけの方向仮定である。
 
-対象5ファイルのfocused検証は全てexit0警告なし。全114名前付き宣言（主spine107、検査用data7）をprintと機械突合し、生成含む160宣言のnamespace監査は標準公理のみ。
+対象5ファイルのfocused検証は全てexit0警告なし。全115名前付き宣言（主spine108、検査用data7）をprintと機械突合し、生成含む162宣言のnamespace監査は標準公理のみ。
 `FiniteValidation` の23実行は全てtrue。関係保存・複体則・二つのcochain則・閉性・適合性・逆条件・同型条件・平方条件の正負、原始solverと存在一意性、checkedSolveの受理/拒否を検査した。
 非零d¹とtorsionを持つ入力、零表示を含む。これらだけで指定W1–W6を達成したとは扱わない。
 
@@ -768,9 +768,9 @@ a₀は余核残差の条件付き記述だけ、特解は非空全解分類だ�
 
 - `PresentedProduct`: `secondMap`, `blockMatrix`, `blockMatrix_first`, `blockMatrix_second`, `product`, `pairClass`, `pairClass_apply`, `pairClass_relations`, `productMap`, `productMap_class`, `productMap_zero`, `productMap_injective`, `productMap_surjective`, `productEquiv`, `productEquiv_class`, `above`, `above_first`, `above_second`, `above_valid`, `above_map`。
 
-- `FiniteLifting`: `jointMatrix`, `jointValue`, `jointValid`, `jointEquation`, `liftFiberEquiv`, `liftFiberEquiv_val`, `jointZero`, `jointKernelEquiv`, `jointKernelEquiv_val`, `correctionPresentation`, `computedKernelEquiv`, `computedKernelEquiv_class`, `finiteSolve`, `decodedSolution`, `decodedSolution_val`, `finiteSolve_complete`, `finiteSolve_obstruction`, `computedLiftEquiv`, `computedLiftEquiv_class`, `finiteUnique`, `finiteUnique_correct`, `finiteSolve_no_solution`, `finiteSolve_failure_kind`, `finiteUnique_lift`, `finiteUnique_kernel`, `finiteEquation_first`, `finiteEquation_second`, `checkedSolve`, `checkedSolve_valid`, `checkedSolve_reject_iff`, `checkedSolve_some_iff`, `finiteSolve_residual`。
+- `FiniteLifting`: `jointMatrix`, `jointValue`, `joint_valid`, `joint_equation`, `liftFiberEquiv`, `liftFiberEquiv_val`, `joint_zero`, `jointKernelEquiv`, `jointKernelEquiv_val`, `correctionPresentation`, `computedKernelEquiv`, `computedKernelEquiv_class`, `finiteSolve`, `decodedSolution`, `decodedSolution_val`, `finiteSolve_complete`, `finiteSolve_obstruction`, `computedLiftEquiv`, `computedLiftEquiv_class`, `finiteUnique`, `finiteUnique_correct`, `finiteSolve_no_solution`, `finiteSolve_failure_kind`, `finiteUnique_lift`, `finiteUnique_kernel`, `finiteEquation_first`, `finiteEquation_second`, `checkedSolve`, `checkedSolve_valid`, `checkedSolve_reject_iff`, `checkedSolve_some_iff`, `finiteSolve_residual`。
 
-- `FiniteRepresentation`: `InverseValid`, `inverseValidDecidable`, `comparison_inverse`, `IsoData`, `IsoValid`, `isoValidDecidable`, `nativeIso`, `nativeIso_hom`, `SquareValid`, `squareValidDecidable`, `nativeSquare`, `transportedInput`, `representationLiftEquiv`, `finiteSolve_representation`, `finiteUnique_representation`, `representationKernelEquiv`, `representationLiftEquiv_val`, `representationKernelEquiv_comm`, `representation_action`, `representation_obstruction`。
+- `FiniteRepresentation`: `InverseValid`, `inverseValidDecidable`, `comparison_inverse`, `IsoData`, `IsoValid`, `isoValidDecidable`, `nativeIso`, `nativeIso_hom`, `SquareValid`, `squareValidDecidable`, `native_square`, `transported_input`, `representationLiftEquiv`, `finiteSolve_representation`, `finiteUnique_representation`, `representationKernelEquiv`, `representationLiftEquiv_val`, `representationKernelEquiv_comm`, `representationLiftEquiv_eq_squareLiftEquiv`, `representation_action`, `representation_obstruction`。
 
 - `FiniteValidation`: `free`, `cyclic`, `torsionComplex`, `identityData`, `zeroData`, `firstComplex`, `secondComplex`。
 
@@ -781,12 +781,15 @@ Focusedコマンドは各対象について `lake env lean ResearchLean/AG/Speci
 
 - `PresentedComplex`: `dbe7ab50952fa1c2a979ab13c938a36462033d82b54916e3d1e56db510f19d88`。
 - `PresentedProduct`: `0faacf681c0ee5d87771a392e881302b5e5c8393b00148fa8d4a00159fc11125`。
-- `FiniteLifting`: `36580ec7545d8da9c46976f6c80f3b0d6814e902d61ac5475336571b32bbf4b9`。
-- `FiniteRepresentation`: `3b04e0efe550cb5f99c8dd193b1ef9e6b773d6fc3dd7ce02c576221f7f13865e`。
+- `FiniteLifting`: `48a7badd39cba38ca78aea38e07a5018ab2e3da42bdaa9f40053d8cbeda7ed37`。
+- `FiniteRepresentation`: `b590aba5534b0bea407ababdf224d57d15179b46a115217cb4ba5caaf8852f8e`。
 - `FiniteValidation`: `195ff29954b9e5bf4f411def5da63b23c70b0c0ae20700ce9a8543e7a774880b`。
 
 Eの選定到達点は一般の全有限表示入力で閉じたが、指定Wの同時成立・W2–W5のE評価、最終累積4本査読は未完了。
 Formal未移植、G-138完了候補ではない。
+
+初回レビュー後、定理名を `jointValid → joint_valid`、`jointEquation → joint_equation`、`jointZero → joint_zero`、`nativeSquare → native_square`、`transportedInput → transported_input` と変更した。statementと証明内容は同じ。
+`representationLiftEquiv_eq_squareLiftEquiv` を公開APIとして追加し、作用の証明はこのAPI経由でCの作用保存を使う。公開定義の直接展開を除去した。
 
 ## Cycle 8 ledger
 
@@ -818,7 +821,7 @@ result:
   lean_artifacts: [上記5module]
   evidence: [checkedSolve_some_iff, liftFiberEquiv, computedKernelEquiv, finiteSolve_obstruction, finiteSolve_residual, computedLiftEquiv, finiteUnique_kernel, representation_action, representation_obstruction]
   claim_mapping:
-    theorem_names: [上記主spine107宣言と検査用7宣言]
+    theorem_names: [上記主spine108宣言と検査用7宣言]
     source_labels: [E, EからA/B/Cへの接続, 設計の整数系と表示変更]
     conjuncts: [全有限検査とdecode, 同じLiftと障害, 実kernel表示と作用, 全解一意性, 表示同型輸送]
     undischarged_assumptions: []
@@ -829,7 +832,7 @@ audits:
     discharged: [複体比較T0は全有限検査, 直積同型は元関係, 実核同型は同じ二式, 順逆と平方は全三成分の有限検査]
     remaining: [指定W1–W6とW2–W5評価, 最終累積査読]
   certificate_provenance:
-    discharged: [原始六群と二微分と三比較, 元関係のブロック対角, jointMatrix, correctionPresentation, nativeIsoとnativeSquare]
+    discharged: [原始六群と二微分と三比較, 元関係のブロック対角, jointMatrix, correctionPresentation, nativeIsoとnative_square]
     unresolved: []
   proof_use:
     used: [関係保存は商射, 複体cochain検査は全次数構造則, 閉性適合性はA障害, 同時二式は実核, 実核は全解作用一意性, 両逆はCの反映, 平方は輸送]

@@ -17,13 +17,13 @@ def jointMatrix : Mat (C.P1.generators+D.P0.generators) C.P0.generators := above
 /-- 同じ二つの指定代表の連結。 -/
 def jointValue (z : Vec C.P1.generators) (b : Vec D.P0.generators) := join z b
 /-- 同じ原始入力の関係保存から束ねた射の関係保存を生成。 -/
-theorem jointValid (hc : ComplexValid C) (hf : ComparisonValid f) :
+theorem joint_valid (hc : ComplexValid C) (hf : ComparisonValid f) :
     MapValid C.P0 (product C.P1 D.P0) (jointMatrix C D f) :=
   above_valid _ _ _ _ _ hc.1 hf.1
 /-- 束ねた商射の等号は元の二つの厳密補正式そのもの。 -/
-theorem jointEquation (hc : ComplexValid C) (hd : ComplexValid D) (hf : ComparisonValid f)
+theorem joint_equation (hc : ComplexValid C) (hd : ComplexValid D) (hf : ComparisonValid f)
     (z : Vec C.P1.generators) (b : Vec D.P0.generators) (a : PresentedGroups.Group C.P0) :
-    PresentedGroups.map C.P0 (product C.P1 D.P0) (jointMatrix C D f) (jointValid C D f hc hf) a =
+    PresentedGroups.map C.P0 (product C.P1 D.P0) (jointMatrix C D f) (joint_valid C D f hc hf) a =
       quotientClass (product C.P1 D.P0) (jointValue C D z b) ↔
     (native C hc).d 0 1 a = quotientClass C.P1 z ∧
       (comparison hc hd f hf).f 0 a = quotientClass D.P0 b := by
@@ -37,9 +37,9 @@ theorem jointEquation (hc : ComplexValid C) (hd : ComplexValid D) (hf : Comparis
 def liftFiberEquiv (hc : ComplexValid C) (hd : ComplexValid D) (hf : ComparisonValid f)
     (z : Vec C.P1.generators) (b : Vec D.P0.generators) :
     NonnegativeLift (comparison hc hd f hf) (quotientClass C.P1 z) (quotientClass D.P0 b) ≃
-      Fiber C.P0 (product C.P1 D.P0) (jointMatrix C D f) (jointValid C D f hc hf) (jointValue C D z b) where
-  toFun a := ⟨a.val,(jointEquation C D f hc hd hf z b a.val).mpr a.property⟩
-  invFun a := ⟨a.val,(jointEquation C D f hc hd hf z b a.val).mp a.property⟩
+      Fiber C.P0 (product C.P1 D.P0) (jointMatrix C D f) (joint_valid C D f hc hf) (jointValue C D z b) where
+  toFun a := ⟨a.val,(joint_equation C D f hc hd hf z b a.val).mpr a.property⟩
+  invFun a := ⟨a.val,(joint_equation C D f hc hd hf z b a.val).mp a.property⟩
   left_inv _ := rfl
   right_inv _ := rfl
 /-- 上の同値は元C⁰の補正を変更しない。 -/
@@ -48,29 +48,29 @@ theorem liftFiberEquiv_val (hc : ComplexValid C) (hd : ComplexValid D) (hf : Com
     (a : NonnegativeLift (comparison hc hd f hf) (quotientClass C.P1 z) (quotientClass D.P0 b)) :
     (liftFiberEquiv C D f hc hd hf z b a).val = a.val := rfl
 /-- 束ねた射の零性は元微分と元比較の同時零性。 -/
-theorem jointZero (hc : ComplexValid C) (hd : ComplexValid D) (hf : ComparisonValid f)
+theorem joint_zero (hc : ComplexValid C) (hd : ComplexValid D) (hf : ComparisonValid f)
     (a : PresentedGroups.Group C.P0) :
-    PresentedGroups.map C.P0 (product C.P1 D.P0) (jointMatrix C D f) (jointValid C D f hc hf) a = 0 ↔
+    PresentedGroups.map C.P0 (product C.P1 D.P0) (jointMatrix C D f) (joint_valid C D f hc hf) a = 0 ↔
       (native C hc).d 0 1 a = 0 ∧ (comparison hc hd f hf).f 0 a = 0 := by
-  have he := jointEquation C D f hc hd hf 0 0 a
+  have he := joint_equation C D f hc hd hf 0 0 a
   have hj : jointValue C D (0 : Vec C.P1.generators) (0 : Vec D.P0.generators) = 0 := by
     ext i
     refine Fin.addCases (fun j => ?_) (fun j => ?_) i <;> simp [jointValue,join]
   simpa only [hj,map_zero] using he
 /-- 束ねた元商射の実kernelはBの同じCorrectionKernel。 -/
 def jointKernelEquiv (hc : ComplexValid C) (hd : ComplexValid D) (hf : ComparisonValid f) :
-    LinearMap.ker (PresentedGroups.map C.P0 (product C.P1 D.P0) (jointMatrix C D f) (jointValid C D f hc hf)) ≃+
+    LinearMap.ker (PresentedGroups.map C.P0 (product C.P1 D.P0) (jointMatrix C D f) (joint_valid C D f hc hf)) ≃+
       CorrectionKernel (comparison hc hd f hf) where
-  toFun x := ⟨⟨x.val,((jointZero C D f hc hd hf x.val).mp x.property).1⟩,
-    Subtype.ext (((jointZero C D f hc hd hf x.val).mp x.property).2)⟩
-  invFun x := ⟨x.val.val,(jointZero C D f hc hd hf x.val.val).mpr
+  toFun x := ⟨⟨x.val,((joint_zero C D f hc hd hf x.val).mp x.property).1⟩,
+    Subtype.ext (((joint_zero C D f hc hd hf x.val).mp x.property).2)⟩
+  invFun x := ⟨x.val.val,(joint_zero C D f hc hd hf x.val.val).mpr
     ⟨correctionKernel_d _ x,correctionKernel_f _ x⟩⟩
   left_inv _ := rfl
   right_inv _ := rfl
   map_add' _ _ := rfl
 /-- 実kernel同定は元C⁰の値を保持する。 -/
 theorem jointKernelEquiv_val (hc : ComplexValid C) (hd : ComplexValid D) (hf : ComparisonValid f)
-    (x : LinearMap.ker (PresentedGroups.map C.P0 (product C.P1 D.P0) (jointMatrix C D f) (jointValid C D f hc hf))) :
+    (x : LinearMap.ker (PresentedGroups.map C.P0 (product C.P1 D.P0) (jointMatrix C D f) (joint_valid C D f hc hf))) :
     (jointKernelEquiv C D f hc hd hf x).val.val = x.val := rfl
 /-- 原始入力から計算した実補正kernelの有限表示。 -/
 def correctionPresentation : Presentation :=
@@ -78,7 +78,7 @@ def correctionPresentation : Presentation :=
 /-- 生成した有限表示をBの同じ実CorrectionKernelへ同定する。 -/
 noncomputable def computedKernelEquiv (hc : ComplexValid C) (hd : ComplexValid D) (hf : ComparisonValid f) :
     PresentedGroups.Group (correctionPresentation C D f) ≃+ CorrectionKernel (comparison hc hd f hf) :=
-  (PresentedGroups.kernelEquiv _ _ _ (jointValid C D f hc hf)).toAddEquiv.trans (jointKernelEquiv C D f hc hd hf)
+  (PresentedGroups.kernelEquiv _ _ _ (joint_valid C D f hc hf)).toAddEquiv.trans (jointKernelEquiv C D f hc hd hf)
 /-- 生成核表示の代表の元C⁰への復元は計算した同じ行列。 -/
 theorem computedKernelEquiv_class (hc : ComplexValid C) (hd : ComplexValid D) (hf : ComparisonValid f)
     (t : Vec (C.P0.generators+(product C.P1 D.P0).relations)) :
@@ -91,8 +91,8 @@ def finiteSolve (z : Vec C.P1.generators) (b : Vec D.P0.generators) :=
 def decodedSolution (z : Vec C.P1.generators) (b : Vec D.P0.generators) (h : InputValid C D f z b)
     (x : Vec C.P0.generators) (hx : finiteSolve C D f z b = .inl x) :
     NonnegativeLift (comparison h.1 h.2.1 f h.2.2.1) (quotientClass C.P1 z) (quotientClass D.P0 b) :=
-  ⟨quotientClass C.P0 x,(jointEquation C D f h.1 h.2.1 h.2.2.1 z b _).mp
-    (solvePresented_solution _ _ _ (jointValid C D f h.1 h.2.2.1) _ x hx)⟩
+  ⟨quotientClass C.P0 x,(joint_equation C D f h.1 h.2.1 h.2.2.1 z b _).mp
+    (solvePresented_solution _ _ _ (joint_valid C D f h.1 h.2.2.1) _ x hx)⟩
 /-- 特解復元はsolverの元代表をそのまま元群へ送る。 -/
 theorem decodedSolution_val (z : Vec C.P1.generators) (b : Vec D.P0.generators) (h : InputValid C D f z b)
     (x : Vec C.P0.generators) (hx : finiteSolve C D f z b = .inl x) :
@@ -105,8 +105,8 @@ theorem finiteSolve_complete (z : Vec C.P1.generators) (b : Vec D.P0.generators)
   · rintro ⟨x,hx⟩
     exact ⟨decodedSolution C D f z b h x hx⟩
   · rintro ⟨a⟩
-    apply (solvePresented_complete _ _ _ (jointValid C D f h.1 h.2.2.1) _).mpr
-    exact ⟨a.val,(jointEquation C D f h.1 h.2.1 h.2.2.1 z b _).mpr a.property⟩
+    apply (solvePresented_complete _ _ _ (joint_valid C D f h.1 h.2.2.1) _).mpr
+    exact ⟨a.val,(joint_equation C D f h.1 h.2.1 h.2.2.1 z b _).mpr a.property⟩
 /-- 同じ標準錐障害の零性と原始入力の判定が一致する。 -/
 theorem finiteSolve_obstruction (z : Vec C.P1.generators) (b : Vec D.P0.generators) (h : InputValid C D f z b) :
     (∃ x, finiteSolve C D f z b = .inl x) ↔
@@ -133,8 +133,8 @@ theorem finiteUnique_correct (z : Vec C.P1.generators) (b : Vec D.P0.generators)
     finiteUnique C D f z b = true ↔ ∃! a : (native C h.1).X 0,
       (native C h.1).d 0 1 a = quotientClass C.P1 z ∧
         (comparison h.1 h.2.1 f h.2.2.1).f 0 a = quotientClass D.P0 b := by
-  rw [finiteUnique,uniquePresented_correct _ _ _ (jointValid C D f h.1 h.2.2.1)]
-  simp only [jointEquation C D f h.1 h.2.1 h.2.2.1 z b]
+  rw [finiteUnique,uniquePresented_correct _ _ _ (joint_valid C D f h.1 h.2.2.1)]
+  simp only [joint_equation C D f h.1 h.2.1 h.2.2.1 z b]
   rfl
 
 
@@ -220,11 +220,11 @@ end AAT.AG.SpecifiedRepairLifting.FiniteLifting
 
 #print axioms AAT.AG.SpecifiedRepairLifting.FiniteLifting.jointMatrix
 #print axioms AAT.AG.SpecifiedRepairLifting.FiniteLifting.jointValue
-#print axioms AAT.AG.SpecifiedRepairLifting.FiniteLifting.jointValid
-#print axioms AAT.AG.SpecifiedRepairLifting.FiniteLifting.jointEquation
+#print axioms AAT.AG.SpecifiedRepairLifting.FiniteLifting.joint_valid
+#print axioms AAT.AG.SpecifiedRepairLifting.FiniteLifting.joint_equation
 #print axioms AAT.AG.SpecifiedRepairLifting.FiniteLifting.liftFiberEquiv
 #print axioms AAT.AG.SpecifiedRepairLifting.FiniteLifting.liftFiberEquiv_val
-#print axioms AAT.AG.SpecifiedRepairLifting.FiniteLifting.jointZero
+#print axioms AAT.AG.SpecifiedRepairLifting.FiniteLifting.joint_zero
 #print axioms AAT.AG.SpecifiedRepairLifting.FiniteLifting.jointKernelEquiv
 #print axioms AAT.AG.SpecifiedRepairLifting.FiniteLifting.jointKernelEquiv_val
 #print axioms AAT.AG.SpecifiedRepairLifting.FiniteLifting.correctionPresentation
