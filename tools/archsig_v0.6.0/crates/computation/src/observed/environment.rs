@@ -131,13 +131,7 @@ enum LexicalOrigin {
 
 type ScopedMatchBindings = (usize, BTreeMap<String, SourceValue>);
 
-type SourceCacheEntry = (
-    super::call::Context,
-    usize,
-    (usize, usize),
-    Vec<Binding>,
-    SourceAnalysis,
-);
+type SourceCacheEntry = (usize, (usize, usize), Vec<Binding>, SourceAnalysis);
 type FrameInputs = (Vec<Binding>, BTreeMap<String, SourceValue>, Scope);
 type NodeRefKey = (super::call::Context, usize);
 // 同じ検査epochの成功値は不変。利用側が必要とする部分だけをコピーする。
@@ -379,7 +373,7 @@ struct ValidationCache {
     registry_read: bool,
     checked: BTreeSet<NodeRefKey>,
     rechecked: BTreeSet<NodeRefKey>,
-    sources: Vec<SourceCacheEntry>,
+    sources: SourceCache,
     context_candidates: context_candidates::ContextIndex,
     frames: BTreeMap<(usize, usize), FrameInputs>,
     // 全域の成功にもprefix照合を要求し、Plan・局所軸・実call・補完を全てkeyにする。
@@ -397,6 +391,33 @@ struct ValidationCache {
     completion_domains: BTreeMap<completion::DomainKey, Vec<NodeRef>>,
     completion_cases: BTreeMap<completion::MemoKey, CompletionValues>,
     completion_slots: BTreeMap<completion::SlotsKey, completion::SlotCollection>,
+}
+#[derive(Default)]
+struct SourceCache {
+    entries: Vec<SourceCacheEntry>,
+    by_context: BTreeMap<super::call::Context, Vec<usize>>,
+}
+impl SourceCache {
+    fn get(
+        &self,
+        context: super::call::Context,
+        cutoff: usize,
+        span: (usize, usize),
+        bindings: &[Binding],
+    ) -> Option<SourceAnalysis> {
+        self.by_context
+            .get(&context)?
+            .iter()
+            .map(|&index| &self.entries[index])
+            .find(|(limit, at, actual, _)| *limit == cutoff && *at == span && actual == bindings)
+            .map(|entry| entry.3.clone())
+    }
+    fn insert(&mut self, context: super::call::Context, entry: SourceCacheEntry) {
+        // 同じ可変借用内で値と位置を追加する。途中に検査・再帰・checkpointを挟まない。
+        let index = self.entries.len();
+        self.entries.push(entry);
+        self.by_context.entry(context).or_default().push(index);
+    }
 }
 
 #[cfg(test)]
@@ -6988,11 +7009,7 @@ impl<'a> Environment<'a> {
                 .cache
                 .borrow()
                 .sources
-                .iter()
-                .find(|(c, l, at, actual, _)| {
-                    *c == context && *l == cutoff && *at == span && actual == bindings
-                })
-                .map(|entry| entry.4.clone());
+                .get(context, cutoff, span, bindings);
             if let Some(value) = cached {
                 return Ok(value);
             }
@@ -7008,13 +7025,11 @@ impl<'a> Environment<'a> {
             previous_completion.restore();
             previous.restore();
             let value = result?;
-            self.results.cache.borrow_mut().sources.push((
-                context,
-                cutoff,
-                span,
-                bindings.to_vec(),
-                value.clone(),
-            ));
+            self.results
+                .cache
+                .borrow_mut()
+                .sources
+                .insert(context, (cutoff, span, bindings.to_vec(), value.clone()));
             Ok(value)
         })
     }
@@ -11423,3 +11438,7 @@ reading CountCheck {{
         assert_eq!(types[1].1, Type::List(Box::new(Type::Z)));
     }
 }
+
+#[cfg(test)]
+#[path = "environment/source_cache_tests.rs"]
+mod source_cache_tests;
