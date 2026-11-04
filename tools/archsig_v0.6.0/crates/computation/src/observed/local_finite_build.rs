@@ -268,7 +268,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
                 }
             }
             let adequate = if let Some(info) = &information { info.adequate(&patches, &model.law_supports, c)? } else {
-                model.law_supports.iter().all(|law| patches.iter().any(|patch| patch.contains(law)))
+                model.covered_by(&patches, c)?
                     && model.slots.iter().all(|slot| patches.iter().any(|patch| patch.visible.contains(slot)))
             };
             if reasons.is_empty() && !adequate {

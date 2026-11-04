@@ -32,6 +32,87 @@ pub(super) struct Model {
     pub missing: Vec<Fact>,
     pub scope: Scope,
 }
+impl Model {
+    /// finite_stateが公開する非アフィン状態tupleと同じ座標選択。
+    pub(super) fn visible_indexes(&self, support: &geometry::Support) -> Vec<usize> {
+        self.slots
+            .iter()
+            .enumerate()
+            .filter(|(_, slot)| support.visible.contains(slot))
+            .map(|(i, _)| i)
+            .collect()
+    }
+
+    pub(super) fn visible_law(
+        &self,
+        support: &geometry::Support,
+        law: usize,
+        c: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
+        let required = self
+            .law_supports
+            .get(law)
+            .ok_or(internal!("有限Lawの支持がない"))?;
+        if support.contains(required) {
+            return Ok(true);
+        }
+        // Z/Qのpointsは全無限域ではない。既存の核・像算法へ任せる。
+        if self.affine_equations
+            || self.rational_equations
+            || !required.carrier.iter().all(|v| support.carrier.contains(v))
+            || !required
+                .positions
+                .iter()
+                .all(|v| support.positions.contains(v))
+        {
+            return Ok(false);
+        }
+        let indexes = self.visible_indexes(support);
+        // 値のwire表現で近似せず、後段の状態tupleと同じScalarの等値を使う。
+        let mut fibers: Vec<(Vec<&Scalar>, bool)> = vec![];
+        for (i, point) in self.points.iter().enumerate() {
+            c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
+            let value = *self
+                .truth
+                .get(i)
+                .and_then(|row| row.get(law))
+                .ok_or(internal!("有限全状態のLaw真偽がない"))?;
+            let key = indexes
+                .iter()
+                .map(|j| point.get(*j).ok_or(internal!("有限全状態の可視座標がない")))
+                .collect::<Result<Vec<_>, _>>()?;
+            if let Some((_, prior)) = fibers.iter().find(|(prior, _)| *prior == key) {
+                if *prior != value {
+                    return Ok(false);
+                }
+            } else {
+                fibers.push((key, value));
+            }
+        }
+        Ok(true)
+    }
+
+    pub(super) fn covered_by(
+        &self,
+        patches: &[geometry::Support],
+        c: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        for law in 0..self.law_supports.len() {
+            let mut covered = false;
+            for patch in patches {
+                if self.visible_law(patch, law, c)? {
+                    covered = true;
+                    break;
+                }
+            }
+            if !covered {
+                return Ok(false);
+            }
+        }
+        Ok(true)
+    }
+}
 fn empty_support() -> geometry::Support {
     geometry::Support {
         carrier: vec![],
@@ -547,3 +628,6 @@ pub(super) fn analyze(
         vec![],
     ))
 }
+
+#[cfg(test)]
+mod tests;
