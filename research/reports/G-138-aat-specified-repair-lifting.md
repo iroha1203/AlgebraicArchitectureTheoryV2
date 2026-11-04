@@ -52,13 +52,14 @@ namespaceは`AAT.AG.SpecifiedRepairLifting`。一般錐の座標APIは可換環R
   G-133の`ConeCoordinates`の証明方針を一般化したが、有理係数の既存定理を整数群の証拠にはしていない。
 
 依存DAGは、零延長→標準錐座標→指定閉元→標準H⁰→微分証人→Lift→元の非負Lift。
-G-125の実比較は下のD節でこのDAGへ接続する。整数消去とFormalへの移植は未実施。
+G-125の実比較はD節、整数消去はE節でこのDAGへ接続する。Formalへの移植は未実施。
 
 ## 残る固定証明義務
 
-Dの同じ実Čech比較とreadingはcycle 5の独立査読待ち。
-Eの整数全入力の停止算法・商での全解、指定W1–W6は未完了。
-これらをAの一般定理や非空虚性例で完了扱いしない。
+A–EとW2–W6はcycle 1–10で受理された。cycle 11でW1の実G-125実現と指定障害を構成する。
+現在はcycle 11の標準PR監査および固定GOAL全体の独立最終累積査読が残る。
+以下の各cycle ledgerはその提出時の記録であり、後続の受理と進捗は後の節とIssueで追跡する。
+最終累積査読前にGOAL完了とは判定しない。
 
 ## Cycle 1 ledger
 
@@ -1044,3 +1045,133 @@ audits:
   blocking_findings: [独立レビュー未実施]
   next_obligation: W1の整数有理差と実G125三点構成および最終累積査読
 ```
+
+## 固定W1の実G-125実現と指定補正障害
+
+cycle10は [PR #6204監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/6204#issuecomment-6639725870) で受理、merge `43eaaede108fa8bb5baf75baae48179feac6c986`。
+cycle11は実装前の [selection](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6191#issuecomment-6639686302) に従い、W1を同じ実G-125入力から全て構成する。
+固定GOALと一般A–Eのsourceは変更していない。
+
+| 固定要求 | 同じ対象のLean証拠 |
+| --- | --- |
+| 三点上集合空間 | `RationalWitnessGeometry.Point/pointLE/Space` はv0,v1,edgeと両頂点≤edge。`mem_patch_false/true`、`patch_intersection`、`patches_cover` は指定された二開chart、唯一交差、全点被覆を計算。`no_three_distinct_charts` は三つの相異なるchartの不存在 |
+| 実contextと被覆 | `RationalWitnessContext.carrier/object/openContext` は幾何点Atomと一生成元Atomを持つ。点読み取りから `contextSupport` を生成し、`contextSupport_openContext/product` で元開集合と交差を回収。`coverageFamily_admissible` は全幾何点・生成元を被覆する。`supportFunctor_isContinuous/contextOpenSupport` は生成siteから実開支持への連続性を構成 |
+| 元G-125の係数層・実Čech | `RationalWitnessInput.cechCover` は同じ二chartと交差のcontextを使用。非空・前連結・制限写像を原始空間から生成。既存 `presentation.faceEmptyCechComplex cechCover` は元の局所定数係数層の複体であり、抽象差分複体への改名ではない |
+| 一生成元・関係なし・一Law発生 | `laws/presentation` の原始表はUnitのsource・Law・値と空関係。`primitiveSubsingleton/blockUnique/labelUnique` はその商とlabelの一元性。`reflection/common_support` は同じ表から証明。`coefficientEquiv_generator` は元生成元の係数を1と評価 |
+| C⁰=Z²,C¹=Zと微分 | `integralZeroEquiv/integralOneEquiv` は元Čech正規化と一block自由群の整数同型を合成。`integral_d0` は元微分が右−左。`integral_higher_zero` は元の全高次群の零性 |
+| D⁰=Q²,D¹=Qと比較 | `chartEquiv/edgeEquiv` は元Law生成座標そのものをcellへ同定。`rationalZeroEquiv/rationalOneEquiv/rational_d0` は元診断複体の差分式。`rational_two_zero` と既存 `diagnosticNative_higher_zero` は次数外の零性。`coefficient_comparison/comparison_zero/one` は元G-125比較が各整数包含であることを証明 |
+| 原始遷移+1、状態0、z=1 | `RationalWitness.localData` は元実入力型で構成し、`mismatch_coordinate` は元 `actualMismatch` が+1。`mismatch_closed` は同じAへ渡す閉性 |
+| b=(1/2,3/2)、a₀=(0,1) | `halfCorrection/baseCorrection`、両 `coordinates`、`half_compatible/base_boundary` が同じ実複体でT0と元補正条件を放電 |
+| 元integralCorrectionの評価 | `integral_floor_coordinate` は元G-125の構成を任意の診断cochainの各床値へ評価。`original_floor_eq_base` は指定bで厳密にa₀=(0,1)となることを示す |
+| 同じ実kとその単射・非全射 | `integralCyclesEquiv/rationalCyclesEquiv` は元微分kernelの全元を対角整数・有理数へ両方向に同定。`cycle_comparison_coordinate/injective/not_surjective` は同じkが整数包含で半整数cycleを覆えないことを示す |
+| 同じ余核Q/Zと非零半整数類 | `cycle_quotient_kernel/surjective` から `cokernelEquiv` を構成。`residual_coordinate/ne_zero` は一般Bの同じ残差が[1/2]で非零。`no_half_lift/obstruction_ne_zero` は同じLiftの空性とAの標準錐障害の非零性 |
+| b′=(0,1)の一意解 | `integerCorrection/coordinates`、`base_comparison/integerLift`、`integer_lift_unique` は指定値そのものへの全解がa₀一個であることを証明。`correction_kernel_zero`、`integer_residual_zero/integer_obstruction_zero` は同じB/Aの結論 |
+
+再利用はG-125の実係数層・Čech・正規化・係数比較・床補正と、A/B/Dの同じ標準複体・Lift・残差・障害。
+接続は点Atomから開支持・連続性を経て実係数層へ至る経路、および元の商と座標の両方向同型。
+新規証明は指定三点入力の全支持条件と、同じ実比較における指定半整数障害・整数指定一意性。
+実contextの構成では既存 `CombinedAtomContextSupport/Continuity` の手法を指定三点と一生成元へ適用し、元sourceは変更していない。
+空な方程式・signatureの成分は被覆条件を消していない。全点Atomと一生成元Atomの支持被覆を原始表から証明し、任意のadmissible familyの開被覆性を連続性の構成に用いる。
+`ReflectionCondition` は一生成元の関係同値から、共通labelは同じ唯一targetから、非空・前連結は実開近傍から生成する。
+これらはG-125の実係数層・正規化・床補正の構成で使用される。指定bの持ち上げ存在をfieldとして与えていない。
+有理群を有限生成整数群で置換せず、W1でEの有限表示算法を要求していない。
+
+全追加宣言は主spine（実入力と補助APIを含む）、別scaffoldなし。
+
+- `RationalWitnessGeometry` 22宣言: `Point`, `pointLE`, `pointLEDecidable`, `pointPartialOrder`, `pointDecidableLE`, `Space`, `point`, `neighborhood`, `mem_neighborhood`, `neighborhood_nonempty`, `neighborhood_preconnected`, `neighborhood_preconnected_space`, `chartVertex`, `patch`, `mem_patch_false`, `mem_patch_true`, `mem_edge_neighborhood`, `patch_intersection`, `patches_cover`, `patch_nonempty`, `patch_preconnected`, `no_three_distinct_charts`。
+
+- `RationalWitnessContext` 35宣言: `carrier`, `object`, `openContext`, `openContext_reads_point`, `openContext_reads_generator`, `readablePointSet`, `contextSupport`, `readablePointSet_mono`, `contextSupport_mono`, `contextPreorder`, `supportFunctor`, `contextSupport_openContext`, `readablePointSet_product`, `contextSupport_product`, `contextSupport_product_openContext`, `openContextMorphism`, `openContextMorphism_isRestriction`, `openContext_le`, `equationSystem`, `signature`, `coverageRequirements`, `overlap`, `site`, `baseContext`, `coverageFamily`, `coverageFamily_support_point`, `coverageFamily_admissible`, `contextPullbackCone`, `contextPullbackConeIsLimit`, `contextHasPullback`, `supportMapPullbackConeIsLimit`, `supportFunctor_preservesPullback`, `mapped_pullback_mem_open_topology`, `supportFunctor_isContinuous`, `contextOpenSupport`。
+
+- `RationalWitnessInput` 17宣言: `reading`, `laws`, `adequate`, `nerve`, `supportedNerve`, `presentation`, `primitiveSubsingleton`, `blockSubsingleton`, `block`, `blockUnique`, `labelSubsingleton`, `label`, `labelUnique`, `reflection`, `common_support`, `supportedFaceEmpty`, `cechCover`。
+
+- `RationalWitnessCoordinates` 18宣言: `coefficientEquiv`, `coefficientEquiv_apply`, `coefficientEquiv_generator`, `coefficient_comparison`, `integralZeroEquiv`, `integralOneEquiv`, `chartEquiv`, `edgeEquiv`, `rationalZeroEquiv`, `rationalOneEquiv`, `integralZeroEquiv_apply`, `integralOneEquiv_apply`, `integral_d0`, `rational_d0`, `comparison_zero`, `comparison_one`, `integral_higher_zero`, `rational_two_zero`。
+
+- `RationalWitness` 16宣言: `actualComplex`, `diagnosticComplex`, `comparison`, `localData`, `mismatch_coordinate`, `halfCorrection`, `halfCorrection_coordinates`, `baseCorrection`, `baseCorrection_coordinates`, `half_compatible`, `base_boundary`, `mismatch_closed`, `integer_ne_half`, `no_half_lift`, `integral_floor_coordinate`, `original_floor_eq_base`。
+
+- `RationalWitnessCycles` 17宣言: `integral_cycle_diagonal`, `rational_cycle_diagonal`, `integralCyclesEquiv`, `rationalCyclesEquiv`, `integralCyclesEquiv_apply`, `rationalCyclesEquiv_apply`, `cycle_comparison_coordinate`, `cycle_comparison_injective`, `cycle_comparison_not_surjective`, `RationalModIntegers`, `cycleQuotient`, `cycleQuotient_apply`, `cycle_quotient_kernel`, `cycle_quotient_surjective`, `cokernelEquiv`, `cokernelEquiv_class`, `half_class_ne_zero`。
+
+- `RationalWitnessObstruction` 13宣言: `residual_coordinate`, `residual_ne_zero`, `obstruction_ne_zero`, `integerCorrection`, `integerCorrection_coordinates`, `base_comparison`, `integerLift`, `comparison_zero_injective`, `integer_lift_unique`, `correction_kernel_zero`, `integer_compatible`, `integer_residual_zero`, `integer_obstruction_zero`。
+
+## Cycle 11 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-138-aat-specified-repair-lifting
+cycle: 11
+goal_blob_sha: 64dd19a5f4959437649748306100bd023b4f029e
+base_oid: 43eaaede108fa8bb5baf75baae48179feac6c986
+tracking_issue: 6191
+report_path: research/reports/G-138-aat-specified-repair-lifting.md
+selection:
+  proof_state_ref: '#6191 / issuecomment-6639686302'
+  proof_dag_predecessors: [A標準錐, B実核余核, D元G125全次数比較, G125実係数層と床補正]
+  milestone: W1の実三点入力と同じ指定半整数障害を同時に構成
+  proof_obligations: [三点上集合実context被覆支持, 一生成元Lawと反映共通label, 元Čech診断差分包含, 遷移1状態0実mismatch1, 元floor01, 同じk整数包含と実余核QZ, 同じ残差半整数非零とLift空, 整数指定一意]
+  exit_criteria: [固定W1全条件同時成立, 同じA/B/Dの対象, focused全公理監査]
+  selection_reason: 唯一残る固定witnessを実G125入力から構成し累積完了候補へ進む
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [RationalWitnessGeometry.lean, RationalWitnessContext.lean, RationalWitnessInput.lean, RationalWitnessCoordinates.lean, RationalWitness.lean, RationalWitnessCycles.lean, RationalWitnessObstruction.lean]
+  risks: [実入力の抽象差分置換, 有理群の有限生成化, 床補正と指定補正の混同, support証明の未使用, 元余核と独自障害の不一致]
+  unchecked: [標準PR独立レビュー, 最終累積独立レビュー]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 固定W1全要求を原始三点入力から同じ実比較で証明
+  exit_criteria_status: [上記対応表とfocused全公理監査]
+  split_reason: none
+  completion_candidate: yes
+  lean_artifacts: [RationalWitnessGeometry.lean, RationalWitnessContext.lean, RationalWitnessInput.lean, RationalWitnessCoordinates.lean, RationalWitness.lean, RationalWitnessCycles.lean, RationalWitnessObstruction.lean]
+  evidence: [coverageFamily_admissible, supportFunctor_isContinuous, reflection, common_support, integral_d0, rational_d0, comparison_zero, comparison_one, mismatch_coordinate, original_floor_eq_base, cokernelEquiv, residual_coordinate, obstruction_ne_zero, integer_lift_unique]
+  claim_mapping:
+    theorem_names: [上記138名前付き宣言]
+    source_labels: [W1, D同じ実比較への具体入力]
+    conjuncts: [実三点入力, 元Čech診断の差分包含, 指定半整数障害, 元floorの厳密評価, 整数指定一意]
+    undischarged_assumptions: []
+    acceptance_point: 固定W1全条件の同時成立
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [実被覆支持と連続性, 原始反映共通label, 元微分比較座標, 指定閉性適合と元補正, 実核余核の全元同型]
+    remaining: [標準PR査読, 最終累積査読]
+  certificate_provenance:
+    discharged: [三点incidence表, 一生成元Law表, 元係数層正規化, 同じ実残差の商]
+    unresolved: []
+  proof_use:
+    used: [点読み取りは開支持, 全点被覆はsite連続性, 開非空前連結は元層正規化, 単一blockは係数同型, 反映共通labelは元床評価, 座標微分比較はT0と全元kernel分類, 実rangeは余核同型, 元残差は半整数障害]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [7focused exit0と全追加公理監査]
+  blocking_findings: [独立レビュー未実施]
+  next_obligation: 固定GOALの全T0/A–E/Wについて標準PR監査後の独立最終累積四本
+```
+
+この提出はcompletion candidateであり、`target-theorem-proved`の判定ではない。
+標準PR監査の後、同じ固定headのfinal packetと累積宣言を独立四本で照合し、全gateが通った場合だけ完了判定を記録する。
+全過去cycleのレビュー・CI・merge証拠はIssue #6191の各受理コメントと対応PRにある。
+Formalへの移植は全成果を通して未実施。
+
+## Cycle 11 focused検証
+
+各moduleについて `research/lean` で `lake env lean -o .lake/build/lib/lean/ResearchLean/AG/SpecifiedRepairLifting/<module>.olean ResearchLean/AG/SpecifiedRepairLifting/<module>.lean` を実行し、全7件exit0・警告なし。138名前付き宣言のsourceとprintを突合し、生成宣言を含む全165件のnamespace公理監査は標準公理のみ。
+
+| module | namespace宣言数 | stdout+stderr SHA256 |
+| --- | --- | --- |
+| `RationalWitnessGeometry` | 47 | `bad3885f9ce67f8b204e0b1c0c424d9d4c5c9fdfd0353ec6ec3b818615e3482b` |
+| `RationalWitnessContext` | 35 | `8496f73c2e7d11cd32c23f9f1261716dcea124740b4ded442f873f7a2b96da83` |
+| `RationalWitnessInput` | 17 | `93bdea2defdabfd2a5f951976e7c140a71e634e509a54beeba5bb638278c26eb` |
+| `RationalWitnessCoordinates` | 20 | `8a7af2401f4f38b2239d02f0824ea1aa5221e9e848a69e51e692b38cb4e91c10` |
+| `RationalWitness` | 16 | `3b433c73ebd4cfda57d9320a91dfc9e50fec794e8eb69d77b6cfe868073d17d3` |
+| `RationalWitnessCycles` | 17 | `c0ee2b45b3525137f5c3519ced82e0744de910e7af399ab2accaa4c502de1d3d` |
+| `RationalWitnessObstruction` | 13 | `ce45fe860be1b47b504728595e053c083026940948500d2384542e3ccc13aecc` |
+
+placeholder・hidden/BiDi・環境パス・新規禁止語scanと `git diff --check` はclean。本体からResearchへのimportは無し。新規7moduleをResearch manifestへ登録。Research全体buildは実行していない。
+
+
+初回標準PR監査（head `b622d2776345537c72d94f4c19aa0d72ef254616`、[監査コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/6205#issuecomment-6640343092)）は非中心3件によりNeeds changes。
+Prop証明4件をtheoremへ変更して命名を整え、instance10件に説明を追加した。
+`integralCyclesEquiv_apply/rationalCyclesEquiv_apply` を公開し、比較・残差の下流証明はこれらと `cycleComparison_apply/residualCycle_val` を使用する。
+型の量化・実対象・数学的結論は保持。宣言形式・名前の変更を含むため、修正後は直接対応ではなく新規四本の正式第2batchで確認する。
