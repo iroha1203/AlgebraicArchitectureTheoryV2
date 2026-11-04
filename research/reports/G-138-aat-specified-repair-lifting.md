@@ -436,7 +436,7 @@ Formal未移植。Dの新規宣言は以下が全spineで、使い捨てscaffold
 
 - `ActualCechComplex`: `cechObject`, `cechDifferential`, `cechDifferential_square`, `cechNative`, `cechNativeEquiv`, `cechNativeEquiv_apply`, `cechNative_d`, `cechCycleEquiv`, `cechCycleClass`, `cechCycleClass_boundary`, `cechH1Map`, `cechH1Map_mk`, `cechH1Map_injective`, `cechH1Map_surjective`, `cechH1Equiv`, `diagnosticObject`, `diagnosticDifferential`, `diagnosticDifferential_square`, `diagnosticNative`, `diagnosticNativeEquiv0`, `diagnosticNativeEquiv1`, `diagnosticNativeEquiv2`, `diagnosticNative_higher_zero`, `diagnosticNative_d`, `diagnosticCycleEquiv`, `diagnosticCycleClass`, `diagnosticCycleClass_boundary`, `diagnosticH1Map`, `diagnosticH1Map_mk`, `diagnosticH1Map_injective`, `diagnosticH1Map_surjective`, `diagnosticH1Equiv`, `actualCechHigher_zero`, `actualComparisonDegree`, `actualComparisonDegree_comm`, `actualComparison`, `actualComparison_f`, `actualComparison_h1`。
 
-- `ActualCechLifting`: `actualMismatch_closed`, `actualMismatch_compatible`, `ActualLift`, `actualLift_equations`, `actualLiftOfEquations`, `actualObstruction`, `actualObstruction_zero_iff`, `actualLift_update`, `actualLiftKernelEquiv`, `actualLiftKernelEquiv_val`, `actualLift_unique_iff`, `actualClass_native`, `actualObstruction_projection`, `actualResidual`, `actualResidual_inclusion`, `actualResidual_zero_iff`, `integralCorrection_is_correction`, `integralCorrection_residual_value`, `integralCorrection_residual_obstruction`。
+- `ActualCechLifting`: `actualMismatch_closed`, `actualMismatch_compatible`, `ActualLift`, `actualLift_equations`, `actualLiftOfEquations`, `actualObstruction`, `actualObstruction_eq_nonnegativeObstruction`, `actualObstruction_zero_iff`, `actualLift_update`, `actualLiftKernelEquiv`, `actualLiftKernelEquiv_val`, `actualLift_unique_iff`, `actualClass_native`, `actualObstruction_projection`, `actualResidual`, `actualResidual_eq_residualClass`, `actualResidual_inclusion`, `actualResidual_zero_iff`, `integralCorrection_is_correction`, `integralCorrection_residual_value`, `integralCorrection_residual_obstruction`。
 
 - `ActualCechReading`: `diagnosticMapDegree`, `diagnosticMapDegree_comm`, `diagnosticNativeMap`, `diagnosticNativeMap_h1`, `actualReadingDegree`, `actualCechDifferential_succ`, `actualReadingDegree_comm`, `actualReadingMap`, `actualReadingMap_h1`, `actualCoefficient0_reading`, `actualReading_square`, `actualReadingData`, `actualReadingData_mismatch`, `actualReading_compatible`, `actualReadingLift`, `actualReadingLift_val`, `actualReading_obstruction`, `actualReading_residual`。
 
@@ -493,7 +493,7 @@ audits:
   vacuity: none-found
   one_way_as_equivalence: none-found
   goal_or_report_reinterpretation: none-found
-  validation_refs: [PR記載の3ファイルfocused検証と75名前付き宣言と生成含む77宣言の公理監査]
+  validation_refs: [PR記載の3ファイルfocused検証と77名前付き宣言と生成含む83宣言の公理監査]
   blocking_findings: [独立レビュー未実施]
   next_obligation: Eの有限表示整数producerとW1–W6
 ```
@@ -502,9 +502,9 @@ audits:
 Dの最終focused検証は3ファイルともexit 0、警告なし。
 `ActualCechComplex` と `ActualCechLifting` は同じ単一ファイルの依存oleanを出力して検証し、
 `ActualCechReading` は `lake env lean ResearchLean/AG/SpecifiedRepairLifting/ActualCechReading.lean` で検証した。
-75名前付き宣言の全printと生成含む77宣言の監査は標準公理のみ。
+77名前付き宣言の全printと生成含む83宣言の監査は標準公理のみ。
 ログSHA256は順に `7f6881c10af3a1e05f4be0a0676e45cfe77ab69d64405e62051f69efbb47ca6a`、
-`6be628b1db1db87f5aa791dbf67219e6fe3890a9ce62ab93faadeb1f205e0c7b`、
-`07916797f99dc17da10d03d3a7cd1d19468c1157a02871e55e03774dc29793df`。
+`6adfc760a2997459255088fdd0e3f8a4df36a458c30e75946e0dedd1bcc41ef5`、
+`6b4402d25127822b9da2ae24bd86024b73fe2409da84e6dba6d11698b8247aba`。
 検証に必要なG-125依存2モジュールだけのtargeted buildもexit 0。
 Research全体・aggregate・全ファイルelaborationは実施していない。

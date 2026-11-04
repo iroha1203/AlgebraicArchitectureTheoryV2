@@ -171,7 +171,7 @@ theorem actualReading_obstruction (x : ActualCechAffineLocalData P V)
       (actualReading_square P V W M ha hb) (actualObstruction P V ha x b he) =
     actualObstruction P W hb (actualReadingData P V W M x) (M.generatedPullback0 laws ha hb b)
       (actualReading_compatible P V W M ha hb x b he) := by
-  unfold actualObstruction
+  simp only [actualObstruction_eq_nonnegativeObstruction]
   rw [obstruction_naturality]
   congr 1
   exact (actualReadingData_mismatch P V W M x).symm
@@ -189,7 +189,7 @@ theorem actualReading_residual (x : ActualCechAffineLocalData P V)
       (actualReading_square P V W M ha hb) (actualResidual P V ha x b a₀ h₀ he) =
     actualResidual P W hb (actualReadingData P V W M x) (M.generatedPullback0 laws ha hb b) a₁ h₁
       (actualReading_compatible P V W M ha hb x b he) := by
-  unfold actualResidual
+  simp only [actualResidual_eq_residualClass]
   simp only [actualReadingData_mismatch]
   exact (residualClass_naturality (actualComparison P V ha) (actualComparison P W hb)
     (actualReadingMap P V W M) (diagnosticNativeMap (M.generatedComparisonHom laws ha hb))

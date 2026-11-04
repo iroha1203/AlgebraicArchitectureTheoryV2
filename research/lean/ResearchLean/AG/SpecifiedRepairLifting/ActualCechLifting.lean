@@ -49,6 +49,12 @@ def actualLiftOfEquations (a : (P.faceEmptyCechComplex V).Cn 0)
 def actualObstruction (hb : D.lawGeneratedD0 laws ha b = x.diagnosticMismatch ha) :=
   nonnegativeObstruction (actualComparison P V ha) x.actualMismatch b
     (actualMismatch_closed P V x) (actualMismatch_compatible P V ha x b hb)
+/-- 実指定障害を一般理論の同じ標準障害へ同定する公開API。 -/
+theorem actualObstruction_eq_nonnegativeObstruction
+    (hb : D.lawGeneratedD0 laws ha b = x.diagnosticMismatch ha) :
+    actualObstruction P V ha x b hb =
+      nonnegativeObstruction (actualComparison P V ha) x.actualMismatch b
+        (actualMismatch_closed P V x) (actualMismatch_compatible P V ha x b hb) := rfl
 /-- 任意の診断補正について A を元の二等式へ接続する。 -/
 theorem actualObstruction_zero_iff (hb : D.lawGeneratedD0 laws ha b = x.diagnosticMismatch ha) :
     actualObstruction P V ha x b hb = 0 ↔ ∃ a : (P.faceEmptyCechComplex V).Cn 0,
@@ -95,6 +101,13 @@ def actualResidual (a₀ : (P.faceEmptyCechComplex V).Cn 0)
     CorrectionCokernel (actualComparison P V ha) :=
   residualClass (actualComparison P V ha) x.actualMismatch b a₀
     (by rw [cechNative_d]; exact h₀) (actualMismatch_compatible P V ha x b hb)
+/-- 実残差を一般理論の同じ余核類へ同定する公開API。 -/
+theorem actualResidual_eq_residualClass (a₀ : (P.faceEmptyCechComplex V).Cn 0)
+    (h₀ : (P.faceEmptyCechComplex V).d 0 a₀ = x.actualMismatch)
+    (hb : D.lawGeneratedD0 laws ha b = x.diagnosticMismatch ha) :
+    actualResidual P V ha x b a₀ h₀ hb =
+      residualClass (actualComparison P V ha) x.actualMismatch b a₀
+        (by rw [cechNative_d]; exact h₀) (actualMismatch_compatible P V ha x b hb) := rfl
 /-- B の j は元補正からの残差を同じ指定障害へ送る。 -/
 theorem actualResidual_inclusion (a₀ : (P.faceEmptyCechComplex V).Cn 0)
     (h₀ : (P.faceEmptyCechComplex V).d 0 a₀ = x.actualMismatch)
@@ -141,6 +154,7 @@ end AAT.AG.SpecifiedRepairLifting
 #print axioms AAT.AG.SpecifiedRepairLifting.actualLift_equations
 #print axioms AAT.AG.SpecifiedRepairLifting.actualLiftOfEquations
 #print axioms AAT.AG.SpecifiedRepairLifting.actualObstruction
+#print axioms AAT.AG.SpecifiedRepairLifting.actualObstruction_eq_nonnegativeObstruction
 #print axioms AAT.AG.SpecifiedRepairLifting.actualObstruction_zero_iff
 #print axioms AAT.AG.SpecifiedRepairLifting.actualLift_update
 #print axioms AAT.AG.SpecifiedRepairLifting.actualLiftKernelEquiv
@@ -149,6 +163,7 @@ end AAT.AG.SpecifiedRepairLifting
 #print axioms AAT.AG.SpecifiedRepairLifting.actualClass_native
 #print axioms AAT.AG.SpecifiedRepairLifting.actualObstruction_projection
 #print axioms AAT.AG.SpecifiedRepairLifting.actualResidual
+#print axioms AAT.AG.SpecifiedRepairLifting.actualResidual_eq_residualClass
 #print axioms AAT.AG.SpecifiedRepairLifting.actualResidual_inclusion
 #print axioms AAT.AG.SpecifiedRepairLifting.actualResidual_zero_iff
 #print axioms AAT.AG.SpecifiedRepairLifting.integralCorrection_is_correction
