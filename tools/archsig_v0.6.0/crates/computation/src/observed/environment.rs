@@ -33,6 +33,7 @@ pub(super) mod change_evaluation;
 pub(super) mod change_search;
 pub(super) mod completion;
 mod conjunction;
+mod context_candidates;
 mod correspondence_path;
 pub(super) mod dependent_family;
 pub(super) mod family;
@@ -379,6 +380,7 @@ struct ValidationCache {
     checked: BTreeSet<NodeRefKey>,
     rechecked: BTreeSet<NodeRefKey>,
     sources: Vec<SourceCacheEntry>,
+    context_candidates: context_candidates::ContextIndex,
     frames: BTreeMap<(usize, usize), FrameInputs>,
     // 全域の成功にもprefix照合を要求し、Plan・局所軸・実call・補完を全てkeyにする。
     universal_frames: Vec<(usize, usize, universal::AnalysisContext, FrameInputs)>,
@@ -3892,7 +3894,8 @@ impl<'a> Environment<'a> {
             .law()
             .expr_type(operand)
             .ok_or(internal!("元子評価の型がない"))?;
-        for (index, node) in graph.nodes.iter().enumerate().take(limit) {
+        for index in self.context_candidates(graph, limit)? {
+            let node = &graph.nodes[index];
             self.tick()?;
             let Some(Payload::Evaluation {
                 expression,
@@ -5468,7 +5471,8 @@ impl<'a> Environment<'a> {
             return Ok(false);
         }
         let context = self.current_context(graph);
-        for (index, completed) in graph.nodes.iter().enumerate().take(limit) {
+        for index in self.context_candidates(graph, limit)? {
+            let completed = &graph.nodes[index];
             self.tick()?;
             if graph.context_at(index) == context
                 && completed.arguments.first() == Some(&source)
@@ -5556,7 +5560,8 @@ impl<'a> Environment<'a> {
             return Err(internal!("chain fieldの実owner値が元入力と違う").into());
         }
         let mut actual_owner = false;
-        for (index, candidate) in graph.nodes.iter().enumerate().take(limit) {
+        for index in self.context_candidates(graph, limit)? {
+            let candidate = &graph.nodes[index];
             self.tick()?;
             if graph.context_at(index) == self.current_context(graph)
                 && let Some(Payload::Evaluation {
@@ -5658,7 +5663,8 @@ impl<'a> Environment<'a> {
         let input_owner = self
             .indexes
             .subject(&input_fact.snapshot, &input_fact.subject)?;
-        for (source_index, source) in graph.nodes.iter().enumerate().take(limit) {
+        for source_index in self.context_candidates(graph, limit)? {
+            let source = &graph.nodes[source_index];
             self.tick()?;
             if graph.context_at(source_index) != self.current_context(graph) {
                 continue;
@@ -5729,7 +5735,8 @@ impl<'a> Environment<'a> {
             {
                 continue;
             }
-            for (index, candidate) in graph.nodes.iter().enumerate().take(limit) {
+            for index in self.context_candidates(graph, limit)? {
+                let candidate = &graph.nodes[index];
                 self.tick()?;
                 if graph.context_at(index) != self.current_context(graph) {
                     continue;
