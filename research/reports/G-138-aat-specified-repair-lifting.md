@@ -56,8 +56,8 @@ G-125の実比較・整数消去はこのDAGへ未接続。Formalへの移植も
 
 ## 残る固定証明義務
 
-Bの短完全列・余核類・選択独立性、Cの全自然性・同型、
-Dの同じ実Čech比較とreading、Eの整数全入力の停止算法・商での全解、指定W1–W6は未完了。
+Cの全自然性・同型、Dの同じ実Čech比較とreading、
+Eの整数全入力の停止算法・商での全解、指定W1–W6は未完了。
 これらをAの一般定理や非空虚性例で完了扱いしない。
 
 ## Cycle 1 ledger
@@ -205,4 +205,94 @@ audits:
   validation_refs: [PR記載のfocused検証と全宣言公理監査]
   blocking_findings: [独立レビュー未実施, 先行PRのCI未完了]
   next_obligation: Bの余核障害の選択独立性と標準錐の実短完全列
+```
+
+
+## Bの余核と標準短完全列
+
+[ResidualExact.lean](../lean/ResearchLean/AG/SpecifiedRepairLifting/ResidualExact.lean)は、
+cycle 2の同じ実kの余核と、cycle 1の同じ標準錐H⁰を接続する。
+依存headは`34272bb80b993e6c56cbc85c078bb3595befa2bd`、
+[cycle 2の独立査読と受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/6196#issuecomment-6635869161)
+を参照する。cycle 1はPR #6195、cycle 2はPR #6196でmerge済み。実行状態はtracking Issueに残す。
+
+| 固定Bの要求 | 宣言 | 実体 |
+| --- | --- | --- |
+| 実kの余核 | `CorrectionCokernel`、`residualClass` | Z⁰D / im kと実b−fa₀の類 |
+| 選択独立性と零性 | `residualClass_independent`、`residualClass_zero_iff_lift` | 任意二補正の差cycleを生成。残差の前像から同じ指定bの補正を復元 |
+| 標準homologyのAPI | `moduleCycleClass`、`moduleDescClass`、`moduleCycleClass_naturality` | mathlibの実ker/range商と標準homology同型、全cycleの類・降下・標準誘導射 |
+| jの構成と単射性 | `zeroCycleToCone`、`cokernelPreinclusion`、`cokernelInclusion`、`cokernelInclusion_injective` | (b,0)の標準類。前写像の核が同じim kであることから降下 |
+| pの構成 | `nonnegativeConeCoordinateEquiv`、`coneCycleProjection`、`coneProjection`、`coneKernelProjection` | 標準錐cycleの元C¹成分を元の標準H¹Cへ送り、実H¹fのkernelへ制限 |
+| pの全射性 | `coneKernelProjection_surjective` | 任意のkernel類の実cycleと、像が実微分である証人から錐類を復元 |
+| 中間の完全性 | `coneProjection_zero_iff`、`cokernel_kernel_exact` | pで零ならsource成分の実補正を取り、target成分を調整してjの前像を構成 |
+| 同じ短完全列 | `correction_short_exact` | 同じj,pのinjective・Function.Exact・surjective |
+| 二つの指定評価式 | `cokernelInclusion_residual`、`coneProjection_obstruction` | j([b−fa₀])=oφ(z,b)、p(oφ(z,b))=−[z]を元の代表元で証明 |
+| 非空虚性 | `integer_oneClass_ne_zero`、`integer_projection_nonzero`、`integer_residual_inclusion_nonzero` | 同じ整数零比較でj,p双方が非零の類を保持。指定Wの代替ではない |
+
+新しいmaterial premiseは追加しない。C,D,f,z,bと適合性はT0、a₀とその補正等式は
+Bの残差表示にだけ必要な方向仮定。j,p、kernelへの所属、完全性、全射性は原始複体から
+構成する。`moduleDescClass`は補助APIとして実微分を零にする証明を受け取るが、
+その唯一の本体適用では`coneCycleProjectionClass_boundary`が標準錐と元のd⁰から生成する。
+`moduleCycleClass_naturality`は別の比較写像を定義せず、標準`ShortComplex.homologyMap`
+との可換性を証明する。pの終域は元の`HomologicalComplex.homologyMap f 1`の実kernel。
+零延長のH¹同型を通じてT0のH¹と一致する。
+
+選択・証人の存在を用いるhomology構成であり、Eの計算可能なproducerとは区別する。
+Cの平方全体での自然性、Dの実比較とEの整数算法は未接続のままである。
+
+## Cycle 3 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-138-aat-specified-repair-lifting
+cycle: 3
+goal_blob_sha: 64dd19a5f4959437649748306100bd023b4f029e
+base_oid: 34272bb80b993e6c56cbc85c078bb3595befa2bd
+tracking_issue: 6191
+report_path: research/reports/G-138-aat-specified-repair-lifting.md
+selection:
+  proof_state_ref: '#6191 / issuecomment-6635880829'
+  proof_dag_predecessors: [cycle1の標準錐と零性, cycle2の実kと残差cycle, mathlibの標準homology]
+  milestone: Bの余核障害と同じ標準錐の短完全列
+  proof_obligations: [余核, 選択独立性, jとpの構成, 単射全射中間完全性, 二つの指定評価式]
+  exit_criteria: [同じ標準錐と標準H¹比較, 全適合入力, 原始射からの構成, 両評価式, 非空虚性, focused検証と公理監査]
+  selection_reason: Aの障害とBの残差を同じ類に接続し、CとDの自然性へ進む
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ResearchLean/AG/SpecifiedRepairLifting/ResidualExact.lean]
+  risks: [標準H¹を別商で置換, pの符号, a₀の存在をAへ追加, exactnessを外部入力化]
+  unchecked: [独立レビュー]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: Bの余核と標準短完全列の対応表を構成
+  exit_criteria_status: [上記対応表とPR記載のfocused検証]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [ResearchLean/AG/SpecifiedRepairLifting/ResidualExact.lean]
+  evidence: [correction_short_exact, cokernelInclusion_residual, coneProjection_obstruction, residualClass_independent]
+  claim_mapping:
+    theorem_names: [上記Bの余核と標準短完全列の対応表]
+    source_labels: [B]
+    conjuncts: [余核障害, 選択独立性, 同じjとpの短完全列, 同じ指定類への評価]
+    undischarged_assumptions: []
+    acceptance_point: 選定したBの余核と短完全列。C–EとWは未完了
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [商への降下, 標準類の自然性, pのkernel所属, jの単射性, pの全射性, 中間完全性, 両指定評価式]
+    remaining: [C–E, W]
+  certificate_provenance:
+    discharged: [実kの像商, 標準錐cycleの座標, 実H¹比較, 元d⁰の像からの復元]
+    unresolved: []
+  proof_use:
+    used: [cochain性は閉性とH¹比較, a₀は残差表示のみ, 元のcycleと微分証人はexactnessの復元]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [PR記載のfocused検証と全宣言公理監査]
+  blocking_findings: [独立レビュー未実施]
+  next_obligation: Cの実平方に沿った障害・余核・短完全列・全解作用の自然性
 ```
