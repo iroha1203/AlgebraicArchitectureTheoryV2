@@ -13,12 +13,12 @@ fn fp(p: &str, n: i32) -> Scalar {
     }
 }
 fn slot(subject: &str, field: &str) -> Fact {
-    Fact {
+    Fact::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: subject.into(),
         field: Some(format!("Pattern.Part.{field}").into()),
         atom: None,
-    }
+    })
 }
 fn root() -> Scalar {
     Scalar::Subject {

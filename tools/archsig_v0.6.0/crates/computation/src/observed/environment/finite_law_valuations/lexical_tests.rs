@@ -20,12 +20,12 @@ fn selected() -> Vec<(String, Vec<(String, Scalar)>)> {
     vec![("Selected.eq".into(), vec![("c".into(), subject("p"))])]
 }
 fn fact(field: &str) -> Fact {
-    Fact {
+    Fact::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: "p".into(),
         field: Some(format!("Pattern.Part.{field}").into()),
         atom: None,
-    }
+    })
 }
 fn table(body: &str) -> (Arc<CheckedInputs>, FiniteLawFamilyValuations) {
     let i = fixture::with_body(fixture::MAP, body);

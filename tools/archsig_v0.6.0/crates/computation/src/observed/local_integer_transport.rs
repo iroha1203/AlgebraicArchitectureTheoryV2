@@ -163,12 +163,12 @@ impl<'a> Renaming<'a> {
         }
     }
     fn subject(&self, snapshot: &str, subject: &str) -> Option<Fact> {
-        self.fact(&Fact {
+        self.fact(&Fact::from(archsig_input::archmap::FactData {
             snapshot: snapshot.into(),
             subject: subject.into(),
             field: None,
             atom: None,
-        })
+        }))
     }
     pub(in crate::observed::local_result) fn carrier(&self, value: &Json) -> Option<Json> {
         let Json::Obj(fields) = value else {
@@ -181,7 +181,7 @@ impl<'a> Renaming<'a> {
         let [Json::Str(snapshot), Json::Str(subject)] = pair.as_slice() else {
             return None;
         };
-        let image = self.subject(snapshot, subject)?;
+        let image = self.subject(snapshot, subject)?.into_data();
         fields.insert(
             "value".into(),
             Json::Arr(vec![Json::str(image.snapshot), Json::str(image.subject)]),
@@ -297,12 +297,12 @@ pub(in crate::observed::local_result) fn dependencies(g: &Graph, context: NodeRe
             let Some(Json::Str(field)) = fields.get("field") else {
                 return Err(internal!("位置のfieldがない").into());
             };
-            Ok(Fact {
+            Ok(Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
                 field: Some(field.clone().into()),
                 atom: None,
-            })
+            }))
         })
         .collect()
 }
@@ -643,7 +643,7 @@ mod tests {
         )]).unwrap();
         let law = archsig_input::law::check_law(include_bytes!("../../../../tests/fixtures/counter.law"), &definitions).unwrap();
         let rename=Renaming {law: &law, fields:[("a","z"),("b","y")].into_iter().map(|(a,b)|
-            (("v".into(),a.into(),None),Fact{snapshot:"v".into(),subject:b.into(),field:None,atom:None})).collect()};
+            (("v".into(),a.into(),None),Fact::from(archsig_input::archmap::FactData{snapshot:"v".into(),subject:b.into(),field:None,atom:None}))).collect()};
         let ty=Type::Ref("R.Item".into());
         let set=|items|Scalar::Set{element:ty.clone(),items};
         let list=|items|Scalar::List{element:ty.clone(),items};

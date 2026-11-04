@@ -68,12 +68,12 @@ fn then_full_46_atom_action_composes_outside_original_source_family() {
         ("w", vec!["A", "p"]),
     ] {
         for subject in subjects {
-            expected.push(Fact {
+            expected.push(Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.into(),
                 subject: subject.into(),
                 field: None,
                 atom: None,
-            });
+            }));
             if subject == "A" {
                 continue;
             }
@@ -83,12 +83,12 @@ fn then_full_46_atom_action_composes_outside_original_source_family() {
                 ("Hop", vec!["owner", "from", "to"])
             };
             for field in fields {
-                expected.push(Fact {
+                expected.push(Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.into(),
                     subject: subject.into(),
                     field: Some(format!("Paths.{entity}.{field}").into()),
                     atom: Some(format!("{subject}-{field}")),
-                });
+                }));
             }
         }
     }
@@ -98,7 +98,7 @@ fn then_full_46_atom_action_composes_outside_original_source_family() {
     for (a, b) in step.carrier.iter().zip(&step.images) {
         let image = if a.snapshot == "v" && ["p", "q"].contains(&a.subject.as_str()) {
             moved += 1;
-            Fact {
+            Fact::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: "r".into(),
                 field: a.field.clone(),
@@ -106,7 +106,7 @@ fn then_full_46_atom_action_composes_outside_original_source_family() {
                     .atom
                     .as_ref()
                     .map(|id| format!("r-{}", id.split_once('-').unwrap().1)),
-            }
+            })
         } else {
             a.clone()
         };

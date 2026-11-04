@@ -27,12 +27,12 @@ fn fact(id: &str, field: Option<&str>) -> FactPointer {
         "m" | "n" | "mm" | "z" => "Migration",
         _ => panic!("fixture subject"),
     };
-    FactPointer {
+    FactPointer::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: id.into(),
         field: field.map(|f| format!("Reservations.{ty}.{f}").into()),
         atom: field.map(|f| format!("{id}-{f}")),
-    }
+    })
 }
 fn arrow(i: &CheckedInputs, id: &str) -> ConfigurationOperation {
     let r = internal_arrow(i, "Reservations", "v", "A", "v", id, &Control::unlimited()).unwrap();
@@ -172,11 +172,11 @@ fn composition_uses_g_after_f_on_all_atoms_without_resetting_the_complement() {
         let mut expected_he = f.clone();
         if f.subject == "q" {
             expected_eh.subject = "p".into();
-            expected_eh.atom = expected_eh.atom.map(|a| a.replacen("q-", "p-", 1));
+            expected_eh.atom = expected_eh.atom.take().map(|a| a.replacen("q-", "p-", 1));
         }
         if f.subject == "p" {
             expected_he.subject = "q".into();
-            expected_he.atom = expected_he.atom.map(|a| a.replacen("p-", "q-", 1));
+            expected_he.atom = expected_he.atom.take().map(|a| a.replacen("p-", "q-", 1));
         }
         assert_eq!(eh.map().candidate().image(f), Some(&expected_eh), "{f:?}");
         assert_eq!(he.map().candidate().image(f), Some(&expected_he), "{f:?}");
@@ -482,7 +482,7 @@ fn retained_composition_keeps_only_completed_operations_at_fixed_stops() {
                             let mut image = atom.clone();
                             if atom.subject == "q" {
                                 image.subject = "p".into();
-                                image.atom = image.atom.map(|a| a.replacen("q-", "p-", 1));
+                                image.atom = image.atom.take().map(|a| a.replacen("q-", "p-", 1));
                             }
                             image
                         } else if ["A", "p", "q", "e", "h", "k"].contains(&atom.subject.as_str()) {

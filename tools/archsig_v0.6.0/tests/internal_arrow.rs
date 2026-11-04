@@ -34,12 +34,12 @@ fn fact(id: &str, field: Option<&str>) -> FactPointer {
         "x" | "y" => "External",
         _ => panic!("fixture subject"),
     };
-    FactPointer {
+    FactPointer::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: id.into(),
         field: field.map(|f| format!("Flow.{ty}.{f}").into()),
         atom: field.map(|f| format!("{id}-{f}")),
-    }
+    })
 }
 fn slot(id: &str, field: &str) -> FactPointer {
     let mut f = fact(id, Some(field));
@@ -436,7 +436,7 @@ fn reservations_internal_arrow_moves_only_its_source_subject_and_fields() {
         let mut expected = f.clone();
         if f.subject == "p" {
             expected.subject = "q".into();
-            expected.atom = expected.atom.map(|a| a.replacen("p-", "q-", 1));
+            expected.atom = expected.atom.take().map(|a| a.replacen("p-", "q-", 1));
         }
         assert_eq!(c.image(f), Some(&expected), "{f:?}");
     }

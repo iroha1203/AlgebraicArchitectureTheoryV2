@@ -412,12 +412,14 @@ mod tests {
                 "scope" => {
                     changed.scope.readings.insert("Forged".into());
                 }
-                "support" => changed.support.make_owned().push(Fact {
-                    snapshot: "v".into(),
-                    subject: "forged".into(),
-                    field: None,
-                    atom: None,
-                }),
+                "support" => changed.support.make_owned().push(Fact::from(
+                    archsig_input::archmap::FactData {
+                        snapshot: "v".into(),
+                        subject: "forged".into(),
+                        field: None,
+                        atom: None,
+                    },
+                )),
                 _ => unreachable!(),
             }
             assert!(

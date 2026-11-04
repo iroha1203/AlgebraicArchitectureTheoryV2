@@ -62,12 +62,12 @@ fn result(i: &CheckedInputs, ty: &str) -> ReferenceTypeTransport {
     reference_type_transport(i, &declarations(i), ty, &Control::unlimited()).unwrap()
 }
 fn fact(snapshot: &str, subject: &str) -> FactPointer {
-    FactPointer {
+    FactPointer::from(archsig_input::archmap::FactData {
         snapshot: snapshot.into(),
         subject: subject.into(),
         field: None,
         atom: None,
-    }
+    })
 }
 fn v(s: &str) -> FactPointer {
     fact("v", s)

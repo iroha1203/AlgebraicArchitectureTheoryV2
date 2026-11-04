@@ -1104,12 +1104,12 @@ fn object_plan(
             .map(|s| {
                 tick(c)?;
                 Ok(Variable {
-                    field: Fact {
+                    field: Fact::from(archsig_input::archmap::FactData {
                         snapshot: s.slot.snapshot.clone(),
                         subject: s.slot.subject.clone(),
                         field: Some(s.slot.field.clone()),
                         atom: None,
-                    },
+                    }),
                     component: s.slot.component.clone(),
                     ty: ring.ty.clone(),
                 })
@@ -1283,9 +1283,11 @@ fn original_positions(
                 {
                     tick(c)?;
                     if f.field.is_some() {
-                        positions.insert(Fact {
-                            atom: None,
-                            ..f.clone()
+                        positions.insert({
+                            let aat_field_0 = None;
+                            let mut aat_fact = f.clone();
+                            aat_fact.atom = aat_field_0;
+                            aat_fact
                         });
                     }
                 }
@@ -1472,12 +1474,12 @@ fn append_presentations(
             if out.evaluations.get(index).is_some_and(Option::is_none) {
                 for symbol in &core.rings()[index].symbols {
                     tick(c)?;
-                    omitted_positions.push(Fact {
+                    omitted_positions.push(Fact::from(archsig_input::archmap::FactData {
                         snapshot: symbol.slot.snapshot.clone(),
                         subject: symbol.slot.subject.clone(),
                         field: Some(symbol.slot.field.clone()),
                         atom: None,
-                    });
+                    }));
                 }
             }
             if out.evaluations.get(index).is_some_and(Option::is_none) {
@@ -1556,7 +1558,7 @@ fn metadata(
                 &symbol.slot.subject,
                 &symbol.slot.field,
             )?;
-            let fact = Fact {
+            let fact = Fact::from(archsig_input::archmap::FactData {
                 snapshot: symbol.slot.snapshot.clone(),
                 subject: symbol.slot.subject.clone(),
                 field: Some(symbol.slot.field.clone()),
@@ -1564,18 +1566,18 @@ fn metadata(
                     archsig_input::archmap::Slot::Known { atom, .. } => Some(atom.clone()),
                     _ => None,
                 },
-            };
+            });
             let value = if fact.atom.is_some() {
                 native::atom_value(Witness::Architecture(a.clone()), &fact, c)?
             } else {
-                native::subject_value(
-                    Witness::Architecture(a.clone()),
-                    &Fact {
-                        field: None,
-                        atom: None,
-                        ..fact
-                    },
-                )?
+                native::subject_value(Witness::Architecture(a.clone()), &{
+                    let aat_field_0 = None;
+                    let aat_field_1 = None;
+                    let mut aat_fact = fact;
+                    aat_fact.field = aat_field_0;
+                    aat_fact.atom = aat_field_1;
+                    aat_fact
+                })?
             };
             let (facts, s) = native::metadata(&value)?;
             support.extend(facts);

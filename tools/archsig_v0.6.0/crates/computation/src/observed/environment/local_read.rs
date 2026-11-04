@@ -60,9 +60,11 @@ fn subject_carrier(
 }
 
 fn positions(facts: &[Fact]) -> impl Iterator<Item = Fact> + '_ {
-    facts.iter().filter(|f| f.field.is_some()).map(|f| Fact {
-        atom: None,
-        ..f.clone()
+    facts.iter().filter(|f| f.field.is_some()).map(|f| {
+        let aat_field_0 = None;
+        let mut aat_fact = f.clone();
+        aat_fact.atom = aat_field_0;
+        aat_fact
     })
 }
 fn evaluate_read(
@@ -502,12 +504,12 @@ fn visible_slots(
         if last.owner() != Some(entity.as_str()) {
             return Err(internal!("局所fieldのowner型が違う").into());
         }
-        visible.push(Fact {
+        visible.push(Fact::from(archsig_input::archmap::FactData {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
             field: Some((*last).clone()),
             atom: None,
-        });
+        }));
     }
     visible.sort();
     visible.dedup();
@@ -633,12 +635,12 @@ fn state_visibility_inner(
                     else {
                         return Ok(None);
                     };
-                    visible.push(Fact {
+                    visible.push(Fact::from(archsig_input::archmap::FactData {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
                         field: Some(env.input_name(&format!("{entity}.{}", name.name))?),
                         atom: None,
-                    });
+                    }));
                     subject_carrier(
                         owner
                             .known_value

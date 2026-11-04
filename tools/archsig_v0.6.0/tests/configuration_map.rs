@@ -163,12 +163,12 @@ fn fact(id: &str, field: Option<&str>) -> FactPointer {
         "m" => "Migration",
         _ => panic!("fixture subject"),
     };
-    FactPointer {
+    FactPointer::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: id.into(),
         field: field.map(|f| format!("Reservations.{ty}.{f}").into()),
         atom: field.map(|f| format!("{id}-{f}")),
-    }
+    })
 }
 fn slot(id: &str, field: &str) -> FactPointer {
     let mut f = fact(id, Some(field));
@@ -299,18 +299,18 @@ fn noninjective_sets_use_the_image_set_while_lists_retain_duplicates() {
         let map = result.map().expect("全域作用とF/R/Eと参照構造を保存する");
         let c = map.candidate();
         assert_eq!(
-            c.image(&FactPointer {
+            c.image(&FactPointer::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: "p".into(),
                 field: None,
                 atom: None
-            }),
-            c.image(&FactPointer {
+            })),
+            c.image(&FactPointer::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: "q".into(),
                 field: None,
                 atom: None
-            })
+            }))
         );
         for f in c.source_configuration().family() {
             assert!(
@@ -400,12 +400,12 @@ fn missing_correspondence_keeps_fixed_list_and_set_violations_without_inventing_
         assert!(result.map().is_none());
         assert_eq!(
             result.missing(),
-            &[FactPointer {
+            &[FactPointer::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: "m".into(),
                 field: Some("Graph.Move.entries".into()),
                 atom: None
-            }]
+            })]
         );
         match violated {
             Some(field) => assert!(
@@ -828,18 +828,18 @@ fn reference_containers_are_checked_beyond_the_same_family_relation_and_action_t
     assert!(good.map().is_some());
     assert!(good.counterexamples().is_empty());
     assert_eq!(good.candidate().unwrap().universe().len(), 59);
-    let outside = FactPointer {
+    let outside = FactPointer::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: "x".into(),
         field: Some("Reservations.External.quantity".into()),
         atom: Some("x-quantity".into()),
-    };
-    let external = FactPointer {
+    });
+    let external = FactPointer::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: "x".into(),
         field: None,
         atom: None,
-    };
+    });
     assert_eq!(
         good.candidate().unwrap().image(&outside),
         Some(&fact("B", None))
@@ -1043,18 +1043,18 @@ fn different_readings_and_explicit_alignment_transport_the_actual_fields() {
     assert_eq!(result.reading(), "LeftRead");
     assert_eq!(result.to_reading(), "RightRead");
     assert!(result.map().is_some());
-    let source = FactPointer {
+    let source = FactPointer::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: "p".into(),
         field: Some("Left.Child.count".into()),
         atom: Some("p-count".into()),
-    };
-    let target = FactPointer {
+    });
+    let target = FactPointer::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: "q".into(),
         field: Some("Right.Child.amount".into()),
         atom: Some("q-amount".into()),
-    };
+    });
     assert_eq!(result.candidate().unwrap().image(&source), Some(&target));
     assert!(result.missing().is_empty());
     assert!(result.counterexamples().is_empty());
@@ -1075,18 +1075,18 @@ fn an_absent_target_declaration_is_a_failed_rule_rather_than_a_missing_observati
     assert!(result.map().is_none());
     assert!(result.missing().is_empty());
     assert!(result.counterexamples().contains(&Counterexample::Field {
-        source: FactPointer {
+        source: FactPointer::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: "a".into(),
             field: Some("Left.Root.count".into()),
             atom: Some("a-count".into())
-        },
-        target_subject: FactPointer {
+        }),
+        target_subject: FactPointer::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: "b".into(),
             field: None,
             atom: None
-        },
+        }),
         target_field: "Right.Root.count".into()
     }));
 }

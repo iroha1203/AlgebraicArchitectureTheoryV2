@@ -60,12 +60,12 @@ fn path(value: &Option<Scalar>) -> &PathValue {
     p
 }
 fn slot(namespace: &str, subject: &str, field: &str) -> Fact {
-    Fact {
+    Fact::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: subject.into(),
         field: Some(format!("{namespace}.{field}").into()),
         atom: None,
-    }
+    })
 }
 const PAIRS: &str = "relation same(e:Hop,f:Hop):path(e)=path(f);";
 #[test]
@@ -514,12 +514,15 @@ fn reference_bindings_keep_origin_scope_even_when_the_guard_does_not_read_them()
         };
         assert_eq!(row.scope.snapshots, BTreeSet::from([snapshot.clone()]));
         assert_eq!(row.scope.readings, BTreeSet::from(["Walk".into()]));
-        assert!(row.support.contains(&Fact {
-            snapshot: snapshot.clone(),
-            subject: subject.clone(),
-            field: None,
-            atom: None
-        }));
+        assert!(
+            row.support
+                .contains(&Fact::from(archsig_input::archmap::FactData {
+                    snapshot: snapshot.clone(),
+                    subject: subject.clone(),
+                    field: None,
+                    atom: None
+                }))
+        );
         assert_eq!(
             row.scope.modes,
             BTreeSet::from([if snapshot == "v" {
@@ -549,12 +552,12 @@ fn reconstructed_relations_reject_forged_actions_differences_domains_and_express
                 step.images[0] = different;
             }
             1 => {
-                let fact = Fact {
+                let fact = Fact::from(archsig_input::archmap::FactData {
                     snapshot: "v".into(),
                     subject: "A".into(),
                     field: None,
                     atom: None,
-                };
+                });
                 forged.instances[0].difference = Some(RelationDifference::Action {
                     fact: fact.clone(),
                     left: fact.clone(),

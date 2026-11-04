@@ -181,10 +181,7 @@ fn analyze(
             .support
             .iter()
             .filter(|f| f.field.is_some())
-            .map(|f| Fact {
-                atom: None,
-                ..f.clone()
-            })
+            .map(|f| { let aat_field_0 = None; let mut aat_fact = f.clone(); aat_fact.atom = aat_field_0; aat_fact })
             .collect::<Vec<_>>();
         positions.sort();
         positions.dedup();

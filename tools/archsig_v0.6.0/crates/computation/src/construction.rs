@@ -222,17 +222,19 @@ fn tick(control: &Control) -> Result<(), ConstructionFailure> {
         .map_err(Into::into)
 }
 fn exists(subject: &Subject) -> FactPointer {
-    FactPointer {
+    FactPointer::from(archsig_input::archmap::FactData {
         snapshot: subject.snapshot.clone(),
         subject: subject.id.clone(),
         field: None,
         atom: None,
-    }
+    })
 }
 fn slot(subject: &Subject, field: &archsig_common::names::QualifiedName) -> FactPointer {
-    FactPointer {
-        field: Some(field.clone()),
-        ..exists(subject)
+    {
+        let aat_field_0 = Some(field.clone());
+        let mut aat_fact = exists(subject);
+        aat_fact.field = aat_field_0;
+        aat_fact
     }
 }
 fn canonical_facts(
@@ -403,9 +405,11 @@ fn configuration_with_owners(
             tick(control)?;
             match &field.slot {
                 Slot::Known { atom, value, .. } => {
-                    let fact = FactPointer {
-                        atom: Some(atom.clone()),
-                        ..slot(subject, &field.name)
+                    let fact = {
+                        let aat_field_0 = Some(atom.clone());
+                        let mut aat_fact = slot(subject, &field.name);
+                        aat_fact.atom = aat_field_0;
+                        aat_fact
                     };
                     family.insert(fact.clone());
                     relations.insert((existence.clone(), fact.clone()));
@@ -551,9 +555,11 @@ fn construct_with_owners(
             for field in &subject.fields {
                 tick(control)?;
                 if let Slot::Known { atom, .. } = &field.slot {
-                    universe.insert(FactPointer {
-                        atom: Some(atom.clone()),
-                        ..slot(subject, &field.name)
+                    universe.insert({
+                        let aat_field_0 = Some(atom.clone());
+                        let mut aat_fact = slot(subject, &field.name);
+                        aat_fact.atom = aat_field_0;
+                        aat_fact
                     });
                 }
             }

@@ -180,12 +180,12 @@ fn extended(map: &str) -> ObservedEvaluation {
     .unwrap()
 }
 fn fact(subject: &str, field: Option<&str>, atom: Option<&str>) -> Fact {
-    Fact {
+    Fact::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: subject.into(),
         field: field.map(Into::into),
         atom: atom.map(str::to_owned),
-    }
+    })
 }
 fn family_configuration(g: &Graph, r: NodeRef) -> &Configuration {
     let Part::Architecture { configuration, .. } = data(g, r).part() else {

@@ -84,12 +84,12 @@ fn fact(id: &str, field: Option<&str>) -> Fact {
         "x" | "y" => "External",
         _ => panic!("id"),
     };
-    Fact {
+    Fact::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: id.into(),
         field: field.map(|f| format!("Flow.{ty}.{f}").into()),
         atom: field.map(|f| format!("{id}-{f}")),
-    }
+    })
 }
 fn remove(map: &str, id: &str) -> String {
     map.lines()
@@ -631,12 +631,12 @@ fn a_missing_target_field_keeps_the_arrow_and_slot_without_fabricating_a_candida
     assert!(row.operation.is_none());
     assert_eq!(
         row.missing,
-        vec![Fact {
+        vec![Fact::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: "q".into(),
             field: Some("Flow.Node.quantity".into()),
             atom: None
-        }]
+        })]
     );
     assert!(row.evidence.is_empty());
     assert_eq!(scalar(&g, d.rows[1].subject), "f");
@@ -670,12 +670,12 @@ fn shared_universe_keeps_external_snapshot_and_mode_in_every_generated_scope() {
     )
     .unwrap();
     assert!(d.all_preserved);
-    let existence = Fact {
+    let existence = Fact::from(archsig_input::archmap::FactData {
         snapshot: "w".into(),
         subject: "z".into(),
         field: None,
         atom: None,
-    };
+    });
     let quantity = fact("x", Some("quantity"));
     for node in &g.nodes[start..] {
         assert!(node.scope.snapshots.contains("w"));
@@ -828,12 +828,14 @@ fn native_generators_are_consumed_with_actual_owned_endpoints_and_public_project
         assert_eq!(word, vec![row.subject]);
         assert_eq!(
             kernel.word(),
-            &[archsig_input::archmap::Fact {
-                snapshot: "v".into(),
-                subject: if i == 0 { "e" } else { "f" }.into(),
-                field: None,
-                atom: None
-            }]
+            &[archsig_input::archmap::Fact::from(
+                archsig_input::archmap::FactData {
+                    snapshot: "v".into(),
+                    subject: if i == 0 { "e" } else { "f" }.into(),
+                    field: None,
+                    atom: None
+                }
+            )]
         );
         let Some(Payload::Construction(value)) = &g.get(r).unwrap().payload else {
             panic!("operation");

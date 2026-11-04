@@ -24,12 +24,12 @@ fn fp(n: u8) -> Scalar {
     }
 }
 fn position(s: &str, f: &str) -> Fact {
-    Fact {
+    Fact::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: s.into(),
         field: Some(format!("Pattern.Part.{f}").into()),
         atom: None,
-    }
+    })
 }
 fn bound() -> Vec<(String, Scalar)> {
     vec![("c".into(), subject("p"))]
@@ -270,12 +270,12 @@ fn candidate_path_dependency_discovery_retains_original_nonfinite_list_position(
     assert_eq!(
         r.state(),
         &FiniteLawState::OutsideFinite {
-            position: Fact {
+            position: Fact::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: "p".into(),
                 field: Some("Paths.Node.links".into()),
                 atom: None
-            },
+            }),
             ty: Type::List(Box::new(Type::Ref("Paths.Node".into()))),
         }
     );

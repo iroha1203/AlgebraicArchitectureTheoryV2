@@ -17,7 +17,7 @@ use archsig_common::json::InputError;
 use archsig_common::types::Type;
 pub use canonical::model_json;
 pub use model::{
-    ArchMapFailure, CheckedArchMap, Fact, Field, Mode, Origin, Slot, Snapshot, Source,
+    ArchMapFailure, CheckedArchMap, Fact, FactData, Field, Mode, Origin, Slot, Snapshot, Source,
     SourceLocation, Subject,
 };
 use schema::*;

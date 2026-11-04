@@ -465,12 +465,14 @@ fn source_instance_application_missing_guard_and_coordinates_are_rechecked() {
         match mode {
             0 => r.columns[0].source_instance = Some(instance(&a, "same", "p")),
             1 => r.columns[0].rows[0].application = Some(false),
-            2 => r.columns[0].rows[0].application_missing.push(Fact {
-                snapshot: "v".into(),
-                subject: "q".into(),
-                field: Some("Pattern.Part.owner".into()),
-                atom: None,
-            }),
+            2 => r.columns[0].rows[0].application_missing.push(Fact::from(
+                archsig_input::archmap::FactData {
+                    snapshot: "v".into(),
+                    subject: "q".into(),
+                    field: Some("Pattern.Part.owner".into()),
+                    atom: None,
+                },
+            )),
             3 => r.instance_mode = false,
             4 => r.columns[0].rows[0].guard = Some(false),
             5 => r.columns[0].rows[0].point = usize::MAX,

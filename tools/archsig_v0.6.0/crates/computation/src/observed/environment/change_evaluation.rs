@@ -225,14 +225,14 @@ fn evaluate_inner(
                     result.retain(&value);
                     if let Some(value) = value.known_value {
                         result.values.push((
-                            Fact {
+                            Fact::from(archsig_input::archmap::FactData {
                                 snapshot: snapshot.clone(),
                                 subject: subject.clone(),
                                 field: Some(
                                     environment.input_name(&format!("{entity}.{}", field.name))?,
                                 ),
                                 atom: None,
-                            },
+                            }),
                             value,
                         ));
                     }
@@ -252,12 +252,12 @@ fn evaluate_inner(
                     result.retain(&value);
                     if let Some(value) = value.known_value {
                         result.values.push((
-                            Fact {
+                            Fact::from(archsig_input::archmap::FactData {
                                 snapshot: snapshot.clone(),
                                 subject: subject.clone(),
                                 field: Some(environment.input_name(&format!("{entity}.{name}"))?),
                                 atom: None,
-                            },
+                            }),
                             value,
                         ));
                     }
@@ -486,12 +486,12 @@ pub(in crate::observed) fn candidate(
             };
             for name in &fields {
                 environment.tick()?;
-                let fact = Fact {
+                let fact = Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.clone(),
                     subject: id.clone(),
                     field: Some(environment.input_name(&format!("{entity}.{name}"))?),
                     atom: None,
-                };
+                });
                 if values.contains_key(&fact) {
                     continue;
                 }

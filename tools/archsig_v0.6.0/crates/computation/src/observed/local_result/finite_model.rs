@@ -135,12 +135,12 @@ pub(super) fn analyze(
             return Err(internal!("更新対象が参照でない").into());
         };
         for field in &fields {
-            slots.push(Fact {
+            slots.push(Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
                 field: Some(env.input_name(&format!("{entity}.{field}"))?),
                 atom: None,
-            });
+            }));
         }
     }
     slots.sort();
@@ -432,9 +432,11 @@ pub(super) fn analyze(
                     },
                     c,
                 )?;
-                support.positions.push(Fact {
-                    atom: None,
-                    ..fact.clone()
+                support.positions.push({
+                    let aat_field_0 = None;
+                    let mut aat_fact = fact.clone();
+                    aat_fact.atom = aat_field_0;
+                    aat_fact
                 });
             }
             if explicit {

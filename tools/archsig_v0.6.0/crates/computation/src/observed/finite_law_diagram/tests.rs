@@ -1814,12 +1814,12 @@ fn finite_presentation_does_not_invent_evaluation_and_rejects_context_and_coordi
     assert_eq!(reasons[0].request, "m");
     assert_eq!(
         reasons[0].missing,
-        vec![Fact {
+        vec![Fact::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: "q".into(),
             field: Some("Finite.Part.quantity".into()),
             atom: None
-        }]
+        })]
     );
     let mut expected = d
         .originals

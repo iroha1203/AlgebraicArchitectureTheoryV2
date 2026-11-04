@@ -177,12 +177,12 @@ fn support(graph: &Graph, row: &Origin, kind: &Kind) -> Result<Vec<Fact>, Valida
         match value {
             Scalar::Subject {
                 snapshot, subject, ..
-            } => facts.push(Fact {
+            } => facts.push(Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.clone(),
                 subject: subject.clone(),
                 field: None,
                 atom: None,
-            }),
+            })),
             Scalar::Tuple(xs)
             | Scalar::List { items: xs, .. }
             | Scalar::Set { items: xs, .. }

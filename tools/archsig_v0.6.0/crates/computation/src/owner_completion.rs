@@ -137,12 +137,12 @@ pub(crate) fn determined_owners(
             for subject in &snapshot.subjects {
                 tick(c)?;
                 if subject.ty == entity.as_str() {
-                    let fact = Fact {
+                    let fact = Fact::from(archsig_input::archmap::FactData {
                         snapshot: snapshot.id.clone(),
                         subject: subject.id.clone(),
                         field: None,
                         atom: None,
-                    };
+                    });
                     family.push(fact.clone());
                     support.push(fact);
                     scope.modes.insert(mode(&subject.origin)?.into());
@@ -171,22 +171,22 @@ pub(crate) fn determined_owners(
         for subject in &snapshot.subjects {
             tick(c)?;
             scope.modes.insert(mode(&subject.origin)?.into());
-            support.push(Fact {
+            support.push(Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.id.clone(),
                 subject: subject.id.clone(),
                 field: None,
                 atom: None,
-            });
+            }));
             for field in &subject.fields {
                 tick(c)?;
                 if let Slot::Known { atom, origin, .. } = &field.slot {
                     scope.modes.insert(mode(origin)?.into());
-                    support.push(Fact {
+                    support.push(Fact::from(archsig_input::archmap::FactData {
                         snapshot: snapshot.id.clone(),
                         subject: subject.id.clone(),
                         field: Some(field.name.clone()),
                         atom: Some(atom.clone()),
-                    });
+                    }));
                 }
             }
         }
@@ -288,11 +288,13 @@ mod tests {
                 s.fields
                     .iter()
                     .filter(|f| f.name.is_owner() && f.slot == Slot::Missing)
-                    .map(|f| Fact {
-                        snapshot: s.snapshot.clone(),
-                        subject: s.id.clone(),
-                        field: Some(f.name.clone()),
-                        atom: None,
+                    .map(|f| {
+                        Fact::from(archsig_input::archmap::FactData {
+                            snapshot: s.snapshot.clone(),
+                            subject: s.id.clone(),
+                            field: Some(f.name.clone()),
+                            atom: None,
+                        })
                     })
             })
             .collect()

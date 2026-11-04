@@ -59,12 +59,12 @@ fn fact(id: &str, f: Option<&str>) -> FactPointer {
         "m" => "Migration",
         _ => panic!("fixture subject"),
     };
-    FactPointer {
+    FactPointer::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: id.into(),
         field: f.map(|f| format!("Reservations.{ty}.{f}").into()),
         atom: f.map(|f| format!("{id}-{f}")),
-    }
+    })
 }
 fn result(i: &CheckedInputs) -> ConfigurationTransport {
     let map = correspondence(i, "v", "m", "Reservations", None, &Control::unlimited()).unwrap();
@@ -383,11 +383,13 @@ fn cross_kind_configuration_maps_keep_object_and_generator_condition_failures_an
     assert!(!r.all_preserved());
     assert!(r.source().all_preserved());
     assert!(r.target().all_preserved());
-    let f = |id: &str| FactPointer {
-        snapshot: "v".into(),
-        subject: id.into(),
-        field: None,
-        atom: None,
+    let f = |id: &str| {
+        FactPointer::from(archsig_input::archmap::FactData {
+            snapshot: "v".into(),
+            subject: id.into(),
+            field: None,
+            atom: None,
+        })
     };
     assert_eq!(r.objects().len(), 3);
     assert!(r.objects()[0].is_preserved());

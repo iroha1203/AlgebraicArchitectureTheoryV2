@@ -68,15 +68,49 @@ pub struct Field {
     pub slot: Slot,
 }
 
+/// 原始観測の位置。共有先への変更をCOWで分離し、比較は4欄の値を使う。
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Fact(std::sync::Arc<FactData>);
+
+/// Factの値。fieldだけを持つものはslot、atomも持つものは既知のfield Atom。
 #[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
-/// 原始観測の位置。fieldだけを持つものはslot、atomも持つものは既知のfield Atom。
-pub struct Fact {
+pub struct FactData {
     pub snapshot: String,
     pub subject: String,
     pub field: Option<archsig_common::names::QualifiedName>,
     pub atom: Option<String>,
 }
+impl From<FactData> for Fact {
+    fn from(data: FactData) -> Self {
+        Self(std::sync::Arc::new(data))
+    }
+}
+impl std::ops::Deref for Fact {
+    type Target = FactData;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl std::ops::DerefMut for Fact {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        std::sync::Arc::make_mut(&mut self.0)
+    }
+}
+impl std::fmt::Debug for Fact {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Fact")
+            .field("snapshot", &self.snapshot)
+            .field("subject", &self.subject)
+            .field("field", &self.field)
+            .field("atom", &self.atom)
+            .finish()
+    }
+}
 impl Fact {
+    /// 消費する値を取り出す。一意なら移動し、共有先があればその値を複製する。
+    pub fn into_data(self) -> FactData {
+        std::sync::Arc::unwrap_or_clone(self.0)
+    }
     pub fn wire(&self) -> Json {
         let mut f = BTreeMap::from([
             ("snapshot".into(), Json::str(&self.snapshot)),
@@ -173,3 +207,6 @@ pub struct ArchMapFailure {
     pub issue: Issue,
     pub bytes_digest: String,
 }
+
+#[cfg(test)]
+mod fact_tests;

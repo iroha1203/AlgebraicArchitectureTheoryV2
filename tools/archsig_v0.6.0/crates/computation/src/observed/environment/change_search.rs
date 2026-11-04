@@ -44,12 +44,12 @@ mod tests {
             inputs.clone(),
             request,
             "Selected",
-            &Fact {
+            &Fact::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: "root".into(),
                 field: None,
                 atom: None,
-            },
+            }),
             &control,
         )
         .unwrap();
@@ -133,12 +133,12 @@ mod tests {
             inputs.clone(),
             &requests.requests()[0],
             "Selected",
-            &Fact {
+            &Fact::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: "root".into(),
                 field: None,
                 atom: None,
-            },
+            }),
             &c,
         )
         .unwrap();
@@ -150,21 +150,21 @@ mod tests {
         // Baseline changes an observed true flag to false; the owner case pins q to r2.
         let valuation = vec![
             (
-                Fact {
+                Fact::from(archsig_input::archmap::FactData {
                     snapshot: "v".into(),
                     subject: "p".into(),
                     field: Some("Pattern.Part.flag".into()),
                     atom: None,
-                },
+                }),
                 Scalar::Bool(false),
             ),
             (
-                Fact {
+                Fact::from(archsig_input::archmap::FactData {
                     snapshot: "v".into(),
                     subject: "q".into(),
                     field: Some("Pattern.Part.owner".into()),
                     atom: None,
-                },
+                }),
                 Scalar::Subject {
                     snapshot: "v".into(),
                     subject: "r2".into(),

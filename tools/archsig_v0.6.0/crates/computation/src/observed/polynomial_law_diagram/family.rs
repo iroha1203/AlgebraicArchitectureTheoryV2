@@ -17,12 +17,12 @@ fn variable(
     ty: &Type,
 ) -> Variable {
     Variable {
-        field: Fact {
+        field: Fact::from(archsig_input::archmap::FactData {
             snapshot: s.slot.snapshot.clone(),
             subject: s.slot.subject.clone(),
             field: Some(s.slot.field.clone()),
             atom: None,
-        },
+        }),
         component: s.slot.component.clone(),
         ty: ty.clone(),
     }

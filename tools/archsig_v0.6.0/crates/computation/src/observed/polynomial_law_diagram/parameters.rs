@@ -557,11 +557,13 @@ pub(super) fn plans(
                 })
                 .flat_map(|q| equations[q.occurrence].1.ring.symbols.iter())
                 .filter(|s| s.value.is_none())
-                .map(|s| Fact {
-                    snapshot: s.slot.snapshot.clone(),
-                    subject: s.slot.subject.clone(),
-                    field: Some(s.slot.field.clone()),
-                    atom: None,
+                .map(|s| {
+                    Fact::from(archsig_input::archmap::FactData {
+                        snapshot: s.slot.snapshot.clone(),
+                        subject: s.slot.subject.clone(),
+                        field: Some(s.slot.field.clone()),
+                        atom: None,
+                    })
                 })
                 .collect::<Vec<_>>();
             for q in &coordinates {

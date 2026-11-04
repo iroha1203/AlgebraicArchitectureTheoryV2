@@ -122,23 +122,23 @@ impl Environment<'_> {
             for s in &snap.subjects {
                 self.tick()?;
                 out.scope.merge(&self.indexes.scope(s, reading, None)?);
-                universe.insert(Fact {
+                universe.insert(Fact::from(archsig_input::archmap::FactData {
                     snapshot: s.snapshot.clone(),
                     subject: s.id.clone(),
                     field: None,
                     atom: None,
-                });
+                }));
                 for f in &s.fields {
                     self.tick()?;
                     if let Slot::Known { atom, origin, .. } = &f.slot {
                         out.scope
                             .merge(&self.indexes.scope(s, reading, Some(origin))?);
-                        universe.insert(Fact {
+                        universe.insert(Fact::from(archsig_input::archmap::FactData {
                             snapshot: s.snapshot.clone(),
                             subject: s.id.clone(),
                             field: Some(f.name.clone()),
                             atom: Some(atom.clone()),
-                        });
+                        }));
                     }
                 }
                 if (s.snapshot.as_str(), s.id.as_str()) == (fp.0.as_str(), fp.1.as_str()) {
@@ -191,18 +191,18 @@ impl Environment<'_> {
             if &t.ty != expected_type {
                 return Err(internal!("対応先の実subject型が違う").into());
             }
-            let fact = Fact {
+            let fact = Fact::from(archsig_input::archmap::FactData {
                 snapshot: s.snapshot.clone(),
                 subject: s.id.clone(),
                 field: None,
                 atom: None,
-            };
-            let image = Fact {
+            });
+            let image = Fact::from(archsig_input::archmap::FactData {
                 snapshot: t.snapshot.clone(),
                 subject: t.id.clone(),
                 field: None,
                 atom: None,
-            };
+            });
             family.insert(fact.clone());
             images.insert(fact, image);
             for f in &s.fields {
@@ -257,18 +257,18 @@ impl Environment<'_> {
                         Scalar::Text(self.path_shape_text(&expected)?),
                     ));
                 }
-                let fact = Fact {
+                let fact = Fact::from(archsig_input::archmap::FactData {
                     snapshot: s.snapshot.clone(),
                     subject: s.id.clone(),
                     field: Some(f.name.clone()),
                     atom: Some(atom.clone()),
-                };
-                let image = Fact {
+                });
+                let image = Fact::from(archsig_input::archmap::FactData {
                     snapshot: t.snapshot.clone(),
                     subject: t.id.clone(),
                     field: Some(target_field.name.clone()),
                     atom: Some(ta.clone()),
-                };
+                });
                 family.insert(fact.clone());
                 family.extend(refs);
                 images.insert(fact, image);
@@ -288,12 +288,12 @@ impl Environment<'_> {
         if unavailable || out.failure.is_some() {
             return Ok(out);
         }
-        let target_root = Fact {
+        let target_root = Fact::from(archsig_input::archmap::FactData {
             snapshot: tp.0.clone(),
             subject: tp.1.clone(),
             field: None,
             atom: None,
-        };
+        });
         let mut carrier = vec![];
         let mut action = vec![];
         for fact in universe {

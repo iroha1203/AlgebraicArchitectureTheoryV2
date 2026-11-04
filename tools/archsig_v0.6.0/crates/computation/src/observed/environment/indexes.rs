@@ -50,30 +50,30 @@ impl<'a> InputIndexes<'a> {
             .ok_or_else(|| internal!("field がない"))?;
         if matches!(field.slot, Slot::Missing)
             && state
-                .architecture_value(&Fact {
+                .architecture_value(&Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.into(),
                     subject: subject.into(),
                     field: Some(field.name.clone()),
                     atom: None,
-                })
+                }))
                 .is_none()
         {
             if let Some(reads) = state.missing_slot_reads.borrow_mut().as_mut() {
-                reads.insert(Fact {
+                reads.insert(Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.into(),
                     subject: subject.into(),
                     field: Some(field.name.clone()),
                     atom: None,
-                });
+                }));
             }
         }
         if let Some(reads) = state.primitive_reads.borrow_mut().as_mut() {
-            reads.insert(Fact {
+            reads.insert(Fact::from(archsig_input::archmap::FactData {
                 snapshot: snapshot.into(),
                 subject: subject.into(),
                 field: Some(field.name.clone()),
                 atom: None,
-            });
+            }));
         }
         Ok(field)
     }
@@ -131,12 +131,12 @@ impl<'a> InputIndexes<'a> {
                     if let Slot::Known { atom, pointer, .. } = &field.slot {
                         atoms.insert(
                             pointer.clone(),
-                            Fact {
+                            Fact::from(archsig_input::archmap::FactData {
                                 snapshot: s.snapshot.clone(),
                                 subject: s.id.clone(),
                                 field: Some(field.name.clone()),
                                 atom: Some(atom.clone()),
-                            },
+                            }),
                         );
                     }
                     control.checkpoint(Checkpoint::FiniteIteration)?;
@@ -208,12 +208,14 @@ impl InputIndexes<'_> {
                         .scope
                         .modes
                         .insert(self.origin_mode(&subject.origin)?.into());
-                    family.support.push(Fact {
-                        snapshot: snapshot.id.clone(),
-                        subject: subject.id.clone(),
-                        field: None,
-                        atom: None,
-                    });
+                    family
+                        .support
+                        .push(Fact::from(archsig_input::archmap::FactData {
+                            snapshot: snapshot.id.clone(),
+                            subject: subject.id.clone(),
+                            field: None,
+                            atom: None,
+                        }));
                 }
                 control.checkpoint(Checkpoint::FiniteIteration)?;
             }

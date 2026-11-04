@@ -133,12 +133,14 @@ impl Environment<'_> {
                     entity: s.ty.to_string(),
                 });
                 enumeration.scope = self.indexes.scope(s, &declaration.reading, None)?;
-                enumeration.support.push(Fact {
-                    snapshot: snapshot.clone(),
-                    subject: subject.clone(),
-                    field: None,
-                    atom: None,
-                });
+                enumeration
+                    .support
+                    .push(Fact::from(archsig_input::archmap::FactData {
+                        snapshot: snapshot.clone(),
+                        subject: subject.clone(),
+                        field: None,
+                        atom: None,
+                    }));
             }
             selector @ Selector::Answer { .. } => {
                 let archsig_input::law::model::Signature::Law { params, .. } =

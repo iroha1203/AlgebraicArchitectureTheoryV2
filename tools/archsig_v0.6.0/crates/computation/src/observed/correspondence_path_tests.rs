@@ -73,19 +73,19 @@ fn correspondence_action_maps_all_41_original_atoms_and_collapses_exact_external
             vec!["from", "to", "states", "reserves"],
         ),
     ] {
-        expected.push(Fact {
+        expected.push(Fact::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: name.into(),
             field: None,
             atom: None,
-        });
+        }));
         for field in fields {
-            expected.push(Fact {
+            expected.push(Fact::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: name.into(),
                 field: Some(format!("{ty}.{field}").into()),
                 atom: Some(format!("{name}-{field}")),
-            });
+            }));
         }
     }
     expected.sort();
@@ -109,12 +109,12 @@ fn correspondence_action_maps_all_41_original_atoms_and_collapses_exact_external
                 }
                 f
             } else {
-                Fact {
+                Fact::from(archsig_input::archmap::FactData {
                     snapshot: "v".into(),
                     subject: "B".into(),
                     field: None,
                     atom: None,
-                }
+                })
             }
         })
         .collect();
@@ -295,19 +295,19 @@ fn correspondence_aligned_full_action_keeps_external_existence_but_collapses_its
         ),
         ("m", "Flow.Move", vec!["from", "to", "nodes"]),
     ] {
-        expected.push(Fact {
+        expected.push(Fact::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: name.into(),
             field: None,
             atom: None,
-        });
+        }));
         for field in fields {
-            expected.push(Fact {
+            expected.push(Fact::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: name.into(),
                 field: Some(format!("{ty}.{field}").into()),
                 atom: Some(format!("{name}-{field}")),
-            });
+            }));
         }
     }
     expected.sort();
@@ -319,12 +319,12 @@ fn correspondence_aligned_full_action_keeps_external_existence_but_collapses_its
             if f.subject == "z" && f.field.is_none() {
                 return f.clone();
             }
-            let mut out = Fact {
+            let mut out = Fact::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: "B".into(),
                 field: None,
                 atom: None,
-            };
+            });
             if ["p", "q"].contains(&f.subject.as_str()) {
                 out.subject = "r".into();
                 if let Some(field) = &f.field {

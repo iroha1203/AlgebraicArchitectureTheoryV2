@@ -59,12 +59,12 @@ impl<'a> IntoIterator for &'a Support {
 #[cfg(test)]
 #[test]
 fn owned_support_edits_leave_shared_facts_unchanged() {
-    let original = Support::from(vec![Fact {
+    let original = Support::from(vec![Fact::from(archsig_input::archmap::FactData {
         snapshot: "snapshot".into(),
         subject: "subject".into(),
         field: Some("Example.Entity.field".into()),
         atom: Some("known".into()),
-    }]);
+    })]);
     let expected = original.to_vec();
     let mut edited = original.clone();
     edited.make_owned()[0].subject = "caller-local".into();
@@ -5250,18 +5250,18 @@ mod invariant_tests {
             request: "current".into(),
             dependencies: vec![NodeRef(0), NodeRef(1)],
             missing: vec![
-                Fact {
+                Fact::from(archsig_input::archmap::FactData {
                     snapshot: "v".into(),
                     subject: "first".into(),
                     field: Some("V.Item.value".into()),
                     atom: None,
-                },
-                Fact {
+                }),
+                Fact::from(archsig_input::archmap::FactData {
                     snapshot: "v".into(),
                     subject: "second".into(),
                     field: None,
                     atom: None,
-                },
+                }),
             ],
             location: Some(Location::Law { span: (2, 5) }),
         };

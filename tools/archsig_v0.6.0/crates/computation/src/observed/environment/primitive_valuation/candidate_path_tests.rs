@@ -16,12 +16,12 @@ fn checked(s: archsig_input::input::InputSources) -> Arc<CheckedInputs> {
     Arc::new(archsig_input::input::check_inputs(s, &quiet()).unwrap())
 }
 fn fact(namespace: &str, subject: &str, field: &str) -> Fact {
-    Fact {
+    Fact::from(archsig_input::archmap::FactData {
         snapshot: "v".into(),
         subject: subject.into(),
         field: Some(format!("{namespace}.{field}").into()),
         atom: None,
-    }
+    })
 }
 fn reference(ty: &str, subject: &str) -> Scalar {
     Scalar::Subject {
@@ -579,12 +579,12 @@ fn finite_path_law_evaluates_all_seventy_two_original_primitive_assignments() {
         *sources.entry(left.subject.clone()).or_default() += 1;
         assert_eq!(
             subject_image(left, "v", &left.subject),
-            Fact {
+            Fact::from(archsig_input::archmap::FactData {
                 snapshot: "v".into(),
                 subject: target.clone(),
                 field: None,
                 atom: None
-            }
+            })
         );
     }
     assert_eq!(

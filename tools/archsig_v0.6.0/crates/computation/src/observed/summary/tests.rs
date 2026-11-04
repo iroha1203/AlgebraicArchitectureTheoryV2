@@ -50,18 +50,18 @@ fn typed_counterexample_variants_keep_values_and_optional_fact_fields() {
         ty: Type::Z,
     }];
     let facts = vec![
-        Fact {
+        Fact::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: "s".into(),
             field: None,
             atom: None,
-        },
-        Fact {
+        }),
+        Fact::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: "s".into(),
             field: Some("Counter.State.count".into()),
             atom: Some("count".into()),
-        },
+        }),
     ];
     let payloads = [
         Payload::Counterexample {
@@ -212,11 +212,13 @@ fn summary_keeps_counterexample_order_totals_and_utf8_byte_limits() {
             .collect();
         let facts = ["first", "second", long.as_str(), "omitted"]
             .into_iter()
-            .map(|subject| Fact {
-                snapshot: "v".into(),
-                subject: subject.into(),
-                field: None,
-                atom: None,
+            .map(|subject| {
+                Fact::from(archsig_input::archmap::FactData {
+                    snapshot: "v".into(),
+                    subject: subject.into(),
+                    field: None,
+                    atom: None,
+                })
             })
             .collect();
         template.payload = Some(Payload::Counterexample {

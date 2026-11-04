@@ -22,12 +22,12 @@ impl Evaluator<'_, '_> {
             },
         };
         let scope = self.environment.indexes.scope(s, reading, None)?;
-        let support = vec![Fact {
+        let support = vec![Fact::from(archsig_input::archmap::FactData {
             snapshot: snapshot.clone(),
             subject: subject.clone(),
             field: None,
             atom: None,
-        }];
+        })];
         self.value(value, rule, vec![], support, scope)
     }
     pub(super) fn path_construct(

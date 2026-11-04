@@ -332,18 +332,18 @@ mod tests {
     use super::*;
     #[test]
     fn relation_queries_require_both_endpoints_in_family() {
-        let a = FactPointer {
+        let a = FactPointer::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: "a".into(),
             field: None,
             atom: None,
-        };
-        let b = FactPointer {
+        });
+        let b = FactPointer::from(archsig_input::archmap::FactData {
             snapshot: "v".into(),
             subject: "b".into(),
             field: None,
             atom: None,
-        };
+        });
         let pairs = vec![
             (a.clone(), a.clone()),
             (a.clone(), b.clone()),
@@ -410,12 +410,12 @@ mod tests {
                 _ => {
                     forged.profiles[1].membership = Some(ConditionalSubject {
                         subject: forged.profiles[1].object.subject().clone(),
-                        owner_slot: FactPointer {
+                        owner_slot: FactPointer::from(archsig_input::archmap::FactData {
                             snapshot: "v".into(),
                             subject: "p".into(),
                             field: Some("Profile.Part.owner".into()),
                             atom: None,
-                        },
+                        }),
                         owner: forged.construction.root().clone(),
                         entity: true,
                     });
