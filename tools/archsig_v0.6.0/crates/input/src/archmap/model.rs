@@ -69,7 +69,7 @@ pub struct Field {
 }
 
 /// 原始観測の位置。共有先への変更をCOWで分離し、比較は4欄の値を使う。
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Fact(std::sync::Arc<FactData>);
 
 /// Factの値。fieldだけを持つものはslot、atomも持つものは既知のfield Atom。
@@ -79,6 +79,23 @@ pub struct FactData {
     pub subject: String,
     pub field: Option<archsig_common::names::QualifiedName>,
     pub atom: Option<String>,
+}
+impl Ord for Fact {
+    #[inline]
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        // 同じ不変payloadは同値。別allocationの値は従来の4欄順で比較する。
+        if std::sync::Arc::ptr_eq(&self.0, &other.0) {
+            std::cmp::Ordering::Equal
+        } else {
+            self.0.as_ref().cmp(other.0.as_ref())
+        }
+    }
+}
+impl PartialOrd for Fact {
+    #[inline]
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
 }
 impl From<FactData> for Fact {
     fn from(data: FactData) -> Self {

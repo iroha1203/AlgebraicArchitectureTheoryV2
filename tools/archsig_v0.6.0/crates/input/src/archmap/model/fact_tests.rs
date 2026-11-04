@@ -99,3 +99,47 @@ fn consuming_unique_data_moves_strings_and_shared_data_keeps_alias_isolated() {
     assert_eq!(consumed.subject, "v");
     assert!(consumed.atom.is_none());
 }
+
+#[test]
+fn shared_payload_order_keeps_value_relations_sort_and_cow() {
+    let original = fact("s", "u", Some("N.E.f"), Some("a"));
+    let alias = original.clone();
+    let independent = fact("s", "u", Some("N.E.f"), Some("a"));
+    assert!(Arc::ptr_eq(&original.0, &alias.0));
+    assert!(!Arc::ptr_eq(&original.0, &independent.0));
+    let mut higher = original.clone();
+    higher.atom = Some("z".into());
+    let lower = fact("s", "t", Some("N.E.f"), Some("a"));
+    let values = [&original, &alias, &independent, &higher, &lower];
+    for a in values {
+        for b in values {
+            let expected = a.0.as_ref().cmp(b.0.as_ref());
+            assert_eq!(a.cmp(b), expected);
+            assert_eq!(a.partial_cmp(b), Some(expected));
+            assert_eq!(a < b, expected.is_lt());
+            assert_eq!(a <= b, expected.is_le());
+            assert_eq!(a > b, expected.is_gt());
+            assert_eq!(a >= b, expected.is_ge());
+            assert_eq!(a == b, expected.is_eq());
+        }
+    }
+    let mut unsorted = vec![
+        higher.clone(),
+        alias,
+        lower.clone(),
+        independent,
+        original.clone(),
+    ];
+    unsorted.sort();
+    assert_eq!(
+        unsorted,
+        vec![
+            lower,
+            original.clone(),
+            original.clone(),
+            original.clone(),
+            higher
+        ]
+    );
+    assert_eq!(original.atom.as_deref(), Some("a"));
+}
