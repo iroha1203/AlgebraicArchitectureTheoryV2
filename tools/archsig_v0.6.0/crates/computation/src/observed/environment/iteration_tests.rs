@@ -375,7 +375,8 @@ fn ordinary_sibling_append_keeps_success_and_registry_dependency_stays_sticky() 
         .validation_graph_session(&g, || input(&env, &g, g.nodes.len()))
         .unwrap();
     assert!(!env.results.cache.borrow().registry_read);
-    g.iterations.push(g.iterations[0].clone());
+    let duplicate_iteration = g.iterations[0].clone();
+    g.iterations.push(duplicate_iteration);
     let warm = env
         .validation_graph_session(&g, || input(&env, &g, g.nodes.len()))
         .unwrap();
@@ -397,7 +398,8 @@ fn ordinary_sibling_append_keeps_success_and_registry_dependency_stays_sticky() 
     let saved = env
         .validation_graph_session(&g, || input(&env, &g, g.nodes.len()))
         .unwrap();
-    g.iterations.push(g.iterations[0].clone());
+    let duplicate_iteration = g.iterations[0].clone();
+    g.iterations.push(duplicate_iteration);
     let after = env
         .validation_graph_session(&g, || input(&env, &g, g.nodes.len()))
         .unwrap();

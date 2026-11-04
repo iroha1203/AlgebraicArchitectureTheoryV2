@@ -521,7 +521,7 @@ fn owned_type_quantification_answer_cancel_preserves_verified_current_result() {
         format!("{:?}", &normal.frames[..stopped.frames.len()])
     );
     assert_eq!(
-        format!("{:?}", &stopped.iterations),
+        format!("{:?}", stopped.iterations.as_slice()),
         format!("{:?}", &normal.iterations[..stopped.iterations.len()])
     );
     assert_eq!(
