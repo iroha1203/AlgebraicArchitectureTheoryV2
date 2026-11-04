@@ -17,8 +17,6 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
 
 - [G-138-aat-specified-repair-lifting](G-138-aat-specified-repair-lifting.md)
   (指定補正の錐障害、全解のtorsor、実Čech比較への接続、有限表示整数判定)
-- [G-135-aat-atlas-coefficient-fiber](G-135-aat-atlas-coefficient-fiber.md)
-  (原始セルからの順像係数、fiber適合とtransgression、実Atlas欠損と診断保存)
 - [G-132-aat-visible-cycle-reflection](G-132-aat-visible-cycle-reflection.md)
   (可視閉路による既存修復障害の零性反映、整数補正と実貼り合わせ、有限判定と失敗入力)
 - [G-sft-conway-01](G-sft-conway-01.md)
@@ -36,6 +34,8 @@ GOAL id は `G-<NNN>-<領域>-<テーマ>` とする。`<NNN>` は 101 から始
   (全安全粗化の因子化順序、最粗元・join閉性・自然な極大元選択の存在判定)
 - [G-136-aat-atlas-gluing-width](G-136-aat-atlas-gluing-width.md)
   (診断欠損の二領域貼り合わせ、真のセル交差の完全列、全有限観測幅の分離族)
+- [G-135-aat-atlas-coefficient-fiber](G-135-aat-atlas-coefficient-fiber.md)
+  (原始セルからの順像係数、fiber適合とtransgression、実Atlas欠損と診断保存)
 - [G-134-aat-face-relation-subdivision](G-134-aat-face-relation-subdivision.md)
   (混在退化面の生成比較、台を保つ細分化・逆縮約、鎖ホモトピーと有限合成、実Law診断への同定)
 - [G-133-aat-atlas-defect-composition](G-133-aat-atlas-defect-composition.md)
