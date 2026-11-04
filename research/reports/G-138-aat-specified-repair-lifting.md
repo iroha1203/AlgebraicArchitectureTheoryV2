@@ -52,12 +52,12 @@ namespaceは`AAT.AG.SpecifiedRepairLifting`。一般錐の座標APIは可換環R
   G-133の`ConeCoordinates`の証明方針を一般化したが、有理係数の既存定理を整数群の証拠にはしていない。
 
 依存DAGは、零延長→標準錐座標→指定閉元→標準H⁰→微分証人→Lift→元の非負Lift。
-G-125の実比較・整数消去はこのDAGへ未接続。Formalへの移植も未実施。
+G-125の実比較は下のD節でこのDAGへ接続する。整数消去とFormalへの移植は未実施。
 
 ## 残る固定証明義務
 
-Dの同じ実Čech比較とreading、Eの整数全入力の停止算法・商での全解、
-指定W1–W6は未完了。
+Dの同じ実Čech比較とreadingはcycle 5の独立査読待ち。
+Eの整数全入力の停止算法・商での全解、指定W1–W6は未完了。
 これらをAの一般定理や非空虚性例で完了扱いしない。
 
 ## Cycle 1 ledger
@@ -238,7 +238,7 @@ Bの残差表示にだけ必要な方向仮定。j,p、kernelへの所属、完�
 零延長のH¹同型を通じてT0のH¹と一致する。
 
 選択・証人の存在を用いるhomology構成であり、Eの計算可能なproducerとは区別する。
-Cの平方全体での自然性、Dの実比較とEの整数算法は未接続のままである。
+cycle 3時点ではCの平方全体での自然性、Dの実比較とEの整数算法は未接続であった。
 
 ## Cycle 3 ledger
 
@@ -324,7 +324,7 @@ audits:
 自然性・逆向きの証明書を外部引数として受け取らない。
 `he`は元のcochain平方の可換性で、零延長、核・余核、障害、実Liftに使用する。
 同型のinverseは同じcochain同型の実逆射である。
-一般平方での反映やLift全射は主張しない。Dでは既存readingからこの入力平方を生成する必要が残る。
+一般平方での反映やLift全射は主張しない。下のD節では既存readingからこの入力平方を生成する。
 整数例はCの非空虚性であり、W1–W6の代替ではない。
 
 ## Cycle 4 ledger
@@ -383,3 +383,128 @@ audits:
   blocking_findings: [独立レビュー未実施]
   next_obligation: DのG-125実比較と元のH¹・readingへの接続
 ```
+
+
+## Dの同じ実 Čech 比較と reading への接続
+
+cycle 4 の受理は [PR #6198監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/6198#issuecomment-6636742470)、merge `d4a8d6b34ae7a1c69f395f7ddcf24dc8afb9ab5c`。
+G-125 の使用版は同じ commit の `ObstructionDiagnosticBridge` の元宣言。
+[PR #4825受理](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4825#issuecomment-5746968898)と
+[完了査読](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/4825#issuecomment-5747017083)を再利用資格の参照とする。
+使用する `FaceEmptyCechNormalization`、`ActualCechH1Comparison`、`SpecifiedAffineObstruction`、
+`SpecifiedClassReflection`、`ActualCechReadingComparison` はそのmerge `964c3bab958fed4ccbd2a7f977ea7f42f9b7b242` から変更なし。
+今回の適用は元の型・定義・証明から照合し、既存の合否のみを適用の証拠にしない。
+
+| 固定Dの要求 | 新規宣言と元の実体 |
+| --- | --- |
+| 元の全次数 Čech 群と微分 | `cechObject`、`cechDifferential`、`cechNative`、`cechNativeEquiv`、`cechNative_d`。一般 `CoverRelativeCechComplex` の全次数を保存し、切断しない。`cechNativeEquiv_apply` が評価を保持し、`actualCechHigher_zero` が元の空なsimplex添字から高次零性を証明 |
+| 独立診断複体の忘却と零延長 | `diagnosticObject`、`diagnosticDifferential`、`diagnosticNative`。元の `ThreeCochainComplex ℚ` の加法群と二微分。`diagnosticNativeEquiv0/1/2` と `diagnosticNative_higher_zero` が元群同定と次数外零性を与える |
+| 元の二つの H¹ 商 | `cechCycleEquiv`、`cechH1Map`、`cechH1Equiv` と `diagnosticCycleEquiv`、`diagnosticH1Map`、`diagnosticH1Equiv`。全cycle・boundaryの代表を保つ単射全射から両方向の群同型を生成 |
+| 同じ実比較 | `actualComparisonDegree`、`actualComparisonDegree_comm`、`actualComparison`、`actualComparison_f`。既存 `actualCechCoefficientCochainMap` のf0/f1/f2をそのまま使用 |
+| 元の H¹ 比較との図式 | `actualComparison_h1`。全ての元のAdditiveCechH1類について既存 `actualCechDiagnosticH1Map` と標準homologyMapが可換 |
+| 任意の元データと指定補正 | `actualMismatch_closed`、`actualMismatch_compatible`、`ActualLift`、`actualLift_equations`、`actualLiftOfEquations`、`actualObstruction_zero_iff`。適合した任意bの元cochain二等式を保持し、反映条件を課さない |
+| A/Bの同じ障害・作用 | `actualLiftKernelEquiv`、`actualLiftKernelEquiv_val`、`actualLift_unique_iff`、`actualClass_native`、`actualObstruction_projection`、`actualResidual_inclusion`、`actualResidual_zero_iff`。実核の加法作用・一意性、pの−actualClass、jの同じ残差を接続 |
+| 元状態の更新 | `actualLift_update`。元の `adjustLocalState (-a)` の actualMismatch が零になる |
+| 床補正の条件付き使用 | `integralCorrection_is_correction` が元G-125定理からa₀を生成。`integralCorrection_residual_value` と `integralCorrection_residual_obstruction` が同じ実φ⁰の差を余核へ送りjで指定障害に一致させる |
+| reading射の同じ成分 | `actualReadingDegree`、`actualReadingMap` と `diagnosticMapDegree`、`diagnosticNativeMap`。既存actualCechPullback0/1とgeneratedComparisonHomを使用し、全次数条件を生成 |
+| 元の reading H¹ 射 | `actualReadingMap_h1`、`diagnosticNativeMap_h1`。元のactualCechRefinementH1Mapと生成診断H¹射が同じ代表で標準射と可換 |
+| Cの平方と元データ輸送 | `actualCoefficient0_reading`、`actualReading_square`、`actualReadingData_mismatch`、`actualReading_compatible`。平方を入力せず元の座標自然性から生成 |
+| 同じ指定補正と解・障害 | `actualReadingLift`、`actualReadingLift_val`、`actualReading_obstruction`、`actualReading_residual`。元データのtransition/localStateを独立にpullbackし、指定bも元generatedPullback0で送る |
+
+Bの実AddTorsor、差、短完全列、残差独立性は同じ `actualComparison` に対する受理済み一般定理
+`liftAddTorsor`、`liftDifference`、`correction_short_exact`、`residualClass_independent` を適用する。
+新しい余核や障害を定義し直さない。`actualReading_residual` は輸送した元補正と新しい側で選び直した任意補正の残差を同定するので、床補正自体の厳密自然性を仮定しない。Cのkernel/cokernel/j/p/作用自然性も生成した同じ
+`actualReading_square` に適用される。一般readingで零性の反映や解の全射は追加しない。
+
+元 Čech の整数係数を有理化せず、診断の有理群の加法構造だけを忘却する。
+全次数群の直接同定と元のH¹商の同型は別々に構成している。
+実comparisonの次数2も保持し、face-emptyによる高次群の一意性を次数外の射にだけ使う。
+`actualObstruction` は標準錐の同じ(b,−actualMismatch)であり、元補正a₀を入力しない。
+
+Material premise: P・cover・adequate laws・元局所データとreading morphismはDが許すambient入力。
+指定bの診断補正式はT0の適合条件で、`actualMismatch_compatible` が実比較の適合性を生成する。
+CommonLabelChartSupport/ReflectionConditionは床補正節だけのdirection-hypothesis。
+元のa₀の補正式はこの節では入力せず `integralCorrection_is_correction` で放電する。
+cochain可換性・二つのH¹比較・reading平方・輸送した適合条件は全てdischarge-requiredとして生成済み。
+自然性・障害零性・指定補正一致を供給する外部certificateは追加しない。
+
+再利用はG-125の全実群・比較・floor・reading、A/B/Cの標準錐・作用・自然性。
+接続は整数加群への忘却、全次数とH¹の同定、実比較の標準射化。
+新規証明はH¹図式、任意指定bへのA/B適用、−a更新、床残差、元reading平方と指定障害/解の輸送。
+Eの整数producer、W1–W6の同時成立と評価は未完了であり、Dの一般適用で代替しない。
+Formal未移植。Dの新規宣言は以下が全spineで、使い捨てscaffoldはない。
+
+- `ActualCechComplex`: `cechObject`, `cechDifferential`, `cechDifferential_square`, `cechNative`, `cechNativeEquiv`, `cechNativeEquiv_apply`, `cechNative_d`, `cechCycleEquiv`, `cechCycleClass`, `cechCycleClass_boundary`, `cechH1Map`, `cechH1Map_mk`, `cechH1Map_injective`, `cechH1Map_surjective`, `cechH1Equiv`, `diagnosticObject`, `diagnosticDifferential`, `diagnosticDifferential_square`, `diagnosticNative`, `diagnosticNativeEquiv0`, `diagnosticNativeEquiv1`, `diagnosticNativeEquiv2`, `diagnosticNative_higher_zero`, `diagnosticNative_d`, `diagnosticCycleEquiv`, `diagnosticCycleClass`, `diagnosticCycleClass_boundary`, `diagnosticH1Map`, `diagnosticH1Map_mk`, `diagnosticH1Map_injective`, `diagnosticH1Map_surjective`, `diagnosticH1Equiv`, `actualCechHigher_zero`, `actualComparisonDegree`, `actualComparisonDegree_comm`, `actualComparison`, `actualComparison_f`, `actualComparison_h1`。
+
+- `ActualCechLifting`: `actualMismatch_closed`, `actualMismatch_compatible`, `ActualLift`, `actualLift_equations`, `actualLiftOfEquations`, `actualObstruction`, `actualObstruction_eq_nonnegativeObstruction`, `actualObstruction_zero_iff`, `actualLift_update`, `actualLiftKernelEquiv`, `actualLiftKernelEquiv_val`, `actualLift_unique_iff`, `actualClass_native`, `actualObstruction_projection`, `actualResidual`, `actualResidual_eq_residualClass`, `actualResidual_inclusion`, `actualResidual_zero_iff`, `integralCorrection_is_correction`, `integralCorrection_residual_value`, `integralCorrection_residual_obstruction`。
+
+- `ActualCechReading`: `diagnosticMapDegree`, `diagnosticMapDegree_comm`, `diagnosticNativeMap`, `diagnosticNativeMap_h1`, `actualReadingDegree`, `actualCechDifferential_succ`, `actualReadingDegree_comm`, `actualReadingMap`, `actualReadingMap_h1`, `actualCoefficient0_reading`, `actualReading_square`, `actualReadingData`, `actualReadingData_mismatch`, `actualReading_compatible`, `actualReadingLift`, `actualReadingLift_val`, `actualReading_obstruction`, `actualReading_residual`。
+
+
+## Cycle 5 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-138-aat-specified-repair-lifting
+cycle: 5
+goal_blob_sha: 64dd19a5f4959437649748306100bd023b4f029e
+base_oid: d4a8d6b34ae7a1c69f395f7ddcf24dc8afb9ab5c
+tracking_issue: 6191
+report_path: research/reports/G-138-aat-specified-repair-lifting.md
+selection:
+  proof_state_ref: '#6191 / issuecomment-6636773067'
+  proof_dag_predecessors: [G-125の実比較と床補正とreading, cycle1-4のA/B/C]
+  milestone: Dの同じ実Čech比較・指定補正・元readingへの接続
+  proof_obligations: [全次数と微分の同定, 元の二つのH¹商と実比較, A/Bの任意指定補正への適用, 負の補正による更新, 床残差, 元readingからのC平方と輸送]
+  exit_criteria: [同じ全入力と係数, 同じ実比較とH¹写像, 反映条件を床節だけに限定, 元cochainの厳密一致, 全次数reading平方, focused検証と公理監査]
+  selection_reason: 一般A/B/Cを元G-125に接続し固定Dの構成義務を閉じる
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [ActualCechComplex.lean, ActualCechLifting.lean, ActualCechReading.lean]
+  risks: [元係数の有理化, 次数切断, H¹だけへの置換, 反映条件の漏出, 平方certificateの入力化]
+  unchecked: [独立レビュー]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: 上記Dの全対応表とspine
+  exit_criteria_status: [元全次数と元商の同定, 同じ比較の可換図式, 任意指定補正の障害と解, 床残差と負の更新, 元reading平方からの輸送, PR記載のfocused検証]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [ActualCechComplex.lean, ActualCechLifting.lean, ActualCechReading.lean]
+  evidence: [actualComparison_h1, actualObstruction_zero_iff, actualLift_update, integralCorrection_residual_obstruction, actualReading_square, actualReading_obstruction]
+  claim_mapping:
+    theorem_names: [上記Dの全spine]
+    source_labels: [D]
+    conjuncts: [元複体とH¹の接続, 元の指定補正へのA/B, 床残差, 元readingへのC]
+    undischarged_assumptions: []
+    acceptance_point: 固定Dの同じ全入力への接続。EとWは未完了
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [元複体則から標準複体, 商同型, 実比較のcochain条件, mismatch閉性と適合性, 条件付き床補正, 元reading平方]
+    remaining: [E, W]
+  certificate_provenance:
+    discharged: [元の全次数群と二微分, 元actualCechCoefficientCochainMap, 元integralCorrection, 元actualCechPullbackとgeneratedComparisonHom]
+    unresolved: []
+  proof_use:
+    used: [adequacyは元診断構成, face-emptyは元高次群と閉性, reflectionとcommon-labelは床補正だけ, reading条件は元pullback可換性]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [PR記載の3ファイルfocused検証と77名前付き宣言と生成含む83宣言の公理監査]
+  blocking_findings: [独立レビュー未実施]
+  next_obligation: Eの有限表示整数producerとW1–W6
+```
+
+
+Dの最終focused検証は3ファイルともexit 0、警告なし。
+`ActualCechComplex` と `ActualCechLifting` は同じ単一ファイルの依存oleanを出力して検証し、
+`ActualCechReading` は `lake env lean ResearchLean/AG/SpecifiedRepairLifting/ActualCechReading.lean` で検証した。
+77名前付き宣言の全printと生成含む83宣言の監査は標準公理のみ。
+ログSHA256は順に `7f6881c10af3a1e05f4be0a0676e45cfe77ab69d64405e62051f69efbb47ca6a`、
+`6adfc760a2997459255088fdd0e3f8a4df36a458c30e75946e0dedd1bcc41ef5`、
+`6b4402d25127822b9da2ae24bd86024b73fe2409da84e6dba6d11698b8247aba`。
+検証に必要なG-125依存2モジュールだけのtargeted buildもexit 0。
+Research全体・aggregate・全ファイルelaborationは実施していない。
