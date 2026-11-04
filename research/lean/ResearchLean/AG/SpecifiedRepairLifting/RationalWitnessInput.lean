@@ -41,7 +41,7 @@ abbrev nerve : CoverNerve where
   faceTripleOverlapComponent := fun f => nomatch f
   edgeOverlapComponent_holds _ := by
     rw [patch_intersection]
-    exact neighborhoodNonempty .edge
+    exact neighborhood_nonempty .edge
   faceTripleOverlapComponent_holds := fun f => nomatch f
 /-- 全chartが同じ唯一targetを実際に支持する。 -/
 def supportedNerve : TargetSupportedNerve reading where
@@ -58,13 +58,16 @@ def supportedNerve : TargetSupportedNerve reading where
 def presentation : GeneratorPresentation laws where
   relation := fun _ _ => False
   relation_preserves_label := by intros; contradiction
+/-- 一source・一Lawの原始生成元は一元。 -/
 instance primitiveSubsingleton : Subsingleton (PrimitiveGenerator laws) := by
   change Subsingleton (Unit × Unit)
   infer_instance
+/-- 一元の原始生成元の関係商も一元。 -/
 instance blockSubsingleton : Subsingleton presentation.Block := by
   infer_instance
 /-- 一つの原始生成元からできる同じblock。 -/
 def block : presentation.Block := presentation.blockOf ((),())
+/-- 元の唯一生成元をblockの基点に選ぶ。 -/
 instance blockUnique : Unique presentation.Block where
   default := block
   uniq _ := Subsingleton.elim _ _
@@ -76,6 +79,7 @@ instance labelSubsingleton : Subsingleton (LawValueLabel laws) where
     rw [Subsingleton.elim x y]
 /-- 原始Law発生から生成するlabel。 -/
 def label : LawValueLabel laws := LawValueLabel.ofSource laws () ()
+/-- 原始Law発生labelを唯一の基点とする。 -/
 instance labelUnique : Unique (LawValueLabel laws) where
   default := label
   uniq _ := Subsingleton.elim _ _
@@ -90,6 +94,7 @@ theorem common_support : GeneratorPresentation.CommonLabelChartSupport supported
   intro l
   refine ⟨(),fun _ => (show () ∈ (univ : Set Unit) from mem_univ _),?_⟩
   exact @Subsingleton.elim Unit inferInstance _ _
+/-- 二chartの実nerveのface型は空。 -/
 instance supportedFaceEmpty : IsEmpty supportedNerve.nerve.FaceComponent := by
   change IsEmpty Empty
   infer_instance
@@ -104,19 +109,19 @@ def cechCover : GeneratorPresentation.FaceEmptyAATCechCover supportedNerve conte
   chartSupportNonempty i := by
     change Nonempty (contextSupport (openContext (patch i)))
     rw [contextSupport_openContext]
-    exact patchNonempty i
+    exact patch_nonempty i
   chartSupportPreconnected i := by
     change PreconnectedSpace (contextSupport (openContext (patch i)))
     rw [contextSupport_openContext]
-    exact patchPreconnected i
+    exact patch_preconnected i
   edgeSupportNonempty _ := by
     change Nonempty (contextSupport (openContext (patch false ⊓ patch true)))
     rw [contextSupport_openContext,patch_intersection]
-    exact neighborhoodNonempty .edge
+    exact neighborhood_nonempty .edge
   edgeSupportPreconnected _ := by
     change PreconnectedSpace (contextSupport (openContext (patch false ⊓ patch true)))
     rw [contextSupport_openContext,patch_intersection]
-    exact neighborhoodPreconnected .edge
+    exact neighborhood_preconnected_space .edge
 end AAT.AG.SpecifiedRepairLifting.RationalWitnessInput
 
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessInput.reading

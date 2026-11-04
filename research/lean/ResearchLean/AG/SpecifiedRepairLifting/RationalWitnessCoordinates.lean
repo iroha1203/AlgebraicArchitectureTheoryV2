@@ -10,7 +10,9 @@ noncomputable section
 namespace AAT.AG.SpecifiedRepairLifting.RationalWitnessCoordinates
 open RationalWitnessGeometry RationalWitnessContext RationalWitnessInput
 open ObstructionDiagnosticBridge CanonicalResolution ResolutionInvariance Cohomology TwoPhase
+/-- 指定nerveの一edgeを座標評価点とする。 -/
 local instance : Unique supportedNerve.nerve.EdgeComponent := inferInstanceAs (Unique Unit)
+/-- 原始一Law表の一元性を座標同型で使用する。 -/
 local instance : Subsingleton laws.Law := inferInstanceAs (Subsingleton Unit)
 /-- 元の一生成元presentationの整数座標。 -/
 def coefficientEquiv : presentation.PresentationGroup ≃+ ℤ :=

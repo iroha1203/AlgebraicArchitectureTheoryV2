@@ -14,12 +14,15 @@ inductive Point where
   deriving DecidableEq, Fintype
 /-- 辺点が二頂点の上にあるincidence順序。 -/
 def pointLE (x y : Point) : Prop := x = y ∨ y = .edge
+/-- 有限三点のincidence条件を判定する。 -/
 instance pointLEDecidable : DecidableRel pointLE := fun _ _ => inferInstanceAs (Decidable (_ ∨ _))
+/-- 原始incidence表の反射・推移・反対称性から順序を生成する。 -/
 instance pointPartialOrder : PartialOrder Point where
   le := pointLE
   le_refl := by decide
   le_trans := by decide
   le_antisymm := by decide
+/-- 実順序の比較判定は原始incidenceの判定と同じ。 -/
 instance pointDecidableLE : DecidableLE Point := pointLEDecidable
 /-- 同じ三点の上集合位相。 -/
 abbrev Space := Topology.WithUpperSet Point
@@ -35,7 +38,7 @@ def neighborhood (x : Point) : Opens Space where
 /-- 開近傍の点membershipは原始incidenceに一致。 -/
 theorem mem_neighborhood (x y : Point) : point y ∈ neighborhood x ↔ pointLE x y := Iff.rfl
 /-- 原始近傍は自身の基点を含む。 -/
-def neighborhoodNonempty (x : Point) : Nonempty (neighborhood x) := ⟨⟨point x,show point x ≤ point x from le_rfl⟩⟩
+theorem neighborhood_nonempty (x : Point) : Nonempty (neighborhood x) := ⟨⟨point x,show point x ≤ point x from le_rfl⟩⟩
 /-- 最小開近傍は上集合位相で前連結。 -/
 theorem neighborhood_preconnected (v : Point) : IsPreconnected (neighborhood v : Set Space) := by
   intro left right hleft hright hcover
@@ -45,7 +48,7 @@ theorem neighborhood_preconnected (v : Point) : IsPreconnected (neighborhood v :
   · exact ⟨y,hy,(Topology.IsUpperSet.isOpen_iff_isUpperSet.mp hleft) hy hl,hyr⟩
   · exact ⟨x,hx,hxl,(Topology.IsUpperSet.isOpen_iff_isUpperSet.mp hright) hx hr⟩
 /-- 係数層で使用する前連結性の証拠。 -/
-def neighborhoodPreconnected (x : Point) : PreconnectedSpace (neighborhood x) :=
+theorem neighborhood_preconnected_space (x : Point) : PreconnectedSpace (neighborhood x) :=
   Subtype.preconnectedSpace (neighborhood_preconnected x)
 /-- 二つのchartの頂点。 -/
 def chartVertex : Bool → Point | false => .v0 | true => .v1
@@ -76,9 +79,9 @@ theorem patches_cover (x : Space) : ∃ i : Bool, x ∈ patch i := by
   | v1 => exact ⟨true,(mem_patch_true _).mpr (Or.inl rfl)⟩
   | edge => exact ⟨false,(mem_patch_false _).mpr (Or.inr rfl)⟩
 /-- 実patchの非空性。 -/
-def patchNonempty (i : Bool) : Nonempty (patch i) := neighborhoodNonempty _
+theorem patch_nonempty (i : Bool) : Nonempty (patch i) := neighborhood_nonempty _
 /-- 実patchの前連結性。 -/
-def patchPreconnected (i : Bool) : PreconnectedSpace (patch i) := neighborhoodPreconnected _
+theorem patch_preconnected (i : Bool) : PreconnectedSpace (patch i) := neighborhood_preconnected_space _
 /-- 二chartには相異なる三chartの組が存在しない。 -/
 theorem no_three_distinct_charts : ¬ ∃ f : Fin 3 → Bool, Function.Injective f := by decide
 end AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry
@@ -92,9 +95,9 @@ end AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.point
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.neighborhood
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.mem_neighborhood
-#print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.neighborhoodNonempty
+#print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.neighborhood_nonempty
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.neighborhood_preconnected
-#print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.neighborhoodPreconnected
+#print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.neighborhood_preconnected_space
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.chartVertex
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.patch
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.mem_patch_false
@@ -102,7 +105,7 @@ end AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.mem_edge_neighborhood
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.patch_intersection
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.patches_cover
-#print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.patchNonempty
-#print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.patchPreconnected
+#print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.patch_nonempty
+#print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.patch_preconnected
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry.no_three_distinct_charts
 #assert_standard_axioms_only AAT.AG.SpecifiedRepairLifting.RationalWitnessGeometry

@@ -1078,7 +1078,7 @@ cycle11は実装前の [selection](https://github.com/iroha1203/AlgebraicArchite
 
 全追加宣言は主spine（実入力と補助APIを含む）、別scaffoldなし。
 
-- `RationalWitnessGeometry` 22宣言: `Point`, `pointLE`, `pointLEDecidable`, `pointPartialOrder`, `pointDecidableLE`, `Space`, `point`, `neighborhood`, `mem_neighborhood`, `neighborhoodNonempty`, `neighborhood_preconnected`, `neighborhoodPreconnected`, `chartVertex`, `patch`, `mem_patch_false`, `mem_patch_true`, `mem_edge_neighborhood`, `patch_intersection`, `patches_cover`, `patchNonempty`, `patchPreconnected`, `no_three_distinct_charts`。
+- `RationalWitnessGeometry` 22宣言: `Point`, `pointLE`, `pointLEDecidable`, `pointPartialOrder`, `pointDecidableLE`, `Space`, `point`, `neighborhood`, `mem_neighborhood`, `neighborhood_nonempty`, `neighborhood_preconnected`, `neighborhood_preconnected_space`, `chartVertex`, `patch`, `mem_patch_false`, `mem_patch_true`, `mem_edge_neighborhood`, `patch_intersection`, `patches_cover`, `patch_nonempty`, `patch_preconnected`, `no_three_distinct_charts`。
 
 - `RationalWitnessContext` 35宣言: `carrier`, `object`, `openContext`, `openContext_reads_point`, `openContext_reads_generator`, `readablePointSet`, `contextSupport`, `readablePointSet_mono`, `contextSupport_mono`, `contextPreorder`, `supportFunctor`, `contextSupport_openContext`, `readablePointSet_product`, `contextSupport_product`, `contextSupport_product_openContext`, `openContextMorphism`, `openContextMorphism_isRestriction`, `openContext_le`, `equationSystem`, `signature`, `coverageRequirements`, `overlap`, `site`, `baseContext`, `coverageFamily`, `coverageFamily_support_point`, `coverageFamily_admissible`, `contextPullbackCone`, `contextPullbackConeIsLimit`, `contextHasPullback`, `supportMapPullbackConeIsLimit`, `supportFunctor_preservesPullback`, `mapped_pullback_mem_open_topology`, `supportFunctor_isContinuous`, `contextOpenSupport`。
 
@@ -1088,7 +1088,7 @@ cycle11は実装前の [selection](https://github.com/iroha1203/AlgebraicArchite
 
 - `RationalWitness` 16宣言: `actualComplex`, `diagnosticComplex`, `comparison`, `localData`, `mismatch_coordinate`, `halfCorrection`, `halfCorrection_coordinates`, `baseCorrection`, `baseCorrection_coordinates`, `half_compatible`, `base_boundary`, `mismatch_closed`, `integer_ne_half`, `no_half_lift`, `integral_floor_coordinate`, `original_floor_eq_base`。
 
-- `RationalWitnessCycles` 15宣言: `integral_cycle_diagonal`, `rational_cycle_diagonal`, `integralCyclesEquiv`, `rationalCyclesEquiv`, `cycle_comparison_coordinate`, `cycle_comparison_injective`, `cycle_comparison_not_surjective`, `RationalModIntegers`, `cycleQuotient`, `cycleQuotient_apply`, `cycle_quotient_kernel`, `cycle_quotient_surjective`, `cokernelEquiv`, `cokernelEquiv_class`, `half_class_ne_zero`。
+- `RationalWitnessCycles` 17宣言: `integral_cycle_diagonal`, `rational_cycle_diagonal`, `integralCyclesEquiv`, `rationalCyclesEquiv`, `integralCyclesEquiv_apply`, `rationalCyclesEquiv_apply`, `cycle_comparison_coordinate`, `cycle_comparison_injective`, `cycle_comparison_not_surjective`, `RationalModIntegers`, `cycleQuotient`, `cycleQuotient_apply`, `cycle_quotient_kernel`, `cycle_quotient_surjective`, `cokernelEquiv`, `cokernelEquiv_class`, `half_class_ne_zero`。
 
 - `RationalWitnessObstruction` 13宣言: `residual_coordinate`, `residual_ne_zero`, `obstruction_ne_zero`, `integerCorrection`, `integerCorrection_coordinates`, `base_comparison`, `integerLift`, `comparison_zero_injective`, `integer_lift_unique`, `correction_kernel_zero`, `integer_compatible`, `integer_residual_zero`, `integer_obstruction_zero`。
 
@@ -1122,7 +1122,7 @@ result:
   lean_artifacts: [RationalWitnessGeometry.lean, RationalWitnessContext.lean, RationalWitnessInput.lean, RationalWitnessCoordinates.lean, RationalWitness.lean, RationalWitnessCycles.lean, RationalWitnessObstruction.lean]
   evidence: [coverageFamily_admissible, supportFunctor_isContinuous, reflection, common_support, integral_d0, rational_d0, comparison_zero, comparison_one, mismatch_coordinate, original_floor_eq_base, cokernelEquiv, residual_coordinate, obstruction_ne_zero, integer_lift_unique]
   claim_mapping:
-    theorem_names: [上記136名前付き宣言]
+    theorem_names: [上記138名前付き宣言]
     source_labels: [W1, D同じ実比較への具体入力]
     conjuncts: [実三点入力, 元Čech診断の差分包含, 指定半整数障害, 元floorの厳密評価, 整数指定一意]
     undischarged_assumptions: []
@@ -1156,16 +1156,22 @@ Formalへの移植は全成果を通して未実施。
 
 ## Cycle 11 focused検証
 
-各moduleについて `research/lean` で `lake env lean -o .lake/build/lib/lean/ResearchLean/AG/SpecifiedRepairLifting/<module>.olean ResearchLean/AG/SpecifiedRepairLifting/<module>.lean` を実行し、全7件exit0・警告なし。136名前付き宣言のsourceとprintを突合し、生成宣言を含む全163件のnamespace公理監査は標準公理のみ。
+各moduleについて `research/lean` で `lake env lean -o .lake/build/lib/lean/ResearchLean/AG/SpecifiedRepairLifting/<module>.olean ResearchLean/AG/SpecifiedRepairLifting/<module>.lean` を実行し、全7件exit0・警告なし。138名前付き宣言のsourceとprintを突合し、生成宣言を含む全165件のnamespace公理監査は標準公理のみ。
 
 | module | namespace宣言数 | stdout+stderr SHA256 |
 | --- | --- | --- |
-| `RationalWitnessGeometry` | 47 | `ceb9b6a4ae7a1233fadc0ed9d51bbe725130c261e174c20449becf662f75a8bf` |
+| `RationalWitnessGeometry` | 47 | `bad3885f9ce67f8b204e0b1c0c424d9d4c5c9fdfd0353ec6ec3b818615e3482b` |
 | `RationalWitnessContext` | 35 | `8496f73c2e7d11cd32c23f9f1261716dcea124740b4ded442f873f7a2b96da83` |
 | `RationalWitnessInput` | 17 | `93bdea2defdabfd2a5f951976e7c140a71e634e509a54beeba5bb638278c26eb` |
 | `RationalWitnessCoordinates` | 20 | `8a7af2401f4f38b2239d02f0824ea1aa5221e9e848a69e51e692b38cb4e91c10` |
 | `RationalWitness` | 16 | `3b433c73ebd4cfda57d9320a91dfc9e50fec794e8eb69d77b6cfe868073d17d3` |
-| `RationalWitnessCycles` | 15 | `2e102f883bc7e1e14b53a9e736677d3329fbad7b5c34882f52330815ef933258` |
+| `RationalWitnessCycles` | 17 | `c0ee2b45b3525137f5c3519ced82e0744de910e7af399ab2accaa4c502de1d3d` |
 | `RationalWitnessObstruction` | 13 | `ce45fe860be1b47b504728595e053c083026940948500d2384542e3ccc13aecc` |
 
 placeholder・hidden/BiDi・環境パス・新規禁止語scanと `git diff --check` はclean。本体からResearchへのimportは無し。新規7moduleをResearch manifestへ登録。Research全体buildは実行していない。
+
+
+初回標準PR監査（head `b622d2776345537c72d94f4c19aa0d72ef254616`、[監査コメント](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/6205#issuecomment-6640343092)）は非中心3件によりNeeds changes。
+Prop証明4件をtheoremへ変更して命名を整え、instance10件に説明を追加した。
+`integralCyclesEquiv_apply/rationalCyclesEquiv_apply` を公開し、比較・残差の下流証明はこれらと `cycleComparison_apply/residualCycle_val` を使用する。
+型の量化・実対象・数学的結論は保持。宣言形式・名前の変更を含むため、修正後は直接対応ではなく新規四本の正式第2batchで確認する。

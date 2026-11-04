@@ -16,6 +16,7 @@ theorem residual_coordinate : cokernelEquiv
     (residualCycle comparison localData.actualMismatch halfCorrection baseCorrection base_boundary half_compatible)) = _
   rw [cokernelEquiv_class]
   congr 1
+  rw [rationalCyclesEquiv_apply,residualCycle_val,map_sub]
   change rationalZeroEquiv halfCorrection false - rationalZeroEquiv
     (presentation.actualCechCoefficientCochain0 cechCover adequate baseCorrection) false = 1/2
   rw [halfCorrection_coordinates,comparison_zero,baseCorrection_coordinates]

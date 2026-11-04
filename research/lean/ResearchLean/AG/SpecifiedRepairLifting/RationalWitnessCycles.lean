@@ -64,9 +64,16 @@ def rationalCyclesEquiv : zeroCycles (diagnosticNative diagnosticComplex) ≃+ �
     · exact (rational_cycle_diagonal a).symm
   right_inv n := congrFun (rationalZeroEquiv.apply_symm_apply _) false
   map_add' a b := congrFun (map_add rationalZeroEquiv a.val b.val) false
+/-- 整数cycle同型は元cochainの左chart座標を読む。 -/
+theorem integralCyclesEquiv_apply (a : zeroCycles (cechNative actualComplex)) :
+    integralCyclesEquiv a = integralZeroEquiv a.val false := rfl
+/-- 有理cycle同型も元cochainの左chart座標を読む。 -/
+theorem rationalCyclesEquiv_apply (a : zeroCycles (diagnosticNative diagnosticComplex)) :
+    rationalCyclesEquiv a = rationalZeroEquiv a.val false := rfl
 /-- 実kは対角座標で整数包含。 -/
 theorem cycle_comparison_coordinate (a : zeroCycles (cechNative actualComplex)) :
     rationalCyclesEquiv (cycleComparison comparison a) = (integralCyclesEquiv a : ℚ) := by
+  rw [rationalCyclesEquiv_apply,integralCyclesEquiv_apply,cycleComparison_apply]
   change rationalZeroEquiv
     (RationalWitnessInput.presentation.actualCechCoefficientCochain0
       RationalWitnessInput.cechCover RationalWitnessInput.adequate a.val) false = _
@@ -142,4 +149,6 @@ end AAT.AG.SpecifiedRepairLifting.RationalWitnessCycles
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessCycles.cokernelEquiv
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessCycles.cokernelEquiv_class
 #print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessCycles.half_class_ne_zero
+#print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessCycles.integralCyclesEquiv_apply
+#print axioms AAT.AG.SpecifiedRepairLifting.RationalWitnessCycles.rationalCyclesEquiv_apply
 #assert_standard_axioms_only AAT.AG.SpecifiedRepairLifting.RationalWitnessCycles
