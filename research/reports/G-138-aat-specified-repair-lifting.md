@@ -847,3 +847,102 @@ audits:
   blocking_findings: [独立レビュー未実施]
   next_obligation: 固定W1–W6の同時成立とW2–W5のE評価
 ```
+
+
+## 固定W2・W5・W6の同時成立
+
+cycle8は [PR #6202監査](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/pull/6202#issuecomment-6639122077) で受理、merge `7da633678a71252824374a88bca80b721abe98d1`。
+cycle9は実装前の [selection](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6191#issuecomment-6638835889) に従う。
+`FreeWitnesses.lean` は設計のW2・W5・W6を同じ原始整数表から生成し、Eの商群を `freeEquiv` で元の整数座標へ同定する。
+原始表と一般A/B/Eの対象を別々に置かず、`native` と `comparison` から同じ実Liftを作る。
+
+| 固定要求 | 同じ入力のLean証拠 |
+| --- | --- |
+| W2のC⁰=Z³、D⁰=Z²、差分微分、射影比較、z=1,b=(0,1) | `w2C/w2D/w2Comparison` の原始表、`w2_input_valid` の全検査、`w2Map` |
+| W2全解と整数wの両逆 | `w2Lift`、`w2Lift_coordinates`、`w2_lift_coordinates`、`w2LiftEquiv`。元C⁰の全解は厳密に(0,1,w) |
+| W2実核と作用、異なる解 | `w2KernelEquiv` は実CorrectionKernelとの群同型、`w2KernelEquiv_coordinates` は(0,0,w)、`w2_action` はwへの加算、`w2_distinct` |
+| W2同じA/B障害 | `w2_obstruction_zero`、`w2_residual_zero` は同じ比較と入力の標準錐・余核類 |
+| W2のE出力と全解作用 | `w2_decoded_coordinates`、`w2ComputedKernelEquiv`、`w2_computed_action`。計算した実核表示から同じ整数wへ同型、出力作用も同じ加算 |
+| W5の非零d¹と唯一Lift | `w5C/w5Comparison/w5_input_valid`、`w5Lift`、`w5_unique`、`w5_not_closed`、`w5_d1_ne_zero`。z=(1,0),b=1で唯一の補正1、(0,1)は閉じない |
+| W5のA/BおよびE評価 | `w5_obstruction_zero`、`w5_residual_zero`、`w5_correction_kernel_zero`。`w5_decoded_eq` はE特解が同じ1、`w5_checked_reject` は不適合表の実行入口拒否 |
+| W6の同じ実補正の一意性 | `w6C/w6Comparison/w6_input_valid`、`w6Lift/w6_unique`。`w6_obstruction_zero/residual_zero`、`w6_correction_kernel_zero` は同じA/B |
+| W6実C⁰への非単射表示 | `w6Rho` は整数座標の和、`integerClassEquiv` で元C⁰へ同定した `w6CorrectionRho` が実射。`w6_parameter_iff` が同じ補正1のfiberを同定 |
+| W6全fiber・全核・異なる表示 | `w6ActualParameterEquiv/val` は全整数nと実fiberの両逆で(n,1−n)、`w6ActualKernelEquiv/val` は実kerρとZの群同型で(n,−n)、`w6_actual_parameters_distinct`。座標側の両逆・非単射性も保持 |
+
+W6ではBの実補正作用核が零である一方、実C⁰を値域とするρの核はZと同型である。
+表示射の値域を新しい代用品に変えず、同じ一意補正の逆像を分類した。
+W2の全解証明は全整数を量化して両逆を証明し、有限実行だけで無限全解を主張していない。
+W5では非零d¹の評価を元複体で証明し、bad zの拒否を計算とtheoremの双方で保持する。
+
+再利用はcycle1–4の一般A/B、cycle6–8の原始有限表示検査と同じLift/kernelへの接続。
+接続は関係なし商を元整数座標へ同定する `freeEquiv` と、一整数商の `integerClassEquiv`。
+新規証明は固定表の全条件、全Liftと核の座標分類、非零d¹、同じ実表示射のfiberと核、計算出力の一致。
+対象外の一般群を自由群へ縮小せず、自由群なのは今回指定された三つの入力だけである。
+
+全69名前付き宣言は以下の主spine（補助API含む）。別scaffoldなし。
+
+`freePresentation`, `free_relations`, `freeEquiv`, `freeEquiv_class`, `free_class_eq_iff`, `w2C`, `w2D`, `w2Comparison`, `w2_input_valid`, `w2Map`, `W2Lift`, `w2Lift`, `w2Lift_coordinates`, `w2_lift_coordinates`, `w2LiftEquiv`, `w2_distinct`, `w2KernelEquiv`, `w2KernelEquiv_coordinates`, `w2_action`, `w2_residual_zero`, `w2_decoded_coordinates`, `w2ComputedKernelEquiv`, `w5C`, `w5Comparison`, `w5_input_valid`, `w5Map`, `W5Lift`, `w5_map_apply`, `w5Lift`, `w5_unique`, `w5_not_closed`, `w5_d1_ne_zero`, `w5_obstruction_zero`, `w6C`, `w6Comparison`, `w6_input_valid`, `w6Map`, `W6Lift`, `w6_map_apply`, `w6Lift`, `w6_unique`, `w6Rho`, `w6Rho_apply`, `W6Parameters`, `w6Parameter`, `w6Parameter_val`, `w6ParameterEquiv`, `w6_parameters_distinct`, `w6ParameterKernelEquiv`, `w6_rho_not_injective`, `integerClassEquiv`, `integerClassEquiv_apply`, `w6CorrectionRho`, `w6CorrectionRho_apply`, `w6_parameter_iff`, `w6ActualParameterEquiv`, `w6ActualKernelEquiv`, `w2_computed_action`, `w2_obstruction_zero`, `w5_residual_zero`, `w6_obstruction_zero`, `w6_residual_zero`, `w6_correction_kernel_zero`, `w5_correction_kernel_zero`, `w6ActualParameterEquiv_val`, `w6ActualKernelEquiv_val`, `w6_actual_parameters_distinct`, `w5_decoded_eq`, `w5_checked_reject`。
+
+`lake env lean ResearchLean/AG/SpecifiedRepairLifting/FreeWitnesses.lean` はexit0警告なし。
+全69宣言のsource・printを機械突合し、namespaceの69宣言も標準公理のみ。
+ログSHA256 `deb6f9c5099f0b6d68bb68e875327307a9f1a97ef27360eac5401da72f5f33aa`。
+7評価は全true（W2入力受理・成功・非一意、W5入力受理・bad z拒否・成功・一意）。
+Research全体buildなし。既存依存は受理baseから変更なし。
+W1（実G-125実現を含む）、W3、W4と最終累積査読は未完。G-138完了候補ではない。
+
+## Cycle 9 ledger
+
+```yaml
+ledger_type: target_cycle_result
+goal: G-138-aat-specified-repair-lifting
+cycle: 9
+goal_blob_sha: 64dd19a5f4959437649748306100bd023b4f029e
+base_oid: 7da633678a71252824374a88bca80b721abe98d1
+tracking_issue: 6191
+report_path: research/reports/G-138-aat-specified-repair-lifting.md
+selection:
+  proof_state_ref: '#6191 / issuecomment-6638835889'
+  proof_dag_predecessors: [一般A/B, cycle8の同じA/B/E接続]
+  milestone: 固定W2・W5・W6の自由整数入力における全解と実核作用および補正と表示の一意性の差
+  proof_obligations: [W2全解と実核と作用と残差, W2のE一致, W5唯一解と非零d1と非閉性とE受理拒否, W6唯一補正と実rhoのfiber核全対応]
+  exit_criteria: [固定表から全入力条件, 同じA/Bへの適用, W2全w両逆と加法作用と異なる解, W5非零d1と障害零とE評価, W6実C0のrhoと全fiber核と異なる表示, focused全公理監査]
+  selection_reason: 一般理論と算法を指定された同じ非退化入力へ適用する義務を縮める
+  expected_result_type: proof-obligation-discharged
+  lean_targets: [FreeWitnesses.lean]
+  risks: [自由代表と元群の同定漏れ, E評価だけの全解主張, 補正と表示の一意性混同, d1未発火]
+  unchecked: [独立レビュー]
+result:
+  proposed_result_type: proof-obligation-discharged
+  proof_obligation_delta: W2とW5とW6の全指定条件を同じ入力から証明
+  exit_criteria_status: [上記対応表とfocused全公理監査]
+  split_reason: none
+  completion_candidate: no
+  lean_artifacts: [FreeWitnesses.lean]
+  evidence: [w2LiftEquiv, w2KernelEquiv, w2_action, w2_computed_action, w5_unique, w5_not_closed, w5_checked_reject, w6_unique, w6ActualParameterEquiv, w6ActualKernelEquiv]
+  claim_mapping:
+    theorem_names: [上記69宣言]
+    source_labels: [W2, W5, W6]
+    conjuncts: [全解実核作用と計算結果, 非零次微分と唯一解, 補正と表示の一意性の差]
+    undischarged_assumptions: []
+    acceptance_point: 固定三入力の全要求の同時成立
+    port_status: unported
+audits:
+  premise_delta:
+    discharged: [固定原始表の全検査, 自由商と整数座標の同定, 同じ実Liftと核の全元分類, 実rhoの全fiber核]
+    remaining: [W1実G125実現含む, W3, W4, 最終累積査読]
+  certificate_provenance:
+    discharged: [w2入力表, w5入力表, w6入力表, 原始表からnativeとcomparison, 同じrho]
+    unresolved: []
+  proof_use:
+    used: [原始検査は複体比較T0, 自由商同型は座標全解, 実核差は作用, 同じBは残差と一意性, Eの実核表示は計算作用同定]
+    unused: []
+  structure_field_escape: none-found
+  route_integrity: pass
+  target_fitting: none-found
+  vacuity: none-found
+  one_way_as_equivalence: none-found
+  goal_or_report_reinterpretation: none-found
+  validation_refs: [focused exit0, 全69公理監査, 7評価true]
+  blocking_findings: [独立レビュー未実施]
+  next_obligation: W3とW4のtorsion不能非一意性および元修復不能の標準障害とE評価
+```
