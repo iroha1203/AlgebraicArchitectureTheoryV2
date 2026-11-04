@@ -1491,6 +1491,21 @@ fn materialize_instance(
                     evaluate_read(state, *id, &variables, &scope, &declaration.reading)?;
                 b.parts[expression.0 - b.base].scope.merge(&read.scope);
                 out.scope.merge(&read.scope);
+                // 宣言した読取りが実際に辿ったfieldの所有subjectも支持に含める。
+                // 終端がprimitive値でも、中間参照の所有者はLaw側と同じcarrierに属する。
+                // visibleには追加せず、fieldの読取り許可は宣言された終端だけに保つ。
+                for fact in positions.iter().filter(|fact| fact.field.is_some()) {
+                    let subject = state.indexes.subject(&fact.snapshot, &fact.subject)?;
+                    subject_carrier(
+                        &Scalar::Subject {
+                            snapshot: fact.snapshot.clone(),
+                            subject: fact.subject.clone(),
+                            entity: subject.ty.to_string(),
+                        },
+                        &mut carrier,
+                        c,
+                    )?;
+                }
                 dependencies.extend(positions);
                 let state_visible = if !free.is_empty() {
                     state_visibility(state, &[*id], bindings, &declaration.reading, c)?
@@ -1835,6 +1850,71 @@ mod tests {
         include!("../../../../../tests/common/architecture_environment.rs");
     }
     use archsig_common::control::quiet;
+    #[test]
+    fn nested_read_keeps_reached_field_owner_without_extra_field_permission() {
+        let inputs = check_inputs(
+            fixture::input("local here(e:Reserve) reads e.from.free;", None),
+            &quiet(),
+        )
+        .unwrap();
+        let requests = resolve_native_for_test(
+            inputs.law(),
+            inputs.archmap(),
+            &["c=check(Reservations.roots,x=@v/A)"],
+            &quiet(),
+        )
+        .unwrap();
+        let env = Environment::with_requests(&inputs, requests.requests(), &quiet()).unwrap();
+        let graph = Graph::new(&quiet());
+        let mut b = Builder {
+            g: &graph,
+            base: 0,
+            parts: vec![],
+        };
+        let bindings = vec![(
+            "e".into(),
+            Scalar::Subject {
+                snapshot: "v".into(),
+                subject: "e".into(),
+                entity: "Reservations.Reserve".into(),
+            },
+        )];
+        let context = materialize_instance(
+            &env,
+            &mut b,
+            &inputs.law().declarations()["Reservations.here"],
+            &requests.requests()[0],
+            &bindings,
+            &[],
+            &[],
+            &[],
+            None,
+            &quiet(),
+        )
+        .unwrap();
+        assert!(context.reasons.is_empty());
+        let reached = Json::obj([
+            ("type", Type::Ref("Reservations.State".into()).wire()),
+            ("value", Json::Arr(vec![Json::str("v"), Json::str("p")])),
+        ]);
+        assert!(
+            context.carrier.contains(&reached),
+            "nested read must retain its reached field owner"
+        );
+        assert!(
+            context
+                .visible
+                .iter()
+                .any(|f| f.subject == "p" && f.field.as_deref() == Some("Reservations.State.free"))
+        );
+        assert!(
+            !context
+                .visible
+                .iter()
+                .any(|f| f.field.as_deref() == Some("Reservations.State.held"))
+        );
+        assert!(!context.visible.iter().any(|f| f.subject == "q"));
+    }
     #[test]
     fn local_owner_missing_survives_the_first_free_state_stop() {
         let map = fixture::remove_atom("p-owner");
