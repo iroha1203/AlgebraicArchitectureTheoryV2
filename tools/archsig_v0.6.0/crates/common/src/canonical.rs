@@ -48,65 +48,75 @@ impl Json {
     ) -> Result<String, E> {
         E::checkpoint(control, point)?;
         let mut out = String::new();
-        self.write_controlled::<E>(&mut out, control, point)?;
+        self.write_controlled(
+            &mut |text| {
+                out.push_str(text);
+                Ok(())
+            },
+            &mut || E::checkpoint(control, point),
+        )?;
         E::checkpoint(control, point)?;
         Ok(out)
     }
 
-    fn write_controlled<E: InputError>(
+    /// 確定済みの表示を全文Stringなしで配送する。計算の停止制御は再導入しない。
+    /// flushと公開の確定は呼出し側が担う。
+    pub fn write_canonical(&self, out: &mut impl std::io::Write) -> std::io::Result<()> {
+        self.write_controlled(&mut |text| out.write_all(text.as_bytes()), &mut || Ok(()))
+    }
+
+    fn write_controlled<E>(
         &self,
-        out: &mut String,
-        control: &Control,
-        point: Checkpoint,
+        emit: &mut impl FnMut(&str) -> Result<(), E>,
+        checkpoint: &mut impl FnMut() -> Result<(), E>,
     ) -> Result<(), E> {
         stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-            E::checkpoint(control, point)?;
+            checkpoint()?;
             match self {
-                Json::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
-                Json::Nat(n) => out.push_str(&n.to_string()),
-                Json::Str(s) => write_string_controlled::<E>(s, out, control, point)?,
+                Json::Bool(b) => emit(if *b { "true" } else { "false" })?,
+                Json::Nat(n) => emit(&n.to_string())?,
+                Json::Str(s) => emit_string(s, emit, checkpoint)?,
                 Json::Arr(items) => {
-                    out.push('[');
+                    emit("[")?;
                     for (i, item) in items.iter().enumerate() {
-                        E::checkpoint(control, point)?;
+                        checkpoint()?;
                         if i > 0 {
-                            out.push(',');
+                            emit(",")?;
                         }
-                        item.write_controlled::<E>(out, control, point)?;
-                        E::checkpoint(control, point)?;
+                        item.write_controlled(emit, checkpoint)?;
+                        checkpoint()?;
                     }
-                    out.push(']');
+                    emit("]")?;
                 }
                 Json::Obj(entries) => {
-                    out.push('{');
+                    emit("{")?;
                     for (i, (k, v)) in entries.iter().enumerate() {
-                        E::checkpoint(control, point)?;
+                        checkpoint()?;
                         if i > 0 {
-                            out.push(',');
+                            emit(",")?;
                         }
-                        write_string_controlled::<E>(k, out, control, point)?;
-                        out.push(':');
-                        v.write_controlled::<E>(out, control, point)?;
-                        E::checkpoint(control, point)?;
+                        emit_string(k, emit, checkpoint)?;
+                        emit(":")?;
+                        v.write_controlled(emit, checkpoint)?;
+                        checkpoint()?;
                     }
-                    out.push('}');
+                    emit("}")?;
                 }
             }
-            E::checkpoint(control, point)?;
+            checkpoint()?;
             Ok(())
         })
     }
 }
 
 /// Canonical escaping keeps the original UTF-8 bytes and checks bounded chunks of scalars.
-fn write_string_controlled<E: InputError>(
+fn emit_string<E>(
     s: &str,
-    out: &mut String,
-    control: &Control,
-    point: Checkpoint,
+    emit: &mut impl FnMut(&str) -> Result<(), E>,
+    checkpoint: &mut impl FnMut() -> Result<(), E>,
 ) -> Result<(), E> {
-    E::checkpoint(control, point)?;
-    out.push('"');
+    checkpoint()?;
+    emit("\"")?;
     let bytes = s.as_bytes();
     let (mut start, mut offset, mut scalars) = (0, 0, 0usize);
     while offset < bytes.len() {
@@ -115,21 +125,27 @@ fn write_string_controlled<E: InputError>(
         // Slice only at these boundaries; escapes are single-byte ASCII.
         if byte & 0xc0 != 0x80 {
             if scalars % 256 == 0 {
-                out.push_str(&s[start..offset]);
+                emit(&s[start..offset])?;
                 start = offset;
-                E::checkpoint(control, point)?;
+                checkpoint()?;
             }
             scalars += 1;
             if byte == b'"' || byte == b'\\' || byte < 0x20 {
-                out.push_str(&s[start..offset]);
+                emit(&s[start..offset])?;
                 match byte {
-                    b'"' => out.push_str("\\\""),
-                    b'\\' => out.push_str("\\\\"),
+                    b'"' => emit("\\\"")?,
+                    b'\\' => emit("\\\\")?,
                     _ => {
                         const HEX: &[u8; 16] = b"0123456789abcdef";
-                        out.push_str("\\u00");
-                        out.push(HEX[(byte >> 4) as usize] as char);
-                        out.push(HEX[(byte & 15) as usize] as char);
+                        let escaped = [
+                            b'\\',
+                            b'u',
+                            b'0',
+                            b'0',
+                            HEX[(byte >> 4) as usize],
+                            HEX[(byte & 15) as usize],
+                        ];
+                        emit(std::str::from_utf8(&escaped).expect("ASCII escape"))?;
                     }
                 }
                 start = offset + 1;
@@ -137,10 +153,27 @@ fn write_string_controlled<E: InputError>(
         }
         offset += 1;
     }
-    out.push_str(&s[start..]);
-    out.push('"');
-    E::checkpoint(control, point)?;
+    emit(&s[start..])?;
+    emit("\"")?;
+    checkpoint()?;
     Ok(())
+}
+
+#[cfg(test)]
+fn write_string_controlled<E: InputError>(
+    s: &str,
+    out: &mut String,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<(), E> {
+    emit_string(
+        s,
+        &mut |text| {
+            out.push_str(text);
+            Ok(())
+        },
+        &mut || E::checkpoint(control, point),
+    )
 }
 
 /// `sha256:` と小文字16進64桁。
@@ -284,7 +317,7 @@ mod controlled_tests {
             .canonical_controlled::<Failure>(&control, Checkpoint::Expression)
             .unwrap();
         let total = count.get();
-        assert!(total > 30);
+        assert_eq!(total, 43, "preserve the original encoder checkpoint count");
         for at in 1..=total {
             let mut visits = 0;
             let control = Control::new(move |_| {
@@ -299,3 +332,6 @@ mod controlled_tests {
         }
     }
 }
+
+#[cfg(test)]
+mod stream_tests;

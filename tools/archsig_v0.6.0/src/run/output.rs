@@ -220,7 +220,7 @@ pub(super) fn publish(
             step("flush", &definitions, io.flush(&definitions))?;
         }
         let p = tmp.join("result.json");
-        step("write", &p, io.write(&p, document.canonical().as_bytes()))?;
+        step("write", &p, io.write_json(&p, &document))?;
         step("flush", &p, io.flush(&p))?;
         step("flush", &inputs, io.flush(&inputs))?;
         step("flush", &tmp, io.flush(&tmp))?;
@@ -270,3 +270,6 @@ fn temp_dir(out: &Path) -> PathBuf {
         _ => PathBuf::from(tmp),
     }
 }
+
+#[cfg(test)]
+mod stream_tests;

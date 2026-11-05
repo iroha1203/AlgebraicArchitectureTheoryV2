@@ -59,6 +59,11 @@ Example: archsig check --atom-definition counter.atoms.json --law counter.law";
 pub trait Io {
     fn create_dir(&mut self, path: &Path) -> std::io::Result<()>;
     fn write(&mut self, path: &Path, bytes: &[u8]) -> std::io::Result<()>;
+    /// 確定済みJSONの配送。既定実装は従来のwrite失敗注入を保つ。
+    /// FileIoは全文Stringを作らずstreamする。独自Ioの既定実装はStringを保持する。
+    fn write_json(&mut self, path: &Path, document: &Json) -> std::io::Result<()> {
+        self.write(path, document.canonical().as_bytes())
+    }
     /// 書いたファイルまたは directory を永続化する。
     fn flush(&mut self, path: &Path) -> std::io::Result<()>;
     /// 既存の path を置き換えずに rename する。
@@ -84,6 +89,10 @@ impl Io for FileIo {
         std::fs::File::create_new(path)?.write_all(bytes)
     }
 
+    fn write_json(&mut self, path: &Path, document: &Json) -> std::io::Result<()> {
+        write_json_to(std::fs::File::create_new(path)?, document)
+    }
+
     fn flush(&mut self, path: &Path) -> std::io::Result<()> {
         std::fs::File::open(path)?.sync_all()
     }
@@ -92,6 +101,14 @@ impl Io for FileIo {
         use rustix::fs::{CWD, RenameFlags, renameat_with};
         renameat_with(CWD, from, CWD, to, RenameFlags::NOREPLACE).map_err(std::io::Error::from)
     }
+}
+
+// 小さなbufferの書出失敗も配送失敗として返し、Dropの暗黙flushへ任せない。
+fn write_json_to(writer: impl std::io::Write, document: &Json) -> std::io::Result<()> {
+    use std::io::Write;
+    let mut writer = std::io::BufWriter::with_capacity(8 * 1024, writer);
+    document.write_canonical(&mut writer)?;
+    writer.flush()
 }
 
 /// 実行の中で捕捉した signal。finalize の開始時に一度だけ確定する。
