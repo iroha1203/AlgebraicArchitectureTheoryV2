@@ -443,6 +443,39 @@ Law の成否 Bool だけの一致と型付き評価族の保存を区別する�
 一般の局所診断では対象・局所読取り・要求に応じた結果を読む。
 算法非対応や欠測は理由付きの未決として扱い、必要なら `needed($問いID)` で内訳を確認する。
 
+### 変更するrootと要求を課す対象を分ける
+
+[Planの定義](assets/plan.atoms.json)・[Law](assets/plan.law)・
+[ArchMap](assets/plan.archmap.json)は四つの独立したPlanを持つ架空の仕様モデル。
+`v/target` と `alternative/blocked` のenabledはfalse、二つの `valid` はtrueである。
+`Plans.enabled(p)` は有効化を要求し、`Plans.configure` は選んだrootのenabledを
+Bool parameter `value` で更新する。実OSSの観測や追試の記録ではない。
+
+```sh
+"$cli" run --atom-definition "$skill/assets/plan.atoms.json" --law "$skill/assets/plan.law" --archmap "$skill/assets/plan.archmap.json" \
+  --ask 'all=solve(Plans.enabled,using=Plans.configure,on=@v/target)' \
+  --ask 'allRepair=repair(Plans.enabled,using=Plans.configure,on=@v/target)' \
+  --ask 'one=solve(Plans.enabled,using=Plans.configure,on=@v/target,bind.p=@v/target)' \
+  --ask 'oneRepair=repair(Plans.enabled,using=Plans.configure,on=@v/target,bind.p=@v/target)' \
+  --out "$work/plan-run"
+```
+
+`all/allRepair` は反証し解集合は空、`allRepair` はrepair/objectを返さない。
+`one/oneRepair` は成立し、唯一の元Assignmentはtargetの `value=true`。
+`oneRepair` はrepair/objectを返す。全体は終了1であり、未決ではない。
+
+両組とも `on` は変更rootを指定し、候補域はtargetにfalse/trueを割り当てる二候補。
+`bind.p` はLawの引数pを指定する。onだけでpをtargetへ束縛したことにはならない。
+このPlanはownerを持たない参照型なので、未束縛pは別snapshotを含む四つのPlanへ
+全称化される。targetだけを変更しても固定されたblockedはfalseのままで、全称要求を満たせない。
+owner依存型の引数はその型・owner・既存束縛に応じた族を使うので、この四対象の説明を
+全てのentity型へ一般化しない。snapshotを分けるだけではこの未束縛pの対象から除外されない。
+
+対象Planだけの要求が目的ならbind.pを明示する。全Planの要求が本来の問いなら、
+この変更範囲での反証は正しい結果である。成功させるためだけにbindを追加したり、
+不適合PlanをArchMapから削除したりしない。要求の対象域や変更範囲を見直す場合は、
+理由を明示した別の問いとして元の反証と分けて検証する。
+
 完全なmapが未決でも確認済みOperationを合成する例は
 [未決のmapと確認済みOperation](assets/partial-operation.md)を参照する。
 生成されたoutput、有限U上の作用、名前値保存、Listの順序保存を分けて確認できる。
