@@ -1,0 +1,11 @@
+{
+  "scope": "Kept/Dropped/Deferredをoffset=1,limit=2,width=4,displayed=Trueで読む方向値",
+  "sources": ["Kept", "Dropped", "Deferred"],
+  "laws": ["directions"],
+  "q": {"Kept": "TT", "Dropped": "TT", "Deferred": "TT"},
+  "v": {
+    "Kept": {"directions": "TT"},
+    "Dropped": {"directions": "TT"},
+    "Deferred": {"directions": "TT"}
+  }
+}
