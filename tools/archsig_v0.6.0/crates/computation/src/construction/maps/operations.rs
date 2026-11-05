@@ -771,11 +771,11 @@ mod tests {
     fn refuted_correspondence_has_no_operation_or_added_stop_checkpoint() {
         let map =
             include_str!("../../../../../tests/fixtures/configuration-operation.archmap.json");
-        let old = r#""id":"p-free","subject":"p","field":"Reservations.State.free","value":"2""#;
+        let old = r#""id":"m-states","subject":"m","field":"Reservations.Migration.states","value":[[["v","p"],["v","r"]],[["v","q"],["v","s"]]]"#;
         assert!(map.contains(old));
         let map = map.replace(
             old,
-            r#""id":"p-free","subject":"p","field":"Reservations.State.free","value":"3""#,
+            r#""id":"m-states","subject":"m","field":"Reservations.Migration.states","value":[[["v","p"],["v","s"]],[["v","q"],["v","r"]]]"#,
         );
         let inputs = inputs_with_map(map.as_bytes());
         let result = correspondence_retained(
