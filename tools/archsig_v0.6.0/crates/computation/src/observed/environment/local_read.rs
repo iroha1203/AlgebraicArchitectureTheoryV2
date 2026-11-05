@@ -5,6 +5,18 @@ use crate::observed::{build_result::Builder, change_result, local_result};
 use archsig_common::canonical::Json;
 use archsig_input::law::model::{Declaration, Signature};
 
+// 完了localの構文専用memoだけを退役する。共有View bodyは別宣言spanに属する。
+impl Environment<'_> {
+    pub(in crate::observed) fn retire_local_memos(&self, declaration: &Declaration) {
+        let program = self.indexes.inputs.law().program();
+        let span = declaration.span;
+        self.results.scoped_values.borrow_mut().retain(|id, _| {
+            let expression = program.nodes[*id].span;
+            !(span.0 <= expression.0 && expression.1 <= span.1)
+        });
+    }
+}
+
 pub(in crate::observed) struct Context {
     pub locals: Vec<Json>,
     pub carrier: Vec<Json>,

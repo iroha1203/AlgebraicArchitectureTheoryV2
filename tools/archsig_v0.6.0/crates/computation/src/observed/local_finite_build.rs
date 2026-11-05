@@ -232,7 +232,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
                     .ok_or_else(|| unsupported("明示localの自由状態が不適合"))?;
                 states.push(state);
             }
-            for declaration in &locals {
+            for (local_index, declaration) in locals.iter().enumerate() {
                 let contexts = if model.affine_equations {
                     super::super::environment::local_read::materialize_with_free(
                         &fixed, &mut b, declaration, request, &expressions, &states,
@@ -263,7 +263,14 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
                     patches.push(support.clone());
                     local_instances.push(geometry::Local { support, instances: explicit.locals, arguments: explicit.arguments });
                 }
+                if local_index + 1 < locals.len() {
+                    for state in &states {
+                        c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
+                        state.retire_local_memos(declaration);
+                    }
+                }
             }
+            drop(states);
             let adequate = if let Some(info) = &information { info.adequate(&patches, &model.law_supports, c)? } else {
                 model.covered_by(&patches, c)?
                     && model.slots.iter().all(|slot| patches.iter().any(|patch| patch.visible.contains(slot)))

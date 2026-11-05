@@ -1852,3 +1852,52 @@ fn completed_leaf_omits_decoded_payload_but_probe_retains_it() {
             .is_empty()
     );
 }
+
+#[test]
+fn completed_local_retires_only_its_private_ast_memos() {
+    let inputs = fixture::with_body(
+        fixture::MAP,
+        "view shared(c:Part):Fp(2)=c.quantity; local first(c:Part) reads shared(c); local second(c:Part) reads shared(c);",
+    );
+    let env = Environment::new(&inputs, &quiet()).unwrap();
+    let declarations = inputs.law().declarations();
+    let first = &declarations["Selected.first"];
+    let second = &declarations["Selected.second"];
+    let read = |d: &archsig_input::law::model::Declaration| match &d.signature {
+        Signature::Local { reads, .. } => reads[0],
+        _ => panic!(),
+    };
+    let variables = BTreeMap::from([("c".into(), source(root()))]);
+    let evaluate = |id| {
+        env.scoped_ast(id, &variables, &Scope::default(), "Selected")
+            .unwrap()
+    };
+    let before = evaluate(read(first));
+    let other = evaluate(read(second));
+    let Signature::View { body: helper, .. } = &declarations["Selected.shared"].signature else {
+        panic!()
+    };
+    assert!(
+        env.results
+            .scoped_values
+            .borrow()
+            .contains_key(&read(first))
+    );
+    assert!(env.results.scoped_values.borrow().contains_key(helper));
+    env.retire_local_memos(first);
+    assert!(
+        !env.results
+            .scoped_values
+            .borrow()
+            .contains_key(&read(first))
+    );
+    assert!(
+        env.results
+            .scoped_values
+            .borrow()
+            .contains_key(&read(second))
+    );
+    assert!(env.results.scoped_values.borrow().contains_key(helper));
+    assert!(before == other);
+    assert!(evaluate(read(second)) == other);
+}
