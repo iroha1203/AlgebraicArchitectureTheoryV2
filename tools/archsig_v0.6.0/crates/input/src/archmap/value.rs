@@ -687,6 +687,77 @@ impl<E: InputError> Reader<'_, '_, E> {
     }
 }
 
+// Typed JSON is already valid UTF-8 with unique, canonical-order object keys.
+// Build the parser's value tree directly; primitive typing stays in Reader.
+fn assignment_text<E: InputError>(text: &str, control: &Control) -> Result<String, E> {
+    let point = Checkpoint::Completion;
+    E::checkpoint(control, point)?;
+    let mut copied = String::new();
+    let mut start = 0;
+    for (count, (offset, _)) in text.char_indices().enumerate() {
+        if count != 0 && count % 256 == 0 {
+            E::checkpoint(control, point)?;
+            copied.push_str(&text[start..offset]);
+            E::checkpoint(control, point)?;
+            start = offset;
+        }
+    }
+    E::checkpoint(control, point)?;
+    copied.push_str(&text[start..]);
+    E::finish(Ok(copied), control, point)
+}
+fn assignment_node<E: InputError>(value: &Json, control: &Control) -> Result<JNode, E> {
+    let point = Checkpoint::Completion;
+    E::checkpoint(control, point)?;
+    let result = stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
+        let value = match value {
+            Json::Bool(value) => JValue::Bool(*value),
+            Json::Nat(value) => JValue::Num(value.to_string()),
+            Json::Str(value) => JValue::Str(assignment_text::<E>(value, control)?),
+            Json::Arr(values) => {
+                let mut nodes = Vec::new();
+                for value in values {
+                    nodes.push(assignment_node::<E>(value, control)?);
+                }
+                JValue::Arr(nodes)
+            }
+            Json::Obj(values) => {
+                let mut nodes = Vec::new();
+                for (name, value) in values {
+                    let name = assignment_text::<E>(name, control)?;
+                    nodes.push((name, assignment_node::<E>(value, control)?));
+                }
+                JValue::Obj(nodes)
+            }
+            Json::NodeReferences(indices) => {
+                let mut nodes = Vec::new();
+                for index in indices {
+                    E::checkpoint(control, point)?;
+                    let name = assignment_text::<E>("node", control)?;
+                    let id = assignment_text::<E>(&format!("n{index}"), control)?;
+                    let reference = E::finish(
+                        Ok(JNode {
+                            value: JValue::Str(id),
+                        }),
+                        control,
+                        point,
+                    )?;
+                    nodes.push(E::finish(
+                        Ok(JNode {
+                            value: JValue::Obj(vec![(name, reference)]),
+                        }),
+                        control,
+                        point,
+                    )?);
+                }
+                JValue::Arr(nodes)
+            }
+        };
+        Ok(JNode { value })
+    });
+    E::finish(result, control, point)
+}
+
 /// 内部の補完値も元fieldのencoding・型・登録参照で再検査する。
 /// 原始表やAtomを更新せず、補完制約の値として返す。
 pub fn check_assignment<E: InputError>(
@@ -697,12 +768,7 @@ pub fn check_assignment<E: InputError>(
     namespace: &str,
     control: &Control,
 ) -> Result<Value, E> {
-    let encoded = value.canonical_controlled::<E>(control, Checkpoint::Completion)?;
-    let node = archsig_common::json::parse_inner::<E>(
-        encoded.as_bytes(),
-        control,
-        Checkpoint::Completion,
-    )?;
+    let node = assignment_node::<E>(value, control)?;
     Reader::<E> {
         control: control.clone(),
         error: std::marker::PhantomData,
@@ -856,3 +922,6 @@ fn check_snapshots_inner<E: InputError>(
     }
     Ok(out)
 }
+
+#[cfg(test)]
+mod assignment_bridge_tests;
