@@ -70,7 +70,8 @@ impl FiniteParameterRealizations {
 }
 fn evaluated_objects(
     inputs: &CheckedInputs,
-    selections: &[Selection],
+    sources: &Arc<InputSources>,
+    selections: &[Arc<Selection>],
     values: &[(Fact, Scalar)],
     e: &Environment<'_>,
     c: &Control,
@@ -79,7 +80,7 @@ fn evaluated_objects(
     for selection in selections {
         tick(c)?;
         let mut object = ObjectLawInstances {
-            sources: inputs.sources().clone(),
+            sources: sources.clone(),
             selection: selection.clone(),
             valuation: Some(values.to_vec()),
             entries: vec![],
@@ -93,12 +94,13 @@ fn evaluated_objects(
 fn populate_realizations(
     inputs: &CheckedInputs,
     result: &mut FiniteParameterRealizations,
-    selections: &[Selection],
+    selections: &[Arc<Selection>],
     c: &Control,
 ) -> Result<(), ValidationFailure> {
     let template = Environment::new(inputs, c)?;
+    let sources = Arc::new(inputs.sources().clone());
     let mut positions: BTreeSet<Fact> = BTreeSet::new();
-    loop {
+    let stable_rows = loop {
         tick(c)?;
         loop {
             let mut expanded = positions.clone();
@@ -141,6 +143,7 @@ fn populate_realizations(
         };
         let mut discovered = positions.clone();
         let mut admissible = vec![];
+        let mut rows = vec![];
         let mut failure = None;
         for candidate in candidates {
             c.checkpoint(Checkpoint::FiniteIteration)?;
@@ -152,7 +155,7 @@ fn populate_realizations(
                 .collect();
             let mut e = Environment::primitive_dependency_probe(inputs, &values, c)?;
             *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
-            let mut evaluated = evaluated_objects(inputs, selections, &values, &e, c);
+            let mut evaluated = evaluated_objects(inputs, &sources, selections, &values, &e, c);
             if result.law_dependencies {
                 if let Ok(objects) = &evaluated {
                     if let Err(cause) =
@@ -171,7 +174,10 @@ fn populate_realizations(
             // 依存発見passの未固定値で、候補やparameter行を枝刈りしない。
             if Environment::try_primitive_valuation(inputs, &values, c)?.is_some() {
                 match evaluated {
-                    Ok(_) => admissible.push(candidate),
+                    Ok(objects) => {
+                        admissible.push(candidate);
+                        rows.push(objects);
+                    }
                     Err(cause) if failure.is_none() => failure = Some(cause),
                     Err(_) => {}
                 }
@@ -187,8 +193,10 @@ fn populate_realizations(
         result.types = types;
         result.domain = admissible;
         result.domain_complete = true;
-        break;
-    }
+        // 依存が閉じ、原始制約を通ったpassの値だけを採用する。
+        // 拡大passや途中停止のrowsは局所変数のまま破棄する。
+        break rows;
+    };
     let mut observed = vec![];
     let mut all_known = true;
     for p in &result.positions {
@@ -221,16 +229,8 @@ fn populate_realizations(
             }
         }
     }
-    for (point, candidate) in result.domain.iter().enumerate() {
+    for (point, objects) in stable_rows.into_iter().enumerate() {
         c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
-        let values: Vec<_> = result
-            .positions
-            .iter()
-            .cloned()
-            .zip(candidate.iter().cloned())
-            .collect();
-        let e = Environment::with_primitive_valuation(inputs, &values, c)?;
-        let objects = evaluated_objects(inputs, selections, &values, &e, c)?;
         result.rows.push(ParameterRealization { point, objects });
         c.checkpoint(Checkpoint::FiniteLawRequired)?;
     }
@@ -268,7 +268,9 @@ fn compute(
         .map_err(|cause| fail(super::super::failure(cause)))?;
     let mut selections = vec![];
     for object in 0..readings.objects().len() {
-        selections.push(Selection::compute(inputs, readings, object, c).map_err(fail)?);
+        selections.push(Arc::new(
+            Selection::compute(inputs, readings, object, c).map_err(fail)?,
+        ));
     }
     let mut result = FiniteParameterRealizations {
         sources: inputs.sources().clone(),

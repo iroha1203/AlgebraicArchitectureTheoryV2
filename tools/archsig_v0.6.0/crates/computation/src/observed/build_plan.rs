@@ -34,6 +34,7 @@ pub(super) struct Plan {
     pub laws: Option<Arc<Table>>,
     pub polynomial: Option<Arc<Layout>>,
     pub finite: Option<Arc<Layout>>,
+    pub finite_boundary: Option<super::finite_law_diagram::OutsideFinite>,
     pub equations: Option<NodeRef>,
     pub views: Option<Views>,
     pub predicates: Vec<Predicate>,
@@ -83,6 +84,7 @@ pub(super) fn prepare_architecture(
     let mut laws = None;
     let mut polynomial = None;
     let mut finite = None;
+    let mut finite_boundary = None;
     let mut equations = None;
     let mut views = None;
     let mut predicates = vec![];
@@ -127,8 +129,15 @@ pub(super) fn prepare_architecture(
             }
             polynomial = Some(layout);
             if equations.is_none() {
-                finite = observable_layout::retain_finite(env, g, table.clone(), inputs, c)?
-                    .map(Arc::new);
+                match observable_layout::retain_finite(env, g, table.clone(), inputs, c)? {
+                    super::finite_law_diagram::FiniteAttempt::Available(layout) => {
+                        finite = Some(Arc::new(layout))
+                    }
+                    super::finite_law_diagram::FiniteAttempt::OutsideFinite(boundary) => {
+                        finite_boundary = Some(boundary)
+                    }
+                    super::finite_law_diagram::FiniteAttempt::Incomplete => {}
+                }
                 if let Some(layout) = &finite
                     && layout.data.complete
                 {
@@ -182,6 +191,7 @@ pub(super) fn prepare_architecture(
         laws,
         polynomial,
         finite,
+        finite_boundary,
         equations,
         views,
         predicates,

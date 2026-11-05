@@ -44,8 +44,9 @@ pub(in crate::observed) struct InstanceParameters {
 /// 元Law instanceの適用条件と残parameterの完全束縛族。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct ObjectLawInstances {
-    sources: InputSources,
-    selection: Selection,
+    // 候補ごとに変わる束縛と、全候補で同じ元入力・対象選択を分けて保持する。
+    sources: Arc<InputSources>,
+    selection: Arc<Selection>,
     valuation: Option<Vec<(Fact, Scalar)>>,
     entries: Vec<InstanceParameters>,
     complete: bool,
@@ -78,12 +79,12 @@ impl ObjectLawInstances {
         inputs: &CheckedInputs,
         c: &Control,
     ) -> Result<(), ValidationFailure> {
-        if inputs.sources() != &self.sources {
+        if inputs.sources() != self.sources.as_ref() {
             return Err(internal!("Law instance添字族の元三入力が違う").into());
         }
         self.selection.recheck(inputs, c)?;
         let mut expected = ObjectLawInstances {
-            sources: inputs.sources().clone(),
+            sources: Arc::new(inputs.sources().clone()),
             selection: self.selection.clone(),
             valuation: self.valuation.clone(),
             entries: vec![],
@@ -109,7 +110,7 @@ impl ObjectLawInstances {
         c: &Control,
     ) -> Result<(), ValidationFailure> {
         let selected = Selection::compute(inputs, readings, object, c)?;
-        if selected != self.selection {
+        if selected != *self.selection {
             return Err(internal!("Law instance添字族が消費先の対象に由来しない").into());
         }
         self.recheck(inputs, c)
@@ -330,8 +331,8 @@ pub(in crate::observed) fn finite_object_law_instances(
             partial: None,
         })?;
     let mut result = ObjectLawInstances {
-        sources: inputs.sources().clone(),
-        selection,
+        sources: Arc::new(inputs.sources().clone()),
+        selection: Arc::new(selection),
         valuation: None,
         entries: vec![],
         complete: false,

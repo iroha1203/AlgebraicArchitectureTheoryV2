@@ -286,7 +286,7 @@ pub(super) fn build(
         for (i, required) in law_supports.iter().enumerate() {
             if if let Some(info) = information {
                 info.visible_law(support, linear_reads[context_index].as_ref().ok_or(internal!("アフィン読取りがない"))?, required, i, c)?
-            } else { support.contains(required) } { selected.push(i); }
+            } else if let Some(model) = finite_model { model.visible_law(support, i, c)? } else { support.contains(required) } { selected.push(i); }
         }
         let context_laws = selected.iter().map(|i| laws[*i]).collect::<Vec<_>>();
         let holds = selected.iter().all(|i| truth[*i]);
@@ -512,7 +512,7 @@ pub(super) fn build(
         patch_indices
             .iter()
             .any(|i| supports[*i].positions.contains(x))
-    }) && if let Some(info) = information { info.adequate(patches, law_supports, c)? } else { law_supports.iter().all(|law| patches.iter().any(|patch| patch.contains(law))) };
+    }) && if let Some(info) = information { info.adequate(patches, law_supports, c)? } else if let Some(model) = finite_model { model.covered_by(patches, c)? } else { law_supports.iter().all(|law| patches.iter().any(|patch| patch.contains(law))) };
     if !adequate {
         return Err(internal!("暗黙支持coverが全体を被覆しない").into());
     }

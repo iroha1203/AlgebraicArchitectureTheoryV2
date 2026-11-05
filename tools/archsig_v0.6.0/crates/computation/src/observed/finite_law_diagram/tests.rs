@@ -282,7 +282,7 @@ fn empty_law_keeps_unit_assignment_domain_and_empty_required_generators() {
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
 #[test]
-fn diagram_recheck_rejects_plan_values_generators_scope_provenance_and_consumer_changes() {
+fn diagram_consumer_recheck_rejects_input_architecture_object_and_node_changes() {
     let e = example(false, BODY);
     let mut g = graph(&e);
     let a = architecture(&g, "a");
@@ -315,51 +315,6 @@ fn diagram_recheck_rejects_plan_values_generators_scope_provenance_and_consumer_
     assert!(
         source
             .recheck(other.prepared.inputs(), &a, 0, &quiet())
-            .is_err()
-    );
-    let mut changed = (*source).clone();
-    changed.parts.swap(0, 1);
-    assert!(
-        changed
-            .recheck(e.prepared.inputs(), &a, 0, &quiet())
-            .is_err()
-    );
-    let mut changed = (*source).clone();
-    changed.support.clear();
-    assert!(
-        changed
-            .recheck(e.prepared.inputs(), &a, 0, &quiet())
-            .is_err()
-    );
-    let mut changed = (*source).clone();
-    changed.scope.assignments = false;
-    assert!(
-        changed
-            .recheck(e.prepared.inputs(), &a, 0, &quiet())
-            .is_err()
-    );
-    let mut changed = (*source).clone();
-    changed.outputs.nu.reverse();
-    assert!(
-        changed
-            .recheck(e.prepared.inputs(), &a, 0, &quiet())
-            .is_err()
-    );
-    let mut changed = (*source).clone();
-    changed.outputs.points.reverse();
-    assert!(
-        changed
-            .recheck(e.prepared.inputs(), &a, 0, &quiet())
-            .is_err()
-    );
-    let mut changed = (*source).clone();
-    let index = d.required.0 - source.base;
-    if let Part::Ideal { generators, .. } = &mut changed.parts[index] {
-        generators.push(d.nu[0]);
-    }
-    assert!(
-        changed
-            .recheck(e.prepared.inputs(), &a, 0, &quiet())
             .is_err()
     );
     for change in 0..5 {
@@ -1147,7 +1102,7 @@ fn original_source_rows_survive_missing_observation_and_preserve_unconditional_o
 }
 
 #[test]
-fn full_law_rows_reject_original_column_bindings_role_expression_and_output_tampering() {
+fn full_law_rows_keep_checked_bindings_roles_and_expression_locations() {
     let e = example(
         false,
         "law required grid(c:Part,n:Fp(2),b:Bool) when b:c.quantity=n;",
@@ -1157,86 +1112,88 @@ fn full_law_rows_reject_original_column_bindings_role_expression_and_output_tamp
     let d = retain(&mut g, e.prepared.shared_inputs(), a, 0, &quiet())
         .unwrap()
         .unwrap();
-    let source = data(&g, d.ring).source.clone();
-    let first = &d.originals[0];
-    for mode in 0..10 {
-        let mut changed = (*source).clone();
-        match mode {
-            0 => changed.outputs.originals.reverse(),
-            1 => {
-                if let Part::Source { column, .. } = &mut changed.parts[first.body.0 - source.base]
-                {
-                    *column = usize::MAX;
-                }
+    assert_eq!(d.originals.len(), 4);
+    let declaration = &e.prepared.inputs().law().declarations()["Chosen.grid"];
+    let Signature::Law {
+        body, guard, role, ..
+    } = &declaration.signature
+    else {
+        panic!("law")
+    };
+    let mut bindings = std::collections::BTreeSet::new();
+    for original in &d.originals {
+        let Part::Source {
+            column,
+            expression,
+            location,
+            bindings: actual,
+            ..
+        } = data(&g, original.body).part()
+        else {
+            panic!("source")
+        };
+        assert_eq!(*column, original.column);
+        assert_eq!(*expression, *body);
+        assert_eq!(
+            *location,
+            Location::Law {
+                span: e.prepared.inputs().law().exprs()[*body].span
             }
-            2 => {
-                if let Part::Source { expression, .. } =
-                    &mut changed.parts[first.body.0 - source.base]
-                {
-                    *expression = usize::MAX;
-                }
-            }
-            3 => {
-                if let Part::Source { location, .. } =
-                    &mut changed.parts[first.body.0 - source.base]
-                {
-                    *location = Location::Law { span: (0, 1) };
-                }
-            }
-            4 => {
-                if let Part::Source { bindings, .. } =
-                    &mut changed.parts[first.body.0 - source.base]
-                {
-                    bindings.swap(0, 1);
-                }
-            }
-            5 => {
-                if let Part::LawInstance { role, .. } =
-                    &mut changed.parts[first.row.0 - source.base]
-                {
-                    *role = Role::Optional;
-                }
-            }
-            6 => {
-                if let Part::LawInstance { name, .. } =
-                    &mut changed.parts[first.row.0 - source.base]
-                {
-                    *name = "Chosen.other".into();
-                }
-            }
-            7 => {
-                if let Part::LawInstance { body, guard, .. } =
-                    &mut changed.parts[first.row.0 - source.base]
-                {
-                    *body = guard.unwrap();
-                }
-            }
-            9 => {
-                if let Part::LawInstance { original, .. } =
-                    &mut changed.parts[first.row.0 - source.base]
-                {
-                    *original = usize::MAX;
-                }
-            }
-            _ => {
-                if let Part::Scalar(Scalar::Fp { value, .. }) =
-                    &mut changed.parts[first.bindings[1].value.0 - source.base]
-                {
-                    *value = if *value == 0.into() {
-                        1.into()
-                    } else {
-                        0.into()
-                    };
-                }
-            }
-        }
-        assert!(
-            changed
-                .recheck(e.prepared.inputs(), &source.architecture, 0, &quiet())
-                .is_err(),
-            "mode {mode}"
         );
+        assert_eq!(actual, &original.bindings);
+        let Part::LawInstance {
+            name,
+            role: actual_role,
+            occurrence,
+            bindings: actual,
+            body: actual_body,
+            guard: actual_guard,
+            ..
+        } = data(&g, original.row).part()
+        else {
+            panic!("instance")
+        };
+        assert_eq!(name, "Chosen.grid");
+        assert_eq!(actual_role, role);
+        assert_eq!(*role, Role::Required);
+        assert_eq!(
+            *occurrence,
+            Location::Law {
+                span: declaration.span
+            }
+        );
+        assert_eq!(actual, &original.bindings);
+        assert_eq!(*actual_body, original.body);
+        assert_eq!(*actual_guard, original.guard);
+        let Part::Source { expression, .. } = data(&g, original.guard.unwrap()).part() else {
+            panic!("guard")
+        };
+        assert_eq!(Some(*expression), *guard);
+        let subject = match g.scalar(original.bindings[0].value).unwrap() {
+            Scalar::Subject { subject, .. } => subject.clone(),
+            _ => panic!("subject"),
+        };
+        let n = match g.scalar(original.bindings[1].value).unwrap() {
+            Scalar::Fp { value, .. } => value.to_string(),
+            _ => panic!("Fp"),
+        };
+        let b = match g.scalar(original.bindings[2].value).unwrap() {
+            Scalar::Bool(value) => *value,
+            _ => panic!("Bool"),
+        };
+        bindings.insert((subject, n, b));
     }
+    let expected = ["p"]
+        .into_iter()
+        .flat_map(|subject| {
+            ["0", "1"].into_iter().flat_map(move |n| {
+                [false, true]
+                    .into_iter()
+                    .map(move |b| (subject.to_string(), n.to_string(), b))
+            })
+        })
+        .collect();
+    assert_eq!(bindings, expected);
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
 
@@ -1521,7 +1478,7 @@ fn general_boolean_conditions_keep_the_body_and_fixed_unit_equality_truth() {
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
 #[test]
-fn operand_plans_reject_free_parameter_substitution_type_projection_and_output_changes() {
+fn operand_nodes_reject_changed_arguments_type_scope_support_and_source_position() {
     let definition = DEFINITION.replace(r#"["Fp","2"]"#, r#"["Tuple",["Fp","2"],"Bool"]"#);
     let map = MAP
         .replace(r#""value":"0""#, r#""value":["0",true]"#)
@@ -1552,41 +1509,28 @@ fn operand_plans_reject_free_parameter_substitution_type_projection_and_output_c
     };
     let open = operands[0].0 - source.base;
     for mode in 0..6 {
-        let mut changed = (*source).clone();
+        let mut nodes = g.nodes.clone();
+        let project_ref = NodeRef(source.base + project);
+        let substitute_ref = NodeRef(source.base + substitute);
+        let open_ref = NodeRef(source.base + open);
         match mode {
-            0 => changed.outputs.operands.reverse(),
-            1 => {
-                if let Part::Transform { position, .. } = &mut changed.parts[project] {
-                    *position = Some(usize::MAX);
-                }
+            0 => {
+                assert!(!nodes[project_ref.0].arguments.is_empty());
+                nodes[project_ref.0].arguments.clear();
             }
+            1 => nodes[project_ref.0].ty = NodeType::Expression(Type::Unit),
             2 => {
-                if let Part::Transform { ty, .. } = &mut changed.parts[project] {
-                    *ty = Type::Unit;
-                }
+                assert!(!nodes[substitute_ref.0].arguments.is_empty());
+                nodes[substitute_ref.0].arguments.clear();
             }
-            3 => {
-                if let Part::Transform { bindings, .. } = &mut changed.parts[substitute] {
-                    bindings.clear();
-                }
-            }
+            3 => nodes[project_ref.0].scope.assignments = !nodes[project_ref.0].scope.assignments,
             4 => {
-                if let Part::Transform { bindings, .. } = &mut changed.parts[substitute] {
-                    bindings[0].name = "other".into();
-                }
+                assert!(!nodes[project_ref.0].support.is_empty());
+                nodes[project_ref.0].support.make_owned().clear();
             }
-            _ => {
-                if let Part::Source { parameters, .. } = &mut changed.parts[open] {
-                    parameters.clear();
-                }
-            }
+            _ => nodes[substitute_ref.0].payload = g.nodes[open_ref.0].payload.clone(),
         }
-        assert!(
-            changed
-                .recheck(e.prepared.inputs(), &source.architecture, 0, &quiet())
-                .is_err(),
-            "mode {mode}"
-        );
+        assert!(replay(&e, &nodes, &g.contexts).is_err(), "node {mode}");
     }
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
@@ -2129,4 +2073,28 @@ fn a_false_finite_guard_does_not_turn_missing_operands_into_observations() {
         }
         replay(&e, &g.nodes, &g.contexts).unwrap();
     }
+}
+
+#[test]
+fn integer_function_keeps_every_ordered_point_with_shared_equal_literals() {
+    let mut parts = vec![];
+    let values = [0, 1, 0, 1].map(num_bigint::BigInt::from);
+    let result = function(&mut parts, 1, NodeRef(0), &values, &[3, 0, 1, 2], &quiet()).unwrap();
+    assert_eq!(parts.len(), 3);
+    let Part::Function { ring, values } = &parts[result.0 - 1] else {
+        panic!("function")
+    };
+    assert_eq!(*ring, NodeRef(0));
+    assert_eq!(values.len(), 4);
+    assert_eq!(values[0], values[2]);
+    assert_eq!(values[1], values[3]);
+    assert_ne!(values[0], values[1]);
+    let actual = values
+        .iter()
+        .map(|r| match &parts[r.0 - 1] {
+            Part::Scalar(Scalar::Z(v)) => v.clone(),
+            _ => panic!("integer literal"),
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(actual, [1, 0, 1, 0].map(num_bigint::BigInt::from));
 }

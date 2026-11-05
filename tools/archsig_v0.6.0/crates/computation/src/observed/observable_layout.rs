@@ -458,20 +458,25 @@ pub(super) fn retain_finite(
     table: Arc<Table>,
     inputs: Arc<CheckedInputs>,
     c: &Control,
-) -> Result<Option<Layout>, ValidationFailure> {
+) -> Result<finite_law_diagram::FiniteAttempt<Layout>, ValidationFailure> {
     tick(c)?;
     table.recheck(env, g, c)?;
     if table.indices.is_empty() {
         // 空族のObservableは空積。未使用のZ^Dをfactorへ追加しない。
-        return retain(env, g, table, c).map(Some);
+        return retain(env, g, table, c).map(finite_law_diagram::FiniteAttempt::Available);
     }
-    let Some(plan) = finite_law_diagram::retain_layout_plan(g, inputs, table.architecture, c)?
-    else {
-        return Ok(None);
+    let plan = match finite_law_diagram::retain_layout_plan(g, inputs, table.architecture, c)? {
+        finite_law_diagram::FiniteAttempt::Available(plan) => plan,
+        finite_law_diagram::FiniteAttempt::OutsideFinite(boundary) => {
+            return Ok(finite_law_diagram::FiniteAttempt::OutsideFinite(boundary));
+        }
+        finite_law_diagram::FiniteAttempt::Incomplete => {
+            return Ok(finite_law_diagram::FiniteAttempt::Incomplete);
+        }
     };
     let data = finite::compute(env, g, &table, &plan, c)?;
     tick(c)?;
-    Ok(Some(Layout {
+    Ok(finite_law_diagram::FiniteAttempt::Available(Layout {
         data,
         table,
         plan: Plan::Finite(plan),

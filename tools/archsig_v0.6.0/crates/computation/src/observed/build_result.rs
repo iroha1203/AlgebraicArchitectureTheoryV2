@@ -11,6 +11,7 @@ use super::{
     result::*,
 };
 use archsig_common::control::{Checkpoint, Control};
+use archsig_common::issue::Location;
 use archsig_common::{canonical::Json, types::Type};
 use std::{collections::BTreeMap, sync::Arc};
 
@@ -268,16 +269,19 @@ fn compute_inner(
     if let Some(layout) = &plan.polynomial {
         reasons.extend(layout.data.reasons.iter().cloned());
     }
+    let mut polynomial_unsupported = false;
     // 多項式表示が明示的に算法非対応で、有限表示も得られない場合を配送する。
     // 未完成の全般を非対応へ置き換えず、元の出現と型を保持する。
     if plan.equations.is_none() && plan.finite.is_none() {
         if let Some(table) = &plan.laws {
             for diagram in table.diagrams()? {
+                polynomial_unsupported |= diagram.unavailable.is_some();
                 for coordinate in &diagram.coordinates {
                     tick(c)?;
                     if coordinate.status != super::object_equation_presentation::EquationPresentationStatus::UnsupportedAlgorithm {
                         continue;
                     }
+                    polynomial_unsupported = true;
                     let original = diagram
                         .originals
                         .iter()
@@ -341,6 +345,70 @@ fn compute_inner(
                 }
             }
         }
+    }
+    // εの欠測だけでは、利用可能な多項式算法を非対応へ変えない。
+    if polynomial_unsupported
+        && !reasons.iter().any(|reason| {
+            matches!(
+                reason.kind,
+                ReasonKind::UnsupportedAlgorithm {
+                    question: super::request::QuestionKind::Build,
+                    ..
+                }
+            )
+        })
+        && let Some(boundary) = &plan.finite_boundary
+    {
+        boundary.recheck(g, plan.architecture.reference, c)?;
+        let position = boundary.position();
+        let field_name = position
+            .field
+            .as_ref()
+            .ok_or(internal!("非有限域の元fieldがない"))?;
+        let field = env.indexes.field(
+            &env.state,
+            &position.snapshot,
+            &position.subject,
+            field_name,
+        )?;
+        if &field.ty != boundary.ty() {
+            return Err(internal!("非有限域の元型が違う").into());
+        }
+        let location = match &field.slot {
+            archsig_input::archmap::Slot::Known { pointer, .. } => Location::ArchMap {
+                pointer: pointer.clone(),
+                span: None,
+            },
+            archsig_input::archmap::Slot::Missing => {
+                let subject = env.indexes.subject(&position.snapshot, &position.subject)?;
+                let declaration =
+                    &env.indexes.inputs.definitions().declarations()[subject.ty.as_str()];
+                let (parameters, fields) = declaration
+                    .signature
+                    .record_fields()
+                    .ok_or(internal!("非有限域の元recordがない"))?;
+                let mut location = None;
+                for declared in parameters.iter().chain(fields) {
+                    tick(c)?;
+                    if format!("{}.{}", subject.ty, declared.name) == *field_name {
+                        location = Some(declared.location.clone());
+                        break;
+                    }
+                }
+                location.ok_or(internal!("非有限域の元定義fieldがない"))?
+            }
+        };
+        reasons.push(Reason {
+            kind: ReasonKind::UnsupportedAlgorithm {
+                question: super::request::QuestionKind::Build,
+                operand_types: vec![boundary.ty().clone()],
+                method: "finite_primitive_domain".into(),
+            },
+            request: request.id.clone(),
+            dependencies: vec![plan.architecture.reference],
+            missing: vec![],
+            location: Some(location),
+        });
     }
     let mut compatibility = vec![];
     let mut evidence = vec![];

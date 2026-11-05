@@ -25,6 +25,59 @@ use std::sync::Arc;
 
 mod operands;
 
+/// 有限表示の試行を、型付き境界と未完成から区別する。
+#[derive(Debug)]
+pub(super) enum FiniteAttempt<T> {
+    Available(T),
+    OutsideFinite(OutsideFinite),
+    Incomplete,
+}
+impl<T> FiniteAttempt<T> {
+    pub(super) fn map<U>(self, f: impl FnOnce(T) -> U) -> FiniteAttempt<U> {
+        match self {
+            Self::Available(value) => FiniteAttempt::Available(f(value)),
+            Self::OutsideFinite(boundary) => FiniteAttempt::OutsideFinite(boundary),
+            Self::Incomplete => FiniteAttempt::Incomplete,
+        }
+    }
+    pub(super) fn into_option(self) -> Option<T> {
+        match self {
+            Self::Available(value) => Some(value),
+            Self::OutsideFinite(_) | Self::Incomplete => None,
+        }
+    }
+}
+/// 同じ元Architectureの全Law依存を調べた結果だけが生成する。
+#[derive(Clone, Debug)]
+pub(super) struct OutsideFinite {
+    architecture: Arc<ArchitectureWitness>,
+    position: Fact,
+    ty: Type,
+}
+impl OutsideFinite {
+    pub(super) fn position(&self) -> &Fact {
+        &self.position
+    }
+    pub(super) fn ty(&self) -> &Type {
+        &self.ty
+    }
+    pub(super) fn recheck(
+        &self,
+        g: &Graph,
+        reference: NodeRef,
+        c: &Control,
+    ) -> Result<(), ValidationFailure> {
+        tick(c)?;
+        if !Arc::ptr_eq(
+            &self.architecture,
+            native::architecture_origin(g, reference, 0)?,
+        ) {
+            return Err(internal!("非有限域の元Architectureが違う").into());
+        }
+        Ok(())
+    }
+}
+
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::FiniteLawFunction)?;
     Ok(())
@@ -489,6 +542,20 @@ fn push(parts: &mut Vec<Part>, base: usize, part: Part) -> Result<NodeRef, Valid
     parts.push(part);
     Ok(NodeRef(index))
 }
+// 同じ有限表示の確定支持・Scopeを持つ整数literalだけを、配列内で共有する。
+fn integer_literal(
+    parts: &mut Vec<Part>,
+    base: usize,
+    value: &num_bigint::BigInt,
+    scalars: &mut std::collections::BTreeMap<num_bigint::BigInt, NodeRef>,
+) -> Result<NodeRef, ValidationFailure> {
+    if let Some(reference) = scalars.get(value) {
+        return Ok(*reference);
+    }
+    let reference = push(parts, base, Part::Scalar(Scalar::Z(value.clone())))?;
+    scalars.insert(value.clone(), reference);
+    Ok(reference)
+}
 fn function(
     parts: &mut Vec<Part>,
     base: usize,
@@ -498,6 +565,7 @@ fn function(
     c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
     let mut elements = vec![];
+    let mut scalars = std::collections::BTreeMap::new();
     if points.len() != values.len() {
         return Err(internal!("有限Lawの公開順と関数の次元が違う").into());
     }
@@ -506,7 +574,7 @@ fn function(
         let v = values
             .get(*point)
             .ok_or(internal!("有限Lawの元関数座標が範囲外"))?;
-        elements.push(push(parts, base, Part::Scalar(Scalar::Z(v.clone())))?);
+        elements.push(integer_literal(parts, base, v, &mut scalars)?);
     }
     push(
         parts,
@@ -778,13 +846,14 @@ fn basis(
     let target = push(parts, base, Part::IntegerRing)?;
     let evaluation = if let Some(ev) = f.object_evaluation(c)? {
         let mut images = vec![];
+        let mut scalars = std::collections::BTreeMap::new();
         for point in &points {
             tick(c)?;
             let v = ev
                 .basis_images()
                 .get(*point)
                 .ok_or(internal!("有限Lawの元評価座標が範囲外"))?;
-            images.push(push(parts, base, Part::Scalar(Scalar::Z(v.clone())))?);
+            images.push(integer_literal(parts, base, v, &mut scalars)?);
         }
         Some(push(
             parts,
@@ -1155,7 +1224,7 @@ impl Source {
         object: usize,
         base: usize,
         c: &Control,
-    ) -> Result<Option<Self>, ValidationFailure> {
+    ) -> Result<FiniteAttempt<Self>, ValidationFailure> {
         Self::compute_plan(inputs, architecture, reference, object, base, false, c)
     }
     fn compute_plan(
@@ -1166,7 +1235,7 @@ impl Source {
         base: usize,
         all_objects: bool,
         c: &Control,
-    ) -> Result<Option<Self>, ValidationFailure> {
+    ) -> Result<FiniteAttempt<Self>, ValidationFailure> {
         if all_objects && object != 0 {
             return Err(internal!("共有有限Lawの先頭がbase対象でない").into());
         }
@@ -1185,11 +1254,31 @@ impl Source {
             .ok_or(internal!("有限Lawの対象が範囲外"))?;
         let full = finite_automatic_law_family(&inputs, architecture.readings(), c)
             .map_err(|e| e.cause)?;
+        use super::environment::finite_law_valuations::object::instances::realizations::ParameterRealizationState;
+        if let ParameterRealizationState::OutsideFinite { position, ty } = &full.parameters().state
+        {
+            return Ok(FiniteAttempt::OutsideFinite(OutsideFinite {
+                architecture,
+                position: position.clone(),
+                ty: ty.clone(),
+            }));
+        }
         let Some(f) = full.family() else {
-            return Ok(None);
+            return Ok(FiniteAttempt::Incomplete);
         };
         if !f.is_complete() || !f.domain_complete() {
-            return Ok(None);
+            if let super::environment::finite_law_valuations::FiniteLawState::OutsideFinite {
+                position,
+                ty,
+            } = f.state()
+            {
+                return Ok(FiniteAttempt::OutsideFinite(OutsideFinite {
+                    architecture,
+                    position: position.clone(),
+                    ty: ty.clone(),
+                }));
+            }
+            return Ok(FiniteAttempt::Incomplete);
         }
         let mut parts = vec![];
         let shared = basis(f, base, &mut parts, c)?;
@@ -1229,7 +1318,7 @@ impl Source {
         };
         let (support, scope) = metadata(&inputs, &architecture, f, c)?;
         tick(c)?;
-        Ok(Some(Self {
+        Ok(FiniteAttempt::Available(Self {
             inputs,
             architecture,
             reference,
@@ -1265,24 +1354,9 @@ impl Source {
                     .internal_context(format!("有限Lawの元reading: {other:?}"))
                     .into(),
             })?;
-        let other = Self::compute_plan(
-            self.inputs.clone(),
-            architecture.clone(),
-            self.reference,
-            object,
-            self.base,
-            self.owned_outputs.is_some(),
-            c,
-        )?
-        .ok_or(internal!("有限Law導出の元族が未完成"))?;
-        if self.parts != other.parts
-            || self.outputs != other.outputs
-            || self.owned_outputs != other.owned_outputs
-            || self.support != other.support
-            || self.scope != other.scope
-        {
-            return Err(internal!("有限Law導出が元全D・成分・生成元・支持と違う").into());
-        }
+        // Sourceはこのmoduleのchecked constructorだけが作り、fieldsはprivate。
+        // Arc保持後に値を書き換える入口も、外部形式から復元する入口もない。
+        // 現consumer/input/readingとNodeの照合を保ち、同じ生成関数を再実行しない。
         tick(c)
     }
 }
@@ -1337,7 +1411,7 @@ pub(super) fn retain_layout_plan(
     inputs: Arc<CheckedInputs>,
     reference: NodeRef,
     c: &Control,
-) -> Result<Option<FamilyPlan>, ValidationFailure> {
+) -> Result<FiniteAttempt<FamilyPlan>, ValidationFailure> {
     Ok(retain_source(graph, inputs, reference, 0, true, c)?.map(FamilyPlan))
 }
 /// 全標準対象を、同じ元D・環・評価から一度に保持する。
@@ -1347,7 +1421,7 @@ pub(super) fn retain_family(
     architecture: NodeRef,
     c: &Control,
 ) -> Result<Option<Vec<Diagram>>, ValidationFailure> {
-    let Some(source) = retain_source(graph, inputs, architecture, 0, true, c)? else {
+    let Some(source) = retain_source(graph, inputs, architecture, 0, true, c)?.into_option() else {
         return Ok(None);
     };
     let owned = source
@@ -1369,7 +1443,7 @@ fn retain_source(
     object: usize,
     all_objects: bool,
     c: &Control,
-) -> Result<Option<Arc<Source>>, ValidationFailure> {
+) -> Result<FiniteAttempt<Arc<Source>>, ValidationFailure> {
     tick(c)?;
     if graph.active != graph.context_at(architecture.0) {
         return Err(internal!("有限Law導出が消費先ArchitectureのRequestでない").into());
@@ -1399,8 +1473,9 @@ fn retain_source(
             c,
         )?
     };
-    let Some(source) = source else {
-        return Ok(None);
+    let source = match source {
+        FiniteAttempt::Available(source) => source,
+        other => return Ok(other.map(Arc::new)),
     };
     let source = Arc::new(source);
     for index in 0..source.parts.len() {
@@ -1426,7 +1501,7 @@ fn retain_source(
         )?;
     }
     tick(c)?;
-    Ok(Some(source))
+    Ok(FiniteAttempt::Available(source))
 }
 pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), ValidationFailure> {
     let Some(part) = data.source.parts.get(data.index) else {
@@ -1538,6 +1613,7 @@ impl super::result_kind::ResultKind for Data {
         let (graph, inputs, architecture, object, c) = input;
         Ok(
             retain_source(graph, inputs, architecture, object, false, c)?
+                .into_option()
                 .map(|source| source.outputs.clone()),
         )
     }

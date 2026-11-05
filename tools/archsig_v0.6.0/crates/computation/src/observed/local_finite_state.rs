@@ -211,19 +211,17 @@ pub(super) fn build(
     reading: Option<&integer::linear::Reading>,
     c: &Control,
 ) -> Result<State, ValidationFailure> {
-    let indexes = model
-        .slots
-        .iter()
-        .enumerate()
-        .filter(|(_, s)| {
-            if reading.is_some() {
-                support.positions.contains(s)
-            } else {
-                support.visible.contains(s)
-            }
-        })
-        .map(|(i, _)| i)
-        .collect::<Vec<_>>();
+    let indexes = if reading.is_some() {
+        model
+            .slots
+            .iter()
+            .enumerate()
+            .filter(|(_, slot)| support.positions.contains(slot))
+            .map(|(i, _)| i)
+            .collect::<Vec<_>>()
+    } else {
+        model.visible_indexes(support)
+    };
     let free = indexes
         .iter()
         .map(|i| model.slots[*i].clone())
