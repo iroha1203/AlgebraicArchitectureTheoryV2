@@ -390,6 +390,55 @@ subject と他の Atom は保持する。data 宣言の必須欄は上の文法�
 `missing_observation` なら不足 slot を読み足し、`refuted` なら反例を要求と照合する。
 `visibility_insufficient` では必要な公開情報を見直し、`unsupported_algorithm` では未決の理由を保つ。
 
+### 開発上の問いから計算を選ぶ
+
+必要な判断に合わせて問いを選ぶ。全機能を毎回実行する必要はない。
+
+| 判断したいこと | 選ぶ計算と読む条件 |
+| --- | --- |
+| 許す変更の範囲で要求を満たす案があるか | `solve`。`domain` は全候補、`solutions` は要求を満たす部分集合 |
+| 要求から修復案を一つに決められるか | `repair`。解の存在と元の change parameter 割当ての一意性を分ける。同じ更新後状態になる別割当ても別解 |
+| 候補の違いをまとめても要求の評価を保てるか | `quotient`。view、対象集合、保存する Law を指定し、同じ view 値の候補間で型付き Law 評価族が一定かを調べる |
+| 局所で読める情報を全体へ貼り合わせられるか | `build` → `localize` → `diagnose`。必要な change、degree、方程式側 `equation` / 許された変更の意味状態側 `semantic` を選ぶ |
+| 変更前後の値や二つの経路が同じか | `compare`。値は `value`、名前付き語は `word`、全域作用は `action`、宣言した同効果関係は `relation`。診断の保存は `diagnostics` と実 Operation の `along` を使う |
+
+以下は上の座標の三入力をそのまま使う架空の設計例。
+`Sum.totalValue` は合計、`Sum.firstValue` は x を読む view。
+`Sum.pinned` は「両座標を零にする」という追加の optional Law で、修復時に明示選択する。
+実際の開発では、変更候補域と追加条件を要求から決める。一意な結果を得るためだけに条件を足さない。
+
+```sh
+"$cli" run --atom-definition "$skill/assets/local.atoms.json" --law "$skill/assets/local.law" --archmap "$skill/assets/local.archmap.json" \
+  --ask 's=solve(Sum.balanced,using=Sum.move,on=@v/state)' \
+  --ask 'r=repair(Sum.balanced,using=Sum.move,on=@v/state)' \
+  --ask 'one=repair(Sum.pinned,using=Sum.move,on=@v/state)' \
+  --ask 'q=quotient(Sum.totalValue,on=$s.domain,law=Sum.balanced,bind.s=@v/state)' \
+  --ask 'bad=quotient(Sum.firstValue,on=$s.domain,law=Sum.balanced,bind.s=@v/state)' \
+  --ask 'sol=quotient(Sum.firstValue,on=$s.solutions,law=Sum.balanced,bind.s=@v/state)' \
+  --ask 'b=build(Tuple,on=@v/state)' --ask 'l=localize($b.object,using=Tuple.move)' \
+  --ask 'd=diagnose($l.system,degree=1,side=equation)' \
+  --ask 'before=evaluate(Sum.totalValue,bind.s=@v/state)' \
+  --ask 'after=evaluate(Sum.totalValue,on=$one.object,bind.s=@v/state)' \
+  --ask 'equal=compare($before.value,to=$after.value,kind=value)'
+```
+
+`r/bad` が反証、他は成立し、全体の終了は1。
+`s` の解は全整数の `(a,-a)`。`r` は存在が成立しても非一意なので `repair/object` を返さない。
+`one` は元割当て `(0,0)` が一意で、元の Law への再代入後の `object` を返す。
+`before/after` の合計はともに0なので `equal` は成立するが、各座標は `(1,-1)` から `(0,0)` へ変わる。
+これは合計値の一致であり、全状態・経路・診断の保存はそれぞれ対応する比較で問う。
+
+`q` は全候補上で合計から `balanced` の左右値 `(x+y,0)` を保てる。
+`bad` は x が同じでも `(0,0)` と `(0,1)` の Law 評価が異なる反例対を返す。
+`sol` は解集合上だけを読むので左右値が常に `(0,0)` となり成立する。この結果を全候補へ広げない。
+Law の成否 Bool だけの一致と型付き評価族の保存を区別する。
+ここで使う `quotient` は三入力と DSL から評価族を計算する。
+後述の `law-fibers` は利用者が与えた有限 token 表を計算する補助であり、両者の入力を区別する。
+
+`d` はこの一つの局所読取りを持つ系の方程式側 degree=1 を診断し、零の群と対象類を返す。
+一般の局所診断では対象・局所読取り・要求に応じた結果を読む。
+算法非対応や欠測は理由付きの未決として扱い、必要なら `needed($問いID)` で内訳を確認する。
+
 ## 計算へ渡し、更新する
 
 バンドルの CLI で入力を検査する。まず同梱例を確認できる。
@@ -401,7 +450,7 @@ subject と他の Atom は保持する。data 宣言の必須欄は上の文法�
   --ask 'c=check(OperationReading.guardedUpdate,bind.branch=@v/rejected)' --ask 'n=needed($c)' --out "$work/run-new"
 ```
 
-出力先は毎回未存在のディレクトリ。実入力では3つのファイルパスも作成した絶対パスへ置き換える。同梱例では `branch` が宣言の parameter、`v` が snapshot、
+保存する場合だけ `--out` を指定し、出力先は毎回未存在のディレクトリ。実入力では3つのファイルパスも作成した絶対パスへ置き換える。同梱例では `branch` が宣言の parameter、`v` が snapshot、
 `rejected` が subject の ID。実入力ではこれらをその宣言と登録 ID に合わせる。
 `@snapshot/subject` の二つの ID と `bind.parameter` を使い、`on` は Architecture の環境指定として分ける。
 この例は出口の値 false と要求成立を別の出力で返す。`check(OperationReading.rejectedReturnsNormally)` は追加仮説を反証する。
@@ -409,13 +458,21 @@ subject と他の Atom は保持する。data 宣言の必須欄は上の文法�
 `needed` の不足 slot は元の subject/field/source に戻って読み、その他の未決理由と分ける。
 CLI が未提供・非対応なら三入力とソース照合を進め、接続は未検証と報告する。
 例示結果を実計算の証拠にしない。
-標準出力は receipt JSON。`result` は呼出し cwd からのパスで、結果が作られなければ省略される。
-保存結果の `answers` を問い ID で対応させ、`status`、`outputs` と依存先の `nodes`、`issues` を読む。
-評価値 false と命題 refuted を区別する。`needed` は欠測 slot と他の未決理由を返す。
+`run` の標準出力は保存の有無によらず `archsig.summary/1` の JSON。
+`answers` を問い ID で対応させ、`status`、`outputs`、`applicability`、`reasons` を読む。
+guard=false の `check` は `status: established` と `applicability: not_applicable` を返す。
+適用外であり、body が要求を満たす証拠として数えない。評価値 false と命題 refuted も区別する。
+たとえば同梱例の `bind.branch=@v/accepted` は guard=false、`@v/rejected` は適用されて成立する。
+要約は表示件数・深さを制限するので、全反例や詳細は `--out` で保存して読む。
+`result` は呼出し cwd からの保存結果へのパスで、保存しない・作成できない場合は省略される。
+保存結果の `answers`、`outputs` と参照先の `nodes`、`issues` を対応させる。
+`check` コマンドの検査状態は stdout の `archsig.receipt/1`、実行失敗の通知は stderr の receipt を読む。
+保存失敗時は計算済み summary が stdout に残ってもプロセスは74で終了するので、両方を確認する。
+`needed` は欠測 slot と他の未決理由を返す。
 終了0は検査成功又は全問い確定・反証なし、1は全問い確定・反証あり、2は未決を含む。
 64は使い方、65は入力、69は版非対応、70/74はinternal/io、130/143は中断。
-終了コードだけで意味を判定せず、receipt と保存結果の理由・位置を確認する。
-実行時間を区切るときは SIGINT/SIGTERM を送り、終了130/143と receipt・保存結果の有無を確認する。
+終了コードだけで意味を判定せず、summary・stderr の receipt と保存結果の理由・位置を確認する。
+実行時間を区切るときは SIGINT/SIGTERM を送り、終了130/143と summary・stderr の receipt・保存結果の有無を確認する。
 中断した初回は未完了として扱う。再実行では元の対象域・owner・接続条件を保ち、新しい出力先を使う。
 再利用は `--reuse OLD_DIRECTORY`。
 再利用先も利用者の保存結果を明示し、旧入力を新しい観測へ読み替えない。

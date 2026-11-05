@@ -2,6 +2,9 @@ law "archsig.law/2" semantics "archsig/0.6.0";
 reading Sum {
   use vocabulary Coordinates version "1" digest "sha256:f866fb391c33d7663fbd195521ea632005c8dc2cb1d039ba038cc4b3fab1659a";
   law required balanced(s: State): s.x + s.y = 0;
+  view totalValue(s: State): Z = s.x + s.y;
+  view firstValue(s: State): Z = s.x;
+  law optional pinned(s: State): s.x = 0 and s.y = 0;
   local total(s: State) reads s.x + s.y;
   change move(s: State, a: Z, b: Z) = s with {x = a, y = b};
 }
