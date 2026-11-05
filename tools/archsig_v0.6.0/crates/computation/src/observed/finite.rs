@@ -728,3 +728,6 @@ fn enumerate_values_maybe(
     enumeration.missing.dedup();
     Ok(Some(enumeration))
 }
+
+#[cfg(test)]
+mod tests;
