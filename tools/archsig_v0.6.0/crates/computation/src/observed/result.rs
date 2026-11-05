@@ -1208,6 +1208,37 @@ impl Payload {
             _ => None,
         }
     }
+    // 保存先が読むEvaluation欄だけを、nativeを借用して描画する。
+    // full wireは独立のまま残し、内部検査のparts/expressionを省かない。
+    fn evaluation_output_fields(
+        &self,
+        include_bindings_and_value: bool,
+    ) -> Option<archsig_common::canonical::JsonObject> {
+        let Self::Evaluation {
+            environment,
+            bindings,
+            value,
+            applicability,
+            ..
+        } = self
+        else {
+            return None;
+        };
+        let mut fields = archsig_common::canonical::JsonObject::from([(
+            "applicability".into(),
+            Json::str(*applicability),
+        )]);
+        if let Some(environment) = environment {
+            fields.insert("environment".into(), environment.wire());
+        }
+        if include_bindings_and_value {
+            fields.insert("bindings".into(), bindings_wire(bindings));
+            if let Some(value) = value {
+                fields.insert("value".into(), value.wire());
+            }
+        }
+        Some(fields)
+    }
     pub(super) fn wire(&self) -> Json {
         match self {
             Self::Construction(value) => value.wire(),
@@ -1601,13 +1632,19 @@ impl Node {
                 Json::Arr(self.support.iter().map(Fact::wire).collect()),
             );
         }
-        self.wire_fields(id, prior, wire)
+        self.wire_fields(id, prior, wire, false)
     }
     // 保存投影だけの入口。native引数はpayloadの既出Ref解決に引き続き使う。
     fn project_wire(&self, id: usize, prior: &[Node]) -> Json {
-        self.wire_fields(id, prior, BTreeMap::new())
+        self.wire_fields(id, prior, BTreeMap::new(), true)
     }
-    fn wire_fields(&self, id: usize, prior: &[Node], mut wire: BTreeMap<String, Json>) -> Json {
+    fn wire_fields(
+        &self,
+        id: usize,
+        prior: &[Node],
+        mut wire: BTreeMap<String, Json>,
+        projected: bool,
+    ) -> Json {
         wire.extend([
             ("id".into(), Json::str(format!("n{id}"))),
             ("type".into(), self.ty.wire()),
@@ -1643,6 +1680,15 @@ impl Node {
                 Payload::Scalar(value) => {
                     super::path_value::wire(value, prior, &self.arguments, &Control::unlimited())
                         .expect("挿入時に検査した値の既出 Ref 表示")
+                }
+                Payload::Evaluation { .. }
+                    if projected && matches!(self.ty, NodeType::Evaluation(_)) =>
+                {
+                    Json::Obj(
+                        payload
+                            .evaluation_output_fields(true)
+                            .expect("Evaluation欄"),
+                    )
                 }
                 other => other.wire(),
             };

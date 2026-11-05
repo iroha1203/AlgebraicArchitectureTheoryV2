@@ -113,6 +113,26 @@ fn saved_projection_keeps_legacy_bytes_for_checked_paths_and_nested_values() {
     )
     .unwrap();
     assert_eq!(result.status(), "complete");
+    let full_before = result.wire().canonical();
+    let full = result.wire();
+    let Json::Obj(full) = &full else { panic!() };
+    let Json::Arr(inspected) = &full["nodes"] else {
+        panic!()
+    };
+    let mut evaluations = 0;
+    for (native, inspected) in result.nodes.iter().zip(inspected) {
+        if matches!(native.payload, Some(Payload::Evaluation { .. })) {
+            evaluations += 1;
+            let Json::Obj(fields) = inspected else {
+                panic!()
+            };
+            let Json::Obj(payload) = &fields["value"] else {
+                panic!()
+            };
+            assert!(payload.contains_key("parts") && payload.contains_key("expression"));
+        }
+    }
+    assert!(evaluations > 0);
     let nodes = &result.nodes;
     let (proofs, examples, completions) = classes(nodes);
     let mut legacy = Vec::new();
@@ -147,6 +167,7 @@ fn saved_projection_keeps_legacy_bytes_for_checked_paths_and_nested_values() {
         Json::Arr(projected).canonical().into_bytes(),
         Json::Arr(legacy).canonical().into_bytes()
     );
+    assert_eq!(result.wire().canonical(), full_before);
     // このfixtureはPath/compound表示を実際に通す。
     assert!(
         nodes
@@ -344,7 +365,25 @@ fn projection_preserves_checkpoint_stop_and_freezes_control() {
         Payload::Scalar(Scalar::Bool(true)),
         vec![],
     )];
-    for at in 1..=3 {
+    let count = std::rc::Rc::new(std::cell::Cell::new(0));
+    let visits = count.clone();
+    let control = Control::new(move |_| {
+        visits.set(visits.get() + 1);
+        None
+    });
+    project_node(
+        &nodes,
+        0,
+        &BTreeSet::new(),
+        &BTreeSet::new(),
+        &BTreeSet::new(),
+        &control,
+        Checkpoint::Expression,
+    )
+    .unwrap();
+    let total = count.get();
+    assert!(total >= 3);
+    for at in 1..=total {
         // 各checkpointで届いた停止を、projectionが成功へ変換しない。
         let count = std::rc::Rc::new(std::cell::Cell::new(0));
         let calls = count.clone();
@@ -364,6 +403,290 @@ fn projection_preserves_checkpoint_stop_and_freezes_control() {
                 &control,
                 Checkpoint::Expression
             ),
+            Err(Signal::Term)
+        ));
+        let before = count.get();
+        assert_eq!(
+            control.checkpoint(Checkpoint::Expression),
+            Err(Signal::Term)
+        );
+        assert_eq!(count.get(), before);
+    }
+}
+
+fn evaluation_nodes(environment: Option<NodeRef>, value: Option<NodeRef>) -> Vec<Node> {
+    use super::super::{Binding, Part};
+    use archsig_common::{issue::Location, types::Type};
+    let mut nodes = vec![
+        node(
+            NodeType::Value(Type::Bool),
+            Payload::Scalar(Scalar::Bool(true)),
+            vec![],
+        ),
+        node(
+            NodeType::Expression(Type::Bool),
+            Payload::Expression {
+                location: Location::Law { span: (0, 1) },
+                parameters: vec![],
+                bindings: vec![],
+            },
+            vec![],
+        ),
+        node(
+            NodeType::Evidence,
+            Payload::FiniteExhaustion {
+                domain: NodeRef(0),
+                checked: 1,
+                instances: vec![],
+            },
+            vec![NodeRef(0)],
+        ),
+        node(
+            NodeType::Evaluation(Type::Bool),
+            Payload::Evaluation {
+                environment,
+                expression: NodeRef(1),
+                bindings: vec![
+                    Binding {
+                        name: "x".into(),
+                        value: NodeRef(0),
+                        ty: Type::Bool,
+                    },
+                    Binding {
+                        name: "proof".into(),
+                        value: NodeRef(2),
+                        ty: Type::Bool,
+                    },
+                ],
+                parts: vec![Part {
+                    location: Location::Law { span: (0, 1) },
+                    value: Some(NodeRef(0)),
+                    residual: Some(NodeRef(0)),
+                    children: vec![NodeRef(1)],
+                }],
+                value,
+                applicability: "applicable",
+            },
+            vec![NodeRef(1), NodeRef(0)],
+        ),
+    ];
+    nodes[3].reasons.push(super::super::Reason {
+        kind: super::super::ReasonKind::Missing,
+        request: "a".into(),
+        dependencies: vec![NodeRef(0), NodeRef(2)],
+        missing: vec![],
+        location: Some(Location::Law { span: (0, 1) }),
+    });
+    nodes
+}
+// 本体の部分helperを使わず、旧full描画から必要欄を読む。
+fn legacy_answer_fields(
+    native: &[Node],
+    index: usize,
+    proofs: &BTreeSet<String>,
+) -> Option<archsig_common::canonical::JsonObject> {
+    let raw = public_raw_node(native, index, proofs, &quiet(), Checkpoint::Expression).unwrap();
+    let Json::Obj(mut fields) = raw else {
+        return None;
+    };
+    let Some(Json::Obj(mut value)) = fields.remove("value") else {
+        return None;
+    };
+    value.retain(|key, _| matches!(key.as_str(), "applicability" | "environment"));
+    Some(value)
+}
+#[test]
+fn evaluation_projection_keeps_four_fields_and_exact_proof_pruning() {
+    for environment in [None, Some(NodeRef(0)), Some(NodeRef(2))] {
+        for value in [None, Some(NodeRef(0)), Some(NodeRef(2))] {
+            let nodes = evaluation_nodes(environment, value);
+            let (proofs, examples, completions) = classes(&nodes);
+            let full_before = nodes[3].wire(3, &nodes[..3]).canonical();
+            let actual = project_node(
+                &nodes,
+                3,
+                &proofs,
+                &examples,
+                &completions,
+                &quiet(),
+                Checkpoint::Expression,
+            )
+            .unwrap();
+            let legacy = legacy_project_node(
+                &nodes,
+                3,
+                &proofs,
+                &examples,
+                &completions,
+                &quiet(),
+                Checkpoint::Expression,
+            )
+            .unwrap();
+            assert_eq!(
+                actual.canonical().into_bytes(),
+                legacy.canonical().into_bytes()
+            );
+            let Json::Obj(fields) = &actual else { panic!() };
+            assert_eq!(fields["type"], Json::str("EvaluationResult"));
+            assert_eq!(fields["conditions"], Json::Arr(vec![]));
+            let Json::Arr(reasons) = &fields["reasons"] else {
+                panic!()
+            };
+            assert_eq!(reasons.len(), 1);
+            let Json::Obj(reason) = &reasons[0] else {
+                panic!()
+            };
+            assert_eq!(reason["code"], Json::str("missing_observation"));
+            assert_eq!(reason["dependencies"], Json::Arr(vec![]));
+            let Json::Obj(payload) = &fields["value"] else {
+                panic!()
+            };
+            let mut expected = archsig_common::canonical::JsonObject::from([
+                ("applicability".into(), Json::str("applicable")),
+                (
+                    "bindings".into(),
+                    Json::Arr(vec![
+                        Json::obj([("name", Json::str("x")), ("value", NodeRef(0).wire())]),
+                        Json::obj([("name", Json::str("proof"))]),
+                    ]),
+                ),
+            ]);
+            if environment == Some(NodeRef(0)) {
+                expected.insert("environment".into(), NodeRef(0).wire());
+            }
+            if value == Some(NodeRef(0)) {
+                expected.insert("value".into(), NodeRef(0).wire());
+            }
+            assert_eq!(payload, &expected);
+            assert!(!payload.contains_key("parts") && !payload.contains_key("expression"));
+            let full = nodes[3].wire(3, &nodes[..3]);
+            assert_eq!(full.canonical(), full_before);
+            let Json::Obj(full) = full else { panic!() };
+            let Json::Obj(payload) = &full["value"] else {
+                panic!()
+            };
+            assert!(payload.contains_key("parts") && payload.contains_key("expression"));
+            for key in ["rule", "arguments", "evidence", "scope", "support"] {
+                assert!(full.contains_key(key));
+            }
+        }
+    }
+}
+#[test]
+fn evaluation_answer_reads_only_two_fields_and_retains_general_fallback() {
+    for environment in [None, Some(NodeRef(0)), Some(NodeRef(2))] {
+        let mut nodes = evaluation_nodes(environment, Some(NodeRef(0)));
+        for applicability in ["applicable", "not_applicable", "undetermined"] {
+            let Some(Payload::Evaluation {
+                applicability: actual,
+                ..
+            }) = &mut nodes[3].payload
+            else {
+                panic!()
+            };
+            *actual = applicability;
+            let (proofs, _, _) = classes(&nodes);
+            let fields =
+                evaluation_answer_fields(&nodes, 3, &proofs, &quiet(), Checkpoint::Expression)
+                    .unwrap();
+            assert_eq!(fields, legacy_answer_fields(&nodes, 3, &proofs));
+            let mut expected = archsig_common::canonical::JsonObject::from([(
+                "applicability".into(),
+                Json::str(applicability),
+            )]);
+            if environment == Some(NodeRef(0)) {
+                expected.insert("environment".into(), NodeRef(0).wire());
+            }
+            assert_eq!(fields, Some(expected));
+        }
+        // 非Evaluationのobject payload / scalar payload / absent payloadの旧挙動。
+        nodes.push(Node {
+            payload: None,
+            ..nodes[0].clone()
+        });
+        for index in [0, 1, 4] {
+            let (proofs, _, _) = classes(&nodes);
+            assert_eq!(
+                evaluation_answer_fields(&nodes, index, &proofs, &quiet(), Checkpoint::Expression)
+                    .unwrap(),
+                legacy_answer_fields(&nodes, index, &proofs)
+            );
+        }
+    }
+}
+#[test]
+fn compact_keeps_existing_answer_environment_when_evaluation_environment_is_absent_or_pruned() {
+    for environment in [None, Some(NodeRef(2)), Some(NodeRef(0))] {
+        let nodes = evaluation_nodes(environment, Some(NodeRef(0)));
+        let mut document = Json::obj([(
+            "answers",
+            Json::Arr(vec![Json::obj([
+                ("id", Json::str("a")),
+                (
+                    "outputs",
+                    Json::obj([
+                        ("evaluation", NodeRef(3).wire()),
+                        ("environment", NodeRef(1).wire()),
+                    ]),
+                ),
+            ])]),
+        )]);
+        compact(&mut document, &nodes, &quiet(), Checkpoint::Expression).unwrap();
+        let Json::Obj(document) = &document else {
+            panic!()
+        };
+        let Json::Arr(answers) = &document["answers"] else {
+            panic!()
+        };
+        let Json::Obj(answer) = &answers[0] else {
+            panic!()
+        };
+        assert_eq!(answer["applicability"], Json::str("applicable"));
+        let Json::Obj(outputs) = &answer["outputs"] else {
+            panic!()
+        };
+        assert!(!outputs.contains_key("evaluation"));
+        // 各caseで唯一到達した環境は保存番号n0。保持した元型も区別して検査する。
+        assert_eq!(outputs["environment"], NodeRef(0).wire());
+        let Json::Arr(saved) = &document["nodes"] else {
+            panic!()
+        };
+        assert_eq!(saved.len(), 1);
+        let Json::Obj(saved) = &saved[0] else {
+            panic!()
+        };
+        assert_eq!(
+            saved["type"],
+            if environment == Some(NodeRef(0)) {
+                Json::str("Bool")
+            } else {
+                Json::str("Expression")
+            }
+        );
+    }
+}
+#[test]
+fn evaluation_answer_stop_propagates_at_every_reachable_checkpoint() {
+    let nodes = evaluation_nodes(Some(NodeRef(0)), Some(NodeRef(0)));
+    let (proofs, _, _) = classes(&nodes);
+    let count = std::rc::Rc::new(std::cell::Cell::new(0));
+    let visits = count.clone();
+    let control = Control::new(move |_| {
+        visits.set(visits.get() + 1);
+        None
+    });
+    evaluation_answer_fields(&nodes, 3, &proofs, &control, Checkpoint::Expression).unwrap();
+    let total = count.get();
+    assert!(total >= 2);
+    for at in 1..=total {
+        let count = std::rc::Rc::new(std::cell::Cell::new(0));
+        let visits = count.clone();
+        let control = Control::new(move |_| {
+            visits.set(visits.get() + 1);
+            (visits.get() == at).then_some(Signal::Term)
+        });
+        assert!(matches!(
+            evaluation_answer_fields(&nodes, 3, &proofs, &control, Checkpoint::Expression),
             Err(Signal::Term)
         ));
         let before = count.get();

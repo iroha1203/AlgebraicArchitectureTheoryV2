@@ -269,6 +269,42 @@ fn public_raw_node(
     remove_proof_refs(&mut node, proofs);
     Ok(node)
 }
+// answerはEvaluation全体でなく適用可否と後続環境だけを読む。
+fn evaluation_answer_fields(
+    native: &[Node],
+    index: usize,
+    proofs: &BTreeSet<String>,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<Option<archsig_common::canonical::JsonObject>, Signal> {
+    if let Some(payload) = &native[index].payload
+        && matches!(payload, super::Payload::Evaluation { .. })
+    {
+        control.checkpoint(point)?;
+        let mut value = Json::Obj(
+            payload
+                .evaluation_output_fields(false)
+                .expect("Evaluation欄"),
+        );
+        control.checkpoint(point)?;
+        clean_reasons(&mut value);
+        remove_proof_refs(&mut value, proofs);
+        let Json::Obj(fields) = value else {
+            unreachable!()
+        };
+        return Ok(Some(fields));
+    }
+    // 一般のraw表示入口の挙動は維持する。型を取り違えたRefも新たに解釈しない。
+    let node = public_raw_node(native, index, proofs, control, point)?;
+    let Json::Obj(mut fields) = node else {
+        return Ok(None);
+    };
+    let Some(Json::Obj(mut value)) = fields.remove("value") else {
+        return Ok(None);
+    };
+    value.retain(|key, _| matches!(key.as_str(), "applicability" | "environment"));
+    Ok(Some(value))
+}
 fn law_claim(
     reference: &Json,
     native: &[Node],
@@ -537,13 +573,12 @@ pub(super) fn compact(
             && let Some(Json::Str(id)) = reference.get("node")
         {
             let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
-            let node = public_raw_node(native, index, &proofs, control, point)?;
-            if let Json::Obj(node) = &node
-                && let Some(Json::Obj(value)) = node.get("value")
+            if let Some(mut value) =
+                evaluation_answer_fields(native, index, &proofs, control, point)?
             {
-                applicability = value.get("applicability").cloned();
-                if let Some(environment) = value.get("environment") {
-                    outputs.insert("environment".into(), environment.clone());
+                applicability = value.remove("applicability");
+                if let Some(environment) = value.remove("environment") {
+                    outputs.insert("environment".into(), environment);
                 }
             }
         }
