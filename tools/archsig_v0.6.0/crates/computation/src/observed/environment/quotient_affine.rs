@@ -234,7 +234,7 @@ pub(in crate::observed) fn compute(
         return Ok(result);
     }
     let mut env =
-        Environment::with_primitive_valuation(original.indexes.inputs, &input.assignments, c)?;
+        Environment::with_primitive_valuation(original.indexes.inputs, &input.search.valuation, c)?;
     env.indexes.object = Some(Arc::new(ObjectDomain::from_readings(
         original.indexes.inputs,
         input.witness.readings(),
@@ -363,7 +363,7 @@ pub(in crate::observed) fn compute(
         let selected = if guard.is_some() {
             let mut selected = Environment::with_primitive_valuation(
                 original.indexes.inputs,
-                &input.assignments,
+                &input.search.valuation,
                 c,
             )?;
             selected.indexes.object = env.indexes.object.clone();
@@ -592,7 +592,8 @@ pub(in crate::observed) fn point(
     let parameters = apply(&image.embedding, &image.origin, coordinates)?;
     let values = apply(&linear.action, &linear.offset, &parameters)?;
     let mut assignments = input
-        .assignments
+        .search
+        .valuation
         .iter()
         .cloned()
         .collect::<BTreeMap<_, _>>();

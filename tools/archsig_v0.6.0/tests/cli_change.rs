@@ -443,30 +443,31 @@ fn unused_let_cannot_erase_an_invalid_path_condition() {
         for (name, data) in [("d.json", &definitions), ("a.json", &map), ("l.law", &law)] {
             std::fs::write(dir.join(name), data).unwrap();
         }
-        let result = run(
-            &dir,
-            &[
-                "run",
-                "--atom-definition",
-                "d.json",
-                "--archmap",
-                "a.json",
-                "--law",
-                "l.law",
-                "--out",
-                "out",
-                "--ask",
-                "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
-            ],
-        );
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            "out",
+            "--ask",
+            "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
+        ];
+        if case == "mixed" {
+            args.extend(["--ask", "q=quotient(Selected.flag,on=$r.domain,c=@v/p)"]);
+        }
+        let result = run(&dir, &args);
         assert_eq!(result.code, code, "{}", result.stdout);
         let saved = result_json(&dir, &result);
-        let answer = &arr(get(&saved, "answers"))[0];
+        let repair_answer = &arr(get(&saved, "answers"))[0];
         assert_eq!(
-            s(get(answer, "status")),
+            s(get(repair_answer, "status")),
             if code == 0 { "established" } else { "refuted" }
         );
-        let outputs = get(answer, "outputs");
+        let outputs = get(repair_answer, "outputs");
         assert_eq!(has(outputs, "object"), code == 0);
         let nodes = arr(get(&saved, "nodes"));
         let domain = nodes
@@ -478,6 +479,16 @@ fn unused_let_cannot_erase_an_invalid_path_condition() {
             .find(|n| s(get(n, "id")) == s(get(get(get(domain, "value"), "parameters"), "node")))
             .unwrap();
         assert_eq!(arr(get(get(parameters, "value"), "elements")).len(), count);
+        if case == "mixed" {
+            let q = answer(&saved, "q");
+            assert_eq!(s(get(q, "status")), "established");
+            let quotient = get(node(&saved, get(get(q, "outputs"), "quotient")), "value");
+            assert_eq!(get(quotient, "domain").value, get(outputs, "domain").value);
+            let fibers = arr(get(get(quotient, "representation"), "fibers"));
+            assert_eq!(fibers.len(), 1);
+            let preimage = get(node(&saved, get(&fibers[0], "preimage")), "value");
+            assert_eq!(arr(get(preimage, "elements")).len(), 1);
+        }
     }
 }
 

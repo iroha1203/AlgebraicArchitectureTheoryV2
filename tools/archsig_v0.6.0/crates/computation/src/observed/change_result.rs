@@ -1305,7 +1305,6 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
 pub(super) struct CandidateInput {
     pub architecture: NodeRef,
     pub witness: Arc<native::ArchitectureWitness>,
-    pub assignments: Vec<(Fact, Scalar)>,
     pub search: change_search::Search,
     pub domain_type: ProjectionType,
 }
@@ -1333,13 +1332,11 @@ pub(super) fn candidate_input(
     let request = origin.request();
     env.with_request_context(g, request, || {
         let _selected = env.enter_architecture(g)?;
-        let assignments = env.state.architecture_values();
         let search = change_search::search(env, g, &d.source.architecture.witness, request, c)
             .map_err(|f| f.cause)?;
         Ok(CandidateInput {
             architecture: d.source.architecture.reference,
             witness: d.source.architecture.witness.clone(),
-            assignments,
             search,
             domain_type: d
                 .projection_type()
