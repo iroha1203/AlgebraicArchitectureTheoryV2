@@ -24,7 +24,7 @@ impl<'a> Environment<'a> {
     }
 
     /// 依存位置の発見中は、まだ固定されている別fieldとの制約で枝を刈らない。
-    /// 元型・値の正規性は検査する。完成候補にはtry_primitive_valuation_fromを使う。
+    /// 元型・値の正規性は検査する。完成候補はprimitive_constraints_holdで所属・全域性を検査する。
     pub(super) fn primitive_dependency_probe_from(
         &self,
         assignments: &[(Fact, Scalar)],
@@ -40,6 +40,57 @@ impl<'a> Environment<'a> {
         control: &Control,
     ) -> Result<Option<Self>, ValidationFailure> {
         Self::primitive_valuation_on(self.fresh_candidate(control), assignments, control, true)
+    }
+
+    /// 同じ候補の初回検査で得た二表だけから、全pinの所属・Map全域性を判定する。
+    /// 評価stateや対象選択を読まず、依存発見のために評価した結果も変更しない。
+    pub(super) fn primitive_constraints_hold(
+        &self,
+        control: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        control.checkpoint(Checkpoint::PrimitiveValuation)?;
+        let values = self
+            .indexes
+            .primitive_valuation
+            .as_ref()
+            .ok_or(internal!("原始候補の検査済み値がない"))?;
+        let originals = self
+            .indexes
+            .primitive_input_valuation
+            .as_ref()
+            .ok_or(internal!("原始候補の検査済み入力値がない"))?;
+        let mut structurally_neutral = true;
+        for original in originals.values() {
+            if !structural_neutral_value(original, control)? {
+                structurally_neutral = false;
+                break;
+            }
+        }
+        let mut pinned = Vec::new();
+        if !structurally_neutral {
+            for (position, value) in values {
+                control.checkpoint(Checkpoint::PrimitiveValuation)?;
+                // field()はread記録を変更する。ここでは初回検査と同じ不変metadataだけを読む。
+                let field = self
+                    .indexes
+                    .fields
+                    .get(&(
+                        position.snapshot.as_str(),
+                        position.subject.as_str(),
+                        position
+                            .field
+                            .as_deref()
+                            .ok_or(internal!("原始候補のfieldがない"))?,
+                    ))
+                    .ok_or(internal!("原始候補の元fieldがない"))?;
+                pinned.push((
+                    position,
+                    field.name.as_str(),
+                    data::input_json(value, control)?,
+                ));
+            }
+        }
+        primitive_constraints_hold(self.indexes.inputs, pinned, structurally_neutral, control)
     }
 
     fn fresh_candidate(&self, control: &Control) -> Self {
@@ -116,53 +167,70 @@ impl<'a> Environment<'a> {
                 structurally_neutral = structural_neutral_value(&original, control)?;
             }
             if constraints {
-                pinned.push((position, &field.name, encoded));
+                pinned.push((position, field.name.as_str(), encoded));
             }
             original_values.insert(position.clone(), original);
             values.insert(position.clone(), checked);
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
         }
-        // CheckedInputsには元の補完がある。Ref/Mapを含まない型検査済みpinは
-        // 参照変数・owner読取りを変えず、元fieldの制約を除くだけなので再探索しない。
-        if constraints && !structurally_neutral {
-            let mut checked_pins = Vec::with_capacity(pinned.len());
-            for (position, field, value) in pinned {
-                control.checkpoint(Checkpoint::PrimitiveValuation)?;
-                checked_pins.push(archsig_input::archmap::FieldAssignment {
-                    snapshot: position.snapshot.clone(),
-                    subject: position.subject.clone(),
-                    field: field.to_string(),
-                    value,
-                });
-            }
-            match archsig_input::archmap::check_valuation_with_values::<
-                CheckFailure<Box<archsig_common::issue::Issue>>,
-            >(
-                &inputs.archmap().snapshots(),
-                inputs.definitions(),
-                &checked_pins,
-                control,
-            ) {
-                Ok(()) => {}
-                Err(CheckFailure::Stopped(stop)) => return Err(ValidationFailure::Stop(stop)),
-                Err(CheckFailure::Input(issue))
-                    if issue.code == archsig_common::issue::Code::InconsistentObservation =>
-                {
-                    return Ok(None);
-                }
-                Err(CheckFailure::Input(issue)) => {
-                    return Err(ValidationFailure::Internal(internal!(
-                        "候補の原始制約検査: {}",
-                        issue.message
-                    )));
-                }
-            }
+        if constraints
+            && !primitive_constraints_hold(inputs, pinned, structurally_neutral, control)?
+        {
+            return Ok(None);
         }
         environment.indexes.primitive_valuation = Some(values);
         environment.indexes.primitive_input_valuation = Some(original_values);
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
         Ok(Some(environment))
     }
+}
+
+// 初回構築は既に生成したencodingと中立判定を渡し、probeは保存済み二表から渡す。
+fn primitive_constraints_hold(
+    inputs: &CheckedInputs,
+    pinned: Vec<(&Fact, &str, archsig_common::canonical::Json)>,
+    structurally_neutral: bool,
+    control: &Control,
+) -> Result<bool, ValidationFailure> {
+    control.checkpoint(Checkpoint::PrimitiveValuation)?;
+    // CheckedInputsには元の補完がある。Ref/Mapを含まない型検査済みpinは
+    // 参照変数・owner読取りを変えず、元fieldの制約を除くだけなので再探索しない。
+    if !structurally_neutral {
+        let mut checked_pins = Vec::with_capacity(pinned.len());
+        for (position, field, value) in pinned {
+            control.checkpoint(Checkpoint::PrimitiveValuation)?;
+            checked_pins.push(archsig_input::archmap::FieldAssignment {
+                snapshot: position.snapshot.clone(),
+                subject: position.subject.clone(),
+                field: field.to_string(),
+                value,
+            });
+        }
+        match archsig_input::archmap::check_valuation_with_values::<
+            CheckFailure<Box<archsig_common::issue::Issue>>,
+        >(
+            &inputs.archmap().snapshots(),
+            inputs.definitions(),
+            &checked_pins,
+            control,
+        ) {
+            Ok(()) => {}
+            Err(CheckFailure::Stopped(stop)) => return Err(ValidationFailure::Stop(stop)),
+            Err(CheckFailure::Input(issue))
+                if issue.code == archsig_common::issue::Code::InconsistentObservation =>
+            {
+                return Ok(false);
+            }
+            Err(CheckFailure::Input(issue)) => {
+                return Err(ValidationFailure::Internal(internal!(
+                    "候補の原始制約検査: {}",
+                    issue.message
+                )));
+            }
+        }
+    }
+    control.checkpoint(Checkpoint::PrimitiveValuation)?;
+    Ok(true)
 }
 
 /// collect_knownがMember/Coverを作らず、slot_refも変えない原始値。

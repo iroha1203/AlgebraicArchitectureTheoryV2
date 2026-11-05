@@ -28,6 +28,15 @@ fn legacy_admissible(inputs: &CheckedInputs, values: &[(Fact, Scalar)]) -> bool 
 }
 fn assert_admission(inputs: &CheckedInputs, values: &[(Fact, Scalar)], expected: bool) {
     assert_eq!(legacy_admissible(inputs, values), expected);
+    // probeは所属で枝刈りしない。初回に検査した同じ二表を完成判定へ渡す。
+    let template = Environment::new(inputs, &quiet()).unwrap();
+    let probe = template
+        .primitive_dependency_probe_from(values, &quiet())
+        .unwrap();
+    assert_eq!(
+        probe.primitive_constraints_hold(&quiet()).unwrap(),
+        expected
+    );
     let actual = Environment::try_primitive_valuation(inputs, values, &quiet()).unwrap();
     assert_eq!(actual.is_some(), expected);
     if let Some(actual) = actual {
@@ -325,4 +334,75 @@ fn pure_data_branch_can_remove_a_known_map_cover_without_adding_constraints() {
         )],
         true,
     );
+}
+
+#[test]
+fn checked_probe_constraints_leave_evaluation_read_tracking_unchanged() {
+    let inputs = fixture::inputs();
+    let template = Environment::new(&inputs, &quiet()).unwrap();
+    // 空Mapは型とencodingが正しくても元の登録域を覆わない。
+    let values = [(slot("p", "table"), table("Part", &[]))];
+    let probe = template
+        .primitive_dependency_probe_from(&values, &quiet())
+        .unwrap();
+    *probe.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
+    *probe.state.missing_slot_reads.borrow_mut() = Some(BTreeSet::new());
+    let scalar_values = probe.indexes.primitive_valuation.clone();
+    assert!(!probe.primitive_constraints_hold(&quiet()).unwrap());
+    assert_eq!(
+        probe.state.primitive_reads.borrow().as_ref().unwrap(),
+        &BTreeSet::new()
+    );
+    assert_eq!(
+        probe.state.missing_slot_reads.borrow().as_ref().unwrap(),
+        &BTreeSet::new()
+    );
+    assert_eq!(probe.indexes.primitive_valuation, scalar_values);
+}
+
+#[test]
+fn checked_probe_constraints_propagate_solver_and_final_adoption_stop() {
+    let inputs = fixture::inputs();
+    let template = Environment::new(&inputs, &quiet()).unwrap();
+    let reference = [(slot("p", "link"), subject_value("q", "Part"))];
+    let probe = template
+        .primitive_dependency_probe_from(&reference, &quiet())
+        .unwrap();
+    let (control, _, _) = stopping(Checkpoint::Completion, 1, Some(Signal::Term), false);
+    assert!(matches!(
+        probe.primitive_constraints_hold(&control),
+        Err(ValidationFailure::Stop(Signal::Term))
+    ));
+
+    let neutral = [(slot("p", "flag"), Scalar::Bool(false))];
+    let probe = template
+        .primitive_dependency_probe_from(&neutral, &quiet())
+        .unwrap();
+    let (control, count, _) = stopping(Checkpoint::PrimitiveValuation, usize::MAX, None, false);
+    assert!(probe.primitive_constraints_hold(&control).unwrap());
+    let (control, _, _) = stopping(
+        Checkpoint::PrimitiveValuation,
+        count.get(),
+        Some(Signal::Int),
+        false,
+    );
+    assert!(matches!(
+        probe.primitive_constraints_hold(&control),
+        Err(ValidationFailure::Stop(Signal::Int))
+    ));
+}
+
+#[test]
+fn checked_probe_term_reencoding_preserves_wire_after_source_relocation() {
+    let inputs = fixture::inputs();
+    let template = Environment::new(&inputs, &quiet()).unwrap();
+    let term = expression(&template, "literal", false).known_value.unwrap();
+    let encoded = data::input_json(&term, &quiet()).unwrap();
+    let position = slot("p", "program");
+    let probe = template
+        .primitive_dependency_probe_from(&[(position.clone(), term)], &quiet())
+        .unwrap();
+    let checked = &probe.indexes.primitive_valuation.as_ref().unwrap()[&position];
+    assert_eq!(data::input_json(checked, &quiet()).unwrap(), encoded);
+    assert!(probe.primitive_constraints_hold(&quiet()).unwrap());
 }
