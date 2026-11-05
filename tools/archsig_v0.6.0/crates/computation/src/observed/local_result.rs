@@ -1429,6 +1429,9 @@ impl super::result_kind::ResultKind for Data {
                 part.judgment.clone(),
             )?;
         }
+        // 同じ検査済み構築経路で生成し、全partを保持できたSourceを登録する。
+        // 後続Graph変更時のsession失効と各nodeの位置・形・入力照合は維持する。
+        env.results.remember(source.clone());
         Ok(source.answer.clone())
     }
     fn validate(
@@ -1448,5 +1451,70 @@ impl super::result_kind::ResultKind for Data {
     ) -> Result<(), ValidationFailure> {
         env.recheck_local(graph, value, limit)?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod produced_source_tests {
+    use super::*;
+    use archsig_common::control::{Checkpoint, Control};
+    use archsig_input::input::InputSources;
+    use std::{cell::Cell, rc::Rc};
+
+    #[test]
+    fn newly_retained_local_source_validates_without_rebuilding_and_checks_node_shape() {
+        let normal = crate::observed::evaluate_observed_bytes(
+            InputSources::from_bytes(
+                vec![include_bytes!("../../../../tests/fixtures/counter.atoms.json").to_vec()],
+                include_bytes!("../../../../tests/fixtures/counter.law").to_vec(),
+                include_bytes!("../../../../tests/fixtures/counter.archmap.json").to_vec(),
+            ),
+            &["b=build(CountCheck,on=@v/s)", "l=localize($b.object)"],
+            &Control::unlimited(),
+        )
+        .unwrap();
+        let base = normal.nodes.iter().position(|node| matches!(
+            &node.payload, Some(Payload::Construction(value)) if matches!(value.data, D::Local(_))
+        )).unwrap();
+        let count = Rc::new(Cell::new(0usize));
+        let observed = count.clone();
+        let control = Control::new(move |checkpoint| {
+            if checkpoint == Checkpoint::Localize {
+                observed.set(observed.get() + 1);
+            }
+            None
+        });
+        let env = Environment::with_prepared(&normal.prepared, &control).unwrap();
+        let mut graph = Graph::new(&control);
+        graph.requests = normal.prepared.requests().requests().to_vec();
+        graph.frames = normal.frames.clone();
+        graph.iterations = normal.iterations.clone();
+        graph.instances = normal.instances.clone();
+        graph.cases = normal.cases.clone();
+        graph.universal_witnesses = normal.universal_witnesses.clone();
+        graph.checked_answers.push((0, normal.answers[0].clone()));
+        for (node, context) in normal.nodes.iter().zip(&normal.contexts).take(base) {
+            graph.active = *context;
+            env.validate(&graph, node).unwrap();
+            graph.push(node.clone()).unwrap();
+        }
+        graph.active = normal.contexts[base];
+        let request = &normal.prepared.requests().requests()[1];
+        let answer = evaluate(&normal.prepared, &env, &mut graph, request, &control).unwrap();
+        assert_eq!(answer.status, Decision::Established);
+        assert!(count.get() > 0, "the source must actually be computed");
+        count.set(0);
+        env.validate_answer(&graph, request, &answer).unwrap();
+        assert_eq!(
+            count.get(),
+            0,
+            "a sealed newly produced source is not computed twice"
+        );
+        let reference = answer.outputs["system"];
+        graph.nodes[reference.0]
+            .scope
+            .readings
+            .insert("changed".into());
+        assert!(env.validate(&graph, &graph.nodes[reference.0]).is_err());
     }
 }
