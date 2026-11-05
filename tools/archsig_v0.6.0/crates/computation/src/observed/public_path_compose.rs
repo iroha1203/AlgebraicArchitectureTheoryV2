@@ -34,6 +34,9 @@ pub(crate) struct PathWitness {
 }
 impl PartialEq for PathWitness {
     fn eq(&self, b: &Self) -> bool {
+        if std::ptr::eq(self, b) {
+            return true;
+        }
         self.inputs.sources() == b.inputs.sources()
             && self.request == b.request
             && self.support == b.support

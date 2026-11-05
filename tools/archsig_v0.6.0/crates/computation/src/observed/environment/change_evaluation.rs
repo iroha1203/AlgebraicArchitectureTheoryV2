@@ -503,7 +503,6 @@ pub(in crate::observed) fn candidate(
                     declaration.span,
                 )?;
                 update.retain(&old);
-                update.support.extend(old.support.into_vec());
                 if let Some(value) = old.known_value {
                     values.insert(fact, value);
                 } else {
@@ -767,6 +766,65 @@ mod tests {
                 .missing
                 .iter()
                 .any(|f| f.field.as_deref() == Some("Pattern.Part.third"))
+        );
+    }
+    #[test]
+    fn unchanged_candidate_coordinates_retain_support_once_and_keep_missing_state() {
+        let inputs = fixture::with_body(
+            fixture::MAP,
+            "change choose(c:Part,b:Bool)=if b then c with {quantity=0} else c with {other=0};",
+        );
+        let environment = Environment::new(&inputs, &quiet()).unwrap();
+        let declaration = &inputs.law().declarations()["Selected.choose"];
+        let ready = candidate(
+            &environment,
+            declaration,
+            &[bindings()[0].1.clone()],
+            &[Scalar::Bool(true)],
+        )
+        .unwrap();
+        assert_eq!(ready.update.state, State::Ready);
+        assert_eq!(ready.update.values.len(), 2);
+        for (name, expected) in [("quantity", 0), ("other", 1)] {
+            let field = format!("Pattern.Part.{name}");
+            let (_, actual) = ready
+                .update
+                .values
+                .iter()
+                .find(|(f, _)| f.field.as_deref() == Some(field.as_str()))
+                .unwrap();
+            assert_eq!(
+                actual,
+                &Scalar::Fp {
+                    modulus: "2".into(),
+                    value: expected.into()
+                }
+            );
+        }
+        assert_eq!(
+            ready
+                .update
+                .support
+                .iter()
+                .filter(|f| f.atom.as_deref() == Some("yp"))
+                .count(),
+            1
+        );
+        assert!(ready.update.scope.readings.contains("Selected"));
+        let absent = Scalar::Subject {
+            snapshot: "v".into(),
+            subject: "q".into(),
+            entity: "Pattern.Part".into(),
+        };
+        let partial =
+            candidate(&environment, declaration, &[absent], &[Scalar::Bool(true)]).unwrap();
+        assert_eq!(partial.update.state, State::Undetermined);
+        assert!(
+            partial
+                .update
+                .missing
+                .iter()
+                .any(|f| f.subject == "q" && f.field.as_deref() == Some("Pattern.Part.other"))
         );
     }
     #[test]

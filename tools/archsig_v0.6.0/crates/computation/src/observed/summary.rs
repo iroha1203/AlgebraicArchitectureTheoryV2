@@ -220,7 +220,7 @@ impl ObservedEvaluation {
                         );
                     }
                 }
-                Json::Obj(row.into())
+                Json::Obj(row)
             })
             .collect();
         let mut result = BTreeMap::from([
@@ -314,7 +314,7 @@ impl ObservedEvaluation {
                                 self.summary_value(value),
                             )]);
                             brief_text(&mut row, "name", name);
-                            Json::Obj(row.into())
+                            Json::Obj(row)
                         })
                         .collect(),
                 ),
@@ -335,7 +335,7 @@ impl ObservedEvaluation {
                                 };
                                 brief_text(&mut row, key, value);
                             }
-                            Json::Obj(row.into())
+                            Json::Obj(row)
                         })
                         .collect(),
                 ),
@@ -368,7 +368,7 @@ impl ObservedEvaluation {
                 }
             }
         }
-        Json::Obj(row.into())
+        Json::Obj(row)
     }
 
     fn summary_value(&self, mut reference: NodeRef) -> Json {
