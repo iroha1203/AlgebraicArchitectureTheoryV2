@@ -31,7 +31,7 @@ pub(in crate::observed) struct BoundInstance {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) struct InstanceParameters {
     pub instance: usize,
-    pub source: ObjectInstance,
+    pub source: Arc<ObjectInstance>,
     pub application: InstanceApplication,
     /// Noneは観測入口、Someはこの原始代入で検査した適用値。
     pub application_value: Option<Option<bool>>,
@@ -47,7 +47,7 @@ pub(in crate::observed) struct ObjectLawInstances {
     // 候補ごとに変わる束縛と、全候補で同じ元入力・対象選択を分けて保持する。
     sources: Arc<InputSources>,
     selection: Arc<Selection>,
-    valuation: Option<Vec<(Fact, Scalar)>>,
+    valuation: Option<Arc<Vec<(Fact, Scalar)>>>,
     entries: Vec<InstanceParameters>,
     complete: bool,
 }
@@ -146,7 +146,7 @@ fn populate_with_environment(
             .clone();
         result.entries.push(InstanceParameters {
             instance: index,
-            source: original.clone(),
+            source: result.selection.instances[index].clone(),
             application,
             application_value: None,
             domains: vec![],

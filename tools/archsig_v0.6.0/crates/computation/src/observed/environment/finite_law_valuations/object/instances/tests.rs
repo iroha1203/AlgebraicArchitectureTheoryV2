@@ -50,7 +50,7 @@ fn all_law_instances_and_the_whole_parameter_product_keep_their_original_identit
     for (subject, index) in [("p", 0), ("q", 1)] {
         let e = entry(&f, "grid", subject);
         assert_eq!(e.state, ParameterFamilyState::Ready);
-        assert_eq!(&e.source, &r.instances()[e.instance]);
+        assert_eq!(e.source.as_ref(), &r.instances()[e.instance]);
         assert_eq!(
             e.source.declaration().role,
             Some(archsig_input::law::ast::Role::Required)

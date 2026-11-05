@@ -8,6 +8,8 @@ use crate::{
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Selection {
     readings: ObjectReadingInstances,
+    // 元instanceは候補に依存しない。不変の元宣言を全代入行で共有する。
+    instances: Vec<Arc<crate::construction::readings::ObjectInstance>>,
     object: usize,
     domain: Arc<ObjectDomain>,
     reading_span: archsig_input::law::ast::Span,
@@ -57,6 +59,7 @@ impl Selection {
         }
         Ok(Self {
             readings: readings.clone(),
+            instances: readings.instances().iter().cloned().map(Arc::new).collect(),
             object,
             domain: Arc::new(domain),
             reading_span,

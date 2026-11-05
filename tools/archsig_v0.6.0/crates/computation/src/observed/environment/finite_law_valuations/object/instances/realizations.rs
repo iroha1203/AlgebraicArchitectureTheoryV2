@@ -76,13 +76,15 @@ fn evaluated_objects(
     e: &Environment<'_>,
     c: &Control,
 ) -> Result<Vec<ObjectLawInstances>, ValidationFailure> {
+    // 同じ候補の全対象は同じ全位置・全値を保持する。候補をまたいで共有しない。
+    let valuation = Arc::new(values.to_vec());
     let mut objects = vec![];
     for selection in selections {
         tick(c)?;
         let mut object = ObjectLawInstances {
             sources: sources.clone(),
             selection: selection.clone(),
-            valuation: Some(values.to_vec()),
+            valuation: Some(valuation.clone()),
             entries: vec![],
             complete: false,
         };
