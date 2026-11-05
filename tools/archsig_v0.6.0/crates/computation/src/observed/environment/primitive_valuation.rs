@@ -369,16 +369,14 @@ fn same_primitive_value(a: &Scalar, b: &Scalar, c: &Control) -> Result<bool, Val
             }
             (
                 Scalar::Data {
-                    family: a,
                     constructor: k,
                     args: p,
                 },
                 Scalar::Data {
-                    family: b,
                     constructor: l,
                     args: q,
                 },
-            ) => a == b && k == l && items(p, q, c)?,
+            ) => k == l && items(p, q, c)?,
             _ => validation_identity::scalar(a, b, c)?,
         })
     })

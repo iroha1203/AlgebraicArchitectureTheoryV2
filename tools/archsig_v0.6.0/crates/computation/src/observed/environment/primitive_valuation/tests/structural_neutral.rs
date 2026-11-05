@@ -70,8 +70,11 @@ fn checked_scalar_and_pure_container_pins_keep_known_and_missing_admission() {
         (
             slot("p", "choice"),
             Scalar::Data {
-                family: "Pattern.Token".into(),
-                constructor: "Pattern.Token.Right".into(),
+                constructor: crate::observed::result::DataConstructor::new(
+                    "Pattern.Token",
+                    "Pattern.Token.Right".into(),
+                )
+                .expect("valid Data constructor"),
                 args: vec![fp("2", 1)],
             },
         ),
@@ -315,8 +318,11 @@ fn pure_data_branch_can_remove_a_known_map_cover_without_adding_constraints() {
         &[(
             slot("p", "choice"),
             Scalar::Data {
-                family: "Pattern.Token".into(),
-                constructor: "Pattern.Token.Right".into(),
+                constructor: crate::observed::result::DataConstructor::new(
+                    "Pattern.Token",
+                    "Pattern.Token.Right".into(),
+                )
+                .expect("valid Data constructor"),
                 args: vec![fp("2", 1)],
             },
         )],
@@ -327,8 +333,11 @@ fn pure_data_branch_can_remove_a_known_map_cover_without_adding_constraints() {
         &[(
             slot("q", "choice"),
             Scalar::Data {
-                family: "Pattern.Token".into(),
-                constructor: "Pattern.Token.Left".into(),
+                constructor: crate::observed::result::DataConstructor::new(
+                    "Pattern.Token",
+                    "Pattern.Token.Left".into(),
+                )
+                .expect("valid Data constructor"),
                 args: vec![fp("2", 0)],
             },
         )],

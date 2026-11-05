@@ -736,8 +736,12 @@ fn validate_binding_value(
                     constructor, args, ..
                 },
             ) => {
-                let ctor =
-                    data::constructor(e.indexes.inputs.law(), family, constructor, &e.control)?;
+                let ctor = data::constructor(
+                    e.indexes.inputs.law(),
+                    family,
+                    constructor.name(),
+                    &e.control,
+                )?;
                 pending.extend(ctor.arguments.iter().zip(args));
             }
             (Type::Map(from, to), Scalar::Map { pairs, .. }) => {

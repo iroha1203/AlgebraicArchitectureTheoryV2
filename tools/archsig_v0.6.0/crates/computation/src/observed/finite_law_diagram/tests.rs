@@ -917,8 +917,11 @@ fn nested_primitive_containers_canonicalize_sets_and_maps_but_preserve_sequences
             value: Some(Box::new(set())),
         },
         Scalar::Data {
-            family: "Finite.Container".into(),
-            constructor: "Finite.Container.Pack".into(),
+            constructor: crate::observed::result::DataConstructor::new(
+                "Finite.Container",
+                "Finite.Container.Pack".into(),
+            )
+            .expect("valid Data constructor"),
             args: vec![set()],
         },
         Scalar::Map {

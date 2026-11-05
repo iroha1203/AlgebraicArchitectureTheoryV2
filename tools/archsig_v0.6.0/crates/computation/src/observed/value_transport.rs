@@ -553,17 +553,12 @@ fn image(
                     pairs: moved,
                 }
             }
-            Scalar::Data {
-                family,
-                constructor,
-                args,
-            } => {
+            Scalar::Data { constructor, args } => {
                 let mut moved = Vec::new();
                 for a in args {
                     moved.push(image(a, inputs, mu, action, alpha, control)?);
                 }
                 Scalar::Data {
-                    family: family.clone(),
                     constructor: constructor.clone(),
                     args: moved,
                 }

@@ -80,7 +80,7 @@ impl Binding {
             Self::FiniteScalar(Scalar::Data {
                 constructor, args, ..
             }) => Some((
-                constructor.to_string(),
+                constructor.name().to_string(),
                 args.iter()
                     .map(|value| match value {
                         Scalar::Bool(value) => Self::Boolean(*value),
@@ -621,8 +621,10 @@ impl Compiler<'_> {
                 }
                 if known {
                     return Ok(Some(Binding::FiniteScalar(Scalar::Data {
-                        family: family.clone(),
-                        constructor,
+                        constructor: crate::observed::result::DataConstructor::new(
+                            family,
+                            constructor,
+                        )?,
                         args: values,
                     })));
                 }

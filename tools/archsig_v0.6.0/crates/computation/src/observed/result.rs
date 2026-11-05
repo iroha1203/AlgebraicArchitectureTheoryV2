@@ -11,6 +11,8 @@ use archsig_input::result::Signal;
 use archsig_input::result::location_wire;
 use num_bigint::BigInt;
 mod completion_graph;
+mod data_constructor;
+pub(crate) use data_constructor::DataConstructor;
 mod semantic_result;
 pub(super) use semantic_result::concise_reasons;
 use std::collections::{BTreeMap, BTreeSet};
@@ -182,8 +184,7 @@ pub(crate) enum Scalar {
     },
     Tuple(Vec<Scalar>),
     Data {
-        family: String,
-        constructor: archsig_common::names::QualifiedName,
+        constructor: DataConstructor,
         args: Vec<Scalar>,
     },
     Bool(bool),
@@ -213,7 +214,7 @@ impl Scalar {
             Self::Q(_, _) => Type::Q,
             Self::Fp { modulus, .. } => Type::Fp(modulus.clone()),
             Self::Tuple(items) => Type::Tuple(items.iter().map(Scalar::ty).collect()),
-            Self::Data { family, .. } => Type::Data(family.clone()),
+            Self::Data { constructor, .. } => Type::Data(constructor.family().to_owned()),
             Self::Bool(_) => Type::Bool,
             Self::Subject { entity, .. } => Type::Ref(entity.clone()),
         })
@@ -324,14 +325,10 @@ impl std::fmt::Debug for Scalar {
                 .field("value", value)
                 .finish(),
             Self::Tuple(items) => f.debug_tuple("Tuple").field(items).finish(),
-            Self::Data {
-                family,
-                constructor,
-                args,
-            } => f
+            Self::Data { constructor, args } => f
                 .debug_struct("Data")
-                .field("family", family)
-                .field("constructor", constructor)
+                .field("family", &constructor.family())
+                .field("constructor", constructor.name())
                 .field("args", args)
                 .finish(),
             Self::Bool(b) => f.debug_tuple("Bool").field(b).finish(),
@@ -383,12 +380,7 @@ impl Clone for Scalar {
                 value: value.clone(),
             },
             Self::Tuple(items) => Self::Tuple(items.clone()),
-            Self::Data {
-                family,
-                constructor,
-                args,
-            } => Self::Data {
-                family: family.clone(),
+            Self::Data { constructor, args } => Self::Data {
                 constructor: constructor.clone(),
                 args: args.clone(),
             },
@@ -501,16 +493,14 @@ impl PartialEq for Scalar {
             (Self::Tuple(a), Self::Tuple(b)) => a == b,
             (
                 Self::Data {
-                    family: a,
                     constructor: b,
                     args: c,
                 },
                 Self::Data {
-                    family: d,
                     constructor: e,
                     args: f,
                 },
-            ) => a == d && b == e && c == f,
+            ) => b == e && c == f,
             (Self::Bool(a), Self::Bool(b)) => a == b,
             (
                 Self::Subject {

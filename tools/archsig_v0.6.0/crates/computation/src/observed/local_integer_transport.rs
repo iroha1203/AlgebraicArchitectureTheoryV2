@@ -648,7 +648,14 @@ mod tests {
         let set=|items|Scalar::Set{element:ty.clone(),items};
         let list=|items|Scalar::List{element:ty.clone(),items};
         let map=|pairs|Scalar::Map{domain:"R.Item".into(),codomain:"R.Item".into(),pairs};
-        let data=|name:&str,args|Scalar::Data{family:"R.Packet".into(),constructor:name.into(),args};
+        let data = |name: &str, args| Scalar::Data {
+            constructor: crate::observed::result::DataConstructor::new(
+                "R.Packet",
+                format!("R.Packet.{name}").into(),
+            )
+            .expect("valid Data constructor"),
+            args,
+        };
         let c=Control::unlimited();
         for (a,b) in [
             (set(vec![subject("a"),subject("b")]),set(vec![subject("y"),subject("z")])),

@@ -197,8 +197,11 @@ fn tuple_and_data_candidates_use_original_projection_and_match() {
             (
                 slot("p", "choice"),
                 Scalar::Data {
-                    family: "Pattern.Token".into(),
-                    constructor: "Pattern.Token.Right".into(),
+                    constructor: crate::observed::result::DataConstructor::new(
+                        "Pattern.Token",
+                        "Pattern.Token.Right".into(),
+                    )
+                    .expect("valid Data constructor"),
                     args: vec![fp("2", 0)],
                 },
             ),
@@ -274,16 +277,22 @@ fn candidate_values_reject_wrong_types_noncanonical_numbers_references_and_compo
         (
             slot("p", "choice"),
             Scalar::Data {
-                family: "Pattern.Token".into(),
-                constructor: "Pattern.Token.Left".into(),
+                constructor: crate::observed::result::DataConstructor::new(
+                    "Pattern.Token",
+                    "Pattern.Token.Left".into(),
+                )
+                .expect("valid Data constructor"),
                 args: vec![Scalar::Bool(false)],
             },
         ),
         (
             slot("p", "choice"),
             Scalar::Data {
-                family: "Pattern.Token".into(),
-                constructor: "Pattern.Token.Absent".into(),
+                constructor: crate::observed::result::DataConstructor::new(
+                    "Pattern.Token",
+                    "Pattern.Token.Absent".into(),
+                )
+                .expect("valid Data constructor"),
                 args: vec![fp("2", 0)],
             },
         ),
@@ -852,8 +861,11 @@ fn text_lists_and_nested_candidates_preserve_contents_order_and_observation_sepa
         },
     ]);
     let packet = Scalar::Data {
-        family: "Pattern.Packet".into(),
-        constructor: "Pattern.Packet.Wrap".into(),
+        constructor: crate::observed::result::DataConstructor::new(
+            "Pattern.Packet",
+            "Pattern.Packet.Wrap".into(),
+        )
+        .expect("valid Data constructor"),
         args: vec![list.clone(), text.clone()],
     };
     for input in [&i, &fixture::inputs()] {
@@ -971,8 +983,11 @@ fn composite_candidate_encoding_stops_without_returning_an_environment() {
         (
             slot("p", "packet"),
             Scalar::Data {
-                family: "Pattern.Packet".into(),
-                constructor: "Pattern.Packet.Wrap".into(),
+                constructor: crate::observed::result::DataConstructor::new(
+                    "Pattern.Packet",
+                    "Pattern.Packet.Wrap".into(),
+                )
+                .expect("valid Data constructor"),
                 args: vec![list.clone(), text.clone()],
             },
         ),

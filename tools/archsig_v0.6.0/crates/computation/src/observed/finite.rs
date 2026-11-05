@@ -682,12 +682,13 @@ fn enumerate_values_maybe(
                                 emit(
                                     &mut values,
                                     Scalar::Data {
-                                        family: family.clone(),
-                                        constructor: law
-                                            .resolved_names()
-                                            .get(&format!("{family}.{}", ctor.name))
-                                            .ok_or(internal!("constructorの検査済み名がない"))?
-                                            .clone(),
+                                        constructor: crate::observed::result::DataConstructor::new(
+                                            family,
+                                            law.resolved_names()
+                                                .get(&format!("{family}.{}", ctor.name))
+                                                .ok_or(internal!("constructorの検査済み名がない"))?
+                                                .clone(),
+                                        )?,
                                         args,
                                     },
                                     control,

@@ -255,14 +255,13 @@ pub(super) fn check(
             Scalar::Term(t) => t.check(control),
             Scalar::Map { .. } => check_shape(value, control),
             Scalar::Data {
-                family,
                 constructor: name,
                 args,
             } => {
-                if !supported(&Type::Data(family.clone()), law, control)? {
+                if !supported(&Type::Data(name.family().to_owned()), law, control)? {
                     return Err(internal!("未対応Data payloadの生成値").into());
                 }
-                let ctor = constructor(law, family, name, control)?;
+                let ctor = constructor(law, name.family(), name.name(), control)?;
                 if args.len() != ctor.arguments.len() {
                     return Err(internal!("Data値のarityが違う").into());
                 }
@@ -472,8 +471,10 @@ pub(super) fn from_input(
                     );
                 }
                 Scalar::Data {
-                    family: family.clone(),
-                    constructor: name.clone(),
+                    constructor: crate::observed::result::DataConstructor::new(
+                        family,
+                        name.clone(),
+                    )?,
                     args: values,
                 }
             }
@@ -576,7 +577,7 @@ pub(super) fn matches(
         else {
             return Err(internal!("constructor照合値がDataでない").into());
         };
-        if constructor != &target {
+        if constructor.name() != &target {
             return Ok(false);
         }
         if args.len() != patterns.len() {
@@ -883,17 +884,15 @@ fn equal_with_retained(
             }
             (
                 Scalar::Data {
-                    family: a,
                     constructor: b,
                     args: c,
                 },
                 Scalar::Data {
-                    family: d,
                     constructor: e,
                     args: f,
                 },
             ) => {
-                if a != d || b != e {
+                if b != e {
                     false
                 } else {
                     if c.len() != f.len() {
@@ -1071,19 +1070,7 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
                 }
                 Ok(())
             }
-            Scalar::Data {
-                family,
-                constructor,
-                args,
-            } => {
-                let name = constructor
-                    .strip_prefix(family)
-                    .and_then(|suffix| suffix.strip_prefix('.'));
-                if family.is_empty()
-                    || name.is_none_or(|name| name.is_empty() || name.contains('.'))
-                {
-                    return Err(internal!("Data値のfamily・正規constructor形式が違う").into());
-                }
+            Scalar::Data { args, .. } => {
                 for arg in args {
                     tick(control)?;
                     if super::path_value::contains_path(&arg.ty(), control)? {

@@ -641,7 +641,7 @@ impl Term {
             else {
                 return Err(internal!("Term constructor patternの値型が違う").into());
             };
-            if constructor != name {
+            if constructor.name() != name {
                 return Ok(false);
             }
             if args.len() != values.len() {
@@ -722,12 +722,13 @@ impl Term {
                                 return Err(internal!("Term零constructorの引数数が違う").into());
                             }
                             Scalar::Data {
-                                family: family.clone(),
-                                constructor: law
-                                    .resolved_names()
-                                    .get(name)
-                                    .ok_or(internal!("constructorの検査済み名がない"))?
-                                    .clone(),
+                                constructor: crate::observed::result::DataConstructor::new(
+                                    family,
+                                    law.resolved_names()
+                                        .get(name)
+                                        .ok_or(internal!("constructorの検査済み名がない"))?
+                                        .clone(),
+                                )?,
                                 args: vec![],
                             }
                         }
@@ -782,12 +783,13 @@ impl Term {
                                 return Err(internal!("Term constructor引数数が違う").into());
                             }
                             Scalar::Data {
-                                family: family.clone(),
-                                constructor: law
-                                    .resolved_names()
-                                    .get(target)
-                                    .ok_or(internal!("constructorの検査済み名がない"))?
-                                    .clone(),
+                                constructor: crate::observed::result::DataConstructor::new(
+                                    family,
+                                    law.resolved_names()
+                                        .get(target)
+                                        .ok_or(internal!("constructorの検査済み名がない"))?
+                                        .clone(),
+                                )?,
                                 args: values,
                             }
                         } else {

@@ -1340,12 +1340,15 @@ mod empty_list_composite_tests {
                     },
                 },
                 Scalar::Data {
-                    family: "Instances.ListBox".into(),
-                    constructor: format!(
-                        "Instances.ListBox.{}",
-                        if index % 2 == 0 { "Absent" } else { "Pack" }
+                    constructor: crate::observed::result::DataConstructor::new(
+                        "Instances.ListBox",
+                        format!(
+                            "Instances.ListBox.{}",
+                            if index % 2 == 0 { "Absent" } else { "Pack" }
+                        )
+                        .into(),
                     )
-                    .into(),
+                    .expect("valid Data constructor"),
                     args: if index % 2 == 0 {
                         vec![]
                     } else {
@@ -1525,8 +1528,11 @@ mod recursive_empty_product_tests {
         assert!(f.is_complete());
         assert_eq!(f.rows().len(), 1);
         let done = Scalar::Data {
-            family: "Instances.Dead".into(),
-            constructor: "Instances.Dead.Done".into(),
+            constructor: crate::observed::result::DataConstructor::new(
+                "Instances.Dead",
+                "Instances.Dead.Done".into(),
+            )
+            .expect("valid Data constructor"),
             args: vec![],
         };
         assert_eq!(
