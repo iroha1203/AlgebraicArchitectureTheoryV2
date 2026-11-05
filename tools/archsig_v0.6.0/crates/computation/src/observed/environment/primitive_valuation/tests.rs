@@ -517,8 +517,8 @@ fn owner_candidate_resolves_a_missing_family_member_without_creating_an_observat
 }
 fn table(domain: &str, pairs: &[(&str, &str)]) -> Scalar {
     Scalar::Map {
-        domain: Type::Ref(format!("Pattern.{domain}")),
-        codomain: Type::Ref("Pattern.Part".into()),
+        domain: format!("Pattern.{domain}"),
+        codomain: "Pattern.Part".into(),
         pairs: pairs
             .iter()
             .map(|(a, b)| (subject_value(a, "Part"), subject_value(b, "Part")))

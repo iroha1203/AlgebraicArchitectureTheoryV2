@@ -100,9 +100,9 @@ impl Environment<'_> {
             self.tick()?;
             keys.push(key.clone());
         }
-        let required = data::set(domain.clone(), &keys, &self.control)?;
+        let required = data::set(Type::Ref(domain.clone()), &keys, &self.control)?;
         keys.push(values[1].clone());
-        let actual = data::set(domain.clone(), &keys, &self.control)?;
+        let actual = data::set(Type::Ref(domain.clone()), &keys, &self.control)?;
         if data::equal(&actual, &required, &self.control)? {
             return Err(internal!("域外Map条件の反証が成立しない").into());
         }

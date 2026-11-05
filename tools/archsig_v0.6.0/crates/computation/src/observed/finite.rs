@@ -389,6 +389,14 @@ fn enumerate_values_maybe(
                     values
                 }
                 Type::Map(domain, codomain) => {
+                    // Enumeration is also called internally without supported(); reject
+                    // hand-built non-reference Maps before enumerating either endpoint.
+                    let domain_entity = domain
+                        .ref_target()
+                        .ok_or(internal!("Mapの始域型が参照でない"))?;
+                    let codomain_entity = codomain
+                        .ref_target()
+                        .ok_or(internal!("Mapの終域型が参照でない"))?;
                     let missing_before_keys = dependencies.missing.len();
                     let Some(keys) = enumerate(
                         domain,
@@ -467,8 +475,8 @@ fn enumerate_values_maybe(
                         emit(
                             &mut values,
                             Scalar::Map {
-                                domain: domain.erase(),
-                                codomain: codomain.erase(),
+                                domain: domain_entity.to_owned(),
+                                codomain: codomain_entity.to_owned(),
                                 pairs,
                             },
                             control,
@@ -727,4 +735,105 @@ fn enumerate_values_maybe(
     enumeration.missing.sort();
     enumeration.missing.dedup();
     Ok(Some(enumeration))
+}
+
+#[cfg(test)]
+mod map_endpoint_tests {
+    use super::*;
+    #[allow(dead_code)]
+    mod fixture {
+        include!("../../../../tests/common/finite_map.rs");
+    }
+    fn law() -> CheckedLaw {
+        let definitions = archsig_input::definition::check_definitions(&[(
+            "maps",
+            fixture::DEFINITIONS.as_bytes(),
+        )])
+        .unwrap();
+        archsig_input::law::check_law(
+            fixture::law(&definitions.vocabularies()["Maps"].digest).as_bytes(),
+            &definitions,
+        )
+        .unwrap()
+    }
+    #[test]
+    fn internal_nonreference_map_endpoints_are_errors_before_enumeration() {
+        let law = law();
+        for (from, to, message) in [
+            (Type::Fp("2".into()), Type::Unit, "Mapの始域型が参照でない"),
+            (
+                Type::Ref("Maps.Key".into()),
+                Type::Unit,
+                "Mapの終域型が参照でない",
+            ),
+        ] {
+            let ty = Type::Map(Box::new(from), Box::new(to));
+            let result = values(
+                &ty,
+                &law,
+                &Control::unlimited(),
+                &mut |_| panic!("invalid endpoints must be rejected before roster access"),
+                &mut |_| panic!("invalid endpoints must not publish a value"),
+            );
+            assert!(matches!(result, Err(ValidationFailure::Internal(ref error))
+                if error.message() == message));
+            let result = field_candidates_if_finite(&ty, &law, &Control::unlimited(), &mut |_| {
+                panic!("invalid if-finite endpoints must not read a roster")
+            });
+            assert!(matches!(result, Err(ValidationFailure::Internal(ref error))
+                if error.message() == message));
+        }
+    }
+    #[test]
+    fn public_law_rejects_nonreference_map_endpoint_types() {
+        let definitions = archsig_input::definition::check_definitions(&[(
+            "maps",
+            fixture::DEFINITIONS.as_bytes(),
+        )])
+        .unwrap();
+        let digest = &definitions.vocabularies()["Maps"].digest;
+        for ty in ["Map<Fp(2),Unit>", "Map<Key,Unit>"] {
+            let source = fixture::law(digest).replace("Map<Key,Image>", ty);
+            let failure =
+                archsig_input::law::check_law(source.as_bytes(), &definitions).unwrap_err();
+            assert_eq!(failure.issue.code, archsig_common::issue::Code::Syntax);
+            assert_eq!(
+                failure.issue.message,
+                "Map domain and codomain must be reference types"
+            );
+        }
+    }
+    #[test]
+    fn empty_owned_map_keeps_erased_endpoint_types_and_owner_roster() {
+        let law = law();
+        let ty = Type::Map(
+            Box::new(Type::Owned("Maps.Key".into(), "from".into())),
+            Box::new(Type::Owned("Maps.Image".into(), "to".into())),
+        );
+        let mut owners = Vec::new();
+        let result = values_with_owned(
+            &ty,
+            &law,
+            &Control::unlimited(),
+            &mut |_| panic!("Owned domains must use their owner roster"),
+            &mut |entity, owner| {
+                owners.push((entity.to_owned(), owner.to_owned()));
+                Ok(Enumeration::default())
+            },
+            &mut |_| {},
+        )
+        .unwrap();
+        assert_eq!(
+            owners,
+            [
+                ("Maps.Key".into(), "from".into()),
+                ("Maps.Image".into(), "to".into())
+            ]
+        );
+        assert_eq!(result.values.len(), 1);
+        let value = &result.values[0];
+        assert_eq!(value.ty(), ty.erase());
+        assert_eq!(value.wire(), archsig_common::canonical::Json::Arr(vec![]));
+        assert_eq!(value.clone(), *value);
+    }
 }

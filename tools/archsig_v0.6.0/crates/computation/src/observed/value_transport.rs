@@ -346,6 +346,18 @@ fn moved_type(
 ) -> Result<Type, ConstructionFailure> {
     crate::construction::maps::moved_declaration_type(ty, mu, alpha, control)
 }
+// The Ref arm of moved_declaration_type, including its entry/exit checkpoints.
+// Map endpoints already own only the entity name, so avoid rebuilding a Type.
+fn moved_reference(
+    entity: &str,
+    mu: &BTreeMap<String, String>,
+    control: &Control,
+) -> Result<String, ConstructionFailure> {
+    control.checkpoint(Checkpoint::DeclarationCorrespondence)?;
+    let moved = crate::construction::maps::moved_entity_name(entity, mu);
+    control.checkpoint(Checkpoint::DeclarationCorrespondence)?;
+    Ok(moved)
+}
 fn same(a: &Scalar, b: &Scalar, control: &Control) -> Result<bool, ConstructionFailure> {
     tick(control)?;
     if a.ty() != b.ty() {
@@ -536,8 +548,8 @@ fn image(
                     }
                 }
                 Scalar::Map {
-                    domain: moved_type(domain, mu, alpha, control)?,
-                    codomain: moved_type(codomain, mu, alpha, control)?,
+                    domain: moved_reference(domain, mu, control)?,
+                    codomain: moved_reference(codomain, mu, control)?,
                     pairs: moved,
                 }
             }
@@ -1100,8 +1112,8 @@ mod tests {
                 pairs.reverse();
             }
             Scalar::Map {
-                domain: Type::Ref("Right.Child".into()),
-                codomain: Type::Ref("Left.Child".into()),
+                domain: "Right.Child".into(),
+                codomain: "Left.Child".into(),
                 pairs,
             }
         };

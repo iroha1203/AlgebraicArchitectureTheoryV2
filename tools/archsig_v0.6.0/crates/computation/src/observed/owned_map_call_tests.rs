@@ -177,7 +177,7 @@ fn missing_owned_map_uses_complete_original_fibers_before_candidate_tables() {
         else {
             panic!("Map")
         };
-        assert_eq!(domain, &Type::Ref("Reservations.State".into()));
+        assert_eq!(domain, "Reservations.State");
         assert_eq!(codomain, domain);
         assert_eq!(pairs.len(), 2);
         let mut targets = vec![];
