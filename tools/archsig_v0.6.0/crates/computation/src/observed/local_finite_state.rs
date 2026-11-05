@@ -53,6 +53,21 @@ fn values(state: &State, equation: bool) -> &[(Scalar, NodeRef)] {
         &state.semantic_values
     }
 }
+// scalar_domainで同値重複を除いた有限状態の恒等制限。
+// State.identityはsemanticからequationへの別の写像なので、各側の値から構成する。
+pub(super) fn identity_restriction(
+    state: &State,
+    equation: bool,
+    c: &Control,
+) -> Result<Vec<(NodeRef, NodeRef)>, ValidationFailure> {
+    values(state, equation)
+        .iter()
+        .map(|(_, reference)| {
+            c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
+            Ok((*reference, *reference))
+        })
+        .collect()
+}
 pub(super) fn restriction(
     from: &State,
     to: &State,
