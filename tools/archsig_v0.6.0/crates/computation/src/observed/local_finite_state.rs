@@ -288,6 +288,7 @@ pub(super) fn build(
     } else {
         None
     };
+    drop(equation_values);
     let mut all_parameters = vec![];
     let mut all_images = vec![];
     let mut solution_parameters = vec![];
@@ -323,6 +324,11 @@ pub(super) fn build(
             Ok((p, v))
         })
         .collect::<Result<Vec<_>, ValidationFailure>>()?;
+    let semantic_checked = all_parameters.len();
+    drop(all_parameters);
+    drop(all_images);
+    drop(parameter_values);
+    drop(image_values);
     let action = state_map(b, point, image, &pair_refs)?;
     let mut slot_values = vec![];
     let mut variables = vec![];
@@ -514,6 +520,9 @@ pub(super) fn build(
         semantic_pairs.extend(parameters.iter().map(|p| (*p, *r)));
         semantic_parameters.push((*r, parameters));
     }
+    drop(solution_parameters);
+    drop(solution_images);
+    drop(solution_parameter_values);
     let semantic_action = state_map(b, solution_parameter_domain, states, &semantic_pairs)?;
     let equations = b.push(
         NodeType::Construction(T::EquationSpace),
@@ -600,7 +609,7 @@ pub(super) fn build(
         semantic_parameters,
         state_type: ty,
         equation_parameters,
-        semantic_checked: all_parameters.len(),
+        semantic_checked,
         equation_checked: projected
             .iter()
             .map(|v| v.wire().canonical())
