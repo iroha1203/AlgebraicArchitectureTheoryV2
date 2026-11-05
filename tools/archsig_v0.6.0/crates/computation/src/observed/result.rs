@@ -157,8 +157,9 @@ pub(crate) enum Scalar {
     Unit,
     Text(String),
     Map {
-        domain: Type,
-        codomain: Type,
+        // Checked Map endpoints are erased references; original Owned constraints live in input metadata.
+        domain: String,
+        codomain: String,
         pairs: Vec<(Scalar, Scalar)>,
     },
     List {
@@ -201,7 +202,10 @@ impl Scalar {
             Self::Text(_) => Type::Text,
             Self::Map {
                 domain, codomain, ..
-            } => Type::Map(Box::new(domain.clone()), Box::new(codomain.clone())),
+            } => Type::Map(
+                Box::new(Type::Ref(domain.clone())),
+                Box::new(Type::Ref(codomain.clone())),
+            ),
             Self::List { element, .. } => Type::List(Box::new(element.clone())),
             Self::Set { element, .. } => Type::Set(Box::new(element.clone())),
             Self::Option { element, .. } => Type::Option(Box::new(element.clone())),
@@ -5359,15 +5363,65 @@ mod invariant_tests {
         }
     }
 
-    fn bool_map(values: &[(bool, bool)]) -> Scalar {
+    fn reference(value: bool) -> Scalar {
+        Scalar::Subject {
+            snapshot: "v".into(),
+            subject: if value { "true" } else { "false" }.into(),
+            entity: "R.Item".into(),
+        }
+    }
+
+    fn reference_map(values: &[(bool, bool)]) -> Scalar {
         Scalar::Map {
-            domain: Type::Bool,
-            codomain: Type::Bool,
+            domain: "R.Item".into(),
+            codomain: "R.Item".into(),
             pairs: values
                 .iter()
-                .map(|&(k, v)| (Scalar::Bool(k), Scalar::Bool(v)))
+                .map(|&(k, v)| (reference(k), reference(v)))
                 .collect(),
         }
+    }
+
+    #[test]
+    fn reference_map_preserves_type_wire_clone_and_pair_order() {
+        let value = reference_map(&[(false, true), (true, false)]);
+        let reversed = reference_map(&[(true, false), (false, true)]);
+        assert_eq!(value, value.clone());
+        assert_eq!(value, reversed);
+        assert_ne!(value.wire(), reversed.wire());
+        assert_eq!(
+            value.ty(),
+            Type::Map(
+                Box::new(Type::Ref("R.Item".into())),
+                Box::new(Type::Ref("R.Item".into())),
+            )
+        );
+        assert_eq!(
+            value.wire(),
+            Json::Arr(vec![
+                Json::Arr(vec![
+                    Json::Arr(vec![Json::str("v"), Json::str("false")]),
+                    Json::Arr(vec![Json::str("v"), Json::str("true")]),
+                ]),
+                Json::Arr(vec![
+                    Json::Arr(vec![Json::str("v"), Json::str("true")]),
+                    Json::Arr(vec![Json::str("v"), Json::str("false")]),
+                ]),
+            ])
+        );
+        assert!(
+            super::super::data::check_shape(&value, &archsig_common::control::Control::unlimited())
+                .is_ok()
+        );
+        let wrong = Scalar::Map {
+            domain: "R.Other".into(),
+            codomain: "R.Item".into(),
+            pairs: vec![(reference(false), reference(true))],
+        };
+        assert!(
+            super::super::data::check_shape(&wrong, &archsig_common::control::Control::unlimited())
+                .is_err()
+        );
     }
 
     #[test]
@@ -5390,26 +5444,26 @@ mod invariant_tests {
 
     #[test]
     fn raw_scalar_map_equality_is_symmetric_and_preserves_type_length_and_order_independence() {
-        let duplicate = bool_map(&[(false, false), (false, false)]);
-        let distinct = bool_map(&[(false, false), (true, true)]);
+        let duplicate = reference_map(&[(false, false), (false, false)]);
+        let distinct = reference_map(&[(false, false), (true, true)]);
         assert_ne!(duplicate, distinct);
         assert_ne!(distinct, duplicate);
-        assert_ne!(duplicate, bool_map(&[(false, false)]));
-        assert_eq!(distinct, bool_map(&[(true, true), (false, false)]));
-        assert_eq!(bool_map(&[(true, true), (false, false)]), distinct);
+        assert_ne!(duplicate, reference_map(&[(false, false)]));
+        assert_eq!(distinct, reference_map(&[(true, true), (false, false)]));
+        assert_eq!(reference_map(&[(true, true), (false, false)]), distinct);
         assert_ne!(
-            bool_map(&[]),
+            reference_map(&[]),
             Scalar::Map {
-                domain: Type::Unit,
-                codomain: Type::Bool,
+                domain: "R.Other".into(),
+                codomain: "R.Item".into(),
                 pairs: vec![]
             }
         );
         assert_ne!(
-            bool_map(&[]),
+            reference_map(&[]),
             Scalar::Map {
-                domain: Type::Bool,
-                codomain: Type::Unit,
+                domain: "R.Item".into(),
+                codomain: "R.Other".into(),
                 pairs: vec![]
             }
         );
@@ -5420,28 +5474,31 @@ mod invariant_tests {
         let nested = |set, map| Scalar::Option {
             element: Type::Tuple(vec![
                 Type::Set(Box::new(Type::Bool)),
-                Type::Map(Box::new(Type::Bool), Box::new(Type::Bool)),
+                Type::Map(
+                    Box::new(Type::Ref("R.Item".into())),
+                    Box::new(Type::Ref("R.Item".into())),
+                ),
             ]),
             value: Some(Box::new(Scalar::Tuple(vec![set, map]))),
         };
         let valid = nested(
             bool_set(&[false, true]),
-            bool_map(&[(false, false), (true, true)]),
+            reference_map(&[(false, false), (true, true)]),
         );
         let reordered = nested(
             bool_set(&[true, false]),
-            bool_map(&[(true, true), (false, false)]),
+            reference_map(&[(true, true), (false, false)]),
         );
         assert_eq!(valid, reordered);
         assert_eq!(reordered, valid);
         for forged in [
             nested(
                 bool_set(&[false, false]),
-                bool_map(&[(false, false), (true, true)]),
+                reference_map(&[(false, false), (true, true)]),
             ),
             nested(
                 bool_set(&[false, true]),
-                bool_map(&[(false, false), (false, false)]),
+                reference_map(&[(false, false), (false, false)]),
             ),
         ] {
             assert_ne!(forged, valid);
@@ -5463,15 +5520,16 @@ mod invariant_tests {
                 element: ty,
                 items: vec![right],
             };
-            let ty = left.ty();
+            // Raw deep-tree equality fixture, not an admissible Map payload.
+            // Keep the nested subtree as each image to exercise stack growth.
             left = Scalar::Map {
-                domain: Type::Bool,
-                codomain: ty.clone(),
+                domain: "R.Item".into(),
+                codomain: "R.Item".into(),
                 pairs: vec![(Scalar::Bool(false), left)],
             };
             right = Scalar::Map {
-                domain: Type::Bool,
-                codomain: ty,
+                domain: "R.Item".into(),
+                codomain: "R.Item".into(),
                 pairs: vec![(Scalar::Bool(false), right)],
             };
         }

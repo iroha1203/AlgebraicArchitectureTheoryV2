@@ -151,6 +151,10 @@ fn tick(control: &Control) -> Result<(), ConstructionFailure> {
         .checkpoint(Checkpoint::DeclarationCorrespondence)
         .map_err(Into::into)
 }
+// Shared by erased reference Map endpoints and the declaration Type transport.
+pub(crate) fn moved_entity_name(entity: &str, mu: &BTreeMap<String, String>) -> String {
+    mu.get(entity).cloned().unwrap_or_else(|| entity.to_owned())
+}
 pub(crate) fn moved_type(
     ty: &Type,
     mu: &BTreeMap<String, String>,
@@ -159,7 +163,7 @@ pub(crate) fn moved_type(
 ) -> Result<Type, ConstructionFailure> {
     stacker::maybe_grow(128 * 1024, 4 * 1024 * 1024, || {
         tick(control)?;
-        let name = |n: &String| mu.get(n).cloned().unwrap_or_else(|| n.clone());
+        let name = |n: &String| moved_entity_name(n, mu);
         let ty = match ty {
             Type::Ref(n) => Type::Ref(name(n)),
             Type::Owned(n, owner) => Type::Owned(

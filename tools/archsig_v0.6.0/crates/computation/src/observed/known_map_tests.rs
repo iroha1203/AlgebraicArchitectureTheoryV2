@@ -51,7 +51,7 @@ fn known_map_rechecks_original_pairs_types_support_and_scope() {
         let Some(Payload::Scalar(Scalar::Map { codomain, .. })) = &mut nodes[t].payload else {
             unreachable!()
         };
-        *codomain = Type::Ref("Maps.Void".into());
+        *codomain = "Maps.Void".into();
     });
     completion_mutation(&r, t, |nodes| {
         nodes[t].support.make_owned().clear();

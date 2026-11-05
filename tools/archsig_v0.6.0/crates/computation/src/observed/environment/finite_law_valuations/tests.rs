@@ -589,8 +589,8 @@ fn fixed_stops_leave_only_completed_rows_and_freeze_the_probe() {
 fn incomplete_non_owned_map_binding_must_be_rejected() {
     let i = fixture::with_body(fixture::MAP, "law required fixed(t:Map<Part,Part>):true;");
     let v = Scalar::Map {
-        domain: Type::Ref("Pattern.Part".into()),
-        codomain: Type::Ref("Pattern.Part".into()),
+        domain: "Pattern.Part".into(),
+        codomain: "Pattern.Part".into(),
         pairs: vec![],
     };
     let r = finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &quiet());
@@ -620,8 +620,8 @@ fn unregistered_path_binding_must_be_rejected() {
 fn single_key_map_binding_must_be_rejected() {
     let i = fixture::with_body(fixture::MAP, "law required fixed(t:Map<Part,Part>):t=t;");
     let v = Scalar::Map {
-        domain: Type::Ref("Pattern.Part".into()),
-        codomain: Type::Ref("Pattern.Part".into()),
+        domain: "Pattern.Part".into(),
+        codomain: "Pattern.Part".into(),
         pairs: vec![(subject("p"), subject("q"))],
     };
     assert!(finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &quiet()).is_err());
@@ -630,8 +630,8 @@ fn single_key_map_binding_must_be_rejected() {
 fn total_map_binding_is_accepted() {
     let i = fixture::with_body(fixture::MAP, "law required fixed(t:Map<Part,Part>):t=t;");
     let v = Scalar::Map {
-        domain: Type::Ref("Pattern.Part".into()),
-        codomain: Type::Ref("Pattern.Part".into()),
+        domain: "Pattern.Part".into(),
+        codomain: "Pattern.Part".into(),
         pairs: vec![(subject("p"), subject("q")), (subject("q"), subject("p"))],
     };
     let r = finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &quiet()).unwrap();
@@ -744,8 +744,8 @@ fn nested_maps_keep_their_original_full_domain_check() {
         let i = fixture::with_body(fixture::MAP, &format!("law required fixed(m:{ty}):true;"));
         for full in [false, true] {
             let map = Scalar::Map {
-                domain: Type::Ref("Pattern.Part".into()),
-                codomain: Type::Ref("Pattern.Part".into()),
+                domain: "Pattern.Part".into(),
+                codomain: "Pattern.Part".into(),
                 pairs: if full {
                     vec![(subject("p"), subject("p")), (subject("q"), subject("q"))]
                 } else {

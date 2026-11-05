@@ -95,7 +95,9 @@ impl Environment<'_> {
                         codomain,
                         pairs,
                     }),
-                ) if *domain == from.erase() && *codomain == to.erase() => {
+                ) if Some(domain.as_str()) == from.ref_target()
+                    && Some(codomain.as_str()) == to.ref_target() =>
+                {
                     if matches!(from.as_ref(), Type::Owned(..)) {
                         pending.push((from, Member::MapDomain(pairs)));
                     }

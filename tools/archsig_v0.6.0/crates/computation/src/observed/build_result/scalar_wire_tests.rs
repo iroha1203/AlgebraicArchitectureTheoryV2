@@ -1,6 +1,14 @@
 use super::*;
 use std::mem::size_of;
 
+fn reference(subject: &str) -> Scalar {
+    Scalar::Subject {
+        snapshot: "v".into(),
+        subject: subject.into(),
+        entity: "R.Item".into(),
+    }
+}
+
 // This is the previous generic Part, not finite_law_diagram::Part.
 #[allow(dead_code)]
 #[derive(PartialEq, Eq)]
@@ -61,11 +69,11 @@ fn scalar_parts_preserve_previous_wire_without_retaining_json() {
             args: vec![Scalar::Bool(false)],
         },
         Scalar::Map {
-            domain: Type::Z,
-            codomain: Type::Text,
+            domain: "R.Item".into(),
+            codomain: "R.Item".into(),
             pairs: vec![
-                (Scalar::Z(2.into()), Scalar::Text("b".into())),
-                (Scalar::Z(1.into()), Scalar::Text("a".into())),
+                (reference("2"), reference("b")),
+                (reference("1"), reference("a")),
             ],
         },
         Scalar::List {
@@ -166,11 +174,11 @@ fn source_part_equality_keeps_the_previous_wire_order_guard() {
         items: vec![Scalar::Z(1.into()), Scalar::Z(2.into())],
     };
     let map = || Scalar::Map {
-        domain: Type::Z,
-        codomain: Type::Bool,
+        domain: "R.Item".into(),
+        codomain: "R.Item".into(),
         pairs: vec![
-            (Scalar::Z(1.into()), Scalar::Bool(false)),
-            (Scalar::Z(2.into()), Scalar::Bool(true)),
+            (reference("1"), reference("false")),
+            (reference("2"), reference("true")),
         ],
     };
     for scalar in [
@@ -317,8 +325,8 @@ fn scalar_wire_order_comparison_keeps_deep_container_stack_growth() {
                     value: Some(Box::new(value)),
                 },
                 2 => Scalar::Map {
-                    domain: Type::Unit,
-                    codomain: Type::Unit,
+                    domain: "R.Item".into(),
+                    codomain: "R.Item".into(),
                     pairs: vec![(Scalar::Unit, value)],
                 },
                 _ => Scalar::Data {

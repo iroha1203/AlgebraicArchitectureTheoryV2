@@ -647,7 +647,7 @@ mod tests {
         let ty=Type::Ref("R.Item".into());
         let set=|items|Scalar::Set{element:ty.clone(),items};
         let list=|items|Scalar::List{element:ty.clone(),items};
-        let map=|pairs|Scalar::Map{domain:ty.clone(),codomain:ty.clone(),pairs};
+        let map=|pairs|Scalar::Map{domain:"R.Item".into(),codomain:"R.Item".into(),pairs};
         let data=|name:&str,args|Scalar::Data{family:"R.Packet".into(),constructor:name.into(),args};
         let c=Control::unlimited();
         for (a,b) in [

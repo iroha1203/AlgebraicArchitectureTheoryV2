@@ -922,8 +922,8 @@ fn nested_primitive_containers_canonicalize_sets_and_maps_but_preserve_sequences
             args: vec![set()],
         },
         Scalar::Map {
-            domain: Type::Ref("Finite.Root".into()),
-            codomain: Type::Ref("Finite.Root".into()),
+            domain: "Finite.Root".into(),
+            codomain: "Finite.Root".into(),
             pairs: vec![(subject("b"), subject("a")), (subject("a"), subject("b"))],
         },
     ]);

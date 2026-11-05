@@ -374,8 +374,8 @@ pub(super) fn from_input(
         }
         let result = match (value, ty) {
             (Value::Map(pairs), Type::Map(domain, codomain)) => {
-                let domain = domain.erase();
-                let codomain = codomain.erase();
+                let mut domain = domain.erase();
+                let mut codomain = codomain.erase();
                 let mut values = Vec::new();
                 for (_index, (key, value)) in pairs.iter().enumerate() {
                     #[cfg(test)]
@@ -388,9 +388,15 @@ pub(super) fn from_input(
                     values.push((key, value));
                     tick(control)?;
                 }
+                let Type::Ref(domain) = &mut domain else {
+                    return Err(internal!("Mapの始域型が参照でない").into());
+                };
+                let Type::Ref(codomain) = &mut codomain else {
+                    return Err(internal!("Mapの終域型が参照でない").into());
+                };
                 Scalar::Map {
-                    domain,
-                    codomain,
+                    domain: std::mem::take(domain),
+                    codomain: std::mem::take(codomain),
                     pairs: values,
                 }
             }
@@ -1002,14 +1008,13 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
                 codomain,
                 pairs,
             } => {
-                if !matches!(domain, Type::Ref(_)) || !matches!(codomain, Type::Ref(_)) {
-                    return Err(internal!("Mapの両端型が参照でない").into());
-                }
                 for (index, (key, value)) in pairs.iter().enumerate() {
                     #[cfg(test)]
                     observe_iteration("map_check", index);
                     tick(control)?;
-                    if key.ty() != *domain || value.ty() != *codomain {
+                    if !matches!(key.ty(), Type::Ref(ref entity) if entity == domain)
+                        || !matches!(value.ty(), Type::Ref(ref entity) if entity == codomain)
+                    {
                         return Err(internal!("Mapのkey/value型が違う").into());
                     }
                     check_shape(key, control)?;
@@ -1211,7 +1216,7 @@ pub(super) fn map_apply(
     else {
         return Err(internal!("Map適用のcalleeがMap値でない").into());
     };
-    if key.ty() != *domain {
+    if !matches!(key.ty(), Type::Ref(ref entity) if entity == domain) {
         return Err(internal!("Map適用の実key型が始域型と違う").into());
     }
     let mut selected = None;
@@ -1220,7 +1225,9 @@ pub(super) fn map_apply(
         observe_iteration("map_lookup", _index);
         tick(control)?;
         if equal(candidate, key, control)? {
-            if selected.is_some() || image.ty() != *codomain {
+            if selected.is_some()
+                || !matches!(image.ty(), Type::Ref(ref entity) if entity == codomain)
+            {
                 return Err(internal!("Map適用の像が一意・型付きでない").into());
             }
             selected = Some(image.clone());

@@ -36,13 +36,9 @@ fn example(mode: usize) -> ObservedEvaluation {
     assert_ne!(r.status(), "error", "{:?}", r.answers);
     r
 }
-fn map_mut(value: &mut Scalar) -> (&mut Type, &mut Type, &mut Vec<(Scalar, Scalar)>) {
+fn map_pairs_mut(value: &mut Scalar) -> &mut Vec<(Scalar, Scalar)> {
     match value {
-        Scalar::Map {
-            domain,
-            codomain,
-            pairs,
-        } => (domain, codomain, pairs),
+        Scalar::Map { pairs, .. } => pairs,
         _ => panic!("Map expected"),
     }
 }
@@ -69,7 +65,7 @@ fn map_field_totality_owned_key_image_and_duplicate_rows_are_rechecked() {
         .0;
     // 全域性の再検査の代表: 候補のMapから行を消すと核が拒否する。
     let mut graph = rebuild_for_origin_and_support_recheck(&r, &r.nodes).unwrap();
-    let (_, _, pairs) = map_mut(scalar_mut(&mut graph.nodes[first]));
+    let pairs = map_pairs_mut(scalar_mut(&mut graph.nodes[first]));
     pairs.clear();
     let t = scalar_mut(&mut graph.nodes[first]).ty();
     graph.nodes[first].ty = NodeType::Value(t);

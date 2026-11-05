@@ -7,11 +7,11 @@ mod internal;
 mod operations;
 mod references;
 mod transport;
-pub(crate) use declarations::moved_type as moved_declaration_type;
 pub use declarations::{
     DeclarationCandidate, DeclarationConditionFailure, DeclarationCorrespondence, DeclarationPair,
     declaration_correspondence,
 };
+pub(crate) use declarations::{moved_entity_name, moved_type as moved_declaration_type};
 pub use internal::{
     InternalArrowResult, InternalArrows, InternalArrowsFailure, internal_arrow, internal_arrows,
 };

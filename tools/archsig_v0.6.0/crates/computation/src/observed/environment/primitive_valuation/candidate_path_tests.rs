@@ -79,8 +79,8 @@ fn list(values: &[&str]) -> Scalar {
 }
 fn map(ty: &str, rows: &[(&str, &str)]) -> Scalar {
     Scalar::Map {
-        domain: Type::Ref(ty.into()),
-        codomain: Type::Ref(ty.into()),
+        domain: ty.into(),
+        codomain: ty.into(),
         pairs: rows
             .iter()
             .map(|(a, b)| (reference(ty, a), reference(ty, b)))
