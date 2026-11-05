@@ -90,7 +90,7 @@ pub(super) fn discover_law_reads(
     let mut failure = None;
     for (selection, object) in selections.iter().zip(objects) {
         tick(c)?;
-        if e.indexes.object.as_deref() != Some(selection.domain.as_ref()) {
+        if e.indexes.object.as_ref() != Some(&selection.domain) {
             e.results.scoped_values.borrow_mut().clear();
         }
         e.indexes.object = Some(Arc::clone(&selection.domain));

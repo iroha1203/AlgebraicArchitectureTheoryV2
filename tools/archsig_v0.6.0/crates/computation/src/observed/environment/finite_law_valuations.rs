@@ -1600,8 +1600,7 @@ fn populate_family<R: LawRows>(
                 discovered.extend(reads.iter().cloned());
             }
             // 全Lawの読取りを先に集める。新位置を含むpassの判定は捨てる。
-            if template.try_primitive_valuation_from(&values, c)?.is_none() || !candidate_admissible
-            {
+            if !e.primitive_constraints_hold(c)? || !candidate_admissible {
                 continue;
             }
             blocked |= candidate_blocked;

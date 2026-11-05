@@ -194,7 +194,7 @@ fn populate_realizations<S: ParameterSink>(
                 return Err(stop.into());
             }
             // 依存発見passの未固定値で、候補やparameter行を枝刈りしない。
-            if template.try_primitive_valuation_from(&values, c)?.is_some() {
+            if e.primitive_constraints_hold(c)? {
                 match evaluated {
                     Ok(objects) => {
                         complete &= objects.iter().all(ObjectLawInstances::is_complete);
