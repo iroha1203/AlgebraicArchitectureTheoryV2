@@ -2,9 +2,8 @@ use super::*;
 use archsig_input::{definition, input::InputSources};
 use std::{cell::Cell, rc::Rc};
 
-mod triangle {
-    include!("../../../../../tests/common/three_edge.rs");
-}
+#[path = "../../../../../tests/common/three_edge.rs"]
+mod triangle;
 
 #[test]
 fn coordinate_references_keep_order_repetition_and_exact_owner_membership() {
