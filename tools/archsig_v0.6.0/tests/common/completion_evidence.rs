@@ -1,9 +1,9 @@
 //! 三入力試験で、整合補完の全件と各補完内のwhole判断を確認する。
 use archsig_common::canonical::Json;
 use archsig_computation::observed::ObservedEvaluation;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 
-fn object(value: &Json) -> &BTreeMap<String, Json> {
+fn object(value: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(fields) = value else {
         panic!("object")
     };

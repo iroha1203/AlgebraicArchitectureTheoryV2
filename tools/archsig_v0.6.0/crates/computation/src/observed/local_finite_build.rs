@@ -101,7 +101,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
                 b.push(
                     NodeType::LawInstance,
                     "law_instance",
-                    Json::Obj(fields),
+                    Json::Obj(fields.into()),
                     std::iter::once(expression)
                         .chain(guard)
                         .chain(bindings.iter().map(|(_, r)| *r))

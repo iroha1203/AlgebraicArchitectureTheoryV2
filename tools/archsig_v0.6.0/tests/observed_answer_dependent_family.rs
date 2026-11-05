@@ -3,8 +3,7 @@ use crate::common::answer_dependent_family as fixture;
 use crate::common::quiet;
 use archsig_common::canonical::Json;
 use archsig_computation::observed::evaluate_observed_bytes;
-use std::collections::BTreeMap;
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
+fn obj(j: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(m) = j else { panic!("object") };
     m
 }

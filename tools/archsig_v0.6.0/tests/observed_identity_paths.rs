@@ -3,8 +3,7 @@ use crate::common::quiet;
 use archsig_common::canonical::Json;
 use archsig_computation::observed::evaluate_observed_bytes;
 use archsig_input::input::check_inputs;
-use std::collections::BTreeMap;
-fn object(j: &Json) -> &BTreeMap<String, Json> {
+fn object(j: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(fields) = j else {
         panic!("object {j:?}")
     };

@@ -119,7 +119,7 @@ fn rename(value: &mut Json, ids: &BTreeMap<String, String>) {
     });
 }
 fn retain_evidence(
-    fields: &mut BTreeMap<String, Json>,
+    fields: &mut archsig_common::canonical::JsonObject,
     examples: &BTreeSet<String>,
     completions: &BTreeSet<String>,
 ) {

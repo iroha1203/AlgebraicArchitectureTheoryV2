@@ -41,7 +41,7 @@ fn map_count(value: Option<&str>) -> Vec<u8> {
 fn run(src: InputSources, asks: &[&str]) -> Json {
     evaluate_observed_bytes(src, asks, &quiet()).unwrap().wire()
 }
-fn obj(value: &Json) -> &BTreeMap<String, Json> {
+fn obj(value: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(fields) = value else {
         panic!("object: {value:?}")
     };

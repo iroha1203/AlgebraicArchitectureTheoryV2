@@ -5,7 +5,7 @@ use crate::common::quiet;
 use archsig_common::canonical::Json;
 use archsig_computation::observed::evaluate_observed_bytes;
 use std::collections::{BTreeMap, BTreeSet};
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
+fn obj(j: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(x) = j else { panic!("object") };
     x
 }

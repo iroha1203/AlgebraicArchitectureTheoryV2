@@ -3,9 +3,10 @@
 use crate::control::{Checkpoint, Control};
 use crate::json::InputError;
 use sha2::{Digest, Sha256};
-use std::collections::BTreeMap;
+mod object;
+pub use object::JsonObject;
 
-/// 結果と manifest に使う JSON 値。object の key は `BTreeMap` が UTF-8 byte 順に保つ。
+/// 結果と manifest に使う JSON 値。object の key は `JsonObject` が UTF-8 byte 順に保つ。
 /// UTF-8 の byte 順は Unicode scalar 順と一致する。
 #[derive(Debug, Eq)]
 pub enum Json {
@@ -13,7 +14,7 @@ pub enum Json {
     Nat(u64),
     Str(String),
     Arr(Vec<Json>),
-    Obj(BTreeMap<String, Json>),
+    Obj(JsonObject),
 }
 
 impl Json {

@@ -138,7 +138,7 @@ fn check_inner(table: &JNode) -> Result<(Json, bool)> {
             ),
         );
     }
-    Ok((Json::Obj(result), adequate))
+    Ok((Json::Obj(result.into()), adequate))
 }
 
 #[cfg(test)]

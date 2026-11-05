@@ -116,6 +116,16 @@ impl<K: ControlledEq + Ord, V: ControlledEq> ControlledEq for BTreeMap<K, V> {
         Ok(())
     }
 }
+impl ControlledEq for archsig_common::canonical::JsonObject {
+    fn compare(&self, other: &Self, c: &mut Comparison<'_>) -> Result<(), BundleError> {
+        c.eq(&self.len(), &other.len())?;
+        for ((a, b), (x, y)) in self.iter().zip(other) {
+            c.eq(a, x)?;
+            c.eq(b, y)?;
+        }
+        Ok(())
+    }
+}
 impl<T: ControlledEq> ControlledEq for Option<T> {
     fn compare(&self, other: &Self, c: &mut Comparison<'_>) -> Result<(), BundleError> {
         match (self, other) {

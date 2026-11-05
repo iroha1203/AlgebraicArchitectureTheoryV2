@@ -13,7 +13,7 @@ fn sources(revision: &str) -> InputSources {
         terms::archmap(digest, revision).into_bytes(),
     )
 }
-fn obj(j: &Json) -> &std::collections::BTreeMap<String, Json> {
+fn obj(j: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(m) = j else { panic!("object") };
     m
 }

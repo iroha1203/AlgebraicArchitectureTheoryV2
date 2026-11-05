@@ -88,7 +88,7 @@ fn node_reference(value: &Json) -> NodeRef {
     )
 }
 
-fn brief_text(fields: &mut BTreeMap<String, Json>, key: &str, value: &str) {
+fn brief_text(fields: &mut archsig_common::canonical::JsonObject, key: &str, value: &str) {
     if value.len() <= 256 {
         fields.insert(key.into(), Json::str(value));
     } else {
@@ -96,7 +96,7 @@ fn brief_text(fields: &mut BTreeMap<String, Json>, key: &str, value: &str) {
     }
 }
 
-fn fields(value: &Json) -> Option<&BTreeMap<String, Json>> {
+fn fields(value: &Json) -> Option<&archsig_common::canonical::JsonObject> {
     match value {
         Json::Obj(fields) => Some(fields),
         _ => None,
@@ -134,7 +134,7 @@ impl ObservedEvaluation {
                     .iter()
                     .find(|request| request.id == answer.id)
                     .expect("回答の元の問い");
-                let mut row = BTreeMap::from([
+                let mut row = archsig_common::canonical::JsonObject::from([
                     ("id".into(), Json::str(&answer.id)),
                     ("question".into(), Json::str(request.kind.wire())),
                     ("status".into(), Json::str(answer.status.wire())),
@@ -220,7 +220,7 @@ impl ObservedEvaluation {
                         );
                     }
                 }
-                Json::Obj(row)
+                Json::Obj(row.into())
             })
             .collect();
         let mut result = BTreeMap::from([
@@ -235,7 +235,7 @@ impl ObservedEvaluation {
                 Json::Arr(issues.iter().map(notice).collect()),
             );
         }
-        Json::Obj(result)
+        Json::Obj(result.into())
     }
 
     fn summary_counterexample(&self, node: &Node, data: Counterexample<'_>) -> Json {
@@ -301,7 +301,7 @@ impl ObservedEvaluation {
         bindings: impl ExactSizeIterator<Item = (&'a str, NodeRef)>,
         facts: impl ExactSizeIterator<Item = Json>,
     ) -> Json {
-        let mut row = BTreeMap::from([
+        let mut row = archsig_common::canonical::JsonObject::from([
             ("bindings_total".into(), Json::Nat(bindings.len() as u64)),
             (
                 "bindings".into(),
@@ -309,10 +309,12 @@ impl ObservedEvaluation {
                     bindings
                         .take(ITEM_LIMIT)
                         .map(|(name, value)| {
-                            let mut row =
-                                BTreeMap::from([("value".into(), self.summary_value(value))]);
+                            let mut row = archsig_common::canonical::JsonObject::from([(
+                                "value".into(),
+                                self.summary_value(value),
+                            )]);
                             brief_text(&mut row, "name", name);
-                            Json::Obj(row)
+                            Json::Obj(row.into())
                         })
                         .collect(),
                 ),
@@ -326,14 +328,14 @@ impl ObservedEvaluation {
                     facts
                         .take(ITEM_LIMIT)
                         .map(|fact| {
-                            let mut row = BTreeMap::new();
+                            let mut row = archsig_common::canonical::JsonObject::new();
                             for (key, value) in fields(&fact).expect("counterexample fact") {
                                 let Json::Str(value) = value else {
                                     unreachable!("fact identifier")
                                 };
                                 brief_text(&mut row, key, value);
                             }
-                            Json::Obj(row)
+                            Json::Obj(row.into())
                         })
                         .collect(),
                 ),
@@ -366,7 +368,7 @@ impl ObservedEvaluation {
                 }
             }
         }
-        Json::Obj(row)
+        Json::Obj(row.into())
     }
 
     fn summary_value(&self, mut reference: NodeRef) -> Json {
@@ -411,7 +413,7 @@ impl ObservedEvaluation {
         };
         let Some(value) = value.as_ref() else {
             brief.insert("state".into(), Json::str("blocked"));
-            return Json::Obj(brief);
+            return Json::Obj(brief.into());
         };
         if matches!(node.ty, NodeType::Value(_)) && !has_reference(value) {
             let bytes = value.canonical().len();
@@ -420,7 +422,7 @@ impl ObservedEvaluation {
             } else {
                 brief.insert("value_bytes".into(), Json::Nat(bytes as u64));
             }
-            return Json::Obj(brief);
+            return Json::Obj(brief.into());
         }
         if let Some(value) = fields(value) {
             for key in [
@@ -469,7 +471,7 @@ impl ObservedEvaluation {
                 }
             }
         }
-        Json::Obj(brief)
+        Json::Obj(brief.into())
     }
 }
 

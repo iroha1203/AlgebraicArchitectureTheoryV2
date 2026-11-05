@@ -189,7 +189,7 @@ pub(super) fn diagnose(
             } else {
                 "equation_solutions"
             },
-            Json::Obj(fields),
+            Json::Obj(fields.into()),
             [selected.solution_domain, restriction, r]
                 .into_iter()
                 .chain(parameters)

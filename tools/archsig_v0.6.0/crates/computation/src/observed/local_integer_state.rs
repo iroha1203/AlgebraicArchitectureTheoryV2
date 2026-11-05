@@ -135,7 +135,7 @@ pub(in crate::observed::local_result) fn solutions(
         } else {
             "solution_set"
         },
-        Json::Obj(fields),
+        Json::Obj(fields.into()),
         args,
         None,
         None,
@@ -547,7 +547,7 @@ fn fiber_action(
         ("conditions".into(), refs(&[inhabited, laws])),
     ]);
     if stage == "lawful_fiber" { fields.insert("parameter_kernel".into(), kernel.wire()); }
-    b.push(NodeType::Construction(T::Action), "action", Json::Obj(fields),
+    b.push(NodeType::Construction(T::Action), "action", Json::Obj(fields.into()),
         vec![parameters, states, map, kernel, stabilizer, effective, quotient, inhabited, laws],
         None, None)
 }

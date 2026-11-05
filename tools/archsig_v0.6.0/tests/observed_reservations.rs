@@ -104,7 +104,7 @@ fn fact(subject: &str, field: Option<&str>, atom: Option<&str>) -> Json {
     if let Some(atom) = atom {
         f.insert("atom".into(), Json::str(atom));
     }
-    Json::Obj(f)
+    Json::Obj(f.into())
 }
 fn ref_type(entity: &str) -> Json {
     Json::Arr(vec![Json::str("Ref"), Json::str(entity)])

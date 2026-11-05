@@ -12,7 +12,7 @@ pub(super) struct Maps {
     pub outside_count: num_bigint::BigInt,
     pub outside_image: Option<NodeRef>,
 }
-fn object(value: &Json) -> Result<&BTreeMap<String, Json>, ValidationFailure> {
+fn object(value: &Json) -> Result<&archsig_common::canonical::JsonObject, ValidationFailure> {
     let Json::Obj(fields) = value else {
         return Err(internal!("有限輸送のrecordがない").into());
     };
@@ -25,7 +25,7 @@ fn array(value: &Json) -> Result<&[Json], ValidationFailure> {
     Ok(values)
 }
 fn member<'a>(
-    fields: &'a BTreeMap<String, Json>,
+    fields: &'a archsig_common::canonical::JsonObject,
     name: &str,
 ) -> Result<&'a Json, ValidationFailure> {
     fields

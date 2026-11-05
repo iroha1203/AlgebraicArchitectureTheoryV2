@@ -51,7 +51,7 @@ fn copy_json<E: InputError>(value: &Json, control: &Control) -> R<Json, E> {
                 Json::Str(value) => Json::Str(value.clone()),
                 Json::Arr(values) => wires::<E, _>(control, values, copy_json::<E>)?,
                 Json::Obj(entries) => {
-                    let mut copied = BTreeMap::new();
+                    let mut copied = archsig_common::canonical::JsonObject::new();
                     for (key, value) in entries {
                         canonical_step::<E, _>(control, |control| {
                             copied.insert(key.clone(), copy_json::<E>(value, control)?);
@@ -730,7 +730,7 @@ fn declaration<E: InputError>(
                 references,
                 dependencies,
             },
-            Json::Obj(json),
+            Json::Obj(json.into()),
         ))
     })
 }

@@ -679,7 +679,7 @@ pub(super) fn build(
     let system = b.push(
         NodeType::Construction(T::LocalSystem),
         "local_system",
-        Json::Obj(fields),
+        Json::Obj(fields.into()),
         std::iter::once(target)
             .chain(contexts)
             .chain(maps)

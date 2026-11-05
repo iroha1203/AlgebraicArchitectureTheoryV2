@@ -526,7 +526,7 @@ pub(super) fn compute(
                 b.push(
                     NodeType::LawInstance,
                     "law_instance",
-                    Json::Obj(fields),
+                    Json::Obj(fields.into()),
                     std::iter::once(expression)
                         .chain(guard)
                         .chain(bindings.iter().map(|(_, r)| *r))
@@ -1311,7 +1311,7 @@ fn emit_system(
     let system = b.push(
         NodeType::Construction(T::LocalSystem),
         "local_system",
-        Json::Obj(fields),
+        Json::Obj(fields.into()),
         args,
         None,
         None,

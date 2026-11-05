@@ -612,7 +612,7 @@ fn law_descent(
                 )?;
                 row.insert("values".into(), values);
             }
-            instances.push(Json::Obj(row));
+            instances.push(Json::Obj(row.into()));
         }
         let map = b.push(
             NodeType::Construction(T::StateMap),

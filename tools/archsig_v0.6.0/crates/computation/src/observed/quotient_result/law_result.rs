@@ -71,11 +71,11 @@ fn evaluation(
         part.insert("value".into(), value.wire());
         wire.insert("value".into(), value.wire());
     }
-    wire.insert("parts".into(), Json::Arr(vec![Json::Obj(part)]));
+    wire.insert("parts".into(), Json::Arr(vec![Json::Obj(part.into())]));
     b.push(
         NodeType::Evaluation(ty),
         "evaluation",
-        Json::Obj(wire),
+        Json::Obj(wire.into()),
         arguments,
         None,
         None,
