@@ -1,0 +1,7 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Callbacks {
+ use vocabulary CallbackModel version "1" digest "sha256:4501fbfe4d751a9603bff41a42e5be0e93b73d0d67989e95713f405e2ea4cd7a";
+ law required skipEnter(b: CallbackModel.Branch) when b.cacheHit: not b.enterReached;
+ law required visitHit(b: CallbackModel.Branch) when b.cacheHit: b.visitReached;
+ law required readAfterVisit(b: CallbackModel.Branch) when b.visitReached: b.writeAt < b.readAt;
+}
