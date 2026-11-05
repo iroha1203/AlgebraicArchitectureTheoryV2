@@ -1879,41 +1879,55 @@ mod tests {
                 entity: "Reservations.Reserve".into(),
             },
         )];
-        let context = materialize_instance(
-            &env,
-            &mut b,
-            &inputs.law().declarations()["Reservations.here"],
-            &requests.requests()[0],
-            &bindings,
-            &[],
-            &[],
-            &[],
-            None,
-            &quiet(),
-        )
-        .unwrap();
-        assert!(context.reasons.is_empty());
-        let reached = Json::obj([
-            ("type", Type::Ref("Reservations.State".into()).wire()),
-            ("value", Json::Arr(vec![Json::str("v"), Json::str("p")])),
-        ]);
-        assert!(
-            context.carrier.contains(&reached),
-            "nested read must retain its reached field owner"
-        );
-        assert!(
-            context
-                .visible
-                .iter()
-                .any(|f| f.subject == "p" && f.field.as_deref() == Some("Reservations.State.free"))
-        );
-        assert!(
-            !context
-                .visible
-                .iter()
-                .any(|f| f.field.as_deref() == Some("Reservations.State.held"))
-        );
-        assert!(!context.visible.iter().any(|f| f.subject == "q"));
+        for repeat in 0..2 {
+            let context = materialize_instance(
+                &env,
+                &mut b,
+                &inputs.law().declarations()["Reservations.here"],
+                &requests.requests()[0],
+                &bindings,
+                &[],
+                &[],
+                &[],
+                None,
+                &quiet(),
+            )
+            .unwrap();
+            assert!(context.reasons.is_empty());
+            let reached = Json::obj([
+                ("type", Type::Ref("Reservations.State".into()).wire()),
+                ("value", Json::Arr(vec![Json::str("v"), Json::str("p")])),
+            ]);
+            assert!(
+                context.carrier.contains(&reached),
+                "nested read must retain its reached field owner"
+            );
+            assert!(
+                context
+                    .visible
+                    .iter()
+                    .any(|f| f.subject == "p"
+                        && f.field.as_deref() == Some("Reservations.State.free"))
+            );
+            assert!(
+                !context
+                    .visible
+                    .iter()
+                    .any(|f| f.field.as_deref() == Some("Reservations.State.held"))
+            );
+            assert!(!context.visible.iter().any(|f| f.subject == "q"));
+            for (subject, field) in [
+                ("e", "Reservations.Reserve.from"),
+                ("p", "Reservations.State.free"),
+            ] {
+                assert!(
+                    context.positions.iter().any(|f| f.subject == subject
+                        && f.field.as_deref() == Some(field)
+                        && f.atom.is_none()),
+                    "materialization {repeat} preserves every reached raw position"
+                );
+            }
+        }
     }
     #[test]
     fn local_owner_missing_survives_the_first_free_state_stop() {
