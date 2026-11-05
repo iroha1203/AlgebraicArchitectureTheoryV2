@@ -20,7 +20,12 @@ impl<'a> Environment<'a> {
         assignments: &[(Fact, Scalar)],
         control: &Control,
     ) -> Result<Option<Self>, ValidationFailure> {
-        Self::primitive_valuation_on(Self::new(inputs, control)?, assignments, control, true)
+        Self::primitive_valuation_on(
+            Self::new(inputs, control)?,
+            assignments.iter().map(|(f, v)| (f, v)),
+            control,
+            true,
+        )
     }
 
     /// 依存位置の発見中は、まだ固定されている別fieldとの制約で枝を刈らない。
@@ -30,8 +35,13 @@ impl<'a> Environment<'a> {
         assignments: &[(Fact, Scalar)],
         control: &Control,
     ) -> Result<Self, ValidationFailure> {
-        Self::primitive_valuation_on(self.fresh_candidate(control), assignments, control, false)?
-            .ok_or_else(|| internal!("依存発見用の型付き候補が失われた").into())
+        Self::primitive_valuation_on(
+            self.fresh_candidate(control),
+            assignments.iter().map(|(f, v)| (f, v)),
+            control,
+            false,
+        )?
+        .ok_or_else(|| internal!("依存発見用の型付き候補が失われた").into())
     }
 
     pub(in crate::observed) fn try_primitive_valuation_from(
@@ -39,7 +49,12 @@ impl<'a> Environment<'a> {
         assignments: &[(Fact, Scalar)],
         control: &Control,
     ) -> Result<Option<Self>, ValidationFailure> {
-        Self::primitive_valuation_on(self.fresh_candidate(control), assignments, control, true)
+        Self::primitive_valuation_on(
+            self.fresh_candidate(control),
+            assignments.iter().map(|(f, v)| (f, v)),
+            control,
+            true,
+        )
     }
 
     /// 選択済みlocal対象の静的metadataだけを継承し、候補値と評価状態は分離する。
@@ -49,12 +64,46 @@ impl<'a> Environment<'a> {
         assignments: &[(Fact, Scalar)],
         control: &Control,
     ) -> Result<Option<Self>, ValidationFailure> {
+        self.try_local_primitive_valuation_entries(assignments.iter().map(|(f, v)| (f, v)), control)
+    }
+
+    /// 明示localの固定原始値へpointを上書きし、検査入力だけを短く借用する。
+    pub(in crate::observed) fn try_local_primitive_point(
+        &self,
+        slots: &[Fact],
+        point: &[Scalar],
+        control: &Control,
+    ) -> Result<Option<Self>, ValidationFailure> {
+        if self.state.architecture_ref().is_some() {
+            return Err(internal!("明示localの固定環境にarchitectureがある").into());
+        }
+        let fixed = self
+            .indexes
+            .primitive_valuation
+            .as_ref()
+            .ok_or(internal!("明示localの固定原始値がない"))?;
+        let mut assignments = fixed.iter().collect::<BTreeMap<_, _>>();
+        assignments.extend(slots.iter().zip(point.iter()));
+        self.try_local_primitive_valuation_entries(assignments, control)
+    }
+
+    fn try_local_primitive_valuation_entries<'v>(
+        &self,
+        assignments: impl IntoIterator<Item = (&'v Fact, &'v Scalar)>,
+        control: &Control,
+    ) -> Result<Option<Self>, ValidationFailure> {
         let object = self
             .indexes
             .object
             .as_ref()
             .ok_or(internal!("local候補の生成元対象が未選択"))?;
-        let Some(mut candidate) = self.try_primitive_valuation_from(assignments, control)? else {
+        let Some(mut candidate) = Self::primitive_valuation_on(
+            self.fresh_candidate(control),
+            assignments,
+            control,
+            true,
+        )?
+        else {
             return Ok(None);
         };
         candidate.indexes.object = Some(std::sync::Arc::clone(object));
@@ -136,9 +185,9 @@ impl<'a> Environment<'a> {
         }
     }
 
-    fn primitive_valuation_on(
+    fn primitive_valuation_on<'v>(
         mut environment: Self,
-        assignments: &[(Fact, Scalar)],
+        assignments: impl IntoIterator<Item = (&'v Fact, &'v Scalar)>,
         control: &Control,
         constraints: bool,
     ) -> Result<Option<Self>, ValidationFailure> {
