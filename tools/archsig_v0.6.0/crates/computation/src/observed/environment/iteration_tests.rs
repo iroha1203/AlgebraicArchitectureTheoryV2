@@ -435,3 +435,65 @@ fn changed_context_rejects_warm_result_and_restored_context_rechecks_like_cold()
         .unwrap();
     same(&restored, &checked);
 }
+
+#[test]
+fn published_local_source_keeps_registry_dependency_and_rejects_duplicate_publication() {
+    let law = include_str!("../../../../../tests/fixtures/counter.law").replace(
+        "view amount(s: State): Z = s.count;",
+        "view amount(s:State):Bool = forall x:Bool . x=x;",
+    );
+    let result = super::super::evaluate_observed_bytes(
+        InputSources::from_bytes(
+            vec![include_bytes!("../../../../../tests/fixtures/counter.atoms.json").to_vec()],
+            law.into_bytes(),
+            include_bytes!("../../../../../tests/fixtures/counter.archmap.json").to_vec(),
+        ),
+        &[
+            "a=evaluate(CountCheck.amount,s=@v/s)",
+            "b=build(CountCheck,on=@v/s)",
+            "l=localize($b.object)",
+        ],
+        &quiet(),
+    )
+    .unwrap();
+    assert!(!result.iterations.is_empty());
+    let control = quiet();
+    let mut g = graph(&result, &control);
+    let (index, answer) = g.checked_answers.pop().unwrap();
+    assert_eq!(index, 2);
+    let request = &result.prepared.requests().requests()[index];
+    g.active = result.contexts[answer.outputs["system"].0];
+    let env = Environment::with_prepared(&result.prepared, &control).unwrap();
+    env.validate_answer(&g, request, &answer).unwrap();
+    let source = super::super::local_result::published_source(&g, request, &answer).unwrap();
+    env.results.cache.borrow_mut().registry_read = true;
+    g.checked_answers.push((index, answer.clone()));
+    env.keep_published_local_source(&g, index, request, &answer);
+    assert!(env.results.source_checked(&source));
+    assert!(env.results.cache.borrow().registry_read);
+    assert!(
+        env.results
+            .validation_snapshot
+            .borrow()
+            .as_ref()
+            .unwrap()
+            .matches(&g, &control)
+            .unwrap()
+    );
+    let duplicate = g.iterations[0].clone();
+    g.iterations.push(duplicate);
+    env.validation_graph_session(&g, || Ok(())).unwrap();
+    assert!(
+        !env.results.source_checked(&source),
+        "an old producer registry addition invalidates the source"
+    );
+
+    // 登録済みindexの再追加を、新しい検証結果の公開として扱わない。
+    g.iterations.pop();
+    env.validate_answer(&g, request, &answer).unwrap();
+    assert!(env.results.source_checked(&source));
+    g.checked_answers.push((index, answer.clone()));
+    env.keep_published_local_source(&g, index, request, &answer);
+    assert!(!env.results.source_checked(&source));
+    assert!(env.results.validation_snapshot.borrow().is_none());
+}

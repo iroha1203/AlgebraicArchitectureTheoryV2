@@ -891,6 +891,50 @@ impl<'a> Environment<'a> {
         })
     }
 
+    /// 検証成功後、同じGraphへ自身のAnswerを一件だけ追加した公開境界。
+    /// 他の成功は失効させ、自己依存しない元RequestのSourceだけを引き継ぐ。
+    pub(super) fn keep_published_local_source(
+        &self,
+        graph: &Graph,
+        index: usize,
+        request: &Request,
+        answer: &Answer,
+    ) {
+        let Some(source) = super::local_result::published_source(graph, request, answer) else {
+            return;
+        };
+        let registry_read = self.results.cache.borrow().registry_read;
+        self.results.clear_validation();
+        let mut saved = self.results.validation_snapshot.borrow_mut();
+        let Some(snapshot) = saved.as_mut() else {
+            return;
+        };
+        if self.control.stop_reason().is_some()
+            || self.state.validation_depth.get() != 0
+            || snapshot.node_len != graph.nodes.len()
+            || snapshot.context_len != graph.contexts.len()
+            || !std::rc::Rc::ptr_eq(&snapshot.node_identity, &graph.nodes.prefix_identity())
+            || !std::rc::Rc::ptr_eq(
+                &snapshot.context_identity,
+                &graph.contexts.prefix_identity(),
+            )
+            || graph.checked_answers.len() != snapshot.answers.len() + 1
+            || snapshot.answers.iter().any(|(prior, _)| *prior == index)
+            || graph.requests.get(index) != Some(request)
+            || graph
+                .checked_answers
+                .last()
+                .is_none_or(|(actual, a)| *actual != index || a != answer)
+        {
+            *saved = None;
+            return;
+        }
+        // Sourceが読んだregistryの不在・一意性も、従来どおり後続追加で失効させる。
+        self.results.cache.borrow_mut().registry_read = registry_read;
+        snapshot.answers.push((index, answer.clone()));
+        self.results.remember(source);
+    }
+
     fn resolve_analysis(
         &self,
         graph: &Graph,

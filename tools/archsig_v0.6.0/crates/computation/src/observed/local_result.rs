@@ -1363,6 +1363,24 @@ pub(super) fn validate_answer(
     env.recheck_local(g, v, r.0)
 }
 
+// validate_answer成功直後の公開処理だけが使用する。外部候補の入口にはしない。
+pub(super) fn published_source(
+    graph: &Graph,
+    request: &Request,
+    answer: &Answer,
+) -> Option<Arc<Source>> {
+    answer.outputs.values().find_map(|reference| {
+        let Some(Payload::Construction(value)) = &graph.get(*reference).ok()?.payload else {
+            return None;
+        };
+        let D::Local(data) = &value.data else {
+            return None;
+        };
+        (&data.source.request == request && &data.source.answer == answer)
+            .then(|| data.source.clone())
+    })
+}
+
 pub(super) fn validate_origin(
     env: &Environment<'_>,
     request: &Request,
@@ -1510,11 +1528,66 @@ mod produced_source_tests {
             0,
             "a sealed newly produced source is not computed twice"
         );
+        graph.checked_answers.push((1, answer.clone()));
+        env.keep_published_local_source(&graph, 1, request, &answer);
+        count.set(0);
+        env.validate_answer(&graph, request, &answer).unwrap();
+        assert_eq!(
+            count.get(),
+            0,
+            "publishing the verified answer keeps its own source"
+        );
         let reference = answer.outputs["system"];
         graph.nodes[reference.0]
             .scope
             .readings
             .insert("changed".into());
         assert!(env.validate(&graph, &graph.nodes[reference.0]).is_err());
+    }
+    #[test]
+    fn diagnostic_consumes_the_published_local_source_without_rebuilding_it() {
+        let run = |asks: &[&str]| {
+            let count = Rc::new(Cell::new(0usize));
+            let observed = count.clone();
+            let control = Control::new(move |point| {
+                if point == Checkpoint::Localize {
+                    observed.set(observed.get() + 1);
+                }
+                None
+            });
+            let result = crate::observed::evaluate_observed_bytes(
+                InputSources::from_bytes(
+                    vec![include_bytes!("../../../../tests/fixtures/counter.atoms.json").to_vec()],
+                    include_bytes!("../../../../tests/fixtures/counter.law").to_vec(),
+                    include_bytes!("../../../../tests/fixtures/counter.archmap.json").to_vec(),
+                ),
+                asks,
+                &control,
+            )
+            .unwrap();
+            // Zの順序条件はObjectAlgebraを未決のまま保ち、保持したobjectから局所化する。
+            assert_eq!(result.status(), "partial", "{:?}", result.issues);
+            assert_eq!(result.answers[0].status, Decision::Undetermined);
+            assert!(result.answers[0].reasons.iter().any(|reason| matches!(
+                &reason.kind,
+                ReasonKind::UnsupportedAlgorithm { question: QuestionKind::Build, method, .. }
+                    if method == "integer_order_equation_presentation"
+            )));
+            assert_eq!(result.answers[1].status, Decision::Established);
+            (result, count.get())
+        };
+        let (local, local_steps) = run(&["b=build(CountCheck,on=@v/s)", "l=localize($b.object)"]);
+        let (diagnosed, diagnostic_steps) = run(&[
+            "b=build(CountCheck,on=@v/s)",
+            "l=localize($b.object)",
+            "d=diagnose($l.system,side=semantic)",
+        ]);
+        assert!(local_steps > 0);
+        assert!(
+            diagnostic_steps < local_steps * 2,
+            "diagnosis must not repeat the whole local construction: {local_steps} -> {diagnostic_steps}"
+        );
+        assert_eq!(local.answers, diagnosed.answers[..2]);
+        assert_eq!(diagnosed.answers[2].status, Decision::Established);
     }
 }
