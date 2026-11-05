@@ -624,7 +624,8 @@ impl Compiler<'_> {
                         constructor: crate::observed::result::DataConstructor::new(
                             family,
                             constructor,
-                        )?,
+                        )
+                        .map_err(ConstructionFailure::Inconsistent)?,
                         args: values,
                     })));
                 }
