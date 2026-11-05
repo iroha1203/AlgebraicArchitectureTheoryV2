@@ -222,11 +222,9 @@ impl EvaluationState {
             })
             .unwrap_or_default()
     }
-    pub(in crate::observed) fn architecture_scope(&self) -> Scope {
-        self.architecture
-            .borrow()
-            .as_ref()
-            .map(|c| c.scope.clone())
-            .unwrap_or_default()
+    pub(in crate::observed) fn merge_architecture_scope(&self, scope: &mut Scope) {
+        if let Some(architecture) = self.architecture.borrow().as_ref() {
+            scope.merge(&architecture.scope);
+        }
     }
 }

@@ -7262,7 +7262,7 @@ impl<'a> Environment<'a> {
             }
             let mut base = Scope::default();
             base.readings.insert(declaration.reading.clone());
-            base.merge(&self.state.architecture_scope());
+            self.state.merge_architecture_scope(&mut base);
             let mut variables = BTreeMap::new();
             for parameter in params {
                 self.tick()?;
@@ -7427,7 +7427,7 @@ impl<'a> Environment<'a> {
             }
             (base, variables)
         };
-        base.merge(&self.state.architecture_scope());
+        self.state.merge_architecture_scope(&mut base);
         if self.current_context(graph).case.is_some() {
             base.completions = true;
         }
@@ -9295,7 +9295,7 @@ impl<'a> Environment<'a> {
             .and_then(|values| values.get(&position));
         let (known_value, scalar_scope) = if assigned.is_none() && repaired.is_some() {
             let (_, value) = repaired.ok_or(internal!("修復slot値がない"))?;
-            scope.merge(&self.state.architecture_scope());
+            self.state.merge_architecture_scope(&mut scope);
             (Some(value), self.state.architecture_scalar_scope(&position))
         } else if let Some(value) = assigned {
             let owner_scope = self.indexes.scope(owner, reading, None)?;

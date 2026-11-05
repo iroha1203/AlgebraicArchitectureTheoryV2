@@ -48,13 +48,8 @@ impl Environment<'_> {
             | archsig_input::law::model::Signature::Law { params, .. } => params,
             _ => return Err(internal!("依存停止の元宣言がview/Lawでない").into()),
         };
-        let mut reasons = native
-            .as_ref()
-            .map(|answer| answer.reasons.clone())
-            .unwrap_or_default();
-        let mut scope = native
-            .as_ref()
-            .map(|answer| answer.scope.clone())
+        let (mut reasons, mut scope) = native
+            .map(|answer| (answer.reasons, answer.scope))
             .unwrap_or_default();
         scope.readings.insert(declaration.reading.clone());
         for argument in &request.arguments {

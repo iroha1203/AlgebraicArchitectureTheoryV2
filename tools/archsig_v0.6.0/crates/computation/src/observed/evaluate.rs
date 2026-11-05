@@ -3159,7 +3159,7 @@ fn evaluate_observed_with_validator(
                 Err(failure) => (None, Some(failure)),
             };
             let mut base = base;
-            base.merge(&environment.state.architecture_scope());
+            environment.state.merge_architecture_scope(&mut base);
             let mut evaluator = Evaluator {
                 environment,
                 graph: &mut graph,
