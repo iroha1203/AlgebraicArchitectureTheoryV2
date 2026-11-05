@@ -178,7 +178,7 @@ impl<R: LawRows> FiniteLawFamilyValuations<R> {
         };
         // Graphを読まない元ASTの評価でも、対象域は分析Contextの一部。
         // 対象を替えた列へ、同じ式・束縛の既存値を持ち越さない。
-        if environment.indexes.object.as_deref() != selection.map(|object| object.domain.as_ref()) {
+        if environment.indexes.object.as_ref() != selection.map(|object| &object.domain) {
             environment.results.scoped_values.borrow_mut().clear();
         }
         environment.indexes.object = selection.map(|object| Arc::clone(&object.domain));

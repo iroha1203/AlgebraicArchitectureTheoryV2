@@ -248,10 +248,6 @@ pub(super) fn initial(
         row.support.extend(checks.support);
         row.application_missing.extend(checks.missing);
     }
-    row.support.sort();
-    row.support.dedup();
-    row.application_missing.sort();
-    row.application_missing.dedup();
     Ok(row)
 }
 pub(in super::super) fn probe_instance(
