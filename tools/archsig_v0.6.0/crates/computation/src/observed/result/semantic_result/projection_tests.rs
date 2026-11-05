@@ -491,15 +491,15 @@ fn legacy_answer_fields(
     index: usize,
     proofs: &BTreeSet<String>,
 ) -> Option<archsig_common::canonical::JsonObject> {
-    let raw = public_raw_node(native, index, proofs, &quiet(), Checkpoint::Expression).unwrap();
-    let Json::Obj(mut fields) = raw else {
+    let mut raw = public_raw_node(native, index, proofs, &quiet(), Checkpoint::Expression).unwrap();
+    let Json::Obj(fields) = &mut raw else {
         return None;
     };
-    let Some(Json::Obj(mut value)) = fields.remove("value") else {
+    let Some(Json::Obj(value)) = fields.get_mut("value") else {
         return None;
     };
     value.retain(|key, _| matches!(key.as_str(), "applicability" | "environment"));
-    Some(value)
+    Some(std::mem::take(value))
 }
 #[test]
 fn evaluation_projection_keeps_four_fields_and_exact_proof_pruning() {
@@ -567,7 +567,7 @@ fn evaluation_projection_keeps_four_fields_and_exact_proof_pruning() {
             assert!(!payload.contains_key("parts") && !payload.contains_key("expression"));
             let full = nodes[3].wire(3, &nodes[..3]);
             assert_eq!(full.canonical(), full_before);
-            let Json::Obj(full) = full else { panic!() };
+            let Json::Obj(full) = &full else { panic!() };
             let Json::Obj(payload) = &full["value"] else {
                 panic!()
             };

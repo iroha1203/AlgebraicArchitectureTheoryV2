@@ -289,21 +289,21 @@ fn evaluation_answer_fields(
         control.checkpoint(point)?;
         clean_reasons(&mut value, control, point)?;
         remove_proof_refs(&mut value, proofs);
-        let Json::Obj(fields) = value else {
+        let Json::Obj(fields) = &mut value else {
             unreachable!()
         };
-        return Ok(Some(fields));
+        return Ok(Some(std::mem::take(fields)));
     }
     // 一般のraw表示入口の挙動は維持する。型を取り違えたRefも新たに解釈しない。
-    let node = public_raw_node(native, index, proofs, control, point)?;
-    let Json::Obj(mut fields) = node else {
+    let mut node = public_raw_node(native, index, proofs, control, point)?;
+    let Json::Obj(fields) = &mut node else {
         return Ok(None);
     };
-    let Some(Json::Obj(mut value)) = fields.remove("value") else {
+    let Some(Json::Obj(value)) = fields.get_mut("value") else {
         return Ok(None);
     };
     value.retain(|key, _| matches!(key.as_str(), "applicability" | "environment"));
-    Ok(Some(value))
+    Ok(Some(std::mem::take(value)))
 }
 fn law_claim(
     reference: &Json,
