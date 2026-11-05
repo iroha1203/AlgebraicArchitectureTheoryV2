@@ -15,16 +15,16 @@ fn ring_failure(failure: ConstructionFailure) -> ValidationFailure {
             .into(),
     }
 }
-pub(in crate::observed) struct FiniteLawObjectEvaluation<'a> {
-    family: &'a AutomaticLawValuations,
+pub(in crate::observed) struct FiniteLawObjectEvaluation<'a, R = Vec<FiniteLawRow>> {
+    family: &'a AutomaticLawValuations<R>,
     point: usize,
     basis_images: Vec<BigInt>,
 }
-impl AutomaticLawValuations {
+impl<R: LawRows> AutomaticLawValuations<R> {
     pub(in crate::observed) fn object_evaluation(
         &self,
         c: &Control,
-    ) -> Result<Option<FiniteLawObjectEvaluation<'_>>, ValidationFailure> {
+    ) -> Result<Option<FiniteLawObjectEvaluation<'_, R>>, ValidationFailure> {
         step(c)?;
         if !self.is_complete() || !self.domain_complete() {
             return Ok(None);
@@ -50,7 +50,7 @@ impl AutomaticLawValuations {
         Ok(Some(evaluation))
     }
 }
-impl FiniteLawObjectEvaluation<'_> {
+impl<R: LawRows> FiniteLawObjectEvaluation<'_, R> {
     pub(in crate::observed) fn point(&self) -> usize {
         self.point
     }
@@ -119,7 +119,7 @@ impl FiniteLawObjectEvaluation<'_> {
     /// 消費先の環を外から固定し、同じ長さ・同じ値の別計算を代用しない。
     pub(in crate::observed) fn recheck(
         &self,
-        family: &AutomaticLawValuations,
+        family: &AutomaticLawValuations<R>,
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
         c: &Control,

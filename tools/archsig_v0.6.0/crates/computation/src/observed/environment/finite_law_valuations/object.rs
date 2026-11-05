@@ -92,7 +92,7 @@ impl Selection {
         Ok(())
     }
 }
-impl FiniteLawFamilyValuations {
+impl<R: LawRows> FiniteLawFamilyValuations<R> {
     pub(super) fn in_object<'a>(&self, mut environment: Environment<'a>) -> Environment<'a> {
         environment.indexes.object = self.object.as_ref().map(|o| Arc::clone(&o.domain));
         environment
@@ -116,7 +116,7 @@ impl FiniteLawFamilyValuations {
         readings: &ObjectReadingInstances,
         object: usize,
         c: &Control,
-    ) -> Result<(), FiniteLawFamilyFailure> {
+    ) -> Result<(), FiniteLawFamilyFailure<R>> {
         let expected = Selection::compute(inputs, readings, object, c).map_err(|cause| {
             FiniteLawFamilyFailure {
                 cause,
@@ -161,7 +161,7 @@ pub(super) struct Columns {
     pub(super) readings: ObjectReadingInstances,
     pub(super) columns: Vec<Arc<Selection>>,
 }
-impl FiniteLawFamilyValuations {
+impl<R: LawRows> FiniteLawFamilyValuations<R> {
     pub(super) fn select_column_object(
         &self,
         environment: &mut Environment<'_>,
@@ -213,7 +213,7 @@ impl FiniteLawFamilyValuations {
         readings: &ObjectReadingInstances,
         objects: &[usize],
         c: &Control,
-    ) -> Result<(), FiniteLawFamilyFailure> {
+    ) -> Result<(), FiniteLawFamilyFailure<R>> {
         let fail = |cause| FiniteLawFamilyFailure {
             cause,
             partial: None,

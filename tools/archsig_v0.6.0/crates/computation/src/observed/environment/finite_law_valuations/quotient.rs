@@ -15,7 +15,7 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::FiniteLawQuotient)?;
     Ok(())
 }
-fn paths(ty: &Type, c: &Control) -> Result<Vec<Vec<usize>>, ValidationFailure> {
+pub(super) fn paths(ty: &Type, c: &Control) -> Result<Vec<Vec<usize>>, ValidationFailure> {
     let mut pending = vec![(vec![], ty)];
     let mut result = vec![];
     while let Some((path, ty)) = pending.pop() {
@@ -69,12 +69,12 @@ pub(in crate::observed) enum FiniteIdealMembership {
     Member(FiniteIdealWitness),
     NonMember { projection: FiniteIntegerFunction },
 }
-pub(in crate::observed) struct FiniteLawQuotient<'a> {
-    base: &'a FiniteLawFamilyValuations,
+pub(in crate::observed) struct FiniteLawQuotient<'a, R = Vec<FiniteLawRow>> {
+    base: &'a FiniteLawFamilyValuations<R>,
     points: Vec<usize>,
     owner: Arc<()>,
 }
-impl FiniteLawFamilyValuations {
+impl<R: LawRows> FiniteLawFamilyValuations<R> {
     pub fn integer_ring(&self, c: &Control) -> Result<FiniteIntegerRing<'_>, ValidationFailure> {
         c.checkpoint(Checkpoint::FiniteLawFunction)?;
         if !self.domain_complete {
@@ -111,20 +111,15 @@ impl FiniteLawFamilyValuations {
             return Err(internal!("元Lawの全D評価が未完成").into());
         }
         let mut values = vec![];
-        for (point, row) in q.rows.iter().enumerate() {
+        for point in 0..q.rows.len() {
             c.checkpoint(Checkpoint::FiniteLawFunction)?;
-            if row.point != point || row.condition_failed {
+            if !q.rows.valid_point(point) || q.rows.condition_failed(point) {
                 return Err(internal!("元Lawの行または条件が未確定").into());
             }
-            let value = match component {
-                None => row.indicator.as_ref(),
-                Some(path) => row
-                    .components
-                    .as_ref()
-                    .and_then(|cs| cs.iter().find(|p| p.path == path))
-                    .and_then(|p| p.indicator.as_ref()),
-            }
-            .ok_or(internal!("元Lawの指示関数が未決または非対応"))?;
+            let value = q
+                .rows
+                .indicator(point, component)
+                .ok_or(internal!("元Lawの指示関数が未決または非対応"))?;
             if !value.is_zero() && !value.is_one() {
                 return Err(internal!("元Lawの指示関数が0/1でない").into());
             }
@@ -163,7 +158,7 @@ impl FiniteLawFamilyValuations {
     pub fn required_quotient(
         &self,
         c: &Control,
-    ) -> Result<FiniteLawQuotient<'_>, ValidationFailure> {
+    ) -> Result<FiniteLawQuotient<'_, R>, ValidationFailure> {
         tick(c)?;
         if !self.is_complete() {
             return Err(internal!("有限Law族が未完成でrequired商を作れない").into());
@@ -186,8 +181,8 @@ impl FiniteLawFamilyValuations {
         Ok(quotient)
     }
 }
-impl FiniteLawQuotient<'_> {
-    pub(super) fn belongs_to(&self, family: &FiniteLawFamilyValuations) -> bool {
+impl<R: LawRows> FiniteLawQuotient<'_, R> {
+    pub(super) fn belongs_to(&self, family: &FiniteLawFamilyValuations<R>) -> bool {
         std::ptr::eq(self.base, family)
     }
     pub fn points(&self) -> &[usize] {

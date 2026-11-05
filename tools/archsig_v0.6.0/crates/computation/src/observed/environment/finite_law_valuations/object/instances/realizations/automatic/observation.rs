@@ -8,8 +8,8 @@ pub(in crate::observed) enum ObservedInteger {
     Varying { left: usize, right: usize },
     Empty,
 }
-pub(in crate::observed) struct FiniteLawObservation<'a> {
-    family: &'a AutomaticLawValuations,
+pub(in crate::observed) struct FiniteLawObservation<'a, R = Vec<FiniteLawRow>> {
+    family: &'a AutomaticLawValuations<R>,
     inputs: &'a CheckedInputs,
     known: Vec<(usize, Fact, Scalar)>,
     points: Vec<usize>,
@@ -26,8 +26,8 @@ fn ring_failure(failure: crate::construction::ConstructionFailure) -> Validation
             .into(),
     }
 }
-fn collect(
-    family: &AutomaticLawValuations,
+fn collect<R: LawRows>(
+    family: &AutomaticLawValuations<R>,
     inputs: &CheckedInputs,
     c: &Control,
 ) -> Result<(Vec<(usize, Fact, Scalar)>, Vec<usize>), ValidationFailure> {
@@ -88,12 +88,12 @@ fn collect(
     step(c)?;
     Ok((known, points))
 }
-impl AutomaticLawValuations {
+impl<R: LawRows> AutomaticLawValuations<R> {
     pub fn observation<'a>(
         &'a self,
         inputs: &'a CheckedInputs,
         c: &Control,
-    ) -> Result<Option<FiniteLawObservation<'a>>, ValidationFailure> {
+    ) -> Result<Option<FiniteLawObservation<'a, R>>, ValidationFailure> {
         step(c)?;
         if &self.value.sources != inputs.sources() {
             return Err(internal!("有限観測fiberの元三入力が違う").into());
@@ -110,7 +110,7 @@ impl AutomaticLawValuations {
         }))
     }
 }
-impl FiniteLawObservation<'_> {
+impl<R: LawRows> FiniteLawObservation<'_, R> {
     pub fn known(&self) -> &[(usize, Fact, Scalar)] {
         &self.known
     }
@@ -183,7 +183,7 @@ impl FiniteLawObservation<'_> {
     }
     pub fn recheck(
         &self,
-        family: &AutomaticLawValuations,
+        family: &AutomaticLawValuations<R>,
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
         c: &Control,

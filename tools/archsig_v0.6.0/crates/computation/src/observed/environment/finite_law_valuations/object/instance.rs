@@ -287,7 +287,7 @@ pub(in super::super) fn probe_instance(
         blocked: false,
     })
 }
-impl FiniteLawFamilyValuations {
+impl<R: LawRows> FiniteLawFamilyValuations<R> {
     pub(in super::super) fn probe_column(
         &self,
         e: &Environment<'_>,
@@ -335,7 +335,7 @@ impl FiniteLawFamilyValuations {
         readings: &ObjectReadingInstances,
         selected: &[(usize, usize)],
         c: &Control,
-    ) -> Result<(), FiniteLawFamilyFailure> {
+    ) -> Result<(), FiniteLawFamilyFailure<R>> {
         if !self.instance_mode
             || self.columns.len() != selected.len()
             || self

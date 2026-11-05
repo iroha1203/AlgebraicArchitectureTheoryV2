@@ -11,15 +11,18 @@ use crate::observed::{
     finite_integer_function::{FiniteIntegerFunction, FiniteIntegerRing},
 };
 
-pub(in crate::observed) struct FiniteAutomaticLawFamily<S = DetailedParameters> {
+pub(in crate::observed) struct FiniteAutomaticLawFamily<
+    S = DetailedParameters,
+    R = Vec<FiniteLawRow>,
+> {
     parameters: FiniteParameterRealizations<S>,
-    family: Option<AutomaticLawValuations>,
+    family: Option<AutomaticLawValuations<R>>,
 }
-pub(in crate::observed) struct AutomaticLawFailure<S = DetailedParameters> {
+pub(in crate::observed) struct AutomaticLawFailure<S = DetailedParameters, R = Vec<FiniteLawRow>> {
     pub cause: ValidationFailure,
-    pub partial: Option<Box<FiniteAutomaticLawFamily<S>>>,
+    pub partial: Option<Box<FiniteAutomaticLawFamily<S, R>>>,
 }
-impl<S> std::fmt::Debug for AutomaticLawFailure<S> {
+impl<S, R> std::fmt::Debug for AutomaticLawFailure<S, R> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("AutomaticLawFailure")
             .field("cause", &self.cause)
@@ -27,14 +30,14 @@ impl<S> std::fmt::Debug for AutomaticLawFailure<S> {
             .finish()
     }
 }
-impl<S: ParameterSink> FiniteAutomaticLawFamily<S> {
+impl<S: ParameterSink, R: LawRows> FiniteAutomaticLawFamily<S, R> {
     pub(in crate::observed) fn parameters(&self) -> &FiniteParameterRealizations<S> {
         &self.parameters
     }
-    pub(in crate::observed) fn family(&self) -> Option<&AutomaticLawValuations> {
+    pub(in crate::observed) fn family(&self) -> Option<&AutomaticLawValuations<R>> {
         self.family.as_ref()
     }
-    pub(in crate::observed) fn into_family(self) -> Option<AutomaticLawValuations> {
+    pub(in crate::observed) fn into_family(self) -> Option<AutomaticLawValuations<R>> {
         self.family
     }
     pub(in crate::observed) fn is_complete(&self) -> bool {
@@ -42,14 +45,14 @@ impl<S: ParameterSink> FiniteAutomaticLawFamily<S> {
             && self
                 .family
                 .as_ref()
-                .is_some_and(AutomaticLawValuations::is_complete)
+                .is_some_and(|family| family.is_complete())
     }
     pub(in crate::observed) fn recheck(
         &self,
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
         c: &Control,
-    ) -> Result<(), AutomaticLawFailure<S>> {
+    ) -> Result<(), AutomaticLawFailure<S, R>> {
         let fail = |cause| AutomaticLawFailure {
             cause,
             partial: None,
@@ -133,20 +136,23 @@ pub(in crate::observed) fn finite_automatic_law_family(
     readings: &ObjectReadingInstances,
     c: &Control,
 ) -> Result<FiniteAutomaticLawFamily, AutomaticLawFailure> {
-    automatic_with_sink::<DetailedParameters>(inputs, readings, c)
+    automatic_with_sink::<DetailedParameters, Vec<FiniteLawRow>>(inputs, readings, c)
 }
 pub(in crate::observed) fn finite_automatic_law_family_compact(
     inputs: &CheckedInputs,
     readings: &ObjectReadingInstances,
     c: &Control,
-) -> Result<FiniteAutomaticLawFamily<ParameterCarriers>, AutomaticLawFailure<ParameterCarriers>> {
-    automatic_with_sink::<ParameterCarriers>(inputs, readings, c)
+) -> Result<
+    FiniteAutomaticLawFamily<ParameterCarriers, IntegerRows>,
+    AutomaticLawFailure<ParameterCarriers, IntegerRows>,
+> {
+    automatic_with_sink::<ParameterCarriers, IntegerRows>(inputs, readings, c)
 }
-fn automatic_with_sink<S: ParameterSink>(
+fn automatic_with_sink<S: ParameterSink, R: LawRows>(
     inputs: &CheckedInputs,
     readings: &ObjectReadingInstances,
     c: &Control,
-) -> Result<FiniteAutomaticLawFamily<S>, AutomaticLawFailure<S>> {
+) -> Result<FiniteAutomaticLawFamily<S, R>, AutomaticLawFailure<S, R>> {
     let parameters = match compute_sink::<S>(inputs, readings, true, c) {
         Ok(p) => p,
         Err(error) => {
@@ -168,7 +174,7 @@ fn automatic_with_sink<S: ParameterSink>(
     if !result.parameters.is_complete() {
         return Ok(result);
     }
-    let built = (|| -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
+    let built = (|| -> Result<FiniteLawFamilyValuations<R>, FiniteLawFamilyFailure<R>> {
         c.checkpoint(Checkpoint::FiniteLawAutomatic)
             .map_err(|cause| FiniteLawFamilyFailure {
                 cause: cause.into(),
@@ -193,8 +199,13 @@ fn automatic_with_sink<S: ParameterSink>(
             laws.push((object, original.declaration().name.clone(), bindings));
             instances.push(instance);
         }
-        let (objects, laws) = multi_selection(inputs, readings, &laws, c)?;
-        family_with_instance_domain(
+        let (objects, laws) = multi_selection(inputs, readings, &laws, c).map_err(|error| {
+            FiniteLawFamilyFailure {
+                cause: error.cause,
+                partial: None,
+            }
+        })?;
+        family_with_instance_domain_rows::<R>(
             inputs,
             &laws,
             None,
@@ -238,16 +249,17 @@ fn automatic_with_sink<S: ParameterSink>(
     }
 }
 /// 自動全列の消費では、この型と元readingsを保持する。明示選択族へは変換しない。
-pub(in crate::observed) struct AutomaticLawValuations {
+pub(in crate::observed) struct AutomaticLawValuations<R = Vec<FiniteLawRow>> {
     readings: ObjectReadingInstances,
-    value: FiniteLawFamilyValuations,
+    value: FiniteLawFamilyValuations<R>,
 }
-pub(in crate::observed) struct AutomaticLawQuotient<'a> {
-    family: &'a AutomaticLawValuations,
-    value: FiniteLawQuotient<'a>,
+pub(in crate::observed) type AutomaticLawFunctions = AutomaticLawValuations<IntegerRows>;
+pub(in crate::observed) struct AutomaticLawQuotient<'a, R = Vec<FiniteLawRow>> {
+    family: &'a AutomaticLawValuations<R>,
+    value: FiniteLawQuotient<'a, R>,
 }
-impl AutomaticLawValuations {
-    pub(in crate::observed) fn columns(&self) -> &[FiniteLawColumn] {
+impl<R: LawRows> AutomaticLawValuations<R> {
+    pub(in crate::observed) fn columns(&self) -> &[FiniteLawColumn<R>] {
         self.value.columns()
     }
     pub(in crate::observed) fn positions(&self) -> &[Fact] {
@@ -365,7 +377,7 @@ impl AutomaticLawValuations {
     pub(in crate::observed) fn required_quotient(
         &self,
         c: &Control,
-    ) -> Result<AutomaticLawQuotient<'_>, ValidationFailure> {
+    ) -> Result<AutomaticLawQuotient<'_, R>, ValidationFailure> {
         Ok(AutomaticLawQuotient {
             family: self,
             value: self.value.required_quotient(c)?,
@@ -380,7 +392,7 @@ impl AutomaticLawValuations {
         if &self.readings != readings {
             return Err(internal!("自動Law族が消費先の元readingsに由来しない").into());
         }
-        let expected = finite_automatic_law_family(inputs, readings, c)
+        let expected = automatic_with_sink::<ParameterCarriers, R>(inputs, readings, c)
             .map_err(|failure| failure.cause)?
             .into_family()
             .ok_or(internal!("自動Law族の元parameter域が未完成"))?;
@@ -389,7 +401,7 @@ impl AutomaticLawValuations {
             .map_err(|failure| failure.cause)
     }
 }
-impl AutomaticLawQuotient<'_> {
+impl<R: LawRows> AutomaticLawQuotient<'_, R> {
     pub(in crate::observed) fn points(&self) -> &[usize] {
         self.value.points()
     }

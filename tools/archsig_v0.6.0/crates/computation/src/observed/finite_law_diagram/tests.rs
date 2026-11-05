@@ -604,7 +604,8 @@ fn owned_reference_domain_keeps_original_membership_conditions_with_primitive_va
         panic!("origin")
     };
     let full =
-        finite_automatic_law_family(e.prepared.inputs(), origin.readings(), &quiet()).unwrap();
+        finite_automatic_law_family_compact(e.prepared.inputs(), origin.readings(), &quiet())
+            .unwrap();
     let f = full.family().unwrap();
     assert!(f.is_complete());
     assert!(f.types().iter().any(|t| matches!(t, Type::Owned(..))));
@@ -1546,7 +1547,7 @@ fn all_four_stops_inside_operand_construction_leave_original_graph_and_source_un
         .unwrap()
         .unwrap();
     let source = data(&g, d.ring).source.clone();
-    let full = finite_automatic_law_family(
+    let full = finite_automatic_law_family_compact(
         e.prepared.inputs(),
         source.architecture.readings(),
         &quiet(),

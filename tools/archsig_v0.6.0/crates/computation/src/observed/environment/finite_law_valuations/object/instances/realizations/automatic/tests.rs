@@ -31,7 +31,90 @@ fn run(i: &CheckedInputs, r: &ObjectReadingInstances) -> FiniteAutomaticLawFamil
         );
     }
     match (&result.family, compact.family) {
-        (Some(full), Some(compact)) => full.value.check_expected(compact.value, &quiet()).unwrap(),
+        (Some(full), Some(compact)) => {
+            assert_eq!(full.positions(), compact.positions());
+            assert_eq!(full.types(), compact.types());
+            assert_eq!(full.domain(), compact.domain());
+            assert_eq!(full.domain_complete(), compact.domain_complete());
+            assert_eq!(full.observed_point(), compact.observed_point());
+            assert_eq!(full.state(), compact.state());
+            assert_eq!(full.required_zero(), compact.required_zero());
+            assert_eq!(full.value.object, compact.value.object);
+            assert_eq!(full.value.column_objects, compact.value.column_objects);
+            assert_eq!(full.columns().len(), compact.columns().len());
+            for (index, (a, b)) in full.columns().iter().zip(compact.columns()).enumerate() {
+                assert_eq!(a.declaration(), b.declaration());
+                assert_eq!(a.source_instance(), b.source_instance());
+                assert_eq!(a.bindings(), b.bindings());
+                assert_eq!(a.rows.len(), b.rows.len());
+                assert_eq!(a.rows.flags(), b.rows.flags());
+                for point in 0..a.rows.len() {
+                    assert_eq!(a.rows.zero(point), b.rows.zero(point));
+                }
+                let mut components = vec![None];
+                if let Some(ty) = &a.equation_type {
+                    components.extend(
+                        crate::observed::environment::finite_law_valuations::quotient::paths(
+                            ty,
+                            &quiet(),
+                        )
+                        .unwrap()
+                        .into_iter()
+                        .map(Some),
+                    );
+                }
+                for component in components {
+                    match (
+                        full.integer_function(index, component.as_deref(), &quiet()),
+                        compact.integer_function(index, component.as_deref(), &quiet()),
+                    ) {
+                        (Ok(a), Ok(b)) => {
+                            assert_eq!(a.values(), b.values());
+                            assert!(
+                                compact
+                                    .integer_ring(&quiet())
+                                    .unwrap()
+                                    .member(&a, &quiet())
+                                    .is_err()
+                            );
+                            assert!(
+                                full.integer_ring(&quiet())
+                                    .unwrap()
+                                    .member(&b, &quiet())
+                                    .is_err()
+                            );
+                            if full.is_complete() {
+                                let fa = full.observation(i, &quiet()).unwrap().unwrap();
+                                let fb = compact.observation(i, &quiet()).unwrap().unwrap();
+                                assert_eq!(fa.known(), fb.known());
+                                assert_eq!(fa.points(), fb.points());
+                                assert_eq!(
+                                    fa.evaluate(&a, &quiet()).unwrap(),
+                                    fb.evaluate(&b, &quiet()).unwrap()
+                                );
+                                assert_eq!(
+                                    full.required_quotient(&quiet())
+                                        .unwrap()
+                                        .project(&a, &quiet())
+                                        .unwrap()
+                                        .values(),
+                                    compact
+                                        .required_quotient(&quiet())
+                                        .unwrap()
+                                        .project(&b, &quiet())
+                                        .unwrap()
+                                        .values()
+                                );
+                            }
+                        }
+                        (Err(a), Err(b)) => {
+                            assert_eq!(std::mem::discriminant(&a), std::mem::discriminant(&b))
+                        }
+                        _ => panic!("詳細/整数表の関数完成状態が違う"),
+                    }
+                }
+            }
+        }
         (None, None) => {}
         _ => panic!("詳細/compactの完成族が違う"),
     }
@@ -756,4 +839,19 @@ fn empty_parameter_products_keep_the_parameter_only_shared_domain_in_quotient_re
     assert_eq!(q.points(), [0, 1, 2, 3]);
     assert_eq!(q.integer_ring(&quiet()).unwrap().dimension(), 4);
     q.recheck(&i, &a, &quiet()).unwrap();
+}
+
+#[test]
+fn compact_functions_recheck_original_readings_after_parameter_details_are_consumed() {
+    let i = fixture::with_body(fixture::MAP, "law required zero(c:Part):true;");
+    let a = reading(&i, "root");
+    let plan = finite_automatic_law_family_compact(&i, &a, &quiet()).unwrap();
+    plan.recheck(&i, &a, &quiet()).unwrap();
+    let family = plan.into_family().unwrap();
+    family.recheck(&i, &a, &quiet()).unwrap();
+    let quotient = family.required_quotient(&quiet()).unwrap();
+    quotient.recheck(&i, &a, &quiet()).unwrap();
+    let other = reading(&i, "r2");
+    assert!(family.recheck(&i, &other, &quiet()).is_err());
+    assert!(quotient.recheck(&i, &other, &quiet()).is_err());
 }
