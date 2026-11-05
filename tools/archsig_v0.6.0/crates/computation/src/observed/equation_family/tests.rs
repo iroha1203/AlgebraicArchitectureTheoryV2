@@ -510,6 +510,15 @@ fn family_recheck_rejects_equal_architecture_clones_and_altered_requests_or_cont
     let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let r = retain(&env, &mut g, l.clone(), &quiet()).unwrap().unwrap();
     let n = g.get(r).unwrap();
+    assert!(!l.data.support.is_empty());
+    let mut changed_support = n.clone();
+    changed_support.support.make_owned().clear();
+    assert!(!l.data.support.is_empty());
+    assert!(env.recheck_node(&g, &changed_support, r.0).is_err());
+    assert_ne!(l.data.scope, Scope::default());
+    let mut changed_scope = n.clone();
+    changed_scope.scope = Scope::default();
+    assert!(env.recheck_node(&g, &changed_scope, r.0).is_err());
     let mut forged = n.clone();
     let Some(Payload::Construction(value)) = &mut forged.payload else {
         panic!()

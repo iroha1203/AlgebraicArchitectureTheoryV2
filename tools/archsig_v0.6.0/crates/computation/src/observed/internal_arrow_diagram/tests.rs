@@ -210,6 +210,10 @@ fn generators_use_actual_owned_architectures_and_total_actions_with_fixed_comple
         assert!(n.arguments.iter().all(|r| r.0 < i));
         assert_eq!(n.scope, g.get(a.reference).unwrap().scope);
         assert!(n.support.contains(&fact("x", Some("quantity"))));
+        assert!(std::ptr::eq(
+            &*n.support,
+            &*data(&g, NodeRef(i)).source.support
+        ));
     }
     replay(&p, &g, &g.nodes).unwrap();
 }
@@ -307,7 +311,13 @@ fn changed_inputs_requests_plans_metadata_and_edges_are_rejected() {
         let mut nodes = g.nodes.clone();
         match mode {
             0 => nodes[r.0].arguments.swap(3, 4),
-            1 => nodes[r.0].support.make_owned().clear(),
+            1 => {
+                let original = &data(&g, r).source.support;
+                assert!(!original.is_empty());
+                nodes[r.0].support.make_owned().clear();
+                assert!(!original.is_empty());
+                assert!(nodes[r.0].support.is_empty());
+            }
             2 => nodes[r.0].scope = Scope::default(),
             3 => {
                 let Some(Payload::Construction(v)) = &mut nodes[r.0].payload else {

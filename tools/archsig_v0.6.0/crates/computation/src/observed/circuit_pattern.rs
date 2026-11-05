@@ -118,7 +118,7 @@ pub(super) struct Source {
     base: usize,
     outputs: Vec<Output>,
     diagram: Diagram,
-    support: Vec<Fact>,
+    support: Support,
     scope: Scope,
 }
 impl std::fmt::Debug for Source {
@@ -352,6 +352,9 @@ impl Data {
         self.output.wire()
     }
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+        (self.source.support.to_vec(), self.source.scope.clone())
+    }
+    pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.source.support.clone(), self.source.scope.clone())
     }
     pub(super) fn position(&self, at: usize) -> Result<(), ValidationFailure> {
@@ -384,15 +387,14 @@ pub(super) fn validate_node(g: &Graph, n: &Node, data: &Data) -> Result<(), Vali
         return Err(internal!("query patternのconsumerが別種").into());
     };
     let owner = native::architecture_origin(g, data.source.reference, 0)?;
-    let (support, scope) = data.metadata();
     if !Arc::ptr_eq(a, owner)
         || !Arc::ptr_eq(a, &data.source.architecture)
         || data.source.outputs.get(data.index) != Some(&data.output)
         || n.ty != data.ty()
         || n.rule != Rule::Construction("circuit_pattern")
         || n.arguments != data.arguments()
-        || n.support != support
-        || n.scope != scope
+        || n.support != data.source.support
+        || n.scope != data.source.scope
         || !n.reasons.is_empty()
         || !n.evidence.is_empty()
         || n.judgment.is_some()
@@ -510,7 +512,7 @@ impl super::result_kind::ResultKind for Data {
             base,
             outputs,
             diagram,
-            support,
+            support: support.into(),
             scope,
         });
         for (index, output) in source.outputs.iter().enumerate() {

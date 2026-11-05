@@ -1754,6 +1754,8 @@ pub fn retain(
         .transpose()?;
     let (support, scope) = match &value.data {
         ConstructionData::FiniteLaw(data) => data.retained_metadata(),
+        ConstructionData::InternalArrows(data) => data.retained_metadata(),
+        ConstructionData::CircuitPattern(data) => data.retained_metadata(),
         _ => {
             let (support, scope) = metadata(&value)?;
             (support.into(), scope)
