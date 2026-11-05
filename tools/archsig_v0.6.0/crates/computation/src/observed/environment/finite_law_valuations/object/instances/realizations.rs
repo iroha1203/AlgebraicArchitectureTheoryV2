@@ -85,7 +85,13 @@ fn evaluated_objects(
             sources: sources.clone(),
             selection: selection.clone(),
             valuation: Some(valuation.clone()),
-            entries: vec![],
+            entries: Vec::with_capacity(
+                selection
+                    .instances
+                    .iter()
+                    .filter(|instance| instance.declaration().kind == "law")
+                    .count(),
+            ),
             complete: false,
         };
         populate_with_environment(inputs, &mut object, c, e)?;

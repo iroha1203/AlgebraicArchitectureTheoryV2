@@ -1280,6 +1280,11 @@ impl Source {
             }
             return Ok(FiniteAttempt::Incomplete);
         }
+        // 以後は完成した族だけを消費する。元parameter履歴をpartsと同時保持しない。
+        let family = full
+            .into_family()
+            .ok_or(internal!("確認済みの自動Law族がない"))?;
+        let f = &family;
         let mut parts = vec![];
         let shared = basis(f, base, &mut parts, c)?;
         let mut outputs = object_plan(f, &inputs, object, base, &mut parts, &shared, c)?;
