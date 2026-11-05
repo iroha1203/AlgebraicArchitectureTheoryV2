@@ -1,0 +1,11 @@
+{
+  "scope": "方向値の同じ3候補で非Noneのsurface受渡しとclear内の作用も読む",
+  "sources": ["Kept", "Dropped", "Deferred"],
+  "laws": ["directions", "background", "clear"],
+  "q": {"Kept": "TT", "Dropped": "TT", "Deferred": "TT"},
+  "v": {
+    "Kept": {"directions": "TT", "background": "surface", "clear": "set-false,redraw"},
+    "Dropped": {"directions": "TT", "background": "none", "clear": "set-false,redraw"},
+    "Deferred": {"directions": "TT", "background": "surface", "clear": "set-false"}
+  }
+}
