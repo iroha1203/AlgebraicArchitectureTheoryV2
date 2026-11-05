@@ -1585,10 +1585,7 @@ fn populate_family(
                     failure = Some(f);
                 }
             } else if !candidate_blocked {
-                let point = admissible.len();
-                for (column, mut row) in rows.iter_mut().zip(candidate_rows) {
-                    // pointは元probeの行番号欄だけに使われ、値・支持・Scopeには使われない。
-                    row.point = point;
+                for (column, row) in rows.iter_mut().zip(candidate_rows) {
                     column.push(row);
                 }
                 admissible.push(candidate);
@@ -1666,10 +1663,16 @@ fn populate_family(
     }
     let mut published = vec![0usize; r.columns.len()];
     let publication = (|| -> Result<(), ValidationFailure> {
-        for _ in &r.domain {
+        for point in 0..r.domain.len() {
             c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
-            for count in &mut published {
+            for (count, column) in published.iter_mut().zip(&mut r.columns) {
+                // 元domainの行番号を確定する公開境界。前後の停止では完成prefixだけを残す。
                 c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
+                column
+                    .rows
+                    .get_mut(point)
+                    .ok_or(internal!("安定passの元行がない"))?
+                    .point = point;
                 *count += 1;
                 c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
             }
