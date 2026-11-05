@@ -395,7 +395,7 @@ pub(super) struct Source {
     parts: Vec<Part>,
     outputs: Diagram,
     owned_outputs: Option<Vec<Diagram>>,
-    support: Vec<Fact>,
+    support: Support,
     scope: Scope,
 }
 impl std::fmt::Debug for Source {
@@ -519,9 +519,20 @@ impl Data {
     pub(super) fn wire(&self) -> Json {
         self.part().wire()
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+    fn metadata_ref(&self) -> (&[Fact], &Scope) {
         if let Part::ObservedBoolean { support, scope, .. } = self.part() {
-            (support.clone(), scope.clone())
+            (support, scope)
+        } else {
+            (&self.source.support, &self.source.scope)
+        }
+    }
+    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+        let (support, scope) = self.metadata_ref();
+        (support.to_vec(), scope.clone())
+    }
+    pub(super) fn retained_metadata(&self) -> (Support, Scope) {
+        if let Part::ObservedBoolean { support, scope, .. } = self.part() {
+            (support.clone().into(), scope.clone())
         } else {
             (self.source.support.clone(), self.source.scope.clone())
         }
@@ -1332,7 +1343,7 @@ impl Source {
             parts,
             outputs,
             owned_outputs,
-            support,
+            support: support.into(),
             scope,
         }))
     }
@@ -1522,12 +1533,12 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
     if !Arc::ptr_eq(a, current) || !Arc::ptr_eq(a, &data.source.architecture) {
         return Err(internal!("有限Lawの元Architecture参照が違う").into());
     }
-    let (support, scope) = data.metadata();
+    let (support, scope) = data.metadata_ref();
     if n.ty != part.ty()
         || n.rule != Rule::Construction(part.construction())
         || n.arguments != data.arguments()
-        || n.support != support
-        || n.scope != scope
+        || n.support.as_slice() != support
+        || &n.scope != scope
         || n.reasons
             != match part {
                 Part::Equation(v) => v.reasons(),

@@ -1752,13 +1752,19 @@ pub fn retain(
             Ok::<_, ValidationFailure>(j)
         })
         .transpose()?;
-    let (support, scope) = metadata(&value)?;
+    let (support, scope) = match &value.data {
+        ConstructionData::FiniteLaw(data) => data.retained_metadata(),
+        _ => {
+            let (support, scope) = metadata(&value)?;
+            (support.into(), scope)
+        }
+    };
     let node = Node {
         ty: value.ty(),
         rule: value.rule(),
         arguments: value.arguments(),
         payload: Some(Payload::Construction(Box::new(value))),
-        support: support.into(),
+        support,
         scope,
         reasons,
         evidence,

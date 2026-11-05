@@ -181,15 +181,36 @@ fn finite_native_diagram_keeps_wire_values_original_nu_epsilon_and_ideal_generat
         ["1", "0"]
     );
     assert_eq!(property(&g, ev, "kind"), Json::str("finite_functions"));
+    let mut observed_count = 0;
     for (i, n) in g.nodes.iter().enumerate().skip(start) {
         assert!(n.arguments.iter().all(|r| r.0 < i));
         // 原始代入上の表示と、補完せず実際に読んだBool値を区別する。
-        let observed = matches!(data(&g, NodeRef(i)).part(), Part::ObservedBoolean { .. });
+        let data = data(&g, NodeRef(i));
+        let (support, scope) = data.metadata_ref();
+        let observed = match data.part() {
+            Part::ObservedBoolean {
+                support: expected,
+                scope: expected_scope,
+                ..
+            } => {
+                observed_count += 1;
+                assert_eq!(support, expected.as_slice());
+                assert!(std::ptr::eq(scope, expected_scope));
+                assert!(!std::ptr::eq(scope, &data.source.scope));
+                true
+            }
+            _ => {
+                assert!(std::ptr::eq(&*n.support, &*data.source.support));
+                assert!(std::ptr::eq(scope, &data.source.scope));
+                false
+            }
+        };
         assert_eq!(n.scope.assignments, !observed);
         assert!(!n.scope.completions);
         assert!(n.scope.readings.contains("Chosen"));
         assert!(n.support.iter().any(|f| f.atom.as_deref() == Some("px")));
     }
+    assert!(observed_count > 0);
     replay(&e, &g.nodes, &g.contexts).unwrap();
 }
 #[test]
@@ -323,7 +344,10 @@ fn diagram_consumer_recheck_rejects_input_architecture_object_and_node_changes()
         match change {
             0 => n.arguments.clear(),
             1 => n.scope.assignments = false,
-            2 => n.support.make_owned().clear(),
+            2 => {
+                n.support.make_owned().clear();
+                assert!(!data(&g, d.ring).source.support.is_empty());
+            }
             3 => n.ty = NodeType::Construction(T::Ideal),
             _ => {
                 let Some(Payload::Construction(v)) = &mut n.payload else {
