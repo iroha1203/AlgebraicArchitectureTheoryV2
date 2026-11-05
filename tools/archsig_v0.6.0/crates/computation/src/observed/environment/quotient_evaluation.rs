@@ -447,9 +447,9 @@ pub(in crate::observed) fn compute(
             .collect::<BTreeMap<_, _>>();
         assignments.extend(candidate.update.values.iter().cloned());
         let assignments = assignments.into_iter().collect::<Vec<_>>();
-        let mut env =
-            Environment::try_primitive_valuation(original.indexes.inputs, &assignments, c)?
-                .ok_or(internal!("商の候補代入が不適合"))?;
+        let mut env = original
+            .try_primitive_valuation_from(&assignments, c)?
+            .ok_or(internal!("商の候補代入が不適合"))?;
         env.indexes.object = Some(domain.clone());
         env.state.missing_slot_reads.replace(Some(BTreeSet::new()));
         let mut checked = BTreeMap::new();
