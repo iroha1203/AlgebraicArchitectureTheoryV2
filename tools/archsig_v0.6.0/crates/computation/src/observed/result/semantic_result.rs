@@ -301,13 +301,14 @@ fn project_node(
     control: &Control,
     point: Checkpoint,
 ) -> Result<Json, Signal> {
-    let mut node = public_raw_node(native, index, proofs, control, point)?;
+    control.checkpoint(point)?;
+    let mut node = native[index].project_wire(index, &native[..index]);
+    control.checkpoint(point)?;
+    clean_reasons(&mut node, control, point)?;
+    remove_proof_refs(&mut node, proofs);
     let Json::Obj(fields) = &mut node else {
         unreachable!()
     };
-    for key in ["rule", "arguments", "evidence", "scope", "support"] {
-        fields.remove(key);
-    }
     if let Some(Json::Obj(judgment)) = fields.get_mut("judgment") {
         retain_evidence(judgment, examples, completions);
     }
@@ -880,3 +881,6 @@ mod reference_array_tests {
         );
     }
 }
+
+#[cfg(test)]
+mod projection_tests;

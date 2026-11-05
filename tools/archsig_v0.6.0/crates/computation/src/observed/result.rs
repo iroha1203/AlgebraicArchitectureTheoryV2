@@ -1589,38 +1589,48 @@ impl Node {
         self.wire_with_support(id, prior, true)
     }
     fn wire_with_support(&self, id: usize, prior: &[Node], include_support: bool) -> Json {
-        let mut wire =
-            BTreeMap::from([
-                ("id".into(), Json::str(format!("n{id}"))),
-                ("type".into(), self.ty.wire()),
-                (
-                    "state".into(),
-                    Json::str(
-                        if self.payload.as_ref().is_some_and(
-                            |p| !matches!(p, Payload::Construction(v) if v.is_blocked()),
-                        ) {
-                            "value"
-                        } else {
-                            "blocked"
-                        },
-                    ),
-                ),
-                ("rule".into(), self.rule.wire()),
-                ("arguments".into(), refs(&self.arguments)),
-                ("conditions".into(), refs(&self.conditions())),
-                ("evidence".into(), refs(&self.evidence)),
-                ("scope".into(), self.scope.wire()),
-                (
-                    "reasons".into(),
-                    Json::Arr(self.reasons.iter().map(Reason::wire).collect()),
-                ),
-            ]);
+        let mut wire = BTreeMap::from([
+            ("rule".into(), self.rule.wire()),
+            ("arguments".into(), refs(&self.arguments)),
+            ("evidence".into(), refs(&self.evidence)),
+            ("scope".into(), self.scope.wire()),
+        ]);
         if include_support {
             wire.insert(
                 "support".into(),
                 Json::Arr(self.support.iter().map(Fact::wire).collect()),
             );
         }
+        self.wire_fields(id, prior, wire)
+    }
+    // 保存投影だけの入口。native引数はpayloadの既出Ref解決に引き続き使う。
+    fn project_wire(&self, id: usize, prior: &[Node]) -> Json {
+        self.wire_fields(id, prior, BTreeMap::new())
+    }
+    fn wire_fields(&self, id: usize, prior: &[Node], mut wire: BTreeMap<String, Json>) -> Json {
+        wire.extend([
+            ("id".into(), Json::str(format!("n{id}"))),
+            ("type".into(), self.ty.wire()),
+            (
+                "state".into(),
+                Json::str(
+                    if self
+                        .payload
+                        .as_ref()
+                        .is_some_and(|p| !matches!(p, Payload::Construction(v) if v.is_blocked()))
+                    {
+                        "value"
+                    } else {
+                        "blocked"
+                    },
+                ),
+            ),
+            ("conditions".into(), refs(&self.conditions())),
+            (
+                "reasons".into(),
+                Json::Arr(self.reasons.iter().map(Reason::wire).collect()),
+            ),
+        ]);
         if let Some(Payload::Construction(v)) = &self.payload
             && let Some(partial) = v.partial(&self.reasons)
         {
