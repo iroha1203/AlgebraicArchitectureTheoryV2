@@ -976,6 +976,10 @@ fn captured_local_law_keeps_missing_and_derivation_without_memo_entries() {
     assert_eq!(first.1, vec![slot("Paths.Node", "p", "mark")]);
     assert!(!first.2.is_empty(), "the derivation must still be captured");
     assert!(e.results.scoped_values.borrow().is_empty());
+    let unrecorded = e.local_point_without_trace(declaration, &bindings).unwrap();
+    assert!(first.0 == unrecorded.0);
+    assert_eq!(first.1, unrecorded.1);
+    e.results.scoped_values.borrow_mut().clear();
     let second = e.local_point(declaration, &bindings).unwrap();
     assert!(first.0 == second.0);
     assert_eq!(first.1, second.1);
@@ -994,4 +998,40 @@ fn captured_local_law_keeps_missing_and_derivation_without_memo_entries() {
     assert!(e.results.scoped_values.borrow().is_empty());
     assert!(e.state.missing_slot_reads.borrow().is_none());
     assert!(e.state.evaluation_capture.borrow().is_none());
+}
+
+#[test]
+fn local_law_without_trace_preserves_guard_values_support_and_warm_missing() {
+    for (mode, script) in [
+        ("normal", "law required holds(n:Node): n.mark>=0;"),
+        (
+            "missing_source",
+            "law required holds(n:Node) when false: n.mark>=0;",
+        ),
+        (
+            "missing_source",
+            "law required holds(n:Node): if true then true else n.mark>0;",
+        ),
+    ] {
+        let i = inputs(mode, script);
+        let declaration = &i.law().declarations()["Walk.holds"];
+        let bindings = vec![(
+            "n".into(),
+            Scalar::Subject {
+                snapshot: "v".into(),
+                subject: "p".into(),
+                entity: "Paths.Node".into(),
+            },
+        )];
+        let e = Environment::new(&i, &quiet()).unwrap();
+        let (recorded, missing, trace) = e.local_point(declaration, &bindings).unwrap();
+        assert!(!trace.is_empty());
+        for _ in 0..2 {
+            let (unrecorded, absent) = e.local_point_without_trace(declaration, &bindings).unwrap();
+            assert!(recorded == unrecorded);
+            assert_eq!(missing, absent);
+        }
+        assert!(e.state.evaluation_capture.borrow().is_none());
+        assert!(e.state.missing_slot_reads.borrow().is_none());
+    }
 }

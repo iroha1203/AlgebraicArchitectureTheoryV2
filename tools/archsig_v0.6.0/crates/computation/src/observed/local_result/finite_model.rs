@@ -467,7 +467,12 @@ pub(super) fn analyze(
         let mut row_truth = vec![];
         for (i, (name, bindings)) in requirements.iter().enumerate() {
             let law = &env.indexes.inputs.law().declarations()[name];
-            let (row, absent, evaluated) = state.local_point(law, bindings)?;
+            let (row, absent, evaluated) = if explicit {
+                let (row, absent) = state.local_point_without_trace(law, bindings)?;
+                (row, absent, vec![])
+            } else {
+                state.local_point(law, bindings)?
+            };
             missing.extend(absent);
             missing.extend(row.application_missing.iter().cloned());
             scope.merge(&row.scope);

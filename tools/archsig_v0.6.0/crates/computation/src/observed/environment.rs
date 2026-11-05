@@ -477,22 +477,48 @@ impl<'a> Environment<'a> {
         ),
         ValidationFailure,
     > {
+        self.local_point_mode(declaration, bindings, true)
+    }
+    pub(super) fn local_point_without_trace(
+        &self,
+        declaration: &archsig_input::law::model::Declaration,
+        bindings: &[(String, Scalar)],
+    ) -> Result<(finite_law_valuations::FiniteLawRow, Vec<Fact>), ValidationFailure> {
+        let (row, missing, _) = self.local_point_mode(declaration, bindings, false)?;
+        Ok((row, missing))
+    }
+    fn local_point_mode(
+        &self,
+        declaration: &archsig_input::law::model::Declaration,
+        bindings: &[(String, Scalar)],
+        capture_trace: bool,
+    ) -> Result<
+        (
+            finite_law_valuations::FiniteLawRow,
+            Vec<Fact>,
+            Vec<quotient_evaluation::EvaluationNode>,
+        ),
+        ValidationFailure,
+    > {
         let archsig_input::law::model::Signature::Law { body, guard, .. } = declaration.signature
         else {
             return Err(internal!("局所評価の元Lawがない").into());
         };
         let outer = self.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
-        let prior =
-            self.state
-                .evaluation_capture
-                .scoped(Some(quotient_evaluation::EvaluationCapture {
-                    selected: std::iter::once(body).chain(guard).collect(),
-                    nodes: vec![],
-                    roots: vec![],
-                    stack: vec![],
-                }));
+        let prior = self.state.evaluation_capture.scoped(capture_trace.then(|| {
+            quotient_evaluation::EvaluationCapture {
+                selected: std::iter::once(body).chain(guard).collect(),
+                nodes: vec![],
+                roots: vec![],
+                stack: vec![],
+            }
+        }));
         let result = finite_law_valuations::evaluate_local_point(self, declaration, bindings);
-        let capture = prior.restore().ok_or(internal!("局所読取りの記録がない"))?;
+        let nodes = match (capture_trace, prior.restore()) {
+            (true, Some(capture)) => capture.nodes,
+            (false, None) => vec![],
+            _ => return Err(internal!("局所読取りの記録状態が違う").into()),
+        };
         let reads = outer
             .restore()
             .ok_or(internal!("局所Lawの欠測収集がない"))?;
@@ -511,7 +537,7 @@ impl<'a> Environment<'a> {
                         .is_some_and(|v| v.contains_key(f))
                 })
                 .collect(),
-            capture.nodes,
+            nodes,
         ))
     }
     pub(in crate::observed) fn fixed_values(&self) -> Vec<(Fact, Scalar)> {
