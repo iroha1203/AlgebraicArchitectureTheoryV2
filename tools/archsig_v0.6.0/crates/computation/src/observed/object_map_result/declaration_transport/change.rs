@@ -885,7 +885,7 @@ pub(super) fn retain(
             })
             .collect::<Vec<_>>();
         part.scope.quantifiers.extend(quantifiers.iter().cloned());
-        if let Json::Obj(wire) = &mut part.wire {
+        if let Some(Json::Obj(wire)) = part.wire_mut() {
             wire.insert(
                 "quantifiers".into(),
                 Json::Arr(quantifiers.iter().map(Quantifier::wire).collect()),

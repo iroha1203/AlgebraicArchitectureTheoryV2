@@ -223,7 +223,7 @@ pub(super) fn quantify_parameters(
     }
     // Scopeは元評価の全域を保持する。命題のbinderは元parameterだけであり、
     // 先parameterはDeclarationPairの位置対応で束縛する。独立には量化しない。
-    if let Json::Obj(wire) = &mut p.wire {
+    if let Some(Json::Obj(wire)) = p.wire_mut() {
         wire.insert(
             "quantifiers".into(),
             Json::Arr(quantifiers.iter().map(Quantifier::wire).collect()),
@@ -250,7 +250,7 @@ fn inverse(
         context: None,
     };
     p.scope.quantifiers.push(q.clone());
-    p.wire = Json::obj([
+    *p.wire_mut().ok_or(internal!("逆写像命題のrecordがない"))? = Json::obj([
         ("predicate", Json::str("inverse_maps")),
         (
             "operands",

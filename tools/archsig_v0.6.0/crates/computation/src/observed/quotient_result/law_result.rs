@@ -238,7 +238,7 @@ pub(super) fn row(
             part.arguments.extend([guard_evaluation, guard_value]);
             part.arguments.sort_by_key(|r| r.0);
             part.arguments.dedup();
-            let Json::Obj(wire) = &mut part.wire else {
+            let Some(Json::Obj(wire)) = part.wire_mut() else {
                 unreachable!()
             };
             let Some(Json::Arr(parts)) = wire.get_mut("parts") else {

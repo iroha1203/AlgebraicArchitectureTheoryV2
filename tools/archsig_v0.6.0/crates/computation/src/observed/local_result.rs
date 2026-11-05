@@ -1008,7 +1008,7 @@ fn diagnose(
             let expression = b.push(
                 original.ty.clone(),
                 original.construction,
-                original.wire.clone(),
+                original.wire(),
                 original.arguments.iter().copied().chain([target]).collect(),
                 None,
             )?;

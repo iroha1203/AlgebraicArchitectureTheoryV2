@@ -299,21 +299,17 @@ fn applicable(
         }
         if values[1] == Some(false) {
             out.status = Decision::Refuted;
-            let left = b.push(
+            let left = b.scalar(
                 NodeType::Value(Type::Bool),
                 "binding",
-                Scalar::Bool(true).wire(),
+                Scalar::Bool(true),
                 origins.to_vec(),
-                Some(Scalar::Bool(true)),
-                None,
             )?;
-            let right = b.push(
+            let right = b.scalar(
                 NodeType::Value(Type::Bool),
                 "binding",
-                Scalar::Bool(false).wire(),
+                Scalar::Bool(false),
                 origins.to_vec(),
-                Some(Scalar::Bool(false)),
-                None,
             )?;
             out.evidence.push(counterexample(
                 b,
@@ -487,13 +483,11 @@ fn checked_reference_map(
             subject: source.subject.clone(),
             entity: st.into(),
         };
-        failed_arguments.push(b.push(
+        failed_arguments.push(b.scalar(
             NodeType::Value(scalar.ty()),
             "binding",
-            scalar.wire(),
+            scalar,
             dependencies.to_vec(),
-            Some(scalar),
-            None,
         )?);
         return Ok(None);
     }
@@ -507,13 +501,11 @@ fn checked_reference_map(
                 subject: fact.subject.clone(),
                 entity: entity.into(),
             };
-            refs.push(b.push(
+            refs.push(b.scalar(
                 NodeType::Value(scalar.ty()),
                 "binding",
-                scalar.wire(),
+                scalar,
                 dependencies.to_vec(),
-                Some(scalar),
-                None,
             )?);
         }
         subjects.push((refs[0], refs[1]));
@@ -550,13 +542,11 @@ fn outside_value(
     index
         .map(|i| {
             let value = transport.source()[i].scalar().clone();
-            b.push(
+            b.scalar(
                 NodeType::Value(value.ty()),
                 "binding",
-                value.wire(),
+                value,
                 dependencies.to_vec(),
-                Some(value),
-                None,
             )
         })
         .transpose()
@@ -690,13 +680,11 @@ fn value_type_map(
             )
             .map_err(failure)?
             {
-                failed_arguments.push(b.push(
+                failed_arguments.push(b.scalar(
                     NodeType::Value(value.ty()),
                     "binding",
-                    value.wire(),
+                    value,
                     dependencies.to_vec(),
-                    Some(value),
-                    None,
                 )?);
                 return Ok(None);
             }
@@ -950,13 +938,11 @@ pub(super) fn retain(
                 for value in transport.source() {
                     tick(c)?;
                     let scalar = value.scalar().clone();
-                    sources.push(b.push(
+                    sources.push(b.scalar(
                         NodeType::Value(source.ty.clone()),
                         "binding",
-                        scalar.wire(),
+                        scalar,
                         dependencies.to_vec(),
-                        Some(scalar),
-                        None,
                     )?);
                 }
                 argument_declarations.extend(value_declarations);
@@ -1230,7 +1216,7 @@ pub(super) fn retain(
                 })
                 .collect();
             p.scope.quantifiers.extend(quantifiers.iter().cloned());
-            if let Json::Obj(wire) = &mut p.wire {
+            if let Some(Json::Obj(wire)) = p.wire_mut() {
                 wire.insert(
                     "quantifiers".into(),
                     Json::Arr(quantifiers.iter().map(Quantifier::wire).collect()),

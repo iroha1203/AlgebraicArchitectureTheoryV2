@@ -244,7 +244,7 @@ pub(super) fn compute(
             (actual_image, image_generators),
             (kernel, kernel_generators),
         ] {
-            let Json::Obj(wire) = &mut b.parts[r.0 - base].wire else {
+            let Some(Json::Obj(wire)) = b.parts[r.0 - base].wire_mut() else {
                 return Err(internal!("アフィン商の加群がrecordでない").into());
             };
             wire.insert("generators".into(), Json::Arr(generators));
@@ -369,7 +369,7 @@ pub(super) fn compute(
     let mut outputs = BTreeMap::from([("quotient".into(), quotient)]);
     let mut claim = None;
     if let Some(law) = &image.law {
-        let Json::Obj(wire) = &mut b.parts[quotient.0 - base].wire else {
+        let Some(Json::Obj(wire)) = b.parts[quotient.0 - base].wire_mut() else {
             return Err(internal!("アフィン商のrecordがない").into());
         };
         wire.insert("law".into(), Json::str(&law.name));
@@ -669,7 +669,7 @@ fn law_descent(
             ]));
         }
     }
-    let Json::Obj(wire) = &mut b.parts[family.0 - b.base].wire else {
+    let Some(Json::Obj(wire)) = b.parts[family.0 - b.base].wire_mut() else {
         return Err(internal!("アフィン商の評価族加群がrecordでない").into());
     };
     wire.insert("generators".into(), Json::Arr(generators));

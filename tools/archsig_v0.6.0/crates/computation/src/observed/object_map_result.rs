@@ -58,7 +58,7 @@ impl PartialEq for Data {
 impl Eq for Data {}
 impl Data {
     pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
-        EvidenceKind::from_wire(&self.part().wire)
+        self.part().evidence_kind()
     }
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
@@ -77,7 +77,7 @@ impl Data {
         self.part().construction
     }
     pub(super) fn wire(&self) -> Json {
-        self.part().wire.clone()
+        self.part().wire()
     }
     pub(super) fn arguments(&self) -> Vec<NodeRef> {
         self.part().arguments.clone()
@@ -718,13 +718,11 @@ fn compute_inner(
     };
     dependencies.sort_by_key(|r| r.0);
     dependencies.dedup();
-    let label = b.push(
+    let label = b.scalar(
         NodeType::Value(archsig_common::types::Type::Text),
         "binding",
-        Json::str("object_algebra_map"),
+        Scalar::Text("object_algebra_map".into()),
         vec![candidate],
-        Some(Scalar::Text("object_algebra_map".into())),
-        None,
     )?;
     let mut operands = vec![label];
     operands.extend(dependencies.iter().copied());

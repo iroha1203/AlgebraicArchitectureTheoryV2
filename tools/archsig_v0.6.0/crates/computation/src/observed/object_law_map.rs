@@ -392,14 +392,7 @@ fn path(b: &mut Builder<'_>, p: &Json, parent: NodeRef) -> Result<NodeRef, Valid
         element: Type::Z,
         items,
     };
-    b.push(
-        NodeType::Value(value.ty()),
-        "binding",
-        value.wire(),
-        vec![parent],
-        Some(value),
-        None,
-    )
+    b.scalar(NodeType::Value(value.ty()), "binding", value, vec![parent])
 }
 pub(super) fn retain(
     env: &Environment<'_>,

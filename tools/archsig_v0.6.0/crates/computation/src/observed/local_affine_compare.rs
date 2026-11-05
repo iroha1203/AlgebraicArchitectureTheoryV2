@@ -9,7 +9,7 @@ pub(super) fn record(
     g: &Graph,
     r: NodeRef,
 ) -> Result<&archsig_common::canonical::JsonObject, ValidationFailure> {
-    let Json::Obj(fields) = &local(g, r)?.part().wire else {
+    let Some(Json::Obj(fields)) = local(g, r)?.part().wire_ref() else {
         return Err(internal!("整数診断のレコードがない").into());
     };
     Ok(fields)

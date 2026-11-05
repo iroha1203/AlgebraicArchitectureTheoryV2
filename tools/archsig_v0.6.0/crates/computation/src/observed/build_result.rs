@@ -44,7 +44,8 @@ fn parameters(v: &[(String, Type)]) -> Json {
 pub(super) struct Part {
     pub(super) ty: NodeType,
     pub(super) construction: &'static str,
-    // Scalar is the typed source of truth; only other parts retain a wire record.
+    // Canonical Scalar is the typed source of truth. Path additionally retains
+    // its existing typed-Ref display; JSON-only parts retain their record.
     // The private field prevents callers from changing the representation's presence.
     wire: Option<Json>,
     pub(super) arguments: Vec<NodeRef>,
@@ -69,8 +70,8 @@ impl PartialEq for Part {
             && self.evidence == other.evidence
             && self.scalar == other.scalar
             && self.domain_type == other.domain_type
-            && match (&self.scalar, &other.scalar) {
-                (Some(a), Some(b)) => same_scalar_wire(a, b),
+            && match (&self.scalar, &other.scalar, &self.wire, &other.wire) {
+                (Some(a), Some(b), None, None) => same_scalar_wire(a, b),
                 _ => true,
             }
     }
@@ -150,8 +151,10 @@ impl Part {
     pub(super) fn wire(&self) -> Json {
         match (&self.scalar, &self.wire) {
             (Some(scalar), None) => scalar.wire(),
-            (None, Some(wire)) => wire.clone(),
-            _ => unreachable!("Builder が作る Part は Scalar または JSON を一つ保持する"),
+            (None, Some(wire)) | (Some(Scalar::Path(_)), Some(wire)) => wire.clone(),
+            _ => unreachable!(
+                "Builder が作る Part は canonical Scalar / JSON / typed Path 表示のいずれかを保持する"
+            ),
         }
     }
     pub(super) fn wire_ref(&self) -> Option<&Json> {
@@ -254,8 +257,25 @@ impl Builder<'_> {
     ) -> Result<NodeRef, ValidationFailure> {
         self.push_part(ty, construction, None, arguments, Some(scalar), None)
     }
-    // The two entry points above construct exactly one representation. Metadata,
-    // dependency checks and checkpoint order remain common to both.
+    // Path rendering uses typed existing references, not Scalar::wire().
+    pub(super) fn path(
+        &mut self,
+        path: super::path_value::PathValue,
+        wire: Json,
+        arguments: Vec<NodeRef>,
+    ) -> Result<NodeRef, ValidationFailure> {
+        let scalar = Scalar::Path(Box::new(path));
+        self.push_part(
+            NodeType::Value(scalar.ty()),
+            "binding",
+            Some(wire),
+            arguments,
+            Some(scalar),
+            None,
+        )
+    }
+    // The three entry points above fix the representation. Metadata,
+    // dependency checks and checkpoint order remain common to all three.
     fn push_part(
         &mut self,
         ty: NodeType,

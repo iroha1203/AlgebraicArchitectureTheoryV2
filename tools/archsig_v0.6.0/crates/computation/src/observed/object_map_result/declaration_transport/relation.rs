@@ -113,10 +113,8 @@ fn path_binding(
             generators.push(reference.wire());
         }
     }
-    let scalar = Scalar::Path(Box::new(path.clone()));
-    b.push(
-        NodeType::Value(scalar.ty()),
-        "binding",
+    b.path(
+        path.clone(),
         Json::obj([
             ("reading", Json::str(&path.reading)),
             ("source", source.wire()),
@@ -124,8 +122,6 @@ fn path_binding(
             ("generators", Json::Arr(generators)),
         ]),
         args,
-        Some(scalar),
-        None,
     )
 }
 // 族全体で適用条件と比較する語が確定した後にだけ、実際の反例割当てを作る。
@@ -641,7 +637,7 @@ pub(super) fn retain(
                 let witness = example(b, &[], &[], left, right, &origin_deps, &support, c)?;
                 let part = &mut b.parts[witness.0 - b.base];
                 part.arguments.extend(paths);
-                if let Json::Obj(wire) = &mut part.wire {
+                if let Some(Json::Obj(wire)) = part.wire_mut() {
                     if let Some(Json::Obj(data)) = wire.get_mut("data") {
                         data.insert(
                             "paths".into(),
@@ -898,7 +894,7 @@ pub(super) fn retain(
         let tt = Type::Path(ta.clone(), tb.clone());
         let values = value_map(b, [&st, &tt], &subjects, &identity, deps)?;
         let part = &mut b.parts[values.0 - b.base];
-        if let Json::Obj(wire) = &mut part.wire {
+        if let Some(Json::Obj(wire)) = part.wire_mut() {
             wire.insert(
                 "generators".into(),
                 Json::Arr(
@@ -951,7 +947,7 @@ pub(super) fn retain(
                 })
                 .collect::<Vec<_>>();
             part.scope.quantifiers.extend(quantifiers.iter().cloned());
-            if let Json::Obj(wire) = &mut part.wire {
+            if let Some(Json::Obj(wire)) = part.wire_mut() {
                 wire.insert(
                     "quantifiers".into(),
                     Json::Arr(quantifiers.iter().map(Quantifier::wire).collect()),

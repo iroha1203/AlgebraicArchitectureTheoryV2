@@ -15,7 +15,7 @@ fn local(g: &Graph, r: NodeRef) -> Result<&Data, ValidationFailure> {
 }
 fn field(g: &Graph, r: NodeRef, name: &str) -> Result<NodeRef, ValidationFailure> {
     let d = local(g, r)?;
-    let Json::Obj(w) = &d.part().wire else {
+    let Some(Json::Obj(w)) = d.part().wire_ref() else {
         return Err(internal!("有限診断のレコードがない").into());
     };
     d.part()
@@ -27,7 +27,7 @@ fn field(g: &Graph, r: NodeRef, name: &str) -> Result<NodeRef, ValidationFailure
 }
 fn elements(g: &Graph, r: NodeRef) -> Result<Vec<NodeRef>, ValidationFailure> {
     let d = local(g, r)?;
-    let Json::Obj(w) = &d.part().wire else {
+    let Some(Json::Obj(w)) = d.part().wire_ref() else {
         return Err(internal!("有限Domainがない").into());
     };
     let Some(Json::Arr(items)) = w.get("elements") else {
@@ -47,7 +47,7 @@ fn elements(g: &Graph, r: NodeRef) -> Result<Vec<NodeRef>, ValidationFailure> {
 }
 fn pairs(g: &Graph, r: NodeRef) -> Result<Vec<(NodeRef, NodeRef)>, ValidationFailure> {
     let d = local(g, r)?;
-    let Json::Obj(w) = &d.part().wire else {
+    let Some(Json::Obj(w)) = d.part().wire_ref() else {
         return Err(internal!("有限StateMapがない").into());
     };
     let Some(Json::Arr(items)) = w.get("pairs") else {
@@ -241,7 +241,7 @@ pub(super) fn compute(
             let expression = b.push(
                 original.ty.clone(),
                 original.construction,
-                original.wire.clone(),
+                original.wire(),
                 original
                     .arguments
                     .iter()

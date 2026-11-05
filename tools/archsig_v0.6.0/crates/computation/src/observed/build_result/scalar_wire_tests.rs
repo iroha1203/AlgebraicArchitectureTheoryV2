@@ -139,9 +139,8 @@ fn legacy(part: &Part) -> LegacyPart {
         ty: part.ty.clone(),
         construction: part.construction,
         wire: part
-            .scalar
-            .as_ref()
-            .map_or_else(|| part.wire_ref().unwrap().clone(), Scalar::wire),
+            .wire_ref()
+            .map_or_else(|| part.scalar.as_ref().unwrap().wire(), Clone::clone),
         arguments: part.arguments.clone(),
         support: part.support.clone(),
         scope: part.scope.clone(),
@@ -339,4 +338,60 @@ fn scalar_wire_order_comparison_keeps_deep_container_stack_growth() {
     assert!(!same_scalar_wire(&a, &c));
     assert_eq!(a.wire(), b.wire());
     assert_ne!(a.wire(), c.wire());
+}
+
+#[test]
+fn path_parts_keep_the_original_typed_reference_wire_and_equality() {
+    let control = Control::unlimited();
+    let graph = Graph::new(&control);
+    let mut builder = Builder {
+        g: &graph,
+        base: 0,
+        parts: vec![],
+    };
+    let source = builder
+        .scalar(
+            NodeType::Value(Type::Ref("E".into())),
+            "binding",
+            Scalar::Subject {
+                snapshot: "v".into(),
+                subject: "s".into(),
+                entity: "E".into(),
+            },
+            vec![],
+        )
+        .unwrap();
+    let path = super::super::path_value::PathValue {
+        reading: "R".into(),
+        snapshot: "v".into(),
+        subject: "s".into(),
+        entity: "E".into(),
+        step: None,
+    };
+    let wire = Json::obj([
+        ("reading", Json::str("R")),
+        ("source", source.wire()),
+        ("target", source.wire()),
+        ("generators", Json::Arr(vec![])),
+    ]);
+    let reference = builder.path(path, wire.clone(), vec![source]).unwrap();
+    let part = &builder.parts[reference.0];
+    assert!(matches!(&part.scalar, Some(Scalar::Path(_))));
+    assert_eq!(part.wire_ref(), Some(&wire));
+    assert_eq!(part.wire(), wire);
+    assert!(part.evidence_kind().is_none());
+    assert!(*part == part.clone());
+    for change_path in [false, true] {
+        let mut changed = part.clone();
+        if change_path {
+            let Some(Scalar::Path(path)) = &mut changed.scalar else {
+                unreachable!()
+            };
+            path.reading = "other".into();
+        } else {
+            *changed.wire_mut().unwrap() = Json::Bool(false);
+        }
+        assert!(legacy(part) != legacy(&changed));
+        assert_ne!(*part, changed);
+    }
 }
