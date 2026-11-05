@@ -1,0 +1,48 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "CallbackModel",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "CallbackModel.Branch",
+          "meaning": "同一child参照を扱う架空操作の、cache条件で分けた静的経路。例は正常に終わる固定callbackを持つ。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "cacheHit",
+              "type": "Bool",
+              "meaning": "選択した静的経路でcache lookupがhitする条件。"
+            },
+            {
+              "name": "enterReached",
+              "type": "Bool",
+              "meaning": "この条件付き経路の制御がenter呼出しへ到達するか。"
+            },
+            {
+              "name": "visitReached",
+              "type": "Bool",
+              "meaning": "この条件付き経路の制御がvisit呼出しへ到達するか。"
+            },
+            {
+              "name": "writeAt",
+              "type": "Z",
+              "meaning": "visitによる同じchild.valueへの代入位置。経路内の静的な順序番号であり実測時刻ではない。"
+            },
+            {
+              "name": "readAt",
+              "type": "Z",
+              "meaning": "戻す整数を取得するchild.value読取の位置。同じ経路のwriteAtと比較する静的な順序番号。"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

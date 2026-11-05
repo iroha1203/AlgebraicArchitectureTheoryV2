@@ -1,0 +1,54 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "CallbackModel",
+      "version": "1",
+      "digest": "sha256:4501fbfe4d751a9603bff41a42e5be0e93b73d0d67989e95713f405e2ea4cd7a"
+    }
+  ],
+  "sources": [],
+  "origins": [
+    {
+      "id": "model",
+      "mode": "specification",
+      "method": "callback-read.mdに提示した架空の条件付き経路を記述する。",
+      "locations": [],
+      "note": "実OSSの観測や実行の実測ではない。hitPartialはhitFreshのenter到達性だけを未観測とした不完全入力。番号は静的順序である。"
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "v",
+      "origin": "model",
+      "subjects": [
+        {"id": "hitStale", "type": "CallbackModel.Branch", "origin": "model"},
+        {"id": "hitFresh", "type": "CallbackModel.Branch", "origin": "model"},
+        {"id": "missFresh", "type": "CallbackModel.Branch", "origin": "model"},
+        {"id": "hitPartial", "type": "CallbackModel.Branch", "origin": "model"}
+      ],
+      "atoms": [
+        {"id": "hitStale.cacheHit", "subject": "hitStale", "field": "CallbackModel.Branch.cacheHit", "value": true, "origin": "model"},
+        {"id": "hitStale.enterReached", "subject": "hitStale", "field": "CallbackModel.Branch.enterReached", "value": false, "origin": "model"},
+        {"id": "hitStale.visitReached", "subject": "hitStale", "field": "CallbackModel.Branch.visitReached", "value": true, "origin": "model"},
+        {"id": "hitStale.writeAt", "subject": "hitStale", "field": "CallbackModel.Branch.writeAt", "value": "2", "origin": "model"},
+        {"id": "hitStale.readAt", "subject": "hitStale", "field": "CallbackModel.Branch.readAt", "value": "1", "origin": "model"},
+        {"id": "hitFresh.cacheHit", "subject": "hitFresh", "field": "CallbackModel.Branch.cacheHit", "value": true, "origin": "model"},
+        {"id": "hitFresh.enterReached", "subject": "hitFresh", "field": "CallbackModel.Branch.enterReached", "value": false, "origin": "model"},
+        {"id": "hitFresh.visitReached", "subject": "hitFresh", "field": "CallbackModel.Branch.visitReached", "value": true, "origin": "model"},
+        {"id": "hitFresh.writeAt", "subject": "hitFresh", "field": "CallbackModel.Branch.writeAt", "value": "2", "origin": "model"},
+        {"id": "hitFresh.readAt", "subject": "hitFresh", "field": "CallbackModel.Branch.readAt", "value": "3", "origin": "model"},
+        {"id": "missFresh.cacheHit", "subject": "missFresh", "field": "CallbackModel.Branch.cacheHit", "value": false, "origin": "model"},
+        {"id": "missFresh.enterReached", "subject": "missFresh", "field": "CallbackModel.Branch.enterReached", "value": true, "origin": "model"},
+        {"id": "missFresh.visitReached", "subject": "missFresh", "field": "CallbackModel.Branch.visitReached", "value": true, "origin": "model"},
+        {"id": "missFresh.writeAt", "subject": "missFresh", "field": "CallbackModel.Branch.writeAt", "value": "2", "origin": "model"},
+        {"id": "missFresh.readAt", "subject": "missFresh", "field": "CallbackModel.Branch.readAt", "value": "3", "origin": "model"},
+        {"id": "hitPartial.cacheHit", "subject": "hitPartial", "field": "CallbackModel.Branch.cacheHit", "value": true, "origin": "model"},
+        {"id": "hitPartial.visitReached", "subject": "hitPartial", "field": "CallbackModel.Branch.visitReached", "value": true, "origin": "model"},
+        {"id": "hitPartial.writeAt", "subject": "hitPartial", "field": "CallbackModel.Branch.writeAt", "value": "2", "origin": "model"},
+        {"id": "hitPartial.readAt", "subject": "hitPartial", "field": "CallbackModel.Branch.readAt", "value": "3", "origin": "model"}
+      ]
+    }
+  ]
+}
