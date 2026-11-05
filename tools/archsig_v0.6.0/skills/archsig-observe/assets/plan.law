@@ -1,0 +1,6 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Plans {
+ use vocabulary PlanModel version "1" digest "sha256:d82a8f4a146db29641cbd24709755e7340219fbf3c0a7f0546a61eaf368fd7df";
+ law required enabled(p: PlanModel.Plan): p.enabled;
+ change configure(p: PlanModel.Plan, value: Bool) = p with {enabled = value};
+}

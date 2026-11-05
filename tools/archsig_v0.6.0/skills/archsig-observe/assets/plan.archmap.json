@@ -1,0 +1,41 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "PlanModel",
+      "version": "1",
+      "digest": "sha256:d82a8f4a146db29641cbd24709755e7340219fbf3c0a7f0546a61eaf368fd7df"
+    }
+  ],
+  "sources": [],
+  "origins": [
+    {
+      "id": "model",
+      "mode": "specification",
+      "method": "四つの計画と有効化設定を架空の仕様モデルとして提示する。",
+      "locations": [],
+      "note": "実OSSの実装観測ではない。対象計画と別snapshotの不適合計画を保持し、変更rootとLaw引数束縛の違いを計算する。"
+    }
+  ],
+  "snapshots": [
+    {"id": "v", "origin": "model",
+     "subjects": [
+       {"id": "target", "type": "PlanModel.Plan", "origin": "model"},
+       {"id": "valid", "type": "PlanModel.Plan", "origin": "model"}
+     ],
+     "atoms": [
+       {"id": "target.enabled", "subject": "target", "field": "PlanModel.Plan.enabled", "value": false, "origin": "model"},
+       {"id": "valid.enabled", "subject": "valid", "field": "PlanModel.Plan.enabled", "value": true, "origin": "model"}
+     ]},
+    {"id": "alternative", "origin": "model",
+     "subjects": [
+       {"id": "blocked", "type": "PlanModel.Plan", "origin": "model"},
+       {"id": "valid", "type": "PlanModel.Plan", "origin": "model"}
+     ],
+     "atoms": [
+       {"id": "blocked.enabled", "subject": "blocked", "field": "PlanModel.Plan.enabled", "value": false, "origin": "model"},
+       {"id": "valid.enabled", "subject": "valid", "field": "PlanModel.Plan.enabled", "value": true, "origin": "model"}
+     ]}
+  ]
+}

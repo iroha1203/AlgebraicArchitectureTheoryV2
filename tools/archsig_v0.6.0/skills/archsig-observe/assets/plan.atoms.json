@@ -1,0 +1,28 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "PlanModel",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "PlanModel.Plan",
+          "meaning": "独立した変更rootとして扱う計画。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "enabled",
+              "type": "Bool",
+              "meaning": "計画に記述された機能の有効化設定。実行結果ではない。"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}
