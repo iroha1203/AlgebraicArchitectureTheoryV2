@@ -1,0 +1,22 @@
+{
+  "scope": "固定した平坦な名前集合で同じ文字列をglob/literalとして読む二つの候補モデル",
+  "sources": [
+    "configured",
+    "generated"
+  ],
+  "laws": [
+    "targets"
+  ],
+  "q": {
+    "configured": "configured|glob|project?1",
+    "generated": "generated|literal|project?1"
+  },
+  "v": {
+    "configured": {
+      "targets": "[project?1,projectX1]"
+    },
+    "generated": {
+      "targets": "[project?1]"
+    }
+  }
+}

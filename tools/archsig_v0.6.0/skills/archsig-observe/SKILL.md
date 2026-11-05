@@ -113,6 +113,10 @@ Law は根拠が求める関係を、操作・文脈の原始 field から読む
 要求を満たす別の実装案でも提案 Law が成立するかを考える。要求が許す候補対で Law 値が
 分かれるなら、その内部手段の区別まで要求済みとは扱わず、追加の保存仮説として分ける。
 
+設定globと発見literalの同じ文字列を区別する例は
+[パスの由来と解釈](assets/path-interpretation.md)を参照する。
+raw値への所属と、解釈後の対象への所属を別の式として照合できる。
+
 ## 三入力の書き方
 
 最小の動く形は [Atom 定義](assets/operation.atoms.json)、[Law](assets/operation.law)、
