@@ -712,3 +712,40 @@ fn finite_owner_and_value_completions_close_actual_read_dependencies() {
     assert_eq!(counts, vec![0, 0, 0, 1]);
     assert!(!format!("{:?}", get(&j, "issues")).contains("internal"));
 }
+
+#[test]
+fn quotient_retains_resolved_owner_values_from_its_candidate_search() {
+    let source = sources(false, "", "", "c.flag", false);
+    let law = String::from_utf8(source.law().bytes().to_vec())
+        .unwrap()
+        .replace(
+            "view flag(c:Part):Bool=c.flag;",
+            "view flag(c:Part):Bool=c.flag;view owned(c:Part,r:Root):Bool=c.owner=r;",
+        );
+    let source = InputSources::from_bytes(
+        source
+            .definitions()
+            .iter()
+            .map(|d| d.bytes().to_vec())
+            .collect(),
+        law.into_bytes(),
+        source.archmap().bytes().to_vec(),
+    );
+    let j = result(
+        source,
+        &[
+            "r=repair(Selected.valid,on=@v/root,using=Selected.choose)",
+            "q=quotient(Selected.owned,on=$r.domain,c=@v/q,r=@v/root)",
+        ],
+    );
+    let outputs = get(answer(&j, "r"), "outputs");
+    assert!(has(outputs, "object"));
+    let q = answer(&j, "q");
+    assert_eq!(s(get(q, "status")), "established");
+    let quotient = get(node(&j, get(get(q, "outputs"), "quotient")), "value");
+    assert_eq!(get(quotient, "domain").value, get(outputs, "domain").value);
+    let fibers = arr(get(get(quotient, "representation"), "fibers"));
+    assert_eq!(fibers.len(), 1);
+    let preimage = get(node(&j, get(&fibers[0], "preimage")), "value");
+    assert_eq!(arr(get(preimage, "elements")).len(), 4);
+}

@@ -421,7 +421,10 @@ pub(in crate::observed) fn compute(
     }
     'candidates: for (index, candidate) in candidates.rows.iter().enumerate() {
         c.checkpoint(Checkpoint::Quotient)?;
-        if candidate.update.state == change_evaluation::State::Excluded {
+        if matches!(
+            candidate.update.state,
+            change_evaluation::State::Excluded | change_evaluation::State::ConditionFailed
+        ) {
             continue;
         }
         if matches!(input.domain_type, ProjectionType::SolutionSet(_)) {
@@ -441,7 +444,8 @@ pub(in crate::observed) fn compute(
             return Err(unsupported(request, "商の候補状態が未確定"));
         }
         let mut assignments = input
-            .assignments
+            .search
+            .valuation
             .iter()
             .cloned()
             .collect::<BTreeMap<_, _>>();
