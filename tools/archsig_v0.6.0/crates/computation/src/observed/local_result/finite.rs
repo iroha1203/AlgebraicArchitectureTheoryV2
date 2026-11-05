@@ -223,7 +223,7 @@ pub(super) fn diagnose(
             .collect(),
         None,
     )?;
-    let status = if degree == 0 || !selected.values.is_empty() {
+    let status = if degree == 0 || selected.inhabited {
         Decision::Established
     } else {
         Decision::Refuted
@@ -231,7 +231,7 @@ pub(super) fn diagnose(
     let mut outputs = BTreeMap::from([("diagnostic".into(), diagnostic)]);
     let mut evidence = vec![];
     let claim = if degree == 1 {
-        if selected.values.is_empty() {
+        if !selected.inhabited {
             evidence.push(
                 b.push(
                     NodeType::Evidence,

@@ -76,7 +76,7 @@ pub(super) struct FiniteSide {
     pub global: NodeRef,
     pub domain: NodeRef,
     pub solution_domain: NodeRef,
-    pub values: Vec<(Scalar, NodeRef)>,
+    pub inhabited: bool,
     pub matching: Vec<Scalar>,
     pub matching_type: Type,
     pub all: NodeRef,

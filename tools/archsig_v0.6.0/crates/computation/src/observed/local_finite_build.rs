@@ -422,7 +422,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
     let inhabited = built
         .finite
         .as_ref()
-        .is_some_and(|f| !f.semantic.values.is_empty());
+        .is_some_and(|f| f.semantic.inhabited);
     let diagrams = split_diagram(built.integer);
     Ok(Source {
         base,

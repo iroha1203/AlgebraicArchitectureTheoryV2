@@ -148,7 +148,7 @@ pub(super) fn summary(
         } else {
             state.semantic_solution_domain
         },
-        values: values(state, equation).to_vec(),
+        inhabited: !values(state, equation).is_empty(),
         matching,
         restriction,
         matching_type: Type::Tuple(

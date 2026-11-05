@@ -3947,3 +3947,47 @@ fn universal_laws_localize_integer_and_rational_affine_changes() {
         }
     }
 }
+
+#[test]
+fn finite_rational_action_keeps_nonempty_semantic_diagnoses_at_both_degrees() {
+    let dir = rational_compare_input("finite-rational-action-summary", true);
+    let digest =
+        definition::check_definitions(&[("d", &std::fs::read(dir.join("d.json")).unwrap())])
+            .unwrap()
+            .vocabularies()["Reservations"]
+            .digest
+            .clone();
+    let law = format!(
+        "law \"archsig.law/2\" semantics \"archsig/0.6.0\"; reading Reservations {{ use vocabulary Reservations version \"1\" digest \"{digest}\"; change choose(s:State,b:Bool)=s with{{free=if b then rat(1,2) else rat(3,2)}}; law optional localValid(s:State):s.free=rat(1,2); }}"
+    );
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    let r = execute(
+        &dir,
+        "out",
+        &[
+            "m=map(Reservations.Migration,on=@v/m,reading=Reservations)",
+            "l=localize($m.candidate.source,law=Reservations.localValid,s=@v/p,using=Reservations.choose)",
+            "e=diagnose($l.system,side=equation,degree=0)",
+            "s0=diagnose($l.system,side=semantic,degree=0)",
+            "s1=diagnose($l.system,side=semantic,degree=1)",
+        ],
+    );
+    assert_eq!(r.code, 0, "{}", r.stdout);
+    let j = result_json(&dir, &r);
+    for i in [1, 2, 3, 4] {
+        assert_eq!(s(get(&arr(get(&j, "answers"))[i], "status")), "established");
+    }
+    let space = get(output(&j, 2, "space"), "value");
+    let module = get(node(&j, get(space, "module")), "value");
+    assert_eq!(
+        s(get(get(node(&j, get(module, "ring")), "value"), "scalar")),
+        "Q"
+    );
+    for i in [3, 4] {
+        let diagnostic = get(output(&j, i, "diagnostic"), "value");
+        assert_eq!(s(get(diagnostic, "kind")), "finite_matching");
+        let restriction = get(node(&j, get(diagnostic, "restriction")), "value");
+        let domain = get(node(&j, get(restriction, "source")), "value");
+        assert!(!arr(get(domain, "elements")).is_empty());
+    }
+}
