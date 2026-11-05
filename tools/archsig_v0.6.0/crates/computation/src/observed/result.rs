@@ -278,8 +278,17 @@ impl Drop for Scalar {
                 _ => {}
             }
         }
-        let mut pending = Vec::new();
-        take(self, &mut pending);
+        let mut pending = match self {
+            Scalar::Tuple(items)
+            | Scalar::Data { args: items, .. }
+            | Scalar::List { items, .. }
+            | Scalar::Set { items, .. } => std::mem::take(items),
+            _ => {
+                let mut pending = Vec::new();
+                take(self, &mut pending);
+                pending
+            }
+        };
         while let Some(mut value) = pending.pop() {
             take(&mut value, &mut pending);
         }
