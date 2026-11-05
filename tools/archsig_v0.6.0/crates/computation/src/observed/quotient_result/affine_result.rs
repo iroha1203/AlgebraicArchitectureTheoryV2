@@ -508,7 +508,10 @@ fn law_descent(
             NodeType::Evidence,
             "evidence",
             Json::obj([
-                ("kind", Json::str("separating_pair")),
+                (
+                    "kind",
+                    Json::str(crate::observed::result::EvidenceKind::SeparatingPair.name()),
+                ),
                 (
                     "data",
                     Json::obj([

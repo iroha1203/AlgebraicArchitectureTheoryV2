@@ -46,6 +46,10 @@ pub(crate) enum Data {
     },
 }
 impl Data {
+    pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
+        matches!(self, Self::Counterexample { .. }).then_some(EvidenceKind::Counterexample)
+    }
+
     pub fn scalar(&self) -> Option<&Scalar> {
         match self {
             Self::Value { value, .. } => Some(value),
@@ -188,7 +192,10 @@ impl Data {
                 facts,
                 ..
             } => Json::obj([
-                ("kind", Json::str("counterexample")),
+                (
+                    "kind",
+                    Json::str(crate::observed::result::EvidenceKind::Counterexample.name()),
+                ),
                 (
                     "data",
                     Json::obj([

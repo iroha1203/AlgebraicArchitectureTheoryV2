@@ -1,5 +1,5 @@
 //! 保存結果には値の参照グラフを残し、導出グラフを公開しない。
-use super::{Node, NodeRef, NodeType};
+use super::{EvidenceClass, Node, NodeRef, NodeType};
 use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
@@ -396,28 +396,19 @@ pub(super) fn compact(
         if node.ty != NodeType::Evidence {
             continue;
         }
-        let wire = cleaned_node(native, index, control, point)?;
-        let Json::Obj(fields) = &wire else {
-            unreachable!()
-        };
-        let kind = match fields.get("value") {
-            Some(Json::Obj(value)) => value.get("kind"),
-            _ => None,
-        };
+        // 従来の表示前後と同じ停止点を保ち、分類には表示を構築しない。
+        control.checkpoint(point)?;
+        let class = node.evidence_class();
+        control.checkpoint(point)?;
         let id = format!("n{index}");
-        match kind {
-            Some(Json::Str(kind))
-                if matches!(
-                    kind.as_str(),
-                    "counterexample" | "completion_pair" | "separating_pair"
-                ) =>
-            {
+        match class {
+            EvidenceClass::Example => {
                 examples.insert(id);
             }
-            Some(Json::Str(kind)) if kind == "completion_fibers" => {
+            EvidenceClass::Completion => {
                 completions.insert(id);
             }
-            _ => {
+            EvidenceClass::Proof => {
                 proofs.insert(id);
             }
         }

@@ -75,6 +75,14 @@ pub(crate) enum Data {
     },
 }
 impl Data {
+    pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
+        matches!(
+            self,
+            Self::FailureEvidence { .. } | Self::Counterexample { .. }
+        )
+        .then_some(EvidenceKind::Counterexample)
+    }
+
     pub fn evidence(&self) -> Vec<NodeRef> {
         match self {
             Self::FailureCondition { evidence, .. } => evidence.clone(),
@@ -173,7 +181,10 @@ impl Data {
             Self::FailureEvidence {
                 left, right, facts, ..
             } => Json::obj([
-                ("kind", Json::str("counterexample")),
+                (
+                    "kind",
+                    Json::str(crate::observed::result::EvidenceKind::Counterexample.name()),
+                ),
                 (
                     "data",
                     Json::obj([
@@ -231,7 +242,10 @@ impl Data {
                 ),
             ]),
             Self::Counterexample { left, right, .. } => Json::obj([
-                ("kind", Json::str("counterexample")),
+                (
+                    "kind",
+                    Json::str(crate::observed::result::EvidenceKind::Counterexample.name()),
+                ),
                 (
                     "data",
                     Json::obj([

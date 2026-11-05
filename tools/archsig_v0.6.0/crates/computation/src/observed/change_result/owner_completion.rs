@@ -274,7 +274,10 @@ pub(super) fn compute(
         NodeType::Evidence,
         "evidence",
         Json::obj([
-            ("kind", Json::str("completion_fibers")),
+            (
+                "kind",
+                Json::str(crate::observed::result::EvidenceKind::CompletionFibers.name()),
+            ),
             (
                 "data",
                 Json::obj([

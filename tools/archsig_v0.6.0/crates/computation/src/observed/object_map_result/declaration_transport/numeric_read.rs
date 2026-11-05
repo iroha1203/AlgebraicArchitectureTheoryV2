@@ -151,7 +151,10 @@ pub(super) fn compare(
                 NodeType::Evidence,
                 "evidence",
                 Json::obj([
-                    ("kind", Json::str("counterexample")),
+                    (
+                        "kind",
+                        Json::str(crate::observed::result::EvidenceKind::Counterexample.name()),
+                    ),
                     (
                         "data",
                         Json::obj([

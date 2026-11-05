@@ -39,6 +39,9 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
+        EvidenceKind::from_wire(&self.part().wire)
+    }
     pub(super) fn overrides(
         &self,
         g: &Graph,
@@ -483,7 +486,10 @@ fn compute(
                     NodeType::Evidence,
                     "evidence",
                     Json::obj([
-                        ("kind", Json::str("separating_pair")),
+                        (
+                            "kind",
+                            Json::str(crate::observed::result::EvidenceKind::SeparatingPair.name()),
+                        ),
                         (
                             "data",
                             Json::obj([

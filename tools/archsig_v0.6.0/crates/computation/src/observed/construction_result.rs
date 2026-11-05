@@ -3,8 +3,8 @@ use super::{
     projection::{MapProjection, ProjectionStep, ProjectionType},
     request::Request,
     result::{
-        Binding, Decision, Fact, Graph, Judgment, Node, NodeRef, NodeType, Payload, Reason,
-        ReasonKind, Rule, Scalar, Scope, ValidationFailure,
+        Binding, Decision, EvidenceKind, Fact, Graph, Judgment, Node, NodeRef, NodeType, Payload,
+        Reason, ReasonKind, Rule, Scalar, Scope, ValidationFailure,
     },
 };
 use crate::construction::{
@@ -328,6 +328,22 @@ fn bindings(bs: &[Binding]) -> Json {
     )
 }
 impl ConstructionValue {
+    pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
+        use ConstructionData as D;
+        match &self.data {
+            D::Counterexample { .. } => Some(EvidenceKind::Counterexample),
+            D::Build(data) => data.evidence_kind(),
+            D::ObjectMap(data) => data.evidence_kind(),
+            D::Change(data) => data.evidence_kind(),
+            D::Quotient(data) => data.evidence_kind(),
+            D::Local(data) => data.evidence_kind(),
+            D::InternalArrows(data) => data.evidence_kind(),
+            D::Composition(part) => part.evidence_kind(),
+            D::PathComposition(part) => part.evidence_kind(),
+            D::Comparison(part) => part.evidence_kind(),
+            _ => None,
+        }
+    }
     pub fn scalar(&self) -> Option<&Scalar> {
         match &self.data {
             ConstructionData::FiniteLaw(data) => data.scalar(),
@@ -987,7 +1003,10 @@ impl ConstructionValue {
                 facts,
                 ..
             } => Json::obj([
-                ("kind", Json::str("counterexample")),
+                (
+                    "kind",
+                    Json::str(crate::observed::result::EvidenceKind::Counterexample.name()),
+                ),
                 (
                     "data",
                     Json::obj([
