@@ -61,6 +61,9 @@ impl Data {
     pub(super) fn wire(&self) -> Json {
         self.part().wire.clone()
     }
+    pub(super) fn wire_ref(&self) -> &Json {
+        &self.part().wire
+    }
     pub(super) fn arguments(&self) -> Vec<NodeRef> {
         self.part().arguments.clone()
     }

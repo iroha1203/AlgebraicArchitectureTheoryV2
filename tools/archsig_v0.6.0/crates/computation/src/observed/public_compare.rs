@@ -780,6 +780,29 @@ fn completed_operation<T>(
         )),
     }
 }
+// 線形表示は同じBuilderが作ったPartに保持される。借用中にgraphは変更しない。
+fn vector_wire(graph: &Graph, r: NodeRef) -> Result<&Json, ValidationFailure> {
+    match &value(graph, r)?.data {
+        D::Change(data) => Ok(data.wire_ref()),
+        D::Quotient(data) => Ok(data.wire_ref()),
+        D::Local(data) => Ok(data.wire_ref()),
+        _ => Err(internal!("Vector比較の線形表示がない").into()),
+    }
+}
+// Builder::pushが依存を数値Ref順に整列・重複除去する。表示列の順序は変えず、
+// owner所属を検索する。最後の完全一致で余分な欄や非正規な数値表記も拒否する。
+fn vector_reference(arguments: &[NodeRef], wire: &Json) -> Option<NodeRef> {
+    let Json::Obj(fields) = wire else {
+        return None;
+    };
+    let Json::Str(name) = fields.get("node")? else {
+        return None;
+    };
+    let index = name.strip_prefix('n')?.parse::<usize>().ok()?;
+    let at = arguments.binary_search_by_key(&index, |r| r.0).ok()?;
+    let reference = arguments[at];
+    (reference.wire() == *wire).then_some(reference)
+}
 // 同じModuleの表示ベクトルの差が、関係の生成する部分加群に入るかを解く。
 fn vector_equal(
     graph: &Graph,
@@ -796,17 +819,16 @@ fn vector_equal(
     if graph.get(right)?.ty != NodeType::Vector(module) {
         return Err(internal!("比較のModuleが違う").into());
     }
-    let Json::Obj(ref module_wire) = value(graph, module)?.wire() else {
+    let Json::Obj(module_wire) = vector_wire(graph, module)? else {
         return Err(internal!("Module表示がない").into());
     };
-    let ring = graph
-        .get(module)?
-        .arguments
-        .iter()
-        .find(|r| Some(&r.wire()) == module_wire.get("ring"))
+    let module_arguments = &graph.get(module)?.arguments;
+    let ring = module_wire
+        .get("ring")
+        .and_then(|wire| vector_reference(module_arguments, wire))
         .ok_or(internal!("Vector比較の係数環参照がない"))?;
-    graph.expect(*ring, &NodeType::Construction(T::Ring))?;
-    let Json::Obj(ref ring_wire) = value(graph, *ring)?.wire() else {
+    graph.expect(ring, &NodeType::Construction(T::Ring))?;
+    let Json::Obj(ring_wire) = vector_wire(graph, ring)? else {
         return Err(internal!("Vector比較の係数環表示がない").into());
     };
     let coefficient = match ring_wire.get("scalar") {
@@ -814,28 +836,24 @@ fn vector_equal(
         Some(Json::Str(name)) if name == "Q" => Type::Q,
         _ => return Err(internal!("Vector比較の係数環がZ/Qでない").into()),
     };
-    let scalar = |owner: NodeRef, wire: &Json| -> Result<Scalar, ValidationFailure> {
-        let r = graph
-            .get(owner)?
-            .arguments
-            .iter()
-            .find(|r| r.wire() == *wire)
-            .ok_or(internal!("Vector比較の座標参照がない"))?;
+    let scalar = |arguments: &[NodeRef], wire: &Json| -> Result<Scalar, ValidationFailure> {
+        let r = vector_reference(arguments, wire).ok_or(internal!("Vector比較の座標参照がない"))?;
         c.checkpoint(Checkpoint::FiniteIteration)?;
-        let scalar = graph.scalar(*r)?;
+        let scalar = graph.scalar(r)?;
         if scalar.ty() != coefficient {
             return Err(internal!("Moduleの座標と係数型が違う").into());
         }
         Ok(scalar.clone())
     };
     let coordinates = |r| -> Result<Vec<Scalar>, ValidationFailure> {
-        let Json::Obj(ref wire) = value(graph, r)?.wire() else {
+        let Json::Obj(wire) = vector_wire(graph, r)? else {
             return Err(internal!("Vector表示がない").into());
         };
         let Some(Json::Arr(xs)) = wire.get("coordinates") else {
             return Err(internal!("Vector座標がない").into());
         };
-        xs.iter().map(|x| scalar(r, x)).collect()
+        let arguments = &graph.get(r)?.arguments;
+        xs.iter().map(|x| scalar(arguments, x)).collect()
     };
     let a = coordinates(left)?;
     let b = coordinates(right)?;
@@ -855,7 +873,7 @@ fn vector_equal(
             return Err(internal!("Module関係の座標数が違う").into());
         }
         for (i, x) in row.iter().enumerate() {
-            matrix[i].push(scalar(module, x)?);
+            matrix[i].push(scalar(module_arguments, x)?);
         }
     }
     let difference = a
@@ -1300,3 +1318,7 @@ fn evidence_kind_delegates_relation_and_value_comparisons() {
         assert_eq!(part.evidence_kind(), None);
     }
 }
+
+#[cfg(test)]
+#[path = "public_compare/vector_tests.rs"]
+mod vector_tests;
