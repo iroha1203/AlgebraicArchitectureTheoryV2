@@ -61,6 +61,34 @@ fn every_primitive_owner_assignment_has_its_actual_parameter_fiber() {
     assert_eq!(f.rows.len(), 4);
     assert_eq!(f.observed_point, Some(3));
     let root = object(&r, "root");
+    for row in &f.rows {
+        for pair in row.objects.windows(2) {
+            assert!(Arc::ptr_eq(
+                pair[0].valuation.as_ref().unwrap(),
+                pair[1].valuation.as_ref().unwrap()
+            ));
+        }
+    }
+    for pair in f.rows.windows(2) {
+        assert!(!Arc::ptr_eq(
+            pair[0].objects[0].valuation.as_ref().unwrap(),
+            pair[1].objects[0].valuation.as_ref().unwrap()
+        ));
+        for (first, second) in pair[0].objects[0]
+            .entries
+            .iter()
+            .zip(&pair[1].objects[0].entries)
+        {
+            assert!(Arc::ptr_eq(&first.source, &second.source));
+        }
+    }
+    let mut detached = f.rows[0].objects[0].valuation.clone().unwrap();
+    let original = detached.as_ref().clone();
+    Arc::make_mut(&mut detached).clear();
+    assert_eq!(
+        f.rows[0].objects[0].valuation.as_ref().unwrap().as_ref(),
+        &original
+    );
     for (point, row) in f.rows.iter().enumerate() {
         assert_eq!(row.point, point);
         assert_eq!(row.objects.len(), r.objects().len());
@@ -71,7 +99,7 @@ fn every_primitive_owner_assignment_has_its_actual_parameter_fiber() {
         }
         for subject in ["p", "q"] {
             let e = entry(&row.objects[root], "owned", subject);
-            assert_eq!(e.source, r.instances()[e.instance]);
+            assert_eq!(e.source.as_ref(), &r.instances()[e.instance]);
             assert_eq!(e.application_value, Some(Some(true)));
             assert_eq!(e.state, ParameterFamilyState::Ready);
             assert_eq!(e.rows.len(), 1 + root_members(&f, point));

@@ -10,7 +10,32 @@ fn reading(i: &CheckedInputs, root: &str) -> ObjectReadingInstances {
     object_reading_instances(i, &c, &quiet()).unwrap()
 }
 fn run(i: &CheckedInputs, r: &ObjectReadingInstances) -> FiniteAutomaticLawFamily {
-    finite_automatic_law_family(i, r, &quiet()).unwrap()
+    let result = finite_automatic_law_family(i, r, &quiet()).unwrap();
+    if let Some(family) = result.family().filter(|family| family.domain_complete()) {
+        // 保存行とは独立に、完成候補から制約付き環境を新構築して全元列を再評価する。
+        // indicatorだけでなく元operand・成分・支持・Scope・行番号も照合する。
+        for (point, values) in family.domain().iter().enumerate() {
+            let assignments = family
+                .positions()
+                .iter()
+                .cloned()
+                .zip(values.iter().cloned())
+                .collect::<Vec<_>>();
+            let mut env = family.value.in_object(
+                Environment::with_primitive_valuation(i, &assignments, &quiet()).unwrap(),
+            );
+            for column in 0..family.columns().len() {
+                family.value.select_column_object(&mut env, column).unwrap();
+                let expected = family.value.probe_column(&env, column, point).unwrap();
+                assert!(expected.admissible && !expected.blocked);
+                assert!(
+                    family.columns()[column].rows()[point] == expected.row,
+                    "point={point}, column={column}"
+                );
+            }
+        }
+    }
+    result
 }
 fn missing_map() -> String {
     fixture::MAP.replace(r#",{"id":"oq","subject":"q","field":"Pattern.Part.owner","value":["v","root"],"origin":"model"}"#,"")

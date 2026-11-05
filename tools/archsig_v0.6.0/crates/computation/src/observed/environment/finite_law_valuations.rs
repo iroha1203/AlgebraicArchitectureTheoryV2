@@ -1493,7 +1493,7 @@ fn populate_family(
         return Ok(());
     }
     let mut positions: BTreeSet<Fact> = seed_positions.iter().cloned().collect();
-    loop {
+    let stable_columns = loop {
         tick(c)?;
         loop {
             let mut expanded = positions.clone();
@@ -1533,6 +1533,8 @@ fn populate_family(
         };
         let mut discovered = positions.clone();
         let mut admissible = vec![];
+        // 拡大passの評価は局所保持し、依存閉包と全原始制約の確認後にだけ採用する。
+        let mut rows = (0..r.columns.len()).map(|_| vec![]).collect::<Vec<_>>();
         let mut blocked = false;
         let mut failure = None;
         for candidate in candidates {
@@ -1548,6 +1550,7 @@ fn populate_family(
             let mut candidate_admissible = true;
             let mut candidate_blocked = false;
             let mut candidate_failure = None;
+            let mut candidate_rows = Vec::with_capacity(r.columns.len());
             for index in 0..r.columns.len() {
                 tick(c)?;
                 r.select_column_object(&mut e, index)?;
@@ -1555,6 +1558,7 @@ fn populate_family(
                     Ok(p) => {
                         candidate_admissible &= p.admissible;
                         candidate_blocked |= p.blocked;
+                        candidate_rows.push(p.row);
                     }
                     Err(ValidationFailure::Stop(stop)) => {
                         return Err(ValidationFailure::Stop(stop));
@@ -1581,6 +1585,9 @@ fn populate_family(
                     failure = Some(f);
                 }
             } else if !candidate_blocked {
+                for (column, row) in rows.iter_mut().zip(candidate_rows) {
+                    column.push(row);
+                }
                 admissible.push(candidate);
             }
             tick(c)?;
@@ -1616,8 +1623,8 @@ fn populate_family(
         r.domain = admissible;
         r.domain_complete = true;
         tick(c)?;
-        break;
-    }
+        break rows;
+    };
     let mut observed = vec![];
     let mut all_known = true;
     for p in &r.positions {
@@ -1650,25 +1657,34 @@ fn populate_family(
             }
         }
     }
-    for (point, candidate) in r.domain.iter().enumerate() {
-        c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
-        let values = r
-            .positions
-            .iter()
-            .cloned()
-            .zip(candidate.iter().cloned())
-            .collect::<Vec<_>>();
-        let mut e = r.in_object(Environment::with_primitive_valuation(inputs, &values, c)?);
-        for index in 0..r.columns.len() {
+    // 完成域で既に得た行を移す。二度目の環境構築・原始制約検査・Law再評価は不要。
+    for (column, rows) in r.columns.iter_mut().zip(stable_columns) {
+        column.rows = rows;
+    }
+    let mut published = vec![0usize; r.columns.len()];
+    let publication = (|| -> Result<(), ValidationFailure> {
+        for point in 0..r.domain.len() {
             c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
-            r.select_column_object(&mut e, index)?;
-            let p = r.probe_column(&e, index, point)?;
-            if !p.admissible || p.blocked {
-                return Err(internal!("完成Dの元束縛条件が変わった").into());
+            for (count, column) in published.iter_mut().zip(&mut r.columns) {
+                // 元domainの行番号を確定する公開境界。前後の停止では完成prefixだけを残す。
+                c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
+                column
+                    .rows
+                    .get_mut(point)
+                    .ok_or(internal!("安定passの元行がない"))?
+                    .point = point;
+                *count += 1;
+                c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
             }
-            r.columns[index].rows.push(p.row);
-            c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
         }
+        Ok(())
+    })();
+    if let Err(cause) = publication {
+        // 停止時に返す行は従来のpoint/column公開順で完成したprefixだけ。
+        for (column, count) in r.columns.iter_mut().zip(published) {
+            column.rows.truncate(count);
+        }
+        return Err(cause);
     }
     c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
     r.state = if r

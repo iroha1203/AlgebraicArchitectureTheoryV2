@@ -477,22 +477,48 @@ impl<'a> Environment<'a> {
         ),
         ValidationFailure,
     > {
+        self.local_point_mode(declaration, bindings, true)
+    }
+    pub(super) fn local_point_without_trace(
+        &self,
+        declaration: &archsig_input::law::model::Declaration,
+        bindings: &[(String, Scalar)],
+    ) -> Result<(finite_law_valuations::FiniteLawRow, Vec<Fact>), ValidationFailure> {
+        let (row, missing, _) = self.local_point_mode(declaration, bindings, false)?;
+        Ok((row, missing))
+    }
+    fn local_point_mode(
+        &self,
+        declaration: &archsig_input::law::model::Declaration,
+        bindings: &[(String, Scalar)],
+        capture_trace: bool,
+    ) -> Result<
+        (
+            finite_law_valuations::FiniteLawRow,
+            Vec<Fact>,
+            Vec<quotient_evaluation::EvaluationNode>,
+        ),
+        ValidationFailure,
+    > {
         let archsig_input::law::model::Signature::Law { body, guard, .. } = declaration.signature
         else {
             return Err(internal!("局所評価の元Lawがない").into());
         };
         let outer = self.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
-        let prior =
-            self.state
-                .evaluation_capture
-                .scoped(Some(quotient_evaluation::EvaluationCapture {
-                    selected: std::iter::once(body).chain(guard).collect(),
-                    nodes: vec![],
-                    roots: vec![],
-                    stack: vec![],
-                }));
+        let prior = self.state.evaluation_capture.scoped(capture_trace.then(|| {
+            quotient_evaluation::EvaluationCapture {
+                selected: std::iter::once(body).chain(guard).collect(),
+                nodes: vec![],
+                roots: vec![],
+                stack: vec![],
+            }
+        }));
         let result = finite_law_valuations::evaluate_local_point(self, declaration, bindings);
-        let capture = prior.restore().ok_or(internal!("局所読取りの記録がない"))?;
+        let nodes = match (capture_trace, prior.restore()) {
+            (true, Some(capture)) => capture.nodes,
+            (false, None) => vec![],
+            _ => return Err(internal!("局所読取りの記録状態が違う").into()),
+        };
         let reads = outer
             .restore()
             .ok_or(internal!("局所Lawの欠測収集がない"))?;
@@ -511,7 +537,7 @@ impl<'a> Environment<'a> {
                         .is_some_and(|v| v.contains_key(f))
                 })
                 .collect(),
-            capture.nodes,
+            nodes,
         ))
     }
     pub(in crate::observed) fn fixed_values(&self) -> Vec<(Fact, Scalar)> {
@@ -7922,37 +7948,43 @@ impl<'a> Environment<'a> {
     ) -> Result<SourceValue, ValidationFailure> {
         stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
             self.tick()?;
-            let key = ScopedKey {
-                value_read: self.state.value_read.get(),
-                expression: id,
-                variables: self.copy_variables(variables)?,
-                base: base.clone(),
-                reading: reading.into(),
-                context: self.state.context.get(),
-                scoped: self.state.scoped_context.get(),
-                universal: self.state.universal_context.borrow().clone(),
-                completions: self.state.completion_values.borrow().clone(),
-            };
-            let cached = {
-                let values = self.results.scoped_values.borrow();
-                match values.get(&id) {
-                    Some((candidate, value, missing))
-                        if validation_identity::key(candidate, &key, &self.control)? =>
-                    {
-                        Some((value.clone(), missing.clone()))
-                    }
-                    _ => None,
-                }
-            };
+            // 記録中は値だけのmemoを使えない。導出の再評価に不要なキー・値の
+            // 複製も行わず、欠測の収集とcapture自体は通常どおり実行する。
             let recording = self
                 .state
                 .evaluation_capture
                 .borrow()
                 .as_ref()
                 .is_some_and(|capture| !capture.stack.is_empty());
-            if let Some((value, missing)) = cached
-                && !recording
-            {
+            let key = if recording {
+                None
+            } else {
+                Some(ScopedKey {
+                    value_read: self.state.value_read.get(),
+                    expression: id,
+                    variables: self.copy_variables(variables)?,
+                    base: base.clone(),
+                    reading: reading.into(),
+                    context: self.state.context.get(),
+                    scoped: self.state.scoped_context.get(),
+                    universal: self.state.universal_context.borrow().clone(),
+                    completions: self.state.completion_values.borrow().clone(),
+                })
+            };
+            let cached = if let Some(key) = &key {
+                let values = self.results.scoped_values.borrow();
+                match values.get(&id) {
+                    Some((candidate, value, missing))
+                        if validation_identity::key(candidate, key, &self.control)? =>
+                    {
+                        Some((value.clone(), missing.clone()))
+                    }
+                    _ => None,
+                }
+            } else {
+                None
+            };
+            if let Some((value, missing)) = cached {
                 if let Some(reads) = self.state.missing_slot_reads.borrow_mut().as_mut() {
                     reads.extend(missing);
                 }
@@ -7969,10 +8001,12 @@ impl<'a> Environment<'a> {
             }
             let value = value?;
             self.tick()?;
-            self.results
-                .scoped_values
-                .borrow_mut()
-                .insert(id, (key, value.clone(), missing));
+            if let Some(key) = key {
+                self.results
+                    .scoped_values
+                    .borrow_mut()
+                    .insert(id, (key, value.clone(), missing));
+            }
             Ok(value)
         })
     }

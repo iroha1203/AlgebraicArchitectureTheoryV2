@@ -1747,7 +1747,6 @@ pub fn retain(
         evidence,
         judgment,
     };
-    validate_shape(graph, &node)?;
     graph.retain_native(node)
 }
 fn missing_reference(graph: &Graph, witness: &Witness, root: &Fact) -> Option<NodeRef> {
