@@ -42,6 +42,25 @@ impl<'a> Environment<'a> {
         Self::primitive_valuation_on(self.fresh_candidate(control), assignments, control, true)
     }
 
+    /// 選択済みlocal対象の静的metadataだけを継承し、候補値と評価状態は分離する。
+    /// 対象選択が成功した同じ環境を生成元とし、別入力/別対象を受け取らない。
+    pub(in crate::observed) fn try_local_primitive_valuation_from(
+        &self,
+        assignments: &[(Fact, Scalar)],
+        control: &Control,
+    ) -> Result<Option<Self>, ValidationFailure> {
+        let object = self
+            .indexes
+            .object
+            .as_ref()
+            .ok_or(internal!("local候補の生成元対象が未選択"))?;
+        let Some(mut candidate) = self.try_primitive_valuation_from(assignments, control)? else {
+            return Ok(None);
+        };
+        candidate.indexes.object = Some(std::sync::Arc::clone(object));
+        Ok(Some(candidate))
+    }
+
     /// 同じ候補の初回検査で得た二表だけから、全pinの所属・Map全域性を判定する。
     /// 評価stateや対象選択を読まず、依存発見のために評価した結果も変更しない。
     pub(super) fn primitive_constraints_hold(

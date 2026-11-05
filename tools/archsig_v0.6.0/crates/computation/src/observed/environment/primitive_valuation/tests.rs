@@ -1498,3 +1498,190 @@ fn scoped_memo_raw_collectors_preserve_sharing_of_a_noncapture_view_dag() {
 
 #[path = "tests/structural_neutral.rs"]
 mod structural_neutral;
+
+fn local_object_witness(
+    inputs: std::sync::Arc<CheckedInputs>,
+) -> std::sync::Arc<crate::observed::construction_result::ArchitectureWitness> {
+    let c = quiet();
+    let requests = crate::observed::request::resolve_native_for_test(
+        inputs.law(),
+        inputs.archmap(),
+        &["b=build(Selected,on=@v/root)"],
+        &c,
+    )
+    .unwrap();
+    let prepared = crate::observed::PreparedObserved {
+        inputs,
+        requests,
+        object: None,
+    };
+    let env = Environment::with_prepared(&prepared, &c).unwrap();
+    let mut graph = Graph::new(&c);
+    graph.requests = prepared.requests().requests().to_vec();
+    crate::observed::architecture_result::build(
+        prepared.shared_inputs(),
+        &env,
+        &mut graph,
+        &prepared.requests().requests()[0],
+        &c,
+    )
+    .unwrap()
+    .witness
+}
+
+#[test]
+fn local_candidate_factory_shares_selected_object_and_keeps_values_and_caches_independent() {
+    let inputs = fixture::with_body(
+        fixture::MAP,
+        "view selected(c:Part):Fp(2)=if c.flag then c.quantity else c.other;",
+    );
+    let witness = local_object_witness(inputs.clone());
+    let mut fixed = Environment::with_primitive_valuation(
+        &inputs,
+        &[(slot("p", "quantity"), fp("2", 0))],
+        &quiet(),
+    )
+    .unwrap();
+    fixed.select_local_object(&witness, &quiet()).unwrap();
+    assert_eq!(
+        expression(&fixed, "selected", false).known_value,
+        Some(fp("2", 0))
+    );
+    assert!(!fixed.results.scoped_values.borrow().is_empty());
+    fixed.state.cutoff.set(999);
+    fixed.state.completion_values.borrow_mut().push((
+        slot("p", "quantity"),
+        NodeRef(999),
+        fp("2", 0),
+    ));
+    let candidates = [0, 1].map(|n| {
+        fixed
+            .try_local_primitive_valuation_from(&[(slot("p", "quantity"), fp("2", n))], &quiet())
+            .unwrap()
+            .unwrap()
+    });
+    for (n, candidate) in candidates.iter().enumerate() {
+        assert!(std::sync::Arc::ptr_eq(
+            candidate.indexes.object.as_ref().unwrap(),
+            fixed.indexes.object.as_ref().unwrap(),
+        ));
+        assert!(std::ptr::eq(&*candidate.indexes, &*fixed.indexes));
+        assert!(candidate.results.scoped_values.borrow().is_empty());
+        assert!(candidate.state.completion_values.borrow().is_empty());
+        assert_eq!(candidate.state.cutoff.get(), usize::MAX);
+        assert_eq!(
+            candidate.indexes.primitive_valuation.as_ref().unwrap()[&slot("p", "quantity")],
+            fp("2", n as i32)
+        );
+        let assignments = [(slot("p", "quantity"), fp("2", n as i32))];
+        let mut previous = fixed
+            .try_primitive_valuation_from(&assignments, &quiet())
+            .unwrap()
+            .unwrap();
+        assert!(previous.indexes.object.is_none());
+        previous.select_local_object(&witness, &quiet()).unwrap();
+        assert_eq!(candidate.indexes.object, previous.indexes.object);
+        assert_eq!(
+            candidate.indexes.primitive_valuation,
+            previous.indexes.primitive_valuation
+        );
+        assert_eq!(
+            candidate.indexes.primitive_input_valuation,
+            previous.indexes.primitive_input_valuation
+        );
+        let actual = expression(candidate, "selected", false);
+        let expected = expression(&previous, "selected", false);
+        assert_eq!(actual.known_value, Some(fp("2", n as i32)));
+        assert!(actual == expected);
+        let owner = Scalar::Subject {
+            snapshot: "v".into(),
+            subject: "root".into(),
+            entity: "Pattern.Root".into(),
+        };
+        let owners = BTreeMap::from([("r", Some(&owner))]);
+        let ty = Type::Owned("Pattern.Part".into(), "r".into());
+        let argument = crate::observed::term::affine::Value::Known(root());
+        let mut actual = owned_call::Checks::default();
+        let mut expected = owned_call::Checks::default();
+        candidate
+            .owned_call_value_check(&ty, &argument, &owners, "Selected", (0, 0), &mut actual)
+            .unwrap();
+        previous
+            .owned_call_value_check(&ty, &argument, &owners, "Selected", (0, 0), &mut expected)
+            .unwrap();
+        assert!(actual.failure.is_none() && !actual.blocked && actual.missing.is_empty());
+        assert_eq!(actual.scope, expected.scope);
+        assert_eq!(actual.support, expected.support);
+        assert_eq!(actual.failure, expected.failure);
+        assert_eq!(actual.blocked, expected.blocked);
+        assert_eq!(actual.missing, expected.missing);
+    }
+    assert_eq!(
+        expression(&candidates[0], "selected", false).known_value,
+        Some(fp("2", 0))
+    );
+    assert_eq!(
+        expression(&candidates[1], "selected", false).known_value,
+        Some(fp("2", 1))
+    );
+    assert_eq!(
+        expression(&fixed, "selected", false).known_value,
+        Some(fp("2", 0))
+    );
+    assert!(
+        fixed
+            .try_local_primitive_valuation_from(&[(slot("p", "quantity"), fp("3", 0))], &quiet(),)
+            .is_err()
+    );
+}
+
+#[test]
+fn local_candidate_factory_rejects_unselected_source_and_propagates_both_signals() {
+    let inputs = fixture::with_body(
+        fixture::MAP,
+        "view selected(c:Part):Fp(2)=if c.flag then c.quantity else c.other;",
+    );
+    let mut fixed = Environment::new(&inputs, &quiet()).unwrap();
+    assert!(
+        matches!(fixed.try_local_primitive_valuation_from(&[], &quiet()),
+        Err(ValidationFailure::Internal(error)) if error.message() == "local候補の生成元対象が未選択")
+    );
+    let witness = local_object_witness(inputs.clone());
+    fixed.select_local_object(&witness, &quiet()).unwrap();
+    let assignments = [(slot("p", "quantity"), fp("2", 1))];
+    let seen = Rc::new(Cell::new(0));
+    let visits = seen.clone();
+    let measure = Control::new(move |point| {
+        if point == Checkpoint::PrimitiveValuation {
+            visits.set(visits.get() + 1);
+        }
+        None
+    });
+    fixed
+        .try_local_primitive_valuation_from(&assignments, &measure)
+        .unwrap()
+        .unwrap();
+    let total = seen.get();
+    assert!(total > 1);
+    for at in [1, total] {
+        for signal in [Signal::Int, Signal::Term] {
+            let seen = Rc::new(Cell::new(0));
+            let visits = seen.clone();
+            let control = Control::new(move |point| {
+                if point == Checkpoint::PrimitiveValuation {
+                    visits.set(visits.get() + 1);
+                }
+                (visits.get() == at).then_some(signal)
+            });
+            assert!(
+                matches!(fixed.try_local_primitive_valuation_from(&assignments, &control),
+                Err(ValidationFailure::Stop(actual)) if actual == signal)
+            );
+            assert_eq!(control.stop_reason(), Some(signal));
+            assert!(fixed.indexes.primitive_valuation.is_none());
+            assert!(fixed.indexes.primitive_input_valuation.is_none());
+            assert!(fixed.results.scoped_values.borrow().is_empty());
+            assert!(fixed.indexes.object.is_some());
+        }
+    }
+}
