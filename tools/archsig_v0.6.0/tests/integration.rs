@@ -26,6 +26,7 @@ mod cli_files;
 mod cli_finite_completion;
 mod cli_integer_change;
 mod cli_local_diagnostic;
+mod cli_local_unsupported;
 mod cli_location_position;
 mod cli_map;
 mod cli_map_delivery;

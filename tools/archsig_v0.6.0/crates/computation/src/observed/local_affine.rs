@@ -409,7 +409,8 @@ pub(super) fn compute(
     let mut model = match result {
         Ok(model) => model,
         Err(ValidationFailure::UnsupportedExpression { location, .. })
-            if !pending.facts.is_empty() =>
+            if !pending.facts.is_empty()
+                || pending.unsupported == Some("numeric_change_condition") =>
         {
             let id = pending.expression.ok_or(internal!("整数局所欠測の原式がない"))?;
             let bindings = pending
@@ -422,20 +423,22 @@ pub(super) fn compute(
             b.parts[expression.0 - base].arguments.push(target);
             pending.facts.sort();
             pending.facts.dedup();
-            let reason = Reason {
-                kind: ReasonKind::Missing,
-                request: request.id.clone(),
-                dependencies: vec![expression],
-                missing: pending.facts,
-                location: Some(location.clone()),
-            };
-            let mut reasons = vec![reason];
+            let mut reasons = vec![];
+            if !pending.facts.is_empty() {
+                reasons.push(Reason {
+                    kind: ReasonKind::Missing,
+                    request: request.id.clone(),
+                    dependencies: vec![expression],
+                    missing: pending.facts,
+                    location: Some(location.clone()),
+                });
+            }
             if !missing_domain {
                 reasons.push(Reason {
                     kind: ReasonKind::UnsupportedAlgorithm {
                         question: QuestionKind::Localize,
                         operand_types: vec![coefficient_type()],
-                        method: "integer_local_state".into(),
+                        method: pending.unsupported.unwrap_or("integer_local_state").into(),
                     },
                     request: request.id.clone(),
                     dependencies: vec![expression],
