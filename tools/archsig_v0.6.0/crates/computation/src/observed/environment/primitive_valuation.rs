@@ -60,8 +60,23 @@ impl<'a> Environment<'a> {
             .as_ref()
             .ok_or(internal!("原始候補の検査済み入力値がない"))?;
         let mut structurally_neutral = true;
-        for original in originals.values() {
-            if !structural_neutral_value(original, control)? {
+        for (position, original) in originals {
+            if structural_neutral_value(original, control)? {
+                continue;
+            }
+            let field = self
+                .indexes
+                .fields
+                .get(&(
+                    position.snapshot.as_str(),
+                    position.subject.as_str(),
+                    position
+                        .field
+                        .as_deref()
+                        .ok_or(internal!("原始候補のfieldがない"))?,
+                ))
+                .ok_or(internal!("原始候補の元fieldがない"))?;
+            if !unchanged_known_reference(original, &field.slot) {
                 structurally_neutral = false;
                 break;
             }
@@ -164,7 +179,8 @@ impl<'a> Environment<'a> {
                 return Err(internal!("候補代入が元encodingの正規値と違う").into());
             }
             if constraints && structurally_neutral {
-                structurally_neutral = structural_neutral_value(&original, control)?;
+                structurally_neutral = structural_neutral_value(&original, control)?
+                    || unchanged_known_reference(&original, &field.slot);
             }
             if constraints {
                 pinned.push((position, field.name.as_str(), encoded));
@@ -193,8 +209,8 @@ fn primitive_constraints_hold(
     control: &Control,
 ) -> Result<bool, ValidationFailure> {
     control.checkpoint(Checkpoint::PrimitiveValuation)?;
-    // CheckedInputsには元の補完がある。Ref/Mapを含まない型検査済みpinは
-    // 参照変数・owner読取りを変えず、元fieldの制約を除くだけなので再探索しない。
+    // CheckedInputsには元の補完がある。純値pinは制約を除くだけで、元Knownと
+    // 同一のRef pinはslot_refとMemberを保つ。全pinがこの条件なら再探索しない。
     if !structurally_neutral {
         let mut checked_pins = Vec::with_capacity(pinned.len());
         for (position, field, value) in pinned {
@@ -231,6 +247,18 @@ fn primitive_constraints_hold(
     }
     control.checkpoint(Checkpoint::PrimitiveValuation)?;
     Ok(true)
+}
+
+// 型・encoding検査済みのトップレベルRefだけを元の不変slotと照合する。
+// Ownedも同一RefならMemberが同じ。Missingや入れ子Refへは拡張しない。
+fn unchanged_known_reference(value: &Value, slot: &Slot) -> bool {
+    matches!(
+        (value, slot),
+        (
+            Value::Ref { snapshot, subject },
+            Slot::Known { value: Value::Ref { snapshot: original_snapshot, subject: original_subject }, .. }
+        ) if snapshot == original_snapshot && subject == original_subject
+    )
 }
 
 /// collect_knownがMember/Coverを作らず、slot_refも変えない原始値。

@@ -405,4 +405,172 @@ fn checked_probe_term_reencoding_preserves_wire_after_source_relocation() {
     let checked = &probe.indexes.primitive_valuation.as_ref().unwrap()[&position];
     assert_eq!(data::input_json(checked, &quiet()).unwrap(), encoded);
     assert!(probe.primitive_constraints_hold(&quiet()).unwrap());
+    let (control, _, _) = stopping(Checkpoint::Completion, 1, Some(Signal::Term), false);
+    assert!(matches!(
+        probe.primitive_constraints_hold(&control),
+        Err(ValidationFailure::Stop(Signal::Term))
+    ));
+}
+
+fn assert_probe_solver_path(inputs: &CheckedInputs, values: &[(Fact, Scalar)], skip: bool) {
+    let template = Environment::new(inputs, &quiet()).unwrap();
+    let probe = template
+        .primitive_dependency_probe_from(values, &quiet())
+        .unwrap();
+    // Inject only after decoding: a Completion stop now identifies structural fallback.
+    let (control, count, _) = stopping(Checkpoint::Completion, 1, Some(Signal::Term), false);
+    if skip {
+        assert!(probe.primitive_constraints_hold(&control).unwrap());
+        assert_eq!(count.get(), 0);
+    } else {
+        assert!(matches!(
+            probe.primitive_constraints_hold(&control),
+            Err(ValidationFailure::Stop(Signal::Term))
+        ));
+        assert!(count.get() > 0);
+    }
+}
+
+#[test]
+fn unchanged_known_refs_mix_with_pure_pins_but_missing_and_changed_refs_fall_back() {
+    let inputs = fixture::inputs();
+    let same = vec![
+        (slot("p", "link"), subject_value("p", "Part")),
+        (slot("p", "flag"), Scalar::Bool(false)),
+    ];
+    assert_admission(&inputs, &same, true);
+    assert_probe_solver_path(&inputs, &same, true);
+    for values in [
+        vec![(slot("q", "link"), subject_value("p", "Part"))],
+        vec![(slot("p", "link"), subject_value("q", "Part"))],
+        vec![
+            (slot("p", "link"), subject_value("p", "Part")),
+            (slot("p", "owner"), subject_value("r2", "Root")),
+        ],
+        vec![
+            (slot("p", "link"), subject_value("p", "Part")),
+            (slot("p", "table"), table("Part", &[])),
+        ],
+    ] {
+        assert_admission(&inputs, &values, legacy_admissible(&inputs, &values));
+        assert_probe_solver_path(&inputs, &values, false);
+    }
+}
+
+#[test]
+fn unchanged_known_owned_ref_preserves_member_and_changed_owner_still_falls_back() {
+    use archsig_input::input::{InputSources, check_inputs};
+    let base = fixture::inputs();
+    let definitions = String::from_utf8(base.sources().definitions()[0].bytes().to_vec()).unwrap();
+    let before = r#"{"name":"link","type":["Ref","Pattern.Part"]"#;
+    let after = r#"{"name":"link","type":["Owned","Pattern.Part","owner"]"#;
+    assert!(definitions.contains(before));
+    let definitions = definitions.replace(before, after);
+    let checked =
+        archsig_input::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+            .unwrap();
+    let old_digest = &base.definitions().vocabularies()["Pattern"].digest;
+    let digest = &checked.vocabularies()["Pattern"].digest;
+    let law = String::from_utf8(base.sources().law().bytes().to_vec())
+        .unwrap()
+        .replace(old_digest, digest);
+    let map = String::from_utf8(base.sources().archmap().bytes().to_vec())
+        .unwrap()
+        .replace(old_digest, digest)
+        .replace(
+            r#""field":"Pattern.Part.link","value":["v","p"]"#,
+            r#""field":"Pattern.Part.link","value":["v","q"]"#,
+        );
+    let inputs = check_inputs(
+        InputSources::from_bytes(
+            vec![definitions.into_bytes()],
+            law.into_bytes(),
+            map.into_bytes(),
+        ),
+        &quiet(),
+    )
+    .unwrap();
+    let same = vec![
+        (slot("p", "link"), subject_value("q", "Part")),
+        (slot("p", "flag"), Scalar::Bool(false)),
+    ];
+    assert_admission(&inputs, &same, true);
+    assert_probe_solver_path(&inputs, &same, true);
+    let mut changed_owner = same;
+    changed_owner.push((slot("p", "owner"), subject_value("r2", "Root")));
+    assert_admission(&inputs, &changed_owner, false);
+    assert_probe_solver_path(&inputs, &changed_owner, false);
+}
+
+#[test]
+fn known_ref_match_requires_both_identity_parts_and_a_top_level_known_slot() {
+    let inputs = fixture::inputs();
+    let template = Environment::new(&inputs, &quiet()).unwrap();
+    let field = template
+        .indexes
+        .field(&template.state, "v", "p", "Pattern.Part.link")
+        .unwrap();
+    let reference = |snapshot: &str, subject: &str| Value::Ref {
+        snapshot: snapshot.into(),
+        subject: subject.into(),
+    };
+    assert!(unchanged_known_reference(&reference("v", "p"), &field.slot));
+    assert!(!unchanged_known_reference(
+        &reference("other", "p"),
+        &field.slot
+    ));
+    assert!(!unchanged_known_reference(
+        &reference("v", "q"),
+        &field.slot
+    ));
+    assert!(!unchanged_known_reference(
+        &reference("v", "p"),
+        &Slot::Missing
+    ));
+    assert!(!unchanged_known_reference(
+        &Value::Tuple(vec![reference("v", "p")]),
+        &field.slot
+    ));
+    assert!(!unchanged_known_reference(&Value::Map(vec![]), &field.slot));
+}
+
+#[test]
+fn unchanged_nested_ref_remains_on_structural_solver_path() {
+    use archsig_input::input::{InputSources, check_inputs};
+    let base = fixture::inputs();
+    let definitions = String::from_utf8(base.sources().definitions()[0].bytes().to_vec()).unwrap();
+    let before = r#"{"name":"link","type":["Ref","Pattern.Part"]"#;
+    let after = r#"{"name":"link","type":["Tuple",["Ref","Pattern.Part"],"Bool"]"#;
+    assert!(definitions.contains(before));
+    let definitions = definitions.replace(before, after);
+    let checked =
+        archsig_input::definition::check_definitions(&[("definition0", definitions.as_bytes())])
+            .unwrap();
+    let old_digest = &base.definitions().vocabularies()["Pattern"].digest;
+    let digest = &checked.vocabularies()["Pattern"].digest;
+    let law = format!(
+        "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary Pattern version \"1\" digest \"{digest}\";view chosen(c:Part):Bool=true;}}"
+    );
+    let map = String::from_utf8(base.sources().archmap().bytes().to_vec())
+        .unwrap()
+        .replace(old_digest, digest)
+        .replace(
+            r#""field":"Pattern.Part.link","value":["v","p"]"#,
+            r#""field":"Pattern.Part.link","value":[["v","p"],true]"#,
+        );
+    let inputs = check_inputs(
+        InputSources::from_bytes(
+            vec![definitions.into_bytes()],
+            law.into_bytes(),
+            map.into_bytes(),
+        ),
+        &quiet(),
+    )
+    .unwrap();
+    let same = [(
+        slot("p", "link"),
+        Scalar::Tuple(vec![subject_value("p", "Part"), Scalar::Bool(true)]),
+    )];
+    assert_admission(&inputs, &same, true);
+    assert_probe_solver_path(&inputs, &same, false);
 }
