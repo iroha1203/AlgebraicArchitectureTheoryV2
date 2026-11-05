@@ -390,7 +390,7 @@ fn compute_inner(
                 let mut location = None;
                 for declared in parameters.iter().chain(fields) {
                     tick(c)?;
-                    if declared.name == *field_name {
+                    if format!("{}.{}", subject.ty, declared.name) == *field_name {
                         location = Some(declared.location.clone());
                         break;
                     }

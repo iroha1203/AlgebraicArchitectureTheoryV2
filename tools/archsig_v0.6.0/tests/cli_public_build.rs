@@ -1370,3 +1370,63 @@ fn missing_polynomial_evaluation_is_not_an_algorithm_boundary() {
     );
     std::fs::remove_dir_all(dir).unwrap();
 }
+
+#[test]
+fn unobserved_unbounded_list_keeps_definition_location_and_missing_check() {
+    let definition = DEFINITION.replace(r#""type":"Z""#, r#""type":["List","Bool"]"#);
+    let dir = files_with_definition(
+        "build-list-missing-boundary",
+        "law required all(c:Part):forall x in c.quantity . x;",
+        true,
+        &definition,
+    );
+    let path = dir.join("a.json");
+    let map = std::fs::read_to_string(&path).unwrap().replace(
+        r#",{"id":"xp","subject":"p","field":"Build.Part.quantity","value":"0","origin":"model"}"#,
+        "",
+    );
+    std::fs::write(path, map).unwrap();
+    let run = asks(
+        &dir,
+        &[
+            "b=build(R,on=@v/root)",
+            "c=check(R.all,on=$b.object,c=@v/p)",
+        ],
+    );
+    let result = saved(&dir, &run, "partial", 2);
+    let b = answer(&result, "b");
+    assert!(has(get(b, "outputs"), "object"));
+    assert!(!has(get(b, "outputs"), "algebra"));
+    let reason = arr(get(b, "reasons"))
+        .iter()
+        .find(|r| s(get(r, "code")) == "unsupported_algorithm")
+        .unwrap();
+    assert_eq!(
+        s(get(get(reason, "details"), "method")),
+        "finite_primitive_domain"
+    );
+    let ty = &arr(get(get(reason, "details"), "operand_types"))[0];
+    assert_eq!(s(&arr(ty)[0]), "List");
+    assert_eq!(s(&arr(ty)[1]), "Bool");
+    let location = get(reason, "location");
+    assert_eq!(s(get(location, "input")), "definition0");
+    assert_eq!(
+        s(get(location, "pointer")),
+        "/vocabularies/0/declarations/1/fields/0"
+    );
+    let raw = archsig_common::json::parse(definition.as_bytes()).unwrap();
+    let field = &arr(get(
+        &arr(get(&arr(get(&raw, "vocabularies"))[0], "declarations"))[1],
+        "fields",
+    ))[0];
+    assert_eq!(s(get(field, "name")), "quantity");
+    assert_eq!(s(&arr(get(field, "type"))[0]), "List");
+    let check = answer(&result, "c");
+    assert_eq!(s(get(check, "status")), "undetermined");
+    assert!(
+        arr(get(check, "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "missing_observation")
+    );
+    std::fs::remove_dir_all(dir).unwrap();
+}
