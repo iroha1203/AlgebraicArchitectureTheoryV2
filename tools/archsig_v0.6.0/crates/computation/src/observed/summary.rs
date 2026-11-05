@@ -106,6 +106,7 @@ fn has_reference(value: &Json) -> bool {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || match value {
         Json::Obj(fields) => fields.contains_key("node") || fields.values().any(has_reference),
         Json::Arr(items) => items.iter().any(has_reference),
+        Json::NodeReferences(items) => !items.is_empty(),
         _ => false,
     })
 }
@@ -443,8 +444,13 @@ impl ObservedEvaluation {
             for key in [
                 "elements", "contexts", "covers", "readings", "laws", "pairs",
             ] {
-                if let Some(Json::Arr(items)) = value.get(key) {
-                    brief.insert(format!("{key}_count"), Json::Nat(items.len() as u64));
+                let count = match value.get(key) {
+                    Some(Json::Arr(items)) => Some(items.len()),
+                    Some(Json::NodeReferences(items)) => Some(items.len()),
+                    _ => None,
+                };
+                if let Some(count) = count {
+                    brief.insert(format!("{key}_count"), Json::Nat(count as u64));
                 }
             }
             if depth > 0 {

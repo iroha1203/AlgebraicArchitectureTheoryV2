@@ -1163,6 +1163,15 @@ impl ControlledEq for archsig_common::canonical::Json {
                 c.eq(a0, b0)?;
                 Ok(())
             }
+            (Self::NodeReferences(a), Self::NodeReferences(b)) => c.eq(a, b),
+            (Self::NodeReferences(refs), Self::Arr(items))
+            | (Self::Arr(items), Self::NodeReferences(refs)) => {
+                c.eq(&refs.len(), &items.len())?;
+                for (index, item) in refs.iter().zip(items) {
+                    c.eq(&Some(*index), &item.exact_node_reference())?;
+                }
+                Ok(())
+            }
             (Self::Obj(a0), Self::Obj(b0)) => {
                 c.eq(a0, b0)?;
                 Ok(())
@@ -1355,6 +1364,44 @@ mod tests {
                 Err(CheckFailure::Stopped(Signal::Term))
             ));
         }
+    }
+
+    #[test]
+    fn compact_reference_array_comparison_keeps_strict_shape_order_and_stops() {
+        let compact = Json::NodeReferences(vec![2, 1, 2]);
+        let plain = Json::Arr(
+            [2, 1, 2]
+                .into_iter()
+                .map(|n| Json::obj([("node", Json::str(format!("n{n}")))]))
+                .collect(),
+        );
+        exercise(&compact, &plain);
+        exercise(&plain, &compact);
+        exercise(&compact, &compact);
+        for malformed in [
+            Json::obj([("node", Json::str("n02"))]),
+            Json::obj([("node", Json::str("n+2"))]),
+            Json::obj([("node", Json::str("n2")), ("extra", Json::Bool(true))]),
+        ] {
+            let malformed = Json::Arr(vec![malformed]);
+            assert_ne!(Json::NodeReferences(vec![2]), malformed);
+            assert!(
+                compare(
+                    &Json::NodeReferences(vec![2]),
+                    &malformed,
+                    &Control::unlimited()
+                )
+                .is_err()
+            );
+        }
+        assert!(
+            compare(
+                &compact,
+                &Json::NodeReferences(vec![1, 2, 2]),
+                &Control::unlimited()
+            )
+            .is_err()
+        );
     }
 
     #[test]

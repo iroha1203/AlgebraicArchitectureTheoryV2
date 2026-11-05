@@ -312,6 +312,19 @@ fn normalized_wire(
             Json::Bool(b) => Json::Bool(*b),
             Json::Nat(n) => Json::Nat(*n),
             Json::Str(s) => Json::str(s),
+            Json::NodeReferences(items) => {
+                let mut normalized = Vec::with_capacity(items.len());
+                for index in items {
+                    control.checkpoint(Checkpoint::Reuse)?;
+                    let id = format!("n{index}");
+                    let key = ids
+                        .get(&id)
+                        .ok_or_else(|| invalid("recomputed Ref does not precede its use"))?;
+                    // Normalized refs contain canonical keys, not numeric node ids.
+                    normalized.push(Json::obj([("node", Json::str(key))]));
+                }
+                Json::Arr(normalized)
+            }
             Json::Arr(items) => Json::Arr(
                 items
                     .iter()
@@ -458,4 +471,59 @@ fn verify(
     }
     control.checkpoint(Checkpoint::Reuse)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod reference_array_tests {
+    use super::*;
+    use std::{cell::Cell, rc::Rc};
+    #[test]
+    fn compact_refs_reuse_the_same_canonical_keys_and_reject_nonprior_ids() {
+        let ids = BTreeMap::from([("n1".into(), "v0".into()), ("n2".into(), "v1".into())]);
+        let compact = Json::NodeReferences(vec![2, 1, 2]);
+        let candidate =
+            archsig_common::json::parse(br#"[{"node":"n2"},{"node":"n1"},{"node":"n2"}]"#)
+                .unwrap_or_else(|_| panic!("reference normalization failed"));
+        let expected = normalized_candidate(&candidate, &ids, &Control::unlimited())
+            .unwrap_or_else(|_| panic!("reference normalization failed"));
+        assert_eq!(
+            normalized_wire(&compact, &ids, &Control::unlimited())
+                .unwrap_or_else(|_| panic!("reference normalization failed")),
+            expected
+        );
+        assert_eq!(
+            expected.canonical(),
+            r#"[{"node":"v1"},{"node":"v0"},{"node":"v1"}]"#
+        );
+        assert!(
+            normalized_wire(&Json::NodeReferences(vec![3]), &ids, &Control::unlimited()).is_err()
+        );
+        for bad in [
+            br#"[{"node":"n01"}]"#.as_slice(),
+            br#"[{"node":"n1","extra":true}]"#.as_slice(),
+        ] {
+            let candidate = archsig_common::json::parse(bad)
+                .unwrap_or_else(|_| panic!("reference normalization failed"));
+            assert!(normalized_candidate(&candidate, &ids, &Control::unlimited()).is_err());
+        }
+        let calls = Rc::new(Cell::new(0));
+        let seen = calls.clone();
+        let control = Control::new(move |_| {
+            seen.set(seen.get() + 1);
+            None
+        });
+        normalized_wire(&compact, &ids, &control)
+            .unwrap_or_else(|_| panic!("reference normalization failed"));
+        for at in 1..=calls.get() {
+            let mut visits = 0;
+            let control = Control::new(move |_| {
+                visits += 1;
+                (visits == at).then_some(Signal::Int)
+            });
+            assert!(matches!(
+                normalized_wire(&compact, &ids, &control),
+                Err(Failure::Stopped(Signal::Int))
+            ));
+        }
+    }
 }

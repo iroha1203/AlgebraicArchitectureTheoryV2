@@ -45,6 +45,8 @@ pub fn add_location_positions<'a>(
                 pending.extend(fields.values_mut());
             }
             Json::Arr(values) => pending.extend(values),
+            // Compact result Ref arrays contain no source-location records.
+            Json::NodeReferences(_) => {}
             _ => {}
         }
     }
