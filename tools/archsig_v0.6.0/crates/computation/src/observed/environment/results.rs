@@ -51,7 +51,13 @@ result_table! {
     #[cfg(test)] session test_i32: Arc<i32>,
 }
 
-type ScopedMemoEntry = (ScopedKey, SourceValue, BTreeSet<Fact>);
+// Noneは未収集、Some(empty)は実際に読取りがなかった評価。
+type ScopedMemoEntry = (
+    ScopedKey,
+    SourceValue,
+    BTreeSet<Fact>,
+    Option<BTreeSet<Fact>>,
+);
 
 #[derive(Default)]
 pub(crate) struct ResultStore {

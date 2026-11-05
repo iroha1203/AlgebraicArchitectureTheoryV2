@@ -8015,28 +8015,54 @@ impl<'a> Environment<'a> {
                     completions: self.state.completion_values.borrow().clone(),
                 })
             };
+            let collecting = key.is_some() && self.state.primitive_reads.borrow().is_some();
             let cached = if let Some(key) = &key {
                 let values = self.results.scoped_values.borrow();
                 match values.get(&id) {
-                    Some((candidate, value, missing))
-                        if validation_identity::key(candidate, key, &self.control)? =>
+                    Some((candidate, value, missing, primitive))
+                        if (!collecting || primitive.is_some())
+                            && validation_identity::key(candidate, key, &self.control)? =>
                     {
-                        Some((value.clone(), missing.clone()))
+                        Some((
+                            value.clone(),
+                            missing.clone(),
+                            if collecting { primitive.clone() } else { None },
+                        ))
                     }
                     _ => None,
                 }
             } else {
                 None
             };
-            if let Some((value, missing)) = cached {
+            if let Some((value, missing, primitive)) = cached {
                 if let Some(reads) = self.state.missing_slot_reads.borrow_mut().as_mut() {
                     reads.extend(missing);
+                }
+                if let (Some(primitive), Some(reads)) =
+                    (primitive, self.state.primitive_reads.borrow_mut().as_mut())
+                {
+                    reads.extend(primitive);
                 }
                 self.tick()?;
                 return Ok(value);
             }
             let outer = self.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
+            // 既に有効なcollectorだけを分離し、非収集中やcaptureの評価条件は変えない。
+            let outer_primitive =
+                collecting.then(|| self.state.primitive_reads.scoped(Some(BTreeSet::new())));
             let value = self.scoped_ast_uncached(id, variables, base, reading);
+            let primitive = outer_primitive
+                .map(|outer| {
+                    outer
+                        .restore()
+                        .ok_or(internal!("評価の原始読取り収集がない"))
+                })
+                .transpose()?;
+            if let (Some(primitive), Some(reads)) =
+                (&primitive, self.state.primitive_reads.borrow_mut().as_mut())
+            {
+                reads.extend(primitive.iter().cloned());
+            }
             let missing = outer
                 .restore()
                 .ok_or(internal!("評価の不足位置収集がない"))?;
@@ -8049,7 +8075,7 @@ impl<'a> Environment<'a> {
                 self.results
                     .scoped_values
                     .borrow_mut()
-                    .insert(id, (key, value.clone(), missing));
+                    .insert(id, (key, value.clone(), missing, primitive));
             }
             Ok(value)
         })

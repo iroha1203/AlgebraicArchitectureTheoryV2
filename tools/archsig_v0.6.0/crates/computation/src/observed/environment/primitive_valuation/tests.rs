@@ -1234,6 +1234,72 @@ fn scoped_memo_retains_only_latest_inputs_per_expression_without_crossing_contex
     );
 }
 
+fn assert_scoped_raw_reads_survive_memo(warm_with_collector: bool) {
+    let inputs = fixture::with_body(fixture::MAP, "view value(c:Part):Fp(2)=c.quantity;");
+    let c = quiet();
+    let e = Environment::new(&inputs, &c).unwrap();
+    let Signature::View { body, .. } = &inputs.law().declarations()["Selected.value"].signature
+    else {
+        panic!("view")
+    };
+    let variables = BTreeMap::from([("c".into(), source(root()))]);
+    let evaluate = || {
+        e.scoped_ast(*body, &variables, &Scope::default(), "Selected")
+            .unwrap()
+    };
+    let outer = e
+        .state
+        .primitive_reads
+        .scoped(warm_with_collector.then(BTreeSet::new));
+    let first = evaluate();
+    let first_reads = outer.restore();
+    let expected = BTreeSet::from([slot("p", "quantity")]);
+    if warm_with_collector {
+        assert_eq!(
+            first_reads.unwrap(),
+            expected,
+            "cold evaluation reads the raw field"
+        );
+    } else {
+        assert!(first_reads.is_none());
+    }
+    assert_eq!(first.known_value, Some(fp("2", 0)));
+    assert!(
+        first
+            .support
+            .iter()
+            .any(|fact| fact.subject == "p"
+                && fact.field.as_deref() == Some("Pattern.Part.quantity"))
+    );
+    for _ in 0..2 {
+        let outer = e.state.primitive_reads.scoped(Some(BTreeSet::new()));
+        let again = evaluate();
+        let reads = outer.restore().unwrap();
+        assert!(
+            again == first,
+            "memo preserves value, support, Scope and all source fields"
+        );
+        assert_eq!(
+            reads, expected,
+            "each fresh collector receives exact raw field positions"
+        );
+        assert!(
+            e.state.primitive_reads.borrow().is_none(),
+            "collector ownership is restored"
+        );
+    }
+}
+
+#[test]
+fn scoped_memo_replays_raw_reads_after_untracked_warm_evaluation() {
+    assert_scoped_raw_reads_survive_memo(false);
+}
+
+#[test]
+fn scoped_memo_replays_raw_reads_into_each_fresh_collector() {
+    assert_scoped_raw_reads_survive_memo(true);
+}
+
 #[test]
 fn candidate_factory_shares_only_fixed_inputs_and_resets_valuation_state_and_caches() {
     let i = fixture::inputs();
@@ -1284,4 +1350,148 @@ fn candidate_factory_shares_only_fixed_inputs_and_resets_valuation_state_and_cac
         template.try_primitive_valuation_from(&[], &control),
         Err(ValidationFailure::Stop(Signal::Term))
     ));
+}
+
+#[test]
+fn scoped_memo_keeps_missing_and_raw_collectors_separate_and_restores_parents() {
+    let inputs = fixture::with_body(fixture::MAP, "view missing(c:Part):Fp(3)=c.third;");
+    let e = Environment::new(&inputs, &quiet()).unwrap();
+    let Signature::View { body, .. } = &inputs.law().declarations()["Selected.missing"].signature
+    else {
+        panic!("view")
+    };
+    let variables = BTreeMap::from([("c".into(), source(root()))]);
+    let expected = BTreeSet::from([slot("p", "third")]);
+    let parent = BTreeSet::from([slot("q", "quantity")]);
+    e.state.primitive_reads.replace(Some(parent.clone()));
+    e.state.missing_slot_reads.replace(Some(parent.clone()));
+    for _ in 0..2 {
+        let raw = e.state.primitive_reads.scoped(Some(BTreeSet::new()));
+        let missing = e.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
+        let value = e
+            .scoped_ast(*body, &variables, &Scope::default(), "Selected")
+            .unwrap();
+        assert!(value.known_value.is_none());
+        assert_eq!(raw.restore().unwrap(), expected);
+        assert_eq!(missing.restore().unwrap(), expected);
+        assert_eq!(*e.state.primitive_reads.borrow(), Some(parent.clone()));
+        assert_eq!(*e.state.missing_slot_reads.borrow(), Some(parent.clone()));
+    }
+}
+
+#[test]
+fn scoped_memo_collected_empty_reads_are_not_inferred_from_source_support() {
+    let inputs = fixture::with_body(fixture::MAP, "view original_ref(c:Part):Part=c;");
+    let e = Environment::new(&inputs, &quiet()).unwrap();
+    let Signature::View { body, .. } =
+        &inputs.law().declarations()["Selected.original_ref"].signature
+    else {
+        panic!("view")
+    };
+    let mut value = source(root());
+    value.support = vec![slot("p", "quantity")].into();
+    let variables = BTreeMap::from([("c".into(), value)]);
+    for _ in 0..2 {
+        let raw = e.state.primitive_reads.scoped(Some(BTreeSet::new()));
+        let result = e
+            .scoped_ast(*body, &variables, &Scope::default(), "Selected")
+            .unwrap();
+        assert_eq!(result.known_value, Some(root()));
+        assert!(result.support.contains(&slot("p", "quantity")));
+        assert!(
+            raw.restore().unwrap().is_empty(),
+            "source support is not a raw field read"
+        );
+        assert!(e.state.primitive_reads.borrow().is_none());
+    }
+}
+
+#[test]
+fn scoped_memo_stop_restores_collectors_and_retry_preserves_exact_reads() {
+    let inputs = fixture::with_body(fixture::MAP, "view value(c:Part):Fp(2)=c.quantity;");
+    let Signature::View { body, .. } = &inputs.law().declarations()["Selected.value"].signature
+    else {
+        panic!("view")
+    };
+    let variables = BTreeMap::from([("c".into(), source(root()))]);
+    let parent = BTreeSet::from([slot("q", "quantity")]);
+    let complete = BTreeSet::from([slot("q", "quantity"), slot("p", "quantity")]);
+    let mut stopped = false;
+    let mut completed = false;
+    for budget in 0..40 {
+        let mut e = Environment::new(&inputs, &quiet()).unwrap();
+        let (control, _, _) = stopping(
+            Checkpoint::FiniteIteration,
+            budget,
+            Some(Signal::Term),
+            false,
+        );
+        e.control = control;
+        e.state.primitive_reads.replace(Some(parent.clone()));
+        e.state.missing_slot_reads.replace(Some(parent.clone()));
+        match e.scoped_ast(*body, &variables, &Scope::default(), "Selected") {
+            Err(ValidationFailure::Stop(_)) => stopped = true,
+            Ok(value) => {
+                completed = true;
+                assert_eq!(value.known_value, Some(fp("2", 0)));
+            }
+            Err(error) => panic!("unexpected evaluation failure: {error:?}"),
+        }
+        let reads = e
+            .state
+            .primitive_reads
+            .borrow()
+            .clone()
+            .expect("parent raw collector restored");
+        assert!(reads == parent || reads == complete);
+        assert_eq!(*e.state.missing_slot_reads.borrow(), Some(parent.clone()));
+        e.control = quiet();
+        let value = e
+            .scoped_ast(*body, &variables, &Scope::default(), "Selected")
+            .unwrap();
+        assert_eq!(value.known_value, Some(fp("2", 0)));
+        assert_eq!(*e.state.primitive_reads.borrow(), Some(complete.clone()));
+        assert_eq!(*e.state.missing_slot_reads.borrow(), Some(parent.clone()));
+    }
+    assert!(
+        stopped && completed,
+        "exercise interrupted and completed boundaries"
+    );
+}
+
+#[test]
+fn scoped_memo_raw_collectors_preserve_sharing_of_a_noncapture_view_dag() {
+    let mut law = String::from("view level0(c:Part):Bool=c.quantity=0;");
+    for level in 1..=16 {
+        law.push_str(&format!(
+            "view level{level}(c:Part):Bool=level{}(c) and level{}(c);",
+            level - 1,
+            level - 1
+        ));
+    }
+    let inputs = fixture::with_body(fixture::MAP, &law);
+    let mut e = Environment::new(&inputs, &quiet()).unwrap();
+    let (control, _, _) = stopping(
+        Checkpoint::FiniteIteration,
+        100_000,
+        Some(Signal::Term),
+        false,
+    );
+    e.control = control;
+    let Signature::View { body, .. } = &inputs.law().declarations()["Selected.level16"].signature
+    else {
+        panic!("view")
+    };
+    let variables = BTreeMap::from([("c".into(), source(root()))]);
+    for _ in 0..2 {
+        let raw = e.state.primitive_reads.scoped(Some(BTreeSet::new()));
+        let value = e
+            .scoped_ast(*body, &variables, &Scope::default(), "Selected")
+            .unwrap();
+        assert_eq!(value.known_value, Some(Scalar::Bool(true)));
+        assert_eq!(
+            raw.restore().unwrap(),
+            BTreeSet::from([slot("p", "quantity")])
+        );
+    }
 }
