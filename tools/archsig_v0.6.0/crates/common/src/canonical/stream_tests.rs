@@ -84,3 +84,44 @@ fn streaming_deep_tree_uses_the_stack_safe_encoder() {
     assert_eq!(&bytes[10_000..10_005], b"false");
     assert_eq!(&bytes[10_005..], vec![b']'; 10_000]);
 }
+
+#[test]
+fn streaming_compact_reference_arrays_keep_bytes_short_writes_and_error_prefixes() {
+    for indices in [vec![], vec![0], vec![2, 1, 2, usize::MAX]] {
+        let plain = Json::obj([
+            ("é", Json::str("雪\n\"\\終")),
+            (
+                "a",
+                Json::Arr(
+                    indices
+                        .iter()
+                        .map(|index| Json::obj([("node", Json::str(format!("n{index}")))]))
+                        .collect(),
+                ),
+            ),
+        ]);
+        let compact = Json::obj([
+            ("é", Json::str("雪\n\"\\終")),
+            ("a", Json::NodeReferences(indices)),
+        ]);
+        let expected = plain.canonical();
+        assert_eq!(compact.canonical(), expected);
+        let mut writer = ShortWriter {
+            bytes: vec![],
+            remaining: None,
+            interrupted: true,
+        };
+        compact.write_canonical(&mut writer).unwrap();
+        assert_eq!(writer.bytes, expected.as_bytes());
+        for at in 0..expected.len() {
+            let mut writer = ShortWriter {
+                bytes: vec![],
+                remaining: Some(at),
+                interrupted: false,
+            };
+            let error = compact.write_canonical(&mut writer).unwrap_err();
+            assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
+            assert_eq!(writer.bytes, expected.as_bytes()[..at]);
+        }
+    }
+}

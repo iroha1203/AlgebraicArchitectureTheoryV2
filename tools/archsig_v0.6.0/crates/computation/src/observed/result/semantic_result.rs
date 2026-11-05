@@ -7,26 +7,83 @@ use archsig_common::{
 use archsig_input::result::Signal;
 use std::collections::{BTreeMap, BTreeSet};
 
-fn refs(value: &Json, into: &mut BTreeSet<String>) {
-    stacker::maybe_grow(64 * 1024, 1024 * 1024, || match value {
-        Json::Obj(fields) => {
-            if fields.len() == 1
-                && let Some(Json::Str(id)) = fields.get("node")
-            {
-                into.insert(id.clone());
-            } else {
-                for value in fields.values() {
-                    refs(value, into);
+fn refs(
+    value: &Json,
+    into: &mut BTreeSet<String>,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<(), Signal> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        control.checkpoint(point)?;
+        match value {
+            Json::Obj(fields) => {
+                if fields.len() == 1
+                    && let Some(Json::Str(id)) = fields.get("node")
+                {
+                    into.insert(id.clone());
+                } else {
+                    for value in fields.values() {
+                        refs(value, into, control, point)?;
+                    }
                 }
             }
-        }
-        Json::Arr(items) => {
-            for value in items {
-                refs(value, into);
+            Json::Arr(items) => {
+                for value in items {
+                    refs(value, into, control, point)?;
+                }
             }
+            Json::NodeReferences(items) => {
+                for index in items {
+                    control.checkpoint(point)?;
+                    into.insert(format!("n{index}"));
+                }
+            }
+            _ => {}
         }
-        _ => {}
-    });
+        control.checkpoint(point)?;
+        Ok(())
+    })
+}
+
+// Compress only the completed public projection. Native wire and input objects keep their shape.
+fn compact_reference_arrays(
+    value: &mut Json,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<(), Signal> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        control.checkpoint(point)?;
+        match value {
+            Json::Arr(items) => {
+                let mut indices = Vec::new();
+                for item in items.iter() {
+                    control.checkpoint(point)?;
+                    let Some(index) = item.exact_node_reference() else {
+                        break;
+                    };
+                    indices.push(index);
+                }
+                if !items.is_empty() && indices.len() == items.len() {
+                    *value = Json::NodeReferences(indices);
+                } else {
+                    // Release a successful prefix before traversing the mixed array.
+                    drop(indices);
+                    // Mixed/malformed arrays retain every original value and its spelling.
+                    for item in items {
+                        compact_reference_arrays(item, control, point)?;
+                    }
+                }
+            }
+            Json::Obj(fields) => {
+                for item in fields.values_mut() {
+                    compact_reference_arrays(item, control, point)?;
+                }
+            }
+            _ => {}
+        }
+        control.checkpoint(point)?;
+        Ok(())
+    })
 }
 fn reference(value: Option<&Json>) -> Option<NodeRef> {
     let Json::Obj(fields) = value? else {
@@ -97,26 +154,47 @@ fn quotient_maps(
     }
     Ok(())
 }
-fn rename(value: &mut Json, ids: &BTreeMap<String, String>) {
-    stacker::maybe_grow(64 * 1024, 1024 * 1024, || match value {
-        Json::Obj(fields) => {
-            if fields.len() == 1
-                && let Some(Json::Str(id)) = fields.get_mut("node")
-            {
-                *id = ids[id].clone();
-            } else {
-                for value in fields.values_mut() {
-                    rename(value, ids);
+fn rename(
+    value: &mut Json,
+    ids: &BTreeMap<String, String>,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<(), Signal> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        control.checkpoint(point)?;
+        match value {
+            Json::Obj(fields) => {
+                if fields.len() == 1
+                    && let Some(Json::Str(id)) = fields.get_mut("node")
+                {
+                    *id = ids[id].clone();
+                } else {
+                    for value in fields.values_mut() {
+                        rename(value, ids, control, point)?;
+                    }
                 }
             }
-        }
-        Json::Arr(items) => {
-            for value in items {
-                rename(value, ids);
+            Json::Arr(items) => {
+                for value in items {
+                    rename(value, ids, control, point)?;
+                }
             }
+            Json::NodeReferences(items) => {
+                for index in items {
+                    control.checkpoint(point)?;
+                    // Both maps are built here from canonical numeric node identities.
+                    *index = ids[&format!("n{index}")]
+                        .strip_prefix('n')
+                        .unwrap()
+                        .parse()
+                        .unwrap();
+                }
+            }
+            _ => {}
         }
-        _ => {}
-    });
+        control.checkpoint(point)?;
+        Ok(())
+    })
 }
 fn retain_evidence(
     fields: &mut archsig_common::canonical::JsonObject,
@@ -177,7 +255,7 @@ fn cleaned_node(
     // Path/compound の既出 Ref 解決には元の全 prior と arguments を使う。
     let mut node = native[index].wire_with_support(index, &native[..index], false);
     control.checkpoint(point)?;
-    clean_reasons(&mut node);
+    clean_reasons(&mut node, control, point)?;
     Ok(node)
 }
 fn public_raw_node(
@@ -331,33 +409,44 @@ mod notice_tests {
         assert_eq!(targets.iter().collect::<BTreeSet<_>>().len(), 3);
     }
 }
-fn clean_reasons(value: &mut Json) {
-    stacker::maybe_grow(64 * 1024, 1024 * 1024, || match value {
-        Json::Obj(fields) => {
-            if fields.contains_key("code") && fields.contains_key("message") {
-                fields.insert("dependencies".into(), Json::Arr(vec![]));
-                if let Some(Json::Obj(details)) = fields.get_mut("details") {
-                    details.retain(|_, value| {
-                        let mut references = BTreeSet::new();
-                        refs(value, &mut references);
-                        references.is_empty()
-                    });
+fn clean_reasons(value: &mut Json, control: &Control, point: Checkpoint) -> Result<(), Signal> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        control.checkpoint(point)?;
+        match value {
+            Json::Obj(fields) => {
+                if fields.contains_key("code") && fields.contains_key("message") {
+                    fields.insert("dependencies".into(), Json::Arr(vec![]));
+                    if let Some(Json::Obj(details)) = fields.get_mut("details") {
+                        let mut removed = Vec::new();
+                        for (key, value) in details.iter() {
+                            let mut references = BTreeSet::new();
+                            refs(value, &mut references, control, point)?;
+                            if !references.is_empty() {
+                                removed.push(key.clone());
+                            }
+                        }
+                        for key in removed {
+                            details.remove(&key);
+                        }
+                    }
+                }
+                for value in fields.values_mut() {
+                    clean_reasons(value, control, point)?;
+                }
+                if let Some(Json::Arr(reasons)) = fields.get_mut("reasons") {
+                    concise_reasons(reasons);
                 }
             }
-            for value in fields.values_mut() {
-                clean_reasons(value);
+            Json::Arr(items) => {
+                for value in items {
+                    clean_reasons(value, control, point)?;
+                }
             }
-            if let Some(Json::Arr(reasons)) = fields.get_mut("reasons") {
-                concise_reasons(reasons);
-            }
+            _ => {}
         }
-        Json::Arr(items) => {
-            for value in items {
-                clean_reasons(value);
-            }
-        }
-        _ => {}
-    });
+        control.checkpoint(point)?;
+        Ok(())
+    })
 }
 fn remove_proof_refs(value: &mut Json, proofs: &BTreeSet<String>) -> bool {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || match value {
@@ -370,6 +459,8 @@ fn remove_proof_refs(value: &mut Json, proofs: &BTreeSet<String>) -> bool {
             fields.retain(|_, value| remove_proof_refs(value, proofs));
             true
         }
+        // This helper runs only on raw native wire, before reference-array compression.
+        Json::NodeReferences(_) => unreachable!("proof filtering precedes result compression"),
         Json::Arr(items) => {
             items.retain_mut(|value| remove_proof_refs(value, proofs));
             true
@@ -383,7 +474,7 @@ pub(super) fn compact(
     control: &Control,
     point: Checkpoint,
 ) -> Result<(), Signal> {
-    clean_reasons(result);
+    clean_reasons(result, control, point)?;
     let Json::Obj(document) = result else {
         unreachable!()
     };
@@ -461,7 +552,7 @@ pub(super) fn compact(
     }
     let mut reachable = BTreeSet::new();
     for value in document.values() {
-        refs(value, &mut reachable);
+        refs(value, &mut reachable, control, point)?;
     }
     // 部分結果の理由には後続の診断への参照もある。到達順を計算順と同一視しない。
     let mut pending: Vec<_> = reachable.iter().cloned().collect();
@@ -471,7 +562,7 @@ pub(super) fn compact(
         control.checkpoint(point)?;
         let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
         let mut children = BTreeSet::new();
-        let node = project_node(
+        let mut node = project_node(
             native,
             index,
             &proofs,
@@ -480,7 +571,8 @@ pub(super) fn compact(
             control,
             point,
         )?;
-        refs(&node, &mut children);
+        compact_reference_arrays(&mut node, control, point)?;
+        refs(&node, &mut children, control, point)?;
         if matches!(
             native[index].ty,
             NodeType::Construction(super::super::construction_result::ConstructionType::Quotient)
@@ -504,7 +596,7 @@ pub(super) fn compact(
     for (index, mut node) in projected {
         control.checkpoint(point)?;
         let old_id = format!("n{index}");
-        rename(&mut node, &ids);
+        rename(&mut node, &ids, control, point)?;
         // 環・基底・関係を含む表示全体の一致だけを共有する。同型は推測しない。
         let shared = matches!(
             native[index].ty,
@@ -553,7 +645,7 @@ pub(super) fn compact(
         *id = numbered[id].clone();
     }
     for node in &mut nodes {
-        rename(node, &ids);
+        rename(node, &ids, control, point)?;
         let Json::Obj(fields) = node else {
             unreachable!()
         };
@@ -563,8 +655,228 @@ pub(super) fn compact(
         *id = numbered[id].clone();
     }
     for value in document.values_mut() {
-        rename(value, &ids);
+        rename(value, &ids, control, point)?;
     }
     document.insert("nodes".into(), Json::Arr(nodes));
     Ok(())
+}
+
+#[cfg(test)]
+mod reference_array_tests {
+    use super::*;
+    use std::{cell::Cell, rc::Rc};
+    fn plain(indices: &[usize]) -> Json {
+        Json::Arr(indices.iter().map(|n| NodeRef(*n).wire()).collect())
+    }
+    fn exercise(operation: impl Fn(&Control) -> Result<(), Signal>) {
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        operation(&Control::new(move |_| {
+            seen.set(seen.get() + 1);
+            None
+        }))
+        .unwrap();
+        assert!(count.get() > 3);
+        for signal in [Signal::Int, Signal::Term] {
+            for at in 1..=count.get() {
+                let mut visits = 0;
+                let control = Control::new(move |_| {
+                    visits += 1;
+                    (visits == at).then_some(signal)
+                });
+                assert_eq!(operation(&control), Err(signal));
+            }
+        }
+    }
+    #[allow(dead_code)]
+    mod fixture {
+        include!("../../../../../tests/common/finite_law_family_data.rs");
+    }
+    #[allow(dead_code)]
+    mod partial_fixture {
+        include!("../../../../../tests/common/answer_projections.rs");
+    }
+    #[test]
+    fn partial_projection_keeps_completed_values_and_unknown_reasons_after_display_stop() {
+        let result = crate::observed::evaluate_observed_bytes(
+            partial_fixture::input("stop", "r1"),
+            &[
+                "seed=evaluate(Applications.abSeed)",
+                "prior=check(Applications.abPrior)",
+                "missing=evaluate(Applications.adMissing,p=@v/p)",
+                "nested=evaluate(Applications.apNested)",
+            ],
+            &Control::unlimited(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "partial");
+        let inspection = result.wire();
+        let expected = result.result_wire();
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let control = Control::new(move |_| {
+            seen.set(seen.get() + 1);
+            None
+        });
+        assert_eq!(
+            result
+                .result_wire_controlled(&control, Checkpoint::Expression)
+                .unwrap(),
+            expected
+        );
+        let at = count.get() / 2;
+        let mut visits = 0;
+        let control = Control::new(move |_| {
+            visits += 1;
+            (visits >= at).then_some(Signal::Term)
+        });
+        assert_eq!(
+            result.result_wire_controlled(&control, Checkpoint::Expression),
+            Err(Signal::Term)
+        );
+        assert_eq!(result.result_wire(), expected);
+        assert_eq!(result.wire(), inspection);
+    }
+
+    fn count_compact(value: &Json) -> usize {
+        match value {
+            Json::NodeReferences(items) => items.len(),
+            Json::Arr(items) => items.iter().map(count_compact).sum(),
+            Json::Obj(fields) => fields.values().map(count_compact).sum(),
+            _ => 0,
+        }
+    }
+    #[test]
+    fn saved_finite_projection_keeps_inspection_and_completed_native_data_after_stop() {
+        use crate::observed::{evaluate_observed, prepare_shared_observed};
+        for missing in [false, true] {
+            let prepared = prepare_shared_observed(
+                fixture::inputs(missing, "law required zero(c:Part):c.quantity=0;"),
+                &["b=build(Selected,on=@v/root)"],
+                &Control::unlimited(),
+            )
+            .unwrap();
+            let result = evaluate_observed(prepared, &Control::unlimited()).unwrap();
+            let inspection = result.wire();
+            assert_eq!(count_compact(&inspection), 0);
+            let expected = result.result_wire();
+            // Public bytes remain ordinary JSON; the input parser does not create compact variants.
+            let parsed = archsig_common::json::parse(expected.canonical().as_bytes()).unwrap();
+            assert!(matches!(parsed.value, archsig_common::json::JValue::Obj(_)));
+            let count = Rc::new(Cell::new(0));
+            let seen = count.clone();
+            let control = Control::new(move |_| {
+                seen.set(seen.get() + 1);
+                None
+            });
+            assert_eq!(
+                result
+                    .result_wire_controlled(&control, Checkpoint::Expression)
+                    .unwrap(),
+                expected
+            );
+            for signal in [Signal::Int, Signal::Term] {
+                for at in [1, count.get() / 2, count.get()] {
+                    let mut visits = 0;
+                    let control = Control::new(move |_| {
+                        visits += 1;
+                        (visits >= at).then_some(signal)
+                    });
+                    assert_eq!(
+                        result.result_wire_controlled(&control, Checkpoint::Expression),
+                        Err(signal)
+                    );
+                    assert_eq!(result.wire(), inspection);
+                    assert_eq!(result.result_wire(), expected);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn projected_ref_arrays_preserve_repeated_ordered_values_and_two_renames() {
+        let mut value = Json::obj([("values", plain(&[8, 4, 8]))]);
+        compact_reference_arrays(&mut value, &Control::unlimited(), Checkpoint::Expression)
+            .unwrap();
+        let Json::Obj(fields) = &value else { panic!() };
+        assert!(matches!(fields.get("values"), Some(Json::NodeReferences(v)) if v == &[8, 4, 8]));
+        let mut reachable = BTreeSet::new();
+        refs(
+            &value,
+            &mut reachable,
+            &Control::unlimited(),
+            Checkpoint::Expression,
+        )
+        .unwrap();
+        assert_eq!(reachable, BTreeSet::from(["n4".into(), "n8".into()]));
+        let shared = BTreeMap::from([("n8".into(), "n3".into()), ("n4".into(), "n4".into())]);
+        rename(
+            &mut value,
+            &shared,
+            &Control::unlimited(),
+            Checkpoint::Expression,
+        )
+        .unwrap();
+        let numbered = BTreeMap::from([("n3".into(), "n0".into()), ("n4".into(), "n1".into())]);
+        rename(
+            &mut value,
+            &numbered,
+            &Control::unlimited(),
+            Checkpoint::Expression,
+        )
+        .unwrap();
+        assert_eq!(
+            value.canonical(),
+            r#"{"values":[{"node":"n0"},{"node":"n1"},{"node":"n0"}]}"#
+        );
+    }
+    #[test]
+    fn compression_keeps_empty_mixed_and_invalid_reference_values_unchanged() {
+        for value in [
+            Json::Arr(vec![]),
+            Json::Arr(vec![NodeRef(1).wire(), Json::Nat(2)]),
+            Json::Arr(vec![
+                NodeRef(1).wire(),
+                Json::obj([("node", Json::str("n01"))]),
+            ]),
+            Json::Arr(vec![Json::obj([("node", Json::str("n+1"))])]),
+            Json::Arr(vec![Json::obj([
+                ("node", Json::str("n1")),
+                ("extra", Json::Bool(true)),
+            ])]),
+        ] {
+            let expected = value.canonical();
+            let mut value = value;
+            compact_reference_arrays(&mut value, &Control::unlimited(), Checkpoint::Expression)
+                .unwrap();
+            assert!(matches!(value, Json::Arr(_)));
+            assert_eq!(value.canonical(), expected);
+        }
+    }
+    #[test]
+    fn compression_reachability_and_renaming_stop_at_each_boundary() {
+        let original = Json::obj([("pairs", Json::Arr(vec![plain(&[8, 4]), plain(&[4, 8])]))]);
+        let ids = BTreeMap::from([("n8".into(), "n3".into()), ("n4".into(), "n4".into())]);
+        exercise(|control| {
+            let mut local = original.clone();
+            compact_reference_arrays(&mut local, control, Checkpoint::Expression)
+        });
+        let mut compact = original.clone();
+        compact_reference_arrays(&mut compact, &Control::unlimited(), Checkpoint::Expression)
+            .unwrap();
+        exercise(|control| {
+            refs(
+                &compact,
+                &mut BTreeSet::new(),
+                control,
+                Checkpoint::Expression,
+            )
+        });
+        exercise(|control| rename(&mut compact.clone(), &ids, control, Checkpoint::Expression));
+        // Stops only discard local display work, never mutate the completed source value.
+        assert_eq!(
+            original.canonical(),
+            r#"{"pairs":[[{"node":"n8"},{"node":"n4"}],[{"node":"n4"},{"node":"n8"}]]}"#
+        );
+    }
 }

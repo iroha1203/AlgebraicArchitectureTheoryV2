@@ -50,6 +50,16 @@ fn copy_json<E: InputError>(value: &Json, control: &Control) -> R<Json, E> {
                 Json::Nat(value) => Json::Nat(*value),
                 Json::Str(value) => Json::Str(value.clone()),
                 Json::Arr(values) => wires::<E, _>(control, values, copy_json::<E>)?,
+                Json::NodeReferences(values) => {
+                    let mut copied = Vec::with_capacity(values.len());
+                    for value in values {
+                        canonical_step::<E, _>(control, |_| {
+                            copied.push(*value);
+                            Ok(())
+                        })?;
+                    }
+                    Json::NodeReferences(copied)
+                }
                 Json::Obj(entries) => {
                     let mut copied = archsig_common::canonical::JsonObject::new();
                     for (key, value) in entries {

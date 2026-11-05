@@ -14,6 +14,8 @@ pub enum Json {
     Nat(u64),
     Str(String),
     Arr(Vec<Json>),
+    /// 保存結果の同種 Ref 列。通常の singleton object の列と同じ JSON を表す。
+    NodeReferences(Vec<usize>),
     Obj(JsonObject),
 }
 
@@ -29,6 +31,26 @@ impl Json {
                 .map(|(k, v)| (k.to_owned(), v))
                 .collect(),
         )
+    }
+
+    /// 圧縮可能なのは生成済みの厳密な singleton Ref だけ。入力を正規化しない。
+    pub fn exact_node_reference(&self) -> Option<usize> {
+        let Json::Obj(fields) = self else { return None };
+        if fields.len() != 1 {
+            return None;
+        }
+        let Json::Str(id) = fields.get("node")? else {
+            return None;
+        };
+        let digits = id.strip_prefix('n')?;
+        if digits.is_empty()
+            || digits.len() > usize::BITS as usize
+            || !digits.bytes().all(|b| b.is_ascii_digit())
+            || (digits.len() > 1 && digits.starts_with('0'))
+        {
+            return None;
+        }
+        digits.parse().ok()
     }
 
     /// 空白なし、key は Unicode scalar 順、非 ASCII は UTF-8 のまま出力する。
@@ -84,6 +106,22 @@ impl Json {
                             emit(",")?;
                         }
                         item.write_controlled(emit, checkpoint)?;
+                        checkpoint()?;
+                    }
+                    emit("]")?;
+                }
+                Json::NodeReferences(items) => {
+                    emit("[")?;
+                    for (i, index) in items.iter().enumerate() {
+                        checkpoint()?;
+                        if i > 0 {
+                            emit(",")?;
+                        }
+                        emit("{")?;
+                        emit_string("node", emit, checkpoint)?;
+                        emit(":")?;
+                        emit_string(&format!("n{index}"), emit, checkpoint)?;
+                        emit("}")?;
                         checkpoint()?;
                     }
                     emit("]")?;
@@ -201,6 +239,8 @@ fn take_children(j: &mut Json, stack: &mut Vec<Json>) {
     match j {
         Json::Arr(items) => stack.append(items),
         Json::Obj(entries) => stack.extend(std::mem::take(entries).into_values()),
+        // Numeric Ref arrays own no recursive Json children; their Vec drops normally.
+        Json::NodeReferences(_) => {}
         _ => {}
     }
 }
@@ -212,6 +252,7 @@ impl Clone for Json {
             Json::Nat(n) => Json::Nat(*n),
             Json::Str(s) => Json::Str(s.clone()),
             Json::Arr(items) => Json::Arr(items.clone()),
+            Json::NodeReferences(items) => Json::NodeReferences(items.clone()),
             Json::Obj(entries) => Json::Obj(entries.clone()),
         })
     }
@@ -224,6 +265,15 @@ impl PartialEq for Json {
             (Json::Nat(a), Json::Nat(b)) => a == b,
             (Json::Str(a), Json::Str(b)) => a == b,
             (Json::Arr(a), Json::Arr(b)) => a == b,
+            (Json::NodeReferences(a), Json::NodeReferences(b)) => a == b,
+            (Json::NodeReferences(refs), Json::Arr(items))
+            | (Json::Arr(items), Json::NodeReferences(refs)) => {
+                refs.len() == items.len()
+                    && refs
+                        .iter()
+                        .zip(items)
+                        .all(|(index, item)| item.exact_node_reference() == Some(*index))
+            }
             (Json::Obj(a), Json::Obj(b)) => a == b,
             _ => false,
         })
@@ -335,3 +385,82 @@ mod controlled_tests {
 
 #[cfg(test)]
 mod stream_tests;
+
+#[cfg(test)]
+mod reference_array_tests {
+    use super::*;
+    use crate::{
+        control::{CheckFailure, Signal},
+        issue::Issue,
+    };
+    use std::{cell::Cell, rc::Rc};
+    type Failure = CheckFailure<Box<Issue>>;
+    fn plain(indices: &[usize]) -> Json {
+        Json::Arr(
+            indices
+                .iter()
+                .map(|n| Json::obj([("node", Json::str(format!("n{n}")))]))
+                .collect(),
+        )
+    }
+    #[test]
+    fn compact_reference_array_keeps_bytes_order_duplicates_and_json_layout() {
+        for indices in [vec![], vec![0], vec![2, 1, 2, usize::MAX]] {
+            let compact = Json::NodeReferences(indices.clone());
+            let expanded = plain(&indices);
+            assert_eq!(compact, expanded);
+            assert_eq!(expanded, compact);
+            assert_eq!(compact.clone(), compact);
+            assert_eq!(compact.canonical(), expanded.canonical());
+        }
+        assert_ne!(Json::NodeReferences(vec![1, 2]), plain(&[2, 1]));
+        assert_ne!(Json::NodeReferences(vec![1, 1]), plain(&[1]));
+        #[cfg(target_pointer_width = "64")]
+        assert_eq!(std::mem::size_of::<Json>(), 32);
+    }
+    #[test]
+    fn compact_reference_array_does_not_alias_malformed_or_noncanonical_refs() {
+        let compact = Json::NodeReferences(vec![1]);
+        for item in [
+            Json::obj([("node", Json::str("n01"))]),
+            Json::obj([("node", Json::str("n+1"))]),
+            Json::obj([("node", Json::str("n-1"))]),
+            Json::obj([("node", Json::str(format!("n{}0", usize::MAX)))]),
+            Json::obj([("node", Json::Nat(1))]),
+            Json::obj([("node", Json::str("n1")), ("extra", Json::Bool(true))]),
+            Json::str("n1"),
+        ] {
+            let expanded = Json::Arr(vec![item]);
+            assert_ne!(compact, expanded);
+            assert_ne!(expanded, compact);
+        }
+    }
+    #[test]
+    fn compact_reference_encoding_stops_inside_the_array() {
+        let value = Json::NodeReferences(vec![1, 2, 1]);
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let control = Control::new(move |_| {
+            seen.set(seen.get() + 1);
+            None
+        });
+        assert_eq!(
+            value
+                .canonical_controlled::<Failure>(&control, Checkpoint::Expression)
+                .unwrap(),
+            plain(&[1, 2, 1]).canonical()
+        );
+        assert!(count.get() > 3);
+        for at in 1..=count.get() {
+            let mut visits = 0;
+            let control = Control::new(move |_| {
+                visits += 1;
+                (visits == at).then_some(Signal::Term)
+            });
+            assert!(matches!(
+                value.canonical_controlled::<Failure>(&control, Checkpoint::Expression),
+                Err(Failure::Stopped(Signal::Term))
+            ));
+        }
+    }
+}
