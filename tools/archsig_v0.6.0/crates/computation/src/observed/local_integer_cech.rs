@@ -149,7 +149,6 @@ pub(in crate::observed::local_result) fn diagnose(
             Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str(coefficient_name()))]),
             vec![target],
             None,
-            None,
         )?;
         let mut modules = vec![];
         let mut maps = vec![];
@@ -188,7 +187,6 @@ pub(in crate::observed::local_result) fn diagnose(
                 .copied()
                 .chain([diagram.cover])
                 .collect(),
-            None,
             None,
         )?;
         let cycles = wire::module(
@@ -266,7 +264,6 @@ pub(in crate::observed::local_result) fn diagnose(
                 .chain(relation_refs)
                 .collect(),
             None,
-            None,
         )?;
         let inclusion = wire::map(
             &mut b,
@@ -297,7 +294,6 @@ pub(in crate::observed::local_result) fn diagnose(
                 ("projection", projection.wire()),
             ]),
             vec![complex, cycles, boundaries, module, inclusion, projection],
-            None,
             None,
         )?;
         let mut local_sections = vec![];
@@ -378,7 +374,6 @@ pub(in crate::observed::local_result) fn diagnose(
                 ]),
                 vec![space, representative, coordinates],
                 None,
-                None,
             )?;
             class = Some(r);
             let correction = integer_fiber::solve(&differentials[0], levels[0].rank, &cocycle, c)?;
@@ -428,7 +423,6 @@ pub(in crate::observed::local_result) fn diagnose(
                         ("data", Json::Obj(data.into())),
                     ]),
                     vec![maps[0], representative, annihilator, pairing],
-                    None,
                     None,
                 )?);
             }
@@ -513,7 +507,6 @@ pub(in crate::observed::local_result) fn diagnose(
                 .chain(local_sections)
                 .chain(conditions)
                 .collect(),
-            None,
             None,
         )?;
         b.parts[diagnostic.0 - base].reasons = reasons.clone();
@@ -655,7 +648,6 @@ fn gluing(
             .chain([correction, global])
             .chain(rechecks)
             .collect(),
-        None,
         None,
     )
 }

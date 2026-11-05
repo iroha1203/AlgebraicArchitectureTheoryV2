@@ -16,7 +16,7 @@ pub(super) fn project(
                 ("bindings", Json::Arr(vec![Json::obj([
                     ("name", Json::str("subject")), ("value", subject.wire())
                 ])])),
-            ]), [expression,subject].into_iter().chain(p.arguments.iter().copied()).collect(), None, None,
+            ]), [expression,subject].into_iter().chain(p.arguments.iter().copied()).collect(), None,
         )?;
     } else {
     for position in &p.path {
@@ -40,7 +40,6 @@ pub(super) fn project(
             ]),
             vec![expression],
             None,
-            None,
         )?;
     }
     }
@@ -49,7 +48,7 @@ pub(super) fn project(
         if !matches!(ty, Type::Z | Type::Q) || p.support.visible.len() != 1 { return Err(unsupported("アフィン射影の積の像は未実装")); }
         b.push(NodeType::Domain, "domain", Json::obj([
             ("kind", Json::str("type")), ("type", ty.wire())
-        ]), vec![], None, None)?
+        ]), vec![], None)?
     } else {
         let actual = p.values.iter().map(|v| change_result::value(b, v)).collect::<Result<Vec<_>, _>>()?;
         domain(b, &ty, &actual)?
@@ -139,7 +138,6 @@ fn state(
         ]),
         vec![target],
         None,
-        None,
     )?;
     let candidates = b.push(
         NodeType::Construction(T::CandidateSpace),
@@ -160,7 +158,6 @@ fn state(
             .chain(laws.iter().copied())
             .collect(),
         None,
-        None,
     )?;
     let representation = Json::obj([("kind", Json::str("finite")), ("values", refs(&elements))]);
     let semantic = b.push(
@@ -175,7 +172,6 @@ fn state(
             .into_iter()
             .chain(laws.iter().copied())
             .collect(),
-        None,
         None,
     )?;
     let equations = b.push(
@@ -194,7 +190,6 @@ fn state(
             .chain(slot_subjects.iter().copied())
             .collect(),
         None,
-        None,
     )?;
     let equation = b.push(
         NodeType::Construction(T::EquationSolutionSet),
@@ -204,7 +199,6 @@ fn state(
             ("representation", representation),
         ]),
         vec![equations, states],
-        None,
         None,
     )?;
 
@@ -256,7 +250,7 @@ pub(super) fn build(
 ) -> Result<Built, ValidationFailure> {
     let integer_ring = if finite_model.is_some_and(|m| m.affine_equations) {
         Some(b.push(NodeType::Construction(T::Ring), "ring",
-            Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str(integer::coefficient_name()))]), vec![], None, None)?)
+            Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str(integer::coefficient_name()))]), vec![], None)?)
     } else { None };
     let mut supports = vec![global];
     let mut linear_reads = vec![information.map(|i| i.identity(c)).transpose()?];
@@ -375,7 +369,6 @@ pub(super) fn build(
                 .chain(state.subjects.iter().copied())
                 .collect(),
             None,
-            None,
         )?;
         b.parts[context.0 - b.base].scope.merge(local_scope);
         contexts.push(context);
@@ -467,7 +460,6 @@ pub(super) fn build(
                 ]),
                 vec![contexts[v], contexts[w], restriction, equation_restriction],
                 None,
-                None,
             )?;
             arrows.insert((v, w), arrow);
             maps.push(arrow);
@@ -509,7 +501,6 @@ pub(super) fn build(
                 ]),
                 vec![contexts[left], contexts[right], contexts[i], lp, rp],
                 None,
-                None,
             )?);
         }
     }
@@ -549,7 +540,6 @@ pub(super) fn build(
             .chain(overlaps)
             .chain([adequacy])
             .collect(),
-        None,
         None,
     )?;
     let (topology, matching_checks) = topology(b, &supports, &contexts, &maps, cover, &arrows, &patch_indices)?;
@@ -702,7 +692,6 @@ pub(super) fn build(
             .chain(states.iter().filter_map(|s|s.integer.as_ref().map(|x|x.coefficients)))
             .collect(),
         None,
-        None,
     )?;
     Ok(Built {
         integer,
@@ -771,7 +760,6 @@ pub(super) fn topology(
             .copied()
             .chain([cover])
             .collect(),
-        None,
         None,
     )?;
     Ok((topology, matching_checks))

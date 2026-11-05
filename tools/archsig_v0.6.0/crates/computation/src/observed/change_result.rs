@@ -43,14 +43,14 @@ impl PartialEq for Data {
 impl Eq for Data {}
 impl Data {
     pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
-        EvidenceKind::from_wire(&self.part().wire)
+        self.part().evidence_kind()
     }
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
     }
     pub(super) fn is_blocked(&self) -> bool {
         self.part().ty == NodeType::Construction(T::SolutionSet)
-            && self.part().wire == Json::obj([])
+            && self.part().wire_ref() == Some(&Json::obj([]))
     }
     pub(super) fn ty(&self) -> NodeType {
         self.part().ty.clone()
@@ -59,22 +59,23 @@ impl Data {
         self.part().construction
     }
     pub(super) fn wire(&self) -> Json {
-        self.part().wire.clone()
+        self.part().wire()
     }
-    pub(super) fn wire_ref(&self) -> &Json {
-        &self.part().wire
+    pub(super) fn wire_ref(&self) -> Option<&Json> {
+        self.part().wire_ref()
     }
     pub(super) fn arguments(&self) -> Vec<NodeRef> {
         self.part().arguments.clone()
     }
     pub(super) fn completion_uniqueness(&self) -> Option<Decision> {
         if !self.source.parts.iter().any(|part| {
-            part.ty == NodeType::Construction(T::SolutionSet) && part.wire == Json::obj([])
+            part.ty == NodeType::Construction(T::SolutionSet)
+                && part.wire_ref() == Some(&Json::obj([]))
         }) {
             return None;
         }
         self.source.parts.iter().find_map(|part| {
-            if matches!(&part.wire, Json::Obj(fields) if fields.get("predicate") == Some(&Json::str("unique_solution"))) {
+            if matches!(part.wire_ref(), Some(Json::Obj(fields)) if fields.get("predicate") == Some(&Json::str("unique_solution"))) {
                 part.judgment.as_ref().map(|j| j.status)
             } else { None }
         })
@@ -82,9 +83,10 @@ impl Data {
     pub(super) fn conditions(&self) -> Vec<NodeRef> {
         let completion_condition = self.part().ty == NodeType::Proposition
             && self.source.parts.iter().any(|part| {
-                part.ty == NodeType::Construction(T::SolutionSet) && part.wire == Json::obj([])
+                part.ty == NodeType::Construction(T::SolutionSet)
+                    && part.wire_ref() == Some(&Json::obj([]))
             })
-            && matches!(&self.part().wire, Json::Obj(fields) if fields.get("predicate") == Some(&Json::str("constructible")));
+            && matches!(self.part().wire_ref(), Some(Json::Obj(fields)) if fields.get("predicate") == Some(&Json::str("constructible")));
         if !completion_condition
             && !matches!(
                 self.ty(),
@@ -169,7 +171,7 @@ impl Data {
         if !allowed {
             return None;
         }
-        let Json::Obj(wire) = &self.part().wire else {
+        let Some(Json::Obj(wire)) = self.part().wire_ref() else {
             return None;
         };
         let selected = wire.get(field)?;
@@ -193,13 +195,11 @@ pub(super) fn value(b: &mut Builder<'_>, scalar: &Scalar) -> Result<NodeRef, Val
             return Ok(NodeRef(b.base + index));
         }
     }
-    b.push(
+    b.scalar(
         NodeType::Value(scalar.ty()),
         "binding",
-        scalar.wire(),
+        scalar.clone(),
         vec![],
-        Some(scalar.clone()),
-        None,
     )
 }
 pub(super) fn source_expression(
@@ -256,7 +256,6 @@ pub(super) fn source_expression(
             ),
         ]),
         bindings.iter().map(|(_, r)| *r).collect(),
-        None,
         None,
     )
 }
@@ -530,7 +529,6 @@ pub(super) fn render_search(
             Json::Obj(wire.into_iter().map(|(k, v)| (k.into(), v)).collect()),
             args,
             None,
-            None,
         )?);
     }
     let mut guards = vec![];
@@ -653,7 +651,6 @@ pub(super) fn render_search(
             ]),
             points.clone(),
             None,
-            None,
         )?
     };
     let mut slot_values = vec![];
@@ -696,12 +693,11 @@ pub(super) fn render_search(
         ]),
         state_args,
         None,
-        None,
     )?;
     let mut state_order = BTreeMap::new();
     for state in states {
         c.checkpoint(Checkpoint::PrimitiveValuation)?;
-        state_order.insert(b.parts[state.0 - base].wire.canonical(), state);
+        state_order.insert(b.parts[state.0 - base].wire().canonical(), state);
     }
     let states = state_order.into_values().collect::<Vec<_>>();
     let state_domain = if let Some(linear) = &linear_parts {
@@ -716,7 +712,6 @@ pub(super) fn render_search(
                 ("elements", refs(&states)),
             ]),
             states.clone(),
-            None,
             None,
         )?
     };
@@ -736,7 +731,6 @@ pub(super) fn render_search(
                 ("pairs", Json::Arr(pairs)),
             ]),
             action_args,
-            None,
             None,
         )?
     };
@@ -780,7 +774,6 @@ pub(super) fn render_search(
         ]),
         domain_args,
         None,
-        None,
     )?;
     // 検査済み全候補表の再計算が全域性を担う。出力に各試行のtraceを複製しない。
     let certificate = if let Some(linear) = &linear_parts {
@@ -801,7 +794,6 @@ pub(super) fn render_search(
                 ),
             ]),
             vec![domain, parameters],
-            None,
             None,
         )?
     };
@@ -830,7 +822,6 @@ pub(super) fn render_search(
             ("representation", representation),
         ]),
         solution_args,
-        None,
         None,
     )?;
     let mut status = if solutions.is_empty() {
@@ -890,7 +881,6 @@ pub(super) fn render_search(
                     Json::obj([("domain", domain.wire()), ("entries", Json::Arr(entries))]),
                     args,
                     None,
-                    None,
                 )?;
                 membership.push(b.proposition(
                     "solution_member",
@@ -922,7 +912,6 @@ pub(super) fn render_search(
                     ),
                 ]),
                 args,
-                None,
                 None,
             )?;
             let unequal = b.proposition("equal", witnesses, vec![counter], Decision::Refuted)?;
@@ -983,7 +972,6 @@ pub(super) fn render_search(
                 "assignment",
                 Json::obj([("domain", domain.wire()), ("entries", Json::Arr(entries))]),
                 args,
-                None,
                 None,
             )?;
             let member = b.proposition(
@@ -1108,7 +1096,6 @@ pub(super) fn render_search(
                 original_wire,
                 args,
                 None,
-                None,
             )?;
             let mut args = vec![domain, set, parameters, object, claim];
             args.extend(&conditions);
@@ -1124,7 +1111,6 @@ pub(super) fn render_search(
                     ("rechecks", refs(&conditions)),
                 ]),
                 args,
-                None,
                 None,
             )?;
             outputs.insert("repair".into(), repair);
@@ -1361,7 +1347,7 @@ pub(super) fn architecture_overrides(
     if part.ty != NodeType::Construction(T::Architecture) {
         return Err(internal!("修復対象がArchitectureでない").into());
     }
-    let Json::Obj(wire) = &part.wire else {
+    let Some(Json::Obj(wire)) = part.wire_ref() else {
         return Err(internal!("修復対象のrecordがない").into());
     };
     let Some(Json::Arr(rows)) = wire.get("overrides") else {

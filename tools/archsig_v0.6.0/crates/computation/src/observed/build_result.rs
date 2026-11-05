@@ -40,11 +40,14 @@ fn parameters(v: &[(String, Type)]) -> Json {
     )
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug)]
 pub(super) struct Part {
     pub(super) ty: NodeType,
     pub(super) construction: &'static str,
-    pub(super) wire: Json,
+    // Canonical Scalar is the typed source of truth. Path additionally retains
+    // its existing typed-Ref display; JSON-only parts retain their record.
+    // The private field prevents callers from changing the representation's presence.
+    wire: Option<Json>,
     pub(super) arguments: Vec<NodeRef>,
     pub(super) support: Vec<Fact>,
     pub(super) scope: Scope,
@@ -53,6 +56,116 @@ pub(super) struct Part {
     pub(super) evidence: Vec<NodeRef>,
     pub(super) scalar: Option<Scalar>,
     pub(super) domain_type: Option<Type>,
+}
+impl PartialEq for Part {
+    fn eq(&self, other: &Self) -> bool {
+        self.ty == other.ty
+            && self.construction == other.construction
+            && self.wire == other.wire
+            && self.arguments == other.arguments
+            && self.support == other.support
+            && self.scope == other.scope
+            && self.reasons == other.reasons
+            && self.judgment == other.judgment
+            && self.evidence == other.evidence
+            && self.scalar == other.scalar
+            && self.domain_type == other.domain_type
+            && match (&self.scalar, &other.scalar, &self.wire, &other.wire) {
+                (Some(a), Some(b), None, None) => same_scalar_wire(a, b),
+                _ => true,
+            }
+    }
+}
+impl Eq for Part {}
+
+// Source reconstruction previously compared both Scalar's semantic Eq and its
+// saved JSON. Set/Map Eq ignores order, but their public arrays preserve it.
+// Compare the wire information directly, including nested arrays, without
+// retaining or rebuilding JSON for the ordinary same-variant case.
+fn same_scalar_wire(a: &Scalar, b: &Scalar) -> bool {
+    fn items(a: &[Scalar], b: &[Scalar]) -> bool {
+        a.len() == b.len() && a.iter().zip(b).all(|(a, b)| same_scalar_wire(a, b))
+    }
+    use Scalar as S;
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || match (a, b) {
+        (S::Map { pairs: a, .. }, S::Map { pairs: b, .. }) => {
+            a.len() == b.len()
+                && a.iter().zip(b).all(|((ak, av), (bk, bv))| {
+                    same_scalar_wire(ak, bk) && same_scalar_wire(av, bv)
+                })
+        }
+        (S::List { items: a, .. }, S::List { items: b, .. })
+        | (S::Set { items: a, .. }, S::Set { items: b, .. })
+        | (S::Tuple(a), S::Tuple(b)) => items(a, b),
+        (S::Option { value: a, .. }, S::Option { value: b, .. }) => match (a, b) {
+            (None, None) => true,
+            (Some(a), Some(b)) => same_scalar_wire(a, b),
+            _ => false,
+        },
+        (
+            S::Data {
+                constructor: ac,
+                args: a,
+                ..
+            },
+            S::Data {
+                constructor: bc,
+                args: b,
+                ..
+            },
+        ) => ac.short() == bc.short() && items(a, b),
+        (S::Term(a), S::Term(b)) => {
+            a.body == b.body
+                && a.params.len() == b.params.len()
+                && a.params
+                    .iter()
+                    .zip(&b.params)
+                    .all(|((a, _), (b, _))| a == b)
+        }
+        (
+            S::Subject {
+                snapshot: a,
+                subject: b,
+                ..
+            },
+            S::Subject {
+                snapshot: c,
+                subject: d,
+                ..
+            },
+        ) => a == c && b == d,
+        (S::Fp { value: a, .. }, S::Fp { value: b, .. }) => a == b,
+        (S::Unit, S::Unit) => true,
+        (S::Text(a), S::Text(b)) => a == b,
+        (S::Z(a), S::Z(b)) => a == b,
+        (S::Q(a, b), S::Q(c, d)) => a == c && b == d,
+        (S::Bool(a), S::Bool(b)) => a == b,
+        // Path-containing bindings reuse an existing typed node before Part creation.
+        (S::Path(a), S::Path(b)) => a == b,
+        // Distinct Scalar variants can share JSON shapes. Preserve the old exact
+        // predicate even for malformed mixed children, rather than tightening it.
+        _ => a.wire() == b.wire(),
+    })
+}
+impl Part {
+    pub(super) fn wire(&self) -> Json {
+        match (&self.scalar, &self.wire) {
+            (Some(scalar), None) => scalar.wire(),
+            (None, Some(wire)) | (Some(Scalar::Path(_)), Some(wire)) => wire.clone(),
+            _ => unreachable!(
+                "Builder が作る Part は canonical Scalar / JSON / typed Path 表示のいずれかを保持する"
+            ),
+        }
+    }
+    pub(super) fn wire_ref(&self) -> Option<&Json> {
+        self.wire.as_ref()
+    }
+    pub(super) fn wire_mut(&mut self) -> Option<&mut Json> {
+        self.wire.as_mut()
+    }
+    pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
+        self.wire_ref().and_then(EvidenceKind::from_wire)
+    }
 }
 #[derive(Debug)]
 pub(super) struct Source {
@@ -74,7 +187,7 @@ impl PartialEq for Data {
 impl Eq for Data {}
 impl Data {
     pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
-        EvidenceKind::from_wire(&self.part().wire)
+        self.part().evidence_kind()
     }
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
@@ -86,7 +199,7 @@ impl Data {
         self.part().construction
     }
     pub(super) fn wire(&self) -> Json {
-        self.part().wire.clone()
+        self.part().wire()
     }
     pub(super) fn arguments(&self) -> Vec<NodeRef> {
         self.part().arguments.clone()
@@ -130,6 +243,44 @@ impl Builder<'_> {
         ty: NodeType,
         construction: &'static str,
         wire: Json,
+        arguments: Vec<NodeRef>,
+        decision: Option<Decision>,
+    ) -> Result<NodeRef, ValidationFailure> {
+        self.push_part(ty, construction, Some(wire), arguments, None, decision)
+    }
+    pub(super) fn scalar(
+        &mut self,
+        ty: NodeType,
+        construction: &'static str,
+        scalar: Scalar,
+        arguments: Vec<NodeRef>,
+    ) -> Result<NodeRef, ValidationFailure> {
+        self.push_part(ty, construction, None, arguments, Some(scalar), None)
+    }
+    // Path rendering uses typed existing references, not Scalar::wire().
+    pub(super) fn path(
+        &mut self,
+        path: super::path_value::PathValue,
+        wire: Json,
+        arguments: Vec<NodeRef>,
+    ) -> Result<NodeRef, ValidationFailure> {
+        let scalar = Scalar::Path(Box::new(path));
+        self.push_part(
+            NodeType::Value(scalar.ty()),
+            "binding",
+            Some(wire),
+            arguments,
+            Some(scalar),
+            None,
+        )
+    }
+    // The three entry points above fix the representation. Metadata,
+    // dependency checks and checkpoint order remain common to all three.
+    fn push_part(
+        &mut self,
+        ty: NodeType,
+        construction: &'static str,
+        wire: Option<Json>,
         mut arguments: Vec<NodeRef>,
         scalar: Option<Scalar>,
         decision: Option<Decision>,
@@ -200,7 +351,6 @@ impl Builder<'_> {
             ]),
             args,
             None,
-            None,
         )
     }
     pub(super) fn proposition(
@@ -216,18 +366,17 @@ impl Builder<'_> {
             "proposition",
             Json::Arr(vec![]),
             arguments,
-            None,
             Some(status),
         )?;
         let p = &mut self.parts[r.0 - self.base];
-        p.wire = Json::obj([
+        p.wire = Some(Json::obj([
             ("predicate", Json::str(predicate)),
             ("operands", refs(&operands)),
             (
                 "quantifiers",
                 Json::Arr(p.scope.quantifiers.iter().map(Quantifier::wire).collect()),
             ),
-        ]);
+        ]));
         Ok(r)
     }
 }
@@ -470,7 +619,6 @@ fn compute_inner(
                     ]),
                     inputs.clone(),
                     None,
-                    None,
                 )?;
                 inputs.push(proof);
                 evidence.push(proof);
@@ -533,13 +681,11 @@ fn compute_inner(
                 let value = case
                     .when
                     .map(|value| {
-                        b.push(
+                        b.scalar(
                             NodeType::Value(Type::Bool),
                             "binding",
-                            Json::Bool(value),
+                            Scalar::Bool(value),
                             vec![case.epsilon, case.evaluation],
-                            Some(Scalar::Bool(value)),
-                            None,
                         )
                     })
                     .transpose()?;
@@ -572,7 +718,6 @@ fn compute_inner(
                         .chain(value)
                         .collect(),
                     None,
-                    None,
                 )?;
                 let soundness = b.proposition(
                     "circuit_sound",
@@ -601,7 +746,6 @@ fn compute_inner(
                         soundness,
                     ],
                     None,
-                    None,
                 )?);
             }
             let mut args = cases.clone();
@@ -616,7 +760,6 @@ fn compute_inner(
                     ("cases", refs(&cases)),
                 ]),
                 args,
-                None,
                 None,
             )?);
         }
@@ -655,13 +798,11 @@ fn compute_inner(
     }
     dependencies.extend(compatibility.iter().copied());
     dependencies.extend(circuits.iter().copied());
-    let label = b.push(
+    let label = b.scalar(
         NodeType::Value(Type::Text),
         "binding",
-        Json::str("object_algebra"),
+        Scalar::Text("object_algebra".into()),
         vec![plan.architecture.reference],
-        Some(Scalar::Text("object_algebra".into())),
-        None,
     )?;
     let mut operands = vec![label];
     operands.extend(dependencies.iter().copied());
@@ -783,7 +924,6 @@ fn compute_inner(
                 ("signature", refs(&signature)),
             ]),
             dependencies,
-            None,
             None,
         )?;
         outputs.insert("algebra".into(), algebra);
@@ -1059,3 +1199,6 @@ impl super::result_kind::ResultKind for Data {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod scalar_wire_tests;

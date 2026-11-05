@@ -9,7 +9,7 @@ pub(super) fn record(
     g: &Graph,
     r: NodeRef,
 ) -> Result<&archsig_common::canonical::JsonObject, ValidationFailure> {
-    let Json::Obj(fields) = &local(g, r)?.part().wire else {
+    let Some(Json::Obj(fields)) = local(g, r)?.part().wire_ref() else {
         return Err(internal!("整数診断のレコードがない").into());
     };
     Ok(fields)
@@ -245,7 +245,6 @@ fn quotient_module(
         ]),
         arguments,
         None,
-        None,
     )?;
     Ok((module, q))
 }
@@ -395,7 +394,6 @@ pub(super) fn compare(
             .into_iter()
             .chain(components.iter().copied())
             .collect(),
-        None,
         None,
     )?;
     let ls = field(g, left, "space")?;
@@ -567,7 +565,6 @@ pub(super) fn compare(
             .into_iter()
             .chain(conditions)
             .collect(),
-        None,
         None,
     )?;
     let claim = b.proposition("diagnostics_preserved", vec![comparison], vec![], status)?;

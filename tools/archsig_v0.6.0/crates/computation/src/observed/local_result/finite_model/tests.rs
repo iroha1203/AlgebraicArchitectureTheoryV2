@@ -176,3 +176,73 @@ fn finite_fiber_stop_is_not_a_completed_factorization() {
     ));
     assert_eq!(seen.get(), 3);
 }
+
+#[test]
+fn finite_summary_inhabitation_is_rechecked_from_both_complete_state_tables() {
+    let control = Control::unlimited();
+    let normal = crate::observed::evaluate_observed_bytes(
+        nested_inputs(),
+        &[
+            "b=build(Nested,on=@v/s)",
+            "l=localize($b.object,using=Nested.choose)",
+        ],
+        &control,
+    )
+    .unwrap();
+    let source = normal
+        .nodes
+        .iter()
+        .find_map(|node| match &node.payload {
+            Some(Payload::Construction(value)) => match &value.data {
+                D::Local(data)
+                    if data
+                        .source
+                        .system
+                        .as_ref()
+                        .is_some_and(|system| system.finite.is_some()) =>
+                {
+                    Some(data.source.clone())
+                }
+                _ => None,
+            },
+            _ => None,
+        })
+        .unwrap();
+    let base = source.base;
+    let env = Environment::with_prepared(&normal.prepared, &control).unwrap();
+    let mut graph = Graph::new(&control);
+    graph.requests = normal.prepared.requests().requests().to_vec();
+    graph.frames = normal.frames.clone();
+    graph.iterations = normal.iterations.clone();
+    graph.instances = normal.instances.clone();
+    graph.cases = normal.cases.clone();
+    graph.universal_witnesses = normal.universal_witnesses.clone();
+    graph.checked_answers.push((0, normal.answers[0].clone()));
+    for (node, context) in normal.nodes.iter().zip(&normal.contexts).take(base) {
+        graph.active = *context;
+        env.validate(&graph, node).unwrap();
+        graph.push(node.clone()).unwrap();
+    }
+    graph.active = normal.contexts[base];
+    let value = |source: Arc<super::super::Source>| ConstructionValue {
+        witness: Witness::Architecture(source.witness.clone()),
+        data: D::Local(super::super::Data { source, index: 0 }),
+    };
+    env.recheck_local(&graph, &value(source), base).unwrap();
+    let request = &normal.prepared.requests().requests()[1];
+    for equation in [false, true] {
+        let mut altered = super::super::compute(&env, &graph, request, base, &control).unwrap();
+        let finite = altered.system.as_mut().unwrap().finite.as_mut().unwrap();
+        let side = if equation {
+            finite.equation.as_mut().unwrap()
+        } else {
+            &mut finite.semantic
+        };
+        side.inhabited = !side.inhabited;
+        // A fresh source identity must be checked against independently rebuilt parts/system.
+        assert!(
+            env.recheck_local(&graph, &value(Arc::new(altered)), base)
+                .is_err()
+        );
+    }
+}

@@ -90,7 +90,6 @@ fn update_expression(
         ]),
         vec![source],
         None,
-        None,
     )
 }
 fn guard_expression(
@@ -125,7 +124,6 @@ fn guard_expression(
             ("bindings", Json::Arr(vec![])),
         ]),
         vec![base],
-        None,
         None,
     )
 }
@@ -170,7 +168,6 @@ fn example(
             ),
         ]),
         args,
-        None,
         None,
     )
 }
@@ -644,7 +641,6 @@ pub(super) fn retain(
         ]),
         first_values,
         None,
-        None,
     )?;
     b.parts[first_domain.0 - b.base].domain_type = Some(params[0][0].ty.erase());
     if !instance_bijection {
@@ -889,7 +885,7 @@ pub(super) fn retain(
             })
             .collect::<Vec<_>>();
         part.scope.quantifiers.extend(quantifiers.iter().cloned());
-        if let Json::Obj(wire) = &mut part.wire {
+        if let Some(Json::Obj(wire)) = part.wire_mut() {
             wire.insert(
                 "quantifiers".into(),
                 Json::Arr(quantifiers.iter().map(Quantifier::wire).collect()),
@@ -934,7 +930,6 @@ pub(super) fn retain(
                 ("clauses", Json::Arr(clauses)),
             ]),
             all,
-            None,
             None,
         )?,
     );

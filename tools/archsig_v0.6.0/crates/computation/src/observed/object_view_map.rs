@@ -80,13 +80,11 @@ pub(super) fn counterexample(
     let mut bindings = vec![];
     let mut dependencies = inputs.to_vec();
     for (name, value) in &example.bindings {
-        let r = b.push(
+        let r = b.scalar(
             NodeType::Value(value.ty()),
             "binding",
-            value.wire(),
+            value.clone(),
             inputs.to_vec(),
-            Some(value.clone()),
-            None,
         )?;
         dependencies.push(r);
         bindings.push(Json::obj([
@@ -108,13 +106,11 @@ pub(super) fn counterexample(
         } else {
             value.clone()
         };
-        let r = b.push(
+        let r = b.scalar(
             NodeType::Value(ty.clone()),
             "binding",
-            value.wire(),
+            value,
             inputs.to_vec(),
-            Some(value),
-            None,
         )?;
         dependencies.push(r);
         values.push(r);
@@ -142,7 +138,6 @@ pub(super) fn counterexample(
             ),
         ]),
         dependencies,
-        None,
         None,
     )
 }
@@ -228,7 +223,7 @@ pub(super) fn quantify_parameters(
     }
     // Scopeは元評価の全域を保持する。命題のbinderは元parameterだけであり、
     // 先parameterはDeclarationPairの位置対応で束縛する。独立には量化しない。
-    if let Json::Obj(wire) = &mut p.wire {
+    if let Some(Json::Obj(wire)) = p.wire_mut() {
         wire.insert(
             "quantifiers".into(),
             Json::Arr(quantifiers.iter().map(Quantifier::wire).collect()),
@@ -255,7 +250,7 @@ fn inverse(
         context: None,
     };
     p.scope.quantifiers.push(q.clone());
-    p.wire = Json::obj([
+    *p.wire_mut().ok_or(internal!("逆写像命題のrecordがない"))? = Json::obj([
         ("predicate", Json::str("inverse_maps")),
         (
             "operands",
@@ -330,13 +325,11 @@ fn finite_action(
                     subject: fact.subject.clone(),
                     entity: entity.into(),
                 };
-                refs.push(b.push(
+                refs.push(b.scalar(
                     NodeType::Value(value.ty()),
                     "binding",
-                    value.wire(),
+                    value,
                     dependencies.to_vec(),
-                    Some(value),
-                    None,
                 )?);
             }
             action.subjects.push((refs[0], refs[1]));
@@ -353,13 +346,11 @@ fn reject_equivalence(
     types: [&Type; 2],
     origin: NodeRef,
 ) -> Result<(), ValidationFailure> {
-    let label = b.push(
+    let label = b.scalar(
         NodeType::Value(Type::Text),
         "binding",
-        Json::str("value_equivalence"),
+        Scalar::Text("value_equivalence".into()),
         vec![origin],
-        Some(Scalar::Text("value_equivalence".into())),
-        None,
     )?;
     let mut args = vec![label];
     for ty in types {
@@ -368,7 +359,6 @@ fn reject_equivalence(
             "domain",
             Json::obj([("kind", Json::str("type")), ("type", ty.wire())]),
             vec![origin],
-            None,
             None,
         )?);
     }
@@ -390,7 +380,6 @@ fn equivalence(
             "domain",
             Json::obj([("kind", Json::str("type")), ("type", ty.wire())]),
             vec![origin],
-            None,
             None,
         )?);
     }
@@ -443,7 +432,6 @@ fn equivalence(
                     .chain(subjects.iter().flat_map(|(a, z)| [*a, *z]))
                     .collect(),
                 None,
-                None,
             )?,
         );
     }
@@ -466,7 +454,6 @@ fn equivalence(
             .chain(maps.iter().copied())
             .chain([left, right])
             .collect(),
-        None,
         None,
     )?;
     Ok((r, maps[0]))
@@ -812,14 +799,7 @@ pub(super) fn retain(
         let mut selected_values = vec![];
         for r in [axis.signature, target_signature] {
             let v = Scalar::Bool(selected(b.g, r)?);
-            selected_values.push(b.push(
-                NodeType::Value(Type::Bool),
-                "binding",
-                v.wire(),
-                vec![r],
-                Some(v),
-                None,
-            )?);
+            selected_values.push(b.scalar(NodeType::Value(Type::Bool), "binding", v, vec![r])?);
         }
         let selected = proposition(
             b,
@@ -845,7 +825,6 @@ pub(super) fn retain(
                         .copied()
                         .chain([axis.invariant, target_invariant, values])
                         .collect(),
-                    None,
                     None,
                 )?,
             );

@@ -98,7 +98,6 @@ pub(in crate::observed::local_result) fn certificate(
         Json::obj([("kind", Json::str(kind)), ("data", data)]),
         args,
         None,
-        None,
     )?;
     Ok((equations, certificate))
 }

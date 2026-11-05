@@ -66,10 +66,10 @@ fn finite_owner_completion_recheck_regenerates_missing_duplicate_assignment_and_
         panic!("change")
     };
     let old = &data.source;
-    let cert=old.parts.iter().position(|p| matches!(&p.wire,Json::Obj(fields) if fields.get("kind")==Some(&Json::str("completion_fibers")))).unwrap();
+    let cert=old.parts.iter().position(|p| matches!(p.wire_ref(),Some(Json::Obj(fields)) if fields.get("kind")==Some(&Json::str("completion_fibers")))).unwrap();
     for mode in 0..4 {
         let mut parts = old.parts.clone();
-        let data = field(&mut parts[cert].wire, "data");
+        let data = field(parts[cert].wire_mut().unwrap(), "data");
         if mode == 3 {
             *field(data, "request") = Json::str("different_request");
         } else {

@@ -196,7 +196,6 @@ pub(super) fn diagnose(
                 .chain(laws.iter().copied())
                 .collect(),
             None,
-            None,
         )?;
         fiber_refs.push(fiber);
         fibers.push(Json::obj([
@@ -223,9 +222,8 @@ pub(super) fn diagnose(
             .chain(fiber_refs)
             .collect(),
         None,
-        None,
     )?;
-    let status = if degree == 0 || !selected.values.is_empty() {
+    let status = if degree == 0 || selected.inhabited {
         Decision::Established
     } else {
         Decision::Refuted
@@ -233,7 +231,7 @@ pub(super) fn diagnose(
     let mut outputs = BTreeMap::from([("diagnostic".into(), diagnostic)]);
     let mut evidence = vec![];
     let claim = if degree == 1 {
-        if selected.values.is_empty() {
+        if !selected.inhabited {
             evidence.push(
                 b.push(
                     NodeType::Evidence,
@@ -252,7 +250,6 @@ pub(super) fn diagnose(
                     std::iter::once(selected.all)
                         .chain(laws.iter().copied())
                         .collect(),
-                    None,
                     None,
                 )?,
             );

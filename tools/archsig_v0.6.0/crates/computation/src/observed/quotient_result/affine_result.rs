@@ -147,7 +147,6 @@ pub(super) fn compute(
         },
         vec![reference, expression],
         None,
-        None,
     )?;
     let mut descent = None;
     let mut evidence = vec![];
@@ -170,7 +169,6 @@ pub(super) fn compute(
                 ("pairs", Json::Arr(vec![])),
             ]),
             vec![source, classes],
-            None,
             None,
         )?;
         if let Some(law) = &image.law {
@@ -198,7 +196,6 @@ pub(super) fn compute(
                 ]),
                 vec![classes, target],
                 None,
-                None,
             )?);
         }
         (
@@ -213,7 +210,6 @@ pub(super) fn compute(
             "ring",
             Json::obj([("kind", Json::str("scalar")), ("scalar", ty.wire())]),
             vec![],
-            None,
             None,
         )?;
         let original = linear::module(&mut b, ring, image.origin.len(), "free", vec![reference])?;
@@ -248,7 +244,7 @@ pub(super) fn compute(
             (actual_image, image_generators),
             (kernel, kernel_generators),
         ] {
-            let Json::Obj(wire) = &mut b.parts[r.0 - base].wire else {
+            let Some(Json::Obj(wire)) = b.parts[r.0 - base].wire_mut() else {
                 return Err(internal!("アフィン商の加群がrecordでない").into());
             };
             wire.insert("generators".into(), Json::Arr(generators));
@@ -271,7 +267,6 @@ pub(super) fn compute(
             ]),
             vec![source, ambient_domain, map, offset, embedding, origin],
             None,
-            None,
         )?;
         let classes = b.push(
             NodeType::Domain,
@@ -282,7 +277,6 @@ pub(super) fn compute(
                 ("source", reference.wire()),
             ]),
             vec![view, reference],
-            None,
             None,
         )?;
         let projection = b.push(
@@ -305,7 +299,6 @@ pub(super) fn compute(
                 inclusion,
                 image_inclusion,
             ],
-            None,
             None,
         )?;
         if image.law.is_some() {
@@ -371,13 +364,12 @@ pub(super) fn compute(
         ]),
         args,
         None,
-        None,
     )?;
     let mut status = Decision::Established;
     let mut outputs = BTreeMap::from([("quotient".into(), quotient)]);
     let mut claim = None;
     if let Some(law) = &image.law {
-        let Json::Obj(wire) = &mut b.parts[quotient.0 - base].wire else {
+        let Some(Json::Obj(wire)) = b.parts[quotient.0 - base].wire_mut() else {
             return Err(internal!("アフィン商のrecordがない").into());
         };
         wire.insert("law".into(), Json::str(&law.name));
@@ -530,7 +522,6 @@ fn law_descent(
                 .chain(evaluations.iter().copied())
                 .collect(),
             None,
-            None,
         )?;
         return Ok((None, vec![evidence], evaluations));
     }
@@ -551,7 +542,6 @@ fn law_descent(
             "domain",
             Json::obj([("kind", Json::str("type")), ("type", family_type.wire())]),
             vec![expression],
-            None,
             None,
         )?;
         let mut arguments = vec![classes, target, actual_image, expression];
@@ -627,7 +617,6 @@ fn law_descent(
             ]),
             arguments,
             None,
-            None,
         )?;
         return Ok((Some(map), vec![], vec![]));
     }
@@ -680,7 +669,7 @@ fn law_descent(
             ]));
         }
     }
-    let Json::Obj(wire) = &mut b.parts[family.0 - b.base].wire else {
+    let Some(Json::Obj(wire)) = b.parts[family.0 - b.base].wire_mut() else {
         return Err(internal!("アフィン商の評価族加群がrecordでない").into());
     };
     wire.insert("generators".into(), Json::Arr(generators));
@@ -706,7 +695,6 @@ fn law_descent(
             ("offset", offset.wire()),
         ]),
         vec![classes, target, linear, offset, expression],
-        None,
         None,
     )?;
     Ok((Some(descent), vec![], vec![]))

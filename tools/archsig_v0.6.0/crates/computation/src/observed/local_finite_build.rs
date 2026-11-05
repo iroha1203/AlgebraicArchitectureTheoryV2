@@ -107,7 +107,6 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
                         .chain(bindings.iter().map(|(_, r)| *r))
                         .collect(),
                     None,
-                    None,
                 )?,
             );
         }
@@ -206,7 +205,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
                         ("name", Json::str("subject")), ("value", subject_ref.wire())
                     ])])),
                 ]),
-                vec![subject_ref], None, None,
+                vec![subject_ref], None,
             )?;
             let mut image_values = vec![];
             for point in &model.points {
@@ -423,7 +422,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
     let inhabited = built
         .finite
         .as_ref()
-        .is_some_and(|f| !f.semantic.values.is_empty());
+        .is_some_and(|f| f.semantic.inhabited);
     let diagrams = split_diagram(built.integer);
     Ok(Source {
         base,

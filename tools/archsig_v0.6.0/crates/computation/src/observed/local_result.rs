@@ -65,7 +65,7 @@ impl PartialEq for Data {
 impl Eq for Data {}
 impl Data {
     pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
-        EvidenceKind::from_wire(&self.part().wire)
+        self.part().evidence_kind()
     }
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
@@ -94,10 +94,10 @@ impl Data {
         self.part().construction
     }
     pub(super) fn wire(&self) -> Json {
-        self.part().wire.clone()
+        self.part().wire()
     }
-    pub(super) fn wire_ref(&self) -> &Json {
-        &self.part().wire
+    pub(super) fn wire_ref(&self) -> Option<&Json> {
+        self.part().wire_ref()
     }
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
         (self.part().support.clone(), self.part().scope.clone())
@@ -132,7 +132,7 @@ impl Data {
         if self.ty() != NodeType::Construction(T::Module) {
             return None;
         }
-        let Json::Obj(fields) = &self.part().wire else {
+        let Some(Json::Obj(fields)) = self.part().wire_ref() else {
             return None;
         };
         match path {
@@ -203,7 +203,7 @@ impl Data {
         if !allowed {
             return None;
         }
-        let Json::Obj(wire) = &self.part().wire else {
+        let Some(Json::Obj(wire)) = self.part().wire_ref() else {
             return None;
         };
         self.part()
@@ -237,7 +237,6 @@ pub(super) fn domain(
         ]),
         items.to_vec(),
         None,
-        None,
     )
 }
 fn state_map(
@@ -267,7 +266,6 @@ fn state_map(
             .chain([to])
             .chain(pairs.iter().flat_map(|(a, b)| [*a, *b]))
             .collect(),
-        None,
         None,
     )
 }
@@ -651,11 +649,10 @@ fn compute(
                     .chain(bindings.iter().map(|(_, r)| *r))
                     .collect(),
                 None,
-                None,
             )?;
             if let Some(guard) = guard_expression {
                 let part = &mut b.parts[law.0 - base];
-                if let Json::Obj(wire) = &mut part.wire {
+                if let Some(Json::Obj(wire)) = part.wire_mut() {
                     wire.insert("guard".into(), guard.wire());
                 }
                 part.arguments.push(guard);
@@ -1011,9 +1008,8 @@ fn diagnose(
             let expression = b.push(
                 original.ty.clone(),
                 original.construction,
-                original.wire.clone(),
+                original.wire(),
                 original.arguments.iter().copied().chain([target]).collect(),
-                None,
                 None,
             )?;
             (vec![expression], b.parts[0].scope.clone())
@@ -1135,7 +1131,6 @@ fn diagnose(
         ]),
         vec![target, matching, global, restriction],
         None,
-        None,
     )?;
     let mut evidence = vec![];
     if degree == 1 && !system.inhabited {
@@ -1158,7 +1153,6 @@ fn diagnose(
                     .into_iter()
                     .chain(system.laws.iter().copied())
                     .collect(),
-                None,
                 None,
             )?,
         );

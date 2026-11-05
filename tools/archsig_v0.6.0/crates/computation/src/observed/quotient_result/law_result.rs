@@ -54,13 +54,11 @@ fn evaluation(
         ),
     ]);
     if let Some(residual) = residual {
-        let residual = b.push(
+        let residual = b.scalar(
             NodeType::Value(residual.ty()),
             "evaluation",
-            residual.wire(),
+            residual.clone(),
             children.to_vec(),
-            Some(residual.clone()),
-            None,
         )?;
         part.insert("residual".into(), residual.wire());
         arguments.push(residual);
@@ -77,7 +75,6 @@ fn evaluation(
         "evaluation",
         Json::Obj(wire.into()),
         arguments,
-        None,
         None,
     )
 }
@@ -150,7 +147,6 @@ pub(super) fn row(
         "architecture",
         Json::Obj(wire),
         arguments,
-        None,
         None,
     )?;
     let Signature::Law { body, guard, .. } =
@@ -242,7 +238,7 @@ pub(super) fn row(
             part.arguments.extend([guard_evaluation, guard_value]);
             part.arguments.sort_by_key(|r| r.0);
             part.arguments.dedup();
-            let Json::Obj(wire) = &mut part.wire else {
+            let Some(Json::Obj(wire)) = part.wire_mut() else {
                 unreachable!()
             };
             let Some(Json::Arr(parts)) = wire.get_mut("parts") else {

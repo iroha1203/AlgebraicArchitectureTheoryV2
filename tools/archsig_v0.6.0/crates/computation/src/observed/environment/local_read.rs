@@ -981,7 +981,6 @@ fn affine_read_image(
         ]),
         vec![],
         None,
-        None,
     )?;
     let source_module = wire::module(b, ring, slots.len(), "free", vec![expression])?;
     let parameters = wire::domain(b, source_module)?;
@@ -1041,7 +1040,6 @@ fn affine_read_image(
             .chain(fixed_refs)
             .collect(),
         None,
-        None,
     )?;
     let origin = scalar_wire::vector(
         b,
@@ -1076,7 +1074,6 @@ fn affine_read_image(
         ]),
         vec![space, origin, source_module, embedding],
         None,
-        None,
     )?;
     let source = b.push(
         NodeType::Domain,
@@ -1087,14 +1084,12 @@ fn affine_read_image(
         ]),
         vec![solutions],
         None,
-        None,
     )?;
     let target_domain = b.push(
         NodeType::Domain,
         "domain",
         Json::obj([("kind", Json::str("type")), ("type", read_type.wire())]),
         vec![],
-        None,
         None,
     )?;
     let target_module = wire::module(b, ring, offset.len(), "free", vec![expression])?;
@@ -1112,7 +1107,6 @@ fn affine_read_image(
         ]),
         vec![source, target_domain, linear, offset],
         None,
-        None,
     )?;
     let image = b.push(
         NodeType::Domain,
@@ -1123,7 +1117,6 @@ fn affine_read_image(
             ("source", solutions.wire()),
         ]),
         vec![map, solutions],
-        None,
         None,
     )?;
     Ok((image, slots, matrix))
@@ -1202,7 +1195,6 @@ pub(in crate::observed) fn materialize_positions(
             ]),
             vec![subject_ref],
             None,
-            None,
         )?;
         out.arguments.push(expression);
         let read = env.scoped_field(
@@ -1220,7 +1212,6 @@ pub(in crate::observed) fn materialize_positions(
                 "domain",
                 Json::obj([("kind", Json::str("type")), ("type", ty.wire())]),
                 vec![],
-                None,
                 None,
             )?
         } else if let Some(value) = read.known_value {
@@ -1596,7 +1587,6 @@ fn materialize_instance(
                         "domain",
                         Json::obj([("kind", Json::str("type")), ("type", ty.wire())]),
                         vec![],
-                        None,
                         None,
                     )?
                 } else {
