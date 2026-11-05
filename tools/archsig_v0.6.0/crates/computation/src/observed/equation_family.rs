@@ -226,15 +226,14 @@ pub(super) fn validate_node(g: &Graph, n: &Node, data: &Data) -> Result<(), Vali
         return Err(internal!("EquationFamilyの元Architectureがない").into());
     };
     let current = native::architecture_origin(g, data.source.layout.data.architecture, 0)?;
-    let (support, scope) = data.metadata();
     if !Arc::ptr_eq(a, current)
         || !Arc::ptr_eq(a, &data.source.architecture)
         || data.output != data.source.output
         || n.ty != data.ty()
         || n.rule != Rule::Construction("equation_family")
         || n.arguments != data.arguments()
-        || n.support != support
-        || n.scope != scope
+        || n.support.as_slice() != data.source.layout.data.support.as_slice()
+        || n.scope != data.source.layout.data.scope
         || !n.reasons.is_empty()
         || !n.evidence.is_empty()
         || n.judgment.is_some()

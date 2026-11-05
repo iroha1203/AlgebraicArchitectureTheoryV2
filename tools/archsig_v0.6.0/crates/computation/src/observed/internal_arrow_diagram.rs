@@ -218,7 +218,7 @@ pub(super) struct Source {
     core: InternalArrows,
     parts: Vec<Part>,
     outputs: Diagram,
-    support: Vec<Fact>,
+    support: Support,
     scope: Scope,
 }
 impl std::fmt::Debug for Source {
@@ -387,6 +387,9 @@ impl Data {
         .collect()
     }
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+        (self.source.support.to_vec(), self.source.scope.clone())
+    }
+    pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.source.support.clone(), self.source.scope.clone())
     }
     pub(super) fn position(&self, at: usize) -> Result<(), ValidationFailure> {
@@ -674,15 +677,14 @@ pub(super) fn validate_node(
         data.source.objects.base,
         data.source.universe,
     )?;
-    let (support, scope) = data.metadata();
     if !Arc::ptr_eq(a, current)
         || !Arc::ptr_eq(a, &data.source.architecture)
         || objects != data.source.objects
         || node.ty != part.ty()
         || node.rule != Rule::Construction(part.construction())
         || node.arguments != data.arguments()
-        || node.support != support
-        || node.scope != scope
+        || node.support != data.source.support
+        || node.scope != data.source.scope
         || !node.reasons.is_empty()
         || !node.evidence.is_empty()
         || node.judgment.is_some()
@@ -796,7 +798,7 @@ impl super::result_kind::ResultKind for Data {
             core,
             parts,
             outputs,
-            support,
+            support: support.into(),
             scope,
         });
         source.recheck(graph, &source.inputs, &source.architecture, c)?;
