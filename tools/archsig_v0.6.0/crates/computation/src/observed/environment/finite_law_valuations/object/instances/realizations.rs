@@ -161,7 +161,7 @@ fn populate_realizations(
                 .cloned()
                 .zip(candidate.iter().cloned())
                 .collect();
-            let mut e = Environment::primitive_dependency_probe(inputs, &values, c)?;
+            let mut e = template.primitive_dependency_probe_from(&values, c)?;
             *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
             let mut evaluated = evaluated_objects(inputs, &sources, selections, &values, &e, c);
             if result.law_dependencies {
@@ -180,7 +180,7 @@ fn populate_realizations(
                 return Err(stop.into());
             }
             // 依存発見passの未固定値で、候補やparameter行を枝刈りしない。
-            if Environment::try_primitive_valuation(inputs, &values, c)?.is_some() {
+            if template.try_primitive_valuation_from(&values, c)?.is_some() {
                 match evaluated {
                     Ok(objects) => {
                         admissible.push(candidate);

@@ -1545,7 +1545,7 @@ fn populate_family(
                 .cloned()
                 .zip(candidate.iter().cloned())
                 .collect::<Vec<_>>();
-            let mut e = r.in_object(Environment::primitive_dependency_probe(inputs, &values, c)?);
+            let mut e = r.in_object(template.primitive_dependency_probe_from(&values, c)?);
             *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
             let mut candidate_admissible = true;
             let mut candidate_blocked = false;
@@ -1574,8 +1574,7 @@ fn populate_family(
                 discovered.extend(reads.iter().cloned());
             }
             // 全Lawの読取りを先に集める。新位置を含むpassの判定は捨てる。
-            if Environment::try_primitive_valuation(inputs, &values, c)?.is_none()
-                || !candidate_admissible
+            if template.try_primitive_valuation_from(&values, c)?.is_none() || !candidate_admissible
             {
                 continue;
             }

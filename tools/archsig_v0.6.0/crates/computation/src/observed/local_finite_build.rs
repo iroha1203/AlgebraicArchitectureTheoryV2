@@ -230,7 +230,7 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
                 c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
                 let mut assignments = fixed.fixed_values().into_iter().collect::<BTreeMap<_, _>>();
                 assignments.extend(model.slots.iter().cloned().zip(point.iter().cloned()));
-                let mut state = Environment::try_primitive_valuation(env.indexes.inputs, &assignments.into_iter().collect::<Vec<_>>(), c)?
+                let mut state = env.try_primitive_valuation_from(&assignments.into_iter().collect::<Vec<_>>(), c)?
                     .ok_or_else(|| unsupported("明示localの自由状態が不適合"))?;
                 state.select_local_object(&witness, c)?;
                 states.push(state);

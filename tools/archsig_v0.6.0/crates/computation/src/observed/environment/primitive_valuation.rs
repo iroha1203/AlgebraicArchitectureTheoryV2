@@ -20,40 +20,46 @@ impl<'a> Environment<'a> {
         assignments: &[(Fact, Scalar)],
         control: &Control,
     ) -> Result<Option<Self>, ValidationFailure> {
-        Self::primitive_valuation_checked(inputs, assignments, control, true)
+        Self::primitive_valuation_on(Self::new(inputs, control)?, assignments, control, true)
     }
 
     /// 依存位置の発見中は、まだ固定されている別fieldとの制約で枝を刈らない。
-    /// 元型・値の正規性は検査する。完成候補には必ずtry_primitive_valuationを使う。
-    pub(super) fn primitive_dependency_probe(
-        inputs: &'a CheckedInputs,
+    /// 元型・値の正規性は検査する。完成候補にはtry_primitive_valuation_fromを使う。
+    pub(super) fn primitive_dependency_probe_from(
+        &self,
         assignments: &[(Fact, Scalar)],
         control: &Control,
     ) -> Result<Self, ValidationFailure> {
-        Self::primitive_valuation_checked(inputs, assignments, control, false)?
+        Self::primitive_valuation_on(self.fresh_candidate(control), assignments, control, false)?
             .ok_or_else(|| internal!("依存発見用の型付き候補が失われた").into())
     }
 
-    fn primitive_valuation_checked(
-        inputs: &'a CheckedInputs,
+    pub(in crate::observed) fn try_primitive_valuation_from(
+        &self,
+        assignments: &[(Fact, Scalar)],
+        control: &Control,
+    ) -> Result<Option<Self>, ValidationFailure> {
+        Self::primitive_valuation_on(self.fresh_candidate(control), assignments, control, true)
+    }
+
+    fn fresh_candidate(&self, control: &Control) -> Self {
+        Self {
+            indexes: self.indexes.fresh(),
+            results: ResultStore::default(),
+            state: EvaluationState::default(),
+            control: control.clone(),
+        }
+    }
+
+    fn primitive_valuation_on(
+        mut environment: Self,
         assignments: &[(Fact, Scalar)],
         control: &Control,
         constraints: bool,
     ) -> Result<Option<Self>, ValidationFailure> {
-        let mut environment = Self::new(inputs, control)?;
+        let inputs = environment.indexes.inputs;
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
-        let mut types = std::collections::HashMap::new();
-        for snapshot in inputs.archmap().snapshots() {
-            control.checkpoint(Checkpoint::PrimitiveValuation)?;
-            for subject in &snapshot.subjects {
-                control.checkpoint(Checkpoint::PrimitiveValuation)?;
-                types.insert(
-                    (subject.snapshot.as_str(), subject.id.as_str()),
-                    subject.ty.as_str(),
-                );
-            }
-        }
-        let roster = archsig_input::archmap::value::Roster { types };
+        let roster = &environment.indexes.roster;
         let mut values = BTreeMap::new();
         let mut original_values = BTreeMap::new();
         let mut pinned = Vec::new();
@@ -89,7 +95,7 @@ impl<'a> Environment<'a> {
                 &encoded,
                 &field.ty,
                 inputs.definitions(),
-                &roster,
+                roster,
                 namespace,
                 control,
             )

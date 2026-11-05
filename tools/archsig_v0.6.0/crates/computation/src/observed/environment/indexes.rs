@@ -9,16 +9,44 @@ pub(crate) struct InputIndexes<'a> {
     pub(super) object_instance: Option<&'a crate::construction::readings::ObjectInstance>,
     pub(super) object_values: Option<&'a crate::observed::object_view_family::FiniteViewAssignment>,
     pub(super) original_requests: Option<&'a [Request]>,
-    pub(super) subjects: BTreeMap<(&'a str, &'a str), &'a Subject>,
-    pub(super) fields: HashMap<(&'a str, &'a str, &'a str), &'a archsig_input::archmap::Field>,
-    pub(super) atoms: BTreeMap<String, Fact>,
-    pub(super) modes: BTreeMap<String, &'static str>,
-    pub(super) snapshot_origins: BTreeMap<String, String>,
+    fixed: std::sync::Arc<FixedInputIndexes<'a>>,
     // 候補ごとに独立したEnvironmentへ一度だけ設定し、観測cacheと共有しない。
     pub(super) primitive_valuation: Option<BTreeMap<Fact, Scalar>>,
     // 整数changeの式を読む内部環境。観測slotと元parameterを区別する。
     pub(super) affine_valuation: BTreeMap<Fact, crate::observed::affine::Form>,
     pub(super) primitive_input_valuation: Option<BTreeMap<Fact, Value>>,
+}
+
+/// 同じCheckedInputsの全候補で変わらない索引。可変の候補値・評価cacheを含めない。
+pub(crate) struct FixedInputIndexes<'a> {
+    pub(super) subjects: BTreeMap<(&'a str, &'a str), &'a Subject>,
+    pub(super) fields: HashMap<(&'a str, &'a str, &'a str), &'a archsig_input::archmap::Field>,
+    pub(super) atoms: BTreeMap<String, Fact>,
+    pub(super) modes: BTreeMap<String, &'static str>,
+    pub(super) snapshot_origins: BTreeMap<String, String>,
+    pub(super) roster: archsig_input::archmap::value::Roster<'a>,
+}
+impl<'a> std::ops::Deref for InputIndexes<'a> {
+    type Target = FixedInputIndexes<'a>;
+    fn deref(&self) -> &Self::Target {
+        &self.fixed
+    }
+}
+impl<'a> InputIndexes<'a> {
+    /// 不変索引だけを共有し、候補値・対象選択は元の空状態から始める。
+    pub(super) fn fresh(&self) -> Self {
+        Self {
+            inputs: self.inputs,
+            fixed: self.fixed.clone(),
+            object: None,
+            object_instance: None,
+            object_values: None,
+            original_requests: None,
+            primitive_valuation: None,
+            affine_valuation: BTreeMap::new(),
+            primitive_input_valuation: None,
+        }
+    }
 }
 
 impl<'a> InputIndexes<'a> {
@@ -108,6 +136,7 @@ impl<'a> InputIndexes<'a> {
         let mut atoms = BTreeMap::new();
         let mut modes = BTreeMap::new();
         let mut snapshot_origins = BTreeMap::new();
+        let mut roster_types = HashMap::new();
         for origin in inputs.archmap().origins() {
             control.checkpoint(Checkpoint::FiniteIteration)?;
             modes.insert(origin.id.clone(), origin.mode.wire());
@@ -120,6 +149,7 @@ impl<'a> InputIndexes<'a> {
             for s in &snapshot.subjects {
                 control.checkpoint(Checkpoint::FiniteIteration)?;
                 subjects.insert((s.snapshot.as_str(), s.id.as_str()), s);
+                roster_types.insert((s.snapshot.as_str(), s.id.as_str()), s.ty.as_str());
                 for field in &s.fields {
                     control.checkpoint(Checkpoint::FiniteIteration)?;
                     fields.insert(
@@ -149,12 +179,17 @@ impl<'a> InputIndexes<'a> {
             object: None,
             object_instance: None,
             object_values: None,
-            subjects,
-            fields,
-            atoms,
+            fixed: std::sync::Arc::new(FixedInputIndexes {
+                subjects,
+                fields,
+                atoms,
+                modes,
+                snapshot_origins,
+                roster: archsig_input::archmap::value::Roster {
+                    types: roster_types,
+                },
+            }),
             original_requests: None,
-            modes,
-            snapshot_origins,
             primitive_valuation: None,
             affine_valuation: BTreeMap::new(),
             primitive_input_valuation: None,
