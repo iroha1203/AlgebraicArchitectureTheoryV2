@@ -129,7 +129,7 @@ impl Fact {
         std::sync::Arc::unwrap_or_clone(self.0)
     }
     pub fn wire(&self) -> Json {
-        let mut f = BTreeMap::from([
+        let mut f = archsig_common::canonical::JsonObject::from([
             ("snapshot".into(), Json::str(&self.snapshot)),
             ("subject".into(), Json::str(&self.subject)),
         ]);

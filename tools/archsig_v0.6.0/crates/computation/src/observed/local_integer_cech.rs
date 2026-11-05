@@ -425,7 +425,7 @@ pub(in crate::observed::local_result) fn diagnose(
                     "evidence",
                     Json::obj([
                         ("kind", Json::str("linear_inconsistent")),
-                        ("data", Json::Obj(data)),
+                        ("data", Json::Obj(data.into())),
                     ]),
                     vec![maps[0], representative, annihilator, pairing],
                     None,
@@ -506,7 +506,7 @@ pub(in crate::observed::local_result) fn diagnose(
         let diagnostic = b.push(
             NodeType::Construction(T::Diagnostic),
             "diagnostic",
-            Json::Obj(fields),
+            Json::Obj(fields.into()),
             [target, complex, space]
                 .into_iter()
                 .chain(class)

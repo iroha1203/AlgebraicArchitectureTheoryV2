@@ -97,7 +97,7 @@ pub(super) fn notify(
 
 /// Issueの表示順。状態や意味の再判定には使わない。
 pub(super) fn sort_issues(issues: &mut [Json]) {
-    fn text(fields: &std::collections::BTreeMap<String, Json>, key: &str) -> String {
+    fn text(fields: &archsig_common::canonical::JsonObject, key: &str) -> String {
         match fields.get(key) {
             Some(Json::Str(s)) => s.clone(),
             _ => String::new(),

@@ -10,7 +10,7 @@ use archsig_input::{
     law::ast::{Builtin, ExprKind, QuantDomain, QuantSplit, TypeAst},
 };
 use std::collections::{BTreeMap, BTreeSet};
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
+fn obj(j: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(v) = j else {
         panic!("object {j:?}")
     };

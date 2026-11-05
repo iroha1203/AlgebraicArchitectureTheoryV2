@@ -587,7 +587,7 @@ impl Quantifier {
         if let Some(domain) = self.domain {
             fields.insert("domain".into(), domain.wire());
         }
-        Json::Obj(fields)
+        Json::Obj(fields.into())
     }
 }
 impl Scope {
@@ -850,7 +850,7 @@ impl Reason {
         if let Some(location) = &self.location {
             wire.insert("location".into(), location_wire(location));
         }
-        Json::Obj(wire)
+        Json::Obj(wire.into())
     }
 }
 /// 表示上の理由列の等値。列順と、各 kind の wire で表示する欄だけを比較する。
@@ -1362,7 +1362,7 @@ impl Payload {
                                     if let Some(r) = p.residual {
                                         f.insert("residual".into(), r.wire());
                                     }
-                                    Json::Obj(f)
+                                    Json::Obj(f.into())
                                 })
                                 .collect(),
                         ),
@@ -1374,7 +1374,7 @@ impl Payload {
                 if let Some(environment) = environment {
                     wire.insert("environment".into(), environment.wire());
                 }
-                Json::Obj(wire)
+                Json::Obj(wire.into())
             }
             Self::LawInstance {
                 name,
@@ -1402,7 +1402,7 @@ impl Payload {
                 if let Some(g) = guard {
                     wire.insert("guard".into(), g.wire());
                 }
-                Json::Obj(wire)
+                Json::Obj(wire.into())
             }
             Self::Proposition { instance } => Json::obj([
                 ("predicate", Json::str("law_holds")),
@@ -1455,7 +1455,10 @@ impl Payload {
                 if let Some(r) = residual {
                     data.insert("residual".into(), r.wire());
                 }
-                Json::obj([("kind", Json::str("evaluation")), ("data", Json::Obj(data))])
+                Json::obj([
+                    ("kind", Json::str("evaluation")),
+                    ("data", Json::Obj(data.into())),
+                ])
             }
             Self::TermComparison {
                 source,
@@ -1668,7 +1671,7 @@ impl Node {
                 ]),
             );
         }
-        Json::Obj(wire)
+        Json::Obj(wire.into())
     }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -1705,7 +1708,7 @@ impl Answer {
         if let Some(c) = self.claim {
             wire.insert("claim".into(), c.wire());
         }
-        Json::Obj(wire)
+        Json::Obj(wire.into())
     }
 }
 

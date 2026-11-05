@@ -17,7 +17,7 @@ use std::{
 
 use crate::common::helpers::{fp, links, q, tuple_type, txt};
 use crate::common::quiet;
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
+fn obj(j: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(v) = j else {
         panic!("object {j:?}")
     };

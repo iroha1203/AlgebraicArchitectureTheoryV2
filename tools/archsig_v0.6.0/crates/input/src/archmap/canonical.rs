@@ -1,13 +1,13 @@
 //! ArchMap の canonical JSON(入力仕様 §4)。集合表と Set/Map 値を正規化する。
 
 use super::{CheckedArchMap, FORMAT, Origin, SEMANTICS, Slot, Snapshot, Source, Subject};
+use archsig_common::canonical::JsonObject;
 use archsig_common::{
     canonical::Json,
     control::{Checkpoint, Control},
     issue::Issue,
     json::InputError,
 };
-use std::collections::BTreeMap;
 
 /// 集合表を ID・namespace 名順へ、Set・Map の値を canonical 値順へ並べた ArchMap。
 pub fn model_json(a: &CheckedArchMap) -> Json {
@@ -65,14 +65,14 @@ pub(crate) fn model_json_controlled<E: InputError>(
     let mut origin_json = Vec::new();
     for origin in origins {
         E::checkpoint(control, point)?;
-        let mut object = BTreeMap::new();
+        let mut object = JsonObject::new();
         object.insert("id".to_owned(), Json::str(origin.id.clone()));
         object.insert("mode".to_owned(), Json::str(origin.mode.wire()));
         object.insert("method".to_owned(), Json::str(origin.method.clone()));
         let mut locations = Vec::new();
         for location in &origin.locations {
             E::checkpoint(control, point)?;
-            let mut value = BTreeMap::new();
+            let mut value = JsonObject::new();
             value.insert("source".to_owned(), Json::str(location.source.clone()));
             value.insert("path".to_owned(), Json::str(location.path.clone()));
             if let Some((start, end)) = location.span {

@@ -102,7 +102,7 @@ pub fn numbers(values: &[&str]) -> Json {
     Json::Arr(values.iter().map(|v| Json::str(*v)).collect())
 }
 
-pub fn obj(j: &Json) -> &BTreeMap<String, Json> {
+pub fn obj(j: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(v) = j else {
         panic!("object: {j:?}")
     };

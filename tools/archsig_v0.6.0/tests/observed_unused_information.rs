@@ -14,7 +14,6 @@ use archsig_input::{
     law::{ast::ExprKind, model::Signature},
     result::{declaration_wire, location_wire, primitive_declarations_wire},
 };
-use std::collections::BTreeMap;
 
 const COUNTER: &[u8] = include_bytes!("fixtures/counter.atoms.json");
 const LIBRARY: &[u8] = include_bytes!("fixtures/counter-library.atoms.json");
@@ -28,7 +27,7 @@ const ASKS: [&str; 3] = [
     "ok=check(CountCheck.nonnegative,s=@v/s)",
 ];
 
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
+fn obj(j: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(fields) = j else {
         panic!("object: {j:?}")
     };

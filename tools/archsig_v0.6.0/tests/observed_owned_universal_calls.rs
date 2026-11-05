@@ -11,7 +11,7 @@ fn array(j: &Json) -> &[Json] {
     let Json::Arr(items) = j else { panic!("array") };
     items
 }
-fn object(j: &Json) -> &std::collections::BTreeMap<String, Json> {
+fn object(j: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(fields) = j else {
         panic!("object")
     };

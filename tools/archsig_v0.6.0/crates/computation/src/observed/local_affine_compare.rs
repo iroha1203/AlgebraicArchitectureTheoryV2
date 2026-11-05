@@ -3,9 +3,12 @@ use super::*;
 use num_traits::Zero;
 #[path = "local_integer_transport.rs"]
 mod transport;
-pub(super) use transport::{between, dependencies, Renaming};
+pub(super) use transport::{Renaming, between, dependencies};
 
-pub(super) fn record(g: &Graph, r: NodeRef) -> Result<&BTreeMap<String, Json>, ValidationFailure> {
+pub(super) fn record(
+    g: &Graph,
+    r: NodeRef,
+) -> Result<&archsig_common::canonical::JsonObject, ValidationFailure> {
     let Json::Obj(fields) = &local(g, r)?.part().wire else {
         return Err(internal!("整数診断のレコードがない").into());
     };
@@ -411,7 +414,9 @@ pub(super) fn compare(
             g,
             ls,
             rs,
-            forward.get(degree).ok_or(internal!("次数のcochain写像がない"))?,
+            forward
+                .get(degree)
+                .ok_or(internal!("次数のcochain写像がない"))?,
             c,
         )?;
         let v = if let Some(backward) = &backward {
@@ -419,7 +424,9 @@ pub(super) fn compare(
                 g,
                 rs,
                 ls,
-                backward.get(degree).ok_or(internal!("次数の逆cochain写像がない"))?,
+                backward
+                    .get(degree)
+                    .ok_or(internal!("次数の逆cochain写像がない"))?,
                 c,
             )?;
             check_inverse(g, lh, &v, &f, c)?;
@@ -555,7 +562,7 @@ pub(super) fn compare(
     let comparison = b.push(
         NodeType::Construction(T::Comparison),
         "comparison",
-        Json::Obj(fields),
+        Json::Obj(fields.into()),
         [left, right, along, cochain, hmap, kernel, cokernel]
             .into_iter()
             .chain(conditions)

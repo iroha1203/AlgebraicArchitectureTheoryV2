@@ -10,7 +10,7 @@ use std::{
     collections::{BTreeMap, BTreeSet},
     rc::Rc,
 };
-fn object(j: &Json) -> &BTreeMap<String, Json> {
+fn object(j: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(v) = j else { panic!("object") };
     v
 }

@@ -22,7 +22,7 @@ fn small(missing: bool) -> InputSources {
         engine::smaller(missing, None),
     )
 }
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
+fn obj(j: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(x) = j else {
         panic!("object {j:?}")
     };

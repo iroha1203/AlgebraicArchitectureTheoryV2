@@ -4,7 +4,7 @@ use archsig_common::canonical::Json;
 use archsig_computation::observed::evaluate_observed_bytes;
 use archsig_input::input::{InputSources, check_inputs};
 use std::collections::{BTreeMap, BTreeSet};
-fn obj(j: &Json) -> &BTreeMap<String, Json> {
+fn obj(j: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(v) = j else {
         panic!("object {j:?}")
     };

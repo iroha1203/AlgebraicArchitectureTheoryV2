@@ -52,7 +52,7 @@ fn run(asks: &[&str]) -> Json {
         .unwrap()
         .wire()
 }
-fn obj(json: &Json) -> &BTreeMap<String, Json> {
+fn obj(json: &Json) -> &archsig_common::canonical::JsonObject {
     let Json::Obj(value) = json else {
         panic!("object: {json:?}")
     };
@@ -114,7 +114,7 @@ fn fact(subject: &str, known: bool) -> Json {
     if known {
         value.insert("atom".into(), Json::str("count"));
     }
-    Json::Obj(value)
+    Json::Obj(value.into())
 }
 fn refs(json: &Json, found: &mut Vec<String>) {
     match json {

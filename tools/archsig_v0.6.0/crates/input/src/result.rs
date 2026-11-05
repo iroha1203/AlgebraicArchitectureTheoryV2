@@ -3,9 +3,9 @@
 use crate::definition::{PrimitiveDeclaration, PrimitiveSignature, Vocabulary};
 use crate::law::ast::Role;
 use crate::law::model::{DeclarationInfo, ExpressionKind, SuppliedRule};
-use archsig_common::canonical::Json;
+use archsig_common::canonical::{Json, JsonObject};
 use archsig_common::issue::{Code, Details, Issue, Location};
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 
 mod position;
 pub use position::add_location_positions;
@@ -91,7 +91,7 @@ impl ResultIssue {
     }
 
     pub fn wire(&self) -> Json {
-        let mut m = BTreeMap::new();
+        let mut m = JsonObject::new();
         m.insert("code".to_owned(), Json::str(self.code()));
         m.insert("dependencies".to_owned(), Json::Arr(vec![]));
         m.insert("missing".to_owned(), Json::Arr(vec![]));
@@ -99,7 +99,7 @@ impl ResultIssue {
             ResultIssue::Input(i) => {
                 m.insert("location".to_owned(), location_wire(&i.location));
                 let details = match &i.details {
-                    Details::Empty => Json::Obj(BTreeMap::new()),
+                    Details::Empty => Json::Obj(JsonObject::new()),
                     Details::Type { expected, actual } => {
                         Json::obj([("expected", expected.wire()), ("actual", actual.wire())])
                     }
@@ -109,7 +109,7 @@ impl ResultIssue {
                         found_digest,
                         expected_digest,
                     } => {
-                        let mut details = BTreeMap::from([
+                        let mut details = JsonObject::from([
                             ("namespace".into(), Json::str(namespace)),
                             ("version".into(), Json::str(version)),
                             ("expected_digest".into(), Json::str(expected_digest)),
@@ -145,7 +145,7 @@ impl ResultIssue {
                         found_format,
                         found_semantics,
                     } => {
-                        let mut d = BTreeMap::new();
+                        let mut d = JsonObject::new();
                         d.insert("found_format".to_owned(), Json::str(found_format.clone()));
                         if let Some(s) = found_semantics {
                             d.insert("found_semantics".to_owned(), Json::str(s.clone()));
@@ -227,7 +227,7 @@ pub fn location_wire(l: &Location) -> Json {
             Json::obj([("input", Json::str("law")), ("span", span_wire(*span))])
         }
         Location::ArchMap { pointer, span } => {
-            let mut m = BTreeMap::new();
+            let mut m = JsonObject::new();
             m.insert("input".to_owned(), Json::str("archmap"));
             m.insert("pointer".to_owned(), Json::str(pointer.clone()));
             if let Some(s) = span {
@@ -240,7 +240,7 @@ pub fn location_wire(l: &Location) -> Json {
             pointer,
             span,
         } => {
-            let mut m = BTreeMap::new();
+            let mut m = JsonObject::new();
             m.insert("input".to_owned(), Json::str(input.clone()));
             m.insert("pointer".to_owned(), Json::str(pointer.clone()));
             if let Some(s) = span {
@@ -268,7 +268,7 @@ fn params_wire(ps: &[(String, archsig_common::types::Type)]) -> Json {
 }
 
 pub fn declaration_wire(d: &DeclarationInfo) -> Json {
-    let mut m = BTreeMap::new();
+    let mut m = JsonObject::new();
     m.insert("name".to_owned(), Json::str(d.name.clone()));
     m.insert("kind".to_owned(), Json::str(d.kind));
     m.insert("parameters".to_owned(), params_wire(&d.parameters));
@@ -509,7 +509,7 @@ pub struct InputIdentity {
 
 impl InputIdentity {
     pub fn wire(&self) -> Json {
-        let mut m = BTreeMap::new();
+        let mut m = JsonObject::new();
         m.insert("id".to_owned(), Json::str(self.id.clone()));
         m.insert("kind".to_owned(), Json::str(self.kind));
         m.insert(
@@ -583,7 +583,7 @@ pub(crate) fn metadata_wire<'a>(
     declarations: &[DeclarationInfo],
     primitives: impl IntoIterator<Item = &'a PrimitiveDeclaration>,
     vocabularies: impl IntoIterator<Item = &'a Vocabulary>,
-) -> BTreeMap<String, Json> {
+) -> JsonObject {
     let mut inputs: Vec<&InputIdentity> = inputs.iter().collect();
     inputs.sort_by(|a, b| a.id.cmp(&b.id));
     let mut declaration_rows: Vec<Json> = primitives
@@ -594,7 +594,7 @@ pub(crate) fn metadata_wire<'a>(
     declaration_rows.sort_by(|a, b| declaration_name(a).cmp(declaration_name(b)));
     let mut vocabularies: Vec<_> = vocabularies.into_iter().collect();
     vocabularies.sort_by(|a, b| a.namespace.cmp(&b.namespace));
-    BTreeMap::from([
+    JsonObject::from([
         (
             "inputs".into(),
             Json::Arr(inputs.into_iter().map(InputIdentity::wire).collect()),
