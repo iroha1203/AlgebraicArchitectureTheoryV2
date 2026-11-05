@@ -390,7 +390,6 @@ pub(super) fn build(
             .chain(slot_subjects.iter().copied())
             .collect(),
         None,
-        None,
     )?;
     let declaration = &env.indexes.inputs.law().declarations()[&model.change];
     let Signature::Change { params, guard, .. } = &declaration.signature else {
@@ -465,7 +464,6 @@ pub(super) fn build(
             .chain(laws.iter().copied())
             .collect(),
         None,
-        None,
     )?;
     let (solution_parameter_domain, solution_parameter_values) =
         scalar_domain(b, &parameter_type, &solution_parameters, c)?;
@@ -495,7 +493,6 @@ pub(super) fn build(
             .chain(laws.iter().copied())
             .chain(solution_parameter_values.iter().map(|(_, r)| *r))
             .collect(),
-        None,
         None,
     )?;
     let (states, semantic_values) = scalar_domain(b, &ty, &solution_images, c)?;
@@ -534,7 +531,6 @@ pub(super) fn build(
             .chain(laws.iter().copied())
             .collect(),
         None,
-        None,
     )?;
     let (equation, equation_domain, equation_values, integer) =
         if let (Some(ring), Some((ambient, _))) = (integer_ring, ambient) {
@@ -564,7 +560,6 @@ pub(super) fn build(
                 std::iter::once(equations)
                     .chain(equation_values.iter().map(|(_, r)| *r))
                     .collect(),
-                None,
                 None,
             )?;
             (equation, equation_domain, equation_values, None)

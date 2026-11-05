@@ -171,7 +171,6 @@ pub(super) fn compare(
                 ]),
                 arguments,
                 None,
-                None,
             )?;
             out.evidence.push(evidence);
             out.arguments.push(evidence);

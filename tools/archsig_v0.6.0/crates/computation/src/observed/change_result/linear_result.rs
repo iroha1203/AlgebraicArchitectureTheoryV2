@@ -49,7 +49,6 @@ pub(in crate::observed) fn module(
         ]),
         args,
         None,
-        None,
     )
 }
 pub(in crate::observed) fn map(
@@ -81,7 +80,6 @@ pub(in crate::observed) fn map(
         ]),
         args,
         None,
-        None,
     )
 }
 pub(in crate::observed) fn vector(
@@ -106,7 +104,6 @@ pub(in crate::observed) fn vector(
         ]),
         args,
         None,
-        None,
     )
 }
 pub(in crate::observed) fn domain(
@@ -118,7 +115,6 @@ pub(in crate::observed) fn domain(
         "domain",
         Json::obj([("kind", Json::str("module")), ("module", module.wire())]),
         vec![module],
-        None,
         None,
     )
 }
@@ -134,7 +130,6 @@ pub(super) fn build(
         "ring",
         Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str("Z"))]),
         vec![],
-        None,
         None,
     )?;
     let parameter_module = module(b, ring, linear.parameter_count, "free", vec![])?;
@@ -161,7 +156,6 @@ pub(super) fn build(
             ("offset", offset.wire()),
         ]),
         vec![parameters, states, action_linear, offset],
-        None,
         None,
     )?;
     let mut dependencies = requirements.to_vec();
@@ -309,7 +303,6 @@ pub(in crate::observed) fn smith(
             ),
         ]),
         args,
-        None,
         None,
     )?;
     Ok((equations, certificate))

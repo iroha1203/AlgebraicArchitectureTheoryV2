@@ -147,7 +147,6 @@ pub(super) fn compute(
         },
         vec![reference, expression],
         None,
-        None,
     )?;
     let mut descent = None;
     let mut evidence = vec![];
@@ -170,7 +169,6 @@ pub(super) fn compute(
                 ("pairs", Json::Arr(vec![])),
             ]),
             vec![source, classes],
-            None,
             None,
         )?;
         if let Some(law) = &image.law {
@@ -198,7 +196,6 @@ pub(super) fn compute(
                 ]),
                 vec![classes, target],
                 None,
-                None,
             )?);
         }
         (
@@ -213,7 +210,6 @@ pub(super) fn compute(
             "ring",
             Json::obj([("kind", Json::str("scalar")), ("scalar", ty.wire())]),
             vec![],
-            None,
             None,
         )?;
         let original = linear::module(&mut b, ring, image.origin.len(), "free", vec![reference])?;
@@ -271,7 +267,6 @@ pub(super) fn compute(
             ]),
             vec![source, ambient_domain, map, offset, embedding, origin],
             None,
-            None,
         )?;
         let classes = b.push(
             NodeType::Domain,
@@ -282,7 +277,6 @@ pub(super) fn compute(
                 ("source", reference.wire()),
             ]),
             vec![view, reference],
-            None,
             None,
         )?;
         let projection = b.push(
@@ -305,7 +299,6 @@ pub(super) fn compute(
                 inclusion,
                 image_inclusion,
             ],
-            None,
             None,
         )?;
         if image.law.is_some() {
@@ -370,7 +363,6 @@ pub(super) fn compute(
             ("evaluations", refs(&evaluations)),
         ]),
         args,
-        None,
         None,
     )?;
     let mut status = Decision::Established;
@@ -530,7 +522,6 @@ fn law_descent(
                 .chain(evaluations.iter().copied())
                 .collect(),
             None,
-            None,
         )?;
         return Ok((None, vec![evidence], evaluations));
     }
@@ -551,7 +542,6 @@ fn law_descent(
             "domain",
             Json::obj([("kind", Json::str("type")), ("type", family_type.wire())]),
             vec![expression],
-            None,
             None,
         )?;
         let mut arguments = vec![classes, target, actual_image, expression];
@@ -626,7 +616,6 @@ fn law_descent(
                 ("instances", Json::Arr(instances)),
             ]),
             arguments,
-            None,
             None,
         )?;
         return Ok((Some(map), vec![], vec![]));
@@ -706,7 +695,6 @@ fn law_descent(
             ("offset", offset.wire()),
         ]),
         vec![classes, target, linear, offset, expression],
-        None,
         None,
     )?;
     Ok((Some(descent), vec![], vec![]))

@@ -386,7 +386,6 @@ fn compute_inner(
                         ]),
                         vec![subject, ao.architectures[i], zo.architectures[j], action],
                         None,
-                        None,
                     )?;
                     let proof = b.proposition(
                         "configuration_preserved",
@@ -399,7 +398,6 @@ fn compute_inner(
                         "configuration_map",
                         Json::obj([("candidate", mc.wire())]),
                         vec![mc, proof],
-                        None,
                         None,
                     )?
                 };
@@ -471,7 +469,6 @@ fn compute_inner(
                     ]),
                     vec![a.architecture.universe, action, source_op, target_op],
                     None,
-                    None,
                 )?);
             }
             let counterexample = match row.naturality() {
@@ -506,7 +503,6 @@ fn compute_inner(
                             ),
                         ]),
                         maps.clone(),
-                        None,
                         None,
                     )?;
                     declaration_evidence.push(proof);
@@ -631,7 +627,6 @@ fn compute_inner(
                     ]),
                     dependencies.iter().copied().chain([se, te]).collect(),
                     None,
-                    None,
                 )?);
             }
             let views = super::object_view_map::retain(
@@ -661,7 +656,6 @@ fn compute_inner(
                             .into_iter()
                             .chain([left, right])
                             .collect(),
-                        None,
                         None,
                     )?,
                 );
@@ -804,7 +798,6 @@ fn compute_inner(
                 ),
             ]),
             dependencies,
-            None,
             None,
         )?;
         outputs.insert("map".into(), r);

@@ -54,13 +54,11 @@ fn evaluation(
         ),
     ]);
     if let Some(residual) = residual {
-        let residual = b.push(
+        let residual = b.scalar(
             NodeType::Value(residual.ty()),
             "evaluation",
-            residual.wire(),
+            residual.clone(),
             children.to_vec(),
-            Some(residual.clone()),
-            None,
         )?;
         part.insert("residual".into(), residual.wire());
         arguments.push(residual);
@@ -77,7 +75,6 @@ fn evaluation(
         "evaluation",
         Json::Obj(wire.into()),
         arguments,
-        None,
         None,
     )
 }
@@ -150,7 +147,6 @@ pub(super) fn row(
         "architecture",
         Json::Obj(wire),
         arguments,
-        None,
         None,
     )?;
     let Signature::Law { body, guard, .. } =

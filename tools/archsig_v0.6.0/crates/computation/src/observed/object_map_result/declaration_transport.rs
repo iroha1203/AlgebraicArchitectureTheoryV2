@@ -193,7 +193,6 @@ fn counterexample(
         ]),
         args,
         None,
-        None,
     )
 }
 fn parameter_rows(
@@ -396,7 +395,6 @@ fn domain(
         Json::obj([("kind", Json::str("type")), ("type", ty.wire())]),
         dependencies.to_vec(),
         None,
-        None,
     )
 }
 fn value_map(
@@ -440,7 +438,6 @@ fn value_map(
             ("generators", Json::Arr(vec![])),
         ]),
         args,
-        None,
         None,
     )
 }
@@ -744,7 +741,6 @@ fn expression(
             ("bindings", Json::Arr(vec![])),
         ]),
         dependencies.to_vec(),
-        None,
         None,
     )
 }
@@ -1269,7 +1265,6 @@ pub(super) fn retain(
                     ("clauses", Json::Arr(clauses)),
                 ]),
                 all,
-                None,
                 None,
             )?,
         );

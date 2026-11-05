@@ -870,7 +870,6 @@ pub(super) fn retain(
                         .chain([source.reference, target.reference])
                         .collect(),
                     None,
-                    None,
                 )?;
                 out.circuits.push(r);
             }
@@ -910,7 +909,6 @@ pub(super) fn retain(
                         .map(|r| r.2)
                         .chain([si.invariant, ti.invariant])
                         .collect(),
-                    None,
                     None,
                 )?,
             );

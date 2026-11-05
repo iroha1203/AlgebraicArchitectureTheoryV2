@@ -32,7 +32,6 @@ pub(in crate::observed) fn map(
         ]),
         args,
         None,
-        None,
     )
 }
 pub(in crate::observed) fn vector(
@@ -57,7 +56,6 @@ pub(in crate::observed) fn vector(
         ]),
         args,
         None,
-        None,
     )
 }
 
@@ -74,7 +72,6 @@ pub(super) fn build(
         "ring",
         Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str("Q"))]),
         vec![],
-        None,
         None,
     )?;
     let pm = module(b, ring, n, "free", vec![])?;
@@ -95,7 +92,6 @@ pub(super) fn build(
             ("offset", offset.wire()),
         ]),
         vec![parameters, states, action_linear, offset],
-        None,
         None,
     )?;
     let equations = map(b, pm, em, &linear.equations, n, c)?;
@@ -139,7 +135,6 @@ pub(super) fn build(
                 ),
             ]),
             args,
-            None,
             None,
         )?;
         let rank = n - linear.fiber.pivots.len();
@@ -207,7 +202,6 @@ pub(super) fn build(
                 ),
             ]),
             args,
-            None,
             None,
         )?;
         (

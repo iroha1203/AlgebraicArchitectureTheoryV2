@@ -249,7 +249,6 @@ pub(super) fn compute(
                     .chain([left, right, along])
                     .collect(),
                 None,
-                None,
             )?;
             (vec![expression], b.parts[0].scope.clone())
         } else {
@@ -456,7 +455,6 @@ pub(super) fn compute(
                 .into_iter()
                 .chain(conditions)
                 .collect(),
-            None,
             None,
         )?;
         let proposition =

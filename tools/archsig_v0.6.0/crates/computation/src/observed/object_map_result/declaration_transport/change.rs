@@ -90,7 +90,6 @@ fn update_expression(
         ]),
         vec![source],
         None,
-        None,
     )
 }
 fn guard_expression(
@@ -125,7 +124,6 @@ fn guard_expression(
             ("bindings", Json::Arr(vec![])),
         ]),
         vec![base],
-        None,
         None,
     )
 }
@@ -170,7 +168,6 @@ fn example(
             ),
         ]),
         args,
-        None,
         None,
     )
 }
@@ -644,7 +641,6 @@ pub(super) fn retain(
         ]),
         first_values,
         None,
-        None,
     )?;
     b.parts[first_domain.0 - b.base].domain_type = Some(params[0][0].ty.erase());
     if !instance_bijection {
@@ -934,7 +930,6 @@ pub(super) fn retain(
                 ("clauses", Json::Arr(clauses)),
             ]),
             all,
-            None,
             None,
         )?,
     );

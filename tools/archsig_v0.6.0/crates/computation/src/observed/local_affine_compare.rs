@@ -245,7 +245,6 @@ fn quotient_module(
         ]),
         arguments,
         None,
-        None,
     )?;
     Ok((module, q))
 }
@@ -395,7 +394,6 @@ pub(super) fn compare(
             .into_iter()
             .chain(components.iter().copied())
             .collect(),
-        None,
         None,
     )?;
     let ls = field(g, left, "space")?;
@@ -567,7 +565,6 @@ pub(super) fn compare(
             .into_iter()
             .chain(conditions)
             .collect(),
-        None,
         None,
     )?;
     let claim = b.proposition("diagnostics_preserved", vec![comparison], vec![], status)?;

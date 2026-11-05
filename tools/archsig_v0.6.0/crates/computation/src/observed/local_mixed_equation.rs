@@ -70,7 +70,7 @@ pub(super) fn solve(
             &projection, indexes.len(), &vec![Z::zero(); reading.map.len()], c)?;
         domain = b.push(NodeType::Domain, "domain", Json::obj([
             ("kind", Json::str("image")), ("map", quotient.wire()), ("source", solution.wire()),
-        ]), vec![quotient,solution], None, None)?;
+        ]), vec![quotient,solution], None)?;
         fiber = integer::linear::affine_image(&fiber, &projection, &vec![Z::zero(); reading.map.len()], c)?;
         coefficients = wire::module(b, ring, fiber.rank, "image", vec![quotient])?;
         ambient = read_module;

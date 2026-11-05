@@ -94,7 +94,6 @@ pub(super) fn compute(
         Json::obj([]),
         vec![expression, architecture.root],
         None,
-        None,
     )?;
     b.parts[solutions.0 - base].reasons = vec![reason.clone()];
     b.parts[solutions.0 - base].scope.merge(&enumeration.scope);
@@ -289,7 +288,6 @@ pub(super) fn compute(
             ),
         ]),
         arguments,
-        None,
         None,
     )?;
     b.parts[certificate.0 - base].reasons.clear();

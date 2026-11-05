@@ -532,7 +532,6 @@ pub(super) fn compute(
                         .chain(bindings.iter().map(|(_, r)| *r))
                         .collect(),
                     None,
-                    None,
                 )?,
             );
         }
@@ -789,7 +788,6 @@ pub(super) fn compute(
             Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str(coefficient_name()))]),
             vec![],
             None,
-            None,
         )?;
         let mut states = vec![];
         let mut contexts = vec![];
@@ -885,7 +883,6 @@ pub(super) fn compute(
                     ("law_coordinates", refs(&selected)),
                 ]),
                 arguments,
-                None,
                 None,
             )?;
             contexts.push(context);
@@ -997,7 +994,6 @@ pub(super) fn compute(
                     ]),
                     vec![contexts[v], contexts[w], rr[0], rr[1]],
                     None,
-                    None,
                 )?;
                 for side in 0..2 {
                     restriction_values.push(Json::obj([
@@ -1042,7 +1038,6 @@ pub(super) fn compute(
                     ]),
                     vec![contexts[left], contexts[right], contexts[i], lp, rp],
                     None,
-                    None,
                 )?);
             }
         }
@@ -1070,7 +1065,6 @@ pub(super) fn compute(
                 .chain(overlaps)
                 .chain([adequacy])
                 .collect(),
-            None,
             None,
         )?;
         let (topology, checks) = geometry::topology(
@@ -1313,7 +1307,6 @@ fn emit_system(
         "local_system",
         Json::Obj(fields.into()),
         args,
-        None,
         None,
     )?;
     let label = change_result::value(b, &Scalar::Text("local_system".into()))?;

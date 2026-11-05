@@ -196,7 +196,6 @@ pub(super) fn diagnose(
                 .chain(laws.iter().copied())
                 .collect(),
             None,
-            None,
         )?;
         fiber_refs.push(fiber);
         fibers.push(Json::obj([
@@ -222,7 +221,6 @@ pub(super) fn diagnose(
             .chain([matching, selected.global, restriction])
             .chain(fiber_refs)
             .collect(),
-        None,
         None,
     )?;
     let status = if degree == 0 || !selected.values.is_empty() {
@@ -252,7 +250,6 @@ pub(super) fn diagnose(
                     std::iter::once(selected.all)
                         .chain(laws.iter().copied())
                         .collect(),
-                    None,
                     None,
                 )?,
             );

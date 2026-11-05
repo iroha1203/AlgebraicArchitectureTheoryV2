@@ -63,7 +63,6 @@ pub(in crate::observed::local_result) fn affine_map(
         ]),
         vec![source, target, map, offset],
         None,
-        None,
     )
 }
 pub(in crate::observed::local_result) fn solutions(
@@ -138,7 +137,6 @@ pub(in crate::observed::local_result) fn solutions(
         Json::Obj(fields.into()),
         args,
         None,
-        None,
     )?;
     let values = b.push(
         NodeType::Domain,
@@ -148,7 +146,6 @@ pub(in crate::observed::local_result) fn solutions(
             ("solutions", solution.wire()),
         ]),
         vec![solution],
-        None,
         None,
     )?;
     let local_fiber = linear::Fiber {
@@ -242,7 +239,6 @@ pub(super) fn build(
             .chain(subjects.iter().copied())
             .collect(),
         None,
-        None,
     )?;
     let (equation, mut equation_domain, mut eq_coeff, _) = solutions(
         b,
@@ -290,7 +286,6 @@ pub(super) fn build(
             ),
         ]),
         std::iter::once(target).chain(subjects).collect(),
-        None,
         None,
     )?;
     let mut instances = vec![];
@@ -364,7 +359,6 @@ pub(super) fn build(
             .chain(requirements.iter().copied())
             .collect(),
         None,
-        None,
     )?;
     let mut da = integer_fiber::multiply(&d, &action, model.action.parameter_count, c)?;
     let shift = linear::apply(&d, &offset, c)?;
@@ -417,7 +411,6 @@ pub(super) fn build(
             ]),
             vec![quotient, equation],
             None,
-            None,
         )?;
         eq_coeff = wire::module(b, ring, equation_state.rank, "image", vec![quotient])?;
         (read_module, read_domain)
@@ -445,7 +438,6 @@ pub(super) fn build(
             ("source", sem.wire()),
         ]),
         vec![restricted_action, sem],
-        None,
         None,
     )?;
     let sem_coeff = wire::module(b, ring, semantic.rank, "image", vec![restricted_action])?;
@@ -475,7 +467,7 @@ pub(super) fn build(
                 &read_action, model.action.parameter_count, &read_offset, c)?;
             let states = b.push(NodeType::Domain, "domain", Json::obj([
                 ("kind", Json::str("image")), ("map", map.wire()), ("source", allowed.wire()),
-            ]), vec![map, allowed], None, None)?;
+            ]), vec![map, allowed], None)?;
             let effective = wire::module(b, ring, image.rank, "image", vec![map])?;
             (image, map, states, effective)
         };
@@ -548,6 +540,5 @@ fn fiber_action(
     ]);
     if stage == "lawful_fiber" { fields.insert("parameter_kernel".into(), kernel.wire()); }
     b.push(NodeType::Construction(T::Action), "action", Json::Obj(fields.into()),
-        vec![parameters, states, map, kernel, stabilizer, effective, quotient, inhabited, laws],
-        None, None)
+        vec![parameters, states, map, kernel, stabilizer, effective, quotient, inhabited, laws], None)
 }

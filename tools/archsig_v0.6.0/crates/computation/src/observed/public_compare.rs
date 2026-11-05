@@ -783,9 +783,15 @@ fn completed_operation<T>(
 // 線形表示は同じBuilderが作ったPartに保持される。借用中にgraphは変更しない。
 fn vector_wire(graph: &Graph, r: NodeRef) -> Result<&Json, ValidationFailure> {
     match &value(graph, r)?.data {
-        D::Change(data) => Ok(data.wire_ref()),
-        D::Quotient(data) => Ok(data.wire_ref()),
-        D::Local(data) => Ok(data.wire_ref()),
+        D::Change(data) => data
+            .wire_ref()
+            .ok_or_else(|| internal!("Vector比較の線形表示がない").into()),
+        D::Quotient(data) => data
+            .wire_ref()
+            .ok_or_else(|| internal!("Vector比較の線形表示がない").into()),
+        D::Local(data) => data
+            .wire_ref()
+            .ok_or_else(|| internal!("Vector比較の線形表示がない").into()),
         _ => Err(internal!("Vector比較の線形表示がない").into()),
     }
 }

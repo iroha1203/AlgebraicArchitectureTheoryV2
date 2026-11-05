@@ -228,7 +228,6 @@ fn example(
         ]),
         args,
         None,
-        None,
     )
 }
 struct Generator {
@@ -995,7 +994,6 @@ pub(super) fn retain(
                     ("clauses", Json::Arr(clauses)),
                 ]),
                 all,
-                None,
                 None,
             )?,
         );

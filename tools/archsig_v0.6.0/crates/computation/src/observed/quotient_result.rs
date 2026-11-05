@@ -40,7 +40,7 @@ impl PartialEq for Data {
 impl Eq for Data {}
 impl Data {
     pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
-        EvidenceKind::from_wire(&self.part().wire)
+        self.part().evidence_kind()
     }
     pub(super) fn overrides(
         &self,
@@ -70,10 +70,10 @@ impl Data {
         self.part().construction
     }
     pub(super) fn wire(&self) -> Json {
-        self.part().wire.clone()
+        self.part().wire()
     }
-    pub(super) fn wire_ref(&self) -> &Json {
-        &self.part().wire
+    pub(super) fn wire_ref(&self) -> Option<&Json> {
+        self.part().wire_ref()
     }
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
         (self.part().support.clone(), self.part().scope.clone())
@@ -109,7 +109,7 @@ impl Data {
         if !allowed {
             return None;
         }
-        let Json::Obj(wire) = &self.part().wire else {
+        let Some(Json::Obj(wire)) = self.part().wire_ref() else {
             return None;
         };
         let value = wire.get(field)?;
@@ -138,7 +138,6 @@ fn domain(
             ("elements", refs(items)),
         ]),
         items.iter().chain(dependencies).copied().collect(),
-        None,
         None,
     )
 }
@@ -383,7 +382,6 @@ fn compute(
             },
             vec![reference],
             None,
-            None,
         )?;
         arguments.extend([source_domain, classes_domain]);
         let projection = b.push(
@@ -396,7 +394,6 @@ fn compute(
                 ("pairs", Json::Arr(projection_pairs)),
             ]),
             arguments.clone(),
-            None,
             None,
         )?;
         arguments.push(projection);
@@ -427,7 +424,6 @@ fn compute(
                         ("pairs", Json::Arr(descent_pairs)),
                     ]),
                     args,
-                    None,
                     None,
                 )?;
                 arguments.push(map);
@@ -469,14 +465,13 @@ fn compute(
             ]),
             arguments,
             None,
-            None,
         )?;
         let mut outputs = BTreeMap::from([("quotient".into(), quotient)]);
         let mut evidence = vec![];
         let mut claim = None;
         let mut status = Decision::Established;
         if let Some((name, _)) = &table.law {
-            let Json::Obj(wire) = &mut b.parts[quotient.0 - base].wire else {
+            let Some(Json::Obj(wire)) = b.parts[quotient.0 - base].wire_mut() else {
                 unreachable!()
             };
             wire.insert("law".into(), Json::str(name));
@@ -505,7 +500,6 @@ fn compute(
                         ),
                     ]),
                     vec![reference, first, second, view, left, right],
-                    None,
                     None,
                 )?);
             }
