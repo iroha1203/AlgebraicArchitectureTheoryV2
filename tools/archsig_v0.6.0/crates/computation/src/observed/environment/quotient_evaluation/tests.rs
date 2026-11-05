@@ -11,8 +11,8 @@ fn inputs(extra: &str) -> archsig_input::input::CheckedInputs {
 fn data(name: &str, args: Vec<Scalar>) -> Scalar {
     let (family, _) = name.rsplit_once('.').unwrap();
     Scalar::Data {
-        family: family.into(),
-        constructor: name.into(),
+        constructor: crate::observed::result::DataConstructor::new(family, name.into())
+            .expect("valid Data constructor"),
         args,
     }
 }
@@ -57,6 +57,10 @@ fn finite_data_values_validate_names_arity_payload_and_family_before_equality() 
     let left = data("Pair.Token.Left", vec![Scalar::Bool(false)]);
     let right = data("Pair.Token.Right", vec![Scalar::Bool(false)]);
     let empty = data("Pair.Token.Empty", vec![]);
+    assert!(
+        crate::observed::result::DataConstructor::new("Pair.Token", "Pair.Other.Left".into())
+            .is_err()
+    );
     for value in [&left, &right, &empty] {
         data::check(value, i.law(), &quiet()).unwrap();
     }
@@ -92,11 +96,6 @@ fn finite_data_values_validate_names_arity_payload_and_family_before_equality() 
         data("Pair.Token.Left", vec![]),
         data("Pair.Token.Left", vec![Scalar::Z(0.into())]),
         data("Pair.Token.Empty", vec![Scalar::Bool(false)]),
-        Scalar::Data {
-            family: "Pair.Token".into(),
-            constructor: "Pair.Other.Left".into(),
-            args: vec![Scalar::Bool(false)],
-        },
     ] {
         assert!(data::check(&value, i.law(), &quiet()).is_err(), "{value:?}");
     }

@@ -162,7 +162,7 @@ impl Value {
             Self::Known(Scalar::Data {
                 constructor, args, ..
             }) => Some((
-                constructor.to_string(),
+                constructor.name().to_string(),
                 args.iter().cloned().map(Self::Known).collect(),
             )),
             _ => None,
@@ -1154,12 +1154,13 @@ impl Term {
                     return Err(internal!("Term constructor引数数が違う").into());
                 }
                 Scalar::Data {
-                    family: family.clone(),
-                    constructor: law
-                        .resolved_names()
-                        .get(reference)
-                        .ok_or(internal!("constructorの検査済み名がない"))?
-                        .clone(),
+                    constructor: crate::observed::result::DataConstructor::new(
+                        family,
+                        law.resolved_names()
+                            .get(reference)
+                            .ok_or(internal!("constructorの検査済み名がない"))?
+                            .clone(),
+                    )?,
                     args: values,
                 }
             }

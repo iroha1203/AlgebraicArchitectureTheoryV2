@@ -4,7 +4,8 @@ mod recursive_tree_fixture {
 
 fn recursive_tree_private_inputs() -> archsig_input::input::InputSources {
     let definitions = recursive_tree_fixture::DEFINITIONS.as_bytes();
-    let checked = archsig_input::definition::check_definitions(&[("definition0", definitions)]).unwrap();
+    let checked =
+        archsig_input::definition::check_definitions(&[("definition0", definitions)]).unwrap();
     let digest = &checked.vocabularies()["Trees"].digest;
     archsig_input::input::InputSources::from_bytes(
         vec![definitions.to_vec()],
@@ -56,7 +57,9 @@ fn recursive_tree_rechecks_original_constructor_payload_support_and_scope() {
         else {
             unreachable!()
         };
-        *constructor = "Trees.Tree.Empty".into();
+        *constructor =
+            crate::observed::result::DataConstructor::new("Trees.Tree", "Trees.Tree.Empty".into())
+                .expect("valid Data constructor");
     });
     completion_mutation(&result, target, |nodes| {
         let Some(Payload::Scalar(value)) = &mut nodes[target].payload else {

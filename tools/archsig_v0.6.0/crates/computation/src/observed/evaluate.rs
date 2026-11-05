@@ -7329,21 +7329,26 @@ reading Calc {{
         for mutation in 0..4 {
             let mut changed = prefix.to_vec();
             let node = &mut changed[value];
-            let Some(Payload::Scalar(Scalar::Data {
-                family,
-                constructor,
-                args,
-            })) = &mut node.payload
+            let Some(Payload::Scalar(Scalar::Data { constructor, args })) = &mut node.payload
             else {
                 unreachable!()
             };
             match mutation {
                 0 => {
-                    *family = "Numeric.Other".into();
-                    *constructor = "Numeric.Other.Pair".into();
-                    node.ty = NodeType::Value(Type::Data(family.clone()));
+                    *constructor = crate::observed::result::DataConstructor::new(
+                        "Numeric.Other",
+                        "Numeric.Other.Pair".into(),
+                    )
+                    .expect("valid Data constructor");
+                    node.ty = NodeType::Value(Type::Data(constructor.family().to_owned()));
                 }
-                1 => *constructor = "Numeric.Packet.Swap".into(),
+                1 => {
+                    *constructor = crate::observed::result::DataConstructor::new(
+                        "Numeric.Packet",
+                        "Numeric.Packet.Swap".into(),
+                    )
+                    .expect("valid Data constructor")
+                }
                 2 => {
                     args.swap(0, 1);
                     node.arguments.swap(0, 1);
@@ -8671,19 +8676,25 @@ reading Calc {{
             .0;
         for variant in 0..4 {
             completion_mutation(&result, member, |nodes| {
-                let Some(Payload::Scalar(Scalar::Data {
-                    family,
-                    constructor,
-                    args,
-                })) = &mut nodes[member].payload
+                let Some(Payload::Scalar(Scalar::Data { constructor, args })) =
+                    &mut nodes[member].payload
                 else {
                     unreachable!()
                 };
                 match variant {
-                    0 => *constructor = "ClosedValue.D.Forged".into(),
+                    0 => {
+                        *constructor = crate::observed::result::DataConstructor::new(
+                            "ClosedValue.D",
+                            "ClosedValue.D.Forged".into(),
+                        )
+                        .expect("valid Data constructor")
+                    }
                     1 => {
-                        *family = "ClosedValue.Twin".into();
-                        *constructor = "ClosedValue.Twin.On".into();
+                        *constructor = crate::observed::result::DataConstructor::new(
+                            "ClosedValue.Twin",
+                            "ClosedValue.Twin.On".into(),
+                        )
+                        .expect("valid Data constructor");
                         nodes[member].ty = NodeType::Value(Type::Data("ClosedValue.Twin".into()));
                     }
                     2 => args.clear(),
@@ -8700,7 +8711,11 @@ reading Calc {{
             else {
                 unreachable!()
             };
-            *constructor = "ClosedValue.D.Forged".into();
+            *constructor = crate::observed::result::DataConstructor::new(
+                "ClosedValue.D",
+                "ClosedValue.D.Forged".into(),
+            )
+            .expect("valid Data constructor");
         });
         completion_mutation(&result, fields[1], |nodes| {
             let Some(Payload::Scalar(Scalar::Data { args, .. })) = &mut nodes[fields[1]].payload

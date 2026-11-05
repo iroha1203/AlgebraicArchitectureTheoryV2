@@ -64,8 +64,11 @@ fn scalar_parts_preserve_previous_wire_without_retaining_json() {
         },
         Scalar::Term(Box::new(term)),
         Scalar::Data {
-            family: "F".into(),
-            constructor: QualifiedName::parse("F.C".into()),
+            constructor: crate::observed::result::DataConstructor::new(
+                "F",
+                QualifiedName::parse("F.C".into()),
+            )
+            .expect("valid Data constructor"),
             args: vec![Scalar::Bool(false)],
         },
         Scalar::Map {
@@ -273,13 +276,19 @@ fn wire_order_check_does_not_compare_hidden_scalar_metadata_again() {
         ),
         (
             Scalar::Data {
-                family: "F".into(),
-                constructor: QualifiedName::parse("F.C".into()),
+                constructor: crate::observed::result::DataConstructor::new(
+                    "F",
+                    QualifiedName::parse("F.C".into()),
+                )
+                .expect("valid Data constructor"),
                 args: vec![],
             },
             Scalar::Data {
-                family: "G".into(),
-                constructor: QualifiedName::parse("G.C".into()),
+                constructor: crate::observed::result::DataConstructor::new(
+                    "G",
+                    QualifiedName::parse("G.C".into()),
+                )
+                .expect("valid Data constructor"),
                 args: vec![],
             },
         ),
@@ -330,8 +339,11 @@ fn scalar_wire_order_comparison_keeps_deep_container_stack_growth() {
                     pairs: vec![(Scalar::Unit, value)],
                 },
                 _ => Scalar::Data {
-                    family: "F".into(),
-                    constructor: archsig_common::names::QualifiedName::parse("F.C".into()),
+                    constructor: crate::observed::result::DataConstructor::new(
+                        "F",
+                        archsig_common::names::QualifiedName::parse("F.C".into()),
+                    )
+                    .expect("valid Data constructor"),
                     args: vec![value],
                 },
             };
@@ -402,4 +414,23 @@ fn path_parts_keep_the_original_typed_reference_wire_and_equality() {
         assert!(legacy(part) != legacy(&changed));
         assert_ne!(*part, changed);
     }
+}
+
+#[test]
+fn unregistered_data_keeps_type_shape_clone_and_wire_without_law_lookup() {
+    let value = Scalar::Data {
+        constructor: crate::observed::result::DataConstructor::new("Unknown", "Unknown.F".into())
+            .unwrap(),
+        args: vec![Scalar::Bool(false)],
+    };
+    assert_eq!(value.ty(), Type::Data("Unknown".into()));
+    super::super::data::check_shape(&value, &Control::unlimited()).unwrap();
+    assert_eq!(value, value.clone());
+    assert_eq!(
+        value.wire(),
+        Json::obj([
+            ("tag", Json::str("F")),
+            ("args", Json::Arr(vec![Json::Bool(false)])),
+        ])
+    );
 }

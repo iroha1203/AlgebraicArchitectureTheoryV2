@@ -110,16 +110,14 @@ pub(super) fn scalar(a: &Scalar, b: &Scalar, c: &Control) -> Result<bool, Valida
             (Scalar::Tuple(a), Scalar::Tuple(b)) => scalars(a, b, c)?,
             (
                 Scalar::Data {
-                    family: f,
                     constructor: k,
                     args: a,
                 },
                 Scalar::Data {
-                    family: g,
                     constructor: l,
                     args: b,
                 },
-            ) => f == g && k == l && scalars(a, b, c)?,
+            ) => k == l && scalars(a, b, c)?,
             _ => false,
         };
         tick(c)?;

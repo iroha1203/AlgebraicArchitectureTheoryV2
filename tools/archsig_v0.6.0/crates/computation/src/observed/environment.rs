@@ -4752,8 +4752,7 @@ impl<'a> Environment<'a> {
                 return Err(internal!("Data構成型が違う").into());
             };
             Scalar::Data {
-                family: family.clone(),
-                constructor,
+                constructor: crate::observed::result::DataConstructor::new(family, constructor)?,
                 args: values.to_vec(),
             }
         } else {
