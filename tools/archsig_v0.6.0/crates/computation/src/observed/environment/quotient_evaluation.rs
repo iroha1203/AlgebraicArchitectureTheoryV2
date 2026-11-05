@@ -431,8 +431,8 @@ pub(in crate::observed) fn compute(
             match input
                 .search
                 .solutions
-                .iter()
-                .find(|row| row.candidate == index)
+                .get(index)
+                .filter(|row| row.candidate == index)
                 .and_then(|row| row.member)
             {
                 Some(false) => continue,
