@@ -72,6 +72,18 @@ impl ActionDifference {
         &self.right
     }
 }
+impl CorrespondenceResult {
+    /// 同じ入力から構成済みの保存結果を操作へ転記する。一般のmap再照合入口とは分ける。
+    pub(crate) fn operation_retained(
+        &self,
+        control: &Control,
+    ) -> Result<Option<ConfigurationOperation>, OperationFailure> {
+        self.map
+            .as_ref()
+            .map(|map| from_verified_map_retained(map.clone(), control))
+            .transpose()
+    }
+}
 impl ConfigurationOperation {
     /// 保存確認済みのmapを再照合して操作を構成する。候補やPathを受け取らない。
     pub fn from_map(
@@ -680,6 +692,11 @@ mod tests {
     };
     use std::{cell::Cell, rc::Rc};
     fn inputs() -> CheckedInputs {
+        inputs_with_map(include_bytes!(
+            "../../../../../tests/fixtures/configuration-operation.archmap.json"
+        ))
+    }
+    fn inputs_with_map(map: &[u8]) -> CheckedInputs {
         check_inputs(
             InputSources::from_bytes(
                 vec![
@@ -688,14 +705,98 @@ mod tests {
                 ],
                 include_bytes!("../../../../../tests/fixtures/configuration-operation.law")
                     .to_vec(),
-                include_bytes!(
-                    "../../../../../tests/fixtures/configuration-operation.archmap.json"
-                )
-                .to_vec(),
+                map.to_vec(),
             ),
             &Control::unlimited(),
         )
         .unwrap()
+    }
+    #[test]
+    fn fresh_correspondence_transfers_the_same_operation_and_retains_final_stop() {
+        let inputs = inputs();
+        let result = correspondence_retained(
+            &inputs,
+            "v",
+            "m",
+            "Reservations",
+            None,
+            &Control::unlimited(),
+        )
+        .unwrap();
+        let map = result.map().expect("保存する対応");
+        let general =
+            ConfigurationOperation::from_map_retained(&inputs, map, &Control::unlimited()).unwrap();
+        let count = Rc::new(Cell::new(0usize));
+        let seen = count.clone();
+        let control = Control::new(move |point| {
+            if point == Checkpoint::ConfigurationOperation {
+                seen.set(seen.get() + 1);
+            }
+            None
+        });
+        let fresh = result.operation_retained(&control).unwrap().unwrap();
+        assert_eq!(fresh, general);
+        assert_eq!(fresh.source().subject().subject, "A");
+        assert_eq!(fresh.target().subject().subject, "B");
+        assert_eq!(fresh.word().len(), 1);
+        assert_eq!(fresh.word()[0].subject, "m");
+        assert_eq!(fresh.map(), map);
+        let last = count.get();
+        assert!(last > 1);
+        for at in 1..=last {
+            let count = Rc::new(Cell::new(0usize));
+            let seen = count.clone();
+            let control = Control::new(move |point| {
+                if point == Checkpoint::ConfigurationOperation {
+                    seen.set(seen.get() + 1);
+                }
+                (seen.get() >= at).then_some(Signal::Int)
+            });
+            let failure = result.operation_retained(&control).unwrap_err();
+            assert_eq!(failure.cause, ConstructionFailure::Stopped(Signal::Int));
+            assert_eq!(count.get(), at);
+            if at == last {
+                assert_eq!(failure.partial.as_deref(), Some(&fresh));
+            } else {
+                assert!(failure.partial.is_none());
+            }
+            assert_eq!(
+                control.checkpoint(Checkpoint::ConfigurationOperation),
+                Err(Signal::Int)
+            );
+            assert_eq!(count.get(), at);
+        }
+    }
+    #[test]
+    fn refuted_correspondence_has_no_operation_or_added_stop_checkpoint() {
+        let map =
+            include_str!("../../../../../tests/fixtures/configuration-operation.archmap.json");
+        let old = r#""id":"m-states","subject":"m","field":"Reservations.Migration.states","value":[[["v","p"],["v","r"]],[["v","q"],["v","s"]]]"#;
+        assert!(map.contains(old));
+        let map = map.replace(
+            old,
+            r#""id":"m-states","subject":"m","field":"Reservations.Migration.states","value":[[["v","p"],["v","s"]],[["v","q"],["v","r"]]]"#,
+        );
+        let inputs = inputs_with_map(map.as_bytes());
+        let result = correspondence_retained(
+            &inputs,
+            "v",
+            "m",
+            "Reservations",
+            None,
+            &Control::unlimited(),
+        )
+        .unwrap();
+        assert!(result.map().is_none());
+        assert!(!result.counterexamples().is_empty());
+        let count = Rc::new(Cell::new(0usize));
+        let seen = count.clone();
+        let control = Control::new(move |_| {
+            seen.set(seen.get() + 1);
+            Some(Signal::Term)
+        });
+        assert_eq!(result.operation_retained(&control).unwrap(), None);
+        assert_eq!(count.get(), 0);
     }
     #[test]
     fn recheck_rejects_forged_words_maps_origin_objects_and_composition_edges() {

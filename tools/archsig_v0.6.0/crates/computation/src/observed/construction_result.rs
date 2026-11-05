@@ -1314,11 +1314,9 @@ impl MapWitness {
             },
         };
         let mut operation = None;
-        if stopped.is_none()
-            && let Some(map) = result.map()
-        {
-            match ConfigurationOperation::from_map_retained(&inputs, map, control) {
-                Ok(value) => operation = Some(value),
+        if stopped.is_none() {
+            match result.operation_retained(control) {
+                Ok(value) => operation = value,
                 Err(failure) => match failure.into_parts() {
                     (ConstructionFailure::Stopped(stop), partial) => {
                         stopped = Some(stop);
