@@ -11,15 +11,15 @@ use crate::observed::{
     finite_integer_function::{FiniteIntegerFunction, FiniteIntegerRing},
 };
 
-pub(in crate::observed) struct FiniteAutomaticLawFamily {
-    parameters: FiniteParameterRealizations,
+pub(in crate::observed) struct FiniteAutomaticLawFamily<S = DetailedParameters> {
+    parameters: FiniteParameterRealizations<S>,
     family: Option<AutomaticLawValuations>,
 }
-pub(in crate::observed) struct AutomaticLawFailure {
+pub(in crate::observed) struct AutomaticLawFailure<S = DetailedParameters> {
     pub cause: ValidationFailure,
-    pub partial: Option<Box<FiniteAutomaticLawFamily>>,
+    pub partial: Option<Box<FiniteAutomaticLawFamily<S>>>,
 }
-impl std::fmt::Debug for AutomaticLawFailure {
+impl<S> std::fmt::Debug for AutomaticLawFailure<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("AutomaticLawFailure")
             .field("cause", &self.cause)
@@ -27,8 +27,8 @@ impl std::fmt::Debug for AutomaticLawFailure {
             .finish()
     }
 }
-impl FiniteAutomaticLawFamily {
-    pub(in crate::observed) fn parameters(&self) -> &FiniteParameterRealizations {
+impl<S: ParameterSink> FiniteAutomaticLawFamily<S> {
+    pub(in crate::observed) fn parameters(&self) -> &FiniteParameterRealizations<S> {
         &self.parameters
     }
     pub(in crate::observed) fn family(&self) -> Option<&AutomaticLawValuations> {
@@ -49,7 +49,7 @@ impl FiniteAutomaticLawFamily {
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
         c: &Control,
-    ) -> Result<(), AutomaticLawFailure> {
+    ) -> Result<(), AutomaticLawFailure<S>> {
         let fail = |cause| AutomaticLawFailure {
             cause,
             partial: None,
@@ -122,71 +122,32 @@ pub(super) fn discover_law_reads(
     }
     Ok(())
 }
-fn same_bindings(
-    a: &[(String, Scalar)],
-    b: &[(String, Scalar)],
-    c: &Control,
-) -> Result<bool, ValidationFailure> {
-    if a.len() != b.len() {
-        return Ok(false);
-    }
-    for ((name, a), (other, b)) in a.iter().zip(b) {
-        tick(c)?;
-        if name != other || !validation_identity::scalar(a, b, c)? {
-            return Ok(false);
-        }
-    }
-    Ok(true)
-}
-fn selected_columns(
-    parameters: &FiniteParameterRealizations,
+fn selected_columns<S: ParameterSink>(
+    parameters: &FiniteParameterRealizations<S>,
     c: &Control,
 ) -> Result<Vec<(usize, usize, Vec<(String, Scalar)>)>, ValidationFailure> {
-    let mut carriers = vec![];
-    for (instance, original) in parameters.readings.instances().iter().enumerate() {
-        tick(c)?;
-        if original.declaration().kind != "law" {
-            continue;
-        }
-        let mut bindings: Vec<Vec<(String, Scalar)>> = vec![];
-        for point in &parameters.rows {
-            for object in &point.objects {
-                let entry = object
-                    .entries()
-                    .iter()
-                    .find(|e| e.instance == instance)
-                    .ok_or(internal!("自動Law族の元instanceがない"))?;
-                for row in &entry.rows {
-                    tick(c)?;
-                    let mut duplicate = false;
-                    for previous in &bindings {
-                        duplicate |= same_bindings(previous, &row.bindings, c)?;
-                    }
-                    if !duplicate {
-                        bindings.push(row.bindings.clone());
-                    }
-                }
-            }
-        }
-        for binding in bindings {
-            carriers.push((instance, binding));
-        }
-    }
-    let mut selected = vec![];
-    for object in 0..parameters.readings.objects().len() {
-        for (instance, bindings) in &carriers {
-            tick(c)?;
-            selected.push((object, *instance, bindings.clone()));
-        }
-    }
-    Ok(selected)
+    parameters.storage.columns(parameters.readings(), c)
 }
 pub(in crate::observed) fn finite_automatic_law_family(
     inputs: &CheckedInputs,
     readings: &ObjectReadingInstances,
     c: &Control,
 ) -> Result<FiniteAutomaticLawFamily, AutomaticLawFailure> {
-    let parameters = match compute(inputs, readings, true, c) {
+    automatic_with_sink::<DetailedParameters>(inputs, readings, c)
+}
+pub(in crate::observed) fn finite_automatic_law_family_compact(
+    inputs: &CheckedInputs,
+    readings: &ObjectReadingInstances,
+    c: &Control,
+) -> Result<FiniteAutomaticLawFamily<ParameterCarriers>, AutomaticLawFailure<ParameterCarriers>> {
+    automatic_with_sink::<ParameterCarriers>(inputs, readings, c)
+}
+fn automatic_with_sink<S: ParameterSink>(
+    inputs: &CheckedInputs,
+    readings: &ObjectReadingInstances,
+    c: &Control,
+) -> Result<FiniteAutomaticLawFamily<S>, AutomaticLawFailure<S>> {
+    let parameters = match compute_sink::<S>(inputs, readings, true, c) {
         Ok(p) => p,
         Err(error) => {
             return Err(AutomaticLawFailure {

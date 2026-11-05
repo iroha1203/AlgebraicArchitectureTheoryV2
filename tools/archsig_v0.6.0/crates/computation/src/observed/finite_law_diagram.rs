@@ -8,7 +8,8 @@ use super::{
     environment::{
         Environment,
         finite_law_valuations::object::instances::realizations::automatic::{
-            AutomaticLawValuations, ObservedLawReading, finite_automatic_law_family,
+            AutomaticLawValuations, ObservedLawReading,
+            finite_automatic_law_family_compact as finite_automatic_law_family,
         },
     },
     result::*,

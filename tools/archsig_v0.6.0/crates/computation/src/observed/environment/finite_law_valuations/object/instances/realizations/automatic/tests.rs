@@ -11,6 +11,30 @@ fn reading(i: &CheckedInputs, root: &str) -> ObjectReadingInstances {
 }
 fn run(i: &CheckedInputs, r: &ObjectReadingInstances) -> FiniteAutomaticLawFamily {
     let result = finite_automatic_law_family(i, r, &quiet()).unwrap();
+    let compact = finite_automatic_law_family_compact(i, r, &quiet()).unwrap();
+    assert_eq!(result.parameters.positions, compact.parameters.positions);
+    assert_eq!(result.parameters.types, compact.parameters.types);
+    assert_eq!(result.parameters.domain, compact.parameters.domain);
+    assert_eq!(
+        result.parameters.domain_complete,
+        compact.parameters.domain_complete
+    );
+    assert_eq!(
+        result.parameters.observed_point,
+        compact.parameters.observed_point
+    );
+    assert_eq!(result.parameters.state, compact.parameters.state);
+    if result.parameters.is_complete() {
+        assert_eq!(
+            selected_columns(&result.parameters, &quiet()).unwrap(),
+            selected_columns(&compact.parameters, &quiet()).unwrap()
+        );
+    }
+    match (&result.family, compact.family) {
+        (Some(full), Some(compact)) => full.value.check_expected(compact.value, &quiet()).unwrap(),
+        (None, None) => {}
+        _ => panic!("詳細/compactの完成族が違う"),
+    }
     if let Some(family) = result.family().filter(|family| family.domain_complete()) {
         // 保存行とは独立に、完成候補から制約付き環境を新構築して全元列を再評価する。
         // indicatorだけでなく元operand・成分・支持・Scope・行番号も照合する。
