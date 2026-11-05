@@ -1208,6 +1208,37 @@ impl Payload {
             _ => None,
         }
     }
+    // 保存先が読むEvaluation欄だけを、nativeを借用して描画する。
+    // full wireは独立のまま残し、内部検査のparts/expressionを省かない。
+    fn evaluation_output_fields(
+        &self,
+        include_bindings_and_value: bool,
+    ) -> Option<archsig_common::canonical::JsonObject> {
+        let Self::Evaluation {
+            environment,
+            bindings,
+            value,
+            applicability,
+            ..
+        } = self
+        else {
+            return None;
+        };
+        let mut fields = archsig_common::canonical::JsonObject::from([(
+            "applicability".into(),
+            Json::str(*applicability),
+        )]);
+        if let Some(environment) = environment {
+            fields.insert("environment".into(), environment.wire());
+        }
+        if include_bindings_and_value {
+            fields.insert("bindings".into(), bindings_wire(bindings));
+            if let Some(value) = value {
+                fields.insert("value".into(), value.wire());
+            }
+        }
+        Some(fields)
+    }
     pub(super) fn wire(&self) -> Json {
         match self {
             Self::Construction(value) => value.wire(),
@@ -1589,38 +1620,54 @@ impl Node {
         self.wire_with_support(id, prior, true)
     }
     fn wire_with_support(&self, id: usize, prior: &[Node], include_support: bool) -> Json {
-        let mut wire =
-            BTreeMap::from([
-                ("id".into(), Json::str(format!("n{id}"))),
-                ("type".into(), self.ty.wire()),
-                (
-                    "state".into(),
-                    Json::str(
-                        if self.payload.as_ref().is_some_and(
-                            |p| !matches!(p, Payload::Construction(v) if v.is_blocked()),
-                        ) {
-                            "value"
-                        } else {
-                            "blocked"
-                        },
-                    ),
-                ),
-                ("rule".into(), self.rule.wire()),
-                ("arguments".into(), refs(&self.arguments)),
-                ("conditions".into(), refs(&self.conditions())),
-                ("evidence".into(), refs(&self.evidence)),
-                ("scope".into(), self.scope.wire()),
-                (
-                    "reasons".into(),
-                    Json::Arr(self.reasons.iter().map(Reason::wire).collect()),
-                ),
-            ]);
+        let mut wire = BTreeMap::from([
+            ("rule".into(), self.rule.wire()),
+            ("arguments".into(), refs(&self.arguments)),
+            ("evidence".into(), refs(&self.evidence)),
+            ("scope".into(), self.scope.wire()),
+        ]);
         if include_support {
             wire.insert(
                 "support".into(),
                 Json::Arr(self.support.iter().map(Fact::wire).collect()),
             );
         }
+        self.wire_fields(id, prior, wire, false)
+    }
+    // 保存投影だけの入口。native引数はpayloadの既出Ref解決に引き続き使う。
+    fn project_wire(&self, id: usize, prior: &[Node]) -> Json {
+        self.wire_fields(id, prior, BTreeMap::new(), true)
+    }
+    fn wire_fields(
+        &self,
+        id: usize,
+        prior: &[Node],
+        mut wire: BTreeMap<String, Json>,
+        projected: bool,
+    ) -> Json {
+        wire.extend([
+            ("id".into(), Json::str(format!("n{id}"))),
+            ("type".into(), self.ty.wire()),
+            (
+                "state".into(),
+                Json::str(
+                    if self
+                        .payload
+                        .as_ref()
+                        .is_some_and(|p| !matches!(p, Payload::Construction(v) if v.is_blocked()))
+                    {
+                        "value"
+                    } else {
+                        "blocked"
+                    },
+                ),
+            ),
+            ("conditions".into(), refs(&self.conditions())),
+            (
+                "reasons".into(),
+                Json::Arr(self.reasons.iter().map(Reason::wire).collect()),
+            ),
+        ]);
         if let Some(Payload::Construction(v)) = &self.payload
             && let Some(partial) = v.partial(&self.reasons)
         {
@@ -1633,6 +1680,15 @@ impl Node {
                 Payload::Scalar(value) => {
                     super::path_value::wire(value, prior, &self.arguments, &Control::unlimited())
                         .expect("挿入時に検査した値の既出 Ref 表示")
+                }
+                Payload::Evaluation { .. }
+                    if projected && matches!(self.ty, NodeType::Evaluation(_)) =>
+                {
+                    Json::Obj(
+                        payload
+                            .evaluation_output_fields(true)
+                            .expect("Evaluation欄"),
+                    )
                 }
                 other => other.wire(),
             };

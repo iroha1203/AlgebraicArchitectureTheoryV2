@@ -185,7 +185,7 @@ impl Environment<'_> {
             }
         }
         let mut scope = inputs.origin.scope;
-        scope.merge(&self.state.architecture_scope());
+        self.state.merge_architecture_scope(&mut scope);
         Ok(Some(SourceAnalysis {
             condition_failed: false,
             condition_pending: false,
