@@ -368,7 +368,8 @@ fn raw_reading_rejects_other_inputs_and_preserves_pending_and_failed_owned_condi
         .unwrap();
         let origin = &a.witness;
         assert_eq!(a.complete, choice.is_some());
-        let full = finite_automatic_law_family(p.inputs(), origin.readings(), &quiet()).unwrap();
+        let full =
+            finite_automatic_law_family_compact(p.inputs(), origin.readings(), &quiet()).unwrap();
         let f = full.family().unwrap();
         let mut found = false;
         for (column, _) in f.columns().iter().enumerate() {

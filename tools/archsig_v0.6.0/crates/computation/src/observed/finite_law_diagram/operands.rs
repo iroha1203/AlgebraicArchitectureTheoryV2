@@ -197,7 +197,7 @@ impl Builder<'_> {
     }
 }
 pub(super) fn append(
-    f: &AutomaticLawValuations,
+    f: &AutomaticLawFunctions,
     inputs: &CheckedInputs,
     originals: &[Original],
     columns: &[usize],

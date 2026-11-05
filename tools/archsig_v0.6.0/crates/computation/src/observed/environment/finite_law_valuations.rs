@@ -5,6 +5,8 @@ use archsig_input::input::InputSources;
 use archsig_input::law::model::{Declaration, Signature};
 use num_bigint::BigInt;
 use std::sync::Arc;
+mod row_sink;
+use row_sink::{IntegerRows, LawRows};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) enum FiniteLawState {
@@ -215,14 +217,14 @@ fn single(mut r: FiniteLawFamilyValuations) -> FiniteLawValuations {
 }
 /// 同じ原始代入を読む元Lawの一出現。列の順序・重複も元選択のまま保持する。
 #[derive(Clone)]
-pub(in crate::observed) struct FiniteLawColumn {
+pub(in crate::observed) struct FiniteLawColumn<R = Vec<FiniteLawRow>> {
     declaration: Declaration,
     source_instance: Option<usize>,
     equation_type: Option<Type>,
     bindings: Vec<(String, Scalar)>,
-    rows: Vec<FiniteLawRow>,
+    rows: R,
 }
-impl FiniteLawColumn {
+impl<R> FiniteLawColumn<R> {
     pub fn declaration(&self) -> &Declaration {
         &self.declaration
     }
@@ -231,9 +233,6 @@ impl FiniteLawColumn {
     }
     pub fn bindings(&self) -> &[(String, Scalar)] {
         &self.bindings
-    }
-    pub fn rows(&self) -> &[FiniteLawRow] {
-        &self.rows
     }
     pub fn required(&self) -> bool {
         matches!(
@@ -245,13 +244,18 @@ impl FiniteLawColumn {
         )
     }
 }
-pub(in crate::observed) struct FiniteLawFamilyValuations {
+impl FiniteLawColumn {
+    pub fn rows(&self) -> &[FiniteLawRow] {
+        &self.rows
+    }
+}
+pub(in crate::observed) struct FiniteLawFamilyValuations<R = Vec<FiniteLawRow>> {
     object: Option<Arc<object::Selection>>,
     column_objects: Option<object::Columns>,
     instance_mode: bool,
     sources: InputSources,
     selection: Vec<Arc<Selection>>,
-    columns: Vec<FiniteLawColumn>,
+    columns: Vec<FiniteLawColumn<R>>,
     owner: Arc<()>,
     positions: Vec<Fact>,
     types: Vec<Type>,
@@ -261,11 +265,11 @@ pub(in crate::observed) struct FiniteLawFamilyValuations {
     state: FiniteLawState,
     required_zero: Option<Vec<usize>>,
 }
-pub(in crate::observed) struct FiniteLawFamilyFailure {
+pub(in crate::observed) struct FiniteLawFamilyFailure<R = Vec<FiniteLawRow>> {
     pub cause: ValidationFailure,
-    pub partial: Option<Box<FiniteLawFamilyValuations>>,
+    pub partial: Option<Box<FiniteLawFamilyValuations<R>>>,
 }
-impl std::fmt::Debug for FiniteLawFamilyFailure {
+impl<R> std::fmt::Debug for FiniteLawFamilyFailure<R> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("FiniteLawFamilyFailure")
             .field("cause", &self.cause)
@@ -273,8 +277,8 @@ impl std::fmt::Debug for FiniteLawFamilyFailure {
             .finish()
     }
 }
-impl FiniteLawFamilyValuations {
-    pub fn columns(&self) -> &[FiniteLawColumn] {
+impl<R: LawRows> FiniteLawFamilyValuations<R> {
+    pub fn columns(&self) -> &[FiniteLawColumn<R>] {
         &self.columns
     }
     pub fn positions(&self) -> &[Fact] {
@@ -306,7 +310,7 @@ impl FiniteLawFamilyValuations {
         &self,
         inputs: &CheckedInputs,
         c: &Control,
-    ) -> Result<(), FiniteLawFamilyFailure> {
+    ) -> Result<(), FiniteLawFamilyFailure<R>> {
         if &self.sources != inputs.sources() {
             return Err(FiniteLawFamilyFailure {
                 cause: internal!("有限Law族の元三入力が違う").into(),
@@ -345,17 +349,18 @@ impl FiniteLawFamilyValuations {
             }
             None
         };
-        let expected = family_with_instances(
+        let expected = family_with_instance_domain_rows::<R>(
             inputs,
             &selected,
             self.object.clone(),
             self.column_objects.clone(),
             instances,
+            &[],
             c,
         )?;
         self.check_expected(expected, c)
     }
-    fn check_expected(&self, expected: Self, c: &Control) -> Result<(), FiniteLawFamilyFailure> {
+    fn check_expected(&self, expected: Self, c: &Control) -> Result<(), FiniteLawFamilyFailure<R>> {
         let result = (|| -> Result<bool, ValidationFailure> {
             tick(c)?;
             if self.sources != expected.sources
@@ -478,6 +483,25 @@ fn family_with_instance_domain(
     positions: &[Fact],
     c: &Control,
 ) -> Result<FiniteLawFamilyValuations, FiniteLawFamilyFailure> {
+    family_with_instance_domain_rows::<Vec<FiniteLawRow>>(
+        inputs,
+        selected,
+        object,
+        column_objects,
+        instance_indices,
+        positions,
+        c,
+    )
+}
+fn family_with_instance_domain_rows<R: LawRows>(
+    inputs: &CheckedInputs,
+    selected: &[(String, Vec<(String, Scalar)>)],
+    object: Option<Arc<object::Selection>>,
+    column_objects: Option<object::Columns>,
+    instance_indices: Option<Vec<usize>>,
+    positions: &[Fact],
+    c: &Control,
+) -> Result<FiniteLawFamilyValuations<R>, FiniteLawFamilyFailure<R>> {
     if instance_indices
         .as_ref()
         .is_some_and(|indices| indices.len() != selected.len() || column_objects.is_none())
@@ -609,7 +633,7 @@ fn family_with_instance_domain(
             source_instance: instance_indices.as_ref().map(|indices| indices[index]),
             equation_type,
             bindings: vec![],
-            rows: vec![],
+            rows: R::default(),
         });
         selection.push(Arc::new(Selection {
             law: law.clone(),
@@ -1459,9 +1483,9 @@ fn local_universal_truth(
         }
     })
 }
-fn populate_family(
+fn populate_family<R: LawRows>(
     inputs: &CheckedInputs,
-    r: &mut FiniteLawFamilyValuations,
+    r: &mut FiniteLawFamilyValuations<R>,
     seed_positions: &[Fact],
     c: &Control,
 ) -> Result<(), ValidationFailure> {
@@ -1534,7 +1558,9 @@ fn populate_family(
         let mut discovered = positions.clone();
         let mut admissible = vec![];
         // 拡大passの評価は局所保持し、依存閉包と全原始制約の確認後にだけ採用する。
-        let mut rows = (0..r.columns.len()).map(|_| vec![]).collect::<Vec<_>>();
+        let mut rows = (0..r.columns.len())
+            .map(|_| R::default())
+            .collect::<Vec<_>>();
         let mut blocked = false;
         let mut failure = None;
         for candidate in candidates {
@@ -1585,7 +1611,7 @@ fn populate_family(
                 }
             } else if !candidate_blocked {
                 for (column, row) in rows.iter_mut().zip(candidate_rows) {
-                    column.push(row);
+                    column.store(row, c)?;
                 }
                 admissible.push(candidate);
             }
@@ -1660,60 +1686,26 @@ fn populate_family(
     for (column, rows) in r.columns.iter_mut().zip(stable_columns) {
         column.rows = rows;
     }
-    let mut published = vec![0usize; r.columns.len()];
-    let publication = (|| -> Result<(), ValidationFailure> {
-        for point in 0..r.domain.len() {
-            c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
-            for (count, column) in published.iter_mut().zip(&mut r.columns) {
-                // 元domainの行番号を確定する公開境界。前後の停止では完成prefixだけを残す。
-                c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
-                column
-                    .rows
-                    .get_mut(point)
-                    .ok_or(internal!("安定passの元行がない"))?
-                    .point = point;
-                *count += 1;
-                c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
-            }
-        }
-        Ok(())
-    })();
-    if let Err(cause) = publication {
-        // 停止時に返す行は従来のpoint/column公開順で完成したprefixだけ。
-        for (column, count) in r.columns.iter_mut().zip(published) {
-            column.rows.truncate(count);
-        }
-        return Err(cause);
-    }
+    R::publish(
+        &mut r
+            .columns
+            .iter_mut()
+            .map(|column| &mut column.rows)
+            .collect::<Vec<_>>(),
+        r.domain.len(),
+        c,
+    )?;
     c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
-    r.state = if r
-        .columns
-        .iter()
-        .any(|q| q.rows.iter().any(|p| p.condition_failed))
-    {
+    r.state = if r.columns.iter().any(|q| q.rows.flags().condition_failed) {
         FiniteLawState::ConditionFailed
-    } else if let Some(q) = r.columns.iter().find(|q| {
-        q.rows.iter().any(|row| {
-            row.components.as_ref().is_some_and(|cs| {
-                cs.iter()
-                    .any(|p| p.left.is_some() && p.right.is_some() && p.equal.is_none())
-            })
-        })
-    }) {
+    } else if let Some(q) = r.columns.iter().find(|q| q.rows.flags().comparison_missing) {
         FiniteLawState::Unavailable {
             location: Location::Law {
                 span: q.declaration.span,
             },
             feature: "元等式の成分外延比較に必要な算法".into(),
         }
-    } else if let Some(q) = r.columns.iter().find(|q| {
-        q.rows.iter().any(|p| {
-            p.indicator.is_none()
-                || p.components
-                    .as_ref()
-                    .is_some_and(|cs| cs.iter().any(|p| p.indicator.is_none()))
-        })
-    }) {
+    } else if let Some(q) = r.columns.iter().find(|q| q.rows.flags().indicator_missing) {
         FiniteLawState::Undetermined {
             location: Location::Law {
                 span: q.declaration.span,
@@ -1732,12 +1724,9 @@ fn populate_family(
                 .flat_map(|objects| objects.columns.iter()),
         )
         .any(|object| object.has_reference_conditions())
-        && r.columns.iter().any(|column| {
-            column
-                .rows
-                .iter()
-                .any(|row| row.scope.completions && row.indicator.is_none())
-        })
+        && r.columns
+            .iter()
+            .any(|column| column.rows.flags().completion_missing)
     {
         r.domain_complete = false;
     }
@@ -1750,13 +1739,7 @@ fn populate_family(
             for q in &r.columns {
                 c.checkpoint(Checkpoint::FiniteLawRequired)?;
                 if q.required() {
-                    let row = &q.rows[point];
-                    holds &= match &row.components {
-                        Some(cs) => cs
-                            .iter()
-                            .all(|p| p.indicator.as_ref() == Some(&BigInt::from(0))),
-                        None => row.indicator.as_ref() == Some(&BigInt::from(0)),
-                    };
+                    holds &= q.rows.zero(point);
                 }
             }
             if holds {

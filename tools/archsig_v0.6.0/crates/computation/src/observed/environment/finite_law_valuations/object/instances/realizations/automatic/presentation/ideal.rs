@@ -7,8 +7,8 @@ pub(in crate::observed) enum FiniteObjectIdealKind {
     Witness { equation: usize },
     Obstruction,
 }
-pub(in crate::observed) struct FiniteObjectLawIdeal<'a, 'b> {
-    base: &'a FiniteObjectLawPresentation<'b>,
+pub(in crate::observed) struct FiniteObjectLawIdeal<'a, 'b, R = Vec<FiniteLawRow>> {
+    base: &'a FiniteObjectLawPresentation<'b, R>,
     kind: FiniteObjectIdealKind,
     equations: Vec<usize>,
     zero_points: Vec<usize>,
@@ -17,11 +17,11 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::FiniteLawQuotient)?;
     Ok(())
 }
-fn construct<'a, 'b>(
-    base: &'a FiniteObjectLawPresentation<'b>,
+fn construct<'a, 'b, R: LawRows>(
+    base: &'a FiniteObjectLawPresentation<'b, R>,
     kind: FiniteObjectIdealKind,
     c: &Control,
-) -> Result<FiniteObjectLawIdeal<'a, 'b>, ValidationFailure> {
+) -> Result<FiniteObjectLawIdeal<'a, 'b, R>, ValidationFailure> {
     tick(c)?;
     let mut equations = vec![];
     match kind {
@@ -80,26 +80,26 @@ fn construct<'a, 'b>(
         zero_points,
     })
 }
-impl<'b> FiniteObjectLawPresentation<'b> {
+impl<'b, R: LawRows> FiniteObjectLawPresentation<'b, R> {
     pub fn witness_ideal<'a>(
         &'a self,
         equation: usize,
         c: &Control,
-    ) -> Result<FiniteObjectLawIdeal<'a, 'b>, ValidationFailure> {
+    ) -> Result<FiniteObjectLawIdeal<'a, 'b, R>, ValidationFailure> {
         construct(self, FiniteObjectIdealKind::Witness { equation }, c)
     }
     pub fn required_ideal<'a>(
         &'a self,
         c: &Control,
-    ) -> Result<FiniteObjectLawIdeal<'a, 'b>, ValidationFailure> {
+    ) -> Result<FiniteObjectLawIdeal<'a, 'b, R>, ValidationFailure> {
         construct(self, FiniteObjectIdealKind::Obstruction, c)
     }
 }
-impl FiniteObjectLawIdeal<'_, '_> {
+impl<R: LawRows> FiniteObjectLawIdeal<'_, '_, R> {
     pub fn kind(&self) -> FiniteObjectIdealKind {
         self.kind
     }
-    pub fn base(&self) -> &FiniteObjectLawPresentation<'_> {
+    pub fn base(&self) -> &FiniteObjectLawPresentation<'_, R> {
         self.base
     }
     /// 各位置は元表示のinstance/全parameter/component/roleを保持した成分を指す。
@@ -136,8 +136,8 @@ impl FiniteObjectLawIdeal<'_, '_> {
     }
     pub fn recheck(
         &self,
-        base: &FiniteObjectLawPresentation<'_>,
-        family: &AutomaticLawValuations,
+        base: &FiniteObjectLawPresentation<'_, R>,
+        family: &AutomaticLawValuations<R>,
         object: usize,
         kind: FiniteObjectIdealKind,
         inputs: &CheckedInputs,

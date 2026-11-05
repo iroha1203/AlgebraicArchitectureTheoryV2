@@ -8,7 +8,7 @@ use super::{
     environment::{
         Environment,
         finite_law_valuations::object::instances::realizations::automatic::{
-            AutomaticLawValuations, ObservedLawReading, finite_automatic_law_family,
+            AutomaticLawFunctions, ObservedLawReading, finite_automatic_law_family_compact,
         },
     },
     result::*,
@@ -656,7 +656,7 @@ pub(super) fn canonical_value(value: &Scalar, c: &Control) -> Result<Scalar, Val
     Ok(result)
 }
 fn original_rows(
-    f: &AutomaticLawValuations,
+    f: &AutomaticLawFunctions,
     inputs: &CheckedInputs,
     columns: &[usize],
     parts: &mut Vec<Part>,
@@ -782,7 +782,7 @@ struct Basis {
     evaluation: Option<NodeRef>,
 }
 fn basis(
-    f: &AutomaticLawValuations,
+    f: &AutomaticLawFunctions,
     base: usize,
     parts: &mut Vec<Part>,
     c: &Control,
@@ -876,7 +876,7 @@ fn basis(
     })
 }
 fn object_plan(
-    f: &AutomaticLawValuations,
+    f: &AutomaticLawFunctions,
     inputs: &CheckedInputs,
     object: usize,
     base: usize,
@@ -965,7 +965,7 @@ fn object_plan(
 fn append_readings(
     inputs: &CheckedInputs,
     architecture: &Arc<ArchitectureWitness>,
-    family: &AutomaticLawValuations,
+    family: &AutomaticLawFunctions,
     parts: &mut Vec<Part>,
     out: &mut Diagram,
     base: usize,
@@ -1019,7 +1019,7 @@ fn append_presentation(
     inputs: &CheckedInputs,
     a: &Arc<ArchitectureWitness>,
     reference: NodeRef,
-    f: &AutomaticLawValuations,
+    f: &AutomaticLawFunctions,
     parts: &mut Vec<Part>,
     out: &mut Diagram,
     base: usize,
@@ -1173,7 +1173,7 @@ fn append_presentation(
 fn metadata(
     inputs: &CheckedInputs,
     a: &Arc<ArchitectureWitness>,
-    f: &AutomaticLawValuations,
+    f: &AutomaticLawFunctions,
     c: &Control,
 ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     let value = ConstructionValue {
@@ -1252,7 +1252,7 @@ impl Source {
             .objects()
             .get(object)
             .ok_or(internal!("有限Lawの対象が範囲外"))?;
-        let full = finite_automatic_law_family(&inputs, architecture.readings(), c)
+        let full = finite_automatic_law_family_compact(&inputs, architecture.readings(), c)
             .map_err(|e| e.cause)?;
         use super::environment::finite_law_valuations::object::instances::realizations::ParameterRealizationState;
         if let ParameterRealizationState::OutsideFinite { position, ty } = &full.parameters().state

@@ -1,5 +1,7 @@
 //! 同じ原始代入ごとに、全対象の元Law parameter域を読む。
 use super::*;
+mod sink;
+use sink::{DetailedParameters, ParameterCarriers, ParameterSink};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(in crate::observed) enum ParameterRealizationState {
@@ -15,7 +17,7 @@ pub(in crate::observed) struct ParameterRealization {
     pub objects: Vec<ObjectLawInstances>,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(in crate::observed) struct FiniteParameterRealizations {
+pub(in crate::observed) struct FiniteParameterRealizations<S = DetailedParameters> {
     sources: InputSources,
     readings: ObjectReadingInstances,
     law_dependencies: bool,
@@ -24,14 +26,14 @@ pub(in crate::observed) struct FiniteParameterRealizations {
     pub domain: Vec<Vec<Scalar>>,
     pub domain_complete: bool,
     pub observed_point: Option<usize>,
-    pub rows: Vec<ParameterRealization>,
+    storage: S,
     pub state: ParameterRealizationState,
 }
-pub(in crate::observed) struct ParameterRealizationFailure {
+pub(in crate::observed) struct ParameterRealizationFailure<S = DetailedParameters> {
     pub cause: ValidationFailure,
-    pub partial: Option<Box<FiniteParameterRealizations>>,
+    pub partial: Option<Box<FiniteParameterRealizations<S>>>,
 }
-impl std::fmt::Debug for ParameterRealizationFailure {
+impl<S> std::fmt::Debug for ParameterRealizationFailure<S> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("ParameterRealizationFailure")
             .field("cause", &self.cause)
@@ -39,7 +41,7 @@ impl std::fmt::Debug for ParameterRealizationFailure {
             .finish()
     }
 }
-impl FiniteParameterRealizations {
+impl<S: ParameterSink> FiniteParameterRealizations<S> {
     pub(in crate::observed) fn is_complete(&self) -> bool {
         self.domain_complete && self.state == ParameterRealizationState::Ready
     }
@@ -51,14 +53,14 @@ impl FiniteParameterRealizations {
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,
         c: &Control,
-    ) -> Result<(), ParameterRealizationFailure> {
+    ) -> Result<(), ParameterRealizationFailure<S>> {
         if inputs.sources() != &self.sources || readings != &self.readings {
             return Err(ParameterRealizationFailure {
                 cause: internal!("parameter代入族の元三入力またはreadingsが違う").into(),
                 partial: None,
             });
         }
-        let expected = compute(inputs, readings, self.law_dependencies, c)?;
+        let expected = compute_sink::<S>(inputs, readings, self.law_dependencies, c)?;
         if self != &expected {
             return Err(ParameterRealizationFailure {
                 cause: internal!("parameter代入族が元対象・instance・型域・直積と違う").into(),
@@ -66,6 +68,17 @@ impl FiniteParameterRealizations {
             });
         }
         Ok(())
+    }
+}
+impl std::ops::Deref for FiniteParameterRealizations {
+    type Target = DetailedParameters;
+    fn deref(&self) -> &Self::Target {
+        &self.storage
+    }
+}
+impl std::ops::DerefMut for FiniteParameterRealizations {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.storage
     }
 }
 fn evaluated_objects(
@@ -99,16 +112,16 @@ fn evaluated_objects(
     }
     Ok(objects)
 }
-fn populate_realizations(
+fn populate_realizations<S: ParameterSink>(
     inputs: &CheckedInputs,
-    result: &mut FiniteParameterRealizations,
+    result: &mut FiniteParameterRealizations<S>,
     selections: &[Arc<Selection>],
     c: &Control,
 ) -> Result<(), ValidationFailure> {
     let template = Environment::new(inputs, c)?;
     let sources = Arc::new(inputs.sources().clone());
     let mut positions: BTreeSet<Fact> = BTreeSet::new();
-    let stable_rows = loop {
+    let (stable_storage, complete) = loop {
         tick(c)?;
         loop {
             let mut expanded = positions.clone();
@@ -151,7 +164,8 @@ fn populate_realizations(
         };
         let mut discovered = positions.clone();
         let mut admissible = vec![];
-        let mut rows = vec![];
+        let mut storage = S::default();
+        let mut complete = true;
         let mut failure = None;
         for candidate in candidates {
             c.checkpoint(Checkpoint::FiniteIteration)?;
@@ -183,8 +197,9 @@ fn populate_realizations(
             if template.try_primitive_valuation_from(&values, c)?.is_some() {
                 match evaluated {
                     Ok(objects) => {
+                        complete &= objects.iter().all(ObjectLawInstances::is_complete);
+                        storage.accept(objects, &result.readings, c)?;
                         admissible.push(candidate);
-                        rows.push(objects);
                     }
                     Err(cause) if failure.is_none() => failure = Some(cause),
                     Err(_) => {}
@@ -203,7 +218,7 @@ fn populate_realizations(
         result.domain_complete = true;
         // 依存が閉じ、原始制約を通ったpassの値だけを採用する。
         // 拡大passや途中停止のrowsは局所変数のまま破棄する。
-        break rows;
+        break (storage, complete);
     };
     let mut observed = vec![];
     let mut all_known = true;
@@ -237,17 +252,10 @@ fn populate_realizations(
             }
         }
     }
-    for (point, objects) in stable_rows.into_iter().enumerate() {
-        c.checkpoint(Checkpoint::FiniteLawEvaluation)?;
-        result.rows.push(ParameterRealization { point, objects });
-        c.checkpoint(Checkpoint::FiniteLawRequired)?;
-    }
+    result.storage = stable_storage;
+    result.storage.finish(c)?;
     tick(c)?;
-    result.state = if result
-        .rows
-        .iter()
-        .all(|row| row.objects.iter().all(ObjectLawInstances::is_complete))
-    {
+    result.state = if complete {
         ParameterRealizationState::Ready
     } else {
         ParameterRealizationState::Incomplete
@@ -267,6 +275,14 @@ fn compute(
     law_dependencies: bool,
     c: &Control,
 ) -> Result<FiniteParameterRealizations, ParameterRealizationFailure> {
+    compute_sink::<DetailedParameters>(inputs, readings, law_dependencies, c)
+}
+fn compute_sink<S: ParameterSink>(
+    inputs: &CheckedInputs,
+    readings: &ObjectReadingInstances,
+    law_dependencies: bool,
+    c: &Control,
+) -> Result<FiniteParameterRealizations<S>, ParameterRealizationFailure<S>> {
     let fail = |cause| ParameterRealizationFailure {
         cause,
         partial: None,
@@ -289,7 +305,7 @@ fn compute(
         domain: vec![],
         domain_complete: false,
         observed_point: None,
-        rows: vec![],
+        storage: S::default(),
         state: ParameterRealizationState::Pending,
     };
     if let Err(cause) = populate_realizations(inputs, &mut result, &selections, c) {

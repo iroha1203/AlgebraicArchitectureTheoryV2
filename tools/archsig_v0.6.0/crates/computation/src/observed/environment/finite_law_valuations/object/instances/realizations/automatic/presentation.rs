@@ -40,9 +40,9 @@ impl FiniteObjectEquation {
         self.constant.as_ref()
     }
 }
-pub(in crate::observed) struct FiniteObjectLawPresentation<'a> {
-    family: &'a AutomaticLawValuations,
-    observation: FiniteLawObservation<'a>,
+pub(in crate::observed) struct FiniteObjectLawPresentation<'a, R = Vec<FiniteLawRow>> {
+    family: &'a AutomaticLawValuations<R>,
+    observation: FiniteLawObservation<'a, R>,
     object: usize,
     columns: Vec<usize>,
     equations: Vec<FiniteObjectEquation>,
@@ -84,13 +84,13 @@ fn components(
     }
     Ok(result)
 }
-impl AutomaticLawValuations {
+impl<R: LawRows> AutomaticLawValuations<R> {
     pub fn object_presentation<'a>(
         &'a self,
         inputs: &'a CheckedInputs,
         object: usize,
         c: &Control,
-    ) -> Result<Option<FiniteObjectLawPresentation<'a>>, ValidationFailure> {
+    ) -> Result<Option<FiniteObjectLawPresentation<'a, R>>, ValidationFailure> {
         checkpoint(c)?;
         let selected = self
             .readings
@@ -173,11 +173,11 @@ impl AutomaticLawValuations {
         }))
     }
 }
-impl FiniteObjectLawPresentation<'_> {
+impl<R: LawRows> FiniteObjectLawPresentation<'_, R> {
     pub fn object(&self) -> usize {
         self.object
     }
-    pub fn family(&self) -> &AutomaticLawValuations {
+    pub fn family(&self) -> &AutomaticLawValuations<R> {
         self.family
     }
     /// 空Tuple等式のように葉がなくても、元の全列を保持する。
@@ -190,7 +190,7 @@ impl FiniteObjectLawPresentation<'_> {
     pub fn required_zero(&self) -> &[usize] {
         &self.required_zero
     }
-    pub fn observation(&self) -> &FiniteLawObservation<'_> {
+    pub fn observation(&self) -> &FiniteLawObservation<'_, R> {
         &self.observation
     }
     pub fn evaluated(&self) -> bool {
@@ -198,7 +198,7 @@ impl FiniteObjectLawPresentation<'_> {
     }
     pub fn recheck(
         &self,
-        expected_family: &AutomaticLawValuations,
+        expected_family: &AutomaticLawValuations<R>,
         expected_object: usize,
         inputs: &CheckedInputs,
         readings: &ObjectReadingInstances,

@@ -13,7 +13,7 @@ pub(in crate::observed) struct ObservedLawReading {
     pub support: Vec<Fact>,
     pub scope: Scope,
 }
-impl AutomaticLawValuations {
+impl<R: LawRows> AutomaticLawValuations<R> {
     pub(in crate::observed) fn observed_law(
         &self,
         inputs: &CheckedInputs,
