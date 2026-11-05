@@ -534,38 +534,29 @@ pub(crate) struct Scope {
     pub assignments: bool,
     pub quantifiers: Vec<Quantifier>,
 }
+// 同じ元出現の実域間の並びを無視し、初出occurrence順と各要素の多重度を保つ。
+fn same_quantifiers(left: &[Quantifier], right: &[Quantifier]) -> bool {
+    let occurrences = |quantifiers: &[Quantifier]| {
+        let mut order = Vec::new();
+        for q in quantifiers {
+            if !order.contains(&q.occurrence) {
+                order.push(q.occurrence);
+            }
+        }
+        order
+    };
+    // 完全に同じ列なら、初出occurrence順も各要素の重複数も一致する。
+    left == right
+        || (occurrences(left) == occurrences(right)
+            && left.len() == right.len()
+            && left.iter().all(|q| {
+                left.iter().filter(|actual| *actual == q).count()
+                    == right.iter().filter(|actual| *actual == q).count()
+            }))
+}
 impl PartialEq for Scope {
     fn eq(&self, other: &Self) -> bool {
-        let occurrences = |scope: &Self| {
-            let mut order = Vec::new();
-            for q in &scope.quantifiers {
-                if !order.contains(&q.occurrence) {
-                    order.push(q.occurrence);
-                }
-            }
-            order
-        };
-        self.readings == other.readings
-            && self.snapshots == other.snapshots
-            && self.modes == other.modes
-            && self.completions == other.completions
-            && self.assignments == other.assignments
-            // 完全に同じ列なら、初出occurrence順も各要素の重複数も一致する。
-            // 列が異なる場合の順序独立な比較は従来通り行う。
-            && (self.quantifiers == other.quantifiers
-                || (occurrences(self) == occurrences(other)
-                    && self.quantifiers.len() == other.quantifiers.len()
-                    && self.quantifiers.iter().all(|q| {
-                        self.quantifiers
-                            .iter()
-                            .filter(|actual| *actual == q)
-                            .count()
-                            == other
-                                .quantifiers
-                                .iter()
-                                .filter(|actual| *actual == q)
-                                .count()
-                    })))
+        self.same_metadata(other) && same_quantifiers(&self.quantifiers, &other.quantifiers)
     }
 }
 impl Eq for Scope {}
@@ -600,6 +591,13 @@ impl Quantifier {
     }
 }
 impl Scope {
+    fn same_metadata(&self, other: &Self) -> bool {
+        self.readings == other.readings
+            && self.snapshots == other.snapshots
+            && self.modes == other.modes
+            && self.completions == other.completions
+            && self.assignments == other.assignments
+    }
     // 元式を展開したScopeを順序の正本にする。異なる実Context/Domainは
     // 省略せず、同じ元出現の実域間の表示順には意味を与えない。
     pub(super) fn order_quantifiers_like(&mut self, original: &Self) {
@@ -649,10 +647,12 @@ impl Scope {
         }
     }
     pub(crate) fn source_compatible(&self, other: &Self) -> bool {
-        let normalize = |scope: &Self| {
-            let mut copy = scope.clone();
+        if !self.same_metadata(other) {
+            return false;
+        }
+        let normalize = |quantifiers: &[Quantifier]| {
             let mut qs = Vec::new();
-            for q in &scope.quantifiers {
+            for q in quantifiers {
                 let mut q = q.clone();
                 q.domain = None;
                 q.context = None;
@@ -660,10 +660,12 @@ impl Scope {
                     qs.push(q);
                 }
             }
-            copy.quantifiers = qs;
-            copy
+            qs
         };
-        normalize(self) == normalize(other)
+        same_quantifiers(
+            &normalize(&self.quantifiers),
+            &normalize(&other.quantifiers),
+        )
     }
     pub(crate) fn merge(&mut self, other: &Self) {
         self.readings.extend(other.readings.iter().cloned());
@@ -5194,6 +5196,101 @@ mod invariant_tests {
             assert_ne!(original, changed);
             assert_ne!(changed, original);
         }
+    }
+
+    #[test]
+    fn source_compatibility_erases_only_domains_contexts_and_duplicate_projections() {
+        let q = Quantifier {
+            kind: archsig_input::law::ast::QuantKind::Forall,
+            name: "member".into(),
+            ty: Type::Bool,
+            domain: Some(NodeRef(1)),
+            occurrence: (10, 20),
+            context: Some(super::super::call::Context::default()),
+        };
+        let mut changed_context = q.clone();
+        changed_context.domain = Some(NodeRef(2));
+        changed_context.context.as_mut().unwrap().request = 1;
+        let original = quantified_scope(vec![q.clone(), changed_context.clone()]);
+        let projected = quantified_scope(vec![Quantifier {
+            domain: None,
+            context: None,
+            ..q.clone()
+        }]);
+        assert_ne!(original, projected);
+        assert!(original.source_compatible(&projected));
+        assert!(projected.source_compatible(&original));
+        // Comparison leaves the stored provenance untouched.
+        assert_eq!(original.quantifiers, vec![q.clone(), changed_context]);
+        for case in 0..4 {
+            let mut changed = q.clone();
+            match case {
+                0 => changed.kind = archsig_input::law::ast::QuantKind::Exists,
+                1 => changed.name = "different".into(),
+                2 => changed.ty = Type::Unit,
+                3 => changed.occurrence = (30, 40),
+                _ => unreachable!(),
+            }
+            let changed = quantified_scope(vec![changed]);
+            assert!(!original.source_compatible(&changed));
+            assert!(!changed.source_compatible(&original));
+        }
+    }
+
+    #[test]
+    fn source_compatibility_keeps_metadata_and_occurrence_order() {
+        let a = Quantifier {
+            kind: archsig_input::law::ast::QuantKind::Forall,
+            name: "a".into(),
+            ty: Type::Bool,
+            domain: None,
+            occurrence: (10, 20),
+            context: None,
+        };
+        let b = Quantifier {
+            name: "b".into(),
+            ..a.clone()
+        };
+        let c = Quantifier {
+            name: "c".into(),
+            occurrence: (30, 40),
+            ..a.clone()
+        };
+        let original = quantified_scope(vec![a.clone(), b.clone(), c.clone()]);
+        let reordered = quantified_scope(vec![b.clone(), a.clone(), c.clone()]);
+        assert!(original.source_compatible(&reordered));
+        assert!(reordered.source_compatible(&original));
+        let different_order = quantified_scope(vec![c.clone(), a.clone(), b.clone()]);
+        assert!(!original.source_compatible(&different_order));
+        assert!(!different_order.source_compatible(&original));
+        // Raw multiplicity remains significant to Scope equality; source projection
+        // deliberately collapses equal quantifiers after erasing domain/context.
+        let duplicate = quantified_scope(vec![a.clone(), a.clone(), b.clone(), c]);
+        assert_ne!(original, duplicate);
+        assert!(original.source_compatible(&duplicate));
+        let missing = quantified_scope(vec![a, b]);
+        assert!(!original.source_compatible(&missing));
+        for case in 0..5 {
+            let mut changed = original.clone();
+            match case {
+                0 => {
+                    changed.readings.insert("other".into());
+                }
+                1 => {
+                    changed.snapshots.insert("other".into());
+                }
+                2 => {
+                    changed.modes.insert("other".into());
+                }
+                3 => changed.completions = true,
+                4 => changed.assignments = true,
+                _ => unreachable!(),
+            }
+            assert!(!original.source_compatible(&changed));
+            assert!(!changed.source_compatible(&original));
+        }
+        assert!(Scope::default().source_compatible(&Scope::default()));
+        assert!(!Scope::default().source_compatible(&original));
     }
 
     fn bool_set(values: &[bool]) -> Scalar {
