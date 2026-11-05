@@ -775,6 +775,8 @@ fn vector_equal(
     right: NodeRef,
     c: &Control,
 ) -> Result<bool, ValidationFailure> {
+    use archsig_common::types::Type;
+    use archsig_input::law::ast::BinOp;
     use num_bigint::BigInt as Z;
     let NodeType::Vector(module) = graph.get(left)?.ty else {
         return Err(internal!("比較のVector型がない").into());
@@ -782,19 +784,39 @@ fn vector_equal(
     if graph.get(right)?.ty != NodeType::Vector(module) {
         return Err(internal!("比較のModuleが違う").into());
     }
-    let scalar = |owner: NodeRef, wire: &Json| -> Result<Z, ValidationFailure> {
+    let Json::Obj(ref module_wire) = value(graph, module)?.wire() else {
+        return Err(internal!("Module表示がない").into());
+    };
+    let ring = graph
+        .get(module)?
+        .arguments
+        .iter()
+        .find(|r| Some(&r.wire()) == module_wire.get("ring"))
+        .ok_or(internal!("Vector比較の係数環参照がない"))?;
+    graph.expect(*ring, &NodeType::Construction(T::Ring))?;
+    let Json::Obj(ref ring_wire) = value(graph, *ring)?.wire() else {
+        return Err(internal!("Vector比較の係数環表示がない").into());
+    };
+    let coefficient = match ring_wire.get("scalar") {
+        Some(Json::Str(name)) if name == "Z" => Type::Z,
+        Some(Json::Str(name)) if name == "Q" => Type::Q,
+        _ => return Err(internal!("Vector比較の係数環がZ/Qでない").into()),
+    };
+    let scalar = |owner: NodeRef, wire: &Json| -> Result<Scalar, ValidationFailure> {
         let r = graph
             .get(owner)?
             .arguments
             .iter()
             .find(|r| r.wire() == *wire)
             .ok_or(internal!("Vector比較の座標参照がない"))?;
-        let Scalar::Z(z) = graph.scalar(*r)? else {
-            return Err(internal!("整数Moduleの座標がZでない").into());
-        };
-        Ok(z.clone())
+        c.checkpoint(Checkpoint::FiniteIteration)?;
+        let scalar = graph.scalar(*r)?;
+        if scalar.ty() != coefficient {
+            return Err(internal!("Moduleの座標と係数型が違う").into());
+        }
+        Ok(scalar.clone())
     };
-    let coordinates = |r| -> Result<Vec<Z>, ValidationFailure> {
+    let coordinates = |r| -> Result<Vec<Scalar>, ValidationFailure> {
         let Json::Obj(ref wire) = value(graph, r)?.wire() else {
             return Err(internal!("Vector表示がない").into());
         };
@@ -808,10 +830,7 @@ fn vector_equal(
     if a.len() != b.len() {
         return Err(internal!("同じModuleの座標数が違う").into());
     }
-    let Json::Obj(ref wire) = value(graph, module)?.wire() else {
-        return Err(internal!("Module表示がない").into());
-    };
-    let Some(Json::Arr(relations)) = wire.get("relations") else {
+    let Some(Json::Arr(relations)) = module_wire.get("relations") else {
         return Err(internal!("Module関係がない").into());
     };
     let mut matrix = vec![vec![]; a.len()];
@@ -827,7 +846,37 @@ fn vector_equal(
             matrix[i].push(scalar(module, x)?);
         }
     }
-    let difference = a.iter().zip(&b).map(|(a, b)| a - b).collect::<Vec<_>>();
+    let difference = a
+        .iter()
+        .zip(&b)
+        .map(|(a, b)| super::numeric::binary(BinOp::Sub, a, b, c))
+        .collect::<Result<Vec<_>, _>>()?;
+    if coefficient == Type::Q {
+        return Ok(super::field_fiber::solve(
+            &coefficient,
+            &matrix,
+            relations.len(),
+            &difference,
+            c,
+        )?
+        .particular
+        .is_some());
+    }
+    let integer = |mut value: Scalar| -> Result<Z, ValidationFailure> {
+        c.checkpoint(Checkpoint::FiniteIteration)?;
+        match &mut value {
+            Scalar::Z(value) => Ok(std::mem::take(value)),
+            _ => Err(internal!("整数Moduleの座標がZでない").into()),
+        }
+    };
+    let matrix = matrix
+        .into_iter()
+        .map(|row| row.into_iter().map(&integer).collect::<Result<Vec<_>, _>>())
+        .collect::<Result<Vec<_>, _>>()?;
+    let difference = difference
+        .into_iter()
+        .map(integer)
+        .collect::<Result<Vec<_>, _>>()?;
     Ok(
         super::integer_fiber::solve(&matrix, relations.len(), &difference, c)?
             .particular

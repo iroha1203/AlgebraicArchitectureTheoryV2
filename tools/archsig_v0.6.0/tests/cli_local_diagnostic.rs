@@ -1882,6 +1882,67 @@ fn integer_translation_local_system_generates_cech_group_and_actual_obstruction(
 }
 
 #[test]
+fn rational_local_nonzero_class_vector_compares_equal_to_itself() {
+    use crate::common::{architecture_environment as fixture, three_edge as triangle};
+    use archsig_common::canonical::Json;
+    let input = triangle::input(Some(3));
+    let dir = workdir("rational-nonzero-vector-comparison");
+    let original = String::from_utf8(input.definitions()[0].bytes().to_vec()).unwrap();
+    let definitions = original.replace("\"type\":\"Z\"", "\"type\":\"Q\"");
+    let before = definition::check_definitions(&[("d", original.as_bytes())]).unwrap();
+    let after = definition::check_definitions(&[("d", definitions.as_bytes())]).unwrap();
+    let digest = &before.vocabularies()["Coordinates"].digest;
+    let updated = &after.vocabularies()["Coordinates"].digest;
+    let law = String::from_utf8(input.law().bytes().to_vec())
+        .unwrap()
+        .replace(digest, updated)
+        .replace("d:Z", "d:Q");
+    let archmap = String::from_utf8(input.archmap().bytes().to_vec())
+        .unwrap()
+        .replace(digest, updated);
+    let mut archmap = fixture::owned(&archsig_common::json::parse(archmap.as_bytes()).unwrap());
+    for atom in fixture::atoms(&mut archmap) {
+        let Json::Obj(atom) = atom else {
+            panic!("atom")
+        };
+        if matches!(atom.get("field"), Some(Json::Str(field)) if field == "Coordinates.Point.coordinate" || field == "Coordinates.Shift.shift")
+        {
+            let value = atom["value"].clone();
+            atom.insert("value".into(), Json::Arr(vec![value, Json::str("1")]));
+        }
+    }
+    for (name, text) in [
+        ("d.json", definitions),
+        ("l.law", law),
+        ("a.json", archmap.canonical()),
+    ] {
+        std::fs::write(dir.join(name), text).unwrap();
+    }
+    let result = execute(
+        &dir,
+        "out",
+        &[
+            "a=build(Coordinates,on=@triangle/root)",
+            "l=localize($a.object,using=Coordinates.move)",
+            "d=diagnose($l.system)",
+            "same=compare($d.class.coordinates,to=$d.class.coordinates,kind=value)",
+        ],
+    );
+    assert_eq!(result.code, 1, "{}", result.stdout);
+    let json = result_json(&dir, &result);
+    let class = get(output(&json, 2, "class"), "value");
+    let vector = get(node(&json, get(class, "coordinates")), "value");
+    let coordinates = arr(get(vector, "coordinates"));
+    assert_eq!(coordinates.len(), 1);
+    let value = arr(get(node(&json, &coordinates[0]), "value"));
+    assert_eq!(s(&value[0]).parse::<i64>().unwrap().abs(), 1);
+    assert_eq!(s(&value[1]), "1");
+    let answer = &arr(get(&json, "answers"))[3];
+    assert_eq!(s(get(answer, "status")), "established");
+    assert!(has(get(answer, "outputs"), "comparison"));
+}
+
+#[test]
 fn integer_local_equation_fibers_do_not_expand_the_allowed_even_translation_image() {
     use crate::common::three_edge as triangle;
     let input = triangle::input(Some(2));
