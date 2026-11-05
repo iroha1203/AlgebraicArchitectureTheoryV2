@@ -67,6 +67,10 @@ enum Part {
     },
 }
 impl Part {
+    pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
+        matches!(self, Self::Evidence { .. }).then_some(EvidenceKind::Counterexample)
+    }
+
     fn ty(&self) -> NodeType {
         NodeType::Construction(match self {
             Self::Subject(v) => return NodeType::Value(v.ty()),
@@ -142,7 +146,10 @@ impl Part {
                 right,
                 facts,
             } => Json::obj([
-                ("kind", Json::str("counterexample")),
+                (
+                    "kind",
+                    Json::str(crate::observed::result::EvidenceKind::Counterexample.name()),
+                ),
                 (
                     "data",
                     Json::obj([
@@ -234,6 +241,9 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
+        self.part().evidence_kind()
+    }
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
     }
@@ -835,3 +845,19 @@ impl super::result_kind::ResultKind for Data {
 }
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+#[test]
+fn evidence_kind_matches_the_counterexample_display() {
+    let part = Part::Evidence {
+        subject: NodeRef(0),
+        left: NodeRef(1),
+        right: NodeRef(2),
+        facts: vec![],
+    };
+    assert_eq!(part.evidence_kind(), Some(EvidenceKind::Counterexample));
+    let Json::Obj(ref wire) = part.wire() else {
+        panic!("evidence display")
+    };
+    assert_eq!(wire.get("kind"), Some(&Json::str("counterexample")));
+}

@@ -95,6 +95,15 @@ fn refs(v: &[NodeRef]) -> Json {
     Json::Arr(v.iter().map(|r| r.wire()).collect())
 }
 impl Part {
+    pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
+        match self {
+            Self::Evidence { .. } => Some(EvidenceKind::Counterexample),
+            Self::RelationDerived { data, .. } => data.evidence_kind(),
+            Self::Derived { data, .. } => data.evidence_kind(),
+            _ => None,
+        }
+    }
+
     pub fn scalar(&self) -> Option<&Scalar> {
         match self {
             Self::RelationSource(data) => data.scalar(),
@@ -211,7 +220,10 @@ impl Part {
                 ("quantifiers", Json::Arr(vec![])),
             ]),
             Self::Evidence { left, right, facts } => Json::obj([
-                ("kind", Json::str("counterexample")),
+                (
+                    "kind",
+                    Json::str(crate::observed::result::EvidenceKind::Counterexample.name()),
+                ),
                 (
                     "data",
                     Json::obj([
@@ -1212,4 +1224,79 @@ pub(super) fn evaluate(
         reasons,
         scope: w.scope.clone(),
     })
+}
+
+#[cfg(test)]
+#[test]
+fn evidence_kind_delegates_relation_and_value_comparisons() {
+    let a = NodeRef(0);
+    let relation_examples = [
+        relations::Data::FailureEvidence {
+            left: a,
+            right: a,
+            facts: vec![],
+            arguments: vec![],
+        },
+        relations::Data::Counterexample {
+            left: a,
+            right: a,
+            closure: a,
+            originals: [a, a],
+        },
+    ];
+    for data in relation_examples {
+        assert_eq!(data.evidence_kind(), Some(EvidenceKind::Counterexample));
+        let Json::Obj(ref wire) = data.wire() else {
+            panic!("relation evidence")
+        };
+        assert_eq!(wire.get("kind"), Some(&Json::str("counterexample")));
+        assert_eq!(
+            Part::RelationDerived {
+                index: 0,
+                data: Box::new(data)
+            }
+            .evidence_kind(),
+            Some(EvidenceKind::Counterexample)
+        );
+    }
+    let data = values::Data::Counterexample {
+        bindings: vec![],
+        left: a,
+        right: a,
+        facts: vec![],
+        source: a,
+        originals: [a, a],
+    };
+    let Json::Obj(ref wire) = data.wire() else {
+        panic!("value evidence")
+    };
+    assert_eq!(wire.get("kind"), Some(&Json::str("counterexample")));
+    assert_eq!(
+        Part::Derived {
+            index: 0,
+            data: Box::new(data)
+        }
+        .evidence_kind(),
+        Some(EvidenceKind::Counterexample)
+    );
+    for part in [
+        Part::RelationDerived {
+            index: 0,
+            data: Box::new(relations::Data::Exhaustion {
+                domain: a,
+                words: vec![],
+                steps: vec![],
+            }),
+        },
+        Part::Derived {
+            index: 0,
+            data: Box::new(values::Data::Normalization {
+                before: a,
+                after: a,
+                source: a,
+            }),
+        },
+    ] {
+        assert_eq!(part.evidence_kind(), None);
+    }
 }

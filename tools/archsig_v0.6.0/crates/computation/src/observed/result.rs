@@ -1147,7 +1147,65 @@ pub(crate) enum Payload {
         facts: Vec<Fact>,
     },
 }
+/// 保存表示に残す証拠の種類。識別子は生成と分類で共有する。
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(in crate::observed) enum EvidenceKind {
+    Counterexample,
+    CompletionPair,
+    SeparatingPair,
+    CompletionFibers,
+}
+impl EvidenceKind {
+    pub(in crate::observed) fn name(self) -> &'static str {
+        match self {
+            Self::Counterexample => "counterexample",
+            Self::CompletionPair => "completion_pair",
+            Self::SeparatingPair => "separating_pair",
+            Self::CompletionFibers => "completion_fibers",
+        }
+    }
+    pub(in crate::observed) fn from_wire(wire: &Json) -> Option<Self> {
+        let Json::Obj(fields) = wire else { return None };
+        let Some(Json::Str(kind)) = fields.get("kind") else {
+            return None;
+        };
+        [
+            Self::Counterexample,
+            Self::CompletionPair,
+            Self::SeparatingPair,
+            Self::CompletionFibers,
+        ]
+        .into_iter()
+        .find(|candidate| candidate.name() == kind)
+    }
+    fn class(self) -> EvidenceClass {
+        match self {
+            Self::Counterexample | Self::CompletionPair | Self::SeparatingPair => {
+                EvidenceClass::Example
+            }
+            Self::CompletionFibers => EvidenceClass::Completion,
+        }
+    }
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(super) enum EvidenceClass {
+    Example,
+    Completion,
+    Proof,
+}
 impl Payload {
+    fn evidence_kind(&self) -> Option<EvidenceKind> {
+        match self {
+            Self::Construction(value) => value.evidence_kind(),
+            Self::Counterexample { .. }
+            | Self::PathCounterexample { .. }
+            | Self::OwnedCallCounterexample { .. }
+            | Self::ProjectionCounterexample { .. }
+            | Self::TermCounterexample { .. } => Some(EvidenceKind::Counterexample),
+            Self::CompletionPair { .. } => Some(EvidenceKind::CompletionPair),
+            _ => None,
+        }
+    }
     pub(super) fn wire(&self) -> Json {
         match self {
             Self::Construction(value) => value.wire(),
@@ -1186,7 +1244,10 @@ impl Payload {
                 first_result,
                 second_result,
             } => Json::obj([
-                ("kind", Json::str("completion_pair")),
+                (
+                    "kind",
+                    Json::str(crate::observed::result::EvidenceKind::CompletionPair.name()),
+                ),
                 (
                     "data",
                     Json::obj([
@@ -1363,7 +1424,10 @@ impl Payload {
                 ])
             }
             Self::ProjectionCounterexample { left, right, facts } => Json::obj([
-                ("kind", Json::str("counterexample")),
+                (
+                    "kind",
+                    Json::str(crate::observed::result::EvidenceKind::Counterexample.name()),
+                ),
                 (
                     "data",
                     Json::obj([
@@ -1425,7 +1489,10 @@ impl Payload {
                 right,
                 facts,
             } => Json::obj([
-                ("kind", Json::str("counterexample")),
+                (
+                    "kind",
+                    Json::str(crate::observed::result::EvidenceKind::Counterexample.name()),
+                ),
                 (
                     "data",
                     Json::obj([
@@ -1458,7 +1525,10 @@ impl Payload {
                 right,
                 facts,
             } => Json::obj([
-                ("kind", Json::str("counterexample")),
+                (
+                    "kind",
+                    Json::str(crate::observed::result::EvidenceKind::Counterexample.name()),
+                ),
                 (
                     "data",
                     Json::obj([
@@ -1492,6 +1562,18 @@ pub(crate) struct Node {
     pub reasons: Vec<Reason>,
 }
 impl Node {
+    fn evidence_class(&self) -> EvidenceClass {
+        if self.ty != NodeType::Evidence {
+            return EvidenceClass::Proof;
+        }
+        self.payload
+            .as_ref()
+            .and_then(|payload| match payload {
+                Payload::Construction(value) if value.is_blocked() => None,
+                _ => payload.evidence_kind(),
+            })
+            .map_or(EvidenceClass::Proof, EvidenceKind::class)
+    }
     pub(crate) fn conditions(&self) -> Vec<NodeRef> {
         match &self.payload {
             Some(Payload::Construction(value)) => value.conditions(),
@@ -5397,3 +5479,7 @@ mod invariant_tests {
         ));
     }
 }
+
+#[cfg(test)]
+#[path = "result/evidence_class_tests.rs"]
+mod evidence_class_tests;

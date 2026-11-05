@@ -101,6 +101,10 @@ fn refs(rs: &[NodeRef]) -> Json {
     Json::Arr(rs.iter().map(|r| r.wire()).collect())
 }
 impl Part {
+    pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
+        matches!(self, Self::Evidence { .. }).then_some(EvidenceKind::Counterexample)
+    }
+
     pub fn scalar(&self) -> Option<&Scalar> {
         if let Self::Path { value, .. } | Self::Reading { value } = self {
             Some(value)
@@ -225,7 +229,10 @@ impl Part {
                 ("quantifiers", Json::Arr(vec![])),
             ]),
             Self::Evidence { left, right } => Json::obj([
-                ("kind", Json::str("counterexample")),
+                (
+                    "kind",
+                    Json::str(crate::observed::result::EvidenceKind::Counterexample.name()),
+                ),
                 (
                     "data",
                     Json::obj([
@@ -868,4 +875,18 @@ pub(super) fn evaluate(
         reasons,
         scope: w.scope.clone(),
     })
+}
+
+#[cfg(test)]
+#[test]
+fn evidence_kind_matches_the_counterexample_display() {
+    let part = Part::Evidence {
+        left: NodeRef(0),
+        right: NodeRef(1),
+    };
+    assert_eq!(part.evidence_kind(), Some(EvidenceKind::Counterexample));
+    let Json::Obj(ref wire) = part.wire() else {
+        panic!("evidence display")
+    };
+    assert_eq!(wire.get("kind"), Some(&Json::str("counterexample")));
 }

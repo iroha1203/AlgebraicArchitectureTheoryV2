@@ -73,6 +73,9 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
+        EvidenceKind::from_wire(&self.part().wire)
+    }
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
     }
@@ -450,7 +453,10 @@ fn compute_inner(
                     NodeType::Evidence,
                     "evidence",
                     Json::obj([
-                        ("kind", Json::str("counterexample")),
+                        (
+                            "kind",
+                            Json::str(crate::observed::result::EvidenceKind::Counterexample.name()),
+                        ),
                         (
                             "data",
                             Json::obj([
