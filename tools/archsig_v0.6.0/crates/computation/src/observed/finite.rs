@@ -307,7 +307,8 @@ fn enumerate_values_maybe(
                 for row in &rows {
                     for value in &values {
                         tick(control)?;
-                        let mut item = row.clone();
+                        let mut item = Vec::with_capacity(row.len() + 1);
+                        item.extend_from_slice(row);
                         item.push(value.clone());
                         next.push(item);
                         tick(control)?;
@@ -339,7 +340,8 @@ fn enumerate_values_maybe(
             for row in &rows {
                 for value in &values {
                     tick(control)?;
-                    let mut item = row.clone();
+                    let mut item = Vec::with_capacity(row.len() + 1);
+                    item.extend_from_slice(row);
                     item.push(value.clone());
                     next.push(item);
                     tick(control)?;
@@ -448,9 +450,10 @@ fn enumerate_values_maybe(
                             }
                             for image in &images {
                                 tick(control)?;
-                                let mut table = table.clone();
-                                table.push((key.clone(), image.clone()));
-                                next.push(table);
+                                let mut extended = Vec::with_capacity(table.len() + 1);
+                                extended.extend_from_slice(table);
+                                extended.push((key.clone(), image.clone()));
+                                next.push(extended);
                                 tick(control)?;
                             }
                         }
