@@ -1,0 +1,12 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Representation {
+ use vocabulary TransferModel version "1" digest "sha256:f2c91f516710d48339d973d9179931ad9f791d1d75deb7cb730080195e5eb503";
+ law required coordinateOwner(s: TransferModel.Store):
+   forall c in s.coordinates . c.owner = s;
+}
+reading TransferSafety {
+ use vocabulary TransferModel version "1" digest "sha256:f2c91f516710d48339d973d9179931ad9f791d1d75deb7cb730080195e5eb503";
+ law required names(t: TransferModel.Transfer):
+   let sourceOwner = t.from in
+   forall c: TransferModel.Coord[sourceOwner] . c.name = t.coords(c).name;
+}
