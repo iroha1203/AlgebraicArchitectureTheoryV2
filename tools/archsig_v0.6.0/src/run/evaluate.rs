@@ -218,7 +218,7 @@ fn deliver(
             summary: Some(summary),
         };
     };
-    let inputs = evaluation.prepared().shared_inputs();
+    let inputs = evaluation.prepared().inputs();
     let sources = inputs.sources();
     let mut copies: Vec<(String, &[u8])> = sources
         .definitions()
@@ -280,15 +280,19 @@ fn deliver(
     } else {
         Vec::new()
     };
-    let outcome = Outcome {
-        status,
-        exit_code: code,
-        result: Some(out.join("result.json")),
-        summary: Some(summary),
-        issues: receipt_issues,
-    };
-    drop(evaluation);
-    output::publish(io, out, wire, &copies, outcome)
+    output::publish(
+        io,
+        out,
+        wire,
+        &copies,
+        Outcome {
+            status,
+            exit_code: code,
+            result: Some(out.join("result.json")),
+            summary: Some(summary),
+            issues: receipt_issues,
+        },
+    )
 }
 
 #[cfg(test)]
