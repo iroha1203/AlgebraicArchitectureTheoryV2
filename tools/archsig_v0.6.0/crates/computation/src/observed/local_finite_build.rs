@@ -227,11 +227,8 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
             let mut states = vec![];
             for point in &model.points {
                 c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
-                let mut assignments = fixed.fixed_values().into_iter().collect::<BTreeMap<_, _>>();
-                assignments.extend(model.slots.iter().cloned().zip(point.iter().cloned()));
-                // fixedは同computeのwitness/object 0を選択済み。原始値の検査は
-                // 各候補で行い、不変の対象域metadataだけを共有する。
-                let state = fixed.try_local_primitive_valuation_from(&assignments.into_iter().collect::<Vec<_>>(), c)?
+                // 元型・所属・Map全域性を各候補で検査する。
+                let state = fixed.try_local_primitive_point(&model.slots, point, c)?
                     .ok_or_else(|| unsupported("明示localの自由状態が不適合"))?;
                 states.push(state);
             }

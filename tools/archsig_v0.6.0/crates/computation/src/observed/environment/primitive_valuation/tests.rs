@@ -1700,3 +1700,103 @@ fn local_candidate_factory_rejects_unselected_source_and_propagates_both_signals
         }
     }
 }
+
+#[test]
+fn local_primitive_point_matches_owned_merge_and_preserves_candidates() {
+    let inputs = fixture::with_body(
+        fixture::MAP,
+        "view selected(c:Part):Fp(2)=if c.flag then c.quantity else c.other;",
+    );
+    let witness = local_object_witness(inputs.clone());
+    let mut fixed = Environment::with_primitive_valuation(
+        &inputs,
+        &[
+            (slot("p", "quantity"), fp("2", 0)),
+            (slot("p", "other"), fp("2", 1)),
+        ],
+        &quiet(),
+    )
+    .unwrap();
+    fixed.select_local_object(&witness, &quiet()).unwrap();
+    let slots = [slot("p", "quantity")];
+    let mut candidates = Vec::new();
+    for n in [0, 1] {
+        let point = [fp("2", n)];
+        let mut owned = fixed.fixed_values().into_iter().collect::<BTreeMap<_, _>>();
+        owned.extend(slots.iter().cloned().zip(point.iter().cloned()));
+        let owned = owned.into_iter().collect::<Vec<_>>();
+        let actual = fixed
+            .try_local_primitive_point(&slots, &point, &quiet())
+            .unwrap()
+            .unwrap();
+        let expected = fixed
+            .try_local_primitive_valuation_from(&owned, &quiet())
+            .unwrap()
+            .unwrap();
+        assert_eq!(
+            actual.indexes.primitive_valuation,
+            expected.indexes.primitive_valuation
+        );
+        assert_eq!(
+            actual.indexes.primitive_input_valuation,
+            expected.indexes.primitive_input_valuation
+        );
+        assert!(std::sync::Arc::ptr_eq(
+            actual.indexes.object.as_ref().unwrap(),
+            fixed.indexes.object.as_ref().unwrap()
+        ));
+        assert!(expression(&actual, "selected", false) == expression(&expected, "selected", false));
+        assert_eq!(
+            actual.indexes.primitive_valuation.as_ref().unwrap()[&slot("p", "other")],
+            fp("2", 1)
+        );
+        for signal in [Signal::Int, Signal::Term] {
+            let stop = || Control::new(move |_| Some(signal));
+            assert!(
+                matches!(fixed.try_local_primitive_point(&slots, &point, &stop()), Err(ValidationFailure::Stop(s)) if s == signal)
+            );
+            assert!(
+                matches!(fixed.try_local_primitive_valuation_from(&owned, &stop()), Err(ValidationFailure::Stop(s)) if s == signal)
+            );
+        }
+        candidates.push(actual);
+    }
+    assert_eq!(
+        candidates[0].indexes.primitive_valuation.as_ref().unwrap()[&slots[0]],
+        fp("2", 0)
+    );
+    assert_eq!(
+        candidates[1].indexes.primitive_valuation.as_ref().unwrap()[&slots[0]],
+        fp("2", 1)
+    );
+    assert_eq!(
+        fixed.indexes.primitive_valuation.as_ref().unwrap()[&slots[0]],
+        fp("2", 0)
+    );
+    let mut empty = Environment::with_primitive_valuation(&inputs, &[], &quiet()).unwrap();
+    empty.select_local_object(&witness, &quiet()).unwrap();
+    let actual = empty
+        .try_local_primitive_point(&[], &[], &quiet())
+        .unwrap()
+        .unwrap();
+    let expected = empty
+        .try_local_primitive_valuation_from(&[], &quiet())
+        .unwrap()
+        .unwrap();
+    assert_eq!(
+        actual.indexes.primitive_valuation,
+        expected.indexes.primitive_valuation
+    );
+    assert_eq!(
+        actual.indexes.primitive_input_valuation,
+        expected.indexes.primitive_input_valuation
+    );
+    assert!(
+        actual
+            .indexes
+            .primitive_valuation
+            .as_ref()
+            .unwrap()
+            .is_empty()
+    );
+}
