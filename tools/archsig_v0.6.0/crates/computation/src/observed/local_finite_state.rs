@@ -197,10 +197,10 @@ pub(super) fn bijective(summary: &FiniteSide, c: &Control) -> Result<bool, Valid
     Ok(true)
 }
 
-fn scalar_domain(
+fn scalar_domain<'v>(
     b: &mut Builder<'_>,
     ty: &Type,
-    values: &[Scalar],
+    values: impl IntoIterator<Item = &'v Scalar>,
     c: &Control,
 ) -> Result<(NodeRef, Vec<(Scalar, NodeRef)>), ValidationFailure> {
     let mut elements = vec![];
@@ -252,7 +252,8 @@ pub(super) fn build(
         )
     };
     let mut projected = vec![];
-    let mut equation_values = vec![];
+    // Keep projected row identities, not a second owned copy of each image.
+    let mut equation_points = vec![];
     let holds = |i: usize| selected.iter().all(|law| model.truth[i][*law]);
     for (i, point) in model.points.iter().enumerate() {
         c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
@@ -271,7 +272,7 @@ pub(super) fn build(
             Scalar::Tuple(indexes.iter().map(|i| point[*i].clone()).collect())
         };
         if holds(i) {
-            equation_values.push(value.clone());
+            equation_points.push(i);
         }
         projected.push(value);
     }
@@ -284,31 +285,42 @@ pub(super) fn build(
         scalar_domain(b, &ty, &projected, c)?.0
     };
     let finite_equation = if ambient.is_none() {
-        Some(scalar_domain(b, &ty, &equation_values, c)?)
+        Some(scalar_domain(
+            b,
+            &ty,
+            equation_points.iter().map(|point| &projected[*point]),
+            c,
+        )?)
     } else {
         None
     };
     let mut all_parameters = vec![];
-    let mut all_images = vec![];
+    // Candidate order and repeated images are significant for the full fibers.
+    let mut all_image_points = vec![];
     let mut solution_parameters = vec![];
-    let mut solution_images = vec![];
+    let mut solution_image_points = vec![];
     for (row, point) in model.candidates.rows.iter().zip(&model.candidate_points) {
         c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
         let Some(point) = point else { continue };
         let parameters = Scalar::Tuple(row.parameters.clone());
         all_parameters.push(parameters.clone());
-        all_images.push(projected[*point].clone());
+        all_image_points.push(*point);
         if holds(*point) {
             solution_parameters.push(parameters);
-            solution_images.push(projected[*point].clone());
+            solution_image_points.push(*point);
         }
     }
     let parameter_type = Type::Tuple(model.candidates.parameter_types.clone());
     let (point, parameter_values) = scalar_domain(b, &parameter_type, &all_parameters, c)?;
-    let (image, image_values) = scalar_domain(b, &ty, &all_images, c)?;
+    let (image, image_values) = scalar_domain(
+        b,
+        &ty,
+        all_image_points.iter().map(|point| &projected[*point]),
+        c,
+    )?;
     let pair_refs = all_parameters
         .iter()
-        .zip(&all_images)
+        .zip(all_image_points.iter().map(|point| &projected[*point]))
         .map(|(p, v)| {
             let p = parameter_values
                 .iter()
@@ -495,12 +507,18 @@ pub(super) fn build(
             .collect(),
         None,
     )?;
-    let (states, semantic_values) = scalar_domain(b, &ty, &solution_images, c)?;
+    let (states, semantic_values) = scalar_domain(
+        b,
+        &ty,
+        solution_image_points.iter().map(|point| &projected[*point]),
+        c,
+    )?;
     let mut semantic_parameters = vec![];
     let mut semantic_pairs = vec![];
     for (v, r) in &semantic_values {
-        let parameters = solution_images
+        let parameters = solution_image_points
             .iter()
+            .map(|point| &projected[*point])
             .zip(&solution_parameters)
             .filter(|(image, _)| *image == v)
             .map(|(_, p)| {
@@ -608,3 +626,7 @@ pub(super) fn build(
             .len(),
     })
 }
+
+#[cfg(test)]
+#[path = "local_finite_state/image_row_tests.rs"]
+mod image_row_tests;
