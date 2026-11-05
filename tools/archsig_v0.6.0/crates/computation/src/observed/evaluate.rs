@@ -3020,7 +3020,8 @@ fn evaluate_observed_with_validator(
                 };
                 match evaluate(&prepared, environment, &mut graph, request, control) {
                     Ok(answer) => {
-                        if control.stop_reason().is_none() {
+                        let validated = control.stop_reason().is_none();
+                        if validated {
                             if let Err(failure) =
                                 validate_answer(environment, &graph, request, &answer)
                             {
@@ -3060,6 +3061,10 @@ fn evaluate_observed_with_validator(
                             issues.push(Reason::stopped(&request.id, stop));
                         }
                         graph.checked_answers.push((index, answer.clone()));
+                        if validated {
+                            environment
+                                .keep_published_local_source(&graph, index, request, &answer);
+                        }
                         verified_prefix = sizes(&graph);
                         answers[index] = Some(answer);
                     }

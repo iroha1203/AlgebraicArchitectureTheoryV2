@@ -1233,3 +1233,55 @@ fn scoped_memo_retains_only_latest_inputs_per_expression_without_crossing_contex
         "pure memo must be bounded by syntax, not iteration contexts"
     );
 }
+
+#[test]
+fn candidate_factory_shares_only_fixed_inputs_and_resets_valuation_state_and_caches() {
+    let i = fixture::inputs();
+    let mut template =
+        Environment::with_primitive_valuation(&i, &[(slot("p", "quantity"), fp("2", 0))], &quiet())
+            .unwrap();
+    assert_eq!(
+        expression(&template, "selected", false).known_value,
+        Some(fp("2", 0))
+    );
+    assert!(!template.results.scoped_values.borrow().is_empty());
+    template.indexes.original_requests = Some(&[]);
+    *template.state.primitive_reads.borrow_mut() = Some(BTreeSet::from([slot("p", "flag")]));
+    *template.state.missing_slot_reads.borrow_mut() = Some(BTreeSet::from([slot("p", "quantity")]));
+    template.state.cutoff.set(999);
+    template.state.completion_values.borrow_mut().push((
+        slot("p", "quantity"),
+        NodeRef(999),
+        fp("2", 0),
+    ));
+    for n in [1, 0, 1] {
+        let values = [(slot("p", "quantity"), fp("2", n))];
+        let fresh = template
+            .try_primitive_valuation_from(&values, &quiet())
+            .unwrap()
+            .unwrap();
+        let independent = Environment::with_primitive_valuation(&i, &values, &quiet()).unwrap();
+        assert!(std::ptr::eq(&*fresh.indexes, &*template.indexes));
+        assert!(!std::ptr::eq(&*fresh.indexes, &*independent.indexes));
+        assert!(fresh.indexes.original_requests.is_none());
+        assert!(fresh.state.primitive_reads.borrow().is_none());
+        assert!(fresh.state.missing_slot_reads.borrow().is_none());
+        assert!(fresh.state.completion_values.borrow().is_empty());
+        assert_eq!(fresh.state.cutoff.get(), independent.state.cutoff.get());
+        assert!(fresh.results.scoped_values.borrow().is_empty());
+        let actual = expression(&fresh, "selected", false);
+        let expected = expression(&independent, "selected", false);
+        assert_eq!(actual.known_value, expected.known_value);
+        assert_eq!(actual.support, expected.support);
+        assert_eq!(actual.scope, expected.scope);
+        assert_eq!(
+            expression(&template, "selected", false).known_value,
+            Some(fp("2", 0))
+        );
+    }
+    let control = Control::new(|at| (at == Checkpoint::PrimitiveValuation).then_some(Signal::Term));
+    assert!(matches!(
+        template.try_primitive_valuation_from(&[], &control),
+        Err(ValidationFailure::Stop(Signal::Term))
+    ));
+}

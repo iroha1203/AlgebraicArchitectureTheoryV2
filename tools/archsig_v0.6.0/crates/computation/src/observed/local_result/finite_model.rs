@@ -457,12 +457,9 @@ pub(super) fn analyze(
         c.checkpoint(archsig_common::control::Checkpoint::Localize)?;
         let mut assignments = env.fixed_values().into_iter().collect::<BTreeMap<_, _>>();
         assignments.extend(slots.iter().cloned().zip(point.iter().cloned()));
-        let mut state = Environment::try_primitive_valuation(
-            env.indexes.inputs,
-            &assignments.into_iter().collect::<Vec<_>>(),
-            c,
-        )?
-        .ok_or_else(|| unsupported("自由状態の参照・所属条件が不適合"))?;
+        let mut state = env
+            .try_primitive_valuation_from(&assignments.into_iter().collect::<Vec<_>>(), c)?
+            .ok_or_else(|| unsupported("自由状態の参照・所属条件が不適合"))?;
         state.select_local_object(witness, c)?;
         let mut row_truth = vec![];
         for (i, (name, bindings)) in requirements.iter().enumerate() {

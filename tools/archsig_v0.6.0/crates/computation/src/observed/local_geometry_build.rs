@@ -406,8 +406,17 @@ pub(super) fn build(
             if !big.contains(small) || !mixed_read::contains(&linear_reads[w], &linear_reads[v], c)? {
                 continue;
             }
-            let semantic_pairs = finite_state::restriction(&states[w], &states[v], false, c)?;
-            let equation_pairs = finite_state::restriction(&states[w], &states[v], true, c)?;
+            let (semantic_pairs, equation_pairs) = if v == w && finite_model.is_some() {
+                (
+                    finite_state::identity_restriction(&states[v], false, c)?,
+                    finite_state::identity_restriction(&states[v], true, c)?,
+                )
+            } else {
+                (
+                    finite_state::restriction(&states[w], &states[v], false, c)?,
+                    finite_state::restriction(&states[w], &states[v], true, c)?,
+                )
+            };
             let restriction = if v == w && finite_model.is_none() {
                 states[v].identity
             } else {
