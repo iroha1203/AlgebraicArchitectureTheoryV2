@@ -1495,3 +1495,6 @@ fn scoped_memo_raw_collectors_preserve_sharing_of_a_noncapture_view_dag() {
         );
     }
 }
+
+#[path = "tests/structural_neutral.rs"]
+mod structural_neutral;

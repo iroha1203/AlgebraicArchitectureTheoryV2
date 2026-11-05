@@ -8023,26 +8023,26 @@ impl<'a> Environment<'a> {
                         if (!collecting || primitive.is_some())
                             && validation_identity::key(candidate, key, &self.control)? =>
                     {
-                        Some((
-                            value.clone(),
-                            missing.clone(),
-                            if collecting { primitive.clone() } else { None },
-                        ))
+                        let value = value.clone();
+                        // 保存集合を借りて親へ複写し、中間集合を作らない。
+                        // hit後のtickは、このmemo借用を解放した後に行う。
+                        if let Some(reads) = self.state.missing_slot_reads.borrow_mut().as_mut() {
+                            reads.extend(missing.iter().cloned());
+                        }
+                        if collecting
+                            && let (Some(primitive), Some(reads)) =
+                                (primitive, self.state.primitive_reads.borrow_mut().as_mut())
+                        {
+                            reads.extend(primitive.iter().cloned());
+                        }
+                        Some(value)
                     }
                     _ => None,
                 }
             } else {
                 None
             };
-            if let Some((value, missing, primitive)) = cached {
-                if let Some(reads) = self.state.missing_slot_reads.borrow_mut().as_mut() {
-                    reads.extend(missing);
-                }
-                if let (Some(primitive), Some(reads)) =
-                    (primitive, self.state.primitive_reads.borrow_mut().as_mut())
-                {
-                    reads.extend(primitive);
-                }
+            if let Some(value) = cached {
                 self.tick()?;
                 return Ok(value);
             }

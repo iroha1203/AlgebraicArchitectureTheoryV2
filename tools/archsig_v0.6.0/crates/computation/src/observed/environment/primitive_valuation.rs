@@ -63,6 +63,7 @@ impl<'a> Environment<'a> {
         let mut values = BTreeMap::new();
         let mut original_values = BTreeMap::new();
         let mut pinned = Vec::new();
+        let mut structurally_neutral = true;
         for (position, value) in assignments {
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
             if position.atom.is_some() || position.field.is_none() || values.contains_key(position)
@@ -111,23 +112,35 @@ impl<'a> Environment<'a> {
             if !same_primitive_value(value, &checked, control)? {
                 return Err(internal!("候補代入が元encodingの正規値と違う").into());
             }
-            pinned.push(archsig_input::archmap::FieldAssignment {
-                snapshot: position.snapshot.clone(),
-                subject: position.subject.clone(),
-                field: field.name.to_string(),
-                value: encoded,
-            });
+            if constraints && structurally_neutral {
+                structurally_neutral = structural_neutral_value(&original, control)?;
+            }
+            if constraints {
+                pinned.push((position, &field.name, encoded));
+            }
             original_values.insert(position.clone(), original);
             values.insert(position.clone(), checked);
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
         }
-        if constraints {
+        // CheckedInputsには元の補完がある。Ref/Mapを含まない型検査済みpinは
+        // 参照変数・owner読取りを変えず、元fieldの制約を除くだけなので再探索しない。
+        if constraints && !structurally_neutral {
+            let mut checked_pins = Vec::with_capacity(pinned.len());
+            for (position, field, value) in pinned {
+                control.checkpoint(Checkpoint::PrimitiveValuation)?;
+                checked_pins.push(archsig_input::archmap::FieldAssignment {
+                    snapshot: position.snapshot.clone(),
+                    subject: position.subject.clone(),
+                    field: field.to_string(),
+                    value,
+                });
+            }
             match archsig_input::archmap::check_valuation_with_values::<
                 CheckFailure<Box<archsig_common::issue::Issue>>,
             >(
                 &inputs.archmap().snapshots(),
                 inputs.definitions(),
-                &pinned,
+                &checked_pins,
                 control,
             ) {
                 Ok(()) => {}
@@ -150,6 +163,38 @@ impl<'a> Environment<'a> {
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
         Ok(Some(environment))
     }
+}
+
+/// collect_knownがMember/Coverを作らず、slot_refも変えない原始値。
+/// 元CheckedInputsの補完存在を使う呼出しだけに適用する。Termは保守的に再検査する。
+fn structural_neutral_value(value: &Value, c: &Control) -> Result<bool, ValidationFailure> {
+    let mut pending = vec![value];
+    while let Some(value) = pending.pop() {
+        c.checkpoint(Checkpoint::PrimitiveValuation)?;
+        match value {
+            Value::Unit
+            | Value::Bool(_)
+            | Value::Z(_)
+            | Value::Q(..)
+            | Value::Fp(_)
+            | Value::Text(_)
+            | Value::Option(None) => {}
+            Value::Tuple(items)
+            | Value::List(items)
+            | Value::Set(items)
+            | Value::Data { args: items, .. } => {
+                for item in items {
+                    c.checkpoint(Checkpoint::PrimitiveValuation)?;
+                    pending.push(item);
+                }
+            }
+            Value::Option(Some(value)) => pending.push(value),
+            // 空MapにもCoverがあり、参照leafの有無だけでは中立といえない。
+            Value::Ref { .. } | Value::Map(_) | Value::Term(_) => return Ok(false),
+        }
+    }
+    c.checkpoint(Checkpoint::PrimitiveValuation)?;
+    Ok(true)
 }
 
 // Graphの保存状態比較は変更せず、原始値の往復だけでTermのsource位置を除く。
