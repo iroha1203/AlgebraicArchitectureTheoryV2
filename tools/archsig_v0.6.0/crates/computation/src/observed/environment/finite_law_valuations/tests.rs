@@ -35,6 +35,139 @@ fn bound() -> Vec<(String, Scalar)> {
     vec![("c".into(), subject("p"))]
 }
 #[test]
+fn long_unit_prefix_domain_keeps_order_and_single_reservation_capacity() {
+    let definition = r#"{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{"semantics":"archsig/0.6.0","namespace":"RowBudget","version":"1","dependencies":[],"declarations":[
+{"kind":"entity","name":"RowBudget.Row","meaning":"候補行。","parameters":[],"fields":[
+{"name":"u0","type":"Unit","meaning":"単位座標。"},
+{"name":"u1","type":"Unit","meaning":"単位座標。"},
+{"name":"u2","type":"Unit","meaning":"単位座標。"},
+{"name":"u3","type":"Unit","meaning":"単位座標。"},
+{"name":"u4","type":"Unit","meaning":"単位座標。"},
+{"name":"u5","type":"Unit","meaning":"単位座標。"},
+{"name":"u6","type":"Unit","meaning":"単位座標。"},
+{"name":"u7","type":"Unit","meaning":"単位座標。"},
+{"name":"u8","type":"Unit","meaning":"単位座標。"},
+{"name":"u9","type":"Unit","meaning":"単位座標。"},
+{"name":"a","type":"Bool","meaning":"第一分岐。"},
+{"name":"b","type":"Bool","meaning":"第二分岐。"}
+],"alignments":[]}]}]}"#;
+    let definitions =
+        archsig_input::definition::check_definitions(&[("definition0", definition.as_bytes())])
+            .unwrap();
+    let digest = &definitions.vocabularies()["RowBudget"].digest;
+    let law = format!(
+        "law \"archsig.law/2\" semantics \"archsig/0.6.0\";reading Selected{{use vocabulary RowBudget version \"1\" digest \"{digest}\";view flag(c:Row):Bool=c.a;}}"
+    );
+    let map = r#"{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{"namespace":"RowBudget","version":"1","digest":"@DIGEST@"}],"sources":[],"origins":[{"id":"model","mode":"specification","method":"候補容量の独立入力。","locations":[],"note":"少点の長行。"}],"snapshots":[{"id":"v","origin":"model","subjects":[{"id":"row","type":"RowBudget.Row","origin":"model"}],"atoms":[]}]}"#;
+    let c = quiet();
+    let inputs = archsig_input::input::check_inputs(
+        InputSources::from_bytes(
+            vec![definition.as_bytes().to_vec()],
+            law.into_bytes(),
+            map.replace("@DIGEST@", digest).into_bytes(),
+        ),
+        &c,
+    )
+    .unwrap();
+    let env = Environment::new(&inputs, &c).unwrap();
+    let positions = [
+        "u0", "u1", "u2", "u3", "u4", "u5", "u6", "u7", "u8", "u9", "a", "b",
+    ]
+    .map(|name| {
+        Fact::from(archsig_input::archmap::FactData {
+            snapshot: "v".into(),
+            subject: "row".into(),
+            field: Some(format!("RowBudget.Row.{name}").into()),
+            atom: None,
+        })
+    });
+    let (types, rows) = domains(&env, &positions).unwrap().unwrap();
+    assert_eq!(
+        types,
+        vec![
+            Type::Unit,
+            Type::Unit,
+            Type::Unit,
+            Type::Unit,
+            Type::Unit,
+            Type::Unit,
+            Type::Unit,
+            Type::Unit,
+            Type::Unit,
+            Type::Unit,
+            Type::Bool,
+            Type::Bool
+        ]
+    );
+    assert_eq!(
+        rows,
+        vec![
+            vec![
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Bool(false),
+                Scalar::Bool(false)
+            ],
+            vec![
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Bool(false),
+                Scalar::Bool(true)
+            ],
+            vec![
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Bool(true),
+                Scalar::Bool(false)
+            ],
+            vec![
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Unit,
+                Scalar::Bool(true),
+                Scalar::Bool(true)
+            ],
+        ]
+    );
+    // 内部資源の予算。Vec一般のcapacity == len保証ではなく、同じ型の
+    // 単一予約に比べて完成候補が余分なgrowを残さないことを確認する。
+    let budget = Vec::<Scalar>::with_capacity(12).capacity();
+    for row in &rows {
+        assert_eq!(row.capacity(), budget);
+    }
+}
+#[test]
 fn bool_fp_guard_uses_four_shared_points_and_integer_indicators() {
     let i = fixture::inputs();
     let before = i.sources().clone();

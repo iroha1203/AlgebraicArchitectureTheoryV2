@@ -1003,7 +1003,8 @@ fn domains(
         for row in &product {
             for value in &domain.enumeration.values {
                 tick(&e.control)?;
-                let mut candidate = row.clone();
+                let mut candidate = Vec::with_capacity(row.len() + 1);
+                candidate.extend_from_slice(row);
                 candidate.push(value.clone());
                 next.push(candidate);
                 tick(&e.control)?;
