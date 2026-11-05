@@ -6,7 +6,8 @@ use crate::observed::{
 use archsig_common::types::Type;
 use std::{cell::Cell, rc::Rc};
 
-// Frozen previous canonical-String loop; only its enclosing arguments/return differ.
+// Frozen previous canonical-String loop; enclosing arguments/return and the
+// test module's ConstructionType alias differ.
 fn legacy_share(
     projected: BTreeMap<usize, Json>,
     native: &[Node],
@@ -28,11 +29,7 @@ fn legacy_share(
                 | NodeType::Vector(_)
                 | NodeType::ModuleMap(_, _)
                 | NodeType::Domain
-                | NodeType::Construction(
-                    super::super::construction_result::ConstructionType::StateMap
-                        | super::super::construction_result::ConstructionType::Ring
-                        | super::super::construction_result::ConstructionType::Module
-                )
+                | NodeType::Construction(T::StateMap | T::Ring | T::Module)
         );
         let Json::Obj(fields) = &mut node else {
             unreachable!()
