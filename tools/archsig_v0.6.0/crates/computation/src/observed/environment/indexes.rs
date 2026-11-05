@@ -14,6 +14,8 @@ pub(crate) struct InputIndexes<'a> {
     pub(super) primitive_valuation: Option<BTreeMap<Fact, Scalar>>,
     // 整数changeの式を読む内部環境。観測slotと元parameterを区別する。
     pub(super) affine_valuation: BTreeMap<Fact, crate::observed::affine::Form>,
+    // 参照構造とprobeの再検査に必要なdecoded値。完成候補の純leafは保存しない。
+    // None（候補でない）とSome(empty)は区別する。
     pub(super) primitive_input_valuation: Option<BTreeMap<Fact, Value>>,
 }
 

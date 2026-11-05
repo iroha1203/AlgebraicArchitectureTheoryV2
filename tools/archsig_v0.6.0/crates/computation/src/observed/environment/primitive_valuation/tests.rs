@@ -1800,3 +1800,55 @@ fn local_primitive_point_matches_owned_merge_and_preserves_candidates() {
             .is_empty()
     );
 }
+
+#[test]
+fn completed_leaf_omits_decoded_payload_but_probe_retains_it() {
+    let inputs = fixture::with_body(fixture::MAP, "view selected(c:Part):Fp(2)=c.quantity;");
+    let values = [(slot("p", "quantity"), fp("2", 1))];
+    let completed = Environment::with_primitive_valuation(&inputs, &values, &quiet()).unwrap();
+    assert!(
+        completed
+            .indexes
+            .primitive_input_valuation
+            .as_ref()
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        completed.indexes.primitive_valuation.as_ref().unwrap()[&values[0].0],
+        values[0].1
+    );
+    let result = expression(&completed, "selected", false);
+    assert_eq!(result.known_value, Some(fp("2", 1)));
+    assert!(result.scope.assignments);
+    assert!(result.support.contains(&values[0].0));
+    assert!(
+        !result
+            .support
+            .iter()
+            .any(|f| f.field == values[0].0.field && f.atom.is_some())
+    );
+    let probe = Environment::new(&inputs, &quiet())
+        .unwrap()
+        .primitive_dependency_probe_from(&values, &quiet())
+        .unwrap();
+    assert!(
+        probe
+            .indexes
+            .primitive_input_valuation
+            .as_ref()
+            .unwrap()
+            .contains_key(&values[0].0)
+    );
+    assert!(completed.primitive_constraints_hold(&quiet()).unwrap());
+    assert!(probe.primitive_constraints_hold(&quiet()).unwrap());
+    let empty = Environment::with_primitive_valuation(&inputs, &[], &quiet()).unwrap();
+    assert!(
+        empty
+            .indexes
+            .primitive_input_valuation
+            .as_ref()
+            .unwrap()
+            .is_empty()
+    );
+}

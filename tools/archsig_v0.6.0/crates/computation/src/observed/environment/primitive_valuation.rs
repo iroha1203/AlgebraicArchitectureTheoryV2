@@ -253,7 +253,20 @@ impl<'a> Environment<'a> {
             if constraints {
                 pinned.push((position, field.name.as_str(), encoded));
             }
-            original_values.insert(position.clone(), original);
+            // 完成候補の純leafは参照構造を持たない。probeは後段検査用に全件を保つ。
+            if !constraints
+                || !matches!(
+                    original,
+                    Value::Unit
+                        | Value::Bool(_)
+                        | Value::Z(_)
+                        | Value::Q(..)
+                        | Value::Fp(_)
+                        | Value::Text(_)
+                )
+            {
+                original_values.insert(position.clone(), original);
+            }
             values.insert(position.clone(), checked);
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
         }
