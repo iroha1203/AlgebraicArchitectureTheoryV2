@@ -5,7 +5,11 @@ use archsig_common::{
     control::{Checkpoint, Control},
 };
 use archsig_input::result::Signal;
-use std::collections::{BTreeMap, BTreeSet};
+use std::{
+    collections::{BTreeMap, BTreeSet, hash_map::DefaultHasher},
+    hash::Hasher,
+    io::{self, Write},
+};
 
 fn refs(
     value: &Json,
@@ -505,6 +509,102 @@ fn remove_proof_refs(value: &mut Json, proofs: &BTreeSet<String>) -> bool {
         _ => true,
     })
 }
+// Feed the same write_u8 sequence for the same canonical byte stream. Hasher::write
+// chunk boundaries are not assumed to be invisible to a Hasher implementation.
+struct FingerprintWriter(DefaultHasher);
+impl Write for FingerprintWriter {
+    fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
+        for byte in bytes {
+            self.0.write_u8(*byte);
+        }
+        Ok(bytes.len())
+    }
+    fn flush(&mut self) -> io::Result<()> {
+        Ok(())
+    }
+}
+fn canonical_fingerprint(value: &Json) -> u64 {
+    let mut sink = FingerprintWriter(DefaultHasher::new());
+    value
+        .write_canonical(&mut sink)
+        .expect("in-memory fingerprint sink");
+    sink.0.finish()
+}
+// Accepted nodes retain their root id. Only that field is ignored; all child
+// values use Json's exact Eq, including compact-reference/array equivalence.
+fn same_public_record(a: &Json, b: &Json) -> bool {
+    let (Json::Obj(a), Json::Obj(b)) = (a, b) else {
+        return false;
+    };
+    a.iter()
+        .filter(|(key, _)| key.as_str() != "id")
+        .eq(b.iter().filter(|(key, _)| key.as_str() != "id"))
+}
+fn shared_position(positions: &[usize], nodes: &[Json], candidate: &Json) -> Option<usize> {
+    positions
+        .iter()
+        .copied()
+        .find(|position| same_public_record(candidate, &nodes[*position]))
+}
+fn share_projected(
+    projected: BTreeMap<usize, Json>,
+    native: &[Node],
+    ids: &mut BTreeMap<String, String>,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<Vec<Json>, Signal> {
+    let mut values = BTreeMap::<u64, Vec<usize>>::new();
+    let mut nodes = Vec::new();
+    // 到達順でなく元の数値 index 順が canonical 共有の代表と番号を決める。
+    for (index, mut node) in projected {
+        control.checkpoint(point)?;
+        let old_id = format!("n{index}");
+        rename(&mut node, ids, control, point)?;
+        // 環・基底・関係を含む表示全体の一致だけを共有する。同型は推測しない。
+        let shared = matches!(
+            native[index].ty,
+            NodeType::Value(_)
+                | NodeType::Vector(_)
+                | NodeType::ModuleMap(_, _)
+                | NodeType::Domain
+                | NodeType::Construction(
+                    super::super::construction_result::ConstructionType::StateMap
+                        | super::super::construction_result::ConstructionType::Ring
+                        | super::super::construction_result::ConstructionType::Module
+                )
+        );
+        let Json::Obj(fields) = &mut node else {
+            unreachable!()
+        };
+        fields.remove("id");
+        let key = shared.then(|| canonical_fingerprint(&node));
+        if let Some(position) = key
+            .and_then(|key| values.get(&key))
+            .and_then(|positions| shared_position(positions, &nodes, &node))
+        {
+            let Json::Obj(existing) = &nodes[position] else {
+                unreachable!()
+            };
+            let Json::Str(existing_id) = &existing["id"] else {
+                unreachable!()
+            };
+            ids.insert(old_id, existing_id.clone());
+            continue;
+        }
+        let Json::Obj(fields) = &mut node else {
+            unreachable!()
+        };
+        fields.insert("id".into(), Json::str(&old_id));
+        if let Some(key) = key {
+            values.entry(key).or_default().push(nodes.len());
+        }
+        nodes.push(node);
+    }
+    // No fingerprint positions survive the final node renumbering.
+    drop(values);
+    Ok(nodes)
+}
+
 pub(super) fn compact(
     result: &mut Json,
     native: &[Node],
@@ -626,44 +726,7 @@ pub(super) fn compact(
         .iter()
         .map(|id| (id.clone(), id.clone()))
         .collect();
-    let mut values = BTreeMap::<String, String>::new();
-    let mut nodes = Vec::new();
-    // 到達順でなく元の数値 index 順が canonical 共有の代表と番号を決める。
-    for (index, mut node) in projected {
-        control.checkpoint(point)?;
-        let old_id = format!("n{index}");
-        rename(&mut node, &ids, control, point)?;
-        // 環・基底・関係を含む表示全体の一致だけを共有する。同型は推測しない。
-        let shared = matches!(
-            native[index].ty,
-            NodeType::Value(_)
-                | NodeType::Vector(_)
-                | NodeType::ModuleMap(_, _)
-                | NodeType::Domain
-                | NodeType::Construction(
-                    super::super::construction_result::ConstructionType::StateMap
-                        | super::super::construction_result::ConstructionType::Ring
-                        | super::super::construction_result::ConstructionType::Module
-                )
-        );
-        let Json::Obj(fields) = &mut node else {
-            unreachable!()
-        };
-        fields.remove("id");
-        let key = shared.then(|| node.canonical());
-        if let Some(existing) = key.as_ref().and_then(|key| values.get(key)) {
-            ids.insert(old_id, existing.clone());
-            continue;
-        }
-        let Json::Obj(fields) = &mut node else {
-            unreachable!()
-        };
-        fields.insert("id".into(), Json::str(&old_id));
-        if let Some(key) = key {
-            values.insert(key, old_id.clone());
-        }
-        nodes.push(node);
-    }
+    let mut nodes = share_projected(projected, native, &mut ids, control, point)?;
     let numbered: BTreeMap<String, String> = nodes
         .iter()
         .enumerate()
@@ -919,3 +982,6 @@ mod reference_array_tests {
 
 #[cfg(test)]
 mod projection_tests;
+
+#[cfg(test)]
+mod dedup_key_tests;
