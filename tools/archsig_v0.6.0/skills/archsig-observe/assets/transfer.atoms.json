@@ -1,0 +1,100 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "TransferModel",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "TransferModel.Coord",
+          "meaning": "表現に所属する座標の名前。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "TransferModel.Store"
+              ],
+              "meaning": "所属する表現。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "name",
+              "type": "Text",
+              "meaning": "座標の名前の値。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "TransferModel.Store",
+          "meaning": "順序付き座標を持つ一つの表現。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "coordinates",
+              "type": [
+                "List",
+                [
+                  "Ref",
+                  "TransferModel.Coord"
+                ]
+              ],
+              "meaning": "座標参照の順序付き列。型は長さを制限しない。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "correspondence",
+          "name": "TransferModel.Transfer",
+          "meaning": "二つの表現の座標対応候補。",
+          "parameters": [
+            {
+              "name": "from",
+              "type": [
+                "Ref",
+                "TransferModel.Store"
+              ],
+              "meaning": "元の表現。"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Ref",
+                "TransferModel.Store"
+              ],
+              "meaning": "先の表現。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "coords",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "TransferModel.Coord",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "TransferModel.Coord",
+                  "to"
+                ]
+              ],
+              "meaning": "元の座標から先の座標への全域対応。"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

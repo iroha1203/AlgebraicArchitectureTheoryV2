@@ -1,0 +1,64 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "TransferModel",
+      "version": "1",
+      "digest": "sha256:f2c91f516710d48339d973d9179931ad9f791d1d75deb7cb730080195e5eb503"
+    }
+  ],
+  "sources": [],
+  "origins": [
+    {
+      "id": "model",
+      "mode": "specification",
+      "method": "二つの座標を持つ三つの表現と三つの対応候補を記述する。",
+      "locations": [],
+      "note": "架空の有限モデル。実装観測や実行の実測ではない。oldからowned、ownedからadapter、oldからadapterの座標対応と順序・名前を原始値として置く。保存判定はLawと計算に委ねる。"
+    }
+  ],
+  "snapshots": [{
+    "id": "v", "origin": "model",
+    "subjects": [
+      {"id": "old", "type": "TransferModel.Store", "origin": "model"},
+      {"id": "oldX", "type": "TransferModel.Coord", "origin": "model"},
+      {"id": "oldY", "type": "TransferModel.Coord", "origin": "model"},
+      {"id": "owned", "type": "TransferModel.Store", "origin": "model"},
+      {"id": "ownedX", "type": "TransferModel.Coord", "origin": "model"},
+      {"id": "ownedY", "type": "TransferModel.Coord", "origin": "model"},
+      {"id": "adapter", "type": "TransferModel.Store", "origin": "model"},
+      {"id": "adapterX", "type": "TransferModel.Coord", "origin": "model"},
+      {"id": "adapterY", "type": "TransferModel.Coord", "origin": "model"},
+      {"id": "extract", "type": "TransferModel.Transfer", "origin": "model"},
+      {"id": "adapt", "type": "TransferModel.Transfer", "origin": "model"},
+      {"id": "direct", "type": "TransferModel.Transfer", "origin": "model"}
+    ],
+    "atoms": [
+      {"id": "old.coordinates", "subject": "old", "field": "TransferModel.Store.coordinates", "value": [["v", "oldX"], ["v", "oldY"]], "origin": "model"},
+      {"id": "oldX.owner", "subject": "oldX", "field": "TransferModel.Coord.owner", "value": ["v", "old"], "origin": "model"},
+      {"id": "oldX.name", "subject": "oldX", "field": "TransferModel.Coord.name", "value": "x", "origin": "model"},
+      {"id": "oldY.owner", "subject": "oldY", "field": "TransferModel.Coord.owner", "value": ["v", "old"], "origin": "model"},
+      {"id": "oldY.name", "subject": "oldY", "field": "TransferModel.Coord.name", "value": "y", "origin": "model"},
+      {"id": "owned.coordinates", "subject": "owned", "field": "TransferModel.Store.coordinates", "value": [["v", "ownedX"], ["v", "ownedY"]], "origin": "model"},
+      {"id": "ownedX.owner", "subject": "ownedX", "field": "TransferModel.Coord.owner", "value": ["v", "owned"], "origin": "model"},
+      {"id": "ownedX.name", "subject": "ownedX", "field": "TransferModel.Coord.name", "value": "x", "origin": "model"},
+      {"id": "ownedY.owner", "subject": "ownedY", "field": "TransferModel.Coord.owner", "value": ["v", "owned"], "origin": "model"},
+      {"id": "ownedY.name", "subject": "ownedY", "field": "TransferModel.Coord.name", "value": "y", "origin": "model"},
+      {"id": "adapter.coordinates", "subject": "adapter", "field": "TransferModel.Store.coordinates", "value": [["v", "adapterX"], ["v", "adapterY"]], "origin": "model"},
+      {"id": "adapterX.owner", "subject": "adapterX", "field": "TransferModel.Coord.owner", "value": ["v", "adapter"], "origin": "model"},
+      {"id": "adapterX.name", "subject": "adapterX", "field": "TransferModel.Coord.name", "value": "x", "origin": "model"},
+      {"id": "adapterY.owner", "subject": "adapterY", "field": "TransferModel.Coord.owner", "value": ["v", "adapter"], "origin": "model"},
+      {"id": "adapterY.name", "subject": "adapterY", "field": "TransferModel.Coord.name", "value": "y", "origin": "model"},
+      {"id": "extract.from", "subject": "extract", "field": "TransferModel.Transfer.from", "value": ["v", "old"], "origin": "model"},
+      {"id": "extract.to", "subject": "extract", "field": "TransferModel.Transfer.to", "value": ["v", "owned"], "origin": "model"},
+      {"id": "extract.coords", "subject": "extract", "field": "TransferModel.Transfer.coords", "value": [[["v", "oldX"], ["v", "ownedX"]], [["v", "oldY"], ["v", "ownedY"]]], "origin": "model"},
+      {"id": "adapt.from", "subject": "adapt", "field": "TransferModel.Transfer.from", "value": ["v", "owned"], "origin": "model"},
+      {"id": "adapt.to", "subject": "adapt", "field": "TransferModel.Transfer.to", "value": ["v", "adapter"], "origin": "model"},
+      {"id": "adapt.coords", "subject": "adapt", "field": "TransferModel.Transfer.coords", "value": [[["v", "ownedX"], ["v", "adapterX"]], [["v", "ownedY"], ["v", "adapterY"]]], "origin": "model"},
+      {"id": "direct.from", "subject": "direct", "field": "TransferModel.Transfer.from", "value": ["v", "old"], "origin": "model"},
+      {"id": "direct.to", "subject": "direct", "field": "TransferModel.Transfer.to", "value": ["v", "adapter"], "origin": "model"},
+      {"id": "direct.coords", "subject": "direct", "field": "TransferModel.Transfer.coords", "value": [[["v", "oldX"], ["v", "adapterX"]], [["v", "oldY"], ["v", "adapterY"]]], "origin": "model"}
+    ]
+  }]
+}
