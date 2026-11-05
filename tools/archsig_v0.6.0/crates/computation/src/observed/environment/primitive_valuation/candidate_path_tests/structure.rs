@@ -382,3 +382,49 @@ fn a_quantity_in_a_mixed_slot_does_not_erase_the_whole_slot_dependency() {
     assert!(!r.domain_complete());
     assert!(r.columns()[0].rows().is_empty());
 }
+
+#[test]
+fn empty_reference_containers_keep_candidate_decoded_shape() {
+    for list in [false, true] {
+        let reference_type = Json::Arr(vec![Json::str("Ref"), Json::str("Paths.Node")]);
+        let ty = Json::Arr(vec![
+            Json::str(if list { "List" } else { "Option" }),
+            reference_type,
+        ]);
+        let reference_value = Json::Arr(vec![Json::str("v"), Json::str("r")]);
+        let known = if list {
+            Json::Arr(vec![reference_value])
+        } else {
+            Json::obj([("some", reference_value)])
+        };
+        let inputs = typed_input(ty, Some(known), vec![], "");
+        let normal = Environment::new(&inputs, &quiet()).unwrap();
+        assert!(trace(&normal, false).0.value.is_some());
+        let position = fact("Paths.Node", "q", "mark");
+        let value = if list {
+            Scalar::List {
+                element: Type::Ref("Paths.Node".into()),
+                items: vec![],
+            }
+        } else {
+            Scalar::Option {
+                element: Type::Ref("Paths.Node".into()),
+                value: None,
+            }
+        };
+        let candidate =
+            Environment::with_primitive_valuation(&inputs, &[(position.clone(), value)], &quiet())
+                .unwrap();
+        assert!(
+            candidate
+                .indexes
+                .primitive_input_valuation
+                .as_ref()
+                .unwrap()
+                .contains_key(&position)
+        );
+        let (out, _) = trace(&candidate, false);
+        assert!(out.value.is_none());
+        assert!(out.failure.is_some());
+    }
+}

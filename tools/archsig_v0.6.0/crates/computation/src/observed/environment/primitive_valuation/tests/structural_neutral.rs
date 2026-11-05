@@ -583,3 +583,18 @@ fn unchanged_nested_ref_remains_on_structural_solver_path() {
     assert_admission(&inputs, &same, true);
     assert_probe_solver_path(&inputs, &same, false);
 }
+
+#[test]
+fn mixed_leaf_and_map_retains_full_pin_admission() {
+    let inputs = fixture::inputs();
+    for (field, entity, expected) in [("table", "Part", false), ("emptytable", "Vacant", true)] {
+        assert_admission(
+            &inputs,
+            &[
+                (slot("p", "quantity"), fp("2", 1)),
+                (slot("p", field), table(entity, &[])),
+            ],
+            expected,
+        );
+    }
+}

@@ -261,7 +261,8 @@ impl Environment<'_> {
         self.tick()?;
         Ok(())
     }
-    // 元型で検査した候補のdecoded値を、同じ位置の参照構造検査へ渡す。
+    // 同じ位置の参照構造検査専用。完成候補で省略した純leafは元Knownでもshapeがない。
+    // 数値等の候補値を取得する一般用途には使わない。
     pub(super) fn path_input_value<'b>(
         &'b self,
         owner: &Subject,
