@@ -287,7 +287,7 @@ fn evaluation_answer_fields(
                 .expect("Evaluation欄"),
         );
         control.checkpoint(point)?;
-        clean_reasons(&mut value);
+        clean_reasons(&mut value, control, point)?;
         remove_proof_refs(&mut value, proofs);
         let Json::Obj(fields) = value else {
             unreachable!()

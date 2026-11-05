@@ -340,7 +340,13 @@ fn projection_keeps_payload_quantifiers_and_prunes_proofs_without_changing_full_
     );
     assert!(!judgment.contains_key("evidence"));
     let mut references = BTreeSet::new();
-    refs(&projected, &mut references);
+    refs(
+        &projected,
+        &mut references,
+        &quiet(),
+        Checkpoint::Expression,
+    )
+    .unwrap();
     assert!(!references.contains("n5"));
     assert!(references.contains("n6"));
     assert!(references.contains("n2"));
@@ -696,4 +702,126 @@ fn evaluation_answer_stop_propagates_at_every_reachable_checkpoint() {
         );
         assert_eq!(count.get(), before);
     }
+}
+
+#[test]
+fn compact_stops_discard_only_local_display_and_retry_keeps_native_and_saved_bytes() {
+    let native = evaluation_nodes(Some(NodeRef(0)), Some(NodeRef(0)));
+    let full_before = Json::Arr(
+        native
+            .iter()
+            .enumerate()
+            .map(|(i, node)| node.wire(i, &native[..i]))
+            .collect(),
+    )
+    .canonical();
+    let source = Json::obj([(
+        "answers",
+        Json::Arr(vec![Json::obj([(
+            "outputs",
+            Json::obj([
+                ("evaluation", NodeRef(3).wire()),
+                ("result", NodeRef(3).wire()),
+            ]),
+        )])]),
+    )]);
+    let count = std::rc::Rc::new(std::cell::Cell::new(0));
+    let visits = count.clone();
+    let control = Control::new(move |_| {
+        visits.set(visits.get() + 1);
+        None
+    });
+    let mut expected = source.clone();
+    compact(&mut expected, &native, &control, Checkpoint::Expression).unwrap();
+    let expected = expected.canonical();
+    let total = count.get();
+    assert!(
+        total > 3,
+        "include cleaning, projection, compression, references and renaming"
+    );
+    for at in 1..=total {
+        let calls = std::rc::Rc::new(std::cell::Cell::new(0));
+        let visits = calls.clone();
+        let control = Control::new(move |_| {
+            visits.set(visits.get() + 1);
+            (visits.get() == at).then_some(Signal::Term)
+        });
+        let mut local = source.clone();
+        assert_eq!(
+            compact(&mut local, &native, &control, Checkpoint::Expression),
+            Err(Signal::Term)
+        );
+        drop(local); // 途中の表示は成功成果物として使わない。
+        let frozen = calls.get();
+        assert_eq!(
+            control.checkpoint(Checkpoint::Expression),
+            Err(Signal::Term)
+        );
+        assert_eq!(calls.get(), frozen);
+        let mut retry = source.clone();
+        compact(&mut retry, &native, &quiet(), Checkpoint::Expression).unwrap();
+        assert_eq!(retry.canonical(), expected);
+        assert_eq!(
+            Json::Arr(
+                native
+                    .iter()
+                    .enumerate()
+                    .map(|(i, node)| node.wire(i, &native[..i]))
+                    .collect()
+            )
+            .canonical(),
+            full_before
+        );
+    }
+}
+
+#[test]
+fn proof_pruning_remains_before_reference_array_compaction_and_full_raw_stays_plain() {
+    let native = evaluation_nodes(Some(NodeRef(2)), Some(NodeRef(2)));
+    let (proofs, examples, completions) = classes(&native);
+    let mut projected = project_node(
+        &native,
+        3,
+        &proofs,
+        &examples,
+        &completions,
+        &quiet(),
+        Checkpoint::Expression,
+    )
+    .unwrap();
+    let mut legacy = legacy_project_node(
+        &native,
+        3,
+        &proofs,
+        &examples,
+        &completions,
+        &quiet(),
+        Checkpoint::Expression,
+    )
+    .unwrap();
+    compact_reference_arrays(&mut projected, &quiet(), Checkpoint::Expression).unwrap();
+    compact_reference_arrays(&mut legacy, &quiet(), Checkpoint::Expression).unwrap();
+    assert_eq!(projected.canonical(), legacy.canonical());
+    let mut references = BTreeSet::new();
+    refs(
+        &projected,
+        &mut references,
+        &quiet(),
+        Checkpoint::Expression,
+    )
+    .unwrap();
+    assert!(!references.contains("n2"));
+    assert!(references.contains("n0"));
+    let raw = public_raw_node(&native, 3, &proofs, &quiet(), Checkpoint::Expression).unwrap();
+    let Json::Obj(fields) = &raw else { panic!() };
+    assert!(
+        matches!(&fields["arguments"], Json::Arr(_)),
+        "raw proof pruning never receives bulk reference arrays"
+    );
+    let Json::Obj(value) = &fields["value"] else {
+        panic!()
+    };
+    assert!(matches!(&value["parts"], Json::Arr(_)));
+    assert!(value.contains_key("expression"));
+    assert!(!value.contains_key("environment") && !value.contains_key("value"));
 }
