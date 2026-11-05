@@ -555,11 +555,8 @@ pub(in crate::observed) fn solution_row(
         .unwrap_or_default();
     assignments.extend(candidate.update.values.iter().cloned());
     let assignments = assignments.into_iter().collect::<Vec<_>>();
-    let Some(mut updated) = Environment::try_primitive_valuation(
-        environment.indexes.inputs,
-        &assignments,
-        &environment.control.clone(),
-    )?
+    let Some(mut updated) =
+        environment.try_primitive_valuation_from(&assignments, &environment.control)?
     else {
         row.member = Some(false);
         return Ok(row);
