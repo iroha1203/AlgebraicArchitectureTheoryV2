@@ -97,10 +97,11 @@ EvaluationResultのPayloadはEvaluationを下表の欄へ射影した値とす�
 通常の短い回答表示は[実行 §5](execution.md#5-ファイル操作と出力)に従う。
 
 Vocabulary と VocabularyBinding は [Atom 定義](definitions.md#1-ファイルと識別)の schema を使う。
-QuestionKindとFieldは[固定12問](execution.md#3-固定の12の問い)のkindと出力fieldに限定する。
+QuestionKindとFieldは[問い](execution.md#3-問い)のkindと出力fieldに限定する。
 `outputs`は固定field名をkeyとするobjectであり、任意のkeyを追加しない。
 Request.argumentsは`bind.`へ展開した名前順。短形で明記した束縛もorigin=explicitとする。
-mapのkind=configuration、diagnoseのdegree=1とside=equationは、省略時も引数へ入れ、
+mapのkind=configuration、diagnoseのdegree=1とside=equation、RepairProblem を読む solve の
+mode=solutions は、省略時も引数へ入れ、
 origin=defaultedとする。明記した同じ値はexplicitとし、textには元の要求全体を保持する。
 pathのStringはrecord欄、Natは位置を表す。
 CLIのEnumは問いごとの列挙に限定し、一般のString値として評価しない。
@@ -284,6 +285,9 @@ variantや引数から型が静的に確定しないときは、構成した値�
 | Architecture | root: 元の根entity参照型 |
 | Evaluation | value: 評価式の結果型、environment: Architecture |
 | Repair | domain: CandidateSpace、solutions: SolutionSet、parameters: Assignment、object: Architecture |
+| RepairProblem | domain:CandidateSpace、internal:Domain、units:Domain |
+| ChangeRange | problem:RepairProblem、enabled:Domain |
+| Selection | domain:CandidateSpace、solutions:SolutionSet、parameters:Assignment、object:Architecture |
 | Assignment | domain: CandidateSpace |
 | CandidateSpace | base: Architecture、parameters: Domain、states: StateSpace、action: StateMap |
 | SolutionSet | domain: CandidateSpace |
@@ -346,7 +350,7 @@ circuit_map, invariant, invariant_map, signature_axis, signature_map, value_map,
 declaration_transport, object_algebra_map, operation, composition,
 comparison, domain, state_space, state_map, candidate_space, solution_set, equation_space, equation_solutions, path, context, context_map,
 cover, topology, local_system, equation_presentation, ring, polynomial, finite_function, ring_map, ideal, module, module_map, vector, action,
-complex, cochain_map, cohomology, class, diagnostic, assignment, repair, quotient, observation_plan,
+complex, cochain_map, cohomology, class, diagnostic, assignment, repair, repair_problem, change_range, selection, quotient, observation_plan,
 proposition, evidence`。作者が呼ぶ関数名として公開しない。
 
 ## 3. 対象・式・写像
@@ -580,9 +584,9 @@ source/targetのExpressionとValueMap、naturalityが等式左辺・右辺のAto
 
 | Type | Payload |
 | --- | --- |
-| Domain | `{kind:"type",type:T}` / `{kind:"finite",type:T,elements:Ref[]}` / `{kind:"module",module:Ref}` / `{kind:"states",space:Ref}` / `{kind:"candidates",space:CandidateSpace}` / `{kind:"solutions",solutions:Ref}` / `{kind:"image",map:StateMap,source:Ref}` |
+| Domain | `{kind:"type",type:T}` / `{kind:"finite",type:T,elements:Ref[]}` / `{kind:"product",factors:Domain[]}` / `{kind:"module",module:Ref}` / `{kind:"states",space:Ref}` / `{kind:"candidates",space:CandidateSpace}` / `{kind:"solutions",solutions:Ref}` / `{kind:"image",map:StateMap,source:Ref}` |
 | StateSpace | `{base:Architecture,slots:Slot[],state_type:P}` |
-| StateMap | `{source:Domain,target:Domain,kind:"expression",expression:Expression}` / `{source:Domain,target:Domain,kind:"finite",pairs:[Ref,Ref][]}` / `{source:Domain,target:Domain,kind:"affine",linear:ModuleMap,offset:Vector}` / `{source:Domain,target:Domain,kind:"compose",first:StateMap,second:StateMap}` / `{source:Domain,target:Domain,kind:"guarded_affine",coordinates:Module,value_type:T,instances:{key:Ref,guard:Bool|AffinePart,values?:AffinePart}[]}` |
+| StateMap | `{source:Domain,target:Domain,kind:"expression",expression:Expression}` / `{source:Domain,target:Domain,kind:"finite",pairs:[Ref,Ref][]}` / `{source:Domain,target:Domain,kind:"affine",linear:ModuleMap,offset:Vector}` / `{source:Domain,target:Domain,kind:"change",base:Architecture,change:QName,instances:Ref[]}` / `{source:Domain,target:Domain,kind:"compose",first:StateMap,second:StateMap}` / `{source:Domain,target:Domain,kind:"guarded_affine",coordinates:Module,value_type:T,instances:{key:Ref,guard:Bool|AffinePart,values?:AffinePart}[]}` |
 | CandidateSpace | `{kind:"change"\|"identity",base:Architecture,bindings:Binding[],change?:QName,parameters:Domain,states:StateSpace,action:StateMap,instances:{subject:Ref,positions:Nat[]}[],guards:Expression[],requirements:LawInstance[]}` |
 | SolutionSet | `{domain:CandidateSpace,requirements:LawInstance[],representation:SolutionRepresentation}` |
 | EquationSpace | `{base:Architecture,variables:{position:Position,type:P}[],fixed:Slot[],parameters:Domain,requirements:LawInstance[]}` |
@@ -601,6 +605,11 @@ source/targetのExpressionとValueMap、naturalityが等式左辺・右辺のAto
 | Ideal | `{ring:Ring,parameters?:Parameter[],generators:Ref[],kind:"witness"\|"obstruction"}` |
 
 Domain.elements、Context.dependencies/carrier、Cover.patches/overlaps等は意味上の集合表。
+Domain.kind=product は factors の順の直積を表し、全要素を展開して保持しない。
+空の factors は Unit の一元。各因子は型を持ち、元 parameter と subject の対応を保つ。
+StateMap.kind=change は同じ base 内の instances に宣言 change を同時適用する生成写像であり、
+source の元 parameter tuple から target の更新後状態を計算する。全候補の pairs 表を要求しない。
+その source・target・型・instance の対応と、元更新式への一致を検査する。
 有限StateMapのpairsはsourceの全元を一回ずつ含み、像はtargetに属する。
 ContextMap U→Vの制限は状態・係数ともV→U。imagesはsource.carrierの各元のtarget位置。
 carrierの順序はserializationだけに用い、元の同一性を位置番号に置き換えない。
@@ -625,7 +634,8 @@ usingなしではvariables=[]、parametersはUnit、依存する全slotがfixed�
 
 SolutionRepresentationは`{kind:"empty",certificate:Ref}`、`{kind:"finite",values:Ref[]}`、
 `{kind:"affine",particular:Vector,directions:Module,embedding:ModuleMap}`、
-`{kind:"symbolic"}`の閉じたunion。記号表示は空集合を意味しない。
+`{kind:"symbolic"}`、[有限部品表示](#共通の有限修復問題と明示選択)の
+`{kind:"factored",problem:RepairProblem,range:ChangeRange}`の閉じたunion。記号表示は空集合を意味しない。
 有限解の値はparameter tuple、アフィン解はparticular+embedding(directions)。
 SolutionSetの表示は元changeのparameter座標上に戻し、domain.instancesと元のPositionへの対応を保つ。
 guardの消去等で再parameter化した場合も、particularとembeddingには元parameterへの復元写像を合成する。
@@ -768,6 +778,41 @@ Zでは整数核、Qでは有理核を使う。この条件で適用可否と適
 通常評価器で同じview値と異なる型付き評価族を確認する。
 
 ObservationPlanは数学的な最小観測集合を主張せず、未観測と可視性不足・非対応をblockersで区別する。
+
+### 共通の有限修復問題と明示選択
+
+RepairProblem は、元 CandidateSpace、選択 Law と束縛、常時変更できる instance と有限の変更単位を
+同じ owner の下で保持する結果型である。核が生成した部品の許容関係・共有条件・元 parameter への
+復元は内部で共有する。公開保存表現には計算の処理履歴や索引のダンプを追加しない。
+ChangeRange は同じ RepairProblem と解禁した変更単位の有限集合を保持する結果型である。
+scopes の ranges は ChangeRange を要素とする Domain とし、各要素の修復可能性と
+真部分集合の修復不能性、一覧の完全性を区別して保持する。
+
+| Type | Payload |
+| --- | --- |
+| RepairProblem | `{domain:CandidateSpace,requirements:LawInstance[],internal:Domain,units:Domain}` |
+| ChangeRange | `{problem:RepairProblem,enabled:Domain}` |
+| Selection | `{domain:CandidateSpace,solutions:SolutionSet,parameters:Assignment,object:Architecture,rechecks:Proposition[]}` |
+
+RepairProblem、ChangeRange、Selection は結果専用の Type とし、Law の原始型へ追加しない。
+有限 Domain の type は、その要素が原始値なら原始型、範囲一覧なら ChangeRange とする。
+internal と units の要素は change の entity instance であり、互いに交わらず domain.instances を分割する。
+enabled は同じ units の部分集合。RepairProblem の domain は範囲を課す前の全候補域を表す。
+範囲で絞った SolutionSet も同じ domain を持ち、範囲を満たす元 Assignment の部分集合である。
+有限の全解を列挙せず保持する場合の SolutionRepresentation は
+`{kind:"factored",problem:RepairProblem,range:ChangeRange}` とする。
+共有された部品は現在の三入力とこの生成条件から再構成・検査する。
+意味を確定しない暫定表示を完全な SolutionSet として返さない。
+
+Selection.parameters は利用者が apply へ渡した元 Assignment そのものであり、
+Repair.parameters のように全解の唯一の元であることは要求しない。
+rechecks は solution_member、範囲の固定条件、更新式と元 Law の検査を保持する。
+内部ではこれらを Proposition として追い、保存時は §1 の既存射影と同様に、
+再導出する成立証拠を除き、選択した元 Assignment と object、および参照先を保持する。
+Selection の構成に失敗した場合、候補と解集合は残せるが Selection/object は生成しない。
+所属を未確認のまま、表示行・node ID・表示用特解を採用済みの Assignment にしない。
+保存された Selection は現在の三入力による所属・復元と照合し、保存済みの成功表示だけで採用しない。
+原始事実の由来と、選択した候補から生成した対象の由来を区別する。
 
 ## 6. 証拠と理由
 
