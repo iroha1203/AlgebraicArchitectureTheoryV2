@@ -643,7 +643,7 @@ usingなしではvariables=[]、parametersはUnit、依存する全slotがfixed�
 SolutionRepresentationは`{kind:"empty",certificate:Ref}`、`{kind:"finite",values:Ref[]}`、
 `{kind:"affine",particular:Vector,directions:Module,embedding:ModuleMap}`、
 `{kind:"symbolic"}`、[有限部品表示](#共通の有限修復問題と明示選択)の
-`{kind:"factored",problem:RepairProblem,range:ChangeRange,inputs?:Domain}`の閉じたunion。記号表示は空集合を意味しない。
+`{kind:"factored",problem:RepairProblem,range:ChangeRange}`の閉じたunion。記号表示は空集合を意味しない。
 有限解の値はparameter tuple、アフィン解はparticular+embedding(directions)。
 SolutionSetの表示は元changeのparameter座標上に戻し、domain.instancesと元のPositionへの対応を保つ。
 guardの消去等で再parameter化した場合も、particularとembeddingには元parameterへの復元写像を合成する。
@@ -809,8 +809,7 @@ internal と units の要素は change の entity instance であり、互いに
 enabled は同じ units の部分集合。RepairProblem の domain は範囲を課す前の全候補域を表す。
 範囲で絞った SolutionSet も同じ domain を持ち、範囲を満たす元 Assignment の部分集合である。
 有限の全解を列挙せず保持する場合の SolutionRepresentation は
-`{kind:"factored",problem:RepairProblem,range:ChangeRange,inputs?:Domain}` とする。
-inputsは同じ問題の入力候補族の部分域を指定する場合だけ保持し、省略時は現在と整合する全入力候補を使う。
+`{kind:"factored",problem:RepairProblem,range:ChangeRange}` とする。
 共有された部品は現在の三入力とこの生成条件から再構成・検査する。
 意味を確定しない暫定表示を完全な SolutionSet として返さない。
 
@@ -830,12 +829,17 @@ RepairObservation は needed の欠測理由用ObservationPlanと別の結果型
 
 | Type | Payload |
 | --- | --- |
-| RepairObservation | `{problem:RepairProblem,range:ChangeRange,goal:"decision"\|"assignment",reading:{view:QName,bindings:Binding[]},requirements:{field:FactPointer,dependents:Ref[],locations:Location[]}[],sufficient:Proposition,cases:{values:Ref[],inputs:Domain,possible?:Proposition,solutions?:SolutionSet}[],counterexamples:{kind:"decision_difference"\|"no_common_assignment",inputs:Ref[]}[],solutions?:SolutionSet}` |
+| RepairObservation | `{problem:RepairProblem,range:ChangeRange,goal:"decision"\|"assignment",reading:{view:QName,bindings:Binding[]},requirements:{field:FactPointer,dependents:Ref[],locations:Location[]}[],sufficient:Proposition,cases:{values:Ref[],inputs:Domain,possible?:Proposition,common?:Proposition}[],counterexamples:{kind:"decision_difference"\|"no_common_assignment",inputs:Ref[]}[],solutions?:SolutionSet}` |
 
-RepairProblem.inputs.fieldsは入力viewの原始位置をcanonical順に並べ、domainはその順の型付きTupleの合法な有限族を表す。
+RepairProblem.inputs.fieldsは入力viewで補完する未観測の原始位置をcanonical順に並べ、domainはその順の型付きTupleの合法な有限族を表す。
+入力domainは `{kind:"input_completions",base:Architecture,view:QName,bindings:Binding[],fields:FactPointer[],value_type:Type}`、
+観測群は `{kind:"observation_fiber",domain:Domain,fields:FactPointer[],values:Ref[],value_type:Type}` のDomainで表す。
+前者は現在入力の合法な有限補完、後者は指定位置の値が一致する部分域であり、内部索引や全候補表を保存payloadへ展開しない。
+fieldsが空なら入力値は空Tuple一つとなる。value_typeは元field型を並べたTuple型を保つ。
 既知の位置は現在値に固定し、仮の補完を原始観測の由来にしない。空族は問題の構成条件の失敗とする。
 RepairObservationのcasesはrequirements上の値が等しい入力群を表し、inputsは同じ問題の入力domainの部分域。
-possibleは群内で可否が一定の場合だけ保持し、solutionsは全入力に共通の元Assignmentの全解表示である。
+possibleは群内で可否が一定の場合だけ保持し、commonは群全体に共通の元Assignmentの存在命題である。
+commonはassignmentを求めた場合にだけ生成し、各群の全解表示を未要求のまま公開しない。
 同じ原始位置を別の未知として扱うcaseや、型・ownerの違う元parameterを交差に混ぜない。
 反例のinputsはこのdomainの実際の型付き入力値を指す。decision_differenceは可否が異なる二点、
 no_common_assignmentは全入力が修復可能でも共通の元Assignmentがない群である。全入力が修復不能な群をこの不足理由にしない。
