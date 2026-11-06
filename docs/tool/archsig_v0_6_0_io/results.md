@@ -290,6 +290,7 @@ variantや引数から型が静的に確定しないときは、構成した値�
 | Repair | domain: CandidateSpace、solutions: SolutionSet、parameters: Assignment、object: Architecture |
 | RepairProblem | domain:CandidateSpace、internal:Domain、units:Domain |
 | ChangeRange | problem:RepairProblem、enabled:Domain |
+| List<ChangeRange> | [index]: その位置のChangeRange（完全なscopes.rangesだけ） |
 | Selection | domain:CandidateSpace、solutions:SolutionSet、parameters:Assignment、object:Architecture |
 | Assignment | domain: CandidateSpace |
 | CandidateSpace | base: Architecture、parameters: Domain、states: StateSpace、action: StateMap |
@@ -325,6 +326,9 @@ Optionのsomeを許可し、その後の成分にも型に従って同じ規則�
 Refのencoding内のsnapshot/subject文字列、Termの構文表示等は構造射影の対象に含めない。
 Set/Mapと意味上の集合表はindexで選べない。Assignment.entriesもsubjectを添字とする集合表であり、
 entries[index]から元parameter値を取り出す経路を設けない。
+完全なscopes.rangesのList<ChangeRange>は、上表の専用規則で[index]を許す。
+範囲外はprojectionのcondition_failed、未生成・partialならdependency_blockedとし、
+暫定一覧を型付きの完全な値へ昇格させない。他の導出型containerへ一般化しない。
 
 各段階をこの表またはTの構造射影で型付けできることを要求し、表外の中間欄を経由しない。
 結果が匿名recordのまま終わるpathも許可しない。SolutionSet.representation、
