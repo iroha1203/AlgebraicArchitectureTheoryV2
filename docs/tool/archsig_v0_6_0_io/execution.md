@@ -46,7 +46,7 @@ Request  ::= Name "=" Question
 Question ::= Kind "(" Head ("," Key "=" Argument)* ")"
 Kind     ::= build | evaluate | check | map | compose | compare
            | localize | diagnose | repair | solve | quotient | needed
-           | prepare | scopes | candidate | apply
+           | prepare | scopes | candidate | apply | observe
 Head     ::= QName | Handle
 Argument ::= QName | Handle | Enum | Degree | Ordinal
 Handle   ::= "@" Id "/" Id | "$" Name ("." Name | "[" Index "]")*

@@ -4,7 +4,6 @@ use std::sync::Arc;
 
 #[derive(Debug)]
 pub(in crate::observed) struct Variant {
-    pub domains: Vec<Arc<Vec<Scalar>>>,
     pub outputs: Vec<Output>,
     pub relations: Arc<finite::Problem>,
 }
@@ -319,13 +318,6 @@ pub(in crate::observed) fn prepare(
         }
         let mut relation = compiled.relations.cofactor(&pins, c)?;
         relation.share_rows(&mut pool, c)?;
-        let domains = compiled
-            .domains
-            .iter()
-            .enumerate()
-            .filter(|(i, _)| *i < parameters || *i >= parameters + count)
-            .map(|(_, d)| d.clone())
-            .collect();
         let mut outputs = compiled.outputs.clone();
         for output in &mut outputs {
             if output.baseline.is_none() {
@@ -344,7 +336,6 @@ pub(in crate::observed) fn prepare(
             output.column -= count;
         }
         variants.push(Variant {
-            domains,
             outputs,
             relations: Arc::new(relation),
         });
@@ -358,8 +349,8 @@ pub(in crate::observed) fn prepare(
         c,
     )?;
     let mut domains = compiled.domains[..parameters].to_vec();
-    for variant in &variants {
-        domains.extend(variant.domains[parameters..].iter().cloned());
+    for _ in &variants {
+        domains.extend(compiled.domains[parameters + count..].iter().cloned());
     }
     compiled.outputs = variants[0]
         .outputs

@@ -42,13 +42,14 @@ pub(super) fn resolve(
     let mut arguments = BTreeMap::new();
     for (key, value) in raw.arguments {
         phase(c, Checkpoint::RequestBinding)?;
+        let parameter = key.strip_prefix("bind.").unwrap_or(&key);
         let fixed = matches!(key.as_str(), "on" | "within" | "output");
         let valid = if key == "output" {
             matches!(&value,Selector::Enum{value} if matches!(value.as_str(),"decision"|"assignment"))
         } else if matches!(key.as_str(), "on" | "within") {
             matches!(&value,Selector::Answer{path,..} if !path.is_empty())
         } else {
-            params.contains(&key)
+            params.iter().any(|p| p == parameter)
                 && (matches!(&value, Selector::Subject { .. })
                     || matches!(&value,Selector::Answer{path,..} if !path.is_empty()))
         };
@@ -63,15 +64,29 @@ pub(super) fn resolve(
         if let Selector::Answer { id, .. } = &value {
             dependencies.insert(id.clone());
         }
-        let name = if fixed { key } else { format!("bind.{key}") };
-        arguments.insert(
-            name.clone(),
-            RequestArgument {
-                name,
-                value,
-                origin: ArgumentOrigin::Explicit,
-            },
-        );
+        let name = if fixed {
+            key.clone()
+        } else {
+            format!("bind.{parameter}")
+        };
+        if arguments
+            .insert(
+                name.clone(),
+                RequestArgument {
+                    name,
+                    value,
+                    origin: ArgumentOrigin::Explicit,
+                },
+            )
+            .is_some()
+        {
+            return Err(invalid(problem(
+                RequestIssueCode::DuplicateArgument,
+                &raw.id,
+                &key,
+                "duplicate binding for the same parameter",
+            )));
+        }
     }
     for key in ["on", "within", "output"]
         .into_iter()

@@ -1290,4 +1290,51 @@ mod tests {
             );
         }
     }
+    #[test]
+    fn observation_bindings_use_the_standard_names_and_reject_duplicate_forms() {
+        use crate::observed::{
+            PrepareFailure, prepare_observed,
+            request::{RequestIssueCode, ResolveFailure},
+        };
+        for parameter in ["r", "on", "within", "output"] {
+            let body = format!(
+                "view input({parameter}:Root):Bool={parameter}.h;view all(r:Root):Set<Part> =Part[r];change choose(c:Part,p:Bool)=c with {{flag=p}};law required valid({parameter}:Root):forall c in Part[{parameter}]. c.flag={parameter}.h;"
+            );
+            let asks = [
+                "u=evaluate(Selected.all,r=@v/root)".to_owned(),
+                format!(
+                    "p=prepare(Selected.valid,using=Selected.choose,on=@v/root,inputs=Selected.input,bind.{parameter}=@v/root)"
+                ),
+                format!(
+                    "a=observe(Selected.input,on=$p.problem,within=$u.value,output=assignment,bind.{parameter}=@v/root)"
+                ),
+            ];
+            let asks = asks.iter().map(String::as_str).collect::<Vec<_>>();
+            let c = archsig_common::control::quiet();
+            let result = super::super::super::evaluate_observed_bytes(
+                input(&body, "\"Bool\"", None),
+                &asks,
+                &c,
+            )
+            .unwrap();
+            assert_eq!(result.status(), "complete", "{:?}", result.issues);
+            assert_eq!(result.answers[2].status, Decision::Established);
+            if parameter == "r" {
+                let mut duplicate = asks[..2].to_vec();
+                duplicate.push("bad=observe(Selected.input,on=$p.problem,within=$u.value,output=decision,r=@v/root,bind.r=@v/root)");
+                let Err(PrepareFailure::Requests {
+                    failure: ResolveFailure::Invalid { issues, .. },
+                    ..
+                }) = prepare_observed(input(&body, "\"Bool\"", None), &duplicate, &c)
+                else {
+                    panic!("二重束縛を拒否する")
+                };
+                assert!(
+                    issues
+                        .iter()
+                        .any(|issue| issue.code == RequestIssueCode::DuplicateArgument)
+                );
+            }
+        }
+    }
 }
