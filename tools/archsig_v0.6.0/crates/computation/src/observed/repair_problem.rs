@@ -36,7 +36,6 @@ struct Shared {
     base: NodeRef,
     domain: NodeRef,
     problem: Option<NodeRef>,
-    legacy_set: Option<NodeRef>,
     subjects: Vec<NodeRef>,
     requirements: Vec<NodeRef>,
     internal: Vec<bool>,
@@ -331,10 +330,20 @@ fn range(b: &mut Builder<'_>, s: &Shared, enabled: &[bool]) -> Result<NodeRef, V
     )
 }
 fn same_problem(a: &Shared, b: &Shared) -> bool {
-    a.problem.is_some() && a.problem == b.problem
+    a.problem.is_some()
+        && b.problem.is_some()
+        && same_domain(a, b)
+        && a.internal == b.internal
+        && a.compiled.requirements == b.compiled.requirements
 }
 fn same_domain(a: &Shared, b: &Shared) -> bool {
-    a.domain == b.domain
+    a.witness.construction().root() == b.witness.construction().root()
+        && a.witness.construction().reading() == b.witness.construction().reading()
+        && a.compiled.fixed == b.compiled.fixed
+        && a.change == b.change
+        && a.compiled.bindings == b.compiled.bindings
+        && a.compiled.subjects == b.compiled.subjects
+        && a.compiled.parameter_types == b.compiled.parameter_types
 }
 fn minimal(shared: &Shared, c: &Control) -> Result<Vec<Vec<bool>>, ValidationFailure> {
     let units = shared
@@ -533,7 +542,7 @@ fn consume(
     c: &Control,
 ) -> Result<Source, ValidationFailure> {
     let head = reference(env, g, &r.head)?;
-    let (shared, mut enabled, previous_chosen) = if let Ok(d) = data(g, head) {
+    let (mut shared, mut enabled, previous_chosen) = if let Ok(d) = data(g, head) {
         (
             d.source
                 .shared
@@ -547,6 +556,9 @@ fn consume(
         let shared = legacy(env, g, head, c)?;
         let enabled = vec![true; shared.subjects.len()];
         (shared, Some(enabled), None)
+    } else if r.kind == QuestionKind::Apply {
+        let (shared, point) = prepare::original_assignment(env, g, head, c)?;
+        (shared, None, Some(point))
     } else {
         return Err(internal!("共通修復問題の元結果がない").into());
     };
@@ -637,7 +649,9 @@ fn consume(
                     .clone(),
                 d.source.range.clone(),
             )
-        } else if shared.legacy_set == Some(at) {
+        } else if shared.problem.is_none()
+            && matches!(&g.get(at)?.payload,Some(Payload::Construction(v)) if v.project(&[ProjectionStep::Field("domain".into())]).map(|(r,_)|r)==Some(shared.domain))
+        {
             (shared.clone(), Some(vec![true; shared.subjects.len()]))
         } else {
             let old = legacy(env, g, at, c)?;
@@ -647,7 +661,7 @@ fn consume(
         chosen = previous_chosen;
         enabled = target_range;
         invalid = !same_domain(&shared, &other)
-            || !shared.compiled.relations.member(
+            || !other.compiled.relations.member(
                 &pins(
                     &other,
                     enabled.as_ref().ok_or(internal!("解集合の範囲がない"))?,
@@ -657,6 +671,7 @@ fn consume(
                     .ok_or(internal!("選択した元割当てがない"))?,
                 c,
             )?;
+        shared = other;
     }
     let base = g.nodes.len();
     let mut b = Builder {
@@ -803,6 +818,60 @@ fn consume(
         context: g.active,
     })
 }
+/// 対応範囲外は通常の未決として残し、独立した後続要求を止めない。
+fn unsupported(
+    env: &Environment<'_>,
+    g: &mut Graph,
+    r: &Request,
+) -> Result<Source, ValidationFailure> {
+    let head = reference(env, g, &r.head)?;
+    let Some(Payload::Construction(value)) = &g.get(head)?.payload else {
+        return Err(internal!("未対応の修復入力がnativeでない").into());
+    };
+    let Witness::Architecture(witness) = &value.witness else {
+        return Err(internal!("未対応の修復入力の元対象がない").into());
+    };
+    let witness = witness.clone();
+    let mut inputs = vec![head];
+    for argument in &r.arguments {
+        if matches!(argument.value, Selector::Answer { .. }) {
+            inputs.push(reference(env, g, &argument.value)?);
+        }
+    }
+    let base = g.nodes.len();
+    let mut b = Builder {
+        g,
+        base,
+        parts: vec![],
+    };
+    let claim = condition(&mut b, r, inputs.clone(), Decision::Undetermined)?;
+    let mut a = answer(r, claim, Decision::Undetermined, BTreeMap::new(), &b);
+    a.reasons.push(Reason {
+        kind: ReasonKind::UnsupportedAlgorithm {
+            question: r.kind,
+            operand_types: vec![],
+            method: "finite_repair_relation".into(),
+        },
+        request: r.id.clone(),
+        dependencies: inputs.clone(),
+        missing: vec![],
+        location: None,
+    });
+    Ok(Source {
+        base,
+        parts: b.parts,
+        answer: a,
+        request: r.clone(),
+        witness,
+        shared: None,
+        range: None,
+        ranges: BTreeMap::new(),
+        chosen: None,
+        inputs,
+        context: g.active,
+    })
+}
+
 impl super::result_kind::ResultKind for Data {
     type Stored = Arc<Source>;
     type Input<'a, 'input: 'a> = (
@@ -820,10 +889,18 @@ impl super::result_kind::ResultKind for Data {
         if let Some(a) = super::public_map::unavailable(env, g, r)? {
             return Ok(a);
         }
-        let source = Arc::new(if r.kind == QuestionKind::Prepare {
-            prepare(prepared, env, g, r, c)?
+        let result = if r.kind == QuestionKind::Prepare {
+            prepare(prepared, env, g, r, c)
         } else {
-            consume(env, g, r, c)?
+            consume(env, g, r, c)
+        };
+        let source = Arc::new(match result {
+            Err(ValidationFailure::UnsupportedExpression { .. })
+                if r.kind != QuestionKind::Prepare =>
+            {
+                unsupported(env, g, r)?
+            }
+            result => result?,
         });
         for (index, part) in source.parts.iter().enumerate() {
             native::retain(

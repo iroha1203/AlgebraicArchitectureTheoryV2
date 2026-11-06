@@ -330,7 +330,7 @@ fn ranges_and_candidates_cannot_be_transferred_between_distinct_problems() {
     let asks = [
         "u=evaluate(Selected.all,r=@v/root)",
         "p=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
-        "q=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
+        "q=prepare(Selected.valid,using=Selected.other,on=@v/root)",
         "r=scopes($p.problem)",
         "wrong=solve($q.problem,within=$r.ranges[0])",
         "s=solve($p.problem,within=$u.value)",
@@ -339,7 +339,7 @@ fn ranges_and_candidates_cannot_be_transferred_between_distinct_problems() {
         "a=apply($c.assignment,in=$t.solutions)",
     ];
     let result = super::super::evaluate_observed_bytes(
-        fixture::input(""),
+        fixture::input("change other(c:Part,p:Bool,q:Bool)=c with {flag=p};"),
         &asks,
         &archsig_common::control::quiet(),
     )
@@ -495,4 +495,118 @@ fn internal_instances_must_belong_to_the_selected_owner() {
     assert_eq!(result.answers[0].status, Decision::Established);
     assert_eq!(result.answers[1].status, Decision::Refuted);
     assert!(!result.answers[1].outputs.contains_key("problem"));
+}
+
+#[test]
+fn semantically_same_domains_allow_selection_and_check_target_requirements() {
+    let asks = [
+        "u=evaluate(Selected.all,r=@v/root)",
+        "p=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
+        "q=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
+        "r=scopes($p.problem)",
+        "s=solve($p.problem,within=$u.value)",
+        "t=solve($q.problem,within=$r.ranges[0])",
+        "c=candidate($s.solutions,index=0)",
+        "a=apply($c.assignment,in=$t.solutions)",
+        "off=prepare(Selected.off,using=Selected.choose,on=@v/root)",
+        "os=solve($off.problem,within=$u.value)",
+        "bad=apply($c.assignment,in=$os.solutions)",
+        "any=prepare(Selected.any,using=Selected.choose,on=@v/root)",
+        "free=solve($any.problem,within=$u.value)",
+        "b=apply($c.assignment,in=$free.solutions)",
+    ];
+    let result = super::super::evaluate_observed_bytes(
+        fixture::input("law required off(c:Part):not c.flag;law required any(c:Part):true;"),
+        &asks,
+        &archsig_common::control::quiet(),
+    )
+    .unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    assert_eq!(result.answers[7].status, Decision::Established);
+    assert_eq!(result.answers[10].status, Decision::Refuted);
+    assert!(!result.answers[10].outputs.contains_key("object"));
+    assert_eq!(result.answers[13].status, Decision::Established);
+}
+
+#[test]
+fn existing_unique_repair_assignment_is_accepted_and_legacy_candidates_share_parts() {
+    let input = fixture::sources(
+        &[("p", false, "p")],
+        "view all(r:Root):Set<Part> =Part[r];change choose(c:Part,p:Bool)=c with {flag=p};law required valid(c:Part):c.flag;",
+    );
+    let asks = [
+        "r=repair(Selected.valid,using=Selected.choose,on=@v/root)",
+        "a=apply($r.repair.parameters,in=$r.repair.solutions)",
+        "ok=check(Selected.valid,on=$a.object)",
+        "c0=candidate($r.solutions,index=0)",
+        "c1=candidate($r.solutions,index=0)",
+    ];
+    let before = super::super::environment::repair_problem::generations();
+    let result =
+        super::super::evaluate_observed_bytes(input, &asks, &archsig_common::control::quiet())
+            .unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    assert!(
+        result
+            .answers
+            .iter()
+            .all(|a| a.status == Decision::Established)
+    );
+    assert_eq!(
+        super::super::environment::repair_problem::generations() - before,
+        1
+    );
+}
+
+#[test]
+fn nonfinite_candidate_and_prepare_are_unsupported_without_blocking_independent_checks() {
+    let input = fixture::sources(
+        &[("p", true, "p")],
+        "change choose(c:Part,p:Z)=c with {flag=p=0};law required valid(c:Part):c.flag=c.flag;",
+    );
+    let asks = [
+        "p=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
+        "later=check(Selected.valid,c=@v/p)",
+    ];
+    let result =
+        super::super::evaluate_observed_bytes(input, &asks, &archsig_common::control::quiet())
+            .unwrap();
+    assert_eq!(result.status(), "partial", "{:?}", result.issues);
+    assert_eq!(result.answers[0].status, Decision::Undetermined);
+    assert!(
+        result.answers[0]
+            .reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+    );
+    assert_eq!(result.answers[1].status, Decision::Established);
+    let input = archsig_input::input::InputSources::from_bytes(
+        vec![include_bytes!("../../../../../tests/fixtures/counter.atoms.json").to_vec()],
+        include_str!("../../../../../tests/fixtures/counter.law")
+            .replace(
+                "view amount",
+                "change choose(s:State,n:Z)=s with {count=n};view amount",
+            )
+            .replace("s.count >= 0", "s.count = s.count")
+            .into_bytes(),
+        include_bytes!("../../../../../tests/fixtures/counter.archmap.json").to_vec(),
+    );
+    let asks = [
+        "s=solve(CountCheck.nonnegative,using=CountCheck.choose,on=@v/s)",
+        "c=candidate($s.solutions,index=0)",
+        "later=check(CountCheck.nonnegative,s=@v/s)",
+    ];
+    let result =
+        super::super::evaluate_observed_bytes(input, &asks, &archsig_common::control::quiet())
+            .unwrap();
+    assert_eq!(result.status(), "partial", "{:?}", result.issues);
+    assert_eq!(result.answers[0].status, Decision::Established);
+    assert_eq!(result.answers[1].status, Decision::Undetermined);
+    assert!(
+        result.answers[1]
+            .reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+    );
+    assert_eq!(result.answers[2].status, Decision::Established);
 }

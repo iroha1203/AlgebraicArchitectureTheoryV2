@@ -72,7 +72,16 @@ pub(super) fn prepare(
     let compilation = if let Some(compiled) = reused {
         Compilation::Ready(compiled)
     } else if architecture.complete {
-        crate::observed::environment::repair_problem::compile(env, g, &architecture.witness, r, c)?
+        match crate::observed::environment::repair_problem::compile(
+            env,
+            g,
+            &architecture.witness,
+            r,
+            c,
+        ) {
+            Err(ValidationFailure::UnsupportedExpression { .. }) => Compilation::Pending(vec![]),
+            result => result?,
+        }
     } else {
         Compilation::Pending(
             architecture
@@ -362,7 +371,6 @@ pub(super) fn prepare(
         base: architecture.reference,
         domain: d,
         problem: Some(problem),
-        legacy_set: None,
         subjects,
         requirements,
         internal,
@@ -390,18 +398,34 @@ pub(super) fn legacy(
     set: NodeRef,
     c: &Control,
 ) -> Result<Arc<Shared>, ValidationFailure> {
-    let input = change_result::candidate_input(env, g, set, c)?;
-    if input.search.linear.is_some() || input.search.rational.is_some() {
-        return Err(ValidationFailure::UnsupportedExpression {
-            location: archsig_common::issue::Location::Law { span: (0, 0) },
-            feature: "candidate requires a complete finite SolutionSet".into(),
-        });
+    let (architecture, witness) = change_result::candidate_origin(env, g, set)?;
+    let Some(Payload::Construction(v)) = &g.get(set)?.payload else {
+        return Err(internal!("元候補域がnativeでない").into());
+    };
+    let domain = if g.get(set)?.ty == NodeType::Construction(T::CandidateSpace) {
+        set
+    } else {
+        v.project(&[ProjectionStep::Field("domain".into())])
+            .ok_or(internal!("元候補域がない"))?
+            .0
+    };
+    // 先行する明示取得が保持した不変部品を、同じ検査済み候補域で使う。
+    for node in &g.nodes {
+        tick(c)?;
+        if let Some(Payload::Construction(value)) = &node.payload
+            && let D::SharedRepair(d) = &value.data
+            && let Some(s) = &d.source.shared
+            && s.problem.is_none()
+            && s.domain == domain
+        {
+            return Ok(s.clone());
+        }
     }
-    let origin = Witness::Architecture(input.witness.clone());
+    let origin = Witness::Architecture(witness.clone());
     let request = origin.request();
     let compiled = env.with_request_context(g, request, || {
         let _a = env.enter_architecture(g)?;
-        crate::observed::environment::repair_problem::compile(env, g, &input.witness, request, c)
+        crate::observed::environment::repair_problem::compile(env, g, &witness, request, c)
     })?;
     let Compilation::Ready(compiled) = compiled else {
         return Err(ValidationFailure::UnsupportedExpression {
@@ -409,12 +433,6 @@ pub(super) fn legacy(
             feature: "finite candidate reconstruction requires a known baseline".into(),
         });
     };
-    let Some(Payload::Construction(v)) = &g.get(set)?.payload else {
-        return Err(internal!("元解集合がnativeでない").into());
-    };
-    let (domain, _) = v
-        .project(&[ProjectionStep::Field("domain".into())])
-        .ok_or(internal!("元候補域がない"))?;
     let Some(Payload::Construction(d)) = &g.get(domain)?.payload else {
         return Err(internal!("元候補域がnativeでない").into());
     };
@@ -465,7 +483,7 @@ pub(super) fn legacy(
             }
         })
         .ok_or(internal!("元changeがない"))?;
-    let root = input.witness.construction().root();
+    let root = witness.construction().root();
     let root_type = env
         .indexes
         .subject(&root.snapshot, &root.subject)?
@@ -474,15 +492,79 @@ pub(super) fn legacy(
     let internal = vec![false; subjects.len()];
     Ok(Arc::new(Shared {
         compiled,
-        witness: input.witness,
-        base: input.architecture,
+        witness,
+        base: architecture,
         domain,
         problem: None,
-        legacy_set: Some(set),
         subjects,
         requirements,
         internal,
         change,
         root_type,
     }))
+}
+
+/// 既存repairの元parameterを、共有関係の同じ座標へ復元する。
+pub(super) fn original_assignment(
+    env: &Environment<'_>,
+    g: &Graph,
+    at: NodeRef,
+    c: &Control,
+) -> Result<(Arc<Shared>, Vec<usize>), ValidationFailure> {
+    let input = change_result::assignment_input(env, g, at)?;
+    let shared = legacy(env, g, input.domain, c)?;
+    let mut parameters = vec![];
+    for subject in &shared.compiled.subjects {
+        tick(c)?;
+        let values = &input
+            .entries
+            .iter()
+            .find(|(s, _)| s == subject)
+            .ok_or(internal!("元割当てのinstanceが足りない"))?
+            .1;
+        parameters.extend(values.iter().cloned());
+    }
+    if parameters.len() != shared.compiled.parameter_count {
+        return Err(internal!("元割当てのparameter幅が違う").into());
+    }
+    let mut point = vec![0; shared.compiled.relations.variables()];
+    for (column, value) in parameters.iter().enumerate() {
+        point[column] = shared.compiled.domains[column]
+            .iter()
+            .position(|v| v == value)
+            .ok_or(internal!("元割当てが元parameter域にない"))?;
+    }
+    let mut fixed = env
+        .try_primitive_valuation_from(&shared.compiled.fixed, c)?
+        .ok_or(internal!("元割当ての基準値が不適合"))?;
+    fixed.select_local_object(&shared.witness, c)?;
+    let origin = Witness::Architecture(shared.witness.clone());
+    let update = change_evaluation::candidate(
+        &fixed,
+        &origin.inputs().law().declarations()[&shared.change],
+        &shared.compiled.subjects,
+        &parameters,
+    )?
+    .update;
+    if update.state != change_evaluation::State::Ready {
+        return Err(internal!("検査済み元割当ての更新が成立しない").into());
+    }
+    for output in &shared.compiled.outputs {
+        tick(c)?;
+        let value = &update
+            .values
+            .iter()
+            .find(|(f, _)| {
+                f.snapshot == output.fact.snapshot
+                    && f.subject == output.fact.subject
+                    && f.field == output.fact.field
+            })
+            .ok_or(internal!("元割当ての更新先がない"))?
+            .1;
+        point[output.column] = shared.compiled.domains[output.column]
+            .iter()
+            .position(|v| v == value)
+            .ok_or(internal!("元割当ての更新値が関係にない"))?;
+    }
+    Ok((shared, point))
 }

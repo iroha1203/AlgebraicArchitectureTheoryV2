@@ -44,9 +44,10 @@ fn saved_shared_problem_and_ordinal_return_to_current_observation() {
     }
     let first = execute(&dir, "first", None);
     assert_eq!(first.code, 0, "{}", first.stdout);
-    let saved = s(get(&first.receipt, "result")).to_owned();
-    let second = execute(&dir, "second", Some(&saved));
+    let saved = "first";
+    let second = execute(&dir, "second", Some(saved));
     assert_eq!(second.code, 0, "{}", second.stdout);
+    assert!(warnings(&result_json(&dir, &second)).is_empty());
     for run in [&first, &second] {
         let result = result_json(&dir, &run.run);
         let answers = arr(get(&result, "answers"));
@@ -80,9 +81,15 @@ fn saved_shared_problem_and_ordinal_return_to_current_observation() {
             "view flag(c:Part):Bool=not c.flag",
         );
     std::fs::write(dir.join("l.law"), law).unwrap();
-    let changed = execute(&dir, "changed", Some(&saved));
+    let changed = execute(&dir, "changed", Some(saved));
     assert_eq!(changed.code, 0, "{}", changed.stdout);
     let result = result_json(&dir, &changed);
+    let rejected = warnings(&result);
+    assert!(
+        rejected
+            .iter()
+            .any(|w| s(get(w, "message")).contains("current input identity does not match"))
+    );
     let answers = arr(get(&result, "answers"));
     let output = get(get(&answers[7], "outputs"), "value");
     let value = arr(get(&result, "nodes"))

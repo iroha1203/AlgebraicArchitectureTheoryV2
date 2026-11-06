@@ -1309,6 +1309,103 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
     validate_node(g, n, v, d)
 }
 
+/// 検査済みの生成元だけを返す。全探索が必要な消費側とは分ける。
+pub(super) fn candidate_origin(
+    env: &Environment<'_>,
+    g: &Graph,
+    reference: NodeRef,
+) -> Result<(NodeRef, Arc<native::ArchitectureWitness>), ValidationFailure> {
+    let d = checked_candidate(env, g, reference)?;
+    Ok((
+        d.source.architecture.reference,
+        d.source.architecture.witness.clone(),
+    ))
+}
+fn checked_candidate<'g>(
+    env: &Environment<'_>,
+    g: &'g Graph,
+    reference: NodeRef,
+) -> Result<&'g Data, ValidationFailure> {
+    let node = g.get(reference)?;
+    let Some(Payload::Construction(v)) = &node.payload else {
+        return Err(internal!("元候補域がnativeでない").into());
+    };
+    let D::Change(d) = &v.data else {
+        return Err(internal!("元候補域がchange由来でない").into());
+    };
+    if !matches!(
+        d.ty(),
+        NodeType::Construction(T::CandidateSpace | T::SolutionSet)
+    ) {
+        return Err(internal!("元候補域の型が違う").into());
+    }
+    env.recheck_node(g, node, reference.0)?;
+    Ok(d)
+}
+pub(super) struct AssignmentInput {
+    pub domain: NodeRef,
+    pub entries: Vec<(Scalar, Vec<Scalar>)>,
+}
+/// 既存Assignmentの元の型付き辺を読む。表示の値を再解釈・再符号化しない。
+pub(super) fn assignment_input(
+    env: &Environment<'_>,
+    g: &Graph,
+    reference: NodeRef,
+) -> Result<AssignmentInput, ValidationFailure> {
+    let node = g.get(reference)?;
+    let Some(Payload::Construction(v)) = &node.payload else {
+        return Err(internal!("元割当てがnativeでない").into());
+    };
+    let D::Change(d) = &v.data else {
+        return Err(internal!("元割当てがchange由来でない").into());
+    };
+    if d.ty() != NodeType::Construction(T::Assignment) {
+        return Err(internal!("元割当ての型が違う").into());
+    }
+    env.recheck_node(g, node, reference.0)?;
+    let Some(Json::Obj(record)) = d.part().wire_ref() else {
+        return Err(internal!("元割当ての欄がない").into());
+    };
+    let reference = |value: &Json| -> Result<NodeRef, ValidationFailure> {
+        d.part()
+            .arguments
+            .iter()
+            .copied()
+            .find(|r| r.wire() == *value)
+            .ok_or_else(|| internal!("元割当ての型付き辺がない").into())
+    };
+    let domain = reference(
+        record
+            .get("domain")
+            .ok_or(internal!("元割当ての候補域がない"))?,
+    )?;
+    let Some(Json::Arr(rows)) = record.get("entries") else {
+        return Err(internal!("元割当てのinstanceがない").into());
+    };
+    let mut entries = vec![];
+    for row in rows {
+        env.tick()?;
+        let Json::Obj(row) = row else {
+            return Err(internal!("元割当てのinstance欄がない").into());
+        };
+        let subject = reference(
+            row.get("subject")
+                .ok_or(internal!("元割当てのsubjectがない"))?,
+        )?;
+        let Some(Json::Arr(parameters)) = row.get("parameters") else {
+            return Err(internal!("元割当てのparameterがない").into());
+        };
+        entries.push((
+            g.scalar(subject)?.clone(),
+            parameters
+                .iter()
+                .map(|r| Ok(g.scalar(reference(r)?)?.clone()))
+                .collect::<Result<Vec<_>, ValidationFailure>>()?,
+        ));
+    }
+    Ok(AssignmentInput { domain, entries })
+}
+
 pub(super) struct CandidateInput {
     pub architecture: NodeRef,
     pub witness: Arc<native::ArchitectureWitness>,
@@ -1321,20 +1418,7 @@ pub(super) fn candidate_input(
     reference: NodeRef,
     c: &Control,
 ) -> Result<CandidateInput, ValidationFailure> {
-    let node = g.get(reference)?;
-    let Some(Payload::Construction(v)) = &node.payload else {
-        return Err(internal!("商の候補域がnativeでない").into());
-    };
-    let D::Change(d) = &v.data else {
-        return Err(internal!("商の候補域がchange由来でない").into());
-    };
-    if !matches!(
-        d.ty(),
-        NodeType::Construction(T::CandidateSpace | T::SolutionSet)
-    ) {
-        return Err(internal!("商の候補域の型が違う").into());
-    }
-    env.recheck_node(g, node, reference.0)?;
+    let d = checked_candidate(env, g, reference)?;
     let origin = Witness::Architecture(d.source.architecture.witness.clone());
     let request = origin.request();
     env.with_request_context(g, request, || {
