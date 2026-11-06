@@ -292,6 +292,7 @@ variantや引数から型が静的に確定しないときは、構成した値�
 | ChangeRange | problem:RepairProblem、enabled:Domain |
 | List<ChangeRange> | [index]: その位置のChangeRange（完全なscopes.rangesだけ） |
 | Selection | domain:CandidateSpace、solutions:SolutionSet、parameters:Assignment、object:Architecture |
+| RepairObservation | problem:RepairProblem、range:ChangeRange |
 | Assignment | domain: CandidateSpace |
 | CandidateSpace | base: Architecture、parameters: Domain、states: StateSpace、action: StateMap |
 | SolutionSet | domain: CandidateSpace |
@@ -357,7 +358,7 @@ circuit_map, invariant, invariant_map, signature_axis, signature_map, value_map,
 declaration_transport, object_algebra_map, operation, composition,
 comparison, domain, state_space, state_map, candidate_space, solution_set, equation_space, equation_solutions, path, context, context_map,
 cover, topology, local_system, equation_presentation, ring, polynomial, finite_function, ring_map, ideal, module, module_map, vector, action,
-complex, cochain_map, cohomology, class, diagnostic, assignment, repair, repair_problem, change_range, selection, quotient, observation_plan,
+complex, cochain_map, cohomology, class, diagnostic, assignment, repair, repair_problem, change_range, selection, repair_observation, quotient, observation_plan,
 proposition, evidence`。作者が呼ぶ関数名として公開しない。
 
 ## 3. 対象・式・写像
@@ -797,11 +798,11 @@ scopes の ranges は ChangeRange を要素とする型付き List とし、各�
 
 | Type | Payload |
 | --- | --- |
-| RepairProblem | `{domain:CandidateSpace,requirements:LawInstance[],internal:Domain,units:Domain}` |
+| RepairProblem | `{domain:CandidateSpace,requirements:LawInstance[],internal:Domain,units:Domain,inputs?:{view:QName,bindings:Binding[],fields:FactPointer[],domain:Domain}}` |
 | ChangeRange | `{problem:RepairProblem,enabled:Domain}` |
 | Selection | `{domain:CandidateSpace,solutions:SolutionSet,parameters:Assignment,object:Architecture,rechecks:Proposition[]}` |
 
-RepairProblem、ChangeRange、Selection は結果専用の Type とし、Law の原始型へ追加しない。
+RepairProblem、ChangeRange、Selection、RepairObservation は結果専用の Type とし、Law の原始型へ追加しない。
 ranges のNode.typeは `["List","ChangeRange"]`、payloadは既出ChangeRangeへのRefのarrayとする。
 各ChangeRangeは同じRepairProblemを指し、enabledの集合が同じ要素を重複させない。
 internal と units の要素は change の entity instance であり、互いに交わらず domain.instances を分割する。
@@ -821,6 +822,34 @@ Selection の構成に失敗した場合、候補と解集合は残せるが Sel
 所属を未確認のまま、表示行・node ID・表示用特解を採用済みの Assignment にしない。
 保存された Selection は現在の三入力による所属・復元と照合し、保存済みの成功表示だけで採用しない。
 原始事実の由来と、選択した候補から生成した対象の由来を区別する。
+
+### 有限修復の観測要求
+
+RepairObservation は needed の欠測理由用ObservationPlanと別の結果型であり、有限入力候補族についての十分性を表す。
+
+| Type | Payload |
+| --- | --- |
+| RepairObservation | `{problem:RepairProblem,range:ChangeRange,goal:"decision"\|"assignment",reading:{view:QName,bindings:Binding[]}\|{plan:RepairObservation},requirements:{field:FactPointer,dependents:Ref[],locations:Location[]}[],sufficient:Proposition,cases:{values:Ref[],inputs:Domain,possible?:Proposition,common?:Proposition}[],counterexamples:{kind:"decision_difference"\|"no_common_assignment",inputs:Ref[]}[],solutions?:SolutionSet}` |
+
+RepairProblem.inputs.fieldsは入力viewで補完する未観測の原始位置をcanonical順に並べ、domainはその順の型付きTupleの合法な有限族を表す。
+入力domainは `{kind:"input_completions",base:Architecture,view:QName,bindings:Binding[],fields:FactPointer[],value_type:Type}`、
+観測群は `{kind:"observation_fiber",domain:Domain,fields:FactPointer[],values:Ref[],value_type:Type}` のDomainで表す。
+前者は現在入力の合法な有限補完、後者は指定位置の値が一致する部分域であり、内部索引や全候補表を保存payloadへ展開しない。
+入力domainのfieldsが空なら入力値は空Tuple一つとなる。value_typeは元field型を並べたTuple型を保ち、観測群でも親domainと同じ入力Tuple型を保つ。
+既知の位置は現在値に固定し、仮の補完を原始観測の由来にしない。空族は問題の構成条件の失敗とする。
+RepairObservationのcasesはrequirements上の値が等しい入力群を表し、inputsは同じ問題の入力domainの部分域。
+possibleは群内で可否が一定の場合だけ保持し、commonは群全体に共通の元Assignmentの存在命題である。
+commonはassignmentを求めた場合にだけ生成し、各群の全解表示を未要求のまま公開しない。
+同じ原始位置を別の未知として扱うcaseや、型・ownerの違う元parameterを交差に混ぜない。
+反例のinputsはこのdomainの実際の型付き入力値を指す。decision_differenceは可否が異なる二点、
+no_common_assignmentは全入力が修復可能でも共通の元Assignmentがない群である。全入力が修復不能な群をこの不足理由にしない。
+十分な要求集合を求めた場合、counterexamplesは各残した読取りを除くと不十分になる候補群を保持できる。
+
+requirements、cases、counterexamplesは表示・検査用であり、匿名recordやindexからのCLI射影を追加しない。
+利用者はplan全体をobserveへ渡すか、原始情報を現在のArchMapに反映して同じ問いを実行する。
+requirementsが空で完全な共通解を確定した場合だけ、回答の最上位solutionsを生成する。
+未完了のケース・全解・十分性は表示上のpartialに留める。保存後は入力族・観測値・範囲・群の交差と反例を
+現在の三入力から検査し、成功Boolやdigestだけで採用しない。通常出力へ内部索引や実行計数を加えない。
 
 ## 6. 証拠と理由
 

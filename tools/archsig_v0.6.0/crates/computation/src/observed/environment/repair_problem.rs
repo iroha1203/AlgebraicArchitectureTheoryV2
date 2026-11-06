@@ -6,6 +6,7 @@ use archsig_input::law::{
     model::Signature,
 };
 use std::collections::BTreeSet;
+pub(in crate::observed) mod family;
 mod law_factors;
 
 #[cfg(test)]
@@ -14,7 +15,7 @@ thread_local! {static GENERATIONS:std::cell::Cell<usize>=const {std::cell::Cell:
 pub(in crate::observed) fn generations() -> usize {
     GENERATIONS.with(std::cell::Cell::get)
 }
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub(in crate::observed) struct Output {
     pub fact: Fact,
     pub subject: usize,
@@ -26,7 +27,7 @@ pub(in crate::observed) struct Output {
 pub(in crate::observed) struct Compiled {
     pub subjects: Vec<Scalar>,
     pub parameter_types: Vec<Type>,
-    pub domains: Vec<Vec<Scalar>>,
+    pub domains: Vec<std::sync::Arc<Vec<Scalar>>>,
     pub parameter_count: usize,
     pub outputs: Vec<Output>,
     pub requirements: Vec<(String, Vec<(String, Scalar)>)>,
@@ -34,7 +35,7 @@ pub(in crate::observed) struct Compiled {
     pub support: Vec<Fact>,
     pub scope: Scope,
     pub fixed: Vec<(Fact, Scalar)>,
-    pub relations: finite::Problem,
+    pub relations: std::sync::Arc<finite::Problem>,
 }
 pub(in crate::observed) enum Compilation {
     Ready(std::sync::Arc<Compiled>),
@@ -232,16 +233,81 @@ fn holds(row: &finite_law_valuations::FiniteLawRow) -> Option<bool> {
         }
     }
 }
-fn same_slot(a: &Fact, b: &Fact) -> bool {
+pub(in crate::observed) fn same_slot(a: &Fact, b: &Fact) -> bool {
     a.snapshot == b.snapshot && a.subject == b.subject && a.field == b.field
 }
 
+/// 同じ原始位置に対する合法な有限入力。rowsは各field値域の添字を持つ。
+pub(in crate::observed) struct InputSpace {
+    pub fields: Vec<Fact>,
+    pub domains: Vec<Vec<Scalar>>,
+    pub rows: Vec<Vec<usize>>,
+}
+fn with_input<R>(
+    fixed: &Environment<'_>,
+    inputs: Option<&InputSpace>,
+    parameters: usize,
+    columns: &[usize],
+    point: &[usize],
+    evaluate: impl FnOnce(&Environment<'_>) -> Result<R, ValidationFailure>,
+) -> Result<Option<R>, ValidationFailure> {
+    let Some(inputs) = inputs else {
+        return evaluate(fixed).map(Some);
+    };
+    let mut selected = None;
+    for row in &inputs.rows {
+        fixed.tick()?;
+        if row.iter().enumerate().all(|(i, v)| {
+            columns
+                .iter()
+                .position(|c| *c == parameters + i)
+                .is_none_or(|j| point[j] == *v)
+        }) {
+            selected = Some(row);
+            break;
+        }
+    }
+    let Some(row) = selected else {
+        return Ok(None);
+    };
+    let mut values = fixed.fixed_values().into_iter().collect::<BTreeMap<_, _>>();
+    for ((fact, domain), index) in inputs.fields.iter().zip(&inputs.domains).zip(row) {
+        values.insert(fact.clone(), domain[*index].clone());
+    }
+    let env = fixed
+        .primitive_dependency_probe_from(&values.into_iter().collect::<Vec<_>>(), &fixed.control)?;
+    evaluate(&env).map(Some)
+}
+fn input_dependencies(
+    inputs: Option<&InputSpace>,
+    parameters: usize,
+    support: &[Fact],
+    columns: &mut BTreeSet<usize>,
+) {
+    if let Some(inputs) = inputs {
+        for fact in support {
+            if let Some(i) = inputs.fields.iter().position(|f| same_slot(f, fact)) {
+                columns.insert(parameters + i);
+            }
+        }
+    }
+}
 pub(in crate::observed) fn compile(
     original: &Environment<'_>,
     graph: &Graph,
     witness: &ArchitectureWitness,
     request: &Request,
     c: &Control,
+) -> Result<Compilation, ValidationFailure> {
+    compile_inputs(original, graph, witness, request, c, None)
+}
+pub(in crate::observed) fn compile_inputs(
+    original: &Environment<'_>,
+    graph: &Graph,
+    witness: &ArchitectureWitness,
+    request: &Request,
+    c: &Control,
+    inputs: Option<&InputSpace>,
 ) -> Result<Compilation, ValidationFailure> {
     #[cfg(test)]
     GENERATIONS.with(|n| n.set(n.get() + 1));
@@ -309,6 +375,13 @@ pub(in crate::observed) fn compile(
     let parameter_count = domains.len();
     let width = params.len() - 1;
     let mut relations = vec![];
+    if let Some(inputs) = inputs {
+        domains.extend(inputs.domains.iter().cloned());
+        relations.push(finite::Relation {
+            columns: (parameter_count..domains.len()).collect(),
+            rows: inputs.rows.clone().into(),
+        });
+    }
     let mut outputs = vec![];
     let mut support = BTreeSet::new();
     let mut missing = BTreeSet::new();
@@ -336,29 +409,52 @@ pub(in crate::observed) fn compile(
         };
         let guard_relation = relations.len();
         if let Some(guard) = guard {
-            let columns = dependencies(&fixed, *guard, &names)?
+            let mut columns = dependencies(&fixed, *guard, &names)?
                 .into_iter()
                 .collect::<Vec<_>>();
-            let mut allowed = vec![];
-            rows(&columns, &domains, c, |point| {
-                let update = change_evaluation::relation_guard(
-                    &fixed,
-                    change,
-                    &bindings_for(&columns, point, &domains),
-                )?;
-                pending |= update.state == change_evaluation::State::Undetermined;
-                scope.merge(&update.scope);
-                support.extend(update.support);
-                missing.extend(update.missing);
-                if update.state == change_evaluation::State::Ready {
-                    allowed.push(point.to_vec());
+            loop {
+                let mut discovered = BTreeSet::from_iter(columns.iter().copied());
+                let mut allowed = vec![];
+                let mut pass_pending = false;
+                let mut pass_missing = BTreeSet::new();
+                let mut pass_support = BTreeSet::new();
+                let mut pass_scope = Scope::default();
+                rows(&columns, &domains, c, |point| {
+                    let Some(update) =
+                        with_input(&fixed, inputs, parameter_count, &columns, point, |env| {
+                            change_evaluation::relation_guard(
+                                env,
+                                change,
+                                &bindings_for(&columns, point, &domains),
+                            )
+                        })?
+                    else {
+                        return Ok(());
+                    };
+                    input_dependencies(inputs, parameter_count, &update.support, &mut discovered);
+                    pass_pending |= update.state == change_evaluation::State::Undetermined;
+                    pass_scope.merge(&update.scope);
+                    pass_support.extend(update.support);
+                    pass_missing.extend(update.missing);
+                    if update.state == change_evaluation::State::Ready {
+                        allowed.push(point.to_vec());
+                    }
+                    Ok(())
+                })?;
+                let next = discovered.into_iter().collect::<Vec<_>>();
+                if next == columns {
+                    pending |= pass_pending;
+                    scope.merge(&pass_scope);
+                    support.extend(pass_support);
+                    missing.extend(pass_missing);
+                    relations.push(finite::Relation {
+                        columns,
+                        rows: allowed.into(),
+                    });
+                    break;
                 }
-                Ok(())
-            })?;
-            relations.push(finite::Relation {
-                columns,
-                rows: allowed,
-            });
+                columns = next;
+            }
         }
         for field in &fields {
             let Scalar::Subject {
@@ -386,7 +482,15 @@ pub(in crate::observed) fn compile(
             scope.merge(&base.scope);
             support.extend(base.support.iter().cloned());
             let base_value = base.known_value;
+            let input_domain = inputs.and_then(|inputs| {
+                inputs
+                    .fields
+                    .iter()
+                    .position(|f| same_slot(f, &fact))
+                    .map(|i| &inputs.domains[i])
+            });
             if base_value.is_none()
+                && input_domain.is_none()
                 && request.kind == crate::observed::request::QuestionKind::Prepare
             {
                 missing.insert(fact);
@@ -399,74 +503,98 @@ pub(in crate::observed) fn compile(
                 ));
             }
             let baseline = base_value.as_ref().map(|_| 0);
-            let columns = field_dependencies(&fixed, *body, field, &names)?
+            let initial_values = base_value
+                .into_iter()
+                .chain(input_domain.into_iter().flat_map(|v| v.iter().cloned()))
+                .collect::<Vec<_>>();
+            let mut columns = field_dependencies(&fixed, *body, field, &names)?
                 .into_iter()
                 .collect::<Vec<_>>();
-            let mut values = base_value.into_iter().collect::<Vec<_>>();
-            let mut allowed = vec![];
-            rows(&columns, &domains, c, |point| {
-                // guardの許容行へ延長できない局所割当ては更新式を読まない。
-                // 別因子のguardを再評価せず、その共通parameter上の射影を使う。
-                if guard.is_some() {
-                    let relation = &relations[guard_relation];
-                    let mut admissible = false;
-                    for row in &relation.rows {
-                        tick(c)?;
-                        if relation.columns.iter().zip(row).all(|(column, value)| {
-                            columns
-                                .iter()
-                                .position(|v| v == column)
-                                .is_none_or(|i| point[i] == *value)
-                        }) {
-                            admissible = true;
-                            break;
+            loop {
+                let mut discovered = BTreeSet::from_iter(columns.iter().copied());
+                let mut values = initial_values.clone();
+                let mut allowed = vec![];
+                let mut pass_pending = false;
+                let mut pass_missing = BTreeSet::new();
+                let mut pass_support = BTreeSet::new();
+                let mut pass_scope = Scope::default();
+                rows(&columns, &domains, c, |point| {
+                    if guard.is_some() {
+                        let relation = &relations[guard_relation];
+                        let mut admissible = false;
+                        for row in relation.rows.iter() {
+                            tick(c)?;
+                            if relation.columns.iter().zip(row).all(|(column, value)| {
+                                columns
+                                    .iter()
+                                    .position(|v| v == column)
+                                    .is_none_or(|i| point[i] == *value)
+                            }) {
+                                admissible = true;
+                                break;
+                            }
+                        }
+                        if !admissible {
+                            return Ok(());
                         }
                     }
-                    if !admissible {
+                    let Some(update) =
+                        with_input(&fixed, inputs, parameter_count, &columns, point, |env| {
+                            change_evaluation::relation_field(
+                                env,
+                                change,
+                                &bindings_for(&columns, point, &domains),
+                                field,
+                            )
+                        })?
+                    else {
                         return Ok(());
+                    };
+                    input_dependencies(inputs, parameter_count, &update.support, &mut discovered);
+                    pass_pending |= update.state == change_evaluation::State::Undetermined;
+                    pass_scope.merge(&update.scope);
+                    pass_support.extend(update.support);
+                    pass_missing.extend(update.missing);
+                    if update.state == change_evaluation::State::Ready {
+                        let value = update
+                            .values
+                            .into_iter()
+                            .find(|(f, _)| same_slot(f, &fact))
+                            .map(|(_, v)| v)
+                            .ok_or(internal!("更新関係の値がない"))?;
+                        let index = values.iter().position(|v| *v == value).unwrap_or_else(|| {
+                            values.push(value);
+                            values.len() - 1
+                        });
+                        let mut row = point.to_vec();
+                        row.push(index);
+                        allowed.push(row);
                     }
-                }
-                let update = change_evaluation::relation_field(
-                    &fixed,
-                    change,
-                    &bindings_for(&columns, point, &domains),
-                    field,
-                )?;
-                pending |= update.state == change_evaluation::State::Undetermined;
-                scope.merge(&update.scope);
-                support.extend(update.support);
-                missing.extend(update.missing);
-                if update.state == change_evaluation::State::Ready {
-                    let value = update
-                        .values
-                        .into_iter()
-                        .find(|(f, _)| same_slot(f, &fact))
-                        .map(|(_, v)| v)
-                        .ok_or(internal!("更新関係の値がない"))?;
-                    let index = values.iter().position(|v| *v == value).unwrap_or_else(|| {
-                        values.push(value);
-                        values.len() - 1
+                    Ok(())
+                })?;
+                let next = discovered.into_iter().collect::<Vec<_>>();
+                if next == columns {
+                    pending |= pass_pending;
+                    scope.merge(&pass_scope);
+                    support.extend(pass_support);
+                    missing.extend(pass_missing);
+                    let column = domains.len();
+                    columns.push(column);
+                    relations.push(finite::Relation {
+                        columns,
+                        rows: allowed.into(),
                     });
-                    let mut row = point.to_vec();
-                    row.push(index);
-                    allowed.push(row);
+                    outputs.push(Output {
+                        fact,
+                        subject: subject_index,
+                        column,
+                        baseline,
+                    });
+                    domains.push(values);
+                    break;
                 }
-                Ok(())
-            })?;
-            let column = domains.len();
-            let mut relation_columns = columns;
-            relation_columns.push(column);
-            relations.push(finite::Relation {
-                columns: relation_columns,
-                rows: allowed,
-            });
-            outputs.push(Output {
-                fact,
-                subject: subject_index,
-                column,
-                baseline,
-            });
-            domains.push(values);
+                columns = next;
+            }
         }
     }
     if pending || !missing.is_empty() {
@@ -476,9 +604,23 @@ pub(in crate::observed) fn compile(
     let updates = finite::Problem::new(sizes.clone(), relations, c)?;
     let mut relations = vec![];
     let mut unresolved = vec![];
+    let mut law_axes = outputs.clone();
+    if let Some(inputs) = inputs {
+        for (i, fact) in inputs.fields.iter().enumerate() {
+            if !outputs.iter().any(|o| same_slot(&o.fact, fact)) {
+                law_axes.push(Output {
+                    fact: fact.clone(),
+                    subject: 0,
+                    column: parameter_count + i,
+                    baseline: None,
+                });
+            }
+        }
+    }
+
     for (name, bindings) in &selected.requirements {
         let law = &fixed.indexes.inputs.law().declarations()[name];
-        let factors = law_factors::collect(&fixed, law, bindings, &outputs, &domains, &updates)?;
+        let factors = law_factors::collect(&fixed, law, bindings, &law_axes, &domains, &updates)?;
         support.extend(factors.support);
         scope.merge(&factors.scope);
         for factor in factors.items {
@@ -494,15 +636,12 @@ pub(in crate::observed) fn compile(
                     for (column, value) in columns.iter().zip(point) {
                         pins[*column] = Some(*value);
                     }
-                    if !updates.exists(&pins, c)? {
+                    let Some(witness) = updates.witness(&pins, c)? else {
                         return Ok(());
-                    }
+                    };
                     let mut values = fixed.fixed_values().into_iter().collect::<BTreeMap<_, _>>();
-                    for output in &outputs {
-                        let index = columns
-                            .iter()
-                            .position(|v| *v == output.column)
-                            .map_or(0, |i| point[i]);
+                    for output in &law_axes {
+                        let index = witness[output.column];
                         values.insert(output.fact.clone(), domains[output.column][index].clone());
                     }
                     let updated = fixed.primitive_dependency_probe_from(
@@ -530,7 +669,7 @@ pub(in crate::observed) fn compile(
                         .restore()
                         .ok_or(internal!("有限関係のLaw不足収集がない"))?;
                     for fact in &row.support {
-                        if let Some(o) = outputs.iter().find(|o| same_slot(&o.fact, fact)) {
+                        if let Some(o) = law_axes.iter().find(|o| same_slot(&o.fact, fact)) {
                             discovered.insert(o.column);
                         } else {
                             pass_support.insert(fact.clone());
@@ -558,7 +697,7 @@ pub(in crate::observed) fn compile(
                     scope.merge(&pass_scope);
                     relations.push(finite::Relation {
                         columns,
-                        rows: allowed,
+                        rows: allowed.into(),
                     });
                     break;
                 }
@@ -593,14 +732,14 @@ pub(in crate::observed) fn compile(
         subjects,
         parameter_types,
         parameter_count,
-        domains,
+        domains: domains.into_iter().map(std::sync::Arc::new).collect(),
         outputs,
         requirements: selected.requirements,
         bindings: selected.bindings,
         support: support.into_iter().collect(),
         scope,
         fixed: fixed.fixed_values(),
-        relations,
+        relations: std::sync::Arc::new(relations),
     })))
 }
 
@@ -616,6 +755,9 @@ mod tests {
         fixture::MAP.replace(r#""atoms":["#,r#""atoms":[{"id":"fq","subject":"q","field":"Pattern.Part.flag","value":false,"origin":"model"},"#)
     }
     fn compile_body(map: &str, body: &str) -> Compilation {
+        compile_body_inputs(map, body, None)
+    }
+    fn compile_body_inputs(map: &str, body: &str, input_space: Option<&InputSpace>) -> Compilation {
         let inputs = fixture::with_body(map, body);
         let c = archsig_common::control::quiet();
         let req = crate::observed::request::resolve_native_for_test(
@@ -635,7 +777,7 @@ mod tests {
         let witness =
             ArchitectureWitness::compute(inputs.clone(), request, "Selected", &root, &c).unwrap();
         let env = Environment::new(&inputs, &c).unwrap();
-        compile(&env, &Graph::new(&c), &witness, request, &c).unwrap()
+        compile_inputs(&env, &Graph::new(&c), &witness, request, &c, input_space).unwrap()
     }
     #[test]
     fn original_evaluator_compiles_update_and_law_relations_without_erasing_unused_parameters() {
@@ -716,5 +858,46 @@ mod tests {
         assert!(missing.iter().any(|f| f.snapshot == "v"
             && f.subject == "q"
             && f.field.as_deref() == Some("Pattern.Part.flag")));
+    }
+    #[test]
+    fn input_coordinates_share_one_compilation_and_separate_existence_from_uniform_repair() {
+        let c = archsig_common::control::quiet();
+        let input = InputSpace {
+            fields: vec![Fact::from(archsig_input::archmap::FactData {
+                snapshot: "v".into(),
+                subject: "q".into(),
+                field: Some("Pattern.Part.flag".into()),
+                atom: None,
+            })],
+            domains: vec![vec![Scalar::Bool(false), Scalar::Bool(true)]],
+            rows: vec![vec![0], vec![1]],
+        };
+        let before = generations();
+        let Compilation::Ready(p) = compile_body_inputs(
+            fixture::MAP,
+            "change choose(c:Part,p:Bool)=c with {flag=if p then c.flag else not c.flag};law required valid(c:Part):c.flag;",
+            Some(&input),
+        ) else {
+            panic!("有限入力軸");
+        };
+        assert_eq!(generations() - before, 1);
+        assert_eq!(p.parameter_count, 2);
+        assert_eq!(p.relations.variables(), 5);
+        let mut first = vec![None; 5];
+        first[2] = Some(0);
+        let mut second = first.clone();
+        second[2] = Some(1);
+        let left = p.relations.cofactor(&first, &c).unwrap();
+        let right = p.relations.cofactor(&second, &c).unwrap();
+        assert_eq!(left.witness(&[None; 4], &c).unwrap().unwrap()[..2], [1, 0]);
+        assert_eq!(right.witness(&[None; 4], &c).unwrap().unwrap()[..2], [1, 1]);
+        assert!(
+            left.relations()
+                .iter()
+                .zip(right.relations())
+                .any(|(a, b)| std::sync::Arc::ptr_eq(&a.rows, &b.rows))
+        );
+        let (common, _) = finite::Problem::join(&[&left, &right], 2, &c).unwrap();
+        assert!(!common.exists(&vec![None; common.variables()], &c).unwrap());
     }
 }

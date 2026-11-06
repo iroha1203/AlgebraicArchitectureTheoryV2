@@ -43,6 +43,16 @@ pub(super) fn prepare(
             };
             if d.source.request.kind != QuestionKind::Prepare
                 || d.source.request.declaration() != r.declaration()
+                || d.source
+                    .request
+                    .arguments
+                    .iter()
+                    .find(|a| a.name == "inputs")
+                    .map(|a| &a.value)
+                    != r.arguments
+                        .iter()
+                        .find(|a| a.name == "inputs")
+                        .map(|a| &a.value)
             {
                 continue;
             }
@@ -64,22 +74,61 @@ pub(super) fn prepare(
                         && matches!(&a.value,Selector::Declaration {name}if *name==s.change)
                 })
             {
-                reused = Some(s.compiled.clone());
+                reused = Some((s.compiled.clone(), s.family.clone()));
                 break;
             }
         }
     }
-    let compilation = if let Some(compiled) = reused {
+    let mut family = None;
+    let mut family_domain = None;
+    let mut rejected = false;
+    let mut unsupported_reading = None;
+    let compilation = if let Some((compiled, old_family)) = reused {
+        if let Some((old, domain)) = old_family {
+            family = Some(old);
+            family_domain = Some(domain);
+        }
         Compilation::Ready(compiled)
     } else if architecture.complete {
-        match crate::observed::environment::repair_problem::compile(
-            env,
-            g,
-            &architecture.witness,
-            r,
-            c,
-        ) {
-            Err(ValidationFailure::UnsupportedExpression { .. }) => Compilation::Pending(vec![]),
+        let result = if r.arguments.iter().any(|a| a.name == "inputs") {
+            use crate::observed::environment::repair_problem::family::{self, Preparation};
+            match family::prepare(env, g, &architecture.witness, r, c) {
+                Ok(Preparation::Ready(compiled, new_family)) => {
+                    family = Some(new_family);
+                    Ok(Compilation::Ready(compiled))
+                }
+                Ok(Preparation::Pending(missing)) => Ok(Compilation::Pending(missing)),
+                Ok(Preparation::Rejected) => {
+                    rejected = true;
+                    Ok(Compilation::Pending(vec![]))
+                }
+                Err(error) => Err(error),
+            }
+        } else {
+            crate::observed::environment::repair_problem::compile(
+                env,
+                g,
+                &architecture.witness,
+                r,
+                c,
+            )
+        };
+        match result {
+            Err(ValidationFailure::UnsupportedExpression { location, .. }) => {
+                if let Some(Selector::Declaration { name }) = r
+                    .arguments
+                    .iter()
+                    .find(|a| a.name == "inputs")
+                    .map(|a| &a.value)
+                {
+                    let span = env.indexes.inputs.law().declarations()[name].span;
+                    if matches!(location, archsig_common::issue::Location::Law { span: at } if span.0 <= at.0 && at.1 <= span.1)
+                    {
+                        unsupported_reading = Some(name.clone());
+                    }
+                }
+                Compilation::Pending(vec![])
+            }
             result => result?,
         }
     } else {
@@ -99,23 +148,66 @@ pub(super) fn prepare(
     };
     let compiled = match compilation {
         Compilation::Pending(missing) => {
-            let claim = condition(&mut b, r, inputs.clone(), Decision::Undetermined)?;
-            let mut a = answer(r, claim, Decision::Undetermined, BTreeMap::new(), &b);
-            a.reasons.push(Reason {
-                kind: if missing.is_empty() {
-                    ReasonKind::UnsupportedAlgorithm {
-                        question: r.kind,
-                        operand_types: vec![Type::Bool],
-                        method: "finite_repair_relation".into(),
-                    }
-                } else {
-                    ReasonKind::Missing
-                },
-                request: r.id.clone(),
-                dependencies: vec![architecture.reference],
-                missing,
-                location: None,
-            });
+            let status = if rejected {
+                Decision::Refuted
+            } else {
+                Decision::Undetermined
+            };
+            let mut reasons = vec![];
+            if !rejected {
+                let declaration = &env.indexes.inputs.law().declarations()[unsupported_reading
+                    .as_deref()
+                    .unwrap_or(r.declaration().expect("prepare Law"))];
+                let (params, body, operand_type) = match &declaration.signature {
+                    Signature::Law { params, body, .. } => (params, body, Type::Bool),
+                    Signature::View {
+                        params,
+                        body,
+                        returns,
+                    } => (params, body, returns.clone()),
+                    _ => unreachable!(),
+                };
+                let mut values = vec![];
+                for (name, value) in &binding_values {
+                    values.push((name.clone(), change_result::value(&mut b, value)?));
+                }
+                let parameters = params
+                    .iter()
+                    .filter(|p| !binding_values.contains_key(&p.name))
+                    .map(|p| (p.name.clone(), p.ty.clone()))
+                    .collect::<Vec<_>>();
+                let expression =
+                    change_result::source_expression(&mut b, env, *body, &values, &parameters)?;
+                b.parts[expression.0 - base]
+                    .arguments
+                    .push(architecture.reference);
+                b.parts[expression.0 - base]
+                    .scope
+                    .merge(&b.g.get(architecture.reference)?.scope);
+                reasons.push(Reason {
+                    kind: if missing.is_empty() {
+                        ReasonKind::UnsupportedAlgorithm {
+                            question: r.kind,
+                            operand_types: vec![operand_type],
+                            method: "finite_repair_relation".into(),
+                        }
+                    } else {
+                        ReasonKind::Missing
+                    },
+                    request: r.id.clone(),
+                    dependencies: vec![expression],
+                    missing,
+                    location: Some(archsig_common::issue::Location::Law {
+                        span: declaration.span,
+                    }),
+                });
+            }
+            let claim = condition(&mut b, r, inputs.clone(), status)?;
+            let mut a = answer(r, claim, status, BTreeMap::new(), &b);
+            a.reasons = reasons;
+            if rejected {
+                fail(&mut a, "prepare");
+            }
             return Ok(Source {
                 base,
                 parts: b.parts,
@@ -128,6 +220,7 @@ pub(super) fn prepare(
                 chosen: None,
                 inputs,
                 context: g.active,
+                observation: None,
             });
         }
         Compilation::Ready(compiled) => compiled,
@@ -175,6 +268,7 @@ pub(super) fn prepare(
             chosen: None,
             inputs,
             context: g.active,
+            observation: None,
         });
     }
     let internal = compiled
@@ -316,7 +410,7 @@ pub(super) fn prepare(
             subjects.clone(),
             requirements.clone(),
             guards,
-            binding_refs,
+            binding_refs.clone(),
         ]
         .concat(),
         None,
@@ -333,16 +427,73 @@ pub(super) fn prepare(
         .collect::<Vec<_>>();
     let inside = domain(&mut b, &params[0].ty.erase(), &in_refs)?;
     let units = domain(&mut b, &params[0].ty.erase(), &unit_refs)?;
+    let mut problem_fields = vec![
+        ("domain", d.wire()),
+        ("requirements", refs(&requirements)),
+        ("internal", inside.wire()),
+        ("units", units.wire()),
+    ];
+    let mut problem_arguments =
+        [vec![d, inside, units], requirements.clone(), inputs.clone()].concat();
+    if let Some(family) = &family {
+        let mut family_bindings = vec![];
+        let mut family_arguments = vec![architecture.reference];
+        for (name, _) in &family.bindings {
+            let i = compiled
+                .bindings
+                .iter()
+                .position(|(n, _)| n == name)
+                .ok_or(internal!("入力viewの公開束縛がない"))?;
+            family_bindings.push(Json::obj([
+                ("name", Json::str(name)),
+                ("value", binding_refs[i].wire()),
+            ]));
+            family_arguments.push(binding_refs[i]);
+        }
+        let fields = Json::Arr(family.fields.iter().map(Fact::wire).collect());
+        let domain = if let Some(domain) = family_domain {
+            domain
+        } else {
+            b.push(
+                NodeType::Domain,
+                "domain",
+                Json::obj([
+                    ("kind", Json::str("input_completions")),
+                    ("base", architecture.reference.wire()),
+                    ("view", Json::str(&family.view)),
+                    ("bindings", Json::Arr(family_bindings.clone())),
+                    ("fields", fields.clone()),
+                    (
+                        "value_type",
+                        Type::Tuple(family.domains.iter().map(|d| d[0].ty()).collect()).wire(),
+                    ),
+                ]),
+                family_arguments,
+                None,
+            )?
+        };
+        family_domain = Some(domain);
+        problem_arguments.push(domain);
+        problem_fields.push((
+            "inputs",
+            Json::obj([
+                ("view", Json::str(&family.view)),
+                ("bindings", Json::Arr(family_bindings)),
+                ("fields", fields),
+                ("domain", domain.wire()),
+            ]),
+        ));
+    }
     let problem = b.push(
         NodeType::Construction(T::RepairProblem),
         "repair_problem",
-        Json::obj([
-            ("domain", d.wire()),
-            ("requirements", refs(&requirements)),
-            ("internal", inside.wire()),
-            ("units", units.wire()),
-        ]),
-        [vec![d, inside, units], requirements.clone(), inputs.clone()].concat(),
+        Json::Obj(
+            problem_fields
+                .into_iter()
+                .map(|(k, v)| (k.to_owned(), v))
+                .collect(),
+        ),
+        problem_arguments,
         None,
     )?;
     b.parts[problem.0 - base].scope.merge(&compiled.scope);
@@ -367,6 +518,7 @@ pub(super) fn prepare(
         .to_string();
     let shared = Arc::new(Shared {
         compiled,
+        family: family.map(|family| (family, family_domain.expect("入力族のDomainを構成済み"))),
         witness: architecture.witness.clone(),
         base: architecture.reference,
         domain: d,
@@ -389,6 +541,7 @@ pub(super) fn prepare(
         chosen: None,
         inputs,
         context: g.active,
+        observation: None,
     })
 }
 // 従来の完全な有限SolutionSetも同じ元座標で選択する。元producerの環境と検査を使う。
@@ -492,6 +645,7 @@ pub(super) fn legacy(
     let internal = vec![false; subjects.len()];
     Ok(Arc::new(Shared {
         compiled,
+        family: None,
         witness,
         base: architecture,
         domain,

@@ -183,3 +183,73 @@ fn fixed_range_comparison_keeps_original_assignments_in_both_routes() {
         }
     }
 }
+
+#[test]
+fn saved_observation_plan_is_rechecked_after_primitive_observation() {
+    use crate::common::repair_observation_data;
+    let body = "view input(r:Root):Bool=r.h;view all(r:Root):Set<Part> =Part[r];change choose(c:Part,p:Bool)=c with {flag=p};law required valid(r:Root):forall c in Part[r]. c.flag=r.h;";
+    let dir = workdir("repair-observation");
+    let asks = [
+        "u=evaluate(Selected.all,r=@v/root)",
+        "p=prepare(Selected.valid,using=Selected.choose,on=@v/root,inputs=Selected.input,r=@v/root)",
+        "a=observe(Selected.input,on=$p.problem,within=$u.value,output=assignment,r=@v/root)",
+    ];
+    let execute = |out: &str, reuse: Option<&str>, observed: bool| {
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            out,
+        ];
+        if let Some(reuse) = reuse {
+            args.extend(["--reuse", reuse]);
+        }
+        for ask in asks {
+            args.extend(["--ask", ask]);
+        }
+        if observed {
+            for ask in [
+                "c=candidate($a.solutions,index=0)",
+                "ap=apply($c.assignment,in=$a.solutions)",
+                "ok=check(Selected.valid,on=$ap.object,r=@v/root)",
+            ] {
+                args.extend(["--ask", ask]);
+            }
+        }
+        run_binary(&dir, &args)
+    };
+    for known in [false, true] {
+        let input = repair_observation_data::input(body, "\"Bool\"", known.then_some("true"));
+        for (name, bytes) in [
+            ("d.json", input.definitions()[0].bytes()),
+            ("a.json", input.archmap().bytes()),
+            ("l.law", input.law().bytes()),
+        ] {
+            std::fs::write(dir.join(name), bytes).unwrap();
+        }
+        if !known {
+            for (out, reuse) in [("first", None), ("same", Some("first"))] {
+                let executed = execute(out, reuse, false);
+                assert_eq!(executed.code, 0, "{}", executed.stdout);
+                let result = result_json(&dir, &executed);
+                assert!(warnings(&result).is_empty());
+                let answers = arr(get(&result, "answers"));
+                assert_eq!(s(get(&answers[2], "status")), "established");
+                assert!(!has(get(&answers[2], "outputs"), "solutions"));
+            }
+        } else {
+            let executed = execute("observed", Some("first"), true);
+            assert_eq!(executed.code, 0, "{}", executed.stdout);
+            let result = result_json(&dir, &executed);
+            assert!(warnings(&result).iter().any(|w|s(get(w,"message")).contains("current input identity does not match")));
+            for answer in arr(get(&result, "answers")) {
+                assert_eq!(s(get(answer, "status")), "established");
+            }
+        }
+    }
+}

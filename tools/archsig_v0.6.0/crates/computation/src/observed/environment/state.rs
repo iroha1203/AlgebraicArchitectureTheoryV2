@@ -52,6 +52,8 @@ pub(crate) struct EvaluationState {
     pub(super) completion_values: RefCell<CompletionValues>,
     pub(super) value_read: Cell<bool>,
     pub(super) primitive_reads: RefCell<Option<BTreeSet<Fact>>>,
+    // 原始読取り位置を求める間だけ、未確定のreceiverを記録する。
+    pub(super) unresolved_read_positions: Cell<Option<bool>>,
     pub(super) missing_slot_reads: RefCell<Option<BTreeSet<Fact>>>,
     pub(super) evaluation_capture: RefCell<Option<quotient_evaluation::EvaluationCapture>>,
     pub(super) scoped_context: Cell<Option<crate::observed::call::Context>>,
@@ -102,6 +104,7 @@ impl Default for EvaluationState {
             completion_values: RefCell::new(Vec::new()),
             value_read: Cell::new(false),
             primitive_reads: RefCell::new(None),
+            unresolved_read_positions: Cell::new(None),
             missing_slot_reads: RefCell::new(None),
             evaluation_capture: RefCell::new(None),
             scoped_context: Cell::new(None),

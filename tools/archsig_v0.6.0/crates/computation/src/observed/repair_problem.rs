@@ -1,5 +1,6 @@
 //! 同じ有限修復問題から範囲・元割当て・対象を構成する。
 pub(super) mod finite;
+mod observation;
 mod prepare;
 use prepare::{legacy, prepare};
 #[cfg(test)]
@@ -32,6 +33,10 @@ use std::{collections::BTreeMap, sync::Arc};
 #[derive(Debug)]
 struct Shared {
     compiled: Arc<Compiled>,
+    family: Option<(
+        Arc<crate::observed::environment::repair_problem::family::Family>,
+        NodeRef,
+    )>,
     witness: Arc<ArchitectureWitness>,
     base: NodeRef,
     domain: NodeRef,
@@ -55,6 +60,7 @@ pub(super) struct Source {
     chosen: Option<Vec<usize>>,
     inputs: Vec<NodeRef>,
     context: super::call::Context,
+    observation: Option<Arc<observation::State>>,
 }
 #[derive(Clone, Debug)]
 pub(crate) struct Data {
@@ -140,6 +146,7 @@ impl Data {
         let root = self.source.shared.as_ref().map(|s| s.root_type.clone())?;
         Some(match self.ty() {
             NodeType::Construction(T::RepairProblem) => ProjectionType::RepairProblem(root),
+            NodeType::Construction(T::RepairObservation) => ProjectionType::RepairObservation(root),
             NodeType::Construction(T::ChangeRange) => ProjectionType::ChangeRange(root),
             NodeType::Construction(T::Selection) => ProjectionType::Selection(root),
             NodeType::Construction(T::CandidateSpace) => ProjectionType::CandidateSpace(root),
@@ -294,6 +301,15 @@ fn pins(shared: &Shared, enabled: &[bool]) -> Vec<Option<usize>> {
             pins[o.column] = Some(o.baseline.expect("範囲を固定する問題には基準値がある"));
         }
     }
+    if let Some((family, _)) = &shared.family {
+        for (variant, map) in family.variants.iter().zip(&family.maps) {
+            for o in &variant.outputs {
+                if !shared.internal[o.subject] && !enabled[o.subject] {
+                    pins[map[o.column]] = o.baseline;
+                }
+            }
+        }
+    }
     pins
 }
 fn range(b: &mut Builder<'_>, s: &Shared, enabled: &[bool]) -> Result<NodeRef, ValidationFailure> {
@@ -409,7 +425,7 @@ pub(super) fn candidate_input(
             .visit_solutions(&pins(shared, enabled), c, &mut append)?;
     } else if !shared.compiled.domains[..shared.compiled.parameter_count]
         .iter()
-        .any(Vec::is_empty)
+        .any(|domain| domain.is_empty())
     {
         let mut point = vec![0; shared.compiled.parameter_count];
         loop {
@@ -507,6 +523,17 @@ fn same_problem(a: &Shared, b: &Shared) -> bool {
         && same_domain(a, b)
         && a.internal == b.internal
         && a.compiled.requirements == b.compiled.requirements
+        && match (&a.family, &b.family) {
+            (None, None) => true,
+            (Some((a, _)), Some((b, _))) => {
+                a.view == b.view
+                    && a.bindings == b.bindings
+                    && a.fields == b.fields
+                    && a.domains == b.domains
+                    && a.points == b.points
+            }
+            _ => false,
+        }
 }
 fn same_domain(a: &Shared, b: &Shared) -> bool {
     a.witness.construction().root() == b.witness.construction().root()
@@ -645,15 +672,170 @@ fn assignment(
         None,
     )
 }
+enum Application {
+    Ready(change_evaluation::Candidate),
+    Missing(Vec<Fact>),
+}
+fn family_application(
+    env: &Environment<'_>,
+    shared: &Shared,
+    point: &[usize],
+    c: &Control,
+) -> Result<Application, ValidationFailure> {
+    let (family, _) = shared
+        .family
+        .as_ref()
+        .ok_or(internal!("適用する入力族がない"))?;
+    let mut fixed = env
+        .try_primitive_valuation_from(&shared.compiled.fixed, c)?
+        .ok_or(internal!("適用する基準が不適合"))?;
+    fixed.select_local_object(&shared.witness, c)?;
+    let origin = Witness::Architecture(shared.witness.clone());
+    let change = &origin.inputs().law().declarations()[&shared.change];
+    let values = (0..shared.compiled.parameter_count)
+        .map(|i| shared.compiled.domains[i][point[i]].clone())
+        .collect::<Vec<_>>();
+    let mut candidate =
+        change_evaluation::candidate(&fixed, change, &shared.compiled.subjects, &values)?;
+    let row =
+        change_evaluation::solution_row(&fixed, &candidate, 0, &shared.compiled.requirements)?;
+    if candidate.update.state == change_evaluation::State::Ready && row.member == Some(true) {
+        return Ok(Application::Ready(candidate));
+    }
+    if row.member == Some(false)
+        || matches!(
+            candidate.update.state,
+            change_evaluation::State::Excluded | change_evaluation::State::ConditionFailed
+        )
+    {
+        return Err(internal!("共通候補が現在の原式で反証された").into());
+    }
+    let need_values = candidate.update.state != change_evaluation::State::Ready;
+    let mut first = None::<Vec<(Fact, Scalar)>>;
+    let mut constant = true;
+    let mut support = candidate
+        .update
+        .support
+        .iter()
+        .cloned()
+        .collect::<std::collections::BTreeSet<_>>();
+    let mut scope = candidate.update.scope.clone();
+    for index in 0..family.points.len() {
+        tick(c)?;
+        let updated = family.environment(&fixed, index)?;
+        let at =
+            change_evaluation::candidate(&updated, change, &shared.compiled.subjects, &values)?;
+        let row =
+            change_evaluation::solution_row(&updated, &at, index, &shared.compiled.requirements)?;
+        if row.member != Some(true) || at.update.state != change_evaluation::State::Ready {
+            return Err(internal!("共通候補の元式への再代入が入力族で成立しない").into());
+        }
+        if need_values {
+            if let Some(first) = &first {
+                if first.len() != at.update.values.len() {
+                    return Err(internal!("共通候補の更新先が入力ごとに異なる").into());
+                }
+                for (fact, value) in first {
+                    let other = &at
+                        .update
+                        .values
+                        .iter()
+                        .find(|(f, _)| {
+                            crate::observed::environment::repair_problem::same_slot(f, fact)
+                        })
+                        .ok_or(internal!("共通更新先がない"))?
+                        .1;
+                    constant &= crate::observed::data::equal(value, other, c)?;
+                }
+            } else {
+                first = Some(at.update.values.clone());
+            }
+        }
+        support.extend(at.update.support);
+        scope.merge(&at.update.scope);
+    }
+    if candidate.update.state != change_evaluation::State::Ready {
+        if !constant {
+            let mut missing = candidate.update.missing;
+            missing.extend(row.missing);
+            missing.sort();
+            missing.dedup();
+            return Ok(Application::Missing(missing));
+        }
+        candidate.update.values = first.ok_or(internal!("共通候補の入力族が空"))?;
+        candidate.update.state = change_evaluation::State::Ready;
+    }
+    candidate.update.missing.clear();
+    candidate.update.support = support.into_iter().collect();
+    candidate.update.scope = scope;
+    candidate.update.scope.completions |= !family.fields.is_empty();
+    Ok(Application::Ready(candidate))
+}
+fn pending_application(
+    env: &Environment<'_>,
+    g: &mut Graph,
+    r: &Request,
+    shared: Arc<Shared>,
+    inputs: Vec<NodeRef>,
+    missing: Vec<Fact>,
+) -> Result<Source, ValidationFailure> {
+    if missing.is_empty() {
+        return unsupported(env, g, r);
+    }
+    let base = g.nodes.len();
+    let mut b = Builder {
+        g,
+        base,
+        parts: vec![],
+    };
+    let origin = Witness::Architecture(shared.witness.clone());
+    let Signature::Change { params, body, .. } =
+        &origin.inputs().law().declarations()[&shared.change].signature
+    else {
+        unreachable!()
+    };
+    let parameters = params
+        .iter()
+        .map(|p| (p.name.clone(), p.ty.clone()))
+        .collect::<Vec<_>>();
+    let expression = change_result::source_expression(&mut b, env, *body, &[], &parameters)?;
+    b.parts[expression.0 - base]
+        .arguments
+        .extend(inputs.iter().copied());
+    let claim = condition(&mut b, r, inputs.clone(), Decision::Undetermined)?;
+    let mut a = answer(r, claim, Decision::Undetermined, BTreeMap::new(), &b);
+    a.reasons.push(Reason {
+        kind: ReasonKind::Missing,
+        request: r.id.clone(),
+        dependencies: vec![expression],
+        missing,
+        location: None,
+    });
+    Ok(Source {
+        base,
+        parts: b.parts,
+        answer: a,
+        request: r.clone(),
+        witness: shared.witness.clone(),
+        shared: Some(shared),
+        range: None,
+        ranges: BTreeMap::new(),
+        chosen: None,
+        inputs,
+        context: g.active,
+        observation: None,
+    })
+}
 fn apply_object(
     env: &Environment<'_>,
     b: &mut Builder<'_>,
     s: &Shared,
     point: &[usize],
-    selected: NodeRef,
-    solutions: NodeRef,
+    selection: (NodeRef, NodeRef),
     claim: NodeRef,
+    checked: Option<change_evaluation::Candidate>,
 ) -> Result<(NodeRef, Vec<NodeRef>), ValidationFailure> {
+    let (selected, solutions) = selection;
     let g = b.g;
     let c = &env.control;
     let mut fixed = env
@@ -665,13 +847,25 @@ fn apply_object(
     let values = (0..s.compiled.parameter_count)
         .map(|i| s.compiled.domains[i][point[i]].clone())
         .collect::<Vec<_>>();
-    let candidate = change_evaluation::candidate(&fixed, change, &s.compiled.subjects, &values)?;
-    let row = change_evaluation::solution_row(&fixed, &candidate, 0, &s.compiled.requirements)?;
-    if row.member != Some(true) || candidate.update.state != change_evaluation::State::Ready {
-        return Err(internal!("選択候補が元更新・Lawへの再代入を満たさない").into());
-    }
+    let candidate = if let Some(candidate) = checked {
+        candidate
+    } else {
+        let candidate =
+            change_evaluation::candidate(&fixed, change, &s.compiled.subjects, &values)?;
+        let row = change_evaluation::solution_row(&fixed, &candidate, 0, &s.compiled.requirements)?;
+        if row.member != Some(true) || candidate.update.state != change_evaluation::State::Ready {
+            return Err(internal!("選択候補が元更新・Lawへの再代入を満たさない").into());
+        }
+        candidate
+    };
     for output in &s.compiled.outputs {
         tick(c)?;
+        if s.family
+            .as_ref()
+            .is_some_and(|(family, _)| !family.fields.is_empty())
+        {
+            continue;
+        }
         if !candidate.update.values.iter().any(|(fact, value)| {
             fact.snapshot == output.fact.snapshot
                 && fact.subject == output.fact.subject
@@ -800,7 +994,11 @@ fn consume(
                 .as_ref()
                 .ok_or(internal!("変更範囲の問題がない"))?;
             invalid = !same_problem(&shared, other);
-            enabled = d.source.ranges.get(&d.index).cloned();
+            enabled = d
+                .source
+                .range
+                .clone()
+                .or_else(|| d.source.ranges.get(&d.index).cloned());
         } else {
             let Scalar::Set { items, .. } = g.scalar(at)? else {
                 return Err(internal!("変更範囲がSetでない").into());
@@ -875,20 +1073,53 @@ fn consume(
             let range = Some(vec![true; old.subjects.len()]);
             (old, range)
         };
-        chosen = previous_chosen;
         enabled = target_range;
-        invalid = !same_domain(&shared, &other)
-            || !other.compiled.relations.member(
-                &pins(
-                    &other,
-                    enabled.as_ref().ok_or(internal!("解集合の範囲がない"))?,
-                ),
-                chosen
-                    .as_deref()
-                    .ok_or(internal!("選択した元割当てがない"))?,
-                c,
-            )?;
+        invalid = !same_domain(&shared, &other);
+        chosen = None;
+        if !invalid {
+            let original = previous_chosen
+                .as_deref()
+                .ok_or(internal!("選択した元割当てがない"))?;
+            let mut target_pins = pins(
+                &other,
+                enabled.as_ref().ok_or(internal!("解集合の範囲がない"))?,
+            );
+            for i in 0..shared.compiled.parameter_count {
+                let value = &shared.compiled.domains[i][original[i]];
+                let mut index = None;
+                for (j, candidate) in other.compiled.domains[i].iter().enumerate() {
+                    tick(c)?;
+                    if crate::observed::data::equal(value, candidate, c)? {
+                        index = Some(j);
+                        break;
+                    }
+                }
+                if index.is_none() {
+                    invalid = true;
+                    break;
+                }
+                target_pins[i] = index;
+            }
+            if !invalid {
+                chosen = other.compiled.relations.witness(&target_pins, c)?;
+                invalid = chosen.is_none();
+            }
+        }
         shared = other;
+    }
+    let mut checked_application = None;
+    if r.kind == QuestionKind::Apply && !invalid && shared.family.is_some() {
+        match family_application(
+            env,
+            &shared,
+            chosen.as_deref().ok_or(internal!("共通割当てがない"))?,
+            c,
+        )? {
+            Application::Ready(candidate) => checked_application = Some(candidate),
+            Application::Missing(missing) => {
+                return pending_application(env, g, r, shared, inputs, missing);
+            }
+        }
     }
     let base = g.nodes.len();
     let mut b = Builder {
@@ -996,9 +1227,9 @@ fn consume(
             &mut b,
             &shared,
             chosen.as_deref().ok_or(internal!("割当てがない"))?,
-            head,
-            set,
+            (head, set),
             claim,
+            checked_application.take(),
         )?;
         let selection = b.push(
             NodeType::Construction(T::Selection),
@@ -1033,6 +1264,7 @@ fn consume(
         chosen,
         inputs,
         context: g.active,
+        observation: None,
     })
 }
 /// 対応範囲外は通常の未決として残し、独立した後続要求を止めない。
@@ -1106,6 +1338,7 @@ fn unsupported(
         chosen: None,
         inputs,
         context: g.active,
+        observation: None,
     })
 }
 
@@ -1128,12 +1361,14 @@ impl super::result_kind::ResultKind for Data {
         }
         let result = if r.kind == QuestionKind::Prepare {
             prepare(prepared, env, g, r, c)
+        } else if r.kind == QuestionKind::Observe {
+            observation::compute(env, g, r, c)
         } else {
             consume(env, g, r, c)
         };
         let source = Arc::new(match result {
             Err(ValidationFailure::UnsupportedExpression { .. })
-                if r.kind != QuestionKind::Prepare =>
+                if !matches!(r.kind, QuestionKind::Prepare | QuestionKind::Observe) =>
             {
                 unsupported(env, g, r)?
             }

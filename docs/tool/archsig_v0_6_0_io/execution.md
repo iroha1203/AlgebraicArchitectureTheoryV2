@@ -46,7 +46,7 @@ Request  ::= Name "=" Question
 Question ::= Kind "(" Head ("," Key "=" Argument)* ")"
 Kind     ::= build | evaluate | check | map | compose | compare
            | localize | diagnose | repair | solve | quotient | needed
-           | prepare | scopes | candidate | apply
+           | prepare | scopes | candidate | apply | observe
 Head     ::= QName | Handle
 Argument ::= QName | Handle | Enum | Degree | Ordinal
 Handle   ::= "@" Id "/" Id | "$" Name ("." Name | "[" Index "]")*
@@ -259,7 +259,7 @@ Bool判別式は上の論理式の観測規則に従い、判別式内の等式�
 
 | 問いの正確な形 | 選択と返すfield |
 | --- | --- |
-| `prepare(Law,using=Change,on=Handle,internal=Handle?,B)` | `on` と B は従来の solve と同じ。`internal` は change の第1parameterと同じ entity 型の有限 Set を指す。省略時は空集合。`problem:RepairProblem`、`proposition:Proposition` |
+| `prepare(Law,using=Change,on=Handle,internal=Handle?,inputs=View?,B)` | `on` と B は従来の solve と同じ。`internal` は change の第1parameterと同じ entity 型の有限 Set を指す。省略時は空集合。`problem:RepairProblem`、`proposition:Proposition` |
 | `solve(Handle,within=Handle,mode=existence\|solutions?)` | 第1引数は RepairProblem、within は変更を解禁する entity の有限 Set または同じ問題の ChangeRange。mode の既定は solutions。`proposition:Proposition`、solutions モードでは `solutions:SolutionSet`。双方で `range:ChangeRange` |
 | `scopes(Handle)` | RepairProblem の有限な変更単位について包含極小の修復可能範囲を全て求める。`ranges:List<ChangeRange>`、完全性の `proposition:Proposition` |
 | `candidate(Handle,index=Ordinal)` | 完全な有限 SolutionSet の要求した一候補を元座標へ復元する。`assignment:Assignment`、所属の `proposition:Proposition` |
@@ -323,6 +323,46 @@ next=localize($a.object,law=Example.valid,using=Example.replace)
 別の Assignment に貼り替えず、保存した元 Assignment と現在の復元結果の一致も確認する。
 不一致ならその保存選択を再利用せず、現在入力からの新規評価として区別する。
 中断と依存先の未決は §6 の規則に従い、確認済みの先行回答を残す。
+
+### 修復の判定と元割当てに必要な観測
+
+有限の入力候補族を同じ修復問題へ接続する場合、prepare に `inputs=View` を指定する。
+View の parameter は prepare の明示した B と同名・同型の束縛で全て与える。
+この view が読む原始位置について、現在の既知値は固定し、未観測の有限型の値を合法な全補完で動かす。
+型・owner・基準root・changeのinstance族は固定し、その適合を確認する。
+入力viewに含まれない未観測や、有限に補完できない位置を勝手に補わない。
+inputs を省略した prepare と従来の needed の意味は変えない。
+
+| 問いの正確な形 | 選択と返すfield |
+| --- | --- |
+| `prepare(Law,using=Change,on=Handle,internal=Handle?,inputs=View?,B)` | inputs は原始位置の読取りを記述する view の完全名。`problem:RepairProblem`、`proposition:Proposition` |
+| `observe(View,on=Handle,within=Handle,output=decision\|assignment,B)` | on は有限入力候補族を持つ RepairProblem。View の B を完全束縛する。within は同じ問題の範囲。`plan:RepairObservation`、十分性の `proposition:Proposition`。追加読取り不要で共通の全解を確定した場合だけ `solutions:SolutionSet` |
+| `observe(Handle,on=Handle,within=Handle,output=decision\|assignment)` | 第1引数は同じ問題から生成した RepairObservation。その requirements を許可する読取り集合として再評価する。B は指定しない |
+
+observe の view は、追加で読んでよい原始位置を記述する。核は入力候補族の各点で通常のview評価が
+読む原始位置を集める。比較する観測は view の集約値ではなく、その原始位置の型付き値である。
+Lawの作者がviewを定め、原始値の意味の確認と実際の観測は利用者・製品SKILLが行う。
+既知の値だけで区別できる候補は先に区別し、追加読取りには数えない。
+
+output=decision は各観測群で修復の可否が一定か、output=assignment は各群が全て修復不能、
+または群全体で有効な同じ元Assignmentを返せるかを調べる。二候補ずつの共通解では代用しない。
+十分なら許可集合から不要な原始位置を除き、包含極小の一集合を返す。最少件数や全極小一覧は求めない。
+許可集合全体でも不足する場合は proposition を refuted とし、不足する候補対または候補群を返す。
+これは修復自体が不可能という結論ではない。未完了の場合は十分・不十分を確定しない。
+
+入力viewと追加読取りview、範囲、目的を固定したまま ArchMap に観測値を追加して同じ問いを実行すると、
+現在の既知値と整合する入力候補へ絞り、requirements を更新する。古い成功表示や仮の補完値を
+実際の観測へ貼り替えない。保存は現在の三入力から再検査し、変更した値に対しては再導出する。
+追加読取りが不要になった assignment の solutions は candidate / apply が直接消費する。
+Assignment の十分性は元parameterの構成についての結果であり、適用後の全原始値が既知という意味ではない。
+apply は現在入力の通常の所属・更新式・元Law検査を行い、別途未決が残れば object を生成しない。
+
+入力候補族付き問題の solve / scopes は、現在と整合する全入力候補で共通に有効な元Assignmentを求める。
+各入力ごとの修復可否の一定性は observe の output=decision で求め、この共通解の存在と区別する。
+同じ原始位置は全候補・全部品で同じ座標とし、部品ごとに別の未知を作らない。
+空の合法な入力候補族を空虚な十分性へ変換せず condition_failed とする。
+型・束縛の不一致は usage、別問題の範囲やplanは condition_failed、非有限の補完は unsupported_algorithm、
+その他の観測不足は元の missing、依存先の未完了は dependency_blocked とする。
 
 ## 4. 例
 

@@ -40,6 +40,7 @@ pub enum ProjectionType {
     AtomMap,
     Repair(String),
     RepairProblem(String),
+    RepairObservation(String),
     ChangeRange(String),
     RangeList(String),
     Selection(String),

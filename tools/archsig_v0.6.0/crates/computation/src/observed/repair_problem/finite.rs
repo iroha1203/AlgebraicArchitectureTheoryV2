@@ -3,11 +3,12 @@ use super::super::result::ValidationFailure;
 use archsig_common::control::{Checkpoint, Control};
 use num_bigint::BigUint;
 use num_traits::{One, Zero};
+use std::sync::Arc;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub(in crate::observed) struct Relation {
     pub columns: Vec<usize>,
-    pub rows: Vec<Vec<usize>>,
+    pub rows: Arc<Vec<Vec<usize>>>,
 }
 #[derive(Debug)]
 struct Component {
@@ -57,8 +58,11 @@ impl Problem {
             {
                 return Err(internal!("有限関係の座標・値域が不適合").into());
             }
-            relation.rows.sort();
-            relation.rows.dedup();
+            if relation.rows.windows(2).any(|w| w[0] >= w[1]) {
+                let rows = Arc::make_mut(&mut relation.rows);
+                rows.sort();
+                rows.dedup();
+            }
             impossible |= relation.rows.is_empty();
             for &variable in &relation.columns {
                 tick(c)?;
@@ -115,6 +119,114 @@ impl Problem {
                 .unwrap_or(0),
         )
     }
+    /// 固定した入力座標を除き、残る局所関係の行を共有する。
+    pub fn cofactor(&self, pins: &[Option<usize>], c: &Control) -> Result<Self, ValidationFailure> {
+        tick(c)?;
+        if !self.valid_pins(pins) {
+            return Err(internal!("入力の固定座標が不適合").into());
+        }
+        let mut sizes = vec![];
+        let mut map = vec![];
+        for (i, size) in self.sizes.iter().enumerate() {
+            tick(c)?;
+            map.push(if pins[i].is_none() {
+                let at = sizes.len();
+                sizes.push(*size);
+                Some(at)
+            } else {
+                None
+            });
+        }
+        let mut relations = vec![];
+        for relation in &self.relations {
+            tick(c)?;
+            let columns = relation
+                .columns
+                .iter()
+                .filter_map(|old| map[*old])
+                .collect();
+            let rows = if relation.columns.iter().all(|old| pins[*old].is_none()) {
+                relation.rows.clone()
+            } else {
+                let mut kept = vec![];
+                for row in relation.rows.iter() {
+                    tick(c)?;
+                    if relation
+                        .columns
+                        .iter()
+                        .zip(row)
+                        .all(|(old, v)| pins[*old].is_none_or(|p| p == *v))
+                    {
+                        kept.push(
+                            relation
+                                .columns
+                                .iter()
+                                .zip(row)
+                                .filter_map(|(old, v)| map[*old].map(|_| *v))
+                                .collect(),
+                        );
+                    }
+                }
+                Arc::new(kept)
+            };
+            relations.push(Relation { columns, rows });
+        }
+        Self::new(sizes, relations, c)
+    }
+    /// 元parameterを共有し、各入力の内部座標を別にした共通解を構成する。
+    pub fn join(
+        problems: &[&Self],
+        parameters: usize,
+        c: &Control,
+    ) -> Result<(Self, Vec<Vec<usize>>), ValidationFailure> {
+        let first = problems.first().ok_or(internal!("共通解の入力族が空"))?;
+        if parameters > first.sizes.len() {
+            return Err(internal!("共通parameterの幅が不適合").into());
+        }
+        let mut sizes = first.sizes[..parameters].to_vec();
+        let mut maps = vec![];
+        let mut relations = vec![];
+        for problem in problems {
+            tick(c)?;
+            if problem.sizes.get(..parameters) != Some(&sizes[..parameters]) {
+                return Err(internal!("共通parameterの値域が異なる").into());
+            }
+            let mut map = (0..parameters).collect::<Vec<_>>();
+            for size in &problem.sizes[parameters..] {
+                tick(c)?;
+                map.push(sizes.len());
+                sizes.push(*size);
+            }
+            for relation in &problem.relations {
+                tick(c)?;
+                relations.push(Relation {
+                    columns: relation.columns.iter().map(|old| map[*old]).collect(),
+                    rows: relation.rows.clone(),
+                });
+            }
+            maps.push(map);
+        }
+        Ok((Self::new(sizes, relations, c)?, maps))
+    }
+    #[cfg(test)]
+    pub fn relations(&self) -> &[Relation] {
+        &self.relations
+    }
+    pub fn share_rows(
+        &mut self,
+        pool: &mut std::collections::BTreeSet<Arc<Vec<Vec<usize>>>>,
+        c: &Control,
+    ) -> Result<(), ValidationFailure> {
+        for relation in &mut self.relations {
+            tick(c)?;
+            if let Some(rows) = pool.get(&relation.rows) {
+                relation.rows = rows.clone();
+            } else {
+                pool.insert(relation.rows.clone());
+            }
+        }
+        Ok(())
+    }
     pub fn variables(&self) -> usize {
         self.sizes.len()
     }
@@ -125,7 +237,7 @@ impl Problem {
         c: &Control,
     ) -> Result<bool, ValidationFailure> {
         let relation = &self.relations[relation];
-        for row in &relation.rows {
+        for row in relation.rows.iter() {
             tick(c)?;
             if relation
                 .columns
@@ -281,6 +393,46 @@ impl Problem {
         }
         Ok(true)
     }
+    /// 生成中の依存探索に必要な一つの合法点。件数は計算しない。
+    pub fn witness(
+        &self,
+        pins: &[Option<usize>],
+        c: &Control,
+    ) -> Result<Option<Vec<usize>>, ValidationFailure> {
+        tick(c)?;
+        if !self.valid_pins(pins) {
+            return Err(internal!("証人の固定座標が不適合").into());
+        }
+        if self.impossible {
+            return Ok(None);
+        }
+        let mut point = pins.to_vec();
+        for i in 0..self.components.len() {
+            let variables = &self.components[i].variables;
+            let mut found = None;
+            self.walk(i, &mut point, c, |values| {
+                found = Some(
+                    variables
+                        .iter()
+                        .map(|v| (*v, values[*v]))
+                        .collect::<Vec<_>>(),
+                );
+                false
+            })?;
+            let Some(found) = found else {
+                return Ok(None);
+            };
+            for (column, value) in found {
+                point[column] = value;
+            }
+        }
+        Ok(Some(
+            point
+                .into_iter()
+                .collect::<Option<Vec<_>>>()
+                .ok_or(internal!("証人の座標が未確定"))?,
+        ))
+    }
     fn count(
         &self,
         component: usize,
@@ -348,6 +500,7 @@ impl Problem {
                 .collect(),
         ))
     }
+    #[cfg(test)]
     pub fn member(
         &self,
         pins: &[Option<usize>],
@@ -387,21 +540,21 @@ mod tests {
         let mut relations = vec![
             Relation {
                 columns: vec![0],
-                rows: vec![vec![1]],
+                rows: vec![vec![1]].into(),
             },
             Relation {
                 columns: vec![0, 1],
-                rows: vec![vec![0, 0], vec![1, 1]],
+                rows: vec![vec![0, 0], vec![1, 1]].into(),
             },
             Relation {
                 columns: vec![1, 2],
-                rows: vec![vec![0, 0], vec![1, 1]],
+                rows: vec![vec![0, 0], vec![1, 1]].into(),
             },
         ];
         if cross {
             relations.push(Relation {
                 columns: vec![3, 4],
-                rows: vec![vec![0, 0], vec![1, 1]],
+                rows: vec![vec![0, 0], vec![1, 1]].into(),
             });
         }
         Problem::new(vec![2; 6], relations, &c()).unwrap()
@@ -422,11 +575,16 @@ mod tests {
                     vec![2, 2],
                     vec![Relation {
                         columns: vec![0, 1],
-                        rows: vec![vec![0, 0], vec![1, 1]],
+                        rows: vec![vec![0, 0], vec![1, 1]].into(),
                     }],
                     &c,
                 )?;
                 assert!(p.exists(&[None, None], &c)?);
+                assert_eq!(p.witness(&[Some(1), None], &c)?, Some(vec![1, 1]));
+                let mut reduced = p.cofactor(&[None, Some(1)], &c)?;
+                reduced.share_rows(&mut std::collections::BTreeSet::new(), &c)?;
+                let (joined, _) = Problem::join(&[&reduced, &reduced], 1, &c)?;
+                assert_eq!(joined.witness(&[None], &c)?, Some(vec![1]));
                 let point = p.candidate(&[None, None], BigUint::one(), &c)?.unwrap();
                 assert!(p.member(&[None, None], &point, &c)?);
                 let mut count = 0;
@@ -497,7 +655,7 @@ mod tests {
             vec![2; 3],
             vec![Relation {
                 columns: vec![0, 2],
-                rows: vec![vec![0, 0], vec![1, 1]],
+                rows: vec![vec![0, 0], vec![1, 1]].into(),
             }],
             &c(),
         )
@@ -520,7 +678,7 @@ mod tests {
             vec![2; 2],
             vec![Relation {
                 columns: vec![0, 1],
-                rows: vec![vec![0, 1], vec![1, 0]],
+                rows: vec![vec![0, 1], vec![1, 0]].into(),
             }],
             &c(),
         )
@@ -544,7 +702,7 @@ mod tests {
             vec![],
             vec![Relation {
                 columns: vec![],
-                rows: vec![],
+                rows: vec![].into(),
             }],
             &c(),
         )
@@ -556,7 +714,7 @@ mod tests {
                 vec![2],
                 vec![Relation {
                     columns: vec![0],
-                    rows: vec![vec![2]]
+                    rows: vec![vec![2]].into()
                 }],
                 &c()
             )
