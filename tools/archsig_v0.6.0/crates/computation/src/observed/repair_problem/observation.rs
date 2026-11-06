@@ -87,11 +87,34 @@ fn common_exists(
     let (problem, pins) = common(shared, indices, enabled, c)?;
     problem.exists(&pins, c)
 }
+// The problem and enabled range stay fixed throughout one reduction.
+// Keep only per-input existence bits; partitions and common assignments still change.
+fn possibilities(
+    shared: &Shared,
+    enabled: &[bool],
+    c: &Control,
+) -> Result<Vec<bool>, ValidationFailure> {
+    let (family, _) = shared
+        .family
+        .as_ref()
+        .ok_or(internal!("観測の入力族がない"))?;
+    family
+        .variants
+        .iter()
+        .map(|variant| {
+            tick(c)?;
+            variant
+                .relations
+                .exists(&variant_pins(shared, variant, enabled), c)
+        })
+        .collect()
+}
 fn analyze(
     shared: &Shared,
     readings: &[usize],
     enabled: &[bool],
     goal: Goal,
+    repairable: &[bool],
     c: &Control,
 ) -> Result<Analysis, ValidationFailure> {
     let (family, _) = shared
@@ -115,11 +138,8 @@ fn analyze(
         let mut first_yes = None;
         let mut first_no = None;
         for index in &indices {
-            let variant = &family.variants[*index];
-            if variant
-                .relations
-                .exists(&variant_pins(shared, variant, enabled), c)?
-            {
+            tick(c)?;
+            if repairable[*index] {
                 first_yes.get_or_insert(*index);
             } else {
                 first_no.get_or_insert(*index);
@@ -185,8 +205,9 @@ fn reduce(
     goal: Goal,
     c: &Control,
 ) -> Result<Reduced, ValidationFailure> {
+    let repairable = possibilities(shared, enabled, c)?;
     let mut readings = allowed.to_vec();
-    let mut analysis = analyze(shared, &readings, enabled, goal, c)?;
+    let mut analysis = analyze(shared, &readings, enabled, goal, &repairable, c)?;
     let mut necessary = vec![];
     if analysis.sufficient() {
         for field in allowed {
@@ -196,7 +217,7 @@ fn reduce(
                 .copied()
                 .filter(|f| f != field)
                 .collect::<Vec<_>>();
-            let checked = analyze(shared, &trial, enabled, goal, c)?;
+            let checked = analyze(shared, &trial, enabled, goal, &repairable, c)?;
             if checked.sufficient() {
                 readings = trial;
                 analysis = checked;
@@ -891,7 +912,9 @@ mod tests {
             let assignment = reduce(&shared, &allowed, &enabled, Goal::Assignment, &c).unwrap();
             assert!(assignment.analysis.sufficient());
             assert_eq!(assignment.readings.len(), usize::from(!known));
-            let without = analyze(&shared, &[], &enabled, Goal::Assignment, &c).unwrap();
+            let without = reduce(&shared, &[], &enabled, Goal::Assignment, &c)
+                .unwrap()
+                .analysis;
             assert_eq!(without.sufficient(), known);
             if !known {
                 assert_eq!(without.witnesses[0].kind, "no_common_assignment");
@@ -914,7 +937,9 @@ mod tests {
         for pair in [&[0, 1][..], &[0, 2], &[1, 2]] {
             assert!(common_exists(&shared, pair, &enabled, &c).unwrap());
         }
-        let insufficient = analyze(&shared, &[], &enabled, Goal::Assignment, &c).unwrap();
+        let insufficient = reduce(&shared, &[], &enabled, Goal::Assignment, &c)
+            .unwrap()
+            .analysis;
         assert!(!insufficient.sufficient());
         assert_eq!(insufficient.witnesses[0].indices.len(), 3);
         assert!(
@@ -1091,14 +1116,15 @@ mod tests {
                 }
             );
             let shared = shared(&result);
-            let analyzed = analyze(
+            let analyzed = reduce(
                 &shared,
                 &[],
                 &vec![true; shared.subjects.len()],
                 Goal::Assignment,
                 &archsig_common::control::quiet(),
             )
-            .unwrap();
+            .unwrap()
+            .analysis;
             if law == "false" {
                 assert!(analyzed.witnesses.is_empty());
                 assert_eq!(analyzed.groups[0].possible, Some(false));
@@ -1217,6 +1243,50 @@ mod tests {
             assert!(
                 matches!(run(Some(at)).0, Err(ValidationFailure::Stop(_))),
                 "checkpoint {at}"
+            );
+        }
+    }
+    #[test]
+    fn observation_range_is_consumed_by_solve_and_another_observation() {
+        for known in [false, true] {
+            let input = input(
+                "view input(r:Root):Bool=r.h;view all(r:Root):Set<Part> =Part[r];change choose(c:Part,p:Bool)=c with {flag=p};law required valid(r:Root):forall c in Part[r]. c.flag=r.h;",
+                "\"Bool\"",
+                known.then_some("true"),
+            );
+            let asks = [
+                "u=evaluate(Selected.all,r=@v/root)",
+                "p=prepare(Selected.valid,using=Selected.choose,on=@v/root,inputs=Selected.input,r=@v/root)",
+                "a=observe(Selected.input,on=$p.problem,within=$u.value,output=assignment,r=@v/root)",
+                "s=solve($a.plan.problem,within=$a.plan.range)",
+                "e=solve($p.problem,within=$a.plan.range,mode=existence)",
+                "again=observe($a.plan,on=$a.plan.problem,within=$a.plan.range,output=decision)",
+                "later=evaluate(Selected.all,r=@v/root)",
+            ];
+            let result = super::super::super::evaluate_observed_bytes(
+                input,
+                &asks,
+                &archsig_common::control::quiet(),
+            )
+            .unwrap();
+            assert_eq!(result.status(), "complete", "{:?}", result.issues);
+            for at in [3, 4] {
+                assert_eq!(
+                    result.answers[at].status,
+                    if known {
+                        Decision::Established
+                    } else {
+                        Decision::Refuted
+                    }
+                );
+            }
+            assert_eq!(result.answers[5].status, Decision::Established);
+            assert_eq!(result.answers[6].status, Decision::Established);
+            assert!(
+                result
+                    .issues
+                    .iter()
+                    .all(|r| !matches!(r.kind, ReasonKind::Internal(_)))
             );
         }
     }

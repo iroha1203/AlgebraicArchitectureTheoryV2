@@ -994,7 +994,11 @@ fn consume(
                 .as_ref()
                 .ok_or(internal!("変更範囲の問題がない"))?;
             invalid = !same_problem(&shared, other);
-            enabled = d.source.ranges.get(&d.index).cloned();
+            enabled = d
+                .source
+                .range
+                .clone()
+                .or_else(|| d.source.ranges.get(&d.index).cloned());
         } else {
             let Scalar::Set { items, .. } = g.scalar(at)? else {
                 return Err(internal!("変更範囲がSetでない").into());
