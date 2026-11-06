@@ -610,3 +610,248 @@ fn nonfinite_candidate_and_prepare_are_unsupported_without_blocking_independent_
     );
     assert_eq!(result.answers[2].status, Decision::Established);
 }
+
+#[test]
+fn selected_object_prepares_a_problem_consumed_by_scopes_and_solve() {
+    let asks = [
+        "u=evaluate(Selected.all,r=@v/root)",
+        "p=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
+        "s=solve($p.problem,within=$u.value)",
+        "c=candidate($s.solutions,index=0)",
+        "a=apply($c.assignment,in=$s.solutions)",
+        "next=prepare(Selected.valid,using=Selected.choose,on=$a.object)",
+        "r=scopes($next.problem)",
+        "n=solve($next.problem,within=$r.ranges[0])",
+    ];
+    let result = super::super::evaluate_observed_bytes(
+        fixture::input(""),
+        &asks,
+        &archsig_common::control::quiet(),
+    )
+    .unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    assert!(
+        result
+            .answers
+            .iter()
+            .all(|a| a.status == Decision::Established)
+    );
+    let at = result.answers[6].outputs["ranges"];
+    let d = data_from(&result, at);
+    assert_eq!(
+        d.source.ranges.values().cloned().collect::<Vec<_>>(),
+        vec![vec![false; 2]]
+    );
+}
+fn data_from(result: &super::super::ObservedEvaluation, at: NodeRef) -> &Data {
+    let Some(Payload::Construction(v)) = &result.nodes[at.0].payload else {
+        panic!("native result")
+    };
+    let D::SharedRepair(d) = &v.data else {
+        panic!("shared repair")
+    };
+    d
+}
+#[test]
+fn completed_empty_scope_avoids_enumerating_its_supersets() {
+    let parts = (0..30)
+        .map(|i| (format!("p{i:02}"), false, format!("p{i:02}")))
+        .collect::<Vec<_>>();
+    let refs = parts
+        .iter()
+        .map(|(a, b, c)| (a.as_str(), *b, c.as_str()))
+        .collect::<Vec<_>>();
+    let input = fixture::sources(
+        &refs,
+        "change choose(c:Part,p:Bool)=c with {flag=p};law required valid(c:Part):true;",
+    );
+    let result = super::super::evaluate_observed_bytes(
+        input,
+        &["p=prepare(Selected.valid,using=Selected.choose,on=@v/root)"],
+        &archsig_common::control::quiet(),
+    )
+    .unwrap();
+    let shared = data_from(&result, result.answers[0].outputs["problem"])
+        .source
+        .shared
+        .as_ref()
+        .unwrap();
+    let mut probes = 0;
+    let control = Control::new(move |_| {
+        probes += 1;
+        (probes > 2000).then_some(archsig_common::control::Signal::Term)
+    });
+    assert_eq!(minimal(shared, &control).unwrap(), vec![vec![false; 30]]);
+}
+#[test]
+fn overlapping_minimal_ranges_are_complete_without_duplicate_bounds() {
+    let input = fixture::sources(
+        &[
+            ("a", false, "a"),
+            ("b", false, "b"),
+            ("c", false, "c"),
+            ("d", false, "d"),
+        ],
+        "change choose(c:Part,p:Bool)=c with {flag=p};law required valid(a:Part,b:Part,c:Part,d:Part):(a.flag and b.flag) or (a.flag and c.flag) or (b.flag and d.flag) or (c.flag and d.flag);",
+    );
+    let result=super::super::evaluate_observed_bytes(input,&["p=prepare(Selected.valid,using=Selected.choose,on=@v/root,a=@v/a,b=@v/b,c=@v/c,d=@v/d)","r=scopes($p.problem)"],&archsig_common::control::quiet()).unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    let d = data_from(&result, result.answers[1].outputs["ranges"]);
+    assert_eq!(
+        d.source.ranges.values().cloned().collect::<Vec<_>>(),
+        vec![
+            vec![true, true, false, false],
+            vec![true, false, true, false],
+            vec![false, true, false, true],
+            vec![false, false, true, true]
+        ]
+    );
+}
+#[test]
+fn guard_excluded_missing_branch_does_not_require_observation_or_lose_the_candidate() {
+    let original = fixture::sources(
+        &[("p", false, "p")],
+        "view all(r:Root):Set<Part> =Part[r];change choose(c:Part,p:Bool) when p=c with {flag=if p then true else c.label=\"x\"};law required valid(c:Part):c.flag;",
+    );
+    let map=String::from_utf8(original.archmap().bytes().to_vec()).unwrap().replace(r#",{"id":"label-p","subject":"p","field":"Pattern.Part.label","value":"p","origin":"model"}"#,"");
+    let input = archsig_input::input::InputSources::from_bytes(
+        original
+            .definitions()
+            .iter()
+            .map(|d| d.bytes().to_vec())
+            .collect(),
+        original.law().bytes().to_vec(),
+        map.into_bytes(),
+    );
+    let asks = [
+        "old=solve(Selected.valid,using=Selected.choose,on=@v/root)",
+        "oc=candidate($old.solutions,index=0)",
+        "u=evaluate(Selected.all,r=@v/root)",
+        "p=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
+        "s=solve($p.problem,within=$u.value)",
+        "c=candidate($s.solutions,index=0)",
+        "a=apply($c.assignment,in=$s.solutions)",
+        "ok=check(Selected.valid,on=$a.object)",
+    ];
+    let result =
+        super::super::evaluate_observed_bytes(input, &asks, &archsig_common::control::quiet())
+            .unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    assert!(
+        result
+            .answers
+            .iter()
+            .all(|a| a.status == Decision::Established)
+    );
+}
+
+#[test]
+fn correlated_updates_do_not_read_an_unreachable_law_branch() {
+    let original = fixture::sources(
+        &[("p", false, "q"), ("q", false, "q")],
+        "view all(r:Root):Set<Part> =Part[r];change choose(c:Part,p:Bool)=c with {flag=p,label=if p then \"yes\" else \"no\"};law required valid(c:Part):if c.flag=(c.label=\"yes\") then true else c.link.label=\"x\";",
+    );
+    let map=String::from_utf8(original.archmap().bytes().to_vec()).unwrap().replace(r#"{"id":"root","type":"Pattern.Root","origin":"model"}"#,r#"{"id":"root","type":"Pattern.Root","origin":"model"},{"id":"other","type":"Pattern.Root","origin":"model"}"#).replace(r#"{"id":"owner-q","subject":"q","field":"Pattern.Part.owner","value":["v","root"]"#,r#"{"id":"owner-q","subject":"q","field":"Pattern.Part.owner","value":["v","other"]"#).replace(r#",{"id":"label-q","subject":"q","field":"Pattern.Part.label","value":"q","origin":"model"}"#,"");
+    let input = archsig_input::input::InputSources::from_bytes(
+        original
+            .definitions()
+            .iter()
+            .map(|d| d.bytes().to_vec())
+            .collect(),
+        original.law().bytes().to_vec(),
+        map.into_bytes(),
+    );
+    let asks = [
+        "old=solve(Selected.valid,using=Selected.choose,on=@v/root)",
+        "p=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
+    ];
+    let result =
+        super::super::evaluate_observed_bytes(input, &asks, &archsig_common::control::quiet())
+            .unwrap();
+    assert_eq!(
+        result.answers[0].status,
+        Decision::Established,
+        "{:?}",
+        result.issues
+    );
+    assert_eq!(
+        result.answers[1].status,
+        Decision::Established,
+        "{:?}",
+        result.issues
+    );
+}
+
+#[test]
+fn other_law_factors_exclude_missing_rows_before_observation_is_required() {
+    for body in [
+        "false and c.label=\"x\"",
+        "not c.flag and (if c.flag then c.label=\"x\" else true)",
+    ] {
+        let original = fixture::sources(
+            &[("p", false, "p")],
+            &format!(
+                "view all(r:Root):Set<Part> =Part[r];change choose(c:Part,p:Bool)=c with {{flag=p}};law required valid(c:Part):{body};"
+            ),
+        );
+        let map=String::from_utf8(original.archmap().bytes().to_vec()).unwrap().replace(r#",{"id":"label-p","subject":"p","field":"Pattern.Part.label","value":"p","origin":"model"}"#,"");
+        let input = archsig_input::input::InputSources::from_bytes(
+            original
+                .definitions()
+                .iter()
+                .map(|d| d.bytes().to_vec())
+                .collect(),
+            original.law().bytes().to_vec(),
+            map.into_bytes(),
+        );
+        let asks = [
+            "old=solve(Selected.valid,using=Selected.choose,on=@v/root)",
+            "u=evaluate(Selected.all,r=@v/root)",
+            "p=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
+            "s=solve($p.problem,within=$u.value)",
+        ];
+        let result =
+            super::super::evaluate_observed_bytes(input, &asks, &archsig_common::control::quiet())
+                .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        assert_eq!(result.answers[2].status, Decision::Established);
+        assert_eq!(result.answers[3].status, result.answers[0].status);
+        let expected = if body.starts_with("false") {
+            Decision::Refuted
+        } else {
+            Decision::Established
+        };
+        assert_eq!(result.answers[0].status, expected);
+    }
+}
+
+#[test]
+fn a_reachable_unknown_law_row_still_blocks_a_complete_problem() {
+    let original = fixture::sources(
+        &[("p", false, "p")],
+        r#"change choose(c:Part,p:Bool)=c with {flag=p};law required valid(c:Part):c.flag or c.label="x";"#,
+    );
+    let map=String::from_utf8(original.archmap().bytes().to_vec()).unwrap().replace(r#",{"id":"label-p","subject":"p","field":"Pattern.Part.label","value":"p","origin":"model"}"#,"");
+    let input = archsig_input::input::InputSources::from_bytes(
+        original
+            .definitions()
+            .iter()
+            .map(|d| d.bytes().to_vec())
+            .collect(),
+        original.law().bytes().to_vec(),
+        map.into_bytes(),
+    );
+    let result = super::super::evaluate_observed_bytes(
+        input,
+        &["p=prepare(Selected.valid,using=Selected.choose,on=@v/root)"],
+        &archsig_common::control::quiet(),
+    )
+    .unwrap();
+    assert_eq!(result.answers[0].status, Decision::Undetermined);
+    assert!(!result.answers[0].outputs.contains_key("problem"));
+    assert!(result.answers[0].reasons.iter().any(|r| {
+        r.missing
+            .iter()
+            .any(|f| f.subject == "p" && f.field.as_deref() == Some("Pattern.Part.label"))
+    }));
+}

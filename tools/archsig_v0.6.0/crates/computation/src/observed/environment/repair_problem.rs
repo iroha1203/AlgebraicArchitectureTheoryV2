@@ -355,6 +355,7 @@ pub(in crate::observed) fn compile(
             }
             bindings
         };
+        let guard_relation = relations.len();
         if let Some(guard) = guard {
             let columns = dependencies(&fixed, *guard, &names)?
                 .into_iter()
@@ -421,6 +422,27 @@ pub(in crate::observed) fn compile(
             let mut values = vec![base_value];
             let mut allowed = vec![];
             rows(&columns, &domains, c, |point| {
+                // guardの許容行へ延長できない局所割当ては更新式を読まない。
+                // 別因子のguardを再評価せず、その共通parameter上の射影を使う。
+                if guard.is_some() {
+                    let relation = &relations[guard_relation];
+                    let mut admissible = false;
+                    for row in &relation.rows {
+                        tick(c)?;
+                        if relation.columns.iter().zip(row).all(|(column, value)| {
+                            columns
+                                .iter()
+                                .position(|v| v == column)
+                                .is_none_or(|i| point[i] == *value)
+                        }) {
+                            admissible = true;
+                            break;
+                        }
+                    }
+                    if !admissible {
+                        return Ok(());
+                    }
+                }
                 let update = change_evaluation::relation_field(
                     &fixed,
                     change,
@@ -467,6 +489,10 @@ pub(in crate::observed) fn compile(
     if pending || !missing.is_empty() {
         return Ok(Compilation::Pending(missing.into_iter().collect()));
     }
+    let sizes = domains.iter().map(Vec::len).collect::<Vec<_>>();
+    let updates = finite::Problem::new(sizes.clone(), relations, c)?;
+    let mut relations = vec![];
+    let mut unresolved = vec![];
     for (name, bindings) in &selected.requirements {
         let law = &fixed.indexes.inputs.law().declarations()[name];
         let Signature::Law { body, .. } = law.signature else {
@@ -488,7 +514,17 @@ pub(in crate::observed) fn compile(
             loop {
                 let mut discovered = BTreeSet::from_iter(columns.iter().copied());
                 let mut allowed = vec![];
+                let mut pass_unknown = vec![];
+                let mut pass_support = BTreeSet::new();
+                let mut pass_scope = Scope::default();
                 rows(&columns, &domains, c, |point| {
+                    let mut pins = vec![None; domains.len()];
+                    for (column, value) in columns.iter().zip(point) {
+                        pins[*column] = Some(*value);
+                    }
+                    if !updates.exists(&pins, c)? {
+                        return Ok(());
+                    }
                     let mut values = fixed.fixed_values().into_iter().collect::<BTreeMap<_, _>>();
                     for output in &outputs {
                         let index = columns
@@ -511,7 +547,7 @@ pub(in crate::observed) fn compile(
                         bindings,
                         0,
                     )?;
-                    scope.merge(&row.scope);
+                    pass_scope.merge(&row.scope);
                     let absent = outer
                         .restore()
                         .ok_or(internal!("有限関係のLaw不足収集がない"))?;
@@ -519,21 +555,29 @@ pub(in crate::observed) fn compile(
                         if let Some(o) = outputs.iter().find(|o| same_slot(&o.fact, fact)) {
                             discovered.insert(o.column);
                         } else {
-                            support.insert(fact.clone());
+                            pass_support.insert(fact.clone());
                         }
                     }
                     match holds(&row) {
                         Some(true) => allowed.push(point.to_vec()),
                         Some(false) => {}
                         None => {
-                            pending = true;
-                            missing.extend(absent)
+                            // 未決行はまだ可能な行として結合し、他の条件で
+                            // 到達不能と分かった欠測を要求しない。
+                            allowed.push(point.to_vec());
+                            pass_unknown.push((point.to_vec(), absent));
                         }
                     }
                     Ok(())
                 })?;
                 let next = discovered.into_iter().collect::<Vec<_>>();
                 if next == columns {
+                    // 依存が閉じる前の仮の基準値は、観測要求へ昇格しない。
+                    if !pass_unknown.is_empty() {
+                        unresolved.push((columns.clone(), pass_unknown));
+                    }
+                    support.extend(pass_support);
+                    scope.merge(&pass_scope);
                     relations.push(finite::Relation {
                         columns,
                         rows: allowed,
@@ -544,14 +588,29 @@ pub(in crate::observed) fn compile(
             }
         }
     }
-    if pending || !missing.is_empty() {
-        return Ok(Compilation::Pending(missing.into_iter().collect()));
-    }
     // 関係の座標に束縛した仮代入と量化は外部の観測条件ではない。
     // 外側の固定条件は元Architectureの参照から継承する。
     scope.assignments = false;
     scope.quantifiers.clear();
-    let sizes = domains.iter().map(Vec::len).collect();
+    let mut combined = updates.into_relations();
+    combined.extend(relations);
+    let relations = finite::Problem::new(sizes, combined, c)?;
+    for (columns, rows) in unresolved {
+        for (point, absent) in rows {
+            tick(c)?;
+            let mut pins = vec![None; domains.len()];
+            for (column, value) in columns.iter().zip(point) {
+                pins[*column] = Some(value);
+            }
+            if relations.exists(&pins, c)? {
+                pending = true;
+                missing.extend(absent);
+            }
+        }
+    }
+    if pending || !missing.is_empty() {
+        return Ok(Compilation::Pending(missing.into_iter().collect()));
+    }
     Ok(Compilation::Ready(std::sync::Arc::new(Compiled {
         subjects,
         parameter_types,
@@ -563,7 +622,7 @@ pub(in crate::observed) fn compile(
         support: support.into_iter().collect(),
         scope,
         fixed: fixed.fixed_values(),
-        relations: finite::Problem::new(sizes, relations, c)?,
+        relations,
     })))
 }
 

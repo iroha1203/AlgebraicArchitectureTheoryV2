@@ -352,36 +352,81 @@ fn minimal(shared: &Shared, c: &Control) -> Result<Vec<Vec<bool>>, ValidationFai
         .enumerate()
         .filter_map(|(i, on)| (!on).then_some(i))
         .collect::<Vec<_>>();
-    let mut found: Vec<Vec<bool>> = vec![];
-    for size in 0..=units.len() {
-        let mut selected = (0..size).collect::<Vec<_>>();
-        loop {
+    fn subset(a: &[bool], b: &[bool]) -> bool {
+        a.iter().zip(b).all(|(a, b)| !a || *b)
+    }
+    // 未探索の上限だけを持つ。別の上限に含まれるものは重複しない。
+    fn add(
+        bounds: &mut Vec<Vec<bool>>,
+        bound: Vec<bool>,
+        c: &Control,
+    ) -> Result<(), ValidationFailure> {
+        for old in bounds.iter() {
             tick(c)?;
-            let mut enabled = vec![false; shared.subjects.len()];
-            for i in &selected {
-                enabled[units[*i]] = true;
-            }
-            if !found
-                .iter()
-                .any(|old| old.iter().zip(&enabled).all(|(a, b)| !a || *b))
-                && shared
-                    .compiled
-                    .relations
-                    .exists(&pins(shared, &enabled), c)?
-            {
-                found.push(enabled);
-            }
-            let Some(at) = (0..size)
-                .rev()
-                .find(|i| selected[*i] < units.len() - size + *i)
-            else {
-                break;
-            };
-            selected[at] += 1;
-            for i in at + 1..size {
-                selected[i] = selected[i - 1] + 1;
+            if subset(&bound, old) {
+                return Ok(());
             }
         }
+        let mut at = 0;
+        while at < bounds.len() {
+            tick(c)?;
+            if subset(&bounds[at], &bound) {
+                bounds.swap_remove(at);
+            } else {
+                at += 1;
+            }
+        }
+        bounds.push(bound);
+        Ok(())
+    }
+    let empty = vec![false; shared.subjects.len()];
+    if shared.compiled.relations.exists(&pins(shared, &empty), c)? {
+        return Ok(vec![empty]);
+    }
+    let mut all = empty;
+    for i in &units {
+        all[*i] = true;
+    }
+    let mut bounds = vec![all];
+    let mut found = vec![];
+    while let Some(upper) = bounds.pop() {
+        tick(c)?;
+        if !shared.compiled.relations.exists(&pins(shared, &upper), c)? {
+            continue;
+        }
+        let mut enabled = upper.clone();
+        for unit in &units {
+            tick(c)?;
+            if !enabled[*unit] {
+                continue;
+            }
+            enabled[*unit] = false;
+            if !shared
+                .compiled
+                .relations
+                .exists(&pins(shared, &enabled), c)?
+            {
+                enabled[*unit] = true;
+            }
+        }
+        // 他の極小範囲は、この範囲の少なくとも一単位を含まない。
+        // 既知の極小範囲を含む上位集合を、生成する前に探索域から除く。
+        let previous = std::mem::take(&mut bounds);
+        for bound in std::iter::once(upper).chain(previous) {
+            tick(c)?;
+            if subset(&enabled, &bound) {
+                for unit in &units {
+                    if enabled[*unit] {
+                        let mut next = bound.clone();
+                        next[*unit] = false;
+                        add(&mut bounds, next, c)?;
+                    }
+                }
+            } else {
+                add(&mut bounds, bound, c)?;
+            }
+        }
+        found.push(enabled);
     }
     found.sort_by_key(|enabled| {
         enabled

@@ -137,7 +137,10 @@ pub(super) fn root_types(
             &visible,
             c,
             &mut found,
-            matches!(r.kind, QuestionKind::Solve | QuestionKind::Repair),
+            matches!(
+                r.kind,
+                QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Prepare
+            ),
         )?;
         if found.is_empty() {
             return Err(error(

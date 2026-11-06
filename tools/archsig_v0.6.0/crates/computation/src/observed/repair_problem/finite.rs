@@ -99,6 +99,10 @@ impl Problem {
             impossible,
         })
     }
+    // 接続を調べた同じ関係を、後続のLaw因子と所有権ごと結合する。
+    pub fn into_relations(self) -> Vec<Relation> {
+        self.relations
+    }
     pub fn variables(&self) -> usize {
         self.sizes.len()
     }
