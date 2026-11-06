@@ -4799,3 +4799,46 @@ fn root_change_without_declared_field_correspondence_is_typed_partial() {
             .any(|r| r.value == reason.value)
     );
 }
+
+#[path = "common/numeric_tuple_change.rs"]
+mod numeric_tuple_change;
+
+#[test]
+fn mixed_numeric_tuple_change_delivery_keeps_typed_partial_and_operation() {
+    // 内部の数値条件網羅は computation 側、CLI は混在型の終了codeと保存結果を所有する。
+    for case in numeric_tuple_change::cases()
+        .into_iter()
+        .filter(|case| case.name == "mixed")
+    {
+        let dir = workdir(&format!("mixed-tuple-delivery-{}", case.label()));
+        let input = case.input();
+        for (name, bytes) in [
+            ("d.json", input.definitions()[0].bytes()),
+            ("l.law", input.law().bytes()),
+            ("a.json", input.archmap().bytes()),
+        ] {
+            std::fs::write(dir.join(name), bytes).unwrap();
+        }
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--out",
+            "out",
+        ];
+        for request in &numeric_tuple_change::REQUESTS {
+            args.extend(["--ask", request]);
+        }
+        let run = run_binary(&dir, &args);
+        assert_eq!(run.code, 2, "{}: {}", case.label(), run.stdout);
+        assert_eq!(s(get(&run.receipt, "status")), "partial");
+        assert_eq!(num(get(&run.receipt, "exit_code")), 2);
+        let result = result_json(&dir, &run);
+        assert_eq!(num(get(&result, "exit_code")), 2);
+        case.assert_result(&result);
+    }
+}
