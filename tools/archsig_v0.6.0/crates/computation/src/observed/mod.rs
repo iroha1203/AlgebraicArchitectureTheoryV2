@@ -49,6 +49,7 @@ mod public_compose;
 mod public_map;
 mod public_path_compose;
 mod quantifier;
+mod repair_problem;
 pub mod result;
 mod result_kind;
 mod summary;

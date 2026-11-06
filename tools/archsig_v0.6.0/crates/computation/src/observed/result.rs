@@ -133,6 +133,7 @@ pub(crate) enum NodeType {
     Evidence,
     Domain,
     ObservationPlan,
+    ChangeRanges,
 }
 impl NodeType {
     pub(super) fn wire(&self) -> Json {
@@ -150,6 +151,7 @@ impl NodeType {
             Self::Evidence => Json::str("Evidence"),
             Self::Domain => Json::str("Domain"),
             Self::ObservationPlan => Json::str("ObservationPlan"),
+            Self::ChangeRanges => Json::Arr(vec![Json::str("List"), Json::str("ChangeRange")]),
         }
     }
 }
@@ -2210,6 +2212,10 @@ impl Graph {
             } = reason.kind
             {
                 let proposition = self.get(condition)?;
+                if matches!(construction, "prepare" | "solve" | "candidate" | "apply") {
+                    super::repair_problem::validate_failure(self, reason)?;
+                    continue;
+                }
                 if construction == "repair" {
                     super::change_result::validate_failure(self, reason)?;
                     continue;

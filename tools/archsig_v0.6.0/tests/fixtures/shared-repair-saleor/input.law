@@ -1,0 +1,12 @@
+law "archsig.law/2" semantics "archsig/0.6.0";reading Selected{use vocabulary Pattern version "1" digest "sha256:02203db7c77eb11c53702ec3165ba372406ff4c8b8d6a6d02fea4310c72d04a9";
+        view internal(r:Root):Set<Part> =set {c|c in Part[r] where c.label!="x" and c.label!="y" and c.label!="z"};
+        view xy(r:Root):Set<Part> =set {c|c in Part[r] where c.label="x" or c.label="y"};
+        view xyz(r:Root):Set<Part> =set {c|c in Part[r] where c.label="x" or c.label="y" or c.label="z"};
+        change choose(c:Part,p:Bool)=c with {flag=p};
+        view good(r:Root):Bool =forall c in Part[r]. if c.label="x" then c.flag and c.flag=c.link.flag else if c.label="y" then c.flag=c.link.flag  else true;
+
+        law required valid(r:Root):good(r);
+        view x(r:Root):Set<Part> =set {c|c in Part[r] where c.label="x"};
+        law required task(r:Root):good(r) and (forall c in Part[r]. if c.label="y" or c.label="z" then not c.flag else true);
+        law required payment(r:Root):good(r) and (forall c in Part[r]. if c.label="z" then not c.flag else true);
+    }

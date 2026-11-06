@@ -40,6 +40,7 @@ mod cli_quotient;
 mod cli_refuted_summary;
 mod cli_rejections;
 mod cli_relation_comparison;
+mod cli_repair_problem;
 mod cli_request_acceptance;
 mod cli_reuse;
 mod cli_run;

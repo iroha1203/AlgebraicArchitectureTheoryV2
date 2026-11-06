@@ -287,7 +287,8 @@ candidate の index は、完全な有限全解表示を走査するための0�
 任意精度の Ordinal を使い、JSON Nat の上限を超える番号も指定・保存できる。
 元 subject の参照順、各元 parameter の宣言順、有限型の値の標準順に従う辞書式順序を用いる。
 Bool は false, true、有限和は constructor 宣言順、積は成分順、Fp は0からp−1とし、
-有限 container は型付き値の正規化 encoding の辞書順に従う。同じ元 Assignment の重複表示は一つとする。
+Tuple は成分の辞書順、Option は none を先にして要素の順に従う。
+Set は要素型の有限列挙順に所属を並べ、その最初の要素を最下位bitとする所属bit列の整数順とする。同じ元 Assignment の重複表示は一つとする。
 index は候補の恒久的な identity ではなく、この完全な解集合に対する選択要求である。
 表示行や表示用特解を自動採用しない。範囲外 index は condition_failed。
 一候補を取得するために全候補の Architecture や全量 JSON を作らない。

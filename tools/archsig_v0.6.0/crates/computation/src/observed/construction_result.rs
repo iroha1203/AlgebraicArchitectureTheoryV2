@@ -60,6 +60,9 @@ pub(crate) enum ConstructionType {
     StateMap,
     Assignment,
     Repair,
+    RepairProblem,
+    ChangeRange,
+    Selection,
     Module,
     Quotient,
     LocalSystem,
@@ -116,6 +119,9 @@ impl ConstructionType {
             Self::StateMap => "StateMap",
             Self::Assignment => "Assignment",
             Self::Repair => "Repair",
+            Self::RepairProblem => "RepairProblem",
+            Self::ChangeRange => "ChangeRange",
+            Self::Selection => "Selection",
             Self::Module => "Module",
             Self::Quotient => "Quotient",
             Self::LocalSystem => "LocalSystem",
@@ -224,6 +230,7 @@ pub(crate) enum ConstructionData {
     Build(super::build_result::Data),
     ObjectMap(super::object_map_result::Data),
     Change(super::change_result::Data),
+    SharedRepair(super::repair_problem::Data),
     Quotient(super::quotient_result::Data),
     Local(super::local_result::Data),
     Composition(super::public_compose::Part),
@@ -335,6 +342,7 @@ impl ConstructionValue {
             D::Build(data) => data.evidence_kind(),
             D::ObjectMap(data) => data.evidence_kind(),
             D::Change(data) => data.evidence_kind(),
+            D::SharedRepair(data) => data.evidence_kind(),
             D::Quotient(data) => data.evidence_kind(),
             D::Local(data) => data.evidence_kind(),
             D::InternalArrows(data) => data.evidence_kind(),
@@ -353,6 +361,7 @@ impl ConstructionValue {
             ConstructionData::ViewFamily(data) => data.scalar(),
             ConstructionData::Build(data) => data.scalar(),
             ConstructionData::Change(data) => data.scalar(),
+            ConstructionData::SharedRepair(data) => data.scalar(),
             ConstructionData::Quotient(data) => data.scalar(),
             ConstructionData::Local(data) => data.scalar(),
             ConstructionData::ObjectMap(data) => data.scalar(),
@@ -441,6 +450,7 @@ impl ConstructionValue {
             D::CircuitPattern(data) => return data.ty(),
             D::Build(data) => return data.ty(),
             D::Change(data) => return data.ty(),
+            D::SharedRepair(data) => return data.ty(),
             D::Quotient(data) => return data.ty(),
             D::Local(data) => return data.ty(),
             D::ObjectMap(data) => return data.ty(),
@@ -487,6 +497,7 @@ impl ConstructionValue {
             D::CircuitPattern(data) => data.arguments(),
             D::Build(data) => data.arguments(),
             D::Change(data) => data.arguments(),
+            D::SharedRepair(data) => data.arguments(),
             D::Quotient(data) => data.arguments(),
             D::Local(data) => data.arguments(),
             D::ObjectMap(data) => data.arguments(),
@@ -577,6 +588,7 @@ impl ConstructionValue {
     pub fn conditions(&self) -> Vec<NodeRef> {
         match &self.data {
             ConstructionData::Change(data) => data.conditions(),
+            ConstructionData::SharedRepair(data) => data.conditions(),
             ConstructionData::Quotient(data) => data.conditions(),
             ConstructionData::Local(data) => data.conditions(),
             ConstructionData::ObjectMap(data) => data.conditions(),
@@ -607,6 +619,7 @@ impl ConstructionValue {
             D::CircuitPattern(_) => "circuit_pattern",
             D::Build(ref data) => data.construction(),
             D::Change(ref data) => data.construction(),
+            D::SharedRepair(ref data) => data.construction(),
             D::Quotient(ref data) => data.construction(),
             D::Local(ref data) => data.construction(),
             D::ObjectMap(ref data) => data.construction(),
@@ -655,6 +668,9 @@ impl ConstructionValue {
                 ConstructionType::StateMap => "state_map",
                 ConstructionType::Assignment => "assignment",
                 ConstructionType::Repair => "repair",
+                ConstructionType::RepairProblem => "repair_problem",
+                ConstructionType::ChangeRange => "change_range",
+                ConstructionType::Selection => "selection",
                 ConstructionType::Module => "module",
                 ConstructionType::Quotient => "quotient",
                 ConstructionType::LocalSystem => "local_system",
@@ -690,6 +706,7 @@ impl ConstructionValue {
         use ConstructionData as D;
         match (&self.data, &self.witness) {
             (D::Change(data), _) => data.projection_type(),
+            (D::SharedRepair(data), _) => data.projection_type(),
             (D::Quotient(data), _) => data.projection_type(),
             (D::Local(data), _) => data.projection_type(),
             (D::ObjectMap(data), _) => data.projection_type(),
@@ -765,6 +782,9 @@ impl ConstructionValue {
     }
     pub fn project(&self, path: &[ProjectionStep]) -> Option<(NodeRef, usize)> {
         use ConstructionData as D;
+        if let D::SharedRepair(data) = &self.data {
+            return data.project(path);
+        }
         if let D::Change(data) = &self.data {
             return data.project(path);
         }
@@ -857,6 +877,7 @@ impl ConstructionValue {
             D::CircuitPattern(data) => data.wire(),
             D::Build(data) => data.wire(),
             D::Change(data) => data.wire(),
+            D::SharedRepair(data) => data.wire(),
             D::Quotient(data) => data.wire(),
             D::Local(data) => data.wire(),
             D::ObjectMap(data) => data.wire(),
@@ -1119,7 +1140,9 @@ impl ArchitectureWitness {
         let mut finite_change = false;
         if matches!(
             request.kind,
-            super::request::QuestionKind::Solve | super::request::QuestionKind::Repair
+            super::request::QuestionKind::Solve
+                | super::request::QuestionKind::Repair
+                | super::request::QuestionKind::Prepare
         ) && let Some(super::request::Selector::Declaration { name }) = request
             .arguments
             .iter()
@@ -1480,6 +1503,9 @@ pub fn atom_value(
     })
 }
 pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+    if let ConstructionData::SharedRepair(data) = &value.data {
+        return Ok(data.metadata());
+    }
     if let ConstructionData::Change(data) = &value.data {
         return Ok(data.metadata());
     }
@@ -1694,6 +1720,20 @@ pub(super) fn architecture_origin(
                     != Some(Witness::Architecture(a.clone()).request())
             {
                 return Err(internal!("有限Law導出が元Architectureのroot Requestでない").into());
+            }
+            Ok(a)
+        }
+        (Witness::Architecture(a), ConstructionData::SharedRepair(d))
+            if v.ty() == NodeType::Construction(ConstructionType::Architecture) =>
+        {
+            let context = graph.context_at(reference.0);
+            if context.frame.is_some()
+                || context.iteration.is_some()
+                || context.instance.is_some()
+                || context.case.is_some()
+                || graph.requests.get(context.request) != Some(d.request())
+            {
+                return Err(internal!("選択対象の元Requestが違う").into());
             }
             Ok(a)
         }

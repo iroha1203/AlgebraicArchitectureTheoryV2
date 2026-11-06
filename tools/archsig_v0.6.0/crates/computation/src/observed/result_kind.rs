@@ -43,6 +43,7 @@ macro_rules! registered {
             ConstructionData::CircuitPattern(data) => Some(ResultKind::$method(data $(, $args)*)),
             ConstructionData::Build(data) => Some(ResultKind::$method(data $(, $args)*)),
             ConstructionData::ObjectMap(data) => Some(ResultKind::$method(data $(, $args)*)),
+            ConstructionData::SharedRepair(data) => Some(ResultKind::$method(data $(, $args)*)),
             ConstructionData::Change(data) => Some(ResultKind::$method(data $(, $args)*)),
             ConstructionData::Quotient(data) => Some(ResultKind::$method(data $(, $args)*)),
             ConstructionData::Local(data) => Some(ResultKind::$method(data $(, $args)*)),

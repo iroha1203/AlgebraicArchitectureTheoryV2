@@ -39,6 +39,10 @@ pub enum ProjectionType {
     ComposedMap(OperationProjection),
     AtomMap,
     Repair(String),
+    RepairProblem(String),
+    ChangeRange(String),
+    RangeList(String),
+    Selection(String),
     Assignment(String),
     CandidateSpace(String),
     SolutionSet(String),
@@ -191,6 +195,9 @@ fn project_inner(
             1,
         ))
     };
+    if let Some(plan) = super::request::repair_projection(ty, path) {
+        return plan;
+    }
     match (ty, &path[0]) {
         (ProjectionType::FixedSolutionSet, Field(f)) if f == "domain" => {
             exact(ProjectionType::FixedCandidateSpace)

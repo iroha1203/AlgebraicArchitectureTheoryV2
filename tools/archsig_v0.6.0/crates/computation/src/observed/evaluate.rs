@@ -641,7 +641,10 @@ impl Evaluator<'_, '_> {
                         ty: p.ty.erase(),
                     });
                 }
-                Selector::Declaration { .. } | Selector::Enum { .. } | Selector::Degree { .. } => {
+                Selector::Declaration { .. }
+                | Selector::Enum { .. }
+                | Selector::Degree { .. }
+                | Selector::Ordinal { .. } => {
                     return Err(Failure::Internal(internal!(
                         "parameter に宣言 selector が残っている"
                     )));
@@ -2988,19 +2991,23 @@ fn evaluate_observed_with_validator(
                 instance: None,
                 case: None,
             };
-            if matches!(
-                request.kind,
-                QuestionKind::Build
-                    | QuestionKind::Solve
-                    | QuestionKind::Repair
-                    | QuestionKind::Quotient
-                    | QuestionKind::Localize
-                    | QuestionKind::Diagnose
-                    | QuestionKind::Map
-                    | QuestionKind::Compose
-                    | QuestionKind::Compare
-            ) {
-                let evaluate = if request.kind == QuestionKind::Build {
+            if super::request::shared_repair_request(request)
+                || matches!(
+                    request.kind,
+                    QuestionKind::Build
+                        | QuestionKind::Solve
+                        | QuestionKind::Repair
+                        | QuestionKind::Quotient
+                        | QuestionKind::Localize
+                        | QuestionKind::Diagnose
+                        | QuestionKind::Map
+                        | QuestionKind::Compose
+                        | QuestionKind::Compare
+                )
+            {
+                let evaluate = if super::request::shared_repair_request(request) {
+                    super::repair_problem::evaluate
+                } else if request.kind == QuestionKind::Build {
                     super::build_result::evaluate
                 } else if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair) {
                     super::change_result::evaluate

@@ -296,6 +296,139 @@ pub(in crate::observed) fn selector(
     })
 }
 
+/// 元対象内のchange instanceとLawの束縛族。列挙経路と部品経路で同じ選択を使う。
+pub(in crate::observed) struct Selection {
+    pub subjects: Option<Vec<Scalar>>,
+    pub requirements: Vec<(String, Vec<(String, Scalar)>)>,
+    pub bindings: Vec<(String, Scalar)>,
+    pub missing: Vec<Fact>,
+}
+pub(in crate::observed) fn selection(
+    original: &Environment<'_>,
+    environment: &Environment<'_>,
+    graph: &Graph,
+    witness: &ArchitectureWitness,
+    request: &Request,
+    completions: &[(Fact, Scalar)],
+    control: &Control,
+) -> Result<Selection, ValidationFailure> {
+    let inputs = environment.indexes.inputs;
+    let mut result = Selection {
+        subjects: None,
+        requirements: vec![],
+        bindings: vec![],
+        missing: vec![],
+    };
+    let law_name = request
+        .declaration()
+        .ok_or(internal!("solveの元Lawがない"))?;
+    let law = inputs
+        .law()
+        .declarations()
+        .get(law_name)
+        .ok_or(internal!("solveの元Law宣言がない"))?;
+    let Signature::Law { params, .. } = &law.signature else {
+        return Err(internal!("solveのheadがLawでない").into());
+    };
+    let using = request
+        .arguments
+        .iter()
+        .find(|a| a.name == "using")
+        .ok_or(internal!("solveのusingがない"))?;
+    let Selector::Declaration { name } = &using.value else {
+        return Err(internal!("solveのusingが宣言名でない").into());
+    };
+    let change = inputs
+        .law()
+        .declarations()
+        .get(name)
+        .ok_or(internal!("solveのchange宣言がない"))?;
+    let Signature::Change {
+        params: change_params,
+        ..
+    } = &change.signature
+    else {
+        return Err(internal!("solveのusingがchangeでない").into());
+    };
+    if law.reading != change.reading || witness.construction().reading() != law.reading {
+        return Err(internal!("変更候補のLaw・change・対象readingが違う").into());
+    }
+    let first = change_params
+        .first()
+        .ok_or(internal!("changeの第一parameterがない"))?;
+    let Some(mut subjects) = domain(&environment, &first.ty, first.span, &mut result.missing)?
+    else {
+        return Ok(result);
+    };
+    let construction = witness.construction();
+    subjects.retain(|value| {
+        let Scalar::Subject {
+            snapshot, subject, ..
+        } = value
+        else {
+            return false;
+        };
+        std::iter::once(construction.root())
+            .chain(construction.local_domain().known())
+            .any(|fact| fact.snapshot == *snapshot && fact.subject == *subject)
+            || construction
+                .local_domain()
+                .conditional()
+                .iter()
+                .any(|member| {
+                    member.subject().snapshot == *snapshot
+                        && member.subject().subject == *subject
+                        && completions.iter().any(|(fact, value)| {
+                            fact == member.owner_slot()
+                                && matches!(value, Scalar::Subject { snapshot, subject, .. }
+                if *snapshot == member.owner().snapshot && *subject == member.owner().subject)
+                        })
+                })
+    });
+    let mut rows = vec![vec![]];
+    for parameter in params {
+        control.checkpoint(Checkpoint::PrimitiveValuation)?;
+        let argument = request
+            .arguments
+            .iter()
+            .find(|a| a.name == format!("bind.{}", parameter.name));
+        let values = if let Some(argument) = argument {
+            let selected = selector(original, graph, &argument.value)?;
+            result
+                .bindings
+                .push((parameter.name.clone(), selected.clone()));
+            vec![selected]
+        } else {
+            if matches!(parameter.ty, Type::Z | Type::Q) {
+                continue;
+            }
+            let Some(values) = domain(
+                &environment,
+                &parameter.ty,
+                parameter.span,
+                &mut result.missing,
+            )?
+            else {
+                return Ok(result);
+            };
+            values
+        };
+        let mut next = vec![];
+        for row in rows {
+            for value in &values {
+                control.checkpoint(Checkpoint::PrimitiveValuation)?;
+                let mut row = row.clone();
+                row.push((parameter.name.clone(), value.clone()));
+                next.push(row);
+            }
+        }
+        rows = next;
+    }
+    result.requirements = rows.into_iter().map(|b| (law_name.to_owned(), b)).collect();
+    result.subjects = Some(subjects);
+    Ok(result)
+}
+
 pub(in crate::observed) fn search(
     original: &Environment<'_>,
     graph: &Graph,
@@ -362,105 +495,38 @@ pub(in crate::observed) fn search_with_completions(
             0,
             control,
         )?));
-        let law_name = request
-            .declaration()
-            .ok_or(internal!("solveの元Lawがない"))?;
-        let law = inputs
-            .law()
-            .declarations()
-            .get(law_name)
-            .ok_or(internal!("solveの元Law宣言がない"))?;
-        let Signature::Law { params, .. } = &law.signature else {
-            return Err(internal!("solveのheadがLawでない").into());
+        let selected = selection(
+            original,
+            &environment,
+            graph,
+            witness,
+            request,
+            completions,
+            control,
+        )?;
+        result.requirements = selected.requirements;
+        result.bindings = selected.bindings;
+        result.missing = selected.missing;
+        let Some(subjects) = selected.subjects else {
+            return Ok(());
         };
-        let using = request
+        let Selector::Declaration { name } = &request
             .arguments
             .iter()
             .find(|a| a.name == "using")
-            .ok_or(internal!("solveのusingがない"))?;
-        let Selector::Declaration { name } = &using.value else {
-            return Err(internal!("solveのusingが宣言名でない").into());
+            .ok_or(internal!("change選択がない"))?
+            .value
+        else {
+            return Err(internal!("change選択が宣言でない").into());
         };
-        let change = inputs
-            .law()
-            .declarations()
-            .get(name)
-            .ok_or(internal!("solveのchange宣言がない"))?;
+        let change = &inputs.law().declarations()[name];
         let Signature::Change {
             params: change_params,
             ..
         } = &change.signature
         else {
-            return Err(internal!("solveのusingがchangeでない").into());
+            return Err(internal!("change署名がない").into());
         };
-        if law.reading != change.reading || witness.construction().reading() != law.reading {
-            return Err(internal!("変更候補のLaw・change・対象readingが違う").into());
-        }
-        let first = change_params
-            .first()
-            .ok_or(internal!("changeの第一parameterがない"))?;
-        let Some(mut subjects) = domain(&environment, &first.ty, first.span, &mut result.missing)?
-        else {
-            return Ok(());
-        };
-        let construction = witness.construction();
-        subjects.retain(|value| {
-            let Scalar::Subject {
-                snapshot, subject, ..
-            } = value
-            else {
-                return false;
-            };
-            std::iter::once(construction.root())
-                .chain(construction.local_domain().known())
-                .any(|fact| fact.snapshot == *snapshot && fact.subject == *subject)
-                || construction.local_domain().conditional().iter().any(|member| {
-                    member.subject().snapshot == *snapshot && member.subject().subject == *subject
-                        && completions.iter().any(|(fact, value)| fact == member.owner_slot()
-                            && matches!(value, Scalar::Subject { snapshot, subject, .. }
-                                if *snapshot == member.owner().snapshot && *subject == member.owner().subject))
-                })
-        });
-        let mut rows = vec![vec![]];
-        for parameter in params {
-            control.checkpoint(Checkpoint::PrimitiveValuation)?;
-            let argument = request
-                .arguments
-                .iter()
-                .find(|a| a.name == format!("bind.{}", parameter.name));
-            let values = if let Some(argument) = argument {
-                let selected = selector(original, graph, &argument.value)?;
-                result
-                    .bindings
-                    .push((parameter.name.clone(), selected.clone()));
-                vec![selected]
-            } else {
-                if matches!(parameter.ty, Type::Z | Type::Q) {
-                    continue;
-                }
-                let Some(values) = domain(
-                    &environment,
-                    &parameter.ty,
-                    parameter.span,
-                    &mut result.missing,
-                )?
-                else {
-                    return Ok(());
-                };
-                values
-            };
-            let mut next = vec![];
-            for row in rows {
-                for value in &values {
-                    control.checkpoint(Checkpoint::PrimitiveValuation)?;
-                    let mut row = row.clone();
-                    row.push((parameter.name.clone(), value.clone()));
-                    next.push(row);
-                }
-            }
-            rows = next;
-        }
-        result.requirements = rows.into_iter().map(|b| (law_name.to_owned(), b)).collect();
         if change_params.iter().skip(1).any(|p| p.ty == Type::Z) {
             let mut pending = change_affine::Pending::default();
             let computed = change_affine::compute(

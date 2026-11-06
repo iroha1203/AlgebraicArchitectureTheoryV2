@@ -1,0 +1,6 @@
+task=solve(Selected.task,using=Selected.choose,on=@v/root,r=@v/root)
+payment=solve(Selected.payment,using=Selected.choose,on=@v/root,r=@v/root)
+shared=solve(Selected.valid,using=Selected.choose,on=@v/root,r=@v/root)
+c=candidate($shared.solutions,index=0)
+a=apply($c.assignment,in=$shared.solutions)
+ok=check(Selected.valid,on=$a.object,r=@v/root)

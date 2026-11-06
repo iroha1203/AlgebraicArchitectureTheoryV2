@@ -41,6 +41,7 @@ result_table! {
     persistent view_kernels: super::super::object_view_map::KernelCacheEntry,
     persistent law_kernels: super::super::object_law_map::KernelCacheEntry,
     persistent relation_families: Arc<super::super::public_compare::relation_sources::Family>,
+    session shared_repairs: <super::super::repair_problem::Data as ResultKind>::Stored,
     session changes: <super::super::change_result::Data as ResultKind>::Stored,
     session quotients: <super::super::quotient_result::Data as ResultKind>::Stored,
     session locals: <super::super::local_result::Data as ResultKind>::Stored,
