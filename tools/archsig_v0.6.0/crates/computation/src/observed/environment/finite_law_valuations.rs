@@ -1209,6 +1209,28 @@ pub(in crate::observed) fn evaluate_change_point(
 ) -> Result<FiniteLawRow, ValidationFailure> {
     Ok(probe_local_mode(environment, declaration, bindings, point, true, true)?.row)
 }
+/// 合取として分解した元式を、外側Lawの適用条件・guardの下で評価する。
+#[derive(Clone)]
+pub(in crate::observed) struct FactorCondition {
+    pub expression: usize,
+    pub reading: String,
+    pub bindings: Vec<(String, Scalar)>,
+    pub positive: bool,
+}
+pub(in crate::observed) struct FactorBody<'a> {
+    pub expression: usize,
+    pub reading: &'a str,
+    pub bindings: &'a [(String, Scalar)],
+    pub conditions: &'a [FactorCondition],
+}
+pub(in crate::observed) fn evaluate_change_factor(
+    e: &Environment<'_>,
+    decl: &Declaration,
+    bindings: &[(String, Scalar)],
+    body: FactorBody<'_>,
+) -> Result<FiniteLawRow, ValidationFailure> {
+    Ok(probe_body(e, decl, bindings, 0, true, true, Some(body))?.row)
+}
 /// 局所系は非適用bodyも含めた原式の読取り位置を必要とする。
 pub(in crate::observed) fn evaluate_local_point(
     environment: &Environment<'_>,
@@ -1262,6 +1284,17 @@ fn probe_local_mode(
     conditional: bool,
     universal: bool,
 ) -> Result<Probe, ValidationFailure> {
+    probe_body(e, decl, bindings, point, conditional, universal, None)
+}
+fn probe_body(
+    e: &Environment<'_>,
+    decl: &Declaration,
+    bindings: &[(String, Scalar)],
+    point: usize,
+    conditional: bool,
+    universal: bool,
+    factor: Option<FactorBody<'_>>,
+) -> Result<Probe, ValidationFailure> {
     let Signature::Law {
         params,
         guard,
@@ -1271,7 +1304,7 @@ fn probe_local_mode(
     else {
         return Err(internal!("元Law署名がない").into());
     };
-    let (vars, parameters) = if universal {
+    let (mut vars, parameters) = if universal {
         super::change_affine::law_variables(e, params, bindings)?
     } else {
         (
@@ -1357,16 +1390,74 @@ fn probe_local_mode(
             blocked: false,
         });
     }
-    let b = e.scoped_ast(*body, &vars, &scope, &decl.reading)?;
+    let gated = factor.as_ref().is_some_and(|f| !f.conditions.is_empty());
+    let (body, reading, conditions) = if let Some(factor) = factor {
+        vars.extend(
+            factor
+                .bindings
+                .iter()
+                .map(|(name, value)| (name.clone(), source(value.clone()))),
+        );
+        (factor.expression, factor.reading, factor.conditions)
+    } else {
+        (*body, decl.reading.as_str(), &[][..])
+    };
+    scope.readings.insert(reading.to_owned());
+    fn guarded(
+        e: &Environment<'_>,
+        body: usize,
+        reading: &str,
+        vars: &BTreeMap<String, SourceValue>,
+        scope: &Scope,
+        conditions: &[FactorCondition],
+    ) -> Result<SourceValue, ValidationFailure> {
+        let Some((condition, remaining)) = conditions.split_first() else {
+            return e.scoped_ast(body, vars, scope, reading);
+        };
+        let mut local = vars.clone();
+        local.extend(
+            condition
+                .bindings
+                .iter()
+                .map(|(n, v)| (n.clone(), source(v.clone()))),
+        );
+        let test = e.scoped_ast(condition.expression, &local, scope, &condition.reading)?;
+        let matched = match test.known_value {
+            Some(Scalar::Bool(v)) => Some(v == condition.positive),
+            None => None,
+            _ => return Err(internal!("部品の条件がBoolでない").into()),
+        };
+        let mut value = if matched == Some(false) {
+            source(Scalar::Bool(true))
+        } else {
+            guarded(e, body, reading, vars, scope, remaining)?
+        };
+        if matched.is_none() && !matches!(value.known_value, Some(Scalar::Bool(true))) {
+            value.known_value = None;
+        }
+        value.condition_failed |= test.condition_failed;
+        value.condition_pending |= test.condition_pending;
+        value
+            .support
+            .make_owned()
+            .extend(test.support.iter().cloned());
+        value.scope.merge(&test.scope);
+        Ok(value)
+    }
+    let b = guarded(e, body, reading, &vars, &scope, conditions)?;
     row.predicate = match &b.known_value {
         Some(Scalar::Bool(v)) => Some(*v),
         None => None,
         _ => return Err(internal!("元Law述語がBoolでない").into()),
     };
     if row.predicate.is_none() && !parameters.is_empty() {
-        row.predicate = local_universal_truth(e, *body, &vars, &scope, &decl.reading, &parameters)?;
+        row.predicate = local_universal_truth(e, body, &vars, &scope, reading, &parameters)?;
     }
-    row.operands = operands(e, *body, &vars, &scope, &decl.reading)?;
+    row.operands = if gated {
+        None
+    } else {
+        operands(e, body, &vars, &scope, reading)?
+    };
     if let Some((_, a, b)) = &row.operands {
         for value in a.iter().chain(b) {
             data::check(value, e.indexes.inputs.law(), &e.control)?;

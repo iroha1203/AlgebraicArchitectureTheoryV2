@@ -103,6 +103,18 @@ impl Problem {
     pub fn into_relations(self) -> Vec<Relation> {
         self.relations
     }
+    #[cfg(test)]
+    pub(in crate::observed) fn relation_shape(&self) -> (usize, usize, usize) {
+        (
+            self.relations.len(),
+            self.relations.iter().map(|r| r.rows.len()).sum(),
+            self.relations
+                .iter()
+                .map(|r| r.columns.len())
+                .max()
+                .unwrap_or(0),
+        )
+    }
     pub fn variables(&self) -> usize {
         self.sizes.len()
     }
@@ -146,6 +158,15 @@ impl Problem {
         c: &Control,
         mut visit: impl FnMut(&[Option<usize>]) -> bool,
     ) -> Result<(), ValidationFailure> {
+        self.walk_try(component, point, c, |point| Ok(visit(point)))
+    }
+    fn walk_try(
+        &self,
+        component: usize,
+        point: &mut [Option<usize>],
+        c: &Control,
+        mut visit: impl FnMut(&mut [Option<usize>]) -> Result<bool, ValidationFailure>,
+    ) -> Result<(), ValidationFailure> {
         let component = &self.components[component];
         for &relation in &component.relations {
             if !self.accepts(relation, point, c)? {
@@ -159,7 +180,7 @@ impl Problem {
             .filter(|v| point[*v].is_none())
             .collect::<Vec<_>>();
         if free.is_empty() {
-            visit(point);
+            visit(point)?;
             return Ok(());
         }
         let mut next = vec![0; free.len()];
@@ -182,7 +203,7 @@ impl Problem {
                 continue;
             }
             if depth + 1 == free.len() {
-                if !visit(point) {
+                if !visit(point)? {
                     for v in free {
                         point[v] = None;
                     }
@@ -192,6 +213,45 @@ impl Problem {
                 depth += 1;
             }
         }
+    }
+    /// 明示的に全点を消費する演算へ、成分の解を一つずつ渡す。
+    pub fn visit_solutions(
+        &self,
+        pins: &[Option<usize>],
+        c: &Control,
+        mut visit: impl FnMut(&[usize]) -> Result<(), ValidationFailure>,
+    ) -> Result<(), ValidationFailure> {
+        tick(c)?;
+        if !self.valid_pins(pins) {
+            return Err(internal!("有限問題の固定座標が不適合").into());
+        }
+        if self.impossible {
+            return Ok(());
+        }
+        fn components<F: FnMut(&[usize]) -> Result<(), ValidationFailure>>(
+            p: &Problem,
+            i: usize,
+            point: &mut [Option<usize>],
+            c: &Control,
+            visit: &mut F,
+        ) -> Result<(), ValidationFailure> {
+            stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+                tick(c)?;
+                if i == p.components.len() {
+                    let values = point
+                        .iter()
+                        .copied()
+                        .collect::<Option<Vec<_>>>()
+                        .ok_or(internal!("全成分の元座標が確定していない"))?;
+                    return visit(&values);
+                }
+                p.walk_try(i, point, c, |point| {
+                    components(p, i + 1, point, c, visit)?;
+                    Ok(true)
+                })
+            })
+        }
+        components(self, 0, &mut pins.to_vec(), c, &mut visit)
     }
     fn valid_pins(&self, pins: &[Option<usize>]) -> bool {
         pins.len() == self.sizes.len()
@@ -369,6 +429,12 @@ mod tests {
                 assert!(p.exists(&[None, None], &c)?);
                 let point = p.candidate(&[None, None], BigUint::one(), &c)?.unwrap();
                 assert!(p.member(&[None, None], &point, &c)?);
+                let mut count = 0;
+                p.visit_solutions(&[None, None], &c, |_| {
+                    count += 1;
+                    Ok(())
+                })?;
+                assert_eq!(count, 2);
                 Ok::<_, ValidationFailure>(())
             })();
             (result, count.get())

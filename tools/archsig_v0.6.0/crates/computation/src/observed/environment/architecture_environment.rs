@@ -148,24 +148,11 @@ impl<'i> Environment<'i> {
             reference,
             domain: Arc::new(domain),
             scope: node.scope.clone(),
-            overrides: match &value.data {
-                ConstructionData::Change(d) => d
-                    .overrides(graph)?
-                    .into_iter()
-                    .map(|(f, r, v)| Ok((f, (r, v, graph.get(r)?.scope.clone()))))
-                    .collect::<Result<_, ValidationFailure>>()?,
-                ConstructionData::SharedRepair(d) => d
-                    .overrides(graph)?
-                    .into_iter()
-                    .map(|(f, r, v)| Ok((f, (r, v, graph.get(r)?.scope.clone()))))
-                    .collect::<Result<_, ValidationFailure>>()?,
-                ConstructionData::Quotient(d) => d
-                    .overrides(graph)?
-                    .into_iter()
-                    .map(|(f, r, v)| Ok((f, (r, v, graph.get(r)?.scope.clone()))))
-                    .collect::<Result<_, ValidationFailure>>()?,
-                _ => BTreeMap::new(),
-            },
+            overrides: value
+                .architecture_overrides(graph)?
+                .into_iter()
+                .map(|(f, r, v)| Ok((f, (r, v, graph.get(r)?.scope.clone()))))
+                .collect::<Result<_, ValidationFailure>>()?,
         }))
     }
     pub(super) fn validate_evaluation_environment(

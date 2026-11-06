@@ -6,6 +6,7 @@ use archsig_input::law::{
     model::Signature,
 };
 use std::collections::BTreeSet;
+mod law_factors;
 
 #[cfg(test)]
 thread_local! {static GENERATIONS:std::cell::Cell<usize>=const {std::cell::Cell::new(0)};}
@@ -214,29 +215,6 @@ fn rows(
             point[at] = 0;
         }
     }
-}
-fn split_conjunction(
-    env: &Environment<'_>,
-    expression: usize,
-    out: &mut Vec<usize>,
-) -> Result<(), ValidationFailure> {
-    let mut pending = vec![expression];
-    while let Some(id) = pending.pop() {
-        env.tick()?;
-        match &env.indexes.inputs.law().exprs()[id].kind {
-            ExprKind::Group(i) => pending.push(*i),
-            ExprKind::Binary {
-                op: BinOp::And,
-                lhs,
-                rhs,
-            } => {
-                pending.push(*rhs);
-                pending.push(*lhs);
-            }
-            _ => out.push(id),
-        }
-    }
-    Ok(())
 }
 fn holds(row: &finite_law_valuations::FiniteLawRow) -> Option<bool> {
     if row.application == Some(false) {
@@ -495,21 +473,10 @@ pub(in crate::observed) fn compile(
     let mut unresolved = vec![];
     for (name, bindings) in &selected.requirements {
         let law = &fixed.indexes.inputs.law().declarations()[name];
-        let Signature::Law { body, .. } = law.signature else {
-            return Err(internal!("有限修復のLaw署名が違う").into());
-        };
-        let mut conjuncts = vec![];
-        split_conjunction(&fixed, body, &mut conjuncts)?;
-        for body in conjuncts {
-            let mut declaration = law.clone();
-            let Signature::Law {
-                body: selected_body,
-                ..
-            } = &mut declaration.signature
-            else {
-                unreachable!()
-            };
-            *selected_body = body;
+        let factors = law_factors::collect(&fixed, law, bindings, &outputs, &domains, &updates)?;
+        support.extend(factors.support);
+        scope.merge(&factors.scope);
+        for factor in factors.items {
             let mut columns: Vec<usize> = vec![];
             loop {
                 let mut discovered = BTreeSet::from_iter(columns.iter().copied());
@@ -541,11 +508,16 @@ pub(in crate::observed) fn compile(
                         .state
                         .missing_slot_reads
                         .scoped(Some(BTreeSet::new()));
-                    let row = finite_law_valuations::evaluate_change_point(
+                    let row = finite_law_valuations::evaluate_change_factor(
                         &updated,
-                        &declaration,
+                        law,
                         bindings,
-                        0,
+                        finite_law_valuations::FactorBody {
+                            expression: factor.expression,
+                            reading: &factor.reading,
+                            bindings: &factor.bindings,
+                            conditions: &factor.conditions,
+                        },
                     )?;
                     pass_scope.merge(&row.scope);
                     let absent = outer

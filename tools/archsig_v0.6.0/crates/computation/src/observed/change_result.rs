@@ -1406,6 +1406,128 @@ pub(super) fn assignment_input(
     Ok(AssignmentInput { domain, entries })
 }
 
+/// 候補域の生成条件を元の型付き辺で比較する。描画のnode番号はidentityにしない。
+pub(super) fn same_candidate_space(
+    env: &Environment<'_>,
+    g: &Graph,
+    a: NodeRef,
+    b: NodeRef,
+) -> Result<bool, ValidationFailure> {
+    #[derive(PartialEq)]
+    struct CandidateKey {
+        root: Fact,
+        reading: String,
+        fixed: Vec<(Fact, Scalar)>,
+        kind: String,
+        change: Option<String>,
+        bindings: BTreeMap<String, Scalar>,
+        subjects: Vec<(String, String, String)>,
+    }
+    fn key(
+        env: &Environment<'_>,
+        g: &Graph,
+        at: NodeRef,
+    ) -> Result<CandidateKey, ValidationFailure> {
+        let node = g.get(at)?;
+        env.recheck_node(g, node, at.0)?;
+        if node.ty != NodeType::Construction(T::CandidateSpace) {
+            return Err(internal!("割当ての候補域の型が違う").into());
+        }
+        let Some(Payload::Construction(v)) = &node.payload else {
+            return Err(internal!("割当ての候補域がnativeでない").into());
+        };
+        let wire = v.wire();
+        let Json::Obj(record) = &wire else {
+            return Err(internal!("候補域の生成欄がない").into());
+        };
+        let arguments = v.arguments();
+        let reference = |wire: &Json| {
+            arguments
+                .iter()
+                .copied()
+                .find(|r| r.wire() == *wire)
+                .ok_or_else(|| ValidationFailure::from(internal!("候補域の型付き辺がない")))
+        };
+        let base = reference(
+            record
+                .get("base")
+                .ok_or(internal!("候補域の基準対象がない"))?,
+        )?;
+        let Some(Payload::Construction(base)) = &g.get(base)?.payload else {
+            return Err(internal!("基準対象がnativeでない").into());
+        };
+        let Witness::Architecture(w) = &base.witness else {
+            return Err(internal!("基準対象の帰属がない").into());
+        };
+        let mut fixed = base
+            .architecture_overrides(g)?
+            .into_iter()
+            .map(|(f, _, v)| (f, v))
+            .collect::<Vec<_>>();
+        fixed.sort_by(|a, b| a.0.cmp(&b.0));
+        let Some(Json::Str(kind)) = record.get("kind") else {
+            return Err(internal!("候補域の種類がない").into());
+        };
+        let change = match record.get("change") {
+            Some(Json::Str(name)) => Some(name.clone()),
+            None => None,
+            _ => return Err(internal!("候補域の元changeが違う").into()),
+        };
+        let mut bindings = BTreeMap::new();
+        if let Some(Json::Arr(values)) = record.get("bindings") {
+            for row in values {
+                env.tick()?;
+                let Json::Obj(row) = row else {
+                    return Err(internal!("候補域の束縛欄がない").into());
+                };
+                let Some(Json::Str(name)) = row.get("name") else {
+                    return Err(internal!("候補域の束縛名がない").into());
+                };
+                let value = g
+                    .scalar(reference(
+                        row.get("value").ok_or(internal!("候補域の束縛値がない"))?,
+                    )?)?
+                    .clone();
+                if bindings.insert(name.clone(), value).is_some() {
+                    return Err(internal!("候補域の束縛が重複する").into());
+                }
+            }
+        }
+        let mut subjects = vec![];
+        if let Some(Json::Arr(values)) = record.get("instances") {
+            for row in values {
+                env.tick()?;
+                let Json::Obj(row) = row else {
+                    return Err(internal!("候補域のinstance欄がない").into());
+                };
+                let Scalar::Subject {
+                    snapshot,
+                    subject,
+                    entity,
+                } = g.scalar(reference(
+                    row.get("subject")
+                        .ok_or(internal!("候補域のinstanceがない"))?,
+                )?)?
+                else {
+                    return Err(internal!("候補域のinstanceがsubjectでない").into());
+                };
+                subjects.push((snapshot.clone(), subject.clone(), entity.clone()));
+            }
+        }
+        subjects.sort();
+        Ok(CandidateKey {
+            root: w.construction().root().clone(),
+            reading: w.construction().reading().to_owned(),
+            fixed,
+            kind: kind.clone(),
+            change,
+            bindings,
+            subjects,
+        })
+    }
+    Ok(key(env, g, a)? == key(env, g, b)?)
+}
+
 pub(super) struct CandidateInput {
     pub architecture: NodeRef,
     pub witness: Arc<native::ArchitectureWitness>,
@@ -1418,6 +1540,10 @@ pub(super) fn candidate_input(
     reference: NodeRef,
     c: &Control,
 ) -> Result<CandidateInput, ValidationFailure> {
+    if matches!(&g.get(reference)?.payload,Some(Payload::Construction(v)) if matches!(v.data,D::SharedRepair(_)))
+    {
+        return super::repair_problem::candidate_input(env, g, reference, c);
+    }
     let d = checked_candidate(env, g, reference)?;
     let origin = Witness::Architecture(d.source.architecture.witness.clone());
     let request = origin.request();

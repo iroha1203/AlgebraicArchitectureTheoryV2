@@ -335,6 +335,18 @@ fn bindings(bs: &[Binding]) -> Json {
     )
 }
 impl ConstructionValue {
+    /// 派生Architectureの更新値を、全ての既存消費側で同じように引き継ぐ。
+    pub(super) fn architecture_overrides(
+        &self,
+        g: &Graph,
+    ) -> Result<Vec<(Fact, NodeRef, Scalar)>, ValidationFailure> {
+        match &self.data {
+            ConstructionData::Change(d) => d.overrides(g),
+            ConstructionData::Quotient(d) => d.overrides(g),
+            ConstructionData::SharedRepair(d) => d.overrides(g),
+            _ => Ok(vec![]),
+        }
+    }
     pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
         use ConstructionData as D;
         match &self.data {

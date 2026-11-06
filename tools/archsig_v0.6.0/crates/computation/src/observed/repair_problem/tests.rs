@@ -855,3 +855,233 @@ fn a_reachable_unknown_law_row_still_blocks_a_complete_problem() {
             .any(|f| f.subject == "p" && f.field.as_deref() == Some("Pattern.Part.label"))
     }));
 }
+
+#[test]
+fn localize_and_diagnose_consume_the_selected_values() {
+    for using in ["", ",using=Selected.choose"] {
+        let input = fixture::sources(
+            &[("p", false, "p")],
+            "view all(r:Root):Set<Part> =Part[r];view flag(c:Part):Bool=c.flag;change choose(c:Part,p:Bool)=c with {flag=p};law required valid(c:Part):c.flag;",
+        );
+        let mut asks = vec![
+            "u=evaluate(Selected.all,r=@v/root)".to_owned(),
+            "p=prepare(Selected.valid,using=Selected.choose,on=@v/root)".into(),
+            "s=solve($p.problem,within=$u.value)".into(),
+            "c=candidate($s.solutions,index=0)".into(),
+            "a=apply($c.assignment,in=$s.solutions)".into(),
+        ];
+        asks.extend([
+            format!("l=localize($a.object,law=Selected.valid{using})"),
+            "d=diagnose($l.system,degree=0)".into(),
+            "v=evaluate(Selected.flag,c=@v/p,on=$l.system.base)".into(),
+        ]);
+        let result = super::super::evaluate_observed_bytes(
+            input,
+            &asks.iter().map(String::as_str).collect::<Vec<_>>(),
+            &archsig_common::control::quiet(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        assert!(
+            result
+                .answers
+                .iter()
+                .all(|a| a.status == Decision::Established),
+            "{:?}",
+            result.issues
+        );
+    }
+}
+
+#[test]
+fn assignment_comparison_uses_original_parameters_and_semantic_domains() {
+    let asks = [
+        "u=evaluate(Selected.all,r=@v/root)",
+        "p=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
+        "s=solve($p.problem,within=$u.value)",
+        "c0=candidate($s.solutions,index=0)",
+        "c1=candidate($s.solutions,index=1)",
+        "same=compare($c0.assignment,to=$c0.assignment,kind=value)",
+        "different=compare($c0.assignment,to=$c1.assignment,kind=value)",
+        "q=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
+        "t=solve($q.problem,within=$u.value)",
+        "d=candidate($t.solutions,index=0)",
+        "cross=compare($c0.assignment,to=$d.assignment,kind=value)",
+        "old=solve(Selected.valid,using=Selected.choose,on=@v/root)",
+        "o=candidate($old.solutions,index=0)",
+        "original=compare($c0.assignment,to=$o.assignment,kind=value)",
+    ];
+    let result = super::super::evaluate_observed_bytes(
+        fixture::input(""),
+        &asks,
+        &archsig_common::control::quiet(),
+    )
+    .unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    for i in [5, 10, 13] {
+        assert_eq!(result.answers[i].status, Decision::Established);
+    }
+    assert_eq!(result.answers[6].status, Decision::Refuted);
+}
+
+#[test]
+fn independent_forall_and_view_factors_keep_linear_relation_storage() {
+    for n in [8, 24] {
+        let parts = (0..n)
+            .map(|i| (format!("p{i:02}"), false, format!("p{i:02}")))
+            .collect::<Vec<_>>();
+        let refs = parts
+            .iter()
+            .map(|(a, b, c)| (a.as_str(), *b, c.as_str()))
+            .collect::<Vec<_>>();
+        for (body, binding) in [
+            (
+                "law required valid(r:Root):forall c in Part[r]. c.flag=c.flag;",
+                "r",
+            ),
+            (
+                "view good(s:Root):Bool=forall c in Part[s]. c.flag=c.flag;law required valid(r:Root):good(r);",
+                "r",
+            ),
+            (
+                "law required valid(r:Root):forall c:Part. c.flag=c.flag;",
+                "r",
+            ),
+            (
+                "law required valid(r:Root) when r=r:forall c in Part[r]. c.flag=c.flag;",
+                "r",
+            ),
+            (
+                "view gate(c:Part):Bool=c.flag;law required valid(r:Root,c:Part):if gate(c) then forall x in Part[r]. x.flag else true;",
+                "r",
+            ),
+        ] {
+            let input = fixture::sources(
+                &refs,
+                &format!("change choose(c:Part,p:Bool)=c with {{flag=p}};{body}"),
+            );
+            let extra = if body.contains("view gate") {
+                ",c=@v/p00"
+            } else {
+                ""
+            };
+            let ask = format!(
+                "p=prepare(Selected.valid,using=Selected.choose,on=@v/root,{binding}=@v/root{extra})"
+            );
+            let result = super::super::evaluate_observed_bytes(
+                input,
+                &[ask.as_str()],
+                &archsig_common::control::quiet(),
+            )
+            .unwrap();
+            assert_eq!(result.status(), "complete", "{:?}", result.issues);
+            assert_eq!(result.answers[0].status, Decision::Established);
+            let shared = data_from(&result, result.answers[0].outputs["problem"])
+                .source
+                .shared
+                .as_ref()
+                .unwrap();
+            if body.contains("view gate") && n == 8 {
+                let mut count = 0;
+                shared
+                    .compiled
+                    .relations
+                    .visit_solutions(
+                        &vec![None; shared.compiled.domains.len()],
+                        &archsig_common::control::quiet(),
+                        |_: &[usize]| {
+                            count += 1;
+                            Ok(())
+                        },
+                    )
+                    .unwrap();
+                assert_eq!(count, 129);
+            }
+            let (factors, rows, width) = shared.compiled.relations.relation_shape();
+            assert!(
+                factors <= 2 * n + 1 && rows <= 8 * n && width <= 2,
+                "n={n}, {body}: {factors} factors / {rows} rows / width {width}"
+            );
+        }
+    }
+}
+
+#[test]
+fn quotient_consumes_factored_solutions_and_the_original_candidate_domain() {
+    let asks = [
+        "u=evaluate(Selected.all,r=@v/root)",
+        "p=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
+        "s=solve($p.problem,within=$u.value)",
+        "q=quotient(Selected.flag,on=$s.solutions,c=@v/q)",
+        "all=quotient(Selected.flag,on=$p.problem.domain,c=@v/q)",
+        "old=solve(Selected.valid,using=Selected.choose,on=@v/root)",
+        "before=quotient(Selected.flag,on=$old.solutions,c=@v/q)",
+    ];
+    let result = super::super::evaluate_observed_bytes(
+        fixture::input(""),
+        &asks,
+        &archsig_common::control::quiet(),
+    )
+    .unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    assert!(
+        result
+            .answers
+            .iter()
+            .all(|a| a.status == Decision::Established)
+    );
+    let classes = |answer: usize| {
+        let at = result.answers[answer].outputs["quotient"];
+        let Some(Payload::Construction(v)) = &result.nodes[at.0].payload else {
+            panic!()
+        };
+        let (at, _) = v
+            .project(&[ProjectionStep::Field("classes".into())])
+            .unwrap();
+        let Some(Payload::Construction(v)) = &result.nodes[at.0].payload else {
+            panic!()
+        };
+        let wire = v.wire();
+        let Json::Obj(record) = &wire else { panic!() };
+        let Some(Json::Arr(values)) = record.get("elements") else {
+            panic!()
+        };
+        values.len()
+    };
+    assert_eq!(classes(3), 1);
+    assert_eq!(classes(4), 2);
+    assert_eq!(classes(6), 1);
+}
+
+#[test]
+fn assignment_comparison_accepts_existing_repair_and_rejects_different_spaces() {
+    let input = fixture::sources(
+        &[("p", false, "p")],
+        "view all(r:Root):Set<Part> =Part[r];change choose(c:Part,p:Bool)=c with {flag=p};change other(c:Part,p:Bool)=c with {flag=p};law required valid(c:Part):c.flag;",
+    );
+    let asks = [
+        "u=evaluate(Selected.all,r=@v/root)",
+        "p=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
+        "s=solve($p.problem,within=$u.value)",
+        "c=candidate($s.solutions,index=0)",
+        "r=repair(Selected.valid,using=Selected.choose,on=@v/root)",
+        "same=compare($c.assignment,to=$r.repair.parameters,kind=value)",
+        "q=prepare(Selected.valid,using=Selected.other,on=@v/root)",
+        "t=solve($q.problem,within=$u.value)",
+        "d=candidate($t.solutions,index=0)",
+        "wrong=compare($c.assignment,to=$d.assignment,kind=value)",
+    ];
+    let result =
+        super::super::evaluate_observed_bytes(input, &asks, &archsig_common::control::quiet())
+            .unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    assert_eq!(result.answers[5].status, Decision::Established);
+    assert_eq!(result.answers[9].status, Decision::Refuted);
+    assert!(result.answers[9].reasons.iter().any(|r| matches!(
+        r.kind,
+        ReasonKind::ConditionFailed {
+            construction: "comparison",
+            ..
+        }
+    )));
+}

@@ -329,6 +329,178 @@ fn range(b: &mut Builder<'_>, s: &Shared, enabled: &[bool]) -> Result<NodeRef, V
         None,
     )
 }
+/// 全点を要求する既存の商計算へ、生成済み有限関係の元座標を渡す。
+pub(super) fn candidate_input(
+    env: &Environment<'_>,
+    g: &Graph,
+    at: NodeRef,
+    c: &Control,
+) -> Result<change_result::CandidateInput, ValidationFailure> {
+    env.recheck_node(g, g.get(at)?, at.0)?;
+    let d = data(g, at)?;
+    let shared = d
+        .source
+        .shared
+        .as_ref()
+        .ok_or(internal!("商の共有候補域がない"))?;
+    let solutions = g.get(at)?.ty == NodeType::Construction(T::SolutionSet);
+    if !solutions && g.get(at)?.ty != NodeType::Construction(T::CandidateSpace) {
+        return Err(internal!("商の共有候補域の型が違う").into());
+    }
+    let mut fixed = env
+        .try_primitive_valuation_from(&shared.compiled.fixed, c)?
+        .ok_or(internal!("商の基準値が不適合"))?;
+    fixed.select_local_object(&shared.witness, c)?;
+    let origin = Witness::Architecture(shared.witness.clone());
+    let declaration = &origin.inputs().law().declarations()[&shared.change];
+    let mut rows = vec![];
+    let mut members = vec![];
+    let mut append = |point: &[usize]| -> Result<(), ValidationFailure> {
+        tick(c)?;
+        let parameters = point
+            .iter()
+            .take(shared.compiled.parameter_count)
+            .enumerate()
+            .map(|(i, v)| shared.compiled.domains[i][*v].clone())
+            .collect::<Vec<_>>();
+        let candidate = change_evaluation::candidate(
+            &fixed,
+            declaration,
+            &shared.compiled.subjects,
+            &parameters,
+        )?;
+        // 除外されたguard/未定義の更新は、従来の商も定義域へ含めない。
+        if matches!(
+            candidate.update.state,
+            change_evaluation::State::Excluded | change_evaluation::State::ConditionFailed
+        ) {
+            return Ok(());
+        }
+        let member = if solutions {
+            true
+        } else {
+            let mut fixed = vec![None; shared.compiled.relations.variables()];
+            for (i, value) in point
+                .iter()
+                .take(shared.compiled.parameter_count)
+                .enumerate()
+            {
+                fixed[i] = Some(*value);
+            }
+            shared.compiled.relations.exists(&fixed, c)?
+        };
+        members.push(change_evaluation::SolutionRow {
+            candidate: rows.len(),
+            member: Some(member),
+            missing: vec![],
+        });
+        rows.push(candidate);
+        Ok(())
+    };
+    if solutions {
+        let enabled = d
+            .source
+            .range
+            .as_ref()
+            .ok_or(internal!("商の解集合の範囲がない"))?;
+        shared
+            .compiled
+            .relations
+            .visit_solutions(&pins(shared, enabled), c, &mut append)?;
+    } else if !shared.compiled.domains[..shared.compiled.parameter_count]
+        .iter()
+        .any(Vec::is_empty)
+    {
+        let mut point = vec![0; shared.compiled.parameter_count];
+        loop {
+            append(&point)?;
+            let mut cursor = point.len();
+            loop {
+                if cursor == 0 {
+                    break;
+                }
+                cursor -= 1;
+                point[cursor] += 1;
+                if point[cursor] < shared.compiled.domains[cursor].len() {
+                    break;
+                }
+                point[cursor] = 0;
+            }
+            if point.iter().all(|v| *v == 0) {
+                break;
+            }
+        }
+    }
+    Ok(change_result::CandidateInput {
+        architecture: shared.base,
+        witness: shared.witness.clone(),
+        domain_type: if solutions {
+            ProjectionType::SolutionSet(shared.root_type.clone())
+        } else {
+            ProjectionType::CandidateSpace(shared.root_type.clone())
+        },
+        search: change_search::Search {
+            linear: None,
+            rational: None,
+            pending_integer: None,
+            candidates: Some(change_evaluation::Candidates {
+                subjects: shared.compiled.subjects.clone(),
+                parameter_types: shared.compiled.parameter_types.clone(),
+                rows,
+                complete: true,
+            }),
+            solutions: members,
+            requirements: shared.compiled.requirements.clone(),
+            bindings: shared.compiled.bindings.clone(),
+            missing: vec![],
+            complete: true,
+            valuation: shared.compiled.fixed.clone(),
+        },
+    })
+}
+pub(super) fn assignment_input(
+    env: &Environment<'_>,
+    g: &Graph,
+    at: NodeRef,
+) -> Result<change_result::AssignmentInput, ValidationFailure> {
+    if let Ok(d) = data(g, at) {
+        let s = d
+            .source
+            .shared
+            .as_ref()
+            .ok_or(internal!("元割当ての候補域がない"))?;
+        let point = d
+            .source
+            .chosen
+            .as_ref()
+            .ok_or(internal!("元割当ての座標がない"))?;
+        let width = if s.subjects.is_empty() {
+            0
+        } else {
+            s.compiled.parameter_count / s.subjects.len()
+        };
+        let entries = s
+            .compiled
+            .subjects
+            .iter()
+            .enumerate()
+            .map(|(i, subject)| {
+                (
+                    subject.clone(),
+                    (i * width..(i + 1) * width)
+                        .map(|column| s.compiled.domains[column][point[column]].clone())
+                        .collect(),
+                )
+            })
+            .collect();
+        Ok(change_result::AssignmentInput {
+            domain: s.domain,
+            entries,
+        })
+    } else {
+        change_result::assignment_input(env, g, at)
+    }
+}
 fn same_problem(a: &Shared, b: &Shared) -> bool {
     a.problem.is_some()
         && b.problem.is_some()
