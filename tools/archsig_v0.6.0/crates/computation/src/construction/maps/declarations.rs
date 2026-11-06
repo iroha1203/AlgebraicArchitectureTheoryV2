@@ -98,6 +98,8 @@ impl DeclarationCorrespondence {
                 ConstructionFailure::Inconsistent(internal!("field対応の元定義がない"))
             })?;
         let PrimitiveSignature::Correspondence {
+            from,
+            to,
             implicit,
             alignments,
             ..
@@ -118,6 +120,18 @@ impl DeclarationCorrespondence {
             if a == source {
                 return Ok(Some(b.clone()));
             }
+        }
+        // root は owned map 族に含まれない。同じ root 型の field は、
+        // configuration transport と同じ同名位置を使う。
+        if from == to
+            && let Some((owner, field)) = source.rsplit_once('.')
+            && owner == from.as_str()
+            && inputs.definitions().declarations()[from]
+                .signature
+                .field(field)
+                .is_some()
+        {
+            return Ok(Some(source.to_owned()));
         }
         Ok(None)
     }

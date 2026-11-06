@@ -4712,3 +4712,133 @@ fn naturality_counterexample_is_refuted_and_keeps_operation() {
         }
     }
 }
+
+// owned map を持たない root の field も、同一型なら同名位置を運ぶ。
+fn root_change_inputs(name: &str, heterogeneous: bool) -> PathBuf {
+    let dir = workdir(name);
+    let target = if heterogeneous { "Other" } else { "Root" };
+    let extra = if heterogeneous {
+        r#",{"kind":"entity","name":"RootChange.Other","meaning":"別型のroot。","parameters":[],"fields":[{"name":"flag","type":"Bool","meaning":"更新位置。"}],"alignments":[]}"#
+    } else {
+        ""
+    };
+    let definition = format!(
+        r#"{{"format":"archsig.atom-definition/1","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"RootChange","version":"1","semantics":"archsig/0.6.0","dependencies":[],"declarations":[{{"kind":"entity","name":"RootChange.Root","meaning":"所有対象を持たないroot。","parameters":[],"fields":[{{"name":"flag","type":"Bool","meaning":"更新位置。"}}],"alignments":[]}}{extra},{{"kind":"correspondence","name":"RootChange.Move","meaning":"root間の対応。","parameters":[{{"name":"from","type":["Ref","RootChange.Root"],"meaning":"元。"}},{{"name":"to","type":["Ref","RootChange.{target}"],"meaning":"先。"}}],"fields":[],"alignments":[]}}]}}]}}"#
+    );
+    let checked =
+        archsig_input::definition::check_definitions(&[("d", definition.as_bytes())]).unwrap();
+    let digest = &checked.vocabularies()["RootChange"].digest;
+    std::fs::write(dir.join("d.json"), &definition).unwrap();
+    std::fs::write(dir.join("a.json"), format!(r#"{{"format":"archsig.archmap/2","semantics":"archsig/0.6.0","vocabularies":[{{"namespace":"RootChange","version":"1","digest":"{digest}"}}],"sources":[],"origins":[{{"id":"o","mode":"specification","method":"root更新の独立回帰。","locations":[],"note":"値と対応だけ。"}}],"snapshots":[{{"id":"v","origin":"o","subjects":[{{"id":"a","type":"RootChange.Root","origin":"o"}},{{"id":"b","type":"RootChange.{target}","origin":"o"}},{{"id":"m","type":"RootChange.Move","origin":"o"}}],"atoms":[{{"id":"a-flag","subject":"a","field":"RootChange.Root.flag","value":false,"origin":"o"}},{{"id":"b-flag","subject":"b","field":"RootChange.{target}.flag","value":true,"origin":"o"}},{{"id":"from","subject":"m","field":"RootChange.Move.from","value":["v","a"],"origin":"o"}},{{"id":"to","subject":"m","field":"RootChange.Move.to","value":["v","b"],"origin":"o"}}]}}]}}"#)).unwrap();
+    std::fs::write(dir.join("l.law"),format!(r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading Before {{use vocabulary RootChange version "1" digest "{digest}"; change tune(p:Root,n:Bool)=p with {{flag=n}};}}
+reading After {{use vocabulary RootChange version "1" digest "{digest}"; change tune(q:{target},k:Bool)=q with {{flag=k}};}}"#)).unwrap();
+    dir
+}
+
+#[test]
+fn root_change_same_type_uses_implicit_field_and_keeps_operation() {
+    let dir = root_change_inputs("root-change-implicit", false);
+    let run = asks(
+        &dir,
+        &[
+            "m=map(RootChange.Move,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+        ],
+    );
+    assert_eq!(run.code, 0, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    let m = answer(&result, "m");
+    assert_eq!(s(get(m, "status")), "established");
+    assert!(has(get(m, "outputs"), "map"));
+    let map = value(&result, get(get(m, "outputs"), "map"));
+    let transports = arr(get(map, "transports"));
+    assert_eq!(transports.len(), 1);
+    assert_eq!(s(get(value(&result, &transports[0]), "kind")), "change");
+    assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+}
+
+#[test]
+fn root_change_without_declared_field_correspondence_is_typed_partial() {
+    let dir = root_change_inputs("root-change-no-correspondence", true);
+    let run = asks(
+        &dir,
+        &[
+            "m=map(RootChange.Move,on=@v/m,reading=Before,to_reading=After,kind=object_algebra)",
+            "same=compare($m.operation,to=$m.operation,kind=action)",
+            "n=needed($m)",
+        ],
+    );
+    assert_eq!(run.code, 2, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    assert_eq!(s(get(&result, "status")), "partial");
+    let m = answer(&result, "m");
+    assert_eq!(s(get(m, "status")), "undetermined");
+    assert!(has(get(m, "outputs"), "candidate"));
+    assert!(has(get(m, "outputs"), "operation"));
+    assert!(!has(get(m, "outputs"), "map"));
+    let reason = arr(get(m, "reasons"))
+        .iter()
+        .find(|r| s(get(r, "code")) == "unsupported_algorithm")
+        .unwrap();
+    assert_eq!(
+        s(get(get(reason, "details"), "method")),
+        "missing field correspondence for the change update target"
+    );
+    let span = arr(get(get(reason, "location"), "span"));
+    let law = std::fs::read(dir.join("l.law")).unwrap();
+    assert_eq!(
+        &law[num(&span[0]) as usize..num(&span[1]) as usize],
+        b"p with {flag=n}"
+    );
+    assert_eq!(s(get(answer(&result, "same"), "status")), "established");
+    let plan = value(&result, get(get(answer(&result, "n"), "outputs"), "plan"));
+    assert!(
+        arr(get(plan, "blockers"))
+            .iter()
+            .any(|r| r.value == reason.value)
+    );
+}
+
+#[path = "common/numeric_tuple_change.rs"]
+mod numeric_tuple_change;
+
+#[test]
+fn mixed_numeric_tuple_change_delivery_keeps_typed_partial_and_operation() {
+    // 内部の数値条件網羅は computation 側、CLI は混在型の終了codeと保存結果を所有する。
+    for case in numeric_tuple_change::cases()
+        .into_iter()
+        .filter(|case| case.name == "mixed")
+    {
+        let dir = workdir(&format!("mixed-tuple-delivery-{}", case.label()));
+        let input = case.input();
+        for (name, bytes) in [
+            ("d.json", input.definitions()[0].bytes()),
+            ("l.law", input.law().bytes()),
+            ("a.json", input.archmap().bytes()),
+        ] {
+            std::fs::write(dir.join(name), bytes).unwrap();
+        }
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--out",
+            "out",
+        ];
+        for request in &numeric_tuple_change::REQUESTS {
+            args.extend(["--ask", request]);
+        }
+        let run = run_binary(&dir, &args);
+        assert_eq!(run.code, 2, "{}: {}", case.label(), run.stdout);
+        assert_eq!(s(get(&run.receipt, "status")), "partial");
+        assert_eq!(num(get(&run.receipt, "exit_code")), 2);
+        let result = result_json(&dir, &run);
+        assert_eq!(num(get(&result, "exit_code")), 2);
+        case.assert_result(&result);
+    }
+}

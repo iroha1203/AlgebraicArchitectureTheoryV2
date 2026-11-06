@@ -158,7 +158,7 @@ pub fn cases() -> Vec<Case> {
                 "",
                 "",
                 false,
-                70,
+                2,
             ),
         ] {
             out.push(Case {
@@ -381,6 +381,56 @@ reading After {{use vocabulary Reservations version "1" digest "{digest}";change
             } else {
                 assert!(arr(get(plan, "requirements")).is_empty());
             }
+        }
+        if case == "mixed" {
+            // Z/Q の混在は一様な affine 係数域でも有限域でもない。
+            // 位置付きの算法未対応を返し、確認済み configuration の操作は再利用できる。
+            assert_eq!(s(get(result, "status")), "partial");
+            let outputs = get(map, "outputs");
+            assert!(has(outputs, "candidate"));
+            assert!(has(outputs, "operation"));
+            let reasons = arr(get(map, "reasons"));
+            assert_eq!(reasons.len(), 1);
+            let reason = &reasons[0];
+            assert_eq!(s(get(reason, "code")), "unsupported_algorithm");
+            let details = get(reason, "details");
+            assert_eq!(
+                s(get(details, "method")),
+                "change transport with different update target sets requires finite or uniform Z/Q affine parameters"
+            );
+            let tuple = numeric_tuple_test_type(ty, nested);
+            let other = if ty == "Z" { "Q" } else { "Z" };
+            assert_json(
+                get(details, "operand_types"),
+                &format!(r#"[["Ref","Reservations.State"],{tuple},"{other}",{tuple}]"#),
+            );
+            let location = get(reason, "location");
+            assert_eq!(s(get(location, "input")), "law");
+            let span = arr(get(location, "span"));
+            assert_eq!(span.len(), 2);
+            let index = |n: &JNode| {
+                let archsig_common::json::JValue::Num(n) = &n.value else {
+                    panic!("Law byte offset")
+                };
+                n.parse::<usize>().unwrap()
+            };
+            let input = self.input();
+            assert_eq!(
+                &input.law().bytes()[index(&span[0])..index(&span[1])],
+                format!("s with {{{}}}", self.left).as_bytes(),
+            );
+            let plan = value(result, get(get(answer(result, "n"), "outputs"), "plan"));
+            assert!(arr(get(plan, "requirements")).is_empty());
+            assert!(
+                arr(get(plan, "blockers"))
+                    .iter()
+                    .any(|r| r.value == reason.value)
+            );
+            assert!(
+                arr(get(result, "issues"))
+                    .iter()
+                    .all(|r| s(get(r, "code")) != "internal")
+            );
         }
         if matches!(case, "nonlinear" | "inequality") {
             assert!(

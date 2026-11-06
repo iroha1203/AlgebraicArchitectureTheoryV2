@@ -1,7 +1,6 @@
 //! 数値Tuple changeの各条件を、実際のmap評価経路で検査する。CLI配送は別targetが所有する。
 #[path = "../../../../tests/common/numeric_tuple_change.rs"]
 mod fixture;
-use super::result::ReasonKind;
 use archsig_common::control::{Checkpoint, Control};
 use archsig_computation::observed::{
     EvaluationFailure, evaluate::evaluate_observed, prepare_shared_observed,
@@ -55,54 +54,28 @@ fn check_part(part: usize) {
         let input = case.input();
         let c = Control::unlimited();
         let inputs = Arc::new(check_inputs(input, &c).unwrap());
-        // needed は欠測の計画を照合する組だけが使う。
-        let asks = if case.code == 70 {
-            &fixture::REQUESTS[..1]
-        } else if matches!(case.name, "missing" | "partial") {
+        // needed は欠測計画または算法未対応の blocker を照合する組が使う。
+        let asks = if matches!(case.name, "missing" | "partial" | "mixed") {
             &fixture::REQUESTS[..]
         } else {
             &fixture::REQUESTS[..2]
         };
         let prepared = prepare_shared_observed(inputs, asks, &c).unwrap();
-        let evaluated = evaluate_observed(prepared, &c);
-        if case.code == 70 {
-            match evaluated {
-                Err(EvaluationFailure::NotImplemented { feature, .. }) => {
-                    assert!(!feature.is_empty())
-                }
-                Ok(result) => {
-                    // 現行map入口は未対応混在を実行失敗として返す。数学的な未決とは区別する。
-                    assert_eq!(result.status(), "error", "{}", case.label());
-                    assert!(!result.issues.is_empty());
-                    assert!(
-                        result
-                            .issues
-                            .iter()
-                            .all(|r| matches!(r.kind, ReasonKind::Internal(_)))
-                    );
-                    assert_eq!(result.answers.len(), 1);
-                    assert!(!result.answers[0].outputs.contains_key("map"));
-                }
-                Err(EvaluationFailure::Prepare(_)) => {
-                    panic!("{}: failed before evaluation", case.label())
-                }
+        let result = evaluate_observed(prepared, &c).unwrap_or_else(|e| match e {
+            EvaluationFailure::NotImplemented { feature, .. } => {
+                panic!("{}: {feature}", case.label())
             }
-        } else {
-            let result = evaluated.unwrap_or_else(|e| match e {
-                EvaluationFailure::NotImplemented { feature, .. } => {
-                    panic!("{}: {feature}", case.label())
-                }
-                EvaluationFailure::Prepare(_) => {
-                    panic!("{}: failed before evaluation", case.label())
-                }
-            });
-            // 数学的な結果投影を照合する。OS計測の配送はCLI testが所有する。
-            let display = Control::unlimited();
-            let result = result
-                .result_wire_controlled(&display, Checkpoint::Expression)
-                .unwrap();
-            let result = archsig_common::json::parse(result.canonical().as_bytes()).unwrap();
-            case.assert_result(&result);
-        }
+            EvaluationFailure::Prepare(_) => {
+                panic!("{}: failed before evaluation", case.label())
+            }
+        });
+        assert!(!result.has_internal_issue(), "{}", case.label());
+        // 数学的な結果投影を照合する。OS計測の配送はCLI testが所有する。
+        let display = Control::unlimited();
+        let result = result
+            .result_wire_controlled(&display, Checkpoint::Expression)
+            .unwrap();
+        let result = archsig_common::json::parse(result.canonical().as_bytes()).unwrap();
+        case.assert_result(&result);
     }
 }
