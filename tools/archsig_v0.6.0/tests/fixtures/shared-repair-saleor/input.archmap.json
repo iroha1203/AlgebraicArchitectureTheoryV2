@@ -1,0 +1,270 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "Pattern",
+      "version": "1",
+      "digest": "sha256:02203db7c77eb11c53702ec3165ba372406ff4c8b8d6a6d02fea4310c72d04a9"
+    }
+  ],
+  "sources": [],
+  "origins": [
+    {
+      "id": "model",
+      "mode": "specification",
+      "method": "Finite repair fixture",
+      "locations": [],
+      "note": "Exact finite selection"
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "v",
+      "origin": "model",
+      "subjects": [
+        {
+          "id": "root",
+          "type": "Pattern.Root",
+          "origin": "model"
+        },
+        {
+          "id": "x",
+          "type": "Pattern.Part",
+          "origin": "model"
+        },
+        {
+          "id": "y",
+          "type": "Pattern.Part",
+          "origin": "model"
+        },
+        {
+          "id": "z",
+          "type": "Pattern.Part",
+          "origin": "model"
+        },
+        {
+          "id": "a",
+          "type": "Pattern.Part",
+          "origin": "model"
+        },
+        {
+          "id": "b",
+          "type": "Pattern.Part",
+          "origin": "model"
+        },
+        {
+          "id": "c",
+          "type": "Pattern.Part",
+          "origin": "model"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "owner-x",
+          "subject": "x",
+          "field": "Pattern.Part.owner",
+          "value": [
+            "v",
+            "root"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "flag-x",
+          "subject": "x",
+          "field": "Pattern.Part.flag",
+          "value": false,
+          "origin": "model"
+        },
+        {
+          "id": "label-x",
+          "subject": "x",
+          "field": "Pattern.Part.label",
+          "value": "x",
+          "origin": "model"
+        },
+        {
+          "id": "link-x",
+          "subject": "x",
+          "field": "Pattern.Part.link",
+          "value": [
+            "v",
+            "y"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "owner-y",
+          "subject": "y",
+          "field": "Pattern.Part.owner",
+          "value": [
+            "v",
+            "root"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "flag-y",
+          "subject": "y",
+          "field": "Pattern.Part.flag",
+          "value": false,
+          "origin": "model"
+        },
+        {
+          "id": "label-y",
+          "subject": "y",
+          "field": "Pattern.Part.label",
+          "value": "y",
+          "origin": "model"
+        },
+        {
+          "id": "link-y",
+          "subject": "y",
+          "field": "Pattern.Part.link",
+          "value": [
+            "v",
+            "z"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "owner-z",
+          "subject": "z",
+          "field": "Pattern.Part.owner",
+          "value": [
+            "v",
+            "root"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "flag-z",
+          "subject": "z",
+          "field": "Pattern.Part.flag",
+          "value": false,
+          "origin": "model"
+        },
+        {
+          "id": "label-z",
+          "subject": "z",
+          "field": "Pattern.Part.label",
+          "value": "z",
+          "origin": "model"
+        },
+        {
+          "id": "link-z",
+          "subject": "z",
+          "field": "Pattern.Part.link",
+          "value": [
+            "v",
+            "z"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "owner-a",
+          "subject": "a",
+          "field": "Pattern.Part.owner",
+          "value": [
+            "v",
+            "root"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "flag-a",
+          "subject": "a",
+          "field": "Pattern.Part.flag",
+          "value": false,
+          "origin": "model"
+        },
+        {
+          "id": "label-a",
+          "subject": "a",
+          "field": "Pattern.Part.label",
+          "value": "a",
+          "origin": "model"
+        },
+        {
+          "id": "link-a",
+          "subject": "a",
+          "field": "Pattern.Part.link",
+          "value": [
+            "v",
+            "b"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "owner-b",
+          "subject": "b",
+          "field": "Pattern.Part.owner",
+          "value": [
+            "v",
+            "root"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "flag-b",
+          "subject": "b",
+          "field": "Pattern.Part.flag",
+          "value": false,
+          "origin": "model"
+        },
+        {
+          "id": "label-b",
+          "subject": "b",
+          "field": "Pattern.Part.label",
+          "value": "b",
+          "origin": "model"
+        },
+        {
+          "id": "link-b",
+          "subject": "b",
+          "field": "Pattern.Part.link",
+          "value": [
+            "v",
+            "a"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "owner-c",
+          "subject": "c",
+          "field": "Pattern.Part.owner",
+          "value": [
+            "v",
+            "root"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "flag-c",
+          "subject": "c",
+          "field": "Pattern.Part.flag",
+          "value": false,
+          "origin": "model"
+        },
+        {
+          "id": "label-c",
+          "subject": "c",
+          "field": "Pattern.Part.label",
+          "value": "c",
+          "origin": "model"
+        },
+        {
+          "id": "link-c",
+          "subject": "c",
+          "field": "Pattern.Part.link",
+          "value": [
+            "v",
+            "c"
+          ],
+          "origin": "model"
+        }
+      ]
+    }
+  ]
+}

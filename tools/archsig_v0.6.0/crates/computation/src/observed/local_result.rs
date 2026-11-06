@@ -349,11 +349,7 @@ fn compute(
                 .map(|d| d.name.clone())
                 .collect()
         };
-        let assignments = match &original.data {
-            D::Change(d) => d.overrides(g)?,
-            D::Quotient(d) => d.overrides(g)?,
-            _ => vec![],
-        }
+        let assignments = original.architecture_overrides(g)?
         .into_iter()
         .map(|(f, _, v)| (f, v))
         .collect::<Vec<_>>();

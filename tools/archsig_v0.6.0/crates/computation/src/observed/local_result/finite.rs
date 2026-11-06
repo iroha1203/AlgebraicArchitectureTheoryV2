@@ -11,14 +11,11 @@ pub(super) fn compute(
     witness: Arc<ArchitectureWitness>,
     c: &Control,
 ) -> Result<Source, ValidationFailure> {
-    let assignments = match &original.data {
-        D::Change(d) => d.overrides(g)?,
-        D::Quotient(d) => d.overrides(g)?,
-        _ => vec![],
-    }
-    .into_iter()
-    .map(|(f, _, v)| (f, v))
-    .collect::<Vec<_>>();
+    let assignments = original
+        .architecture_overrides(g)?
+        .into_iter()
+        .map(|(f, _, v)| (f, v))
+        .collect::<Vec<_>>();
     let mut fixed = Environment::try_primitive_valuation(env.indexes.inputs, &assignments, c)?
         .ok_or(internal!("有限局所系の元Architectureが不適合"))?;
     fixed.select_local_object(&witness, c)?;

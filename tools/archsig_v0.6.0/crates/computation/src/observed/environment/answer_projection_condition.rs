@@ -24,13 +24,15 @@ impl Environment<'_> {
             .arguments
             .iter()
             .any(|a| matches!(a.value, Selector::Answer { .. }))
-            && !(matches!(
-                request.kind,
-                QuestionKind::Compose
-                    | QuestionKind::Compare
-                    | QuestionKind::Localize
-                    | QuestionKind::Diagnose
-            ) && matches!(request.head, Selector::Answer { .. }))
+            && !((super::super::request::shared_repair_request(request)
+                || matches!(
+                    request.kind,
+                    QuestionKind::Compose
+                        | QuestionKind::Compare
+                        | QuestionKind::Localize
+                        | QuestionKind::Diagnose
+                ))
+                && matches!(request.head, Selector::Answer { .. }))
         {
             return Ok(vec![]);
         }
@@ -56,6 +58,39 @@ impl Environment<'_> {
         request: &Request,
     ) -> Result<Vec<ProjectionFailurePlan>, ValidationFailure> {
         self.tick()?;
+        if super::super::request::shared_repair_request(request) {
+            let mut plans = vec![];
+            for (parameter, selector) in std::iter::once(("head", &request.head)).chain(
+                request
+                    .arguments
+                    .iter()
+                    .map(|a| (a.name.as_str(), &a.value)),
+            ) {
+                let Selector::Answer { id, .. } = selector else {
+                    continue;
+                };
+                if let AnswerBinding::Inapplicable(root) =
+                    match self.answer_binding(graph, selector, (0, 0)) {
+                        Ok(v) => v,
+                        Err(ValidationFailure::UnsupportedExpression { .. }) => continue,
+                        Err(e) => return Err(e),
+                    }
+                {
+                    let original = graph.get(root)?;
+                    plans.push(ProjectionFailurePlan {
+                        context: self.current_context(graph),
+                        parameter: parameter.into(),
+                        root,
+                        producer: id.clone(),
+                        location: None,
+                        inputs: vec![ConditionInput::Reference(root)],
+                        scope: original.scope.clone(),
+                        support: original.support.to_vec(),
+                    });
+                }
+            }
+            return Ok(plans);
+        }
         if request.kind == QuestionKind::Diagnose
             || (request.kind == QuestionKind::Localize && request.declaration().is_none())
         {

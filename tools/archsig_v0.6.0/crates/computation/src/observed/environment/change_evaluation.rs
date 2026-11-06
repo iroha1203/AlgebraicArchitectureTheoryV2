@@ -20,7 +20,7 @@ pub(in crate::observed) struct Update {
     pub scope: Scope,
 }
 
-fn known(value: Scalar) -> SourceValue {
+pub(super) fn known(value: Scalar) -> SourceValue {
     SourceValue {
         condition_failed: false,
         condition_pending: false,
@@ -69,7 +69,15 @@ pub(in crate::observed) fn evaluate_on_fields(
         .state
         .missing_slot_reads
         .scoped(Some(BTreeSet::new()));
-    let result = evaluate_inner(environment, declaration, bindings, fields);
+    let result = evaluate_inner(
+        environment,
+        declaration,
+        bindings,
+        fields,
+        None,
+        false,
+        false,
+    );
     let missing = outer
         .restore()
         .ok_or(internal!("changeの不足位置収集がない"))?;
@@ -92,11 +100,73 @@ pub(in crate::observed) fn evaluate_on_fields(
     result.support.dedup();
     Ok(result)
 }
+/// 一つの更新関係だけを生成する。guard は別の共有関係で検査する。
+pub(in crate::observed) fn relation_field(
+    environment: &Environment<'_>,
+    declaration: &Declaration,
+    bindings: &[(String, Scalar)],
+    field: &str,
+) -> Result<Update, ValidationFailure> {
+    relation(
+        environment,
+        declaration,
+        bindings,
+        &[field.to_owned()],
+        Some(field),
+        true,
+        false,
+    )
+}
+pub(in crate::observed) fn relation_guard(
+    environment: &Environment<'_>,
+    declaration: &Declaration,
+    bindings: &[(String, Scalar)],
+) -> Result<Update, ValidationFailure> {
+    relation(environment, declaration, bindings, &[], None, false, true)
+}
+fn relation(
+    environment: &Environment<'_>,
+    declaration: &Declaration,
+    bindings: &[(String, Scalar)],
+    fields: &[String],
+    selected: Option<&str>,
+    skip_guard: bool,
+    guard_only: bool,
+) -> Result<Update, ValidationFailure> {
+    let outer = environment
+        .state
+        .missing_slot_reads
+        .scoped(Some(BTreeSet::new()));
+    let result = evaluate_inner(
+        environment,
+        declaration,
+        bindings,
+        fields,
+        selected,
+        skip_guard,
+        guard_only,
+    );
+    let missing = outer
+        .restore()
+        .ok_or(internal!("更新関係の不足位置収集がない"))?;
+    let mut result = result?;
+    if result.state == State::Undetermined {
+        result.missing.extend(missing);
+    }
+    result.support.sort();
+    result.support.dedup();
+    result.missing.sort();
+    result.missing.dedup();
+    Ok(result)
+}
 fn evaluate_inner(
     environment: &Environment<'_>,
     declaration: &Declaration,
     bindings: &[(String, Scalar)],
     fields: &[String],
+    selected_field: Option<&str>,
+    skip_guard: bool,
+    guard_only: bool,
 ) -> Result<Update, ValidationFailure> {
     environment.tick()?;
     let Signature::Change {
@@ -152,7 +222,7 @@ fn evaluate_inner(
     if result.state != State::Ready {
         return Ok(result);
     }
-    if let Some(guard) = guard {
+    if !skip_guard && let Some(guard) = guard {
         let value = environment.scoped_ast(*guard, &vars, &base, &declaration.reading)?;
         result.retain(&value);
         if result.state != State::Ready {
@@ -166,6 +236,9 @@ fn evaluate_inner(
             Some(Scalar::Bool(true)) => {}
             _ => return Err(internal!("change guardの型がBoolでない").into()),
         }
+    }
+    if guard_only {
+        return Ok(result);
     }
     let mut current = *body;
     loop {
@@ -220,6 +293,9 @@ fn evaluate_inner(
                 };
                 for (field, expression) in updates {
                     environment.tick()?;
+                    if selected_field.is_some_and(|selected| selected != field.name) {
+                        continue;
+                    }
                     let value =
                         environment.scoped_ast(*expression, &vars, &base, &declaration.reading)?;
                     result.retain(&value);

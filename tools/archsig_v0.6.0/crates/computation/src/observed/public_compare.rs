@@ -919,6 +919,51 @@ fn vector_equal(
             .is_some(),
     )
 }
+fn equal_value(
+    left: &Scalar,
+    right: &Scalar,
+    c: &Control,
+    stopped: &mut Option<Signal>,
+) -> Result<bool, ValidationFailure> {
+    let mut retained = None;
+    match super::data::equal_retained(left, right, c, |value| retained = Some(value)) {
+        Ok(value) => Ok(value),
+        Err(ValidationFailure::Stop(signal)) if retained.is_some() => {
+            *stopped = Some(signal);
+            Ok(retained.expect("完成値を保持済み"))
+        }
+        Err(error) => Err(error),
+    }
+}
+fn assignment_value(
+    mut entries: Vec<(Scalar, Vec<Scalar>)>,
+    c: &Control,
+) -> Result<Scalar, ValidationFailure> {
+    for (subject, _) in &entries {
+        c.checkpoint(Checkpoint::FiniteIteration)?;
+        if !matches!(subject, Scalar::Subject { .. }) {
+            return Err(internal!("元割当てのinstanceがsubjectでない").into());
+        }
+    }
+    fn key(s: &Scalar) -> (&str, &str, &str) {
+        let Scalar::Subject {
+            snapshot,
+            subject,
+            entity,
+        } = s
+        else {
+            unreachable!("検査済みsubject")
+        };
+        (snapshot, subject, entity)
+    }
+    entries.sort_by(|(a, _), (b, _)| key(a).cmp(&key(b)));
+    Ok(Scalar::Tuple(
+        entries
+            .into_iter()
+            .map(|(s, parameters)| Scalar::Tuple(vec![s, Scalar::Tuple(parameters)]))
+            .collect(),
+    ))
+}
 pub(super) fn evaluate(
     prepared: &PreparedObserved,
     env: &Environment<'_>,
@@ -957,7 +1002,21 @@ pub(super) fn evaluate(
     let mut facts = vec![];
     let mut stopped = None;
     let mut value_plan = None;
-    let equal = if kind == "value" && matches!(graph.get(left)?.ty, NodeType::Vector(_)) {
+    let equal = if kind == "value" && graph.get(left)?.ty == NodeType::Construction(T::Assignment) {
+        let a = super::repair_problem::assignment_input(env, graph, left)?;
+        let b = super::repair_problem::assignment_input(env, graph, right)?;
+        if super::change_result::same_candidate_space(env, graph, a.domain, b.domain)? {
+            Some(equal_value(
+                &assignment_value(a.entries, control)?,
+                &assignment_value(b.entries, control)?,
+                control,
+                &mut stopped,
+            )?)
+        } else {
+            incompatible = Some((a.domain, b.domain));
+            None
+        }
+    } else if kind == "value" && matches!(graph.get(left)?.ty, NodeType::Vector(_)) {
         Some(vector_equal(graph, left, right, control)?)
     } else if kind == "value"
         && super::term::contains(&graph.scalar(left)?.ty(), prepared.inputs().law(), control)?
@@ -978,19 +1037,12 @@ pub(super) fn evaluate(
         value_plan = Some(plan);
         equal
     } else if kind == "value" {
-        let mut retained = None;
-        let outcome =
-            super::data::equal_retained(graph.scalar(left)?, graph.scalar(right)?, control, |v| {
-                retained = Some(v)
-            });
-        Some(match (outcome, retained) {
-            (Ok(v), _) => v,
-            (Err(ValidationFailure::Stop(s)), Some(v)) => {
-                stopped = Some(s);
-                v
-            }
-            (Err(e), _) => return Err(e),
-        })
+        Some(equal_value(
+            graph.scalar(left)?,
+            graph.scalar(right)?,
+            control,
+            &mut stopped,
+        )?)
     } else if let Ok(Scalar::Path(a)) = graph.scalar(left) {
         let Scalar::Path(b) = graph.scalar(right)? else {
             return Err(internal!("Path比較へ別型を渡した").into());

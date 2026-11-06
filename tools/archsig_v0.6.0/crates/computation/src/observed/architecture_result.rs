@@ -297,7 +297,7 @@ fn request_reading<'a>(
     };
     match request.kind {
         QuestionKind::Build => Ok(name),
-        QuestionKind::Solve | QuestionKind::Repair => inputs
+        QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Prepare => inputs
             .law()
             .declarations()
             .get(name)
@@ -357,7 +357,10 @@ fn selected_root_reference(
     r: NodeRef,
     request: &Request,
 ) -> Result<NodeRef, ValidationFailure> {
-    if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair) {
+    if matches!(
+        request.kind,
+        QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Prepare
+    ) {
         if let Some(Payload::Construction(v)) = &graph.get(r)?.payload {
             if graph.get(r)?.ty == NodeType::Construction(T::Architecture) {
                 let law = request
@@ -488,7 +491,10 @@ pub(super) fn validate_build_origin(
             _ => None,
         };
         if let Some(reference) = reference {
-            if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair) {
+            if matches!(
+                request.kind,
+                QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Prepare
+            ) {
                 if let AnswerBinding::Reference(original) =
                     environment.answer_binding(graph, on, (0, 0))?
                 {

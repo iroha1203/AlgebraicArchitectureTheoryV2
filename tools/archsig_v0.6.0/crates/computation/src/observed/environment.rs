@@ -57,6 +57,7 @@ mod primitive_valuation;
 pub(super) mod quotient_affine;
 pub(super) mod quotient_evaluation;
 pub(super) mod relation_instances;
+pub(super) mod repair_problem;
 mod term_comparison_validation;
 pub(super) mod universal;
 mod validation_identity;
@@ -4363,20 +4364,24 @@ impl<'a> Environment<'a> {
     ) -> Result<(), ValidationFailure> {
         self.validation_graph_session(graph, || {
             self.tick()?;
-            if matches!(
-                request.kind,
-                QuestionKind::Build
-                    | QuestionKind::Solve
-                    | QuestionKind::Repair
-                    | QuestionKind::Quotient
-                    | QuestionKind::Localize
-                    | QuestionKind::Diagnose
-                    | QuestionKind::Map
-                    | QuestionKind::Compose
-                    | QuestionKind::Compare
-            ) {
+            if super::request::shared_repair_request(request)
+                || matches!(
+                    request.kind,
+                    QuestionKind::Build
+                        | QuestionKind::Solve
+                        | QuestionKind::Repair
+                        | QuestionKind::Quotient
+                        | QuestionKind::Localize
+                        | QuestionKind::Diagnose
+                        | QuestionKind::Map
+                        | QuestionKind::Compose
+                        | QuestionKind::Compare
+                )
+            {
                 return self.with_request_context(graph, request, || {
-                    if request.kind == QuestionKind::Build {
+                    if super::request::shared_repair_request(request) {
+                        super::repair_problem::validate_answer(self, graph, request, answer)?;
+                    } else if request.kind == QuestionKind::Build {
                         super::build_result::validate_answer(self, graph, request, answer)?;
                     } else if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair) {
                         super::change_result::validate_answer(self, graph, request, answer)?;

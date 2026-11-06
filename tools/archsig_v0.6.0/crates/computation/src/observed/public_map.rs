@@ -137,6 +137,17 @@ pub(super) fn validate_origin(
     request: &Request,
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
+    if let D::SharedRepair(_) = &value.data {
+        return super::repair_problem::validate_origin(environment, request, value);
+    }
+    if request.kind == QuestionKind::Prepare {
+        return super::architecture_result::validate_build_origin(
+            environment,
+            graph,
+            request,
+            value,
+        );
+    }
     if matches!(
         request.kind,
         QuestionKind::Localize | QuestionKind::Diagnose
@@ -369,13 +380,14 @@ pub(super) fn unavailable(
         );
     }
     let selectors = request.arguments.iter().map(|a| &a.value).chain(
-        matches!(
-            request.kind,
-            QuestionKind::Compose
-                | QuestionKind::Compare
-                | QuestionKind::Localize
-                | QuestionKind::Diagnose
-        )
+        (super::request::shared_repair_request(request)
+            || matches!(
+                request.kind,
+                QuestionKind::Compose
+                    | QuestionKind::Compare
+                    | QuestionKind::Localize
+                    | QuestionKind::Diagnose
+            ))
         .then_some(&request.head),
     );
     for selector in selectors {
@@ -391,6 +403,7 @@ pub(super) fn unavailable(
             .arguments
             .iter()
             .any(|a| a.name == "on" && &a.value == selector)
+            && !super::request::shared_repair_request(request)
             && !matches!(
                 request.kind,
                 QuestionKind::Map
@@ -441,15 +454,17 @@ pub(super) fn unavailable(
             location: None,
         });
     }
-    if matches!(
-        request.kind,
-        QuestionKind::Map
-            | QuestionKind::Compose
-            | QuestionKind::Compare
-            | QuestionKind::Quotient
-            | QuestionKind::Localize
-            | QuestionKind::Diagnose
-    ) {
+    if super::request::shared_repair_request(request)
+        || matches!(
+            request.kind,
+            QuestionKind::Map
+                | QuestionKind::Compose
+                | QuestionKind::Compare
+                | QuestionKind::Quotient
+                | QuestionKind::Localize
+                | QuestionKind::Diagnose
+        )
+    {
         let (projection_reasons, projection_scope) =
             environment.projection_failure_reasons(graph, request)?;
         reasons.extend(projection_reasons);

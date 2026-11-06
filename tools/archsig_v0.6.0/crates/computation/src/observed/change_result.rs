@@ -403,6 +403,96 @@ fn compute_inner(
     render_search(env, g, architecture, base, request, c, search)
 }
 
+pub(super) fn requirements(
+    b: &mut Builder<'_>,
+    env: &Environment<'_>,
+    rows: &[(String, Vec<(String, Scalar)>)],
+    c: &Control,
+) -> Result<Vec<NodeRef>, ValidationFailure> {
+    let base = b.base;
+    let g = b.g;
+    let mut requirements = vec![];
+    for (name, bindings) in rows {
+        c.checkpoint(Checkpoint::PrimitiveValuation)?;
+        let law = &env.indexes.inputs.law().declarations()[name];
+        let Signature::Law {
+            role,
+            body,
+            guard,
+            params: law_params,
+        } = &law.signature
+        else {
+            return Err(internal!("候補の元Lawがない").into());
+        };
+        let bindings = bindings
+            .iter()
+            .map(|(name, v)| Ok((name.clone(), value(b, v)?)))
+            .collect::<Result<Vec<_>, ValidationFailure>>()?;
+        let unbound = law_params
+            .iter()
+            .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
+            .collect::<Vec<_>>();
+        let parameters = unbound
+            .iter()
+            .map(|p| (p.name.clone(), p.ty.clone()))
+            .collect::<Vec<_>>();
+        let body = source_expression(b, env, *body, &bindings, &parameters)?;
+        for parameter in unbound {
+            b.parts[body.0 - base].scope.quantifiers.push(Quantifier {
+                kind: archsig_input::law::ast::QuantKind::Forall,
+                name: parameter.name.clone(),
+                ty: parameter.ty.erase(),
+                domain: None,
+                occurrence: parameter.span,
+                context: Some(env.current_context(g)),
+            });
+        }
+        let guard = guard
+            .map(|id| source_expression(b, env, id, &bindings, &parameters))
+            .transpose()?;
+        let mut args = bindings.iter().map(|(_, r)| *r).collect::<Vec<_>>();
+        args.push(body);
+        args.extend(guard);
+        let mut wire = vec![
+            ("name", Json::str(name)),
+            (
+                "role",
+                Json::str(match role {
+                    archsig_input::law::ast::Role::Required => "required",
+                    archsig_input::law::ast::Role::Optional => "optional",
+                }),
+            ),
+            (
+                "occurrence",
+                archsig_input::result::location_wire(&Location::Law { span: law.span }),
+            ),
+            (
+                "bindings",
+                Json::Arr(
+                    bindings
+                        .iter()
+                        .map(|(name, r)| {
+                            Json::obj([("name", Json::str(name)), ("value", r.wire())])
+                        })
+                        .collect(),
+                ),
+            ),
+            ("body", body.wire()),
+        ];
+        if let Some(r) = guard {
+            wire.push(("guard", r.wire()));
+        }
+        requirements.push(b.push(
+            NodeType::LawInstance,
+            "law_instance",
+            Json::Obj(wire.into_iter().map(|(k, v)| (k.into(), v)).collect()),
+            args,
+            None,
+        )?);
+    }
+    Ok(requirements)
+}
+
 pub(super) fn render_search(
     env: &Environment<'_>,
     g: &Graph,
@@ -452,85 +542,7 @@ pub(super) fn render_search(
         binding_refs.push(r);
         selected_bindings.push(Json::obj([("name", Json::str(name)), ("value", r.wire())]));
     }
-    let mut requirements = vec![];
-    for (name, bindings) in &search.requirements {
-        c.checkpoint(Checkpoint::PrimitiveValuation)?;
-        let law = &env.indexes.inputs.law().declarations()[name];
-        let Signature::Law {
-            role,
-            body,
-            guard,
-            params: law_params,
-        } = &law.signature
-        else {
-            return Err(internal!("候補の元Lawがない").into());
-        };
-        let bindings = bindings
-            .iter()
-            .map(|(name, v)| Ok((name.clone(), value(&mut b, v)?)))
-            .collect::<Result<Vec<_>, ValidationFailure>>()?;
-        let unbound = law_params
-            .iter()
-            .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
-            .collect::<Vec<_>>();
-        let parameters = unbound
-            .iter()
-            .map(|p| (p.name.clone(), p.ty.clone()))
-            .collect::<Vec<_>>();
-        let body = source_expression(&mut b, env, *body, &bindings, &parameters)?;
-        for parameter in unbound {
-            b.parts[body.0 - base].scope.quantifiers.push(Quantifier {
-                kind: archsig_input::law::ast::QuantKind::Forall,
-                name: parameter.name.clone(),
-                ty: parameter.ty.erase(),
-                domain: None,
-                occurrence: parameter.span,
-                context: Some(env.current_context(g)),
-            });
-        }
-        let guard = guard
-            .map(|id| source_expression(&mut b, env, id, &bindings, &parameters))
-            .transpose()?;
-        let mut args = bindings.iter().map(|(_, r)| *r).collect::<Vec<_>>();
-        args.push(body);
-        args.extend(guard);
-        let mut wire = vec![
-            ("name", Json::str(name)),
-            (
-                "role",
-                Json::str(match role {
-                    archsig_input::law::ast::Role::Required => "required",
-                    archsig_input::law::ast::Role::Optional => "optional",
-                }),
-            ),
-            (
-                "occurrence",
-                archsig_input::result::location_wire(&Location::Law { span: law.span }),
-            ),
-            (
-                "bindings",
-                Json::Arr(
-                    bindings
-                        .iter()
-                        .map(|(name, r)| {
-                            Json::obj([("name", Json::str(name)), ("value", r.wire())])
-                        })
-                        .collect(),
-                ),
-            ),
-            ("body", body.wire()),
-        ];
-        if let Some(r) = guard {
-            wire.push(("guard", r.wire()));
-        }
-        requirements.push(b.push(
-            NodeType::LawInstance,
-            "law_instance",
-            Json::Obj(wire.into_iter().map(|(k, v)| (k.into(), v)).collect()),
-            args,
-            None,
-        )?);
-    }
+    let requirements = requirements(&mut b, env, &search.requirements, c)?;
     let mut guards = vec![];
     if let Some(expression) = guard {
         let residual = params[1..]
@@ -1297,6 +1309,225 @@ pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), Validat
     validate_node(g, n, v, d)
 }
 
+/// 検査済みの生成元だけを返す。全探索が必要な消費側とは分ける。
+pub(super) fn candidate_origin(
+    env: &Environment<'_>,
+    g: &Graph,
+    reference: NodeRef,
+) -> Result<(NodeRef, Arc<native::ArchitectureWitness>), ValidationFailure> {
+    let d = checked_candidate(env, g, reference)?;
+    Ok((
+        d.source.architecture.reference,
+        d.source.architecture.witness.clone(),
+    ))
+}
+fn checked_candidate<'g>(
+    env: &Environment<'_>,
+    g: &'g Graph,
+    reference: NodeRef,
+) -> Result<&'g Data, ValidationFailure> {
+    let node = g.get(reference)?;
+    let Some(Payload::Construction(v)) = &node.payload else {
+        return Err(internal!("元候補域がnativeでない").into());
+    };
+    let D::Change(d) = &v.data else {
+        return Err(internal!("元候補域がchange由来でない").into());
+    };
+    if !matches!(
+        d.ty(),
+        NodeType::Construction(T::CandidateSpace | T::SolutionSet)
+    ) {
+        return Err(internal!("元候補域の型が違う").into());
+    }
+    env.recheck_node(g, node, reference.0)?;
+    Ok(d)
+}
+pub(super) struct AssignmentInput {
+    pub domain: NodeRef,
+    pub entries: Vec<(Scalar, Vec<Scalar>)>,
+}
+/// 既存Assignmentの元の型付き辺を読む。表示の値を再解釈・再符号化しない。
+pub(super) fn assignment_input(
+    env: &Environment<'_>,
+    g: &Graph,
+    reference: NodeRef,
+) -> Result<AssignmentInput, ValidationFailure> {
+    let node = g.get(reference)?;
+    let Some(Payload::Construction(v)) = &node.payload else {
+        return Err(internal!("元割当てがnativeでない").into());
+    };
+    let D::Change(d) = &v.data else {
+        return Err(internal!("元割当てがchange由来でない").into());
+    };
+    if d.ty() != NodeType::Construction(T::Assignment) {
+        return Err(internal!("元割当ての型が違う").into());
+    }
+    env.recheck_node(g, node, reference.0)?;
+    let Some(Json::Obj(record)) = d.part().wire_ref() else {
+        return Err(internal!("元割当ての欄がない").into());
+    };
+    let reference = |value: &Json| -> Result<NodeRef, ValidationFailure> {
+        d.part()
+            .arguments
+            .iter()
+            .copied()
+            .find(|r| r.wire() == *value)
+            .ok_or_else(|| internal!("元割当ての型付き辺がない").into())
+    };
+    let domain = reference(
+        record
+            .get("domain")
+            .ok_or(internal!("元割当ての候補域がない"))?,
+    )?;
+    let Some(Json::Arr(rows)) = record.get("entries") else {
+        return Err(internal!("元割当てのinstanceがない").into());
+    };
+    let mut entries = vec![];
+    for row in rows {
+        env.tick()?;
+        let Json::Obj(row) = row else {
+            return Err(internal!("元割当てのinstance欄がない").into());
+        };
+        let subject = reference(
+            row.get("subject")
+                .ok_or(internal!("元割当てのsubjectがない"))?,
+        )?;
+        let Some(Json::Arr(parameters)) = row.get("parameters") else {
+            return Err(internal!("元割当てのparameterがない").into());
+        };
+        entries.push((
+            g.scalar(subject)?.clone(),
+            parameters
+                .iter()
+                .map(|r| Ok(g.scalar(reference(r)?)?.clone()))
+                .collect::<Result<Vec<_>, ValidationFailure>>()?,
+        ));
+    }
+    Ok(AssignmentInput { domain, entries })
+}
+
+/// 候補域の生成条件を元の型付き辺で比較する。描画のnode番号はidentityにしない。
+pub(super) fn same_candidate_space(
+    env: &Environment<'_>,
+    g: &Graph,
+    a: NodeRef,
+    b: NodeRef,
+) -> Result<bool, ValidationFailure> {
+    #[derive(PartialEq)]
+    struct CandidateKey {
+        root: Fact,
+        reading: String,
+        fixed: Vec<(Fact, Scalar)>,
+        kind: String,
+        change: Option<String>,
+        bindings: BTreeMap<String, Scalar>,
+        subjects: Vec<(String, String, String)>,
+    }
+    fn key(
+        env: &Environment<'_>,
+        g: &Graph,
+        at: NodeRef,
+    ) -> Result<CandidateKey, ValidationFailure> {
+        let node = g.get(at)?;
+        env.recheck_node(g, node, at.0)?;
+        if node.ty != NodeType::Construction(T::CandidateSpace) {
+            return Err(internal!("割当ての候補域の型が違う").into());
+        }
+        let Some(Payload::Construction(v)) = &node.payload else {
+            return Err(internal!("割当ての候補域がnativeでない").into());
+        };
+        let wire = v.wire();
+        let Json::Obj(record) = &wire else {
+            return Err(internal!("候補域の生成欄がない").into());
+        };
+        let arguments = v.arguments();
+        let reference = |wire: &Json| {
+            arguments
+                .iter()
+                .copied()
+                .find(|r| r.wire() == *wire)
+                .ok_or_else(|| ValidationFailure::from(internal!("候補域の型付き辺がない")))
+        };
+        let base = reference(
+            record
+                .get("base")
+                .ok_or(internal!("候補域の基準対象がない"))?,
+        )?;
+        let Some(Payload::Construction(base)) = &g.get(base)?.payload else {
+            return Err(internal!("基準対象がnativeでない").into());
+        };
+        let Witness::Architecture(w) = &base.witness else {
+            return Err(internal!("基準対象の帰属がない").into());
+        };
+        let mut fixed = base
+            .architecture_overrides(g)?
+            .into_iter()
+            .map(|(f, _, v)| (f, v))
+            .collect::<Vec<_>>();
+        fixed.sort_by(|a, b| a.0.cmp(&b.0));
+        let Some(Json::Str(kind)) = record.get("kind") else {
+            return Err(internal!("候補域の種類がない").into());
+        };
+        let change = match record.get("change") {
+            Some(Json::Str(name)) => Some(name.clone()),
+            None => None,
+            _ => return Err(internal!("候補域の元changeが違う").into()),
+        };
+        let mut bindings = BTreeMap::new();
+        if let Some(Json::Arr(values)) = record.get("bindings") {
+            for row in values {
+                env.tick()?;
+                let Json::Obj(row) = row else {
+                    return Err(internal!("候補域の束縛欄がない").into());
+                };
+                let Some(Json::Str(name)) = row.get("name") else {
+                    return Err(internal!("候補域の束縛名がない").into());
+                };
+                let value = g
+                    .scalar(reference(
+                        row.get("value").ok_or(internal!("候補域の束縛値がない"))?,
+                    )?)?
+                    .clone();
+                if bindings.insert(name.clone(), value).is_some() {
+                    return Err(internal!("候補域の束縛が重複する").into());
+                }
+            }
+        }
+        let mut subjects = vec![];
+        if let Some(Json::Arr(values)) = record.get("instances") {
+            for row in values {
+                env.tick()?;
+                let Json::Obj(row) = row else {
+                    return Err(internal!("候補域のinstance欄がない").into());
+                };
+                let Scalar::Subject {
+                    snapshot,
+                    subject,
+                    entity,
+                } = g.scalar(reference(
+                    row.get("subject")
+                        .ok_or(internal!("候補域のinstanceがない"))?,
+                )?)?
+                else {
+                    return Err(internal!("候補域のinstanceがsubjectでない").into());
+                };
+                subjects.push((snapshot.clone(), subject.clone(), entity.clone()));
+            }
+        }
+        subjects.sort();
+        Ok(CandidateKey {
+            root: w.construction().root().clone(),
+            reading: w.construction().reading().to_owned(),
+            fixed,
+            kind: kind.clone(),
+            change,
+            bindings,
+            subjects,
+        })
+    }
+    Ok(key(env, g, a)? == key(env, g, b)?)
+}
+
 pub(super) struct CandidateInput {
     pub architecture: NodeRef,
     pub witness: Arc<native::ArchitectureWitness>,
@@ -1309,20 +1540,11 @@ pub(super) fn candidate_input(
     reference: NodeRef,
     c: &Control,
 ) -> Result<CandidateInput, ValidationFailure> {
-    let node = g.get(reference)?;
-    let Some(Payload::Construction(v)) = &node.payload else {
-        return Err(internal!("商の候補域がnativeでない").into());
-    };
-    let D::Change(d) = &v.data else {
-        return Err(internal!("商の候補域がchange由来でない").into());
-    };
-    if !matches!(
-        d.ty(),
-        NodeType::Construction(T::CandidateSpace | T::SolutionSet)
-    ) {
-        return Err(internal!("商の候補域の型が違う").into());
+    if matches!(&g.get(reference)?.payload,Some(Payload::Construction(v)) if matches!(v.data,D::SharedRepair(_)))
+    {
+        return super::repair_problem::candidate_input(env, g, reference, c);
     }
-    env.recheck_node(g, node, reference.0)?;
+    let d = checked_candidate(env, g, reference)?;
     let origin = Witness::Architecture(d.source.architecture.witness.clone());
     let request = origin.request();
     env.with_request_context(g, request, || {

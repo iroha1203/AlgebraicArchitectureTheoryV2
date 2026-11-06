@@ -18,6 +18,7 @@ pub(super) mod comparison;
 pub(super) mod composition;
 mod configuration_map;
 mod local;
+mod repair_problem;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum QuestionKind {
@@ -33,6 +34,10 @@ pub enum QuestionKind {
     Quotient,
     Localize,
     Diagnose,
+    Prepare,
+    Scopes,
+    Candidate,
+    Apply,
 }
 impl QuestionKind {
     pub fn wire(self) -> &'static str {
@@ -49,6 +54,10 @@ impl QuestionKind {
             Self::Quotient => "quotient",
             Self::Localize => "localize",
             Self::Diagnose => "diagnose",
+            Self::Prepare => "prepare",
+            Self::Scopes => "scopes",
+            Self::Candidate => "candidate",
+            Self::Apply => "apply",
         }
     }
 }
@@ -57,6 +66,9 @@ impl QuestionKind {
 pub enum Selector {
     Degree {
         value: u64,
+    },
+    Ordinal {
+        value: String,
     },
     Enum {
         value: String,
@@ -76,6 +88,9 @@ pub enum Selector {
 impl Selector {
     pub fn wire(&self) -> Json {
         match self {
+            Self::Ordinal { value } => {
+                Json::obj([("kind", Json::str("ordinal")), ("value", Json::str(value))])
+            }
             Self::Degree { value } => {
                 Json::obj([("kind", Json::str("degree")), ("value", Json::Nat(*value))])
             }
@@ -402,6 +417,10 @@ fn resolve_inner(
         }
         let kind = match raw.kind.as_str() {
             "build" => QuestionKind::Build,
+            "prepare" => QuestionKind::Prepare,
+            "scopes" => QuestionKind::Scopes,
+            "candidate" => QuestionKind::Candidate,
+            "apply" => QuestionKind::Apply,
             "solve" => QuestionKind::Solve,
             "repair" => QuestionKind::Repair,
             "quotient" => QuestionKind::Quotient,
@@ -422,6 +441,16 @@ fn resolve_inner(
                 )));
             }
         };
+        if matches!(
+            kind,
+            QuestionKind::Scopes | QuestionKind::Candidate | QuestionKind::Apply
+        ) || (kind == QuestionKind::Solve && matches!(raw.head, Selector::Answer { .. }))
+        {
+            let request = repair_problem::resolve(raw, text, kind, control)?;
+            names.insert(request.id.clone(), requests.len());
+            requests.push(request);
+            continue;
+        }
         if matches!(kind, QuestionKind::Localize | QuestionKind::Diagnose) {
             let request = local::resolve(law, raw, text, control)?;
             names.insert(request.id.clone(), requests.len());
@@ -580,7 +609,40 @@ fn resolve_inner(
                 }
                 continue;
             }
-            if key == "using" && matches!(kind, QuestionKind::Solve | QuestionKind::Repair) {
+            if key == "internal" && kind == QuestionKind::Prepare {
+                let Selector::Answer { id, path } = &value else {
+                    return Err(invalid(problem(
+                        RequestIssueCode::Type,
+                        &raw.id,
+                        &key,
+                        "internal must reference a finite entity Set",
+                    )));
+                };
+                if path.is_empty() {
+                    return Err(invalid(problem(
+                        RequestIssueCode::Projection,
+                        &raw.id,
+                        &key,
+                        "specify an output field",
+                    )));
+                }
+                dependencies.insert(id.clone());
+                arguments.insert(
+                    key.clone(),
+                    RequestArgument {
+                        name: key,
+                        value,
+                        origin: ArgumentOrigin::Explicit,
+                    },
+                );
+                continue;
+            }
+            if key == "using"
+                && matches!(
+                    kind,
+                    QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Prepare
+                )
+            {
                 let Selector::Declaration { name } = &value else {
                     return Err(invalid(problem(
                         RequestIssueCode::Type,
@@ -613,7 +675,10 @@ fn resolve_inner(
                 continue;
             }
             if key == "on"
-                && matches!(kind, QuestionKind::Solve | QuestionKind::Repair)
+                && matches!(
+                    kind,
+                    QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Prepare
+                )
                 && matches!(value, Selector::Subject { .. })
             {
                 arguments.insert(
@@ -731,8 +796,10 @@ fn resolve_inner(
             };
             finish_request(result, control, Checkpoint::RequestBinding)?;
         }
-        if matches!(kind, QuestionKind::Solve | QuestionKind::Repair)
-            && (!arguments.contains_key("on") || !arguments.contains_key("using"))
+        if matches!(
+            kind,
+            QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Prepare
+        ) && (!arguments.contains_key("on") || !arguments.contains_key("using"))
         {
             return Err(invalid(problem(
                 RequestIssueCode::MissingBinding,
@@ -830,6 +897,10 @@ fn resolve_inner(
                 | QuestionKind::Quotient
                 | QuestionKind::Localize
                 | QuestionKind::Diagnose
+                | QuestionKind::Prepare
+                | QuestionKind::Scopes
+                | QuestionKind::Candidate
+                | QuestionKind::Apply
         )
     }) {
         for request in &requests {
@@ -898,6 +969,13 @@ fn resolve_inner(
             phase(control, Checkpoint::RequestDependency)?;
             continue;
         }
+        if repair_problem::is_custom(req) {
+            repair_problem::check(law, map, &requests, &names, req, control)?;
+            continue;
+        }
+        if req.kind == QuestionKind::Prepare {
+            repair_problem::check_internal(law, map, &requests, &names, req, control)?;
+        }
         let params = parameters(
             &law.declarations()[req.declaration().expect("宣言headの問い")].signature,
             req.kind,
@@ -950,8 +1028,10 @@ fn resolve_inner(
                     _ => Ok(false),
                 }
             }
-            let change_root = if matches!(req.kind, QuestionKind::Solve | QuestionKind::Repair)
-                && !architecture(&plan.ty, control)?
+            let change_root = if matches!(
+                req.kind,
+                QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Prepare
+            ) && !architecture(&plan.ty, control)?
             {
                 let declaration = &law.declarations()[req.declaration().expect("Lawのhead")];
                 let mut root_request = req.clone();
@@ -1251,7 +1331,10 @@ fn parameters(sig: &Signature, kind: QuestionKind) -> Option<&[Param]> {
         (Signature::View { params, .. }, QuestionKind::Evaluate | QuestionKind::Quotient)
         | (
             Signature::Law { params, .. },
-            QuestionKind::Check | QuestionKind::Solve | QuestionKind::Repair,
+            QuestionKind::Check
+            | QuestionKind::Solve
+            | QuestionKind::Repair
+            | QuestionKind::Prepare,
         ) => Some(params),
         _ => None,
     }
@@ -1332,9 +1415,14 @@ fn selector_type(
             // 保持するのは署名と選択された Request の束縛だけであり、view の本体を
             // 評価して参照値を推測しない。後方参照でも同じ有限な表を参照する。
             owners = owner_bindings(r, control)?;
-            let initial = if r.kind == QuestionKind::Build {
+            let initial = if r.kind == QuestionKind::Prepare || repair_problem::is_custom(r) {
+                repair_problem::output_type(law, map, requests, names, r, field, control)?
+            } else if r.kind == QuestionKind::Build {
                 build::output_type(law, map, requests, names, r, field, control)?
-            } else if matches!(r.kind, QuestionKind::Solve | QuestionKind::Repair) {
+            } else if matches!(
+                r.kind,
+                QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Prepare
+            ) {
                 if field == "proposition"
                     || (field == "existence" && r.kind == QuestionKind::Repair)
                 {
@@ -1463,6 +1551,9 @@ fn clone_selector(selector: &Selector, control: &Control) -> Result<Selector, Re
     phase(control, Checkpoint::RequestBinding)?;
     let selector = match selector {
         Selector::Degree { value } => Selector::Degree { value: *value },
+        Selector::Ordinal { value } => Selector::Ordinal {
+            value: value.clone(),
+        },
         Selector::Enum { value } => Selector::Enum {
             value: value.clone(),
         },
@@ -2062,7 +2153,14 @@ impl<'a> Parser<'a> {
         self.expect(b'(')?;
         let head = self.selector(matches!(
             kind.as_str(),
-            "needed" | "compose" | "compare" | "localize" | "diagnose"
+            "needed"
+                | "compose"
+                | "compare"
+                | "localize"
+                | "diagnose"
+                | "scopes"
+                | "candidate"
+                | "apply"
         ))?;
         let mut arguments = Vec::new();
         let mut keys = BTreeSet::new();
@@ -2089,7 +2187,29 @@ impl<'a> Parser<'a> {
             };
             finish_request(result, &self.control, Checkpoint::RequestSyntax)?;
             self.expect(b'=')?;
-            let value = if kind == "diagnose" && key == "degree" {
+            let value = if kind == "candidate" && key == "index" {
+                self.ws()?;
+                let start = self.at;
+                while self
+                    .src
+                    .as_bytes()
+                    .get(self.at)
+                    .is_some_and(u8::is_ascii_digit)
+                {
+                    self.tick()?;
+                    self.at += 1;
+                }
+                if start == self.at || (self.at - start > 1 && self.src.as_bytes()[start] == b'0') {
+                    return Err(self.error("index must be a normalized nonnegative integer"));
+                }
+                Selector::Ordinal {
+                    value: self.src[start..self.at].to_owned(),
+                }
+            } else if kind == "solve" && key == "mode" {
+                Selector::Enum {
+                    value: self.name(false)?,
+                }
+            } else if kind == "diagnose" && key == "degree" {
                 Selector::Degree {
                     value: self.degree()?,
                 }
@@ -2109,7 +2229,8 @@ impl<'a> Parser<'a> {
                     "compare" => matches!(key.as_str(), "to" | "along"),
                     "localize" => !matches!(key.as_str(), "law" | "using"),
                     "evaluate" | "check" => true,
-                    "solve" | "repair" => key != "using",
+                    "solve" | "repair" | "prepare" => key != "using",
+                    "apply" => key == "in",
                     "quotient" => key != "law",
                     _ => false,
                 };
@@ -2189,4 +2310,15 @@ mod required_predicate_priority_tests {
             ));
         }
     }
+}
+
+pub(super) fn repair_projection(
+    ty: &ProjectionType,
+    path: &[ProjectionStep],
+) -> Option<Result<(ProjectionPlan, usize), projection::ProjectionFailure>> {
+    repair_problem::projection(ty, path)
+}
+
+pub(super) fn shared_repair_request(r: &Request) -> bool {
+    r.kind == QuestionKind::Prepare || repair_problem::is_custom(r)
 }

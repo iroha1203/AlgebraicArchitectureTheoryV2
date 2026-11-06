@@ -250,6 +250,12 @@ fn value_constraints(
         // Moduleの同一性は実際の型付き出力で構成条件として検査する。
         return Ok(vec![]);
     }
+    if plans
+        .iter()
+        .all(|(_, _, plan, _)| matches!(plan.ty, ProjectionType::Assignment(_)))
+    {
+        return Ok(vec![]);
+    }
     let mut selections = vec![];
     for (key, selector, plan, owners) in plans {
         let mut types = vec![];

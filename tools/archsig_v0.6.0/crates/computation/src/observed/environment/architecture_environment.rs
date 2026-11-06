@@ -73,6 +73,7 @@ impl<'i> Environment<'i> {
                     | QuestionKind::Check
                     | QuestionKind::Solve
                     | QuestionKind::Repair
+                    | QuestionKind::Prepare
             ) {
                 return Ok(None);
             }
@@ -120,6 +121,7 @@ impl<'i> Environment<'i> {
                 | ConstructionData::ObjectComponents(_)
                 | ConstructionData::Change(_)
                 | ConstructionData::Quotient(_)
+                | ConstructionData::SharedRepair(_)
         ) {
             return Ok(None);
         }
@@ -130,7 +132,8 @@ impl<'i> Environment<'i> {
         let object = match &value.data {
             ConstructionData::Architecture { .. }
             | ConstructionData::Change(_)
-            | ConstructionData::Quotient(_) => 0,
+            | ConstructionData::Quotient(_)
+            | ConstructionData::SharedRepair(_) => 0,
             ConstructionData::ObjectComponents(data) => data.architecture_object(reference)?,
             _ => return Err(internal!("環境Architectureの構成が違う").into()),
         };
@@ -145,19 +148,11 @@ impl<'i> Environment<'i> {
             reference,
             domain: Arc::new(domain),
             scope: node.scope.clone(),
-            overrides: match &value.data {
-                ConstructionData::Change(d) => d
-                    .overrides(graph)?
-                    .into_iter()
-                    .map(|(f, r, v)| Ok((f, (r, v, graph.get(r)?.scope.clone()))))
-                    .collect::<Result<_, ValidationFailure>>()?,
-                ConstructionData::Quotient(d) => d
-                    .overrides(graph)?
-                    .into_iter()
-                    .map(|(f, r, v)| Ok((f, (r, v, graph.get(r)?.scope.clone()))))
-                    .collect::<Result<_, ValidationFailure>>()?,
-                _ => BTreeMap::new(),
-            },
+            overrides: value
+                .architecture_overrides(graph)?
+                .into_iter()
+                .map(|(f, r, v)| Ok((f, (r, v, graph.get(r)?.scope.clone()))))
+                .collect::<Result<_, ValidationFailure>>()?,
         }))
     }
     pub(super) fn validate_evaluation_environment(
