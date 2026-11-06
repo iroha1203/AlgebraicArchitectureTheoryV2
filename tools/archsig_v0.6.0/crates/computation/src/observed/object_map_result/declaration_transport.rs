@@ -757,7 +757,7 @@ pub(super) fn retain(
     'declarations: for candidate in declarations.candidates() {
         tick(c)?;
         if candidate.source().kind == "change" {
-            let out = change::retain(
+            let out = match change::retain(
                 env,
                 b,
                 inputs,
@@ -766,7 +766,32 @@ pub(super) fn retain(
                 dependencies,
                 request,
                 c,
-            )?;
+            ) {
+                Ok(out) => out,
+                Err(ValidationFailure::UnsupportedExpression { location, feature }) => Output {
+                    transports: vec![],
+                    failed_arguments: vec![],
+                    status: Decision::Undetermined,
+                    reasons: vec![Reason {
+                        kind: ReasonKind::UnsupportedAlgorithm {
+                            question: request.kind,
+                            operand_types: candidate
+                                .source()
+                                .parameters
+                                .iter()
+                                .map(|(_, ty)| ty.clone())
+                                .collect(),
+                            method: feature,
+                        },
+                        request: request.id.clone(),
+                        dependencies: dependencies.to_vec(),
+                        missing: vec![],
+                        location: Some(location),
+                    }],
+                    evidence: vec![],
+                },
+                Err(error) => return Err(error),
+            };
             result.transports.extend(out.transports);
             result.failed_arguments.extend(out.failed_arguments);
             result.status = merge_status(result.status, out.status);
