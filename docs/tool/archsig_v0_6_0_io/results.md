@@ -113,7 +113,7 @@ defaultsはCLIのSelectorで表さない省略の意味を、次の閉じた規�
 | required_laws | localizeでlawを省略。同じreadingの全required Lawを全parameterの適用域で読む |
 | identity_change | localizeでusingを省略。Unit parameterと現在値だけの候補を使う |
 | no_law_check | quotientでlawを省略。viewによる商を作り、Law評価の十分性は問わない |
-| universal_parameters | check/solve/repair、law指定のlocalize/quotientでLaw parameterを未束縛にした。declarationはそのLawの完全名、parametersは未束縛parameter名を宣言順に並べ、その型・依存族で全称化する |
+| universal_parameters | check/solve/repair/prepare、law指定のlocalize/quotientでLaw parameterを未束縛にした。declarationはそのLawの完全名、parametersは未束縛parameter名を宣言順に並べ、その型・依存族で全称化する |
 
 map の to_reading 省略時は reading と同じ選択を arguments に origin=defaulted で保持する。
 同じruleを重複させず、universal_parametersはparametersが非空のときだけ記録する。
@@ -584,7 +584,7 @@ source/targetのExpressionとValueMap、naturalityが等式左辺・右辺のAto
 
 | Type | Payload |
 | --- | --- |
-| Domain | `{kind:"type",type:T}` / `{kind:"finite",type:T,elements:Ref[]}` / `{kind:"product",factors:Domain[]}` / `{kind:"module",module:Ref}` / `{kind:"states",space:Ref}` / `{kind:"candidates",space:CandidateSpace}` / `{kind:"solutions",solutions:Ref}` / `{kind:"image",map:StateMap,source:Ref}` |
+| Domain | `{kind:"type",type:T}` / `{kind:"finite",type:Type,elements:Ref[]}` / `{kind:"product",factors:Domain[]}` / `{kind:"module",module:Ref}` / `{kind:"states",space:Ref}` / `{kind:"candidates",space:CandidateSpace}` / `{kind:"solutions",solutions:Ref}` / `{kind:"image",map:StateMap,source:Ref}` |
 | StateSpace | `{base:Architecture,slots:Slot[],state_type:P}` |
 | StateMap | `{source:Domain,target:Domain,kind:"expression",expression:Expression}` / `{source:Domain,target:Domain,kind:"finite",pairs:[Ref,Ref][]}` / `{source:Domain,target:Domain,kind:"affine",linear:ModuleMap,offset:Vector}` / `{source:Domain,target:Domain,kind:"change",base:Architecture,change:QName,instances:Ref[]}` / `{source:Domain,target:Domain,kind:"compose",first:StateMap,second:StateMap}` / `{source:Domain,target:Domain,kind:"guarded_affine",coordinates:Module,value_type:T,instances:{key:Ref,guard:Bool|AffinePart,values?:AffinePart}[]}` |
 | CandidateSpace | `{kind:"change"\|"identity",base:Architecture,bindings:Binding[],change?:QName,parameters:Domain,states:StateSpace,action:StateMap,instances:{subject:Ref,positions:Nat[]}[],guards:Expression[],requirements:LawInstance[]}` |
