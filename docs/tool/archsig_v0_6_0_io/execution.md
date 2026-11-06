@@ -48,18 +48,20 @@ Kind     ::= build | evaluate | check | map | compose | compare
            | localize | diagnose | repair | solve | quotient | needed
            | prepare | scopes | candidate | apply
 Head     ::= QName | Handle
-Argument ::= QName | Handle | Enum | Degree
+Argument ::= QName | Handle | Enum | Degree | Ordinal
 Handle   ::= "@" Id "/" Id | "$" Name ("." Name | "[" Index "]")*
 Key      ::= Name | "bind." Name
 Index    ::= "0" | [1-9][0-9]*
 Degree   ::= Index
+Ordinal  ::= Index
 ```
 
 QName、Id、Nameは[入力](inputs.md)と[Law](law.md)の定義に従う。
 ただし固定引数名と公開された射影名の位置では、then、law、some等の当該固定語を受理する。
 Lawの予約語と重なることを理由に、これらの位置の固定語を拒否しない。
 字句の間のASCII空白を無視する。文字列literal、任意式、配列literal、入れ子の問いを受け付けない。
-EnumとDegreeは次節で指定した位置だけに置ける。DegreeはJSONのNatの上限以内とする。
+Enum・Degree・Ordinalは次節で指定した位置だけに置ける。DegreeはJSONのNatの上限以内とする。
+Ordinalは candidate のindex専用の上限を持たない十進自然数であり、保存時はDecimalNat文字列とする。
 各引数名は一回だけ指定する。指定の順序に意味を持たせない。
 
 `@snapshot/subject`は現在のArchMapの原始subjectを指す。
@@ -258,9 +260,9 @@ Bool判別式は上の論理式の観測規則に従い、判別式内の等式�
 | 問いの正確な形 | 選択と返すfield |
 | --- | --- |
 | `prepare(Law,using=Change,on=Handle,internal=Handle?,B)` | `on` と B は従来の solve と同じ。`internal` は change の第1parameterと同じ entity 型の有限 Set を指す。省略時は空集合。`problem:RepairProblem`、`proposition:Proposition` |
-| `solve(Handle,within=Handle,mode=existence\|solutions?)` | 第1引数は RepairProblem、within は変更を解禁する entity の有限 Set。mode の既定は solutions。`proposition:Proposition`、solutions モードでは `solutions:SolutionSet`。双方で `range:ChangeRange` |
-| `scopes(Handle)` | RepairProblem の有限な変更単位について包含極小の修復可能範囲を全て求める。`ranges:Domain`、完全性の `proposition:Proposition` |
-| `candidate(Handle,index=Degree)` | 完全な有限 SolutionSet の要求した一候補を元座標へ復元する。`assignment:Assignment`、所属の `proposition:Proposition` |
+| `solve(Handle,within=Handle,mode=existence\|solutions?)` | 第1引数は RepairProblem、within は変更を解禁する entity の有限 Set または同じ問題の ChangeRange。mode の既定は solutions。`proposition:Proposition`、solutions モードでは `solutions:SolutionSet`。双方で `range:ChangeRange` |
+| `scopes(Handle)` | RepairProblem の有限な変更単位について包含極小の修復可能範囲を全て求める。`ranges:List<ChangeRange>`、完全性の `proposition:Proposition` |
+| `candidate(Handle,index=Ordinal)` | 完全な有限 SolutionSet の要求した一候補を元座標へ復元する。`assignment:Assignment`、所属の `proposition:Proposition` |
 | `apply(Handle,in=Handle)` | 第1引数は利用者が明示選択した Assignment、in は同じ候補域の SolutionSet。所属と再代入を検査する。`proposition:Proposition`、成立時だけ `selection:Selection`、`object:Architecture` |
 
 新しい行にも、表外の固定引数を拒否する規則を適用する。RepairProblem を指す solve には
@@ -270,13 +272,19 @@ internal / within の Set は、既存の view を evaluate して得た型付�
 
 変更単位は、prepare が生成した change の各 entity instance とする。同じ instance の更新先は
 一単位で解禁する。internal は常時変更できる instance、残りが範囲の変更単位である。
-Set の要素は基準対象内の該当 instance に属さなければならず、within は変更単位の部分集合とする。
+Set の要素は基準対象内の該当 instance に属さなければならず、within の Set は変更単位の部分集合とする。
+within に ChangeRange を指定した場合は同じ RepairProblem の enabled を使う。別の問題の範囲は
+condition_failed とする。scopes の完全な ranges は enabled のsubject参照の辞書順に並べた
+型付き List で返し、利用者は `$r.ranges[0]` のように明示選択して solve へ直接渡せる。
+List の順序は選択のための表示であり、ChangeRange の同一性は問題と enabled の集合で決まる。
+未完了時に得た範囲は partial の表示として残し、完全な ranges の値として消費させない。
 型不一致は usage、値を計算して判明する所属違反は condition_failed。
 internal の観測値が未確定なら空集合と見なさず未決とする。
 範囲外では、parameter を零にする代わりに更新先を基準 Architecture の値へ固定する。
 同じ不変な RepairProblem を各 solve / scopes が参照する。
 
 candidate の index は、完全な有限全解表示を走査するための0始まりの明示指定である。
+任意精度の Ordinal を使い、JSON Nat の上限を超える番号も指定・保存できる。
 元 subject の参照順、各元 parameter の宣言順、有限型の値の標準順に従う辞書式順序を用いる。
 Bool は false, true、有限和は constructor 宣言順、積は成分順、Fp は0からp−1とし、
 有限 container は型付き値の正規化 encoding の辞書順に従う。同じ元 Assignment の重複表示は一つとする。
@@ -300,8 +308,10 @@ apply の object は check、evaluate、localize、次の prepare / solve / repa
 p=prepare(Example.valid,using=Example.replace,on=@v/root,internal=$i.value)
 small=solve($p.problem,within=$xy.value,mode=existence)
 full=solve($p.problem,within=$xyz.value)
-c=candidate($full.solutions,index=0)
-a=apply($c.assignment,in=$full.solutions)
+r=scopes($p.problem)
+minimal=solve($p.problem,within=$r.ranges[0])
+c=candidate($minimal.solutions,index=0)
+a=apply($c.assignment,in=$minimal.solutions)
 ok=check(Example.valid,on=$a.object)
 next=localize($a.object,law=Example.valid,using=Example.replace)
 ```

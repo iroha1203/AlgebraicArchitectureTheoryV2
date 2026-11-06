@@ -52,6 +52,7 @@ Selector = {kind:"declaration",name:QName}
          | {kind:"subject",snapshot:Id,subject:Id}
          | {kind:"answer",id:String,path:(String|Nat)[]}
          | {kind:"enum",value:String} | {kind:"degree",value:Nat}
+         | {kind:"ordinal",value:DecimalNat}
 Answer = {id:String,status:Decision,outputs:{Field:Ref},claim?:Ref,
           evidence:Ref[],reasons:Issue[],scope:Scope}
 Decision = "established"|"refuted"|"undetermined"
@@ -105,6 +106,8 @@ mode=solutions は、省略時も引数へ入れ、
 origin=defaultedとする。明記した同じ値はexplicitとし、textには元の要求全体を保持する。
 pathのStringはrecord欄、Natは位置を表す。
 CLIのEnumは問いごとの列挙に限定し、一般のString値として評価しない。
+candidate のindexは ordinal selectorとし、JSON数値に変換せずDecimalNat文字列で保存する。
+原始parameterの値として束縛する選択肢ではない。
 defaultsはCLIのSelectorで表さない省略の意味を、次の閉じた規則で保持する。
 
 | rule | 記録する場合と意味 |
@@ -584,7 +587,7 @@ source/targetのExpressionとValueMap、naturalityが等式左辺・右辺のAto
 
 | Type | Payload |
 | --- | --- |
-| Domain | `{kind:"type",type:T}` / `{kind:"finite",type:Type,elements:Ref[]}` / `{kind:"product",factors:Domain[]}` / `{kind:"module",module:Ref}` / `{kind:"states",space:Ref}` / `{kind:"candidates",space:CandidateSpace}` / `{kind:"solutions",solutions:Ref}` / `{kind:"image",map:StateMap,source:Ref}` |
+| Domain | `{kind:"type",type:T}` / `{kind:"finite",type:T,elements:Ref[]}` / `{kind:"product",factors:Domain[]}` / `{kind:"module",module:Ref}` / `{kind:"states",space:Ref}` / `{kind:"candidates",space:CandidateSpace}` / `{kind:"solutions",solutions:Ref}` / `{kind:"image",map:StateMap,source:Ref}` |
 | StateSpace | `{base:Architecture,slots:Slot[],state_type:P}` |
 | StateMap | `{source:Domain,target:Domain,kind:"expression",expression:Expression}` / `{source:Domain,target:Domain,kind:"finite",pairs:[Ref,Ref][]}` / `{source:Domain,target:Domain,kind:"affine",linear:ModuleMap,offset:Vector}` / `{source:Domain,target:Domain,kind:"change",base:Architecture,change:QName,instances:Ref[]}` / `{source:Domain,target:Domain,kind:"compose",first:StateMap,second:StateMap}` / `{source:Domain,target:Domain,kind:"guarded_affine",coordinates:Module,value_type:T,instances:{key:Ref,guard:Bool|AffinePart,values?:AffinePart}[]}` |
 | CandidateSpace | `{kind:"change"\|"identity",base:Architecture,bindings:Binding[],change?:QName,parameters:Domain,states:StateSpace,action:StateMap,instances:{subject:Ref,positions:Nat[]}[],guards:Expression[],requirements:LawInstance[]}` |
@@ -785,7 +788,7 @@ RepairProblem は、元 CandidateSpace、選択 Law と束縛、常時変更で�
 同じ owner の下で保持する結果型である。核が生成した部品の許容関係・共有条件・元 parameter への
 復元は内部で共有する。公開保存表現には計算の処理履歴や索引のダンプを追加しない。
 ChangeRange は同じ RepairProblem と解禁した変更単位の有限集合を保持する結果型である。
-scopes の ranges は ChangeRange を要素とする Domain とし、各要素の修復可能性と
+scopes の ranges は ChangeRange を要素とする型付き List とし、各要素の修復可能性と
 真部分集合の修復不能性、一覧の完全性を区別して保持する。
 
 | Type | Payload |
@@ -795,7 +798,8 @@ scopes の ranges は ChangeRange を要素とする Domain とし、各要素�
 | Selection | `{domain:CandidateSpace,solutions:SolutionSet,parameters:Assignment,object:Architecture,rechecks:Proposition[]}` |
 
 RepairProblem、ChangeRange、Selection は結果専用の Type とし、Law の原始型へ追加しない。
-有限 Domain の type は、その要素が原始値なら原始型、範囲一覧なら ChangeRange とする。
+ranges のNode.typeは `["List","ChangeRange"]`、payloadは既出ChangeRangeへのRefのarrayとする。
+各ChangeRangeは同じRepairProblemを指し、enabledの集合が同じ要素を重複させない。
 internal と units の要素は change の entity instance であり、互いに交わらず domain.instances を分割する。
 enabled は同じ units の部分集合。RepairProblem の domain は範囲を課す前の全候補域を表す。
 範囲で絞った SolutionSet も同じ domain を持ち、範囲を満たす元 Assignment の部分集合である。
