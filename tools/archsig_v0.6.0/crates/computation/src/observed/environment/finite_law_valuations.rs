@@ -1218,6 +1218,7 @@ pub(in crate::observed) struct FactorCondition {
     pub positive: bool,
 }
 pub(in crate::observed) struct FactorBody<'a> {
+    pub original_context: bool,
     pub expression: usize,
     pub reading: &'a str,
     pub bindings: &'a [(String, Scalar)],
@@ -1392,6 +1393,9 @@ fn probe_body(
     }
     let gated = factor.as_ref().is_some_and(|f| !f.conditions.is_empty());
     let (body, reading, conditions) = if let Some(factor) = factor {
+        if !factor.original_context {
+            vars.clear();
+        }
         vars.extend(
             factor
                 .bindings
@@ -1414,7 +1418,7 @@ fn probe_body(
         let Some((condition, remaining)) = conditions.split_first() else {
             return e.scoped_ast(body, vars, scope, reading);
         };
-        let mut local = vars.clone();
+        let mut local = BTreeMap::new();
         local.extend(
             condition
                 .bindings

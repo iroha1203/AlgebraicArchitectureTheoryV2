@@ -19,7 +19,8 @@ pub(in crate::observed) struct Output {
     pub fact: Fact,
     pub subject: usize,
     pub column: usize,
-    pub baseline: usize,
+    // 旧SolutionSetの全更新からの復元では、上書き前値が未観測でもよい。
+    pub baseline: Option<usize>,
 }
 #[derive(Debug)]
 pub(in crate::observed) struct Compiled {
@@ -384,20 +385,24 @@ pub(in crate::observed) fn compile(
             )?;
             scope.merge(&base.scope);
             support.extend(base.support.iter().cloned());
-            let Some(base_value) = base.known_value else {
+            let base_value = base.known_value;
+            if base_value.is_none()
+                && request.kind == crate::observed::request::QuestionKind::Prepare
+            {
                 missing.insert(fact);
                 continue;
-            };
+            }
             if base.condition_failed || base.condition_pending {
                 return Err(unsupported(
                     change.span,
                     "finite repair baseline field is not constructible",
                 ));
             }
+            let baseline = base_value.as_ref().map(|_| 0);
             let columns = field_dependencies(&fixed, *body, field, &names)?
                 .into_iter()
                 .collect::<Vec<_>>();
-            let mut values = vec![base_value];
+            let mut values = base_value.into_iter().collect::<Vec<_>>();
             let mut allowed = vec![];
             rows(&columns, &domains, c, |point| {
                 // guardの許容行へ延長できない局所割当ては更新式を読まない。
@@ -459,7 +464,7 @@ pub(in crate::observed) fn compile(
                 fact,
                 subject: subject_index,
                 column,
-                baseline: 0,
+                baseline,
             });
             domains.push(values);
         }
@@ -513,6 +518,7 @@ pub(in crate::observed) fn compile(
                         law,
                         bindings,
                         finite_law_valuations::FactorBody {
+                            original_context: factor.original_context,
                             expression: factor.expression,
                             reading: &factor.reading,
                             bindings: &factor.bindings,
@@ -615,7 +621,7 @@ mod tests {
         let req = crate::observed::request::resolve_native_for_test(
             inputs.law(),
             inputs.archmap(),
-            &["s=solve(Selected.valid,using=Selected.choose,on=@v/root)"],
+            &["s=prepare(Selected.valid,using=Selected.choose,on=@v/root)"],
             &c,
         )
         .unwrap();
@@ -666,7 +672,7 @@ mod tests {
         }
         let mut fixed = pins;
         let q = p.outputs.iter().find(|o| o.fact.subject == "q").unwrap();
-        fixed[q.column] = Some(q.baseline);
+        fixed[q.column] = q.baseline;
         assert!(!p.relations.exists(&fixed, &c).unwrap());
     }
     #[test]

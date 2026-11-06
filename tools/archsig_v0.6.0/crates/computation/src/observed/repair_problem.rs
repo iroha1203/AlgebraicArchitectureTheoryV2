@@ -291,7 +291,7 @@ fn pins(shared: &Shared, enabled: &[bool]) -> Vec<Option<usize>> {
     let mut pins = vec![None; shared.compiled.relations.variables()];
     for o in &shared.compiled.outputs {
         if !shared.internal[o.subject] && !enabled[o.subject] {
-            pins[o.column] = Some(o.baseline);
+            pins[o.column] = Some(o.baseline.expect("範囲を固定する問題には基準値がある"));
         }
     }
     pins
@@ -1061,16 +1061,36 @@ fn unsupported(
         base,
         parts: vec![],
     };
+    let origin = Witness::Architecture(witness.clone());
+    let change = origin
+        .request()
+        .arguments
+        .iter()
+        .find_map(|a| match (&*a.name, &a.value) {
+            ("using", Selector::Declaration { name }) => {
+                env.indexes.inputs.law().declarations().get(name)
+            }
+            _ => None,
+        })
+        .ok_or(internal!("未対応の候補の元changeがない"))?;
+    let Signature::Change { params, body, .. } = &change.signature else {
+        return Err(internal!("未対応の候補の元操作がchangeでない").into());
+    };
+    let parameters = params
+        .iter()
+        .map(|p| (p.name.clone(), p.ty.clone()))
+        .collect::<Vec<_>>();
+    let expression = change_result::source_expression(&mut b, env, *body, &[], &parameters)?;
     let claim = condition(&mut b, r, inputs.clone(), Decision::Undetermined)?;
     let mut a = answer(r, claim, Decision::Undetermined, BTreeMap::new(), &b);
     a.reasons.push(Reason {
         kind: ReasonKind::UnsupportedAlgorithm {
             question: r.kind,
-            operand_types: vec![],
+            operand_types: params.iter().map(|p| p.ty.clone()).collect(),
             method: "finite_repair_relation".into(),
         },
         request: r.id.clone(),
-        dependencies: inputs.clone(),
+        dependencies: vec![expression],
         missing: vec![],
         location: None,
     });

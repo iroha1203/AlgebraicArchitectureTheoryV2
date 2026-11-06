@@ -594,6 +594,8 @@ fn nonfinite_candidate_and_prepare_are_unsupported_without_blocking_independent_
     let asks = [
         "s=solve(CountCheck.nonnegative,using=CountCheck.choose,on=@v/s)",
         "c=candidate($s.solutions,index=0)",
+        "a=apply($c.assignment,in=$s.solutions)",
+        "blocked=check(CountCheck.nonnegative,on=$a.object,s=@v/s)",
         "later=check(CountCheck.nonnegative,s=@v/s)",
     ];
     let result =
@@ -608,7 +610,9 @@ fn nonfinite_candidate_and_prepare_are_unsupported_without_blocking_independent_
             .iter()
             .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
     );
-    assert_eq!(result.answers[2].status, Decision::Established);
+    assert_eq!(result.answers[2].status, Decision::Undetermined);
+    assert_eq!(result.answers[3].status, Decision::Undetermined);
+    assert_eq!(result.answers[4].status, Decision::Established);
 }
 
 #[test]
@@ -1084,4 +1088,88 @@ fn assignment_comparison_accepts_existing_repair_and_rejects_different_spaces() 
             ..
         }
     )));
+}
+
+#[test]
+fn factored_conditions_and_views_keep_their_lexical_bindings() {
+    for body in [
+        "law required valid(r:Root):if (forall c in Part[r]. c.flag) then false else (forall c in Part[r]. not c.flag);",
+        "view good(s:Root):Bool=forall c in Part[s]. not c.flag;law required valid(r:Root,c:Part):good(r);",
+    ] {
+        let input = fixture::sources(
+            &[("p", false, "p"), ("q", false, "q"), ("t", false, "t")],
+            &format!(
+                "view all(r:Root):Set<Part> =Part[r];change choose(c:Part,p:Bool)=c with {{flag=p}};{body}"
+            ),
+        );
+        let extra = if body.contains("view good") {
+            ",c=@v/p"
+        } else {
+            ""
+        };
+        let asks = vec![
+            "u=evaluate(Selected.all,r=@v/root)".to_owned(),
+            format!("old=solve(Selected.valid,using=Selected.choose,on=@v/root,r=@v/root{extra})"),
+            format!("p=prepare(Selected.valid,using=Selected.choose,on=@v/root,r=@v/root{extra})"),
+            "s=solve($p.problem,within=$u.value)".into(),
+            "a=candidate($old.solutions,index=0)".into(),
+            "b=candidate($s.solutions,index=0)".into(),
+            "eq=compare($a.assignment,to=$b.assignment,kind=value)".into(),
+            "no=candidate($s.solutions,index=1)".into(),
+        ];
+        let result = super::super::evaluate_observed_bytes(
+            input,
+            &asks.iter().map(String::as_str).collect::<Vec<_>>(),
+            &archsig_common::control::quiet(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        for answer in &result.answers[..7] {
+            assert_eq!(
+                answer.status,
+                Decision::Established,
+                "{} {:?}",
+                answer.id,
+                answer.reasons
+            );
+        }
+        assert_eq!(result.answers[7].status, Decision::Refuted);
+    }
+}
+
+#[test]
+fn existing_complete_solutions_select_without_observing_overwritten_values() {
+    let original = fixture::sources(
+        &[("p", false, "p")],
+        "change choose(c:Part,p:Bool)=c with {flag=p};law required valid(c:Part):c.flag;",
+    );
+    let map=String::from_utf8(original.archmap().bytes().to_vec()).unwrap().replace(r#",{"id":"flag-p","subject":"p","field":"Pattern.Part.flag","value":false,"origin":"model"}"#,"");
+    let input = archsig_input::input::InputSources::from_bytes(
+        original
+            .definitions()
+            .iter()
+            .map(|d| d.bytes().to_vec())
+            .collect(),
+        original.law().bytes().to_vec(),
+        map.into_bytes(),
+    );
+    let asks = [
+        "s=solve(Selected.valid,using=Selected.choose,on=@v/root)",
+        "c=candidate($s.solutions,index=0)",
+        "a=apply($c.assignment,in=$s.solutions)",
+        "ok=check(Selected.valid,on=$a.object,c=@v/p)",
+    ];
+    let result =
+        super::super::evaluate_observed_bytes(input, &asks, &archsig_common::control::quiet())
+            .unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    for answer in &result.answers {
+        assert_eq!(
+            answer.status,
+            Decision::Established,
+            "{} {:?}",
+            answer.id,
+            answer.reasons
+        );
+    }
 }

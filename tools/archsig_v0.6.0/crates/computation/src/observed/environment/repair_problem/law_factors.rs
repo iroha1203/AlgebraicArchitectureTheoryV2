@@ -5,6 +5,7 @@ use archsig_input::law::model::Declaration;
 
 pub(super) struct Factor {
     pub expression: usize,
+    pub original_context: bool,
     pub reading: String,
     pub bindings: Vec<(String, Scalar)>,
     pub conditions: Vec<finite_law_valuations::FactorCondition>,
@@ -59,6 +60,7 @@ impl Collector<'_, '_> {
     fn emit(&mut self, expression: usize, reading: &str, bindings: &BTreeMap<String, Scalar>) {
         self.factors.items.push(Factor {
             expression,
+            original_context: false,
             reading: reading.into(),
             bindings: bindings
                 .iter()
@@ -315,7 +317,7 @@ impl Collector<'_, '_> {
                                 .iter()
                                 .any(|f| self.outputs.iter().any(|o| same_slot(&o.fact, f)))
                         {
-                            let mut nested = bindings.clone();
+                            let mut nested = BTreeMap::new();
                             for (parameter, value) in params.iter().zip(&actual) {
                                 nested.insert(
                                     parameter.name.clone(),
@@ -366,6 +368,12 @@ pub(super) fn collect(
     let bindings = bindings.iter().cloned().collect::<BTreeMap<_, _>>();
     if params.iter().any(|p| !bindings.contains_key(&p.name)) {
         collector.emit(*body, &law.reading, &bindings);
+        collector
+            .factors
+            .items
+            .last_mut()
+            .expect("元式の因子")
+            .original_context = true;
     } else {
         collector.collect(*body, &law.reading, &bindings)?;
     }
