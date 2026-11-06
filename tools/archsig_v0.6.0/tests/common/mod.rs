@@ -50,6 +50,7 @@ pub mod public_relation;
 pub mod public_term_compare;
 pub mod recursive_tree;
 pub mod reference_completions;
+pub mod repair_observation_data;
 pub mod repair_problem_data;
 pub mod request_acceptance_data;
 pub mod term_equality;

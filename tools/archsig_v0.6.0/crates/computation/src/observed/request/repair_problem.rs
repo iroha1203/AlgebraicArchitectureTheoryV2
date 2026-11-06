@@ -3,7 +3,10 @@ use super::*;
 pub(super) fn is_custom(r: &Request) -> bool {
     matches!(
         r.kind,
-        QuestionKind::Scopes | QuestionKind::Candidate | QuestionKind::Apply
+        QuestionKind::Scopes
+            | QuestionKind::Candidate
+            | QuestionKind::Apply
+            | QuestionKind::Observe
     ) || (r.kind == QuestionKind::Solve && matches!(r.head, Selector::Answer { .. }))
 }
 pub(super) fn resolve(
@@ -119,6 +122,7 @@ fn root(t: ProjectionType) -> Option<String> {
         ProjectionType::RepairProblem(r)
         | ProjectionType::ChangeRange(r)
         | ProjectionType::RangeList(r)
+        | ProjectionType::RepairObservation(r)
         | ProjectionType::Selection(r)
         | ProjectionType::SolutionSet(r)
         | ProjectionType::Assignment(r) => Some(r),
@@ -155,9 +159,20 @@ pub(super) fn output_type(
         let roots = build::root_types(law, map, requests, names, &b, c)?;
         roots.into_iter().next().ok_or_else(fail)?
     } else {
-        root(plan(law, map, requests, names, r, &r.head, c)?).ok_or_else(fail)?
+        let selector = if r.kind == QuestionKind::Observe {
+            &r.arguments
+                .iter()
+                .find(|a| a.name == "on")
+                .ok_or_else(fail)?
+                .value
+        } else {
+            &r.head
+        };
+        root(plan(law, map, requests, names, r, selector, c)?).ok_or_else(fail)?
     };
     Ok(match (r.kind, field) {
+        (QuestionKind::Observe, "plan") => ProjectionType::RepairObservation(owner),
+        (QuestionKind::Observe, "solutions") => ProjectionType::SolutionSet(owner),
         (QuestionKind::Prepare, "problem") => ProjectionType::RepairProblem(owner),
         (QuestionKind::Solve, "solutions") => ProjectionType::SolutionSet(owner),
         (QuestionKind::Solve, "range") => ProjectionType::ChangeRange(owner),
@@ -168,7 +183,7 @@ pub(super) fn output_type(
         _ => return Err(fail()),
     })
 }
-fn origin<'a>(
+pub(super) fn origin<'a>(
     r: &'a Request,
     requests: &'a [Request],
     names: &BTreeMap<String, usize>,
@@ -178,7 +193,12 @@ fn origin<'a>(
         if current.kind == QuestionKind::Prepare {
             return Some(current);
         }
-        let Selector::Answer { id, .. } = &current.head else {
+        let head = if current.kind == QuestionKind::Observe {
+            &current.arguments.iter().find(|a| a.name == "on")?.value
+        } else {
+            &current.head
+        };
+        let Selector::Answer { id, .. } = head else {
             return None;
         };
         current = &requests[*names.get(id)?];
@@ -193,6 +213,38 @@ pub(super) fn check_internal(
     r: &Request,
     c: &Control,
 ) -> Result<(), ResolveFailure> {
+    if let Some(RequestArgument {
+        value: Selector::Declaration { name },
+        ..
+    }) = r.arguments.iter().find(|a| a.name == "inputs")
+    {
+        let Signature::View { params, .. } = &law.declarations()[name].signature else {
+            unreachable!()
+        };
+        let Signature::Law {
+            params: original, ..
+        } = &law.declarations()[r.declaration().expect("prepare Law")].signature
+        else {
+            unreachable!()
+        };
+        for parameter in params {
+            if !original
+                .iter()
+                .any(|p| p.name == parameter.name && p.ty.erase() == parameter.ty.erase())
+                || !r
+                    .arguments
+                    .iter()
+                    .any(|a| a.name == format!("bind.{}", parameter.name))
+            {
+                return Err(invalid(problem(
+                    RequestIssueCode::Type,
+                    &r.id,
+                    "inputs",
+                    "input view parameters must be explicit Law bindings with the same names and types",
+                )));
+            }
+        }
+    }
     if let Some(a) = r.arguments.iter().find(|a| a.name == "internal") {
         let Some(Selector::Declaration { name }) = r
             .arguments
@@ -232,6 +284,9 @@ pub(super) fn check(
     r: &Request,
     c: &Control,
 ) -> Result<(), ResolveFailure> {
+    if r.kind == QuestionKind::Observe {
+        return super::observation::check(law, map, requests, names, r, c);
+    }
     let ty = plan(law, map, requests, names, r, &r.head, c)?;
     let valid = match r.kind {
         QuestionKind::Solve | QuestionKind::Scopes => {
@@ -302,10 +357,18 @@ pub(super) fn projection(
         ProjectionType::RepairProblem(r)
         | ProjectionType::ChangeRange(r)
         | ProjectionType::RangeList(r)
+        | ProjectionType::RepairObservation(r)
         | ProjectionType::Selection(r) => r,
         _ => return None,
     };
     let next = match (ty, path.first()) {
+        (ProjectionType::RepairObservation(_), Some(ProjectionStep::Field(f))) => {
+            match f.as_str() {
+                "problem" => ProjectionType::RepairProblem(owner.clone()),
+                "range" => ProjectionType::ChangeRange(owner.clone()),
+                _ => return Some(Err("RepairObservation projection is not public".into())),
+            }
+        }
         (ProjectionType::RepairProblem(_), Some(ProjectionStep::Field(f))) => match f.as_str() {
             "domain" => ProjectionType::CandidateSpace(owner.clone()),
             "internal" | "units" => ProjectionType::Domain,

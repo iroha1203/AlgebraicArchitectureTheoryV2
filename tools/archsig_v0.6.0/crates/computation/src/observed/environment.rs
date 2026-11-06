@@ -7998,12 +7998,13 @@ impl<'a> Environment<'a> {
             self.tick()?;
             // 記録中は値だけのmemoを使えない。導出の再評価に不要なキー・値の
             // 複製も行わず、欠測の収集とcapture自体は通常どおり実行する。
-            let recording = self
-                .state
-                .evaluation_capture
-                .borrow()
-                .as_ref()
-                .is_some_and(|capture| !capture.stack.is_empty());
+            let recording = self.state.unresolved_read_positions.get().is_some()
+                || self
+                    .state
+                    .evaluation_capture
+                    .borrow()
+                    .as_ref()
+                    .is_some_and(|capture| !capture.stack.is_empty());
             let key = if recording {
                 None
             } else {
@@ -9238,6 +9239,9 @@ impl<'a> Environment<'a> {
             ..
         } = base;
         if known_value.is_none() {
+            if self.state.unresolved_read_positions.get().is_some() {
+                self.state.unresolved_read_positions.set(Some(true));
+            }
             // 元ownerが未確定な解析では値も支持Atomも追加しない。
             // 実導出がownerのMissingを保持し、整合する有限参照補完ごとに
             // このfieldを読み直すための未確定な解析結果を返す。

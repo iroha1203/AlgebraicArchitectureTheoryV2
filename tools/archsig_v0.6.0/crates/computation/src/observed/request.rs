@@ -18,6 +18,7 @@ pub(super) mod comparison;
 pub(super) mod composition;
 mod configuration_map;
 mod local;
+mod observation;
 mod repair_problem;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -38,6 +39,7 @@ pub enum QuestionKind {
     Scopes,
     Candidate,
     Apply,
+    Observe,
 }
 impl QuestionKind {
     pub fn wire(self) -> &'static str {
@@ -58,6 +60,7 @@ impl QuestionKind {
             Self::Scopes => "scopes",
             Self::Candidate => "candidate",
             Self::Apply => "apply",
+            Self::Observe => "observe",
         }
     }
 }
@@ -418,6 +421,7 @@ fn resolve_inner(
         let kind = match raw.kind.as_str() {
             "build" => QuestionKind::Build,
             "prepare" => QuestionKind::Prepare,
+            "observe" => QuestionKind::Observe,
             "scopes" => QuestionKind::Scopes,
             "candidate" => QuestionKind::Candidate,
             "apply" => QuestionKind::Apply,
@@ -441,6 +445,12 @@ fn resolve_inner(
                 )));
             }
         };
+        if kind == QuestionKind::Observe {
+            let request = observation::resolve(law, raw, text, control)?;
+            names.insert(request.id.clone(), requests.len());
+            requests.push(request);
+            continue;
+        }
         if matches!(
             kind,
             QuestionKind::Scopes | QuestionKind::Candidate | QuestionKind::Apply
@@ -607,6 +617,36 @@ fn resolve_inner(
                         "duplicate law",
                     )));
                 }
+                continue;
+            }
+            if key == "inputs" && kind == QuestionKind::Prepare {
+                let Selector::Declaration { name } = &value else {
+                    return Err(invalid(problem(
+                        RequestIssueCode::Type,
+                        &raw.id,
+                        &key,
+                        "inputs must name a view",
+                    )));
+                };
+                let view = declaration(law, name, control, &raw.id)?;
+                if !matches!(law.declarations()[&view].signature, Signature::View { .. })
+                    || law.declarations()[&view].reading != law.declarations()[&full].reading
+                {
+                    return Err(invalid(problem(
+                        RequestIssueCode::Type,
+                        &raw.id,
+                        &key,
+                        "inputs must name a view in the same reading",
+                    )));
+                }
+                arguments.insert(
+                    key.clone(),
+                    RequestArgument {
+                        name: key,
+                        value: Selector::Declaration { name: view },
+                        origin: ArgumentOrigin::Explicit,
+                    },
+                );
                 continue;
             }
             if key == "internal" && kind == QuestionKind::Prepare {
@@ -2205,7 +2245,7 @@ impl<'a> Parser<'a> {
                 Selector::Ordinal {
                     value: self.src[start..self.at].to_owned(),
                 }
-            } else if kind == "solve" && key == "mode" {
+            } else if (kind == "solve" && key == "mode") || (kind == "observe" && key == "output") {
                 Selector::Enum {
                     value: self.name(false)?,
                 }
@@ -2229,7 +2269,8 @@ impl<'a> Parser<'a> {
                     "compare" => matches!(key.as_str(), "to" | "along"),
                     "localize" => !matches!(key.as_str(), "law" | "using"),
                     "evaluate" | "check" => true,
-                    "solve" | "repair" | "prepare" => key != "using",
+                    "solve" | "repair" => key != "using",
+                    "prepare" => !matches!(key.as_str(), "using" | "inputs"),
                     "apply" => key == "in",
                     "quotient" => key != "law",
                     _ => false,

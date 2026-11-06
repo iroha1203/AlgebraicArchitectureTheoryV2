@@ -1173,3 +1173,63 @@ fn existing_complete_solutions_select_without_observing_overwritten_values() {
         );
     }
 }
+
+#[test]
+fn prepared_input_family_keeps_each_completion_and_uniform_assignments_distinct() {
+    for known in [false, true] {
+        let original = fixture::sources(
+            &[("p", true, "p"), ("q", false, "q")],
+            "view all(r:Root):Set<Part> =Part[r];view input(c:Part):Bool=c.flag;change choose(c:Part,p:Bool)=c with {flag=if p then c.flag else not c.flag};law required valid(c:Part):c.flag;",
+        );
+        let map = String::from_utf8(original.archmap().bytes().to_vec()).unwrap();
+        let map = if known {
+            map
+        } else {
+            map.replace(r#",{"id":"flag-q","subject":"q","field":"Pattern.Part.flag","value":false,"origin":"model"}"#,"")
+        };
+        let input = archsig_input::input::InputSources::from_bytes(
+            original
+                .definitions()
+                .iter()
+                .map(|d| d.bytes().to_vec())
+                .collect(),
+            original.law().bytes().to_vec(),
+            map.into_bytes(),
+        );
+        let asks = [
+            "u=evaluate(Selected.all,r=@v/root)",
+            "p=prepare(Selected.valid,using=Selected.choose,on=@v/root,inputs=Selected.input,c=@v/q)",
+            "s=solve($p.problem,within=$u.value)",
+        ];
+        let result =
+            super::super::evaluate_observed_bytes(input, &asks, &archsig_common::control::quiet())
+                .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        assert_eq!(
+            result.answers[1].status,
+            Decision::Established,
+            "{:?}",
+            result.answers[1].reasons
+        );
+        let d = data_from(&result, result.answers[1].outputs["problem"]);
+        let shared = d.source.shared.as_ref().unwrap();
+        let (family, _) = shared.family.as_ref().unwrap();
+        assert_eq!(family.points.len(), if known { 1 } else { 2 });
+        assert!(family.variants.iter().all(|v| {
+            v.relations
+                .exists(
+                    &vec![None; v.relations.variables()],
+                    &archsig_common::control::quiet(),
+                )
+                .unwrap()
+        }));
+        assert_eq!(
+            result.answers[2].status,
+            if known {
+                Decision::Established
+            } else {
+                Decision::Refuted
+            }
+        );
+    }
+}

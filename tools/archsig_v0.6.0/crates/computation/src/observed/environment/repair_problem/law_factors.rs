@@ -84,19 +84,16 @@ impl Collector<'_, '_> {
                 for (column, value) in columns.iter().zip(point) {
                     pins[*column] = Some(*value);
                 }
-                if !self.updates.exists(&pins, &self.env.control)? {
+                let Some(witness) = self.updates.witness(&pins, &self.env.control)? else {
                     return Ok(());
-                }
+                };
                 let mut fixed = self
                     .env
                     .fixed_values()
                     .into_iter()
                     .collect::<BTreeMap<_, _>>();
                 for output in self.outputs {
-                    let index = columns
-                        .iter()
-                        .position(|c| *c == output.column)
-                        .map_or(0, |i| point[i]);
+                    let index = witness[output.column];
                     fixed.insert(
                         output.fact.clone(),
                         self.domains[output.column][index].clone(),
