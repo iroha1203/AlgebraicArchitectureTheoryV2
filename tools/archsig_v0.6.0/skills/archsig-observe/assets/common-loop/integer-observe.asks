@@ -1,0 +1,5 @@
+u=evaluate(Pair.all,s=@v/s)
+n=evaluate(Pair.vacant,s=@v/s)
+p=prepare(Pair.valid,using=Pair.choose,on=@v/s,inputs=Pair.input,s=@v/s)
+d=observe(Pair.constant,on=$p.problem,within=$u.value,output=decision,s=@v/s)
+a=observe(Pair.input,on=$p.problem,within=$u.value,output=assignment,s=@v/s)

@@ -402,6 +402,8 @@ subject と他の Atom は保持する。data 宣言の必須欄は上の文法�
 
 | 判断したいこと | 選ぶ計算と読む条件 |
 | --- | --- |
+| 必要情報と変更範囲を比べ、候補を選んで再観測まで進めたい | `prepare` → `observe` / `scopes` / `solve` → `candidate` → `apply` → `check`。[共通構造の一周](references/common-loop.md)の有限・整数例を使う |
+| 担当別の対象と対応から全体を作りたい | `assemble` → `assemble_map`。原始の共有対・局所対応から全体を構成する。[同梱の構成例](references/common-loop.md#担当別のモデルを全体へ構成するとき) |
 | 許す変更の範囲で要求を満たす案があるか | `solve`。`domain` は全候補、`solutions` は要求を満たす部分集合 |
 | 要求から修復案を一つに決められるか | `repair`。解の存在と元の change parameter 割当ての一意性を分ける。同じ更新後状態になる別割当ても別解 |
 | 候補の違いをまとめても要求の評価を保てるか | `quotient`。view、対象集合、保存する Law を指定し、同じ view 値の候補間で型付き Law 評価族が一定かを調べる |

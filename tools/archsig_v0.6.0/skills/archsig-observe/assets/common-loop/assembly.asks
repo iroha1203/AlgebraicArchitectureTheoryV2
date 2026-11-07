@@ -1,0 +1,4 @@
+a=assemble(Assembly.fragments,on=@v/G,along=Assembly.interfaces,a=@v/A,b=@v/B,ma=@v/ma,mb=@v/mb)
+ok=check(Assembly.zero,on=$a.object)
+owner=evaluate(Assembly.ownerOf,on=$a.object,p=@v/b)
+m=assemble_map(Assembly.moves,from=$a.assembly,to=$a.assembly,x=@v/moveA,y=@v/moveB)
