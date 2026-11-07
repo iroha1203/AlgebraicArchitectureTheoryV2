@@ -156,12 +156,12 @@ pub(super) fn check(
     else {
         return Err(error(&r.id, "along", "along must be a view"));
     };
+    let other_types: BTreeMap<_, _> = other.iter().map(|p| (p.name.as_str(), &p.ty)).collect();
     if head.reading != along.reading
         || params.len() != other.len()
         || params
             .iter()
-            .zip(other)
-            .any(|(a, b)| a.name != b.name || a.ty != b.ty)
+            .any(|p| other_types.get(p.name.as_str()).copied() != Some(&p.ty))
     {
         return Err(error(
             &r.id,
@@ -374,4 +374,83 @@ pub(super) fn project(
         ))
     })();
     Some(result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use archsig_common::control::quiet;
+    use archsig_input::input::{InputSources, check_inputs};
+    #[allow(dead_code)]
+    mod fixture {
+        include!("../../../../../tests/common/model_assembly_data.rs");
+    }
+
+    #[test]
+    fn interface_parameters_match_by_name_and_type_independently_of_order() {
+        for (signature, accepted) in [
+            ("mb:Part,ma:Part,b:Root,a:Root", true),
+            ("a:Root,c:Root,ma:Part,mb:Part", false),
+            ("a:Root,b:Part,ma:Part,mb:Part", false),
+            ("a:Root,ma:Part,mb:Part", false),
+        ] {
+            let input = fixture::input(|s| s);
+            let law = String::from_utf8(input.law().bytes().to_vec())
+                .unwrap()
+                .replace(
+                    "interfaces(a:Root,b:Root,ma:Part,mb:Part)",
+                    &format!("interfaces({signature})"),
+                );
+            let input = InputSources::from_bytes(
+                vec![input.definitions()[0].bytes().to_vec()],
+                law.into_bytes(),
+                input.archmap().bytes().to_vec(),
+            );
+            let checked = check_inputs(input.clone(), &quiet()).unwrap();
+            let resolved = resolve_native_for_test(
+                checked.law(),
+                checked.archmap(),
+                &[fixture::ASSEMBLE],
+                &quiet(),
+            );
+            if accepted {
+                resolved.unwrap();
+                let result =
+                    crate::observed::evaluate_observed_bytes(input, &[fixture::ASSEMBLE], &quiet())
+                        .unwrap();
+                assert_eq!(
+                    result.answers[0].status,
+                    crate::observed::result::Decision::Established
+                );
+                let reference = result.answers[0].outputs["object"];
+                let Some(crate::observed::result::Payload::Construction(value)) =
+                    &result.nodes[reference.0].payload
+                else {
+                    panic!("Architecture")
+                };
+                let crate::observed::construction_result::Witness::Architecture(a) = &value.witness
+                else {
+                    panic!("Architecture witness")
+                };
+                assert_eq!(
+                    a.construction()
+                        .local_domain()
+                        .known()
+                        .iter()
+                        .map(|f| f.subject.as_str())
+                        .collect::<BTreeSet<_>>(),
+                    BTreeSet::from(["G", "a", "b", "ma", "left", "right"])
+                );
+            } else {
+                let Err(ResolveFailure::Invalid { issues, .. }) = resolved else {
+                    panic!("名前・型・個数の不一致は拒否する")
+                };
+                assert!(
+                    issues
+                        .iter()
+                        .any(|i| i.argument == "along" && i.code == RequestIssueCode::Type)
+                );
+            }
+        }
+    }
 }
