@@ -1676,43 +1676,68 @@ fn unavailable(e: &super::object_evaluate::ObjectEvaluationFailure) -> Option<Un
         _ => None,
     }
 }
-fn calculate(
+type CalculationBase = Result<Arc<super::object_law_residuals::ObjectLawResiduals>, Unavailable>;
+fn calculation_base(
     inputs: Arc<CheckedInputs>,
     a: &Arc<ArchitectureWitness>,
-    object: usize,
     c: &Control,
-) -> Result<(Option<Arc<EquationPresentation>>, Option<Unavailable>), ValidationFailure> {
+) -> Result<CalculationBase, ValidationFailure> {
     tick(c)?;
-    if object >= a.readings().objects().len() {
-        return Err(internal!("多項式の対象添字が域外").into());
-    }
-    match super::object_equation_presentation::object_equation_presentation_on(
-        inputs,
-        a.shared_construction(),
-        object,
-        c,
-    ) {
-        Ok(core) => {
-            if core.base().base().readings() != a.readings() {
+    match super::object_law_residuals::object_law_residuals_on(inputs, a.shared_construction(), c) {
+        Ok(base) => {
+            if base.base().readings() != a.readings() {
                 return Err(internal!("多項式が元対象族・readingと違う").into());
             }
-            Ok((Some(Arc::new(core)), None))
+            Ok(Ok(Arc::new(base)))
         }
         Err(e) => {
             if let Some(stop) = c.stop_reason() {
                 return Err(ValidationFailure::Stop(stop));
             }
             let reason = match &e {
-                EquationPresentationFailure::Original(
-                    super::object_law_residuals::ObjectLawResidualsFailure::Original(e),
-                ) => unavailable(e.cause()),
+                super::object_law_residuals::ObjectLawResidualsFailure::Original(e) => {
+                    unavailable(e.cause())
+                }
                 _ => None,
             };
-            if let Some(reason) = reason {
-                Ok((None, Some(reason)))
-            } else {
-                Err(failed(e, c))
+            match reason {
+                Some(reason) => Ok(Err(reason)),
+                None => Err(failed(EquationPresentationFailure::Original(e), c)),
             }
+        }
+    }
+}
+fn calculate(
+    inputs: Arc<CheckedInputs>,
+    a: &Arc<ArchitectureWitness>,
+    object: usize,
+    c: &Control,
+) -> Result<(Option<Arc<EquationPresentation>>, Option<Unavailable>), ValidationFailure> {
+    let base = calculation_base(inputs.clone(), a, c)?;
+    calculate_from_base(inputs, a, object, &base, c)
+}
+fn calculate_from_base(
+    inputs: Arc<CheckedInputs>,
+    a: &Arc<ArchitectureWitness>,
+    object: usize,
+    base: &CalculationBase,
+    c: &Control,
+) -> Result<(Option<Arc<EquationPresentation>>, Option<Unavailable>), ValidationFailure> {
+    tick(c)?;
+    if object >= a.readings().objects().len() {
+        return Err(internal!("多項式の対象添字が域外").into());
+    }
+    let base = match base {
+        Ok(base) => base.clone(),
+        Err(reason) => return Ok((None, Some(reason.clone()))),
+    };
+    match super::object_equation_presentation::presentation_from_base(inputs, base, object, c) {
+        Ok(core) => Ok((Some(Arc::new(core)), None)),
+        Err(e) => {
+            if let Some(stop) = c.stop_reason() {
+                return Err(ValidationFailure::Stop(stop));
+            }
+            Err(failed(e, c))
         }
     }
 }

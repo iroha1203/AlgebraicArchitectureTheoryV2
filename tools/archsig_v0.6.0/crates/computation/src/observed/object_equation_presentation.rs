@@ -323,7 +323,7 @@ pub struct EquationOccurrence {
 }
 #[derive(Debug)]
 pub struct EquationPresentation {
-    base: ObjectLawResiduals,
+    base: Arc<ObjectLawResiduals>,
     object: usize,
     rings: Vec<EquationRing>,
     occurrences: Vec<EquationOccurrence>,
@@ -1535,7 +1535,7 @@ pub fn object_equation_presentation(
 ) -> Result<EquationPresentation, EquationPresentationFailure> {
     let base = object_law_residuals(Arc::clone(&inputs), reading, snapshot, root, c)
         .map_err(EquationPresentationFailure::Original)?;
-    presentation_from_base(inputs, base, object, c)
+    presentation_from_base(inputs, Arc::new(base), object, c)
 }
 pub(crate) fn object_equation_presentation_on(
     inputs: Arc<CheckedInputs>,
@@ -1546,11 +1546,11 @@ pub(crate) fn object_equation_presentation_on(
     let base =
         super::object_law_residuals::object_law_residuals_on(inputs.clone(), construction, c)
             .map_err(EquationPresentationFailure::Original)?;
-    presentation_from_base(inputs, base, object, c)
+    presentation_from_base(inputs, Arc::new(base), object, c)
 }
-fn presentation_from_base(
+pub(crate) fn presentation_from_base(
     inputs: Arc<CheckedInputs>,
-    base: super::object_law_residuals::ObjectLawResiduals,
+    base: Arc<ObjectLawResiduals>,
     object: usize,
     c: &Control,
 ) -> Result<EquationPresentation, EquationPresentationFailure> {

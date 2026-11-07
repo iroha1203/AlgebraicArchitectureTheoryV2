@@ -217,11 +217,7 @@ impl Source {
                 scope,
             });
         }
-        let mut cores = vec![];
-        for object in 0..a.readings().objects().len() {
-            tick(c)?;
-            cores.push(calculate(inputs.clone(), &a, object, c)?);
-        }
+        let cores = calculate_family(inputs.clone(), &a, c)?;
         let mut parts = vec![];
         let shared = basis(&cores, &mut parts, base, c)?;
         let mut outputs = vec![];
@@ -282,4 +278,25 @@ impl Source {
             scope,
         })
     }
+}
+
+// 同じ対象族のprofiles・Law評価を共有し、対象別の式だけを構成する。
+pub(super) fn calculate_family(
+    inputs: Arc<CheckedInputs>,
+    a: &Arc<ArchitectureWitness>,
+    c: &Control,
+) -> Result<Vec<(Option<Arc<EquationPresentation>>, Option<Unavailable>)>, ValidationFailure> {
+    let residuals = calculation_base(inputs.clone(), a, c)?;
+    let mut cores = vec![];
+    for object in 0..a.readings().objects().len() {
+        tick(c)?;
+        cores.push(calculate_from_base(
+            inputs.clone(),
+            a,
+            object,
+            &residuals,
+            c,
+        )?);
+    }
+    Ok(cores)
 }

@@ -655,3 +655,32 @@ fn polynomial_explicit_nested_term_and_path_domains_keep_container_types_and_ref
         });
     }
 }
+
+#[test]
+fn family_shares_all_object_residuals_and_keeps_object_selection() {
+    let p = prepared(
+        false,
+        false,
+        "law required zero(c:Part):c.quantity=0;",
+        "root",
+    );
+    let (g, reference) = built(&p);
+    let Some(Payload::Construction(native)) = &g.nodes[reference.0].payload else {
+        panic!("Architecture");
+    };
+    let Witness::Architecture(a) = &native.witness else {
+        panic!("Architecture witness")
+    };
+    let cores = family::calculate_family(p.shared_inputs(), a, &quiet()).unwrap();
+    assert!(cores.len() > 1, "単一対象では共有の反証にならない");
+    let first = cores[0].0.as_ref().unwrap();
+    for (object, (core, reason)) in cores.iter().enumerate() {
+        assert!(reason.is_none());
+        let core = core.as_ref().unwrap();
+        assert!(
+            std::ptr::eq(first.base(), core.base()),
+            "全対象のLaw残差を複製しない"
+        );
+        assert_eq!(core.object(), object);
+    }
+}
