@@ -526,3 +526,64 @@ fn equal_field_values_keep_distinct_owned_environment_subjects() {
     assert_eq!(state_values(&env, &left, false), ["p"]);
     assert_eq!(state_values(&env, &right, false), ["q"]);
 }
+
+#[test]
+fn repeated_assembly_environment_selection_shares_transported_value_buffers() {
+    #[allow(dead_code)]
+    mod assembly_fixture {
+        include!("../../../../../../tests/common/model_assembly_data.rs");
+    }
+    let c = quiet();
+    let sources = assembly_fixture::input(|s| {
+        assembly_fixture::without_arrows(assembly_fixture::atom(
+            s,
+            "b-links",
+            Some(Json::Arr(
+                (0..256)
+                    .map(|_| Json::Arr(vec![Json::str("v"), Json::str("mb")]))
+                    .collect(),
+            )),
+        ))
+    });
+    let inputs = Arc::new(archsig_input::input::check_inputs(sources, &c).unwrap());
+    let requests = crate::observed::request::resolve_observed_requests_controlled(
+        inputs.law(),
+        inputs.archmap(),
+        &[assembly_fixture::ASSEMBLE],
+        &c,
+    )
+    .unwrap();
+    let p = PreparedObserved {
+        inputs,
+        requests,
+        object: None,
+    };
+    let env = Environment::with_prepared(&p, &c).unwrap();
+    let mut g = Graph::new(&c);
+    g.requests = p.requests().requests().to_vec();
+    let answer =
+        crate::observed::build_result::evaluate(&p, &env, &mut g, &p.requests().requests()[0], &c)
+            .unwrap();
+    assert_eq!(answer.status, Decision::Established);
+    env.validate_answer(&g, &p.requests().requests()[0], &answer)
+        .unwrap();
+    let reference = answer.outputs["object"];
+    let first = env.select_architecture(&g, reference).unwrap().unwrap();
+    let field = first
+        .overrides
+        .iter()
+        .find(|(f, _)| f.subject == "b" && f.field.as_deref() == Some("Assemble.Part.links"))
+        .unwrap();
+    let (value_ref, index, _, _) = field.1;
+    let value = &first.values[*index].1;
+    assert!(matches!(value, Scalar::List {items, ..} if items.len() == 256));
+    assert!(std::ptr::eq(value, g.scalar(*value_ref).unwrap()));
+    for _ in 0..4 {
+        let next = env.select_architecture(&g, reference).unwrap().unwrap();
+        assert!(Arc::ptr_eq(&first.values, &next.values));
+        assert!(std::ptr::eq(value, &next.values[*index].1));
+    }
+    let copied = first.clone();
+    assert!(Arc::ptr_eq(&first.values, &copied.values));
+    assert!(Arc::ptr_eq(&first.overrides, &copied.overrides));
+}

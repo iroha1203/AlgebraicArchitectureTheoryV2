@@ -2428,7 +2428,7 @@ impl Evaluator<'_, '_> {
             field: Some(field.name.clone()),
             atom: None,
         });
-        if let Some((assigned, _)) = self.environment.state.architecture_value(&fact) {
+        if let Some(assigned) = self.environment.state.architecture_value_reference(&fact) {
             let support = self.graph.get(assigned)?.support.to_vec();
             return self.finish(
                 span,

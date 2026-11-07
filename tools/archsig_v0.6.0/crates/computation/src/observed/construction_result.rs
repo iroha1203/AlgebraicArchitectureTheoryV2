@@ -362,6 +362,7 @@ fn bindings(bs: &[Binding]) -> Json {
             .collect(),
     )
 }
+type RetainedArchitectureOverrides = (Arc<Vec<(Fact, Scalar)>>, Vec<(usize, NodeRef)>);
 impl ConstructionValue {
     /// 派生Architectureの更新値を、全ての既存消費側で同じように引き継ぐ。
     pub(super) fn architecture_overrides(
@@ -393,6 +394,35 @@ impl ConstructionValue {
             ConstructionData::SharedRepair(d) => d.overrides(g),
             _ => Ok(vec![]),
         }
+    }
+    /// native由来を照合済みの環境が、既存の値bufferを共有して選ぶ。
+    pub(super) fn retained_architecture_overrides(
+        &self,
+        g: &Graph,
+        control: &Control,
+    ) -> Result<RetainedArchitectureOverrides, ValidationFailure> {
+        if let ConstructionData::Architecture { overrides, .. } = &self.data {
+            let Witness::Architecture(a) = &self.witness else {
+                return Err(internal!("構成対象の元由来がない").into());
+            };
+            let mut references = Vec::with_capacity(overrides.len());
+            for (index, _, value) in overrides.iter() {
+                control.checkpoint(archsig_common::control::Checkpoint::Expression)?;
+                if a.body.overrides.get(*index).is_none() {
+                    return Err(internal!("構成対象の更新位置がない").into());
+                }
+                references.push((*index, *value));
+            }
+            return Ok((a.body.overrides.clone(), references));
+        }
+        let mut values = vec![];
+        let mut references = vec![];
+        for (fact, reference, value) in self.architecture_overrides(g)? {
+            control.checkpoint(archsig_common::control::Checkpoint::Expression)?;
+            references.push((values.len(), reference));
+            values.push((fact, value));
+        }
+        Ok((Arc::new(values), references))
     }
     pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
         use ConstructionData as D;

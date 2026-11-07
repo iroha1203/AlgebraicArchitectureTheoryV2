@@ -11,7 +11,8 @@ pub(super) struct ArchitectureContext {
     reference: NodeRef,
     domain: Arc<ObjectDomain>,
     scope: Scope,
-    overrides: BTreeMap<Fact, (NodeRef, Scalar, Scope, Support)>,
+    values: Arc<Vec<(Fact, Scalar)>>,
+    overrides: Arc<BTreeMap<Fact, (NodeRef, usize, Scope, Support)>>,
 }
 /// 依存producerの再検査中に別の根を選んでも、呼出し側の環境を復元する。
 pub(in crate::observed) struct ArchitectureGuard<'e, 'i> {
@@ -144,27 +145,29 @@ impl<'i> Environment<'i> {
             &self.control,
         )?;
         self.tick()?;
+        // validate_atが元のslot/index/value/所有者を照合済み。値bufferは所有し直さない。
+        let (values, references) = value.retained_architecture_overrides(graph, &self.control)?;
+        let overrides = references
+            .into_iter()
+            .map(|(index, reference)| {
+                self.tick()?;
+                let (fact, _) = values.get(index).ok_or(internal!("環境の更新位置がない"))?;
+                let value = graph.get(reference)?;
+                Ok((
+                    fact.clone(),
+                    (reference, index, value.scope.clone(), value.support.clone()),
+                ))
+            })
+            .collect::<Result<BTreeMap<_, _>, ValidationFailure>>()?;
         Ok(Some(ArchitectureContext {
             reference,
             domain: Arc::new(domain),
             scope: node.scope.clone(),
-            overrides: value
-                .architecture_overrides(graph)?
-                .into_iter()
-                .map(|(f, r, v)| {
-                    Ok((
-                        f,
-                        (
-                            r,
-                            v,
-                            graph.get(r)?.scope.clone(),
-                            graph.get(r)?.support.clone(),
-                        ),
-                    ))
-                })
-                .collect::<Result<_, ValidationFailure>>()?,
+            values,
+            overrides: Arc::new(overrides),
         }))
     }
+
     pub(super) fn validate_evaluation_environment(
         &self,
         graph: &Graph,
@@ -194,12 +197,18 @@ impl EvaluationState {
         self.architecture.borrow().as_ref().map(|c| c.reference)
     }
     pub(in crate::observed) fn architecture_value(&self, fact: &Fact) -> Option<(NodeRef, Scalar)> {
+        let architecture = self.architecture.borrow();
+        let architecture = architecture.as_ref()?;
+        let (reference, index, _, _) = architecture.overrides.get(fact)?;
+        Some((*reference, architecture.values.get(*index)?.1.clone()))
+    }
+    pub(in crate::observed) fn architecture_value_reference(&self, fact: &Fact) -> Option<NodeRef> {
         self.architecture
             .borrow()
             .as_ref()?
             .overrides
             .get(fact)
-            .map(|(r, v, _, _)| (*r, v.clone()))
+            .map(|(r, _, _, _)| *r)
     }
     pub(in crate::observed) fn architecture_scalar_scope(&self, fact: &Fact) -> Option<Scope> {
         self.architecture
@@ -230,7 +239,7 @@ impl EvaluationState {
             .map(|a| {
                 a.overrides
                     .iter()
-                    .map(|(f, (_, v, _, _))| (f.clone(), v.clone()))
+                    .map(|(f, (_, index, _, _))| (f.clone(), a.values[*index].1.clone()))
                     .collect()
             })
             .unwrap_or_default()

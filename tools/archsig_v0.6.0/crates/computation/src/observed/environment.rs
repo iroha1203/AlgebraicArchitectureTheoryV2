@@ -7721,7 +7721,7 @@ impl<'a> Environment<'a> {
                     atom: None,
                 });
                 if matches!(&field.slot, Slot::Missing)
-                    && self.state.architecture_value(&fact).is_none()
+                    && self.state.architecture_value_reference(&fact).is_none()
                 {
                     Some(PendingMissing { fact })
                 } else {
@@ -9860,7 +9860,7 @@ impl<'a> Environment<'a> {
             field: Some(field.name.clone()),
             atom: None,
         });
-        if let Some((assigned, _)) = self.state.architecture_value(&fact) {
+        if let Some(assigned) = self.state.architecture_value_reference(&fact) {
             if value != Some(assigned) {
                 return Err(internal!("field評価が修復Architectureの値を読まない").into());
             }

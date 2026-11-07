@@ -232,13 +232,14 @@ fn original(
     tick(c)?;
     Ok(Some((a, components, objects, universe, support, scope)))
 }
+type ComputedPatterns = (Arc<ConfigurationProfiles>, Vec<Output>, Diagram);
 fn compute(
     a: &ArchitectureWitness,
     objects: &Objects,
     universe: NodeRef,
     base: usize,
     c: &Control,
-) -> Result<Option<(Arc<ConfigurationProfiles>, Vec<Output>, Diagram)>, ValidationFailure> {
+) -> Result<Option<ComputedPatterns>, ValidationFailure> {
     tick(c)?;
     let profiles = a.shared_profiles(c).map_err(failure)?;
     if profiles.construction() != a.construction() {
