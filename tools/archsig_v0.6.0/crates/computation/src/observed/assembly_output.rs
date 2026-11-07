@@ -2,7 +2,7 @@
 use super::{
     assembly_plan::{Assembly, Failure},
     build_plan::Plan,
-    build_result::{Builder, Part},
+    build_result::Builder,
     construction_result::{self as native, ConstructionType as T},
     environment::Environment,
     request::Request,
@@ -114,27 +114,45 @@ fn attach_facts(
     Ok(())
 }
 
+pub(super) type Actions = Vec<(usize, Action)>;
+#[derive(Clone, Debug)]
+pub(super) struct Action {
+    model: std::sync::Arc<super::model_assembly::Model>,
+    index: usize,
+    restriction: bool,
+}
+impl Action {
+    pub(super) fn images(&self) -> &[Fact] {
+        if self.restriction {
+            self.model.restrictions[self.index].candidate().images()
+        } else {
+            self.model.inclusions[self.index].action().images()
+        }
+    }
+}
+impl PartialEq for Action {
+    fn eq(&self, other: &Self) -> bool {
+        self.images() == other.images()
+    }
+}
+impl Eq for Action {}
 fn map(
     b: &mut Builder<'_>,
-    core: &crate::construction::maps::ConfigurationMap,
+    descriptor: Action,
     source: NodeRef,
     target: NodeRef,
     universe: NodeRef,
     proof: NodeRef,
+    deferred: &mut Actions,
 ) -> Result<NodeRef, ValidationFailure> {
     let action = b.push(
         NodeType::Construction(T::AtomMap),
         "atom_map",
-        Json::obj([
-            ("universe", universe.wire()),
-            (
-                "images",
-                Json::Arr(core.candidate().images().iter().map(Fact::wire).collect()),
-            ),
-        ]),
+        Json::obj([("universe", universe.wire())]),
         vec![universe],
         None,
     )?;
+    deferred.push((action.0 - b.base, descriptor));
     let candidate = b.push(
         NodeType::Construction(T::MapCandidate),
         "map_candidate",
@@ -188,7 +206,7 @@ pub(super) fn append(
     algebra: NodeRef,
     proof: NodeRef,
     c: &Control,
-) -> Result<(NodeRef, NodeRef), ValidationFailure> {
+) -> Result<(NodeRef, NodeRef, Actions), ValidationFailure> {
     let a = plan
         .assembly
         .as_ref()
@@ -208,6 +226,7 @@ pub(super) fn append(
             .ok_or(internal!("組立ての全生成操作がない"))?,
     )?;
     let mut inclusions = Vec::new();
+    let mut deferred = Vec::new();
     let mut args = vec![
         fragments,
         interfaces,
@@ -226,19 +245,29 @@ pub(super) fn append(
         let local = &a.locals[index];
         let inclusion = map(
             b,
-            core.operation().map(),
+            Action {
+                model: model.clone(),
+                index,
+                restriction: false,
+            },
             local.architecture.reference,
             plan.architecture.reference,
             plan.architecture.universe,
             proof,
+            &mut deferred,
         )?;
         let restriction = map(
             b,
-            &model.restrictions[index],
+            Action {
+                model: model.clone(),
+                index,
+                restriction: true,
+            },
             a.restrictions[index].reference,
             local.architecture.reference,
             plan.architecture.universe,
             proof,
+            &mut deferred,
         )?;
         let locals = operations(b.g, &local.arrows)?;
         let mut generators = Vec::new();
@@ -300,7 +329,7 @@ pub(super) fn append(
         vec![proof],
         Decision::Established,
     )?;
-    Ok((result, claim))
+    Ok((result, claim, deferred))
 }
 pub(super) fn failed(
     e: &Environment<'_>,
@@ -308,7 +337,7 @@ pub(super) fn failed(
     r: &Request,
     base: usize,
     g: &Graph,
-) -> Result<(Vec<Part>, Answer), ValidationFailure> {
+) -> Result<(super::build_result::Parts, Answer), ValidationFailure> {
     let a = plan
         .assembly
         .as_ref()
@@ -523,7 +552,7 @@ pub(super) fn failed(
     judgment.reasons = reasons.clone();
     let scope = part.scope.clone();
     Ok((
-        b.parts,
+        b.parts.into(),
         Answer {
             id: r.id.clone(),
             status,

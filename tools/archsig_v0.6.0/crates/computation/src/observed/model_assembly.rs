@@ -101,7 +101,7 @@ fn counterexample_facts(rows: &[crate::construction::maps::Counterexample]) -> V
 #[derive(Debug)]
 pub(super) struct Model {
     pub construction: std::sync::Arc<ConfigurationConstruction>,
-    pub fragments: Vec<ConfigurationConstruction>,
+    pub fragments: Vec<std::sync::Arc<ConfigurationConstruction>>,
     pub overrides: std::sync::Arc<Vec<(Fact, Scalar)>>,
     pub support: Vec<Fact>,
     pub inclusions: Vec<crate::construction::maps::ConfigurationTransport>,
@@ -216,7 +216,7 @@ pub(super) fn compile(
                 parent.insert(fact.clone(), fact.clone());
             }
         }
-        fragments.push(local);
+        fragments.push(std::sync::Arc::new(local));
     }
     // 原始のscalar欠測も含め、完成した局所記述だけを対象にする。
     for fact in fragments
@@ -407,7 +407,7 @@ pub(super) fn compile(
         for fact in local.local_domain().known() {
             local_image.push(construction.transported_subject(fact).clone());
         }
-        let local = std::sync::Arc::new(local.clone());
+        let local = local.clone();
         let Some(inclusion) = construction::maps::assembled_map(
             inputs,
             local.clone(),
@@ -589,38 +589,46 @@ mod tests {
         use std::{cell::Cell, rc::Rc};
         let i = fixture::input(|s| s);
         let asks = ["v=evaluate(Assembly.amount,p=@v/a)", fixture::ASSEMBLE];
-        for signal in [
-            archsig_common::control::Signal::Int,
-            archsig_common::control::Signal::Term,
+        for (checkpoint, at) in [
+            (Checkpoint::ConfigurationMap, 12),
+            (Checkpoint::NativeResultNode, 101),
+            (Checkpoint::NativeResultNode, 601),
         ] {
-            let reached = Rc::new(Cell::new(0));
-            let count = reached.clone();
-            let c = Control::new(move |phase| {
-                if phase == Checkpoint::ConfigurationMap {
-                    count.set(count.get() + 1);
-                }
-                (count.get() >= 12).then_some(signal)
-            });
-            let result = crate::observed::evaluate_observed_bytes(i.clone(), &asks, &c).unwrap();
-            assert!(reached.get() >= 12);
-            assert_eq!(result.answers[0].status, Decision::Established);
-            assert!(
-                result
-                    .answers
-                    .iter()
-                    .skip(1)
-                    .all(|a| a.status != Decision::Established
-                        && !a.outputs.contains_key("object")
-                        && !a.outputs.contains_key("assembly"))
-            );
-            assert!(
-                result
-                    .issues
-                    .iter()
-                    .any(|r| matches!(r.kind, ReasonKind::Stop(_)))
-            );
+            for signal in [
+                archsig_common::control::Signal::Int,
+                archsig_common::control::Signal::Term,
+            ] {
+                let reached = Rc::new(Cell::new(0));
+                let count = reached.clone();
+                let c = Control::new(move |phase| {
+                    if phase == checkpoint {
+                        count.set(count.get() + 1);
+                    }
+                    (count.get() >= at).then_some(signal)
+                });
+                let result =
+                    crate::observed::evaluate_observed_bytes(i.clone(), &asks, &c).unwrap();
+                assert!(reached.get() >= at);
+                assert_eq!(result.answers[0].status, Decision::Established);
+                assert!(
+                    result
+                        .answers
+                        .iter()
+                        .skip(1)
+                        .all(|a| a.status != Decision::Established
+                            && !a.outputs.contains_key("object")
+                            && !a.outputs.contains_key("assembly"))
+                );
+                assert!(
+                    result
+                        .issues
+                        .iter()
+                        .any(|r| matches!(r.kind, ReasonKind::Stop(_)))
+                );
+            }
         }
     }
+
     #[test]
     fn local_roots_generate_a_new_global_domain_and_transport_known_owners() {
         let i = inputs(|x| x);
@@ -855,6 +863,74 @@ mod tests {
                 Arc::ptr_eq(w, original).then_some(&n.support)
             })
             .collect();
+        let model = result
+            .nodes
+            .iter()
+            .find_map(|n| match &n.payload {
+                Some(Payload::Construction(v)) => match &v.data {
+                    crate::observed::construction_result::ConstructionData::Build(d) => {
+                        d.assembly_model()
+                    }
+                    _ => None,
+                },
+                _ => None,
+            })
+            .unwrap();
+        for (index, fragment) in model.fragments.iter().enumerate() {
+            assert!(Arc::ptr_eq(
+                fragment,
+                &model.inclusions[index]
+                    .operation()
+                    .map()
+                    .candidate()
+                    .source_construction()
+                    .unwrap()
+            ));
+            assert!(result.nodes.iter().any(|n| matches!(&n.payload, Some(Payload::Construction(v)) if matches!(&v.witness, crate::observed::construction_result::Witness::Architecture(w) if Arc::ptr_eq(fragment, &w.shared_construction())))));
+        }
+        let cores: Vec<_> = result
+            .nodes
+            .iter()
+            .filter_map(|n| match &n.payload {
+                Some(Payload::Construction(v)) => match &v.data {
+                    crate::observed::construction_result::ConstructionData::InternalArrows(d) => {
+                        Some(d.shared_core())
+                    }
+                    _ => None,
+                },
+                _ => None,
+            })
+            .collect();
+        assert!(
+            cores
+                .iter()
+                .any(|c| Arc::ptr_eq(c, &model.inclusions[0].shared_target()))
+        );
+        for inclusion in &model.inclusions {
+            assert!(
+                cores
+                    .iter()
+                    .any(|c| Arc::ptr_eq(c, &inclusion.shared_source()))
+            );
+        }
+        let lazy: Vec<_> = result
+            .nodes
+            .iter()
+            .filter_map(|n| match &n.payload {
+                Some(Payload::Construction(v)) => match &v.data {
+                    crate::observed::construction_result::ConstructionData::Build(d) => {
+                        d.assembly_action_is_lazy()
+                    }
+                    _ => None,
+                },
+                _ => None,
+            })
+            .collect();
+        assert_eq!(
+            lazy,
+            vec![true; 2 * model.fragments.len()],
+            "作用表のJSONを描画前に保持しない"
+        );
         assert!(supports.len() >= 2);
         assert_eq!(
             supports[0].as_ptr(),

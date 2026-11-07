@@ -278,19 +278,19 @@ pub(super) fn prepare(
     if let Some(model) = &model {
         for (index, local) in model.fragments.iter().enumerate() {
             c.checkpoint(Checkpoint::ConfigurationMap)?;
-            let local =
-                ArchitectureWitness::assembly_fragment(&witness, Arc::new(local.clone()), c)
-                    .map_err(failure)?;
+            let local = ArchitectureWitness::assembly_fragment(&witness, local.clone(), c)
+                .map_err(failure)?;
             let local = architecture_result::architecture(g, local, c)?;
             let objects =
                 super::object_component_diagram::retain(g, p.shared_inputs(), local.reference, c)?
                     .ok_or(internal!("局所対象の対象族が完成しない"))?;
-            let arrows = super::internal_arrow_diagram::retain(
+            let arrows = super::internal_arrow_diagram::retain_constructed(
                 g,
                 p.shared_inputs(),
                 local.reference,
                 &objects,
                 local.universe,
+                model.inclusions[index].shared_source(),
                 c,
             )?;
             locals.push(Fragment {
@@ -325,7 +325,20 @@ pub(super) fn prepare(
         restrictions,
     });
     let mut plan = if assembly.failure.is_none() {
-        build_plan::prepare_architecture(e, g, p.shared_inputs(), architecture, c)?
+        let core = assembly
+            .model
+            .as_ref()
+            .and_then(|m| m.inclusions.first())
+            .ok_or(internal!("組立ての共有操作族がない"))?
+            .shared_target();
+        build_plan::prepare_architecture_with_arrows(
+            e,
+            g,
+            p.shared_inputs(),
+            architecture,
+            Some(core),
+            c,
+        )?
     } else {
         build_plan::incomplete_architecture(e, g, architecture, c)?
     };

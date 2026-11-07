@@ -215,7 +215,7 @@ pub(super) struct Source {
     objects: Objects,
     universe: NodeRef,
     base: usize,
-    core: InternalArrows,
+    core: Arc<InternalArrows>,
     parts: Vec<Part>,
     outputs: Diagram,
     support: Support,
@@ -241,6 +241,11 @@ impl PartialEq for Data {
 }
 impl Eq for Data {}
 impl Data {
+    #[cfg(test)]
+    pub(super) fn shared_core(&self) -> &Arc<InternalArrows> {
+        &self.source.core
+    }
+
     pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
         self.part().evidence_kind()
     }
@@ -652,7 +657,26 @@ pub(super) fn retain(
     c: &Control,
 ) -> Result<Diagram, ValidationFailure> {
     <Data as super::result_kind::ResultKind>::compute_and_retain((
-        graph, inputs, reference, objects, universe, c,
+        graph, inputs, reference, objects, universe, None, c,
+    ))
+}
+pub(super) fn retain_constructed(
+    graph: &mut Graph,
+    inputs: Arc<CheckedInputs>,
+    reference: NodeRef,
+    objects: &Objects,
+    universe: NodeRef,
+    core: Arc<InternalArrows>,
+    c: &Control,
+) -> Result<Diagram, ValidationFailure> {
+    <Data as super::result_kind::ResultKind>::compute_and_retain((
+        graph,
+        inputs,
+        reference,
+        objects,
+        universe,
+        Some(core),
+        c,
     ))
 }
 pub(super) fn validate_node(
@@ -761,13 +785,14 @@ impl super::result_kind::ResultKind for Data {
         NodeRef,
         &'a Objects,
         NodeRef,
+        Option<Arc<InternalArrows>>,
         &'a Control,
     );
     type Output = Diagram;
     fn compute_and_retain<'a, 'input: 'a>(
         input: Self::Input<'a, 'input>,
     ) -> Result<Self::Output, ValidationFailure> {
-        let (graph, inputs, reference, objects, universe, c) = input;
+        let (graph, inputs, reference, objects, universe, supplied, c) = input;
         tick(c)?;
         if graph.active != graph.context_at(reference.0) {
             return Err(internal!("内部arrowの生成が元Requestでない").into());
@@ -778,8 +803,18 @@ impl super::result_kind::ResultKind for Data {
         {
             return Err(internal!("内部arrowの入力または対象表が違う").into());
         }
-        let core = internal_arrows_constructed(&inputs, a.shared_construction(), c)
-            .map_err(|e| failure(e.cause().clone()))?;
+        let core = match supplied {
+            Some(core) => {
+                if core.construction() != a.construction() {
+                    return Err(internal!("既存操作族の対象構成が違う").into());
+                }
+                core
+            }
+            None => Arc::new(
+                internal_arrows_constructed(&inputs, a.shared_construction(), c)
+                    .map_err(|e| failure(e.cause().clone()))?,
+            ),
+        };
         let (parts, outputs) = plan(&inputs, a, objects, universe, graph.nodes.len(), &core, c)?;
         let (support, scope) = metadata(graph, reference, universe)?;
         let source = Arc::new(Source {

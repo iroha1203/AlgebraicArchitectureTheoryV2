@@ -167,11 +167,39 @@ impl Part {
         self.wire_ref().and_then(EvidenceKind::from_wire)
     }
 }
+// Only assembly requests retain deferred actions; ordinary Part keeps its size.
+#[derive(Debug, PartialEq, Eq)]
+pub(super) struct Parts {
+    nodes: Vec<Part>,
+    pub(super) actions: super::assembly_output::Actions,
+}
+impl From<Vec<Part>> for Parts {
+    fn from(nodes: Vec<Part>) -> Self {
+        Self {
+            nodes,
+            actions: vec![],
+        }
+    }
+}
+impl Parts {
+    fn action(&self, index: usize) -> Option<&super::assembly_output::Action> {
+        self.actions
+            .binary_search_by_key(&index, |(at, _)| *at)
+            .ok()
+            .map(|at| &self.actions[at].1)
+    }
+}
+impl std::ops::Deref for Parts {
+    type Target = Vec<Part>;
+    fn deref(&self) -> &Self::Target {
+        &self.nodes
+    }
+}
 #[derive(Debug)]
 pub(super) struct Source {
     plan: Plan,
     base: usize,
-    parts: Vec<Part>,
+    parts: Parts,
     answer: Answer,
 }
 #[derive(Clone, Debug)]
@@ -199,7 +227,25 @@ impl Data {
         self.part().construction
     }
     pub(super) fn wire(&self) -> Json {
-        self.part().wire()
+        let mut wire = self.part().wire();
+        if let Some(action) = self.source.parts.action(self.index) {
+            let Json::Obj(fields) = &mut wire else {
+                unreachable!("作用は型付きrecordである")
+            };
+            fields.insert(
+                "images".into(),
+                Json::Arr(action.images().iter().map(Fact::wire).collect()),
+            );
+        }
+        wire
+    }
+    #[cfg(test)]
+    pub(super) fn assembly_model(&self) -> Option<&Arc<super::model_assembly::Model>> {
+        self.source.plan.assembly.as_ref()?.model.as_ref()
+    }
+    #[cfg(test)]
+    pub(super) fn assembly_action_is_lazy(&self) -> Option<bool> {
+        self.source.parts.action(self.index).map(|_| matches!(self.part().wire_ref(),Some(Json::Obj(fields)) if !fields.contains_key("images")))
     }
     pub(super) fn arguments(&self) -> Vec<NodeRef> {
         self.part().arguments.clone()
@@ -435,7 +481,7 @@ fn compute(
     base: usize,
     request: &Request,
     c: &Control,
-) -> Result<(Vec<Part>, Answer), ValidationFailure> {
+) -> Result<(Parts, Answer), ValidationFailure> {
     env.validation_graph_session(g, || compute_inner(env, g, plan, base, request, c))
 }
 
@@ -446,7 +492,7 @@ fn compute_inner(
     base: usize,
     request: &Request,
     c: &Control,
-) -> Result<(Vec<Part>, Answer), ValidationFailure> {
+) -> Result<(Parts, Answer), ValidationFailure> {
     tick(c)?;
     if plan.assembly.as_ref().is_some_and(|a| a.failure.is_some()) {
         return super::assembly_output::failed(env, plan, request, base, g);
@@ -456,6 +502,7 @@ fn compute_inner(
         base,
         parts: vec![],
     };
+    let mut deferred_actions = Vec::new();
     let mut dependencies = plan.boundary.inputs().to_vec();
     let mut status = Decision::Established;
     let mut reasons = plan.architecture.reasons.clone();
@@ -978,8 +1025,9 @@ fn compute_inner(
         )?;
         outputs.insert("algebra".into(), algebra);
         if plan.assembly.is_some() {
-            let (assembly, assembly_claim) =
+            let (assembly, assembly_claim, actions) =
                 super::assembly_output::append(env, plan, request, &mut b, algebra, claim, c)?;
+            deferred_actions = actions;
             claim = assembly_claim;
             outputs.insert("assembly".into(), assembly);
             outputs.insert("proposition".into(), claim);
@@ -990,7 +1038,10 @@ fn compute_inner(
     }
     let scope = b.parts[claim.0 - base].scope.clone();
     Ok((
-        b.parts,
+        Parts {
+            nodes: b.parts,
+            actions: deferred_actions,
+        },
         Answer {
             id: request.id.clone(),
             status,
@@ -1229,6 +1280,7 @@ impl super::result_kind::ResultKind for Data {
                     if let Some(Payload::Construction(v)) = &node.payload
                         && v.witness.request() == request
                         && matches!(v.data, D::Architecture { .. })
+                        && request.kind != super::request::QuestionKind::Assemble
                     {
                         outputs.insert("object".into(), NodeRef(index));
                         scope.merge(&node.scope);

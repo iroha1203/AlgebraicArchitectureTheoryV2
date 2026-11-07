@@ -169,6 +169,12 @@ impl ConfigurationTransport {
     pub fn operation(&self) -> &ConfigurationOperation {
         &self.operation
     }
+    pub(crate) fn shared_source(&self) -> std::sync::Arc<InternalArrows> {
+        self.source.clone()
+    }
+    pub(crate) fn shared_target(&self) -> std::sync::Arc<InternalArrows> {
+        self.target.clone()
+    }
     pub fn source(&self) -> &InternalArrows {
         &self.source
     }

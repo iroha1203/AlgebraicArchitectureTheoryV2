@@ -107,6 +107,16 @@ pub(super) fn prepare_architecture(
     architecture: Architecture,
     c: &Control,
 ) -> Result<Plan, ValidationFailure> {
+    prepare_architecture_with_arrows(env, g, inputs, architecture, None, c)
+}
+pub(super) fn prepare_architecture_with_arrows(
+    env: &Environment<'_>,
+    g: &mut Graph,
+    inputs: Arc<CheckedInputs>,
+    architecture: Architecture,
+    supplied_arrows: Option<Arc<crate::construction::maps::InternalArrows>>,
+    c: &Control,
+) -> Result<Plan, ValidationFailure> {
     tick(c)?;
     let reference = architecture.reference;
     let mut objects = None;
@@ -143,14 +153,26 @@ pub(super) fn prepare_architecture(
         if let Some(objects) = &objects {
             patterns =
                 circuit_pattern::retain(env, g, inputs.clone(), reference, Some(objects.base), c)?;
-            arrows = Some(internal_arrow_diagram::retain(
-                g,
-                inputs.clone(),
-                reference,
-                objects,
-                architecture.universe,
-                c,
-            )?);
+            arrows = Some(if let Some(core) = supplied_arrows {
+                internal_arrow_diagram::retain_constructed(
+                    g,
+                    inputs.clone(),
+                    reference,
+                    objects,
+                    architecture.universe,
+                    core,
+                    c,
+                )?
+            } else {
+                internal_arrow_diagram::retain(
+                    g,
+                    inputs.clone(),
+                    reference,
+                    objects,
+                    architecture.universe,
+                    c,
+                )?
+            });
             views = Some(view_invariant::retain(env, g, objects.base, c)?);
         }
         if let Some(table) = &laws {
