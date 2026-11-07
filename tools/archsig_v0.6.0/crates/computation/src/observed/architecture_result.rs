@@ -83,18 +83,40 @@ pub(super) struct Architecture {
     pub(super) universe: NodeRef,
     pub(super) complete: bool,
     pub(super) reasons: Vec<Reason>,
+    pub(super) overrides: Arc<Vec<(usize, NodeRef, NodeRef)>>,
 }
 pub(super) fn architecture(
     graph: &mut Graph,
     witness: Arc<ArchitectureWitness>,
     control: &Control,
 ) -> Result<Architecture, ValidationFailure> {
-    architecture_with_root(graph, witness, None, control)
+    architecture_with_root(graph, witness, None, None, control)
+}
+pub(super) fn restriction(
+    graph: &mut Graph,
+    witness: Arc<ArchitectureWitness>,
+    parent: &Architecture,
+    control: &Control,
+) -> Result<Architecture, ValidationFailure> {
+    if !witness
+        .override_parent()
+        .is_some_and(|p| Arc::ptr_eq(p, &parent.witness))
+    {
+        return Err(internal!("再制限の輸送値の親が違う").into());
+    }
+    architecture_with_root(
+        graph,
+        witness,
+        None,
+        Some(parent.overrides.clone()),
+        control,
+    )
 }
 fn architecture_with_root(
     graph: &mut Graph,
     witness: Arc<ArchitectureWitness>,
     selected_root: Option<NodeRef>,
+    inherited: Option<Arc<Vec<(usize, NodeRef, NodeRef)>>>,
     control: &Control,
 ) -> Result<Architecture, ValidationFailure> {
     tick(control)?;
@@ -245,16 +267,21 @@ fn architecture_with_root(
     }
     sort_reasons(&mut reasons);
     let complete = construction.base().configuration().is_some() && laws_complete;
-    let mut overrides = Vec::new();
-    for (index, (fact, _)) in a.overrides().iter().enumerate() {
-        tick(control)?;
-        let mut subject = fact.clone();
-        subject.field = None;
-        subject.atom = None;
-        let subject = raw(graph, &witness, &subject)?;
-        let value = put(graph, &witness, D::ConstructedField { index }, vec![])?;
-        overrides.push((index, subject, value));
-    }
+    let overrides = if let Some(inherited) = inherited {
+        inherited
+    } else {
+        let mut overrides = Vec::new();
+        for (index, (fact, _)) in a.overrides().iter().enumerate() {
+            tick(control)?;
+            let mut subject = fact.clone();
+            subject.field = None;
+            subject.atom = None;
+            let subject = raw(graph, &witness, &subject)?;
+            let value = put(graph, &witness, D::ConstructedField { index }, vec![])?;
+            overrides.push((index, subject, value));
+        }
+        Arc::new(overrides)
+    };
     let data = if complete {
         D::Architecture {
             reading: construction.reading().into(),
@@ -262,7 +289,7 @@ fn architecture_with_root(
             configuration,
             laws,
             arrows,
-            overrides,
+            overrides: overrides.clone(),
         }
     } else {
         let mut parts = vec![
@@ -295,6 +322,7 @@ fn architecture_with_root(
         universe,
         complete,
         reasons,
+        overrides,
     })
 }
 
@@ -395,7 +423,7 @@ pub(super) fn build(
         }
         _ => None,
     };
-    architecture_with_root(graph, witness, selected_root, control)
+    architecture_with_root(graph, witness, selected_root, None, control)
 }
 
 fn selected_root_reference(

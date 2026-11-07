@@ -321,16 +321,14 @@ pub(super) fn prepare(
                 .candidate()
                 .source_construction()
                 .ok_or(internal!("再制限写像の元対象がない"))?;
-            let restricted = ArchitectureWitness::from_assembled(
-                p.shared_inputs(),
-                r,
+            let restricted = ArchitectureWitness::assembly_restriction(&witness, restricted, c)
+                .map_err(failure)?;
+            restrictions.push(architecture_result::restriction(
+                g,
                 restricted,
-                model.overrides.clone(),
-                &model.support,
+                &architecture,
                 c,
-            )
-            .map_err(failure)?;
-            restrictions.push(architecture_result::architecture(g, restricted, c)?);
+            )?);
         }
     }
     input_refs.extend(locals.iter().map(|a| a.architecture.reference));

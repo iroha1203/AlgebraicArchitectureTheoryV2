@@ -547,6 +547,95 @@ mod tests {
         .unwrap()
     }
     #[test]
+    fn restrictions_share_native_values_and_support_but_keep_exact_slot_provenance() {
+        let c = Control::unlimited();
+        let inputs = inputs(|s| s);
+        let requests = crate::observed::request::resolve_observed_requests_controlled(
+            inputs.law(),
+            inputs.archmap(),
+            &[fixture::ASSEMBLE],
+            &c,
+        )
+        .unwrap();
+        let p = crate::observed::PreparedObserved {
+            inputs,
+            requests,
+            object: None,
+        };
+        let env = crate::observed::environment::Environment::with_prepared(&p, &c).unwrap();
+        let mut g = Graph::new(&c);
+        g.requests = p.requests().requests().to_vec();
+        let answer = crate::observed::build_result::evaluate(
+            &p,
+            &env,
+            &mut g,
+            &p.requests().requests()[0],
+            &c,
+        )
+        .unwrap();
+        env.validate_answer(&g, &p.requests().requests()[0], &answer)
+            .unwrap();
+        let Some(Payload::Construction(global)) = &g.get(answer.outputs["object"]).unwrap().payload
+        else {
+            panic!("native全体を要求する")
+        };
+        let crate::observed::construction_result::Witness::Architecture(parent) = &global.witness
+        else {
+            panic!("全体の由来を要求する")
+        };
+        let crate::observed::construction_result::ConstructionData::Architecture {
+            overrides, ..
+        } = &global.data
+        else {
+            panic!("完成対象を要求する")
+        };
+        assert!(overrides.len() > 1);
+        let mut restrictions = Vec::new();
+        for node in &g.nodes {
+            let Some(Payload::Construction(v)) = &node.payload else {
+                continue;
+            };
+            let crate::observed::construction_result::Witness::Architecture(w) = &v.witness else {
+                continue;
+            };
+            let crate::observed::construction_result::ConstructionData::Architecture {
+                overrides: local,
+                ..
+            } = &v.data
+            else {
+                continue;
+            };
+            if w.override_parent().is_some() {
+                assert!(Arc::ptr_eq(local, overrides));
+                assert_eq!(w.support().as_ptr(), parent.support().as_ptr());
+                assert_eq!(node.support.as_ptr(), parent.support().as_ptr());
+                restrictions.push(node);
+            }
+        }
+        assert_eq!(restrictions.len(), 2);
+        assert_eq!(g.nodes.iter().filter(|n|matches!(&n.payload,Some(Payload::Construction(v)) if matches!(v.data,crate::observed::construction_result::ConstructionData::ConstructedField {..}))).count(),overrides.len());
+        // Equal owner values from another slot still cannot replace this slot's proof.
+        assert_eq!(
+            g.scalar(overrides[0].2).unwrap(),
+            g.scalar(overrides[1].2).unwrap()
+        );
+        let mut forged = restrictions[0].clone();
+        let Some(Payload::Construction(v)) = &mut forged.payload else {
+            unreachable!()
+        };
+        let crate::observed::construction_result::ConstructionData::Architecture {
+            overrides: changed,
+            ..
+        } = &mut v.data
+        else {
+            unreachable!()
+        };
+        Arc::make_mut(changed)[0].2 = overrides[1].2;
+        forged.arguments = v.arguments();
+        let error = env.validate(&g, &forged).unwrap_err();
+        assert!(format!("{error:?}").contains("輸送値が別由来"), "{error:?}");
+    }
+    #[test]
     fn unsupported_algebra_keeps_following_object_consumers_dependency_blocked() {
         let source = fixture::input(|s| s);
         let law = String::from_utf8(source.law().bytes().to_vec())

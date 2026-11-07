@@ -98,6 +98,7 @@ fn finite_owner_completion_recheck_regenerates_missing_duplicate_assignment_and_
                 root: a.root,
                 universe: a.universe,
                 complete: a.complete,
+                overrides: a.overrides.clone(),
                 reasons: a.reasons.clone(),
             },
             boundary: old.boundary.clone(),

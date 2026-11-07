@@ -161,6 +161,10 @@ struct ArchitectureBody {
     support: Support,
     overrides: Arc<Vec<(Fact, Scalar)>>,
 }
+enum ArchitectureSupport<'a> {
+    Collect(&'a [Fact]),
+    Shared(Support),
+}
 impl PartialEq for ArchitectureWitness {
     fn eq(&self, other: &Self) -> bool {
         self.inputs.sources() == other.inputs.sources()
@@ -277,7 +281,7 @@ pub(crate) enum ConstructionData {
         configuration: NodeRef,
         laws: Vec<NodeRef>,
         arrows: Vec<NodeRef>,
-        overrides: Vec<(usize, NodeRef, NodeRef)>,
+        overrides: Arc<Vec<(usize, NodeRef, NodeRef)>>,
     },
     AtomUniverse(Vec<Fact>),
     AtomMap {
@@ -1297,6 +1301,23 @@ impl ArchitectureWitness {
         extra_support: &[Fact],
         control: &Control,
     ) -> Result<Arc<Self>, ConstructionFailure> {
+        Self::from_parts(
+            inputs,
+            request,
+            construction,
+            overrides,
+            ArchitectureSupport::Collect(extra_support),
+            control,
+        )
+    }
+    fn from_parts(
+        inputs: Arc<CheckedInputs>,
+        request: &Request,
+        construction: Arc<ConfigurationConstruction>,
+        overrides: Arc<Vec<(Fact, Scalar)>>,
+        support_source: ArchitectureSupport<'_>,
+        control: &Control,
+    ) -> Result<Arc<Self>, ConstructionFailure> {
         let reading = construction.reading();
         let root = construction.root();
         let readings = crate::construction::readings::object_reading_instances_shared(
@@ -1324,74 +1345,84 @@ impl ArchitectureWitness {
         }
         arrows.sort_by_key(|f| f.wire().canonical());
         arrows.dedup();
-        let namespaces = crate::construction::reading_namespaces(inputs.law(), reading, control)?;
-        let root_type = &find_subject(&inputs, root)
-            .map_err(ConstructionFailure::Inconsistent)?
-            .ty;
-        let mut support = construction.base().known().family().to_vec();
-        support.extend_from_slice(construction.owner_support());
-        for snapshot in inputs.archmap().snapshots() {
-            for subject in &snapshot.subjects {
-                control.checkpoint(archsig_common::control::Checkpoint::ObjectInstances)?;
-                let declaration = &inputs.definitions().declarations()[subject.ty.as_str()];
-                let owner = match &declaration.signature {
-                    archsig_input::definition::PrimitiveSignature::Entity {
-                        owner: Some(owner),
-                        ..
-                    }
-                    | archsig_input::definition::PrimitiveSignature::Arrow { owner, .. } => owner,
-                    _ => continue,
-                };
-                if owner != root_type || !namespaces.contains(&declaration.namespace) {
-                    continue;
-                }
-                // 別root所属として除外した根拠も支持へ残す。
-                support.push(Fact::from(archsig_input::archmap::FactData {
-                    snapshot: subject.snapshot.clone(),
-                    subject: subject.id.clone(),
-                    field: None,
-                    atom: None,
-                }));
-                for field in &subject.fields {
-                    if !field.name.is_owner() {
-                        continue;
-                    }
-                    if let archsig_input::archmap::Slot::Known { atom, .. } = &field.slot {
+        let support = match support_source {
+            ArchitectureSupport::Shared(support) => support,
+            ArchitectureSupport::Collect(extra_support) => {
+                let namespaces =
+                    crate::construction::reading_namespaces(inputs.law(), reading, control)?;
+                let root_type = &find_subject(&inputs, root)
+                    .map_err(ConstructionFailure::Inconsistent)?
+                    .ty;
+                let mut support = construction.base().known().family().to_vec();
+                support.extend_from_slice(construction.owner_support());
+                for snapshot in inputs.archmap().snapshots() {
+                    for subject in &snapshot.subjects {
+                        control.checkpoint(archsig_common::control::Checkpoint::ObjectInstances)?;
+                        let declaration = &inputs.definitions().declarations()[subject.ty.as_str()];
+                        let owner = match &declaration.signature {
+                            archsig_input::definition::PrimitiveSignature::Entity {
+                                owner: Some(owner),
+                                ..
+                            }
+                            | archsig_input::definition::PrimitiveSignature::Arrow {
+                                owner, ..
+                            } => owner,
+                            _ => continue,
+                        };
+                        if owner != root_type || !namespaces.contains(&declaration.namespace) {
+                            continue;
+                        }
+                        // 別root所属として除外した根拠も支持へ残す。
                         support.push(Fact::from(archsig_input::archmap::FactData {
                             snapshot: subject.snapshot.clone(),
                             subject: subject.id.clone(),
-                            field: Some(field.name.clone()),
-                            atom: Some(atom.clone()),
+                            field: None,
+                            atom: None,
                         }));
-                    }
-                }
-            }
-        }
-        for row in readings.instances() {
-            for binding in row.bindings() {
-                control.checkpoint(archsig_common::control::Checkpoint::ObjectInstances)?;
-                support.push(binding.subject().clone());
-                if matches!(binding.parameter().ty, Type::Owned(..)) {
-                    let subject = find_subject(&inputs, binding.subject())
-                        .map_err(ConstructionFailure::Inconsistent)?;
-                    for field in &subject.fields {
-                        if field.name.is_owner()
-                            && let archsig_input::archmap::Slot::Known { atom, .. } = &field.slot
-                        {
-                            support.push(Fact::from(archsig_input::archmap::FactData {
-                                snapshot: subject.snapshot.clone(),
-                                subject: subject.id.clone(),
-                                field: Some(field.name.clone()),
-                                atom: Some(atom.clone()),
-                            }));
+                        for field in &subject.fields {
+                            if !field.name.is_owner() {
+                                continue;
+                            }
+                            if let archsig_input::archmap::Slot::Known { atom, .. } = &field.slot {
+                                support.push(Fact::from(archsig_input::archmap::FactData {
+                                    snapshot: subject.snapshot.clone(),
+                                    subject: subject.id.clone(),
+                                    field: Some(field.name.clone()),
+                                    atom: Some(atom.clone()),
+                                }));
+                            }
                         }
                     }
                 }
+                for row in readings.instances() {
+                    for binding in row.bindings() {
+                        control.checkpoint(archsig_common::control::Checkpoint::ObjectInstances)?;
+                        support.push(binding.subject().clone());
+                        if matches!(binding.parameter().ty, Type::Owned(..)) {
+                            let subject = find_subject(&inputs, binding.subject())
+                                .map_err(ConstructionFailure::Inconsistent)?;
+                            for field in &subject.fields {
+                                if field.name.is_owner()
+                                    && let archsig_input::archmap::Slot::Known { atom, .. } =
+                                        &field.slot
+                                {
+                                    support.push(Fact::from(archsig_input::archmap::FactData {
+                                        snapshot: subject.snapshot.clone(),
+                                        subject: subject.id.clone(),
+                                        field: Some(field.name.clone()),
+                                        atom: Some(atom.clone()),
+                                    }));
+                                }
+                            }
+                        }
+                    }
+                }
+                support.extend_from_slice(extra_support);
+                support.sort_by_key(|f| f.wire().canonical());
+                support.dedup();
+                support.into()
             }
-        }
-        support.extend_from_slice(extra_support);
-        support.sort_by_key(|f| f.wire().canonical());
-        support.dedup();
+        };
         Ok(Arc::new(Self {
             inputs,
             request: request.clone(),
@@ -1399,7 +1430,7 @@ impl ArchitectureWitness {
                 construction,
                 readings,
                 arrows,
-                support: support.into(),
+                support,
                 overrides,
             }),
             assembly_parent: None,
@@ -1444,6 +1475,59 @@ impl ArchitectureWitness {
             body: a.body.clone(),
             assembly_parent: Some(parent.clone()),
         }))
+    }
+    pub(super) fn assembly_restriction(
+        parent: &Arc<Self>,
+        construction: Arc<ConfigurationConstruction>,
+        control: &Control,
+    ) -> Result<Arc<Self>, ConstructionFailure> {
+        let Some(transport) = parent.construction().transport() else {
+            return Err(ConstructionFailure::InvalidSelection(
+                "再制限の親が組立て対象でない".into(),
+            ));
+        };
+        if construction.reading() != parent.construction().reading()
+            || construction.root() != parent.construction().root()
+            || !construction
+                .transport()
+                .is_some_and(|t| std::ptr::eq(t, transport))
+            || !Arc::ptr_eq(
+                &construction.shared_universe(),
+                &parent.construction().shared_universe(),
+            )
+            || construction
+                .local_domain()
+                .known()
+                .iter()
+                .any(|f| !parent.construction().local_domain().known().contains(f))
+        {
+            return Err(ConstructionFailure::InvalidSelection(
+                "再制限が親組立ての部分域でない".into(),
+            ));
+        }
+        let a = Self::from_parts(
+            parent.inputs.clone(),
+            &parent.request,
+            construction,
+            parent.body.overrides.clone(),
+            ArchitectureSupport::Shared(parent.body.support.clone()),
+            control,
+        )?;
+        Ok(Arc::new(Self {
+            inputs: a.inputs.clone(),
+            request: a.request.clone(),
+            body: a.body.clone(),
+            assembly_parent: Some(parent.clone()),
+        }))
+    }
+    pub(super) fn override_parent(&self) -> Option<&Arc<Self>> {
+        self.assembly_parent
+            .as_ref()
+            .filter(|parent| Arc::ptr_eq(&self.body.overrides, &parent.body.overrides))
+    }
+    #[cfg(test)]
+    pub(super) fn support(&self) -> &Support {
+        &self.body.support
     }
     pub(super) fn selected_root(&self) -> &Fact {
         self.assembly_parent
@@ -2617,13 +2701,15 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 existence.field = None;
                 existence.atom = None;
                 require!(
-                    subject_fact(graph, *subject)? == existence
-                        && graph.scalar(*value_ref)? == scalar,
+                    subject_fact(graph, *subject)? == existence && {
+                        let actual = graph.scalar(*value_ref)?;
+                        std::ptr::eq(actual, scalar) || actual == scalar
+                    },
                     "構成対象の輸送位置・値が違う"
                 );
                 let derived = value(graph, *value_ref)?;
                 require!(
-                    derived.witness == v.witness
+                    (a.override_parent().is_some_and(|parent|matches!(&derived.witness,Witness::Architecture(owner) if Arc::ptr_eq(parent,owner))) || derived.witness == v.witness)
                         && matches!(derived.data,D::ConstructedField{index:i} if i==expected),
                     "構成対象の輸送値が別由来"
                 );
