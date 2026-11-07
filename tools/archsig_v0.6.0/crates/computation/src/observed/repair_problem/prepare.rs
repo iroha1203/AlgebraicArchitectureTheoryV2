@@ -56,7 +56,7 @@ pub(super) fn prepare(
             {
                 continue;
             }
-            let Some(s) = &d.source.shared else {
+            let Some(s) = d.source.finite() else {
                 continue;
             };
             if s.witness.construction().root() == architecture.witness.construction().root()
@@ -535,7 +535,7 @@ pub(super) fn prepare(
         answer: a,
         request: r.clone(),
         witness: architecture.witness,
-        shared: Some(shared),
+        shared: Some(Backend::Finite(shared)),
         range: None,
         ranges: BTreeMap::new(),
         chosen: None,
@@ -567,7 +567,7 @@ pub(super) fn legacy(
         tick(c)?;
         if let Some(Payload::Construction(value)) = &node.payload
             && let D::SharedRepair(d) = &value.data
-            && let Some(s) = &d.source.shared
+            && let Some(s) = d.source.finite()
             && s.problem.is_none()
             && s.domain == domain
         {

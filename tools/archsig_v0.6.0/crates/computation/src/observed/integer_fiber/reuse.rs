@@ -55,6 +55,64 @@ fn copy(matrix: &Matrix, c: &Control) -> Result<Matrix, ValidationFailure> {
     }
     Ok(result)
 }
+fn lookup(
+    pool: &SharedPool,
+    matrix: &Matrix,
+    columns: usize,
+    c: &Control,
+) -> Result<Option<(bool, Arc<Entry>)>, ValidationFailure> {
+    let pool = pool.borrow();
+    for (current, entry) in pool
+        .current
+        .iter()
+        .map(|e| (true, e))
+        .chain(pool.previous.iter().map(|e| (false, e)))
+    {
+        if matches(entry, matrix, columns, c)? {
+            return Ok(Some((current, entry.clone())));
+        }
+    }
+    Ok(None)
+}
+impl Entry {
+    pub(in crate::observed) fn matrix(&self) -> &Matrix {
+        &self.matrix
+    }
+    pub(in crate::observed) fn decomposition(&self) -> &Arc<Decomposition> {
+        &self.decomposition
+    }
+}
+/// 所有する係数表をそのまま照合keyへ移し、右辺を持たない完全な線形部品を共有する。
+pub(in crate::observed) fn factor(
+    pool: &SharedPool,
+    matrix: Matrix,
+    columns: usize,
+    c: &Control,
+) -> Result<Arc<Entry>, ValidationFailure> {
+    tick(c)?;
+    if matrix.iter().any(|r| r.len() != columns) {
+        return Err(internal!("整数行列の列数が違う").into());
+    }
+    let (current, entry) = if let Some((current, entry)) = lookup(pool, &matrix, columns, c)? {
+        #[cfg(test)]
+        REUSED.with(|n| n.set(n.get() + 1));
+        (current, entry)
+    } else {
+        let decomposition = Arc::new(decompose(&matrix, columns, c)?);
+        (
+            false,
+            Arc::new(Entry {
+                matrix,
+                columns,
+                decomposition,
+            }),
+        )
+    };
+    if !current {
+        pool.borrow_mut().current.push(entry.clone());
+    }
+    Ok(entry)
+}
 /// 係数の生成と適用条件は呼出し元が現在入力で検査する。この層の鍵は純粋なZ行列。
 pub(in crate::observed) fn solve(
     pool: &SharedPool,
@@ -67,22 +125,7 @@ pub(in crate::observed) fn solve(
     if matrix.len() != rhs.len() || matrix.iter().any(|r| r.len() != columns) {
         return Err(internal!("整数系の行列・右辺の次元が違う").into());
     }
-    let found = {
-        let pool = pool.borrow();
-        let mut found = None;
-        for (current, entry) in pool
-            .current
-            .iter()
-            .map(|e| (true, e))
-            .chain(pool.previous.iter().map(|e| (false, e)))
-        {
-            if matches(entry, matrix, columns, c)? {
-                found = Some((current, entry.clone()));
-                break;
-            }
-        }
-        found
-    };
+    let found = lookup(pool, matrix, columns, c)?;
     let (already_current, entry, reused) = if let Some((current, entry)) = found {
         (current, entry, true)
     } else {

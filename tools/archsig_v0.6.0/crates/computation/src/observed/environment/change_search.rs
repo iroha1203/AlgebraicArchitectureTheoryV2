@@ -6,7 +6,7 @@ use change_evaluation::{Candidates, SolutionRow};
 use std::sync::Arc;
 
 pub(in crate::observed) struct Search {
-    pub linear: Option<change_affine::Linear>,
+    pub linear: Option<Arc<change_affine::Linear>>,
     pub rational: Option<field_change::Linear>,
     pub pending_integer: Option<change_affine::Pending>,
     pub candidates: Option<Candidates>,
@@ -579,7 +579,7 @@ pub(in crate::observed) fn search_with_completions(
                 });
             }
             result.candidates = Some(candidates);
-            result.linear = Some(linear);
+            result.linear = Some(Arc::new(linear));
             result.complete = true;
             return Ok(());
         }

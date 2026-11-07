@@ -253,3 +253,93 @@ fn saved_observation_plan_is_rechecked_after_primitive_observation() {
         }
     }
 }
+
+#[allow(dead_code)]
+#[path = "common/integer_reobservation_data.rs"]
+mod integer_fixture;
+#[test]
+fn saved_integer_problem_preserves_exact_ordinal_and_rechecks_forged_original_assignment() {
+    let body = "view all(s:State):Set<State> =set<State>{s};view first(s:State):Z=s.h;change choose(s:State,p:Z,q:Z)=s with{h=p};law required valid(s:State):s.a*s.h=s.b;";
+    let input = integer_fixture::input(body, "2", "2");
+    let dir = workdir("integer-common-repair-save");
+    for (name, bytes) in [
+        ("d.json", input.definitions()[0].bytes()),
+        ("a.json", input.archmap().bytes()),
+        ("l.law", input.law().bytes()),
+    ] {
+        std::fs::write(dir.join(name), bytes).unwrap();
+    }
+    let asks = [
+        "u=evaluate(Pair.all,s=@v/s)",
+        "p=prepare(Pair.valid,using=Pair.choose,on=@v/s,s=@v/s)",
+        "ranges=scopes($p.problem)",
+        "s=solve($p.problem,within=$ranges.ranges[0])",
+        "c=candidate($s.solutions,index=18446744073709551617)",
+        "a=apply($c.assignment,in=$s.solutions)",
+        "ok=check(Pair.valid,on=$a.object,s=@v/s)",
+        "h=evaluate(Pair.first,on=$a.object,s=@v/s)",
+    ];
+    let run = |out: &str, reuse: Option<&str>| {
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            out,
+        ];
+        if let Some(path) = reuse {
+            args.extend(["--reuse", path]);
+        }
+        for ask in asks {
+            args.extend(["--ask", ask]);
+        }
+        run_binary(&dir, &args)
+    };
+    let first = run("first", None);
+    assert_eq!(first.code, 0, "{}", first.stdout);
+    let same = run("same", Some("first"));
+    assert_eq!(same.code, 0, "{}", same.stdout);
+    let cold = result_json(&dir, &first);
+    let warm = result_json(&dir, &same);
+    assert!(warnings(&warm).is_empty());
+    for key in ["requests", "answers", "nodes"] {
+        assert_eq!(get(&cold, key), get(&warm, key), "{key}");
+    }
+    for answer in arr(get(&warm, "answers")) {
+        assert_eq!(s(get(answer, "status")), "established");
+    }
+    let requests = arr(get(&warm, "requests"));
+    let index = arr(get(&requests[4], "arguments"))
+        .iter()
+        .find(|a| s(get(a, "name")) == "index")
+        .unwrap();
+    assert_eq!(s(get(get(index, "value"), "value")), "18446744073709551617");
+    let raw = std::fs::read_to_string(dir.join(s(get(&first.receipt, "result")))).unwrap();
+    let forged = raw.replace("\"9223372036854775809\"", "\"9223372036854775810\"");
+    assert_ne!(raw, forged);
+    std::fs::create_dir(dir.join("forged")).unwrap();
+    std::fs::write(dir.join("forged/result.json"), forged).unwrap();
+    let rejected = run("rejected", Some("forged"));
+    assert_eq!(rejected.code, 0, "{}", rejected.stdout);
+    let checked = result_json(&dir, &rejected);
+    assert!(!warnings(&checked).is_empty());
+    for key in ["requests", "answers", "nodes"] {
+        assert_eq!(get(&cold, key), get(&checked, key), "{key}");
+    }
+    let changed = integer_fixture::input(body, "2", "4");
+    std::fs::write(dir.join("a.json"), changed.archmap().bytes()).unwrap();
+    let current = run("current", Some("first"));
+    assert_eq!(current.code, 0, "{}", current.stdout);
+    let result = result_json(&dir, &current);
+    assert!(!warnings(&result).is_empty());
+    let value = get(get(&arr(get(&result, "answers"))[7], "outputs"), "value");
+    let node = arr(get(&result, "nodes"))
+        .iter()
+        .find(|n| s(get(n, "id")) == s(get(value, "node")))
+        .unwrap();
+    assert_eq!(s(get(node, "value")), "2");
+}

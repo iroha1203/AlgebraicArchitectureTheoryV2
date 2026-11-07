@@ -24,6 +24,7 @@ pub(in crate::observed) struct Linear {
     pub particular: Option<Vec<Z>>,
     pub kernel: Matrix,
     pub slots: Vec<Fact>,
+    pub unit_writes: Vec<Vec<Fact>>,
     pub action: Matrix,
     pub offset: Vec<Z>,
     pub equations: Matrix,
@@ -650,6 +651,7 @@ fn collect_updates(
     missing: &mut Pending,
     selected: Option<&str>,
     updates: &mut BTreeMap<Fact, Form>,
+    mut touched: Option<&mut std::collections::BTreeSet<Fact>>,
 ) -> Result<(), ValidationFailure> {
     let mut current = body;
     loop {
@@ -741,6 +743,9 @@ fn collect_updates(
                         field: Some(env.input_name(&format!("{entity}.{}", field.name))?),
                         atom: None,
                     });
+                    if let Some(touched) = &mut touched {
+                        touched.insert(position.clone());
+                    }
                     if let Some(prior) = updates.get(&position) {
                         if prior != form.as_ref() {
                             return Err(unsupported(
@@ -805,6 +810,7 @@ pub(in crate::observed) fn compute_update(
             missing,
             Some(field),
             &mut updates,
+            None,
         )
     })?;
     let form = if let Some(form) = updates.into_values().next() {
@@ -887,6 +893,7 @@ pub(in crate::observed) fn compute(
         }
     }
     let mut updates = BTreeMap::<Fact, Form>::new();
+    let mut unit_writes = vec![];
     let mut guard_matrix = vec![];
     let mut guard_rhs = vec![];
     for (i, subject) in subjects.iter().enumerate() {
@@ -921,6 +928,7 @@ pub(in crate::observed) fn compute(
             )?;
         }
         missing.expression = Some(*body);
+        let mut touched = std::collections::BTreeSet::new();
         collect_updates(
             env,
             *body,
@@ -930,7 +938,9 @@ pub(in crate::observed) fn compute(
             missing,
             None,
             &mut updates,
+            Some(&mut touched),
         )?;
+        unit_writes.push(touched.into_iter().collect());
     }
     let mut slots = vec![];
     let mut action = vec![];
@@ -962,6 +972,7 @@ pub(in crate::observed) fn compute(
                 particular: None,
                 kernel: fiber.decomposition.kernel.clone(),
                 slots,
+                unit_writes,
                 action,
                 offset,
                 equations: guard_matrix,
@@ -1062,6 +1073,7 @@ pub(in crate::observed) fn compute(
         particular,
         kernel,
         slots,
+        unit_writes,
         action,
         offset,
         equations: matrix,

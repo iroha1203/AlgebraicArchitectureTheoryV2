@@ -38,7 +38,7 @@ fn shared(result: &ObservedEvaluation) -> &Arc<Shared> {
     let D::SharedRepair(d) = &v.data else {
         panic!()
     };
-    d.source.shared.as_ref().unwrap()
+    d.source.finite().unwrap()
 }
 fn equivalent(current: &ObservedEvaluation, cold: &ObservedEvaluation) {
     assert_eq!(current.status(), cold.status());

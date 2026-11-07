@@ -1533,6 +1533,7 @@ pub(super) struct CandidateInput {
     pub witness: Arc<native::ArchitectureWitness>,
     pub search: change_search::Search,
     pub domain_type: ProjectionType,
+    pub integer_family: Option<super::repair_problem::integer::Family>,
 }
 pub(super) fn candidate_input(
     env: &Environment<'_>,
@@ -1552,6 +1553,7 @@ pub(super) fn candidate_input(
         let search = change_search::search(env, g, &d.source.architecture.witness, request, c)
             .map_err(|f| f.cause)?;
         Ok(CandidateInput {
+            integer_family: None,
             architecture: d.source.architecture.reference,
             witness: d.source.architecture.witness.clone(),
             search,
