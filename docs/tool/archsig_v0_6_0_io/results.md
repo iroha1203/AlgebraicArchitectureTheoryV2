@@ -699,7 +699,7 @@ Idealの零性やideal membershipを、εの零性へ読み替えない。
 
 | Type | Payload |
 | --- | --- |
-| Module | `{ring:Ring,generators:TypedValue[],relations:Ref[][],free_rank:Nat,torsion:String[],construction:{name:"free"\|"kernel"\|"image"\|"quotient",arguments:Ref[]}}` |
+| Module | `{ring:Ring,generators:TypedValue[],relations:Ref[][],free_rank:Nat,torsion:String[],construction:{name:"free"\|"kernel"\|"image"\|"quotient"\|"direct_sum",arguments:Ref[]}}` |
 | Vector | `{module:Module,coordinates:Ref[]}` |
 | ModuleMap | `{source:Module,target:Module,columns:Ref[][]}` |
 | Action | `{side:Side,stage:"allowed"\|"lawful_fiber",parameters:Domain,states:Domain,map:StateMap,parameter_kernel?:Module,stabilizer?:Module,effective?:Module,quotient?:ModuleMap,conditions:Proposition[]}` |
@@ -713,6 +713,12 @@ Idealの零性やideal membershipを、εの零性へ読み替えない。
 | Quotient | `{domain:Ref,view:QName,bindings:Binding[],classes:Domain,projection:StateMap,representation:QuotientRepresentation,law?:QName,evaluations:Evaluation[],descent?:StateMap}` |
 | Comparison | `{kind:"value"\|"word"\|"action"\|"relation",left:Ref,right:Ref}` / `{kind:"diagnostics",left:Diagnostic,right:Diagnostic,along:Operation,cochain_map?:CochainMap,cohomology_map?:ModuleMap,kernel?:Module,cokernel?:Module,class_transport?:Proposition,finite_map?:StateMap,conditions:Proposition[]}` |
 | ObservationPlan | `{request:String,requirements:{field:FactPointer,dependents:Ref[],locations:Location[]}[],blockers:Issue[]}` |
+
+Moduleの`direct_sum`は、`arguments`に置いた二つのModuleの直和を表す。
+整数修復の全解では、共有側に残る核と隠れた内部核をこの順に置き、
+両者の基底を並べた自由係数から元Assignmentへ戻す。
+これはnativeの型付き構成にも現れる。保存用の射影では他のModule構成名と同様に、
+補助的な`construction`を省いて生成元・関係・階数を保持する。
 
 Moduleのringはscalarに限る。各relationとVector.coordinatesの長さはgenerator数。
 ModuleMap.columnsはsource生成元ごとのtarget座標列で、その長さはtarget生成元数。
