@@ -2927,7 +2927,7 @@ fn evaluate_observed_with_validator(
     evaluate_observed_with_reuse(prepared, control, None, validate_answer)
 }
 
-/// 現在の検査済み三入力で再評価し、不変な有限修復関係だけを前回と共有する。
+/// 現在の検査済み三入力で再評価し、不変な有限修復関係・整数分解を前回と共有する。
 pub fn reevaluate_observed(
     previous: &ObservedEvaluation,
     prepared: PreparedObserved,
@@ -2982,6 +2982,7 @@ fn evaluate_observed_with_reuse(
     let mut verified_prefix = (0, 0, 0, 0, 0, 0);
     let mut not_implemented = None;
     let mut repair_cache = vec![];
+    let mut integer_cache = vec![];
     {
         let environment = Environment::with_prepared(&prepared, control).ok();
         if let (Some(environment), Some(previous)) = (&environment, previous) {
@@ -2995,6 +2996,8 @@ fn evaluate_observed_with_reuse(
             {
                 environment.results.repair_relations.borrow_mut().previous =
                     previous.repair_cache.clone();
+                environment.results.integer_factors.borrow_mut().previous =
+                    previous.integer_cache.clone();
             }
         }
         for &index in prepared.requests().evaluation_order() {
@@ -3380,6 +3383,8 @@ fn evaluate_observed_with_reuse(
         {
             repair_cache =
                 std::mem::take(&mut environment.results.repair_relations.borrow_mut().current);
+            integer_cache =
+                std::mem::take(&mut environment.results.integer_factors.borrow_mut().current);
         }
     }
     if internal {
@@ -3437,6 +3442,7 @@ fn evaluate_observed_with_reuse(
     };
     let evaluation = ObservedEvaluation {
         repair_cache,
+        integer_cache,
         prepared,
         nodes: graph.nodes.into_vec(),
         #[cfg(test)]

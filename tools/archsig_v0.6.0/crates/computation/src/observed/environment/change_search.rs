@@ -486,9 +486,9 @@ pub(in crate::observed) fn search_with_completions(
     };
     let computed = (|| -> Result<(), ValidationFailure> {
         let inputs = original.indexes.inputs;
-        let mut environment =
-            Environment::try_primitive_valuation(inputs, &result.valuation, control)?
-                .ok_or(internal!("元修復Architectureの代入が不適合"))?;
+        let mut environment = original
+            .try_primitive_valuation_from(&result.valuation, control)?
+            .ok_or(internal!("元修復Architectureの代入が不適合"))?;
         environment.indexes.object = Some(Arc::new(ObjectDomain::from_readings(
             inputs,
             witness.readings(),
@@ -544,7 +544,7 @@ pub(in crate::observed) fn search_with_completions(
             let mut points = vec![];
             if let Some(particular) = &linear.particular {
                 points.push(particular.clone());
-                if linear.fiber.rank < linear.fiber.right.len() {
+                if linear.fiber.decomposition.rank < linear.fiber.decomposition.right.len() {
                     points.push(
                         particular
                             .iter()
@@ -685,9 +685,9 @@ pub(in crate::observed) fn verify_point(
     control: &Control,
 ) -> Result<(), ValidationFailure> {
     control.checkpoint(Checkpoint::ChangeWitness)?;
-    let mut environment =
-        Environment::try_primitive_valuation(original.indexes.inputs, &search.valuation, control)?
-            .ok_or(internal!("元修復Architectureの代入が不適合"))?;
+    let mut environment = original
+        .try_primitive_valuation_from(&search.valuation, control)?
+        .ok_or(internal!("元修復Architectureの代入が不適合"))?;
     environment.indexes.object = Some(Arc::new(ObjectDomain::from_readings(
         original.indexes.inputs,
         witness.readings(),

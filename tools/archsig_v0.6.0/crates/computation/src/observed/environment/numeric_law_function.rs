@@ -429,6 +429,7 @@ impl System {
     fn directions(&self) -> Vec<Vec<Scalar>> {
         match &self.certificate {
             Certificate::Integer(f) => f
+                .decomposition
                 .kernel
                 .iter()
                 .map(|r| r.iter().cloned().map(Scalar::Z).collect())

@@ -398,7 +398,7 @@ pub(in crate::observed::local_result) fn diagnose(
                 Decision::Refuted
             };
             if let Some(row) = correction.obstruction {
-                let annihilator = wire::vector(&mut b, modules[1], &correction.left[row], c)?;
+                let annihilator = wire::vector(&mut b, modules[1], &correction.decomposition.left[row], c)?;
                 let pairing = change_result::value(
                     &mut b,
                     &coefficient_value(correction.transformed_rhs[row].clone()),
@@ -409,10 +409,10 @@ pub(in crate::observed::local_result) fn diagnose(
                     ("annihilator".into(), annihilator.wire()),
                     ("pairing".into(), pairing.wire()),
                 ]);
-                if row < correction.rank && correction.diagonal[row][row] > Z::one() {
+                if row < correction.decomposition.rank && correction.decomposition.diagonal[row][row] > Z::one() {
                     data.insert(
                         "modulus".into(),
-                        Json::str(correction.diagonal[row][row].to_string()),
+                        Json::str(correction.decomposition.diagonal[row][row].to_string()),
                     );
                 }
                 evidence.push(b.push(

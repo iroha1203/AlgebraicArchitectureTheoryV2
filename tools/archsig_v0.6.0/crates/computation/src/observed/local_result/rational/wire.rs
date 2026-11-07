@@ -37,7 +37,7 @@ pub(in crate::observed::local_result) fn certificate(
     dependencies: &[NodeRef],
     c: &Control,
 ) -> Result<(NodeRef, NodeRef), ValidationFailure> {
-    let n = f.right.len();
+    let n = f.decomposition.right.len();
     let equations_module = module(b, ring, a.len(), "free", vec![])?;
     let equations = map(b, parameters, equations_module, a, n, c)?;
     let rhs_ref = vector(b, equations_module, rhs, c)?;
@@ -70,7 +70,7 @@ pub(in crate::observed::local_result) fn certificate(
         let i = f
             .obstruction
             .ok_or(internal!("有理局所空解の矛盾行がない"))?;
-        let annihilator = &f.left[i];
+        let annihilator = &f.decomposition.left[i];
         let zero = integer_fiber::multiply(&vec![annihilator.clone()], a, n, c)?;
         let pairing = linear::apply(&vec![annihilator.clone()], rhs, c)?;
         if zero.iter().flatten().any(|v| !v.is_zero())

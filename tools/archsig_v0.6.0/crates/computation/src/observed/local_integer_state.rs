@@ -92,14 +92,14 @@ pub(in crate::observed::local_result) fn solutions(
         let target = wire::module(b, ring, matrix.len(), "free", laws.to_vec())?;
         (wire::map(b, ambient, target, matrix, cols, c)?, None)
     };
-    let directions = wire::module(b, ring, cols - fiber.rank, "kernel", vec![equations])?;
+    let directions = wire::module(b, ring, cols - fiber.decomposition.rank, "kernel", vec![equations])?;
     let mut args = vec![domain, equations, directions];
     args.extend_from_slice(laws);
     let representation = if let Some(certificate) = certificate {
         args.push(certificate);
         if let Some(p) = &fiber.particular {
             let particular = wire::vector(b, ambient, p, c)?;
-            let embedding = wire::map(b, directions, ambient, &fiber.kernel, cols - fiber.rank, c)?;
+            let embedding = wire::map(b, directions, ambient, &fiber.decomposition.kernel, cols - fiber.decomposition.rank, c)?;
             args.extend([particular, embedding]);
             Json::obj([
                 ("kind", Json::str("affine")),
@@ -150,7 +150,7 @@ pub(in crate::observed::local_result) fn solutions(
     )?;
     let local_fiber = linear::Fiber {
         origin: if known_rhs.is_some() { fiber.particular } else { None },
-        known: known_rhs.is_some(), basis: fiber.kernel, rank: cols - fiber.rank,
+        known: known_rhs.is_some(), rank: cols - fiber.decomposition.rank, basis: fiber.decomposition.into_kernel(),
     };
     Ok((solution, values, directions, local_fiber))
 }
@@ -514,10 +514,10 @@ fn fiber_action(
     let quotient = wire::map(b, kernel, effective, &coordinates, fiber.rank, c)?;
     let stabilizer_fiber = integer_fiber::solve(&coordinates, fiber.rank,
         &vec![Z::zero(); image.rank], c)?;
-    let stabilizer = wire::module(b, ring, fiber.rank - stabilizer_fiber.rank,
+    let stabilizer = wire::module(b, ring, fiber.rank - stabilizer_fiber.decomposition.rank,
         "kernel", vec![quotient])?;
     let stabilizer_inclusion = wire::map(b, stabilizer, kernel,
-        &stabilizer_fiber.kernel, fiber.rank - stabilizer_fiber.rank, c)?;
+        &stabilizer_fiber.decomposition.kernel, fiber.rank - stabilizer_fiber.decomposition.rank, c)?;
     let parameter_inclusion = wire::map(b, kernel, parameter_module, &fiber.basis, fiber.rank, c)?;
     let effective_inclusion = wire::map(b, effective, ambient, &image.basis, image.rank, c)?;
     // image基底への座標射影が全射であることを、整数の各単位元の持上げで検査する。
