@@ -114,7 +114,7 @@ pub(super) struct Source {
     components: NodeRef,
     objects: Objects,
     universe: NodeRef,
-    profiles: ConfigurationProfiles,
+    profiles: Arc<ConfigurationProfiles>,
     base: usize,
     outputs: Vec<Output>,
     diagram: Diagram,
@@ -233,17 +233,14 @@ fn original(
     Ok(Some((a, components, objects, universe, support, scope)))
 }
 fn compute(
-    inputs: &CheckedInputs,
     a: &ArchitectureWitness,
     objects: &Objects,
     universe: NodeRef,
     base: usize,
     c: &Control,
-) -> Result<Option<(ConfigurationProfiles, Vec<Output>, Diagram)>, ValidationFailure> {
+) -> Result<Option<(Arc<ConfigurationProfiles>, Vec<Output>, Diagram)>, ValidationFailure> {
     tick(c)?;
-    let profiles =
-        crate::construction::profiles::construct_profiles_for(inputs, a.shared_construction(), c)
-            .map_err(failure)?;
+    let profiles = a.shared_profiles(c).map_err(failure)?;
     if profiles.construction() != a.construction() {
         return Err(internal!("query patternの構成が元Architectureと違う").into());
     }
@@ -326,6 +323,10 @@ fn compute(
 impl Data {
     pub(super) fn same_pattern(&self, other: &Self) -> bool {
         self.output == other.output
+    }
+    #[cfg(test)]
+    pub(super) fn profiles(&self) -> &Arc<ConfigurationProfiles> {
+        &self.source.profiles
     }
     pub(super) fn ty(&self) -> NodeType {
         NodeType::Construction(T::CircuitPattern)
@@ -444,14 +445,8 @@ impl Environment<'_> {
         {
             return Ok(());
         }
-        let Some((profiles, outputs, diagram)) = compute(
-            &data.source.inputs,
-            &owner,
-            &objects,
-            universe,
-            data.source.base,
-            &c,
-        )?
+        let Some((profiles, outputs, diagram)) =
+            compute(&owner, &objects, universe, data.source.base, &c)?
         else {
             return Err(internal!("query patternの元全表が未完成").into());
         };
@@ -491,8 +486,7 @@ impl super::result_kind::ResultKind for Data {
             return Ok(None);
         };
         let base = g.nodes.len();
-        let Some((profiles, outputs, diagram)) = compute(&inputs, &a, &objects, universe, base, c)?
-        else {
+        let Some((profiles, outputs, diagram)) = compute(&a, &objects, universe, base, c)? else {
             return Ok(None);
         };
         let source = Arc::new(Source {

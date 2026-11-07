@@ -1544,12 +1544,22 @@ fn metadata(
     core: Option<&EquationPresentation>,
     c: &Control,
 ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+    metadata_for_cores(inputs, a, core.into_iter(), c)
+}
+fn metadata_for_cores<'a>(
+    inputs: &CheckedInputs,
+    a: &Arc<ArchitectureWitness>,
+    cores: impl Iterator<Item = &'a EquationPresentation>,
+    c: &Control,
+) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+    let mut cores = cores.peekable();
+    let has_core = cores.peek().is_some();
     let (mut support, mut scope) = native::metadata(&ConstructionValue {
         witness: Witness::Architecture(a.clone()),
         data: D::ConstructionLabel(Scalar::Text("polynomial_law".into())),
     })?;
     let env = Environment::new(inputs, c)?;
-    for ring in core.into_iter().flat_map(|core| core.rings()) {
+    for ring in cores.flat_map(|core| core.rings()) {
         for symbol in &ring.symbols {
             tick(c)?;
             let slot = env.indexes.field(
@@ -1600,7 +1610,7 @@ fn metadata(
     support.sort_by_key(|f| f.wire().canonical());
     support.dedup();
     scope.assignments = true;
-    if core.is_some() {
+    if has_core {
         super::equation_presentation_node::global_metadata(a, &mut support, &mut scope)?;
     }
     tick(c)?;
@@ -1683,13 +1693,17 @@ fn calculation_base(
     c: &Control,
 ) -> Result<CalculationBase, ValidationFailure> {
     tick(c)?;
-    match super::object_law_residuals::object_law_residuals_on(inputs, a.shared_construction(), c) {
-        Ok(base) => {
-            if base.base().readings() != a.readings() {
-                return Err(internal!("多項式が元対象族・readingと違う").into());
-            }
-            Ok(Ok(Arc::new(base)))
-        }
+    let compatibility = super::object_law_compatibility::object_law_compatibility_with(
+        inputs.clone(),
+        a.shared_profiles(c).map_err(|e| construction_failure(&e))?,
+        a.shared_readings(),
+        c,
+    )
+    .map_err(super::object_law_residuals::ObjectLawResidualsFailure::Original);
+    match compatibility
+        .and_then(|base| super::object_law_residuals::residuals_from_base(inputs, base, c))
+    {
+        Ok(base) => Ok(Ok(Arc::new(base))),
         Err(e) => {
             if let Some(stop) = c.stop_reason() {
                 return Err(ValidationFailure::Stop(stop));

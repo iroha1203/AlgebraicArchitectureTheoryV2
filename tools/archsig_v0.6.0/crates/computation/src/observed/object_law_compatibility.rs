@@ -142,8 +142,8 @@ impl LawPatternComparison {
 #[derive(Debug)]
 pub struct ObjectLawCompatibility {
     inputs: Arc<CheckedInputs>,
-    profiles: ConfigurationProfiles,
-    readings: ObjectReadingInstances,
+    profiles: Arc<ConfigurationProfiles>,
+    readings: Arc<ObjectReadingInstances>,
     laws: Vec<usize>,
     evaluations: Vec<LawReadingEvaluation>,
     comparisons: Vec<LawPatternComparison>,
@@ -513,6 +513,20 @@ pub(crate) fn object_law_compatibility_on(
         crate::construction::profiles::construct_profiles_for(&inputs, construction.clone(), c)?;
     let readings =
         crate::construction::readings::object_reading_instances_checked(&inputs, construction, c)?;
+    object_law_compatibility_with(inputs, Arc::new(profiles), Arc::new(readings), c)
+}
+pub(super) fn object_law_compatibility_with(
+    inputs: Arc<CheckedInputs>,
+    profiles: Arc<ConfigurationProfiles>,
+    readings: Arc<ObjectReadingInstances>,
+    c: &Control,
+) -> Result<ObjectLawCompatibility, ObjectLawCompatibilityFailure> {
+    if !std::ptr::eq(
+        profiles.construction(),
+        readings.shared_construction().as_ref(),
+    ) {
+        return Err(bad("profilesとreading instancesの元構成が違う").into());
+    }
     let mut profile_objects = Vec::new();
     for p in profiles.profiles() {
         tick(c)?;

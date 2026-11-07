@@ -108,3 +108,15 @@ pub fn atom(map: String, id: &str, value: Option<Json>) -> String {
     }
     map.canonical()
 }
+
+pub fn without_arrows(map: String) -> String {
+    let mut map = owned(&archsig_common::json::parse(map.as_bytes()).unwrap());
+    let snapshot = &mut items(fields(&mut map).get_mut("snapshots").unwrap())[0];
+    items(fields(snapshot).get_mut("subjects").unwrap()).retain(|subject|
+        !matches!(subject, Json::Obj(f) if ["left", "right"].iter().any(|id| f.get("id") == Some(&Json::str(*id))))
+    );
+    items(fields(snapshot).get_mut("atoms").unwrap()).retain(|atom|
+        !matches!(atom, Json::Obj(f) if ["left", "right"].iter().any(|id| f.get("subject") == Some(&Json::str(*id))))
+    );
+    map.canonical()
+}

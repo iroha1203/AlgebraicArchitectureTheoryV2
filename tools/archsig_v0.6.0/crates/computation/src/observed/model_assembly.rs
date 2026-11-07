@@ -313,30 +313,19 @@ pub(super) fn compile(
     for (from, to) in &transport {
         tick(c)?;
         let a = subject(inputs, from)?;
-        let b = subject(inputs, to)?;
         for af in &a.fields {
             tick(c)?;
-            let bf = b
-                .fields
-                .iter()
-                .find(|f| f.name == af.name)
-                .ok_or(internal!("同じ型の組立てfieldがない"))?;
-            let (Slot::Known { value: av, .. }, Slot::Known { value: bv, .. }) =
-                (&af.slot, &bf.slot)
-            else {
+            let Slot::Known { value: av, .. } = &af.slot else {
                 return Err(internal!("組立ての既知field検査が失われた").into());
             };
-            let (Some(av), Some(bv)) = (
-                data::from_input(av, &af.ty.erase(), inputs.law(), c)?,
-                data::from_input(bv, &bf.ty.erase(), inputs.law(), c)?,
-            ) else {
+            let Some(av) = data::from_input(av, &af.ty.erase(), inputs.law(), c)? else {
                 return Ok(unsupported(
                     a,
                     af,
                     format!("field `{}` の型付き値輸送に未対応", af.name),
                 ));
             };
-            if contains_term(&av, c)? || contains_term(&bv, c)? {
+            if contains_term(&av, c)? {
                 return Ok(unsupported(
                     a,
                     af,
@@ -345,8 +334,40 @@ pub(super) fn compile(
             }
             let moved_a = value_transport::transport_references(&av, inputs, &transport, c)
                 .map_err(failure)?;
+            if from == to {
+                if !data::equal(&av, &moved_a, c)? {
+                    overrides.push((field_fact(a, af), moved_a));
+                }
+                continue;
+            }
+            // 以後は異なる個体間の共有整合だけを調べる。原値はもう保持しない。
+            drop(av);
+            let b = subject(inputs, to)?;
+            let bf = b
+                .fields
+                .iter()
+                .find(|f| f.name == af.name)
+                .ok_or(internal!("同じ型の組立てfieldがない"))?;
+            let Slot::Known { value: bv, .. } = &bf.slot else {
+                return Err(internal!("組立ての既知field検査が失われた").into());
+            };
+            let Some(bv) = data::from_input(bv, &bf.ty.erase(), inputs.law(), c)? else {
+                return Ok(unsupported(
+                    a,
+                    af,
+                    format!("field `{}` の型付き値輸送に未対応", af.name),
+                ));
+            };
+            if contains_term(&bv, c)? {
+                return Ok(unsupported(
+                    a,
+                    af,
+                    format!("field `{}` は関数値を含む", af.name),
+                ));
+            }
             let moved_b = value_transport::transport_references(&bv, inputs, &transport, c)
                 .map_err(failure)?;
+            drop(bv);
             if !data::equal(&moved_a, &moved_b, c)? {
                 return Ok(Preparation::Rejected(Rejection {
                     detail: format!("共有個体のfield `{}` が参照輸送後に一致しない", af.name),
@@ -354,11 +375,9 @@ pub(super) fn compile(
                     values: Some((moved_a, moved_b)),
                 }));
             }
-            if from == to && !data::equal(&bv, &moved_b, c)? {
-                overrides.push((field_fact(b, bf), moved_b));
-            }
         }
     }
+
     // targetrootはparentのkeyでない。rootの輸送後値も明示する。
     for field in &root_subject.fields {
         tick(c)?;
@@ -556,6 +575,59 @@ mod tests {
             &Control::unlimited(),
         )
         .unwrap()
+    }
+    #[test]
+    fn identity_subject_transports_list_order_duplicates_and_self_reference() {
+        let i = inputs(|s| {
+            fixture::without_arrows(fixture::atom(
+                s,
+                "b-links",
+                Some(Json::Arr(
+                    ["mb", "b", "mb"]
+                        .into_iter()
+                        .map(|id| Json::Arr(vec![Json::str("v"), Json::str(id)]))
+                        .collect(),
+                )),
+            ))
+        });
+        let preparation = build(&i, &[(fact("ma"), fact("mb"))]);
+        let Preparation::Ready(model) = preparation else {
+            panic!("組立て成立: {preparation:?}")
+        };
+        let (_, value) = model
+            .overrides
+            .iter()
+            .find(|(slot, _)| {
+                slot.subject == "b" && slot.field.as_deref() == Some("Assemble.Part.links")
+            })
+            .unwrap();
+        let Scalar::List { items, .. } = value else {
+            panic!("List")
+        };
+        let subjects = items
+            .iter()
+            .map(|v| match v {
+                Scalar::Subject { subject, .. } => subject.as_str(),
+                _ => panic!("Part参照"),
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(subjects, ["ma", "b", "ma"]);
+        let original = subject(&i, &fact("b")).unwrap();
+        let field = original
+            .fields
+            .iter()
+            .find(|f| f.name == "Assemble.Part.links")
+            .unwrap();
+        let Slot::Known { value, .. } = &field.slot else {
+            panic!("既知原値")
+        };
+        let raw = data::from_input(value, &field.ty.erase(), i.law(), &Control::unlimited())
+            .unwrap()
+            .unwrap();
+        let Scalar::List { items, .. } = &raw else {
+            panic!("原始List")
+        };
+        assert!(matches!(&items[0], Scalar::Subject {subject,..} if subject == "mb"));
     }
     #[test]
     fn profiles_construct_and_recheck_the_current_domain_once_each() {

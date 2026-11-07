@@ -221,8 +221,6 @@ impl Source {
         let mut parts = vec![];
         let shared = basis(&cores, &mut parts, base, c)?;
         let mut outputs = vec![];
-        let mut support = vec![];
-        let mut scope = Scope::default();
         for (core, reason) in &cores {
             tick(c)?;
             let out = match (core, reason) {
@@ -251,13 +249,14 @@ impl Source {
                 }
                 _ => return Err(internal!("共有多項式族の元計算状態が不正").into()),
             };
-            let (facts, s) = metadata(&inputs, &a, core.as_deref(), c)?;
-            support.extend(facts);
-            scope.merge(&s);
             outputs.push(out);
         }
-        support.sort_by_key(|f| f.wire().canonical());
-        support.dedup();
+        let (support, scope) = metadata_for_cores(
+            &inputs,
+            &a,
+            cores.iter().filter_map(|(core, _)| core.as_deref()),
+            c,
+        )?;
         if outputs.is_empty() {
             return Err(internal!("共有多項式族のbase対象がない").into());
         }

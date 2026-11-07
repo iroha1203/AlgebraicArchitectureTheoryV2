@@ -623,6 +623,8 @@ fn four_stops_keep_complete_pattern_nodes_and_the_exact_original_context_prefix(
                 }
                 (count.get() >= at).then_some(signal)
             });
+            // 各試行のcold構成を分ける。前の試行が共有profilesを温めても停止位置を変えない。
+            let (initial, a, o) = start(&p);
             let mut g = copy(&initial, &c);
             let env = Environment::with_prepared(&p, &quiet()).unwrap();
             assert!(matches!(

@@ -684,3 +684,101 @@ fn family_shares_all_object_residuals_and_keeps_object_selection() {
         assert_eq!(core.object(), object);
     }
 }
+
+#[test]
+fn build_shares_profiles_and_readings_across_law_and_circuit_sources() {
+    #[allow(dead_code)]
+    mod assembly_fixture {
+        include!("../../../../../tests/common/model_assembly_data.rs");
+    }
+    let seen = std::rc::Rc::new(std::cell::Cell::new(0));
+    let counter = seen.clone();
+    let _observer = crate::construction::profiles::observe_profiles(move |construction| {
+        if construction.root().subject == "G" {
+            counter.set(counter.get() + 1);
+        }
+    });
+    let e = crate::observed::evaluate_observed_bytes(
+        assembly_fixture::input(|s| s),
+        &[assembly_fixture::ASSEMBLE],
+        &quiet(),
+    )
+    .unwrap();
+    assert_eq!(e.answers[0].status, Decision::Established);
+    assert_eq!(seen.get(), 1, "同じ組立てでprofilesを二度構成しない");
+    let reference = e.answers[0].outputs["object"];
+    let Some(Payload::Construction(native)) = &e.nodes[reference.0].payload else {
+        panic!("Architecture")
+    };
+    let Witness::Architecture(a) = &native.witness else {
+        panic!("Architecture witness")
+    };
+    let profiles = a.shared_profiles(&quiet()).unwrap();
+    let mut laws = 0;
+    let mut circuits = 0;
+    for node in &e.nodes {
+        let Some(Payload::Construction(native)) = &node.payload else {
+            continue;
+        };
+        match &native.data {
+            D::PolynomialLaw(data) => {
+                let core = data.source.core.as_ref().unwrap();
+                assert!(std::ptr::eq(
+                    core.base().base().profiles(),
+                    profiles.as_ref()
+                ));
+                assert!(std::ptr::eq(core.base().base().readings(), a.readings()));
+                laws += 1;
+            }
+            D::CircuitPattern(data) => {
+                assert!(Arc::ptr_eq(data.profiles(), &profiles));
+                circuits += 1;
+            }
+            _ => {}
+        }
+    }
+    assert!(laws > 0 && circuits > 0);
+    assert_eq!(seen.get(), 1);
+    for signal in [
+        archsig_common::control::Signal::Int,
+        archsig_common::control::Signal::Term,
+    ] {
+        let c = archsig_common::control::Control::new(move |_| Some(signal));
+        assert!(
+            matches!(a.shared_profiles(&c), Err(crate::construction::ConstructionFailure::Stopped(actual)) if actual == signal)
+        );
+    }
+}
+
+#[test]
+fn failed_profile_generation_is_not_retained() {
+    let p = prepared(
+        false,
+        false,
+        "law required zero(c:Part):c.quantity=0;",
+        "root",
+    );
+    let (g, reference) = built(&p);
+    let Some(Payload::Construction(native)) = &g.nodes[reference.0].payload else {
+        panic!("Architecture")
+    };
+    let Witness::Architecture(a) = &native.witness else {
+        panic!("Architecture witness")
+    };
+    let reached = std::rc::Rc::new(std::cell::Cell::new(0));
+    let counter = reached.clone();
+    let c = archsig_common::control::Control::new(move |phase| {
+        if phase == archsig_common::control::Checkpoint::ConfigurationProfile {
+            counter.set(counter.get() + 1);
+        }
+        (counter.get() >= 20).then_some(archsig_common::control::Signal::Int)
+    });
+    assert!(a.shared_profiles(&c).is_err());
+    assert!(reached.get() >= 20);
+    let profiles = a.shared_profiles(&quiet()).unwrap();
+    assert!(profiles.is_complete());
+    assert!(Arc::ptr_eq(
+        &profiles,
+        &a.shared_profiles(&quiet()).unwrap()
+    ));
+}

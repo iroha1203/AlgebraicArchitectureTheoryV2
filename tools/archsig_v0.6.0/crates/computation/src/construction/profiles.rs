@@ -2,6 +2,24 @@
 use super::maps::ObjectIdentity;
 use super::*;
 
+#[cfg(test)]
+type ProfileProbe = Box<dyn FnMut(&ConfigurationConstruction)>;
+#[cfg(test)]
+thread_local! { static PROFILE_PROBE: std::cell::RefCell<Option<ProfileProbe>> = const {std::cell::RefCell::new(None)}; }
+#[cfg(test)]
+pub(crate) struct ProfileObserver(Option<ProfileProbe>);
+#[cfg(test)]
+impl Drop for ProfileObserver {
+    fn drop(&mut self) {
+        PROFILE_PROBE.with(|p| p.replace(self.0.take()));
+    }
+}
+#[cfg(test)]
+pub(crate) fn observe_profiles(
+    probe: impl FnMut(&ConfigurationConstruction) + 'static,
+) -> ProfileObserver {
+    ProfileObserver(PROFILE_PROBE.with(|p| p.replace(Some(Box::new(probe)))))
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CircuitQuery<'a> {
     Atom {
@@ -239,6 +257,12 @@ pub(crate) fn construct_profiles_for(
     control: &Control,
 ) -> Result<ConfigurationProfiles, ConstructionFailure> {
     check(control)?;
+    #[cfg(test)]
+    PROFILE_PROBE.with_borrow_mut(|probe| {
+        if let Some(probe) = probe {
+            probe(&construction);
+        }
+    });
     let mut profiles = Vec::new();
     let base_pattern = construction
         .base()

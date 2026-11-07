@@ -19,7 +19,7 @@ use archsig_common::{canonical::Json, issue::Location, types::Type};
 use archsig_input::input::CheckedInputs;
 use archsig_input::result::Signal;
 use archsig_input::result::location_wire;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum ConstructionType {
@@ -153,14 +153,26 @@ pub(crate) struct ArchitectureWitness {
     body: Arc<ArchitectureBody>,
     assembly_parent: Option<Arc<ArchitectureWitness>>,
 }
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug)]
 struct ArchitectureBody {
     construction: Arc<ConfigurationConstruction>,
-    readings: ObjectReadingInstances,
+    readings: Arc<ObjectReadingInstances>,
+    profiles: OnceLock<Arc<crate::construction::profiles::ConfigurationProfiles>>,
     arrows: Vec<Fact>,
     support: Support,
     overrides: Arc<Vec<(Fact, Scalar)>>,
 }
+// profilesは同じ不変な構成から導出する補助値。初期化の有無は意味の等値性に含めない。
+impl PartialEq for ArchitectureBody {
+    fn eq(&self, other: &Self) -> bool {
+        self.construction == other.construction
+            && self.readings == other.readings
+            && self.arrows == other.arrows
+            && self.support == other.support
+            && self.overrides == other.overrides
+    }
+}
+impl Eq for ArchitectureBody {}
 enum ArchitectureSupport<'a> {
     Collect(&'a [Fact]),
     Shared(Support),
@@ -1428,7 +1440,8 @@ impl ArchitectureWitness {
             request: request.clone(),
             body: Arc::new(ArchitectureBody {
                 construction,
-                readings,
+                readings: Arc::new(readings),
+                profiles: OnceLock::new(),
                 arrows,
                 support,
                 overrides,
@@ -1441,6 +1454,26 @@ impl ArchitectureWitness {
     }
     pub fn readings(&self) -> &ObjectReadingInstances {
         &self.body.readings
+    }
+    pub(super) fn shared_readings(&self) -> Arc<ObjectReadingInstances> {
+        self.body.readings.clone()
+    }
+    pub(super) fn shared_profiles(
+        &self,
+        control: &Control,
+    ) -> Result<Arc<crate::construction::profiles::ConfigurationProfiles>, ConstructionFailure>
+    {
+        control.checkpoint(archsig_common::control::Checkpoint::ConfigurationProfile)?;
+        if let Some(profiles) = self.body.profiles.get() {
+            return Ok(profiles.clone());
+        }
+        let profiles = Arc::new(crate::construction::profiles::construct_profiles_for(
+            &self.inputs,
+            self.shared_construction(),
+            control,
+        )?);
+        // 停止などの失敗は保持せず、成功した構成だけを同じbodyの利用者へ渡す。
+        Ok(self.body.profiles.get_or_init(|| profiles).clone())
     }
     pub fn arrows(&self) -> &[Fact] {
         &self.body.arrows

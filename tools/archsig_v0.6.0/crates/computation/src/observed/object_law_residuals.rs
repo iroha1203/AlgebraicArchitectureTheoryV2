@@ -1111,7 +1111,7 @@ pub(crate) fn object_law_residuals_on(
     .map_err(ObjectLawResidualsFailure::Original)?;
     residuals_from_base(inputs, base, c)
 }
-fn residuals_from_base(
+pub(super) fn residuals_from_base(
     inputs: Arc<CheckedInputs>,
     base: super::object_law_compatibility::ObjectLawCompatibility,
     c: &Control,
