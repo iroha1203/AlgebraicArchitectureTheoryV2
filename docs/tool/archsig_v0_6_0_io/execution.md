@@ -373,6 +373,33 @@ apply は現在入力の通常の所属・更新式・元Law検査を行い、�
 既知値を固定する。更新・guardとinstance族は入力未知に依存させず、Law等式と範囲の基準値に
 未知を保つ。適用条件外はunsupported_algorithmであり、整数解なしへ読み替えない。
 
+### 有限の局所モデルを組み立てる問い
+
+`assemble(View,on=Handle,along=View,B)` は、担当別の root の有限集合を返す View と、
+共有する個体の対を返す along の View を同じ明示束縛 B で評価する。
+両 View は同じ reading に属し、parameter の名前・型を共有する。全 parameter を束縛する。
+第1 View の戻り型は owner を持たない同じ entity 型の `Set<Root>` とする。
+along の戻り型は `List<(T,T)>`、またはそれらの有限 Tuple とし、T はその root 型の
+owned entity / arrow の参照型とする。空の Tuple は共有個体なしを表す。
+対は原始個体の明示対応であり、構成済みの全体対象や保存証拠を入力しない。
+
+on は同じ snapshot・root 型の原始参照で、組立て後の root の identity と既知 field を与える。
+担当 root は空でない有限集合とし、on と異なる。on には既存の owned 個体がないことを要求する。
+初段の適用族は、同じ snapshot・定義環境・reading で、各局所構成と on の field がすべて既知である族とする。
+関数値 Term を含む field はこの算法の対象外とする。入力の通常の型・参照検査は先に行う。
+
+返す field は `proposition:Proposition`、成立時 `assembly:ModelAssembly`、
+`object:Architecture`、`algebra:ObjectAlgebra` とする。
+assembly から局所ごとの包含と再制限の対応を辿れる。構成した object は evaluate / check /
+localize と次の変更の on に渡せる。初段の組立ては対象と生成操作を構成し、担当別の新旧写像の
+組立ては別の構成とする。局所で確認した Law の成立を全体の成立へ昇格させず、元の Law を全体で検査する。
+
+未観測 field はその原始位置を持つ `missing_observation`、適用族外は原式と束縛を持つ
+`unsupported_algorithm` とする。共有対応が局所の異なる個体を潰す、型・field 値・端点が
+整合しない、または生成操作の保存を満たさない場合は `condition_failed` を返す。
+失敗した組立てから完成した object / algebra を返さない。中断時は先行する確認済み回答を保持し、
+未完了の組立てを成立させない。
+
 ## 4. 例
 
 ```text

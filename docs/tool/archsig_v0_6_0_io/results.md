@@ -377,12 +377,18 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 | Proposition | `{predicate:Predicate,operands:Ref[],quantifiers:Quantifier[]}` |
 | Configuration | `{family:FactPointer[],requirements:FactPointer[],relations:[FactPointer,FactPointer][],identifications:[FactPointer,FactPointer][]}` |
 | Architecture | `{reading:QName,root:Ref,configuration:Configuration,laws:LawInstance[],internal_arrows:Ref[],overrides:{slot:Slot,value:Ref}[]}` |
+| ModelAssembly | `{reading:QName,fragments:Ref[],interfaces:Ref,object:Architecture,algebra:ObjectAlgebra,inclusions:{fragment:Architecture,map:ObjectAlgebraMap,restriction:ConfigurationMap}[]}` |
 | AtomUniverse | `{atoms:FactPointer[]}` |
 | AtomMap | `{universe:AtomUniverse,images:FactPointer[]}` |
 | MapCandidate | `{declaration?:QName,subject?:Ref,source:Architecture,target:Architecture,action:AtomMap}` |
 | ConfigurationMap | `{candidate:MapCandidate}` |
 | Operation | `{source:Architecture,target:Architecture,candidate:MapCandidate,configuration_map:ConfigurationMap,action:AtomMap,name:OperationName,word:Ref[]}` |
 | Path | `{reading:QName,source:Ref,target:Ref,generators:Ref[]}` |
+
+ModelAssembly の fragments と interfaces は、元 View・束縛から評価した型付き値を指す。
+各 inclusion は同じ全体 object を終域とし、restriction はその局所像への再制限と逆対応を検査した
+実写像を持つ。元の担当別の原始位置と共有の対応を、代表個体へ潰して保存から消さない。
+保存後は現在の三入力・元 Request から構成を再検査し、保存済みの成立表示だけで受理しない。
 
 AtomUniverse.atomsは全入力snapshotのsubject存在事実と全既知field Atomを、FactPointerのcanonical順で
 一度ずつ含む。未観測slotをAtomに加えない。同じrunの全AtomMapは同じuniverseを使う。
