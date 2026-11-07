@@ -90,6 +90,8 @@ sh "$example/run.sh" "$cli" "$work/assembled" assembly observed
 
 `assembly.asks` は二担当 A/B の局所対象を G へ構成し、元 Law の検査、共有個体の所属の読取り、
 局所対応の全体写像への構成を行う。全 answer が established、終了値0となる。
-構成後の object は check/evaluate と次の変更計算の on に使え、map は compose/compare に使う。
+構成後の object は check/evaluate と次の変更計算の on に使える。
+写像の作用を compose/compare に渡す出力は `$m.configuration_map`（ConfigurationMap）。
+`$m.map`（ModelMapAssembly）は、局所対応・全体対象・操作と Law の保存をまとめた構成結果である。
 共有箇所の値が矛盾したらその根拠を修正し、現在入力から構成し直す。
 全体にしか書けない要求を局所の検査だけで満たした扱いにしない。
