@@ -117,6 +117,32 @@ fn edit(map: &str, id: &str, before: &str, after: &str) -> String {
     r
 }
 #[test]
+fn checked_generator_delivery_does_not_reconstruct_each_endpoint_domain() {
+    let p = prepared(MAP, &["b=build(FlowRead,on=@v/A)"]);
+    let mut g = empty(&p);
+    let a = build(&p, &mut g);
+    let objects = family(&p, &mut g, &a);
+    let core =
+        internal_arrows_constructed(p.inputs(), a.witness.shared_construction(), &quiet()).unwrap();
+    let seen = Rc::new(Cell::new(0));
+    let counter = seen.clone();
+    let _observer =
+        crate::construction::observe_constructions(move |_| counter.set(counter.get() + 1));
+    let (_, result) = plan(
+        p.inputs(),
+        &a.witness,
+        &objects,
+        a.universe,
+        g.nodes.len(),
+        &core,
+        &quiet(),
+    )
+    .unwrap();
+    assert_eq!(result.rows.len(), 2);
+    assert!(result.rows.iter().all(|r| r.operation.is_some()));
+    assert_eq!(seen.get(), 0);
+}
+#[test]
 fn generators_use_actual_owned_architectures_and_total_actions_with_fixed_complements() {
     let p = prepared(MAP, &["b=build(FlowRead,on=@v/A)"]);
     let mut g = empty(&p);

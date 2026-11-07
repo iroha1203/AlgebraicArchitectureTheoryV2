@@ -1320,7 +1320,7 @@ impl ArchitectureWitness {
     ) -> Result<Arc<Self>, ConstructionFailure> {
         let reading = construction.reading();
         let root = construction.root();
-        let readings = crate::construction::readings::object_reading_instances_shared(
+        let readings = crate::construction::readings::object_reading_instances_checked(
             &inputs,
             construction.clone(),
             control,

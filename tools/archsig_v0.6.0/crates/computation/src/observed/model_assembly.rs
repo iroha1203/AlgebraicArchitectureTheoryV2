@@ -194,9 +194,20 @@ pub(super) fn compile(
     let mut support = BTreeSet::new();
     for (i, root) in roots.iter().enumerate() {
         tick(c)?;
+        if root.snapshot != target.snapshot {
+            let root_subject = subject(inputs, root)?;
+            return Ok(Preparation::Unsupported(Unsupported {
+                detail: "担当rootのsnapshotが組立て標識と異なる".into(),
+                location: Location::ArchMap {
+                    pointer: root_subject.pointer.clone(),
+                    span: None,
+                },
+                operand_types: vec![Type::Ref(root_subject.ty.to_string())],
+                position: None,
+            }));
+        }
         if root == target
             || !roots_seen.insert(root)
-            || root.snapshot != target.snapshot
             || subject(inputs, root)?.ty != root_subject.ty
         {
             return Ok(rejected(
@@ -545,6 +556,87 @@ mod tests {
             &Control::unlimited(),
         )
         .unwrap()
+    }
+    #[test]
+    fn profiles_construct_and_recheck_the_current_domain_once_each() {
+        let i = inputs(|s| s);
+        let c = Control::unlimited();
+        let seen = std::rc::Rc::new(std::cell::Cell::new(0));
+        let counter = seen.clone();
+        let _observer =
+            construction::observe_constructions(move |_| counter.set(counter.get() + 1));
+        let profiles =
+            construction::profiles::construct_profiles(&i, "Assembly", "v", "A", &c).unwrap();
+        assert_eq!(seen.get(), 1);
+        assert!(profiles.is_complete());
+        seen.set(0);
+        profiles.recheck(&i, &c).unwrap();
+        assert_eq!(seen.get(), 1);
+    }
+    #[test]
+    fn cross_snapshot_fragments_are_outside_the_algorithm_not_refuted() {
+        let input = fixture::with_second_snapshot();
+        let ask = fixture::ASSEMBLE
+            .replace("b=@v/B", "b=@w/B")
+            .replace("mb=@v/mb", "mb=@w/mb");
+        let result =
+            crate::observed::evaluate_observed_bytes(input, &[&ask], &Control::unlimited())
+                .unwrap();
+        assert_eq!(
+            result.answers[0].status,
+            Decision::Undetermined,
+            "{:?}",
+            result.issues
+        );
+        assert!(!result.answers[0].outputs.contains_key("object"));
+        assert!(!result.answers[0].outputs.contains_key("assembly"));
+        assert!(result.issues.iter().any(|r| matches!(
+            r.kind,
+            ReasonKind::UnsupportedAlgorithm { .. }
+        ) && !r.dependencies.is_empty()
+            && matches!(r.location, Some(Location::ArchMap { .. }))));
+        assert!(result.issues.iter().all(|r| !matches!(
+            r.kind,
+            ReasonKind::Internal(_) | ReasonKind::ConditionFailed { .. }
+        )));
+    }
+    #[test]
+    fn unavailable_parameter_handles_block_assembly_before_reading_views() {
+        let source = fixture::input(|s| fixture::atom(s, "ma-quantity", None));
+        let law = String::from_utf8(source.law().bytes().to_vec())
+            .unwrap()
+            .replace(
+                "view singleton",
+                "view pick(p:Part,q:Part):Part=if p.quantity=0 then p else q;\n  view singleton",
+            );
+        let source = archsig_input::input::InputSources::from_bytes(
+            vec![source.definitions()[0].bytes().to_vec()],
+            law.into_bytes(),
+            source.archmap().bytes().to_vec(),
+        );
+        let ask = fixture::ASSEMBLE.replace("ma=@v/ma", "ma=$n.value");
+        let result = crate::observed::evaluate_observed_bytes(
+            source,
+            &["n=evaluate(Assembly.pick,p=@v/ma,q=@v/b)", &ask],
+            &Control::unlimited(),
+        )
+        .unwrap();
+        assert_eq!(result.answers[0].status, Decision::Undetermined);
+        assert!(
+            result
+                .issues
+                .iter()
+                .all(|r| !matches!(r.kind, ReasonKind::Internal(_))),
+            "{:?}",
+            result.issues
+        );
+        assert!(
+            result.answers[1]
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::DependencyBlocked { .. }))
+        );
+        assert!(!result.answers[1].outputs.contains_key("object"));
     }
     #[test]
     fn restrictions_share_native_values_and_support_but_keep_exact_slot_provenance() {

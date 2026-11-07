@@ -189,6 +189,14 @@ impl ObjectViewCompatibility {
         inputs: Arc<CheckedInputs>,
         c: &Control,
     ) -> Result<(), ObjectViewCompatibilityFailure> {
+        let construction = self.readings.shared_construction();
+        construction.recheck(
+            &inputs,
+            construction.reading(),
+            &construction.root().snapshot,
+            &construction.root().subject,
+            c,
+        )?;
         let expected =
             object_view_compatibility_on(inputs, self.readings.shared_construction(), c)?;
         match same(self, &expected, c) {
@@ -544,7 +552,7 @@ pub(crate) fn object_view_compatibility_on(
     let profiles =
         crate::construction::profiles::construct_profiles_for(&inputs, construction.clone(), c)?;
     let readings =
-        crate::construction::readings::object_reading_instances_shared(&inputs, construction, c)?;
+        crate::construction::readings::object_reading_instances_checked(&inputs, construction, c)?;
     let mut profile_objects = Vec::new();
     for p in profiles.profiles() {
         tick(c)?;

@@ -532,7 +532,7 @@ fn plan(
             )?;
             candidate_ref = Some(candidate);
             if let Some(map) = row.map() {
-                let op = ConfigurationOperation::from_map(inputs, map, c).map_err(failure)?;
+                let op = ConfigurationOperation::from_checked_map(map, c).map_err(failure)?;
                 if op.word() != [row.arrow().clone()]
                     || endpoint(&op.source())? != source
                     || endpoint(&op.target())? != target

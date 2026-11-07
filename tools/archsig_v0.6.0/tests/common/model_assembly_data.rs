@@ -22,6 +22,17 @@ fn sources(definition: &[u8], map: String) -> InputSources {
         map.replace("@ASSEMBLE_DIGEST@", digest).into_bytes(),
     )
 }
+pub fn with_second_snapshot() -> InputSources {
+    input(|map| {
+        let mut map = owned(&archsig_common::json::parse(map.as_bytes()).unwrap());
+        let snapshots = items(fields(&mut map).get_mut("snapshots").unwrap());
+        let second = snapshots[0].canonical().replace("\"v\"", "\"w\"");
+        snapshots.push(owned(
+            &archsig_common::json::parse(second.as_bytes()).unwrap(),
+        ));
+        map.canonical()
+    })
+}
 pub fn with_term() -> InputSources {
     let mut d = owned(
         &archsig_common::json::parse(include_bytes!("../fixtures/model-assembly.atoms.json"))

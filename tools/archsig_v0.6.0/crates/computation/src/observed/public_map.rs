@@ -406,7 +406,8 @@ pub(super) fn unavailable(
             && !super::request::shared_repair_request(request)
             && !matches!(
                 request.kind,
-                QuestionKind::Map
+                QuestionKind::Assemble
+                    | QuestionKind::Map
                     | QuestionKind::Compose
                     | QuestionKind::Compare
                     | QuestionKind::Quotient

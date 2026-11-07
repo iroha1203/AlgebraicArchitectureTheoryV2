@@ -113,7 +113,14 @@ impl ObjectReadingInstances {
         inputs: &CheckedInputs,
         control: &Control,
     ) -> Result<(), ConstructionFailure> {
-        let actual = object_reading_instances(inputs, &self.construction, control)?;
+        self.construction.recheck(
+            inputs,
+            self.construction.reading(),
+            &self.construction.root().snapshot,
+            &self.construction.root().subject,
+            control,
+        )?;
+        let actual = object_reading_instances_checked(inputs, self.construction.clone(), control)?;
         if self != &actual {
             return Err(ConstructionFailure::Inconsistent(internal!(
                 "対象別instanceが現在の入力・原宣言・参照束縛と違う"
@@ -293,22 +300,23 @@ pub fn object_reading_instances(
     construction: &ConfigurationConstruction,
     control: &Control,
 ) -> Result<ObjectReadingInstances, ConstructionFailure> {
-    object_reading_instances_shared(inputs, std::sync::Arc::new(construction.clone()), control)
+    construction.recheck(
+        inputs,
+        construction.reading(),
+        &construction.root().snapshot,
+        &construction.root().subject,
+        control,
+    )?;
+    object_reading_instances_checked(inputs, std::sync::Arc::new(construction.clone()), control)
 }
-pub(crate) fn object_reading_instances_shared(
+/// Internal path after construction or current-input validation has succeeded.
+pub(crate) fn object_reading_instances_checked(
     inputs: &CheckedInputs,
     construction: std::sync::Arc<ConfigurationConstruction>,
     control: &Control,
 ) -> Result<ObjectReadingInstances, ConstructionFailure> {
     checkpoint(control)?;
     let root = construction.root();
-    construction.recheck(
-        inputs,
-        construction.reading(),
-        &root.snapshot,
-        &root.subject,
-        control,
-    )?;
     let root_ty = &subject(inputs, root, control)?.ty;
     let visible_namespaces = namespaces(inputs, construction.reading(), control)?;
     let mut local_types = BTreeSet::from([root_ty.to_string()]);

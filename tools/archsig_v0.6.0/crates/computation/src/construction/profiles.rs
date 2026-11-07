@@ -232,18 +232,13 @@ pub fn construct_profiles(
     let construction = std::sync::Arc::new(construct(inputs, reading, snapshot, root, control)?);
     construct_profiles_for(inputs, construction, control)
 }
+/// The caller already constructed or rechecked this immutable configuration against inputs.
 pub(crate) fn construct_profiles_for(
     inputs: &CheckedInputs,
     construction: std::sync::Arc<ConfigurationConstruction>,
     control: &Control,
 ) -> Result<ConfigurationProfiles, ConstructionFailure> {
-    construction.recheck(
-        inputs,
-        construction.reading(),
-        &construction.root().snapshot,
-        &construction.root().subject,
-        control,
-    )?;
+    check(control)?;
     let mut profiles = Vec::new();
     let base_pattern = construction
         .base()
