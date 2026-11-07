@@ -323,6 +323,14 @@ fn law_claim(
         return Ok(false);
     };
     let index: usize = id.strip_prefix('n').unwrap().parse().unwrap();
+    control.checkpoint(point)?;
+    if let Some(super::Payload::Construction(value)) = &native[index].payload
+        && let Some(Json::Obj(fields)) = value.retained_wire()
+    {
+        let is_law = matches!(fields.get("predicate"), Some(Json::Str(predicate)) if predicate == "law_holds");
+        control.checkpoint(point)?;
+        return Ok(is_law);
+    }
     let node = public_raw_node(native, index, proofs, control, point)?;
     let Json::Obj(fields) = &node else {
         return Ok(false);

@@ -207,7 +207,8 @@ fn generators_use_actual_owned_architectures_and_total_actions_with_fixed_comple
         let u = a.witness.construction().universe();
         assert_eq!(u.len(), 45);
         assert_eq!(images.len(), 45);
-        for (atom, image) in u.iter().zip(images) {
+        assert_eq!(images.as_ptr(), core_map.candidate().images().as_ptr());
+        for (atom, image) in u.iter().zip(images.iter()) {
             let fields = [
                 None,
                 Some("owner"),

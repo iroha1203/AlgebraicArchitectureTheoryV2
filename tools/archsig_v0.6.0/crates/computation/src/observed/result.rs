@@ -1869,6 +1869,13 @@ impl ObservedEvaluation {
         point: Checkpoint,
         inspection: bool,
     ) -> Result<Json, Signal> {
+        #[cfg(test)]
+        super::data::observe_actual(
+            (0, 0),
+            super::call::Context::default(),
+            "result_wire",
+            usize::from(inspection),
+        );
         control.checkpoint(point)?;
         let mut result = if inspection {
             self.prepared.inputs().metadata_wire()

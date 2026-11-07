@@ -170,6 +170,18 @@ fn fixed_range_comparison_keeps_original_assignments_in_both_routes() {
                 "value",
             )
         };
+        for (id, expected) in [
+            ("i", vec!["a", "b", "c"]),
+            ("x", vec!["x"]),
+            ("xy", vec!["x", "y"]),
+            ("xyz", vec!["x", "y", "z"]),
+        ] {
+            let answer = answers.iter().find(|a| s(get(a, "id")) == id).unwrap();
+            assert_eq!(s(get(answer, "status")), "established");
+            let value = resolve(get(get(answer, "outputs"), "value"));
+            let subjects = arr(value).iter().map(|v| s(&arr(v)[1])).collect::<Vec<_>>();
+            assert_eq!(subjects, expected);
+        }
         let assignment = resolve(reference);
         let entries = arr(get(assignment, "entries"));
         assert_eq!(entries.len(), 6);

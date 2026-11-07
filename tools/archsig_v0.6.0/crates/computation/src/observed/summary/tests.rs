@@ -144,8 +144,15 @@ fn native_comparison_and_separating_pair_keep_their_distinct_shapes() {
             ]),
         ),
     ]);
+    let borrowed = Counterexample::from_native_record(Cow::Borrowed(&comparison)).unwrap();
+    assert!(
+        matches!(&borrowed, Counterexample::Native(Cow::Borrowed(data))
+        if std::ptr::eq(*data, &fields(&comparison).unwrap()["data"]))
+    );
+    let borrowed_summary = result.summary_counterexample(node, borrowed);
     let actual =
         result.summary_counterexample(node, Counterexample::from_native(comparison).unwrap());
+    assert_eq!(borrowed_summary, actual);
     assert_eq!(
         actual,
         Json::obj([
@@ -285,4 +292,54 @@ fn summary_keeps_counterexample_order_totals_and_utf8_byte_limits() {
             ])
         );
     }
+}
+
+#[test]
+fn action_and_architecture_summary_use_typed_metadata_without_rendering_images_or_updates() {
+    use crate::observed::construction_result::{ConstructionData as D, ConstructionType as T};
+    use std::{cell::Cell, rc::Rc};
+    let definition = include_bytes!("../../../../../tests/fixtures/internal-arrow.atoms.json");
+    let checked =
+        archsig_input::definition::check_definitions(&[("definition0", definition)]).unwrap();
+    let digest = &checked.vocabularies()["Flow"].digest;
+    let source = InputSources::from_bytes(
+        vec![definition.to_vec()],
+        include_str!("../../../../../tests/fixtures/internal-arrow.law")
+            .replace("@FLOW_DIGEST@", digest)
+            .into_bytes(),
+        include_str!("../../../../../tests/fixtures/internal-arrow.archmap.json")
+            .replace("@FLOW_DIGEST@", digest)
+            .into_bytes(),
+    );
+    let result = evaluate_observed_bytes(
+        source,
+        &["b=build(FlowRead,on=@v/A)"],
+        &Control::unlimited(),
+    )
+    .unwrap();
+    assert!(result.issues.is_empty(), "{:?}", result.issues);
+    let action = result.nodes.iter().position(|n| n.ty == NodeType::Construction(T::AtomMap)
+        && matches!(&n.payload, Some(Payload::Construction(v)) if matches!(v.data, D::InternalArrows(_)))).unwrap();
+    let architecture = result.nodes.iter().position(|n|
+        matches!(&n.payload, Some(Payload::Construction(v)) if matches!(v.data, D::Architecture { .. }))).unwrap();
+    let calls = Rc::new(Cell::new(0));
+    let counter = calls.clone();
+    crate::observed::data::observe_iterations(move |_, _, operation, _| {
+        if operation == "construction_wire" {
+            counter.set(counter.get() + 1);
+        }
+    });
+    assert_eq!(
+        result.summary_node(NodeRef(action), 2),
+        Json::obj([("type", Json::str("AtomMap"))])
+    );
+    assert_eq!(
+        result.summary_node(NodeRef(architecture), 2),
+        Json::obj([
+            ("type", Json::str("Architecture")),
+            ("laws_count", Json::Nat(0)),
+        ])
+    );
+    assert_eq!(calls.get(), 0);
+    crate::observed::data::clear_iteration_observer();
 }

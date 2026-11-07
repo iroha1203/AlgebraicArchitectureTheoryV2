@@ -3,7 +3,7 @@ use super::result::{
     Binding, Decision, Fact, Node, NodeRef, NodeType, ObservedEvaluation, Payload, ReasonKind,
 };
 use archsig_common::canonical::Json;
-use std::collections::BTreeMap;
+use std::{borrow::Cow, collections::BTreeMap};
 
 const EXAMPLE_LIMIT: usize = 3;
 const ITEM_LIMIT: usize = 3;
@@ -16,7 +16,7 @@ enum Counterexample<'a> {
         right: NodeRef,
         facts: &'a [Fact],
     },
-    Native(Json),
+    Native(Cow<'a, Json>),
 }
 impl<'a> Counterexample<'a> {
     fn from_payload(payload: &'a Payload) -> Option<Self> {
@@ -56,22 +56,34 @@ impl<'a> Counterexample<'a> {
                 right: *right,
                 facts,
             }),
-            Payload::Construction(value) => Self::from_native(value.wire()),
+            Payload::Construction(value) => Self::from_native_record(match value.retained_wire() {
+                Some(record) => Cow::Borrowed(record),
+                None => Cow::Owned(value.wire()),
+            }),
             _ => None,
         }
     }
 
-    fn from_native(mut value: Json) -> Option<Self> {
-        let Json::Obj(wire) = &mut value else {
-            return None;
-        };
+    #[cfg(test)]
+    fn from_native(value: Json) -> Option<Self> {
+        Self::from_native_record(Cow::Owned(value))
+    }
+    fn from_native_record(value: Cow<'a, Json>) -> Option<Self> {
+        let wire = fields(&value)?;
         if !matches!(wire.get("kind"), Some(Json::Str(kind)) if matches!(kind.as_str(), "counterexample" | "separating_pair"))
         {
             return None;
         }
-        Some(Self::Native(
-            wire.remove("data").expect("native counterexample data"),
-        ))
+        let data = match value {
+            Cow::Borrowed(value) => Cow::Borrowed(&fields(value)?["data"]),
+            Cow::Owned(mut value) => {
+                let Json::Obj(wire) = &mut value else {
+                    unreachable!("確認済みrecord")
+                };
+                Cow::Owned(wire.remove("data").expect("native counterexample data"))
+            }
+        };
+        Some(Self::Native(data))
     }
 }
 
@@ -101,6 +113,24 @@ fn fields(value: &Json) -> Option<&archsig_common::canonical::JsonObject> {
         Json::Obj(fields) => Some(fields),
         _ => None,
     }
+}
+/// 同じcanonical encoderで数え、要約のbyte数のための全文Stringは持たない。
+fn canonical_bytes(value: &Json) -> usize {
+    struct Count(usize);
+    impl std::io::Write for Count {
+        fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+            self.0 += bytes.len();
+            Ok(bytes.len())
+        }
+        fn flush(&mut self) -> std::io::Result<()> {
+            Ok(())
+        }
+    }
+    let mut count = Count(0);
+    value
+        .write_canonical(&mut count)
+        .expect("byte計数はI/Oで失敗しない");
+    count.0
 }
 fn has_reference(value: &Json) -> bool {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || match value {
@@ -380,7 +410,7 @@ impl ObservedEvaluation {
             reference = *value;
         }
         let value = self.summary_node(reference, 0);
-        let bytes = value.canonical().len();
+        let bytes = canonical_bytes(&value);
         if bytes <= 512 {
             value
         } else {
@@ -398,10 +428,23 @@ impl ObservedEvaluation {
         if let Some(judgment) = &node.judgment {
             brief.insert("status".into(), Json::str(judgment.status.wire()));
         }
+        // この二構成の要約は、作用の全像や更新値の全量表示を使わない。
+        if let Some(Payload::Construction(value)) = &node.payload
+            && !value.is_blocked()
+        {
+            use super::construction_result::{ConstructionData as D, ConstructionType as T};
+            if node.ty == NodeType::Construction(T::AtomMap) {
+                return Json::Obj(brief.into());
+            }
+            if let D::Architecture { laws, .. } = &value.data {
+                brief.insert("laws_count".into(), Json::Nat(laws.len() as u64));
+                return Json::Obj(brief.into());
+            }
+        }
         let value = match &node.payload {
             None => None,
             Some(Payload::Construction(value)) if value.is_blocked() => None,
-            Some(Payload::Scalar(value)) => Some(
+            Some(Payload::Scalar(value)) => Some(Cow::Owned(
                 super::path_value::wire(
                     value,
                     &self.nodes[..reference.0],
@@ -409,15 +452,19 @@ impl ObservedEvaluation {
                     &archsig_common::control::Control::unlimited(),
                 )
                 .expect("挿入時に検査した値の既出 Ref 表示"),
-            ),
-            Some(payload) => Some(payload.wire()),
+            )),
+            Some(Payload::Construction(value)) => Some(match value.retained_wire() {
+                Some(retained) => Cow::Borrowed(retained),
+                None => Cow::Owned(value.wire()),
+            }),
+            Some(payload) => Some(Cow::Owned(payload.wire())),
         };
-        let Some(value) = value.as_ref() else {
+        let Some(value) = value.as_deref() else {
             brief.insert("state".into(), Json::str("blocked"));
             return Json::Obj(brief.into());
         };
         if matches!(node.ty, NodeType::Value(_)) && !has_reference(value) {
-            let bytes = value.canonical().len();
+            let bytes = canonical_bytes(value);
             if bytes <= 256 {
                 brief.insert("value".into(), value.clone());
             } else {
