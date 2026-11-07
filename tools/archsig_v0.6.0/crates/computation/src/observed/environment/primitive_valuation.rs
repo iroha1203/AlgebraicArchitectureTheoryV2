@@ -144,6 +144,7 @@ impl<'a> Environment<'a> {
             .ok_or(internal!("local候補の生成元対象が未選択"))?;
         let mut base = self.fresh_candidate(control);
         base.indexes.object = Some(std::sync::Arc::clone(object));
+        base.indexes.valuation_domain = super::indexes::ValuationDomain::Object;
         let Some(candidate) = Self::primitive_valuation_on(base, assignments, control, true)?
         else {
             return Ok(None);
@@ -295,6 +296,7 @@ impl<'a> Environment<'a> {
             // 検査済み構成の参照射影は元入力全体へのpinではない。
             // 異なる参照候補は通常の所属・Map制約検査へ進む。
             if !pure
+                && environment.indexes.valuation_domain == super::indexes::ValuationDomain::Object
                 && let Some((projected, _)) = environment.object_field_value(position)?
                 && data::equal(value, &projected, control)?
             {

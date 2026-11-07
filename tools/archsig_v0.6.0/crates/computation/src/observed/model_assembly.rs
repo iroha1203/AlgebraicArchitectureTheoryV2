@@ -1447,4 +1447,75 @@ mod tests {
                 .all(|r| !matches!(r.kind, ReasonKind::Internal(_)))
         );
     }
+    #[test]
+    fn changed_integer_and_count_laws_keep_original_occurrences_and_object_references() {
+        let mut previous = None;
+        let asks = [
+            fixture::ASSEMBLE,
+            "raw=evaluate(Assembly.sizeOf,p=@v/a)",
+            "global=evaluate(Assembly.sizeOf,on=$a.object,p=@v/a)",
+        ];
+        for clause in [
+            "law required zero(p:Part):p.quantity=0;",
+            "law required parameter(r:Root,n:Z):n=n;",
+            "law required size(p:Part):count(Part[p.owner])>=1;",
+            "law required zero(p:Part):p.quantity=0;",
+        ] {
+            let raw = fixture::input(|s| s);
+            let law = String::from_utf8(raw.law().bytes().to_vec())
+                .unwrap()
+                .replace(
+                    "law required zero(p:Part):p.quantity=0;",
+                    &format!("{clause} view sizeOf(p:Part):Z=count(Part[p.owner]);"),
+                );
+            let input = archsig_input::input::InputSources::from_bytes(
+                raw.definitions()
+                    .iter()
+                    .map(|d| d.bytes().to_vec())
+                    .collect(),
+                law.into_bytes(),
+                raw.archmap().bytes().to_vec(),
+            );
+            let result = match previous.as_ref() {
+                Some(old) => crate::observed::reevaluate_observed_bytes(
+                    old,
+                    input.clone(),
+                    &asks,
+                    &Control::unlimited(),
+                )
+                .unwrap(),
+                None => crate::observed::evaluate_observed_bytes(
+                    input.clone(),
+                    &asks,
+                    &Control::unlimited(),
+                )
+                .unwrap(),
+            };
+            let cold =
+                crate::observed::evaluate_observed_bytes(input, &asks, &Control::unlimited())
+                    .unwrap();
+            assert_eq!(result.result_wire(), cold.result_wire(), "{clause}");
+            let scalar = |answer: usize| match result.nodes
+                [result.answers[answer].outputs["value"].0]
+                .payload
+                .as_ref()
+                .unwrap()
+            {
+                Payload::Scalar(v) => v,
+                Payload::Construction(v) => v.scalar().unwrap(),
+                _ => panic!("scalar"),
+            };
+            assert_eq!(scalar(1), &Scalar::Z(2.into()));
+            assert_eq!(scalar(2), &Scalar::Z(3.into()));
+            assert_eq!(
+                result.answers[0].status,
+                Decision::Established,
+                "{clause}: {:?}",
+                result.issues
+            );
+            assert!(result.answers[0].outputs.contains_key("object"));
+            assert!(result.issues.is_empty(), "{clause}: {:?}", result.issues);
+            previous = Some(result);
+        }
+    }
 }

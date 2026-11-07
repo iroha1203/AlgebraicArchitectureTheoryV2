@@ -3638,16 +3638,14 @@ impl Environment<'_> {
         };
         if self.current_context(graph).frame.is_none() {
             self.universal_fixed_bindings(graph, request, bindings)?;
-            let name = match request.declaration() {
-                Some(name) => name.to_owned(),
-                None => self
-                    .current_context(graph)
-                    .instance
-                    .map(|index| self.instance_source_declaration(graph, index))
-                    .transpose()?
-                    .flatten()
-                    .ok_or(internal!("全域Sourceの元要求・relation宣言がない"))?,
-            };
+            let name = self
+                .current_context(graph)
+                .instance
+                .map(|index| self.instance_source_declaration(graph, index))
+                .transpose()?
+                .flatten()
+                .or_else(|| request.declaration().map(str::to_owned))
+                .ok_or(internal!("全域Sourceの元要求・relation宣言がない"))?;
             let declaration = self
                 .indexes
                 .inputs
