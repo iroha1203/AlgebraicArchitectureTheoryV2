@@ -89,6 +89,13 @@ impl CorrespondenceResult {
     }
 }
 impl ConfigurationOperation {
+    /// The private construction path already checked this map against the same input.
+    pub(crate) fn from_checked_map(
+        map: &ConfigurationMap,
+        control: &Control,
+    ) -> Result<Self, ConstructionFailure> {
+        from_verified_map_retained(map.clone(), control).map_err(|failure| failure.cause)
+    }
     /// 保存確認済みのmapを再照合して操作を構成する。候補やPathを受け取らない。
     pub fn from_map(
         inputs: &CheckedInputs,
@@ -418,7 +425,7 @@ struct Data {
     target: ObjectIdentity,
     source_configuration: Configuration,
     target_configuration: Configuration,
-    universe: Vec<FactPointer>,
+    universe: std::sync::Arc<Vec<FactPointer>>,
     images: Vec<FactPointer>,
 }
 impl Data {
@@ -620,7 +627,7 @@ fn identity_object(
             target: object.clone(),
             source_configuration: configuration.clone(),
             target_configuration: configuration.clone(),
-            universe: construction.universe().to_vec(),
+            universe: construction.shared_universe(),
             images,
         };
         Some(from_verified_map(

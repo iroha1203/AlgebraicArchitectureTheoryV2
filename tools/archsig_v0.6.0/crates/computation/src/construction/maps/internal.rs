@@ -466,7 +466,7 @@ pub(super) fn internal_arrow_checked(
             to_reading: construction.reading().into(),
             source_configuration: source_config.clone(),
             target_configuration: target_config.clone(),
-            universe: construction.universe().to_vec(),
+            universe: construction.shared_universe(),
             images,
         };
         if result.counterexamples.is_empty() {

@@ -91,4 +91,24 @@ fn saved_assembly_rechecks_current_fields_and_withdrawn_observations() {
     write_inputs(&dir, &fixture::input(|s| s));
     let restored = execute(&dir, "restored", Some("first"));
     assert_eq!(restored.code, 0, "{}", restored.stdout);
+    let law = String::from_utf8(fixture::input(|s| s).law().bytes().to_vec())
+        .unwrap()
+        .replace(
+            "law required zero",
+            "law required atMostTwo(r:Root):count(Part[r])=2;\n  law required zero",
+        );
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    let unsupported = execute(&dir, "unsupported", Some("first"));
+    assert_eq!(unsupported.code, 2, "{}", unsupported.stdout);
+    let result = result_json(&dir, &unsupported);
+    assert!(
+        arr(get(&result, "answers"))
+            .iter()
+            .all(|a| s(get(a, "status")) == "undetermined")
+    );
+    assert!(
+        arr(get(&result, "issues"))
+            .iter()
+            .all(|r| s(get(r, "code")) != "internal")
+    );
 }

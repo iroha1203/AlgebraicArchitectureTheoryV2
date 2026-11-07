@@ -204,8 +204,14 @@ pub(super) fn compile(
                 vec![root.clone(), target.clone()],
             ));
         }
-        let local = construction::construct(inputs, reading, &root.snapshot, &root.subject, c)
-            .map_err(failure)?;
+        let local = construction::construct_fragment(
+            inputs,
+            &target_construction,
+            &root.snapshot,
+            &root.subject,
+            c,
+        )
+        .map_err(failure)?;
         missing.extend(local.base().blocking_slots().iter().cloned());
         support.extend(local.base().known().family().iter().cloned());
         parent.insert(root.clone(), target.clone());
@@ -541,6 +547,105 @@ mod tests {
         .unwrap()
     }
     #[test]
+    fn unsupported_algebra_keeps_following_object_consumers_dependency_blocked() {
+        let source = fixture::input(|s| s);
+        let law = String::from_utf8(source.law().bytes().to_vec())
+            .unwrap()
+            .replace(
+                "law required zero",
+                "law required atMostTwo(r:Root):count(Part[r])=2;\n  law required zero",
+            );
+        let source = archsig_input::input::InputSources::from_bytes(
+            vec![source.definitions()[0].bytes().to_vec()],
+            law.into_bytes(),
+            source.archmap().bytes().to_vec(),
+        );
+        let asks = [fixture::ASSEMBLE, "c=check(Assembly.zero,on=$a.object)"];
+        let c = Control::unlimited();
+        let result = crate::observed::evaluate_observed_bytes(source, &asks, &c).unwrap();
+        assert_eq!(result.answers[1].status, Decision::Undetermined);
+        assert!(
+            result
+                .issues
+                .iter()
+                .all(|r| !matches!(r.kind, ReasonKind::Internal(_)))
+        );
+        assert!(
+            result.answers[1]
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::DependencyBlocked { .. }))
+        );
+    }
+    #[test]
+    fn interface_views_can_read_known_arrow_endpoints() {
+        let source = fixture::input(|s| s);
+        let law = String::from_utf8(source.law().bytes().to_vec()).unwrap()
+            .replace("ma:Part,mb:Part)", "ma:Part,mb:Part,ea:Step,eb:Step)")
+            .replace("List<(Part,Part)> = list<(Part,Part)>[(ma,mb)]", "(List<(Part,Part)>,List<(Step,Step)>) = (list<(Part,Part)>[(ea.from,eb.from),(ma,mb)],list<(Step,Step)>[(ea,eb)])");
+        let input = archsig_input::input::InputSources::from_bytes(
+            vec![source.definitions()[0].bytes().to_vec()],
+            law.into_bytes(),
+            source.archmap().bytes().to_vec(),
+        );
+        let ask = fixture::ASSEMBLE.replace("mb=@v/mb)", "mb=@v/b,ea=@v/left,eb=@v/right)");
+        let result = crate::observed::evaluate_observed_bytes(input, &[
+            "v=evaluate(Assembly.interfaces,a=@v/A,b=@v/B,ma=@v/ma,mb=@v/b,ea=@v/left,eb=@v/right)",
+            &ask, "c=check(Assembly.zero,on=$a.object)", "o=evaluate(Assembly.ownerOf,on=$a.object,p=@v/b)"
+        ], &Control::unlimited()).unwrap();
+        assert!(
+            result
+                .answers
+                .iter()
+                .all(|a| a.status == Decision::Established),
+            "{:?}",
+            result.issues
+        );
+        let assembly = &result.nodes[result.answers[1].outputs["assembly"].0];
+        let Some(Payload::Construction(v)) = &assembly.payload else {
+            panic!("native組立てを要求する")
+        };
+        let crate::observed::construction_result::ConstructionData::Build(d) = &v.data else {
+            panic!("組立ての元planを要求する")
+        };
+        let (interfaces, _) = d
+            .assembly_project(&[crate::observed::projection::ProjectionStep::Field(
+                "interfaces".into(),
+            )])
+            .unwrap();
+        let scalar = |at: NodeRef| match result.nodes[at.0].payload.as_ref() {
+            Some(Payload::Scalar(v)) => v,
+            Some(Payload::Construction(v)) => v.scalar().unwrap(),
+            _ => panic!("型付き値を要求する"),
+        };
+        assert!(
+            data::equal(
+                scalar(result.answers[0].outputs["value"]),
+                scalar(interfaces),
+                &Control::unlimited()
+            )
+            .unwrap()
+        );
+        for atom in ["left-from", "right-from"] {
+            assert!(
+                result.nodes[interfaces.0]
+                    .support
+                    .iter()
+                    .any(|f| f.atom.as_deref() == Some(atom))
+            );
+        }
+        assert!(
+            result.nodes[interfaces.0]
+                .support
+                .iter()
+                .all(|f| f.field.is_none() || f.atom.is_some())
+        );
+        assert!(
+            matches!(scalar(result.answers[3].outputs["value"]),Scalar::Subject {subject,..} if subject=="G")
+        );
+    }
+
+    #[test]
     fn empty_interface_tuple_keeps_distinct_fragments_and_binding_errors_are_rejected() {
         let source = fixture::input(|s| s);
         let law = String::from_utf8(source.law().bytes().to_vec())
@@ -632,10 +737,57 @@ mod tests {
     #[test]
     fn local_roots_generate_a_new_global_domain_and_transport_known_owners() {
         let i = inputs(|x| x);
-        let result = build(&i, &[(fact("ma"), fact("mb"))]);
+        let counts = std::rc::Rc::new(std::cell::RefCell::new(BTreeMap::new()));
+        let seen = counts.clone();
+        let result = {
+            let _observer = construction::observe_constructions(move |root| {
+                *seen.borrow_mut().entry(root.to_owned()).or_insert(0usize) += 1
+            });
+            build(&i, &[(fact("ma"), fact("mb"))])
+        };
+        assert_eq!(
+            *counts.borrow(),
+            BTreeMap::from([("A".into(), 1), ("B".into(), 1), ("G".into(), 1)])
+        );
         let Preparation::Ready(m) = result else {
             panic!("{result:?}")
         };
+        for (index, inclusion) in m.inclusions.iter().enumerate() {
+            assert!(
+                inclusion
+                    .operation()
+                    .map()
+                    .candidate()
+                    .source_configuration()
+                    .shares_storage_with(m.fragments[index].base().known())
+            );
+            assert!(
+                inclusion
+                    .operation()
+                    .map()
+                    .candidate()
+                    .target_configuration()
+                    .shares_storage_with(m.construction.base().known())
+            );
+            assert!(
+                m.restrictions[index]
+                    .candidate()
+                    .target_configuration()
+                    .shares_storage_with(m.fragments[index].base().known())
+            );
+            assert_eq!(
+                inclusion.action().universe().as_ptr(),
+                m.construction.universe().as_ptr()
+            );
+            assert_eq!(
+                m.restrictions[index].candidate().universe().as_ptr(),
+                m.construction.universe().as_ptr()
+            );
+            assert_eq!(
+                m.fragments[index].universe().as_ptr(),
+                m.construction.universe().as_ptr()
+            );
+        }
         let names: BTreeSet<_> = m
             .construction
             .local_domain()

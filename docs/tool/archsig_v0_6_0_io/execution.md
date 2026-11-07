@@ -44,7 +44,7 @@ help以外の短縮flag、stdin、暗黙のファイル探索、環境変数に�
 ```text
 Request  ::= Name "=" Question
 Question ::= Kind "(" Head ("," Key "=" Argument)* ")"
-Kind     ::= build | evaluate | check | map | compose | compare
+Kind     ::= build | assemble | evaluate | check | map | compose | compare
            | localize | diagnose | repair | solve | quotient | needed
            | prepare | scopes | candidate | apply | observe
 Head     ::= QName | Handle

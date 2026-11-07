@@ -362,12 +362,7 @@ mod tests {
             (b.clone(), a.clone()),
             (b.clone(), b.clone()),
         ];
-        let c = Configuration {
-            family: vec![a.clone()],
-            requirements: vec![],
-            relations: pairs.clone(),
-            identifications: pairs,
-        };
+        let c = Configuration::new(vec![a.clone()], vec![], pairs.clone(), pairs);
         let p = pattern(&c, &[a, b], &Control::unlimited()).unwrap();
         assert_eq!(p.membership(), [true, false]);
         assert_eq!(p.relations(), [true, false, false, false]);

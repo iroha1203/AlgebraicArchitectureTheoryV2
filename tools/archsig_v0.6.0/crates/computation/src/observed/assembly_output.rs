@@ -369,60 +369,16 @@ pub(super) fn failed(
     if let Failure::Unsupported(unsupported) = failure
         && let Some(position) = &unsupported.position
     {
-        let s = e.indexes.subject(&position.snapshot, &position.subject)?;
-        let mut existence = position.clone();
-        existence.field = None;
-        existence.atom = None;
-        let subject = b.scalar(
-            NodeType::Value(Type::Ref(s.ty.to_string())),
-            "binding",
-            Scalar::Subject {
-                snapshot: s.snapshot.clone(),
-                subject: s.id.clone(),
-                entity: s.ty.to_string(),
-            },
+        let expression = b.field_source(
+            e,
+            position,
+            unsupported
+                .operand_types
+                .first()
+                .ok_or(internal!("未対応fieldの型がない"))?,
+            &unsupported.location,
+            plan.architecture.witness.construction().reading(),
             vec![head, along],
-        )?;
-        attach_facts(
-            &mut b,
-            e,
-            plan.architecture.witness.construction().reading(),
-            subject,
-            &[existence],
-        )?;
-        let expression = b.push(
-            NodeType::Expression(
-                unsupported
-                    .operand_types
-                    .first()
-                    .cloned()
-                    .ok_or(internal!("未対応fieldの型がない"))?,
-            ),
-            "expression",
-            Json::obj([
-                ("kind", Json::str("source")),
-                (
-                    "location",
-                    archsig_input::result::location_wire(&unsupported.location),
-                ),
-                ("parameters", Json::Arr(vec![])),
-                (
-                    "bindings",
-                    Json::Arr(vec![Json::obj([
-                        ("name", Json::str("on")),
-                        ("value", subject.wire()),
-                    ])]),
-                ),
-            ]),
-            vec![subject],
-            None,
-        )?;
-        attach_facts(
-            &mut b,
-            e,
-            plan.architecture.witness.construction().reading(),
-            expression,
-            std::slice::from_ref(position),
         )?;
         dependencies.push(expression);
     }

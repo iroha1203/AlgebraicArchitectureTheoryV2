@@ -348,7 +348,11 @@ fn configuration_transport_inner(
         )
         .into());
     }
-    let operation = ConfigurationOperation::from_map(inputs, map, control)?;
+    let operation = if source.is_some() && target.is_some() {
+        ConfigurationOperation::from_checked_map(map, control)?
+    } else {
+        ConfigurationOperation::from_map(inputs, map, control)?
+    };
     let mut result = ConfigurationTransportPartial {
         operation,
         source,
@@ -604,7 +608,9 @@ mod tests {
                     forged.objects[1].target = forged.objects[2].target.clone();
                 }
                 3 => {
-                    forged.objects[1].source_configuration.family.pop();
+                    std::sync::Arc::make_mut(&mut forged.objects[1].source_configuration.data)
+                        .family
+                        .pop();
                 }
                 4 => {
                     let source = forged.objects[1].source.subject().clone();

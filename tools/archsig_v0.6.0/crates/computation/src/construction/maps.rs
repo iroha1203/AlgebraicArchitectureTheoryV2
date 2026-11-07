@@ -94,7 +94,7 @@ pub struct MapCandidate {
     to_reading: String,
     source_configuration: Configuration,
     target_configuration: Configuration,
-    universe: Vec<FactPointer>,
+    universe: std::sync::Arc<Vec<FactPointer>>,
     images: Vec<FactPointer>,
 }
 impl MapCandidate {
@@ -1370,7 +1370,7 @@ pub fn correspondence_retained(
                 to_reading: to_reading.into(),
                 source_configuration: source_config.clone(),
                 target_configuration: target_config.clone(),
-                universe: source.universe().to_vec(),
+                universe: source.shared_universe(),
                 images,
             };
             if result.counterexamples.is_empty() {

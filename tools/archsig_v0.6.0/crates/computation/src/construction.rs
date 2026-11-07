@@ -13,29 +13,69 @@ use archsig_input::{
     result::Signal,
 };
 use std::collections::{BTreeMap, BTreeSet};
+#[cfg(test)]
+type ConstructionProbe = Box<dyn FnMut(&str)>;
+#[cfg(test)]
+thread_local! { static CONSTRUCTION_PROBE: std::cell::RefCell<Option<ConstructionProbe>> = const {std::cell::RefCell::new(None)}; }
+#[cfg(test)]
+pub(crate) struct ConstructionObserver(Option<ConstructionProbe>);
+#[cfg(test)]
+impl Drop for ConstructionObserver {
+    fn drop(&mut self) {
+        CONSTRUCTION_PROBE.with(|p| p.replace(self.0.take()));
+    }
+}
+#[cfg(test)]
+pub(crate) fn observe_constructions(probe: impl FnMut(&str) + 'static) -> ConstructionObserver {
+    ConstructionObserver(CONSTRUCTION_PROBE.with(|p| p.replace(Some(Box::new(probe)))))
+}
 pub mod maps;
 pub mod profiles;
 pub mod readings;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Configuration {
+    data: std::sync::Arc<ConfigurationData>,
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct ConfigurationData {
     family: Vec<FactPointer>,
     requirements: Vec<FactPointer>,
     relations: Vec<(FactPointer, FactPointer)>,
     identifications: Vec<(FactPointer, FactPointer)>,
 }
 impl Configuration {
+    fn new(
+        family: Vec<FactPointer>,
+        requirements: Vec<FactPointer>,
+        relations: Vec<(FactPointer, FactPointer)>,
+        identifications: Vec<(FactPointer, FactPointer)>,
+    ) -> Self {
+        Self {
+            data: std::sync::Arc::new(ConfigurationData {
+                family,
+                requirements,
+                relations,
+                identifications,
+            }),
+        }
+    }
+    #[cfg(test)]
+    pub(crate) fn shares_storage_with(&self, other: &Self) -> bool {
+        std::sync::Arc::ptr_eq(&self.data, &other.data)
+    }
+
     pub fn family(&self) -> &[FactPointer] {
-        &self.family
+        &self.data.family
     }
     pub fn requirements(&self) -> &[FactPointer] {
-        &self.requirements
+        &self.data.requirements
     }
     pub fn relations(&self) -> &[(FactPointer, FactPointer)] {
-        &self.relations
+        &self.data.relations
     }
     pub fn identifications(&self) -> &[(FactPointer, FactPointer)] {
-        &self.identifications
+        &self.data.identifications
     }
     pub fn wire(&self) -> Json {
         let pairs = |items: &[(FactPointer, FactPointer)]| {
@@ -49,14 +89,20 @@ impl Configuration {
         Json::obj([
             (
                 "family",
-                Json::Arr(self.family.iter().map(FactPointer::wire).collect()),
+                Json::Arr(self.data.family.iter().map(FactPointer::wire).collect()),
             ),
             (
                 "requirements",
-                Json::Arr(self.requirements.iter().map(FactPointer::wire).collect()),
+                Json::Arr(
+                    self.data
+                        .requirements
+                        .iter()
+                        .map(FactPointer::wire)
+                        .collect(),
+                ),
             ),
-            ("relations", pairs(&self.relations)),
-            ("identifications", pairs(&self.identifications)),
+            ("relations", pairs(&self.data.relations)),
+            ("identifications", pairs(&self.data.identifications)),
         ])
     }
 }
@@ -134,7 +180,7 @@ impl SubjectDomain {
 pub struct ConfigurationConstruction {
     reading: String,
     root: FactPointer,
-    universe: Vec<FactPointer>,
+    universe: std::sync::Arc<Vec<FactPointer>>,
     base: ConfigurationCandidate,
     components: Vec<ObjectComponent>,
     local_domain: SubjectDomain,
@@ -186,6 +232,9 @@ impl ConfigurationConstruction {
     pub fn root(&self) -> &FactPointer {
         &self.root
     }
+    pub(crate) fn shared_universe(&self) -> std::sync::Arc<Vec<FactPointer>> {
+        self.universe.clone()
+    }
     pub fn universe(&self) -> &[FactPointer] {
         &self.universe
     }
@@ -216,7 +265,13 @@ impl ConfigurationConstruction {
                 )));
             }
             let target = construct(inputs, reading, snapshot, root, control)?;
-            assemble_from_origin(target, origin.clone(), control)?
+            assemble_from_origin(
+                target.reading(),
+                target.root(),
+                target.shared_universe(),
+                origin.clone(),
+                control,
+            )?
         } else if self.owner_resolution.is_none() {
             construct(inputs, reading, snapshot, root, control)?
         } else {
@@ -500,12 +555,12 @@ fn configuration_transported(
         identifications.insert((fact.clone(), fact.clone()));
     }
     Ok(ConfigurationCandidate {
-        known: Configuration {
-            family: canonical_facts(family, control)?,
-            requirements: canonical_facts(requirements, control)?,
-            relations: canonical_pairs(relations, control)?,
-            identifications: canonical_pairs(identifications, control)?,
-        },
+        known: Configuration::new(
+            canonical_facts(family, control)?,
+            canonical_facts(requirements, control)?,
+            canonical_pairs(relations, control)?,
+            canonical_pairs(identifications, control)?,
+        ),
         blocking_slots: canonical_facts(blocking, control)?,
     })
 }
@@ -588,7 +643,43 @@ fn construct_with_owners(
     owners: &[(FactPointer, FactPointer)],
     control: &Control,
 ) -> Result<ConfigurationConstruction, ConstructionFailure> {
+    construct_inner(inputs, reading, snapshot, root, owners, None, control)
+}
+/// Same checked input and reading as the ambient construction; share its carrier.
+pub(crate) fn construct_fragment(
+    inputs: &CheckedInputs,
+    ambient: &ConfigurationConstruction,
+    snapshot: &str,
+    root: &str,
+    control: &Control,
+) -> Result<ConfigurationConstruction, ConstructionFailure> {
+    construct_inner(
+        inputs,
+        ambient.reading(),
+        snapshot,
+        root,
+        &[],
+        Some(ambient.shared_universe()),
+        control,
+    )
+}
+fn construct_inner(
+    inputs: &CheckedInputs,
+    reading: &str,
+    snapshot: &str,
+    root: &str,
+    owners: &[(FactPointer, FactPointer)],
+    shared_universe: Option<std::sync::Arc<Vec<FactPointer>>>,
+    control: &Control,
+) -> Result<ConfigurationConstruction, ConstructionFailure> {
     tick(control)?;
+    #[cfg(test)]
+    CONSTRUCTION_PROBE.with(|p| {
+        if let Some(probe) = p.borrow_mut().as_mut() {
+            probe(root);
+        }
+    });
+
     let namespaces = namespaces(inputs, reading, control)?;
     let mut index = BTreeMap::new();
     let mut universe = BTreeSet::new();
@@ -597,16 +688,18 @@ fn construct_with_owners(
         for subject in &snap.subjects {
             tick(control)?;
             index.insert((subject.snapshot.as_str(), subject.id.as_str()), subject);
-            universe.insert(exists(subject));
-            for field in &subject.fields {
-                tick(control)?;
-                if let Slot::Known { atom, .. } = &field.slot {
-                    universe.insert({
-                        let aat_field_0 = Some(atom.clone());
-                        let mut aat_fact = slot(subject, &field.name);
-                        aat_fact.atom = aat_field_0;
-                        aat_fact
-                    });
+            if shared_universe.is_none() {
+                universe.insert(exists(subject));
+                for field in &subject.fields {
+                    tick(control)?;
+                    if let Slot::Known { atom, .. } = &field.slot {
+                        universe.insert({
+                            let aat_field_0 = Some(atom.clone());
+                            let mut aat_fact = slot(subject, &field.name);
+                            aat_fact.atom = aat_field_0;
+                            aat_fact
+                        });
+                    }
                 }
             }
         }
@@ -756,7 +849,11 @@ fn construct_with_owners(
     let result = ConfigurationConstruction {
         reading: reading.into(),
         root: exists(selected),
-        universe: canonical_facts(universe, control)?,
+        universe: if let Some(universe) = shared_universe {
+            universe
+        } else {
+            std::sync::Arc::new(canonical_facts(universe, control)?)
+        },
         base,
         components,
         local_domain,
@@ -781,7 +878,13 @@ pub(crate) fn construct_assembled(
         members: members.to_vec(),
         transport: std::sync::Arc::new(transport),
     });
-    assemble_from_origin(target, origin, control)
+    assemble_from_origin(
+        target.reading(),
+        target.root(),
+        target.shared_universe(),
+        origin,
+        control,
+    )
 }
 pub(crate) fn restrict_assembled(
     source: &ConfigurationConstruction,
@@ -791,22 +894,23 @@ pub(crate) fn restrict_assembled(
     let origin = source.assembly.as_ref().ok_or_else(|| {
         ConstructionFailure::InvalidSelection("再制限元が組立て対象でない".into())
     })?;
-    let target = construct(
-        &origin.inputs,
-        source.reading(),
-        &source.root().snapshot,
-        &source.root().subject,
-        control,
-    )?;
     let origin = std::sync::Arc::new(AssemblyOrigin {
         inputs: origin.inputs.clone(),
         members,
         transport: origin.transport.clone(),
     });
-    assemble_from_origin(target, origin, control)
+    assemble_from_origin(
+        source.reading(),
+        source.root(),
+        source.shared_universe(),
+        origin,
+        control,
+    )
 }
 fn assemble_from_origin(
-    mut target: ConfigurationConstruction,
+    reading: &str,
+    root: &FactPointer,
+    universe: std::sync::Arc<Vec<FactPointer>>,
     origin: std::sync::Arc<AssemblyOrigin>,
     control: &Control,
 ) -> Result<ConfigurationConstruction, ConstructionFailure> {
@@ -829,7 +933,7 @@ fn assemble_from_origin(
             .get(&(fact.snapshot.as_str(), fact.subject.as_str()))
             .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("組立て個体がない")))?;
         subjects.push(subject);
-        if fact != target.root()
+        if fact != root
             && matches!(
                 inputs.definitions().declarations()[subject.ty.as_str()].signature,
                 PrimitiveSignature::Entity { .. }
@@ -849,7 +953,7 @@ fn assemble_from_origin(
             });
         }
     }
-    target.base = configuration_transported(
+    let base = configuration_transported(
         inputs,
         &subjects,
         &index,
@@ -859,14 +963,21 @@ fn assemble_from_origin(
         control,
     )?;
     components.sort_by_key(|p| p.subject.wire().canonical());
-    target.components = components;
-    target.local_domain = SubjectDomain {
+    let local_domain = SubjectDomain {
         known: canonical_facts(members.iter().cloned().collect(), control)?,
         conditional: vec![],
     };
-    target.assembly = Some(origin);
     tick(control)?;
-    Ok(target)
+    Ok(ConfigurationConstruction {
+        reading: reading.into(),
+        root: root.clone(),
+        universe,
+        base,
+        components,
+        local_domain,
+        owner_resolution: None,
+        assembly: Some(origin),
+    })
 }
 
 #[cfg(test)]
@@ -918,19 +1029,27 @@ mod tests {
             let mut forged = original.clone();
             match kind {
                 "family" => {
-                    forged.base.known.family.pop();
+                    std::sync::Arc::make_mut(&mut forged.base.known.data)
+                        .family
+                        .pop();
                 }
                 "requirements" => {
-                    forged.base.known.requirements.pop();
+                    std::sync::Arc::make_mut(&mut forged.base.known.data)
+                        .requirements
+                        .pop();
                 }
                 "relations" => {
-                    forged.base.known.relations.pop();
+                    std::sync::Arc::make_mut(&mut forged.base.known.data)
+                        .relations
+                        .pop();
                 }
                 "identifications" => {
-                    forged.base.known.identifications.pop();
+                    std::sync::Arc::make_mut(&mut forged.base.known.data)
+                        .identifications
+                        .pop();
                 }
                 "universe" => {
-                    forged.universe.pop();
+                    std::sync::Arc::make_mut(&mut forged.universe).pop();
                 }
                 "component" => {
                     forged.components[0].subject.subject = "q".into();

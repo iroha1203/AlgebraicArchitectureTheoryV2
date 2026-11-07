@@ -16,7 +16,7 @@ pub(crate) fn assembled_map(
     subjects: BTreeMap<FactPointer, FactPointer>,
     control: &Control,
 ) -> Result<Option<ConfigurationMap>, ConstructionFailure> {
-    recompute(
+    compute_checked(
         inputs,
         &Arc::new(AssemblyMap {
             source,
@@ -32,17 +32,26 @@ pub(super) fn recompute(
     control: &Control,
 ) -> Result<Option<ConfigurationMap>, ConstructionFailure> {
     check(control)?;
-    let source = &recipe.source;
-    let target = &recipe.target;
-    for c in [source, target] {
-        c.recheck(
+    for construction in [&recipe.source, &recipe.target] {
+        construction.recheck(
             inputs,
-            c.reading(),
-            &c.root().snapshot,
-            &c.root().subject,
+            construction.reading(),
+            &construction.root().snapshot,
+            &construction.root().subject,
             control,
         )?;
     }
+    compute_checked(inputs, recipe, control)
+}
+// Both endpoints were constructed against this immutable input in the caller.
+fn compute_checked(
+    inputs: &CheckedInputs,
+    recipe: &Arc<AssemblyMap>,
+    control: &Control,
+) -> Result<Option<ConfigurationMap>, ConstructionFailure> {
+    check(control)?;
+    let source = &recipe.source;
+    let target = &recipe.target;
     let (Some(sc), Some(tc)) = (source.base().configuration(), target.base().configuration())
     else {
         return Ok(None);
@@ -140,7 +149,7 @@ pub(super) fn recompute(
         to_reading: target.reading().into(),
         source_configuration: sc.clone(),
         target_configuration: tc.clone(),
-        universe: source.universe().to_vec(),
+        universe: source.shared_universe(),
         images,
     };
     check(control)?;

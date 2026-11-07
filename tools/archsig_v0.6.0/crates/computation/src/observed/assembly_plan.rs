@@ -23,11 +23,31 @@ fn read(
     bindings: &[(String, Scalar)],
 ) -> Result<Read, ValidationFailure> {
     match family::read_with_value(env, name, bindings) {
-        Ok((metadata, value)) => Ok(Read {
-            metadata,
-            value,
-            unsupported: None,
-        }),
+        Ok((mut metadata, value)) => {
+            // The read collector records positions; native support records actual atoms.
+            for fact in &mut metadata.support {
+                if fact.atom.is_none()
+                    && let Some(name) = &fact.field
+                {
+                    let subject = env.indexes.subject(&fact.snapshot, &fact.subject)?;
+                    let field = subject
+                        .fields
+                        .iter()
+                        .find(|f| &f.name == name)
+                        .ok_or(internal!("読取り位置のfieldがない"))?;
+                    if let archsig_input::archmap::Slot::Known { atom, .. } = &field.slot {
+                        fact.atom = Some(atom.clone());
+                    }
+                }
+            }
+            metadata.support.sort();
+            metadata.support.dedup();
+            Ok(Read {
+                metadata,
+                value,
+                unsupported: None,
+            })
+        }
         Err(ValidationFailure::UnsupportedExpression { location, feature }) => {
             let law = env.indexes.inputs.law();
             let operand_types = if let archsig_common::issue::Location::Law { span } = &location {

@@ -423,6 +423,74 @@ impl Builder<'_> {
         });
         Ok(r)
     }
+    pub(super) fn field_source(
+        &mut self,
+        env: &Environment<'_>,
+        position: &Fact,
+        ty: &Type,
+        location: &Location,
+        reading: &str,
+        arguments: Vec<NodeRef>,
+    ) -> Result<NodeRef, ValidationFailure> {
+        let subject = env.indexes.subject(&position.snapshot, &position.subject)?;
+        let field = subject
+            .fields
+            .iter()
+            .find(|f| Some(&f.name) == position.field.as_ref())
+            .ok_or(internal!("元fieldの位置がない"))?;
+        let mut existence = position.clone();
+        existence.field = None;
+        existence.atom = None;
+        let binding = self.scalar(
+            NodeType::Value(Type::Ref(subject.ty.to_string())),
+            "binding",
+            Scalar::Subject {
+                snapshot: subject.snapshot.clone(),
+                subject: subject.id.clone(),
+                entity: subject.ty.to_string(),
+            },
+            arguments,
+        )?;
+        let part = &mut self.parts[binding.0 - self.base];
+        part.support.push(existence);
+        part.support.sort();
+        part.support.dedup();
+        part.scope
+            .merge(&env.indexes.scope(subject, reading, None)?);
+        let expression = self.push(
+            NodeType::Expression(ty.clone()),
+            "expression",
+            Json::obj([
+                ("kind", Json::str("source")),
+                ("location", archsig_input::result::location_wire(location)),
+                ("parameters", Json::Arr(vec![])),
+                (
+                    "bindings",
+                    Json::Arr(vec![Json::obj([
+                        ("name", Json::str("on")),
+                        ("value", binding.wire()),
+                    ])]),
+                ),
+            ]),
+            vec![binding],
+            None,
+        )?;
+        let (origin, atom) = match &field.slot {
+            archsig_input::archmap::Slot::Known { origin, atom, .. } => {
+                (Some(origin.as_str()), Some(atom.clone()))
+            }
+            _ => (None, None),
+        };
+        let mut position = position.clone();
+        position.atom = atom;
+        let part = &mut self.parts[expression.0 - self.base];
+        part.support.push(position);
+        part.support.sort();
+        part.support.dedup();
+        part.scope
+            .merge(&env.indexes.scope(subject, reading, origin)?);
+        Ok(expression)
+    }
     fn expression(
         &mut self,
         operation: &str,
@@ -647,6 +715,14 @@ fn compute_inner(
                 location.ok_or(internal!("非有限域の元定義fieldがない"))?
             }
         };
+        let expression = b.field_source(
+            env,
+            position,
+            boundary.ty(),
+            &location,
+            plan.architecture.witness.construction().reading(),
+            vec![plan.architecture.reference],
+        )?;
         reasons.push(Reason {
             kind: ReasonKind::UnsupportedAlgorithm {
                 question: request.kind,
@@ -654,7 +730,7 @@ fn compute_inner(
                 method: "finite_primitive_domain".into(),
             },
             request: request.id.clone(),
-            dependencies: vec![plan.architecture.reference],
+            dependencies: vec![expression],
             missing: vec![],
             location: Some(location),
         });
