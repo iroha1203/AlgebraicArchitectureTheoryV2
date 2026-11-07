@@ -196,3 +196,5 @@ pub fn field<'a>(c: &'a CheckedArchMap, snapshot: &str, id: &str, name: &str) ->
         .find(|f| f.name.rsplit('.').next() == Some(name))
         .unwrap()
 }
+
+pub mod model_assembly_data;

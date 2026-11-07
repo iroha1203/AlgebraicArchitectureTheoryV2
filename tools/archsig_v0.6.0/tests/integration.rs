@@ -30,6 +30,7 @@ mod cli_local_unsupported;
 mod cli_location_position;
 mod cli_map;
 mod cli_map_delivery;
+mod cli_model_assembly;
 mod cli_needed;
 mod cli_object_algebra_map;
 mod cli_observe;

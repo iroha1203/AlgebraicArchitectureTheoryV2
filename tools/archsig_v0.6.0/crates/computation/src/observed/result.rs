@@ -19,19 +19,19 @@ use std::collections::{BTreeMap, BTreeSet};
 
 /// 確定した支持。加工する側は所有 Vec を明示的に取り出す。
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub(crate) struct Support(std::rc::Rc<Vec<Fact>>);
+pub(crate) struct Support(std::sync::Arc<Vec<Fact>>);
 impl Support {
     /// 共有先を変えずに加工するため、この値の Vec を一意所有にする。
     pub(crate) fn make_owned(&mut self) -> &mut Vec<Fact> {
-        std::rc::Rc::make_mut(&mut self.0)
+        std::sync::Arc::make_mut(&mut self.0)
     }
     pub(crate) fn into_vec(self) -> Vec<Fact> {
-        std::rc::Rc::try_unwrap(self.0).unwrap_or_else(|shared| (*shared).clone())
+        std::sync::Arc::try_unwrap(self.0).unwrap_or_else(|shared| (*shared).clone())
     }
 }
 impl From<Vec<Fact>> for Support {
     fn from(facts: Vec<Fact>) -> Self {
-        Self(std::rc::Rc::new(facts))
+        Self(std::sync::Arc::new(facts))
     }
 }
 impl std::ops::Deref for Support {
@@ -2226,7 +2226,7 @@ impl Graph {
                     super::object_map_result::validate_failure(self, reason)?;
                     continue;
                 }
-                if construction == "object_algebra" {
+                if matches!(construction, "object_algebra" | "model_assembly") {
                     super::build_result::validate_failure(self, reason)?;
                     continue;
                 }

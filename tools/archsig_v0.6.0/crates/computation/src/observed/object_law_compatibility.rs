@@ -15,9 +15,7 @@ use super::{
 };
 use crate::{
     construction::{
-        ConstructionFailure,
-        profiles::{ConfigurationProfiles, construct_profiles},
-        readings::{ObjectReadingInstances, object_reading_instances},
+        ConstructionFailure, profiles::ConfigurationProfiles, readings::ObjectReadingInstances,
     },
     observed::object_evaluation_table::ObjectEvaluationPosition,
 };
@@ -177,14 +175,7 @@ impl ObjectLawCompatibility {
         inputs: Arc<CheckedInputs>,
         c: &Control,
     ) -> Result<(), ObjectLawCompatibilityFailure> {
-        let root = self.readings.construction().root();
-        let expected = object_law_compatibility(
-            inputs,
-            self.readings.construction().reading(),
-            &root.snapshot,
-            &root.subject,
-            c,
-        )?;
+        let expected = object_law_compatibility_on(inputs, self.readings.shared_construction(), c)?;
         match same(self, &expected, c) {
             Ok(true) => Ok(()),
             other => Err(ObjectLawCompatibilityFailure {
@@ -500,8 +491,20 @@ pub fn object_law_compatibility(
     c: &Control,
 ) -> Result<ObjectLawCompatibility, ObjectLawCompatibilityFailure> {
     tick(c)?;
-    let profiles = construct_profiles(&inputs, reading, snapshot, root, c)?;
-    let readings = object_reading_instances(&inputs, profiles.construction(), c)?;
+    let construction = std::sync::Arc::new(crate::construction::construct(
+        &inputs, reading, snapshot, root, c,
+    )?);
+    object_law_compatibility_on(inputs, construction, c)
+}
+pub(crate) fn object_law_compatibility_on(
+    inputs: Arc<CheckedInputs>,
+    construction: std::sync::Arc<crate::construction::ConfigurationConstruction>,
+    c: &Control,
+) -> Result<ObjectLawCompatibility, ObjectLawCompatibilityFailure> {
+    let profiles =
+        crate::construction::profiles::construct_profiles_for(&inputs, construction.clone(), c)?;
+    let readings =
+        crate::construction::readings::object_reading_instances_shared(&inputs, construction, c)?;
     let mut profile_objects = Vec::new();
     for p in profiles.profiles() {
         tick(c)?;

@@ -427,6 +427,23 @@ pub(super) fn finite_type_domain_failure(
     Ok(None)
 }
 
+/// 同じ宣言環境内の個体対応を、既存の型付き値輸送へ渡す。
+pub(super) fn transport_references(
+    value: &Scalar,
+    inputs: &CheckedInputs,
+    action: &BTreeMap<Fact, Fact>,
+    control: &Control,
+) -> Result<Scalar, ConstructionFailure> {
+    image(
+        value,
+        inputs,
+        &BTreeMap::new(),
+        action,
+        &BTreeMap::new(),
+        control,
+    )
+}
+
 fn image(
     value: &Scalar,
     inputs: &CheckedInputs,

@@ -27,6 +27,7 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
 /// Optionは実際に構成できた中間結果だけを表す。構成条件の判断はこの後に行う。
 #[derive(Debug)]
 pub(super) struct Plan {
+    pub assembly: Option<Arc<super::assembly_plan::Assembly>>,
     pub architecture: Architecture,
     pub objects: Option<Objects>,
     pub patterns: Option<Patterns>,
@@ -67,6 +68,36 @@ pub(super) fn prepare(
     tick(c)?;
     let architecture = architecture_result::build(inputs.clone(), env, g, request, c)?;
     prepare_architecture(env, g, inputs, architecture, c)
+}
+
+pub(super) fn incomplete_architecture(
+    env: &Environment<'_>,
+    g: &Graph,
+    architecture: Architecture,
+    c: &Control,
+) -> Result<Plan, ValidationFailure> {
+    let boundary = Boundary::capture(
+        env,
+        g,
+        architecture.reference,
+        vec![architecture.reference, architecture.universe],
+        c,
+    )?;
+    Ok(Plan {
+        assembly: None,
+        architecture,
+        objects: None,
+        patterns: None,
+        arrows: None,
+        laws: None,
+        polynomial: None,
+        finite: None,
+        finite_boundary: None,
+        equations: None,
+        views: None,
+        predicates: vec![],
+        boundary,
+    })
 }
 
 pub(super) fn prepare_architecture(
@@ -184,6 +215,7 @@ pub(super) fn prepare_architecture(
     let boundary = Boundary::capture(env, g, reference, dependencies, c)?;
     tick(c)?;
     Ok(Plan {
+        assembly: None,
         architecture,
         objects,
         patterns,

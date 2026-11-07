@@ -11,7 +11,7 @@ use super::{
 };
 use crate::construction::{
     ConstructionFailure,
-    profiles::{CircuitQuery, ConfigurationProfiles, construct_profiles},
+    profiles::{CircuitQuery, ConfigurationProfiles},
 };
 use archsig_common::canonical::Json;
 use archsig_common::control::{Checkpoint, Control};
@@ -241,15 +241,9 @@ fn compute(
     c: &Control,
 ) -> Result<Option<(ConfigurationProfiles, Vec<Output>, Diagram)>, ValidationFailure> {
     tick(c)?;
-    let root = a.construction().root();
-    let profiles = construct_profiles(
-        inputs,
-        a.construction().reading(),
-        &root.snapshot,
-        &root.subject,
-        c,
-    )
-    .map_err(failure)?;
+    let profiles =
+        crate::construction::profiles::construct_profiles_for(inputs, a.shared_construction(), c)
+            .map_err(failure)?;
     if profiles.construction() != a.construction() {
         return Err(internal!("query patternの構成が元Architectureと違う").into());
     }

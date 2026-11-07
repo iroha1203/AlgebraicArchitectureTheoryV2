@@ -11,7 +11,7 @@ pub(super) struct ArchitectureContext {
     reference: NodeRef,
     domain: Arc<ObjectDomain>,
     scope: Scope,
-    overrides: BTreeMap<Fact, (NodeRef, Scalar, Scope)>,
+    overrides: BTreeMap<Fact, (NodeRef, Scalar, Scope, Support)>,
 }
 /// 依存producerの再検査中に別の根を選んでも、呼出し側の環境を復元する。
 pub(in crate::observed) struct ArchitectureGuard<'e, 'i> {
@@ -151,7 +151,17 @@ impl<'i> Environment<'i> {
             overrides: value
                 .architecture_overrides(graph)?
                 .into_iter()
-                .map(|(f, r, v)| Ok((f, (r, v, graph.get(r)?.scope.clone()))))
+                .map(|(f, r, v)| {
+                    Ok((
+                        f,
+                        (
+                            r,
+                            v,
+                            graph.get(r)?.scope.clone(),
+                            graph.get(r)?.support.clone(),
+                        ),
+                    ))
+                })
                 .collect::<Result<_, ValidationFailure>>()?,
         }))
     }
@@ -189,7 +199,7 @@ impl EvaluationState {
             .as_ref()?
             .overrides
             .get(fact)
-            .map(|(r, v, _)| (*r, v.clone()))
+            .map(|(r, v, _, _)| (*r, v.clone()))
     }
     pub(in crate::observed) fn architecture_scalar_scope(&self, fact: &Fact) -> Option<Scope> {
         self.architecture
@@ -197,13 +207,21 @@ impl EvaluationState {
             .as_ref()?
             .overrides
             .get(fact)
-            .map(|(_, _, s)| s.clone())
+            .map(|(_, _, s, _)| s.clone())
+    }
+    pub(in crate::observed) fn architecture_support(&self, fact: &Fact) -> Option<Support> {
+        self.architecture
+            .borrow()
+            .as_ref()?
+            .overrides
+            .get(fact)
+            .map(|(_, _, _, s)| s.clone())
     }
     pub(super) fn architecture_has_value(&self, reference: NodeRef) -> bool {
         self.architecture
             .borrow()
             .as_ref()
-            .is_some_and(|a| a.overrides.values().any(|(r, _, _)| *r == reference))
+            .is_some_and(|a| a.overrides.values().any(|(r, _, _, _)| *r == reference))
     }
     pub(in crate::observed) fn architecture_values(&self) -> Vec<(Fact, Scalar)> {
         self.architecture
@@ -212,7 +230,7 @@ impl EvaluationState {
             .map(|a| {
                 a.overrides
                     .iter()
-                    .map(|(f, (_, v, _))| (f.clone(), v.clone()))
+                    .map(|(f, (_, v, _, _))| (f.clone(), v.clone()))
                     .collect()
             })
             .unwrap_or_default()

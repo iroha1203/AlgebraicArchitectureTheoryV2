@@ -77,7 +77,7 @@ impl ObjectInstance {
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ObjectReadingInstances {
-    construction: ConfigurationConstruction,
+    construction: std::sync::Arc<ConfigurationConstruction>,
     source_law: InputBytes,
     local_types: BTreeSet<String>,
     objects: Vec<ReadingObject>,
@@ -85,6 +85,9 @@ pub struct ObjectReadingInstances {
     instances: Vec<ObjectInstance>,
 }
 impl ObjectReadingInstances {
+    pub(crate) fn shared_construction(&self) -> std::sync::Arc<ConfigurationConstruction> {
+        self.construction.clone()
+    }
     pub(crate) fn local_types(&self) -> &BTreeSet<String> {
         &self.local_types
     }
@@ -194,7 +197,15 @@ fn owner_condition(
             Slot::Known {
                 value: Value::Ref { snapshot, subject },
                 ..
-            } => Ok((snapshot == &owner.snapshot && subject == &owner.subject).then(Vec::new)),
+            } => {
+                let original = FactPointer::from(archsig_input::archmap::FactData {
+                    snapshot: snapshot.clone(),
+                    subject: subject.clone(),
+                    field: None,
+                    atom: None,
+                });
+                Ok((construction.transported_subject(&original) == owner).then(Vec::new))
+            }
             Slot::Missing
                 if construction.resolved_owners().iter().any(|(fact, actual)| {
                     *fact == slot(candidate, &field.name) && actual == owner
@@ -282,6 +293,13 @@ pub fn object_reading_instances(
     construction: &ConfigurationConstruction,
     control: &Control,
 ) -> Result<ObjectReadingInstances, ConstructionFailure> {
+    object_reading_instances_shared(inputs, std::sync::Arc::new(construction.clone()), control)
+}
+pub(crate) fn object_reading_instances_shared(
+    inputs: &CheckedInputs,
+    construction: std::sync::Arc<ConfigurationConstruction>,
+    control: &Control,
+) -> Result<ObjectReadingInstances, ConstructionFailure> {
     checkpoint(control)?;
     let root = construction.root();
     construction.recheck(
@@ -304,14 +322,15 @@ pub fn object_reading_instances(
             local_types.insert(declaration.name.clone());
         }
     }
+    let shared_construction = construction.clone();
     let mut objects = vec![ReadingObject {
-        identity: ObjectIdentity::selected(construction.reading(), root, root),
+        identity: ObjectIdentity::constructed(&shared_construction, root),
         conditions: vec![],
     }];
     for component in construction.components() {
         checkpoint(control)?;
         objects.push(ReadingObject {
-            identity: ObjectIdentity::selected(construction.reading(), root, component.subject()),
+            identity: ObjectIdentity::constructed(&shared_construction, component.subject()),
             conditions: vec![],
         });
     }
@@ -319,7 +338,7 @@ pub fn object_reading_instances(
         checkpoint(control)?;
         if member.is_entity() {
             objects.push(ReadingObject {
-                identity: ObjectIdentity::selected(construction.reading(), root, member.subject()),
+                identity: ObjectIdentity::constructed(&shared_construction, member.subject()),
                 conditions: vec![MembershipCondition {
                     slot: member.owner_slot().clone(),
                     owner: root.clone(),
@@ -406,7 +425,7 @@ pub fn object_reading_instances(
                                 ))
                             })?;
                         let Some(required) = owner_condition(
-                            construction,
+                            &construction,
                             subject(inputs, &choice.subject, control)?,
                             &owner.subject,
                             control,

@@ -89,8 +89,8 @@ impl GeneratorTransport {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ConfigurationTransport {
     operation: ConfigurationOperation,
-    source: InternalArrows,
-    target: InternalArrows,
+    source: std::sync::Arc<InternalArrows>,
+    target: std::sync::Arc<InternalArrows>,
     objects: Vec<ObjectTransport>,
     generators: Vec<GeneratorTransport>,
 }
@@ -98,8 +98,8 @@ pub struct ConfigurationTransport {
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ConfigurationTransportPartial {
     operation: ConfigurationOperation,
-    source: Option<InternalArrows>,
-    target: Option<InternalArrows>,
+    source: Option<std::sync::Arc<InternalArrows>>,
+    target: Option<std::sync::Arc<InternalArrows>>,
     objects: Vec<ObjectTransport>,
     generators: Vec<GeneratorTransport>,
     outcome: Option<bool>,
@@ -109,10 +109,10 @@ impl ConfigurationTransportPartial {
         &self.operation
     }
     pub fn source(&self) -> Option<&InternalArrows> {
-        self.source.as_ref()
+        self.source.as_deref()
     }
     pub fn target(&self) -> Option<&InternalArrows> {
-        self.target.as_ref()
+        self.target.as_deref()
     }
     pub fn objects(&self) -> &[ObjectTransport] {
         &self.objects
@@ -300,8 +300,43 @@ pub fn configuration_transport(
     map: &ConfigurationMap,
     control: &Control,
 ) -> Result<ConfigurationTransport, ConfigurationTransportFailure> {
+    configuration_transport_inner(inputs, map, None, None, control)
+}
+pub(crate) fn configuration_transport_constructed(
+    inputs: &CheckedInputs,
+    map: &ConfigurationMap,
+    source: std::sync::Arc<InternalArrows>,
+    target: std::sync::Arc<InternalArrows>,
+    control: &Control,
+) -> Result<ConfigurationTransport, ConfigurationTransportFailure> {
+    let MapOrigin::Assembly(recipe) = &map.candidate.origin else {
+        return Err(ConstructionFailure::InvalidSelection(
+            "構成済みの族の対応は組立て写像を要求する".into(),
+        )
+        .into());
+    };
+    if source.construction() != recipe.source.as_ref()
+        || target.construction() != recipe.target.as_ref()
+    {
+        return Err(ConstructionFailure::InvalidSelection(
+            "組立て写像と操作族の元構成が違う".into(),
+        )
+        .into());
+    }
+    configuration_transport_inner(inputs, map, Some(source), Some(target), control)
+}
+fn configuration_transport_inner(
+    inputs: &CheckedInputs,
+    map: &ConfigurationMap,
+    source: Option<std::sync::Arc<InternalArrows>>,
+    target: Option<std::sync::Arc<InternalArrows>>,
+    control: &Control,
+) -> Result<ConfigurationTransport, ConfigurationTransportFailure> {
     tick(control)?;
-    if !matches!(map.candidate.origin, MapOrigin::Correspondence(_)) {
+    if !matches!(
+        map.candidate.origin,
+        MapOrigin::Correspondence(_) | MapOrigin::Assembly(_)
+    ) {
         return Err(ConstructionFailure::InvalidSelection(
             "対象族の対応は原始correspondenceの保存済みmapを要求する".into(),
         )
@@ -310,46 +345,58 @@ pub fn configuration_transport(
     let operation = ConfigurationOperation::from_map(inputs, map, control)?;
     let mut result = ConfigurationTransportPartial {
         operation,
-        source: None,
-        target: None,
+        source,
+        target,
         objects: vec![],
         generators: vec![],
         outcome: None,
     };
     let computed = (|| -> Result<(), ConstructionFailure> {
         let c = map.candidate();
-        result.source = Some(
-            match internal_arrows(
-                inputs,
-                c.reading(),
-                &c.source_root().snapshot,
-                &c.source_root().subject,
-                control,
-            ) {
-                Ok(source) => source,
-                Err(failure) => {
-                    let (cause, partial) = failure.into_parts();
-                    result.source = partial.map(|r| *r);
-                    return Err(cause);
-                }
-            },
-        );
-        result.target = Some(
-            match internal_arrows(
-                inputs,
-                c.to_reading(),
-                &c.target_root().snapshot,
-                &c.target_root().subject,
-                control,
-            ) {
-                Ok(target) => target,
-                Err(failure) => {
-                    let (cause, partial) = failure.into_parts();
-                    result.target = partial.map(|r| *r);
-                    return Err(cause);
-                }
-            },
-        );
+        if result.source.is_none() {
+            result.source = Some(
+                match if let MapOrigin::Assembly(recipe) = &c.origin {
+                    internal_arrows_constructed(inputs, recipe.source.clone(), control)
+                } else {
+                    internal_arrows(
+                        inputs,
+                        c.reading(),
+                        &c.source_root().snapshot,
+                        &c.source_root().subject,
+                        control,
+                    )
+                } {
+                    Ok(source) => std::sync::Arc::new(source),
+                    Err(failure) => {
+                        let (cause, partial) = failure.into_parts();
+                        result.source = partial.map(|r| std::sync::Arc::new(*r));
+                        return Err(cause);
+                    }
+                },
+            );
+        }
+        if result.target.is_none() {
+            result.target = Some(
+                match if let MapOrigin::Assembly(recipe) = &c.origin {
+                    internal_arrows_constructed(inputs, recipe.target.clone(), control)
+                } else {
+                    internal_arrows(
+                        inputs,
+                        c.to_reading(),
+                        &c.target_root().snapshot,
+                        &c.target_root().subject,
+                        control,
+                    )
+                } {
+                    Ok(target) => std::sync::Arc::new(target),
+                    Err(failure) => {
+                        let (cause, partial) = failure.into_parts();
+                        result.target = partial.map(|r| std::sync::Arc::new(*r));
+                        return Err(cause);
+                    }
+                },
+            );
+        }
         let source = result.source.as_ref().ok_or_else(|| {
             ConstructionFailure::Inconsistent(internal!("対象写像のsource表がない"))
         })?;
@@ -377,9 +424,8 @@ pub fn configuration_transport(
             let (target_object, target_configuration, counterexamples, condition_failure) =
                 if let Some(target_config) = selected {
                     (
-                        Some(ObjectIdentity::selected(
-                            c.to_reading(),
-                            c.target_root(),
+                        Some(ObjectIdentity::constructed(
+                            target.shared_construction(),
                             target_subject,
                         )),
                         Some(target_config.clone()),
@@ -404,7 +450,7 @@ pub fn configuration_transport(
                     )
                 };
             result.objects.push(ObjectTransport {
-                source: ObjectIdentity::selected(c.reading(), c.source_root(), source_subject),
+                source: ObjectIdentity::constructed(source.shared_construction(), source_subject),
                 target: target_object,
                 source_configuration: source_config.clone(),
                 target_configuration,

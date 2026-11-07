@@ -9,7 +9,7 @@ use super::{
     equation_polynomial::EquationPolynomial,
     object_equation_presentation::{
         EquationGuard, EquationPresentation, EquationPresentationFailure,
-        EquationPresentationStatus, object_equation_presentation,
+        EquationPresentationStatus,
     },
     result::*,
 };
@@ -1686,12 +1686,9 @@ fn calculate(
     if object >= a.readings().objects().len() {
         return Err(internal!("多項式の対象添字が域外").into());
     }
-    let root = a.construction().root();
-    match object_equation_presentation(
+    match super::object_equation_presentation::object_equation_presentation_on(
         inputs,
-        a.construction().reading(),
-        &root.snapshot,
-        &root.subject,
+        a.shared_construction(),
         object,
         c,
     ) {

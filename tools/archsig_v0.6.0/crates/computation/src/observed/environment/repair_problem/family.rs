@@ -22,6 +22,7 @@ pub(in crate::observed) enum Preparation {
     Pending(Vec<Fact>),
     Rejected,
 }
+#[derive(Debug)]
 pub(in crate::observed) struct Read {
     pub failed: bool,
     pub blocked: bool,
@@ -34,6 +35,13 @@ pub(in crate::observed) fn read(
     name: &str,
     bindings: &[(String, Scalar)],
 ) -> Result<Read, ValidationFailure> {
+    read_with_value(env, name, bindings).map(|(read, _)| read)
+}
+pub(in crate::observed) fn read_with_value(
+    env: &Environment<'_>,
+    name: &str,
+    bindings: &[(String, Scalar)],
+) -> Result<(Read, Option<Scalar>), ValidationFailure> {
     let declaration = &env.indexes.inputs.law().declarations()[name];
     let Signature::View { params, body, .. } = &declaration.signature else {
         return Err(internal!("原始読取りの元がviewでない").into());
@@ -84,6 +92,7 @@ pub(in crate::observed) fn read(
     support.extend(reads);
     let mut failed = checks.failure.is_some();
     let mut blocked = checks.blocked || unresolved;
+    let mut known = None;
     if let Some(value) = value {
         support.extend(value.support.iter().cloned());
         scope.merge(&value.scope);
@@ -95,6 +104,7 @@ pub(in crate::observed) fn read(
                 "observation view has an unresolved computation",
             ));
         }
+        known = value.known_value;
     }
     if blocked && missing.is_empty() {
         return Err(unsupported(
@@ -102,17 +112,20 @@ pub(in crate::observed) fn read(
             "observation view requires valid primitive reads",
         ));
     }
-    Ok(Read {
-        failed,
-        blocked,
-        missing: missing.into_iter().collect(),
-        support: support
-            .into_iter()
-            .collect::<BTreeSet<_>>()
-            .into_iter()
-            .collect(),
-        scope,
-    })
+    Ok((
+        Read {
+            failed,
+            blocked,
+            missing: missing.into_iter().collect(),
+            support: support
+                .into_iter()
+                .collect::<BTreeSet<_>>()
+                .into_iter()
+                .collect(),
+            scope,
+        },
+        known,
+    ))
 }
 impl Family {
     pub fn values(&self, index: usize) -> Vec<(Fact, Scalar)> {

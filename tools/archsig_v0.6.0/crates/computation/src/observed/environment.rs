@@ -568,6 +568,75 @@ impl<'a> Environment<'a> {
         Ok(())
     }
 
+    pub(in crate::observed) fn object_field_value(
+        &self,
+        position: &Fact,
+    ) -> Result<Option<(Scalar, Fact)>, ValidationFailure> {
+        let Some(domain) = self.indexes.object.as_ref() else {
+            return Ok(None);
+        };
+        let Some(construction) = domain.identity.constructed_context() else {
+            return Ok(None);
+        };
+        let Some(transport) = construction.transport() else {
+            return Ok(None);
+        };
+        if !construction
+            .local_domain()
+            .known()
+            .iter()
+            .any(|f| f.snapshot == position.snapshot && f.subject == position.subject)
+        {
+            return Ok(None);
+        }
+        let field = self.indexes.field(
+            &self.state,
+            &position.snapshot,
+            &position.subject,
+            position
+                .field
+                .as_deref()
+                .ok_or(internal!("構成対象のfieldがない"))?,
+        )?;
+        let Slot::Known { value, atom, .. } = &field.slot else {
+            return Ok(None);
+        };
+        if !crate::construction::has_reference(self.indexes.inputs, &field.ty, &self.control)
+            .map_err(|e| match e {
+                crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
+                e => e
+                    .internal_context(format!("対象fieldの参照型: {e:?}"))
+                    .into(),
+            })?
+        {
+            return Ok(None);
+        }
+        let Some(raw) = data::from_input(
+            value,
+            &field.ty.erase(),
+            self.indexes.inputs.law(),
+            &self.control,
+        )?
+        else {
+            return Ok(None);
+        };
+        let moved = super::value_transport::transport_references(
+            &raw,
+            self.indexes.inputs,
+            transport,
+            &self.control,
+        )
+        .map_err(|e| match e {
+            crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
+            e => e.internal_context(format!("対象のfield輸送: {e:?}")).into(),
+        })?;
+        if data::equal(&raw, &moved, &self.control)? {
+            return Ok(None);
+        }
+        let mut fact = position.clone();
+        fact.atom = Some(atom.clone());
+        Ok(Some((moved, fact)))
+    }
     pub(in crate::observed) fn with_prepared(
         prepared: &'a super::PreparedObserved,
         control: &Control,
@@ -1485,6 +1554,22 @@ impl<'a> Environment<'a> {
             }
             self.validate_term_comparison_value(graph, node, limit)?;
             match &node.rule {
+                Rule::Construction("object_field") => {
+                    let fact = node
+                        .support
+                        .first()
+                        .ok_or(internal!("対象fieldの元支持がない"))?;
+                    let mut position = fact.clone();
+                    position.atom = None;
+                    let Some((expected, expected_fact)) = self.object_field_value(&position)?
+                    else {
+                        return Err(internal!("対象fieldの輸送がない").into());
+                    };
+                    if scalar != &expected || node.support.as_slice() != [expected_fact] {
+                        return Err(internal!("対象fieldの値・原始支持が違う").into());
+                    }
+                    self.call_field_source(graph, node, limit)?;
+                }
                 Rule::Input {
                     kind: "subject",
                     location: Location::ArchMap { pointer, .. },
@@ -4368,6 +4453,7 @@ impl<'a> Environment<'a> {
                 || matches!(
                     request.kind,
                     QuestionKind::Build
+                        | QuestionKind::Assemble
                         | QuestionKind::Solve
                         | QuestionKind::Repair
                         | QuestionKind::Quotient
@@ -4381,7 +4467,7 @@ impl<'a> Environment<'a> {
                 return self.with_request_context(graph, request, || {
                     if super::request::shared_repair_request(request) {
                         super::repair_problem::validate_answer(self, graph, request, answer)?;
-                    } else if request.kind == QuestionKind::Build {
+                    } else if matches!(request.kind, QuestionKind::Build | QuestionKind::Assemble) {
                         super::build_result::validate_answer(self, graph, request, answer)?;
                     } else if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair) {
                         super::change_result::validate_answer(self, graph, request, answer)?;
@@ -5724,6 +5810,10 @@ impl<'a> Environment<'a> {
             field: Some(field.name.clone()),
             atom: Some(atom.clone()),
         });
+        let expected = self
+            .object_field_value(&fact)?
+            .map(|(v, _)| v)
+            .unwrap_or(expected);
         let analysis = self.resolve_analysis(
             graph,
             self.analyze_source(graph, *span, bindings)?,
@@ -5753,11 +5843,30 @@ impl<'a> Environment<'a> {
         if node.arguments.len() != 1 {
             return Err(internal!("field owner数が違う").into());
         }
-        let Rule::Input {
+        let pointer = if let Rule::Input {
             kind: "atom",
             location: Location::ArchMap { pointer, .. },
         } = &node.rule
-        else {
+        {
+            pointer
+        } else if node.rule == Rule::Construction("object_field") {
+            let fact = node
+                .support
+                .first()
+                .ok_or(internal!("対象fieldの元Atomがない"))?;
+            let field = self.indexes.field(
+                &self.state,
+                &fact.snapshot,
+                &fact.subject,
+                fact.field
+                    .as_deref()
+                    .ok_or(internal!("対象fieldの元位置がない"))?,
+            )?;
+            let Slot::Known { pointer, .. } = &field.slot else {
+                return Err(internal!("対象fieldの元Atomがない").into());
+            };
+            pointer
+        } else {
             return Err(internal!("fieldの原始値に元Atom位置がない").into());
         };
         let input_fact = self
@@ -5892,7 +6001,8 @@ impl<'a> Environment<'a> {
                     field: Some(field.name.clone()),
                     atom: Some(atom.clone()),
                 });
-                if !matches!(&node.rule, Rule::Input {kind: "atom", location: Location::ArchMap {pointer: actual, ..}} if actual == pointer)
+                if !(matches!(&node.rule, Rule::Input {kind: "atom", location: Location::ArchMap {pointer: actual, ..}} if actual == pointer)
+                    || node.rule == Rule::Construction("object_field"))
                     || *node.support != [expected]
                 {
                     continue;
@@ -9295,6 +9405,7 @@ impl<'a> Environment<'a> {
                 support,
             });
         }
+        let transported = self.object_field_value(&position)?;
         let repaired = self.state.architecture_value(&position);
         let assigned = self
             .indexes
@@ -9303,6 +9414,15 @@ impl<'a> Environment<'a> {
             .and_then(|values| values.get(&position));
         let (known_value, scalar_scope) = if assigned.is_none() && repaired.is_some() {
             let (_, value) = repaired.ok_or(internal!("修復slot値がない"))?;
+            if let Some(source_support) = self.state.architecture_support(&position) {
+                if support.iter().all(|f| source_support.contains(f)) {
+                    support = source_support;
+                } else {
+                    support.make_owned().extend(source_support.iter().cloned());
+                    support.make_owned().sort();
+                    support.make_owned().dedup();
+                }
+            }
             self.state.merge_architecture_scope(&mut scope);
             (Some(value), self.state.architecture_scalar_scope(&position))
         } else if let Some(value) = assigned {
@@ -9315,6 +9435,16 @@ impl<'a> Environment<'a> {
             // 同じslotの元Atomがあっても、別の候補値の観測証拠に使わない。
             support.make_owned().push(position);
             (Some(value.clone()), Some(scalar_scope))
+        } else if let Some((value, fact)) = transported {
+            let Slot::Known { origin, .. } = &field.slot else {
+                return Err(internal!("輸送値の原始slotがない").into());
+            };
+            let owner_scope = self.indexes.scope(owner, reading, Some(origin))?;
+            scope.merge(&owner_scope);
+            let mut scalar_scope = request_base.clone();
+            scalar_scope.merge(&owner_scope);
+            support.make_owned().push(fact);
+            (Some(value), Some(scalar_scope))
         } else {
             match &field.slot {
                 Slot::Known {
@@ -9735,6 +9865,23 @@ impl<'a> Environment<'a> {
                 return Err(internal!("field評価が修復Architectureの値を読まない").into());
             }
             self.validate_at(graph, graph.get(assigned)?, assigned.0)?;
+            return Ok(());
+        }
+        if let Some((expected, fact)) = self.object_field_value(&fact)? {
+            let actual = value.ok_or(internal!("対象fieldの評価値がない"))?;
+            let node = graph.get(actual)?;
+            if graph.scalar(actual)? != &expected
+                || node.support.as_slice() != [fact]
+                || if chained {
+                    node.arguments != [base, expression]
+                        || !matches!(&node.rule,Rule::Input{kind:"law",location:Location::Law{span:at}} if *at==span)
+                } else {
+                    node.arguments != [base] || node.rule != Rule::Construction("object_field")
+                }
+            {
+                return Err(internal!("対象fieldが元の参照輸送・出現を読まない").into());
+            }
+            self.validate_at(graph, node, actual.0)?;
             return Ok(());
         }
         match (&field.slot, value) {

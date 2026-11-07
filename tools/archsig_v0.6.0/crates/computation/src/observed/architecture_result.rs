@@ -245,6 +245,16 @@ fn architecture_with_root(
     }
     sort_reasons(&mut reasons);
     let complete = construction.base().configuration().is_some() && laws_complete;
+    let mut overrides = Vec::new();
+    for (index, (fact, _)) in a.overrides().iter().enumerate() {
+        tick(control)?;
+        let mut subject = fact.clone();
+        subject.field = None;
+        subject.atom = None;
+        let subject = raw(graph, &witness, &subject)?;
+        let value = put(graph, &witness, D::ConstructedField { index }, vec![])?;
+        overrides.push((index, subject, value));
+    }
     let data = if complete {
         D::Architecture {
             reading: construction.reading().into(),
@@ -252,6 +262,7 @@ fn architecture_with_root(
             configuration,
             laws,
             arrows,
+            overrides,
         }
     } else {
         let mut parts = vec![
@@ -297,7 +308,10 @@ fn request_reading<'a>(
     };
     match request.kind {
         QuestionKind::Build => Ok(name),
-        QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Prepare => inputs
+        QuestionKind::Solve
+        | QuestionKind::Repair
+        | QuestionKind::Prepare
+        | QuestionKind::Assemble => inputs
             .law()
             .declarations()
             .get(name)
@@ -326,8 +340,40 @@ pub(super) fn build(
     environment.with_request_context(graph, request, || Ok(()))?;
     let root = selected_build(environment, graph, request)?;
     let reading = request_reading(&inputs, request)?.to_owned();
-    let witness =
-        ArchitectureWitness::compute(inputs, request, &reading, &root, control).map_err(failure)?;
+    // 組立て済みの所属域・参照輸送を、後続の変更で原始rootの域へ戻さない。
+    let mut inherited = None;
+    if let Some(argument) = request.arguments.iter().find(|a| a.name == "on") {
+        if matches!(argument.value, Selector::Answer { .. }) {
+            if let AnswerBinding::Reference(reference) =
+                environment.answer_binding(graph, &argument.value, (0, 0))?
+            {
+                let node = graph.get(reference)?;
+                if node.ty == NodeType::Construction(T::Architecture) {
+                    environment.validate_at(graph, node, reference.0)?;
+                    if let Some(Payload::Construction(value)) = &node.payload {
+                        if let Witness::Architecture(w) = &value.witness {
+                            if w.construction().transport().is_some() {
+                                if w.construction().reading() != reading
+                                    || w.construction().root() != &root
+                                {
+                                    return Err(internal!(
+                                        "組立て対象のreading・rootが後続要求と違う"
+                                    )
+                                    .into());
+                                }
+                                inherited = Some(w.rebind(request));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    let witness = match inherited {
+        Some(w) => w,
+        None => ArchitectureWitness::compute(inputs, request, &reading, &root, control)
+            .map_err(failure)?,
+    };
     let on = &request
         .arguments
         .iter()
@@ -522,7 +568,7 @@ pub(super) fn validate_build_origin(
             return Err(internal!("owner補完Architectureの再構成が違う").into());
         }
     }
-    if a.construction().root() != &root || a.construction().reading() != reading {
+    if a.selected_root() != &root || a.construction().reading() != reading {
         return Err(internal!("build構成が元root・readingに属さない").into());
     }
     Ok(())

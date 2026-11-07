@@ -2,7 +2,10 @@
 use super::*;
 use archsig_input::archmap::Field;
 
+mod assembly;
 mod declarations;
+pub use assembly::AssemblyMap;
+pub(crate) use assembly::assembled_map;
 mod internal;
 mod operations;
 mod references;
@@ -12,6 +15,7 @@ pub use declarations::{
     declaration_correspondence,
 };
 pub(crate) use declarations::{moved_entity_name, moved_type as moved_declaration_type};
+pub(crate) use internal::internal_arrows_constructed;
 pub use internal::{
     InternalArrowResult, InternalArrows, InternalArrowsFailure, internal_arrow, internal_arrows,
 };
@@ -22,6 +26,7 @@ pub use operations::{
 pub use references::{
     ReferenceBijection, ReferenceConditionFailure, ReferenceTypeTransport, reference_type_transport,
 };
+pub(crate) use transport::configuration_transport_constructed;
 pub use transport::{
     ConfigurationTransport, ConfigurationTransportFailure, ConfigurationTransportPartial,
     GeneratorTransport, Naturality, ObjectTransport, TransportConditionFailure,
@@ -33,9 +38,11 @@ type SubjectKey = (String, String);
 enum MapOrigin {
     Derived(operations::DerivedOrigin),
     Correspondence(FactPointer),
+    Assembly(std::sync::Arc<AssemblyMap>),
     InternalArrow {
         root: FactPointer,
         arrow: FactPointer,
+        construction: Option<std::sync::Arc<ConfigurationConstruction>>,
     },
 }
 /// 同じConfigurationでも、root・reading・subjectの異なる対象を同一視しない。
@@ -44,6 +51,7 @@ pub struct ObjectIdentity {
     reading: String,
     root: FactPointer,
     subject: FactPointer,
+    construction: Option<std::sync::Arc<ConfigurationConstruction>>,
 }
 impl ObjectIdentity {
     pub(super) fn selected(reading: &str, root: &FactPointer, subject: &FactPointer) -> Self {
@@ -51,7 +59,21 @@ impl ObjectIdentity {
             reading: reading.into(),
             root: root.clone(),
             subject: subject.clone(),
+            construction: None,
         }
+    }
+    pub(super) fn constructed(
+        construction: &std::sync::Arc<ConfigurationConstruction>,
+        subject: &FactPointer,
+    ) -> Self {
+        let mut identity = Self::selected(construction.reading(), construction.root(), subject);
+        if construction.transport().is_some() {
+            identity.construction = Some(construction.clone());
+        }
+        identity
+    }
+    pub(crate) fn constructed_context(&self) -> Option<&std::sync::Arc<ConfigurationConstruction>> {
+        self.construction.as_ref()
     }
     pub fn reading(&self) -> &str {
         &self.reading
@@ -80,18 +102,23 @@ impl MapCandidate {
         match &self.origin {
             MapOrigin::Correspondence(subject) => Some(subject),
             MapOrigin::InternalArrow { arrow, .. } => Some(arrow),
-            MapOrigin::Derived(_) => None,
+            MapOrigin::Derived(_) | MapOrigin::Assembly(_) => None,
         }
     }
     pub fn correspondence(&self) -> Option<&FactPointer> {
         match &self.origin {
             MapOrigin::Correspondence(subject) => Some(subject),
-            MapOrigin::InternalArrow { .. } | MapOrigin::Derived(_) => None,
+            MapOrigin::InternalArrow { .. } | MapOrigin::Derived(_) | MapOrigin::Assembly(_) => {
+                None
+            }
         }
     }
     pub fn source_object(&self) -> ObjectIdentity {
         let root = match &self.origin {
             MapOrigin::Derived(origin) => return origin.source.clone(),
+            MapOrigin::Assembly(recipe) => {
+                return ObjectIdentity::constructed(&recipe.source, recipe.source.root());
+            }
             MapOrigin::Correspondence(_) => self.source_root.clone(),
             MapOrigin::InternalArrow { root, .. } => root.clone(),
         };
@@ -99,11 +126,18 @@ impl MapCandidate {
             reading: self.reading.clone(),
             root,
             subject: self.source_root.clone(),
+            construction: match &self.origin {
+                MapOrigin::InternalArrow { construction, .. } => construction.clone(),
+                _ => None,
+            },
         }
     }
     pub fn target_object(&self) -> ObjectIdentity {
         let root = match &self.origin {
             MapOrigin::Derived(origin) => return origin.target.clone(),
+            MapOrigin::Assembly(recipe) => {
+                return ObjectIdentity::constructed(&recipe.target, recipe.target.root());
+            }
             MapOrigin::Correspondence(_) => self.target_root.clone(),
             MapOrigin::InternalArrow { root, .. } => root.clone(),
         };
@@ -111,6 +145,16 @@ impl MapCandidate {
             reading: self.to_reading.clone(),
             root,
             subject: self.target_root.clone(),
+            construction: match &self.origin {
+                MapOrigin::InternalArrow { construction, .. } => construction.clone(),
+                _ => None,
+            },
+        }
+    }
+    pub(crate) fn source_construction(&self) -> Option<std::sync::Arc<ConfigurationConstruction>> {
+        match &self.origin {
+            MapOrigin::Assembly(recipe) => Some(recipe.source.clone()),
+            _ => None,
         }
     }
     pub fn source_root(&self) -> &FactPointer {
@@ -151,6 +195,10 @@ impl MapCandidate {
         control: &Control,
     ) -> Result<(Option<MapCandidate>, Option<ConfigurationMap>), ConstructionFailure> {
         match &self.origin {
+            MapOrigin::Assembly(recipe) => {
+                let map = assembly::recompute(inputs, recipe, control)?;
+                Ok((map.as_ref().map(|m| m.candidate.clone()), map))
+            }
             MapOrigin::Derived(origin) => {
                 let map = operations::recompute(inputs, &origin.steps, control)?;
                 Ok((Some(map.candidate.clone()), Some(map)))
@@ -166,16 +214,37 @@ impl MapCandidate {
                 )?;
                 Ok((result.candidate, result.map))
             }
-            MapOrigin::InternalArrow { root, arrow } => {
-                let result = internal_arrow(
-                    inputs,
-                    &self.reading,
-                    &root.snapshot,
-                    &root.subject,
-                    &arrow.snapshot,
-                    &arrow.subject,
-                    control,
-                )?;
+            MapOrigin::InternalArrow {
+                root,
+                arrow,
+                construction,
+            } => {
+                let result = if let Some(construction) = construction {
+                    construction.recheck(
+                        inputs,
+                        &self.reading,
+                        &root.snapshot,
+                        &root.subject,
+                        control,
+                    )?;
+                    internal::internal_arrow_checked(
+                        inputs,
+                        construction,
+                        &arrow.snapshot,
+                        &arrow.subject,
+                        control,
+                    )?
+                } else {
+                    internal_arrow(
+                        inputs,
+                        &self.reading,
+                        &root.snapshot,
+                        &root.subject,
+                        &arrow.snapshot,
+                        &arrow.subject,
+                        control,
+                    )?
+                };
                 Ok((result.candidate, result.map))
             }
         }

@@ -161,7 +161,7 @@ pub(super) fn validate_origin(
     }
     if matches!(
         request.kind,
-        QuestionKind::Build | QuestionKind::Solve | QuestionKind::Repair
+        QuestionKind::Build | QuestionKind::Assemble | QuestionKind::Solve | QuestionKind::Repair
     ) {
         return super::architecture_result::validate_build_origin(
             environment,

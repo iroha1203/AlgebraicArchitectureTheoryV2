@@ -224,14 +224,8 @@ impl ObjectLawResiduals {
         self.base
             .recheck(Arc::clone(&inputs), c)
             .map_err(ObjectLawResidualsFailure::Original)?;
-        let root = self.base.readings().construction().root();
-        let expected = object_law_residuals(
-            inputs,
-            self.base.readings().construction().reading(),
-            &root.snapshot,
-            &root.subject,
-            c,
-        )?;
+        let expected =
+            object_law_residuals_on(inputs, self.base.readings().shared_construction(), c)?;
         let checked = same(self, &expected, c);
         match checked {
             Ok(true) => Ok(()),
@@ -1102,6 +1096,26 @@ pub fn object_law_residuals(
 ) -> Result<ObjectLawResiduals, ObjectLawResidualsFailure> {
     let base = object_law_compatibility(Arc::clone(&inputs), reading, snapshot, root, c)
         .map_err(ObjectLawResidualsFailure::Original)?;
+    residuals_from_base(inputs, base, c)
+}
+pub(crate) fn object_law_residuals_on(
+    inputs: Arc<CheckedInputs>,
+    construction: Arc<crate::construction::ConfigurationConstruction>,
+    c: &Control,
+) -> Result<ObjectLawResiduals, ObjectLawResidualsFailure> {
+    let base = super::object_law_compatibility::object_law_compatibility_on(
+        inputs.clone(),
+        construction,
+        c,
+    )
+    .map_err(ObjectLawResidualsFailure::Original)?;
+    residuals_from_base(inputs, base, c)
+}
+fn residuals_from_base(
+    inputs: Arc<CheckedInputs>,
+    base: super::object_law_compatibility::ObjectLawCompatibility,
+    c: &Control,
+) -> Result<ObjectLawResiduals, ObjectLawResidualsFailure> {
     let mut result = ObjectLawResiduals {
         base,
         evaluations: vec![],

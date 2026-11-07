@@ -107,10 +107,12 @@ fn build_request_keeps_original_architecture_law_occurrences_and_all_object_read
         configuration,
         laws,
         arrows,
+        overrides,
     } = &value(&g, a.reference).data
     else {
         panic!("Architecture")
     };
+    assert!(overrides.is_empty());
     assert_eq!(reading, "R");
     assert_eq!(*root, a.root);
     assert!(arrows.is_empty());

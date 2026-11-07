@@ -4,10 +4,14 @@ use super::*;
 /// 各indexはこの有限表内の元操作を指す。合成の両indexは自身より前にある。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum OperationStep {
+    Assembly {
+        recipe: std::sync::Arc<AssemblyMap>,
+    },
     Generator {
         subject: FactPointer,
         /// 内部arrowの包含root。correspondenceはNone。
         root: Option<FactPointer>,
+        construction: Option<std::sync::Arc<ConfigurationConstruction>>,
         reading: String,
         to_reading: String,
     },
@@ -302,14 +306,24 @@ fn overflow() -> ConstructionFailure {
 }
 fn raw_step(map: &ConfigurationMap) -> Option<OperationStep> {
     let candidate = &map.candidate;
-    let (subject, root) = match &candidate.origin {
-        MapOrigin::Correspondence(subject) => (subject.clone(), None),
-        MapOrigin::InternalArrow { root, arrow } => (arrow.clone(), Some(root.clone())),
-        MapOrigin::Derived(_) => return None,
+    if let MapOrigin::Assembly(recipe) = &candidate.origin {
+        return Some(OperationStep::Assembly {
+            recipe: recipe.clone(),
+        });
+    }
+    let (subject, root, construction) = match &candidate.origin {
+        MapOrigin::Correspondence(subject) => (subject.clone(), None, None),
+        MapOrigin::InternalArrow {
+            root,
+            arrow,
+            construction,
+        } => (arrow.clone(), Some(root.clone()), construction.clone()),
+        MapOrigin::Derived(_) | MapOrigin::Assembly(_) => return None,
     };
     Some(OperationStep::Generator {
         subject,
         root,
+        construction,
         reading: candidate.reading.clone(),
         to_reading: candidate.to_reading.clone(),
     })
@@ -388,6 +402,7 @@ fn word(
         tick(control)?;
         match &steps[i] {
             OperationStep::Generator { subject, .. } => out.push(subject.clone()),
+            OperationStep::Assembly { recipe } => out.push(recipe.source.root().clone()),
             OperationStep::Identity { .. } => {}
             OperationStep::Compose { first, then } => {
                 pending.push(*then);
@@ -513,6 +528,7 @@ pub fn identity(
             reading: reading.into(),
             root,
             subject,
+            construction: None,
         },
         control,
     )
@@ -523,13 +539,24 @@ fn identity_object(
     control: &Control,
 ) -> Result<IdentityConstruction, ConstructionFailure> {
     tick(control)?;
-    let construction = construct(
-        inputs,
-        &object.reading,
-        &object.root.snapshot,
-        &object.root.subject,
-        control,
-    )?;
+    let construction = if let Some(construction) = &object.construction {
+        construction.recheck(
+            inputs,
+            &object.reading,
+            &object.root.snapshot,
+            &object.root.subject,
+            control,
+        )?;
+        construction.clone()
+    } else {
+        std::sync::Arc::new(construct(
+            inputs,
+            &object.reading,
+            &object.root.snapshot,
+            &object.root.subject,
+            control,
+        )?)
+    };
     if object.root != *construction.root()
         || object.subject.field.is_some()
         || object.subject.atom.is_some()
@@ -540,6 +567,14 @@ fn identity_object(
     }
     let candidate = if object.subject == object.root {
         construction.base().clone()
+    } else if construction.transport().is_some() {
+        construction
+            .components()
+            .iter()
+            .find(|p| p.subject() == &object.subject)
+            .ok_or_else(|| ConstructionFailure::InvalidSelection("組立て対象の成分がない".into()))?
+            .candidate()
+            .clone()
     } else {
         let selected = subject(
             inputs,
@@ -617,13 +652,36 @@ pub(super) fn recompute(
     for step in steps {
         tick(control)?;
         let value = match step {
+            OperationStep::Assembly { recipe } => {
+                let map = assembly::recompute(inputs, recipe, control)?.ok_or_else(|| {
+                    ConstructionFailure::InvalidSelection("局所組立て写像の保存が現在未確認".into())
+                })?;
+                Data::from_map(&map)
+            }
             OperationStep::Generator {
                 subject,
                 root,
+                construction,
                 reading,
                 to_reading,
             } => {
-                let map = if let Some(root) = root {
+                let map = if let Some(construction) = construction {
+                    construction.recheck(
+                        inputs,
+                        reading,
+                        &construction.root().snapshot,
+                        &construction.root().subject,
+                        control,
+                    )?;
+                    internal::internal_arrow_checked(
+                        inputs,
+                        construction,
+                        &subject.snapshot,
+                        &subject.subject,
+                        control,
+                    )?
+                    .map
+                } else if let Some(root) = root {
                     internal_arrow(
                         inputs,
                         reading,

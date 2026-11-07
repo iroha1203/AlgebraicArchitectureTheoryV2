@@ -380,12 +380,12 @@ apply は現在入力の通常の所属・更新式・元Law検査を行い、�
 両 View は同じ reading に属し、parameter の名前・型を共有する。全 parameter を束縛する。
 第1 View の戻り型は owner を持たない同じ entity 型の `Set<Root>` とする。
 along の戻り型は `List<(T,T)>`、またはそれらの有限 Tuple とし、T はその root 型の
-owned entity / arrow の参照型とする。空の Tuple は共有個体なしを表す。
+owned entity / arrow の参照型とする。`Unit` と値 `unit` は共有個体なしを表す。
 対は原始個体の明示対応であり、構成済みの全体対象や保存証拠を入力しない。
 
 on は同じ snapshot・root 型の原始参照で、組立て後の root の identity と既知 field を与える。
 担当 root は空でない有限集合とし、on と異なる。on には既存の owned 個体がないことを要求する。
-初段の適用族は、同じ snapshot・定義環境・reading で、各局所構成と on の field がすべて既知である族とする。
+初段の適用族は、同じ snapshot・定義環境・reading で、各局所 root とその所属個体、および on の field がすべて既知である族とする。
 関数値 Term を含む field はこの算法の対象外とする。入力の通常の型・参照検査は先に行う。
 
 返す field は `proposition:Proposition`、成立時 `assembly:ModelAssembly`、
@@ -397,6 +397,8 @@ localize と次の変更の on に渡せる。初段の組立ては対象と生�
 未観測 field はその原始位置を持つ `missing_observation`、適用族外は原式と束縛を持つ
 `unsupported_algorithm` とする。共有対応が局所の異なる個体を潰す、型・field 値・端点が
 整合しない、または生成操作の保存を満たさない場合は `condition_failed` を返す。
+field 値の不一致は参照輸送後の実際の二値と元の field 位置を証拠にする。
+それ以外の不整合は、評価した局所集合・明示対応と不整合な原始位置へ戻す。
 失敗した組立てから完成した object / algebra を返さない。中断時は先行する確認済み回答を保持し、
 未完了の組立てを成立させない。
 

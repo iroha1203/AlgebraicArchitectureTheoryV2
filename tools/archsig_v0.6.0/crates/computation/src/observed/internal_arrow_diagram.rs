@@ -12,7 +12,7 @@ use super::{
 };
 use crate::construction::{
     ConstructionFailure,
-    maps::{ConfigurationOperation, InternalArrows, internal_arrows},
+    maps::{ConfigurationOperation, InternalArrows, internal_arrows_constructed},
 };
 use archsig_common::canonical::Json;
 use archsig_common::control::{Checkpoint, Control};
@@ -778,14 +778,8 @@ impl super::result_kind::ResultKind for Data {
         {
             return Err(internal!("内部arrowの入力または対象表が違う").into());
         }
-        let core = internal_arrows(
-            &inputs,
-            a.construction().reading(),
-            &a.construction().root().snapshot,
-            &a.construction().root().subject,
-            c,
-        )
-        .map_err(|e| failure(e.cause().clone()))?;
+        let core = internal_arrows_constructed(&inputs, a.shared_construction(), c)
+            .map_err(|e| failure(e.cause().clone()))?;
         let (parts, outputs) = plan(&inputs, a, objects, universe, graph.nodes.len(), &core, c)?;
         let (support, scope) = metadata(graph, reference, universe)?;
         let source = Arc::new(Source {

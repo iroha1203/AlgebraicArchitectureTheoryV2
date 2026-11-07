@@ -139,8 +139,32 @@ pub struct ConfigurationConstruction {
     components: Vec<ObjectComponent>,
     local_domain: SubjectDomain,
     owner_resolution: Option<crate::owner_completion::DeterminedOwners>,
+    assembly: Option<std::sync::Arc<AssemblyOrigin>>,
 }
+/// 計算済みの組立てに閉じた不変な由来。外部入力から直接生成しない。
+#[derive(Debug)]
+struct AssemblyOrigin {
+    inputs: std::sync::Arc<CheckedInputs>,
+    members: Vec<FactPointer>,
+    transport: std::sync::Arc<BTreeMap<FactPointer, FactPointer>>,
+}
+impl PartialEq for AssemblyOrigin {
+    fn eq(&self, other: &Self) -> bool {
+        self.members == other.members
+            && self.transport == other.transport
+            && (std::sync::Arc::ptr_eq(&self.inputs, &other.inputs)
+                || self.inputs.sources() == other.inputs.sources())
+    }
+}
+impl Eq for AssemblyOrigin {}
 impl ConfigurationConstruction {
+    /// 構成した対象の参照輸送。元の観測値と欠測補完を変更しない。
+    pub(crate) fn transported_subject<'a>(&'a self, fact: &'a FactPointer) -> &'a FactPointer {
+        self.transport().and_then(|m| m.get(fact)).unwrap_or(fact)
+    }
+    pub(crate) fn transport(&self) -> Option<&BTreeMap<FactPointer, FactPointer>> {
+        self.assembly.as_deref().map(|a| a.transport.as_ref())
+    }
     pub(crate) fn resolved_owners(&self) -> &[(FactPointer, FactPointer)] {
         self.owner_resolution
             .as_ref()
@@ -183,7 +207,17 @@ impl ConfigurationConstruction {
         root: &str,
         control: &Control,
     ) -> Result<(), ConstructionFailure> {
-        let expected = if self.owner_resolution.is_none() {
+        let expected = if let Some(origin) = &self.assembly {
+            if !std::ptr::eq(inputs, origin.inputs.as_ref())
+                && inputs.sources() != origin.inputs.sources()
+            {
+                return Err(ConstructionFailure::Inconsistent(internal!(
+                    "組立て構成の元三入力が違う"
+                )));
+            }
+            let target = construct(inputs, reading, snapshot, root, control)?;
+            assemble_from_origin(target, origin.clone(), control)?
+        } else if self.owner_resolution.is_none() {
             construct(inputs, reading, snapshot, root, control)?
         } else {
             construct_resolving_owners(inputs, reading, snapshot, root, control)?
@@ -313,7 +347,7 @@ fn visible(inputs: &CheckedInputs, ty: &str, namespaces: &BTreeSet<String>) -> b
         .get(ty)
         .is_some_and(|d| namespaces.contains(&d.namespace))
 }
-fn has_reference(
+pub(crate) fn has_reference(
     inputs: &CheckedInputs,
     ty: &Type,
     control: &Control,
@@ -391,8 +425,19 @@ fn configuration_with_owners(
     inputs: &CheckedInputs,
     subjects: &[&Subject],
     index: &BTreeMap<(&str, &str), &Subject>,
+    blocking: BTreeSet<FactPointer>,
+    owners: &[(FactPointer, FactPointer)],
+    control: &Control,
+) -> Result<ConfigurationCandidate, ConstructionFailure> {
+    configuration_transported(inputs, subjects, index, blocking, owners, None, control)
+}
+fn configuration_transported(
+    inputs: &CheckedInputs,
+    subjects: &[&Subject],
+    index: &BTreeMap<(&str, &str), &Subject>,
     mut blocking: BTreeSet<FactPointer>,
     owners: &[(FactPointer, FactPointer)],
+    transport: Option<&BTreeMap<FactPointer, FactPointer>>,
     control: &Control,
 ) -> Result<ConfigurationCandidate, ConstructionFailure> {
     let mut family = BTreeSet::new();
@@ -419,8 +464,9 @@ fn configuration_with_owners(
                             ConstructionFailure::Inconsistent(internal!("参照先の存在事実がない"))
                         })?;
                         let target = exists(target);
+                        let target = transport.and_then(|m| m.get(&target)).unwrap_or(&target);
                         family.insert(target.clone());
-                        relations.insert((fact.clone(), target));
+                        relations.insert((fact.clone(), target.clone()));
                     }
                 }
                 Slot::Missing
@@ -715,9 +761,112 @@ fn construct_with_owners(
         components,
         local_domain,
         owner_resolution: None,
+        assembly: None,
     };
     tick(control)?;
     Ok(result)
+}
+
+/// 検査済みの局所組立てが決めた個体と参照輸送から、既存のF/R/E規則を適用する。
+/// 対応の値整合と局所単射は呼出し側の型付き組立てで先に検査する。
+pub(crate) fn construct_assembled(
+    inputs: std::sync::Arc<CheckedInputs>,
+    target: ConfigurationConstruction,
+    members: &[FactPointer],
+    transport: BTreeMap<FactPointer, FactPointer>,
+    control: &Control,
+) -> Result<ConfigurationConstruction, ConstructionFailure> {
+    let origin = std::sync::Arc::new(AssemblyOrigin {
+        inputs,
+        members: members.to_vec(),
+        transport: std::sync::Arc::new(transport),
+    });
+    assemble_from_origin(target, origin, control)
+}
+pub(crate) fn restrict_assembled(
+    source: &ConfigurationConstruction,
+    members: Vec<FactPointer>,
+    control: &Control,
+) -> Result<ConfigurationConstruction, ConstructionFailure> {
+    let origin = source.assembly.as_ref().ok_or_else(|| {
+        ConstructionFailure::InvalidSelection("再制限元が組立て対象でない".into())
+    })?;
+    let target = construct(
+        &origin.inputs,
+        source.reading(),
+        &source.root().snapshot,
+        &source.root().subject,
+        control,
+    )?;
+    let origin = std::sync::Arc::new(AssemblyOrigin {
+        inputs: origin.inputs.clone(),
+        members,
+        transport: origin.transport.clone(),
+    });
+    assemble_from_origin(target, origin, control)
+}
+fn assemble_from_origin(
+    mut target: ConfigurationConstruction,
+    origin: std::sync::Arc<AssemblyOrigin>,
+    control: &Control,
+) -> Result<ConfigurationConstruction, ConstructionFailure> {
+    let inputs = &origin.inputs;
+    let members = &origin.members;
+    let transport = origin.transport.as_ref();
+    tick(control)?;
+    let mut index = BTreeMap::new();
+    for snapshot in inputs.archmap().snapshots() {
+        for subject in &snapshot.subjects {
+            tick(control)?;
+            index.insert((subject.snapshot.as_str(), subject.id.as_str()), subject);
+        }
+    }
+    let mut subjects = Vec::new();
+    let mut components = Vec::new();
+    for fact in members {
+        tick(control)?;
+        let subject = *index
+            .get(&(fact.snapshot.as_str(), fact.subject.as_str()))
+            .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("組立て個体がない")))?;
+        subjects.push(subject);
+        if fact != target.root()
+            && matches!(
+                inputs.definitions().declarations()[subject.ty.as_str()].signature,
+                PrimitiveSignature::Entity { .. }
+            )
+        {
+            components.push(ObjectComponent {
+                subject: fact.clone(),
+                candidate: configuration_transported(
+                    inputs,
+                    &[subject],
+                    &index,
+                    BTreeSet::new(),
+                    &[],
+                    Some(transport),
+                    control,
+                )?,
+            });
+        }
+    }
+    target.base = configuration_transported(
+        inputs,
+        &subjects,
+        &index,
+        BTreeSet::new(),
+        &[],
+        Some(transport),
+        control,
+    )?;
+    components.sort_by_key(|p| p.subject.wire().canonical());
+    target.components = components;
+    target.local_domain = SubjectDomain {
+        known: canonical_facts(members.iter().cloned().collect(), control)?,
+        conditional: vec![],
+    };
+    target.assembly = Some(origin);
+    tick(control)?;
+    Ok(target)
 }
 
 #[cfg(test)]

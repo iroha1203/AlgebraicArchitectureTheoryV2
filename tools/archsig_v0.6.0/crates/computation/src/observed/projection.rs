@@ -21,6 +21,13 @@ pub struct OperationProjection {
     pub word: Vec<String>,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct AssemblyProjection {
+    pub root: String,
+    pub reading: String,
+    pub interfaces: Type,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ProjectionType {
     Law(Type),
     Evaluation(Type),
@@ -28,6 +35,7 @@ pub enum ProjectionType {
     Comparison,
     Architecture,
     ArchitectureRoot(String),
+    ModelAssembly(AssemblyProjection),
     MapCandidate(MapProjection),
     ConfigurationMap(MapProjection),
     ObjectAlgebraMap(MapProjection),
@@ -196,6 +204,9 @@ fn project_inner(
             1,
         ))
     };
+    if let Some(plan) = super::request::assembly_projection(law, ty, path, control) {
+        return plan;
+    }
     if let Some(plan) = super::request::repair_projection(ty, path) {
         return plan;
     }
