@@ -1,3 +1,7 @@
+i=evaluate(Selected.internal,r=@v/root)
+x=evaluate(Selected.x,r=@v/root)
+xy=evaluate(Selected.xy,r=@v/root)
+xyz=evaluate(Selected.xyz,r=@v/root)
 task=solve(Selected.task,using=Selected.choose,on=@v/root,r=@v/root)
 payment=solve(Selected.payment,using=Selected.choose,on=@v/root,r=@v/root)
 shared=solve(Selected.valid,using=Selected.choose,on=@v/root,r=@v/root)

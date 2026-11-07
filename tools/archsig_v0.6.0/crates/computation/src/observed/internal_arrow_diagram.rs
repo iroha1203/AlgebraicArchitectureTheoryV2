@@ -38,7 +38,7 @@ enum Part {
     Subject(Scalar),
     Action {
         universe: NodeRef,
-        images: Vec<Fact>,
+        images: Arc<Vec<Fact>>,
     },
     Candidate {
         declaration: String,
@@ -536,7 +536,7 @@ fn plan(
                 base,
                 Part::Action {
                     universe,
-                    images: candidate.images().to_vec(),
+                    images: candidate.shared_images(),
                 },
                 c,
             )?;

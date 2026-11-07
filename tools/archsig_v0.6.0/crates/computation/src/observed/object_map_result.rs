@@ -76,6 +76,10 @@ impl Data {
     pub(super) fn construction(&self) -> &'static str {
         self.part().construction
     }
+    /// 保持済み表示のmetadataだけを読む。動的な作用表は生成しない。
+    pub(super) fn wire_ref(&self) -> Option<&Json> {
+        self.part().wire_ref()
+    }
     pub(super) fn wire(&self) -> Json {
         self.part().wire()
     }

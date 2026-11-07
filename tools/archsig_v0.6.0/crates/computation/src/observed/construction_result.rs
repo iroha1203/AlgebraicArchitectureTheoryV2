@@ -984,7 +984,28 @@ impl ConstructionValue {
         };
         Some((r, 1))
     }
+    /// Builderが既に持つ表示record。要約のために共通値を複製しない。
+    pub(super) fn retained_wire(&self) -> Option<&Json> {
+        use ConstructionData as D;
+        match &self.data {
+            D::Build(data) => data.wire_ref(),
+            D::Change(data) => data.wire_ref(),
+            D::SharedRepair(data) => data.wire_ref(),
+            D::Quotient(data) => data.wire_ref(),
+            D::Local(data) => data.wire_ref(),
+            D::ObjectMap(data) => data.wire_ref(),
+            D::ModelMap(data) => data.wire_ref(),
+            _ => None,
+        }
+    }
     pub fn wire(&self) -> Json {
+        #[cfg(test)]
+        super::data::observe_actual(
+            (0, 0),
+            super::call::Context::default(),
+            "construction_wire",
+            0,
+        );
         use ConstructionData as D;
         match &self.data {
             D::FiniteLaw(data) => data.wire(),

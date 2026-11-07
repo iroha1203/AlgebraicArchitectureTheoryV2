@@ -146,6 +146,10 @@ impl Data {
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
         (self.part().support.to_vec(), self.part().scope.clone())
     }
+    /// 保持済み表示のmetadataだけを読む。動的な作用表は生成しない。
+    pub(super) fn wire_ref(&self) -> Option<&Json> {
+        self.part().wire_ref()
+    }
     pub(super) fn wire(&self) -> Json {
         if let Some(map) = self.source.computed.actions.get(&self.index) {
             let mut wire = self.part().wire();

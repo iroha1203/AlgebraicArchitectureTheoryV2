@@ -1231,3 +1231,123 @@ fn prepared_input_family_keeps_each_completion_and_uniform_assignments_distinct(
         );
     }
 }
+
+#[test]
+fn shared_repair_summary_borrows_metadata_and_saving_renders_reachable_parts_once() {
+    use std::{
+        cell::{Cell, RefCell},
+        rc::Rc,
+    };
+    let result = super::super::evaluate_observed_bytes(
+        input(""),
+        &[
+            "p=prepare(Selected.valid,using=Selected.choose,on=@v/root)",
+            "r=scopes($p.problem)",
+            "s=solve($p.problem,within=$r.ranges[0])",
+            "c=candidate($s.solutions,index=0)",
+            "a=apply($c.assignment,in=$s.solutions)",
+            "ok=check(Selected.valid,on=$a.object)",
+        ],
+        &archsig_common::control::quiet(),
+    )
+    .unwrap();
+    assert!(result.issues.is_empty(), "{:?}", result.issues);
+    let full = Rc::new(Cell::new(0usize));
+    let displays = Rc::new(Cell::new(0usize));
+    let parts = Rc::new(RefCell::new(
+        std::collections::BTreeMap::<usize, usize>::new(),
+    ));
+    let (f, d, p) = (full.clone(), displays.clone(), parts.clone());
+    super::super::data::observe_iterations(move |_, _, operation, index| match operation {
+        "result_wire" => f.set(f.get() + 1),
+        "construction_wire" => d.set(d.get() + 1),
+        "shared_repair_wire" => *p.borrow_mut().entry(index).or_default() += 1,
+        _ => {}
+    });
+    let summary = result.summary_wire("complete", 0, &[]);
+    assert_eq!(full.get(), 0, "短い回答のために全結果を描画しない");
+    assert_eq!(displays.get(), 0, "保持済みの共通構造metadataを借りる");
+    assert!(parts.borrow().is_empty());
+    let Json::Obj(fields) = &summary else {
+        panic!("summary")
+    };
+    let Json::Arr(answers) = &fields["answers"] else {
+        panic!("answers")
+    };
+    assert_eq!(answers.len(), 6);
+    assert!(
+        answers
+            .iter()
+            .all(|a| matches!(a, Json::Obj(a) if a["status"] == Json::str("established")))
+    );
+    let saved = result.result_wire();
+    assert_eq!(full.get(), 1);
+    assert!(!parts.borrow().is_empty());
+    assert!(
+        parts.borrow().values().all(|count| *count == 1),
+        "{:?}",
+        parts.borrow()
+    );
+    assert_eq!(result.summary_wire("complete", 0, &[]), summary);
+    assert_eq!(full.get(), 1);
+    assert!(parts.borrow().values().all(|count| *count == 1));
+    let Json::Obj(fields) = &saved else {
+        panic!("saved")
+    };
+    let Json::Arr(nodes) = &fields["nodes"] else {
+        panic!("nodes")
+    };
+    assert!(!nodes.is_empty());
+    super::super::data::clear_iteration_observer();
+}
+
+#[test]
+fn shared_repair_validation_reuses_success_and_rechecks_after_mutable_graph_access() {
+    use std::{cell::Cell, rc::Rc};
+    let control = archsig_common::control::quiet();
+    let result = super::super::evaluate_observed_bytes(
+        input(""),
+        &["p=prepare(Selected.valid,using=Selected.choose,on=@v/root)"],
+        &control,
+    )
+    .unwrap();
+    let reference = result.answers[0].outputs["problem"];
+    let source_base = data_from(&result, reference).source.base;
+    let env = Environment::with_prepared(&result.prepared, &control).unwrap();
+    let mut graph = Graph::new(&control);
+    graph.requests = result.prepared.requests().requests().to_vec();
+    graph.frames = result.frames.clone();
+    graph.iterations = result.iterations.clone();
+    graph.instances = result.instances.clone();
+    graph.cases = result.cases.clone();
+    graph.universal_witnesses = result.universal_witnesses.clone();
+    for (index, node) in result.nodes[..reference.0].iter().enumerate() {
+        graph.active = result.contexts[index];
+        graph.push(node.clone()).unwrap();
+    }
+    graph.active = result.contexts[reference.0];
+    let node = &result.nodes[reference.0];
+    let checks = Rc::new(Cell::new(0));
+    let seen = checks.clone();
+    super::super::data::observe_iterations(move |_, _, operation, index| {
+        if operation == "shared_repair_recheck" && index == source_base {
+            seen.set(seen.get() + 1);
+        }
+    });
+    env.validate(&graph, node).unwrap();
+    assert_eq!(checks.get(), 1);
+    for _ in 0..8 {
+        env.validate(&graph, node).unwrap();
+    }
+    assert_eq!(checks.get(), 1, "同じ不変ownerの検査成功を引き継ぐ");
+    // 同値の書戻しも可変アクセスなので、不変prefixへの依存は失効する。
+    graph.nodes[0] = graph.nodes[0].clone();
+    env.validate(&graph, node).unwrap();
+    assert_eq!(checks.get(), 2, "可変状態へ以前の検査成功を貼り替えない");
+    graph.requests[0].id = "foreign".into();
+    assert!(
+        env.validate(&graph, node).is_err(),
+        "別ownerを成功cacheで通さない"
+    );
+    super::super::data::clear_iteration_observer();
+}

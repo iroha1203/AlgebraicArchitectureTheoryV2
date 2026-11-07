@@ -128,7 +128,18 @@ impl Data {
     pub(super) fn construction(&self) -> &'static str {
         self.part().construction
     }
+    /// 保持済み表示のmetadataだけを読む。動的な作用表は生成しない。
+    pub(super) fn wire_ref(&self) -> Option<&Json> {
+        self.part().wire_ref()
+    }
     pub(super) fn wire(&self) -> Json {
+        #[cfg(test)]
+        super::data::observe_actual(
+            (0, 0),
+            self.source.context,
+            "shared_repair_wire",
+            self.source.base + self.index,
+        );
         self.part().wire()
     }
     pub(super) fn scalar(&self) -> Option<&Scalar> {
@@ -1478,6 +1489,13 @@ impl super::result_kind::ResultKind for Data {
         if env.results.source_checked(&self.source) {
             return Ok(());
         }
+        #[cfg(test)]
+        super::data::observe_actual(
+            (0, 0),
+            self.source.context,
+            "shared_repair_recheck",
+            self.source.base,
+        );
         for input in &self.source.inputs {
             if input.0 >= self.source.base {
                 return Err(internal!("共通修復問題の元入力が既出でない").into());
