@@ -260,3 +260,45 @@ fn absent_model_or_binding_keeps_dependency_and_original_missing_position() {
     }
     replay(&result, &result.nodes, &result.contexts).unwrap();
 }
+
+#[test]
+fn generator_configuration_maps_keep_their_owned_endpoints_and_feed_compose_compare() {
+    let result = super::super::evaluate_observed_bytes(
+        fixture::query(|s|s),
+        &[
+            fixture::ASSEMBLE,
+            fixture::MAP,
+            "self=compare($m.map.generators[0].source.configuration_map,to=$m.map.generators[0].source.configuration_map,kind=action)",
+            "named=compose($m.map.generators[0].source,then=$m.map.generators[1].source)",
+            "mapped=compose($m.map.generators[0].source.configuration_map,then=$m.map.generators[1].source.configuration_map)",
+            "same=compare($mapped.map,to=$named.map,kind=action)",
+            "wrong=compose($m.map.generators[0].source.configuration_map,then=$m.map.generators[0].source.configuration_map)",
+        ],
+        &Control::unlimited(),
+    ).unwrap_or_else(|e|panic!("{:?}",e.wire()));
+    assert!(
+        result.answers[..6]
+            .iter()
+            .all(|a| a.status == Decision::Established),
+        "{:?}",
+        result.issues
+    );
+    assert!(result.answers[3].outputs.contains_key("operation"));
+    assert!(!result.answers[4].outputs.contains_key("operation"));
+    assert!(result.answers[4].outputs.contains_key("map"));
+    assert_eq!(result.answers[6].status, Decision::Refuted);
+    assert!(!result.answers[6].outputs.contains_key("map"));
+    assert!(
+        result.answers[6]
+            .reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+    );
+    assert!(
+        !result
+            .issues
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::Internal(_)))
+    );
+    replay(&result, &result.nodes, &result.contexts).unwrap();
+}

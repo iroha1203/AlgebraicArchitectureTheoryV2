@@ -351,6 +351,9 @@ pub(super) fn checked_map(
     }
     let v = value(graph, r)?;
     match (&v.data, &v.witness) {
+        (D::InternalArrows(data), _) => data
+            .core_map()
+            .ok_or(internal!("内部生成操作の確認済み写像がない").into()),
         (D::ModelMap(d), _) => d
             .core_map()
             .ok_or(internal!("全体写像の実作用がない").into()),
