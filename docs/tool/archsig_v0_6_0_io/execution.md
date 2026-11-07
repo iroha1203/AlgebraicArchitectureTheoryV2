@@ -262,7 +262,7 @@ Bool判別式は上の論理式の観測規則に従い、判別式内の等式�
 | `prepare(Law,using=Change,on=Handle,internal=Handle?,inputs=View?,B)` | `on` と B は従来の solve と同じ。`internal` は change の第1parameterと同じ entity 型の有限 Set を指す。省略時は空集合。`problem:RepairProblem`、`proposition:Proposition` |
 | `solve(Handle,within=Handle,mode=existence\|solutions?)` | 第1引数は RepairProblem、within は変更を解禁する entity の有限 Set または同じ問題の ChangeRange。mode の既定は solutions。`proposition:Proposition`、solutions モードでは `solutions:SolutionSet`。双方で `range:ChangeRange` |
 | `scopes(Handle)` | RepairProblem の有限な変更単位について包含極小の修復可能範囲を全て求める。`ranges:List<ChangeRange>`、完全性の `proposition:Proposition` |
-| `candidate(Handle,index=Ordinal)` | 完全な有限 SolutionSet の要求した一候補を元座標へ復元する。`assignment:Assignment`、所属の `proposition:Proposition` |
+| `candidate(Handle,index=Ordinal)` | 完全な有限または整数アフィン SolutionSet の要求した一候補を元座標へ復元する。`assignment:Assignment`、所属の `proposition:Proposition` |
 | `apply(Handle,in=Handle)` | 第1引数は利用者が明示選択した Assignment、in は同じ候補域の SolutionSet。所属と再代入を検査する。`proposition:Proposition`、成立時だけ `selection:Selection`、`object:Architecture` |
 
 新しい行にも、表外の固定引数を拒否する規則を適用する。RepairProblem を指す solve には
@@ -283,16 +283,22 @@ internal の観測値が未確定なら空集合と見なさず未決とする�
 範囲外では、parameter を零にする代わりに更新先を基準 Architecture の値へ固定する。
 同じ不変な RepairProblem を各 solve / scopes が参照する。
 
-candidate の index は、完全な有限全解表示を走査するための0始まりの明示指定である。
+candidate の index は、完全な全解表示から選ぶための0始まりの明示指定である。
 任意精度の Ordinal を使い、JSON Nat の上限を超える番号も指定・保存できる。
-元 subject の参照順、各元 parameter の宣言順、有限型の値の標準順に従う辞書式順序を用いる。
+有限型では元 subject の参照順、各元 parameter の宣言順、値の標準順に従う辞書式順序を用いる。
 Bool は false, true、有限和は constructor 宣言順、積は成分順、Fp は0からp−1とし、
 Tuple は成分の辞書順、Option は none を先にして要素の順に従う。
 Set は要素型の有限列挙順に所属を並べ、その最初の要素を最下位bitとする所属bit列の整数順とする。同じ元 Assignment の重複表示は一つとする。
+整数アフィンでは、全解の表示用原点と元parameter座標の整数核の順序を使う。
+核の自由係数がd個あるとき、indexのbit位置jを係数j mod dのbit位置floor(j/d)へ分配する。
+各非負整数nは、偶数なら−n/2、奇数なら(n+1)/2へ戻す。この対応はZのd乗を一度ずつ覆う。
+係数を元座標の全核へ作用させ原点を加え、内部の自由係数も含む元Assignmentを復元する。
+d=0の非空全解にはindex=0だけが属し、空解にはどのindexも属さない。
+index=0でも表示用原点を無検査で採用せず、所属・更新式・元Lawへの再代入を行う。
 index は候補の恒久的な identity ではなく、この完全な解集合に対する選択要求である。
 表示行や表示用特解を自動採用しない。範囲外 index は condition_failed。
 一候補を取得するために全候補の Architecture や全量 JSON を作らない。
-非有限の全解表示と未完了の探索にこの操作を適用した場合は、前者を unsupported_algorithm、
+完全な整数アフィン以外の非有限全解表示と未完了の探索にこの操作を適用した場合は、前者を unsupported_algorithm、
 後者を dependency_blocked とする。取得した Assignment を apply に渡すことで採用を明示する。
 
 apply は元の解集合、候補域、選んだ元 Assignment、生成した対象を Selection で結びつける。

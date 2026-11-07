@@ -787,7 +787,7 @@ Zでは整数核、Qでは有理核を使う。この条件で適用可否と適
 
 ObservationPlanは数学的な最小観測集合を主張せず、未観測と可視性不足・非対応をblockersで区別する。
 
-### 共通の有限修復問題と明示選択
+### 共通の有限・整数アフィン修復問題と明示選択
 
 RepairProblem は、元 CandidateSpace、選択 Law と束縛、常時変更できる instance と有限の変更単位を
 同じ owner の下で保持する結果型である。核が生成した部品の許容関係・共有条件・元 parameter への
@@ -811,6 +811,10 @@ enabled は同じ units の部分集合。RepairProblem の domain は範囲を�
 有限の全解を列挙せず保持する場合の SolutionRepresentation は
 `{kind:"factored",problem:RepairProblem,range:ChangeRange}` とする。
 共有された部品は現在の三入力とこの生成条件から再構成・検査する。
+整数アフィンのSolutionSetは、既存のaffine表示で元parameter座標の原点と全整数核を保持する。
+内部消去で隠した自由度も核へ戻し、同じ状態を作る異なる元Assignmentを同一視しない。
+整数の候補域は元parameterの整数加群とguardを保つ。有限の変更単位と、無限の候補域を区別する。
+候補番号の対応はexecution仕様に従い、番号自体を元Assignmentの恒久的identityにしない。
 意味を確定しない暫定表示を完全な SolutionSet として返さない。
 
 Selection.parameters は利用者が apply へ渡した元 Assignment そのものであり、
