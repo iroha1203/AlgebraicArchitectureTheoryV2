@@ -1,0 +1,5 @@
+u=evaluate(Selected.all,r=@v/root)
+n=evaluate(Selected.small,r=@v/root)
+p=prepare(Selected.valid,using=Selected.choose,on=@v/root,inputs=Selected.input,r=@v/root)
+d=observe(Selected.input,on=$p.problem,within=$u.value,output=decision,r=@v/root)
+a=observe(Selected.input,on=$p.problem,within=$u.value,output=assignment,r=@v/root)

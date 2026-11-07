@@ -375,6 +375,10 @@ apply は現在入力の通常の所属・更新式・元Law検査を行い、�
 既知値を固定する。更新・guardとinstance族は入力未知に依存させず、Law等式と範囲の基準値に
 未知を保つ。適用条件外はunsupported_algorithmであり、整数解なしへ読み替えない。
 
+同梱 [共通構造の一周](../../../tools/archsig_v0.6.0/skills/archsig-observe/references/common-loop.md)は、
+有限・整数の観測計画、範囲比較、元割当ての明示選択、適用・検査、再観測と保存の再検査を実行する。
+操作・型・判定の仕様は本節に従う。
+
 ### 有限の局所モデルを組み立てる問い
 
 `assemble(View,on=Handle,along=View,B)` は、担当別の root の有限集合を返す View と、
