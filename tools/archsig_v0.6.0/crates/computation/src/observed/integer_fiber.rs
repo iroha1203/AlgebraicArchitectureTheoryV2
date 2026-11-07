@@ -5,6 +5,7 @@ use num_bigint::BigInt as Z;
 use num_traits::{One, Signed, Zero};
 use std::sync::Arc;
 
+pub(in crate::observed) mod projection;
 #[cfg(test)]
 mod reobservation_tests;
 pub(in crate::observed) mod reuse;
@@ -251,7 +252,7 @@ fn decompose(a: &Matrix, cols: usize, c: &Control) -> Result<Decomposition, Vali
     })
 }
 
-fn restore(
+pub(super) fn restore(
     decomposition: Arc<Decomposition>,
     rhs: &[Z],
     c: &Control,

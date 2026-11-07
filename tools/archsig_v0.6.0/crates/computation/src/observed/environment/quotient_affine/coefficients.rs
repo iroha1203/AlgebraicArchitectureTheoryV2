@@ -8,6 +8,19 @@ fn vector(v: &[num_bigint::BigInt]) -> Vec<Scalar> {
 fn matrix(m: &integer_fiber::Matrix) -> Matrix {
     m.iter().map(|row| vector(row)).collect()
 }
+/// 具体点の実値検査には元更新だけが必要で、全fiberを再構成しない。
+pub(in crate::observed) fn updates(
+    search: &change_search::Search,
+) -> Result<(Vec<Fact>, Matrix, Vec<Scalar>), ValidationFailure> {
+    if let Some(x) = &search.rational {
+        return Ok((x.slots.clone(), x.action.clone(), x.offset.clone()));
+    }
+    let x = search
+        .linear
+        .as_ref()
+        .ok_or(internal!("商の線形更新がない"))?;
+    Ok((x.slots.clone(), matrix(&x.action), vector(&x.offset)))
+}
 pub(in crate::observed) struct Input {
     pub ty: Type,
     pub parameter_count: usize,
@@ -22,23 +35,39 @@ pub(in crate::observed) struct Input {
     pub offset: Vec<Scalar>,
 }
 impl Input {
-    pub fn from_search(
-        search: &change_search::Search,
-        c: &Control,
-    ) -> Result<Self, ValidationFailure> {
+    pub fn from_candidate(input: &CandidateInput, c: &Control) -> Result<Self, ValidationFailure> {
+        let search = &input.search;
+        let solutions = matches!(input.domain_type, ProjectionType::SolutionSet(_));
+        let (slots, action, offset) = updates(search)?;
         if let Some(x) = &search.rational {
             return Ok(Self {
                 ty: Type::Q,
                 parameter_count: x.parameter_count,
                 axes: x.axes.clone(),
-                particular: x.particular.clone(),
-                kernel: x.kernel.clone(),
-                guard_origin: x.guard_fiber.particular.clone(),
-                guard_kernel: x.guard_fiber.kernel.clone(),
-                guard_dimensions: x.parameter_count - x.guard_fiber.pivots.len(),
-                slots: x.slots.clone(),
-                action: x.action.clone(),
-                offset: x.offset.clone(),
+                particular: if solutions {
+                    x.particular.clone()
+                } else {
+                    None
+                },
+                kernel: if solutions { x.kernel.clone() } else { vec![] },
+                guard_origin: if solutions {
+                    None
+                } else {
+                    x.guard_fiber.particular.clone()
+                },
+                guard_kernel: if solutions {
+                    vec![]
+                } else {
+                    x.guard_fiber.kernel.clone()
+                },
+                guard_dimensions: if solutions {
+                    0
+                } else {
+                    x.parameter_count - x.guard_fiber.pivots.len()
+                },
+                slots,
+                action,
+                offset,
             });
         }
         let x = search
@@ -46,7 +75,9 @@ impl Input {
             .as_ref()
             .ok_or(internal!("商の線形表示がない"))?;
         let n = x.parameter_count;
-        let (guard_origin, guard_kernel, guard_dimensions) = if x.candidates_empty {
+        let (guard_origin, guard_kernel, guard_dimensions) = if solutions {
+            (None, vec![], 0)
+        } else if x.candidates_empty {
             (None, vec![vec![]; n], 0)
         } else if let Some(g) = &x.guard {
             (
@@ -68,18 +99,33 @@ impl Input {
                 n,
             )
         };
+        let (particular, kernel) = if !solutions {
+            (None, vec![])
+        } else if let Some(family) = &input.integer_family {
+            let particular = family.particular(c)?.map(|v| vector(&v));
+            let dimensions = family.dimensions()?;
+            let mut kernel = vec![Vec::with_capacity(dimensions); n];
+            for j in 0..dimensions {
+                for (row, value) in kernel.iter_mut().zip(family.column(j, c)?) {
+                    row.push(Scalar::Z(value));
+                }
+            }
+            (particular, kernel)
+        } else {
+            (x.particular.as_ref().map(|v| vector(v)), matrix(&x.kernel))
+        };
         Ok(Self {
             ty: Type::Z,
             parameter_count: n,
             axes: x.axes.clone(),
-            particular: x.particular.as_ref().map(|v| vector(v)),
-            kernel: matrix(&x.kernel),
+            particular,
+            kernel,
             guard_origin,
             guard_kernel,
             guard_dimensions,
-            slots: x.slots.clone(),
-            action: matrix(&x.action),
-            offset: vector(&x.offset),
+            slots,
+            action,
+            offset,
         })
     }
 }

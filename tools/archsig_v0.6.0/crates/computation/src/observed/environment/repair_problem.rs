@@ -7,6 +7,7 @@ use archsig_input::law::{
 };
 use std::collections::BTreeSet;
 pub(in crate::observed) mod family;
+pub(in crate::observed) mod integer;
 mod law_factors;
 pub(in crate::observed) mod reuse;
 

@@ -366,7 +366,7 @@ fn rejected(
         answer: a,
         request: r.clone(),
         witness: shared.witness.clone(),
-        shared: Some(shared),
+        shared: Some(Backend::Finite(shared)),
         range: None,
         ranges: BTreeMap::new(),
         chosen: None,
@@ -390,10 +390,12 @@ fn compute_inner(
             .ok_or(internal!("観測の修復問題がない"))?
             .value,
     )?;
+    if let Some(source) = super::integer::consume_at(env, g, r, c, problem)? {
+        return Ok(source);
+    }
     let shared = data(g, problem)?
         .source
-        .shared
-        .as_ref()
+        .finite()
         .ok_or(internal!("観測の共有構成がない"))?
         .clone();
     let (family, input_domain) = shared
@@ -416,11 +418,9 @@ fn compute_inner(
     let mut valid = true;
     let enabled = if g.get(within)?.ty == NodeType::Construction(T::ChangeRange) {
         let old = data(g, within)?;
-        let origin = old
-            .source
-            .shared
-            .as_ref()
-            .ok_or(internal!("観測範囲の問題がない"))?;
+        let Some(origin) = old.source.finite() else {
+            return rejected(g, r, shared, inputs);
+        };
         valid &= same_problem(&shared, origin);
         old.source
             .range
@@ -510,8 +510,7 @@ fn compute_inner(
             let old = data(g, old)?;
             let origin = old
                 .source
-                .shared
-                .as_ref()
+                .finite()
                 .ok_or(internal!("読取りplanの元問題がない"))?;
             valid &= same_problem(&shared, origin);
             let state = old
@@ -726,7 +725,7 @@ fn compute_inner(
         answer: a,
         request: r.clone(),
         witness: shared.witness.clone(),
-        shared: Some(shared),
+        shared: Some(Backend::Finite(shared)),
         range: Some(enabled),
         ranges: BTreeMap::new(),
         chosen: None,
@@ -793,7 +792,7 @@ fn unready(
         answer: a,
         request: r.clone(),
         witness: shared.witness.clone(),
-        shared: Some(shared),
+        shared: Some(Backend::Finite(shared)),
         range: None,
         ranges: BTreeMap::new(),
         chosen: None,
@@ -821,8 +820,7 @@ pub(super) fn compute(
             )?;
             let shared = data(g, problem)?
                 .source
-                .shared
-                .as_ref()
+                .finite()
                 .ok_or(internal!("未対応観測の共有構成がない"))?
                 .clone();
             let mut inputs = vec![problem];
@@ -889,7 +887,7 @@ mod tests {
         let D::SharedRepair(d) = &v.data else {
             panic!("共有問題")
         };
-        d.source.shared.as_ref().unwrap().clone()
+        d.source.finite().unwrap().clone()
     }
     #[test]
     fn decision_and_assignment_readings_differ_and_known_information_removes_the_requirement() {

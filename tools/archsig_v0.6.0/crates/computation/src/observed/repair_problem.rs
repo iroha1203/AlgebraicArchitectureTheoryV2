@@ -1,5 +1,6 @@
 //! 同じ有限修復問題から範囲・元割当て・対象を構成する。
 pub(super) mod finite;
+pub(super) mod integer;
 mod observation;
 mod prepare;
 use prepare::{legacy, prepare};
@@ -50,19 +51,44 @@ struct Shared {
     root_type: String,
 }
 #[derive(Debug)]
+enum Backend {
+    Finite(Arc<Shared>),
+    Integer(integer::State),
+}
+#[derive(Debug)]
 pub(super) struct Source {
     base: usize,
     parts: Vec<Part>,
     answer: Answer,
     request: Request,
     witness: Arc<ArchitectureWitness>,
-    shared: Option<Arc<Shared>>,
+    shared: Option<Backend>,
     range: Option<Vec<bool>>,
     ranges: BTreeMap<usize, Vec<bool>>,
     chosen: Option<Vec<usize>>,
     inputs: Vec<NodeRef>,
     context: super::call::Context,
     observation: Option<Arc<observation::State>>,
+}
+impl Source {
+    fn finite(&self) -> Option<&Arc<Shared>> {
+        match self.shared.as_ref()? {
+            Backend::Finite(s) => Some(s),
+            Backend::Integer(_) => None,
+        }
+    }
+    fn integer(&self) -> Option<&integer::State> {
+        match self.shared.as_ref()? {
+            Backend::Integer(s) => Some(s),
+            Backend::Finite(_) => None,
+        }
+    }
+    fn root_type(&self) -> Option<&str> {
+        match self.shared.as_ref()? {
+            Backend::Finite(s) => Some(&s.root_type),
+            Backend::Integer(s) => Some(&s.shared.root_type),
+        }
+    }
 }
 #[derive(Clone, Debug)]
 pub(crate) struct Data {
@@ -145,7 +171,7 @@ impl Data {
             .collect()
     }
     pub(super) fn projection_type(&self) -> Option<ProjectionType> {
-        let root = self.source.shared.as_ref().map(|s| s.root_type.clone())?;
+        let root = self.source.root_type()?.to_owned();
         Some(match self.ty() {
             NodeType::Construction(T::RepairProblem) => ProjectionType::RepairProblem(root),
             NodeType::Construction(T::RepairObservation) => ProjectionType::RepairObservation(root),
@@ -356,11 +382,10 @@ pub(super) fn candidate_input(
 ) -> Result<change_result::CandidateInput, ValidationFailure> {
     env.recheck_node(g, g.get(at)?, at.0)?;
     let d = data(g, at)?;
-    let shared = d
-        .source
-        .shared
-        .as_ref()
-        .ok_or(internal!("商の共有候補域がない"))?;
+    if let Some(state) = d.source.integer() {
+        return integer::candidate_input(state, g.get(at)?.ty.clone());
+    }
+    let shared = d.source.finite().ok_or(internal!("商の共有候補域がない"))?;
     let solutions = g.get(at)?.ty == NodeType::Construction(T::SolutionSet);
     if !solutions && g.get(at)?.ty != NodeType::Construction(T::CandidateSpace) {
         return Err(internal!("商の共有候補域の型が違う").into());
@@ -450,6 +475,7 @@ pub(super) fn candidate_input(
         }
     }
     Ok(change_result::CandidateInput {
+        integer_family: None,
         architecture: shared.base,
         witness: shared.witness.clone(),
         domain_type: if solutions {
@@ -482,10 +508,12 @@ pub(super) fn assignment_input(
     at: NodeRef,
 ) -> Result<change_result::AssignmentInput, ValidationFailure> {
     if let Ok(d) = data(g, at) {
+        if let Some(state) = d.source.integer() {
+            return integer::assignment_input(state);
+        }
         let s = d
             .source
-            .shared
-            .as_ref()
+            .finite()
             .ok_or(internal!("元割当ての候補域がない"))?;
         let point = d
             .source
@@ -547,8 +575,18 @@ fn same_domain(a: &Shared, b: &Shared) -> bool {
         && a.compiled.parameter_types == b.compiled.parameter_types
 }
 fn minimal(shared: &Shared, c: &Control) -> Result<Vec<Vec<bool>>, ValidationFailure> {
-    let units = shared
-        .internal
+    minimal_masks(
+        &shared.internal,
+        |enabled| shared.compiled.relations.exists(&pins(shared, enabled), c),
+        c,
+    )
+}
+fn minimal_masks(
+    internal: &[bool],
+    mut exists: impl FnMut(&[bool]) -> Result<bool, ValidationFailure>,
+    c: &Control,
+) -> Result<Vec<Vec<bool>>, ValidationFailure> {
+    let units = internal
         .iter()
         .enumerate()
         .filter_map(|(i, on)| (!on).then_some(i))
@@ -580,8 +618,8 @@ fn minimal(shared: &Shared, c: &Control) -> Result<Vec<Vec<bool>>, ValidationFai
         bounds.push(bound);
         Ok(())
     }
-    let empty = vec![false; shared.subjects.len()];
-    if shared.compiled.relations.exists(&pins(shared, &empty), c)? {
+    let empty = vec![false; internal.len()];
+    if exists(&empty)? {
         return Ok(vec![empty]);
     }
     let mut all = empty;
@@ -592,7 +630,7 @@ fn minimal(shared: &Shared, c: &Control) -> Result<Vec<Vec<bool>>, ValidationFai
     let mut found = vec![];
     while let Some(upper) = bounds.pop() {
         tick(c)?;
-        if !shared.compiled.relations.exists(&pins(shared, &upper), c)? {
+        if !exists(&upper)? {
             continue;
         }
         let mut enabled = upper.clone();
@@ -602,11 +640,7 @@ fn minimal(shared: &Shared, c: &Control) -> Result<Vec<Vec<bool>>, ValidationFai
                 continue;
             }
             enabled[*unit] = false;
-            if !shared
-                .compiled
-                .relations
-                .exists(&pins(shared, &enabled), c)?
-            {
+            if !exists(&enabled)? {
                 enabled[*unit] = true;
             }
         }
@@ -819,7 +853,7 @@ fn pending_application(
         answer: a,
         request: r.clone(),
         witness: shared.witness.clone(),
-        shared: Some(shared),
+        shared: Some(Backend::Finite(shared)),
         range: None,
         ranges: BTreeMap::new(),
         chosen: None,
@@ -955,11 +989,13 @@ fn consume(
     c: &Control,
 ) -> Result<Source, ValidationFailure> {
     let head = reference(env, g, &r.head)?;
+    if let Some(source) = integer::consume_at(env, g, r, c, head)? {
+        return Ok(source);
+    }
     let (mut shared, mut enabled, previous_chosen) = if let Ok(d) = data(g, head) {
         (
             d.source
-                .shared
-                .as_ref()
+                .finite()
                 .ok_or(internal!("未構成の修復問題を消費した"))?
                 .clone(),
             d.source.range.clone(),
@@ -990,17 +1026,16 @@ fn consume(
         inputs.push(at);
         if g.get(at)?.ty == NodeType::Construction(T::ChangeRange) {
             let d = data(g, at)?;
-            let other = d
-                .source
-                .shared
-                .as_ref()
-                .ok_or(internal!("変更範囲の問題がない"))?;
-            invalid = !same_problem(&shared, other);
-            enabled = d
-                .source
-                .range
-                .clone()
-                .or_else(|| d.source.ranges.get(&d.index).cloned());
+            if let Some(other) = d.source.finite() {
+                invalid = !same_problem(&shared, other);
+                enabled = d
+                    .source
+                    .range
+                    .clone()
+                    .or_else(|| d.source.ranges.get(&d.index).cloned());
+            } else {
+                invalid = true;
+            }
         } else {
             let Scalar::Set { items, .. } = g.scalar(at)? else {
                 return Err(internal!("変更範囲がSetでない").into());
@@ -1058,14 +1093,12 @@ fn consume(
         inputs.push(at);
         target_set = Some(at);
         let (other, target_range) = if let Ok(d) = data(g, at) {
-            (
-                d.source
-                    .shared
-                    .as_ref()
-                    .ok_or(internal!("解集合の問題がない"))?
-                    .clone(),
-                d.source.range.clone(),
-            )
+            if let Some(other) = d.source.finite() {
+                (other.clone(), d.source.range.clone())
+            } else {
+                invalid = true;
+                (shared.clone(), None)
+            }
         } else if shared.problem.is_none()
             && matches!(&g.get(at)?.payload,Some(Payload::Construction(v)) if v.project(&[ProjectionStep::Field("domain".into())]).map(|(r,_)|r)==Some(shared.domain))
         {
@@ -1076,7 +1109,7 @@ fn consume(
             (old, range)
         };
         enabled = target_range;
-        invalid = !same_domain(&shared, &other);
+        invalid |= !same_domain(&shared, &other);
         chosen = None;
         if !invalid {
             let original = previous_chosen
@@ -1260,7 +1293,7 @@ fn consume(
         answer: a,
         request: r.clone(),
         witness: shared.witness.clone(),
-        shared: Some(shared),
+        shared: Some(Backend::Finite(shared)),
         range: enabled,
         ranges,
         chosen,
@@ -1361,7 +1394,9 @@ impl super::result_kind::ResultKind for Data {
         if let Some(a) = super::public_map::unavailable(env, g, r)? {
             return Ok(a);
         }
-        let result = if r.kind == QuestionKind::Prepare {
+        let result = if r.kind == QuestionKind::Prepare && integer::is_prepare(env, r) {
+            integer::prepare(prepared, env, g, r, c)
+        } else if r.kind == QuestionKind::Prepare {
             prepare(prepared, env, g, r, c)
         } else if r.kind == QuestionKind::Observe {
             observation::compute(env, g, r, c)

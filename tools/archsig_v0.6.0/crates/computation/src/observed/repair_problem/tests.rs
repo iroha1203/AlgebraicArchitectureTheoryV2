@@ -39,7 +39,7 @@ fn shared_problem_range_selection_reaches_original_law_and_next_change() {
     );
     let shared_for = |at: NodeRef| match &result.nodes[at.0].payload {
         Some(Payload::Construction(v)) => match &v.data {
-            D::SharedRepair(d) => d.source.shared.as_ref().unwrap(),
+            D::SharedRepair(d) => d.source.finite().unwrap(),
             _ => panic!("共有経路"),
         },
         _ => panic!("native結果"),
@@ -107,7 +107,7 @@ fn six_instance_shared_fibers_match_original_assignments_and_updated_targets() {
             let D::SharedRepair(d) = &v.data else {
                 panic!()
             };
-            let s = d.source.shared.as_ref().unwrap();
+            let s = d.source.finite().unwrap();
             let point = d.source.chosen.as_ref().unwrap();
             let mut row = BTreeMap::new();
             for (i, subject) in s.compiled.subjects.iter().enumerate() {
@@ -174,7 +174,7 @@ fn separate_internal_masks_share_compilation_and_keep_problem_identity() {
         let D::SharedRepair(d) = &v.data else {
             panic!()
         };
-        d.source.shared.as_ref().unwrap()
+        d.source.finite().unwrap()
     };
     let (a, b) = (shared(1), shared(2));
     assert!(Arc::ptr_eq(&a.compiled, &b.compiled));
@@ -559,7 +559,7 @@ fn existing_unique_repair_assignment_is_accepted_and_legacy_candidates_share_par
 }
 
 #[test]
-fn nonfinite_candidate_and_prepare_are_unsupported_without_blocking_independent_checks() {
+fn unsupported_mixed_integer_prepare_and_supported_integer_candidates_preserve_later_checks() {
     let input = fixture::sources(
         &[("p", true, "p")],
         "change choose(c:Part,p:Z)=c with {flag=p=0};law required valid(c:Part):c.flag=c.flag;",
@@ -601,18 +601,18 @@ fn nonfinite_candidate_and_prepare_are_unsupported_without_blocking_independent_
     let result =
         super::super::evaluate_observed_bytes(input, &asks, &archsig_common::control::quiet())
             .unwrap();
-    assert_eq!(result.status(), "partial", "{:?}", result.issues);
-    assert_eq!(result.answers[0].status, Decision::Established);
-    assert_eq!(result.answers[1].status, Decision::Undetermined);
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
     assert!(
-        result.answers[1]
-            .reasons
+        result
+            .answers
             .iter()
-            .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+            .all(|answer| answer.status == Decision::Established)
     );
-    assert_eq!(result.answers[2].status, Decision::Undetermined);
-    assert_eq!(result.answers[3].status, Decision::Undetermined);
-    assert_eq!(result.answers[4].status, Decision::Established);
+    let assignment = data_from(&result, result.answers[1].outputs["assignment"]);
+    assert_eq!(
+        assignment.source.integer().unwrap().parameters.as_deref(),
+        Some([num_bigint::BigInt::from(0)].as_slice())
+    );
 }
 
 #[test]
@@ -677,8 +677,7 @@ fn completed_empty_scope_avoids_enumerating_its_supersets() {
     .unwrap();
     let shared = data_from(&result, result.answers[0].outputs["problem"])
         .source
-        .shared
-        .as_ref()
+        .finite()
         .unwrap();
     let mut probes = 0;
     let control = Control::new(move |_| {
@@ -982,8 +981,7 @@ fn independent_forall_and_view_factors_keep_linear_relation_storage() {
             assert_eq!(result.answers[0].status, Decision::Established);
             let shared = data_from(&result, result.answers[0].outputs["problem"])
                 .source
-                .shared
-                .as_ref()
+                .finite()
                 .unwrap();
             if body.contains("view gate") && n == 8 {
                 let mut count = 0;
@@ -1212,7 +1210,7 @@ fn prepared_input_family_keeps_each_completion_and_uniform_assignments_distinct(
             result.answers[1].reasons
         );
         let d = data_from(&result, result.answers[1].outputs["problem"]);
-        let shared = d.source.shared.as_ref().unwrap();
+        let shared = d.source.finite().unwrap();
         let (family, _) = shared.family.as_ref().unwrap();
         assert_eq!(family.points.len(), if known { 1 } else { 2 });
         assert!(family.variants.iter().all(|v| {

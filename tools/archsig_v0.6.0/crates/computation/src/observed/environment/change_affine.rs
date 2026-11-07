@@ -24,6 +24,7 @@ pub(in crate::observed) struct Linear {
     pub particular: Option<Vec<Z>>,
     pub kernel: Matrix,
     pub slots: Vec<Fact>,
+    pub unit_writes: Vec<Vec<Fact>>,
     pub action: Matrix,
     pub offset: Vec<Z>,
     pub equations: Matrix,
@@ -760,6 +761,38 @@ fn collect_updates(
     }
     Ok(())
 }
+/// 通常candidateと同じ、更新されない宣言座標の基準値を保持する。
+fn unchanged_form(
+    env: &Environment<'_>,
+    change: &Declaration,
+    subject: &Scalar,
+    field: &str,
+    missing: &mut Pending,
+) -> Result<Form, ValidationFailure> {
+    let Signature::Change { params, body, .. } = &change.signature else {
+        return Err(internal!("数値changeの署名がない").into());
+    };
+    let source = env.scoped_field(
+        value(env, subject.clone())?,
+        &env.input_name(&format!(
+            "{}.{}",
+            params[0]
+                .ty
+                .ref_target()
+                .ok_or(internal!("更新対象型がRefでない"))?,
+            field
+        ))?,
+        &Scope::default(),
+        &change.reading,
+        change.span,
+    )?;
+    missing.support.extend(source.support.iter().cloned());
+    missing.scope.merge(&source.scope);
+    usable(env, *body, &source)?;
+    Ok(*source
+        .affine
+        .ok_or_else(|| unsupported(env, *body, "数値changeの未更新値がアフィンでない"))?)
+}
 /// guard域の確認後、選択した更新値のZ/Q係数と固定項を取り出す。
 pub(in crate::observed) fn compute_update(
     env: &Environment<'_>,
@@ -810,27 +843,7 @@ pub(in crate::observed) fn compute_update(
     let form = if let Some(form) = updates.into_values().next() {
         form
     } else {
-        // The selected coordinate is unchanged by the original simultaneous update.
-        let source = env.scoped_field(
-            value(env, subject.clone())?,
-            &env.input_name(&format!(
-                "{}.{}",
-                params[0]
-                    .ty
-                    .ref_target()
-                    .ok_or(internal!("更新対象型がRefでない"))?,
-                field
-            ))?,
-            &Scope::default(),
-            &change.reading,
-            change.span,
-        )?;
-        missing.support.extend(source.support.iter().cloned());
-        missing.scope.merge(&source.scope);
-        usable(env, *body, &source)?;
-        *source
-            .affine
-            .ok_or_else(|| unsupported(env, *body, "数値changeの未更新値がアフィンでない"))?
+        unchanged_form(env, change, subject, field, missing)?
     };
     let coordinates = match ty {
         Type::Z => form
@@ -909,28 +922,66 @@ pub(in crate::observed) fn compute(
             .collect();
         if let Some(guard) = guard {
             missing.expression = Some(*guard);
-            equations(
-                env,
-                *guard,
-                &vars,
-                &change.reading,
-                Axes::Parameters(&axes),
-                &mut guard_matrix,
-                &mut guard_rhs,
-                missing,
-            )?;
+            with_missing(env, missing, |missing| {
+                equations(
+                    env,
+                    *guard,
+                    &vars,
+                    &change.reading,
+                    Axes::Parameters(&axes),
+                    &mut guard_matrix,
+                    &mut guard_rhs,
+                    missing,
+                )
+            })?;
         }
         missing.expression = Some(*body);
-        collect_updates(
-            env,
-            *body,
-            &change.reading,
-            &mut vars,
-            &axes,
-            missing,
-            None,
-            &mut updates,
-        )?;
+        with_missing(env, missing, |missing| {
+            collect_updates(
+                env,
+                *body,
+                &change.reading,
+                &mut vars,
+                &axes,
+                missing,
+                None,
+                &mut updates,
+            )
+        })?;
+    }
+    // 全instanceの実更新を先に結合し、その後に未更新座標を補完する。
+    // 通常candidateのupdate_fieldsと同じ座標族なので、既知分岐でも表示と実更新が一致する。
+    let fields = super::change_evaluation::update_fields(env, change)?;
+    let mut unit_writes = Vec::with_capacity(subjects.len());
+    for subject in subjects {
+        let Scalar::Subject {
+            snapshot,
+            subject: id,
+            entity,
+        } = subject
+        else {
+            return Err(internal!("整数更新のinstanceがsubjectでない").into());
+        };
+        let mut unit = Vec::with_capacity(fields.len());
+        for name in &fields {
+            env.tick()?;
+            let fact = Fact::from(archsig_input::archmap::FactData {
+                snapshot: snapshot.clone(),
+                subject: id.clone(),
+                field: Some(env.input_name(&format!("{entity}.{name}"))?),
+                atom: None,
+            });
+            let retained = match updates.entry(fact) {
+                std::collections::btree_map::Entry::Occupied(entry) => entry.key().clone(),
+                std::collections::btree_map::Entry::Vacant(entry) => {
+                    let position = entry.key().clone();
+                    entry.insert(unchanged_form(env, change, subject, name, missing)?);
+                    position
+                }
+            };
+            unit.push(retained);
+        }
+        unit_writes.push(unit);
     }
     let mut slots = vec![];
     let mut action = vec![];
@@ -962,6 +1013,7 @@ pub(in crate::observed) fn compute(
                 particular: None,
                 kernel: fiber.decomposition.kernel.clone(),
                 slots,
+                unit_writes,
                 action,
                 offset,
                 equations: guard_matrix,
@@ -1062,6 +1114,7 @@ pub(in crate::observed) fn compute(
         particular,
         kernel,
         slots,
+        unit_writes,
         action,
         offset,
         equations: matrix,
@@ -1131,6 +1184,16 @@ pub(in crate::observed) fn state_equations(
     requirement_equations(&state, Axes::State(slots), requirements, missing)
 }
 fn requirement_equations(
+    env: &Environment<'_>,
+    axes: Axes<'_>,
+    requirements: &[(String, Vec<(String, Scalar)>)],
+    missing: &mut Pending,
+) -> Result<(Matrix, Vec<Option<Z>>), ValidationFailure> {
+    with_missing(env, missing, |missing| {
+        requirement_equations_inner(env, axes, requirements, missing)
+    })
+}
+fn requirement_equations_inner(
     env: &Environment<'_>,
     axes: Axes<'_>,
     requirements: &[(String, Vec<(String, Scalar)>)],

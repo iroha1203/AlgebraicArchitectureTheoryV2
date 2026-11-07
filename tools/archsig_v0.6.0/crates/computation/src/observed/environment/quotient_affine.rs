@@ -89,7 +89,7 @@ pub(in crate::observed) fn compute(
     if !input.search.complete {
         return Err(unsupported(request, "アフィン商の候補全域が未確定"));
     }
-    let linear = coefficients::Input::from_search(&input.search, c)?;
+    let mut linear = coefficients::Input::from_candidate(input, c)?;
     let ty = &linear.ty;
     let decl = &original.indexes.inputs.law().declarations()[request
         .declaration()
@@ -188,24 +188,26 @@ pub(in crate::observed) fn compute(
     let (origin, embedding, dimensions, empty) =
         if matches!(input.domain_type, ProjectionType::SolutionSet(_)) {
             let dimensions = linear.kernel.first().map_or(0, Vec::len);
+            let empty = linear.particular.is_none();
             (
                 linear
                     .particular
-                    .clone()
+                    .take()
                     .unwrap_or(vec![numeric::zero(ty, c)?; n]),
-                linear.kernel.clone(),
+                std::mem::take(&mut linear.kernel),
                 dimensions,
-                linear.particular.is_none(),
+                empty,
             )
         } else {
+            let empty = linear.guard_origin.is_none();
             (
                 linear
                     .guard_origin
-                    .clone()
+                    .take()
                     .unwrap_or(vec![numeric::zero(ty, c)?; n]),
-                linear.guard_kernel.clone(),
+                std::mem::take(&mut linear.guard_kernel),
                 linear.guard_dimensions,
-                linear.guard_origin.is_none(),
+                empty,
             )
         };
     let mut result = Image {
@@ -567,7 +569,7 @@ pub(in crate::observed) fn point(
         .law
         .as_ref()
         .ok_or(internal!("アフィン商のLawがない"))?;
-    let linear = coefficients::Input::from_search(&input.search, c)?;
+    let (slots, action, offset) = coefficients::updates(&input.search)?;
     let arithmetic_control = c.clone();
     let apply = |matrix: &Matrix,
                  offset: &[Scalar],
@@ -590,14 +592,14 @@ pub(in crate::observed) fn point(
             .collect()
     };
     let parameters = apply(&image.embedding, &image.origin, coordinates)?;
-    let values = apply(&linear.action, &linear.offset, &parameters)?;
+    let values = apply(&action, &offset, &parameters)?;
     let mut assignments = input
         .search
         .valuation
         .iter()
         .cloned()
         .collect::<BTreeMap<_, _>>();
-    assignments.extend(linear.slots.iter().cloned().zip(values));
+    assignments.extend(slots.into_iter().zip(values));
     let assignments = assignments.into_iter().collect::<Vec<_>>();
     let mut env = Environment::with_primitive_valuation(original.indexes.inputs, &assignments, c)?;
     env.indexes.object = Some(Arc::new(ObjectDomain::from_readings(

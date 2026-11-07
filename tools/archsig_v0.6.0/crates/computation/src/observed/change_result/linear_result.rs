@@ -59,16 +59,31 @@ pub(in crate::observed) fn map(
     cols: usize,
     c: &Control,
 ) -> Result<NodeRef, ValidationFailure> {
+    map_generated(b, source, target, cols, c, |j| {
+        Ok(matrix.iter().map(|row| row[j].clone()).collect())
+    })
+}
+/// 元座標の列を順に公開し、中間の密な数値行列を保持しない。
+pub(in crate::observed) fn map_generated(
+    b: &mut Builder<'_>,
+    source: NodeRef,
+    target: NodeRef,
+    cols: usize,
+    c: &Control,
+    mut column: impl FnMut(usize) -> Result<Vec<Z>, ValidationFailure>,
+) -> Result<NodeRef, ValidationFailure> {
     let mut columns = vec![];
     let mut args = vec![source, target];
     for j in 0..cols {
-        let mut column = vec![];
-        for row in matrix {
+        let mut values = vec![];
+        for entry in column(j)? {
             c.checkpoint(Checkpoint::PrimitiveValuation)?;
-            column.push(value(b, &Scalar::Z(row[j].clone()))?);
+            values.push(value(b, &Scalar::Z(entry))?);
         }
-        args.extend(&column);
-        columns.push(refs(&column));
+        args.extend(&values);
+        args.sort_by_key(|r| r.0);
+        args.dedup();
+        columns.push(refs(&values));
     }
     b.push(
         NodeType::ModuleMap(source, target),
@@ -118,46 +133,15 @@ pub(in crate::observed) fn domain(
         None,
     )
 }
-pub(super) fn build(
+pub(in crate::observed) fn system(
     b: &mut Builder<'_>,
     linear: &Linear,
+    ring: NodeRef,
+    parameter_module: NodeRef,
     requirements: &[NodeRef],
     c: &Control,
-) -> Result<Parts, ValidationFailure> {
+) -> Result<(NodeRef, NodeRef), ValidationFailure> {
     let n = linear.fiber.decomposition.right.len();
-    let ring = b.push(
-        NodeType::Construction(T::Ring),
-        "ring",
-        Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str("Z"))]),
-        vec![],
-        None,
-    )?;
-    let parameter_module = module(b, ring, linear.parameter_count, "free", vec![])?;
-    let state_module = module(b, ring, linear.slots.len(), "free", vec![])?;
-    let parameters = domain(b, parameter_module)?;
-    let states = domain(b, state_module)?;
-    let action_linear = map(
-        b,
-        parameter_module,
-        state_module,
-        &linear.action,
-        linear.parameter_count,
-        c,
-    )?;
-    let offset = vector(b, state_module, &linear.offset, c)?;
-    let action = b.push(
-        NodeType::Construction(T::StateMap),
-        "state_map",
-        Json::obj([
-            ("source", parameters.wire()),
-            ("target", states.wire()),
-            ("kind", Json::str("affine")),
-            ("linear", action_linear.wire()),
-            ("offset", offset.wire()),
-        ]),
-        vec![parameters, states, action_linear, offset],
-        None,
-    )?;
     let mut dependencies = requirements.to_vec();
     let equation_parameters = if let Some(guard) = &linear.guard {
         let (guard_map, guard_certificate) = smith(
@@ -204,6 +188,49 @@ pub(super) fn build(
         &dependencies,
         c,
     )?;
+    Ok((equations, certificate))
+}
+pub(super) fn build(
+    b: &mut Builder<'_>,
+    linear: &Linear,
+    requirements: &[NodeRef],
+    c: &Control,
+) -> Result<Parts, ValidationFailure> {
+    let n = linear.fiber.decomposition.right.len();
+    let ring = b.push(
+        NodeType::Construction(T::Ring),
+        "ring",
+        Json::obj([("kind", Json::str("scalar")), ("scalar", Json::str("Z"))]),
+        vec![],
+        None,
+    )?;
+    let parameter_module = module(b, ring, linear.parameter_count, "free", vec![])?;
+    let state_module = module(b, ring, linear.slots.len(), "free", vec![])?;
+    let parameters = domain(b, parameter_module)?;
+    let states = domain(b, state_module)?;
+    let action_linear = map(
+        b,
+        parameter_module,
+        state_module,
+        &linear.action,
+        linear.parameter_count,
+        c,
+    )?;
+    let offset = vector(b, state_module, &linear.offset, c)?;
+    let action = b.push(
+        NodeType::Construction(T::StateMap),
+        "state_map",
+        Json::obj([
+            ("source", parameters.wire()),
+            ("target", states.wire()),
+            ("kind", Json::str("affine")),
+            ("linear", action_linear.wire()),
+            ("offset", offset.wire()),
+        ]),
+        vec![parameters, states, action_linear, offset],
+        None,
+    )?;
+    let (equations, certificate) = system(b, linear, ring, parameter_module, requirements, c)?;
     let (representation, representation_args) = if let Some(p) = &linear.particular {
         let particular = vector(b, parameter_module, p, c)?;
         let directions = module(
