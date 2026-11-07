@@ -3,18 +3,37 @@ use super::result::ValidationFailure;
 use archsig_common::control::{Checkpoint, Control};
 use num_bigint::BigInt as Z;
 use num_traits::{One, Signed, Zero};
+use std::sync::Arc;
+
+#[cfg(test)]
+mod reobservation_tests;
+pub(in crate::observed) mod reuse;
 
 pub(super) type Matrix = Vec<Vec<Z>>;
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub(super) struct Fiber {
+/// 右辺に依存しない整数分解。各列は元parameter座標に対応する。
+#[derive(Debug, PartialEq, Eq)]
+pub(super) struct Decomposition {
     pub diagonal: Matrix,
     pub left: Matrix,
     pub right: Matrix,
-    pub transformed_rhs: Vec<Z>,
     pub rank: usize,
-    pub particular: Option<Vec<Z>>,
-    /// 各列が元parameter座標の整数核の基底。
     pub kernel: Matrix,
+    columns: usize,
+}
+impl Decomposition {
+    // 非共有の従来経路では行列をmoveし、cacheと共有中だけ必要なkernelを複製する。
+    pub(super) fn into_kernel(self: Arc<Self>) -> Matrix {
+        match Arc::try_unwrap(self) {
+            Ok(owned) => owned.kernel,
+            Err(shared) => shared.kernel.clone(),
+        }
+    }
+}
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(super) struct Fiber {
+    pub decomposition: Arc<Decomposition>,
+    pub transformed_rhs: Vec<Z>,
+    pub particular: Option<Vec<Z>>,
     pub obstruction: Option<usize>,
 }
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
@@ -84,6 +103,29 @@ pub(super) fn multiply(
     tick(c)?;
     Ok(out)
 }
+/// 一列行列への詰替えを作らず、元座標のベクトルへ作用する。
+pub(super) fn apply(
+    matrix: &Matrix,
+    point: &[Z],
+    c: &Control,
+) -> Result<Vec<Z>, ValidationFailure> {
+    tick(c)?;
+    matrix
+        .iter()
+        .map(|row| {
+            tick(c)?;
+            if row.len() != point.len() {
+                return Err(internal!("整数写像とベクトルの寸法が違う").into());
+            }
+            let mut value = Z::zero();
+            for (a, b) in row.iter().zip(point) {
+                tick(c)?;
+                value += a * b;
+            }
+            Ok(value)
+        })
+        .collect()
+}
 pub(super) fn solve(
     a: &Matrix,
     cols: usize,
@@ -91,9 +133,20 @@ pub(super) fn solve(
     c: &Control,
 ) -> Result<Fiber, ValidationFailure> {
     tick(c)?;
-    if a.len() != rhs.len() || a.iter().any(|r| r.len() != cols) {
+    if a.len() != rhs.len() {
         return Err(internal!("整数系の行列・右辺の次元が違う").into());
     }
+    let decomposition = Arc::new(decompose(a, cols, c)?);
+    restore(decomposition, rhs, c)
+}
+
+fn decompose(a: &Matrix, cols: usize, c: &Control) -> Result<Decomposition, ValidationFailure> {
+    tick(c)?;
+    if a.iter().any(|r| r.len() != cols) {
+        return Err(internal!("整数行列の列数が違う").into());
+    }
+    #[cfg(test)]
+    GENERATED.with(|n| n.set(n.get() + 1));
     let rows = a.len();
     let mut diagonal = a.clone();
     let mut left = identity(rows, c)?;
@@ -183,11 +236,41 @@ pub(super) fn solve(
         }
         rank += 1;
     }
-    let rhs_column = rhs.iter().map(|x| vec![x.clone()]).collect();
-    let transformed_rhs = multiply(&left, &rhs_column, 1, c)?
-        .into_iter()
-        .map(|r| r[0].clone())
-        .collect::<Vec<_>>();
+    let mut kernel = vec![];
+    for row in &right {
+        tick(c)?;
+        kernel.push(row[rank..].to_vec());
+    }
+    Ok(Decomposition {
+        diagonal,
+        left,
+        right,
+        rank,
+        kernel,
+        columns: cols,
+    })
+}
+
+fn restore(
+    decomposition: Arc<Decomposition>,
+    rhs: &[Z],
+    c: &Control,
+) -> Result<Fiber, ValidationFailure> {
+    tick(c)?;
+    let Decomposition {
+        diagonal,
+        left,
+        right,
+        rank,
+        columns: cols,
+        ..
+    } = decomposition.as_ref();
+    let (rank, cols) = (*rank, *cols);
+    let rows = diagonal.len();
+    if rhs.len() != rows {
+        return Err(internal!("整数系の行列・右辺の次元が違う").into());
+    }
+    let transformed_rhs = apply(left, rhs, c)?;
     let mut coordinate = vec![Z::zero(); cols];
     let mut obstruction = None;
     for i in 0..rows {
@@ -204,35 +287,23 @@ pub(super) fn solve(
         }
     }
     let particular = if obstruction.is_none() {
-        Some(
-            multiply(
-                &right,
-                &coordinate.into_iter().map(|x| vec![x]).collect(),
-                1,
-                c,
-            )?
-            .into_iter()
-            .map(|r| r[0].clone())
-            .collect(),
-        )
+        Some(apply(right, &coordinate, c)?)
     } else {
         None
     };
-    let mut kernel = vec![];
-    for row in &right {
-        tick(c)?;
-        kernel.push(row[rank..].to_vec());
-    }
     Ok(Fiber {
-        diagonal,
-        left,
-        right,
+        decomposition,
         transformed_rhs,
-        rank,
         particular,
-        kernel,
         obstruction,
     })
+}
+
+#[cfg(test)]
+thread_local! { static GENERATED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) }; }
+#[cfg(test)]
+pub(in crate::observed) fn generated() -> usize {
+    GENERATED.with(std::cell::Cell::get)
 }
 
 #[cfg(test)]
@@ -254,21 +325,27 @@ mod tests {
                     for e in -2..=2 {
                         let original = matrix(&[&[a, b], &[d, e]]);
                         let f = solve(&original, 2, &[Z::one(), Z::zero()], &c).unwrap();
-                        assert_eq!(determinant(&f.left).abs(), Z::one());
-                        assert_eq!(determinant(&f.right).abs(), Z::one());
+                        assert_eq!(determinant(&f.decomposition.left).abs(), Z::one());
+                        assert_eq!(determinant(&f.decomposition.right).abs(), Z::one());
                         assert_eq!(
                             multiply(
-                                &multiply(&f.left, &original, 2, &c).unwrap(),
-                                &f.right,
+                                &multiply(&f.decomposition.left, &original, 2, &c).unwrap(),
+                                &f.decomposition.right,
                                 2,
                                 &c
                             )
                             .unwrap(),
-                            f.diagonal
+                            f.decomposition.diagonal
                         );
-                        assert!(f.diagonal[0][1].is_zero() && f.diagonal[1][0].is_zero());
-                        if f.rank == 2 {
-                            assert!((&f.diagonal[1][1] % &f.diagonal[0][0]).is_zero());
+                        assert!(
+                            f.decomposition.diagonal[0][1].is_zero()
+                                && f.decomposition.diagonal[1][0].is_zero()
+                        );
+                        if f.decomposition.rank == 2 {
+                            assert!(
+                                (&f.decomposition.diagonal[1][1] % &f.decomposition.diagonal[0][0])
+                                    .is_zero()
+                            );
                         }
                     }
                 }
@@ -319,11 +396,17 @@ mod tests {
             let rhs = b.into_iter().map(Z::from).collect::<Vec<_>>();
             let f = solve(&a, n, &rhs, &c).unwrap();
             assert_eq!(
-                multiply(&multiply(&f.left, &a, n, &c).unwrap(), &f.right, n, &c).unwrap(),
-                f.diagonal
+                multiply(
+                    &multiply(&f.decomposition.left, &a, n, &c).unwrap(),
+                    &f.decomposition.right,
+                    n,
+                    &c
+                )
+                .unwrap(),
+                f.decomposition.diagonal
             );
             assert!(
-                multiply(&a, &f.kernel, n - f.rank, &c)
+                multiply(&a, &f.decomposition.kernel, n - f.decomposition.rank, &c)
                     .unwrap()
                     .iter()
                     .flatten()
@@ -339,11 +422,11 @@ mod tests {
             }
         }
         let total = solve(&matrix(&[&[1, 1]]), 2, &[Z::one()], &c).unwrap();
-        assert_eq!(total.rank, 1);
+        assert_eq!(total.decomposition.rank, 1);
         assert!(total.particular.is_some());
         let pinned = solve(&matrix(&[&[1, 1], &[1, 0]]), 2, &[Z::one(), Z::zero()], &c).unwrap();
         assert_eq!(pinned.particular, Some(vec![Z::zero(), Z::one()]));
-        assert_eq!(pinned.rank, 2);
+        assert_eq!(pinned.decomposition.rank, 2);
         assert!(
             solve(&matrix(&[&[2, 4]]), 2, &[Z::one()], &c)
                 .unwrap()

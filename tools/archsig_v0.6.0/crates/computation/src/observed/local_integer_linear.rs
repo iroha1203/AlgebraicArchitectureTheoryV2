@@ -28,8 +28,8 @@ pub(super) fn solve(
     Ok(Fiber {
         origin: result.particular,
         known: true,
-        basis: result.kernel,
-        rank: cols - result.rank,
+        rank: cols - result.decomposition.rank,
+        basis: result.decomposition.into_kernel(),
     })
 }
 pub(super) fn solve_partial(
@@ -53,13 +53,13 @@ pub(in crate::observed::local_result) fn image(
     c: &Control,
 ) -> Result<(Matrix, usize), ValidationFailure> {
     let result = integer_fiber::solve(a, cols, &vec![Z::zero(); a.len()], c)?;
-    let transformed = integer_fiber::multiply(a, &result.right, cols, c)?;
+    let transformed = integer_fiber::multiply(a, &result.decomposition.right, cols, c)?;
     Ok((
         transformed
             .into_iter()
-            .map(|r| r[..result.rank].to_vec())
+            .map(|r| r[..result.decomposition.rank].to_vec())
             .collect(),
-        result.rank,
+        result.decomposition.rank,
     ))
 }
 pub(in crate::observed::local_result) fn coordinates(
@@ -75,7 +75,7 @@ pub(in crate::observed::local_result) fn coordinates(
         let rhs = values.iter().map(|r| r[j].clone()).collect::<Vec<_>>();
         let fiber = integer_fiber::solve(basis, rank, &rhs, c)?;
         let point = fiber.particular.ok_or(internal!("局所制限が係数の像に入らない"))?;
-        if fiber.rank != rank {
+        if fiber.decomposition.rank != rank {
             return Err(internal!("局所係数の座標基底が独立でない").into());
         }
         for i in 0..rank {
@@ -144,23 +144,23 @@ pub(in crate::observed::local_result) fn cohomology(
     )?;
     let mut projection = vec![];
     let mut torsion = vec![];
-    for i in 0..quotient.rank {
-        if quotient.diagonal[i][i] != Z::one() {
-            torsion.push(quotient.diagonal[i][i].clone());
-            projection.push(quotient.left[i].clone());
+    for i in 0..quotient.decomposition.rank {
+        if quotient.decomposition.diagonal[i][i] != Z::one() {
+            torsion.push(quotient.decomposition.diagonal[i][i].clone());
+            projection.push(quotient.decomposition.left[i].clone());
         }
     }
-    for i in quotient.rank..cycles.rank {
-        projection.push(quotient.left[i].clone());
+    for i in quotient.decomposition.rank..cycles.rank {
+        projection.push(quotient.decomposition.left[i].clone());
     }
-    let boundary_rank = quotient.rank;
+    let boundary_rank = quotient.decomposition.rank;
     Ok(Cohomology {
         cycles: cycles.basis,
         cycle_rank: cycles.rank,
         boundary_rank,
         projection,
         torsion,
-        free_rank: cycles.rank - quotient.rank,
+        free_rank: cycles.rank - quotient.decomposition.rank,
     })
 }
 
@@ -269,9 +269,9 @@ pub(in crate::observed::local_result) fn glues(
         &vec![Z::zero(); matching.rank],
         c,
     )?;
-    Ok(image.rank == matching.rank
-        && image.rank == states[target].rank
-        && (0..image.rank).all(|i| image.diagonal[i][i] == Z::one()))
+    Ok(image.decomposition.rank == matching.rank
+        && image.decomposition.rank == states[target].rank
+        && (0..image.decomposition.rank).all(|i| image.decomposition.diagonal[i][i] == Z::one()))
 }
 
 /// 整数readの同じfiberを同一視した自由座標。mapは全射、liftはその切断。
@@ -284,22 +284,22 @@ pub(in crate::observed::local_result) struct Reading {
 impl Reading {
     pub fn new(rows: &Matrix, n: usize, c: &Control) -> Result<Self, ValidationFailure> {
         let fiber = integer_fiber::solve(rows, n, &vec![Z::zero(); rows.len()], c)?;
-        if fiber.rank == n {
+        if fiber.decomposition.rank == n {
             return Ok(Self {
                 map: identity(n),
                 lift: identity(n),
                 kernel: vec![vec![]; n],
             });
         }
-        let inverse = coordinates(&fiber.right, n, &identity(n), n, c)?;
+        let inverse = coordinates(&fiber.decomposition.right, n, &identity(n), n, c)?;
         Ok(Self {
-            map: inverse[..fiber.rank].to_vec(),
+            map: inverse[..fiber.decomposition.rank].to_vec(),
             lift: fiber
-                .right
+                .decomposition.right
                 .iter()
-                .map(|row| row[..fiber.rank].to_vec())
+                .map(|row| row[..fiber.decomposition.rank].to_vec())
                 .collect(),
-            kernel: fiber.kernel,
+            kernel: fiber.decomposition.into_kernel(),
         })
     }
     pub fn contains(&self, other: &Self, c: &Control) -> Result<bool, ValidationFailure> {
@@ -326,8 +326,8 @@ impl Reading {
             }
         }
         let common = integer_fiber::solve(&rows, n, &vec![Z::zero(); rows.len()], c)?;
-        let rows = (0..n - common.rank)
-            .map(|j| common.kernel.iter().map(|r| r[j].clone()).collect())
+        let rows = (0..n - common.decomposition.rank)
+            .map(|j| common.decomposition.kernel.iter().map(|r| r[j].clone()).collect())
             .collect();
         Self::new(&rows, n, c)
     }

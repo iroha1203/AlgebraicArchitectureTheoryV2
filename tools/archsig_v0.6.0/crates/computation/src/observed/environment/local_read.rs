@@ -859,7 +859,7 @@ pub(in crate::observed) fn read_kernel(
             c,
         )?;
         Ok(result
-            .kernel
+            .decomposition.into_kernel()
             .into_iter()
             .map(|row| row.into_iter().map(Scalar::Z).collect())
             .collect())

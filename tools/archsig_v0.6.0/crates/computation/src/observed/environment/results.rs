@@ -64,6 +64,7 @@ type ScopedMemoEntry = (
 pub(crate) struct ResultStore {
     verified: VerifiedResults,
     pub(in crate::observed) repair_relations: super::repair_problem::reuse::SharedPool,
+    pub(in crate::observed) integer_factors: super::super::integer_fiber::reuse::SharedPool,
     pub(super) dotted_inputs: RefCell<DottedInputCache>,
     // 純粋AST計算の入力値と全分析Contextだけをキーにする。Graphを読まず、
     // producer/証拠の照合成功は保存しない。それらは各不変借用で再検査する。
@@ -78,6 +79,7 @@ impl ResultStore {
     pub(super) fn fresh_candidate(&self) -> Self {
         Self {
             repair_relations: self.repair_relations.clone(),
+            integer_factors: self.integer_factors.clone(),
             verified: VerifiedResults::default(),
             dotted_inputs: RefCell::default(),
             scoped_values: RefCell::default(),

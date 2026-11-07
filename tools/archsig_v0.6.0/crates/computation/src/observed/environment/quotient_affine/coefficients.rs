@@ -51,8 +51,8 @@ impl Input {
         } else if let Some(g) = &x.guard {
             (
                 g.fiber.particular.as_ref().map(|v| vector(v)),
-                matrix(&g.fiber.kernel),
-                n - g.fiber.rank,
+                matrix(&g.fiber.decomposition.kernel),
+                n - g.fiber.decomposition.rank,
             )
         } else {
             let mut identity = vec![];
@@ -157,12 +157,12 @@ pub(in crate::observed) fn fiber(
             })
             .collect::<Result<integer_fiber::Matrix, _>>()?;
         let f = integer_fiber::solve(&a, n, &vec![num_bigint::BigInt::zero(); a.len()], c)?;
-        let basis = integer_fiber::multiply(&a, &f.right, n, c)?;
+        let basis = integer_fiber::multiply(&a, &f.decomposition.right, n, c)?;
         return Ok(Fiber {
-            rank: f.rank,
-            kernel: matrix(&f.kernel),
-            image: matrix(&basis.iter().map(|r| r[..f.rank].to_vec()).collect()),
-            lifts: matrix(&f.right.iter().map(|r| r[..f.rank].to_vec()).collect()),
+            rank: f.decomposition.rank,
+            kernel: matrix(&f.decomposition.kernel),
+            image: matrix(&basis.iter().map(|r| r[..f.decomposition.rank].to_vec()).collect()),
+            lifts: matrix(&f.decomposition.right.iter().map(|r| r[..f.decomposition.rank].to_vec()).collect()),
         });
     }
     let f = field_fiber::solve(ty, a, n, &vec![numeric::zero(ty, c)?; a.len()], c)?;

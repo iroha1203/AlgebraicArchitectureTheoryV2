@@ -3,7 +3,7 @@ use super::*;
 use crate::observed::environment::state::ScopedReplace;
 use crate::observed::{
     affine::{self, Form, NumberType, Parameter},
-    integer_fiber::{self, Fiber, Matrix},
+    integer_fiber::{self, Fiber, Matrix, apply},
 };
 use archsig_input::law::model::{Declaration, Signature};
 use num_bigint::BigInt as Z;
@@ -628,7 +628,13 @@ pub(super) fn parameter_guard_domain(
         .into_iter()
         .collect::<Option<Vec<_>>>()
         .ok_or(internal!("guard固定項が未確定"))?;
-    let fiber = integer_fiber::solve(&matrix, axes.len(), &rhs, &env.control)?;
+    let fiber = integer_fiber::reuse::solve(
+        &env.results.integer_factors,
+        &matrix,
+        axes.len(),
+        &rhs,
+        &env.control,
+    )?;
     Ok(Guard {
         equations: matrix,
         rhs,
@@ -940,7 +946,13 @@ pub(in crate::observed) fn compute(
         .collect::<Option<Vec<_>>>()
         .ok_or(internal!("guardの固定項が未確定"))?;
     let guard = if !guard_matrix.is_empty() {
-        let fiber = integer_fiber::solve(&guard_matrix, axes.len(), &guard_rhs, &env.control)?;
+        let fiber = integer_fiber::reuse::solve(
+            &env.results.integer_factors,
+            &guard_matrix,
+            axes.len(),
+            &guard_rhs,
+            &env.control,
+        )?;
         if fiber.particular.is_none() {
             return Ok(Linear {
                 parameter_count: axes.len(),
@@ -948,7 +960,7 @@ pub(in crate::observed) fn compute(
                 candidates_empty: true,
                 guard: None,
                 particular: None,
-                kernel: fiber.kernel.clone(),
+                kernel: fiber.decomposition.kernel.clone(),
                 slots,
                 action,
                 offset,
@@ -975,8 +987,9 @@ pub(in crate::observed) fn compute(
                 .collect::<Vec<_>>()
         })
         .unwrap_or_default();
-    let mut updated =
-        Environment::with_primitive_valuation(env.indexes.inputs, &assignments, &env.control)?;
+    let mut updated = env
+        .try_primitive_valuation_from(&assignments, &env.control)?
+        .ok_or(internal!("整数作用の元代入が不適合"))?;
     updated.indexes.object = env.object_domain();
     updated.indexes.affine_valuation = updates;
     let (mut matrix, rhs) =
@@ -987,7 +1000,7 @@ pub(in crate::observed) fn compute(
         .ok_or(internal!("parameter方程式の固定項が未確定"))?;
     let free_count = guard
         .as_ref()
-        .map_or(axes.len(), |g| axes.len() - g.fiber.rank);
+        .map_or(axes.len(), |g| axes.len() - g.fiber.decomposition.rank);
     if let Some(g) = &guard {
         let origin = g
             .fiber
@@ -998,15 +1011,26 @@ pub(in crate::observed) fn compute(
         for (value, shift) in rhs.iter_mut().zip(shift) {
             *value -= shift;
         }
-        matrix = compose(&matrix, &g.fiber.kernel, free_count, &env.control)?;
+        matrix = compose(
+            &matrix,
+            &g.fiber.decomposition.kernel,
+            free_count,
+            &env.control,
+        )?;
     }
-    let fiber = integer_fiber::solve(&matrix, free_count, &rhs, &env.control)?;
+    let fiber = integer_fiber::reuse::solve(
+        &env.results.integer_factors,
+        &matrix,
+        free_count,
+        &rhs,
+        &env.control,
+    )?;
     let (particular, kernel) = if let Some(g) = &guard {
         let particular = fiber
             .particular
             .as_ref()
             .map(|point| {
-                let mut restored = apply(&g.fiber.kernel, point, &env.control)?;
+                let mut restored = apply(&g.fiber.decomposition.kernel, point, &env.control)?;
                 for (value, offset) in restored.iter_mut().zip(
                     g.fiber
                         .particular
@@ -1021,14 +1045,14 @@ pub(in crate::observed) fn compute(
         (
             particular,
             compose(
-                &g.fiber.kernel,
-                &fiber.kernel,
-                free_count - fiber.rank,
+                &g.fiber.decomposition.kernel,
+                &fiber.decomposition.kernel,
+                free_count - fiber.decomposition.rank,
                 &env.control,
             )?,
         )
     } else {
-        (fiber.particular.clone(), fiber.kernel.clone())
+        (fiber.particular.clone(), fiber.decomposition.kernel.clone())
     };
     Ok(Linear {
         parameter_count: axes.len(),
@@ -1045,22 +1069,7 @@ pub(in crate::observed) fn compute(
         fiber,
     })
 }
-fn apply(matrix: &Matrix, point: &[Z], c: &Control) -> Result<Vec<Z>, ValidationFailure> {
-    matrix
-        .iter()
-        .map(|row| {
-            if row.len() != point.len() {
-                return Err(internal!("復元写像の寸法が違う").into());
-            }
-            let mut value = Z::zero();
-            for (a, b) in row.iter().zip(point) {
-                c.checkpoint(Checkpoint::PrimitiveValuation)?;
-                value += a * b;
-            }
-            Ok(value)
-        })
-        .collect()
-}
+
 fn compose(
     left: &Matrix,
     right: &Matrix,
@@ -1248,13 +1257,14 @@ pub(super) fn numeric_guard_domain(
                     .collect::<Result<_, _>>()?,
                 rhs: scalars(guard.rhs)?,
                 particular: guard.fiber.particular.map(&scalars).transpose()?,
+                rank: guard.fiber.decomposition.rank,
                 kernel: guard
                     .fiber
-                    .kernel
+                    .decomposition
+                    .into_kernel()
                     .into_iter()
                     .map(&scalars)
                     .collect::<Result<_, _>>()?,
-                rank: guard.fiber.rank,
             })
         }
         Type::Q => {

@@ -2,15 +2,26 @@
 use super::*;
 use num_traits::One;
 pub(in crate::observed::local_result) type Matrix = Vec<Vec<Z>>;
+// 同じ局所計算のsourceを整数版と共有するため、線形部分を同じ形で参照する。
+// 有理数側ではこの分解をcacheせず、従来どおり体の消去から生成する。
 #[derive(Clone, Debug)]
-pub(in crate::observed::local_result) struct Fiber {
+pub(in crate::observed::local_result) struct Decomposition {
     pub diagonal: Matrix,
     pub left: Matrix,
     pub right: Matrix,
-    pub transformed_rhs: Vec<Z>,
     pub rank: usize,
-    pub particular: Option<Vec<Z>>,
     pub kernel: Matrix,
+}
+impl Decomposition {
+    pub(in crate::observed::local_result) fn into_kernel(self) -> Matrix {
+        self.kernel
+    }
+}
+#[derive(Clone, Debug)]
+pub(in crate::observed::local_result) struct Fiber {
+    pub decomposition: Decomposition,
+    pub transformed_rhs: Vec<Z>,
+    pub particular: Option<Vec<Z>>,
     pub obstruction: Option<usize>,
 }
 pub(in crate::observed::local_result) fn scalars(
@@ -57,13 +68,15 @@ pub(in crate::observed::local_result) fn solve(
         diagonal[i][i] = Z::one();
     }
     Ok(Fiber {
-        diagonal,
-        left: matrix(&f.left)?,
-        right,
+        decomposition: Decomposition {
+            diagonal,
+            left: matrix(&f.left)?,
+            right,
+            rank,
+            kernel,
+        },
         transformed_rhs: vector(&f.transformed_rhs)?,
-        rank,
         particular: f.particular.as_ref().map(|v| vector(v)).transpose()?,
-        kernel,
         obstruction: f.obstruction,
     })
 }

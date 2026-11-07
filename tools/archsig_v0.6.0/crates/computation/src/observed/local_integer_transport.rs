@@ -264,7 +264,7 @@ fn coordinates(
         let Some(point) = solution.particular else {
             return Ok(None);
         };
-        if solution.rank != rank {
+        if solution.decomposition.rank != rank {
             return Ok(None);
         }
         for i in 0..rank {

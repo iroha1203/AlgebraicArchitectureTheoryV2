@@ -124,7 +124,7 @@ pub(super) fn build(
     requirements: &[NodeRef],
     c: &Control,
 ) -> Result<Parts, ValidationFailure> {
-    let n = linear.fiber.right.len();
+    let n = linear.fiber.decomposition.right.len();
     let ring = b.push(
         NodeType::Construction(T::Ring),
         "ring",
@@ -171,7 +171,7 @@ pub(super) fn build(
             c,
         )?;
         let free = module(b, ring, n, "kernel", vec![guard_map])?;
-        let recovery = map(b, free, parameter_module, &guard.fiber.kernel, n, c)?;
+        let recovery = map(b, free, parameter_module, &guard.fiber.decomposition.kernel, n, c)?;
         let origin = vector(
             b,
             parameter_module,
@@ -199,13 +199,13 @@ pub(super) fn build(
     )?;
     let (representation, representation_args) = if let Some(p) = &linear.particular {
         let particular = vector(b, parameter_module, p, c)?;
-        let directions = module(b, ring, n - linear.fiber.rank, "kernel", vec![equations])?;
+        let directions = module(b, ring, n - linear.fiber.decomposition.rank, "kernel", vec![equations])?;
         let embedding = map(
             b,
             directions,
             parameter_module,
             &linear.kernel,
-            n - linear.fiber.rank,
+            n - linear.fiber.decomposition.rank,
             c,
         )?;
         (
@@ -246,20 +246,20 @@ pub(in crate::observed) fn smith(
     dependencies: &[NodeRef],
     c: &Control,
 ) -> Result<(NodeRef, NodeRef), ValidationFailure> {
-    let n = fiber.right.len();
+    let n = fiber.decomposition.right.len();
     let m = matrix.len();
     let equation_module = module(b, ring, m, "free", vec![])?;
     let equations = map(b, parameter_module, equation_module, matrix, n, c)?;
-    let left = map(b, equation_module, equation_module, &fiber.left, m, c)?;
-    let right = map(b, parameter_module, parameter_module, &fiber.right, n, c)?;
-    let diagonal = map(b, parameter_module, equation_module, &fiber.diagonal, n, c)?;
+    let left = map(b, equation_module, equation_module, &fiber.decomposition.left, m, c)?;
+    let right = map(b, parameter_module, parameter_module, &fiber.decomposition.right, n, c)?;
+    let diagonal = map(b, parameter_module, equation_module, &fiber.decomposition.diagonal, n, c)?;
     let rhs = vector(b, equation_module, rhs_values, c)?;
     let transformed = vector(b, equation_module, &fiber.transformed_rhs, c)?;
     let mut divisibility = vec![];
     for i in 0..m {
         c.checkpoint(Checkpoint::PrimitiveValuation)?;
-        let divisor = if i < fiber.rank {
-            fiber.diagonal[i][i].clone()
+        let divisor = if i < fiber.decomposition.rank {
+            fiber.decomposition.diagonal[i][i].clone()
         } else {
             Z::zero()
         };

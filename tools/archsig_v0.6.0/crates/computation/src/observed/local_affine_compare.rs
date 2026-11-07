@@ -268,8 +268,8 @@ fn kernel_cokernel(
         .map(|(a, r)| a.iter().cloned().chain(r.iter().map(|x| -x)).collect())
         .collect();
     let fiber = integer_fiber::solve(&equations, n + tr.len(), &vec![Z::zero(); m], c)?;
-    let preimage = fiber.kernel[..n].to_vec();
-    let (basis, k) = linear::image(&preimage, n + tr.len() - fiber.rank, c)?;
+    let preimage = fiber.decomposition.kernel[..n].to_vec();
+    let (basis, k) = linear::image(&preimage, n + tr.len() - fiber.decomposition.rank, c)?;
     let relations = linear::coordinates(&basis, k, &from_columns(&sr, n)?, sr.len(), c)?;
     let (kernel, kq) = quotient_module(b, ring, &relations, sr.len(), k, "kernel", hmap, c)?;
     let kr = kq.free_rank + kq.torsion.len();
