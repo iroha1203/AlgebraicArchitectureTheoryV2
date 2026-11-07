@@ -138,6 +138,7 @@ pub(super) fn affine_guard_forms(
 
 #[derive(Clone, Copy)]
 enum Axes<'a> {
+    Inputs(&'a [Parameter], &'a [Fact]),
     Parameters(&'a [Parameter]),
     State(&'a [Fact]),
 }
@@ -145,6 +146,7 @@ impl Axes<'_> {
     fn len(self) -> usize {
         match self {
             Self::Parameters(xs) => xs.len(),
+            Self::Inputs(xs, inputs) => xs.len() + inputs.len(),
             Self::State(xs) => xs.len(),
         }
     }
@@ -157,6 +159,9 @@ fn coordinates(
     missing: &mut Pending,
 ) -> Result<(Option<Z>, Vec<Z>), ValidationFailure> {
     (match axes {
+        Axes::Inputs(xs, inputs) => form
+            .integer_input_coordinates(xs, inputs, &env.control)?
+            .map(|(v, row)| (Some(v), row)),
         Axes::Parameters(xs) => form
             .integer_coordinates(xs, &env.control)?
             .map(|(v, row)| (Some(v), row)),
@@ -862,6 +867,13 @@ pub(in crate::observed) fn compute_update(
     })?;
     Ok((row, constant))
 }
+/// 元parameterと入力位置の正確な同時関係。外部係数・証書は受け取らない。
+#[derive(Debug)]
+pub(in crate::observed) struct InputSystem {
+    pub equations: Matrix,
+    pub inputs: Matrix,
+    pub rhs: Vec<Z>,
+}
 pub(in crate::observed) fn compute(
     env: &Environment<'_>,
     change: &Declaration,
@@ -869,6 +881,31 @@ pub(in crate::observed) fn compute(
     requirements: &[(String, Vec<(String, Scalar)>)],
     missing: &mut Pending,
 ) -> Result<Linear, ValidationFailure> {
+    compute_inner(env, change, subjects, requirements, missing, None).map(|(linear, _)| linear)
+}
+pub(in crate::observed) fn compute_inputs(
+    env: &Environment<'_>,
+    change: &Declaration,
+    subjects: &[Scalar],
+    requirements: &[(String, Vec<(String, Scalar)>)],
+    missing: &mut Pending,
+    inputs: &[Fact],
+) -> Result<(Linear, InputSystem), ValidationFailure> {
+    let (linear, system) =
+        compute_inner(env, change, subjects, requirements, missing, Some(inputs))?;
+    Ok((
+        linear,
+        system.ok_or(internal!("整数入力系が生成されていない"))?,
+    ))
+}
+fn compute_inner(
+    env: &Environment<'_>,
+    change: &Declaration,
+    subjects: &[Scalar],
+    requirements: &[(String, Vec<(String, Scalar)>)],
+    missing: &mut Pending,
+    inputs: Option<&[Fact]>,
+) -> Result<(Linear, Option<InputSystem>), ValidationFailure> {
     let Signature::Change {
         params,
         guard,
@@ -1005,21 +1042,29 @@ pub(in crate::observed) fn compute(
             &env.control,
         )?;
         if fiber.particular.is_none() {
-            return Ok(Linear {
-                parameter_count: axes.len(),
-                axes,
-                candidates_empty: true,
-                guard: None,
-                particular: None,
-                kernel: fiber.decomposition.kernel.clone(),
-                slots,
-                unit_writes,
-                action,
-                offset,
-                equations: guard_matrix,
-                rhs: guard_rhs,
-                fiber,
+            let system = inputs.map(|inputs| InputSystem {
+                equations: guard_matrix.clone(),
+                inputs: vec![vec![Z::zero(); inputs.len()]; guard_matrix.len()],
+                rhs: guard_rhs.clone(),
             });
+            return Ok((
+                Linear {
+                    parameter_count: axes.len(),
+                    axes,
+                    candidates_empty: true,
+                    guard: None,
+                    particular: None,
+                    kernel: fiber.decomposition.kernel.clone(),
+                    slots,
+                    unit_writes,
+                    action,
+                    offset,
+                    equations: guard_matrix,
+                    rhs: guard_rhs,
+                    fiber,
+                },
+                system,
+            ));
         }
         Some(Guard {
             equations: guard_matrix,
@@ -1044,12 +1089,43 @@ pub(in crate::observed) fn compute(
         .ok_or(internal!("整数作用の元代入が不適合"))?;
     updated.indexes.object = env.object_domain();
     updated.indexes.affine_valuation = updates;
-    let (mut matrix, rhs) =
-        requirement_equations(&updated, Axes::Parameters(&axes), requirements, missing)?;
+    let law_axes = inputs.map_or(Axes::Parameters(&axes), |inputs| {
+        Axes::Inputs(&axes, inputs)
+    });
+    let (mut matrix, rhs) = requirement_equations(&updated, law_axes, requirements, missing)?;
     let mut rhs = rhs
         .into_iter()
         .collect::<Option<Vec<_>>>()
         .ok_or(internal!("parameter方程式の固定項が未確定"))?;
+    let system = if let Some(inputs) = inputs {
+        let mut input_rows = Vec::with_capacity(matrix.len());
+        for row in &mut matrix {
+            env.tick()?;
+            input_rows.push(row.split_off(axes.len()));
+        }
+        let mut equations = guard
+            .as_ref()
+            .map_or_else(Vec::new, |g| g.equations.clone());
+        let mut system_rhs = guard.as_ref().map_or_else(Vec::new, |g| g.rhs.clone());
+        let mut input_matrix = vec![vec![Z::zero(); inputs.len()]; equations.len()];
+        equations.extend(matrix.iter().cloned());
+        system_rhs.extend(rhs.iter().cloned());
+        let varying = input_rows.iter().flatten().any(|v| !v.is_zero());
+        input_matrix.extend(input_rows);
+        let system = InputSystem {
+            equations,
+            inputs: input_matrix,
+            rhs: system_rhs,
+        };
+        if varying {
+            // forall x∈Z^m の共通pには全x係数の零性が必要。非零係数から導く矛盾。
+            matrix.push(vec![Z::zero(); axes.len()]);
+            rhs.push(Z::one());
+        }
+        Some(system)
+    } else {
+        None
+    };
     let free_count = guard
         .as_ref()
         .map_or(axes.len(), |g| axes.len() - g.fiber.decomposition.rank);
@@ -1106,21 +1182,24 @@ pub(in crate::observed) fn compute(
     } else {
         (fiber.particular.clone(), fiber.decomposition.kernel.clone())
     };
-    Ok(Linear {
-        parameter_count: axes.len(),
-        axes,
-        candidates_empty: false,
-        guard,
-        particular,
-        kernel,
-        slots,
-        unit_writes,
-        action,
-        offset,
-        equations: matrix,
-        rhs,
-        fiber,
-    })
+    Ok((
+        Linear {
+            parameter_count: axes.len(),
+            axes,
+            candidates_empty: false,
+            guard,
+            particular,
+            kernel,
+            slots,
+            unit_writes,
+            action,
+            offset,
+            equations: matrix,
+            rhs,
+            fiber,
+        },
+        system,
+    ))
 }
 
 fn compose(

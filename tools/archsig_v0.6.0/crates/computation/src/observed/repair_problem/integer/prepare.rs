@@ -68,7 +68,7 @@ pub(super) fn diagnostic(
         },
     ))
 }
-fn pending(
+pub(super) fn pending(
     env: &Environment<'_>,
     g: &mut Graph,
     r: &Request,
@@ -163,17 +163,6 @@ pub(in crate::observed::repair_problem) fn prepare(
             false,
         );
     }
-    if r.arguments.iter().any(|a| a.name == "inputs") {
-        return pending(
-            env,
-            g,
-            r,
-            architecture.witness,
-            inputs,
-            Default::default(),
-            true,
-        );
-    }
     let mut reused = None;
     let fixed_values = env.fixed_values();
     for node in &g.nodes {
@@ -193,6 +182,7 @@ pub(in crate::observed::repair_problem) fn prepare(
         if d.source.request.kind==QuestionKind::Prepare && d.source.request.declaration()==r.declaration()
             && old.shared.witness.construction().root()==architecture.witness.construction().root()
             && old.shared.witness.construction().reading()==architecture.witness.construction().reading()
+            && old.shared.compiled.family.as_ref().map(|f| &f.view)==r.arguments.iter().find_map(|a| match (&*a.name,&a.value) {("inputs",Selector::Declaration{name})=>Some(name),_=>None})
             && fixed_equal(&old.shared.compiled.fixed,&fixed_values,c)?
             && bindings_equal(&old.shared.compiled.bindings,&bindings,c)?
             && r.arguments.iter().any(|a|a.name=="using" && matches!(&a.value,Selector::Declaration{name}if *name==old.shared.compiled.change)) {
@@ -204,6 +194,18 @@ pub(in crate::observed::repair_problem) fn prepare(
     } else {
         match compiler::compile(env, g, &architecture.witness, r, c)? {
             Preparation::Ready(compiled) => compiled,
+            Preparation::Rejected => {
+                let base = g.nodes.len();
+                let mut b = Builder {
+                    g,
+                    base,
+                    parts: vec![],
+                };
+                let claim = condition(&mut b, r, inputs.clone(), Decision::Refuted)?;
+                let mut a = answer(r, claim, Decision::Refuted, BTreeMap::new(), &b);
+                fail(&mut a, "prepare");
+                return Ok(wrap(b, a, r, architecture.witness, None, inputs));
+            }
             Preparation::Pending {
                 details,
                 unsupported,
@@ -413,19 +415,69 @@ pub(in crate::observed::repair_problem) fn prepare(
         .unwrap_or_else(|| params[0].ty.clone());
     let internal_domain = super::domain(&mut b, &ty, &internal_refs)?;
     let units = super::domain(&mut b, &ty, &unit_refs)?;
+    let mut problem_fields = vec![];
+    let input_domain = if let Some(family) = &compiled.family {
+        let coordinates = display::module(&mut b, ring, family.fields.len(), "free", vec![])?;
+        let mut binding_fields = vec![];
+        let mut arguments = vec![architecture.reference, coordinates];
+        for (name, value) in &family.bindings {
+            let at = change_result::value(&mut b, value)?;
+            arguments.push(at);
+            binding_fields.push(Json::obj([("name", Json::str(name)), ("value", at.wire())]));
+        }
+        let fields = Json::Arr(family.fields.iter().map(Fact::wire).collect());
+        let domain = b.push(
+            NodeType::Domain,
+            "domain",
+            Json::obj([
+                ("kind", Json::str("integer_input_completions")),
+                ("base", architecture.reference.wire()),
+                ("view", Json::str(&family.view)),
+                ("bindings", Json::Arr(binding_fields)),
+                ("fields", fields.clone()),
+                (
+                    "value_type",
+                    Type::Tuple(vec![Type::Z; family.fields.len()]).wire(),
+                ),
+                ("coordinates", coordinates.wire()),
+            ]),
+            arguments,
+            None,
+        )?;
+        problem_fields.push((
+            "inputs".to_owned(),
+            Json::obj([
+                ("view", Json::str(&family.view)),
+                ("fields", fields),
+                ("domain", domain.wire()),
+            ]),
+        ));
+        Some(InputDomain {
+            domain,
+            coordinates,
+        })
+    } else {
+        None
+    };
     let problem = b.push(
         NodeType::Construction(T::RepairProblem),
         "repair_problem",
-        Json::obj([
-            ("domain", domain.wire()),
-            ("requirements", refs(&requirements)),
-            ("internal", internal_domain.wire()),
-            ("units", units.wire()),
-        ]),
+        Json::Obj(
+            problem_fields
+                .into_iter()
+                .chain([
+                    ("domain".into(), domain.wire()),
+                    ("requirements".into(), refs(&requirements)),
+                    ("internal".into(), internal_domain.wire()),
+                    ("units".into(), units.wire()),
+                ])
+                .collect(),
+        ),
         [
             vec![domain, internal_domain, units],
             requirements.clone(),
             inputs.clone(),
+            input_domain.into_iter().map(|d| d.domain).collect(),
         ]
         .concat(),
         None,
@@ -503,6 +555,7 @@ pub(in crate::observed::repair_problem) fn prepare(
         .to_string();
     let shared = Arc::new(Shared {
         compiled,
+        input_domain,
         projection,
         witness: architecture.witness.clone(),
         base: architecture.reference,

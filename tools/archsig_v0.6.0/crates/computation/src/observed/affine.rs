@@ -361,6 +361,50 @@ impl Form {
         }
         Ok(Some((constant.clone(), coefficients)))
     }
+    /// 元parameterと、入力viewに属する原始整数位置を別々の軸として取り出す。
+    pub(in crate::observed) fn integer_input_coordinates(
+        &self,
+        axes: &[Parameter],
+        inputs: &[Fact],
+        c: &Control,
+    ) -> Result<Option<(BigInt, Vec<BigInt>)>, ValidationFailure> {
+        self.check(c)?;
+        let Scalar::Z(constant) = &self.constant else {
+            return Ok(None);
+        };
+        for symbol in self.coefficients.keys() {
+            tick(c)?;
+            match symbol {
+                Symbol::Parameter(axis) if axes.contains(axis) => {}
+                Symbol::Missing(key)
+                    if key.kind == NumberType::Z
+                        && key.component.is_empty()
+                        && inputs.contains(&key.fact) => {}
+                _ => return Ok(None),
+            }
+        }
+        let mut row = Vec::with_capacity(axes.len() + inputs.len());
+        for symbol in axes
+            .iter()
+            .cloned()
+            .map(Symbol::Parameter)
+            .chain(inputs.iter().cloned().map(|fact| {
+                Symbol::Missing(MissingKey {
+                    fact,
+                    component: vec![],
+                    kind: NumberType::Z,
+                })
+            }))
+        {
+            tick(c)?;
+            row.push(match self.coefficients.get(&symbol) {
+                Some(Scalar::Z(z)) => z.clone(),
+                None => BigInt::zero(),
+                _ => return Err(internal!("整数入力系の係数がZでない").into()),
+            });
+        }
+        Ok(Some((constant.clone(), row)))
+    }
     pub(in crate::observed) fn rational_coordinates(
         &self,
         axes: &[Parameter],

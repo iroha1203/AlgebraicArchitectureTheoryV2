@@ -10,12 +10,19 @@ mod output;
 use output::{
     PublicModel, apply_object, assignment_value, known_public, publish_model, render_solutions,
 };
+mod observation;
 mod prepare;
 use legacy::legacy;
 pub(super) use prepare::{is_prepare, prepare};
+#[derive(Clone, Copy, Debug)]
+pub(super) struct InputDomain {
+    domain: NodeRef,
+    coordinates: NodeRef,
+}
 #[derive(Debug)]
 pub(super) struct Shared {
     pub compiled: Arc<Compiled>,
+    pub input_domain: Option<InputDomain>,
     pub projection: Option<Arc<Projection>>,
     pub witness: Arc<ArchitectureWitness>,
     pub base: NodeRef,
@@ -38,6 +45,7 @@ pub(super) struct State {
     pub solutions: Option<NodeRef>,
     pub public_model: Option<Arc<PublicModel>>,
     pub input_key: Vec<NodeRef>,
+    observation: Option<Arc<observation::Observation>>,
 }
 
 /// 商から明示的に求められた元parameterの全fiber。公開JSONでなく検査済みownerを保持する。
@@ -251,6 +259,7 @@ fn wrap(
                 solutions: None,
                 public_model: None,
                 input_key: vec![],
+                observation: None,
             })
         }),
         range: None,
@@ -313,6 +322,25 @@ fn fixed(shared: &Shared, enabled: &[bool], c: &Control) -> Result<FixedRows, Va
         Err(missing)
     })
 }
+fn input_conflict(
+    shared: &Shared,
+    enabled: &[bool],
+    c: &Control,
+) -> Result<bool, ValidationFailure> {
+    if let Some(family) = &shared.compiled.family {
+        for (i, writes) in shared.compiled.linear.unit_writes.iter().enumerate() {
+            tick(c)?;
+            if !enabled[i] && !shared.internal[i] {
+                for fact in writes {
+                    if find(&family.fields, fact, c)?.is_some() {
+                        return Ok(true);
+                    }
+                }
+            }
+        }
+    }
+    Ok(false)
+}
 fn resolve_range(
     env: &Environment<'_>,
     shared: &Shared,
@@ -322,6 +350,21 @@ fn resolve_range(
     let Some(projection) = &shared.projection else {
         return Ok(Ok(Arc::new(RangeMath::Empty)));
     };
+    if input_conflict(shared, enabled, c)? {
+        let coefficients = integer_fiber::reuse::factor(
+            &env.results.integer_factors,
+            vec![vec![Z::from(0); projection.visible()]],
+            projection.visible(),
+            c,
+        )?;
+        let rhs = vec![Z::from(1)];
+        let fiber = integer_fiber::restore(coefficients.decomposition().clone(), &rhs, c)?;
+        return Ok(Ok(Arc::new(RangeMath::Constrained {
+            coefficients,
+            rhs,
+            fiber,
+        })));
+    }
     let fixed = match fixed(shared, enabled, c)? {
         Ok(v) => v,
         Err(v) => return Ok(Err(v)),
@@ -744,6 +787,9 @@ fn consume(
     let mut target_set = None;
     let mut selected_ranges = vec![];
     let mut public_model = None;
+    if r.kind == QuestionKind::Observe && shared.compiled.family.is_some() {
+        return observation::compute(env, g, r, c, head, shared);
+    }
     if r.kind == QuestionKind::Observe {
         let base = g.nodes.len();
         let mut b = Builder {
@@ -798,16 +844,25 @@ fn consume(
         }
     } else if r.kind == QuestionKind::Scopes {
         if let Some(projection) = &shared.projection {
-            missing = projection
-                .shared_rows
-                .iter()
-                .filter(|i| shared.compiled.baselines[**i].is_none())
-                .map(|i| shared.compiled.linear.slots[*i].clone())
-                .collect();
+            missing =
+                projection
+                    .shared_rows
+                    .iter()
+                    .filter(|i| {
+                        shared.compiled.baselines[**i].is_none()
+                            && !shared.compiled.family.as_ref().is_some_and(|f| {
+                                f.fields.contains(&shared.compiled.linear.slots[**i])
+                            })
+                    })
+                    .map(|i| shared.compiled.linear.slots[*i].clone())
+                    .collect();
             if missing.is_empty() {
                 selected_ranges = super::minimal_masks(
                     &shared.internal,
                     |mask| {
+                        if input_conflict(&shared, mask, c)? {
+                            return Ok(false);
+                        }
                         let fixed = fixed(&shared, mask, c)?.map_err(|_| {
                             ValidationFailure::from(internal!("確認済みの整数基準値がない"))
                         })?;

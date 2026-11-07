@@ -239,7 +239,7 @@ fn reduce(
         necessary,
     })
 }
-fn named(
+pub(super) fn named(
     b: &mut Builder<'_>,
     name: &str,
     arguments: Vec<NodeRef>,
@@ -508,10 +508,9 @@ fn compute_inner(
             let old = reference(env, g, &r.head)?;
             inputs.push(old);
             let old = data(g, old)?;
-            let origin = old
-                .source
-                .finite()
-                .ok_or(internal!("読取りplanの元問題がない"))?;
+            let Some(origin) = old.source.finite() else {
+                return rejected(g, r, shared, inputs);
+            };
             valid &= same_problem(&shared, origin);
             let state = old
                 .source
