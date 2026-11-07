@@ -1054,3 +1054,104 @@ fn integer_regression_quotient_builds_only_the_requested_domain_coordinates() {
     assert!(coordinates.guard_origin.is_none());
     assert!(coordinates.guard_kernel.is_empty());
 }
+
+#[test]
+fn legacy_and_prepared_integer_assignments_transfer_by_subject_across_coordinate_orders() {
+    let body = "view all(r:Root):Set<Part> =Part[r];change choose(c:Part,p:Z,q:Z)=c with{x=p,y=q};law required valid(r:Root):forall c in Part[r]. c.x=(if c.label=\"a\" then 1 else if c.label=\"b\" then 2 else 3);";
+    let asks = [
+        "u=evaluate(Selected.all,r=@v/root)",
+        "p=prepare(Selected.valid,using=Selected.choose,on=@v/root,r=@v/root)",
+        "s=solve($p.problem,within=$u.value)",
+        "old=solve(Selected.valid,using=Selected.choose,on=@v/root,r=@v/root)",
+        "c=candidate($old.solutions,index=1)",
+        "a=apply($c.assignment,in=$s.solutions)",
+        "d=candidate($s.solutions,index=1)",
+        "back=apply($d.assignment,in=$old.solutions)",
+        "ok=check(Selected.valid,on=$a.object,r=@v/root)",
+        "also=check(Selected.valid,on=$back.object,r=@v/root)",
+    ];
+    let c = quiet();
+    for order in [["a", "b", "c"], ["c", "a", "b"], ["b", "c", "a"]] {
+        let parts = order.map(|id| (id, 0, 0, id));
+        let result = evaluate_observed_bytes(parts::input(&parts, body), &asks, &c)
+            .unwrap_or_else(|e| panic!("{:?}", e.wire()));
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        for answer in &result.answers {
+            assert_eq!(
+                answer.status,
+                Decision::Established,
+                "{order:?} {} {:?}",
+                answer.id,
+                result.issues
+            );
+        }
+        for (source, applied) in [(4, 5), (6, 7)] {
+            let source = data_for(&result, result.answers[source].outputs["assignment"])
+                .source
+                .integer()
+                .unwrap();
+            let target = data_for(&result, result.answers[applied].outputs["selection"])
+                .source
+                .integer()
+                .unwrap();
+            for (i, subject) in target.shared.compiled.subjects.iter().enumerate() {
+                let from = source
+                    .shared
+                    .compiled
+                    .subjects
+                    .iter()
+                    .position(|s| s == subject)
+                    .unwrap();
+                assert_eq!(
+                    &target.parameters.as_ref().unwrap()[2 * i..2 * i + 2],
+                    &source.parameters.as_ref().unwrap()[2 * from..2 * from + 2],
+                    "同じsubjectの元parameterを宣言順で維持する"
+                );
+            }
+        }
+    }
+}
+
+#[test]
+fn parameter_block_transfer_preserves_every_permutation_and_stops_at_each_checkpoint() {
+    use std::{cell::Cell, rc::Rc};
+    let original = [10, 11, 20, 21, 30, 31].map(Z::from).to_vec();
+    let c = quiet();
+    for order in [
+        [0, 1, 2],
+        [0, 2, 1],
+        [1, 0, 2],
+        [1, 2, 0],
+        [2, 0, 1],
+        [2, 1, 0],
+    ] {
+        let expected = order
+            .iter()
+            .flat_map(|i| original[2 * i..2 * i + 2].iter().cloned())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            transfer_parameters(original.clone(), order.to_vec(), &c).unwrap(),
+            expected
+        );
+    }
+    assert!(transfer_parameters(vec![], vec![], &c).unwrap().is_empty());
+    let run = |stop: Option<usize>| {
+        let count = Rc::new(Cell::new(0));
+        let seen = count.clone();
+        let c = Control::new(move |_| {
+            seen.set(seen.get() + 1);
+            (stop == Some(seen.get())).then_some(archsig_common::control::Signal::Term)
+        });
+        let result = transfer_parameters(original.clone(), vec![2, 0, 1], &c);
+        (result, count.get())
+    };
+    let (complete, count) = run(None);
+    assert!(complete.is_ok());
+    assert!(count > 3);
+    for at in 1..=count {
+        assert!(
+            matches!(run(Some(at)).0, Err(ValidationFailure::Stop(_))),
+            "checkpoint {at}"
+        );
+    }
+}

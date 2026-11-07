@@ -367,24 +367,24 @@ fn range_value(
         None,
     )
 }
-fn same_domain(a: &Shared, b: &Shared, c: &Control) -> Result<bool, ValidationFailure> {
+/// 同じ候補域の元subject対応を得る。座標順をidentityに使わない。
+fn domain_layout(
+    a: &Shared,
+    b: &Shared,
+    c: &Control,
+) -> Result<Option<Vec<usize>>, ValidationFailure> {
     if a.witness.construction().root() != b.witness.construction().root()
         || a.witness.construction().reading() != b.witness.construction().reading()
         || a.compiled.change != b.compiled.change
+        || a.compiled.linear.parameter_count != b.compiled.linear.parameter_count
         || a.compiled.subjects.len() != b.compiled.subjects.len()
         || a.compiled.bindings.len() != b.compiled.bindings.len()
     {
-        return Ok(false);
+        return Ok(None);
     };
     if !fixed_equal(&a.compiled.fixed, &b.compiled.fixed, c)? {
-        return Ok(false);
+        return Ok(None);
     };
-    for (a, b) in a.compiled.subjects.iter().zip(&b.compiled.subjects) {
-        tick(c)?;
-        if a != b {
-            return Ok(false);
-        }
-    }
     for (name, value) in &a.compiled.bindings {
         let mut other = None;
         for (key, scalar) in &b.compiled.bindings {
@@ -394,13 +394,81 @@ fn same_domain(a: &Shared, b: &Shared, c: &Control) -> Result<bool, ValidationFa
                 break;
             }
         }
-        let Some(other) = other else { return Ok(false) };
+        let Some(other) = other else { return Ok(None) };
         if !crate::observed::data::equal(value, other, c)? {
-            return Ok(false);
+            return Ok(None);
         }
     }
-    Ok(true)
+    let mut layout = Vec::with_capacity(b.compiled.subjects.len());
+    let mut ordered = true;
+    for (i, (source, target)) in a
+        .compiled
+        .subjects
+        .iter()
+        .zip(&b.compiled.subjects)
+        .enumerate()
+    {
+        tick(c)?;
+        if source != target {
+            ordered = false;
+            break;
+        }
+        layout.push(i);
+    }
+    if ordered {
+        return Ok(Some(layout));
+    }
+    layout.clear();
+    for subject in &b.compiled.subjects {
+        let Some(index) = find(&a.compiled.subjects, subject, c)? else {
+            return Ok(None);
+        };
+        layout.push(index);
+    }
+    Ok(Some(layout))
 }
+/// 同じ元subjectのparameter blockを移す。任意精度整数をもう一組複製しない。
+fn transfer_parameters(
+    mut parameters: Vec<Z>,
+    mut layout: Vec<usize>,
+    c: &Control,
+) -> Result<Vec<Z>, ValidationFailure> {
+    if layout.is_empty() {
+        return if parameters.is_empty() {
+            Ok(parameters)
+        } else {
+            Err(internal!("空instance族の元parameterが空でない").into())
+        };
+    }
+    if !parameters.len().is_multiple_of(layout.len()) {
+        return Err(internal!("移送する元parameterの幅が違う").into());
+    }
+    let width = parameters.len() / layout.len();
+    for i in 0..layout.len() {
+        tick(c)?;
+        let from = layout[i];
+        if from < i || from >= layout.len() {
+            return Err(internal!("元subjectの移送が置換でない").into());
+        }
+        if from == i {
+            continue;
+        }
+        for j in 0..width {
+            tick(c)?;
+            parameters.swap(i * width + j, from * width + j);
+        }
+        for position in &mut layout[i + 1..] {
+            tick(c)?;
+            if *position == i {
+                *position = from;
+                break;
+            }
+        }
+        layout[i] = i;
+    }
+    Ok(parameters)
+}
+
 fn mask(
     env: &Environment<'_>,
     g: &mut Graph,
@@ -413,7 +481,8 @@ fn mask(
         let Some(other) = d.source.integer() else {
             return Ok((at, None));
         };
-        if s.problem != other.shared.problem || !same_domain(s, &other.shared, &env.control)? {
+        // 範囲maskは同じRepairProblem所有者の座標。元Assignmentの域間移送とは区別する。
+        if s.problem != other.shared.problem || !std::ptr::eq(s, other.shared.as_ref()) {
             return Ok((at, None));
         }
         return Ok((
@@ -844,12 +913,21 @@ fn consume(
             })
         };
         if let Some((target, range, known)) = target {
-            invalid = !same_domain(&shared, &target, c)?;
+            let layout = domain_layout(&shared, &target, c)?;
+            invalid = layout.is_none();
+            let parameters = layout
+                .map(|layout| {
+                    transfer_parameters(
+                        previous_parameters.ok_or(internal!("整数の元割当てがない"))?,
+                        layout,
+                        c,
+                    )
+                })
+                .transpose()?;
             enabled = range;
             math = known;
             shared = target;
-            if !invalid {
-                let parameters = previous_parameters.ok_or(internal!("整数の元割当てがない"))?;
+            if let Some(parameters) = parameters {
                 let mask = enabled
                     .as_ref()
                     .ok_or(internal!("整数の適用先範囲がない"))?;
