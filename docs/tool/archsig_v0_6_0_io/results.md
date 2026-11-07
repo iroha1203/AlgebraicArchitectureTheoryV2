@@ -352,7 +352,7 @@ constructionのrule.pathはname=projectionの場合だけ非空の列を必須�
 
 Constructionは次の閉じた列挙とする。各規則の意味は[核の構成](computations.md)に従う。
 `binding, projection, expression, evaluation, law_instance, configuration,
-architecture, atom_universe, atom_map, map_candidate, configuration_map, object_component,
+architecture, model_assembly, model_map_assembly, atom_universe, atom_map, map_candidate, configuration_map, object_component,
 object_algebra, equation_family, equation_map, circuit_pattern, circuit_case, circuit_detector,
 circuit_map, invariant, invariant_map, signature_axis, signature_map, value_map, value_equivalence,
 declaration_transport, object_algebra_map, operation, composition,
@@ -378,6 +378,7 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 | Configuration | `{family:FactPointer[],requirements:FactPointer[],relations:[FactPointer,FactPointer][],identifications:[FactPointer,FactPointer][]}` |
 | Architecture | `{reading:QName,root:Ref,configuration:Configuration,laws:LawInstance[],internal_arrows:Ref[],overrides:{slot:Slot,value:Ref}[]}` |
 | ModelAssembly | `{reading:QName,fragments:Ref,interfaces:Ref,object:Architecture,algebra:ObjectAlgebra,inclusions:{fragment:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,generators:{source:Operation,target:Operation,proposition:Proposition}[]}[]}` |
+| ModelMapAssembly | `{source:Architecture,target:Architecture,source_assembly:ModelAssembly,target_assembly:ModelAssembly,correspondences:Ref,configuration_map:ConfigurationMap,locals:{correspondence:Ref,source:Architecture,target:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,proposition:Proposition}[],generators:{source:Operation,target:Operation,proposition:Proposition}[],laws:{source_object:ObjectComponent,target_object:ObjectComponent,source_law:LawInstance,target_law:LawInstance,proposition:Proposition}[]}` |
 | AtomUniverse | `{atoms:FactPointer[]}` |
 | AtomMap | `{universe:AtomUniverse,images:FactPointer[]}` |
 | MapCandidate | `{declaration?:QName,subject?:Ref,source:Architecture,target:Architecture,action:AtomMap}` |
@@ -392,6 +393,14 @@ ModelAssembly の fragments と interfaces は、元 View・束縛から評価�
 restriction はその局所像への再制限と逆対応を検査した
 実写像を持つ。元の担当別の原始位置と共有の対応を、代表個体へ潰して保存から消さない。
 保存後は現在の三入力・元 Request から構成を再検査し、保存済みの成立表示だけで受理しない。
+
+ModelMapAssemblyは局所correspondenceの元View・束縛、始終の組立て結果と全体写像を保持する。
+locals.mapは元の担当間の写像、locals.restrictionは始終の局所像間で全体写像を制限した実写像であり、
+propositionは包含と再制限の可換性を確認する。generatorsは全体の生成元保存、lawsは各対象・元Law出現の
+適用/required status/Bool読取りの移送を確認する。局所行やLaw出現を、同じ値だけを理由に統合しない。
+ConfigurationMapの確認済み結果は、操作/Lawの移送が反証・未決でもconfiguration_mapとして保持できる。
+map:ModelMapAssemblyは全構成条件が成立した場合だけ返す。始終の対象自身のLaw真偽と写像の保存命題を区別する。
+ConfigurationMap同士のcomposeは同じMapCandidate/AtomMap表現を返し、comparison.kind=actionは全Uの像を比較する。
 
 AtomUniverse.atomsは全入力snapshotのsubject存在事実と全既知field Atomを、FactPointerのcanonical順で
 一度ずつ含む。未観測slotをAtomに加えない。同じrunの全AtomMapは同じuniverseを使う。

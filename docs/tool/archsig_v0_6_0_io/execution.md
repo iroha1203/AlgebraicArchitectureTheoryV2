@@ -44,7 +44,7 @@ help以外の短縮flag、stdin、暗黙のファイル探索、環境変数に�
 ```text
 Request  ::= Name "=" Question
 Question ::= Kind "(" Head ("," Key "=" Argument)* ")"
-Kind     ::= build | assemble | evaluate | check | map | compose | compare
+Kind     ::= build | assemble | assemble_map | evaluate | check | map | compose | compare
            | localize | diagnose | repair | solve | quotient | needed
            | prepare | scopes | candidate | apply | observe
 Head     ::= QName | Handle
@@ -122,10 +122,12 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | 問いの正確な形 | 選択と返すfield |
 | --- | --- |
 | `build(Reading,on=Handle)` | rootとreadingから対象と有限表示のobject algebraを生成する。`proposition:Proposition`、構成できた`object:Architecture`、成立時`algebra:ObjectAlgebra` |
+| `assemble(View,on=Handle,along=View,B)` | 局所rootと共有対から対象を構成する。`proposition:Proposition`、成立時`assembly:ModelAssembly`、`object:Architecture`、`algebra:ObjectAlgebra` |
+| `assemble_map(View,from=Handle,to=Handle,B)` | 始終のModelAssemblyと担当別の原始correspondenceから全体写像を構成する。`proposition:Proposition`、作用構成時`candidate:MapCandidate`、configuration保存時`configuration_map:ConfigurationMap`、全条件成立時`map:ModelMapAssembly` |
 | `evaluate(View,on=Handle?,B)` | viewの全parameterを束縛して評価する。onは結果のArchitectureを読む環境。`value:T`、`evaluation:Evaluation`。TはPathやそのcontainerを含むLawの返り型 |
 | `check(Law,on=Handle?,B)` | Lawの選択instance族について、未束縛parameterと内部量化を保って成立を問う。onは結果のArchitectureを読む環境。`proposition:Proposition`、`evaluation:Evaluation` |
 | `map(Correspondence,on=Handle,reading=Reading,to_reading=Reading?,kind=configuration\|object_algebra?)` | onはこのcorrespondenceの原始instance。readingは始域の読み、to_readingは終域の読み（既定はreadingと同じ）。kindの既定はconfiguration。`candidate:MapCandidate`、`proposition:Proposition`、configuration保存確認時だけ`operation:Operation`、選択kindの成立時`map:ConfigurationMap\|ObjectAlgebraMap` |
-| `compose(Handle,then=Handle)` | 二つの成立済みOperationまたは二つのPathを指定順に合成する。`proposition:Proposition`、端点確認後`operation:Operation\|Path`、Operationの場合は`map:ConfigurationMap` |
+| `compose(Handle,then=Handle)` | 二つの成立済みOperation、二つのPath、または二つのConfigurationMapを指定順に合成する。`proposition:Proposition`、端点確認後`operation:Operation\|Path`、Operationの場合は`map:ConfigurationMap`。ConfigurationMap同士は`map:ConfigurationMap`を返す |
 | `compare(Handle,to=Handle,kind=value\|word\|action\|relation\|diagnostics,along=Handle?)` | 下記の比較を行う。`comparison:Comparison`、`proposition:Proposition` |
 | `localize(Handle,law=QName?,using=QName?,B)` | Architectureを局所化する。lawは選択Law、usingはchange。`system:LocalSystem`、`proposition:Proposition` |
 | `diagnose(Handle,degree=Degree?,side=equation\|semantic?)` | LocalSystemのdegree（既定1）、side（既定equation）を診断する。`diagnostic:Diagnostic`。計算できた場合`space:Cohomology`、`class:Class`、`proposition:Proposition`をそれぞれ保持する |
@@ -401,6 +403,33 @@ field 値の不一致は参照輸送後の実際の二値と元の field 位置�
 それ以外の不整合は、評価した局所集合・明示対応と不整合な原始位置へ戻す。
 失敗した組立てから完成した object / algebra を返さない。中断時は先行する確認済み回答を保持し、
 未完了の組立てを成立させない。
+
+### 局所の新旧対応から全体写像を組み立てる問い
+
+`assemble_map(View,from=Handle,to=Handle,B)` のfrom/toは、同じsnapshot・定義環境・readingの
+`ModelAssembly` を指す。Viewは原始correspondence参照の有限集合 `Set<C>` を返し、
+全parameterを明示束縛Bで与える。Cの始終root型は両組立てのroot型と一致し、
+owned型の対応は同じ型を結ぶ。Viewも同じreadingに属する。
+各始域fragmentにcorrespondenceをちょうど一件対応させ、その終域は終域側のfragmentのいずれかとする。
+同じ終域fragmentへ複数の担当が写ってよい。終域全体への全射は構成条件にしない。
+
+局所対応の型・値・参照・configuration保存、重なりの像の一致、再制限の可換性、
+全体生成操作の保存とLaw移送を核が検査する。Law移送はrequired status・適用とBool読取りを
+元の出現と束縛で比較する。初段は残るparameterの全域を既存の有限型域算法で構成できるLaw族を扱う。
+Configuration保存を確認した時点でconfiguration_mapを保持し、操作/Law保存も確認した場合だけ
+ModelMapAssemblyを返す。確認済みの構造ごとにfieldを区別する。
+欠測は元位置付きmissing_observation、適用族外は元宣言・式と束縛付きunsupported_algorithm、
+共有像・保存・可換性の不一致は実像と元位置付きcondition_failedとする。中断時は先行回答を保持する。
+保存候補は現在の三入力と元Requestから再検査する。
+
+`compose($f.configuration_map,then=$g.configuration_map)` はConfigurationMapの通常の総作用合成を返す。
+中間のArchitectureはrootの綴りに加え、構成済みの所属域・参照輸送・値・readingが一致することを検査する。
+ConfigurationMapの合成出力はmap/candidate/propositionであり、元の局所対応と始終対象を保持する。
+`compare($direct.configuration_map,to=$composed.map,kind=action)` は同じ始終対象の全U作用を比較する。
+不一致は最初の元位置と両像を返す。Operation同士の名前付き語の比較と、ConfigurationMapの作用比較は
+それぞれの型で指定する。ConfigurationMapのkind=wordはusageとする。
+ModelMapAssembly.source/targetとConfigurationMap.candidate.source/targetは構成済みArchitectureを指し、
+evaluate/check/localize/後続変更のHandleとして使える。
 
 ## 4. 例
 
