@@ -469,8 +469,13 @@ fn without_atom(
         .unwrap()
         .to_owned();
     let start = map.find(&format!(r#"{{"id":"{id}","#)).unwrap();
-    let end = start + map[start..].find("},").unwrap() + 2;
-    map.replace_range(start..end, "");
+    let end = start + map[start..].find('}').unwrap() + 1;
+    if map.as_bytes().get(end) == Some(&b',') {
+        map.replace_range(start..end + 1, "");
+    } else {
+        assert_eq!(map.as_bytes().get(start - 1), Some(&b','));
+        map.replace_range(start - 1..end, "");
+    }
     archsig_input::input::InputSources::from_bytes(
         input
             .definitions()
@@ -1189,4 +1194,183 @@ fn parameter_block_transfer_preserves_every_permutation_and_stops_at_each_checkp
             "checkpoint {at}"
         );
     }
+}
+
+#[test]
+fn pending_integer_reasons_keep_source_expressions_and_do_not_block_independent_checks() {
+    let c = quiet();
+    let asks = [
+        "p=prepare(Pair.valid,using=Pair.choose,on=@v/s,s=@v/s)",
+        "blocked=check(Pair.valid,on=$p.problem.domain.base,s=@v/s)",
+        "later=check(Pair.known,s=@v/s)",
+    ];
+    for (change, law, missing) in [
+        (
+            "change choose(s:State,p:Z,q:Z)=s with{h=p*q};",
+            "s.h=s.b",
+            None,
+        ),
+        (
+            "change choose(s:State,p:Z) when p>0 =s with{h=p};",
+            "s.h=s.b",
+            None,
+        ),
+        (
+            "change choose(s:State,p:Z)=s with{h=p};",
+            "s.h=s.b",
+            Some("b"),
+        ),
+        (
+            "change choose(s:State,p:Z)=s with{h=p};",
+            "s.a*s.h=s.b",
+            Some("a"),
+        ),
+        (
+            "change choose(s:State,p:Z)=s with{h=s.a*p};",
+            "s.h=s.b",
+            Some("a"),
+        ),
+        (
+            "change choose(s:State,p:Z) when s.a*p=1 =s with{h=p};",
+            "s.h=s.b",
+            Some("a"),
+        ),
+    ] {
+        let body = format!(
+            "{change}law required valid(s:State):{law};law required known(s:State):s.h=s.h;"
+        );
+        let input = fixture::input(&body, "2", "2");
+        let input = missing.map_or_else(|| input.clone(), |name| without_atom(input.clone(), name));
+        let result = evaluate_observed_bytes(input, &asks, &c)
+            .unwrap_or_else(|e| panic!("{change} {law}: {:?}", e.wire()));
+        assert!(
+            result
+                .issues
+                .iter()
+                .all(|r| !matches!(r.kind, ReasonKind::Internal(_))),
+            "{:?}",
+            result.issues
+        );
+        assert_eq!(result.answers[0].status, Decision::Undetermined);
+        assert_eq!(result.answers[1].status, Decision::Undetermined);
+        assert_eq!(result.answers[2].status, Decision::Established);
+        let reasons = &result.answers[0].reasons;
+        assert!(!reasons.is_empty());
+        for reason in reasons {
+            if matches!(
+                reason.kind,
+                ReasonKind::Missing | ReasonKind::UnsupportedAlgorithm { .. }
+            ) {
+                assert!(!reason.dependencies.is_empty());
+                assert!(
+                    reason
+                        .dependencies
+                        .iter()
+                        .all(|at| matches!(result.nodes[at.0].ty, NodeType::Expression(_)))
+                );
+                assert!(reason.location.is_some());
+            }
+        }
+        if let Some(name) = missing {
+            assert!(
+                reasons.iter().any(|r| matches!(r.kind, ReasonKind::Missing)
+                    && r.missing
+                        .iter()
+                        .any(|f| f.field.as_deref() == Some(&format!("Pair.State.{name}")))),
+                "{reasons:?}"
+            );
+        }
+    }
+}
+
+#[test]
+fn finite_and_integer_foreign_assignments_and_ranges_are_condition_failures() {
+    let body = "view all(s:State):Set<State> =set<State>{s};change zi(s:State,p:Z)=s with{h=p};change bf(s:State,p:Bool)=s with{h=if p then 1 else 0};law required valid(s:State):s.h=s.h;";
+    let asks = [
+        "u=evaluate(Pair.all,s=@v/s)",
+        "i=prepare(Pair.valid,using=Pair.zi,on=@v/s,s=@v/s)",
+        "f=prepare(Pair.valid,using=Pair.bf,on=@v/s,s=@v/s)",
+        "is=solve($i.problem,within=$u.value)",
+        "fs=solve($f.problem,within=$u.value)",
+        "ic=candidate($is.solutions,index=0)",
+        "fc=candidate($fs.solutions,index=0)",
+        "ir=scopes($i.problem)",
+        "fr=scopes($f.problem)",
+        "bad1=apply($fc.assignment,in=$is.solutions)",
+        "bad2=apply($ic.assignment,in=$fs.solutions)",
+        "bad3=solve($f.problem,within=$ir.ranges[0])",
+        "bad4=solve($i.problem,within=$fr.ranges[0])",
+        "later=check(Pair.valid,s=@v/s)",
+    ];
+    let result = evaluate_observed_bytes(fixture::input(body, "2", "2"), &asks, &quiet()).unwrap();
+    assert!(
+        result
+            .issues
+            .iter()
+            .all(|r| !matches!(r.kind, ReasonKind::Internal(_))),
+        "{:?}",
+        result.issues
+    );
+    for a in &result.answers[9..13] {
+        assert_eq!(a.status, Decision::Refuted, "{a:?}");
+        assert!(a.outputs.keys().all(|key| key == "proposition"));
+        assert!(
+            a.reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. })),
+            "{a:?}"
+        );
+    }
+    assert_eq!(result.answers[13].status, Decision::Established);
+}
+
+#[test]
+fn integer_candidate_environments_share_only_the_selected_object_domain() {
+    let c = quiet();
+    let result = evaluate_observed_bytes(fixture::input(BODY, "2", "2"), &ASKS[..3], &c).unwrap();
+    let state = data_for(&result, result.answers[2].outputs["problem"])
+        .source
+        .integer()
+        .unwrap();
+    let env = Environment::with_requests(
+        result.prepared.inputs(),
+        result.prepared.requests().requests(),
+        &c,
+    )
+    .unwrap();
+    let first = state.shared.compiled.environment(&env, &c).unwrap();
+    let second = state.shared.compiled.environment(&env, &c).unwrap();
+    // Candidate point environments inherit the immutable domain without rebuilding its tables.
+    state.shared.compiled.assert_object_shared(&first);
+    state.shared.compiled.assert_object_shared(&second);
+    assert!(first.fixed_values().is_empty());
+    assert!(second.fixed_values().is_empty());
+}
+
+#[test]
+fn unsupported_integer_input_family_keeps_source_expression_and_later_checks() {
+    let c = quiet();
+    let asks = [
+        "p=prepare(Pair.valid,using=Pair.choose,on=@v/s,inputs=Pair.first,s=@v/s)",
+        "blocked=check(Pair.valid,on=$p.problem.domain.base,s=@v/s)",
+        "later=check(Pair.valid,s=@v/s)",
+    ];
+    let result = evaluate_observed_bytes(fixture::input(BODY, "2", "0"), &asks, &c).unwrap();
+    assert!(
+        result
+            .issues
+            .iter()
+            .all(|r| !matches!(r.kind, ReasonKind::Internal(_))),
+        "{:?}",
+        result.issues
+    );
+    assert_eq!(result.answers[0].status, Decision::Undetermined);
+    assert_eq!(result.answers[2].status, Decision::Established);
+    assert!(result.answers[0].reasons.iter().any(|r| {
+        matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. })
+            && !r.dependencies.is_empty()
+            && r.dependencies
+                .iter()
+                .all(|at| matches!(result.nodes[at.0].ty, NodeType::Expression(Type::Bool)))
+    }));
 }

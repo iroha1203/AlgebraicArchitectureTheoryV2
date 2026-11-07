@@ -12,13 +12,69 @@ pub(in crate::observed::repair_problem) fn is_prepare(env: &Environment<'_>, r: 
     };
     matches!(&declaration.signature,Signature::Change{params,..} if params.iter().skip(1).any(|p|p.ty==Type::Z))
 }
+pub(super) fn diagnostic(
+    b: &mut Builder<'_>,
+    env: &Environment<'_>,
+    r: &Request,
+    inputs: &[NodeRef],
+    details: &crate::observed::environment::change_affine::Pending,
+) -> Result<(NodeRef, Type, archsig_common::issue::Location), ValidationFailure> {
+    let mut bindings = vec![];
+    let (body, parameters, ty) = if let Some(body) = details.expression {
+        for (name, scalar) in &details.bindings {
+            bindings.push((name.clone(), change_result::value(b, scalar)?));
+        }
+        (
+            body,
+            details.parameters.clone(),
+            details.coefficient_type.clone().unwrap_or(Type::Z),
+        )
+    } else {
+        let declaration = &env.indexes.inputs.law().declarations()
+            [r.declaration().ok_or(internal!("理由の宣言がない"))?];
+        let (params, body, ty) = match &declaration.signature {
+            Signature::Law { params, body, .. } => (params, *body, Type::Bool),
+            Signature::View {
+                params,
+                body,
+                returns,
+            } => (params, *body, returns.clone()),
+            _ => return Err(internal!("理由の宣言がLaw/Viewでない").into()),
+        };
+        for a in &r.arguments {
+            if let Some(name) = a.name.strip_prefix("bind.") {
+                let scalar = change_search::selector(env, b.g, &a.value)?;
+                bindings.push((name.to_owned(), change_result::value(b, &scalar)?));
+            }
+        }
+        let parameters = params
+            .iter()
+            .filter(|p| !bindings.iter().any(|(n, _)| *n == p.name))
+            .map(|p| (p.name.clone(), p.ty.clone()))
+            .collect::<Vec<_>>();
+        (body, parameters, ty)
+    };
+    let expression = change_result::source_expression(b, env, body, &bindings, &parameters)?;
+    let part = &mut b.parts[expression.0 - b.base];
+    part.arguments.extend_from_slice(inputs);
+    for at in inputs {
+        part.scope.merge(&b.g.get(*at)?.scope);
+    }
+    Ok((
+        expression,
+        details.coefficient_type.clone().unwrap_or(ty),
+        archsig_common::issue::Location::Law {
+            span: env.indexes.inputs.law().exprs()[body].span,
+        },
+    ))
+}
 fn pending(
     env: &Environment<'_>,
     g: &mut Graph,
     r: &Request,
     witness: Arc<ArchitectureWitness>,
     inputs: Vec<NodeRef>,
-    missing: Vec<Fact>,
+    details: crate::observed::environment::change_affine::Pending,
     unsupported: bool,
 ) -> Result<Source, ValidationFailure> {
     let base = g.nodes.len();
@@ -27,32 +83,32 @@ fn pending(
         base,
         parts: vec![],
     };
+    let (expression, ty, location) = diagnostic(&mut b, env, r, &inputs, &details)?;
     let claim = condition(&mut b, r, inputs.clone(), Decision::Undetermined)?;
     let mut a = answer(r, claim, Decision::Undetermined, BTreeMap::new(), &b);
-    if !missing.is_empty() {
+    if !details.facts.is_empty() {
         a.reasons.push(Reason {
             kind: ReasonKind::Missing,
             request: r.id.clone(),
-            dependencies: inputs.clone(),
-            missing,
-            location: None,
+            dependencies: vec![expression],
+            missing: details.facts,
+            location: Some(location.clone()),
         });
     }
     if unsupported {
         a.reasons.push(Reason {
             kind: ReasonKind::UnsupportedAlgorithm {
                 question: r.kind,
-                operand_types: vec![Type::Bool],
-                method: "integer_affine_repair_relation".into(),
+                operand_types: vec![ty],
+                method: details
+                    .unsupported
+                    .unwrap_or("integer_affine_repair_relation")
+                    .into(),
             },
             request: r.id.clone(),
-            dependencies: inputs.clone(),
+            dependencies: vec![expression],
             missing: vec![],
-            location: r
-                .declaration()
-                .map(|name| archsig_common::issue::Location::Law {
-                    span: env.indexes.inputs.law().declarations()[name].span,
-                }),
+            location: Some(location),
         });
     }
     Ok(wrap(b, a, r, witness, None, inputs))
@@ -94,10 +150,29 @@ pub(in crate::observed::repair_problem) fn prepare(
             .iter()
             .flat_map(|r| r.missing.iter().cloned())
             .collect();
-        return pending(env, g, r, architecture.witness, inputs, missing, false);
+        return pending(
+            env,
+            g,
+            r,
+            architecture.witness,
+            inputs,
+            crate::observed::environment::change_affine::Pending {
+                facts: missing,
+                ..Default::default()
+            },
+            false,
+        );
     }
     if r.arguments.iter().any(|a| a.name == "inputs") {
-        return pending(env, g, r, architecture.witness, inputs, vec![], true);
+        return pending(
+            env,
+            g,
+            r,
+            architecture.witness,
+            inputs,
+            Default::default(),
+            true,
+        );
     }
     let mut reused = None;
     let fixed_values = env.fixed_values();
@@ -130,7 +205,7 @@ pub(in crate::observed::repair_problem) fn prepare(
         match compiler::compile(env, g, &architecture.witness, r, c)? {
             Preparation::Ready(compiled) => compiled,
             Preparation::Pending {
-                missing,
+                details,
                 unsupported,
             } => {
                 return pending(
@@ -139,7 +214,7 @@ pub(in crate::observed::repair_problem) fn prepare(
                     r,
                     architecture.witness,
                     inputs,
-                    missing,
+                    *details,
                     unsupported,
                 );
             }

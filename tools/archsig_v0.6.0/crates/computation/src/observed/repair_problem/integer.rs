@@ -559,10 +559,7 @@ fn check_candidate(
     parameters: &[Z],
     c: &Control,
 ) -> Result<Checked, ValidationFailure> {
-    let mut current = env
-        .try_primitive_valuation_from(&shared.compiled.fixed, c)?
-        .ok_or(internal!("整数候補の基準代入が不適合"))?;
-    current.select_local_object(&shared.witness, c)?;
+    let current = shared.compiled.environment(env, c)?;
     let origin = Witness::Architecture(shared.witness.clone());
     let change = &origin.inputs().law().declarations()[&shared.compiled.change];
     let values = parameters
@@ -754,25 +751,20 @@ fn consume(
             base,
             parts: vec![],
         };
+        let (expression, ty, location) =
+            prepare::diagnostic(&mut b, env, r, &inputs, &Default::default())?;
         let claim = condition(&mut b, r, inputs.clone(), Decision::Undetermined)?;
         let mut a = answer(r, claim, Decision::Undetermined, BTreeMap::new(), &b);
         a.reasons.push(Reason {
             kind: ReasonKind::UnsupportedAlgorithm {
                 question: r.kind,
-                operand_types: vec![match r
-                    .declaration()
-                    .and_then(|name| env.indexes.inputs.law().declarations().get(name))
-                    .map(|d| &d.signature)
-                {
-                    Some(Signature::View { returns, .. }) => returns.clone(),
-                    _ => Type::Bool,
-                }],
+                operand_types: vec![ty],
                 method: "integer_affine_repair_observation".into(),
             },
             request: r.id.clone(),
-            dependencies: inputs.clone(),
+            dependencies: vec![expression],
             missing: vec![],
-            location: None,
+            location: Some(location),
         });
         let mut source = wrap(b, a, r, shared.witness.clone(), Some(shared), inputs);
         source.range = enabled;
@@ -1098,10 +1090,28 @@ fn consume(
         fail(&mut a, r.kind.wire());
     }
     if !missing.is_empty() {
+        let Signature::Change { params, body, .. } =
+            &env.indexes.inputs.law().declarations()[&shared.compiled.change].signature
+        else {
+            unreachable!("整数change")
+        };
+        let mut dependencies = vec![];
+        for subject in &shared.compiled.subjects {
+            let details = crate::observed::environment::change_affine::Pending {
+                expression: Some(*body),
+                bindings: vec![(params[0].name.clone(), subject.clone())],
+                parameters: params[1..]
+                    .iter()
+                    .map(|p| (p.name.clone(), p.ty.clone()))
+                    .collect(),
+                ..Default::default()
+            };
+            dependencies.push(prepare::diagnostic(&mut b, env, r, &inputs, &details)?.0);
+        }
         a.reasons.push(Reason {
             kind: ReasonKind::Missing,
             request: r.id.clone(),
-            dependencies: inputs.clone(),
+            dependencies,
             missing,
             location: None,
         });

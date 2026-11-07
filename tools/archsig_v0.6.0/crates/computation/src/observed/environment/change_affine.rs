@@ -922,28 +922,32 @@ pub(in crate::observed) fn compute(
             .collect();
         if let Some(guard) = guard {
             missing.expression = Some(*guard);
-            equations(
-                env,
-                *guard,
-                &vars,
-                &change.reading,
-                Axes::Parameters(&axes),
-                &mut guard_matrix,
-                &mut guard_rhs,
-                missing,
-            )?;
+            with_missing(env, missing, |missing| {
+                equations(
+                    env,
+                    *guard,
+                    &vars,
+                    &change.reading,
+                    Axes::Parameters(&axes),
+                    &mut guard_matrix,
+                    &mut guard_rhs,
+                    missing,
+                )
+            })?;
         }
         missing.expression = Some(*body);
-        collect_updates(
-            env,
-            *body,
-            &change.reading,
-            &mut vars,
-            &axes,
-            missing,
-            None,
-            &mut updates,
-        )?;
+        with_missing(env, missing, |missing| {
+            collect_updates(
+                env,
+                *body,
+                &change.reading,
+                &mut vars,
+                &axes,
+                missing,
+                None,
+                &mut updates,
+            )
+        })?;
     }
     // 全instanceの実更新を先に結合し、その後に未更新座標を補完する。
     // 通常candidateのupdate_fieldsと同じ座標族なので、既知分岐でも表示と実更新が一致する。
@@ -1180,6 +1184,16 @@ pub(in crate::observed) fn state_equations(
     requirement_equations(&state, Axes::State(slots), requirements, missing)
 }
 fn requirement_equations(
+    env: &Environment<'_>,
+    axes: Axes<'_>,
+    requirements: &[(String, Vec<(String, Scalar)>)],
+    missing: &mut Pending,
+) -> Result<(Matrix, Vec<Option<Z>>), ValidationFailure> {
+    with_missing(env, missing, |missing| {
+        requirement_equations_inner(env, axes, requirements, missing)
+    })
+}
+fn requirement_equations_inner(
     env: &Environment<'_>,
     axes: Axes<'_>,
     requirements: &[(String, Vec<(String, Scalar)>)],

@@ -1026,13 +1026,16 @@ fn consume(
         inputs.push(at);
         if g.get(at)?.ty == NodeType::Construction(T::ChangeRange) {
             let d = data(g, at)?;
-            let other = d.source.finite().ok_or(internal!("変更範囲の問題がない"))?;
-            invalid = !same_problem(&shared, other);
-            enabled = d
-                .source
-                .range
-                .clone()
-                .or_else(|| d.source.ranges.get(&d.index).cloned());
+            if let Some(other) = d.source.finite() {
+                invalid = !same_problem(&shared, other);
+                enabled = d
+                    .source
+                    .range
+                    .clone()
+                    .or_else(|| d.source.ranges.get(&d.index).cloned());
+            } else {
+                invalid = true;
+            }
         } else {
             let Scalar::Set { items, .. } = g.scalar(at)? else {
                 return Err(internal!("変更範囲がSetでない").into());
@@ -1090,13 +1093,12 @@ fn consume(
         inputs.push(at);
         target_set = Some(at);
         let (other, target_range) = if let Ok(d) = data(g, at) {
-            (
-                d.source
-                    .finite()
-                    .ok_or(internal!("解集合の問題がない"))?
-                    .clone(),
-                d.source.range.clone(),
-            )
+            if let Some(other) = d.source.finite() {
+                (other.clone(), d.source.range.clone())
+            } else {
+                invalid = true;
+                (shared.clone(), None)
+            }
         } else if shared.problem.is_none()
             && matches!(&g.get(at)?.payload,Some(Payload::Construction(v)) if v.project(&[ProjectionStep::Field("domain".into())]).map(|(r,_)|r)==Some(shared.domain))
         {
@@ -1107,7 +1109,7 @@ fn consume(
             (old, range)
         };
         enabled = target_range;
-        invalid = !same_domain(&shared, &other);
+        invalid |= !same_domain(&shared, &other);
         chosen = None;
         if !invalid {
             let original = previous_chosen

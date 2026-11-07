@@ -6,6 +6,7 @@ use std::sync::Arc;
 #[derive(Debug)]
 pub(in crate::observed) struct Compiled {
     pub linear: Arc<change_affine::Linear>,
+    object: Arc<crate::observed::object_evaluate::ObjectDomain>,
     pub subjects: Vec<Scalar>,
     pub requirements: Vec<(String, Vec<(String, Scalar)>)>,
     pub bindings: Vec<(String, Scalar)>,
@@ -18,7 +19,7 @@ pub(in crate::observed) struct Compiled {
 pub(in crate::observed) enum Preparation {
     Ready(Arc<Compiled>),
     Pending {
-        missing: Vec<Fact>,
+        details: Box<change_affine::Pending>,
         unsupported: bool,
     },
 }
@@ -63,7 +64,10 @@ fn compile_inner(
     let selected = change_search::selection(original, &env, g, witness, r, &[], c)?;
     let Some(mut subjects) = selected.subjects else {
         return Ok(Preparation::Pending {
-            missing: selected.missing,
+            details: Box::new(change_affine::Pending {
+                facts: selected.missing,
+                ..Default::default()
+            }),
             unsupported: false,
         });
     };
@@ -105,7 +109,7 @@ fn compile_inner(
             Err(ValidationFailure::UnsupportedExpression { .. }) => {
                 return Ok(Preparation::Pending {
                     unsupported: pending.unsupported.is_some() || pending.facts.is_empty(),
-                    missing: pending.facts,
+                    details: Box::new(pending),
                 });
             }
             Err(e) => return Err(e),
@@ -147,6 +151,9 @@ fn compile_inner(
     }
     Ok(Preparation::Ready(Arc::new(Compiled {
         linear,
+        object: env
+            .object_domain()
+            .ok_or(internal!("整数修復の参照域がない"))?,
         subjects,
         requirements: selected.requirements,
         bindings: selected.bindings,
@@ -156,4 +163,24 @@ fn compile_inner(
         scope,
         change: change_name,
     })))
+}
+
+impl Compiled {
+    #[cfg(test)]
+    pub(in crate::observed) fn assert_object_shared(&self, current: &Environment<'_>) {
+        assert!(Arc::ptr_eq(&self.object, &current.object_domain().unwrap()));
+    }
+
+    /// 同じ固定入力の参照域だけを共有し、評価状態は毎回新しくする。
+    pub(in crate::observed) fn environment<'i>(
+        &self,
+        original: &Environment<'i>,
+        c: &Control,
+    ) -> Result<Environment<'i>, ValidationFailure> {
+        let mut current = original
+            .try_primitive_valuation_from(&self.fixed, c)?
+            .ok_or(internal!("整数候補の基準代入が不適合"))?;
+        current.indexes.object = Some(self.object.clone());
+        Ok(current)
+    }
 }

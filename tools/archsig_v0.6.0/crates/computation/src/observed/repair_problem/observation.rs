@@ -418,10 +418,9 @@ fn compute_inner(
     let mut valid = true;
     let enabled = if g.get(within)?.ty == NodeType::Construction(T::ChangeRange) {
         let old = data(g, within)?;
-        let origin = old
-            .source
-            .finite()
-            .ok_or(internal!("観測範囲の問題がない"))?;
+        let Some(origin) = old.source.finite() else {
+            return rejected(g, r, shared, inputs);
+        };
         valid &= same_problem(&shared, origin);
         old.source
             .range
