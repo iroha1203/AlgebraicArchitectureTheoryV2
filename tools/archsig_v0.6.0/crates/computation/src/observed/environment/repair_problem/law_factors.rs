@@ -18,7 +18,7 @@ pub(super) struct Factors {
 struct Collector<'a, 'i> {
     env: &'a Environment<'i>,
     outputs: &'a [Output],
-    domains: &'a [Vec<Scalar>],
+    domains: &'a [std::sync::Arc<Vec<Scalar>>],
     updates: &'a finite::Problem,
     conditions: Vec<finite_law_valuations::FactorCondition>,
     factors: Factors,
@@ -343,7 +343,7 @@ pub(super) fn collect(
     law: &Declaration,
     bindings: &[(String, Scalar)],
     outputs: &[Output],
-    domains: &[Vec<Scalar>],
+    domains: &[std::sync::Arc<Vec<Scalar>>],
     updates: &finite::Problem,
 ) -> Result<Factors, ValidationFailure> {
     let Signature::Law { params, body, .. } = &law.signature else {

@@ -8,6 +8,7 @@ use archsig_input::law::{
 use std::collections::BTreeSet;
 pub(in crate::observed) mod family;
 mod law_factors;
+pub(in crate::observed) mod reuse;
 
 #[cfg(test)]
 thread_local! {static GENERATIONS:std::cell::Cell<usize>=const {std::cell::Cell::new(0)};}
@@ -193,31 +194,46 @@ fn field_dependencies(
 }
 fn rows(
     columns: &[usize],
-    domains: &[Vec<Scalar>],
+    domains: &[impl std::borrow::Borrow<Vec<Scalar>>],
     c: &Control,
     mut visit: impl FnMut(&[usize]) -> Result<(), ValidationFailure>,
 ) -> Result<(), ValidationFailure> {
-    if domains.iter().any(Vec::is_empty) {
-        return Ok(());
+    rows_while(columns, domains, c, |point| {
+        visit(point)?;
+        Ok(true)
+    })?;
+    Ok(())
+}
+fn rows_while(
+    columns: &[usize],
+    domains: &[impl std::borrow::Borrow<Vec<Scalar>>],
+    c: &Control,
+    mut visit: impl FnMut(&[usize]) -> Result<bool, ValidationFailure>,
+) -> Result<bool, ValidationFailure> {
+    if domains.iter().any(|d| d.borrow().is_empty()) {
+        return Ok(true);
     }
     let mut point = vec![0; columns.len()];
     loop {
         tick(c)?;
-        visit(&point)?;
+        if !visit(&point)? {
+            return Ok(false);
+        }
         let mut at = point.len();
         loop {
             if at == 0 {
-                return Ok(());
+                return Ok(true);
             }
             at -= 1;
             point[at] += 1;
-            if point[at] < domains[columns[at]].len() {
+            if point[at] < domains[columns[at]].borrow().len() {
                 break;
             }
             point[at] = 0;
         }
     }
 }
+
 fn holds(row: &finite_law_valuations::FiniteLawRow) -> Option<bool> {
     if row.application == Some(false) {
         Some(true)
@@ -602,6 +618,29 @@ pub(in crate::observed) fn compile_inputs(
     }
     let sizes = domains.iter().map(Vec::len).collect::<Vec<_>>();
     let updates = finite::Problem::new(sizes.clone(), relations, c)?;
+    let domains = domains
+        .into_iter()
+        .map(std::sync::Arc::new)
+        .collect::<Vec<_>>();
+    let mut cached = reuse::Builder::begin(
+        &fixed,
+        witness,
+        name,
+        &subjects,
+        &selected.requirements,
+        reuse::Basis {
+            domains: &domains,
+            parameters: parameter_count,
+            outputs: &outputs,
+            inputs,
+        },
+        c,
+    )?;
+    let prior = cached
+        .as_ref()
+        .map(|frame| frame.prior(&fixed, c))
+        .transpose()?
+        .flatten();
     let mut relations = vec![];
     let mut unresolved = vec![];
     let mut law_axes = outputs.clone();
@@ -624,11 +663,27 @@ pub(in crate::observed) fn compile_inputs(
         support.extend(factors.support);
         scope.merge(&factors.scope);
         for factor in factors.items {
+            let mut signature = cached
+                .as_mut()
+                .map(|frame| frame.signature(name, &factor, c))
+                .transpose()?
+                .flatten();
+            if let (Some(frame), Some(signature)) = (&mut cached, &signature)
+                && let Some((relation, facts, saved_scope)) =
+                    frame.reuse(&fixed, prior.as_deref(), signature, &updates, c)?
+            {
+                relations.push(relation);
+                support.extend(facts);
+                scope.merge(&saved_scope);
+                continue;
+            }
+            reuse::generated();
             let mut columns: Vec<usize> = vec![];
             loop {
                 let mut discovered = BTreeSet::from_iter(columns.iter().copied());
                 let mut allowed = vec![];
                 let mut pass_unknown = vec![];
+                let mut pass_skipped = false;
                 let mut pass_support = BTreeSet::new();
                 let mut pass_scope = Scope::default();
                 rows(&columns, &domains, c, |point| {
@@ -637,6 +692,7 @@ pub(in crate::observed) fn compile_inputs(
                         pins[*column] = Some(*value);
                     }
                     let Some(witness) = updates.witness(&pins, c)? else {
+                        pass_skipped = true;
                         return Ok(());
                     };
                     let mut values = fixed.fixed_values().into_iter().collect::<BTreeMap<_, _>>();
@@ -690,15 +746,30 @@ pub(in crate::observed) fn compile_inputs(
                 let next = discovered.into_iter().collect::<Vec<_>>();
                 if next == columns {
                     // 依存が閉じる前の仮の基準値は、観測要求へ昇格しない。
-                    if !pass_unknown.is_empty() {
+                    let complete = pass_unknown.is_empty();
+                    if !complete {
                         unresolved.push((columns.clone(), pass_unknown));
+                    }
+                    let relation = finite::Relation {
+                        columns,
+                        rows: allowed.into(),
+                    };
+                    if complete
+                        && !pass_skipped
+                        && let (Some(frame), Some(signature)) = (&mut cached, signature.take())
+                    {
+                        frame.remember(
+                            &fixed,
+                            signature,
+                            &relation,
+                            &pass_support,
+                            &pass_scope,
+                            c,
+                        )?;
                     }
                     support.extend(pass_support);
                     scope.merge(&pass_scope);
-                    relations.push(finite::Relation {
-                        columns,
-                        rows: allowed.into(),
-                    });
+                    relations.push(relation);
                     break;
                 }
                 columns = next;
@@ -725,6 +796,9 @@ pub(in crate::observed) fn compile_inputs(
             }
         }
     }
+    if let Some(frame) = cached {
+        frame.finish(&fixed, c)?;
+    }
     if pending || !missing.is_empty() {
         return Ok(Compilation::Pending(missing.into_iter().collect()));
     }
@@ -732,7 +806,7 @@ pub(in crate::observed) fn compile_inputs(
         subjects,
         parameter_types,
         parameter_count,
-        domains: domains.into_iter().map(std::sync::Arc::new).collect(),
+        domains,
         outputs,
         requirements: selected.requirements,
         bindings: selected.bindings,

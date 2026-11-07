@@ -179,7 +179,7 @@ impl<'a> Environment<'a> {
     fn fresh_candidate(&self, control: &Control) -> Self {
         Self {
             indexes: self.indexes.fresh(),
-            results: ResultStore::default(),
+            results: self.results.fresh_candidate(),
             state: EvaluationState::default(),
             control: control.clone(),
         }

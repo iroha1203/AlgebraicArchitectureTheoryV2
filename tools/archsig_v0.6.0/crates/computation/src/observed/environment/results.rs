@@ -63,6 +63,7 @@ type ScopedMemoEntry = (
 #[derive(Default)]
 pub(crate) struct ResultStore {
     verified: VerifiedResults,
+    pub(in crate::observed) repair_relations: super::repair_problem::reuse::SharedPool,
     pub(super) dotted_inputs: RefCell<DottedInputCache>,
     // 純粋AST計算の入力値と全分析Contextだけをキーにする。Graphを読まず、
     // producer/証拠の照合成功は保存しない。それらは各不変借用で再検査する。
@@ -74,6 +75,17 @@ pub(crate) struct ResultStore {
 }
 
 impl ResultStore {
+    pub(super) fn fresh_candidate(&self) -> Self {
+        Self {
+            repair_relations: self.repair_relations.clone(),
+            verified: VerifiedResults::default(),
+            dotted_inputs: RefCell::default(),
+            scoped_values: RefCell::default(),
+            cache: RefCell::default(),
+            validation_snapshot: RefCell::default(),
+        }
+    }
+
     pub(in crate::observed) fn verified<T: StoredValue>(&self) -> Ref<'_, [T]> {
         Ref::map(T::entries(&self.verified).borrow(), |values| {
             values.as_slice()

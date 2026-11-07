@@ -208,7 +208,6 @@ impl Problem {
         }
         Ok((Self::new(sizes, relations, c)?, maps))
     }
-    #[cfg(test)]
     pub fn relations(&self) -> &[Relation] {
         &self.relations
     }

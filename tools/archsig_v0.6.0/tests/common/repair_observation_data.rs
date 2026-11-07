@@ -3,7 +3,15 @@ pub fn input(
     field_type: &str,
     known: Option<&str>,
 ) -> archsig_input::input::InputSources {
-    let original = super::repair_problem_data::sources(&[("v", false, "v")], body);
+    with_parts(&[("v", false, "v")], body, field_type, known)
+}
+pub fn with_parts(
+    parts: &[(&str, bool, &str)],
+    body: &str,
+    field_type: &str,
+    known: Option<&str>,
+) -> archsig_input::input::InputSources {
+    let original = super::repair_problem_data::sources(parts, body);
     let definition = std::str::from_utf8(original.definitions()[0].bytes()).unwrap();
     let old =
         archsig_input::definition::check_definitions(&[("definition0", definition.as_bytes())])

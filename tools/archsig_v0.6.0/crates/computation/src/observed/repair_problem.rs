@@ -4,6 +4,8 @@ mod observation;
 mod prepare;
 use prepare::{legacy, prepare};
 #[cfg(test)]
+mod reobservation_tests;
+#[cfg(test)]
 mod tests;
 use super::{
     PreparedObserved, architecture_result,

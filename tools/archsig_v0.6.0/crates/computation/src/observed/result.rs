@@ -1785,6 +1785,7 @@ pub(super) struct UniversalWitness {
 /// Node/Answer は外から変更できず、検査済みの入力を所有して由来を保持する。
 #[derive(Debug)]
 pub struct ObservedEvaluation {
+    pub(super) repair_cache: Vec<std::sync::Arc<super::environment::repair_problem::reuse::Frame>>,
     pub(super) prepared: PreparedObserved,
     pub(crate) nodes: Vec<Node>,
     pub(crate) answers: Vec<Answer>,
