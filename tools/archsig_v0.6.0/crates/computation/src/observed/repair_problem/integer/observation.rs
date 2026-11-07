@@ -580,21 +580,34 @@ pub(super) fn compute(
     let needed = math.needed(goal, c)?;
     let sufficient = needed.iter().all(|j| allowed.contains(j));
     let readings = if sufficient { needed.clone() } else { allowed };
-    let common = if sufficient && goal == Goal::Assignment && readings.is_empty() {
-        Some(match resolve_range(env, &shared, &enabled, c)? {
-            Ok(math) => math,
-            Err(missing) => {
-                return pending(env, g, r, &shared, inputs, (&reader, &bindings), missing);
-            }
-        })
+    // 共通全解はProblemと範囲で決まる。読取りの別出現・由来はplan側に保持する。
+    let input_key = vec![problem, within];
+    let (common, published) = if sufficient && goal == Goal::Assignment && readings.is_empty() {
+        if let Some((math, set)) = known_range(g, &shared, &enabled, &input_key, true, c)? {
+            (Some(math), set)
+        } else {
+            let math = match resolve_range(env, &shared, &enabled, c)? {
+                Ok(math) => math,
+                Err(missing) => {
+                    return pending(env, g, r, &shared, inputs, (&reader, &bindings), missing);
+                }
+            };
+            (Some(math), None)
+        }
     } else {
-        None
+        (None, None)
     };
-    let public = if common.is_some() {
+    let public = if common.is_some() && published.is_none() {
         known_public(g, &shared, c)?
     } else {
         None
     };
+    // 借用する公開値は既存の検査sessionへ渡し、作り直して検査を省く経路にしない。
+    if let Some(set) = published {
+        inputs.push(set);
+    } else if let Some(public) = &public {
+        inputs.extend(public.inputs());
+    }
     let base = g.nodes.len();
     let mut b = Builder {
         g,
@@ -725,16 +738,21 @@ pub(super) fn compute(
     let mut public_model = None;
     let mut solutions = None;
     if let Some(common) = &common {
-        let public = if let Some(public) = public {
-            public
+        let set = if let Some(set) = published {
+            set
         } else {
-            publish_model(&mut b, &shared, c)?
+            let public = if let Some(public) = public {
+                public
+            } else {
+                publish_model(&mut b, &shared, c)?
+            };
+            let set = render_solutions(&mut b, &shared, &public, common, range, c)?;
+            public_model = Some(public);
+            set
         };
-        let set = render_solutions(&mut b, &shared, &public, common, range, c)?;
         outputs.insert("solutions".into(), set);
         arguments.push(set);
         solutions = Some(set);
-        public_model = Some(public);
     }
     let location = archsig_input::result::location_wire(&archsig_common::issue::Location::Law {
         span: env.indexes.inputs.law().declarations()[&reader].span,
@@ -816,6 +834,7 @@ pub(super) fn compute(
             affine,
         }));
         state.range_result = common;
+        state.input_key = input_key;
         state.solutions = solutions;
         state.public_model = public_model;
     }

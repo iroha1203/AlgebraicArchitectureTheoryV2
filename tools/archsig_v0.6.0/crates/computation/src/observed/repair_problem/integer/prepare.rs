@@ -416,6 +416,7 @@ pub(in crate::observed::repair_problem) fn prepare(
     let internal_domain = super::domain(&mut b, &ty, &internal_refs)?;
     let units = super::domain(&mut b, &ty, &unit_refs)?;
     let mut problem_fields = vec![];
+    let mut input_bindings = vec![];
     let input_domain = if let Some(family) = &compiled.family {
         let coordinates = display::module(&mut b, ring, family.fields.len(), "free", vec![])?;
         let mut binding_fields = vec![];
@@ -423,6 +424,7 @@ pub(in crate::observed::repair_problem) fn prepare(
         for (name, value) in &family.bindings {
             let at = change_result::value(&mut b, value)?;
             arguments.push(at);
+            input_bindings.push(at);
             binding_fields.push(Json::obj([("name", Json::str(name)), ("value", at.wire())]));
         }
         let fields = Json::Arr(family.fields.iter().map(Fact::wire).collect());
@@ -433,7 +435,7 @@ pub(in crate::observed::repair_problem) fn prepare(
                 ("kind", Json::str("integer_input_completions")),
                 ("base", architecture.reference.wire()),
                 ("view", Json::str(&family.view)),
-                ("bindings", Json::Arr(binding_fields)),
+                ("bindings", Json::Arr(binding_fields.clone())),
                 ("fields", fields.clone()),
                 (
                     "value_type",
@@ -448,6 +450,7 @@ pub(in crate::observed::repair_problem) fn prepare(
             "inputs".to_owned(),
             Json::obj([
                 ("view", Json::str(&family.view)),
+                ("bindings", Json::Arr(binding_fields)),
                 ("fields", fields),
                 ("domain", domain.wire()),
             ]),
@@ -477,6 +480,7 @@ pub(in crate::observed::repair_problem) fn prepare(
             vec![domain, internal_domain, units],
             requirements.clone(),
             inputs.clone(),
+            input_bindings,
             input_domain.into_iter().map(|d| d.domain).collect(),
         ]
         .concat(),

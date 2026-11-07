@@ -813,3 +813,101 @@ fn a_refuted_assignment_plan_remains_a_typed_input_for_the_decision_question() {
         .unwrap();
     assert!(Arc::ptr_eq(&a.math, &d.math));
 }
+
+#[test]
+fn repeated_common_observations_and_solve_share_the_native_solution_and_hidden_embedding() {
+    let views = VIEWS;
+    let body = format!(
+        "{views}change choose(s:State,p:Z,q:Z)=s with{{h=p}};law required valid(s:State):s.h=s.b-s.b;"
+    );
+    let asks = [
+        ASKS[0],
+        ASKS[2],
+        ASKS[4],
+        "b=observe(Pair.input,on=$p.problem,within=$u.value,output=assignment,s=@v/s)",
+        "again=observe($a.plan,on=$p.problem,within=$u.value,output=assignment)",
+        "s=solve($p.problem,within=$u.value)",
+        "c=candidate($again.solutions,index=3)",
+        "ap=apply($c.assignment,in=$s.solutions)",
+        "ok=check(Pair.valid,on=$ap.object,s=@v/s)",
+    ];
+    let result = evaluate_observed_bytes(
+        without_atom(fixture::input(&body, "1", "2"), "b"),
+        &asks,
+        &quiet(),
+    )
+    .unwrap();
+    assert!(
+        result
+            .issues
+            .iter()
+            .all(|r| !matches!(r.kind, ReasonKind::Internal(_))),
+        "{:?}",
+        result.issues
+    );
+    for a in &result.answers {
+        assert_eq!(a.status, Decision::Established, "{a:?}");
+    }
+    let set = result.answers[2].outputs["solutions"];
+    for i in [3, 4, 5] {
+        assert_eq!(result.answers[i].outputs["solutions"], set);
+    }
+    let first = data_for(&result, result.answers[2].outputs["plan"])
+        .source
+        .integer()
+        .unwrap();
+    for i in [3, 4] {
+        let state = data_for(&result, result.answers[i].outputs["plan"])
+            .source
+            .integer()
+            .unwrap();
+        let source = &data_for(&result, result.answers[i].outputs["plan"]).source;
+        assert!(
+            source.parts.iter().all(|part| !matches!(
+                part.ty,
+                NodeType::ModuleMap(_, _) | NodeType::Construction(T::SolutionSet)
+            )),
+            "反復回答に全核や全解の別表示を生成しない"
+        );
+        assert!(Arc::ptr_eq(
+            first.range_result.as_ref().unwrap(),
+            state.range_result.as_ref().unwrap()
+        ));
+        assert!(state.public_model.is_none(), "新しい全核表示を保持しない");
+    }
+    let parameters = data_for(&result, result.answers[6].outputs["assignment"])
+        .source
+        .integer()
+        .unwrap()
+        .parameters
+        .as_ref()
+        .unwrap();
+    assert_eq!(parameters.len(), 2);
+    assert_eq!(parameters[0], Z::zero());
+    assert_eq!(parameters[1], Z::from(2));
+}
+#[test]
+fn integer_problem_and_input_domain_publish_the_same_explicit_bindings() {
+    let result = evaluate("s.h=s.b", "1");
+    let problem = result.answers[2].outputs["problem"];
+    let state = data_for(&result, problem).source.integer().unwrap();
+    let input = state.shared.input_domain.unwrap().domain;
+    let problem = data_for(&result, problem);
+    let domain = data_for(&result, input);
+    let problem = crate::observed::repair_problem::fields(
+        problem.source.parts[problem.index].wire_ref().unwrap(),
+    )
+    .unwrap();
+    let domain = crate::observed::repair_problem::fields(
+        domain.source.parts[domain.index].wire_ref().unwrap(),
+    )
+    .unwrap();
+    let inputs = crate::observed::repair_problem::fields(&problem["inputs"]).unwrap();
+    assert_eq!(inputs["bindings"], domain["bindings"]);
+    let Json::Arr(bindings) = &inputs["bindings"] else {
+        panic!()
+    };
+    assert_eq!(bindings.len(), 1);
+    let binding = crate::observed::repair_problem::fields(&bindings[0]).unwrap();
+    assert_eq!(binding["name"], Json::str("s"));
+}

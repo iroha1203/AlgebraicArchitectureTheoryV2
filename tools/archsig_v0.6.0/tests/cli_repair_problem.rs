@@ -397,6 +397,25 @@ fn saved_integer_observation_uses_current_raw_values_before_candidate_and_apply(
         assert!(warnings(&result).is_empty());
         let answers = arr(get(&result, "answers"));
         assert!(!has(get(&answers[2], "outputs"), "solutions"));
+        let problem = get(get(&answers[1], "outputs"), "problem");
+        let problem = arr(get(&result, "nodes"))
+            .iter()
+            .find(|n| s(get(n, "id")) == s(get(problem, "node")))
+            .unwrap();
+        let inputs = get(get(problem, "value"), "inputs");
+        let bindings = arr(get(inputs, "bindings"));
+        assert_eq!(bindings.len(), 1);
+        assert_eq!(s(get(&bindings[0], "name")), "s");
+        let domain = get(inputs, "domain");
+        let domain = arr(get(&result, "nodes"))
+            .iter()
+            .find(|n| s(get(n, "id")) == s(get(domain, "node")))
+            .unwrap();
+        let domain_bindings = arr(get(get(domain, "value"), "bindings"));
+        assert_eq!(
+            s(get(get(&bindings[0], "value"), "node")),
+            s(get(get(&domain_bindings[0], "value"), "node"))
+        );
         let plan = get(get(&answers[2], "outputs"), "plan");
         let plan = arr(get(&result, "nodes"))
             .iter()
