@@ -4,7 +4,7 @@ use super::{
     request::Request,
     result::{
         Binding, Decision, EvidenceKind, Fact, Graph, Judgment, Node, NodeRef, NodeType, Payload,
-        Reason, ReasonKind, Rule, Scalar, Scope, ValidationFailure,
+        Reason, ReasonKind, Rule, Scalar, Scope, Support, ValidationFailure,
     },
 };
 use crate::construction::{
@@ -12,14 +12,14 @@ use crate::construction::{
     maps::{ConfigurationOperation, CorrespondenceResult},
     readings::ObjectReadingInstances,
 };
-use crate::construction::{ConstructionFailure, construct, readings::object_reading_instances};
+use crate::construction::{ConstructionFailure, construct};
 use archsig_common::control::Control;
 use archsig_common::internal::InternalError;
 use archsig_common::{canonical::Json, issue::Location, types::Type};
 use archsig_input::input::CheckedInputs;
 use archsig_input::result::Signal;
 use archsig_input::result::location_wire;
-use std::sync::Arc;
+use std::sync::{Arc, OnceLock};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum ConstructionType {
@@ -61,6 +61,7 @@ pub(crate) enum ConstructionType {
     Assignment,
     Repair,
     RepairProblem,
+    ModelAssembly,
     RepairObservation,
     ChangeRange,
     Selection,
@@ -121,6 +122,7 @@ impl ConstructionType {
             Self::Assignment => "Assignment",
             Self::Repair => "Repair",
             Self::RepairProblem => "RepairProblem",
+            Self::ModelAssembly => "ModelAssembly",
             Self::RepairObservation => "RepairObservation",
             Self::ChangeRange => "ChangeRange",
             Self::Selection => "Selection",
@@ -148,19 +150,39 @@ impl ConstructionType {
 pub(crate) struct ArchitectureWitness {
     inputs: Arc<CheckedInputs>,
     request: Request,
-    construction: ConfigurationConstruction,
-    readings: ObjectReadingInstances,
+    body: Arc<ArchitectureBody>,
+    assembly_parent: Option<Arc<ArchitectureWitness>>,
+}
+#[derive(Debug)]
+struct ArchitectureBody {
+    construction: Arc<ConfigurationConstruction>,
+    readings: Arc<ObjectReadingInstances>,
+    profiles: OnceLock<Arc<crate::construction::profiles::ConfigurationProfiles>>,
     arrows: Vec<Fact>,
-    support: Vec<Fact>,
+    support: Support,
+    overrides: Arc<Vec<(Fact, Scalar)>>,
+}
+// profilesは同じ不変な構成から導出する補助値。初期化の有無は意味の等値性に含めない。
+impl PartialEq for ArchitectureBody {
+    fn eq(&self, other: &Self) -> bool {
+        self.construction == other.construction
+            && self.readings == other.readings
+            && self.arrows == other.arrows
+            && self.support == other.support
+            && self.overrides == other.overrides
+    }
+}
+impl Eq for ArchitectureBody {}
+enum ArchitectureSupport<'a> {
+    Collect(&'a [Fact]),
+    Shared(Support),
 }
 impl PartialEq for ArchitectureWitness {
     fn eq(&self, other: &Self) -> bool {
         self.inputs.sources() == other.inputs.sources()
             && self.request == other.request
-            && self.construction == other.construction
-            && self.readings == other.readings
-            && self.arrows == other.arrows
-            && self.support == other.support
+            && self.body == other.body
+            && self.assembly_parent == other.assembly_parent
     }
 }
 impl Eq for ArchitectureWitness {}
@@ -215,6 +237,9 @@ impl PartialEq for AtomWitness {
 impl Eq for AtomWitness {}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum ConstructionData {
+    ConstructedField {
+        index: usize,
+    },
     FiniteLaw(super::finite_law_diagram::Data),
     PolynomialLaw(super::polynomial_law_diagram::Data),
     LawFrame(super::law_evaluation::Data),
@@ -268,6 +293,7 @@ pub(crate) enum ConstructionData {
         configuration: NodeRef,
         laws: Vec<NodeRef>,
         arrows: Vec<NodeRef>,
+        overrides: Arc<Vec<(usize, NodeRef, NodeRef)>>,
     },
     AtomUniverse(Vec<Fact>),
     AtomMap {
@@ -336,6 +362,7 @@ fn bindings(bs: &[Binding]) -> Json {
             .collect(),
     )
 }
+type RetainedArchitectureOverrides = (Arc<Vec<(Fact, Scalar)>>, Vec<(usize, NodeRef)>);
 impl ConstructionValue {
     /// 派生Architectureの更新値を、全ての既存消費側で同じように引き継ぐ。
     pub(super) fn architecture_overrides(
@@ -343,11 +370,59 @@ impl ConstructionValue {
         g: &Graph,
     ) -> Result<Vec<(Fact, NodeRef, Scalar)>, ValidationFailure> {
         match &self.data {
+            ConstructionData::Architecture { overrides, .. } => {
+                let Witness::Architecture(a) = &self.witness else {
+                    return Err(internal!("構成対象の元由来がない").into());
+                };
+                overrides
+                    .iter()
+                    .map(|(index, _, value)| {
+                        let (fact, expected) = a
+                            .body
+                            .overrides
+                            .get(*index)
+                            .ok_or(internal!("構成対象の更新位置がない"))?;
+                        if g.scalar(*value)? != expected {
+                            return Err(internal!("構成対象の輸送値が違う").into());
+                        }
+                        Ok((fact.clone(), *value, expected.clone()))
+                    })
+                    .collect()
+            }
             ConstructionData::Change(d) => d.overrides(g),
             ConstructionData::Quotient(d) => d.overrides(g),
             ConstructionData::SharedRepair(d) => d.overrides(g),
             _ => Ok(vec![]),
         }
+    }
+    /// native由来を照合済みの環境が、既存の値bufferを共有して選ぶ。
+    pub(super) fn retained_architecture_overrides(
+        &self,
+        g: &Graph,
+        control: &Control,
+    ) -> Result<RetainedArchitectureOverrides, ValidationFailure> {
+        if let ConstructionData::Architecture { overrides, .. } = &self.data {
+            let Witness::Architecture(a) = &self.witness else {
+                return Err(internal!("構成対象の元由来がない").into());
+            };
+            let mut references = Vec::with_capacity(overrides.len());
+            for (index, _, value) in overrides.iter() {
+                control.checkpoint(archsig_common::control::Checkpoint::Expression)?;
+                if a.body.overrides.get(*index).is_none() {
+                    return Err(internal!("構成対象の更新位置がない").into());
+                }
+                references.push((*index, *value));
+            }
+            return Ok((a.body.overrides.clone(), references));
+        }
+        let mut values = vec![];
+        let mut references = vec![];
+        for (fact, reference, value) in self.architecture_overrides(g)? {
+            control.checkpoint(archsig_common::control::Checkpoint::Expression)?;
+            references.push((values.len(), reference));
+            values.push((fact, value));
+        }
+        Ok((Arc::new(values), references))
     }
     pub(super) fn evidence_kind(&self) -> Option<EvidenceKind> {
         use ConstructionData as D;
@@ -368,6 +443,10 @@ impl ConstructionValue {
     }
     pub fn scalar(&self) -> Option<&Scalar> {
         match &self.data {
+            ConstructionData::ConstructedField { index } => match &self.witness {
+                Witness::Architecture(a) => a.body.overrides.get(*index).map(|(_, v)| v),
+                _ => None,
+            },
             ConstructionData::FiniteLaw(data) => data.scalar(),
             ConstructionData::PolynomialLaw(data) => data.scalar(),
             ConstructionData::LawFrame(data) => data.scalar(),
@@ -471,6 +550,9 @@ impl ConstructionValue {
             D::Composition(part) => return part.ty(),
             D::PathComposition(part) => return part.ty(),
             D::Comparison(part) => return part.ty(),
+            D::ConstructedField { .. } => {
+                return NodeType::Value(self.scalar().map(Scalar::ty).unwrap_or(Type::Unit));
+            }
             D::Subject { value, .. } => return NodeType::Value(value.ty()),
             D::Atom(a) => return NodeType::Value(a.value.ty()),
             D::ConstructionLabel(_) => return NodeType::Value(Type::Text),
@@ -540,17 +622,23 @@ impl ConstructionValue {
             D::Pending { parts, .. }
             | D::PendingPreservation { parts }
             | D::PendingLawInstance { parts, .. } => parts.iter().map(|(_, r)| *r).collect(),
-            D::Configuration(_) | D::AtomUniverse(_) => vec![],
+            D::Configuration(_) | D::AtomUniverse(_) | D::ConstructedField { .. } => vec![],
             D::Architecture {
                 root,
                 configuration,
                 laws,
                 arrows,
+                overrides,
                 ..
             } => std::iter::once(*root)
                 .chain(std::iter::once(*configuration))
                 .chain(laws.iter().copied())
                 .chain(arrows.iter().copied())
+                .chain(
+                    overrides
+                        .iter()
+                        .flat_map(|(_, subject, value)| [*subject, *value]),
+                )
                 .collect(),
             D::AtomMap { universe, .. } => vec![*universe],
             D::MapCandidate {
@@ -683,6 +771,7 @@ impl ConstructionValue {
                 ConstructionType::Assignment => "assignment",
                 ConstructionType::Repair => "repair",
                 ConstructionType::RepairProblem => "repair_problem",
+                ConstructionType::ModelAssembly => "model_assembly",
                 ConstructionType::RepairObservation => "repair_observation",
                 ConstructionType::ChangeRange => "change_range",
                 ConstructionType::Selection => "selection",
@@ -705,6 +794,7 @@ impl ConstructionValue {
             D::PendingPreservation { .. } => "proposition",
             D::PendingLawInstance { .. } => "law_instance",
             D::Configuration(_) => "configuration",
+            D::ConstructedField { .. } => "binding",
             D::Architecture { .. } => "architecture",
             D::AtomUniverse(_) => "atom_universe",
             D::AtomMap { .. } => "atom_map",
@@ -725,16 +815,19 @@ impl ConstructionValue {
             (D::Quotient(data), _) => data.projection_type(),
             (D::Local(data), _) => data.projection_type(),
             (D::ObjectMap(data), _) => data.projection_type(),
+            (D::Build(data), _) if data.assembly_projection_type().is_some() => {
+                data.assembly_projection_type()
+            }
             (D::Build(data), Witness::Architecture(a)) if data.algebra_base().is_some() => {
                 Some(ProjectionType::ObjectAlgebraRoot(
                     a.inputs
                         .archmap()
                         .snapshots()
                         .iter()
-                        .find(|s| s.id == a.construction.root().snapshot)?
+                        .find(|s| s.id == a.body.construction.root().snapshot)?
                         .subjects
                         .iter()
-                        .find(|s| s.id == a.construction.root().subject)?
+                        .find(|s| s.id == a.body.construction.root().subject)?
                         .ty
                         .to_string(),
                 ))
@@ -747,10 +840,10 @@ impl ConstructionValue {
                         .archmap()
                         .snapshots()
                         .iter()
-                        .find(|s| s.id == a.construction.root().snapshot)?
+                        .find(|s| s.id == a.body.construction.root().snapshot)?
                         .subjects
                         .iter()
-                        .find(|s| s.id == a.construction.root().subject)?
+                        .find(|s| s.id == a.body.construction.root().subject)?
                         .ty
                         .to_string(),
                 ))
@@ -768,10 +861,10 @@ impl ConstructionValue {
                         .archmap()
                         .snapshots()
                         .iter()
-                        .find(|s| s.id == a.construction.root().snapshot)?
+                        .find(|s| s.id == a.body.construction.root().snapshot)?
                         .subjects
                         .iter()
-                        .find(|s| s.id == a.construction.root().subject)?
+                        .find(|s| s.id == a.body.construction.root().subject)?
                         .ty
                         .to_string(),
                 ))
@@ -813,6 +906,9 @@ impl ConstructionValue {
             return data.project(path);
         }
         if let D::Build(data) = &self.data {
+            if data.assembly_projection_type().is_some() {
+                return data.assembly_project(path);
+            }
             return match path.first()? {
                 ProjectionStep::Field(f) if f == "base" => data.algebra_base().map(|r| (r, 1)),
                 _ => None,
@@ -902,6 +998,10 @@ impl ConstructionValue {
                 Witness::Compare(w) => part.wire(w),
                 _ => unreachable!("比較は元検査を持つ"),
             },
+            D::ConstructedField { .. } => self
+                .scalar()
+                .map(Scalar::wire)
+                .unwrap_or_else(|| Json::obj([])),
             D::Subject { value, .. } => value.wire(),
             D::Atom(a) => a.value.wire(),
             D::Pending { .. } | D::PendingPreservation { .. } | D::PendingLawInstance { .. } => {
@@ -914,6 +1014,7 @@ impl ConstructionValue {
                 configuration,
                 laws,
                 arrows,
+                overrides,
                 ..
             } => Json::obj([
                 ("reading", Json::str(reading)),
@@ -921,7 +1022,33 @@ impl ConstructionValue {
                 ("configuration", configuration.wire()),
                 ("laws", refs(laws)),
                 ("internal_arrows", refs(arrows)),
-                ("overrides", Json::Arr(vec![])),
+                (
+                    "overrides",
+                    Json::Arr(
+                        overrides
+                            .iter()
+                            .map(|(index, subject, value)| {
+                                let Witness::Architecture(a) = &self.witness else {
+                                    unreachable!()
+                                };
+                                let (fact, _) = &a.body.overrides[*index];
+                                Json::obj([
+                                    (
+                                        "slot",
+                                        Json::obj([
+                                            ("subject", subject.wire()),
+                                            (
+                                                "field",
+                                                Json::str(fact.field.as_ref().unwrap().as_str()),
+                                            ),
+                                        ]),
+                                    ),
+                                    ("value", value.wire()),
+                                ])
+                            })
+                            .collect(),
+                    ),
+                ),
             ]),
             D::AtomUniverse(atoms) => {
                 Json::obj([("atoms", Json::Arr(atoms.iter().map(Fact::wire).collect()))])
@@ -1191,7 +1318,55 @@ impl ArchitectureWitness {
         } else {
             construct(&inputs, reading, &root.snapshot, &root.subject, control)?
         };
-        let readings = object_reading_instances(&inputs, &construction, control)?;
+        Self::from_construction(inputs, request, Arc::new(construction), control)
+    }
+    pub(super) fn from_construction(
+        inputs: Arc<CheckedInputs>,
+        request: &Request,
+        construction: Arc<ConfigurationConstruction>,
+        control: &Control,
+    ) -> Result<Arc<Self>, ConstructionFailure> {
+        Self::from_assembled(
+            inputs,
+            request,
+            construction,
+            Arc::new(vec![]),
+            &[],
+            control,
+        )
+    }
+    pub(super) fn from_assembled(
+        inputs: Arc<CheckedInputs>,
+        request: &Request,
+        construction: Arc<ConfigurationConstruction>,
+        overrides: Arc<Vec<(Fact, Scalar)>>,
+        extra_support: &[Fact],
+        control: &Control,
+    ) -> Result<Arc<Self>, ConstructionFailure> {
+        Self::from_parts(
+            inputs,
+            request,
+            construction,
+            overrides,
+            ArchitectureSupport::Collect(extra_support),
+            control,
+        )
+    }
+    fn from_parts(
+        inputs: Arc<CheckedInputs>,
+        request: &Request,
+        construction: Arc<ConfigurationConstruction>,
+        overrides: Arc<Vec<(Fact, Scalar)>>,
+        support_source: ArchitectureSupport<'_>,
+        control: &Control,
+    ) -> Result<Arc<Self>, ConstructionFailure> {
+        let reading = construction.reading();
+        let root = construction.root();
+        let readings = crate::construction::readings::object_reading_instances_checked(
+            &inputs,
+            construction.clone(),
+            control,
+        )?;
         let mut arrows = vec![];
         for fact in construction.local_domain().known().iter().chain(
             construction
@@ -1212,90 +1387,230 @@ impl ArchitectureWitness {
         }
         arrows.sort_by_key(|f| f.wire().canonical());
         arrows.dedup();
-        let namespaces = crate::construction::reading_namespaces(inputs.law(), reading, control)?;
-        let root_type = &find_subject(&inputs, root)
-            .map_err(ConstructionFailure::Inconsistent)?
-            .ty;
-        let mut support = construction.base().known().family().to_vec();
-        support.extend_from_slice(construction.owner_support());
-        for snapshot in inputs.archmap().snapshots() {
-            for subject in &snapshot.subjects {
-                control.checkpoint(archsig_common::control::Checkpoint::ObjectInstances)?;
-                let declaration = &inputs.definitions().declarations()[subject.ty.as_str()];
-                let owner = match &declaration.signature {
-                    archsig_input::definition::PrimitiveSignature::Entity {
-                        owner: Some(owner),
-                        ..
-                    }
-                    | archsig_input::definition::PrimitiveSignature::Arrow { owner, .. } => owner,
-                    _ => continue,
-                };
-                if owner != root_type || !namespaces.contains(&declaration.namespace) {
-                    continue;
-                }
-                // 別root所属として除外した根拠も支持へ残す。
-                support.push(Fact::from(archsig_input::archmap::FactData {
-                    snapshot: subject.snapshot.clone(),
-                    subject: subject.id.clone(),
-                    field: None,
-                    atom: None,
-                }));
-                for field in &subject.fields {
-                    if !field.name.is_owner() {
-                        continue;
-                    }
-                    if let archsig_input::archmap::Slot::Known { atom, .. } = &field.slot {
+        let support = match support_source {
+            ArchitectureSupport::Shared(support) => support,
+            ArchitectureSupport::Collect(extra_support) => {
+                let namespaces =
+                    crate::construction::reading_namespaces(inputs.law(), reading, control)?;
+                let root_type = &find_subject(&inputs, root)
+                    .map_err(ConstructionFailure::Inconsistent)?
+                    .ty;
+                let mut support = construction.base().known().family().to_vec();
+                support.extend_from_slice(construction.owner_support());
+                for snapshot in inputs.archmap().snapshots() {
+                    for subject in &snapshot.subjects {
+                        control.checkpoint(archsig_common::control::Checkpoint::ObjectInstances)?;
+                        let declaration = &inputs.definitions().declarations()[subject.ty.as_str()];
+                        let owner = match &declaration.signature {
+                            archsig_input::definition::PrimitiveSignature::Entity {
+                                owner: Some(owner),
+                                ..
+                            }
+                            | archsig_input::definition::PrimitiveSignature::Arrow {
+                                owner, ..
+                            } => owner,
+                            _ => continue,
+                        };
+                        if owner != root_type || !namespaces.contains(&declaration.namespace) {
+                            continue;
+                        }
+                        // 別root所属として除外した根拠も支持へ残す。
                         support.push(Fact::from(archsig_input::archmap::FactData {
                             snapshot: subject.snapshot.clone(),
                             subject: subject.id.clone(),
-                            field: Some(field.name.clone()),
-                            atom: Some(atom.clone()),
+                            field: None,
+                            atom: None,
                         }));
-                    }
-                }
-            }
-        }
-        for row in readings.instances() {
-            for binding in row.bindings() {
-                control.checkpoint(archsig_common::control::Checkpoint::ObjectInstances)?;
-                support.push(binding.subject().clone());
-                if matches!(binding.parameter().ty, Type::Owned(..)) {
-                    let subject = find_subject(&inputs, binding.subject())
-                        .map_err(ConstructionFailure::Inconsistent)?;
-                    for field in &subject.fields {
-                        if field.name.is_owner()
-                            && let archsig_input::archmap::Slot::Known { atom, .. } = &field.slot
-                        {
-                            support.push(Fact::from(archsig_input::archmap::FactData {
-                                snapshot: subject.snapshot.clone(),
-                                subject: subject.id.clone(),
-                                field: Some(field.name.clone()),
-                                atom: Some(atom.clone()),
-                            }));
+                        for field in &subject.fields {
+                            if !field.name.is_owner() {
+                                continue;
+                            }
+                            if let archsig_input::archmap::Slot::Known { atom, .. } = &field.slot {
+                                support.push(Fact::from(archsig_input::archmap::FactData {
+                                    snapshot: subject.snapshot.clone(),
+                                    subject: subject.id.clone(),
+                                    field: Some(field.name.clone()),
+                                    atom: Some(atom.clone()),
+                                }));
+                            }
                         }
                     }
                 }
+                for row in readings.instances() {
+                    for binding in row.bindings() {
+                        control.checkpoint(archsig_common::control::Checkpoint::ObjectInstances)?;
+                        support.push(binding.subject().clone());
+                        if matches!(binding.parameter().ty, Type::Owned(..)) {
+                            let subject = find_subject(&inputs, binding.subject())
+                                .map_err(ConstructionFailure::Inconsistent)?;
+                            for field in &subject.fields {
+                                if field.name.is_owner()
+                                    && let archsig_input::archmap::Slot::Known { atom, .. } =
+                                        &field.slot
+                                {
+                                    support.push(Fact::from(archsig_input::archmap::FactData {
+                                        snapshot: subject.snapshot.clone(),
+                                        subject: subject.id.clone(),
+                                        field: Some(field.name.clone()),
+                                        atom: Some(atom.clone()),
+                                    }));
+                                }
+                            }
+                        }
+                    }
+                }
+                support.extend_from_slice(extra_support);
+                support.sort_by_key(|f| f.wire().canonical());
+                support.dedup();
+                support.into()
             }
-        }
-        support.sort_by_key(|f| f.wire().canonical());
-        support.dedup();
+        };
         Ok(Arc::new(Self {
             inputs,
             request: request.clone(),
-            construction,
-            readings,
-            arrows,
-            support,
+            body: Arc::new(ArchitectureBody {
+                construction,
+                readings: Arc::new(readings),
+                profiles: OnceLock::new(),
+                arrows,
+                support,
+                overrides,
+            }),
+            assembly_parent: None,
         }))
     }
     pub fn construction(&self) -> &ConfigurationConstruction {
-        &self.construction
+        &self.body.construction
     }
     pub fn readings(&self) -> &ObjectReadingInstances {
-        &self.readings
+        &self.body.readings
+    }
+    pub(super) fn shared_readings(&self) -> Arc<ObjectReadingInstances> {
+        self.body.readings.clone()
+    }
+    pub(super) fn shared_profiles(
+        &self,
+        control: &Control,
+    ) -> Result<Arc<crate::construction::profiles::ConfigurationProfiles>, ConstructionFailure>
+    {
+        control.checkpoint(archsig_common::control::Checkpoint::ConfigurationProfile)?;
+        if let Some(profiles) = self.body.profiles.get() {
+            return Ok(profiles.clone());
+        }
+        let profiles = Arc::new(crate::construction::profiles::construct_profiles_for(
+            &self.inputs,
+            self.shared_construction(),
+            control,
+        )?);
+        // 停止などの失敗は保持せず、成功した構成だけを同じbodyの利用者へ渡す。
+        Ok(self.body.profiles.get_or_init(|| profiles).clone())
     }
     pub fn arrows(&self) -> &[Fact] {
-        &self.arrows
+        &self.body.arrows
+    }
+    pub(super) fn assembly_fragment(
+        parent: &Arc<Self>,
+        construction: Arc<ConfigurationConstruction>,
+        control: &Control,
+    ) -> Result<Arc<Self>, ConstructionFailure> {
+        let Some(transport) = parent.construction().transport() else {
+            return Err(ConstructionFailure::InvalidSelection(
+                "局所対象の元が組立て対象でない".into(),
+            ));
+        };
+        if construction.reading() != parent.construction().reading()
+            || construction.root() == parent.construction().root()
+            || transport.get(construction.root()) != Some(parent.construction().root())
+        {
+            return Err(ConstructionFailure::InvalidSelection(
+                "局所対象が組立て元のrootでない".into(),
+            ));
+        }
+        let a = Self::from_construction(
+            parent.inputs.clone(),
+            &parent.request,
+            construction,
+            control,
+        )?;
+        Ok(Arc::new(Self {
+            inputs: a.inputs.clone(),
+            request: a.request.clone(),
+            body: a.body.clone(),
+            assembly_parent: Some(parent.clone()),
+        }))
+    }
+    pub(super) fn assembly_restriction(
+        parent: &Arc<Self>,
+        construction: Arc<ConfigurationConstruction>,
+        control: &Control,
+    ) -> Result<Arc<Self>, ConstructionFailure> {
+        let Some(transport) = parent.construction().transport() else {
+            return Err(ConstructionFailure::InvalidSelection(
+                "再制限の親が組立て対象でない".into(),
+            ));
+        };
+        if construction.reading() != parent.construction().reading()
+            || construction.root() != parent.construction().root()
+            || !construction
+                .transport()
+                .is_some_and(|t| std::ptr::eq(t, transport))
+            || !Arc::ptr_eq(
+                &construction.shared_universe(),
+                &parent.construction().shared_universe(),
+            )
+            || construction
+                .local_domain()
+                .known()
+                .iter()
+                .any(|f| !parent.construction().local_domain().known().contains(f))
+        {
+            return Err(ConstructionFailure::InvalidSelection(
+                "再制限が親組立ての部分域でない".into(),
+            ));
+        }
+        let a = Self::from_parts(
+            parent.inputs.clone(),
+            &parent.request,
+            construction,
+            parent.body.overrides.clone(),
+            ArchitectureSupport::Shared(parent.body.support.clone()),
+            control,
+        )?;
+        Ok(Arc::new(Self {
+            inputs: a.inputs.clone(),
+            request: a.request.clone(),
+            body: a.body.clone(),
+            assembly_parent: Some(parent.clone()),
+        }))
+    }
+    pub(super) fn override_parent(&self) -> Option<&Arc<Self>> {
+        self.assembly_parent
+            .as_ref()
+            .filter(|parent| Arc::ptr_eq(&self.body.overrides, &parent.body.overrides))
+    }
+    #[cfg(test)]
+    pub(super) fn support(&self) -> &Support {
+        &self.body.support
+    }
+    pub(super) fn selected_root(&self) -> &Fact {
+        self.assembly_parent
+            .as_ref()
+            .map(|p| p.construction().root())
+            .unwrap_or_else(|| self.construction().root())
+    }
+    pub(super) fn overrides(&self) -> &[(Fact, Scalar)] {
+        &self.body.overrides
+    }
+    pub(super) fn shared_construction(&self) -> Arc<ConfigurationConstruction> {
+        self.body.construction.clone()
+    }
+    pub(super) fn rebind(&self, request: &Request) -> Arc<Self> {
+        Arc::new(Self {
+            inputs: self.inputs.clone(),
+            request: request.clone(),
+            body: self.body.clone(),
+            assembly_parent: self.assembly_parent.clone(),
+        })
     }
 }
 impl MapWitness {
@@ -1307,7 +1622,9 @@ impl MapWitness {
         control: &Control,
     ) -> Result<(Arc<Self>, Option<Signal>), ConstructionFailure> {
         let universe = match universe {
-            Some(a) if a.inputs.sources() == inputs.sources() => a.construction.universe().to_vec(),
+            Some(a) if a.inputs.sources() == inputs.sources() => {
+                a.body.construction.universe().to_vec()
+            }
             Some(_) => {
                 return Err(ConstructionFailure::Inconsistent(internal!(
                     "別入力の共通Uをmapへ渡した"
@@ -1630,7 +1947,7 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
             field: None,
             atom: None,
         })],
-        (_, Witness::Architecture(a)) => a.support.clone(),
+        (_, Witness::Architecture(a)) => a.body.support.to_vec(),
         (_, Witness::Map(m)) => {
             let mut facts = m.universe.clone();
             facts.push(m.subject.clone());
@@ -1670,8 +1987,8 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
     ) {
         match &value.witness {
             Witness::Architecture(a) => {
-                scope.readings.insert(a.construction.reading().into());
-                if let Some(owner_scope) = a.construction.owner_scope() {
+                scope.readings.insert(a.body.construction.reading().into());
+                if let Some(owner_scope) = a.body.construction.owner_scope() {
                     scope
                         .snapshots
                         .extend(owner_scope.snapshots.iter().cloned());
@@ -1813,7 +2130,16 @@ pub fn retain(
         ConstructionData::CircuitPattern(data) => data.retained_metadata(),
         _ => {
             let (support, scope) = metadata(&value)?;
-            (support.into(), scope)
+            let support = if let Witness::Architecture(a) = &value.witness {
+                if support == a.body.support {
+                    a.body.support.clone()
+                } else {
+                    support.into()
+                }
+            } else {
+                support.into()
+            };
+            (support, scope)
         }
     };
     let node = Node {
@@ -1900,9 +2226,12 @@ fn atom_fact(graph: &Graph, r: NodeRef) -> Result<Fact, ValidationFailure> {
     }
 }
 fn architecture_reasons(a: &ArchitectureWitness) -> Vec<Reason> {
-    let mut reasons = missing(&a.request, a.construction.base().blocking_slots().to_vec());
+    let mut reasons = missing(
+        &a.request,
+        a.body.construction.base().blocking_slots().to_vec(),
+    );
     for row in a
-        .readings
+        .readings()
         .instances()
         .iter()
         .filter(|r| r.declaration().kind == "law")
@@ -1922,10 +2251,10 @@ fn validate_partial(
     let mut expected_count = 0;
     let reasons = match (&v.witness, ty) {
         (Witness::Architecture(a), ConstructionType::Configuration) => {
-            if a.construction.base().configuration().is_some() {
+            if a.body.construction.base().configuration().is_some() {
                 return Err(internal!("完成configurationを欠測扱いした").into());
             }
-            let known = a.construction.base().known();
+            let known = a.body.construction.base().known();
             for (i, fact) in known.family().iter().enumerate() {
                 if atom_fact(graph, part(parts, "family", Some(i))?)? != *fact {
                     return Err(internal!("部分familyの元位置が違う").into());
@@ -1951,14 +2280,17 @@ fn validate_partial(
                     }
                 }
             }
-            missing(&a.request, a.construction.base().blocking_slots().to_vec())
+            missing(
+                &a.request,
+                a.body.construction.base().blocking_slots().to_vec(),
+            )
         }
         (Witness::Architecture(a), ConstructionType::Architecture) => {
             let reasons = architecture_reasons(a);
             if reasons.is_empty() {
                 return Err(internal!("完成Architectureを未決にした").into());
             }
-            if subject_fact(graph, part(parts, "root", None)?)? != *a.construction.root() {
+            if subject_fact(graph, part(parts, "root", None)?)? != *a.body.construction.root() {
                 return Err(internal!("部分Architectureの根が違う").into());
             }
             let c = value(graph, part(parts, "configuration", None)?)?;
@@ -1976,7 +2308,7 @@ fn validate_partial(
             }
             expected_count = 2;
             for (i, (instance, _)) in a
-                .readings
+                .readings()
                 .instances()
                 .iter()
                 .enumerate()
@@ -1991,7 +2323,7 @@ fn validate_partial(
                 }
                 expected_count += 1;
             }
-            for (i, arrow) in a.arrows.iter().enumerate() {
+            for (i, arrow) in a.arrows().iter().enumerate() {
                 if subject_fact(graph, part(parts, "internal_arrows", Some(i))?)? != *arrow {
                     return Err(internal!("部分Architectureの内部arrowが違う").into());
                 }
@@ -2026,10 +2358,10 @@ fn validate_partial(
                     let Witness::Architecture(a) = &av.witness else {
                         return Err(internal!("部分候補の始終域がArchitectureでない").into());
                     };
-                    if a.construction.root().snapshot != *snapshot
-                        || a.construction.root().subject != *subject
-                        || a.construction.reading() != reading
-                        || expected.is_some_and(|e| e != &a.construction)
+                    if a.body.construction.root().snapshot != *snapshot
+                        || a.body.construction.root().subject != *subject
+                        || a.body.construction.reading() != reading
+                        || expected.is_some_and(|e| e != a.construction())
                         || !matches!(
                             av.data,
                             D::Architecture { .. }
@@ -2181,7 +2513,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
             for (r, expected) in [(*source, m.result.source()), (*target, m.result.target())] {
                 let a = value(graph, r)?;
                 require!(
-                    matches!(&a.witness,Witness::Architecture(a) if Some(&a.construction)==expected),
+                    matches!(&a.witness,Witness::Architecture(a) if Some(a.construction())==expected),
                     "構成不成立の元始終域が違う"
                 );
             }
@@ -2272,13 +2604,13 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                         || matches!((&v.witness, ty, path.as_slice()), (Witness::Architecture(a), ConstructionType::Architecture, [ProjectionStep::Field(field)])
                             if field=="root" && a.request.kind==super::request::QuestionKind::Build
                                 && a.request.arguments.iter().any(|arg| arg.name=="on" && matches!(arg.value,super::request::Selector::Answer { .. }))
-                                && subject_fact(graph,*r).is_ok_and(|f| &f==a.construction.root())),
+                                && subject_fact(graph,*r).is_ok_and(|f| &f==a.body.construction.root())),
                     "部分構成が別入力・要求を参照した"
                 );
             }
             match (&v.witness, ty) {
                 (Witness::Architecture(a), ConstructionType::Configuration) => require!(
-                    a.construction.base().configuration().is_none(),
+                    a.body.construction.base().configuration().is_none(),
                     "完成configurationを欠測扱いした"
                 ),
                 (Witness::Architecture(_), ConstructionType::Architecture)
@@ -2333,7 +2665,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
         }
         (D::PendingLawInstance { instance, parts }, Witness::Architecture(a)) => {
             let row = a
-                .readings
+                .readings()
                 .instances()
                 .get(*instance)
                 .ok_or(internal!("未完成Lawの元instanceがない"))?;
@@ -2389,8 +2721,14 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
         }
         (D::Configuration(c), Witness::Architecture(a)) => {
             require!(
-                a.construction.base().configuration() == Some(c),
+                a.body.construction.base().configuration() == Some(c),
                 "未完成または別のconfiguration"
+            );
+        }
+        (D::ConstructedField { index }, Witness::Architecture(a)) => {
+            require!(
+                a.body.overrides.get(*index).is_some(),
+                "構成対象の輸送値の添字が違う"
             );
         }
         (
@@ -2400,22 +2738,47 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 configuration,
                 laws,
                 arrows,
+                overrides,
             },
             Witness::Architecture(a),
         ) => {
             require!(
-                reading == a.construction.reading()
-                    && subject_fact(graph, *root)? == *a.construction.root(),
+                reading == a.body.construction.reading()
+                    && subject_fact(graph, *root)? == *a.body.construction.root(),
                 "Architectureのreading/rootが違う"
             );
             let config = value(graph, *configuration)?;
             require!(
                 config.witness == v.witness
-                    && matches!(&config.data,D::Configuration(c) if a.construction.base().configuration()==Some(c)),
+                    && matches!(&config.data,D::Configuration(c) if a.body.construction.base().configuration()==Some(c)),
                 "Architectureのconfigurationが違う"
             );
+            require!(
+                overrides.len() == a.body.overrides.len(),
+                "構成対象が参照輸送を落とした"
+            );
+            for (expected, (index, subject, value_ref)) in overrides.iter().enumerate() {
+                require!(*index == expected, "構成対象の輸送値の順序が違う");
+                let (fact, scalar) = &a.body.overrides[expected];
+                let mut existence = fact.clone();
+                existence.field = None;
+                existence.atom = None;
+                require!(
+                    subject_fact(graph, *subject)? == existence && {
+                        let actual = graph.scalar(*value_ref)?;
+                        std::ptr::eq(actual, scalar) || actual == scalar
+                    },
+                    "構成対象の輸送位置・値が違う"
+                );
+                let derived = value(graph, *value_ref)?;
+                require!(
+                    (a.override_parent().is_some_and(|parent|matches!(&derived.witness,Witness::Architecture(owner) if Arc::ptr_eq(parent,owner))) || derived.witness == v.witness)
+                        && matches!(derived.data,D::ConstructedField{index:i} if i==expected),
+                    "構成対象の輸送値が別由来"
+                );
+            }
             let indices = a
-                .readings
+                .readings()
                 .instances()
                 .iter()
                 .enumerate()
@@ -2423,7 +2786,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                 .map(|(i, _)| i)
                 .collect::<Vec<_>>();
             require!(
-                indices.len() == laws.len() && a.arrows.len() == arrows.len(),
+                indices.len() == laws.len() && a.arrows().len() == arrows.len(),
                 "ArchitectureがLaw/内部arrowを落とした"
             );
             for (&expected, &law) in indices.iter().zip(laws) {
@@ -2434,7 +2797,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                     "ArchitectureのLaw instanceが違う"
                 );
             }
-            for (expected, &arrow) in a.arrows.iter().zip(arrows) {
+            for (expected, &arrow) in a.arrows().iter().zip(arrows) {
                 require!(
                     subject_fact(graph, arrow)? == *expected,
                     "Architectureの内部arrowが違う"
@@ -2442,7 +2805,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
             }
         }
         (D::AtomUniverse(atoms), Witness::Architecture(a)) => require!(
-            atoms == a.construction.universe(),
+            atoms == a.body.construction.universe(),
             "共通AtomUniverseの全元が違う"
         ),
         (D::AtomUniverse(atoms), Witness::Map(m)) => {
@@ -2486,7 +2849,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
                     return Err(internal!("候補の始終域がArchitectureでない").into());
                 };
                 require!(
-                    Some(&a.construction) == expected
+                    Some(a.construction()) == expected
                         && matches!(value(graph, r)?.data, D::Architecture { .. }),
                     "候補の始終Architectureが違う"
                 );
@@ -2551,7 +2914,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
             Witness::Architecture(a),
         ) => {
             let row = a
-                .readings
+                .readings()
                 .instances()
                 .get(*instance)
                 .ok_or(internal!("元Law instanceがない"))?;
@@ -2608,7 +2971,7 @@ pub(crate) fn validate_shape(graph: &Graph, node: &Node) -> Result<(), Validatio
             Witness::Architecture(a),
         ) => {
             let row = a
-                .readings
+                .readings()
                 .instances()
                 .get(*instance)
                 .ok_or(internal!("元Law instanceがない"))?;

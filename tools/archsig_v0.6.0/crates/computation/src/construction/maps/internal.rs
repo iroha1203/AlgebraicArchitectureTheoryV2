@@ -4,6 +4,7 @@ use super::*;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct InternalArrowResult {
     root: FactPointer,
+    construction: Option<std::sync::Arc<ConfigurationConstruction>>,
     arrow: FactPointer,
     reading: String,
     source: Option<ObjectComponent>,
@@ -46,15 +47,32 @@ impl InternalArrowResult {
         inputs: &CheckedInputs,
         control: &Control,
     ) -> Result<(), ConstructionFailure> {
-        let expected = internal_arrow(
-            inputs,
-            &self.reading,
-            &self.root.snapshot,
-            &self.root.subject,
-            &self.arrow.snapshot,
-            &self.arrow.subject,
-            control,
-        )?;
+        let expected = if let Some(construction) = &self.construction {
+            construction.recheck(
+                inputs,
+                &self.reading,
+                &self.root.snapshot,
+                &self.root.subject,
+                control,
+            )?;
+            internal_arrow_checked(
+                inputs,
+                construction,
+                &self.arrow.snapshot,
+                &self.arrow.subject,
+                control,
+            )?
+        } else {
+            internal_arrow(
+                inputs,
+                &self.reading,
+                &self.root.snapshot,
+                &self.root.subject,
+                &self.arrow.snapshot,
+                &self.arrow.subject,
+                control,
+            )?
+        };
         if self != &expected {
             return Err(ConstructionFailure::Inconsistent(internal!(
                 "内部arrowの構成・保存結果が現在入力と違う"
@@ -66,7 +84,7 @@ impl InternalArrowResult {
 /// rootで選んだ全内部arrowの検査結果。ObjectAlgebraの成立型とは区別する。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct InternalArrows {
-    construction: ConfigurationConstruction,
+    construction: std::sync::Arc<ConfigurationConstruction>,
     arrows: Vec<InternalArrowResult>,
     selected: Option<Vec<FactPointer>>,
     complete: bool,
@@ -96,6 +114,9 @@ impl From<ConstructionFailure> for InternalArrowsFailure {
     }
 }
 impl InternalArrows {
+    pub(super) fn shared_construction(&self) -> &std::sync::Arc<ConfigurationConstruction> {
+        &self.construction
+    }
     pub fn construction(&self) -> &ConfigurationConstruction {
         &self.construction
     }
@@ -120,14 +141,15 @@ impl InternalArrows {
         inputs: &CheckedInputs,
         control: &Control,
     ) -> Result<(), ConstructionFailure> {
-        let expected = internal_arrows(
+        self.construction.recheck(
             inputs,
             self.construction.reading(),
             &self.construction.root().snapshot,
             &self.construction.root().subject,
             control,
-        )
-        .map_err(|failure| failure.cause)?;
+        )?;
+        let expected = internal_arrows_constructed(inputs, self.construction.clone(), control)
+            .map_err(|failure| failure.cause)?;
         if self != &expected {
             return Err(ConstructionFailure::Inconsistent(internal!(
                 "内部arrow全件の構成が現在入力と違う"
@@ -141,18 +163,40 @@ fn tick(control: &Control) -> Result<(), ConstructionFailure> {
         .checkpoint(Checkpoint::InternalArrow)
         .map_err(Into::into)
 }
+fn effective_endpoint(
+    construction: &ConfigurationConstruction,
+    holder: &Subject,
+    name: &str,
+    missing: &mut BTreeSet<FactPointer>,
+    control: &Control,
+) -> Result<Option<SubjectKey>, ConstructionFailure> {
+    endpoint(holder, name, missing, control)?
+        .map(|(snapshot, subject)| {
+            let fact = FactPointer::from(archsig_input::archmap::FactData {
+                snapshot,
+                subject,
+                field: None,
+                atom: None,
+            });
+            let image = construction.transported_subject(&fact);
+            Ok((image.snapshot.clone(), image.subject.clone()))
+        })
+        .transpose()
+}
+
 fn component(
     inputs: &CheckedInputs,
     key: &SubjectKey,
     index: &BTreeMap<(&str, &str), &Subject>,
-    root: &FactPointer,
+    construction: &ConfigurationConstruction,
     confirmed_owner: bool,
     missing: &mut BTreeSet<FactPointer>,
     control: &Control,
 ) -> Result<Option<ObjectComponent>, ConstructionFailure> {
     tick(control)?;
+    let root = construction.root();
     let selected = subject(inputs, &key.0, &key.1, control)?;
-    let owner = endpoint(selected, "owner", missing, control)?;
+    let owner = effective_endpoint(construction, selected, "owner", missing, control)?;
     if owner
         .as_ref()
         .is_some_and(|(s, id)| s != &root.snapshot || id != &root.subject)
@@ -165,7 +209,19 @@ fn component(
         // arrowのowner未観測時には、このrootの対象だと仮定しない。
         return Ok(None);
     }
-    let candidate = configuration(inputs, &[selected], index, BTreeSet::new(), control)?;
+    let candidate = if construction.transport().is_some() {
+        construction
+            .components()
+            .iter()
+            .find(|p| p.subject() == &exists(selected))
+            .ok_or_else(|| {
+                ConstructionFailure::InvalidSelection("組立てarrowの端点が対象域にない".into())
+            })?
+            .candidate()
+            .clone()
+    } else {
+        configuration(inputs, &[selected], index, BTreeSet::new(), control)?
+    };
     for slot in candidate.blocking_slots() {
         tick(control)?;
         missing.insert(slot.clone());
@@ -187,14 +243,15 @@ pub fn internal_arrow(
     control: &Control,
 ) -> Result<InternalArrowResult, ConstructionFailure> {
     tick(control)?;
-    let construction = construct(inputs, reading, root_snapshot, root_id, control)?;
+    let construction =
+        std::sync::Arc::new(construct(inputs, reading, root_snapshot, root_id, control)?);
     let result = internal_arrow_checked(inputs, &construction, arrow_snapshot, arrow_id, control)?;
     tick(control)?;
     Ok(result)
 }
-fn internal_arrow_checked(
+pub(super) fn internal_arrow_checked(
     inputs: &CheckedInputs,
-    construction: &ConfigurationConstruction,
+    construction: &std::sync::Arc<ConfigurationConstruction>,
     arrow_snapshot: &str,
     arrow_id: &str,
     control: &Control,
@@ -229,7 +286,7 @@ fn internal_arrow_checked(
         ));
     }
     let mut missing = BTreeSet::new();
-    let owner = endpoint(holder, "owner", &mut missing, control)?;
+    let owner = effective_endpoint(construction, holder, "owner", &mut missing, control)?;
     if owner
         .as_ref()
         .is_some_and(|(s, id)| s != &root.snapshot || id != &root.id)
@@ -238,8 +295,8 @@ fn internal_arrow_checked(
             "arrowが選択rootに属さない".into(),
         ));
     }
-    let from = endpoint(holder, "from", &mut missing, control)?;
-    let to = endpoint(holder, "to", &mut missing, control)?;
+    let from = effective_endpoint(construction, holder, "from", &mut missing, control)?;
+    let to = effective_endpoint(construction, holder, "to", &mut missing, control)?;
     let mut index = BTreeMap::new();
     for snapshot in inputs.archmap().snapshots() {
         tick(control)?;
@@ -250,6 +307,7 @@ fn internal_arrow_checked(
     }
     let mut result = InternalArrowResult {
         root: construction.root().clone(),
+        construction: construction.transport().map(|_| construction.clone()),
         arrow: exists(holder),
         reading: construction.reading().into(),
         source: None,
@@ -264,7 +322,7 @@ fn internal_arrow_checked(
             inputs,
             from,
             &index,
-            construction.root(),
+            construction,
             owner.is_some(),
             &mut missing,
             control,
@@ -275,7 +333,7 @@ fn internal_arrow_checked(
             inputs,
             to,
             &index,
-            construction.root(),
+            construction,
             owner.is_some(),
             &mut missing,
             control,
@@ -290,6 +348,20 @@ fn internal_arrow_checked(
     let moved = BTreeMap::from([(from.clone(), to.clone())]);
     let source_config = source.candidate().known();
     let target_config = target.candidate().known();
+    let transported_shapes = if let Some(transport) = construction.transport() {
+        let mut right = BTreeMap::new();
+        let mut left = moved.clone();
+        for (a, b) in transport {
+            tick(control)?;
+            let a = (a.snapshot.clone(), a.subject.clone());
+            let b = (b.snapshot.clone(), b.subject.clone());
+            right.insert(a.clone(), b.clone());
+            left.insert(a, moved.get(&b).unwrap_or(&b).clone());
+        }
+        Some((left, right))
+    } else {
+        None
+    };
     let family: BTreeSet<_> = source_config.family().iter().collect();
     let mut images = Vec::new();
     let mut action = BTreeMap::new();
@@ -350,13 +422,19 @@ fn internal_arrow_checked(
                 "内部作用の始域Atom値がない"
             )));
         };
-        if reference_violation(
-            source_value,
-            target_value,
-            &moved,
-            &BTreeSet::new(),
-            control,
-        )? {
+        let violates = if let Some((left, right)) = &transported_shapes {
+            reference_shape(source_value, left, control)?
+                != reference_shape(target_value, right, control)?
+        } else {
+            reference_violation(
+                source_value,
+                target_value,
+                &moved,
+                &BTreeSet::new(),
+                control,
+            )?
+        };
+        if violates {
             result
                 .counterexamples
                 .push(Counterexample::ReferenceStructure {
@@ -380,6 +458,7 @@ fn internal_arrow_checked(
             origin: MapOrigin::InternalArrow {
                 root: construction.root().clone(),
                 arrow: exists(holder),
+                construction: construction.transport().map(|_| construction.clone()),
             },
             source_root: source.subject().clone(),
             target_root: target.subject().clone(),
@@ -387,7 +466,7 @@ fn internal_arrow_checked(
             to_reading: construction.reading().into(),
             source_configuration: source_config.clone(),
             target_configuration: target_config.clone(),
-            universe: construction.universe().to_vec(),
+            universe: construction.shared_universe(),
             images,
         };
         if result.counterexamples.is_empty() {
@@ -408,7 +487,19 @@ pub fn internal_arrows(
     control: &Control,
 ) -> Result<InternalArrows, InternalArrowsFailure> {
     tick(control)?;
-    let construction = construct(inputs, reading, root_snapshot, root_id, control)?;
+    let construction =
+        std::sync::Arc::new(construct(inputs, reading, root_snapshot, root_id, control)?);
+    internal_arrows_constructed(inputs, construction, control)
+}
+/// 所属域を構成済みの対象にも同じ生成元検査を適用する。
+pub(crate) fn internal_arrows_constructed(
+    inputs: &CheckedInputs,
+    construction: std::sync::Arc<ConfigurationConstruction>,
+    control: &Control,
+) -> Result<InternalArrows, InternalArrowsFailure> {
+    let reading = construction.reading().to_owned();
+    let root_snapshot = construction.root().snapshot.clone();
+    let root_id = construction.root().subject.clone();
     let mut result = InternalArrows {
         construction,
         arrows: vec![],
@@ -417,8 +508,8 @@ pub fn internal_arrows(
     };
     let computed = (|| -> Result<(), ConstructionFailure> {
         control.checkpoint(Checkpoint::InternalArrowRoster)?;
-        let root = subject(inputs, root_snapshot, root_id, control)?;
-        let namespaces = namespaces(inputs, reading, control)?;
+        let root = subject(inputs, &root_snapshot, &root_id, control)?;
+        let namespaces = namespaces(inputs, &reading, control)?;
         let mut arrows = Vec::new();
         for snapshot in inputs.archmap().snapshots() {
             tick(control)?;
@@ -441,10 +532,18 @@ pub fn internal_arrows(
                 let f = field(holder, "owner", control)?.ok_or_else(|| {
                     ConstructionFailure::Inconsistent(internal!("内部arrowのowner slotがない"))
                 })?;
-                let selected = match &f.slot {
-                    Slot::Missing => true,
-                    Slot::Known { value, .. } => {
-                        key(value)? == (root_snapshot.into(), root_id.into())
+                let selected = if result.construction.transport().is_some() {
+                    result
+                        .construction
+                        .local_domain()
+                        .known()
+                        .contains(&exists(holder))
+                } else {
+                    match &f.slot {
+                        Slot::Missing => true,
+                        Slot::Known { value, .. } => {
+                            key(value)? == (root_snapshot.clone(), root_id.clone())
+                        }
                     }
                 };
                 if selected {

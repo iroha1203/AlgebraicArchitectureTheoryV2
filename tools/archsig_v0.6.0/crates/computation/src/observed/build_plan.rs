@@ -27,6 +27,7 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
 /// Optionは実際に構成できた中間結果だけを表す。構成条件の判断はこの後に行う。
 #[derive(Debug)]
 pub(super) struct Plan {
+    pub assembly: Option<Arc<super::assembly_plan::Assembly>>,
     pub architecture: Architecture,
     pub objects: Option<Objects>,
     pub patterns: Option<Patterns>,
@@ -69,11 +70,51 @@ pub(super) fn prepare(
     prepare_architecture(env, g, inputs, architecture, c)
 }
 
+pub(super) fn incomplete_architecture(
+    env: &Environment<'_>,
+    g: &Graph,
+    architecture: Architecture,
+    c: &Control,
+) -> Result<Plan, ValidationFailure> {
+    let boundary = Boundary::capture(
+        env,
+        g,
+        architecture.reference,
+        vec![architecture.reference, architecture.universe],
+        c,
+    )?;
+    Ok(Plan {
+        assembly: None,
+        architecture,
+        objects: None,
+        patterns: None,
+        arrows: None,
+        laws: None,
+        polynomial: None,
+        finite: None,
+        finite_boundary: None,
+        equations: None,
+        views: None,
+        predicates: vec![],
+        boundary,
+    })
+}
+
 pub(super) fn prepare_architecture(
     env: &Environment<'_>,
     g: &mut Graph,
     inputs: Arc<CheckedInputs>,
     architecture: Architecture,
+    c: &Control,
+) -> Result<Plan, ValidationFailure> {
+    prepare_architecture_with_arrows(env, g, inputs, architecture, None, c)
+}
+pub(super) fn prepare_architecture_with_arrows(
+    env: &Environment<'_>,
+    g: &mut Graph,
+    inputs: Arc<CheckedInputs>,
+    architecture: Architecture,
+    supplied_arrows: Option<Arc<crate::construction::maps::InternalArrows>>,
     c: &Control,
 ) -> Result<Plan, ValidationFailure> {
     tick(c)?;
@@ -112,14 +153,26 @@ pub(super) fn prepare_architecture(
         if let Some(objects) = &objects {
             patterns =
                 circuit_pattern::retain(env, g, inputs.clone(), reference, Some(objects.base), c)?;
-            arrows = Some(internal_arrow_diagram::retain(
-                g,
-                inputs.clone(),
-                reference,
-                objects,
-                architecture.universe,
-                c,
-            )?);
+            arrows = Some(if let Some(core) = supplied_arrows {
+                internal_arrow_diagram::retain_constructed(
+                    g,
+                    inputs.clone(),
+                    reference,
+                    objects,
+                    architecture.universe,
+                    core,
+                    c,
+                )?
+            } else {
+                internal_arrow_diagram::retain(
+                    g,
+                    inputs.clone(),
+                    reference,
+                    objects,
+                    architecture.universe,
+                    c,
+                )?
+            });
             views = Some(view_invariant::retain(env, g, objects.base, c)?);
         }
         if let Some(table) = &laws {
@@ -184,6 +237,7 @@ pub(super) fn prepare_architecture(
     let boundary = Boundary::capture(env, g, reference, dependencies, c)?;
     tick(c)?;
     Ok(Plan {
+        assembly: None,
         architecture,
         objects,
         patterns,

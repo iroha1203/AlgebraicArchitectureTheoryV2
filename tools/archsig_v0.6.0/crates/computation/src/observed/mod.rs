@@ -2,6 +2,8 @@
 
 mod affine;
 mod architecture_result;
+mod assembly_output;
+mod assembly_plan;
 mod call;
 mod circuit_pattern;
 pub(crate) mod construction_result;
@@ -23,6 +25,7 @@ mod law_instantiation;
 mod law_proposition;
 mod law_table;
 mod local_result;
+mod model_assembly;
 mod needed;
 mod numeric;
 pub mod numeric_transport;

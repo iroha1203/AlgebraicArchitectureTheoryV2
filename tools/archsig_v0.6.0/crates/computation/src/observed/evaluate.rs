@@ -2428,13 +2428,48 @@ impl Evaluator<'_, '_> {
             field: Some(field.name.clone()),
             atom: None,
         });
-        if let Some((assigned, _)) = self.environment.state.architecture_value(&fact) {
+        if let Some(assigned) = self.environment.state.architecture_value_reference(&fact) {
+            let support = self.graph.get(assigned)?.support.to_vec();
             return self.finish(
                 span,
                 field.ty.erase(),
                 Some(assigned),
                 vec![base],
-                vec![],
+                support,
+                None,
+                None,
+                None,
+            );
+        }
+        if let Some((value, known_fact)) = self.environment.object_field_value(&fact)? {
+            let analysis = self
+                .environment
+                .analyze_source(self.graph, span, &self.bindings)?;
+            let scope = analysis
+                .scalar_scope
+                .ok_or_else(|| Failure::Internal(internal!("対象fieldの値Scopeがない")))?;
+            let mut arguments = vec![reference];
+            let rule = if chain {
+                arguments.push(
+                    self.sources
+                        .get(&span)
+                        .ok_or_else(|| Failure::Internal(internal!("対象fieldの元出現がない")))?
+                        .expression,
+                );
+                Rule::Input {
+                    kind: "law",
+                    location: Location::Law { span },
+                }
+            } else {
+                Rule::Construction("object_field")
+            };
+            let value = self.value(value, rule, arguments, vec![known_fact.clone()], scope)?;
+            return self.finish(
+                span,
+                field.ty.erase(),
+                Some(value),
+                vec![base],
+                vec![known_fact],
                 None,
                 None,
                 None,
@@ -3052,6 +3087,7 @@ fn evaluate_observed_with_reuse(
                 || matches!(
                     request.kind,
                     QuestionKind::Build
+                        | QuestionKind::Assemble
                         | QuestionKind::Solve
                         | QuestionKind::Repair
                         | QuestionKind::Quotient
@@ -3064,7 +3100,7 @@ fn evaluate_observed_with_reuse(
             {
                 let evaluate = if super::request::shared_repair_request(request) {
                     super::repair_problem::evaluate
-                } else if request.kind == QuestionKind::Build {
+                } else if matches!(request.kind, QuestionKind::Build | QuestionKind::Assemble) {
                     super::build_result::evaluate
                 } else if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair) {
                     super::change_result::evaluate

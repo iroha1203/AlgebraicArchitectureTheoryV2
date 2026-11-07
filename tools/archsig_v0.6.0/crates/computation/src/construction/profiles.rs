@@ -2,6 +2,24 @@
 use super::maps::ObjectIdentity;
 use super::*;
 
+#[cfg(test)]
+type ProfileProbe = Box<dyn FnMut(&ConfigurationConstruction)>;
+#[cfg(test)]
+thread_local! { static PROFILE_PROBE: std::cell::RefCell<Option<ProfileProbe>> = const {std::cell::RefCell::new(None)}; }
+#[cfg(test)]
+pub(crate) struct ProfileObserver(Option<ProfileProbe>);
+#[cfg(test)]
+impl Drop for ProfileObserver {
+    fn drop(&mut self) {
+        PROFILE_PROBE.with(|p| p.replace(self.0.take()));
+    }
+}
+#[cfg(test)]
+pub(crate) fn observe_profiles(
+    probe: impl FnMut(&ConfigurationConstruction) + 'static,
+) -> ProfileObserver {
+    ProfileObserver(PROFILE_PROBE.with(|p| p.replace(Some(Box::new(probe)))))
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CircuitQuery<'a> {
     Atom {
@@ -110,7 +128,7 @@ impl ConfigurationProfile {
 /// 同じpatternの行を群にしても、対象や読取りのidentityを統合しない。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ConfigurationProfiles {
-    construction: ConfigurationConstruction,
+    construction: std::sync::Arc<ConfigurationConstruction>,
     profiles: Vec<ConfigurationProfile>,
     known_classes: Vec<Vec<usize>>,
 }
@@ -140,16 +158,14 @@ impl ConfigurationProfiles {
         inputs: &CheckedInputs,
         control: &Control,
     ) -> Result<(), ConstructionFailure> {
-        let root = self.construction.root();
-        if self
-            != &construct_profiles(
-                inputs,
-                self.construction.reading(),
-                &root.snapshot,
-                &root.subject,
-                control,
-            )?
-        {
+        self.construction.recheck(
+            inputs,
+            self.construction.reading(),
+            &self.construction.root().snapshot,
+            &self.construction.root().subject,
+            control,
+        )?;
+        if self != &construct_profiles_for(inputs, self.construction.clone(), control)? {
             return Err(ConstructionFailure::Inconsistent(internal!(
                 "適用域・query pattern・対象群が現在入力と違う"
             )));
@@ -231,7 +247,22 @@ pub fn construct_profiles(
     control: &Control,
 ) -> Result<ConfigurationProfiles, ConstructionFailure> {
     check(control)?;
-    let construction = construct(inputs, reading, snapshot, root, control)?;
+    let construction = std::sync::Arc::new(construct(inputs, reading, snapshot, root, control)?);
+    construct_profiles_for(inputs, construction, control)
+}
+/// The caller already constructed or rechecked this immutable configuration against inputs.
+pub(crate) fn construct_profiles_for(
+    inputs: &CheckedInputs,
+    construction: std::sync::Arc<ConfigurationConstruction>,
+    control: &Control,
+) -> Result<ConfigurationProfiles, ConstructionFailure> {
+    check(control)?;
+    #[cfg(test)]
+    PROFILE_PROBE.with_borrow_mut(|probe| {
+        if let Some(probe) = probe {
+            probe(&construction);
+        }
+    });
     let mut profiles = Vec::new();
     let base_pattern = construction
         .base()
@@ -239,7 +270,7 @@ pub fn construct_profiles(
         .map(|c| pattern(c, construction.universe(), control))
         .transpose()?;
     profiles.push(ConfigurationProfile {
-        object: ObjectIdentity::selected(reading, construction.root(), construction.root()),
+        object: ObjectIdentity::constructed(&construction, construction.root()),
         configuration: construction.base().clone(),
         domain: construction.local_domain().clone(),
         membership: None,
@@ -296,7 +327,7 @@ pub fn construct_profiles(
             None
         };
         profiles.push(ConfigurationProfile {
-            object: ObjectIdentity::selected(reading, construction.root(), &subject),
+            object: ObjectIdentity::constructed(&construction, &subject),
             configuration: candidate,
             domain: SubjectDomain {
                 known: vec![subject],
@@ -350,12 +381,7 @@ mod tests {
             (b.clone(), a.clone()),
             (b.clone(), b.clone()),
         ];
-        let c = Configuration {
-            family: vec![a.clone()],
-            requirements: vec![],
-            relations: pairs.clone(),
-            identifications: pairs,
-        };
+        let c = Configuration::new(vec![a.clone()], vec![], pairs.clone(), pairs);
         let p = pattern(&c, &[a, b], &Control::unlimited()).unwrap();
         assert_eq!(p.membership(), [true, false]);
         assert_eq!(p.relations(), [true, false, false, false]);

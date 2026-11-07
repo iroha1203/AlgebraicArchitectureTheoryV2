@@ -167,11 +167,39 @@ impl Part {
         self.wire_ref().and_then(EvidenceKind::from_wire)
     }
 }
+// Only assembly requests retain deferred actions; ordinary Part keeps its size.
+#[derive(Debug, PartialEq, Eq)]
+pub(super) struct Parts {
+    nodes: Vec<Part>,
+    pub(super) actions: super::assembly_output::Actions,
+}
+impl From<Vec<Part>> for Parts {
+    fn from(nodes: Vec<Part>) -> Self {
+        Self {
+            nodes,
+            actions: vec![],
+        }
+    }
+}
+impl Parts {
+    fn action(&self, index: usize) -> Option<&super::assembly_output::Action> {
+        self.actions
+            .binary_search_by_key(&index, |(at, _)| *at)
+            .ok()
+            .map(|at| &self.actions[at].1)
+    }
+}
+impl std::ops::Deref for Parts {
+    type Target = Vec<Part>;
+    fn deref(&self) -> &Self::Target {
+        &self.nodes
+    }
+}
 #[derive(Debug)]
 pub(super) struct Source {
     plan: Plan,
     base: usize,
-    parts: Vec<Part>,
+    parts: Parts,
     answer: Answer,
 }
 #[derive(Clone, Debug)]
@@ -199,7 +227,25 @@ impl Data {
         self.part().construction
     }
     pub(super) fn wire(&self) -> Json {
-        self.part().wire()
+        let mut wire = self.part().wire();
+        if let Some(action) = self.source.parts.action(self.index) {
+            let Json::Obj(fields) = &mut wire else {
+                unreachable!("作用は型付きrecordである")
+            };
+            fields.insert(
+                "images".into(),
+                Json::Arr(action.images().iter().map(Fact::wire).collect()),
+            );
+        }
+        wire
+    }
+    #[cfg(test)]
+    pub(super) fn assembly_model(&self) -> Option<&Arc<super::model_assembly::Model>> {
+        self.source.plan.assembly.as_ref()?.model.as_ref()
+    }
+    #[cfg(test)]
+    pub(super) fn assembly_action_is_lazy(&self) -> Option<bool> {
+        self.source.parts.action(self.index).map(|_| matches!(self.part().wire_ref(),Some(Json::Obj(fields)) if !fields.contains_key("images")))
     }
     pub(super) fn arguments(&self) -> Vec<NodeRef> {
         self.part().arguments.clone()
@@ -215,6 +261,53 @@ impl Data {
     }
     pub(super) fn plan(&self) -> &Plan {
         &self.source.plan
+    }
+    pub(super) fn assembly_projection_type(&self) -> Option<super::projection::ProjectionType> {
+        use super::projection::{MapProjection, ProjectionType as P};
+        self.source.plan.assembly.as_ref()?;
+        let r = super::construction_result::Witness::Architecture(
+            self.source.plan.architecture.witness.clone(),
+        );
+        let shape = super::request::assembly_shape(r.inputs().law(), r.request()).ok()?;
+        Some(match self.ty() {
+            NodeType::Construction(T::ModelAssembly) => P::ModelAssembly(shape),
+            NodeType::Construction(T::AtomMap) => P::AtomMap,
+            NodeType::Construction(T::MapCandidate) => P::MapCandidate(MapProjection {
+                declaration: String::new(),
+                source: shape.root.clone(),
+                target: shape.root,
+            }),
+            NodeType::Construction(T::ConfigurationMap) => P::ConfigurationMap(MapProjection {
+                declaration: String::new(),
+                source: shape.root.clone(),
+                target: shape.root,
+            }),
+            _ => return None,
+        })
+    }
+    pub(super) fn assembly_project(
+        &self,
+        path: &[super::projection::ProjectionStep],
+    ) -> Option<(NodeRef, usize)> {
+        use super::projection::ProjectionStep as P;
+        self.assembly_projection_type()?;
+        let mut value = self.part().wire_ref()?;
+        for (index, step) in path.iter().enumerate() {
+            value = match (value, step) {
+                (Json::Obj(fields), P::Field(field)) => fields.get(field)?,
+                (Json::Arr(items), P::Index(at)) => items.get(usize::try_from(*at).ok()?)?,
+                _ => return None,
+            };
+            if let Some(at) = value.exact_node_reference() {
+                let reference = NodeRef(at);
+                return self
+                    .part()
+                    .arguments
+                    .contains(&reference)
+                    .then_some((reference, index + 1));
+            }
+        }
+        None
     }
     pub(super) fn algebra_base(&self) -> Option<NodeRef> {
         (self.ty() == NodeType::Construction(T::ObjectAlgebra))
@@ -330,6 +423,74 @@ impl Builder<'_> {
         });
         Ok(r)
     }
+    pub(super) fn field_source(
+        &mut self,
+        env: &Environment<'_>,
+        position: &Fact,
+        ty: &Type,
+        location: &Location,
+        reading: &str,
+        arguments: Vec<NodeRef>,
+    ) -> Result<NodeRef, ValidationFailure> {
+        let subject = env.indexes.subject(&position.snapshot, &position.subject)?;
+        let field = subject
+            .fields
+            .iter()
+            .find(|f| Some(&f.name) == position.field.as_ref())
+            .ok_or(internal!("元fieldの位置がない"))?;
+        let mut existence = position.clone();
+        existence.field = None;
+        existence.atom = None;
+        let binding = self.scalar(
+            NodeType::Value(Type::Ref(subject.ty.to_string())),
+            "binding",
+            Scalar::Subject {
+                snapshot: subject.snapshot.clone(),
+                subject: subject.id.clone(),
+                entity: subject.ty.to_string(),
+            },
+            arguments,
+        )?;
+        let part = &mut self.parts[binding.0 - self.base];
+        part.support.push(existence);
+        part.support.sort();
+        part.support.dedup();
+        part.scope
+            .merge(&env.indexes.scope(subject, reading, None)?);
+        let expression = self.push(
+            NodeType::Expression(ty.clone()),
+            "expression",
+            Json::obj([
+                ("kind", Json::str("source")),
+                ("location", archsig_input::result::location_wire(location)),
+                ("parameters", Json::Arr(vec![])),
+                (
+                    "bindings",
+                    Json::Arr(vec![Json::obj([
+                        ("name", Json::str("on")),
+                        ("value", binding.wire()),
+                    ])]),
+                ),
+            ]),
+            vec![binding],
+            None,
+        )?;
+        let (origin, atom) = match &field.slot {
+            archsig_input::archmap::Slot::Known { origin, atom, .. } => {
+                (Some(origin.as_str()), Some(atom.clone()))
+            }
+            _ => (None, None),
+        };
+        let mut position = position.clone();
+        position.atom = atom;
+        let part = &mut self.parts[expression.0 - self.base];
+        part.support.push(position);
+        part.support.sort();
+        part.support.dedup();
+        part.scope
+            .merge(&env.indexes.scope(subject, reading, origin)?);
+        Ok(expression)
+    }
     fn expression(
         &mut self,
         operation: &str,
@@ -388,7 +549,7 @@ fn compute(
     base: usize,
     request: &Request,
     c: &Control,
-) -> Result<(Vec<Part>, Answer), ValidationFailure> {
+) -> Result<(Parts, Answer), ValidationFailure> {
     env.validation_graph_session(g, || compute_inner(env, g, plan, base, request, c))
 }
 
@@ -399,13 +560,17 @@ fn compute_inner(
     base: usize,
     request: &Request,
     c: &Control,
-) -> Result<(Vec<Part>, Answer), ValidationFailure> {
+) -> Result<(Parts, Answer), ValidationFailure> {
     tick(c)?;
+    if plan.assembly.as_ref().is_some_and(|a| a.failure.is_some()) {
+        return super::assembly_output::failed(env, plan, request, base, g);
+    }
     let mut b = Builder {
         g,
         base,
         parts: vec![],
     };
+    let mut deferred_actions = Vec::new();
     let mut dependencies = plan.boundary.inputs().to_vec();
     let mut status = Decision::Established;
     let mut reasons = plan.architecture.reasons.clone();
@@ -485,7 +650,7 @@ fn compute_inner(
                     dependencies.dedup();
                     reasons.push(Reason {
                         kind: ReasonKind::UnsupportedAlgorithm {
-                            question: super::request::QuestionKind::Build,
+                            question: request.kind,
                             operand_types: vec![Type::Z, Type::Z],
                             method: "integer_order_equation_presentation".into(),
                         },
@@ -504,9 +669,9 @@ fn compute_inner(
             matches!(
                 reason.kind,
                 ReasonKind::UnsupportedAlgorithm {
-                    question: super::request::QuestionKind::Build,
+                    question,
                     ..
-                }
+                } if question == request.kind
             )
         })
         && let Some(boundary) = &plan.finite_boundary
@@ -550,14 +715,22 @@ fn compute_inner(
                 location.ok_or(internal!("非有限域の元定義fieldがない"))?
             }
         };
+        let expression = b.field_source(
+            env,
+            position,
+            boundary.ty(),
+            &location,
+            plan.architecture.witness.construction().reading(),
+            vec![plan.architecture.reference],
+        )?;
         reasons.push(Reason {
             kind: ReasonKind::UnsupportedAlgorithm {
-                question: super::request::QuestionKind::Build,
+                question: request.kind,
                 operand_types: vec![boundary.ty().clone()],
                 method: "finite_primitive_domain".into(),
             },
             request: request.id.clone(),
-            dependencies: vec![plan.architecture.reference],
+            dependencies: vec![expression],
             missing: vec![],
             location: Some(location),
         });
@@ -828,7 +1001,7 @@ fn compute_inner(
     }
     dependencies.extend(failed_conditions);
     dependencies.extend(evidence.iter().copied());
-    let claim = b.proposition("constructible", operands, dependencies.clone(), status)?;
+    let mut claim = b.proposition("constructible", operands, dependencies.clone(), status)?;
     // neededと回答は、構成命題に保持した同じ理由を読む。
     let proposition = &mut b.parts[claim.0 - base];
     proposition.evidence = evidence.clone();
@@ -927,10 +1100,24 @@ fn compute_inner(
             None,
         )?;
         outputs.insert("algebra".into(), algebra);
+        if plan.assembly.is_some() {
+            let (assembly, assembly_claim, actions) =
+                super::assembly_output::append(env, plan, request, &mut b, algebra, claim, c)?;
+            deferred_actions = actions;
+            claim = assembly_claim;
+            outputs.insert("assembly".into(), assembly);
+            outputs.insert("proposition".into(), claim);
+        }
+    }
+    if plan.assembly.is_some() && status != Decision::Established {
+        outputs.remove("object");
     }
     let scope = b.parts[claim.0 - base].scope.clone();
     Ok((
-        b.parts,
+        Parts {
+            nodes: b.parts,
+            actions: deferred_actions,
+        },
         Answer {
             id: request.id.clone(),
             status,
@@ -962,7 +1149,11 @@ fn evaluate_inner(
     if let Some(answer) = super::public_map::unavailable(env, g, request)? {
         return Ok(answer);
     }
-    let plan = build_plan::prepare(env, g, prepared.shared_inputs(), request, c)?;
+    let plan = if request.kind == super::request::QuestionKind::Assemble {
+        super::assembly_plan::prepare(prepared, env, g, request, c)?
+    } else {
+        build_plan::prepare(env, g, prepared.shared_inputs(), request, c)?
+    };
     retain_plan(env, g, plan, request, c)
 }
 
@@ -1117,11 +1308,14 @@ pub(super) fn validate_answer(
 pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), ValidationFailure> {
     let ReasonKind::ConditionFailed {
         condition,
-        construction: "object_algebra",
+        construction,
     } = reason.kind
     else {
         return Err(internal!("buildの構成条件失敗が別種").into());
     };
+    if !matches!(construction, "object_algebra" | "model_assembly") {
+        return Err(internal!("buildの構成反証が別種").into());
+    }
     let node = g.get(condition)?;
     let Some(Payload::Construction(v)) = &node.payload else {
         return Err(internal!("buildの条件命題がnativeでない").into());
@@ -1162,6 +1356,7 @@ impl super::result_kind::ResultKind for Data {
                     if let Some(Payload::Construction(v)) = &node.payload
                         && v.witness.request() == request
                         && matches!(v.data, D::Architecture { .. })
+                        && request.kind != super::request::QuestionKind::Assemble
                     {
                         outputs.insert("object".into(), NodeRef(index));
                         scope.merge(&node.scope);

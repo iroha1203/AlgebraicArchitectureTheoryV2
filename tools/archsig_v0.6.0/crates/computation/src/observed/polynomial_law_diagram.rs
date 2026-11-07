@@ -9,7 +9,7 @@ use super::{
     equation_polynomial::EquationPolynomial,
     object_equation_presentation::{
         EquationGuard, EquationPresentation, EquationPresentationFailure,
-        EquationPresentationStatus, object_equation_presentation,
+        EquationPresentationStatus,
     },
     result::*,
 };
@@ -1544,12 +1544,22 @@ fn metadata(
     core: Option<&EquationPresentation>,
     c: &Control,
 ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+    metadata_for_cores(inputs, a, core.into_iter(), c)
+}
+fn metadata_for_cores<'a>(
+    inputs: &CheckedInputs,
+    a: &Arc<ArchitectureWitness>,
+    cores: impl Iterator<Item = &'a EquationPresentation>,
+    c: &Control,
+) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+    let mut cores = cores.peekable();
+    let has_core = cores.peek().is_some();
     let (mut support, mut scope) = native::metadata(&ConstructionValue {
         witness: Witness::Architecture(a.clone()),
         data: D::ConstructionLabel(Scalar::Text("polynomial_law".into())),
     })?;
     let env = Environment::new(inputs, c)?;
-    for ring in core.into_iter().flat_map(|core| core.rings()) {
+    for ring in cores.flat_map(|core| core.rings()) {
         for symbol in &ring.symbols {
             tick(c)?;
             let slot = env.indexes.field(
@@ -1600,7 +1610,7 @@ fn metadata(
     support.sort_by_key(|f| f.wire().canonical());
     support.dedup();
     scope.assignments = true;
-    if core.is_some() {
+    if has_core {
         super::equation_presentation_node::global_metadata(a, &mut support, &mut scope)?;
     }
     tick(c)?;
@@ -1676,46 +1686,72 @@ fn unavailable(e: &super::object_evaluate::ObjectEvaluationFailure) -> Option<Un
         _ => None,
     }
 }
+type CalculationBase = Result<Arc<super::object_law_residuals::ObjectLawResiduals>, Unavailable>;
+fn calculation_base(
+    inputs: Arc<CheckedInputs>,
+    a: &Arc<ArchitectureWitness>,
+    c: &Control,
+) -> Result<CalculationBase, ValidationFailure> {
+    tick(c)?;
+    let compatibility = super::object_law_compatibility::object_law_compatibility_with(
+        inputs.clone(),
+        a.shared_profiles(c).map_err(|e| construction_failure(&e))?,
+        a.shared_readings(),
+        c,
+    )
+    .map_err(super::object_law_residuals::ObjectLawResidualsFailure::Original);
+    match compatibility
+        .and_then(|base| super::object_law_residuals::residuals_from_base(inputs, base, c))
+    {
+        Ok(base) => Ok(Ok(Arc::new(base))),
+        Err(e) => {
+            if let Some(stop) = c.stop_reason() {
+                return Err(ValidationFailure::Stop(stop));
+            }
+            let reason = match &e {
+                super::object_law_residuals::ObjectLawResidualsFailure::Original(e) => {
+                    unavailable(e.cause())
+                }
+                _ => None,
+            };
+            match reason {
+                Some(reason) => Ok(Err(reason)),
+                None => Err(failed(EquationPresentationFailure::Original(e), c)),
+            }
+        }
+    }
+}
 fn calculate(
     inputs: Arc<CheckedInputs>,
     a: &Arc<ArchitectureWitness>,
     object: usize,
     c: &Control,
 ) -> Result<(Option<Arc<EquationPresentation>>, Option<Unavailable>), ValidationFailure> {
+    let base = calculation_base(inputs.clone(), a, c)?;
+    calculate_from_base(inputs, a, object, &base, c)
+}
+fn calculate_from_base(
+    inputs: Arc<CheckedInputs>,
+    a: &Arc<ArchitectureWitness>,
+    object: usize,
+    base: &CalculationBase,
+    c: &Control,
+) -> Result<(Option<Arc<EquationPresentation>>, Option<Unavailable>), ValidationFailure> {
     tick(c)?;
     if object >= a.readings().objects().len() {
         return Err(internal!("多項式の対象添字が域外").into());
     }
-    let root = a.construction().root();
-    match object_equation_presentation(
-        inputs,
-        a.construction().reading(),
-        &root.snapshot,
-        &root.subject,
-        object,
-        c,
-    ) {
-        Ok(core) => {
-            if core.base().base().readings() != a.readings() {
-                return Err(internal!("多項式が元対象族・readingと違う").into());
-            }
-            Ok((Some(Arc::new(core)), None))
-        }
+    let base = match base {
+        Ok(base) => base.clone(),
+        Err(reason) => return Ok((None, Some(reason.clone()))),
+    };
+    match super::object_equation_presentation::presentation_from_base(inputs, base, object, c) {
+        Ok(core) => Ok((Some(Arc::new(core)), None)),
         Err(e) => {
             if let Some(stop) = c.stop_reason() {
                 return Err(ValidationFailure::Stop(stop));
             }
-            let reason = match &e {
-                EquationPresentationFailure::Original(
-                    super::object_law_residuals::ObjectLawResidualsFailure::Original(e),
-                ) => unavailable(e.cause()),
-                _ => None,
-            };
-            if let Some(reason) = reason {
-                Ok((None, Some(reason)))
-            } else {
-                Err(failed(e, c))
-            }
+            Err(failed(e, c))
         }
     }
 }

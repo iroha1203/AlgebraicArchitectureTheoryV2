@@ -161,7 +161,12 @@ fn retained_architecture(g: &Graph, r: NodeRef) -> Result<Architecture, Validati
     let Some(Payload::Construction(v)) = &g.get(r)?.payload else {
         return Err(internal!("Architectureがnativeでない").into());
     };
-    let D::Architecture { root, .. } = v.data else {
+    let D::Architecture {
+        root,
+        ref overrides,
+        ..
+    } = v.data
+    else {
         return Err(internal!("mapの端点Architectureが未完成").into());
     };
     let universe = g.nodes.iter().enumerate().find_map(|(i,n)| match &n.payload {
@@ -174,6 +179,7 @@ fn retained_architecture(g: &Graph, r: NodeRef) -> Result<Architecture, Validati
         universe,
         complete: true,
         reasons: vec![],
+        overrides: overrides.clone(),
     })
 }
 pub(super) fn extend(

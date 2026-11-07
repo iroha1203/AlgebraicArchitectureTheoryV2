@@ -13,6 +13,7 @@ use archsig_input::{
     },
 };
 use std::collections::{BTreeMap, BTreeSet};
+mod assembly;
 mod build;
 pub(super) mod comparison;
 pub(super) mod composition;
@@ -23,6 +24,7 @@ mod repair_problem;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum QuestionKind {
+    Assemble,
     Build,
     Evaluate,
     Check,
@@ -45,6 +47,7 @@ impl QuestionKind {
     pub fn wire(self) -> &'static str {
         match self {
             Self::Build => "build",
+            Self::Assemble => "assemble",
             Self::Evaluate => "evaluate",
             Self::Check => "check",
             Self::Needed => "needed",
@@ -420,6 +423,7 @@ fn resolve_inner(
         }
         let kind = match raw.kind.as_str() {
             "build" => QuestionKind::Build,
+            "assemble" => QuestionKind::Assemble,
             "prepare" => QuestionKind::Prepare,
             "observe" => QuestionKind::Observe,
             "scopes" => QuestionKind::Scopes,
@@ -445,6 +449,12 @@ fn resolve_inner(
                 )));
             }
         };
+        if kind == QuestionKind::Assemble {
+            let request = assembly::resolve(law, raw, text, control)?;
+            names.insert(request.id.clone(), requests.len());
+            requests.push(request);
+            continue;
+        }
         if kind == QuestionKind::Observe {
             let request = observation::resolve(law, raw, text, control)?;
             names.insert(request.id.clone(), requests.len());
@@ -972,6 +982,10 @@ fn resolve_inner(
         checkpoint(control)?;
         phase(control, Checkpoint::RequestBinding)?;
         let req = &requests[i];
+        if req.kind == QuestionKind::Assemble {
+            requests[i].constraints = assembly::check(law, map, &requests, &names, req, control)?;
+            continue;
+        }
         if matches!(req.kind, QuestionKind::Localize | QuestionKind::Diagnose) {
             requests[i].constraints = local::check(law, map, &requests, &names, req, control)?;
             continue;
@@ -1455,7 +1469,9 @@ fn selector_type(
             // 保持するのは署名と選択された Request の束縛だけであり、view の本体を
             // 評価して参照値を推測しない。後方参照でも同じ有限な表を参照する。
             owners = owner_bindings(r, control)?;
-            let initial = if r.kind == QuestionKind::Prepare || repair_problem::is_custom(r) {
+            let initial = if r.kind == QuestionKind::Assemble {
+                assembly::output_type(law, r, field)?
+            } else if r.kind == QuestionKind::Prepare || repair_problem::is_custom(r) {
                 repair_problem::output_type(law, map, requests, names, r, field, control)?
             } else if r.kind == QuestionKind::Build {
                 build::output_type(law, map, requests, names, r, field, control)?
@@ -2362,4 +2378,19 @@ pub(super) fn repair_projection(
 
 pub(super) fn shared_repair_request(r: &Request) -> bool {
     r.kind == QuestionKind::Prepare || repair_problem::is_custom(r)
+}
+
+pub(super) fn assembly_projection(
+    law: &CheckedLaw,
+    ty: &ProjectionType,
+    path: &[ProjectionStep],
+    c: &Control,
+) -> Option<Result<(ProjectionPlan, usize), super::projection::ProjectionFailure>> {
+    assembly::project(law, ty, path, c)
+}
+pub(super) fn assembly_shape(
+    law: &CheckedLaw,
+    r: &Request,
+) -> Result<super::projection::AssemblyProjection, ResolveFailure> {
+    assembly::shape(law, r)
 }

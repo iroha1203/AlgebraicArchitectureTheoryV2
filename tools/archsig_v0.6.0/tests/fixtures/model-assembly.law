@@ -1,0 +1,11 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Assembly {
+  use vocabulary Assemble version "1" digest "@ASSEMBLE_DIGEST@";
+  view amount(p:Part):Z = p.quantity;
+  view ownerOf(p:Part):Root = p.owner;
+  view fragments(a:Root,b:Root,ma:Part,mb:Part):Set<Root> = set<Root>{a,b};
+  view interfaces(a:Root,b:Root,ma:Part,mb:Part):List<(Part,Part)> = list<(Part,Part)>[(ma,mb)];
+  view singleton(p:Part):Set<Part> = set<Part>{p};
+  change choose(p:Part,q:Bool) = p with {quantity=if q then 1 else 0};
+  law required zero(p:Part):p.quantity=0;
+}

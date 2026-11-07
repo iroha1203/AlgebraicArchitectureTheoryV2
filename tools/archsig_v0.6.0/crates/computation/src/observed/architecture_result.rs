@@ -83,18 +83,40 @@ pub(super) struct Architecture {
     pub(super) universe: NodeRef,
     pub(super) complete: bool,
     pub(super) reasons: Vec<Reason>,
+    pub(super) overrides: Arc<Vec<(usize, NodeRef, NodeRef)>>,
 }
 pub(super) fn architecture(
     graph: &mut Graph,
     witness: Arc<ArchitectureWitness>,
     control: &Control,
 ) -> Result<Architecture, ValidationFailure> {
-    architecture_with_root(graph, witness, None, control)
+    architecture_with_root(graph, witness, None, None, control)
+}
+pub(super) fn restriction(
+    graph: &mut Graph,
+    witness: Arc<ArchitectureWitness>,
+    parent: &Architecture,
+    control: &Control,
+) -> Result<Architecture, ValidationFailure> {
+    if !witness
+        .override_parent()
+        .is_some_and(|p| Arc::ptr_eq(p, &parent.witness))
+    {
+        return Err(internal!("再制限の輸送値の親が違う").into());
+    }
+    architecture_with_root(
+        graph,
+        witness,
+        None,
+        Some(parent.overrides.clone()),
+        control,
+    )
 }
 fn architecture_with_root(
     graph: &mut Graph,
     witness: Arc<ArchitectureWitness>,
     selected_root: Option<NodeRef>,
+    inherited: Option<Arc<Vec<(usize, NodeRef, NodeRef)>>>,
     control: &Control,
 ) -> Result<Architecture, ValidationFailure> {
     tick(control)?;
@@ -245,6 +267,21 @@ fn architecture_with_root(
     }
     sort_reasons(&mut reasons);
     let complete = construction.base().configuration().is_some() && laws_complete;
+    let overrides = if let Some(inherited) = inherited {
+        inherited
+    } else {
+        let mut overrides = Vec::new();
+        for (index, (fact, _)) in a.overrides().iter().enumerate() {
+            tick(control)?;
+            let mut subject = fact.clone();
+            subject.field = None;
+            subject.atom = None;
+            let subject = raw(graph, &witness, &subject)?;
+            let value = put(graph, &witness, D::ConstructedField { index }, vec![])?;
+            overrides.push((index, subject, value));
+        }
+        Arc::new(overrides)
+    };
     let data = if complete {
         D::Architecture {
             reading: construction.reading().into(),
@@ -252,6 +289,7 @@ fn architecture_with_root(
             configuration,
             laws,
             arrows,
+            overrides: overrides.clone(),
         }
     } else {
         let mut parts = vec![
@@ -284,6 +322,7 @@ fn architecture_with_root(
         universe,
         complete,
         reasons,
+        overrides,
     })
 }
 
@@ -297,7 +336,10 @@ fn request_reading<'a>(
     };
     match request.kind {
         QuestionKind::Build => Ok(name),
-        QuestionKind::Solve | QuestionKind::Repair | QuestionKind::Prepare => inputs
+        QuestionKind::Solve
+        | QuestionKind::Repair
+        | QuestionKind::Prepare
+        | QuestionKind::Assemble => inputs
             .law()
             .declarations()
             .get(name)
@@ -326,8 +368,40 @@ pub(super) fn build(
     environment.with_request_context(graph, request, || Ok(()))?;
     let root = selected_build(environment, graph, request)?;
     let reading = request_reading(&inputs, request)?.to_owned();
-    let witness =
-        ArchitectureWitness::compute(inputs, request, &reading, &root, control).map_err(failure)?;
+    // 組立て済みの所属域・参照輸送を、後続の変更で原始rootの域へ戻さない。
+    let mut inherited = None;
+    if let Some(argument) = request.arguments.iter().find(|a| a.name == "on") {
+        if matches!(argument.value, Selector::Answer { .. }) {
+            if let AnswerBinding::Reference(reference) =
+                environment.answer_binding(graph, &argument.value, (0, 0))?
+            {
+                let node = graph.get(reference)?;
+                if node.ty == NodeType::Construction(T::Architecture) {
+                    environment.validate_at(graph, node, reference.0)?;
+                    if let Some(Payload::Construction(value)) = &node.payload {
+                        if let Witness::Architecture(w) = &value.witness {
+                            if w.construction().transport().is_some() {
+                                if w.construction().reading() != reading
+                                    || w.construction().root() != &root
+                                {
+                                    return Err(internal!(
+                                        "組立て対象のreading・rootが後続要求と違う"
+                                    )
+                                    .into());
+                                }
+                                inherited = Some(w.rebind(request));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    let witness = match inherited {
+        Some(w) => w,
+        None => ArchitectureWitness::compute(inputs, request, &reading, &root, control)
+            .map_err(failure)?,
+    };
     let on = &request
         .arguments
         .iter()
@@ -349,7 +423,7 @@ pub(super) fn build(
         }
         _ => None,
     };
-    architecture_with_root(graph, witness, selected_root, control)
+    architecture_with_root(graph, witness, selected_root, None, control)
 }
 
 fn selected_root_reference(
@@ -522,7 +596,7 @@ pub(super) fn validate_build_origin(
             return Err(internal!("owner補完Architectureの再構成が違う").into());
         }
     }
-    if a.construction().root() != &root || a.construction().reading() != reading {
+    if a.selected_root() != &root || a.construction().reading() != reading {
         return Err(internal!("build構成が元root・readingに属さない").into());
     }
     Ok(())

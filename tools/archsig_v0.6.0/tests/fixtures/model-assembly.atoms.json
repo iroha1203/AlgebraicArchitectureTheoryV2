@@ -1,0 +1,91 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Assemble",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Assemble.Root",
+          "meaning": "担当別と組立て先のモデル。",
+          "parameters": [],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Assemble.Part",
+          "meaning": "担当が記述する個体。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Assemble.Root"
+              ],
+              "meaning": "担当モデル。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "quantity",
+              "type": "Z",
+              "meaning": "既知の量。"
+            },
+            {
+              "name": "links",
+              "type": [
+                "List",
+                [
+                  "Ref",
+                  "Assemble.Part"
+                ]
+              ],
+              "meaning": "位置を保つ参照。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "arrow",
+          "name": "Assemble.Step",
+          "meaning": "個体間の名前付き操作。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Assemble.Root"
+              ],
+              "meaning": "担当モデル。"
+            },
+            {
+              "name": "from",
+              "type": [
+                "Owned",
+                "Assemble.Part",
+                "owner"
+              ],
+              "meaning": "始域。"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Owned",
+                "Assemble.Part",
+                "owner"
+              ],
+              "meaning": "終域。"
+            }
+          ],
+          "fields": [],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

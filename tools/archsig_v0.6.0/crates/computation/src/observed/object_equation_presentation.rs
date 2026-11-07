@@ -323,7 +323,7 @@ pub struct EquationOccurrence {
 }
 #[derive(Debug)]
 pub struct EquationPresentation {
-    base: ObjectLawResiduals,
+    base: Arc<ObjectLawResiduals>,
     object: usize,
     rings: Vec<EquationRing>,
     occurrences: Vec<EquationOccurrence>,
@@ -371,12 +371,9 @@ impl EquationPresentation {
         self.base
             .recheck(Arc::clone(&inputs), c)
             .map_err(EquationPresentationFailure::Original)?;
-        let root = self.base.base().readings().construction().root();
-        let expected = object_equation_presentation(
+        let expected = object_equation_presentation_on(
             inputs,
-            self.base.base().readings().construction().reading(),
-            &root.snapshot,
-            &root.subject,
+            self.base.base().readings().shared_construction(),
             self.object,
             c,
         )?;
@@ -1538,6 +1535,25 @@ pub fn object_equation_presentation(
 ) -> Result<EquationPresentation, EquationPresentationFailure> {
     let base = object_law_residuals(Arc::clone(&inputs), reading, snapshot, root, c)
         .map_err(EquationPresentationFailure::Original)?;
+    presentation_from_base(inputs, Arc::new(base), object, c)
+}
+pub(crate) fn object_equation_presentation_on(
+    inputs: Arc<CheckedInputs>,
+    construction: Arc<crate::construction::ConfigurationConstruction>,
+    object: usize,
+    c: &Control,
+) -> Result<EquationPresentation, EquationPresentationFailure> {
+    let base =
+        super::object_law_residuals::object_law_residuals_on(inputs.clone(), construction, c)
+            .map_err(EquationPresentationFailure::Original)?;
+    presentation_from_base(inputs, Arc::new(base), object, c)
+}
+pub(crate) fn presentation_from_base(
+    inputs: Arc<CheckedInputs>,
+    base: Arc<ObjectLawResiduals>,
+    object: usize,
+    c: &Control,
+) -> Result<EquationPresentation, EquationPresentationFailure> {
     if object >= base.base().readings().objects().len() {
         return Err(EquationPresentationFailure::Selection(
             ConstructionFailure::InvalidSelection("方程式表示の対象添字が域外".into()),

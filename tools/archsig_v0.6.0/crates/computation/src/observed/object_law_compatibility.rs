@@ -15,9 +15,7 @@ use super::{
 };
 use crate::{
     construction::{
-        ConstructionFailure,
-        profiles::{ConfigurationProfiles, construct_profiles},
-        readings::{ObjectReadingInstances, object_reading_instances},
+        ConstructionFailure, profiles::ConfigurationProfiles, readings::ObjectReadingInstances,
     },
     observed::object_evaluation_table::ObjectEvaluationPosition,
 };
@@ -144,8 +142,8 @@ impl LawPatternComparison {
 #[derive(Debug)]
 pub struct ObjectLawCompatibility {
     inputs: Arc<CheckedInputs>,
-    profiles: ConfigurationProfiles,
-    readings: ObjectReadingInstances,
+    profiles: Arc<ConfigurationProfiles>,
+    readings: Arc<ObjectReadingInstances>,
     laws: Vec<usize>,
     evaluations: Vec<LawReadingEvaluation>,
     comparisons: Vec<LawPatternComparison>,
@@ -177,14 +175,15 @@ impl ObjectLawCompatibility {
         inputs: Arc<CheckedInputs>,
         c: &Control,
     ) -> Result<(), ObjectLawCompatibilityFailure> {
-        let root = self.readings.construction().root();
-        let expected = object_law_compatibility(
-            inputs,
-            self.readings.construction().reading(),
-            &root.snapshot,
-            &root.subject,
+        let construction = self.readings.shared_construction();
+        construction.recheck(
+            &inputs,
+            construction.reading(),
+            &construction.root().snapshot,
+            &construction.root().subject,
             c,
         )?;
+        let expected = object_law_compatibility_on(inputs, self.readings.shared_construction(), c)?;
         match same(self, &expected, c) {
             Ok(true) => Ok(()),
             other => Err(ObjectLawCompatibilityFailure {
@@ -500,8 +499,34 @@ pub fn object_law_compatibility(
     c: &Control,
 ) -> Result<ObjectLawCompatibility, ObjectLawCompatibilityFailure> {
     tick(c)?;
-    let profiles = construct_profiles(&inputs, reading, snapshot, root, c)?;
-    let readings = object_reading_instances(&inputs, profiles.construction(), c)?;
+    let construction = std::sync::Arc::new(crate::construction::construct(
+        &inputs, reading, snapshot, root, c,
+    )?);
+    object_law_compatibility_on(inputs, construction, c)
+}
+pub(crate) fn object_law_compatibility_on(
+    inputs: Arc<CheckedInputs>,
+    construction: std::sync::Arc<crate::construction::ConfigurationConstruction>,
+    c: &Control,
+) -> Result<ObjectLawCompatibility, ObjectLawCompatibilityFailure> {
+    let profiles =
+        crate::construction::profiles::construct_profiles_for(&inputs, construction.clone(), c)?;
+    let readings =
+        crate::construction::readings::object_reading_instances_checked(&inputs, construction, c)?;
+    object_law_compatibility_with(inputs, Arc::new(profiles), Arc::new(readings), c)
+}
+pub(super) fn object_law_compatibility_with(
+    inputs: Arc<CheckedInputs>,
+    profiles: Arc<ConfigurationProfiles>,
+    readings: Arc<ObjectReadingInstances>,
+    c: &Control,
+) -> Result<ObjectLawCompatibility, ObjectLawCompatibilityFailure> {
+    if !std::ptr::eq(
+        profiles.construction(),
+        readings.shared_construction().as_ref(),
+    ) {
+        return Err(bad("profilesとreading instancesの元構成が違う").into());
+    }
     let mut profile_objects = Vec::new();
     for p in profiles.profiles() {
         tick(c)?;

@@ -78,7 +78,7 @@ impl<'a> InputIndexes<'a> {
             .ok_or_else(|| internal!("field がない"))?;
         if matches!(field.slot, Slot::Missing)
             && state
-                .architecture_value(&Fact::from(archsig_input::archmap::FactData {
+                .architecture_value_reference(&Fact::from(archsig_input::archmap::FactData {
                     snapshot: snapshot.into(),
                     subject: subject.into(),
                     field: Some(field.name.clone()),
