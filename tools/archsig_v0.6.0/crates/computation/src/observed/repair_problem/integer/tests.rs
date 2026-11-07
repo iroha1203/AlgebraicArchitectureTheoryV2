@@ -964,3 +964,93 @@ fn legacy_integer_ordinal_uses_the_public_origin_and_kernel_order() {
         }
     }
 }
+
+#[test]
+fn integer_regression_known_branches_share_the_complete_update_layout() {
+    let body = "view all(s:State):Set<State> =set<State>{s};view vacant(s:State):Set<State> =set<State>{};view first(s:State):Z=s.h;view second(s:State):Z=s.k;change choose(s:State,p:Z)=if s.a=2 then s with{h=p} else s with{k=p};law required valid(s:State):if s.a=2 then s.h=s.b else s.k=s.b;";
+    let asks = [
+        "u=evaluate(Pair.all,s=@v/s)",
+        "z=evaluate(Pair.vacant,s=@v/s)",
+        "p=prepare(Pair.valid,using=Pair.choose,on=@v/s,s=@v/s)",
+        "lo=solve($p.problem,within=$z.value)",
+        "hi=solve($p.problem,within=$u.value)",
+        "r=scopes($p.problem)",
+        "c=candidate($hi.solutions,index=0)",
+        "a=apply($c.assignment,in=$hi.solutions)",
+        "ok=check(Pair.valid,on=$a.object,s=@v/s)",
+        "h=evaluate(Pair.first,on=$a.object,s=@v/s)",
+        "k=evaluate(Pair.second,on=$a.object,s=@v/s)",
+        "next=prepare(Pair.valid,using=Pair.choose,on=$a.object,s=@v/s)",
+        "fixed=solve($next.problem,within=$z.value)",
+        "old=solve(Pair.valid,using=Pair.choose,on=@v/s,s=@v/s)",
+        "explicit=candidate($old.solutions,index=0)",
+    ];
+    let c = quiet();
+    let first = evaluate_observed_bytes(fixture::input(body, "2", "2"), &asks, &c).unwrap();
+    let current =
+        reevaluate_observed_bytes(&first, fixture::input(body, "3", "2"), &asks, &c).unwrap();
+    let cold = evaluate_observed_bytes(fixture::input(body, "3", "2"), &asks, &c).unwrap();
+    assert_eq!(current.result_wire(), cold.result_wire());
+    for (result, expected) in [(&first, [2, 0]), (&current, [0, 2])] {
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        for (i, answer) in result.answers.iter().enumerate() {
+            assert_eq!(
+                answer.status,
+                if i == 3 {
+                    Decision::Refuted
+                } else {
+                    Decision::Established
+                },
+                "{} {:?}",
+                answer.id,
+                result.issues
+            );
+        }
+        for (i, z) in (9..=10).zip(expected) {
+            let at = result.answers[i].outputs["value"].0;
+            let value = match result.nodes[at].payload.as_ref().unwrap() {
+                Payload::Scalar(value) => value,
+                Payload::Construction(value) => value.scalar().unwrap(),
+                _ => panic!(),
+            };
+            assert_eq!(value, &Scalar::Z(z.into()));
+        }
+        let state = data_for(result, result.answers[6].outputs["assignment"])
+            .source
+            .integer()
+            .unwrap();
+        assert_eq!(state.parameters.as_deref(), Some([Z::from(2)].as_slice()));
+    }
+}
+#[test]
+fn integer_regression_quotient_builds_only_the_requested_domain_coordinates() {
+    use crate::observed::environment::quotient_affine::coefficients;
+    let c = quiet();
+    let result = evaluate_observed_bytes(part_input(2), &part_asks()[..7], &c).unwrap();
+    let prepared = data_for(&result, result.answers[4].outputs["problem"])
+        .source
+        .integer()
+        .unwrap();
+    assert!(prepared.shared.compiled.linear.particular.is_some());
+    assert!(!prepared.shared.compiled.linear.kernel[0].is_empty());
+    let domain = candidate_input(prepared, NodeType::Construction(T::CandidateSpace)).unwrap();
+    let coordinates = coefficients::Input::from_candidate(&domain, &c).unwrap();
+    assert!(coordinates.particular.is_none());
+    assert!(
+        coordinates.kernel.is_empty(),
+        "候補域の商ではLaw全解の密な表示を作らない"
+    );
+    assert!(coordinates.guard_origin.is_some());
+    assert_eq!(coordinates.guard_kernel.len(), 6);
+    let solved = data_for(&result, result.answers[6].outputs["solutions"])
+        .source
+        .integer()
+        .unwrap();
+    let domain = candidate_input(solved, NodeType::Construction(T::SolutionSet)).unwrap();
+    let coordinates = coefficients::Input::from_candidate(&domain, &c).unwrap();
+    assert!(coordinates.particular.is_some());
+    assert_eq!(coordinates.kernel.len(), 6);
+    assert_eq!(coordinates.kernel[0].len(), 5);
+    assert!(coordinates.guard_origin.is_none());
+    assert!(coordinates.guard_kernel.is_empty());
+}

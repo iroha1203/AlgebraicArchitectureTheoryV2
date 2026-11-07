@@ -651,7 +651,6 @@ fn collect_updates(
     missing: &mut Pending,
     selected: Option<&str>,
     updates: &mut BTreeMap<Fact, Form>,
-    mut touched: Option<&mut std::collections::BTreeSet<Fact>>,
 ) -> Result<(), ValidationFailure> {
     let mut current = body;
     loop {
@@ -743,9 +742,6 @@ fn collect_updates(
                         field: Some(env.input_name(&format!("{entity}.{}", field.name))?),
                         atom: None,
                     });
-                    if let Some(touched) = &mut touched {
-                        touched.insert(position.clone());
-                    }
                     if let Some(prior) = updates.get(&position) {
                         if prior != form.as_ref() {
                             return Err(unsupported(
@@ -764,6 +760,38 @@ fn collect_updates(
         }
     }
     Ok(())
+}
+/// 通常candidateと同じ、更新されない宣言座標の基準値を保持する。
+fn unchanged_form(
+    env: &Environment<'_>,
+    change: &Declaration,
+    subject: &Scalar,
+    field: &str,
+    missing: &mut Pending,
+) -> Result<Form, ValidationFailure> {
+    let Signature::Change { params, body, .. } = &change.signature else {
+        return Err(internal!("数値changeの署名がない").into());
+    };
+    let source = env.scoped_field(
+        value(env, subject.clone())?,
+        &env.input_name(&format!(
+            "{}.{}",
+            params[0]
+                .ty
+                .ref_target()
+                .ok_or(internal!("更新対象型がRefでない"))?,
+            field
+        ))?,
+        &Scope::default(),
+        &change.reading,
+        change.span,
+    )?;
+    missing.support.extend(source.support.iter().cloned());
+    missing.scope.merge(&source.scope);
+    usable(env, *body, &source)?;
+    Ok(*source
+        .affine
+        .ok_or_else(|| unsupported(env, *body, "数値changeの未更新値がアフィンでない"))?)
 }
 /// guard域の確認後、選択した更新値のZ/Q係数と固定項を取り出す。
 pub(in crate::observed) fn compute_update(
@@ -810,33 +838,12 @@ pub(in crate::observed) fn compute_update(
             missing,
             Some(field),
             &mut updates,
-            None,
         )
     })?;
     let form = if let Some(form) = updates.into_values().next() {
         form
     } else {
-        // The selected coordinate is unchanged by the original simultaneous update.
-        let source = env.scoped_field(
-            value(env, subject.clone())?,
-            &env.input_name(&format!(
-                "{}.{}",
-                params[0]
-                    .ty
-                    .ref_target()
-                    .ok_or(internal!("更新対象型がRefでない"))?,
-                field
-            ))?,
-            &Scope::default(),
-            &change.reading,
-            change.span,
-        )?;
-        missing.support.extend(source.support.iter().cloned());
-        missing.scope.merge(&source.scope);
-        usable(env, *body, &source)?;
-        *source
-            .affine
-            .ok_or_else(|| unsupported(env, *body, "数値changeの未更新値がアフィンでない"))?
+        unchanged_form(env, change, subject, field, missing)?
     };
     let coordinates = match ty {
         Type::Z => form
@@ -893,7 +900,6 @@ pub(in crate::observed) fn compute(
         }
     }
     let mut updates = BTreeMap::<Fact, Form>::new();
-    let mut unit_writes = vec![];
     let mut guard_matrix = vec![];
     let mut guard_rhs = vec![];
     for (i, subject) in subjects.iter().enumerate() {
@@ -928,7 +934,6 @@ pub(in crate::observed) fn compute(
             )?;
         }
         missing.expression = Some(*body);
-        let mut touched = std::collections::BTreeSet::new();
         collect_updates(
             env,
             *body,
@@ -938,9 +943,41 @@ pub(in crate::observed) fn compute(
             missing,
             None,
             &mut updates,
-            Some(&mut touched),
         )?;
-        unit_writes.push(touched.into_iter().collect());
+    }
+    // 全instanceの実更新を先に結合し、その後に未更新座標を補完する。
+    // 通常candidateのupdate_fieldsと同じ座標族なので、既知分岐でも表示と実更新が一致する。
+    let fields = super::change_evaluation::update_fields(env, change)?;
+    let mut unit_writes = Vec::with_capacity(subjects.len());
+    for subject in subjects {
+        let Scalar::Subject {
+            snapshot,
+            subject: id,
+            entity,
+        } = subject
+        else {
+            return Err(internal!("整数更新のinstanceがsubjectでない").into());
+        };
+        let mut unit = Vec::with_capacity(fields.len());
+        for name in &fields {
+            env.tick()?;
+            let fact = Fact::from(archsig_input::archmap::FactData {
+                snapshot: snapshot.clone(),
+                subject: id.clone(),
+                field: Some(env.input_name(&format!("{entity}.{name}"))?),
+                atom: None,
+            });
+            let retained = match updates.entry(fact) {
+                std::collections::btree_map::Entry::Occupied(entry) => entry.key().clone(),
+                std::collections::btree_map::Entry::Vacant(entry) => {
+                    let position = entry.key().clone();
+                    entry.insert(unchanged_form(env, change, subject, name, missing)?);
+                    position
+                }
+            };
+            unit.push(retained);
+        }
+        unit_writes.push(unit);
     }
     let mut slots = vec![];
     let mut action = vec![];

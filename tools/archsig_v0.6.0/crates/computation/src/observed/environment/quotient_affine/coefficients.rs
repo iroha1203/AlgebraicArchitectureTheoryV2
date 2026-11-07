@@ -37,17 +37,34 @@ pub(in crate::observed) struct Input {
 impl Input {
     pub fn from_candidate(input: &CandidateInput, c: &Control) -> Result<Self, ValidationFailure> {
         let search = &input.search;
+        let solutions = matches!(input.domain_type, ProjectionType::SolutionSet(_));
         let (slots, action, offset) = updates(search)?;
         if let Some(x) = &search.rational {
             return Ok(Self {
                 ty: Type::Q,
                 parameter_count: x.parameter_count,
                 axes: x.axes.clone(),
-                particular: x.particular.clone(),
-                kernel: x.kernel.clone(),
-                guard_origin: x.guard_fiber.particular.clone(),
-                guard_kernel: x.guard_fiber.kernel.clone(),
-                guard_dimensions: x.parameter_count - x.guard_fiber.pivots.len(),
+                particular: if solutions {
+                    x.particular.clone()
+                } else {
+                    None
+                },
+                kernel: if solutions { x.kernel.clone() } else { vec![] },
+                guard_origin: if solutions {
+                    None
+                } else {
+                    x.guard_fiber.particular.clone()
+                },
+                guard_kernel: if solutions {
+                    vec![]
+                } else {
+                    x.guard_fiber.kernel.clone()
+                },
+                guard_dimensions: if solutions {
+                    0
+                } else {
+                    x.parameter_count - x.guard_fiber.pivots.len()
+                },
                 slots,
                 action,
                 offset,
@@ -58,32 +75,33 @@ impl Input {
             .as_ref()
             .ok_or(internal!("商の線形表示がない"))?;
         let n = x.parameter_count;
-        let (guard_origin, guard_kernel, guard_dimensions) =
-            if matches!(input.domain_type, ProjectionType::SolutionSet(_)) {
-                (None, vec![], 0)
-            } else if x.candidates_empty {
-                (None, vec![vec![]; n], 0)
-            } else if let Some(g) = &x.guard {
-                (
-                    g.fiber.particular.as_ref().map(|v| vector(v)),
-                    matrix(&g.fiber.decomposition.kernel),
-                    n - g.fiber.decomposition.rank,
-                )
-            } else {
-                let mut identity = vec![];
-                for i in 0..n {
-                    c.checkpoint(Checkpoint::Quotient)?;
-                    let mut row = vec![Scalar::Z(num_bigint::BigInt::zero()); n];
-                    row[i] = Scalar::Z(num_bigint::BigInt::one());
-                    identity.push(row);
-                }
-                (
-                    Some(vec![Scalar::Z(num_bigint::BigInt::zero()); n]),
-                    identity,
-                    n,
-                )
-            };
-        let (particular, kernel) = if let Some(family) = &input.integer_family {
+        let (guard_origin, guard_kernel, guard_dimensions) = if solutions {
+            (None, vec![], 0)
+        } else if x.candidates_empty {
+            (None, vec![vec![]; n], 0)
+        } else if let Some(g) = &x.guard {
+            (
+                g.fiber.particular.as_ref().map(|v| vector(v)),
+                matrix(&g.fiber.decomposition.kernel),
+                n - g.fiber.decomposition.rank,
+            )
+        } else {
+            let mut identity = vec![];
+            for i in 0..n {
+                c.checkpoint(Checkpoint::Quotient)?;
+                let mut row = vec![Scalar::Z(num_bigint::BigInt::zero()); n];
+                row[i] = Scalar::Z(num_bigint::BigInt::one());
+                identity.push(row);
+            }
+            (
+                Some(vec![Scalar::Z(num_bigint::BigInt::zero()); n]),
+                identity,
+                n,
+            )
+        };
+        let (particular, kernel) = if !solutions {
+            (None, vec![])
+        } else if let Some(family) = &input.integer_family {
             let particular = family.particular(c)?.map(|v| vector(&v));
             let dimensions = family.dimensions()?;
             let mut kernel = vec![Vec::with_capacity(dimensions); n];
