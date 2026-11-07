@@ -35,6 +35,27 @@ pub(in crate::observed) fn compile(
     r: &crate::observed::request::Request,
     c: &Control,
 ) -> Result<Preparation, ValidationFailure> {
+    compile_inner(original, g, witness, r, c, None)
+}
+/// 既存solveの公開済み表示を、同じparameter/核の順序のまま引き継ぐ。
+pub(in crate::observed) fn from_linear(
+    original: &Environment<'_>,
+    g: &Graph,
+    witness: &ArchitectureWitness,
+    r: &crate::observed::request::Request,
+    c: &Control,
+    linear: Arc<change_affine::Linear>,
+) -> Result<Preparation, ValidationFailure> {
+    compile_inner(original, g, witness, r, c, Some(linear))
+}
+fn compile_inner(
+    original: &Environment<'_>,
+    g: &Graph,
+    witness: &ArchitectureWitness,
+    r: &crate::observed::request::Request,
+    c: &Control,
+    prior: Option<Arc<change_affine::Linear>>,
+) -> Result<Preparation, ValidationFailure> {
     let mut env = original
         .try_primitive_valuation_from(&original.fixed_values(), c)?
         .ok_or(internal!("整数修復の基準代入が不適合"))?;
@@ -46,12 +67,14 @@ pub(in crate::observed) fn compile(
             unsupported: false,
         });
     };
-    subjects.sort_by_key(|s| match s {
-        Scalar::Subject {
-            snapshot, subject, ..
-        } => (snapshot.clone(), subject.clone()),
-        _ => unreachable!("選択済みentity"),
-    });
+    if prior.is_none() {
+        subjects.sort_by_key(|s| match s {
+            Scalar::Subject {
+                snapshot, subject, ..
+            } => (snapshot.clone(), subject.clone()),
+            _ => unreachable!("選択済みentity"),
+        });
+    }
     let change_name = r
         .arguments
         .iter()
@@ -68,21 +91,28 @@ pub(in crate::observed) fn compile(
         .ok_or(internal!("整数修復のchangeがない"))?;
     let change = &env.indexes.inputs.law().declarations()[&change_name];
     let mut pending = change_affine::Pending::default();
-    let linear = match change_affine::compute(
-        &env,
-        change,
-        &subjects,
-        &selected.requirements,
-        &mut pending,
-    ) {
-        Ok(linear) => linear,
-        Err(ValidationFailure::UnsupportedExpression { .. }) => {
-            return Ok(Preparation::Pending {
-                unsupported: pending.unsupported.is_some() || pending.facts.is_empty(),
-                missing: pending.facts,
-            });
-        }
-        Err(e) => return Err(e),
+    let linear = if let Some(linear) = prior {
+        linear
+    } else {
+        let generated = match change_affine::compute(
+            &env,
+            change,
+            &subjects,
+            &selected.requirements,
+            &mut pending,
+        ) {
+            Ok(linear) => linear,
+            Err(ValidationFailure::UnsupportedExpression { .. }) => {
+                return Ok(Preparation::Pending {
+                    unsupported: pending.unsupported.is_some() || pending.facts.is_empty(),
+                    missing: pending.facts,
+                });
+            }
+            Err(e) => return Err(e),
+        };
+        #[cfg(test)]
+        GENERATED.with(|n| n.set(n.get() + 1));
+        Arc::new(generated)
     };
     let mut support = pending.support.into_iter().collect::<BTreeSet<_>>();
     let mut scope = pending.scope;
@@ -115,10 +145,8 @@ pub(in crate::observed) fn compile(
             _ => return Err(internal!("整数更新先の基準値がZでない").into()),
         });
     }
-    #[cfg(test)]
-    GENERATED.with(|n| n.set(n.get() + 1));
     Ok(Preparation::Ready(Arc::new(Compiled {
-        linear: Arc::new(linear),
+        linear,
         subjects,
         requirements: selected.requirements,
         bindings: selected.bindings,

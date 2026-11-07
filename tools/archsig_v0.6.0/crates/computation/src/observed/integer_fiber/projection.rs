@@ -215,6 +215,31 @@ impl Projection {
         Ok(result)
     }
 }
+/// 公開済みの原点と核列の順序で、一つの元Assignmentだけを復元する。
+pub(in crate::observed) fn in_basis(
+    origin: Option<&[Z]>,
+    kernel: &Matrix,
+    index: &BigUint,
+    c: &Control,
+) -> Result<Option<Vec<Z>>, ValidationFailure> {
+    checked(c)?;
+    let Some(origin) = origin else {
+        return Ok(None);
+    };
+    let dimensions = kernel.first().map_or(0, Vec::len);
+    let Some(coefficients) = ordinal(index, dimensions, c)? else {
+        return Ok(None);
+    };
+    let mut point = apply(kernel, &coefficients, c)?;
+    if point.len() != origin.len() {
+        return Err(internal!("公開整数fiberの原点と核の幅が違う").into());
+    }
+    for (value, constant) in point.iter_mut().zip(origin) {
+        checked(c)?;
+        *value += constant;
+    }
+    Ok(Some(point))
+}
 fn ordinal(
     index: &BigUint,
     dimensions: usize,
@@ -401,7 +426,8 @@ mod tests {
                 )?;
                 let range = p.solve(&pool, &[], &c)?;
                 p.candidate(&origin, &k, &range, &BigUint::from(23u32), &c)?;
-                p.kernel(&k, &range, &c)
+                p.kernel(&k, &range, &c)?;
+                in_basis(Some(&origin), &k, &BigUint::from(23u32), &c)
             })();
             (result, seen.get())
         };

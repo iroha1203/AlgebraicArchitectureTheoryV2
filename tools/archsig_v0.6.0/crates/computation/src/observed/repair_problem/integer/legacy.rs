@@ -51,9 +51,11 @@ pub(super) fn legacy(
         }
     }
     use crate::observed::environment::repair_problem::integer::{self as compiler, Preparation};
+    let linear = change_result::candidate_linear(env, g, set)?
+        .ok_or(internal!("既存整数全解の表示を生成したfiberがない"))?;
     let compiled = env.with_request_context(g, request, || {
         let _selected = env.enter_architecture(g)?;
-        compiler::compile(env, g, &witness, request, c)
+        compiler::from_linear(env, g, &witness, request, c, linear)
     })?;
     let Preparation::Ready(compiled) = compiled else {
         return Err(ValidationFailure::UnsupportedExpression {
@@ -104,24 +106,6 @@ pub(super) fn legacy(
     let parameter_module = field(parameters, "module")?;
     let ring = field(parameter_module, "ring")?;
     let action = field(domain, "action")?;
-    let rows = (0..compiled.linear.slots.len()).collect();
-    let projection = compiled
-        .linear
-        .particular
-        .as_ref()
-        .map(|origin| {
-            Projection::new(
-                &env.results.integer_factors,
-                origin,
-                &compiled.linear.kernel,
-                &compiled.linear.action,
-                &compiled.linear.offset,
-                rows,
-                c,
-            )
-            .map(Arc::new)
-        })
-        .transpose()?;
     let root = witness.construction().root();
     let root_type = env
         .indexes
@@ -131,7 +115,7 @@ pub(super) fn legacy(
     let n = subjects.len();
     Ok(Some(Arc::new(Shared {
         compiled,
-        projection,
+        projection: None,
         witness,
         base,
         domain,

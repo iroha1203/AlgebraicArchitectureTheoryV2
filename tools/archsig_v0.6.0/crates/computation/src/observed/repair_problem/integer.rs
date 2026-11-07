@@ -534,7 +534,9 @@ fn check_candidate(
             return Err(internal!("整数候補の復元値が元更新式と違う").into());
         }
     }
-    let member = if let Some(projection) = &shared.projection {
+    let member = if shared.problem.is_none() {
+        Some(true)
+    } else if let Some(projection) = &shared.projection {
         match fixed(shared, enabled, c)? {
             Ok(fixed) => Some(
                 fixed
@@ -764,20 +766,6 @@ fn consume(
         let mask = enabled
             .as_ref()
             .ok_or(internal!("整数解集合の範囲がない"))?;
-        math = if shared.problem.is_none() {
-            match resolve_range(env, &shared, mask, c)? {
-                Ok(value) => Some(value),
-                Err(_) => return Err(internal!("整数元全解の固定条件が未確定").into()),
-            }
-        } else {
-            data(g, head)?
-                .source
-                .integer()
-                .ok_or(internal!("整数解集合のownerがない"))?
-                .range_result
-                .clone()
-        };
-        let solved = math.as_ref().ok_or(internal!("完成した整数全解がない"))?;
         let index = &r
             .arguments
             .iter()
@@ -789,16 +777,38 @@ fn consume(
         };
         let index =
             BigUint::parse_bytes(value.as_bytes(), 10).ok_or(internal!("整数候補番号が不正"))?;
-        chosen = match (
-            solved.as_ref(),
-            shared.projection.as_ref(),
-            shared.compiled.linear.particular.as_ref(),
-        ) {
-            (RangeMath::Constrained { fiber, .. }, Some(projection), Some(origin)) => {
-                projection.candidate(origin, &shared.compiled.linear.kernel, fiber, &index, c)?
+        chosen = if shared.problem.is_none() {
+            integer_fiber::projection::in_basis(
+                shared.compiled.linear.particular.as_deref(),
+                &shared.compiled.linear.kernel,
+                &index,
+                c,
+            )?
+        } else {
+            math = data(g, head)?
+                .source
+                .integer()
+                .ok_or(internal!("整数解集合のownerがない"))?
+                .range_result
+                .clone();
+            let solved = math.as_ref().ok_or(internal!("完成した整数全解がない"))?;
+            match (
+                solved.as_ref(),
+                shared.projection.as_ref(),
+                shared.compiled.linear.particular.as_ref(),
+            ) {
+                (RangeMath::Constrained { fiber, .. }, Some(projection), Some(origin)) => {
+                    projection.candidate(
+                        origin,
+                        &shared.compiled.linear.kernel,
+                        fiber,
+                        &index,
+                        c,
+                    )?
+                }
+                (RangeMath::Empty, _, _) => None,
+                _ => return Err(internal!("整数全解の部品が対応しない").into()),
             }
-            (RangeMath::Empty, _, _) => None,
-            _ => return Err(internal!("整数全解の部品が対応しない").into()),
         };
         invalid = chosen.is_none();
         if let Some(parameters) = &chosen {

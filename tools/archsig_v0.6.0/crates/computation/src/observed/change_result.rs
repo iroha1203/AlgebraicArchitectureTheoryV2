@@ -29,6 +29,7 @@ pub(super) struct Source {
     base: usize,
     parts: Vec<Part>,
     answer: Answer,
+    integer: Option<Arc<super::environment::change_affine::Linear>>,
 }
 #[derive(Clone, Debug)]
 pub(crate) struct Data {
@@ -1321,6 +1322,14 @@ pub(super) fn candidate_origin(
         d.source.architecture.witness.clone(),
     ))
 }
+/// 完成済み公開表示を生成した同じ原点・核を、検査済みownerから共有する。
+pub(super) fn candidate_linear(
+    env: &Environment<'_>,
+    g: &Graph,
+    reference: NodeRef,
+) -> Result<Option<Arc<super::environment::change_affine::Linear>>, ValidationFailure> {
+    Ok(checked_candidate(env, g, reference)?.source.integer.clone())
+}
 fn checked_candidate<'g>(
     env: &Environment<'_>,
     g: &'g Graph,
@@ -1644,7 +1653,9 @@ impl super::result_kind::ResultKind for Data {
         let boundary = Boundary::capture(env, g, producer, vec![architecture.reference], c)?;
         let base = g.nodes.len();
         let (parts, answer, verification) = compute(env, g, &architecture, base, request, c)?;
+        let integer = verification.as_ref().and_then(|s| s.linear.clone());
         let source = Arc::new(Source {
+            integer,
             architecture,
             boundary,
             base,

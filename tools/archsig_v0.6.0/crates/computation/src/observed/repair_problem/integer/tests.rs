@@ -893,3 +893,74 @@ fn integer_native_validation_rejects_changed_owner_edges_metadata_and_request() 
         Err(ValidationFailure::Internal(_))
     ));
 }
+
+#[test]
+fn legacy_integer_ordinal_uses_the_public_origin_and_kernel_order() {
+    for body in [
+        "view first(s:State):Z=s.h;change choose(s:State,p:Z,q:Z)=s with{h=q};law required valid(s:State):s.h=s.h;",
+        "view first(s:State):Z=s.h;change choose(s:State,p:Z,q:Z,t:Z) when p+q=3 =s with{h=t};law required valid(s:State):s.h=s.h;",
+    ] {
+        let c = quiet();
+        let asks = [
+            "s=solve(Pair.valid,using=Pair.choose,on=@v/s,s=@v/s)",
+            "c=candidate($s.solutions,index=1)",
+            "a=apply($c.assignment,in=$s.solutions)",
+            "h=evaluate(Pair.first,on=$a.object,s=@v/s)",
+        ];
+        let result = evaluate_observed_bytes(fixture::input(body, "2", "2"), &asks, &c)
+            .unwrap_or_else(|e| panic!("{:?}", e.wire()));
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        let at = |wire: &Json| -> usize {
+            (0..result.nodes.len())
+                .find(|i| NodeRef(*i).wire() == *wire)
+                .unwrap()
+        };
+        let value = |i: usize| -> Z {
+            match result.nodes[i].payload.as_ref().unwrap() {
+                Payload::Scalar(Scalar::Z(z)) => z.clone(),
+                Payload::Construction(v) => match v.scalar().unwrap() {
+                    Scalar::Z(z) => z.clone(),
+                    _ => panic!(),
+                },
+                _ => panic!(),
+            }
+        };
+        let record = |i: usize| -> Json {
+            let Some(Payload::Construction(v)) = &result.nodes[i].payload else {
+                panic!()
+            };
+            v.wire()
+        };
+        let set = record(result.answers[0].outputs["solutions"].0);
+        let representation = fields(&fields(&set).unwrap()["representation"]).unwrap();
+        let origin = record(at(&representation["particular"]));
+        let Json::Arr(origin) = &fields(&origin).unwrap()["coordinates"] else {
+            panic!()
+        };
+        let embedding = record(at(&representation["embedding"]));
+        let Json::Arr(columns) = &fields(&embedding).unwrap()["columns"] else {
+            panic!()
+        };
+        let Json::Arr(first) = &columns[0] else {
+            panic!()
+        };
+        // index=1は公開された第1核列の係数だけが1。他の自由係数は0。
+        let expected = origin
+            .iter()
+            .zip(first)
+            .map(|(a, b)| value(at(a)) + value(at(b)))
+            .collect::<Vec<_>>();
+        let state = data_for(&result, result.answers[1].outputs["assignment"])
+            .source
+            .integer()
+            .unwrap();
+        assert_eq!(state.parameters.as_ref(), Some(&expected));
+        assert_eq!(
+            value(result.answers[3].outputs["value"].0),
+            *expected.last().unwrap()
+        );
+        if expected.len() == 2 {
+            assert_eq!(expected, vec![Z::from(1), Z::from(0)]);
+        }
+    }
+}
