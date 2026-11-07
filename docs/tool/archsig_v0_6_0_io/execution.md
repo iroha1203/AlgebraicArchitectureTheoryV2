@@ -409,7 +409,8 @@ field 値の不一致は参照輸送後の実際の二値と元の field 位置�
 `assemble_map(View,from=Handle,to=Handle,B)` のfrom/toは、同じsnapshot・定義環境・readingの
 `ModelAssembly` を指す。Viewは原始correspondence参照の有限集合 `Set<C>` を返し、
 全parameterを明示束縛Bで与える。Cの始終root型は両組立てのroot型と一致し、
-owned型の対応は同じ型を結ぶ。Viewも同じreadingに属する。
+owned型とfield位置の対応は同じ元宣言を結ぶものとする。
+異なる型・field位置へのalignは、この初段算法の適用族外として元correspondenceを示す。Viewも同じreadingに属する。
 各始域fragmentにcorrespondenceをちょうど一件対応させ、その終域は終域側のfragmentのいずれかとする。
 同じ終域fragmentへ複数の担当が写ってよい。終域全体への全射は構成条件にしない。
 
