@@ -29,6 +29,23 @@ pub(super) struct DerivedOrigin {
     pub(super) target: ObjectIdentity,
     pub(super) steps: Vec<OperationStep>,
 }
+/// 写像の合成由来は共有した二辺で保持する。名前付き操作語を展開しない。
+#[derive(Clone, PartialEq, Eq)]
+pub(super) struct MapComposition {
+    pub(super) source: ObjectIdentity,
+    pub(super) target: ObjectIdentity,
+    pub(super) first: ConfigurationMap,
+    then: ConfigurationMap,
+}
+
+impl std::fmt::Debug for MapComposition {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("MapComposition")
+            .field("source", &self.source)
+            .field("target", &self.target)
+            .finish_non_exhaustive()
+    }
+}
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ConfigurationOperation {
     map: ConfigurationMap,
@@ -273,13 +290,24 @@ impl ConfigurationOperation {
         &self,
         other: &Self,
         control: &Control,
+        retain: impl FnMut(Option<&ActionDifference>),
+    ) -> Result<Option<ActionDifference>, ConstructionFailure> {
+        self.map
+            .action_difference_after_recheck(&other.map, control, retain)
+    }
+}
+impl ConfigurationMap {
+    pub(crate) fn action_difference_after_recheck(
+        &self,
+        other: &Self,
+        control: &Control,
         mut retain: impl FnMut(Option<&ActionDifference>),
     ) -> Result<Option<ActionDifference>, ConstructionFailure> {
         tick(control)?;
-        let a = &self.map.candidate;
-        let b = &other.map.candidate;
-        if self.source() != other.source()
-            || self.target() != other.target()
+        let a = &self.candidate;
+        let b = &other.candidate;
+        if a.source_object() != b.source_object()
+            || a.target_object() != b.target_object()
             || a.universe != b.universe
         {
             return Err(ConstructionFailure::InvalidSelection(
@@ -357,7 +385,7 @@ fn raw_step(map: &ConfigurationMap) -> Option<OperationStep> {
             arrow,
             construction,
         } => (arrow.clone(), Some(root.clone()), construction.clone()),
-        MapOrigin::Derived(_) | MapOrigin::Assembly(_) => return None,
+        MapOrigin::Derived(_) | MapOrigin::Composition(_) | MapOrigin::Assembly(_) => return None,
     };
     Some(OperationStep::Generator {
         subject,
@@ -380,6 +408,12 @@ fn from_verified_map_retained(
     tick(control)?;
     let steps =
         match &map.candidate.origin {
+            MapOrigin::Composition(_) => {
+                return Err(ConstructionFailure::InvalidSelection(
+                    "写像合成は名前付き操作語を供給しない".into(),
+                )
+                .into());
+            }
             MapOrigin::Derived(origin) => origin.steps.clone(),
             _ => vec![raw_step(&map).ok_or_else(|| {
                 ConstructionFailure::Inconsistent(internal!("原始mapの由来がない"))
@@ -511,24 +545,101 @@ fn compose_data(a: &Data, b: &Data, control: &Control) -> Result<Data, Construct
         images: std::sync::Arc::new(images),
     })
 }
-fn derived_map(data: Data, steps: Vec<OperationStep>) -> ConfigurationMap {
+impl ConfigurationMap {
+    /// 呼出し側の同一native検査範囲で確認済みの写像を合成し、元写像を共有する。
+    pub(crate) fn compose_after_recheck(
+        &self,
+        then: &Self,
+        control: &Control,
+        retain: impl FnOnce(&Self),
+    ) -> Result<Self, ConstructionFailure> {
+        let data = compose_data(&Data::from_map(self), &Data::from_map(then), control)?;
+        let origin = MapOrigin::Composition(std::sync::Arc::new(MapComposition {
+            source: data.source.clone(),
+            target: data.target.clone(),
+            first: self.clone(),
+            then: then.clone(),
+        }));
+        let map = map_from_data(data, origin);
+        retain(&map);
+        tick(control)?;
+        Ok(map)
+    }
+}
+/// 現在入力のleaf検査と同じ作用合成を使い、共有された導出を一度ずつ照合する。
+/// privateな合成由来は循環せず、入力mapより後にだけ作られる。
+pub(super) fn recompute_map_composition(
+    candidate: &MapCandidate,
+    inputs: &CheckedInputs,
+    control: &Control,
+) -> Result<ConfigurationMap, ConstructionFailure> {
+    let mut pending = vec![(candidate, false)];
+    let mut checked = std::collections::BTreeSet::new();
+    while let Some((current, ready)) = pending.pop() {
+        tick(control)?;
+        if let MapOrigin::Composition(origin) = &current.origin {
+            let key = std::sync::Arc::as_ptr(origin);
+            if checked.contains(&key) {
+                continue;
+            }
+            if !ready {
+                pending.push((current, true));
+                pending.push((&origin.then.candidate, false));
+                pending.push((&origin.first.candidate, false));
+            } else {
+                let data = compose_data(
+                    &Data::from_map(&origin.first),
+                    &Data::from_map(&origin.then),
+                    control,
+                )?;
+                if data.source != origin.source
+                    || data.target != origin.target
+                    || data.source != current.source_object()
+                    || data.target != current.target_object()
+                    || data.source_configuration != current.source_configuration
+                    || data.target_configuration != current.target_configuration
+                    || data.universe != current.universe
+                    || data.images != current.images
+                {
+                    return Err(ConstructionFailure::Inconsistent(internal!(
+                        "合成写像の現在入力・作用が違う"
+                    )));
+                }
+                checked.insert(key);
+            }
+        } else {
+            ConfigurationMap {
+                candidate: current.clone(),
+            }
+            .recheck(inputs, control)?;
+        }
+    }
+    Ok(ConfigurationMap {
+        candidate: candidate.clone(),
+    })
+}
+fn map_from_data(data: Data, origin: MapOrigin) -> ConfigurationMap {
     ConfigurationMap {
         candidate: MapCandidate {
             source_root: data.source.subject.clone(),
             target_root: data.target.subject.clone(),
             reading: data.source.reading.clone(),
             to_reading: data.target.reading.clone(),
-            origin: MapOrigin::Derived(DerivedOrigin {
-                source: data.source,
-                target: data.target,
-                steps,
-            }),
+            origin,
             source_configuration: data.source_configuration,
             target_configuration: data.target_configuration,
             universe: data.universe,
             images: data.images,
         },
     }
+}
+fn derived_map(data: Data, steps: Vec<OperationStep>) -> ConfigurationMap {
+    let origin = MapOrigin::Derived(DerivedOrigin {
+        source: data.source.clone(),
+        target: data.target.clone(),
+        steps,
+    });
+    map_from_data(data, origin)
 }
 /// base、または指定owned entityの部分対象の全U恒等。未決の構成にはoperationを返さない。
 pub fn identity(
@@ -990,6 +1101,91 @@ mod tests {
         let mut forged = original.clone();
         std::sync::Arc::make_mut(&mut forged.map.candidate.images).clear();
         assert!(forged.recheck(&inputs, &Control::unlimited()).is_err());
+    }
+    #[test]
+    fn repeated_map_squaring_shares_its_derivation_and_rechecks_each_node_once() {
+        let inputs = inputs();
+        let c = Control::unlimited();
+        let original = identity(&inputs, "Reservations", "v", "A", None, &c)
+            .unwrap()
+            .operation
+            .unwrap()
+            .map;
+        let mut map = original.clone();
+        for _ in 0..80 {
+            let next = map.compose_after_recheck(&map, &c, |_| {}).unwrap();
+            let MapOrigin::Composition(origin) = &next.candidate.origin else {
+                panic!("composition")
+            };
+            if let MapOrigin::Composition(left) = &origin.first.candidate.origin {
+                let MapOrigin::Composition(right) = &origin.then.candidate.origin else {
+                    panic!("shared child")
+                };
+                assert!(std::sync::Arc::ptr_eq(left, right));
+            }
+            assert_eq!(next.candidate.images, original.candidate.images);
+            map = next;
+        }
+        let seen = Rc::new(Cell::new(0usize));
+        let counter = Rc::clone(&seen);
+        let control = Control::new(move |point| {
+            if point == Checkpoint::ConfigurationOperation {
+                counter.set(counter.get() + 1);
+            }
+            (counter.get() > 20_000).then_some(Signal::Int)
+        });
+        map.recheck(&inputs, &control).unwrap();
+        assert!(
+            map.action_difference_after_recheck(&original, &c, |_| {})
+                .unwrap()
+                .is_none()
+        );
+        assert!(matches!(
+            ConfigurationOperation::from_map(&inputs, &map, &c),
+            Err(ConstructionFailure::InvalidSelection(_))
+        ));
+        let mut forged = map.clone();
+        std::sync::Arc::make_mut(&mut forged.candidate.images).swap(0, 1);
+        assert!(forged.recheck(&inputs, &c).is_err());
+        let raw =
+            include_str!("../../../../../tests/fixtures/configuration-operation.archmap.json");
+        let changed = raw.replace("\"A\"", "\"C\"");
+        assert_ne!(raw, changed);
+        assert!(
+            map.recheck(&inputs_with_map(changed.as_bytes()), &c)
+                .is_err()
+        );
+        // 最後の停止確認では、完成済みの合成を呼出し側へ残す。
+        let probes = Rc::new(Cell::new(0usize));
+        let counter = Rc::clone(&probes);
+        let counted = Control::new(move |point| {
+            if point == Checkpoint::ConfigurationOperation {
+                counter.set(counter.get() + 1);
+            }
+            None
+        });
+        let normal = map.compose_after_recheck(&map, &counted, |_| {}).unwrap();
+        let at = probes.get();
+        let seen = Rc::new(Cell::new(0usize));
+        let counter = Rc::clone(&seen);
+        let stopped = Control::new(move |point| {
+            if point == Checkpoint::ConfigurationOperation {
+                counter.set(counter.get() + 1);
+            }
+            (counter.get() >= at).then_some(Signal::Int)
+        });
+        let mut retained = None;
+        assert!(matches!(
+            map.compose_after_recheck(&map, &stopped, |map| retained = Some(map.clone())),
+            Err(ConstructionFailure::Stopped(Signal::Int))
+        ));
+        assert_eq!(retained.unwrap(), normal);
+        assert_eq!(seen.get(), at);
+        let stop = Control::new(|_| Some(Signal::Term));
+        assert!(matches!(
+            map.recheck(&inputs, &stop),
+            Err(ConstructionFailure::Stopped(Signal::Term))
+        ));
     }
     #[test]
     fn very_deep_identity_composition_is_iterative_and_latches_before_recomputation() {

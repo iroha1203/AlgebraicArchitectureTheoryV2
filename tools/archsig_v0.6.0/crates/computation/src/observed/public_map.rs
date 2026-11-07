@@ -410,6 +410,7 @@ pub(super) fn unavailable(
             && !matches!(
                 request.kind,
                 QuestionKind::Assemble
+                    | QuestionKind::AssembleMap
                     | QuestionKind::Map
                     | QuestionKind::Compose
                     | QuestionKind::Compare
@@ -462,6 +463,7 @@ pub(super) fn unavailable(
         || matches!(
             request.kind,
             QuestionKind::Map
+                | QuestionKind::AssembleMap
                 | QuestionKind::Compose
                 | QuestionKind::Compare
                 | QuestionKind::Quotient

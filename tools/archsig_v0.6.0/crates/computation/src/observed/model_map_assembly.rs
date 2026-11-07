@@ -681,6 +681,42 @@ mod tests {
         }
     }
     #[test]
+    fn repeated_native_map_squaring_compares_actions_without_an_operation_word() {
+        use super::super::result::Decision;
+        let mut asks = vec![fixture::ASSEMBLE.to_owned(), fixture::MAP.to_owned()];
+        asks.push("c0=compose($m.configuration_map,then=$m.configuration_map)".into());
+        for n in 1..4 {
+            asks.push(format!(
+                "c{n}=compose($c{}.map,then=$c{}.map)",
+                n - 1,
+                n - 1
+            ));
+        }
+        asks.extend([
+            "same=compare($c0.map,to=$c3.map,kind=action)".into(),
+            "different=compare($m.configuration_map,to=$c3.map,kind=action)".into(),
+        ]);
+        let texts = asks.iter().map(String::as_str).collect::<Vec<_>>();
+        let result = crate::observed::evaluate_observed_bytes(
+            fixture::query(fixture::swapping),
+            &texts,
+            &Control::unlimited(),
+        )
+        .unwrap_or_else(|e| panic!("{:?}", e.wire()));
+        assert!(
+            result.answers[..7]
+                .iter()
+                .all(|a| a.status == Decision::Established),
+            "{:?}",
+            result.issues
+        );
+        assert_eq!(result.answers[7].status, Decision::Refuted);
+        for answer in &result.answers[2..6] {
+            assert!(answer.outputs.contains_key("map"));
+            assert!(!answer.outputs.contains_key("operation"));
+        }
+    }
+    #[test]
     fn missing_correspondence_endpoint_keeps_an_unknown_proposition_without_a_map() {
         use super::super::result::{Decision, ReasonKind};
         let result = crate::observed::evaluate_observed_bytes(
@@ -732,6 +768,24 @@ mod tests {
         );
         let answer = &result.answers[2];
         assert_eq!(answer.status, Decision::Refuted, "{:?}", result.issues);
+        let failure = answer
+            .reasons
+            .iter()
+            .find_map(|r| match r.kind {
+                super::super::result::ReasonKind::ConditionFailed { condition, .. } => {
+                    Some(condition)
+                }
+                _ => None,
+            })
+            .expect("元の反証条件を理由へ保持する");
+        assert_eq!(
+            result.nodes[failure.0].judgment.as_ref().unwrap().status,
+            Decision::Refuted
+        );
+        assert_eq!(
+            result.nodes[answer.claim.unwrap().0].reasons,
+            answer.reasons
+        );
         assert!(answer.outputs.contains_key("configuration_map"));
         assert!(!answer.outputs.contains_key("map"));
         let scalar = |r: usize| match result.nodes[r].payload.as_ref().unwrap() {
@@ -898,6 +952,24 @@ mod tests {
         );
         let answer = &result.answers[2];
         assert_eq!(answer.status, Decision::Refuted, "{:?}", result.issues);
+        let failure = answer
+            .reasons
+            .iter()
+            .find_map(|r| match r.kind {
+                super::super::result::ReasonKind::ConditionFailed { condition, .. } => {
+                    Some(condition)
+                }
+                _ => None,
+            })
+            .expect("元の反証条件を理由へ保持する");
+        assert_eq!(
+            result.nodes[failure.0].judgment.as_ref().unwrap().status,
+            Decision::Refuted
+        );
+        assert_eq!(
+            result.nodes[answer.claim.unwrap().0].reasons,
+            answer.reasons
+        );
         assert!(answer.outputs.contains_key("configuration_map"));
         assert!(!answer.outputs.contains_key("map"));
         let Some(Payload::Construction(value)) = &result.nodes[answer.evidence[0].0].payload else {

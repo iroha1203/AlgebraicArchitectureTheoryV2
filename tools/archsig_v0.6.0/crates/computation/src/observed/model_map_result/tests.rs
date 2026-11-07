@@ -213,3 +213,50 @@ fn a_native_set_operand_and_its_identity_view_keep_the_original_value_reference(
     assert_eq!(used, 1);
     assert_eq!(reference, result.answers[1].outputs["value"]);
 }
+
+#[test]
+fn absent_model_or_binding_keeps_dependency_and_original_missing_position() {
+    let input = fixture::replace_law(
+        fixture::query(|s| fixture::atom(s, "a-quantity", None)),
+        "law required zero(p:Part):p.quantity=0;",
+        "view only(a:Root):Set<Root> = set<Root>{a};view emptyInterfaces(a:Root):Unit=unit;view quantity(p:Part):Z=p.quantity;view withValue(x:Move,y:Move,n:Z):Set<Move> = set<Move>{x,y};law required zero(p:Part):p.quantity=0;",
+    );
+    let result = super::super::evaluate_observed_bytes(input, &[
+        fixture::ASSEMBLE,
+        "b=assemble(Assembly.only,on=@v/G,along=Assembly.emptyInterfaces,a=@v/B)",
+        "u=evaluate(Assembly.quantity,p=@v/a)",
+        "from=assemble_map(Assembly.moves,from=$a.assembly,to=$b.assembly,x=@v/moveA,y=@v/moveB)",
+        "to=assemble_map(Assembly.moves,from=$b.assembly,to=$a.assembly,x=@v/moveA,y=@v/moveB)",
+        "binding=assemble_map(Assembly.withValue,from=$b.assembly,to=$b.assembly,x=@v/moveB,y=@v/moveB,n=$u.value)",
+    ], &Control::unlimited()).unwrap();
+    assert_eq!(
+        result.answers[1].status,
+        Decision::Established,
+        "{:?}",
+        result.issues
+    );
+    for answer in &result.answers[3..] {
+        assert_eq!(answer.status, Decision::Undetermined);
+        assert!(answer.outputs.is_empty());
+        assert!(answer.claim.is_none());
+        assert!(
+            answer
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::DependencyBlocked { .. }))
+        );
+        assert!(answer.reasons.iter().any(|r| {
+            matches!(r.kind, ReasonKind::Missing)
+                && r.missing.iter().any(|f| {
+                    f.subject == "a" && f.field.as_deref() == Some("Assemble.Part.quantity")
+                })
+        }));
+        assert!(
+            !answer
+                .reasons
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::Internal(_)))
+        );
+    }
+    replay(&result, &result.nodes, &result.contexts).unwrap();
+}

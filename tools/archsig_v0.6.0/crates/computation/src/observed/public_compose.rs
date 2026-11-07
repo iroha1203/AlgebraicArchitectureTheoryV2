@@ -9,11 +9,33 @@ use super::{
     request::{QuestionKind, Request, Selector},
     result::*,
 };
-use crate::construction::{ConstructionFailure, maps::ConfigurationOperation};
+use crate::construction::{
+    ConstructionFailure,
+    maps::{ConfigurationMap, ConfigurationOperation},
+};
 use archsig_common::canonical::Json;
 use archsig_common::control::{Checkpoint, Control};
 use archsig_input::{input::CheckedInputs, result::Signal};
 use std::{collections::BTreeMap, sync::Arc};
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum Composition {
+    Operation(ConfigurationOperation),
+    Map(ConfigurationMap),
+}
+impl Composition {
+    fn map(&self) -> &ConfigurationMap {
+        match self {
+            Self::Operation(operation) => operation.map(),
+            Self::Map(map) => map,
+        }
+    }
+    fn operation(&self) -> Option<&ConfigurationOperation> {
+        match self {
+            Self::Operation(operation) => Some(operation),
+            Self::Map(_) => None,
+        }
+    }
+}
 #[derive(Clone, Debug)]
 pub(crate) struct ComposeWitness {
     pub(super) inputs: Arc<CheckedInputs>,
@@ -29,7 +51,7 @@ pub(crate) struct ComposeWitness {
     universe: NodeRef,
     word: Vec<NodeRef>,
     shape: OperationProjection,
-    operation: Option<ConfigurationOperation>,
+    result: Option<Composition>,
     stopped: Option<Signal>,
     maps_only: bool,
 }
@@ -51,7 +73,7 @@ impl PartialEq for ComposeWitness {
             && self.universe == b.universe
             && self.word == b.word
             && self.shape == b.shape
-            && self.operation == b.operation
+            && self.result == b.result
             && self.stopped == b.stopped
             && self.maps_only == b.maps_only
     }
@@ -313,13 +335,14 @@ pub(super) fn op(graph: &Graph, r: NodeRef) -> Result<&ConfigurationOperation, V
             .operation()
             .ok_or(internal!("元mapのOperationがない").into()),
         (D::Composition(Part::Operation { .. }), Witness::Compose(c)) => c
-            .operation
+            .result
             .as_ref()
+            .and_then(Composition::operation)
             .ok_or(internal!("元合成のOperationがない").into()),
         _ => Err(internal!("未確認候補・PathをOperationへ昇格した").into()),
     }
 }
-fn checked_map(
+pub(super) fn checked_map(
     graph: &Graph,
     r: NodeRef,
 ) -> Result<&crate::construction::maps::ConfigurationMap, ValidationFailure> {
@@ -339,52 +362,10 @@ fn checked_map(
             .map()
             .ok_or(internal!("原始写像の実作用がない").into()),
         (D::Composition(Part::Map { .. }), Witness::Compose(w)) => w
-            .operation
+            .result
             .as_ref()
-            .map(|op| op.map())
+            .map(Composition::map)
             .ok_or(internal!("合成写像の実作用がない").into()),
-        _ => Err(internal!("確認済みConfigurationMapを要求する").into()),
-    }
-}
-/// ConfigurationMapは作用だけを消費する。rawの操作名や語として公開しない。
-pub(super) fn action_operation<'a>(
-    graph: &'a Graph,
-    r: NodeRef,
-    c: &Control,
-) -> Result<std::borrow::Cow<'a, ConfigurationOperation>, ValidationFailure> {
-    use std::borrow::Cow;
-    let v = value(graph, r)?;
-    if graph.get(r)?.ty != NodeType::Construction(T::ConfigurationMap) {
-        return Ok(Cow::Borrowed(op(graph, r)?));
-    }
-    match (&v.data, &v.witness) {
-        (D::ModelMap(data), _) => ConfigurationOperation::from_checked_map(
-            data.core_map().ok_or(internal!("全体写像の実作用がない"))?,
-            c,
-        )
-        .map(Cow::Owned)
-        .map_err(|e| match e {
-            ConstructionFailure::Stopped(s) => s.into(),
-            e => e.internal_context("全体写像の作用".into()).into(),
-        }),
-        (D::Build(data), _) => ConfigurationOperation::from_checked_map(
-            data.core_map()
-                .ok_or(internal!("包含・制限の実作用がない"))?,
-            c,
-        )
-        .map(Cow::Owned)
-        .map_err(|e| match e {
-            ConstructionFailure::Stopped(s) => s.into(),
-            e => e.internal_context("組立て写像の作用".into()).into(),
-        }),
-        (D::ConfigurationMap { .. }, Witness::Map(m)) => Ok(Cow::Borrowed(
-            m.operation().ok_or(internal!("原始写像の実作用がない"))?,
-        )),
-        (D::Composition(Part::Map { .. }), Witness::Compose(w)) => Ok(Cow::Borrowed(
-            w.operation
-                .as_ref()
-                .ok_or(internal!("合成写像の実作用がない"))?,
-        )),
         _ => Err(internal!("確認済みConfigurationMapを要求する").into()),
     }
 }
@@ -501,6 +482,9 @@ pub(super) fn validate_origin(
         || selected(environment, graph, request, "then")? != c.right
         || c.maps_only != (graph.get(c.left)?.ty == NodeType::Construction(T::ConfigurationMap))
         || c.maps_only != (graph.get(c.right)?.ty == NodeType::Construction(T::ConfigurationMap))
+        || c.result
+            .as_ref()
+            .is_some_and(|r| matches!(r, Composition::Map(_)) != c.maps_only)
     {
         return Err(internal!("合成の現在入力・元要求・元Operationが違う").into());
     }
@@ -578,7 +562,7 @@ pub(super) fn validate_node(
     }
     match p {
         Part::Action { universe, images } => {
-            let result = c.operation.as_ref().ok_or_else(fail)?;
+            let result = c.result.as_ref().ok_or_else(fail)?;
             if *universe != c.universe || images.as_slice() != result.map().candidate().images() {
                 return Err(fail());
             }
@@ -590,7 +574,7 @@ pub(super) fn validate_node(
             left,
             right,
         } => {
-            if c.operation.is_none()
+            if c.result.is_none()
                 || (*source, *target, *left, *right) != (c.source, c.target, c.left, c.right)
                 || !matches!(part(graph, *action, c)?, Part::Action { .. })
             {
@@ -612,7 +596,7 @@ pub(super) fn validate_node(
             if !matches!(&label.witness,Witness::Compose(actual) if actual.as_ref()==c) {
                 return Err(fail());
             }
-            let expected = if c.operation.is_some() {
+            let expected = if c.result.is_some() {
                 Decision::Established
             } else {
                 Decision::Refuted
@@ -644,7 +628,7 @@ pub(super) fn validate_node(
             }
         }
         Part::Endpoints { left, right } => {
-            if c.operation.is_some()
+            if c.result.is_some()
                 || (*left, *right) != (c.middle_left, c.middle_right)
                 || node.evidence.len() != 1
                 || !matches!(part(graph, node.evidence[0], c)?, Part::Evidence { .. })
@@ -659,7 +643,7 @@ pub(super) fn validate_node(
             }
         }
         Part::Evidence { left, right } => {
-            if c.operation.is_some()
+            if c.result.is_some()
                 || (*left, *right) != (c.middle_left, c.middle_right)
                 || checked_map(graph, c.left)?.candidate().target_object()
                     == checked_map(graph, c.right)?.candidate().source_object()
@@ -701,7 +685,7 @@ pub(super) fn validate_node(
             word,
         } => {
             if c.maps_only
-                || c.operation.is_none()
+                || c.result.is_none()
                 || (*source, *target, *left, *right) != (c.source, c.target, c.left, c.right)
                 || word != &c.word
                 || !matches!(part(graph,*map,c)?,Part::Map{candidate:r,preservation:p} if r==candidate&&p==preservation)
@@ -786,7 +770,7 @@ pub(super) fn validate_failure(graph: &Graph, reason: &Reason) -> Result<(), Val
     let Witness::Compose(c) = &v.witness else {
         return Err(internal!("合成の元証拠がない").into());
     };
-    if c.operation.is_some()
+    if c.result.is_some()
         || c.request.id != reason.request
         || &failed_reason(&c.request, condition) != reason
         || !matches!(v.data, D::Composition(Part::Endpoints { .. }))
@@ -824,7 +808,7 @@ pub(super) fn validate_answer(
         .as_ref()
         .ok_or(internal!("合成命題の判断がない"))?;
     let mut outputs = BTreeMap::from([("proposition".into(), p)]);
-    if c.operation.is_some() {
+    if c.result.is_some() {
         if c.maps_only {
             let map = *answer
                 .outputs
@@ -904,8 +888,8 @@ pub(super) fn evaluate(
         environment.recheck_node(graph, graph.get(left)?, left.0)?;
         environment.recheck_node(graph, graph.get(right)?, right.0)?;
     }
-    let first = action_operation(graph, left, control)?;
-    let then = action_operation(graph, right, control)?;
+    let first = checked_map(graph, left)?;
+    let then = checked_map(graph, right)?;
     let mut types = Vec::new();
     for r in &word {
         control.checkpoint(Checkpoint::ConfigurationOperation)?;
@@ -917,33 +901,43 @@ pub(super) fn evaluate(
     let shape = OperationProjection {
         source: root_type(graph, source)?,
         target: root_type(graph, target)?,
-        reading: first.source().reading().into(),
-        to_reading: then.target().reading().into(),
+        reading: first.candidate().source_object().reading().into(),
+        to_reading: then.candidate().target_object().reading().into(),
         word: types,
     };
     let composed = if maps_only {
-        first.compose_checked_retained(&then, control)
+        let mut retained = None;
+        first
+            .compose_after_recheck(then, control, |map| retained = Some(map.clone()))
+            .map(Composition::Map)
+            .map_err(|cause| (cause, retained.map(Composition::Map)))
     } else {
-        first.compose_retained(prepared.inputs(), &then, control)
+        op(graph, left)?
+            .compose_retained(prepared.inputs(), op(graph, right)?, control)
+            .map(Composition::Operation)
+            .map_err(|failure| {
+                let (cause, partial) = failure.into_parts();
+                (cause, partial.map(|op| Composition::Operation(*op)))
+            })
     };
-    let (operation, stopped) = match composed {
-        Ok(op) => (Some(op), None),
-        Err(f) => match f.cause() {
-            ConstructionFailure::Stopped(stop) => {
-                let Some(op) = f.partial() else {
-                    return Err((*stop).into());
-                };
-                (Some(op.clone()), Some(*stop))
-            }
-            ConstructionFailure::InvalidSelection(_) if first.target() != then.source() => {
-                (None, None)
-            }
-            other => {
-                return Err(other
-                    .internal_context(format!("native compose: {other:?}"))
-                    .into());
-            }
-        },
+    let (result, stopped) = match composed {
+        Ok(value) => (Some(value), None),
+        Err((ConstructionFailure::Stopped(stop), partial)) => {
+            let Some(value) = partial else {
+                return Err(stop.into());
+            };
+            (Some(value), Some(stop))
+        }
+        Err((ConstructionFailure::InvalidSelection(_), _))
+            if first.candidate().target_object() != then.candidate().source_object() =>
+        {
+            (None, None)
+        }
+        Err((other, _)) => {
+            return Err(other
+                .internal_context(format!("native compose: {other:?}"))
+                .into());
+        }
     };
     let c = Arc::new(ComposeWitness {
         inputs: prepared.shared_inputs(),
@@ -959,7 +953,7 @@ pub(super) fn evaluate(
         universe,
         word,
         shape,
-        operation,
+        result,
         stopped,
         maps_only,
     });
@@ -970,7 +964,7 @@ pub(super) fn evaluate(
         vec![],
         None,
     )?;
-    let evidence = if c.operation.is_none() {
+    let evidence = if c.result.is_none() {
         vec![add(
             graph,
             &c,
@@ -982,12 +976,12 @@ pub(super) fn evaluate(
     } else {
         vec![]
     };
-    let status = if c.operation.is_some() {
+    let status = if c.result.is_some() {
         Decision::Established
     } else {
         Decision::Refuted
     };
-    let condition = if c.operation.is_none() {
+    let condition = if c.result.is_none() {
         Some(claim(
             graph,
             &c,
@@ -1014,7 +1008,7 @@ pub(super) fn evaluate(
         evidence.clone(),
     )?;
     let mut outputs = BTreeMap::from([("proposition".into(), proposition)]);
-    if let Some(operation) = &c.operation {
+    if let Some(operation) = &c.result {
         let action = add(
             graph,
             &c,

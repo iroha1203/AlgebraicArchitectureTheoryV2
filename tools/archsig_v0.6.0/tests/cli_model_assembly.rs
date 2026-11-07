@@ -148,6 +148,22 @@ fn saved_map_assembly_rechecks_local_correspondences_and_serializes_square_failu
     let same = execute("same", Some("first"), target);
     assert_eq!(same.code, 0, "{}", same.stdout);
     assert!(warnings(&result_json(&dir, &same)).is_empty());
+    write_inputs(&dir, &maps::query(|s| maps::atom(s, "a-quantity", None)));
+    let blocked = execute("blocked-model", Some("first"), target);
+    assert_eq!(blocked.code, 2, "{}", blocked.stdout);
+    let result = result_json(&dir, &blocked);
+    let answer = &arr(get(&result, "answers"))[2];
+    assert_eq!(s(get(answer, "status")), "undetermined");
+    assert!(
+        arr(get(answer, "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "dependency_blocked")
+    );
+    assert!(
+        arr(get(answer, "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "missing_observation")
+    );
     write_inputs(&dir, &maps::query(|s| maps::atom(s, "moveB-parts", None)));
     let missing = execute("missing", Some("first"), target);
     let result = result_json(&dir, &missing);
@@ -179,6 +195,11 @@ fn saved_map_assembly_rechecks_local_correspondences_and_serializes_square_failu
         .find(|n| get(n, "id") == get(evidence, "node"))
         .unwrap();
     let difference = get(get(get(node, "value"), "data"), "action_difference");
+    assert!(
+        arr(get(answer, "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "condition_failed")
+    );
     assert_eq!(s(get(difference, "kind")), "generator");
     assert_ne!(get(difference, "left"), get(difference, "right"));
 }

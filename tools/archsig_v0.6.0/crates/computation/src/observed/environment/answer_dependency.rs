@@ -16,7 +16,10 @@ impl Environment<'_> {
         let native = self.with_request_context(graph, request, || {
             super::super::public_map::unavailable(self, graph, request)
         })?;
-        if matches!(request.kind, QuestionKind::Map | QuestionKind::Compose) {
+        if matches!(
+            request.kind,
+            QuestionKind::Map | QuestionKind::Compose | QuestionKind::AssembleMap
+        ) {
             return Ok(native);
         }
         self.tick()?;

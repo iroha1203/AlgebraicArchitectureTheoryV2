@@ -39,6 +39,7 @@ type SubjectKey = (String, String);
 #[derive(Clone, Debug, PartialEq, Eq)]
 enum MapOrigin {
     Derived(operations::DerivedOrigin),
+    Composition(std::sync::Arc<operations::MapComposition>),
     Correspondence(FactPointer),
     Assembly(std::sync::Arc<AssemblyMap>),
     InternalArrow {
@@ -104,20 +105,22 @@ impl MapCandidate {
         match &self.origin {
             MapOrigin::Correspondence(subject) => Some(subject),
             MapOrigin::InternalArrow { arrow, .. } => Some(arrow),
-            MapOrigin::Derived(_) | MapOrigin::Assembly(_) => None,
+            MapOrigin::Derived(_) | MapOrigin::Composition(_) | MapOrigin::Assembly(_) => None,
         }
     }
     pub fn correspondence(&self) -> Option<&FactPointer> {
         match &self.origin {
             MapOrigin::Correspondence(subject) => Some(subject),
-            MapOrigin::InternalArrow { .. } | MapOrigin::Derived(_) | MapOrigin::Assembly(_) => {
-                None
-            }
+            MapOrigin::InternalArrow { .. }
+            | MapOrigin::Derived(_)
+            | MapOrigin::Composition(_)
+            | MapOrigin::Assembly(_) => None,
         }
     }
     pub fn source_object(&self) -> ObjectIdentity {
         let root = match &self.origin {
             MapOrigin::Derived(origin) => return origin.source.clone(),
+            MapOrigin::Composition(origin) => return origin.source.clone(),
             MapOrigin::Assembly(recipe) => {
                 return ObjectIdentity::constructed(&recipe.source, recipe.source.root());
             }
@@ -137,6 +140,7 @@ impl MapCandidate {
     pub fn target_object(&self) -> ObjectIdentity {
         let root = match &self.origin {
             MapOrigin::Derived(origin) => return origin.target.clone(),
+            MapOrigin::Composition(origin) => return origin.target.clone(),
             MapOrigin::Assembly(recipe) => {
                 return ObjectIdentity::constructed(&recipe.target, recipe.target.root());
             }
@@ -156,6 +160,7 @@ impl MapCandidate {
     pub(crate) fn source_construction(&self) -> Option<std::sync::Arc<ConfigurationConstruction>> {
         match &self.origin {
             MapOrigin::Assembly(recipe) => Some(recipe.source.clone()),
+            MapOrigin::Composition(origin) => origin.first.candidate.source_construction(),
             _ => None,
         }
     }
@@ -197,6 +202,10 @@ impl MapCandidate {
         control: &Control,
     ) -> Result<(Option<MapCandidate>, Option<ConfigurationMap>), ConstructionFailure> {
         match &self.origin {
+            MapOrigin::Composition(_) => {
+                let map = operations::recompute_map_composition(self, inputs, control)?;
+                Ok((Some(map.candidate.clone()), Some(map)))
+            }
             MapOrigin::Assembly(recipe) => {
                 let map = assembly::recompute(inputs, recipe, control)?;
                 Ok((map.as_ref().map(|m| m.candidate.clone()), map))

@@ -562,6 +562,7 @@ fn compute(
     let mut local_fields = Vec::new();
     let mut outputs = BTreeMap::new();
     let mut evidence = Vec::new();
+    let mut conditions = vec![local_condition];
     let mut reasons = Vec::new();
     let mut status = if let Some(v) = &verified {
         if v.all_preserved() {
@@ -1090,12 +1091,29 @@ fn compute(
             None,
         )?;
         evidence.push(counterexample);
+        let condition = b.proposition(
+            "constructible",
+            vec![label],
+            vec![local_condition, counterexample],
+            Decision::Refuted,
+        )?;
+        conditions.push(condition);
+        reasons.push(Reason {
+            kind: ReasonKind::ConditionFailed {
+                condition,
+                construction: "model_map_assembly",
+            },
+            request: r.id.clone(),
+            dependencies: vec![condition],
+            missing: vec![],
+            location: None,
+        });
     }
     sort_reasons(&mut reasons);
     let claim = b.proposition(
         "constructible",
         vec![label],
-        outputs.values().copied().chain([local_condition]).collect(),
+        outputs.values().copied().chain(conditions).collect(),
         status,
     )?;
     let part = &mut b.parts[claim.0 - base];
@@ -1148,6 +1166,9 @@ impl super::result_kind::ResultKind for Data {
         input: Self::Input<'a, 'input>,
     ) -> Result<Answer, ValidationFailure> {
         let (p, e, g, r, c) = input;
+        if let Some(answer) = e.unavailable_binding_answer(g, r)? {
+            return Ok(answer);
+        }
         let mut selected = Vec::new();
         let mut dependencies = Vec::new();
         let mut binding_refs = BTreeMap::new();
@@ -1379,6 +1400,13 @@ pub(super) fn validate_answer(
     r: &Request,
     a: &Answer,
 ) -> Result<(), ValidationFailure> {
+    if let Some(expected) = e.unavailable_binding_answer(g, r)? {
+        return if a == &expected {
+            Ok(())
+        } else {
+            Err(internal!("全体写像の依存停止回答が元導出と違う").into())
+        };
+    }
     let at = a.claim.ok_or(internal!("全体写像の構成命題がない"))?;
     let Some(Payload::Construction(v)) = &g.get(at)?.payload else {
         return Err(internal!("全体写像の命題がnativeでない").into());
