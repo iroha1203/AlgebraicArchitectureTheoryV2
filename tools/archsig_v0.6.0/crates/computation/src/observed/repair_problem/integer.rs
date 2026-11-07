@@ -1111,7 +1111,12 @@ fn consume(
     source.range = enabled;
     source.ranges = ranges;
     if let Some(Backend::Integer(state)) = &mut source.shared {
-        state.parameters = chosen;
+        // Selectionは元Assignmentへの辺を持つ。再検査用の一時parameterを重ねて保持しない。
+        state.parameters = if r.kind == QuestionKind::Candidate {
+            chosen
+        } else {
+            None
+        };
         state.range_result = math;
         state.solutions = published;
         state.public_model = public_model;

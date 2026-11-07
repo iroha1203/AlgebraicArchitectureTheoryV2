@@ -1085,27 +1085,62 @@ fn legacy_and_prepared_integer_assignments_transfer_by_subject_across_coordinate
                 result.issues
             );
         }
+        let scalar = |wire: &Json| -> Scalar {
+            let at = (0..result.nodes.len())
+                .find(|i| NodeRef(*i).wire() == *wire)
+                .unwrap();
+            match result.nodes[at].payload.as_ref().unwrap() {
+                Payload::Scalar(s) => s.clone(),
+                Payload::Construction(v) => v.scalar().unwrap().clone(),
+                _ => panic!(),
+            }
+        };
         for (source, applied) in [(4, 5), (6, 7)] {
-            let source = data_for(&result, result.answers[source].outputs["assignment"])
-                .source
-                .integer()
-                .unwrap();
-            let target = data_for(&result, result.answers[applied].outputs["selection"])
-                .source
-                .integer()
-                .unwrap();
-            for (i, subject) in target.shared.compiled.subjects.iter().enumerate() {
+            let assignment = result.answers[source].outputs["assignment"];
+            let source = data_for(&result, assignment).source.integer().unwrap();
+            let selection = result.answers[applied].outputs["selection"];
+            let state = data_for(&result, selection).source.integer().unwrap();
+            assert!(
+                state.parameters.is_none(),
+                "適用後は元Assignmentを参照し、一時の元値を重複保持しない"
+            );
+            let Some(Payload::Construction(selected)) = &result.nodes[selection.0].payload else {
+                panic!()
+            };
+            let selected = selected.wire();
+            assert_eq!(fields(&selected).unwrap()["parameters"], assignment.wire());
+            let object = result.answers[applied].outputs["object"];
+            let Some(Payload::Construction(value)) = &result.nodes[object.0].payload else {
+                panic!()
+            };
+            let wire = value.wire();
+            let Json::Arr(overrides) = &fields(&wire).unwrap()["overrides"] else {
+                panic!()
+            };
+            assert_eq!(overrides.len(), 6);
+            for row in overrides {
+                let row = fields(row).unwrap();
+                let slot = fields(&row["slot"]).unwrap();
+                let subject = scalar(&slot["subject"]);
                 let from = source
                     .shared
                     .compiled
                     .subjects
                     .iter()
-                    .position(|s| s == subject)
+                    .position(|s| *s == subject)
                     .unwrap();
+                let Json::Str(field) = &slot["field"] else {
+                    panic!()
+                };
+                let offset = match field.as_str() {
+                    "Pattern.Part.x" => 0,
+                    "Pattern.Part.y" => 1,
+                    _ => panic!("更新先が違う"),
+                };
                 assert_eq!(
-                    &target.parameters.as_ref().unwrap()[2 * i..2 * i + 2],
-                    &source.parameters.as_ref().unwrap()[2 * from..2 * from + 2],
-                    "同じsubjectの元parameterを宣言順で維持する"
+                    scalar(&row["value"]),
+                    Scalar::Z(source.parameters.as_ref().unwrap()[2 * from + offset].clone()),
+                    "元subjectの元parameterを実対象の各座標へ戻す"
                 );
             }
         }
