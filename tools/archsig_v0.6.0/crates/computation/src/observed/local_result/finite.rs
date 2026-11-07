@@ -16,9 +16,9 @@ pub(super) fn compute(
         .into_iter()
         .map(|(f, _, v)| (f, v))
         .collect::<Vec<_>>();
-    let mut fixed = Environment::try_primitive_valuation(env.indexes.inputs, &assignments, c)?
-        .ok_or(internal!("有限局所系の元Architectureが不適合"))?;
-    fixed.select_local_object(&witness, c)?;
+    let fixed =
+        Environment::try_object_primitive_valuation(env.indexes.inputs, &assignments, &witness, c)?
+            .ok_or(internal!("有限局所系の元Architectureが不適合"))?;
     let (model, missing) = finite_model::analyze(env, &fixed, g, &witness, request, c)?;
     let Some(model) = model else {
         let using = request

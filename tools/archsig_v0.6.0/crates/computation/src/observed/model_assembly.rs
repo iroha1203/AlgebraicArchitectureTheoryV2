@@ -60,7 +60,9 @@ fn observed_fact(s: &Subject, f: &archsig_input::archmap::Field) -> Fact {
     }
     fact
 }
-fn counterexample_facts(rows: &[crate::construction::maps::Counterexample]) -> Vec<Fact> {
+pub(super) fn counterexample_facts(
+    rows: &[crate::construction::maps::Counterexample],
+) -> Vec<Fact> {
     use crate::construction::maps::Counterexample as C;
     let mut facts = Vec::new();
     for row in rows {
@@ -117,7 +119,10 @@ fn failure(e: ConstructionFailure) -> ValidationFailure {
         e => ValidationFailure::Internal(e.internal_context(format!("局所モデル組立て: {e:?}"))),
     }
 }
-fn subject<'a>(inputs: &'a CheckedInputs, fact: &Fact) -> Result<&'a Subject, ValidationFailure> {
+pub(super) fn subject<'a>(
+    inputs: &'a CheckedInputs,
+    fact: &Fact,
+) -> Result<&'a Subject, ValidationFailure> {
     inputs
         .archmap()
         .snapshots()
@@ -126,7 +131,7 @@ fn subject<'a>(inputs: &'a CheckedInputs, fact: &Fact) -> Result<&'a Subject, Va
         .and_then(|s| s.subjects.iter().find(|s| s.id == fact.subject))
         .ok_or_else(|| internal!("組立ての型付き参照先がない").into())
 }
-fn field_fact(s: &Subject, field: &archsig_input::archmap::Field) -> Fact {
+pub(super) fn field_fact(s: &Subject, field: &archsig_input::archmap::Field) -> Fact {
     Fact::from(archsig_input::archmap::FactData {
         snapshot: s.snapshot.clone(),
         subject: s.id.clone(),

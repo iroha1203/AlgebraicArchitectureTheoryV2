@@ -153,7 +153,7 @@ fn legacy(part: &Part) -> LegacyPart {
             .wire_ref()
             .map_or_else(|| part.scalar.as_ref().unwrap().wire(), Clone::clone),
         arguments: part.arguments.clone(),
-        support: part.support.clone(),
+        support: part.support.to_vec(),
         scope: part.scope.clone(),
         reasons: part.reasons.clone(),
         judgment: part.judgment.clone(),

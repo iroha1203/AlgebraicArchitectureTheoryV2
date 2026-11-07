@@ -423,6 +423,13 @@ fn interrupt_leaves_exact_completed_dag_prefix_and_no_completed_table() {
         "root",
     );
     let (initial, a) = start(&p);
+    // 同じArchitectureが所有するLaw評価を共有するため、停止位置の基準も
+    // 同じ温まった不変入力で計測する。cold/warmの内部checkpoint数を混ぜない。
+    let mut warm = copy_graph(&initial, &quiet());
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    retain(&env, &mut warm, p.shared_inputs(), a, &quiet())
+        .unwrap()
+        .unwrap();
     let seen = Rc::new(Cell::new(0));
     let count = seen.clone();
     let c = Control::new(move |point| {

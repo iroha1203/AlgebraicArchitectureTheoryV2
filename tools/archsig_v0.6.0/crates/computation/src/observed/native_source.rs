@@ -27,6 +27,7 @@ pub(super) struct Boundary {
     start: usize,
     producer: Context,
     architecture: NodeRef,
+    architecture_context: Context,
     inputs: Vec<NodeRef>,
 }
 impl Boundary {
@@ -51,10 +52,41 @@ impl Boundary {
             start: g.nodes.len(),
             producer,
             architecture,
+            architecture_context: producer,
             inputs,
         };
         boundary.recheck(env, g, boundary.start, c)?;
         Ok(boundary)
+    }
+    /// 既出Handleを消費する別のroot要求。元nodeと現在producerのContextを別々に保持する。
+    pub(super) fn capture_existing(
+        env: &Environment<'_>,
+        g: &Graph,
+        architecture: NodeRef,
+        inputs: Vec<NodeRef>,
+        c: &Control,
+    ) -> Result<Self, ValidationFailure> {
+        tick(c)?;
+        let producer = g.active;
+        if producer.frame.is_some()
+            || producer.instance.is_some()
+            || producer.iteration.is_some()
+            || producer.case.is_some()
+        {
+            return Err(internal!("既出構成の消費がroot Contextでない").into());
+        }
+        let boundary = Self {
+            start: g.nodes.len(),
+            producer,
+            architecture,
+            architecture_context: saved_context(g, architecture)?,
+            inputs,
+        };
+        boundary.recheck(env, g, boundary.start, c)?;
+        Ok(boundary)
+    }
+    pub(super) fn producer_request(&self) -> usize {
+        self.producer.request
     }
     pub(super) fn start(&self) -> usize {
         self.start
@@ -83,7 +115,7 @@ impl Boundary {
             };
             if self.start > at
                 || actual != self.producer
-                || saved_context(g, self.architecture)? != self.producer
+                || saved_context(g, self.architecture)? != self.architecture_context
             {
                 return Err(internal!("native構成の開始位置または元producerが違う").into());
             }

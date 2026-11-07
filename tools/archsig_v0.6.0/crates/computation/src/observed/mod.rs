@@ -26,6 +26,8 @@ mod law_proposition;
 mod law_table;
 mod local_result;
 mod model_assembly;
+mod model_map_assembly;
+mod model_map_result;
 mod needed;
 mod numeric;
 pub mod numeric_transport;

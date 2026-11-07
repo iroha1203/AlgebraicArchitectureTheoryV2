@@ -28,6 +28,51 @@ impl<'a> Environment<'a> {
         )
     }
 
+    /// 検査済み構成対象の参照輸送を選んでから、実際の変更値だけを原始候補にする。
+    /// 輸送された所有者は元ArchMapへの更新ではなく、object_field_valueが供給する。
+    pub(in crate::observed) fn try_object_primitive_valuation(
+        inputs: &'a CheckedInputs,
+        assignments: &[(Fact, Scalar)],
+        witness: &super::super::construction_result::ArchitectureWitness,
+        control: &Control,
+    ) -> Result<Option<Self>, ValidationFailure> {
+        Self::object_primitive_valuation_on(
+            Self::new(inputs, control)?,
+            assignments,
+            witness,
+            control,
+        )
+    }
+
+    pub(in crate::observed) fn try_object_primitive_valuation_from(
+        &self,
+        assignments: &[(Fact, Scalar)],
+        witness: &super::super::construction_result::ArchitectureWitness,
+        control: &Control,
+    ) -> Result<Option<Self>, ValidationFailure> {
+        Self::object_primitive_valuation_on(
+            self.fresh_candidate(control),
+            assignments,
+            witness,
+            control,
+        )
+    }
+
+    fn object_primitive_valuation_on(
+        mut environment: Self,
+        assignments: &[(Fact, Scalar)],
+        witness: &super::super::construction_result::ArchitectureWitness,
+        control: &Control,
+    ) -> Result<Option<Self>, ValidationFailure> {
+        environment.select_local_object(witness, control)?;
+        Self::primitive_valuation_on(
+            environment,
+            assignments.iter().map(|(f, v)| (f, v)),
+            control,
+            true,
+        )
+    }
+
     /// 依存位置の発見中は、まだ固定されている別fieldとの制約で枝を刈らない。
     /// 元型・値の正規性は検査する。完成候補はprimitive_constraints_holdで所属・全域性を検査する。
     pub(super) fn primitive_dependency_probe_from(
@@ -97,16 +142,12 @@ impl<'a> Environment<'a> {
             .object
             .as_ref()
             .ok_or(internal!("local候補の生成元対象が未選択"))?;
-        let Some(mut candidate) = Self::primitive_valuation_on(
-            self.fresh_candidate(control),
-            assignments,
-            control,
-            true,
-        )?
+        let mut base = self.fresh_candidate(control);
+        base.indexes.object = Some(std::sync::Arc::clone(object));
+        let Some(candidate) = Self::primitive_valuation_on(base, assignments, control, true)?
         else {
             return Ok(None);
         };
-        candidate.indexes.object = Some(std::sync::Arc::clone(object));
         Ok(Some(candidate))
     }
 
@@ -195,12 +236,16 @@ impl<'a> Environment<'a> {
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
         let roster = &environment.indexes.roster;
         let mut values = BTreeMap::new();
+        let mut projected_positions = std::collections::BTreeSet::new();
         let mut original_values = BTreeMap::new();
         let mut pinned = Vec::new();
         let mut structurally_neutral = true;
         for (position, value) in assignments {
             control.checkpoint(Checkpoint::PrimitiveValuation)?;
-            if position.atom.is_some() || position.field.is_none() || values.contains_key(position)
+            if position.atom.is_some()
+                || position.field.is_none()
+                || values.contains_key(position)
+                || projected_positions.contains(position)
             {
                 return Err(
                     internal!("候補代入の位置が重複・fieldなし・観測Atom付きである").into(),
@@ -246,9 +291,18 @@ impl<'a> Environment<'a> {
             if !same_primitive_value(value, &checked, control)? {
                 return Err(internal!("候補代入が元encodingの正規値と違う").into());
             }
+            let pure = structural_neutral_value(&original, control)?;
+            // 検査済み構成の参照射影は元入力全体へのpinではない。
+            // 異なる参照候補は通常の所属・Map制約検査へ進む。
+            if !pure
+                && let Some((projected, _)) = environment.object_field_value(position)?
+                && data::equal(value, &projected, control)?
+            {
+                projected_positions.insert(position);
+                continue;
+            }
             if constraints && structurally_neutral {
-                structurally_neutral = structural_neutral_value(&original, control)?
-                    || unchanged_known_reference(&original, &field.slot);
+                structurally_neutral = pure || unchanged_known_reference(&original, &field.slot);
             }
             if constraints {
                 pinned.push((position, field.name.as_str(), encoded));

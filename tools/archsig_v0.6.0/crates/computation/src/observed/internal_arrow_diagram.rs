@@ -55,6 +55,7 @@ enum Part {
     },
     Map {
         candidate: NodeRef,
+        core_row: usize,
     },
     Operation {
         kernel: Box<ConfigurationOperation>,
@@ -108,7 +109,7 @@ impl Part {
                 right,
                 ..
             } => vec![*subject, *left, *right],
-            Self::Map { candidate } => vec![*candidate],
+            Self::Map { candidate, .. } => vec![*candidate],
             Self::Operation {
                 subject,
                 source,
@@ -167,7 +168,7 @@ impl Part {
                     ]),
                 ),
             ]),
-            Self::Map { candidate } => Json::obj([("candidate", candidate.wire())]),
+            Self::Map { candidate, .. } => Json::obj([("candidate", candidate.wire())]),
             Self::Operation {
                 subject,
                 source,
@@ -260,7 +261,7 @@ impl Data {
         }
         let candidate = match part {
             Part::Candidate { .. } => part,
-            Part::Map { candidate } | Part::Operation { candidate, .. } => self
+            Part::Map { candidate, .. } | Part::Operation { candidate, .. } => self
                 .source
                 .parts
                 .get(candidate.0.checked_sub(self.source.base)?)?,
@@ -323,6 +324,12 @@ impl Data {
             _ => None,
         }
     }
+    pub(super) fn core_map(&self) -> Option<&crate::construction::maps::ConfigurationMap> {
+        let Part::Map { core_row, .. } = self.source.parts.get(self.index)? else {
+            return None;
+        };
+        self.source.core.arrows().get(*core_row)?.map()
+    }
     pub(super) fn components(&self) -> Option<(NodeRef, NodeRef, NodeRef, Vec<NodeRef>)> {
         match self.source.parts.get(self.index)? {
             Part::Operation {
@@ -332,6 +339,21 @@ impl Data {
                 action,
                 ..
             } => Some((*source, *target, *action, vec![*subject])),
+            Part::Map { candidate, .. } => {
+                let Part::Candidate {
+                    source,
+                    target,
+                    action,
+                    ..
+                } = self
+                    .source
+                    .parts
+                    .get(candidate.0.checked_sub(self.source.base)?)?
+                else {
+                    return None;
+                };
+                Some((*source, *target, *action, vec![]))
+            }
             _ => None,
         }
     }
@@ -355,7 +377,7 @@ impl Data {
             (Part::Candidate { source, .. } | Part::Operation { source, .. }, "source") => *source,
             (Part::Candidate { target, .. } | Part::Operation { target, .. }, "target") => *target,
             (Part::Candidate { action, .. } | Part::Operation { action, .. }, "action") => *action,
-            (Part::Map { candidate } | Part::Operation { candidate, .. }, "candidate") => {
+            (Part::Map { candidate, .. } | Part::Operation { candidate, .. }, "candidate") => {
                 *candidate
             }
             (Part::Operation { map, .. }, "configuration_map") => *map,
@@ -478,7 +500,7 @@ fn plan(
         objects.architectures.get(index).copied()
             .ok_or_else(|| internal!("内部arrowの実Architectureがない").into())
     };
-    for row in core.arrows() {
+    for (core_row, row) in core.arrows().iter().enumerate() {
         tick(c)?;
         let f = row.arrow();
         let original = inputs
@@ -539,7 +561,15 @@ fn plan(
                 {
                     return Err(internal!("内部arrowの生成操作が元候補と違う").into());
                 }
-                let map = push(&mut parts, base, Part::Map { candidate }, c)?;
+                let map = push(
+                    &mut parts,
+                    base,
+                    Part::Map {
+                        candidate,
+                        core_row,
+                    },
+                    c,
+                )?;
                 operation = Some(push(
                     &mut parts,
                     base,

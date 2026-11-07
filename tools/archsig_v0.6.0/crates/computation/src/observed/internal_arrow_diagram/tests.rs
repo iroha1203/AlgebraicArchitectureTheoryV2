@@ -184,7 +184,19 @@ fn generators_use_actual_owned_architectures_and_total_actions_with_fixed_comple
         assert_eq!(*source, o.architectures[from_index]);
         assert_eq!(*target, o.architectures[to_index]);
         assert_ne!(source, target);
-        assert!(matches!(data(&g,*map).part(),Part::Map{candidate:c} if c==candidate));
+        assert!(matches!(data(&g,*map).part(),Part::Map{candidate:c,..} if c==candidate));
+        let map_data = data(&g, *map);
+        let core_map = map_data.core_map().expect("保持済み核写像");
+        let operation = data(&g, row.operation.unwrap()).operation().unwrap();
+        assert_eq!(core_map, operation.map());
+        assert_eq!(
+            core_map.candidate().images().as_ptr(),
+            operation.map().candidate().images().as_ptr()
+        );
+        assert_eq!(
+            map_data.components(),
+            Some((*source, *target, *action, vec![]))
+        );
         assert!(
             matches!(data(&g,*candidate).part(),Part::Candidate{declaration,subject:s,source:x,target:y,action:z} if declaration=="Flow.Step"&&s==subject&&x==source&&y==target&&z==action)
         );

@@ -361,8 +361,9 @@ pub(super) fn apply_object(
         .merge(&candidate.update.scope);
     b.parts[object.0 - b.base]
         .support
+        .make_owned()
         .extend(candidate.update.support.iter().cloned());
-    b.parts[object.0 - b.base].support.sort();
-    b.parts[object.0 - b.base].support.dedup();
+    b.parts[object.0 - b.base].support.make_owned().sort();
+    b.parts[object.0 - b.base].support.make_owned().dedup();
     Ok((object, checks))
 }

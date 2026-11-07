@@ -79,16 +79,25 @@ impl DeclarationCorrespondence {
         source: &str,
         control: &Control,
     ) -> Result<Option<String>, ConstructionFailure> {
-        let raw = self
-            .operation
-            .map()
-            .candidate()
-            .correspondence()
-            .ok_or_else(|| {
-                ConstructionFailure::InvalidSelection(
-                    "field対応は原始correspondenceを要求する".into(),
-                )
-            })?;
+        let Some(raw) = self.operation.map().candidate().correspondence() else {
+            if matches!(
+                self.operation.map().candidate().origin,
+                MapOrigin::Assembly(_)
+            ) && self.operation.map().candidate().reading()
+                == self.operation.map().candidate().to_reading()
+                && let Some((owner, field)) = source.rsplit_once('.')
+                && inputs
+                    .definitions()
+                    .declarations()
+                    .get(owner)
+                    .is_some_and(|d| d.signature.field(field).is_some())
+            {
+                return Ok(Some(source.to_owned()));
+            }
+            return Err(ConstructionFailure::InvalidSelection(
+                "field対応の元correspondenceまたは組立てmapがない".into(),
+            ));
+        };
         let holder = subject(inputs, &raw.snapshot, &raw.subject, control)?;
         let declaration = inputs
             .definitions()
@@ -237,8 +246,12 @@ pub fn declaration_correspondence(
 ) -> Result<DeclarationCorrespondence, ConstructionFailure> {
     tick(control)?;
     let MapOrigin::Correspondence(raw) = &map.candidate.origin else {
+        if matches!(map.candidate.origin, MapOrigin::Assembly(_)) {
+            map.recheck(inputs, control)?;
+            return declaration_correspondence_constructed(inputs, map, control);
+        }
         return Err(ConstructionFailure::InvalidSelection(
-            "宣言対応は原始correspondenceの保存済みmapを要求する".into(),
+            "宣言対応は原始correspondenceまたは構成済み組立てmapを要求する".into(),
         ));
     };
     let operation = ConfigurationOperation::from_map(inputs, map, control)?;
@@ -259,6 +272,49 @@ pub fn declaration_correspondence(
         tick(control)?;
         mu.insert(a.clone(), b.clone());
     }
+    declarations_with_types(inputs, map, operation, mu, control)
+}
+/// 同じ宣言環境・readingの検査済み組立て写像。型・field名は同じ元宣言を指す。
+pub(crate) fn declaration_correspondence_constructed(
+    inputs: &CheckedInputs,
+    map: &ConfigurationMap,
+    control: &Control,
+) -> Result<DeclarationCorrespondence, ConstructionFailure> {
+    tick(control)?;
+    let MapOrigin::Assembly(recipe) = &map.candidate.origin else {
+        return Err(ConstructionFailure::InvalidSelection(
+            "組立てmapの元構成がない".into(),
+        ));
+    };
+    if recipe.source.reading() != recipe.target.reading()
+        || subject(
+            inputs,
+            &recipe.source.root().snapshot,
+            &recipe.source.root().subject,
+            control,
+        )?
+        .ty != subject(
+            inputs,
+            &recipe.target.root().snapshot,
+            &recipe.target.root().subject,
+            control,
+        )?
+        .ty
+    {
+        return Err(ConstructionFailure::InvalidSelection(
+            "組立てmapの宣言環境・readingが違う".into(),
+        ));
+    }
+    let operation = ConfigurationOperation::from_checked_map(map, control)?;
+    declarations_with_types(inputs, map, operation, BTreeMap::new(), control)
+}
+fn declarations_with_types(
+    inputs: &CheckedInputs,
+    map: &ConfigurationMap,
+    operation: ConfigurationOperation,
+    mu: BTreeMap<String, String>,
+    control: &Control,
+) -> Result<DeclarationCorrespondence, ConstructionFailure> {
     let c = map.candidate();
     let prefix = format!("{}.", c.reading());
     let mut candidates = Vec::new();

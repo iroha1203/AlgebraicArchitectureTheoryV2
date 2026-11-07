@@ -9,11 +9,33 @@ use super::{
     request::{QuestionKind, Request, Selector},
     result::*,
 };
-use crate::construction::{ConstructionFailure, maps::ConfigurationOperation};
+use crate::construction::{
+    ConstructionFailure,
+    maps::{ConfigurationMap, ConfigurationOperation},
+};
 use archsig_common::canonical::Json;
 use archsig_common::control::{Checkpoint, Control};
 use archsig_input::{input::CheckedInputs, result::Signal};
 use std::{collections::BTreeMap, sync::Arc};
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum Composition {
+    Operation(ConfigurationOperation),
+    Map(ConfigurationMap),
+}
+impl Composition {
+    fn map(&self) -> &ConfigurationMap {
+        match self {
+            Self::Operation(operation) => operation.map(),
+            Self::Map(map) => map,
+        }
+    }
+    fn operation(&self) -> Option<&ConfigurationOperation> {
+        match self {
+            Self::Operation(operation) => Some(operation),
+            Self::Map(_) => None,
+        }
+    }
+}
 #[derive(Clone, Debug)]
 pub(crate) struct ComposeWitness {
     pub(super) inputs: Arc<CheckedInputs>,
@@ -29,8 +51,9 @@ pub(crate) struct ComposeWitness {
     universe: NodeRef,
     word: Vec<NodeRef>,
     shape: OperationProjection,
-    operation: Option<ConfigurationOperation>,
+    result: Option<Composition>,
     stopped: Option<Signal>,
+    maps_only: bool,
 }
 impl PartialEq for ComposeWitness {
     fn eq(&self, b: &Self) -> bool {
@@ -50,8 +73,9 @@ impl PartialEq for ComposeWitness {
             && self.universe == b.universe
             && self.word == b.word
             && self.shape == b.shape
-            && self.operation == b.operation
+            && self.result == b.result
             && self.stopped == b.stopped
+            && self.maps_only == b.maps_only
     }
 }
 impl Eq for ComposeWitness {}
@@ -59,7 +83,7 @@ impl Eq for ComposeWitness {}
 pub(crate) enum Part {
     Action {
         universe: NodeRef,
-        images: Vec<Fact>,
+        images: Arc<Vec<Fact>>,
     },
     Candidate {
         source: NodeRef,
@@ -311,10 +335,41 @@ pub(super) fn op(graph: &Graph, r: NodeRef) -> Result<&ConfigurationOperation, V
             .operation()
             .ok_or(internal!("元mapのOperationがない").into()),
         (D::Composition(Part::Operation { .. }), Witness::Compose(c)) => c
-            .operation
+            .result
             .as_ref()
+            .and_then(Composition::operation)
             .ok_or(internal!("元合成のOperationがない").into()),
         _ => Err(internal!("未確認候補・PathをOperationへ昇格した").into()),
+    }
+}
+pub(super) fn checked_map(
+    graph: &Graph,
+    r: NodeRef,
+) -> Result<&crate::construction::maps::ConfigurationMap, ValidationFailure> {
+    if graph.get(r)?.ty != NodeType::Construction(T::ConfigurationMap) {
+        return Ok(op(graph, r)?.map());
+    }
+    let v = value(graph, r)?;
+    match (&v.data, &v.witness) {
+        (D::InternalArrows(data), _) => data
+            .core_map()
+            .ok_or(internal!("内部生成操作の確認済み写像がない").into()),
+        (D::ModelMap(d), _) => d
+            .core_map()
+            .ok_or(internal!("全体写像の実作用がない").into()),
+        (D::Build(d), _) => d
+            .core_map()
+            .ok_or(internal!("包含・制限の実作用がない").into()),
+        (D::ConfigurationMap { .. }, Witness::Map(m)) => m
+            .result()
+            .map()
+            .ok_or(internal!("原始写像の実作用がない").into()),
+        (D::Composition(Part::Map { .. }), Witness::Compose(w)) => w
+            .result
+            .as_ref()
+            .map(Composition::map)
+            .ok_or(internal!("合成写像の実作用がない").into()),
+        _ => Err(internal!("確認済みConfigurationMapを要求する").into()),
     }
 }
 pub(super) fn components(
@@ -322,6 +377,29 @@ pub(super) fn components(
     r: NodeRef,
 ) -> Result<(NodeRef, NodeRef, NodeRef, Vec<NodeRef>), ValidationFailure> {
     match &value(graph, r)?.data {
+        D::ModelMap(data) => data
+            .map_components()
+            .ok_or(internal!("全体写像の端点・作用がない").into()),
+        D::Build(data) => data
+            .map_components()
+            .ok_or(internal!("組立て写像の端点・作用がない").into()),
+        D::ConfigurationMap { candidate, .. } | D::Composition(Part::Map { candidate, .. }) => {
+            match &value(graph, *candidate)?.data {
+                D::MapCandidate {
+                    source,
+                    target,
+                    action,
+                    ..
+                }
+                | D::Composition(Part::Candidate {
+                    source,
+                    target,
+                    action,
+                    ..
+                }) => Ok((*source, *target, *action, vec![])),
+                _ => Err(internal!("写像の候補・端点・作用がない").into()),
+            }
+        }
         D::InternalArrows(data) => data
             .components()
             .ok_or(internal!("内部arrowのOperation実体がない").into()),
@@ -344,6 +422,12 @@ pub(super) fn components(
 }
 pub(super) fn universe(graph: &Graph, r: NodeRef) -> Result<NodeRef, ValidationFailure> {
     match &value(graph, r)?.data {
+        D::ModelMap(data) => data
+            .action_universe()
+            .ok_or(internal!("全体写像のUがない").into()),
+        D::Build(data) => data
+            .action_universe()
+            .ok_or(internal!("組立て写像のUがない").into()),
         D::InternalArrows(data) => data
             .universe()
             .ok_or(internal!("内部arrowの総作用の元Uがない").into()),
@@ -399,6 +483,11 @@ pub(super) fn validate_origin(
         || c.inputs.sources() != environment.indexes.inputs.sources()
         || selected(environment, graph, request, "head")? != c.left
         || selected(environment, graph, request, "then")? != c.right
+        || c.maps_only != (graph.get(c.left)?.ty == NodeType::Construction(T::ConfigurationMap))
+        || c.maps_only != (graph.get(c.right)?.ty == NodeType::Construction(T::ConfigurationMap))
+        || c.result
+            .as_ref()
+            .is_some_and(|r| matches!(r, Composition::Map(_)) != c.maps_only)
     {
         return Err(internal!("合成の現在入力・元要求・元Operationが違う").into());
     }
@@ -476,8 +565,8 @@ pub(super) fn validate_node(
     }
     match p {
         Part::Action { universe, images } => {
-            let result = c.operation.as_ref().ok_or_else(fail)?;
-            if *universe != c.universe || images != result.map().candidate().images() {
+            let result = c.result.as_ref().ok_or_else(fail)?;
+            if *universe != c.universe || images.as_slice() != result.map().candidate().images() {
                 return Err(fail());
             }
         }
@@ -488,7 +577,7 @@ pub(super) fn validate_node(
             left,
             right,
         } => {
-            if c.operation.is_none()
+            if c.result.is_none()
                 || (*source, *target, *left, *right) != (c.source, c.target, c.left, c.right)
                 || !matches!(part(graph, *action, c)?, Part::Action { .. })
             {
@@ -510,7 +599,7 @@ pub(super) fn validate_node(
             if !matches!(&label.witness,Witness::Compose(actual) if actual.as_ref()==c) {
                 return Err(fail());
             }
-            let expected = if c.operation.is_some() {
+            let expected = if c.result.is_some() {
                 Decision::Established
             } else {
                 Decision::Refuted
@@ -542,7 +631,7 @@ pub(super) fn validate_node(
             }
         }
         Part::Endpoints { left, right } => {
-            if c.operation.is_some()
+            if c.result.is_some()
                 || (*left, *right) != (c.middle_left, c.middle_right)
                 || node.evidence.len() != 1
                 || !matches!(part(graph, node.evidence[0], c)?, Part::Evidence { .. })
@@ -557,9 +646,10 @@ pub(super) fn validate_node(
             }
         }
         Part::Evidence { left, right } => {
-            if c.operation.is_some()
+            if c.result.is_some()
                 || (*left, *right) != (c.middle_left, c.middle_right)
-                || op(graph, c.left)?.target() == op(graph, c.right)?.source()
+                || checked_map(graph, c.left)?.candidate().target_object()
+                    == checked_map(graph, c.right)?.candidate().source_object()
             {
                 return Err(fail());
             }
@@ -597,7 +687,8 @@ pub(super) fn validate_node(
             right,
             word,
         } => {
-            if c.operation.is_none()
+            if c.maps_only
+                || c.result.is_none()
                 || (*source, *target, *left, *right) != (c.source, c.target, c.left, c.right)
                 || word != &c.word
                 || !matches!(part(graph,*map,c)?,Part::Map{candidate:r,preservation:p} if r==candidate&&p==preservation)
@@ -682,7 +773,7 @@ pub(super) fn validate_failure(graph: &Graph, reason: &Reason) -> Result<(), Val
     let Witness::Compose(c) = &v.witness else {
         return Err(internal!("合成の元証拠がない").into());
     };
-    if c.operation.is_some()
+    if c.result.is_some()
         || c.request.id != reason.request
         || &failed_reason(&c.request, condition) != reason
         || !matches!(v.data, D::Composition(Part::Endpoints { .. }))
@@ -720,16 +811,28 @@ pub(super) fn validate_answer(
         .as_ref()
         .ok_or(internal!("合成命題の判断がない"))?;
     let mut outputs = BTreeMap::from([("proposition".into(), p)]);
-    if c.operation.is_some() {
-        let operation = *answer
-            .outputs
-            .get("operation")
-            .ok_or(internal!("合成Operationがない"))?;
-        let Part::Operation { map, .. } = part(graph, operation, c)? else {
-            return Err(internal!("合成出力がOperationでない").into());
-        };
-        outputs.insert("operation".into(), operation);
-        outputs.insert("map".into(), *map);
+    if c.result.is_some() {
+        if c.maps_only {
+            let map = *answer
+                .outputs
+                .get("map")
+                .ok_or(internal!("合成写像がない"))?;
+            let Part::Map { candidate, .. } = part(graph, map, c)? else {
+                return Err(internal!("合成出力が写像でない").into());
+            };
+            outputs.insert("map".into(), map);
+            outputs.insert("candidate".into(), *candidate);
+        } else {
+            let operation = *answer
+                .outputs
+                .get("operation")
+                .ok_or(internal!("合成Operationがない"))?;
+            let Part::Operation { map, .. } = part(graph, operation, c)? else {
+                return Err(internal!("合成出力がOperationでない").into());
+            };
+            outputs.insert("operation".into(), operation);
+            outputs.insert("map".into(), *map);
+        }
     }
     let mut reasons = j.reasons.clone();
     if let Some(stop) = &c.stopped {
@@ -783,8 +886,13 @@ pub(super) fn evaluate(
     support.dedup();
     let mut scope = graph.get(left)?.scope.clone();
     scope.merge(&graph.get(right)?.scope);
-    let first = op(graph, left)?;
-    let then = op(graph, right)?;
+    let maps_only = graph.get(left)?.ty == NodeType::Construction(T::ConfigurationMap);
+    if maps_only {
+        environment.recheck_node(graph, graph.get(left)?, left.0)?;
+        environment.recheck_node(graph, graph.get(right)?, right.0)?;
+    }
+    let first = checked_map(graph, left)?;
+    let then = checked_map(graph, right)?;
     let mut types = Vec::new();
     for r in &word {
         control.checkpoint(Checkpoint::ConfigurationOperation)?;
@@ -796,28 +904,43 @@ pub(super) fn evaluate(
     let shape = OperationProjection {
         source: root_type(graph, source)?,
         target: root_type(graph, target)?,
-        reading: first.source().reading().into(),
-        to_reading: then.target().reading().into(),
+        reading: first.candidate().source_object().reading().into(),
+        to_reading: then.candidate().target_object().reading().into(),
         word: types,
     };
-    let (operation, stopped) = match first.compose_retained(prepared.inputs(), then, control) {
-        Ok(op) => (Some(op), None),
-        Err(f) => match f.cause() {
-            ConstructionFailure::Stopped(stop) => {
-                let Some(op) = f.partial() else {
-                    return Err((*stop).into());
-                };
-                (Some(op.clone()), Some(*stop))
-            }
-            ConstructionFailure::InvalidSelection(_) if first.target() != then.source() => {
-                (None, None)
-            }
-            other => {
-                return Err(other
-                    .internal_context(format!("native compose: {other:?}"))
-                    .into());
-            }
-        },
+    let composed = if maps_only {
+        let mut retained = None;
+        first
+            .compose_after_recheck(then, control, |map| retained = Some(map.clone()))
+            .map(Composition::Map)
+            .map_err(|cause| (cause, retained.map(Composition::Map)))
+    } else {
+        op(graph, left)?
+            .compose_retained(prepared.inputs(), op(graph, right)?, control)
+            .map(Composition::Operation)
+            .map_err(|failure| {
+                let (cause, partial) = failure.into_parts();
+                (cause, partial.map(|op| Composition::Operation(*op)))
+            })
+    };
+    let (result, stopped) = match composed {
+        Ok(value) => (Some(value), None),
+        Err((ConstructionFailure::Stopped(stop), partial)) => {
+            let Some(value) = partial else {
+                return Err(stop.into());
+            };
+            (Some(value), Some(stop))
+        }
+        Err((ConstructionFailure::InvalidSelection(_), _))
+            if first.candidate().target_object() != then.candidate().source_object() =>
+        {
+            (None, None)
+        }
+        Err((other, _)) => {
+            return Err(other
+                .internal_context(format!("native compose: {other:?}"))
+                .into());
+        }
     };
     let c = Arc::new(ComposeWitness {
         inputs: prepared.shared_inputs(),
@@ -833,8 +956,9 @@ pub(super) fn evaluate(
         universe,
         word,
         shape,
-        operation,
+        result,
         stopped,
+        maps_only,
     });
     let name = put(
         graph,
@@ -843,7 +967,7 @@ pub(super) fn evaluate(
         vec![],
         None,
     )?;
-    let evidence = if c.operation.is_none() {
+    let evidence = if c.result.is_none() {
         vec![add(
             graph,
             &c,
@@ -855,12 +979,12 @@ pub(super) fn evaluate(
     } else {
         vec![]
     };
-    let status = if c.operation.is_some() {
+    let status = if c.result.is_some() {
         Decision::Established
     } else {
         Decision::Refuted
     };
-    let condition = if c.operation.is_none() {
+    let condition = if c.result.is_none() {
         Some(claim(
             graph,
             &c,
@@ -887,13 +1011,13 @@ pub(super) fn evaluate(
         evidence.clone(),
     )?;
     let mut outputs = BTreeMap::from([("proposition".into(), proposition)]);
-    if let Some(operation) = &c.operation {
+    if let Some(operation) = &c.result {
         let action = add(
             graph,
             &c,
             Part::Action {
                 universe,
-                images: operation.map().candidate().images().to_vec(),
+                images: operation.map().candidate().shared_images(),
             },
         )?;
         let candidate = add(
@@ -925,23 +1049,28 @@ pub(super) fn evaluate(
                 preservation,
             },
         )?;
-        let operation = add(
-            graph,
-            &c,
-            Part::Operation {
-                source,
-                target,
-                candidate,
-                map,
-                action,
-                preservation,
-                left,
-                right,
-                word: c.word.clone(),
-            },
-        )?;
+        if !c.maps_only {
+            let operation = add(
+                graph,
+                &c,
+                Part::Operation {
+                    source,
+                    target,
+                    candidate,
+                    map,
+                    action,
+                    preservation,
+                    left,
+                    right,
+                    word: c.word.clone(),
+                },
+            )?;
+            outputs.insert("operation".into(), operation);
+        }
         outputs.insert("map".into(), map);
-        outputs.insert("operation".into(), operation);
+        if c.maps_only {
+            outputs.insert("candidate".into(), candidate);
+        }
     }
     let mut reasons = condition
         .map(|r| vec![failed_reason(request, r)])

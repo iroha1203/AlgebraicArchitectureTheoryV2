@@ -89,7 +89,7 @@ fn shared_table_plan_reuses_its_verified_immutable_polynomial_source() {
     let configurations = Rc::new(Cell::new(0usize));
     let hits = configurations.clone();
     let c = Control::new(move |point| {
-        if point == Checkpoint::Configuration {
+        if point == Checkpoint::EquationPresentation {
             hits.set(hits.get() + 1);
         }
         None
@@ -98,13 +98,16 @@ fn shared_table_plan_reuses_its_verified_immutable_polynomial_source() {
     let env = Environment::with_prepared(&p, &c).unwrap();
     configurations.set(0);
     plan.recheck(&env, &g, a, &c).unwrap();
-    assert!(configurations.get() > 0, "最初の消費は元計画を再構成する");
+    assert!(
+        configurations.get() > 1,
+        "最初の消費は元計画の内容を照合する"
+    );
     configurations.set(0);
     plan.recheck(&env, &g, a, &c).unwrap();
     assert_eq!(
         configurations.get(),
-        0,
-        "同じ不変計画の再構成を繰り返さない"
+        1,
+        "同じ不変計画は入口の停止確認だけ行い再構成しない"
     );
     assert!(plan.recheck(&env, &g, NodeRef(usize::MAX), &c).is_err());
 }
@@ -142,11 +145,30 @@ fn stopped_shared_table_plan_recheck_does_not_cache_a_partial_verification() {
     let p = prepared(false, false, BODY, "root");
     let (mut g, a) = built(&p);
     let plan = retain_table_plan(&mut g, p.shared_inputs(), a, &quiet()).unwrap();
+    let measured = Rc::new(Cell::new(0usize));
+    let measure = measured.clone();
+    let probe = Control::new(move |point| {
+        if point == Checkpoint::EquationPresentation {
+            measure.set(measure.get() + 1);
+        }
+        None
+    });
+    let fresh = Environment::with_prepared(&p, &probe).unwrap();
+    plan.recheck(&fresh, &g, a, &probe).unwrap();
+    let stop_at = measured.get() / 2;
+    assert!(stop_at > 2);
+    let seen = Rc::new(Cell::new(0usize));
+    let count = seen.clone();
     let armed = Rc::new(Cell::new(false));
     let arm = armed.clone();
     let c = Control::new(move |point| {
-        (arm.get() && point == Checkpoint::Configuration)
-            .then_some(archsig_input::result::Signal::Int)
+        if arm.get() && point == Checkpoint::EquationPresentation {
+            count.set(count.get() + 1);
+            if count.get() >= stop_at {
+                return Some(archsig_input::result::Signal::Int);
+            }
+        }
+        None
     });
     let env = Environment::with_prepared(&p, &c).unwrap();
     armed.set(true);

@@ -137,6 +137,9 @@ pub(super) fn validate_origin(
     request: &Request,
     value: &ConstructionValue,
 ) -> Result<(), ValidationFailure> {
+    if let D::ModelMap(data) = &value.data {
+        return data.validate_origin(request);
+    }
     if let D::SharedRepair(_) = &value.data {
         return super::repair_problem::validate_origin(environment, request, value);
     }
@@ -407,6 +410,7 @@ pub(super) fn unavailable(
             && !matches!(
                 request.kind,
                 QuestionKind::Assemble
+                    | QuestionKind::AssembleMap
                     | QuestionKind::Map
                     | QuestionKind::Compose
                     | QuestionKind::Compare
@@ -459,6 +463,7 @@ pub(super) fn unavailable(
         || matches!(
             request.kind,
             QuestionKind::Map
+                | QuestionKind::AssembleMap
                 | QuestionKind::Compose
                 | QuestionKind::Compare
                 | QuestionKind::Quotient

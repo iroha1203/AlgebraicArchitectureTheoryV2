@@ -45,6 +45,7 @@ result_table! {
     session changes: <super::super::change_result::Data as ResultKind>::Stored,
     session quotients: <super::super::quotient_result::Data as ResultKind>::Stored,
     session locals: <super::super::local_result::Data as ResultKind>::Stored,
+    session model_maps: <super::super::model_map_result::Data as ResultKind>::Stored,
     session object_maps: <super::super::object_map_result::Data as ResultKind>::Stored,
     session builds: <super::super::build_result::Data as ResultKind>::Stored,
     #[cfg(test)] persistent test_u32: Arc<u32>,

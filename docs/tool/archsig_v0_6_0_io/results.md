@@ -352,7 +352,7 @@ constructionのrule.pathはname=projectionの場合だけ非空の列を必須�
 
 Constructionは次の閉じた列挙とする。各規則の意味は[核の構成](computations.md)に従う。
 `binding, projection, expression, evaluation, law_instance, configuration,
-architecture, atom_universe, atom_map, map_candidate, configuration_map, object_component,
+architecture, model_assembly, model_map_assembly, atom_universe, atom_map, map_candidate, configuration_map, object_component,
 object_algebra, equation_family, equation_map, circuit_pattern, circuit_case, circuit_detector,
 circuit_map, invariant, invariant_map, signature_axis, signature_map, value_map, value_equivalence,
 declaration_transport, object_algebra_map, operation, composition,
@@ -378,6 +378,7 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 | Configuration | `{family:FactPointer[],requirements:FactPointer[],relations:[FactPointer,FactPointer][],identifications:[FactPointer,FactPointer][]}` |
 | Architecture | `{reading:QName,root:Ref,configuration:Configuration,laws:LawInstance[],internal_arrows:Ref[],overrides:{slot:Slot,value:Ref}[]}` |
 | ModelAssembly | `{reading:QName,fragments:Ref,interfaces:Ref,object:Architecture,algebra:ObjectAlgebra,inclusions:{fragment:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,generators:{source:Operation,target:Operation,proposition:Proposition}[]}[]}` |
+| ModelMapAssembly | `{source:Architecture,target:Architecture,source_assembly:ModelAssembly,target_assembly:ModelAssembly,correspondences:Ref,configuration_map:ConfigurationMap,locals:{correspondence:Ref,source:Architecture,target:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,proposition:Proposition}[],generators:{source:Operation,target:Operation,proposition:Proposition}[],laws:{source_object:ObjectComponent,target_object:ObjectComponent,source_law:LawInstance,target_law:LawInstance,proposition:Proposition}[]}` |
 | AtomUniverse | `{atoms:FactPointer[]}` |
 | AtomMap | `{universe:AtomUniverse,images:FactPointer[]}` |
 | MapCandidate | `{declaration?:QName,subject?:Ref,source:Architecture,target:Architecture,action:AtomMap}` |
@@ -392,6 +393,14 @@ ModelAssembly の fragments と interfaces は、元 View・束縛から評価�
 restriction はその局所像への再制限と逆対応を検査した
 実写像を持つ。元の担当別の原始位置と共有の対応を、代表個体へ潰して保存から消さない。
 保存後は現在の三入力・元 Request から構成を再検査し、保存済みの成立表示だけで受理しない。
+
+ModelMapAssemblyは局所correspondenceの元View・束縛、始終の組立て結果と全体写像を保持する。
+locals.mapは元の担当間の写像、locals.restrictionは始終の局所像間で全体写像を制限した実写像であり、
+propositionは包含と再制限の可換性を確認する。generatorsは全体の生成元保存、lawsは各対象・元Law出現の
+適用/required status/Bool読取りの移送を確認する。局所行やLaw出現を、同じ値だけを理由に統合しない。
+ConfigurationMapの確認済み結果は、操作/Lawの移送が反証・未決でもconfiguration_mapとして保持できる。
+map:ModelMapAssemblyは全構成条件が成立した場合だけ返す。始終の対象自身のLaw真偽と写像の保存命題を区別する。
+ConfigurationMap同士のcomposeは同じMapCandidate/AtomMap表現を返し、comparison.kind=actionは全Uの像を比較する。
 
 AtomUniverse.atomsは全入力snapshotのsubject存在事実と全既知field Atomを、FactPointerのcanonical順で
 一度ずつ含む。未観測slotをAtomに加えない。同じrunの全AtomMapは同じuniverseを使う。
@@ -903,7 +912,7 @@ Evidenceは結果専用。`{kind:EvidenceKind,data:EvidenceData}`をpayloadと�
 | --- | --- |
 | evaluation | `{instance:LawInstance,lhs:Ref,rhs:Ref,residual?:Ref}` |
 | finite_exhaustion | `{domain:Domain,checked:Nat,instances:Ref[]}` |
-| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[]}` |
+| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[],action_difference?:AssemblyActionDifference,overlap?:AssemblyOverlap}` |
 | linear_solution | `{map:ModuleMap,rhs:Vector,solution:Vector,recheck:Proposition}` |
 | linear_inconsistent | `{map:ModuleMap,rhs:Vector,annihilator:Vector,pairing:Ref,modulus?:DecimalNat}` |
 | smith | `{map:ModuleMap,left:ModuleMap,right:ModuleMap,diagonal:ModuleMap,transformed_rhs?:Vector,divisibility:Proposition[]}` |
@@ -922,6 +931,15 @@ smithではleft/rightがunimodularでleft∘map∘right=diagonalを検査する�
 rhsを扱う場合だけtransformed_rhsを持ち、これはleftによるrhsの像。
 divisibilityは各対角行の係数が対応するtransformed_rhs成分を割るPropositionを行順に持つ。
 零行では0がその成分を割る条件、すなわち成分=0を使う。rhsを扱わない場合はdivisibility=[]。
+写像組立ての反例では、入力を指すleft/rightと、全Uで異なる実像の位置を区別する。
+`AssemblyActionDifference={kind:"inclusion"|"restriction"|"generator",subject:FactPointer,
+fact:FactPointer,left:FactPointer,right:FactPointer}` は、元correspondenceまたは生成操作subjectと、
+最初に作用が異なるfactおよび両側の実像を保持する。inclusionのleft/rightはj_i∘μ_iとμ∘ι_i、
+restrictionではρ_target∘μ_hat_iとμ_i∘ρ_source、generatorではμ∘eとμ(e)∘μの順とする。
+`AssemblyOverlap={source:FactPointer,left_correspondence:FactPointer,right_correspondence:FactPointer,
+left:FactPointer,right:FactPointer}` は、同じ共有類へ異なる像を指定した二つの原始対応を保持する。
+これらは核が計算した反例の位置であり、新しい観測値や入力証書ではない。
+
 completion_pairは未知slotの型を保つ補完対、separating_pairは宣言済み候補域の二候補であり、
 観測された反例と区別する。反証には元の名前・入力値・結果・source位置を保持する。
 参照を含まない有限型slotの補完では、元Expressionを補完域の起点にし、Domainのelementsを

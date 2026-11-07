@@ -62,6 +62,7 @@ pub(crate) enum ConstructionType {
     Repair,
     RepairProblem,
     ModelAssembly,
+    ModelMapAssembly,
     RepairObservation,
     ChangeRange,
     Selection,
@@ -123,6 +124,7 @@ impl ConstructionType {
             Self::Repair => "Repair",
             Self::RepairProblem => "RepairProblem",
             Self::ModelAssembly => "ModelAssembly",
+            Self::ModelMapAssembly => "ModelMapAssembly",
             Self::RepairObservation => "RepairObservation",
             Self::ChangeRange => "ChangeRange",
             Self::Selection => "Selection",
@@ -157,12 +159,13 @@ pub(crate) struct ArchitectureWitness {
 struct ArchitectureBody {
     construction: Arc<ConfigurationConstruction>,
     readings: Arc<ObjectReadingInstances>,
+    evaluations: Arc<super::object_evaluate::LawEvaluationCache>,
     profiles: OnceLock<Arc<crate::construction::profiles::ConfigurationProfiles>>,
     arrows: Vec<Fact>,
     support: Support,
     overrides: Arc<Vec<(Fact, Scalar)>>,
 }
-// profilesは同じ不変な構成から導出する補助値。初期化の有無は意味の等値性に含めない。
+// profilesとLaw評価は不変な構成から導出する補助値。初期化の有無は意味の等値性に含めない。
 impl PartialEq for ArchitectureBody {
     fn eq(&self, other: &Self) -> bool {
         self.construction == other.construction
@@ -255,6 +258,7 @@ pub(crate) enum ConstructionData {
     EquationFamily(super::equation_family::Data),
     CircuitPattern(super::circuit_pattern::Data),
     Build(super::build_result::Data),
+    ModelMap(super::model_map_result::Data),
     ObjectMap(super::object_map_result::Data),
     Change(super::change_result::Data),
     SharedRepair(super::repair_problem::Data),
@@ -430,6 +434,7 @@ impl ConstructionValue {
             D::Counterexample { .. } => Some(EvidenceKind::Counterexample),
             D::Build(data) => data.evidence_kind(),
             D::ObjectMap(data) => data.evidence_kind(),
+            D::ModelMap(data) => data.evidence_kind(),
             D::Change(data) => data.evidence_kind(),
             D::SharedRepair(data) => data.evidence_kind(),
             D::Quotient(data) => data.evidence_kind(),
@@ -458,6 +463,7 @@ impl ConstructionValue {
             ConstructionData::Quotient(data) => data.scalar(),
             ConstructionData::Local(data) => data.scalar(),
             ConstructionData::ObjectMap(data) => data.scalar(),
+            ConstructionData::ModelMap(data) => data.scalar(),
             ConstructionData::OutsideLaw(data) => data.scalar(),
             ConstructionData::LawInstantiation(data) => data.scalar(),
             ConstructionData::LawFamily(data) => data.scalar(),
@@ -547,6 +553,7 @@ impl ConstructionValue {
             D::Quotient(data) => return data.ty(),
             D::Local(data) => return data.ty(),
             D::ObjectMap(data) => return data.ty(),
+            D::ModelMap(data) => return data.ty(),
             D::Composition(part) => return part.ty(),
             D::PathComposition(part) => return part.ty(),
             D::Comparison(part) => return part.ty(),
@@ -597,6 +604,7 @@ impl ConstructionValue {
             D::Quotient(data) => data.arguments(),
             D::Local(data) => data.arguments(),
             D::ObjectMap(data) => data.arguments(),
+            D::ModelMap(data) => data.arguments(),
             D::Composition(part) => part.arguments(),
             D::PathComposition(part) => part.arguments(),
             D::Comparison(part) => {
@@ -694,6 +702,7 @@ impl ConstructionValue {
             ConstructionData::Quotient(data) => data.conditions(),
             ConstructionData::Local(data) => data.conditions(),
             ConstructionData::ObjectMap(data) => data.conditions(),
+            ConstructionData::ModelMap(data) => data.conditions(),
             ConstructionData::Composition(part) => part.conditions(),
             ConstructionData::PathComposition(part) => part.conditions(),
             ConstructionData::Comparison(part) => part.conditions(),
@@ -725,6 +734,7 @@ impl ConstructionValue {
             D::Quotient(ref data) => data.construction(),
             D::Local(ref data) => data.construction(),
             D::ObjectMap(ref data) => data.construction(),
+            D::ModelMap(ref data) => data.construction(),
             D::Composition(ref part) => part.construction(),
             D::PathComposition(ref part) => part.construction(),
             D::Comparison(ref part) => part.construction(),
@@ -772,6 +782,7 @@ impl ConstructionValue {
                 ConstructionType::Repair => "repair",
                 ConstructionType::RepairProblem => "repair_problem",
                 ConstructionType::ModelAssembly => "model_assembly",
+                ConstructionType::ModelMapAssembly => "model_map_assembly",
                 ConstructionType::RepairObservation => "repair_observation",
                 ConstructionType::ChangeRange => "change_range",
                 ConstructionType::Selection => "selection",
@@ -815,6 +826,7 @@ impl ConstructionValue {
             (D::Quotient(data), _) => data.projection_type(),
             (D::Local(data), _) => data.projection_type(),
             (D::ObjectMap(data), _) => data.projection_type(),
+            (D::ModelMap(data), _) => data.projection_type(),
             (D::Build(data), _) if data.assembly_projection_type().is_some() => {
                 data.assembly_projection_type()
             }
@@ -905,6 +917,9 @@ impl ConstructionValue {
         if let D::ObjectMap(data) = &self.data {
             return data.project(path);
         }
+        if let D::ModelMap(data) = &self.data {
+            return data.project(path);
+        }
         if let D::Build(data) = &self.data {
             if data.assembly_projection_type().is_some() {
                 return data.assembly_project(path);
@@ -992,6 +1007,7 @@ impl ConstructionValue {
             D::Quotient(data) => data.wire(),
             D::Local(data) => data.wire(),
             D::ObjectMap(data) => data.wire(),
+            D::ModelMap(data) => data.wire(),
             D::Composition(part) => part.wire(),
             D::PathComposition(part) => part.wire(),
             D::Comparison(part) => match &self.witness {
@@ -1465,12 +1481,18 @@ impl ArchitectureWitness {
                 support.into()
             }
         };
+        let readings = Arc::new(readings);
+        let evaluations = Arc::new(super::object_evaluate::LawEvaluationCache::new(
+            inputs.clone(),
+            readings.clone(),
+        ));
         Ok(Arc::new(Self {
             inputs,
             request: request.clone(),
             body: Arc::new(ArchitectureBody {
                 construction,
-                readings: Arc::new(readings),
+                readings,
+                evaluations,
                 profiles: OnceLock::new(),
                 arrows,
                 support,
@@ -1487,6 +1509,9 @@ impl ArchitectureWitness {
     }
     pub(super) fn shared_readings(&self) -> Arc<ObjectReadingInstances> {
         self.body.readings.clone()
+    }
+    pub(super) fn shared_evaluations(&self) -> Arc<super::object_evaluate::LawEvaluationCache> {
+        self.body.evaluations.clone()
     }
     pub(super) fn shared_profiles(
         &self,
@@ -1850,6 +1875,9 @@ pub fn metadata(value: &ConstructionValue) -> Result<(Vec<Fact>, Scope), Validat
     if let ConstructionData::ObjectMap(data) = &value.data {
         return Ok(data.metadata());
     }
+    if let ConstructionData::ModelMap(data) = &value.data {
+        return Ok(data.metadata());
+    }
     if let ConstructionData::Build(data) = &value.data {
         return Ok(data.metadata());
     }
@@ -2125,6 +2153,13 @@ pub fn retain(
         })
         .transpose()?;
     let (support, scope) = match &value.data {
+        ConstructionData::SharedRepair(data) => data.retained_metadata(),
+        ConstructionData::Build(data) => data.retained_metadata(),
+        ConstructionData::ModelMap(data) => data.retained_metadata(),
+        ConstructionData::ObjectMap(data) => data.retained_metadata(),
+        ConstructionData::Change(data) => data.retained_metadata(),
+        ConstructionData::Local(data) => data.retained_metadata(),
+        ConstructionData::Quotient(data) => data.retained_metadata(),
         ConstructionData::FiniteLaw(data) => data.retained_metadata(),
         ConstructionData::InternalArrows(data) => data.retained_metadata(),
         ConstructionData::CircuitPattern(data) => data.retained_metadata(),

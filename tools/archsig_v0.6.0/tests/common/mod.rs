@@ -198,3 +198,5 @@ pub fn field<'a>(c: &'a CheckedArchMap, snapshot: &str, id: &str, name: &str) ->
 }
 
 pub mod model_assembly_data;
+
+pub mod model_map_assembly_data;

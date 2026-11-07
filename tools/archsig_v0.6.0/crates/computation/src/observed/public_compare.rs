@@ -1093,29 +1093,48 @@ pub(super) fn evaluate(
             Some(equal)
         }
     } else {
-        let a = super::public_compose::op(graph, left)?;
-        let b = super::public_compose::op(graph, right)?;
+        let maps_only = graph.get(left)?.ty == NodeType::Construction(T::ConfigurationMap);
+        if maps_only {
+            env.recheck_node(graph, graph.get(left)?, left.0)?;
+            env.recheck_node(graph, graph.get(right)?, right.0)?;
+        }
+        let a = super::public_compose::checked_map(graph, left)?;
+        let b = super::public_compose::checked_map(graph, right)?;
         if matches!(kind.as_str(), "action" | "relation")
-            && (a.source() != b.source() || a.target() != b.target())
+            && (a.candidate().source_object() != b.candidate().source_object()
+                || a.candidate().target_object() != b.candidate().target_object())
         {
             let (asource, atarget, _, _) = super::public_compose::components(graph, left)?;
             let (bsource, btarget, _, _) = super::public_compose::components(graph, right)?;
-            incompatible = Some(if a.source() != b.source() {
-                (asource, bsource)
-            } else {
-                (atarget, btarget)
-            });
+            incompatible = Some(
+                if a.candidate().source_object() != b.candidate().source_object() {
+                    (asource, bsource)
+                } else {
+                    (atarget, btarget)
+                },
+            );
             None
         } else if kind == "word" {
             let mut retained = None;
-            let outcome =
-                a.word_equal_retained(prepared.inputs(), b, control, |v| retained = Some(v));
+            let outcome = super::public_compose::op(graph, left)?.word_equal_retained(
+                prepared.inputs(),
+                super::public_compose::op(graph, right)?,
+                control,
+                |v| retained = Some(v),
+            );
             Some(completed_operation(outcome, retained, &mut stopped)?)
         } else {
             let mut retained = None;
-            let outcome = a.action_difference_retained(prepared.inputs(), b, control, |v| {
-                retained = Some(v.cloned())
-            });
+            let outcome = if maps_only {
+                a.action_difference_after_recheck(b, control, |v| retained = Some(v.cloned()))
+            } else {
+                super::public_compose::op(graph, left)?.action_difference_retained(
+                    prepared.inputs(),
+                    super::public_compose::op(graph, right)?,
+                    control,
+                    |v| retained = Some(v.cloned()),
+                )
+            };
             let difference = completed_operation(outcome, retained, &mut stopped)?;
             if let Some(d) = &difference {
                 facts = vec![d.fact().clone(), d.left().clone(), d.right().clone()];

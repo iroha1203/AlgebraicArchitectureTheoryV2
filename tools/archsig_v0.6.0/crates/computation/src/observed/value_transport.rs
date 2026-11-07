@@ -637,6 +637,16 @@ pub fn finite_declaration_value_transport(
 ) -> Result<FiniteValueTransport, ConstructionFailure> {
     tick(control)?;
     declarations.recheck(inputs, control)?;
+    finite_declaration_value_transport_checked(inputs, declarations, declaration, position, control)
+}
+pub(crate) fn finite_declaration_value_transport_checked(
+    inputs: &CheckedInputs,
+    declarations: &DeclarationCorrespondence,
+    declaration: &str,
+    position: DeclarationValuePosition,
+    control: &Control,
+) -> Result<FiniteValueTransport, ConstructionFailure> {
+    tick(control)?;
     let (source_type, target_type) =
         selected_types(inputs, declarations, declaration, position, control)?;
     let source = domain(inputs, &source_type, control)?;

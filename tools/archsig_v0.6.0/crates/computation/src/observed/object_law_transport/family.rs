@@ -7,7 +7,7 @@ use crate::observed::{
     result::{NodeType, ValidationFailure},
     value_transport::{
         DeclarationValuePosition, FiniteTransportValue, FiniteValueTransport,
-        finite_declaration_value_transport,
+        finite_declaration_value_transport_checked,
     },
 };
 use archsig_common::types::Type;
@@ -105,7 +105,7 @@ pub(super) fn prepare(
             .iter()
             .position(|(name, _)| name == &p.name)
             .ok_or_else(|| inconsistent("元Lawのparameter位置がない"))?;
-        let transport = finite_declaration_value_transport(
+        let transport = finite_declaration_value_transport_checked(
             inputs,
             &r.declarations,
             &source.declaration().name,

@@ -14,6 +14,7 @@ use archsig_input::{
 };
 use std::collections::{BTreeMap, BTreeSet};
 mod assembly;
+pub(super) mod assembly_map;
 mod build;
 pub(super) mod comparison;
 pub(super) mod composition;
@@ -25,6 +26,7 @@ mod repair_problem;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum QuestionKind {
     Assemble,
+    AssembleMap,
     Build,
     Evaluate,
     Check,
@@ -48,6 +50,7 @@ impl QuestionKind {
         match self {
             Self::Build => "build",
             Self::Assemble => "assemble",
+            Self::AssembleMap => "assemble_map",
             Self::Evaluate => "evaluate",
             Self::Check => "check",
             Self::Needed => "needed",
@@ -424,6 +427,7 @@ fn resolve_inner(
         let kind = match raw.kind.as_str() {
             "build" => QuestionKind::Build,
             "assemble" => QuestionKind::Assemble,
+            "assemble_map" => QuestionKind::AssembleMap,
             "prepare" => QuestionKind::Prepare,
             "observe" => QuestionKind::Observe,
             "scopes" => QuestionKind::Scopes,
@@ -449,6 +453,12 @@ fn resolve_inner(
                 )));
             }
         };
+        if kind == QuestionKind::AssembleMap {
+            let request = assembly_map::resolve(law, raw, text, control)?;
+            names.insert(request.id.clone(), requests.len());
+            requests.push(request);
+            continue;
+        }
         if kind == QuestionKind::Assemble {
             let request = assembly::resolve(law, raw, text, control)?;
             names.insert(request.id.clone(), requests.len());
@@ -982,6 +992,11 @@ fn resolve_inner(
         checkpoint(control)?;
         phase(control, Checkpoint::RequestBinding)?;
         let req = &requests[i];
+        if req.kind == QuestionKind::AssembleMap {
+            requests[i].constraints =
+                assembly_map::check(law, map, &requests, &names, req, control)?;
+            continue;
+        }
         if req.kind == QuestionKind::Assemble {
             requests[i].constraints = assembly::check(law, map, &requests, &names, req, control)?;
             continue;
@@ -1469,7 +1484,9 @@ fn selector_type(
             // 保持するのは署名と選択された Request の束縛だけであり、view の本体を
             // 評価して参照値を推測しない。後方参照でも同じ有限な表を参照する。
             owners = owner_bindings(r, control)?;
-            let initial = if r.kind == QuestionKind::Assemble {
+            let initial = if r.kind == QuestionKind::AssembleMap {
+                assembly_map::output_type(law, map, requests, names, r, field, control)?
+            } else if r.kind == QuestionKind::Assemble {
                 assembly::output_type(law, r, field)?
             } else if r.kind == QuestionKind::Prepare || repair_problem::is_custom(r) {
                 repair_problem::output_type(law, map, requests, names, r, field, control)?
@@ -2386,7 +2403,7 @@ pub(super) fn assembly_projection(
     path: &[ProjectionStep],
     c: &Control,
 ) -> Option<Result<(ProjectionPlan, usize), super::projection::ProjectionFailure>> {
-    assembly::project(law, ty, path, c)
+    assembly_map::project(law, ty, path, c).or_else(|| assembly::project(law, ty, path, c))
 }
 pub(super) fn assembly_shape(
     law: &CheckedLaw,
