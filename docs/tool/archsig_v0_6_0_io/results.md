@@ -912,7 +912,7 @@ Evidenceは結果専用。`{kind:EvidenceKind,data:EvidenceData}`をpayloadと�
 | --- | --- |
 | evaluation | `{instance:LawInstance,lhs:Ref,rhs:Ref,residual?:Ref}` |
 | finite_exhaustion | `{domain:Domain,checked:Nat,instances:Ref[]}` |
-| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[]}` |
+| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[],action_difference?:AssemblyActionDifference,overlap?:AssemblyOverlap}` |
 | linear_solution | `{map:ModuleMap,rhs:Vector,solution:Vector,recheck:Proposition}` |
 | linear_inconsistent | `{map:ModuleMap,rhs:Vector,annihilator:Vector,pairing:Ref,modulus?:DecimalNat}` |
 | smith | `{map:ModuleMap,left:ModuleMap,right:ModuleMap,diagonal:ModuleMap,transformed_rhs?:Vector,divisibility:Proposition[]}` |
@@ -931,6 +931,15 @@ smithではleft/rightがunimodularでleft∘map∘right=diagonalを検査する�
 rhsを扱う場合だけtransformed_rhsを持ち、これはleftによるrhsの像。
 divisibilityは各対角行の係数が対応するtransformed_rhs成分を割るPropositionを行順に持つ。
 零行では0がその成分を割る条件、すなわち成分=0を使う。rhsを扱わない場合はdivisibility=[]。
+写像組立ての反例では、入力を指すleft/rightと、全Uで異なる実像の位置を区別する。
+`AssemblyActionDifference={kind:"inclusion"|"restriction"|"generator",subject:FactPointer,
+fact:FactPointer,left:FactPointer,right:FactPointer}` は、元correspondenceまたは生成操作subjectと、
+最初に作用が異なるfactおよび両側の実像を保持する。inclusionのleft/rightはj_i∘μ_iとμ∘ι_i、
+restrictionではρ_target∘μ_hat_iとμ_i∘ρ_source、generatorではμ∘eとμ(e)∘μの順とする。
+`AssemblyOverlap={source:FactPointer,left_correspondence:FactPointer,right_correspondence:FactPointer,
+left:FactPointer,right:FactPointer}` は、同じ共有類へ異なる像を指定した二つの原始対応を保持する。
+これらは核が計算した反例の位置であり、新しい観測値や入力証書ではない。
+
 completion_pairは未知slotの型を保つ補完対、separating_pairは宣言済み候補域の二候補であり、
 観測された反例と区別する。反証には元の名前・入力値・結果・source位置を保持する。
 参照を含まない有限型slotの補完では、元Expressionを補完域の起点にし、Domainのelementsを
