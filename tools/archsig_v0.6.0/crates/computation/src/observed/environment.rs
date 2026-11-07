@@ -557,6 +557,7 @@ impl<'a> Environment<'a> {
         w: &super::construction_result::ArchitectureWitness,
         c: &Control,
     ) -> Result<(), ValidationFailure> {
+        self.indexes.valuation_domain = indexes::ValuationDomain::Object;
         self.indexes.object = Some(std::sync::Arc::new(
             super::object_evaluate::ObjectDomain::from_readings(
                 self.indexes.inputs,
@@ -572,21 +573,10 @@ impl<'a> Environment<'a> {
         &self,
         position: &Fact,
     ) -> Result<Option<(Scalar, Fact)>, ValidationFailure> {
-        let Some(domain) = self.indexes.object.as_ref() else {
+        let Some(domain) = self.object_domain() else {
             return Ok(None);
         };
-        let Some(construction) = domain.identity.constructed_context() else {
-            return Ok(None);
-        };
-        let Some(transport) = construction.transport() else {
-            return Ok(None);
-        };
-        if !construction
-            .local_domain()
-            .known()
-            .iter()
-            .any(|f| f.snapshot == position.snapshot && f.subject == position.subject)
-        {
+        if domain.identity.constructed_context().is_none() {
             return Ok(None);
         }
         let field = self.indexes.field(
@@ -620,8 +610,58 @@ impl<'a> Environment<'a> {
         else {
             return Ok(None);
         };
+        let Some(moved) = self.project_object_field(position, &raw)? else {
+            return Ok(None);
+        };
+        let mut fact = position.clone();
+        fact.atom = Some(atom.clone());
+        Ok(Some((moved, fact)))
+    }
+
+    /// 元入力の候補値を、保存したpinを変えず選択対象の参照域へ読む。
+    fn project_object_field(
+        &self,
+        position: &Fact,
+        raw: &Scalar,
+    ) -> Result<Option<Scalar>, ValidationFailure> {
+        let Some(domain) = self.object_domain() else {
+            return Ok(None);
+        };
+        let Some(construction) = domain.identity.constructed_context() else {
+            return Ok(None);
+        };
+        let Some(transport) = construction.transport() else {
+            return Ok(None);
+        };
+        if !construction
+            .local_domain()
+            .known()
+            .iter()
+            .any(|f| f.snapshot == position.snapshot && f.subject == position.subject)
+        {
+            return Ok(None);
+        }
+        let field = self.indexes.field(
+            &self.state,
+            &position.snapshot,
+            &position.subject,
+            position
+                .field
+                .as_deref()
+                .ok_or(internal!("構成対象のfieldがない"))?,
+        )?;
+        if !crate::construction::has_reference(self.indexes.inputs, &field.ty, &self.control)
+            .map_err(|e| match e {
+                crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
+                e => e
+                    .internal_context(format!("対象fieldの参照型: {e:?}"))
+                    .into(),
+            })?
+        {
+            return Ok(None);
+        }
         let moved = super::value_transport::transport_references(
-            &raw,
+            raw,
             self.indexes.inputs,
             transport,
             &self.control,
@@ -630,12 +670,7 @@ impl<'a> Environment<'a> {
             crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
             e => e.internal_context(format!("対象のfield輸送: {e:?}")).into(),
         })?;
-        if data::equal(&raw, &moved, &self.control)? {
-            return Ok(None);
-        }
-        let mut fact = position.clone();
-        fact.atom = Some(atom.clone());
-        Ok(Some((moved, fact)))
+        Ok((!data::equal(raw, &moved, &self.control)?).then_some(moved))
     }
     pub(in crate::observed) fn with_prepared(
         prepared: &'a super::PreparedObserved,
@@ -1555,20 +1590,7 @@ impl<'a> Environment<'a> {
             self.validate_term_comparison_value(graph, node, limit)?;
             match &node.rule {
                 Rule::Construction("object_field") => {
-                    let fact = node
-                        .support
-                        .first()
-                        .ok_or(internal!("対象fieldの元支持がない"))?;
-                    let mut position = fact.clone();
-                    position.atom = None;
-                    let Some((expected, expected_fact)) = self.object_field_value(&position)?
-                    else {
-                        return Err(internal!("対象fieldの輸送がない").into());
-                    };
-                    if scalar != &expected || node.support.as_slice() != [expected_fact] {
-                        return Err(internal!("対象fieldの値・原始支持が違う").into());
-                    }
-                    self.call_field_source(graph, node, limit)?;
+                    self.object_field_support(graph, node, limit)?;
                 }
                 Rule::Input {
                     kind: "subject",
@@ -4210,6 +4232,35 @@ impl<'a> Environment<'a> {
             Ok(analysis)
         })
     }
+    /// 輸送された参照値を元field・実owner・元式へ結び、支持を再構成する。
+    fn object_field_support(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+    ) -> Result<Vec<Fact>, ValidationFailure> {
+        let Some(Payload::Scalar(actual)) = &node.payload else {
+            return Err(internal!("対象fieldの値がScalarでない").into());
+        };
+        let mut position = node
+            .support
+            .first()
+            .ok_or(internal!("対象fieldの元支持がない"))?
+            .clone();
+        position.atom = None;
+        let Some((expected, fact)) = self.object_field_value(&position)? else {
+            return Err(internal!("対象fieldの輸送がない").into());
+        };
+        if node.rule != Rule::Construction("object_field")
+            || node.ty != NodeType::Value(expected.ty())
+            || actual != &expected
+            || node.support.as_slice() != [fact.clone()]
+        {
+            return Err(internal!("対象fieldの型・値・原始支持が違う").into());
+        }
+        self.call_field_source(graph, node, limit)?;
+        Ok(vec![fact])
+    }
     // Scalar の支持も自己申告の集合を信じず、原始 leaf または実引数から復元する。
     fn scalar_support(
         &self,
@@ -4408,6 +4459,9 @@ impl<'a> Environment<'a> {
                     .residual_source_analysis(graph, node, limit)?
                     .support
                     .into_vec(),
+                Rule::Construction("object_field") => {
+                    self.object_field_support(graph, node, limit)?
+                }
                 Rule::Construction("domain") => {
                     self.domain_member(graph, node, limit, domain)?;
                     node.support.to_vec()
@@ -9436,8 +9490,14 @@ impl<'a> Environment<'a> {
             scalar_scope.merge(&owner_scope);
             scalar_scope.assignments = true;
             // 同じslotの元Atomがあっても、別の候補値の観測証拠に使わない。
+            let value = if self.indexes.valuation_domain == indexes::ValuationDomain::Input {
+                self.project_object_field(&position, value)?
+                    .unwrap_or_else(|| value.clone())
+            } else {
+                value.clone()
+            };
             support.make_owned().push(position);
-            (Some(value.clone()), Some(scalar_scope))
+            (Some(value), Some(scalar_scope))
         } else if let Some((value, fact)) = transported {
             let Slot::Known { origin, .. } = &field.slot else {
                 return Err(internal!("輸送値の原始slotがない").into());

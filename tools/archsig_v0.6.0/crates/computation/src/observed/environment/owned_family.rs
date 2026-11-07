@@ -114,17 +114,48 @@ impl Environment<'_> {
                     .as_ref()
                     .and_then(|values| values.get(&position))
                 {
+                    let projected = if self.indexes.valuation_domain
+                        == super::indexes::ValuationDomain::Input
+                    {
+                        self.project_object_field(&position, assigned)?
+                    } else {
+                        None
+                    };
                     let Scalar::Subject {
                         snapshot: target_snapshot,
                         subject: target_subject,
                         ..
-                    } = assigned
+                    } = projected.as_ref().unwrap_or(assigned)
                     else {
                         return Err(internal!("候補の原始owner値がRefでない").into());
                     };
                     result.enumeration.scope.assignments = true;
                     result.enumeration.support.push(position);
                     if target_snapshot == owner_snapshot && target_subject == owner_subject {
+                        result.enumeration.values.push(value);
+                    }
+                    self.tick()?;
+                    continue;
+                }
+                if let Some((projected, fact)) = self.object_field_value(&position)? {
+                    let Scalar::Subject {
+                        snapshot,
+                        subject: target,
+                        ..
+                    } = &projected
+                    else {
+                        return Err(internal!("輸送されたowner値がRefでない").into());
+                    };
+                    let Slot::Known { origin, .. } = &field.slot else {
+                        return Err(internal!("輸送されたownerの元slotがない").into());
+                    };
+                    result.enumeration.scope.merge(&self.indexes.scope(
+                        subject,
+                        reading,
+                        Some(origin),
+                    )?);
+                    result.enumeration.support.push(fact);
+                    if snapshot == owner_snapshot && target == owner_subject {
                         result.enumeration.values.push(value);
                     }
                     self.tick()?;

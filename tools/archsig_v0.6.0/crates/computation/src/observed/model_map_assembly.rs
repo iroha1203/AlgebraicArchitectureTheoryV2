@@ -206,6 +206,23 @@ pub(super) struct Verified {
     pub unsupported_instances: Vec<usize>,
 }
 impl Verified {
+    pub fn has_refutation(&self) -> bool {
+        self.transport.objects().iter().any(|object| {
+            object.condition_failure().is_some() || !object.counterexamples().is_empty()
+        }) || self.transport.generators().iter().any(|generator| {
+            generator.condition_failure().is_some()
+                || generator.endpoints_preserved() == Some(false)
+                || matches!(
+                    generator.naturality(),
+                    Some(maps::Naturality::Refuted { .. })
+                )
+        }) || self.laws.iter().any(|law| {
+            matches!(
+                law.outcome(),
+                super::object_law_transport::LawTransportOutcome::Refuted(_)
+            )
+        })
+    }
     pub fn all_preserved(&self) -> bool {
         self.transport.all_preserved()
             && self.unsupported_instances.is_empty()
@@ -750,65 +767,83 @@ mod tests {
             construction_result::ConstructionData as D,
             result::{Decision, Payload, Scalar},
         };
-        let input = fixture::query(|s| fixture::folding(s, true));
-        let input = fixture::replace_law(
-            input,
-            "law required zero(p:Part):p.quantity=0;",
-            "view only(a:Root):Set<Root> = set<Root>{a};view emptyInterfaces(a:Root):Unit=unit;law required zero(p:Part):p.quantity=0;",
-        );
-        let result=crate::observed::evaluate_observed_bytes(input,&[fixture::ASSEMBLE,
+        for residual in ["", "law required parameter(r:Root,n:Z):n=n;"] {
+            let input = fixture::query(|s| fixture::folding(s, true));
+            let input = fixture::replace_law(
+                input,
+                "law required zero(p:Part):p.quantity=0;",
+                "view only(a:Root):Set<Root> = set<Root>{a};view emptyInterfaces(a:Root):Unit=unit;law required zero(p:Part):p.quantity=0;",
+            );
+            let input = fixture::replace_law(
+                input,
+                "law required zero(p:Part):p.quantity=0;",
+                &format!("law required zero(p:Part):p.quantity=0;{residual}"),
+            );
+            let result=crate::observed::evaluate_observed_bytes(input,&[fixture::ASSEMBLE,
             "b=assemble(Assembly.only,on=@v/G,along=Assembly.emptyInterfaces,a=@v/A)",
             "m=assemble_map(Assembly.moves,from=$a.assembly,to=$b.assembly,x=@v/moveA,y=@v/moveB)"],&Control::unlimited()).unwrap();
-        assert!(
-            result.answers[..2]
+            assert!(
+                result.answers[..2]
+                    .iter()
+                    .all(|a| a.status == Decision::Established),
+                "{:?}",
+                result.issues
+            );
+            let answer = &result.answers[2];
+            assert_eq!(answer.status, Decision::Refuted, "{:?}", result.issues);
+            let failure = answer
+                .reasons
                 .iter()
-                .all(|a| a.status == Decision::Established),
-            "{:?}",
-            result.issues
-        );
-        let answer = &result.answers[2];
-        assert_eq!(answer.status, Decision::Refuted, "{:?}", result.issues);
-        let failure = answer
-            .reasons
-            .iter()
-            .find_map(|r| match r.kind {
-                super::super::result::ReasonKind::ConditionFailed { condition, .. } => {
-                    Some(condition)
-                }
-                _ => None,
-            })
-            .expect("元の反証条件を理由へ保持する");
-        assert_eq!(
-            result.nodes[failure.0].judgment.as_ref().unwrap().status,
-            Decision::Refuted
-        );
-        assert_eq!(
-            result.nodes[answer.claim.unwrap().0].reasons,
-            answer.reasons
-        );
-        assert!(answer.outputs.contains_key("configuration_map"));
-        assert!(!answer.outputs.contains_key("map"));
-        let scalar = |r: usize| match result.nodes[r].payload.as_ref().unwrap() {
-            Payload::Scalar(v) => v,
-            Payload::Construction(v) => v.scalar().unwrap(),
-            _ => panic!("native値"),
-        };
-        let Some(Payload::Construction(value)) = &result.nodes[answer.evidence[0].0].payload else {
-            panic!("native反例")
-        };
-        let D::ModelMap(data) = &value.data else {
-            panic!("組立ての反例")
-        };
-        let Json::Obj(ref record) = data.wire() else {
-            panic!("反例record")
-        };
-        let Json::Obj(record) = &record["data"] else {
-            panic!("反例data")
-        };
-        let left = record["left"].exact_node_reference().unwrap();
-        let right = record["right"].exact_node_reference().unwrap();
-        assert_eq!(scalar(left), &Scalar::Bool(true));
-        assert_eq!(scalar(right), &Scalar::Bool(false));
+                .find_map(|r| match r.kind {
+                    super::super::result::ReasonKind::ConditionFailed { condition, .. } => {
+                        Some(condition)
+                    }
+                    _ => None,
+                })
+                .expect("元の反証条件を理由へ保持する");
+            assert_eq!(
+                result.nodes[failure.0].judgment.as_ref().unwrap().status,
+                Decision::Refuted
+            );
+            assert_eq!(
+                result.nodes[answer.claim.unwrap().0].reasons,
+                answer.reasons
+            );
+            assert!(answer.outputs.contains_key("configuration_map"));
+            assert!(!answer.outputs.contains_key("map"));
+            let scalar = |r: usize| match result.nodes[r].payload.as_ref().unwrap() {
+                Payload::Scalar(v) => v,
+                Payload::Construction(v) => v.scalar().unwrap(),
+                _ => panic!("native値"),
+            };
+            let Some(Payload::Construction(value)) = &result.nodes[answer.evidence[0].0].payload
+            else {
+                panic!("native反例")
+            };
+            let D::ModelMap(data) = &value.data else {
+                panic!("組立ての反例")
+            };
+            let Json::Obj(ref record) = data.wire() else {
+                panic!("反例record")
+            };
+            let Json::Obj(record) = &record["data"] else {
+                panic!("反例data")
+            };
+            let left = record["left"].exact_node_reference().unwrap();
+            let right = record["right"].exact_node_reference().unwrap();
+            assert_eq!(scalar(left), &Scalar::Bool(true));
+            assert_eq!(scalar(right), &Scalar::Bool(false));
+            if !residual.is_empty() {
+                assert!(
+                    answer.reasons.iter().any(|reason| matches!(
+                        reason.kind,
+                        super::super::result::ReasonKind::UnsupportedAlgorithm { .. }
+                    )),
+                    "{:?}",
+                    answer.reasons
+                );
+            }
+        }
     }
 
     #[test]

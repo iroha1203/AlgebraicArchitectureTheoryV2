@@ -3,6 +3,13 @@ use super::*;
 use archsig_common::internal::InternalError;
 use std::collections::HashMap;
 
+/// 候補値を元入力で読むか、選択対象への明示変更として読むか。
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum ValuationDomain {
+    Input,
+    Object,
+}
+
 pub(crate) struct InputIndexes<'a> {
     pub inputs: &'a CheckedInputs,
     pub(super) object: Option<std::sync::Arc<crate::observed::object_evaluate::ObjectDomain>>,
@@ -12,6 +19,7 @@ pub(crate) struct InputIndexes<'a> {
     fixed: std::sync::Arc<FixedInputIndexes<'a>>,
     // 候補ごとに独立したEnvironmentへ一度だけ設定し、観測cacheと共有しない。
     pub(super) primitive_valuation: Option<BTreeMap<Fact, Scalar>>,
+    pub(super) valuation_domain: ValuationDomain,
     // 整数changeの式を読む内部環境。観測slotと元parameterを区別する。
     pub(super) affine_valuation: BTreeMap<Fact, crate::observed::affine::Form>,
     // 参照構造とprobeの再検査に必要なdecoded値。完成候補の純leafは保存しない。
@@ -39,6 +47,7 @@ impl<'a> InputIndexes<'a> {
     pub(super) fn fresh(&self) -> Self {
         Self {
             inputs: self.inputs,
+            valuation_domain: self.valuation_domain,
             fixed: self.fixed.clone(),
             object: None,
             object_instance: None,
@@ -178,6 +187,7 @@ impl<'a> InputIndexes<'a> {
         control.checkpoint(Checkpoint::FiniteIteration)?;
         Ok(Self {
             inputs,
+            valuation_domain: ValuationDomain::Input,
             object: None,
             object_instance: None,
             object_values: None,

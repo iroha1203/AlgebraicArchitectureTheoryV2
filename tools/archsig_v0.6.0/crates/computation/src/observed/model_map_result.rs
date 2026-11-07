@@ -567,18 +567,10 @@ fn compute(
     let mut status = if let Some(v) = &verified {
         if v.all_preserved() {
             Decision::Established
-        } else if v.transport.all_preserved()
-            && (!v.unsupported_instances.is_empty()
-                || v.laws.iter().any(|law| {
-                    matches!(
-                        law.outcome(),
-                        super::object_law_transport::LawTransportOutcome::Undetermined
-                    )
-                }))
-        {
-            Decision::Undetermined
-        } else {
+        } else if v.has_refutation() {
             Decision::Refuted
+        } else {
+            Decision::Undetermined
         }
     } else {
         b.parts[local_condition.0 - base]

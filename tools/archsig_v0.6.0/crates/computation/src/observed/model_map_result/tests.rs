@@ -302,3 +302,69 @@ fn generator_configuration_maps_keep_their_owned_endpoints_and_feed_compose_comp
     );
     replay(&result, &result.nodes, &result.contexts).unwrap();
 }
+
+#[test]
+fn integer_law_assembly_keeps_unsupported_map_transport_and_blocks_only_its_model_output() {
+    let input = fixture::replace_law(
+        fixture::query(|s| s),
+        "law required zero(p:Part):p.quantity=0;",
+        "law required parameter(r:Root,n:Z):n=n;",
+    );
+    let result = super::super::evaluate_observed_bytes(
+        input,
+        &[
+            fixture::ASSEMBLE,
+            fixture::MAP,
+            "blocked=compare($m.map.configuration_map,to=$m.configuration_map,kind=action)",
+            "owner=evaluate(Assembly.ownerOf,on=$a.object,p=@v/a)",
+        ],
+        &Control::unlimited(),
+    )
+    .unwrap();
+    assert_eq!(
+        result.answers[0].status,
+        Decision::Established,
+        "{:?}",
+        result.issues
+    );
+    let map = &result.answers[1];
+    assert_eq!(map.status, Decision::Undetermined, "{:?}", result.issues);
+    assert!(map.outputs.contains_key("configuration_map"));
+    assert!(!map.outputs.contains_key("map"));
+    assert!(
+        map.reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::UnsupportedAlgorithm { .. }))
+    );
+    assert!(
+        result.answers[2]
+            .reasons
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::DependencyBlocked { .. }))
+    );
+    assert!(
+        !result
+            .issues
+            .iter()
+            .any(|r| matches!(r.kind, ReasonKind::Internal(_)))
+    );
+    replay(&result, &result.nodes, &result.contexts).unwrap();
+    let projected = result
+        .nodes
+        .iter()
+        .position(|node| node.rule == Rule::Construction("object_field"))
+        .expect("輸送された元field");
+    for support in [true, false] {
+        let mut nodes = result.nodes.clone();
+        if support {
+            nodes[projected].support = Support::default();
+        } else {
+            nodes[projected].payload = Some(Payload::Scalar(Scalar::Subject {
+                snapshot: "v".into(),
+                subject: "A".into(),
+                entity: "Assemble.Root".into(),
+            }));
+        }
+        assert!(replay(&result, &nodes, &result.contexts).is_err());
+    }
+}

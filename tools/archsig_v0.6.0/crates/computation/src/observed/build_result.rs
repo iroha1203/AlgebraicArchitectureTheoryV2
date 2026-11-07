@@ -713,7 +713,9 @@ fn compute_inner(
                         request: request.id.clone(),
                         dependencies,
                         missing: vec![],
-                        location: None,
+                        location: Some(Location::Law {
+                            span: env.indexes.inputs.law().exprs()[body].span,
+                        }),
                     });
                 }
             }

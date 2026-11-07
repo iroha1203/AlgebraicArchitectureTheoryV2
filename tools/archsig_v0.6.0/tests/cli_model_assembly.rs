@@ -3,6 +3,18 @@ use crate::common::{cli::*, model_assembly_data as fixture};
 use archsig_common::canonical::Json;
 use std::path::Path;
 fn execute(dir: &Path, out: &str, reuse: Option<&str>) -> BinaryRun {
+    execute_asks(
+        dir,
+        out,
+        reuse,
+        &[
+            fixture::ASSEMBLE,
+            "c=check(Assembly.zero,on=$a.object)",
+            "o=evaluate(Assembly.ownerOf,on=$a.object,p=@v/b)",
+        ],
+    )
+}
+fn execute_asks(dir: &Path, out: &str, reuse: Option<&str>, asks: &[&str]) -> BinaryRun {
     let mut args = vec![
         "run",
         "--atom-definition",
@@ -17,11 +29,7 @@ fn execute(dir: &Path, out: &str, reuse: Option<&str>) -> BinaryRun {
     if let Some(path) = reuse {
         args.extend(["--reuse", path]);
     }
-    for ask in [
-        fixture::ASSEMBLE,
-        "c=check(Assembly.zero,on=$a.object)",
-        "o=evaluate(Assembly.ownerOf,on=$a.object,p=@v/b)",
-    ] {
+    for &ask in asks {
         args.extend(["--ask", ask]);
     }
     run_binary(dir, &args)
@@ -202,4 +210,74 @@ fn saved_map_assembly_rechecks_local_correspondences_and_serializes_square_failu
     );
     assert_eq!(s(get(difference, "kind")), "generator");
     assert_ne!(get(difference, "left"), get(difference, "right"));
+}
+
+#[test]
+fn saved_assembly_accepts_supported_law_updates_and_restores_the_original_law() {
+    let dir = workdir("model-assembly-law-updates");
+    let input = fixture::input(|s| s);
+    write_inputs(&dir, &input);
+    let asks = [
+        fixture::ASSEMBLE,
+        "o=evaluate(Assembly.ownerOf,on=$a.object,p=@v/b)",
+    ];
+    assert_eq!(execute_asks(&dir, "original", None, &asks).code, 0);
+    let original = std::str::from_utf8(input.law().bytes()).unwrap();
+    let unsupported = "law required sizeLaw(p:Part):count(Part[p.owner])>=1;";
+    let law = original.replace(
+        "law required zero",
+        &format!("{unsupported} law required zero"),
+    );
+    let expression = "count(Part[p.owner])>=1";
+    let begin = law.find(expression).unwrap();
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    let run = execute_asks(&dir, "coexisting-law", Some("original"), &asks);
+    assert_eq!(run.code, 2, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    let answers = arr(get(&result, "answers"));
+    assert_eq!(s(get(&answers[0], "status")), "undetermined");
+    assert!(!has(get(&answers[0], "outputs"), "object"));
+    for answer in answers {
+        let reasons = arr(get(answer, "reasons"));
+        let reason = reasons
+            .iter()
+            .find(|r| s(get(r, "code")) == "unsupported_algorithm")
+            .unwrap();
+        let location = get(reason, "location");
+        assert_eq!(s(get(location, "input")), "law");
+        let span = arr(get(location, "span"));
+        assert_eq!(
+            (num(&span[0]), num(&span[1])),
+            (begin as u64, (begin + expression.len()) as u64)
+        );
+        assert_eq!(
+            s(get(get(reason, "details"), "method")),
+            "integer_order_equation_presentation"
+        );
+    }
+    assert!(
+        arr(get(&answers[1], "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "dependency_blocked")
+    );
+    for (name, added) in [
+        ("integer", "law required parameter(r:Root,n:Z):n=n;"),
+        (
+            "count",
+            "law required size(p:Part):count(Part[p.owner])>=1;",
+        ),
+        ("restored", "law required zero(p:Part):p.quantity=0;"),
+    ] {
+        let law = original.replace("law required zero(p:Part):p.quantity=0;", added);
+        std::fs::write(dir.join("l.law"), law).unwrap();
+        let current = execute_asks(&dir, name, Some("original"), &asks);
+        assert_eq!(current.code, 0, "{name}: {}", current.stdout);
+        let result = result_json(&dir, &current);
+        assert!(
+            arr(get(&result, "answers"))
+                .iter()
+                .all(|a| s(get(a, "status")) == "established")
+        );
+        assert!(arr(get(&result, "issues")).is_empty());
+    }
 }

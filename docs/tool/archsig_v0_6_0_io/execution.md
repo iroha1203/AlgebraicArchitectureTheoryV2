@@ -395,6 +395,13 @@ on は同じ snapshot・root 型の原始参照で、組立て後の root の id
 assembly から局所ごとの包含と再制限の対応を辿れる。構成した object は evaluate / check /
 localize と次の変更の on に渡せる。初段の組立ては対象と生成操作を構成し、担当別の新旧写像の
 組立ては別の構成とする。局所で確認した Law の成立を全体の成立へ昇格させず、元の Law を全体で検査する。
+組立てViewの元式と、対象に付随するLawの元式・parameter・束縛は分けて保持する。
+Lawの追加・修正時も、その元出現の下で既存の数値族・有限読取りの算法を使う。
+構成で輸送した既知の参照を族・集計のownerへ渡す場合も、元fieldの支持と輸送の由来を保つ。
+有限計算の元入力への候補代入は、所属・Map全域性の検査では元の参照値を保ち、
+選択対象の式・所属集合を読むときに同じ構成の参照輸送を使う。
+選択対象への明示変更として渡された値は、この元入力候補の輸送と区別する。
+既存算法で成立・反証を計算できる式を、組立てViewと異なる宣言であることだけで未対応化しない。
 
 未観測 field はその原始位置を持つ `missing_observation`、適用族外は原式と束縛を持つ
 `unsupported_algorithm` とする。共有対応が局所の異なる個体を潰す、型・field 値・端点が
@@ -420,7 +427,10 @@ owned型とfield位置の対応は同じ元宣言を結ぶものとする。
 Configuration保存を確認した時点でconfiguration_mapを保持し、操作/Law保存も確認した場合だけ
 ModelMapAssemblyを返す。確認済みの構造ごとにfieldを区別する。
 欠測は元位置付きmissing_observation、適用族外は元宣言・式と束縛付きunsupported_algorithm、
-共有像・保存・可換性の不一致は実像と元位置付きcondition_failedとする。中断時は先行回答を保持する。
+共有像・保存・可換性の不一致は実像と元位置付きcondition_failedとする。
+複数の保存条件のうち一つでも実際の反証を得た場合は、別条件が未対応・未決でも全体をrefutedとし、
+その反例と失敗条件を保持する。未対応条件の理由も消さず、反証がなく確認を終えられない場合はundeterminedとする。
+中断時は先行回答を保持する。
 保存候補は現在の三入力と元Requestから再検査する。
 
 `compose($f.configuration_map,then=$g.configuration_map)` はConfigurationMapの通常の総作用合成を返す。
