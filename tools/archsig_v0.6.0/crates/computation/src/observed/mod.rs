@@ -60,7 +60,9 @@ mod view_family;
 #[cfg(any(test, feature = "test-support"))]
 #[doc(hidden)]
 pub use evaluate::evaluate_observed_with_rejected_answer;
-pub use evaluate::{evaluate_observed, evaluate_observed_bytes};
+pub use evaluate::{
+    evaluate_observed, evaluate_observed_bytes, reevaluate_observed, reevaluate_observed_bytes,
+};
 pub use result::{EvaluationFailure, ObservedEvaluation};
 pub mod projection;
 pub mod request;

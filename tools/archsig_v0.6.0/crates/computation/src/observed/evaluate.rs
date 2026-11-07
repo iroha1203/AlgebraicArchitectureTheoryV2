@@ -2917,6 +2917,46 @@ pub fn evaluate_observed(
 fn evaluate_observed_with_validator(
     prepared: PreparedObserved,
     control: &Control,
+    validate_answer: impl FnMut(
+        &Environment<'_>,
+        &Graph,
+        &Request,
+        &Answer,
+    ) -> Result<(), ValidationFailure>,
+) -> Result<ObservedEvaluation, EvaluationFailure> {
+    evaluate_observed_with_reuse(prepared, control, None, validate_answer)
+}
+
+/// 現在の検査済み三入力で再評価し、不変な有限修復関係だけを前回と共有する。
+pub fn reevaluate_observed(
+    previous: &ObservedEvaluation,
+    prepared: PreparedObserved,
+    control: &Control,
+) -> Result<ObservedEvaluation, EvaluationFailure> {
+    evaluate_observed_with_reuse(
+        prepared,
+        control,
+        Some(previous),
+        |environment, graph, request, answer| environment.validate_answer(graph, request, answer),
+    )
+}
+
+/// 現在の三入力と要求を通常検査してからnativeな前回結果と再評価する。
+pub fn reevaluate_observed_bytes(
+    previous: &ObservedEvaluation,
+    sources: archsig_input::input::InputSources,
+    texts: &[&str],
+    control: &Control,
+) -> Result<ObservedEvaluation, EvaluationFailure> {
+    let prepared =
+        super::prepare_observed(sources, texts, control).map_err(EvaluationFailure::Prepare)?;
+    reevaluate_observed(previous, prepared, control)
+}
+
+fn evaluate_observed_with_reuse(
+    prepared: PreparedObserved,
+    control: &Control,
+    previous: Option<&ObservedEvaluation>,
     mut validate_answer: impl FnMut(
         &Environment<'_>,
         &Graph,
@@ -2941,8 +2981,22 @@ fn evaluate_observed_with_validator(
     };
     let mut verified_prefix = (0, 0, 0, 0, 0, 0);
     let mut not_implemented = None;
+    let mut repair_cache = vec![];
     {
         let environment = Environment::with_prepared(&prepared, control).ok();
+        if let (Some(environment), Some(previous)) = (&environment, previous) {
+            let current = prepared.inputs().sources();
+            let old = previous.prepared.inputs().sources();
+            if matches!(previous.status(), "complete" | "partial")
+                && prepared.object.is_none()
+                && previous.prepared.object.is_none()
+                && current.definitions() == old.definitions()
+                && current.law() == old.law()
+            {
+                environment.results.repair_relations.borrow_mut().previous =
+                    previous.repair_cache.clone();
+            }
+        }
         for &index in prepared.requests().evaluation_order() {
             let request = &prepared.requests().requests()[index];
             let declaration = request
@@ -3319,6 +3373,14 @@ fn evaluate_observed_with_validator(
                 }
             }
         }
+        if !internal
+            && not_implemented.is_none()
+            && control.stop_reason().is_none()
+            && let Some(environment) = &environment
+        {
+            repair_cache =
+                std::mem::take(&mut environment.results.repair_relations.borrow_mut().current);
+        }
     }
     if internal {
         // Only completed, validated answers qualify the graph prefix for delivery.
@@ -3374,6 +3436,7 @@ fn evaluate_observed_with_validator(
         "complete"
     };
     let evaluation = ObservedEvaluation {
+        repair_cache,
         prepared,
         nodes: graph.nodes.into_vec(),
         #[cfg(test)]
