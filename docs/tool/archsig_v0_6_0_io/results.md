@@ -866,6 +866,26 @@ requirementsが空で完全な共通解を確定した場合だけ、回答の�
 前回graphの参照番号・source・成功判断を現在の結果へ持ち込まない。
 保存JSONの読込みはnativeな前回結果を構成する入口ではなく、現在の導出との照合である。
 
+### 整数修復の観測要求
+
+計算仕様の適用条件を満たす整数入力族にもRepairProblem.inputsとRepairObservationを使う。
+入力domainは`{kind:"integer_input_completions",base:Architecture,view:QName,bindings:Binding[],fields:FactPointer[],value_type:Type,coordinates:Module}`。
+fieldsは未観測の原始Z位置のcanonical順、value_typeは同順のZのTuple、coordinatesはその自由整数Moduleである。
+原始位置・既知値・型・ownerは現在入力に属し、仮の入力点を観測済みAtomの由来にしない。
+
+整数RepairObservationは上記の共通fieldに、
+`affine:{parameters:Module,inputs:Module,equations:ModuleMap,rhs:Vector}`を持つ。
+equationsの始域はparametersとinputsのこの順の直和、終域はrhsのModuleであり、
+guard・Law・範囲外固定を合わせた`A p+B x=c`を保持する。parametersは元change parameterのModule。
+無限の観測群をcasesへ列挙せず、casesは空列とし、この有限な関係とrequirementsで全群を表す。
+十分性は全群に対する命題であり、個々の観測結果のpossible/commonを一つの値へ潰さない。
+counterexamples.inputsは入力domainに属する実際の整数Tupleへの参照である。
+requirementsのdependentsは、その読取りを除いたときの反例の命題を指す。
+全入力が修復不能なら追加読取り不要であり、修復可能な入力があるのに共通解だけがない場合と区別する。
+requirementsが空のassignmentの共通SolutionSetは、元parameterの全整数fiberを保持し、
+通常の明示候補・所属・適用・元Law検査へ接続する。
+保存後の検査は、現在の三入力から入力域・整数系・像/整除・反例と共通fiberを再導出して照合する。
+
 ## 6. 証拠と理由
 
 Evidenceは結果専用。`{kind:EvidenceKind,data:EvidenceData}`をpayloadとする。

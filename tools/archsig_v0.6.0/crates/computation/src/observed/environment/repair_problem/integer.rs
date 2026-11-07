@@ -6,6 +6,7 @@ use std::sync::Arc;
 #[derive(Debug)]
 pub(in crate::observed) struct Compiled {
     pub linear: Arc<change_affine::Linear>,
+    pub family: Option<Arc<InputFamily>>,
     object: Arc<crate::observed::object_evaluate::ObjectDomain>,
     pub subjects: Vec<Scalar>,
     pub requirements: Vec<(String, Vec<(String, Scalar)>)>,
@@ -16,8 +17,16 @@ pub(in crate::observed) struct Compiled {
     pub scope: Scope,
     pub change: String,
 }
+#[derive(Debug)]
+pub(in crate::observed) struct InputFamily {
+    pub view: String,
+    pub bindings: Vec<(String, Scalar)>,
+    pub fields: Vec<Fact>,
+    pub system: change_affine::InputSystem,
+}
 pub(in crate::observed) enum Preparation {
     Ready(Arc<Compiled>),
+    Rejected,
     Pending {
         details: Box<change_affine::Pending>,
         unsupported: bool,
@@ -94,29 +103,131 @@ fn compile_inner(
         })
         .ok_or(internal!("整数修復のchangeがない"))?;
     let change = &env.indexes.inputs.law().declarations()[&change_name];
-    let mut pending = change_affine::Pending::default();
-    let linear = if let Some(linear) = prior {
-        linear
-    } else {
-        let generated = match change_affine::compute(
-            &env,
-            change,
-            &subjects,
-            &selected.requirements,
-            &mut pending,
-        ) {
-            Ok(linear) => linear,
+    let input = r.arguments.iter().find_map(|a| match (&*a.name, &a.value) {
+        ("inputs", crate::observed::request::Selector::Declaration { name }) => Some(name.clone()),
+        _ => None,
+    });
+    let mut input_data = None;
+    if let Some(name) = input {
+        let Signature::View {
+            params,
+            body,
+            returns,
+        } = &env.indexes.inputs.law().declarations()[&name].signature
+        else {
+            unreachable!("入力view")
+        };
+        let mut bindings = vec![];
+        for p in params {
+            let a = r
+                .arguments
+                .iter()
+                .find(|a| a.name == format!("bind.{}", p.name))
+                .ok_or(internal!("整数入力viewの束縛がない"))?;
+            bindings.push((
+                p.name.clone(),
+                change_search::selector(original, g, &a.value)?,
+            ));
+        }
+        let mut details = change_affine::Pending {
+            expression: Some(*body),
+            coefficient_type: Some(returns.clone()),
+            bindings: bindings.clone(),
+            ..Default::default()
+        };
+        let read = match super::family::read(&env, &name, &bindings) {
+            Ok(read) => read,
             Err(ValidationFailure::UnsupportedExpression { .. }) => {
                 return Ok(Preparation::Pending {
-                    unsupported: pending.unsupported.is_some() || pending.facts.is_empty(),
+                    details: Box::new(details),
+                    unsupported: true,
+                });
+            }
+            Err(e) => return Err(e),
+        };
+        if read.failed {
+            return Ok(Preparation::Rejected);
+        }
+        details.facts = read.missing.clone();
+        if read.blocked {
+            return Ok(Preparation::Pending {
+                unsupported: details.facts.is_empty(),
+                details: Box::new(details),
+            });
+        }
+        for fact in &read.missing {
+            env.tick()?;
+            let field = env.indexes.field(
+                &env.state,
+                &fact.snapshot,
+                &fact.subject,
+                fact.field
+                    .as_deref()
+                    .ok_or(internal!("整数入力位置のfieldがない"))?,
+            )?;
+            if field.ty != Type::Z || fact.field.as_ref().is_some_and(|f| f.is_owner()) {
+                return Ok(Preparation::Pending {
+                    details: Box::new(details),
+                    unsupported: true,
+                });
+            }
+        }
+        input_data = Some((name, bindings, read));
+    }
+    let mut pending = change_affine::Pending::default();
+    let (linear, family) = if let Some(linear) = prior {
+        (linear, None)
+    } else {
+        let generated = if let Some((_, _, read)) = &input_data {
+            change_affine::compute_inputs(
+                &env,
+                change,
+                &subjects,
+                &selected.requirements,
+                &mut pending,
+                &read.missing,
+            )
+            .map(|(linear, system)| (linear, Some(system)))
+        } else {
+            change_affine::compute(
+                &env,
+                change,
+                &subjects,
+                &selected.requirements,
+                &mut pending,
+            )
+            .map(|linear| (linear, None))
+        };
+        let (linear, system) = match generated {
+            Ok(generated) => generated,
+            Err(ValidationFailure::UnsupportedExpression { .. }) => {
+                return Ok(Preparation::Pending {
+                    unsupported: pending.unsupported.is_some()
+                        || pending.facts.is_empty()
+                        || input_data.as_ref().is_some_and(|(_, _, read)| {
+                            pending.facts.iter().any(|fact| read.missing.contains(fact))
+                        }),
                     details: Box::new(pending),
                 });
             }
             Err(e) => return Err(e),
         };
+        let family = if let Some((name, bindings, read)) = input_data {
+            pending.support.extend(read.support);
+            pending.scope.merge(&read.scope);
+            pending.scope.completions = !read.missing.is_empty();
+            Some(Arc::new(InputFamily {
+                view: name,
+                bindings,
+                fields: read.missing,
+                system: system.ok_or(internal!("整数入力の同時系がない"))?,
+            }))
+        } else {
+            None
+        };
         #[cfg(test)]
         GENERATED.with(|n| n.set(n.get() + 1));
-        Arc::new(generated)
+        (Arc::new(linear), family)
     };
     let mut support = pending.support.into_iter().collect::<BTreeSet<_>>();
     let mut scope = pending.scope;
@@ -151,6 +262,7 @@ fn compile_inner(
     }
     Ok(Preparation::Ready(Arc::new(Compiled {
         linear,
+        family,
         object: env
             .object_domain()
             .ok_or(internal!("整数修復の参照域がない"))?,

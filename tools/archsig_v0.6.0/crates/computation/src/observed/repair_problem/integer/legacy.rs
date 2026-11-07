@@ -115,6 +115,7 @@ pub(super) fn legacy(
     let n = subjects.len();
     Ok(Some(Arc::new(Shared {
         compiled,
+        input_domain: None,
         projection: None,
         witness,
         base,

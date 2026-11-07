@@ -2,7 +2,7 @@ use super::*;
 use crate::observed::{evaluate_observed_bytes, reevaluate_observed_bytes};
 use archsig_common::control::quiet;
 #[allow(dead_code)]
-mod fixture {
+pub(super) mod fixture {
     include!("../../../../../../tests/common/integer_reobservation_data.rs");
 }
 const BODY: &str = "view all(s:State):Set<State> =set<State>{s};view vacant(s:State):Set<State> =set<State>{};view first(s:State):Z=s.h;change choose(s:State,p:Z)=s with{h=p};law required valid(s:State):s.a*s.h=s.b;";
@@ -69,7 +69,7 @@ fn integer_problem_ranges_candidate_and_applied_original_law_form_one_loop() {
         Some([Z::from(1)].as_slice())
     );
 }
-fn data_for(result: &crate::observed::ObservedEvaluation, at: NodeRef) -> &Data {
+pub(super) fn data_for(result: &crate::observed::ObservedEvaluation, at: NodeRef) -> &Data {
     let Some(Payload::Construction(v)) = &result.nodes[at.0].payload else {
         panic!()
     };
@@ -80,7 +80,7 @@ fn data_for(result: &crate::observed::ObservedEvaluation, at: NodeRef) -> &Data 
 }
 #[allow(dead_code)]
 #[path = "../../../../../../tests/common/integer_repair_problem_data.rs"]
-mod parts;
+pub(super) mod parts;
 const PART_BODY: &str = "view all(r:Root):Set<Part> =Part[r];view inside(r:Root):Set<Part> =set {c|c in Part[r] where c.label!=\"b\"};view vacant(r:Root):Set<Part> =set {c|c in Part[r] where false};view outside(r:Root):Set<Part> =set {c|c in Part[r] where c.label=\"b\"};view read(c:Part):Z=c.x;change choose(c:Part,p:Z,q:Z)=c with{x=p};law required valid(r:Root):forall a in Part[r]. forall b in Part[r]. if a.label=\"a\" and b.label=\"b\" then b.x=2*a.x else true;";
 fn part_input(b: i64) -> archsig_input::input::InputSources {
     parts::input(
@@ -461,7 +461,7 @@ fn integer_existence_and_scope_search_publish_no_unrequested_fibers_or_candidate
     assert_eq!(result.integer_cache.len(), only_solve.integer_cache.len());
     assert!(before.integer_cache.len() <= result.integer_cache.len());
 }
-fn without_atom(
+pub(super) fn without_atom(
     input: archsig_input::input::InputSources,
     id: &str,
 ) -> archsig_input::input::InputSources {
@@ -1355,7 +1355,7 @@ fn unsupported_integer_input_family_keeps_source_expression_and_later_checks() {
         "blocked=check(Pair.valid,on=$p.problem.domain.base,s=@v/s)",
         "later=check(Pair.valid,s=@v/s)",
     ];
-    let result = evaluate_observed_bytes(fixture::input(BODY, "2", "0"), &asks, &c).unwrap();
+    let result = evaluate_observed_bytes(without_atom(fixture::input("view first(s:State):Z=s.a;change choose(s:State,p:Z)=s with{h=s.a*p};law required valid(s:State):s.h=s.h;", "2", "0"),"a"), &asks, &c).unwrap();
     assert!(
         result
             .issues
@@ -1371,6 +1371,6 @@ fn unsupported_integer_input_family_keeps_source_expression_and_later_checks() {
             && !r.dependencies.is_empty()
             && r.dependencies
                 .iter()
-                .all(|at| matches!(result.nodes[at.0].ty, NodeType::Expression(Type::Bool)))
+                .all(|at| matches!(result.nodes[at.0].ty, NodeType::Expression(_)))
     }));
 }

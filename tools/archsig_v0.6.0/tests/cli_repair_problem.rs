@@ -343,3 +343,105 @@ fn saved_integer_problem_preserves_exact_ordinal_and_rechecks_forged_original_as
         .unwrap();
     assert_eq!(s(get(node, "value")), "2");
 }
+
+#[test]
+fn saved_integer_observation_uses_current_raw_values_before_candidate_and_apply() {
+    let body = "view all(s:State):Set<State> =set<State>{s};view input(s:State):Z=s.b;change choose(s:State,p:Z)=s with{h=p};law required valid(s:State):2*s.h=s.b;";
+    let dir = workdir("integer-repair-observation");
+    let run = |out: &str, reuse: Option<&str>, observed: bool| {
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--archmap",
+            "a.json",
+            "--law",
+            "l.law",
+            "--out",
+            out,
+        ];
+        if let Some(path) = reuse {
+            args.extend(["--reuse", path]);
+        }
+        for ask in [
+            "u=evaluate(Pair.all,s=@v/s)",
+            "p=prepare(Pair.valid,using=Pair.choose,on=@v/s,inputs=Pair.input,s=@v/s)",
+            "a=observe(Pair.input,on=$p.problem,within=$u.value,output=assignment,s=@v/s)",
+        ] {
+            args.extend(["--ask", ask]);
+        }
+        if observed {
+            for ask in [
+                "c=candidate($a.solutions,index=0)",
+                "ap=apply($c.assignment,in=$a.solutions)",
+                "ok=check(Pair.valid,on=$ap.object,s=@v/s)",
+            ] {
+                args.extend(["--ask", ask]);
+            }
+        }
+        run_binary(&dir, &args)
+    };
+    let input = integer_fixture::input(body, "2", "2");
+    std::fs::write(dir.join("d.json"), input.definitions()[0].bytes()).unwrap();
+    std::fs::write(dir.join("l.law"), input.law().bytes()).unwrap();
+    let mut map = String::from_utf8(input.archmap().bytes().to_vec()).unwrap();
+    let start = map.find(r#"{"id":"b","#).unwrap();
+    let end = start + map[start..].find('}').unwrap() + 1;
+    assert_eq!(map.as_bytes()[start - 1], b',');
+    map.replace_range(start - 1..end, "");
+    std::fs::write(dir.join("a.json"), map).unwrap();
+    for (out, reuse) in [("missing", None), ("same", Some("missing"))] {
+        let executed = run(out, reuse, false);
+        assert_eq!(executed.code, 0, "{}", executed.stdout);
+        let result = result_json(&dir, &executed);
+        assert!(warnings(&result).is_empty());
+        let answers = arr(get(&result, "answers"));
+        assert!(!has(get(&answers[2], "outputs"), "solutions"));
+        let problem = get(get(&answers[1], "outputs"), "problem");
+        let problem = arr(get(&result, "nodes"))
+            .iter()
+            .find(|n| s(get(n, "id")) == s(get(problem, "node")))
+            .unwrap();
+        let inputs = get(get(problem, "value"), "inputs");
+        let bindings = arr(get(inputs, "bindings"));
+        assert_eq!(bindings.len(), 1);
+        assert_eq!(s(get(&bindings[0], "name")), "s");
+        let domain = get(inputs, "domain");
+        let domain = arr(get(&result, "nodes"))
+            .iter()
+            .find(|n| s(get(n, "id")) == s(get(domain, "node")))
+            .unwrap();
+        let domain_bindings = arr(get(get(domain, "value"), "bindings"));
+        assert_eq!(
+            s(get(get(&bindings[0], "value"), "node")),
+            s(get(get(&domain_bindings[0], "value"), "node"))
+        );
+        let plan = get(get(&answers[2], "outputs"), "plan");
+        let plan = arr(get(&result, "nodes"))
+            .iter()
+            .find(|n| s(get(n, "id")) == s(get(plan, "node")))
+            .unwrap();
+        let value = get(plan, "value");
+        assert_eq!(arr(get(value, "requirements")).len(), 1);
+        assert!(has(value, "affine"));
+    }
+    std::fs::write(dir.join("a.json"), input.archmap().bytes()).unwrap();
+    let executed = run("observed", Some("missing"), true);
+    assert_eq!(executed.code, 0, "{}", executed.stdout);
+    let result = result_json(&dir, &executed);
+    assert!(
+        warnings(&result)
+            .iter()
+            .any(|w| s(get(w, "message")).contains("current input identity does not match"))
+    );
+    let answers = arr(get(&result, "answers"));
+    for a in answers {
+        assert_eq!(s(get(a, "status")), "established");
+    }
+    let plan = get(get(&answers[2], "outputs"), "plan");
+    let plan = arr(get(&result, "nodes"))
+        .iter()
+        .find(|n| s(get(n, "id")) == s(get(plan, "node")))
+        .unwrap();
+    assert!(arr(get(get(plan, "value"), "requirements")).is_empty());
+}
