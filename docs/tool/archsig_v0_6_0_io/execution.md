@@ -342,7 +342,7 @@ inputs を省略した prepare と従来の needed の意味は変えない。
 | 問いの正確な形 | 選択と返すfield |
 | --- | --- |
 | `prepare(Law,using=Change,on=Handle,internal=Handle?,inputs=View?,B)` | inputs は原始位置の読取りを記述する view の完全名。`problem:RepairProblem`、`proposition:Proposition` |
-| `observe(View,on=Handle,within=Handle,output=decision\|assignment,B)` | on は有限入力候補族を持つ RepairProblem。View の B を完全束縛する。within は同じ問題の範囲。`plan:RepairObservation`、十分性の `proposition:Proposition`。追加読取り不要で共通の全解を確定した場合だけ `solutions:SolutionSet` |
+| `observe(View,on=Handle,within=Handle,output=decision\|assignment,B)` | on は有限または適用条件を満たす整数入力族を持つ RepairProblem。View の B を完全束縛する。within は同じ問題の範囲。`plan:RepairObservation`、十分性の `proposition:Proposition`。追加読取り不要で共通の全解を確定した場合だけ `solutions:SolutionSet` |
 | `observe(Handle,on=Handle,within=Handle,output=decision\|assignment)` | 第1引数は同じ問題から生成した RepairObservation。その requirements を許可する読取り集合として再評価する。B は指定しない |
 
 observe の view は、追加で読んでよい原始位置を記述する。核は入力候補族の各点で通常のview評価が
@@ -369,6 +369,9 @@ apply は現在入力の通常の所属・更新式・元Law検査を行い、�
 空の合法な入力候補族を空虚な十分性へ変換せず condition_failed とする。
 型・束縛の不一致は usage、別問題の範囲やplanは condition_failed、非有限の補完は unsupported_algorithm、
 その他の観測不足は元の missing、依存先の未完了は dependency_blocked とする。
+整数changeのinputsは計算仕様の整数アフィン適用条件を使う。未観測Zを全整数域として扱い、
+既知値を固定する。更新・guardとinstance族は入力未知に依存させず、Law等式と範囲の基準値に
+未知を保つ。適用条件外はunsupported_algorithmであり、整数解なしへ読み替えない。
 
 ## 4. 例
 
