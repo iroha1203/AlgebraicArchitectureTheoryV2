@@ -223,6 +223,43 @@ fn saved_assembly_accepts_supported_law_updates_and_restores_the_original_law() 
     ];
     assert_eq!(execute_asks(&dir, "original", None, &asks).code, 0);
     let original = std::str::from_utf8(input.law().bytes()).unwrap();
+    let unsupported = "law required sizeLaw(p:Part):count(Part[p.owner])>=1;";
+    let law = original.replace(
+        "law required zero",
+        &format!("{unsupported} law required zero"),
+    );
+    let expression = "count(Part[p.owner])>=1";
+    let begin = law.find(expression).unwrap();
+    std::fs::write(dir.join("l.law"), law).unwrap();
+    let run = execute_asks(&dir, "coexisting-law", Some("original"), &asks);
+    assert_eq!(run.code, 2, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    let answers = arr(get(&result, "answers"));
+    assert_eq!(s(get(&answers[0], "status")), "undetermined");
+    assert!(!has(get(&answers[0], "outputs"), "object"));
+    for answer in answers {
+        let reasons = arr(get(answer, "reasons"));
+        let reason = reasons
+            .iter()
+            .find(|r| s(get(r, "code")) == "unsupported_algorithm")
+            .unwrap();
+        let location = get(reason, "location");
+        assert_eq!(s(get(location, "input")), "law");
+        let span = arr(get(location, "span"));
+        assert_eq!(
+            (num(&span[0]), num(&span[1])),
+            (begin as u64, (begin + expression.len()) as u64)
+        );
+        assert_eq!(
+            s(get(get(reason, "details"), "method")),
+            "integer_order_equation_presentation"
+        );
+    }
+    assert!(
+        arr(get(&answers[1], "reasons"))
+            .iter()
+            .any(|r| s(get(r, "code")) == "dependency_blocked")
+    );
     for (name, added) in [
         ("integer", "law required parameter(r:Root,n:Z):n=n;"),
         (

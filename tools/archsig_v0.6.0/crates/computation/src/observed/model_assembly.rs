@@ -811,8 +811,13 @@ mod tests {
             .unwrap()
             .replace(
                 "law required zero",
-                "law required atMostTwo(r:Root):count(Part[r])=2;\n  law required zero",
+                "law required sizeLaw(p:Part):count(Part[p.owner])>=1;\n  law required zero",
             );
+        let expression = "count(Part[p.owner])>=1";
+        let begin = law.find(expression).unwrap();
+        let location = Location::Law {
+            span: (begin, begin + expression.len()),
+        };
         let source = archsig_input::input::InputSources::from_bytes(
             vec![source.definitions()[0].bytes().to_vec()],
             law.into_bytes(),
@@ -821,6 +826,62 @@ mod tests {
         let asks = [fixture::ASSEMBLE, "c=check(Assembly.zero,on=$a.object)"];
         let c = Control::unlimited();
         let result = crate::observed::evaluate_observed_bytes(source, &asks, &c).unwrap();
+        let reason = result.answers[0].reasons.iter().find(|r| matches!(&r.kind,
+            ReasonKind::UnsupportedAlgorithm { method, operand_types, .. }
+                if method == "integer_order_equation_presentation" && operand_types == &[Type::Z, Type::Z])).unwrap();
+        assert_eq!(reason.location, Some(location.clone()));
+        assert!(!reason.dependencies.is_empty());
+        let mut found = false;
+        for dependency in &reason.dependencies {
+            if let Some(Payload::Construction(value)) = &result.nodes[dependency.0].payload
+                && let super::super::construction_result::ConstructionData::PolynomialLaw(data) =
+                    &value.data
+                && let archsig_common::canonical::Json::Obj(ref fields) = data.wire()
+                && fields.get("kind") == Some(&archsig_common::canonical::Json::str("source"))
+            {
+                assert_eq!(
+                    fields["location"],
+                    archsig_input::result::location_wire(&location)
+                );
+                let archsig_common::canonical::Json::Arr(bindings) = &fields["bindings"] else {
+                    panic!("元束縛")
+                };
+                let binding = bindings
+                    .iter()
+                    .find_map(|binding| match binding {
+                        archsig_common::canonical::Json::Obj(fields)
+                            if fields.get("name")
+                                == Some(&archsig_common::canonical::Json::str("p")) =>
+                        {
+                            Some(fields["value"].exact_node_reference().unwrap())
+                        }
+                        _ => None,
+                    })
+                    .expect("未対応となった元個体の束縛");
+                let bound = &result.nodes[binding];
+                assert_eq!(bound.ty, NodeType::Value(Type::Ref("Assemble.Part".into())));
+                let scalar = match &bound.payload {
+                    Some(Payload::Scalar(value)) => value,
+                    Some(Payload::Construction(value)) => value.scalar().unwrap(),
+                    _ => panic!("元subject"),
+                };
+                assert!(
+                    matches!(scalar, Scalar::Subject { snapshot, subject, entity }
+                    if snapshot == "v" && ["a", "b", "ma"].contains(&subject.as_str()) && entity == "Assemble.Part")
+                );
+
+                found = true;
+            }
+        }
+        assert!(found, "未対応となった元Lawの型付き出現を保持する");
+        assert!(
+            result.answers[1]
+                .reasons
+                .iter()
+                .any(|r| r.kind == reason.kind
+                    && r.location == reason.location
+                    && r.dependencies == reason.dependencies)
+        );
         assert_eq!(result.answers[1].status, Decision::Undetermined);
         assert!(
             result
