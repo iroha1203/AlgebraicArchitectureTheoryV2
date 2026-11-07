@@ -171,7 +171,14 @@ pub(super) fn build(
             c,
         )?;
         let free = module(b, ring, n, "kernel", vec![guard_map])?;
-        let recovery = map(b, free, parameter_module, &guard.fiber.decomposition.kernel, n, c)?;
+        let recovery = map(
+            b,
+            free,
+            parameter_module,
+            &guard.fiber.decomposition.kernel,
+            n,
+            c,
+        )?;
         let origin = vector(
             b,
             parameter_module,
@@ -199,7 +206,13 @@ pub(super) fn build(
     )?;
     let (representation, representation_args) = if let Some(p) = &linear.particular {
         let particular = vector(b, parameter_module, p, c)?;
-        let directions = module(b, ring, n - linear.fiber.decomposition.rank, "kernel", vec![equations])?;
+        let directions = module(
+            b,
+            ring,
+            n - linear.fiber.decomposition.rank,
+            "kernel",
+            vec![equations],
+        )?;
         let embedding = map(
             b,
             directions,
@@ -250,9 +263,30 @@ pub(in crate::observed) fn smith(
     let m = matrix.len();
     let equation_module = module(b, ring, m, "free", vec![])?;
     let equations = map(b, parameter_module, equation_module, matrix, n, c)?;
-    let left = map(b, equation_module, equation_module, &fiber.decomposition.left, m, c)?;
-    let right = map(b, parameter_module, parameter_module, &fiber.decomposition.right, n, c)?;
-    let diagonal = map(b, parameter_module, equation_module, &fiber.decomposition.diagonal, n, c)?;
+    let left = map(
+        b,
+        equation_module,
+        equation_module,
+        &fiber.decomposition.left,
+        m,
+        c,
+    )?;
+    let right = map(
+        b,
+        parameter_module,
+        parameter_module,
+        &fiber.decomposition.right,
+        n,
+        c,
+    )?;
+    let diagonal = map(
+        b,
+        parameter_module,
+        equation_module,
+        &fiber.decomposition.diagonal,
+        n,
+        c,
+    )?;
     let rhs = vector(b, equation_module, rhs_values, c)?;
     let transformed = vector(b, equation_module, &fiber.transformed_rhs, c)?;
     let mut divisibility = vec![];

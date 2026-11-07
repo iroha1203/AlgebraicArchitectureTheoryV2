@@ -161,8 +161,19 @@ pub(in crate::observed) fn fiber(
         return Ok(Fiber {
             rank: f.decomposition.rank,
             kernel: matrix(&f.decomposition.kernel),
-            image: matrix(&basis.iter().map(|r| r[..f.decomposition.rank].to_vec()).collect()),
-            lifts: matrix(&f.decomposition.right.iter().map(|r| r[..f.decomposition.rank].to_vec()).collect()),
+            image: matrix(
+                &basis
+                    .iter()
+                    .map(|r| r[..f.decomposition.rank].to_vec())
+                    .collect(),
+            ),
+            lifts: matrix(
+                &f.decomposition
+                    .right
+                    .iter()
+                    .map(|r| r[..f.decomposition.rank].to_vec())
+                    .collect(),
+            ),
         });
     }
     let f = field_fiber::solve(ty, a, n, &vec![numeric::zero(ty, c)?; a.len()], c)?;
