@@ -150,7 +150,7 @@ fn compute_checked(
         source_configuration: sc.clone(),
         target_configuration: tc.clone(),
         universe: source.shared_universe(),
-        images,
+        images: std::sync::Arc::new(images),
     };
     check(control)?;
     Ok(Some(ConfigurationMap { candidate }))

@@ -75,8 +75,11 @@ impl Data {
     pub(super) fn wire_ref(&self) -> Option<&Json> {
         self.part().wire_ref()
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+    pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.part().support.clone(), self.part().scope.clone())
+    }
+    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+        (self.part().support.to_vec(), self.part().scope.clone())
     }
     pub(super) fn projection_type(&self) -> Option<ProjectionType> {
         match self.ty() {

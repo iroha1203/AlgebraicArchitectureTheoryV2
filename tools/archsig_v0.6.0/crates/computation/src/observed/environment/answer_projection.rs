@@ -34,6 +34,8 @@ impl Environment<'_> {
             (_, Some(ty)) => ty,
             (NodeType::Value(t), None) => ProjectionType::Law(t.clone()),
             (NodeType::Evaluation(t), None) => ProjectionType::Evaluation(t.clone()),
+            (NodeType::LawInstance, None) => ProjectionType::LawInstance,
+            (NodeType::Proposition, None) => ProjectionType::Proposition,
             _ => return Err(self.answer_projection_unprovided(span)),
         };
         match resolve_projection_controlled(self.indexes.inputs.law(), initial, path, &self.control)

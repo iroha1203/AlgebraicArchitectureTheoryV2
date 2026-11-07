@@ -49,7 +49,7 @@ pub(super) struct Part {
     // The private field prevents callers from changing the representation's presence.
     wire: Option<Json>,
     pub(super) arguments: Vec<NodeRef>,
-    pub(super) support: Vec<Fact>,
+    pub(super) support: Support,
     pub(super) scope: Scope,
     pub(super) reasons: Vec<Reason>,
     pub(super) judgment: Option<Judgment>,
@@ -148,6 +148,37 @@ fn same_scalar_wire(a: &Scalar, b: &Scalar) -> bool {
     })
 }
 impl Part {
+    pub(super) fn project(
+        &self,
+        path: &[super::projection::ProjectionStep],
+    ) -> Option<(NodeRef, usize)> {
+        use super::projection::ProjectionStep as P;
+        let mut value = self.wire_ref()?;
+        for (index, step) in path.iter().enumerate() {
+            value = match (value, step) {
+                (Json::Obj(fields), P::Field(field)) => fields.get(field)?,
+                (Json::Arr(items), P::Index(at)) => items.get(usize::try_from(*at).ok()?)?,
+                _ => return None,
+            };
+            if let Some(at) = value.exact_node_reference() {
+                let reference = NodeRef(at);
+                return self
+                    .arguments
+                    .contains(&reference)
+                    .then_some((reference, index + 1));
+            }
+        }
+        None
+    }
+    /// native recordが既出辺として保持する参照。入力や検査器をJSON化して復元しない。
+    pub(super) fn reference(&self, field: &str) -> Option<NodeRef> {
+        let Json::Obj(fields) = self.wire_ref()? else {
+            return None;
+        };
+        let reference = NodeRef(fields.get(field)?.exact_node_reference()?);
+        self.arguments.contains(&reference).then_some(reference)
+    }
+
     pub(super) fn wire(&self) -> Json {
         match (&self.scalar, &self.wire) {
             (Some(scalar), None) => scalar.wire(),
@@ -239,6 +270,36 @@ impl Data {
         }
         wire
     }
+    pub(super) fn map_components(&self) -> Option<(NodeRef, NodeRef, NodeRef, Vec<NodeRef>)> {
+        if self.ty() != NodeType::Construction(T::ConfigurationMap) {
+            return None;
+        }
+        let candidate = self.part().reference("candidate")?;
+        let row = self
+            .source
+            .parts
+            .get(candidate.0.checked_sub(self.source.base)?)?;
+        Some((
+            row.reference("source")?,
+            row.reference("target")?,
+            row.reference("action")?,
+            vec![],
+        ))
+    }
+    pub(super) fn core_map(&self) -> Option<&crate::construction::maps::ConfigurationMap> {
+        let (_, _, action, _) = self.map_components()?;
+        Some(
+            self.source
+                .parts
+                .action(action.0.checked_sub(self.source.base)?)?
+                .map(),
+        )
+    }
+    pub(super) fn action_universe(&self) -> Option<NodeRef> {
+        (self.ty() == NodeType::Construction(T::AtomMap))
+            .then(|| self.part().reference("universe"))
+            .flatten()
+    }
     #[cfg(test)]
     pub(super) fn assembly_model(&self) -> Option<&Arc<super::model_assembly::Model>> {
         self.source.plan.assembly.as_ref()?.model.as_ref()
@@ -250,8 +311,11 @@ impl Data {
     pub(super) fn arguments(&self) -> Vec<NodeRef> {
         self.part().arguments.clone()
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+    pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.part().support.clone(), self.part().scope.clone())
+    }
+    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+        (self.part().support.to_vec(), self.part().scope.clone())
     }
     pub(super) fn scalar(&self) -> Option<&Scalar> {
         self.part().scalar.as_ref()
@@ -289,25 +353,8 @@ impl Data {
         &self,
         path: &[super::projection::ProjectionStep],
     ) -> Option<(NodeRef, usize)> {
-        use super::projection::ProjectionStep as P;
         self.assembly_projection_type()?;
-        let mut value = self.part().wire_ref()?;
-        for (index, step) in path.iter().enumerate() {
-            value = match (value, step) {
-                (Json::Obj(fields), P::Field(field)) => fields.get(field)?,
-                (Json::Arr(items), P::Index(at)) => items.get(usize::try_from(*at).ok()?)?,
-                _ => return None,
-            };
-            if let Some(at) = value.exact_node_reference() {
-                let reference = NodeRef(at);
-                return self
-                    .part()
-                    .arguments
-                    .contains(&reference)
-                    .then_some((reference, index + 1));
-            }
-        }
-        None
+        self.part().project(path)
     }
     pub(super) fn algebra_base(&self) -> Option<NodeRef> {
         (self.ty() == NodeType::Construction(T::ObjectAlgebra))
@@ -408,6 +455,15 @@ impl Builder<'_> {
             evidence: vec![],
             reasons: reasons.clone(),
         });
+        let shared = arguments.iter().find_map(|input| {
+            let original = if input.0 < self.base {
+                &self.g.nodes[input.0].support
+            } else {
+                &self.parts[input.0 - self.base].support
+            };
+            (original.as_slice() == support.as_slice()).then(|| original.clone())
+        });
+        let support = shared.unwrap_or_else(|| support.into());
         self.parts.push(Part {
             ty,
             construction,
@@ -452,9 +508,9 @@ impl Builder<'_> {
             arguments,
         )?;
         let part = &mut self.parts[binding.0 - self.base];
-        part.support.push(existence);
-        part.support.sort();
-        part.support.dedup();
+        part.support.make_owned().push(existence);
+        part.support.make_owned().sort();
+        part.support.make_owned().dedup();
         part.scope
             .merge(&env.indexes.scope(subject, reading, None)?);
         let expression = self.push(
@@ -484,9 +540,9 @@ impl Builder<'_> {
         let mut position = position.clone();
         position.atom = atom;
         let part = &mut self.parts[expression.0 - self.base];
-        part.support.push(position);
-        part.support.sort();
-        part.support.dedup();
+        part.support.make_owned().push(position);
+        part.support.make_owned().sort();
+        part.support.make_owned().dedup();
         part.scope
             .merge(&env.indexes.scope(subject, reading, origin)?);
         Ok(expression)

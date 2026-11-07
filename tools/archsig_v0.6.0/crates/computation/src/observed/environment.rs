@@ -4454,6 +4454,7 @@ impl<'a> Environment<'a> {
                     request.kind,
                     QuestionKind::Build
                         | QuestionKind::Assemble
+                        | QuestionKind::AssembleMap
                         | QuestionKind::Solve
                         | QuestionKind::Repair
                         | QuestionKind::Quotient
@@ -4467,6 +4468,8 @@ impl<'a> Environment<'a> {
                 return self.with_request_context(graph, request, || {
                     if super::request::shared_repair_request(request) {
                         super::repair_problem::validate_answer(self, graph, request, answer)?;
+                    } else if request.kind == QuestionKind::AssembleMap {
+                        super::model_map_result::validate_answer(self, graph, request, answer)?;
                     } else if matches!(request.kind, QuestionKind::Build | QuestionKind::Assemble) {
                         super::build_result::validate_answer(self, graph, request, answer)?;
                     } else if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair) {

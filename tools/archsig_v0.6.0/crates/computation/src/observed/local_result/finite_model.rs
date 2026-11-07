@@ -177,10 +177,13 @@ pub(super) fn analyze(
     if change.reading != reading {
         return Err(unsupported("局所changeと対象readingが異なる"));
     }
-    let mut fixed =
-        Environment::try_primitive_valuation(env.indexes.inputs, &env.fixed_values(), c)?
-            .ok_or(internal!("局所対象の値が不適合"))?;
-    fixed.select_local_object(witness, c)?;
+    let fixed = Environment::try_object_primitive_valuation(
+        env.indexes.inputs,
+        &env.fixed_values(),
+        witness,
+        c,
+    )?
+    .ok_or(internal!("局所対象の値が不適合"))?;
     let mut missing = vec![];
     let first = params
         .first()

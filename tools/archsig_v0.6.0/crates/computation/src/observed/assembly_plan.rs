@@ -17,7 +17,7 @@ pub(super) struct Read {
     pub value: Option<Scalar>,
     pub unsupported: Option<model_assembly::Unsupported>,
 }
-fn read(
+pub(super) fn read(
     env: &Environment<'_>,
     name: &str,
     bindings: &[(String, Scalar)],
@@ -152,7 +152,7 @@ fn interfaces(value: &Scalar, c: &Control) -> Result<Vec<(Fact, Fact)>, Validati
     }
     Ok(pairs)
 }
-fn reference(
+pub(super) fn reference(
     e: &Environment<'_>,
     g: &mut Graph,
     s: &Selector,

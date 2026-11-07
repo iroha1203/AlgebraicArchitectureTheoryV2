@@ -328,10 +328,9 @@ pub(in crate::observed) fn compile_inputs(
 ) -> Result<Compilation, ValidationFailure> {
     #[cfg(test)]
     GENERATIONS.with(|n| n.set(n.get() + 1));
-    let mut fixed = original
-        .try_primitive_valuation_from(&original.fixed_values(), c)?
+    let fixed = original
+        .try_object_primitive_valuation_from(&original.fixed_values(), witness, c)?
         .ok_or(internal!("有限修復の基準代入が不適合"))?;
-    fixed.select_local_object(witness, c)?;
     let selected = change_search::selection(original, &fixed, graph, witness, request, &[], c)?;
     let Some(mut subjects) = selected.subjects else {
         return Ok(Compilation::Pending(selected.missing));

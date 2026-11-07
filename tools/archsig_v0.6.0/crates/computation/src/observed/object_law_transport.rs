@@ -1,12 +1,11 @@
 //! 対象間で対応するLawのrequired status・適用条件・成立を実評価から比較する。
 use super::{
-    object_evaluate::{
-        ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
-        evaluate_object_instance,
-    },
+    object_evaluate::{ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome},
     object_transport::{mapped_instance, same_evaluation},
     result::{NodeRef, ObservedEvaluation, Payload, Scalar},
 };
+#[cfg(test)]
+use crate::construction::readings::object_reading_instances;
 use crate::construction::{
     ConstructionFailure,
     maps::{
@@ -15,7 +14,8 @@ use crate::construction::{
         configuration_transport,
     },
     readings::{
-        MembershipCondition, ObjectInstance, ObjectReadingInstances, object_reading_instances,
+        MembershipCondition, ObjectInstance, ObjectReadingInstances,
+        object_reading_instances_checked,
     },
 };
 use archsig_common::control::{Checkpoint, Control};
@@ -138,16 +138,16 @@ impl LawBooleanReading {
 }
 #[derive(Debug)]
 pub struct ObjectLawTransport {
-    declarations: DeclarationCorrespondence,
-    objects: ConfigurationTransport,
-    source_readings: ObjectReadingInstances,
-    target_readings: ObjectReadingInstances,
+    declarations: Arc<DeclarationCorrespondence>,
+    objects: Arc<ConfigurationTransport>,
+    source_readings: Arc<ObjectReadingInstances>,
+    target_readings: Arc<ObjectReadingInstances>,
     object: usize,
     instance: usize,
     target_object: Option<usize>,
     target_instance: Option<usize>,
-    source: Option<ObjectEvaluation>,
-    target: Option<ObjectEvaluation>,
+    source: Option<Arc<ObjectEvaluation>>,
+    target: Option<Arc<ObjectEvaluation>>,
     source_reading: Option<LawBooleanReading>,
     target_reading: Option<LawBooleanReading>,
     family: Option<FiniteLawFamily>,
@@ -390,8 +390,16 @@ fn checked_transport(
             }
         })?;
     let readings = (|| -> Result<_, ConstructionFailure> {
-        let source = object_reading_instances(&inputs, objects.source().construction(), c)?;
-        let target = object_reading_instances(&inputs, objects.target().construction(), c)?;
+        let source = object_reading_instances_checked(
+            &inputs,
+            objects.source().shared_construction().clone(),
+            c,
+        )?;
+        let target = object_reading_instances_checked(
+            &inputs,
+            objects.target().shared_construction().clone(),
+            c,
+        )?;
         Ok((source, target))
     })();
     let (source_readings, target_readings) = match readings {
@@ -407,6 +415,50 @@ fn checked_transport(
         }
         Err(failure) => return Err(failure.into()),
     };
+    object_law_transport_on(
+        inputs.clone(),
+        Arc::new(declarations.clone()),
+        Arc::new(objects),
+        [
+            Arc::new(super::object_evaluate::LawEvaluationCache::new(
+                inputs.clone(),
+                Arc::new(source_readings),
+            )),
+            Arc::new(super::object_evaluate::LawEvaluationCache::new(
+                inputs.clone(),
+                Arc::new(target_readings),
+            )),
+        ],
+        object,
+        instance,
+        c,
+    )
+}
+/// 同じ現在入力で検査したmap・生成操作族・readingsを各Law出現から共有する。
+pub(crate) fn object_law_transport_on(
+    inputs: Arc<CheckedInputs>,
+    declarations: Arc<DeclarationCorrespondence>,
+    objects: Arc<ConfigurationTransport>,
+    evaluations: [Arc<super::object_evaluate::LawEvaluationCache>; 2],
+    object: usize,
+    instance: usize,
+    c: &Control,
+) -> Result<ObjectLawTransport, ObjectLawTransportFailure> {
+    tick(c)?;
+    let source_readings = evaluations[0].readings().clone();
+    let target_readings = evaluations[1].readings().clone();
+    if !std::ptr::eq(
+        source_readings.construction(),
+        objects.source().construction(),
+    ) || !std::ptr::eq(
+        target_readings.construction(),
+        objects.target().construction(),
+    ) || declarations.operation() != objects.operation()
+    {
+        return Err(
+            ConstructionFailure::InvalidSelection("Law移送の共有構成・操作が違う".into()).into(),
+        );
+    }
     if source_readings.objects().get(object).is_none()
         || source_readings.instances().get(instance).is_none()
     {
@@ -540,27 +592,26 @@ fn checked_transport(
             }
         }
         r.source = Some(
-            evaluate_object_instance(Arc::clone(&inputs), &r.source_readings, object, instance, c)
+            evaluations[0]
+                .evaluate(object, instance, c)
                 .map_err(|failure| ObjectLawTransportFailure::Evaluation {
                     operation: Box::new(r.operation().clone()),
                     partial: None,
                     failure: Box::new(failure),
                 })?,
         );
-        if c.stop_reason().is_none() && family::is_ground_reading(r.source.as_ref()) {
+        if c.stop_reason().is_none() && family::is_ground_reading(r.source.as_deref()) {
             r.source_reading = r.source.as_ref().map(|e| reading(e, c)).transpose()?;
         }
         tick(c)?;
-        r.target = Some(
-            evaluate_object_instance(inputs, &r.target_readings, to, ti, c).map_err(|failure| {
-                ObjectLawTransportFailure::Evaluation {
-                    operation: Box::new(r.operation().clone()),
-                    partial: None,
-                    failure: Box::new(failure),
-                }
-            })?,
-        );
-        if c.stop_reason().is_none() && family::is_ground_reading(r.target.as_ref()) {
+        r.target = Some(evaluations[1].evaluate(to, ti, c).map_err(|failure| {
+            ObjectLawTransportFailure::Evaluation {
+                operation: Box::new(r.operation().clone()),
+                partial: None,
+                failure: Box::new(failure),
+            }
+        })?);
+        if c.stop_reason().is_none() && family::is_ground_reading(r.target.as_deref()) {
             r.target_reading = r.target.as_ref().map(|e| reading(e, c)).transpose()?;
         }
         tick(c)?;
@@ -637,10 +688,10 @@ impl ObjectLawTransport {
             .map(|n| &self.target_readings.instances()[n])
     }
     pub fn source(&self) -> Option<&ObjectEvaluation> {
-        self.source.as_ref()
+        self.source.as_deref()
     }
     pub fn target(&self) -> Option<&ObjectEvaluation> {
-        self.target.as_ref()
+        self.target.as_deref()
     }
     pub fn source_reading(&self) -> Option<&LawBooleanReading> {
         self.source_reading.as_ref()
@@ -672,8 +723,8 @@ impl ObjectLawTransport {
             || self.target_readings != r.target_readings
             || self.target_object != r.target_object
             || self.target_instance != r.target_instance
-            || !same_evaluation(self.source.as_ref(), r.source.as_ref())
-            || !same_evaluation(self.target.as_ref(), r.target.as_ref())
+            || !same_evaluation(self.source.as_deref(), r.source.as_deref())
+            || !same_evaluation(self.target.as_deref(), r.target.as_deref())
             || self.source_reading != r.source_reading
             || self.target_reading != r.target_reading
             || self.numeric_family != r.numeric_family
@@ -999,7 +1050,9 @@ mod tests {
                 6 => r.target_reading = None,
                 _ => {
                     let ObjectEvaluationOutcome::Evaluated(e) =
-                        r.source.as_mut().unwrap().outcome_mut_for_test()
+                        Arc::get_mut(r.source.as_mut().unwrap())
+                            .unwrap()
+                            .outcome_mut_for_test()
                     else {
                         panic!()
                     };

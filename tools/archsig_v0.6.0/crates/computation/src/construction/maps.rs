@@ -14,7 +14,9 @@ pub use declarations::{
     DeclarationCandidate, DeclarationConditionFailure, DeclarationCorrespondence, DeclarationPair,
     declaration_correspondence,
 };
-pub(crate) use declarations::{moved_entity_name, moved_type as moved_declaration_type};
+pub(crate) use declarations::{
+    declaration_correspondence_constructed, moved_entity_name, moved_type as moved_declaration_type,
+};
 pub(crate) use internal::internal_arrows_constructed;
 pub use internal::{
     InternalArrowResult, InternalArrows, InternalArrowsFailure, internal_arrow, internal_arrows,
@@ -95,7 +97,7 @@ pub struct MapCandidate {
     source_configuration: Configuration,
     target_configuration: Configuration,
     universe: std::sync::Arc<Vec<FactPointer>>,
-    images: Vec<FactPointer>,
+    images: std::sync::Arc<Vec<FactPointer>>,
 }
 impl MapCandidate {
     pub fn subject(&self) -> Option<&FactPointer> {
@@ -252,6 +254,9 @@ impl MapCandidate {
     pub fn universe(&self) -> &[FactPointer] {
         &self.universe
     }
+    pub(crate) fn shared_images(&self) -> std::sync::Arc<Vec<FactPointer>> {
+        self.images.clone()
+    }
     pub fn images(&self) -> &[FactPointer] {
         &self.images
     }
@@ -345,8 +350,8 @@ pub struct CorrespondenceResult {
     correspondence: FactPointer,
     reading: String,
     to_reading: String,
-    source: Option<ConfigurationConstruction>,
-    target: Option<ConfigurationConstruction>,
+    source: Option<std::sync::Arc<ConfigurationConstruction>>,
+    target: Option<std::sync::Arc<ConfigurationConstruction>>,
     candidate: Option<MapCandidate>,
     map: Option<ConfigurationMap>,
     missing: Vec<FactPointer>,
@@ -358,10 +363,10 @@ impl CorrespondenceResult {
         &self.correspondence
     }
     pub fn source(&self) -> Option<&ConfigurationConstruction> {
-        self.source.as_ref()
+        self.source.as_deref()
     }
     pub fn target(&self) -> Option<&ConfigurationConstruction> {
-        self.target.as_ref()
+        self.target.as_deref()
     }
     pub fn candidate(&self) -> Option<&MapCandidate> {
         self.candidate.as_ref()
@@ -1063,6 +1068,38 @@ pub fn correspondence_retained(
     to_reading: Option<&str>,
     control: &Control,
 ) -> Result<CorrespondenceResult, CorrespondenceFailure> {
+    correspondence_with(inputs, snapshot, id, reading, to_reading, None, control)
+}
+/// 同じ不変入力で構成済みの局所域を、原始correspondenceの検査へ渡す。
+pub(crate) fn correspondence_constructed(
+    inputs: &CheckedInputs,
+    snapshot: &str,
+    id: &str,
+    source: std::sync::Arc<ConfigurationConstruction>,
+    target: std::sync::Arc<ConfigurationConstruction>,
+    control: &Control,
+) -> Result<CorrespondenceResult, CorrespondenceFailure> {
+    let reading = source.reading().to_owned();
+    let to_reading = target.reading().to_owned();
+    correspondence_with(
+        inputs,
+        snapshot,
+        id,
+        &reading,
+        Some(&to_reading),
+        Some([source, target]),
+        control,
+    )
+}
+fn correspondence_with(
+    inputs: &CheckedInputs,
+    snapshot: &str,
+    id: &str,
+    reading: &str,
+    to_reading: Option<&str>,
+    retained: Option<[std::sync::Arc<ConfigurationConstruction>; 2]>,
+    control: &Control,
+) -> Result<CorrespondenceResult, CorrespondenceFailure> {
     check(control)?;
     let holder = subject(inputs, snapshot, id, control)?;
     let declaration = inputs
@@ -1111,11 +1148,29 @@ pub fn correspondence_retained(
         let from = endpoint(holder, "from", &mut missing, control)?;
         let to = endpoint(holder, "to", &mut missing, control)?;
 
-        if let Some((s, id)) = &from {
-            result.source = Some(construct(inputs, reading, s, id, control)?);
-        }
-        if let Some((s, id)) = &to {
-            result.target = Some(construct(inputs, to_reading, s, id, control)?);
+        for (index, endpoint, reading) in [(0, &from, reading), (1, &to, to_reading)] {
+            let Some((snapshot, id)) = endpoint else {
+                continue;
+            };
+            let construction = if let Some(retained) = &retained {
+                let construction = &retained[index];
+                if construction.reading() != reading
+                    || construction.root().snapshot != *snapshot
+                    || construction.root().subject != *id
+                {
+                    return Err(ConstructionFailure::InvalidSelection(
+                        "原始correspondenceと保持済み局所域の端点が違う".into(),
+                    ));
+                }
+                construction.clone()
+            } else {
+                std::sync::Arc::new(construct(inputs, reading, snapshot, id, control)?)
+            };
+            if index == 0 {
+                result.source = Some(construction);
+            } else {
+                result.target = Some(construction);
+            }
         }
         let mut moved = BTreeMap::new();
         if let (Some(from), Some(to)) = (&from, &to) {
@@ -1371,7 +1426,7 @@ pub fn correspondence_retained(
                 source_configuration: source_config.clone(),
                 target_configuration: target_config.clone(),
                 universe: source.shared_universe(),
-                images,
+                images: std::sync::Arc::new(images),
             };
             if result.counterexamples.is_empty() {
                 result.map = Some(ConfigurationMap {
@@ -1527,10 +1582,13 @@ mod tests {
             let mut forged = original.clone();
             match kind {
                 "action" => {
-                    forged.candidate.as_mut().unwrap().images[0] =
+                    std::sync::Arc::make_mut(&mut forged.candidate.as_mut().unwrap().images)[0] =
                         original.candidate.as_ref().unwrap().source_root.clone()
                 }
-                "verified" => forged.map.as_mut().unwrap().candidate.images.swap(0, 1),
+                "verified" => {
+                    std::sync::Arc::make_mut(&mut forged.map.as_mut().unwrap().candidate.images)
+                        .swap(0, 1)
+                }
                 "reading" => forged.to_reading = "other".into(),
                 "candidate" => forged.candidate = None,
                 "correspondence" => forged.correspondence.subject = "other".into(),

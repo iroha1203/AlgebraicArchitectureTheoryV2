@@ -258,7 +258,7 @@ pub enum ObjectEvaluationOutcome {
 /// 適用状態と、その対象の元宣言・束縛・型付き評価。全域延長の成立とは区別する。
 #[derive(Debug)]
 pub struct ObjectEvaluation {
-    readings: ObjectReadingInstances,
+    readings: Arc<ObjectReadingInstances>,
     object: usize,
     instance: usize,
     outcome: ObjectEvaluationOutcome,
@@ -287,6 +287,69 @@ impl ObjectEvaluation {
     }
 }
 
+/// 一つの不変なArchitecture/readingsに属する元Lawの評価。外部の再検査はこの表を使わない。
+pub(crate) struct LawEvaluationCache {
+    inputs: Arc<CheckedInputs>,
+    readings: Arc<ObjectReadingInstances>,
+    values: std::cell::RefCell<BTreeMap<(usize, usize), Arc<ObjectEvaluation>>>,
+}
+impl std::fmt::Debug for LawEvaluationCache {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("LawEvaluationCache")
+            .field("entries", &self.values.borrow().len())
+            .finish_non_exhaustive()
+    }
+}
+impl LawEvaluationCache {
+    pub(crate) fn new(inputs: Arc<CheckedInputs>, readings: Arc<ObjectReadingInstances>) -> Self {
+        Self {
+            inputs,
+            readings,
+            values: Default::default(),
+        }
+    }
+    pub(crate) fn readings(&self) -> &Arc<ObjectReadingInstances> {
+        &self.readings
+    }
+    pub(crate) fn evaluate(
+        &self,
+        object: usize,
+        instance: usize,
+        c: &Control,
+    ) -> Result<Arc<ObjectEvaluation>, ObjectEvaluationFailure> {
+        c.checkpoint(Checkpoint::ObjectEvaluation)
+            .map_err(ConstructionFailure::from)?;
+        if self
+            .readings
+            .instances()
+            .get(instance)
+            .is_none_or(|i| i.declaration().kind != "law")
+        {
+            return Err(ConstructionFailure::InvalidSelection(
+                "共有元評価はLaw instanceを要求する".into(),
+            )
+            .into());
+        }
+        if let Some(value) = self.values.borrow().get(&(object, instance)).cloned() {
+            return Ok(value);
+        }
+        let value = Arc::new(evaluate_object_instance_checked(
+            self.inputs.clone(),
+            self.readings.clone(),
+            object,
+            instance,
+            c,
+        )?);
+        if c.stop_reason().is_none()
+            && !matches!(value.outcome(), ObjectEvaluationOutcome::Evaluated(e) if e.status() == "error")
+        {
+            self.values
+                .borrow_mut()
+                .insert((object, instance), value.clone());
+        }
+        Ok(value)
+    }
+}
 pub fn evaluate_object_instance(
     inputs: Arc<CheckedInputs>,
     readings: &ObjectReadingInstances,
@@ -298,6 +361,25 @@ pub fn evaluate_object_instance(
         .checkpoint(Checkpoint::ObjectEvaluation)
         .map_err(ConstructionFailure::from)?;
     readings.recheck(&inputs, control)?;
+    evaluate_object_instance_checked(
+        inputs,
+        Arc::new(readings.clone()),
+        object,
+        instance,
+        control,
+    )
+}
+/// 不変な現在入力に対して構成/照合済みのreadingsを共有する。
+pub(crate) fn evaluate_object_instance_checked(
+    inputs: Arc<CheckedInputs>,
+    readings: Arc<ObjectReadingInstances>,
+    object: usize,
+    instance: usize,
+    control: &Control,
+) -> Result<ObjectEvaluation, ObjectEvaluationFailure> {
+    control
+        .checkpoint(Checkpoint::ObjectEvaluation)
+        .map_err(ConstructionFailure::from)?;
     let _selected = readings
         .objects()
         .get(object)
@@ -318,7 +400,7 @@ pub fn evaluate_object_instance(
         InstanceApplication::Applicable { .. } => {
             if row.declaration().kind == "view" && !row.parameters().is_empty() {
                 let family = super::object_view_family::evaluate_finite_view(
-                    inputs, readings, object, instance, control,
+                    inputs, &readings, object, instance, control,
                 )?;
                 return Ok(ObjectEvaluation {
                     readings: readings.clone(),
@@ -354,13 +436,13 @@ pub fn evaluate_object_instance(
                 ObjectEvaluationFailure::Evaluation(Box::new(EvaluationFailure::Prepare(f)))
             })?;
             prepared.object = Some(ObjectContext {
-                domain: ObjectDomain::from_readings(&prepared.inputs, readings, object, control)
+                domain: ObjectDomain::from_readings(&prepared.inputs, &readings, object, control)
                     .map_err(|f| match f {
-                        ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
-                        other => ConstructionFailure::Inconsistent(
-                            other.internal_context(format!("{other:?}")),
-                        ),
-                    })?,
+                    ValidationFailure::Stop(s) => ConstructionFailure::Stopped(s),
+                    other => ConstructionFailure::Inconsistent(
+                        other.internal_context(format!("{other:?}")),
+                    ),
+                })?,
                 instance: row.clone(),
                 values: None,
             });

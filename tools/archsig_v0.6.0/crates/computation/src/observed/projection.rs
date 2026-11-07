@@ -28,14 +28,23 @@ pub struct AssemblyProjection {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
+pub struct MapAssemblyProjection {
+    pub source: AssemblyProjection,
+    pub target: AssemblyProjection,
+    pub correspondence: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ProjectionType {
     Law(Type),
     Evaluation(Type),
     Proposition,
+    LawInstance,
     Comparison,
     Architecture,
     ArchitectureRoot(String),
     ModelAssembly(AssemblyProjection),
+    ModelMapAssembly(MapAssemblyProjection),
     MapCandidate(MapProjection),
     ConfigurationMap(MapProjection),
     ObjectAlgebraMap(MapProjection),

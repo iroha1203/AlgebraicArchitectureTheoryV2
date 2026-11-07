@@ -164,6 +164,22 @@ impl ConfigurationOperation {
         tick(control)?;
         self.recheck(inputs, control)?;
         then.recheck(inputs, control)?;
+        self.compose_checked_retained(then, control)
+    }
+    /// 同じ検査範囲のnative producerが確認済みの二写像を合成する。
+    pub(crate) fn compose_checked(
+        &self,
+        then: &Self,
+        control: &Control,
+    ) -> Result<Self, ConstructionFailure> {
+        self.compose_checked_retained(then, control)
+            .map_err(|f| f.cause)
+    }
+    pub(crate) fn compose_checked_retained(
+        &self,
+        then: &Self,
+        control: &Control,
+    ) -> Result<Self, OperationFailure> {
         let data = compose_data(
             &Data::from_map(&self.map),
             &Data::from_map(&then.map),
@@ -240,10 +256,26 @@ impl ConfigurationOperation {
         inputs: &CheckedInputs,
         other: &Self,
         control: &Control,
-        mut retain: impl FnMut(Option<&ActionDifference>),
+        retain: impl FnMut(Option<&ActionDifference>),
     ) -> Result<Option<ActionDifference>, ConstructionFailure> {
         self.recheck(inputs, control)?;
         other.recheck(inputs, control)?;
+        self.action_difference_after_recheck(other, control, retain)
+    }
+    pub(crate) fn action_difference_checked(
+        &self,
+        other: &Self,
+        control: &Control,
+    ) -> Result<Option<ActionDifference>, ConstructionFailure> {
+        self.action_difference_after_recheck(other, control, |_| {})
+    }
+    pub(crate) fn action_difference_after_recheck(
+        &self,
+        other: &Self,
+        control: &Control,
+        mut retain: impl FnMut(Option<&ActionDifference>),
+    ) -> Result<Option<ActionDifference>, ConstructionFailure> {
+        tick(control)?;
         let a = &self.map.candidate;
         let b = &other.map.candidate;
         if self.source() != other.source()
@@ -254,7 +286,7 @@ impl ConfigurationOperation {
                 "作用比較の始終対象・reading・共通Uが違う".into(),
             ));
         }
-        for ((fact, left), right) in a.universe.iter().zip(&a.images).zip(&b.images) {
+        for ((fact, left), right) in a.universe.iter().zip(a.images.iter()).zip(b.images.iter()) {
             tick(control)?;
             if left != right {
                 let difference = ActionDifference {
@@ -426,7 +458,7 @@ struct Data {
     source_configuration: Configuration,
     target_configuration: Configuration,
     universe: std::sync::Arc<Vec<FactPointer>>,
-    images: Vec<FactPointer>,
+    images: std::sync::Arc<Vec<FactPointer>>,
 }
 impl Data {
     fn from_map(map: &ConfigurationMap) -> Self {
@@ -457,7 +489,7 @@ fn compose_data(a: &Data, b: &Data, control: &Control) -> Result<Data, Construct
         index.insert(fact, i);
     }
     let mut images = Vec::new();
-    for intermediate in &a.images {
+    for intermediate in a.images.iter() {
         tick(control)?;
         let i = *index
             .get(intermediate)
@@ -476,7 +508,7 @@ fn compose_data(a: &Data, b: &Data, control: &Control) -> Result<Data, Construct
         source_configuration: a.source_configuration.clone(),
         target_configuration: b.target_configuration.clone(),
         universe: a.universe.clone(),
-        images,
+        images: std::sync::Arc::new(images),
     })
 }
 fn derived_map(data: Data, steps: Vec<OperationStep>) -> ConfigurationMap {
@@ -628,7 +660,7 @@ fn identity_object(
             source_configuration: configuration.clone(),
             target_configuration: configuration.clone(),
             universe: construction.shared_universe(),
-            images,
+            images: std::sync::Arc::new(images),
         };
         Some(from_verified_map(
             derived_map(
@@ -907,7 +939,7 @@ mod tests {
             let mut forged = original.clone();
             match kind {
                 "word" => forged.word.clear(),
-                "action" => forged.map.candidate.images.swap(0, 1),
+                "action" => std::sync::Arc::make_mut(&mut forged.map.candidate.images).swap(0, 1),
                 "source" => forged.map.candidate.source_root.subject = "q".into(),
                 "target" => forged.map.candidate.target_root.subject = "q".into(),
                 "reading" => forged.map.candidate.to_reading = "Alternative".into(),
@@ -956,7 +988,7 @@ mod tests {
         forged.operation = None;
         assert!(forged.recheck(&inputs, &Control::unlimited()).is_err());
         let mut forged = original.clone();
-        forged.map.candidate.images.clear();
+        std::sync::Arc::make_mut(&mut forged.map.candidate.images).clear();
         assert!(forged.recheck(&inputs, &Control::unlimited()).is_err());
     }
     #[test]

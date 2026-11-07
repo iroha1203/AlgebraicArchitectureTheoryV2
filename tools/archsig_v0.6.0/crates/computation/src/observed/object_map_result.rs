@@ -111,8 +111,11 @@ impl Data {
             })
             .collect()
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+    pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.part().support.clone(), self.part().scope.clone())
+    }
+    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+        (self.part().support.to_vec(), self.part().scope.clone())
     }
     pub(super) fn scalar(&self) -> Option<&Scalar> {
         self.part().scalar.as_ref()

@@ -488,9 +488,10 @@ pub(in crate::observed::repair_problem) fn prepare(
     )?;
     b.parts[problem.0 - base]
         .support
+        .make_owned()
         .extend(compiled.support.iter().cloned());
-    b.parts[problem.0 - base].support.sort();
-    b.parts[problem.0 - base].support.dedup();
+    b.parts[problem.0 - base].support.make_owned().sort();
+    b.parts[problem.0 - base].support.make_owned().dedup();
     b.parts[problem.0 - base].scope.merge(&compiled.scope);
     let (projection, unit_rows) = if let Some(old) = reused.filter(|old| old.internal == internal) {
         (old.projection.clone(), old.unit_rows.clone())

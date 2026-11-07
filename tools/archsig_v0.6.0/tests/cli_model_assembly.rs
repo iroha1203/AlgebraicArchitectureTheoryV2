@@ -112,3 +112,73 @@ fn saved_assembly_rechecks_current_fields_and_withdrawn_observations() {
             .all(|r| s(get(r, "code")) != "internal")
     );
 }
+
+#[test]
+fn saved_map_assembly_rechecks_local_correspondences_and_serializes_square_failure() {
+    use crate::common::model_map_assembly_data as maps;
+    let dir = workdir("model-map-assembly");
+    let execute = |out: &str, reuse: Option<&str>, target: &str| {
+        let mut args = vec![
+            "run",
+            "--atom-definition",
+            "d.json",
+            "--law",
+            "l.law",
+            "--archmap",
+            "a.json",
+            "--out",
+            out,
+        ];
+        if let Some(path) = reuse {
+            args.extend(["--reuse", path]);
+        }
+        for ask in [
+            maps::ASSEMBLE,
+            target,
+            "m=assemble_map(Assembly.moves,from=$a.assembly,to=$b.assembly,x=@v/moveA,y=@v/moveB)",
+        ] {
+            args.extend(["--ask", ask]);
+        }
+        run_binary(&dir, &args)
+    };
+    let target = "b=assemble(Assembly.fragments,on=@v/G,along=Assembly.interfaces,a=@v/A,b=@v/B,ma=@v/ma,mb=@v/mb)";
+    write_inputs(&dir, &maps::query(|s| s));
+    let first = execute("first", None, target);
+    assert_eq!(first.code, 0, "{}", first.stdout);
+    let same = execute("same", Some("first"), target);
+    assert_eq!(same.code, 0, "{}", same.stdout);
+    assert!(warnings(&result_json(&dir, &same)).is_empty());
+    write_inputs(&dir, &maps::query(|s| maps::atom(s, "moveB-parts", None)));
+    let missing = execute("missing", Some("first"), target);
+    let result = result_json(&dir, &missing);
+    assert!(!warnings(&result).is_empty());
+    let answer = &arr(get(&result, "answers"))[2];
+    assert_eq!(s(get(answer, "status")), "undetermined");
+    assert!(!has(get(answer, "outputs"), "map"));
+    write_inputs(
+        &dir,
+        &maps::replace_law(
+            maps::query(maps::folding_with_arrows),
+            "law required zero(p:Part):p.quantity=0;",
+            "view only(a:Root):Set<Root> = set<Root>{a};view emptyInterfaces(a:Root):Unit=unit;law required zero(p:Part):p.quantity=0;",
+        ),
+    );
+    let failed = execute(
+        "square",
+        None,
+        "b=assemble(Assembly.only,on=@v/G,along=Assembly.emptyInterfaces,a=@v/A)",
+    );
+    assert_eq!(failed.code, 1, "{}", failed.stdout);
+    let result = result_json(&dir, &failed);
+    let answer = &arr(get(&result, "answers"))[2];
+    assert!(has(get(answer, "outputs"), "configuration_map"));
+    assert!(!has(get(answer, "outputs"), "map"));
+    let evidence = &arr(get(answer, "counterexamples"))[0];
+    let node = arr(get(&result, "nodes"))
+        .iter()
+        .find(|n| get(n, "id") == get(evidence, "node"))
+        .unwrap();
+    let difference = get(get(get(node, "value"), "data"), "action_difference");
+    assert_eq!(s(get(difference, "kind")), "generator");
+    assert_ne!(get(difference, "left"), get(difference, "right"));
+}

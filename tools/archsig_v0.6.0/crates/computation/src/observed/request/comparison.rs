@@ -146,6 +146,19 @@ pub(super) fn constraints(
                 ));
             }
         }
+        (Shape::Map(a), Shape::Map(b)) if mode == "action" => {
+            if a.source != b.source
+                || a.target != b.target
+                || a.reading != b.reading
+                || a.to_reading != b.to_reading
+            {
+                return Err(error(
+                    &request.id,
+                    "to",
+                    "map action comparison requires matching endpoint types and readings",
+                ));
+            }
+        }
         (Shape::Operation(a), Shape::Operation(b)) => {
             if mode == "relation" && (a.reading != a.to_reading || b.reading != b.to_reading) {
                 return Err(error(
@@ -175,7 +188,7 @@ pub(super) fn constraints(
             ));
         }
     }
-    if matches!(left, Shape::Operation(_)) {
+    if matches!(left, Shape::Operation(_) | Shape::Map(_)) {
         return Ok(vec![]);
     }
     let mut out = vec![];

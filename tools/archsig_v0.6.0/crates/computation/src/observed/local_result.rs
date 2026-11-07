@@ -99,8 +99,11 @@ impl Data {
     pub(super) fn wire_ref(&self) -> Option<&Json> {
         self.part().wire_ref()
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+    pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.part().support.clone(), self.part().scope.clone())
+    }
+    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+        (self.part().support.to_vec(), self.part().scope.clone())
     }
     pub(super) fn projection_type(&self) -> Option<ProjectionType> {
         match self.ty() {
@@ -353,9 +356,8 @@ fn compute(
         .into_iter()
         .map(|(f, _, v)| (f, v))
         .collect::<Vec<_>>();
-        let mut fixed = Environment::try_primitive_valuation(env.indexes.inputs, &assignments, c)?
+        let fixed = Environment::try_object_primitive_valuation(env.indexes.inputs, &assignments, witness, c)?
             .ok_or(internal!("固定Architectureの値が不適合"))?;
-        fixed.select_local_object(witness, c)?;
         let mut evaluations = vec![];
         for name in &names {
             let declaration = &env.indexes.inputs.law().declarations()[name];

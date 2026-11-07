@@ -3088,6 +3088,7 @@ fn evaluate_observed_with_reuse(
                     request.kind,
                     QuestionKind::Build
                         | QuestionKind::Assemble
+                        | QuestionKind::AssembleMap
                         | QuestionKind::Solve
                         | QuestionKind::Repair
                         | QuestionKind::Quotient
@@ -3100,6 +3101,8 @@ fn evaluate_observed_with_reuse(
             {
                 let evaluate = if super::request::shared_repair_request(request) {
                     super::repair_problem::evaluate
+                } else if request.kind == QuestionKind::AssembleMap {
+                    super::model_map_result::evaluate
                 } else if matches!(request.kind, QuestionKind::Build | QuestionKind::Assemble) {
                     super::build_result::evaluate
                 } else if matches!(request.kind, QuestionKind::Solve | QuestionKind::Repair) {

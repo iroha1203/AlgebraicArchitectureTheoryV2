@@ -4,6 +4,7 @@ use crate::observed::projection::OperationProjection;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) enum Shape {
     Operation(OperationProjection),
+    Map(OperationProjection),
     Path(String, String),
 }
 fn error(r: &str, key: &str, message: &str) -> ResolveFailure {
@@ -65,6 +66,17 @@ fn reading(r: &Request, key: &str) -> Result<String, ResolveFailure> {
         _ => Err(error(&r.id, key, "missing reading for resolved map")),
     }
 }
+fn readings(law: &CheckedLaw, r: &Request) -> Result<(String, String), ResolveFailure> {
+    if matches!(r.kind, QuestionKind::Assemble | QuestionKind::AssembleMap) {
+        let name = r
+            .declaration()
+            .ok_or_else(|| error(&r.id, "head", "assembly view is absent"))?;
+        let reading = law.declarations()[name].reading.clone();
+        Ok((reading.clone(), reading))
+    } else {
+        Ok((reading(r, "reading")?, reading(r, "to_reading")?))
+    }
+}
 pub(super) fn selected(
     law: &CheckedLaw,
     map: &CheckedArchMap,
@@ -94,15 +106,31 @@ pub(super) fn selected(
                 ));
             };
             let producer = &requests[names[id]];
+            let (reading, to_reading) = readings(law, producer)?;
             Ok(Shape::Operation(OperationProjection {
                 source: s.source,
                 target: s.target,
-                reading: reading(producer, "reading")?,
-                to_reading: reading(producer, "to_reading")?,
+                reading,
+                to_reading,
                 word: vec![s.declaration],
             }))
         }
         ProjectionType::ComposedOperation(s) => Ok(Shape::Operation(s)),
+        ProjectionType::ComposedMap(s) => Ok(Shape::Map(s)),
+        ProjectionType::ConfigurationMap(s) => {
+            let Selector::Answer { id, .. } = value else {
+                return Err(error(&request.id, key, "missing map producer"));
+            };
+            let producer = &requests[names[id]];
+            let (reading, to_reading) = readings(law, producer)?;
+            Ok(Shape::Map(OperationProjection {
+                source: s.source,
+                target: s.target,
+                reading,
+                to_reading,
+                word: vec![],
+            }))
+        }
         ProjectionType::Law(Type::Path(ref a, ref b)) => Ok(Shape::Path(a.clone(), b.clone())),
         _ => Err(error(
             &request.id,
@@ -158,6 +186,13 @@ pub(super) fn shape(
                 }
                 Ok(Shape::Operation(a))
             }
+            (Shape::Map(mut a), Shape::Map(b))
+                if a.target == b.source && a.to_reading == b.reading =>
+            {
+                a.target = b.target;
+                a.to_reading = b.to_reading;
+                Ok(Shape::Map(a))
+            }
             (Shape::Path(a, b), Shape::Path(c, d)) if b == c => Ok(Shape::Path(a, d)),
             _ => Err(error(
                 &request.id,
@@ -180,7 +215,8 @@ pub(super) fn output_type(
     match (field, shape) {
         ("proposition", _) => Ok(ProjectionType::Proposition),
         ("operation", Shape::Operation(s)) => Ok(ProjectionType::ComposedOperation(s)),
-        ("map", Shape::Operation(s)) => Ok(ProjectionType::ComposedMap(s)),
+        ("map", Shape::Operation(s) | Shape::Map(s)) => Ok(ProjectionType::ComposedMap(s)),
+        ("candidate", Shape::Map(s)) => Ok(ProjectionType::ComposedCandidate(s)),
         ("operation", Shape::Path(a, b)) => Ok(ProjectionType::Law(Type::Path(a, b))),
         _ => Err(error(&request.id, field, "compose output is not public")),
     }

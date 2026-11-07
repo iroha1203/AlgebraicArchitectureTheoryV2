@@ -1697,6 +1697,7 @@ fn calculation_base(
         inputs.clone(),
         a.shared_profiles(c).map_err(|e| construction_failure(&e))?,
         a.shared_readings(),
+        a.shared_evaluations(),
         c,
     )
     .map_err(super::object_law_residuals::ObjectLawResidualsFailure::Original);

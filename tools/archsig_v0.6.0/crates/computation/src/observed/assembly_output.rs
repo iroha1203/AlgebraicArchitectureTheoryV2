@@ -73,9 +73,11 @@ fn input(
         None,
     )?;
     let part = &mut b.parts[source.0 - b.base];
-    part.support.extend(read.metadata.support.iter().cloned());
-    part.support.sort();
-    part.support.dedup();
+    part.support
+        .make_owned()
+        .extend(read.metadata.support.iter().cloned());
+    part.support.make_owned().sort();
+    part.support.make_owned().dedup();
     part.scope.merge(&read.metadata.scope);
     let value = read
         .value
@@ -107,10 +109,10 @@ fn attach_facts(
         };
         part.scope
             .merge(&e.indexes.scope(subject, reading, origin)?);
-        part.support.push(fact.clone());
+        part.support.make_owned().push(fact.clone());
     }
-    part.support.sort();
-    part.support.dedup();
+    part.support.make_owned().sort();
+    part.support.make_owned().dedup();
     Ok(())
 }
 
@@ -122,6 +124,13 @@ pub(super) struct Action {
     restriction: bool,
 }
 impl Action {
+    pub(super) fn map(&self) -> &crate::construction::maps::ConfigurationMap {
+        if self.restriction {
+            &self.model.restrictions[self.index]
+        } else {
+            self.model.inclusions[self.index].operation().map()
+        }
+    }
     pub(super) fn images(&self) -> &[Fact] {
         if self.restriction {
             self.model.restrictions[self.index].candidate().images()
@@ -172,7 +181,7 @@ fn map(
         None,
     )
 }
-fn operations(
+pub(super) fn operations(
     g: &Graph,
     diagram: &super::internal_arrow_diagram::Diagram,
 ) -> Result<BTreeMap<Fact, NodeRef>, ValidationFailure> {

@@ -1,8 +1,10 @@
 //! 全対象と全instanceの実評価を、元の適用状態と導出のまま保持する。
+#[cfg(test)]
+use super::object_evaluate::evaluate_object_instance;
 use super::{
     object_evaluate::{
         ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
-        evaluate_object_instance,
+        evaluate_object_instance_checked,
     },
     object_transport::same_evaluation,
 };
@@ -33,7 +35,7 @@ impl ObjectEvaluationRow {
 #[derive(Debug)]
 pub struct ObjectEvaluationTable {
     inputs: Arc<CheckedInputs>,
-    readings: ObjectReadingInstances,
+    readings: Arc<ObjectReadingInstances>,
     rows: Vec<ObjectEvaluationRow>,
     complete: bool,
 }
@@ -263,6 +265,13 @@ pub fn evaluate_object_table(
 ) -> Result<ObjectEvaluationTable, ObjectEvaluationTableFailure> {
     tick(control)?;
     readings.recheck(&inputs, control)?;
+    evaluate_object_table_checked(inputs, Arc::new(readings.clone()), control)
+}
+pub(crate) fn evaluate_object_table_checked(
+    inputs: Arc<CheckedInputs>,
+    readings: Arc<ObjectReadingInstances>,
+    control: &Control,
+) -> Result<ObjectEvaluationTable, ObjectEvaluationTableFailure> {
     let mut result = ObjectEvaluationTable {
         inputs: Arc::clone(&inputs),
         readings: readings.clone(),
@@ -275,9 +284,9 @@ pub fn evaluate_object_table(
         while let Some(next) = result.pending() {
             tick(control)?;
             position = Some(next);
-            let evaluation = evaluate_object_instance(
+            let evaluation = evaluate_object_instance_checked(
                 Arc::clone(&inputs),
-                &result.readings,
+                result.readings.clone(),
                 next.object,
                 next.instance,
                 control,

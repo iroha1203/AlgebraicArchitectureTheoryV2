@@ -114,7 +114,7 @@ impl From<ConstructionFailure> for InternalArrowsFailure {
     }
 }
 impl InternalArrows {
-    pub(super) fn shared_construction(&self) -> &std::sync::Arc<ConfigurationConstruction> {
+    pub(crate) fn shared_construction(&self) -> &std::sync::Arc<ConfigurationConstruction> {
         &self.construction
     }
     pub fn construction(&self) -> &ConfigurationConstruction {
@@ -467,7 +467,7 @@ pub(super) fn internal_arrow_checked(
             source_configuration: source_config.clone(),
             target_configuration: target_config.clone(),
             universe: construction.shared_universe(),
-            images,
+            images: std::sync::Arc::new(images),
         };
         if result.counterexamples.is_empty() {
             result.map = Some(ConfigurationMap {
@@ -628,12 +628,10 @@ mod tests {
                 "root" => forged.arrows[0].root.subject = "B".into(),
                 "reading" => forged.arrows[0].reading = "OtherRead".into(),
                 "source" => forged.arrows[0].source.as_mut().unwrap().subject.subject = "q".into(),
-                "action" => forged.arrows[0]
-                    .candidate
-                    .as_mut()
-                    .unwrap()
-                    .images
-                    .swap(0, 1),
+                "action" => std::sync::Arc::make_mut(
+                    &mut forged.arrows[0].candidate.as_mut().unwrap().images,
+                )
+                .swap(0, 1),
                 "map" => forged.arrows[0].map = None,
                 "missing" => forged.arrows[0]
                     .missing
@@ -658,7 +656,7 @@ mod tests {
         for kind in ["action", "origin", "target", "reading"] {
             let mut forged = candidate.clone();
             match kind {
-                "action" => forged.images.swap(0, 1),
+                "action" => std::sync::Arc::make_mut(&mut forged.images).swap(0, 1),
                 "origin" => {
                     if let MapOrigin::InternalArrow { arrow, .. } = &mut forged.origin {
                         arrow.subject = "f".into();

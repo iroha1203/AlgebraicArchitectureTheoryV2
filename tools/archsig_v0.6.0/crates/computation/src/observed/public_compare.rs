@@ -1093,8 +1093,13 @@ pub(super) fn evaluate(
             Some(equal)
         }
     } else {
-        let a = super::public_compose::op(graph, left)?;
-        let b = super::public_compose::op(graph, right)?;
+        let maps_only = graph.get(left)?.ty == NodeType::Construction(T::ConfigurationMap);
+        if maps_only {
+            env.recheck_node(graph, graph.get(left)?, left.0)?;
+            env.recheck_node(graph, graph.get(right)?, right.0)?;
+        }
+        let a = super::public_compose::action_operation(graph, left, control)?;
+        let b = super::public_compose::action_operation(graph, right, control)?;
         if matches!(kind.as_str(), "action" | "relation")
             && (a.source() != b.source() || a.target() != b.target())
         {
@@ -1109,13 +1114,17 @@ pub(super) fn evaluate(
         } else if kind == "word" {
             let mut retained = None;
             let outcome =
-                a.word_equal_retained(prepared.inputs(), b, control, |v| retained = Some(v));
+                a.word_equal_retained(prepared.inputs(), &b, control, |v| retained = Some(v));
             Some(completed_operation(outcome, retained, &mut stopped)?)
         } else {
             let mut retained = None;
-            let outcome = a.action_difference_retained(prepared.inputs(), b, control, |v| {
-                retained = Some(v.cloned())
-            });
+            let outcome = if maps_only {
+                a.action_difference_after_recheck(&b, control, |v| retained = Some(v.cloned()))
+            } else {
+                a.action_difference_retained(prepared.inputs(), &b, control, |v| {
+                    retained = Some(v.cloned())
+                })
+            };
             let difference = completed_operation(outcome, retained, &mut stopped)?;
             if let Some(d) = &difference {
                 facts = vec![d.fact().clone(), d.left().clone(), d.right().clone()];

@@ -1,10 +1,7 @@
 //! 同じ完全query pattern上のLaw適用条件と述語を、元評価の全代入で照合する。
 use super::{
     data,
-    object_evaluate::{
-        ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome,
-        evaluate_object_instance,
-    },
+    object_evaluate::{ObjectEvaluation, ObjectEvaluationFailure, ObjectEvaluationOutcome},
     object_law_transport::{
         LawBooleanReading, LawConditionFailure, LawReadingFamily, LawTransportOutcome,
         compare_native_readings, read_native_family,
@@ -54,7 +51,7 @@ pub enum LawCompatibilityOutcome {
 #[derive(Debug)]
 pub struct LawReadingEvaluation {
     position: ObjectEvaluationPosition,
-    evaluation: ObjectEvaluation,
+    evaluation: Arc<ObjectEvaluation>,
     family: LawReadingFamily,
 }
 impl LawReadingEvaluation {
@@ -144,6 +141,7 @@ pub struct ObjectLawCompatibility {
     inputs: Arc<CheckedInputs>,
     profiles: Arc<ConfigurationProfiles>,
     readings: Arc<ObjectReadingInstances>,
+    evaluation_cache: Arc<super::object_evaluate::LawEvaluationCache>,
     laws: Vec<usize>,
     evaluations: Vec<LawReadingEvaluation>,
     comparisons: Vec<LawPatternComparison>,
@@ -202,7 +200,7 @@ impl ObjectLawCompatibility {
 pub struct ObjectLawCompatibilityFailure {
     cause: ObjectEvaluationFailure,
     partial: Option<Box<ObjectLawCompatibility>>,
-    active: Option<Box<ObjectEvaluation>>,
+    active: Option<Arc<ObjectEvaluation>>,
     position: Option<ObjectEvaluationPosition>,
 }
 impl ObjectLawCompatibilityFailure {
@@ -513,18 +511,26 @@ pub(crate) fn object_law_compatibility_on(
         crate::construction::profiles::construct_profiles_for(&inputs, construction.clone(), c)?;
     let readings =
         crate::construction::readings::object_reading_instances_checked(&inputs, construction, c)?;
-    object_law_compatibility_with(inputs, Arc::new(profiles), Arc::new(readings), c)
+    let readings = Arc::new(readings);
+    let evaluations = Arc::new(super::object_evaluate::LawEvaluationCache::new(
+        inputs.clone(),
+        readings.clone(),
+    ));
+    object_law_compatibility_with(inputs, Arc::new(profiles), readings, evaluations, c)
 }
 pub(super) fn object_law_compatibility_with(
     inputs: Arc<CheckedInputs>,
     profiles: Arc<ConfigurationProfiles>,
     readings: Arc<ObjectReadingInstances>,
+    evaluation_cache: Arc<super::object_evaluate::LawEvaluationCache>,
     c: &Control,
 ) -> Result<ObjectLawCompatibility, ObjectLawCompatibilityFailure> {
-    if !std::ptr::eq(
-        profiles.construction(),
-        readings.shared_construction().as_ref(),
-    ) {
+    if !Arc::ptr_eq(&readings, evaluation_cache.readings())
+        || !std::ptr::eq(
+            profiles.construction(),
+            readings.shared_construction().as_ref(),
+        )
+    {
         return Err(bad("profilesとreading instancesの元構成が違う").into());
     }
     let mut profile_objects = Vec::new();
@@ -582,6 +588,7 @@ pub(super) fn object_law_compatibility_with(
         inputs: Arc::clone(&inputs),
         profiles,
         readings,
+        evaluation_cache,
         laws,
         evaluations: vec![],
         comparisons,
@@ -596,13 +603,7 @@ pub(super) fn object_law_compatibility_with(
             for object in 0..result.readings.objects().len() {
                 tick(c)?;
                 position = Some(ObjectEvaluationPosition { object, instance });
-                let evaluation = evaluate_object_instance(
-                    Arc::clone(&inputs),
-                    &result.readings,
-                    object,
-                    instance,
-                    c,
-                )?;
+                let evaluation = result.evaluation_cache.evaluate(object, instance, c)?;
                 let failure = if let Some(s) = c.stop_reason() {
                     Some(ConstructionFailure::Stopped(s))
                 } else if matches!(evaluation.outcome(),ObjectEvaluationOutcome::Evaluated(e) if e.status()=="error")
@@ -612,7 +613,7 @@ pub(super) fn object_law_compatibility_with(
                     None
                 };
                 if let Some(failure) = failure {
-                    active = Some(Box::new(evaluation));
+                    active = Some(evaluation);
                     return Err(failure.into());
                 }
                 result.evaluations.push(LawReadingEvaluation {
@@ -819,6 +820,11 @@ mod tests {
         let other_reading = other.evaluations[0].family.rows[0].reading.clone();
         for mode in 0..34 {
             let (i, mut r) = example();
+            // 改変試験用に元評価を独立所有させる。製品の共有bufferは変更しない。
+            r.evaluation_cache = Arc::new(super::super::object_evaluate::LawEvaluationCache::new(
+                i.clone(),
+                r.readings.clone(),
+            ));
             match mode {
                 0 => {
                     r.evaluations.pop();
@@ -874,7 +880,9 @@ mod tests {
                 32 => r.comparisons[0].outcome = Some(LawCompatibilityOutcome::Undetermined),
                 _ => {
                     let ObjectEvaluationOutcome::Evaluated(e) =
-                        r.evaluations[0].evaluation.outcome_mut_for_test()
+                        Arc::get_mut(&mut r.evaluations[0].evaluation)
+                            .unwrap()
+                            .outcome_mut_for_test()
                     else {
                         panic!("original evaluation")
                     };
