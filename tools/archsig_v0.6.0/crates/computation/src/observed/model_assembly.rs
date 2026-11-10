@@ -164,12 +164,29 @@ fn representative(
     }
     Ok(root)
 }
+fn selected_field(
+    inputs: &CheckedInputs,
+    subject: &Subject,
+    field: &archsig_input::archmap::Field,
+    selected: &BTreeMap<Fact, Scalar>,
+    c: &Control,
+) -> Result<Option<Scalar>, ValidationFailure> {
+    if let Some(value) = selected.get(&field_fact(subject, field)) {
+        return Ok(Some(value.clone()));
+    }
+    let Slot::Known { value, .. } = &field.slot else {
+        return Err(internal!("組立ての既知field検査が失われた").into());
+    };
+    data::from_input(value, &field.ty.erase(), inputs.law(), c)
+}
+
 pub(super) fn compile(
     inputs: &std::sync::Arc<CheckedInputs>,
     reading: &str,
     target: &Fact,
     roots: &[Fact],
     pairs: &[(Fact, Fact)],
+    selected: &BTreeMap<Fact, Scalar>,
     c: &Control,
 ) -> Result<Preparation, ValidationFailure> {
     tick(c)?;
@@ -320,10 +337,7 @@ pub(super) fn compile(
         let a = subject(inputs, from)?;
         for af in &a.fields {
             tick(c)?;
-            let Slot::Known { value: av, .. } = &af.slot else {
-                return Err(internal!("組立ての既知field検査が失われた").into());
-            };
-            let Some(av) = data::from_input(av, &af.ty.erase(), inputs.law(), c)? else {
+            let Some(av) = selected_field(inputs, a, af, selected, c)? else {
                 return Ok(unsupported(
                     a,
                     af,
@@ -340,8 +354,9 @@ pub(super) fn compile(
             let moved_a = value_transport::transport_references(&av, inputs, &transport, c)
                 .map_err(failure)?;
             if from == to {
-                if !data::equal(&av, &moved_a, c)? {
-                    overrides.push((field_fact(a, af), moved_a));
+                let position = field_fact(a, af);
+                if selected.contains_key(&position) || !data::equal(&av, &moved_a, c)? {
+                    overrides.push((position, moved_a));
                 }
                 continue;
             }
@@ -353,10 +368,7 @@ pub(super) fn compile(
                 .iter()
                 .find(|f| f.name == af.name)
                 .ok_or(internal!("同じ型の組立てfieldがない"))?;
-            let Slot::Known { value: bv, .. } = &bf.slot else {
-                return Err(internal!("組立ての既知field検査が失われた").into());
-            };
-            let Some(bv) = data::from_input(bv, &bf.ty.erase(), inputs.law(), c)? else {
+            let Some(bv) = selected_field(inputs, b, bf, selected, c)? else {
                 return Ok(unsupported(
                     a,
                     af,
@@ -376,7 +388,17 @@ pub(super) fn compile(
             if !data::equal(&moved_a, &moved_b, c)? {
                 return Ok(Preparation::Rejected(Rejection {
                     detail: format!("共有個体のfield `{}` が参照輸送後に一致しない", af.name),
-                    facts: vec![observed_fact(a, af), observed_fact(b, bf)],
+                    facts: [(a, af), (b, bf)]
+                        .into_iter()
+                        .map(|(subject, field)| {
+                            let position = field_fact(subject, field);
+                            if selected.contains_key(&position) {
+                                position
+                            } else {
+                                observed_fact(subject, field)
+                            }
+                        })
+                        .collect(),
                     values: Some((moved_a, moved_b)),
                 }));
             }
@@ -577,6 +599,7 @@ mod tests {
             &fact("G"),
             &[fact("A"), fact("B")],
             pairs,
+            &BTreeMap::new(),
             &Control::unlimited(),
         )
         .unwrap()

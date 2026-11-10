@@ -60,6 +60,21 @@ pub(super) fn resolve(
             };
             let name = declaration(law, name, c, &raw.id)?;
             (key.clone(), Selector::Declaration { name })
+        } else if let Some(parameter) = key.strip_prefix("local.") {
+            if !params.iter().any(|p| p.name == parameter)
+                || !matches!(&value, Selector::Answer { path, .. } if !path.is_empty())
+            {
+                return Err(error(
+                    &raw.id,
+                    &key,
+                    "local requires a fragment parameter and an Architecture Handle",
+                ));
+            }
+            let Selector::Answer { id, .. } = &value else {
+                unreachable!()
+            };
+            dependencies.insert(id.clone());
+            (key.clone(), value)
         } else {
             let parameter = key.strip_prefix("bind.").unwrap_or(&key);
             if key != "on" && !params.iter().any(|p| p.name == parameter) {
@@ -220,6 +235,38 @@ pub(super) fn check(
             "on",
             "assembly root marker has a different type",
         ));
+    }
+    for local in &r.arguments {
+        let Some(parameter) = local.name.strip_prefix("local.") else {
+            continue;
+        };
+        phase(c, Checkpoint::RequestBinding)?;
+        if !params
+            .iter()
+            .any(|p| p.name == parameter && p.ty == Type::Ref(root.into()))
+        {
+            return Err(error(
+                &r.id,
+                &local.name,
+                "local parameter must have the fragment root type",
+            ));
+        }
+        let (resolved, _) = selector_type(
+            law,
+            map,
+            requests,
+            names,
+            &local.value,
+            c,
+            (&r.id, &local.name),
+        )?;
+        if resolved.ty != ProjectionType::ArchitectureRoot(root.into()) {
+            return Err(error(
+                &r.id,
+                &local.name,
+                "local must select an Architecture of the fragment root type",
+            ));
+        }
     }
     binding_constraints(law, map, requests, names, r, params, c)
 }

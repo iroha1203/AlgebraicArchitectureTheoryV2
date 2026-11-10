@@ -472,7 +472,7 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 | Proposition | `{predicate:Predicate,operands:Ref[],quantifiers:Quantifier[]}` |
 | Configuration | `{family:FactPointer[],requirements:FactPointer[],relations:[FactPointer,FactPointer][],identifications:[FactPointer,FactPointer][]}` |
 | Architecture | `{reading:QName,root:Ref,configuration:Configuration,laws:LawInstance[],internal_arrows:Ref[],overrides:{slot:Slot,value:Ref}[]}` |
-| ModelAssembly | `{reading:QName,fragments:Ref,interfaces:Ref,object:Architecture,algebra:ObjectAlgebra,inclusions:{fragment:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,generators:{source:Operation,target:Operation,proposition:Proposition}[]}[]}` |
+| ModelAssembly | `{reading:QName,fragments:Ref,interfaces:Ref,object:Architecture,algebra:ObjectAlgebra,inclusions:{fragment:Architecture,applied?:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,generators:{source:Operation,target:Operation,proposition:Proposition}[]}[]}` |
 | ModelMapAssembly | `{source:Architecture,target:Architecture,source_assembly:ModelAssembly,target_assembly:ModelAssembly,correspondences:Ref,configuration_map:ConfigurationMap,locals:{correspondence:Ref,source:Architecture,target:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,proposition:Proposition}[],generators:{source:Operation,target:Operation,proposition:Proposition}[],laws:{source_object:ObjectComponent,target_object:ObjectComponent,source_law:LawInstance,target_law:LawInstance,proposition:Proposition}[]}` |
 | AtomUniverse | `{atoms:FactPointer[]}` |
 | AtomMap | `{universe:AtomUniverse,images:FactPointer[]}` |
@@ -482,6 +482,8 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 | Path | `{reading:QName,source:Ref,target:Ref,generators:Ref[]}` |
 
 ModelAssembly の fragments と interfaces は、元 View・束縛から評価した型付き値を指す。
+`local.<parameter>` を選んだ担当は `inclusions[].applied` がその `apply` の出力を直接参照する。
+`fragment` は同じ更新値を保ち、組立てと共通の U で包含・再制限を検査するための局所対象である。
 各 inclusion.map は同じ全体 object を終域とし、generators は局所の各生成操作の像と全 U 上の
 自然性を確認した命題を持つ。この有限表示を語へ延長する。局所にある全称 Law と、対象域の増えた
 全体の Law の成立はそれぞれ元の式で検査し、包含の構造保存から成立を推論しない。

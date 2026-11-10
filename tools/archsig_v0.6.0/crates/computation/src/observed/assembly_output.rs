@@ -302,12 +302,19 @@ pub(super) fn append(
             ]));
             args.extend([source, target, proposition]);
         }
-        inclusions.push(Json::obj([
+        let mut wire = Json::obj([
             ("fragment", local.architecture.reference.wire()),
             ("map", inclusion.wire()),
             ("restriction", restriction.wire()),
             ("generators", Json::Arr(generators)),
-        ]));
+        ]);
+        if let Some(applied) = local.applied
+            && let Json::Obj(fields) = &mut wire
+        {
+            fields.insert("applied".into(), applied.wire());
+            args.push(applied);
+        }
+        inclusions.push(wire);
     }
     let result = b.push(
         NodeType::Construction(T::ModelAssembly),

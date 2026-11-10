@@ -1557,6 +1557,7 @@ impl ArchitectureWitness {
     pub(super) fn assembly_fragment(
         parent: &Arc<Self>,
         construction: Arc<ConfigurationConstruction>,
+        source: Option<(&Self, Arc<Vec<(Fact, Scalar)>>)>,
         control: &Control,
     ) -> Result<Arc<Self>, ConstructionFailure> {
         let Some(transport) = parent.construction().transport() else {
@@ -1572,12 +1573,31 @@ impl ArchitectureWitness {
                 "局所対象が組立て元のrootでない".into(),
             ));
         }
-        let a = Self::from_construction(
-            parent.inputs.clone(),
-            &parent.request,
-            construction,
-            control,
-        )?;
+        let a = if let Some((source, overrides)) = source {
+            if source.construction().root() != construction.root()
+                || source.construction().local_domain().known()
+                    != construction.local_domain().known()
+            {
+                return Err(ConstructionFailure::InvalidSelection(
+                    "修復局所の所属域が組立ての元域と違う".into(),
+                ));
+            }
+            Self::from_parts(
+                parent.inputs.clone(),
+                &parent.request,
+                construction,
+                overrides,
+                ArchitectureSupport::Shared(source.body.support.clone()),
+                control,
+            )?
+        } else {
+            Self::from_construction(
+                parent.inputs.clone(),
+                &parent.request,
+                construction,
+                control,
+            )?
+        };
         Ok(Arc::new(Self {
             inputs: a.inputs.clone(),
             request: a.request.clone(),

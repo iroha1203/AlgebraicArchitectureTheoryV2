@@ -122,7 +122,7 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | 問いの正確な形 | 選択と返すfield |
 | --- | --- |
 | `build(Reading,on=Handle)` | rootとreadingから対象と有限表示のobject algebraを生成する。`proposition:Proposition`、構成できた`object:Architecture`、成立時`algebra:ObjectAlgebra` |
-| `assemble(View,on=Handle,along=View,B)` | 局所rootと共有対から対象を構成する。`proposition:Proposition`、成立時`assembly:ModelAssembly`、`object:Architecture`、`algebra:ObjectAlgebra` |
+| `assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…)` | 局所rootと共有対から対象を構成する。`proposition:Proposition`、成立時`assembly:ModelAssembly`、`object:Architecture`、`algebra:ObjectAlgebra` |
 | `assemble_map(View,from=Handle,to=Handle,B)` | 始終のModelAssemblyと担当別の原始correspondenceから全体写像を構成する。`proposition:Proposition`、作用構成時`candidate:MapCandidate`、configuration保存時`configuration_map:ConfigurationMap`、全条件成立時`map:ModelMapAssembly` |
 | `evaluate(View,on=Handle?,B)` | viewの全parameterを束縛して評価する。onは結果のArchitectureを読む環境。`value:T`、`evaluation:Evaluation`。TはPathやそのcontainerを含むLawの返り型 |
 | `check(Law,on=Handle?,B)` | Lawの選択instance族について、未束縛parameterと内部量化を保って成立を問う。onは結果のArchitectureを読む環境。`proposition:Proposition`、`evaluation:Evaluation` |
@@ -393,6 +393,11 @@ on は同じ snapshot・root 型の原始参照で、組立て後の root の id
 担当 root は空でない有限集合とし、on と異なる。on には既存の owned 個体がないことを要求する。
 初段の適用族は、同じ snapshot・定義環境・reading で、各局所 root とその所属個体、および on の field がすべて既知である族とする。
 関数値 Term を含む field はこの算法の対象外とする。入力の通常の型・参照検査は先に行う。
+
+任意の `local.<parameter>=$applyId.object` で、担当 root に対して選んだ修復済みの局所状態を使う。
+parameter は第1 View の root 型引数で、束縛値と `apply` の元 root、snapshot、reading、所属域を照合する。
+同じ担当への二重選択と、別担当の `apply` 結果は整合失敗になる。指定のない担当は原始状態を読む。
+局所の全候補を自動選択する処理は行わず、利用者が各 `candidate` と `apply` を明示する。
 
 返す field は `proposition:Proposition`、成立時 `assembly:ModelAssembly`、
 `object:Architecture`、`algebra:ObjectAlgebra` とする。

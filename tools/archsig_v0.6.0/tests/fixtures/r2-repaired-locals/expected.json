@@ -1,0 +1,45 @@
+{
+  "answers": {
+    "aBefore": "established",
+    "bBefore": "established",
+    "raw": "refuted",
+    "aWithin": "established",
+    "bWithin": "established",
+    "aProblem": "established",
+    "bProblem": "established",
+    "bProblemOne": "established",
+    "bSolveOne": "established",
+    "bPickOne": "established",
+    "bApplyOne": "established",
+    "aSolve": "established",
+    "bSolve": "established",
+    "aPick0": "established",
+    "aPick1": "established",
+    "bPick0": "established",
+    "bPick1": "established",
+    "aApply0": "established",
+    "aApply1": "established",
+    "bApply0": "established",
+    "bApply1": "established",
+    "made0": "established",
+    "made1": "established",
+    "madeConflict": "refuted",
+    "madePartial": "refuted",
+    "mixedOwner": "refuted",
+    "shared": "established",
+    "globalZero": "established",
+    "globalOne": "refuted"
+  },
+  "global_quantities": {
+    "made0": {
+      "a": "0",
+      "b": "0",
+      "ma": "0"
+    },
+    "made1": {
+      "a": "1",
+      "b": "1",
+      "ma": "0"
+    }
+  }
+}

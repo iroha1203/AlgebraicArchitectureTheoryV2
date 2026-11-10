@@ -1,0 +1,13 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Assembly {
+  use vocabulary Assemble version "1" digest "sha256:f767c561d09c61047a1b2ec08e871469408fd70f3105b5330528a74d584893e4";
+  view amount(p:Part):Z = p.quantity;
+  view ownerOf(p:Part):Root = p.owner;
+  view fragments(a:Root,b:Root,ma:Part,mb:Part):Set<Root> = set<Root>{a,b};
+  view interfaces(a:Root,b:Root,ma:Part,mb:Part):List<(Part,Part)> = list<(Part,Part)>[(ma,mb)];
+  change choose(p:Part,q:Bool) = p with {quantity=if q then 1 else 0};
+  law optional pair(a:Part,b:Part):a.quantity+b.quantity=1;
+  law optional boundary(p:Part):p.quantity=0;
+  law optional boundaryOne(p:Part):p.quantity=1;
+  view within(r:Root):Set<Part> = Part[r];
+}

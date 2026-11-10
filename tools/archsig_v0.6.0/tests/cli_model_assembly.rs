@@ -574,3 +574,171 @@ fn refuted_e12_map_blocks_only_its_target_consumers_and_rechecks() {
     }));
     assert!(!dir.join("invalid").exists());
 }
+
+#[test]
+fn r2_repairs_keep_local_freedom_and_reassemble_actual_objects() {
+    use archsig_common::json::JNode;
+    let dir = workdir("r2-repaired-locals");
+    write_inputs(
+        &dir,
+        &archsig_input::input::InputSources::from_bytes(
+            vec![include_bytes!("fixtures/r2-repaired-locals/definitions.json").to_vec()],
+            include_bytes!("fixtures/r2-repaired-locals/laws.law").to_vec(),
+            include_bytes!("fixtures/r2-repaired-locals/archmap.json").to_vec(),
+        ),
+    );
+    let asks = include_str!("fixtures/r2-repaired-locals/queries.txt")
+        .lines()
+        .collect::<Vec<_>>();
+    let run = execute_asks(&dir, "first", None, &asks);
+    assert_eq!(run.code, 1, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let answers = arr(get(&result, "answers"));
+    let nodes = arr(get(&result, "nodes"));
+    let answer = |id: &str| answers.iter().find(|a| s(get(a, "id")) == id).unwrap();
+    let output = |id: &str, field: &str| get(get(answer(id), "outputs"), field);
+    let node = |reference: &JNode| {
+        nodes
+            .iter()
+            .find(|node| s(get(node, "id")) == s(get(reference, "node")))
+            .unwrap()
+    };
+    let value = |reference: &JNode| get(node(reference), "value");
+    let id = |reference: &JNode| s(&arr(value(reference))[1]);
+    let expected =
+        archsig_common::json::parse(include_bytes!("fixtures/r2-repaired-locals/expected.json"))
+            .unwrap();
+    assert_eq!(s(get(&result, "status")), "complete");
+    for a in answers {
+        let id = s(get(a, "id"));
+        assert_eq!(
+            s(get(a, "status")),
+            s(get(get(&expected, "answers"), id)),
+            "{id}"
+        );
+    }
+
+    for (assembled, local_a, local_b) in [
+        ("made0", "aApply0", "bApply0"),
+        ("made1", "aApply1", "bApply1"),
+    ] {
+        let object = output(assembled, "object");
+        let assembly = value(output(assembled, "assembly"));
+        assert_eq!(get(assembly, "object").value, object.value);
+        let expected_values = get(get(&expected, "global_quantities"), assembled);
+        let mut found = 0;
+        let mut transported_endpoint = false;
+        for row in arr(get(value(object), "overrides")) {
+            let slot = get(row, "slot");
+            if s(get(slot, "field")) == "Assemble.Part.quantity" {
+                assert_eq!(
+                    s(value(get(row, "value"))),
+                    s(get(expected_values, id(get(slot, "subject"))))
+                );
+                found += 1;
+            }
+            if s(get(slot, "field")) == "Assemble.Step.from" {
+                assert_eq!(id(get(slot, "subject")), "right");
+                assert_eq!(id(get(row, "value")), "ma");
+                transported_endpoint = true;
+            }
+        }
+        assert_eq!(found, 3);
+        assert!(transported_endpoint);
+        let [a, b] = arr(get(assembly, "inclusions")) else {
+            panic!("two local inclusions");
+        };
+        for (row, apply, owner, operation) in
+            [(a, local_a, "A", "left"), (b, local_b, "B", "right")]
+        {
+            assert_eq!(get(row, "applied").value, output(apply, "object").value);
+            let fragment = get(row, "fragment");
+            assert_eq!(id(get(value(fragment), "root")), owner);
+            assert_eq!(
+                get(value(fragment), "overrides").value,
+                get(value(output(apply, "object")), "overrides").value
+            );
+            let inclusion = value(get(value(get(row, "map")), "candidate"));
+            let restriction = value(get(value(get(row, "restriction")), "candidate"));
+            assert_eq!(get(inclusion, "source").value, fragment.value);
+            assert_eq!(get(inclusion, "target").value, object.value);
+            assert_eq!(get(restriction, "target").value, fragment.value);
+            assert_eq!(id(get(value(get(restriction, "source")), "root")), "G");
+            let [generator] = arr(get(row, "generators")) else {
+                panic!("one operation per site");
+            };
+            for side in ["source", "target"] {
+                assert_eq!(
+                    id(get(get(value(get(generator, side)), "name"), "subject")),
+                    operation
+                );
+            }
+            assert_eq!(
+                s(get(
+                    get(node(get(generator, "proposition")), "judgment"),
+                    "status"
+                )),
+                "established"
+            );
+        }
+    }
+    assert_eq!(id(output("shared", "value")), "G");
+    for (check, assembly) in [("globalZero", "made0"), ("globalOne", "made1")] {
+        assert_eq!(
+            output(check, "environment").value,
+            output(assembly, "object").value
+        );
+    }
+    let [conflict] = arr(get(answer("madeConflict"), "counterexamples")) else {
+        panic!("actual repaired overlap differs");
+    };
+    let conflict = get(value(conflict), "data");
+    assert_eq!(s(value(get(conflict, "left"))), "1");
+    assert_eq!(s(value(get(conflict, "right"))), "0");
+    assert_eq!(
+        arr(get(conflict, "facts"))
+            .iter()
+            .map(|fact| (s(get(fact, "subject")), has(fact, "atom")))
+            .collect::<Vec<_>>(),
+        [("mb", false), ("ma", false)]
+    );
+    for rejected in ["raw", "madeConflict", "madePartial", "mixedOwner"] {
+        assert!(!has(get(answer(rejected), "outputs"), "object"));
+        assert_eq!(
+            s(get(&arr(get(answer(rejected), "reasons"))[0], "code")),
+            "condition_failed"
+        );
+    }
+
+    let prefix: Vec<_> = asks
+        .into_iter()
+        .filter(|ask| {
+            let (id, _) = ask.split_once('=').unwrap();
+            matches!(
+                id,
+                "aWithin"
+                    | "bWithin"
+                    | "aProblem"
+                    | "bProblem"
+                    | "aSolve"
+                    | "bSolve"
+                    | "aPick0"
+                    | "bPick0"
+                    | "aApply0"
+                    | "bApply0"
+                    | "made0"
+                    | "globalZero"
+            )
+        })
+        .collect();
+    let saved = execute_asks(&dir, "saved", None, &prefix);
+    assert_eq!(saved.code, 0, "{}{}", saved.stdout, saved.stderr);
+    let same = execute_asks(&dir, "same", Some("saved"), &prefix);
+    assert_eq!(same.code, 0, "{}{}", same.stdout, same.stderr);
+    let saved = result_json(&dir, &saved);
+    let same = result_json(&dir, &same);
+    assert!(warnings(&same).is_empty());
+    for key in ["answers", "nodes", "issues"] {
+        assert_eq!(get(&saved, key).value, get(&same, key).value);
+    }
+}
