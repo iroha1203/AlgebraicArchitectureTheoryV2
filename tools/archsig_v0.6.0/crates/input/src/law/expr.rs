@@ -436,7 +436,8 @@ impl<E: InputError> Checker<'_, E> {
                 }
                 Ok(Type::Set(Box::new(t)))
             }
-            ExprKind::SetComp {
+            ExprKind::Comprehension {
+                list,
                 elem,
                 var,
                 domain,
@@ -464,8 +465,12 @@ impl<E: InputError> Checker<'_, E> {
                 }
                 let t = self.check(elem, None, env, ctx)?;
                 env.vars.truncate(mark);
-                self.reject_term_or_path(&t, self.span(elem))?;
-                Ok(Type::Set(Box::new(t)))
+                Ok(if list {
+                    Type::List(Box::new(t))
+                } else {
+                    self.reject_term_or_path(&t, self.span(elem))?;
+                    Type::Set(Box::new(t))
+                })
             }
             ExprKind::None(ty) => Ok(Type::Option(Box::new(self.resolve_type_in(&ty, env, ctx)?))),
             ExprKind::Some(inner) => {

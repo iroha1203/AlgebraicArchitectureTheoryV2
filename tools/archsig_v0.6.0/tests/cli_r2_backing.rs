@@ -113,3 +113,114 @@ fn unsupported_r2_backing_blocks_only_its_consumer() {
         assert_eq!(get(&result, key).value, get(&rechecked, key).value);
     }
 }
+
+#[test]
+fn r2_backing_projects_one_quantity_per_owned_cell() {
+    use archsig_common::json::JValue;
+
+    let dir = workdir("r2-backing-projection");
+    let law = LAW.replace(
+        " view claimLoad",
+        concat!(
+            " view eligibleLoad(c:Pool.Claim):Q=sum(list{b.quantity | b in Pool.Cell[c.owner] where b.claim=c and b.stock in c.eligible});\n",
+            " view copies(b:Pool.Cell):Q=sum(list{x.quantity | x in list<Pool.Cell>[b,b]});\n",
+            " view empty(c:Pool.Claim):Q=sum(list{b.quantity | b in Pool.Cell[c.owner] where false});\n",
+            " view missingQuantity(c:Pool.Claim):Q=sum(list{b.quantity | b in Pool.Cell[c.owner] where b.claim=c});\n",
+            " view missingFilter(c:Pool.Claim):Q=sum(list{rat(1,2) | b in Pool.Cell[c.owner] where b.claim=c and b.stock in c.eligible});\n",
+            " view claimLoad",
+        ),
+    );
+    let map = include_str!("fixtures/r2-backing/archmap.json")
+        .lines()
+        .filter(|line| {
+            !line.contains(r#""id": "overlapFeasible.B2.Z.quantity""#)
+                && !line.contains(r#""id": "overlapFeasible.B2.Y.stock""#)
+        })
+        .map(|line| {
+            if ["B1.X", "B1.Y"]
+                .iter()
+                .any(|cell| line.contains(&format!(r#""id": "overlapFeasible.{cell}.quantity""#)))
+            {
+                line.replace(r#"["0", "1"]"#, r#"["1", "2"]"#)
+            } else if line.contains(r#""id": "overlapFeasible.B1.Z.quantity""#) {
+                line.replace(r#"["0", "1"]"#, r#"["11", "2"]"#)
+            } else {
+                line.to_owned()
+            }
+        })
+        .collect::<Vec<_>>()
+        .join("\n");
+    for (name, contents) in [
+        (
+            "definitions.json",
+            include_str!("fixtures/r2-backing/definitions.json"),
+        ),
+        ("laws.law", &law),
+        ("archmap.json", &map),
+    ] {
+        std::fs::write(dir.join(name), contents).unwrap();
+    }
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "definitions.json",
+        "--law",
+        "laws.law",
+        "--archmap",
+        "archmap.json",
+        "--out",
+        "first",
+    ];
+    for query in [
+        "load=evaluate(Backing.eligibleLoad,c=@fixture/overlapFeasible.B1)",
+        "repeat=evaluate(Backing.copies,b=@fixture/overlapFeasible.B1.X)",
+        "empty=evaluate(Backing.empty,c=@fixture/overlapFeasible.B1)",
+        "quantity=evaluate(Backing.missingQuantity,c=@fixture/overlapFeasible.B2)",
+        "filter=evaluate(Backing.missingFilter,c=@fixture/overlapFeasible.B2)",
+    ] {
+        args.extend(["--ask", query]);
+    }
+    let run = run_binary(&dir, &args);
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let answers = arr(get(&result, "answers"));
+    for (answer, numerator) in answers[..3].iter().zip(["1", "1", "0"]) {
+        assert_eq!(s(get(answer, "status")), "established");
+        let value = referenced(&result, get(get(answer, "outputs"), "value"));
+        assert_eq!(s(get(value, "type")), "Q");
+        let [n, d] = arr(get(value, "value")) else {
+            panic!("Q numerator and denominator");
+        };
+        assert_eq!((s(n), s(d)), (numerator, "1"));
+    }
+    for (answer, subject, field) in [
+        (&answers[3], "overlapFeasible.B2.Z", "Pool.Cell.quantity"),
+        (&answers[4], "overlapFeasible.B2.Y", "Pool.Cell.stock"),
+    ] {
+        assert_eq!(s(get(answer, "status")), "undetermined");
+        assert!(
+            matches!(&get(answer, "outputs").value, JValue::Obj(values) if !values.iter().any(|(key, _)| key == "value"))
+        );
+        assert!(arr(get(answer, "reasons")).iter().any(|reason| {
+            s(get(reason, "code")) == "missing_observation"
+                && arr(get(reason, "missing")).iter().any(|fact| {
+                    s(get(fact, "snapshot")) == "fixture"
+                        && s(get(fact, "subject")) == subject
+                        && s(get(fact, "field")) == field
+                })
+        }));
+    }
+    args[8] = "rechecked";
+    args.extend(["--reuse", "first"]);
+    let rechecked = run_binary(&dir, &args);
+    assert_eq!(
+        rechecked.code, 2,
+        "{}{}",
+        rechecked.stdout, rechecked.stderr
+    );
+    let rechecked = result_json(&dir, &rechecked);
+    assert!(warnings(&rechecked).is_empty());
+    for key in ["answers", "nodes", "issues"] {
+        assert_eq!(get(&result, key).value, get(&rechecked, key).value);
+    }
+}

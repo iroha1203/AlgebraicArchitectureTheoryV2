@@ -932,13 +932,15 @@ impl ControlledEq for crate::law::ast::ExprKind {
                 Ok(())
             }
             (
-                Self::SetComp {
+                Self::Comprehension {
+                    list: a4,
                     elem: a0,
                     var: a1,
                     domain: a2,
                     filter: a3,
                 },
-                Self::SetComp {
+                Self::Comprehension {
+                    list: b4,
                     elem: b0,
                     var: b1,
                     domain: b2,
@@ -949,6 +951,7 @@ impl ControlledEq for crate::law::ast::ExprKind {
                 c.eq(a1, b1)?;
                 c.eq(a2, b2)?;
                 c.eq(a3, b3)?;
+                c.eq(a4, b4)?;
                 Ok(())
             }
             (Self::None(a0), Self::None(b0)) => {

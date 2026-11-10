@@ -232,7 +232,8 @@ pub enum ExprKind {
         ty: TypeAst,
         items: Vec<ExprId>,
     },
-    SetComp {
+    Comprehension {
+        list: bool,
         elem: ExprId,
         var: Ident,
         domain: ExprId,

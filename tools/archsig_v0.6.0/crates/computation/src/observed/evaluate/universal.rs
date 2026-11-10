@@ -1393,7 +1393,7 @@ impl Evaluator<'_, '_> {
                 let context =
                     environment.universal_source_context(self.graph, source.expression)?;
                 environment.with_universal(context, || match expr.kind {
-                    ExprKind::SetComp {
+                    ExprKind::Comprehension {
                         domain,
                         elem,
                         filter,

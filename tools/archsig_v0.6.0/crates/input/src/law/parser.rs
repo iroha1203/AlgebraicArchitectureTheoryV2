@@ -1176,25 +1176,21 @@ impl<E: InputError> Parser<E> {
                     parser.pos += 1;
                     Ok(parser.push(ExprKind::ThenOp, t.span))
                 }
-                "list" => {
+                "list" | "set" => {
                     parser.pos += 1;
-                    parser.expect_sym("<")?;
-                    let ty = parser.ty()?;
-                    parser.expect_sym(">")?;
-                    parser.expect_sym("[")?;
-                    let items = parser.items("]")?;
-                    Ok(parser.push(ExprKind::ListLit { ty, items }, (start, parser.prev_end())))
-                }
-                "set" => {
-                    parser.pos += 1;
+                    let list = t.text == "list";
                     if parser.eat_sym("<") {
                         let ty = parser.ty()?;
                         parser.expect_sym(">")?;
-                        parser.expect_sym("{")?;
-                        let items = parser.items("}")?;
-                        return Ok(
-                            parser.push(ExprKind::SetLit { ty, items }, (start, parser.prev_end()))
-                        );
+                        let (open, close) = if list { ("[", "]") } else { ("{", "}") };
+                        parser.expect_sym(open)?;
+                        let items = parser.items(close)?;
+                        let kind = if list {
+                            ExprKind::ListLit { ty, items }
+                        } else {
+                            ExprKind::SetLit { ty, items }
+                        };
+                        return Ok(parser.push(kind, (start, parser.prev_end())));
                     }
                     parser.expect_sym("{")?;
                     let elem = parser.parse_expr(Flags::default())?;
@@ -1209,7 +1205,8 @@ impl<E: InputError> Parser<E> {
                     };
                     parser.expect_sym("}")?;
                     Ok(parser.push(
-                        ExprKind::SetComp {
+                        ExprKind::Comprehension {
+                            list,
                             elem,
                             var,
                             domain,

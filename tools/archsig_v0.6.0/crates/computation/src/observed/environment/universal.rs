@@ -1500,7 +1500,7 @@ impl Environment<'_> {
         id: usize,
     ) -> Result<bool, ValidationFailure> {
         Ok(match &self.indexes.inputs.law().exprs()[id].kind {
-            ExprKind::SetComp { .. } => true,
+            ExprKind::Comprehension { .. } => true,
             ExprKind::Quant {
                 split:
                     QuantSplit::Fixed {

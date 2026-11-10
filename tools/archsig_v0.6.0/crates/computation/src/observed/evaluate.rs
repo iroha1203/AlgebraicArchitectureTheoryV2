@@ -837,7 +837,7 @@ impl Evaluator<'_, '_> {
                         }
                     }
                 }
-                ExprKind::SetComp { domain, .. } => {
+                ExprKind::Comprehension { domain, .. } => {
                     self.prepare_source_child(*domain)?;
                 }
                 ExprKind::Family { owner, .. } => {
@@ -1351,11 +1351,11 @@ impl Evaluator<'_, '_> {
             }
             ExprKind::Family { owner, .. } => self.owned_family(id, *owner, span, ty),
             ExprKind::Quant { .. } => self.quantification(id),
-            ExprKind::SetComp {
+            ExprKind::Comprehension {
                 elem,
-                var: _,
                 domain,
                 filter,
+                ..
             } => self.comprehension(*domain, *elem, *filter, span, ty),
             ExprKind::Match { scrutinee, arms } => {
                 let input = self.eval(*scrutinee)?;
@@ -1938,13 +1938,11 @@ impl Evaluator<'_, '_> {
         let Some(value) = input.value else {
             return self.lexical_result(span, ty, None, children);
         };
-        let member_count = match self.graph.scalar(value)? {
-            Scalar::List { items, .. } | Scalar::Set { items, .. } => items.len(),
-            _ => return Err(Failure::Internal(internal!("内包域がList/Setでない"))),
-        };
+        let positions =
+            data::comprehension_positions(self.graph.scalar(value)?, &ty, self.control)?;
         let mut values = Vec::new();
         let mut known = true;
-        for position in 0..member_count {
+        for position in positions {
             #[cfg(test)]
             data::observe_actual(span, self.graph.active, "comprehension_iteration", position);
             self.tick(Checkpoint::FiniteIteration)?;
@@ -1980,13 +1978,10 @@ impl Evaluator<'_, '_> {
             result?;
             self.tick(Checkpoint::FiniteIteration)?;
         }
-        let Type::Set(element) = &ty else {
-            return Err(Failure::Internal(internal!("内包結果型がSetでない")));
-        };
         let value = if known {
             #[cfg(test)]
             let previous = data::evaluation_context(Some((span, self.graph.active)));
-            let constructed = data::set((**element).clone(), &values, self.control);
+            let constructed = data::comprehension_value(&ty, values, self.control);
             #[cfg(test)]
             data::evaluation_context(previous);
             Some(constructed?)
@@ -8062,6 +8057,41 @@ reading Calc {{
             }
             rejects_named_prefix(&result, &changed);
         }
+    }
+    #[test]
+    fn list_projection_rechecks_order_and_accepts_permuted_set_inputs() {
+        let result = evaluate_observed_bytes(
+            numeric_recheck_fixture(
+                &[],
+                "view ordered(): List<Z> = list { x | x in set<Z>{2,1} };",
+            ),
+            &["value=evaluate(Calc.ordered)"],
+            &quiet(),
+        )
+        .unwrap();
+        assert_eq!(result.status(), "complete", "{:?}", result.issues);
+        let output = result.answers[0].outputs["value"].0;
+        let domain = result.iterations[0].domain;
+        let Some(Payload::Evaluation {
+            value: Some(domain_value),
+            ..
+        }) = &result.nodes[domain.0].payload
+        else {
+            panic!("元のSetを評価した証拠")
+        };
+        let mut nodes = result.nodes.clone();
+        let Some(Payload::Scalar(Scalar::Set { items, .. })) = &mut nodes[domain_value.0].payload
+        else {
+            panic!("元のSet")
+        };
+        items.reverse();
+        rebuild_for_origin_and_support_recheck(&result, &nodes).unwrap();
+        let Some(Payload::Scalar(Scalar::List { items, .. })) = &mut nodes[output].payload else {
+            panic!("順序付きの射影")
+        };
+        assert_eq!(items, &[Scalar::Z(1.into()), Scalar::Z(2.into())]);
+        items.reverse();
+        rejects_named_prefix(&result, &nodes);
     }
     #[test]
     fn set_comprehension_empty_domain_does_not_implement_map_container_results() {
