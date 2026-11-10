@@ -77,7 +77,8 @@ fn scalar_parts_preserve_previous_wire_without_retaining_json() {
             pairs: vec![
                 (reference("2"), reference("b")),
                 (reference("1"), reference("a")),
-            ],
+            ]
+            .into(),
         },
         Scalar::List {
             element: Type::Bool,
@@ -182,7 +183,8 @@ fn source_part_equality_keeps_the_previous_wire_order_guard() {
         pairs: vec![
             (reference("1"), reference("false")),
             (reference("2"), reference("true")),
-        ],
+        ]
+        .into(),
     };
     for scalar in [
         set(),
@@ -336,7 +338,7 @@ fn scalar_wire_order_comparison_keeps_deep_container_stack_growth() {
                 2 => Scalar::Map {
                     domain: "R.Item".into(),
                     codomain: "R.Item".into(),
-                    pairs: vec![(Scalar::Unit, value)],
+                    pairs: vec![(Scalar::Unit, value)].into(),
                 },
                 _ => Scalar::Data {
                     constructor: crate::observed::result::DataConstructor::new(

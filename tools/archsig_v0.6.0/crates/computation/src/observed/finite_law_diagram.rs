@@ -631,17 +631,22 @@ pub(super) fn canonical_value(value: &Scalar, c: &Control) -> Result<Scalar, Val
                 }
                 Scalar::Map { pairs, .. } => {
                     let mut ordered = Vec::new();
-                    for (mut key, mut image) in std::mem::take(pairs) {
+                    for (key, image) in pairs.iter() {
+                        tick(c)?;
+                        let (mut key, mut image) = (key.clone(), image.clone());
                         visit(&mut key, c)?;
                         visit(&mut image, c)?;
                         ordered.push((value_key(&key, c)?, (key, image)));
                     }
                     ordered.sort_by(|a, b| a.0.as_bytes().cmp(b.0.as_bytes()));
                     tick(c)?;
-                    for (_, pair) in ordered {
-                        tick(c)?;
-                        pairs.push(pair);
-                    }
+                    *pairs = ordered
+                        .into_iter()
+                        .map(|(_, pair)| {
+                            tick(c)?;
+                            Ok(pair)
+                        })
+                        .collect::<Result<_, ValidationFailure>>()?;
                 }
                 Scalar::Tuple(items)
                 | Scalar::List { items, .. }
