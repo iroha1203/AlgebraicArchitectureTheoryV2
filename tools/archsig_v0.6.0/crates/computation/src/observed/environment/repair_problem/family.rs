@@ -72,6 +72,14 @@ pub(in crate::observed) fn read_with_value(
             change_evaluation::known(value.clone()),
         );
     }
+    if let Some(failure) = &checks.failure {
+        env.capture_assembly_condition(
+            declaration.span,
+            "View束縛のownerが一致しない",
+            failure,
+            &checks.support,
+        );
+    }
     let mut scope = checks.scope;
     scope.readings.insert(declaration.reading.clone());
     let value = if checks.failure.is_none() && !checks.blocked {

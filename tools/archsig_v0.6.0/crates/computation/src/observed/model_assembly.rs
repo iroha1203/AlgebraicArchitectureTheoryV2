@@ -46,6 +46,7 @@ pub(super) struct Rejection {
     pub facts: Vec<Fact>,
     pub values: Option<(Scalar, Scalar)>,
     pub repaired: [Option<Fact>; 2],
+    pub location: Option<Location>,
 }
 pub(super) fn rejected(detail: impl Into<String>, facts: Vec<Fact>) -> Preparation {
     Preparation::Rejected(Rejection {
@@ -53,6 +54,7 @@ pub(super) fn rejected(detail: impl Into<String>, facts: Vec<Fact>) -> Preparati
         facts,
         values: None,
         repaired: [None, None],
+        location: None,
     })
 }
 pub(super) fn observed_fact(s: &Subject, f: &archsig_input::archmap::Field) -> Fact {
@@ -404,6 +406,7 @@ pub(super) fn compile(
                     facts,
                     values: Some((moved_a, moved_b)),
                     repaired,
+                    location: None,
                 }));
             }
         }

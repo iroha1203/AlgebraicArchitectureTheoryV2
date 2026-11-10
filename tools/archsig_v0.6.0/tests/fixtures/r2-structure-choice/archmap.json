@@ -5,7 +5,7 @@
     {
       "namespace": "E12",
       "version": "1",
-      "digest": "sha256:2558b11807584c79ca619e6b58a6869461de8a82f2de797e705da321c11c1d71"
+      "digest": "sha256:5a12aea89b9efafd94100163205d529bfc4d7da92f1143b9327538c391fa1326"
     }
   ],
   "sources": [],
@@ -299,30 +299,6 @@
           "origin": "reduced-e12"
         },
         {
-          "id": "plan-old",
-          "subject": "plan",
-          "field": "E12.Design.old",
-          "value": [
-            [
-              "comparison",
-              "native-T3"
-            ]
-          ],
-          "origin": "reduced-e12"
-        },
-        {
-          "id": "plan-new",
-          "subject": "plan",
-          "field": "E12.Design.new",
-          "value": [
-            [
-              "comparison",
-              "rust-T3"
-            ]
-          ],
-          "origin": "reduced-e12"
-        },
-        {
           "id": "lookalike-label",
           "subject": "lookalike",
           "field": "E12.Design.label",
@@ -334,30 +310,6 @@
           "subject": "lookalike",
           "field": "E12.Design.split",
           "value": false,
-          "origin": "reduced-e12"
-        },
-        {
-          "id": "lookalike-old",
-          "subject": "lookalike",
-          "field": "E12.Design.old",
-          "value": [
-            [
-              "comparison",
-              "native-T3"
-            ]
-          ],
-          "origin": "reduced-e12"
-        },
-        {
-          "id": "lookalike-new",
-          "subject": "lookalike",
-          "field": "E12.Design.new",
-          "value": [
-            [
-              "comparison",
-              "native-T3"
-            ]
-          ],
           "origin": "reduced-e12"
         }
       ]

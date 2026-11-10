@@ -42,46 +42,55 @@ pub(super) fn materialized_scope(
 ) -> Result<Scope, ValidationFailure> {
     let mut scope = read.metadata.scope.clone();
     let source = NodeRef(b.base + b.parts.len());
-    let mut pending = Vec::new();
+    let mut references = BTreeMap::new();
     for (index, (quantifier, captured)) in read.domains.iter().enumerate() {
         if !read.metadata.scope.quantifiers.contains(quantifier) {
             continue;
         }
-        if *captured == CapturedDomain::Pending {
-            pending.push((index, quantifier));
-            continue;
-        }
-        let mut elements = Vec::new();
-        let mut wire = BTreeMap::from([("type".into(), quantifier.ty.wire())]);
-        if let CapturedDomain::Finite(members) = captured {
-            for member in members {
-                e.control.checkpoint(Checkpoint::ConfigurationMap)?;
-                elements.push(b.captured_scalar(member, inputs, &e.control)?);
+        let domain = match captured {
+            CapturedDomain::Pending => None,
+            other => {
+                let key = match other {
+                    CapturedDomain::Finite(members) => {
+                        (quantifier.occurrence, members.as_ptr() as usize)
+                    }
+                    _ => (quantifier.occurrence, 0),
+                };
+                let reference = if let Some(&reference) = references.get(&key) {
+                    reference
+                } else {
+                    let mut elements = Vec::new();
+                    let mut wire = BTreeMap::from([("type".into(), quantifier.ty.wire())]);
+                    if let CapturedDomain::Finite(members) = other {
+                        for member in members.iter() {
+                            e.control.checkpoint(Checkpoint::ConfigurationMap)?;
+                            elements.push(b.captured_scalar(member, inputs, &e.control)?);
+                        }
+                        wire.insert("kind".into(), Json::str("finite"));
+                        wire.insert(
+                            "elements".into(),
+                            Json::Arr(elements.iter().map(|element| element.wire()).collect()),
+                        );
+                    } else {
+                        wire.insert("kind".into(), Json::str("type"));
+                    }
+                    let domain = b.push(
+                        NodeType::Domain,
+                        "domain",
+                        Json::Obj(wire.into()),
+                        inputs.iter().chain(&elements).copied().collect(),
+                        None,
+                    )?;
+                    b.parts[domain.0 - b.base].domain_type = Some(quantifier.ty.clone());
+                    references.insert(key, domain);
+                    domain
+                };
+                Some(reference)
             }
-            wire.insert("kind".into(), Json::str("finite"));
-            wire.insert(
-                "elements".into(),
-                Json::Arr(elements.iter().map(|element| element.wire()).collect()),
-            );
-        } else {
-            wire.insert("kind".into(), Json::str("type"));
-        }
-        let domain = b.push(
-            NodeType::Domain,
-            "domain",
-            Json::Obj(wire.into()),
-            inputs.iter().chain(&elements).copied().collect(),
-            None,
-        )?;
-        b.parts[domain.0 - b.base].domain_type = Some(quantifier.ty.clone());
-        scope.add_quantifier(Quantifier {
-            domain: Some(domain),
-            ..quantifier.clone()
-        });
-    }
-    for (index, quantifier) in pending {
+        };
         scope.quantifiers.retain(|q| q != quantifier);
         scope.add_quantifier(Quantifier {
+            domain,
             assembly_instance: Some((source, index)),
             ..quantifier.clone()
         });
@@ -143,20 +152,20 @@ fn input(
         .transpose()?;
     Ok((source, value))
 }
-pub(super) fn view_scope(
+pub(super) fn assembly_reads(
     b: &mut Builder<'_>,
     e: &Environment<'_>,
     request: &Request,
     assembly: &Assembly,
-) -> Result<Scope, ValidationFailure> {
-    let (head, _) = input(
+) -> Result<(Vec<NodeRef>, Scope), ValidationFailure> {
+    let (head, fragments) = input(
         b,
         e,
         field(e, request, "head")?,
         assembly,
         &assembly.fragments,
     )?;
-    let (along, _) = input(
+    let (along, interfaces) = input(
         b,
         e,
         field(e, request, "along")?,
@@ -165,7 +174,14 @@ pub(super) fn view_scope(
     )?;
     let mut scope = b.parts[head.0 - b.base].scope.clone();
     scope.merge(&b.parts[along.0 - b.base].scope);
-    Ok(scope)
+    Ok((
+        [head, along]
+            .into_iter()
+            .chain(fragments)
+            .chain(interfaces)
+            .collect(),
+        scope,
+    ))
 }
 
 pub(super) fn select_quantifiers(part: &mut super::build_result::Part, scope: Scope) {
@@ -541,12 +557,7 @@ pub(super) fn failed(
                                 .ok_or(internal!("修復済み反例の元対象がない"))?,
                         );
                     }
-                    let reference = b.scalar(
-                        NodeType::Value(value.ty()),
-                        "binding",
-                        value.clone(),
-                        operands,
-                    )?;
+                    let reference = b.captured_scalar(value, &operands, &e.control)?;
                     if !has_repaired || position.is_none() {
                         attach_facts(&mut b, e, reading, reference, &rejection.facts)?;
                     }
@@ -660,7 +671,7 @@ pub(super) fn failed(
     let claim = b.proposition("constructible", operands, dependencies.clone(), status)?;
     let mut reasons = match failure {
         Failure::Missing(facts) => native::missing(r, facts.clone()),
-        Failure::Rejected(_) => vec![Reason {
+        Failure::Rejected(rejection) => vec![Reason {
             kind: ReasonKind::ConditionFailed {
                 condition: condition.ok_or(internal!("組立ての失敗条件がない"))?,
                 construction: "model_assembly",
@@ -668,7 +679,7 @@ pub(super) fn failed(
             request: r.id.clone(),
             dependencies: vec![condition.ok_or(internal!("組立ての失敗条件がない"))?],
             missing: vec![],
-            location: None,
+            location: rejection.location.clone(),
         }],
         Failure::Unsupported(unsupported) => vec![Reason {
             kind: ReasonKind::UnsupportedAlgorithm {

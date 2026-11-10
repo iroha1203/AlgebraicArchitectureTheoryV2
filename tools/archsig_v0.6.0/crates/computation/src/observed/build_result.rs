@@ -1221,7 +1221,8 @@ fn compute_inner(
             .as_ref()
             .filter(|assembly| assembly.design.is_some())
     {
-        let scoped = super::assembly_output::view_scope(&mut b, env, request, assembly)?;
+        let (views, scoped) =
+            super::assembly_output::assembly_reads(&mut b, env, request, assembly)?;
         // The assembly reading is known even when the later algebra is pending.
         // Add a new outer claim so its scope refers only to earlier domains.
         let previous = claim;
@@ -1237,7 +1238,11 @@ fn compute_inner(
             .filter_map(|quantifier| quantifier.domain);
         claim = b.proposition(
             "constructible",
-            vec![label],
+            std::iter::once(label)
+                .chain(views)
+                .chain(assembly.design)
+                .chain([previous])
+                .collect(),
             std::iter::once(previous).chain(domains).collect(),
             status,
         )?;

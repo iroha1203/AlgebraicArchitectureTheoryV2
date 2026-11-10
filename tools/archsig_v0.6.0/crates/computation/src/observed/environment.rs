@@ -460,11 +460,20 @@ struct DomainEnumeration<'a> {
 
 #[derive(Debug, PartialEq, Eq)]
 pub(super) enum CapturedDomain {
-    Finite(Vec<Scalar>),
+    Finite(CapturedMembers),
     Type,
     Pending,
 }
+type CapturedMembers = std::sync::Arc<[Scalar]>;
 type AssemblyDomain = (Quantifier, CapturedDomain);
+
+#[derive(Debug)]
+pub(super) struct AssemblyCondition {
+    pub(super) span: (usize, usize),
+    pub(super) detail: &'static str,
+    pub(super) values: (Scalar, Scalar),
+    pub(super) support: Vec<Fact>,
+}
 
 #[derive(Default)]
 pub(super) struct AssemblyTrace {
@@ -472,6 +481,8 @@ pub(super) struct AssemblyTrace {
     occurrences: BTreeMap<(Option<usize>, usize, Option<usize>), usize>,
     captured: BTreeMap<(Option<usize>, (usize, usize), Option<super::call::Context>), Vec<usize>>,
     pub(super) domains: Vec<AssemblyDomain>,
+    finite_domains: BTreeMap<((usize, usize), usize), Vec<CapturedMembers>>,
+    pub(super) condition: Option<AssemblyCondition>,
     pub(super) scope: Scope,
     pub(super) support: BTreeSet<Fact>,
 }
@@ -600,6 +611,57 @@ impl<'a> Environment<'a> {
             .is_some_and(|trace| trace.fixed_design)
     }
 
+    fn note_assembly_quantifier(&self, id: usize) -> Result<(), ValidationFailure> {
+        use archsig_input::law::ast::{QuantDomain, QuantSplit};
+        let mut capture = self.state.assembly_domains.borrow_mut();
+        let Some(trace) = capture.as_mut().filter(|trace| trace.fixed_design) else {
+            return Ok(());
+        };
+        let law = self.indexes.inputs.law();
+        let expression = &law.exprs()[id];
+        if let ExprKind::Quant { kind, var, split } = &expression.kind
+            && let Some(ty) = &law.quantifier_types()[id]
+        {
+            let symbolic = matches!(
+                split,
+                QuantSplit::Fixed {
+                    domain: QuantDomain::Type(_),
+                    ..
+                }
+            ) && self.universal_symbolic_type(ty)?;
+            trace.scope.add_quantifier(Quantifier {
+                kind: *kind,
+                name: var.name.clone(),
+                ty: ty.clone(),
+                domain: None,
+                occurrence: if symbolic { var.span } else { expression.span },
+                assembly_instance: None,
+                context: self.state.scoped_context.get(),
+            });
+        }
+        Ok(())
+    }
+
+    fn capture_assembly_condition(
+        &self,
+        span: (usize, usize),
+        detail: &'static str,
+        values: &(Scalar, Scalar),
+        support: &[Fact],
+    ) {
+        let mut capture = self.state.assembly_domains.borrow_mut();
+        if let Some(trace) = capture.as_mut().filter(|trace| trace.fixed_design)
+            && trace.condition.is_none()
+        {
+            trace.condition = Some(AssemblyCondition {
+                span,
+                detail,
+                values: values.clone(),
+                support: support.to_vec(),
+            });
+        }
+    }
+
     fn capture_assembly_domain(
         &self,
         descriptor: &Quantifier,
@@ -624,7 +686,7 @@ impl<'a> Environment<'a> {
         for &index in prior.iter() {
             self.tick()?;
             let same = match (&trace.domains[index].1, members, symbolic) {
-                (CapturedDomain::Finite(old), Some(new), _) => old == new,
+                (CapturedDomain::Finite(old), Some(new), _) => old.as_ref() == new,
                 (CapturedDomain::Type, None, true) | (CapturedDomain::Pending, None, false) => true,
                 _ => false,
             };
@@ -634,7 +696,26 @@ impl<'a> Environment<'a> {
         }
         prior.push(trace.domains.len());
         let domain = match members {
-            Some(items) => CapturedDomain::Finite(items.to_vec()),
+            Some(items) => {
+                let domains = trace
+                    .finite_domains
+                    .entry((descriptor.occurrence, items.len()))
+                    .or_default();
+                let mut shared = None;
+                for domain in domains.iter() {
+                    self.tick()?;
+                    if domain.as_ref() == items {
+                        shared = Some(domain.clone());
+                        break;
+                    }
+                }
+                let domain = shared.unwrap_or_else(|| {
+                    let domain = CapturedMembers::from(items);
+                    domains.push(domain.clone());
+                    domain
+                });
+                CapturedDomain::Finite(domain)
+            }
             None if symbolic => CapturedDomain::Type,
             None => CapturedDomain::Pending,
         };
@@ -8856,6 +8937,14 @@ impl<'a> Environment<'a> {
                     checks.blocked |= inherited_pending;
                     call_base.merge(&checks.scope);
                     support.extend(checks.support);
+                    if let Some(failure) = &checks.failure {
+                        self.capture_assembly_condition(
+                            expression.span,
+                            "View実引数のownerが一致しない",
+                            failure,
+                            &support,
+                        );
+                    }
                     if checks.failure.is_some() || checks.blocked {
                         let condition_failed = inherited_failure || checks.failure.is_some();
                         let condition_pending = inherited_pending || checks.blocked;
@@ -8902,6 +8991,14 @@ impl<'a> Environment<'a> {
                     support.extend(checks.support);
                     support.sort();
                     support.dedup();
+                    if let Some(failure) = &checks.failure {
+                        self.capture_assembly_condition(
+                            expression.span,
+                            "View戻り値のownerが一致しない",
+                            failure,
+                            &support,
+                        );
+                    }
                     let failed = checks.failure.is_some() || checks.blocked;
                     SourceValue {
                         condition_failed: body.condition_failed || checks.failure.is_some(),
@@ -9004,6 +9101,14 @@ impl<'a> Environment<'a> {
                         support.extend(path.support.iter().cloned());
                         support.sort();
                         support.dedup();
+                        if let Some(failure) = &path.failure {
+                            self.capture_assembly_condition(
+                                expression.span,
+                                "Pathの端点または実引数が一致しない",
+                                failure,
+                                &support,
+                            );
+                        }
                         condition_failed |= path.failure.is_some();
                         condition_pending |= path.value.is_none() && path.failure.is_none();
                     }
@@ -9427,6 +9532,7 @@ impl<'a> Environment<'a> {
         base: &Scope,
         reading: &str,
     ) -> Result<SourceValue, ValidationFailure> {
+        self.note_assembly_quantifier(id)?;
         let mut result = {
             if let Some(value) =
                 self.universal_quantifier_source_value(id, variables, base, reading)?

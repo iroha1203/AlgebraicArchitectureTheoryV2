@@ -487,9 +487,10 @@ fn compute(
     } else {
         None
     };
+    let view_condition = read.condition.as_ref().filter(|_| read.metadata.failed);
     let mut failed = None;
     let mut verified = None;
-    if !read.metadata.missing.is_empty() {
+    if !read.metadata.missing.is_empty() && view_condition.is_none() {
         failed = Some(Failure::Missing(read.metadata.missing.clone()));
     } else if read.metadata.failed {
         failed = Some(Failure::Coverage {
@@ -786,7 +787,7 @@ fn compute(
             outputs.insert("map".into(), result);
         }
     }
-    if read.unsupported.is_some() || read.metadata.blocked {
+    if (read.unsupported.is_some() || read.metadata.blocked) && view_condition.is_none() {
         status = Decision::Undetermined;
     }
     // 元slotの未知と、実対応・Lawの反例を区別して保持する。
@@ -1022,6 +1023,18 @@ fn compute(
             right = binding(actual, vec![expression, refs[0], refs[1]])?;
             endpoint_detail = Some("local correspondence does not preserve an observed reference");
         }
+        if let Some(failure) = view_condition {
+            let operands = [expression, refs[0], refs[1]];
+            left = b.captured_scalar(&failure.values.0, &operands, c)?;
+            right = b.captured_scalar(&failure.values.1, &operands, c)?;
+            endpoint_detail = Some(failure.detail);
+            facts.extend(failure.support.iter().cloned());
+            for value in [&failure.values.0, &failure.values.1] {
+                if matches!(value, Scalar::Subject { .. }) {
+                    facts.push(fact(value)?);
+                }
+            }
+        }
         facts.sort();
         facts.dedup();
         let mut counter_bindings = bindings.clone();
@@ -1200,7 +1213,8 @@ fn compute(
             request: r.id.clone(),
             dependencies: vec![condition],
             missing: vec![],
-            location: None,
+            location: view_condition
+                .map(|failure| archsig_common::issue::Location::Law { span: failure.span }),
         });
     }
     sort_reasons(&mut reasons);

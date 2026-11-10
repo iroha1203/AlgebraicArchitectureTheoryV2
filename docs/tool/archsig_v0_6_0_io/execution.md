@@ -382,7 +382,7 @@ apply は現在入力の通常の所属・更新式・元Law検査を行い、�
 
 ### 有限の局所モデルを組み立てる問い
 
-`assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…)` は、担当別の root の有限集合を返す View と、
+`assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…,design.<parameter>=Handle)` は、担当別の root の有限集合を返す View と、
 共有する個体の対を返す along の View を同じ明示束縛 B で評価する。
 両 View は同じ reading に属し、parameter の名前・型を共有する。全 parameter を束縛する。
 第1 View の戻り型は owner を持たない同じ entity 型の `Set<Root>` とする。

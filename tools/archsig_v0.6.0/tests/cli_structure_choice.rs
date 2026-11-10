@@ -232,6 +232,42 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
     assert!(s(get(data, "condition_detail")).contains("observed reference"));
     assert_eq!(s(&arr(value(get(data, "left")))[1]), "rust-T3-after");
     assert_eq!(s(&arr(value(get(data, "right")))[1]), "rust-T3-before");
+    let original = include_str!("fixtures/r2-structure-choice/archmap.json");
+    let fact = concat!(
+        "\"id\": \"rust-T3-after.quantity\",\n          \"subject\": \"rust-T3-after\",\n",
+        "          \"field\": \"E12.State.quantity\",\n          \"value\": \"16\"",
+    );
+    let changed = original.replacen(fact, &fact.replace("16", "17"), 1);
+    assert_ne!(changed, original);
+    std::fs::write(dir.join("archmap.json"), changed).unwrap();
+    args[8] = "changed-law";
+    let run = run_binary(&dir, &args);
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let answers = arr(get(&result, "answers"));
+    let answer = |id| answers.iter().find(|a| s(get(a, "id")) == id).unwrap();
+    assert_eq!(s(get(answer("layout1"), "status")), "established");
+    let migration = answer("migrate");
+    assert_eq!(s(get(migration, "status")), "refuted");
+    let outputs = get(migration, "outputs");
+    assert!(has(outputs, "configuration_map"));
+    assert!(!has(outputs, "map"));
+    let [counterexample] = arr(get(migration, "counterexamples")) else {
+        panic!("actual comparison in the Law refutation");
+    };
+    let nodes = arr(get(&result, "nodes"));
+    let value = |reference: &JNode| {
+        get(
+            nodes
+                .iter()
+                .find(|node| s(get(node, "id")) == s(get(reference, "node")))
+                .unwrap(),
+            "value",
+        )
+    };
+    let evidence = get(value(counterexample), "data");
+    assert_eq!(value(get(evidence, "left")).value, JValue::Bool(true));
+    assert_eq!(value(get(evidence, "right")).value, JValue::Bool(false));
 }
 
 #[test]
@@ -254,16 +290,16 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
 ",
             "  view selected",
         ))
-        .replace("selected(p:Design)", "selected(p:Design,x:State,y:State)")
+        .replace("selected(p:Design,t:Route)", "selected(p:Design,t:Route,x:State,y:State)")
         .replace(
-            "if p.split then p.new",
+            "if p.split then set<Root>{t.to}",
             concat!(
                 "if holds(x) and holds(x) and (forall b in list<Bool>[true] . p.split=b) ",
                 "and (forall ignored in list<Bool>[true] . y.quantity=0) then ",
-                "(if (forall absent in list<Bool>[true] . y.quantity=0) then p.new else p.new)",
+                "(if (forall absent in list<Bool>[true] . y.quantity=0) then set<Root>{t.to} else set<Root>{t.to})",
             ),
         )
-        .replace("interfaces(p:Design):Unit = unit", "interfaces(p:Design,x:State,y:State):List<(State,State)> = if p.split then list<(State,State)>[(x,y)] else list<(State,State)>[]");
+        .replace("interfaces(p:Design,t:Route):Unit = unit", "interfaces(p:Design,t:Route,x:State,y:State):List<(State,State)> = if p.split then list<(State,State)>[(x,y)] else list<(State,State)>[]");
     std::fs::write(dir.join("laws.law"), law).unwrap();
     let original = include_str!("fixtures/r2-structure-choice/queries.txt")
         .lines()
@@ -278,7 +314,7 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
         ("fixed0", ",design.p=$planApply0.object"),
         ("fixed1", ",design.p=$planApply1.object"),
     ] {
-        asks.push(format!("{id}=assemble(E12Compare.selected,on=@comparison/rust-output1,along=E12Compare.interfaces,p=$bindDesign.value{endpoints}{selected})"));
+        asks.push(format!("{id}=assemble(E12Compare.selected,on=@comparison/rust-output1,along=E12Compare.interfaces,p=$bindDesign.value,t=@comparison/move-T3{endpoints}{selected})"));
     }
     asks.push("reuseFragments=evaluate(E12Compare.same,f=$fixed0.assembly.fragments)".into());
     let mut args = vec![
@@ -410,8 +446,8 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
         );
     std::fs::write(dir.join("archmap.json"), map).unwrap();
     let law = include_str!("fixtures/r2-structure-choice/laws.law").replace(
-        "if p.split then p.new else p.old",
-        "let seen=forall b:Root . b=b in if seen and (exists z:Z . z*z=2) then p.new else p.old",
+        "if p.split then set<Root>{t.to} else set<Root>{t.from}",
+        "let seen=forall b:Root . b=b in if seen and (exists z:Z . z*z=2) then set<Root>{t.to} else set<Root>{t.from}",
     );
     std::fs::write(dir.join("laws.law"), law).unwrap();
     let original = include_str!("fixtures/r2-structure-choice/queries.txt")
@@ -419,7 +455,7 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
         .collect::<Vec<_>>();
     let mut asks = original[1..8].to_vec();
     asks.extend([
-        "layout=assemble(E12Compare.selected,on=@comparison/rust-output1,along=E12Compare.interfaces,p=@comparison/plan,design.p=$planApply1.object)",
+        "layout=assemble(E12Compare.selected,on=@comparison/rust-output1,along=E12Compare.interfaces,p=@comparison/plan,t=@comparison/move-T3,design.p=$planApply1.object)",
         "blocked=check(E12Compare.consumed,on=$layout.object,s=@comparison/rust-T3-after)",
     ]);
     let mut args = vec![
@@ -495,4 +531,95 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
             .iter()
             .all(|reason| s(get(reason, "code")) != "internal")
     );
+    let law = include_str!("fixtures/r2-structure-choice/laws.law").replace(
+        "  view selected",
+        "  law required ordered(s:State):s.quantity<20;\n  view selected",
+    );
+    std::fs::write(dir.join("laws.law"), law).unwrap();
+    args[8] = "later-algebra";
+    let run = run_binary(&dir, &args);
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let answers = arr(get(&result, "answers"));
+    let layout = answers
+        .iter()
+        .find(|a| s(get(a, "id")) == "layout")
+        .unwrap();
+    let applied = answers
+        .iter()
+        .find(|a| s(get(a, "id")) == "planApply1")
+        .unwrap();
+    assert_eq!(s(get(layout, "status")), "undetermined");
+    let nodes = arr(get(&result, "nodes"));
+    let node = |reference: &JNode| {
+        nodes
+            .iter()
+            .find(|node| s(get(node, "id")) == s(get(reference, "node")))
+            .unwrap()
+    };
+    let claim = node(get(get(layout, "outputs"), "proposition"));
+    let operands = arr(get(get(claim, "value"), "operands"));
+    let applied = get(get(applied, "outputs"), "object");
+    assert!(operands.iter().any(|value| value.value == applied.value));
+    assert_eq!(
+        operands
+            .iter()
+            .filter(|value| matches!(&get(node(value), "type").value, JValue::Str(name) if name == "Expression"))
+            .count(),
+        2
+    );
+    assert!(operands.iter().any(|value| {
+        let value = get(node(value), "value");
+        matches!(&value.value, JValue::Arr(elements) if elements.len() == 1
+            && matches!(&elements[0].value, JValue::Arr(pair) if pair.len() == 2 && s(&pair[1]) == "rust-T3"))
+    }));
+    let law = include_str!("fixtures/r2-structure-choice/laws.law")
+        .replace(
+            "selected(p:Design,t:Route)",
+            "selected(p:Design,t:Route,x:State,y:State)",
+        )
+        .replace(
+            "interfaces(p:Design,t:Route)",
+            "interfaces(p:Design,t:Route,x:State,y:State)",
+        )
+        .replace(
+            "if p.split then set<Root>{t.to}",
+            "if source(then(identity(x),identity(y)))=x and p.split then set<Root>{t.to}",
+        );
+    std::fs::write(dir.join("laws.law"), law).unwrap();
+    let path_ask = format!(
+        "{},x=@comparison/native-T3-before,y=@comparison/rust-T3-before)",
+        asks[asks.len() - 2].strip_suffix(')').unwrap()
+    );
+    let at = args.len() - 3;
+    args[at] = &path_ask;
+    args[8] = "failed-path";
+    let run = run_binary(&dir, &args);
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let layout = arr(get(&result, "answers"))
+        .iter()
+        .find(|a| s(get(a, "id")) == "layout")
+        .unwrap();
+    assert_eq!(s(get(layout, "status")), "refuted");
+    let [counterexample] = arr(get(layout, "counterexamples")) else {
+        panic!("the failed View comparison");
+    };
+    let nodes = arr(get(&result, "nodes"));
+    let value = |reference: &JNode| {
+        get(
+            nodes
+                .iter()
+                .find(|node| s(get(node, "id")) == s(get(reference, "node")))
+                .unwrap(),
+            "value",
+        )
+    };
+    let data = get(value(counterexample), "data");
+    assert_eq!(s(&arr(value(get(data, "left")))[1]), "native-T3-before");
+    assert_eq!(s(&arr(value(get(data, "right")))[1]), "rust-T3-before");
+    let [reason] = arr(get(layout, "reasons")) else {
+        panic!("one checked condition failure");
+    };
+    assert_eq!(s(get(get(reason, "location"), "input")), "law");
 }

@@ -5,7 +5,8 @@ use super::{
     build_plan::{self, Plan},
     construction_result::{self as native, ArchitectureWitness, Witness},
     environment::{
-        AnswerBinding, CapturedDomain, Environment, change_search, repair_problem::family,
+        AnswerBinding, AssemblyCondition, CapturedDomain, Environment, change_search,
+        repair_problem::family,
     },
     model_assembly::{self, Model, Preparation},
     request::{Request, Selector},
@@ -18,6 +19,7 @@ pub(super) struct Read {
     pub metadata: family::Read,
     pub value: Option<Scalar>,
     pub domains: Vec<(Quantifier, CapturedDomain)>,
+    pub condition: Option<AssemblyCondition>,
     pub unsupported: Option<model_assembly::Unsupported>,
 }
 pub(super) fn read(
@@ -65,6 +67,7 @@ pub(super) fn read(
                 metadata,
                 value,
                 domains: trace.domains,
+                condition: trace.condition,
                 unsupported: None,
             })
         }
@@ -107,6 +110,7 @@ pub(super) fn read(
                 },
                 value: None,
                 domains: trace.domains,
+                condition: trace.condition,
                 unsupported: Some(model_assembly::Unsupported {
                     detail: feature,
                     location,
@@ -395,6 +399,7 @@ pub(super) fn prepare(
             },
             value: None,
             domains: vec![],
+            condition: None,
             unsupported: None,
         };
         (unread(), unread())
@@ -410,6 +415,29 @@ pub(super) fn prepare(
     missing.dedup();
     let preparation = if let Some(rejected) = rejected {
         rejected
+    } else if let Some(failure) = [
+        (&fragments.metadata, fragments.condition.as_ref()),
+        (&shared.metadata, shared.condition.as_ref()),
+    ]
+    .into_iter()
+    .find_map(|(read, failure)| read.failed.then_some(failure).flatten())
+    {
+        let mut facts = failure.support.clone();
+        for value in [&failure.values.0, &failure.values.1] {
+            if matches!(value, Scalar::Subject { .. }) {
+                facts.push(fact(value)?);
+            }
+        }
+        facts.retain(|fact| !reader.has_primitive_override(fact) && !selected.contains_key(fact));
+        facts.sort();
+        facts.dedup();
+        Preparation::Rejected(model_assembly::Rejection {
+            detail: failure.detail.into(),
+            facts,
+            values: Some(failure.values.clone()),
+            repaired: [None, None],
+            location: Some(archsig_common::issue::Location::Law { span: failure.span }),
+        })
     } else if fragments.metadata.failed || shared.metadata.failed {
         model_assembly::rejected(
             "組立てViewの束縛または適用条件が成立しない",
