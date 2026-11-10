@@ -274,6 +274,9 @@ fn owned_expression_family_enumeration_cancel_preserves_owner_prefix_and_prior_a
         }
     });
     let prepared = prepare_observed(inputs, &asks, &control).unwrap();
+    let first_state = prepared.inputs().archmap().snapshots().iter()
+        .find(|snapshot| snapshot.id == "v").unwrap().subjects.iter()
+        .position(|subject| subject.ty == "Reservations.State").unwrap();
     let stopped = evaluate_observed_with_validator(
         prepared,
         &control,
@@ -285,7 +288,7 @@ fn owned_expression_family_enumeration_cancel_preserves_owner_prefix_and_prior_a
                     if context.request == 3
                         && context.case.is_none()
                         && operation == "owned_family_enum"
-                        && index == 0
+                        && index == first_state
                     {
                         assert!(!observed.replace(true));
                         arm.set(true);

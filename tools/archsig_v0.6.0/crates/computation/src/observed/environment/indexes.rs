@@ -30,6 +30,7 @@ pub(crate) struct InputIndexes<'a> {
 /// 同じCheckedInputsの全候補で変わらない索引。可変の候補値・評価cacheを含めない。
 pub(crate) struct FixedInputIndexes<'a> {
     pub(super) subjects: BTreeMap<(&'a str, &'a str), &'a Subject>,
+    pub(super) subjects_by_type: HashMap<(&'a str, &'a str), Vec<(usize, &'a Subject)>>,
     pub(super) fields: HashMap<(&'a str, &'a str, &'a str), &'a archsig_input::archmap::Field>,
     pub(super) atoms: BTreeMap<String, Fact>,
     pub(super) modes: BTreeMap<String, &'static str>,
@@ -143,6 +144,7 @@ impl<'a> InputIndexes<'a> {
 impl<'a> InputIndexes<'a> {
     pub fn new(inputs: &'a CheckedInputs, control: &Control) -> Result<Self, Signal> {
         let mut subjects = BTreeMap::new();
+        let mut subjects_by_type = HashMap::<_, Vec<_>>::new();
         let mut fields = HashMap::new();
         let mut atoms = BTreeMap::new();
         let mut modes = BTreeMap::new();
@@ -157,8 +159,12 @@ impl<'a> InputIndexes<'a> {
         for snapshot in inputs.archmap().snapshots() {
             control.checkpoint(Checkpoint::FiniteIteration)?;
             snapshot_origins.insert(snapshot.id.clone(), snapshot.origin.clone());
-            for s in &snapshot.subjects {
+            for (position, s) in snapshot.subjects.iter().enumerate() {
                 control.checkpoint(Checkpoint::FiniteIteration)?;
+                subjects_by_type
+                    .entry((s.snapshot.as_str(), s.ty.as_str()))
+                    .or_default()
+                    .push((position, s));
                 subjects.insert((s.snapshot.as_str(), s.id.as_str()), s);
                 roster_types.insert((s.snapshot.as_str(), s.id.as_str()), s.ty.as_str());
                 for field in &s.fields {
@@ -193,6 +199,7 @@ impl<'a> InputIndexes<'a> {
             object_values: None,
             fixed: std::sync::Arc::new(FixedInputIndexes {
                 subjects,
+                subjects_by_type,
                 fields,
                 atoms,
                 modes,
