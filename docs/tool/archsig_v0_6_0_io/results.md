@@ -85,7 +85,7 @@ EvaluationResultのPayloadはEvaluationを下表の欄へ射影した値とす�
 | 内部の検査表現 | runの保存表現 |
 | --- | --- |
 | nodeのrule・arguments・evidence・scope・support | 欄を持たない。値の参照とconditionsは保持する |
-| 証明Evidenceとその参照 | 除く。counterexample・completion_pair・separating_pairはCounterexample型としてcounterexamplesへ、completion_fibersはevidenceへ保持する |
+| 証明Evidenceとその参照 | 除く。counterexample・completion_pair・separating_pairはCounterexample型としてcounterexamplesへ、completion_fibersはevidenceへ保持する。`rational_polyhedron` は `SolutionSet.representation.certificate` から到達する Evidence として保持する |
 | Law成立だけのclaim/proposition | 回答のstatusへ反映し、重複する参照を除く |
 | 回答のevaluation | applicabilityと、存在すればoutputs.environmentへ射影する |
 | Evaluation値 | EvaluationResult型でapplicability・bindings・value・environmentを保持する |

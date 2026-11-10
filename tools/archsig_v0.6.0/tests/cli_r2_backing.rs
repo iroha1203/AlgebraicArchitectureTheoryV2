@@ -755,6 +755,21 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
         1,
     );
     for (out, law, codes) in [
+        ("let-coefficient", POLY_LAW.replacen("b.quantity>=rat(0,1)",
+            "(let capacity=b.stock.available in b.quantity*capacity>=rat(0,1))", 1), &["missing_observation"][..]),
+        ("view-coefficient", POLY_LAW.replacen(" law required legal",
+            " view weighted(b:Pool.Cell):Q=b.quantity*b.stock.available;\n law required legal", 1)
+            .replacen("b.quantity>=rat(0,1)", "weighted(b)>=rat(0,1)", 1), &["missing_observation"][..]),
+        ("guard-dead", POLY_LAW.replacen("stockLoad(s)<=s.available", "stockLoad(s)<=rat(5,1)", 1)
+            .replacen("legal(w:Pool.World):", "legal(w:Pool.World) when (forall b in Pool.Cell[w] . if true then b.quantity>=rat(0,1) else b.stock.available>=rat(10,1)):", 1),
+            &["unsupported_algorithm"][..]),
+        ("guard-live", POLY_LAW.replacen("legal(w:Pool.World):",
+            "legal(w:Pool.World) when (forall b in Pool.Cell[w] . if true then b.stock.available>=rat(0,1) else b.quantity>=rat(10,1)):", 1),
+            &["missing_observation"][..]),
+        ("cancelled-coefficient", POLY_LAW.replacen("stockLoad(s)<=s.available", "stockLoad(s)<=rat(5,1)", 1)
+            .replacen("b.quantity>=rat(0,1)", "(b.quantity+b.stock.available-b.stock.available>=rat(10,1) or b.quantity<=rat(0,1))", 1),
+            &["unsupported_algorithm"][..]),
+
         ("cancelled-symbol", POLY_LAW.replacen("legal(w:Pool.World):",
             "legal(w:Pool.World) when (forall b in Pool.Cell[w] . b.quantity-b.quantity+b.stock.available>=rat(0,1)):", 1),
             &["missing_observation"][..]),

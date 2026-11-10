@@ -123,11 +123,13 @@ fn potential_affine(
     vars: &BTreeMap<String, SourceValue>,
     reading: &str,
     axes: &[Parameter],
+    observations: &mut BTreeSet<Fact>,
 ) -> Result<Option<bool>, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         env.tick()?;
         let value = env.scoped_ast(id, vars, &Scope::default(), reading)?;
         if let Some(form) = value.affine.as_deref() {
+            observations.extend(form.missing_facts());
             if form.awaiting_rational_observation(axes, &env.control)?
                 || form.rational_coordinates(axes, &env.control)?.is_some()
             {
@@ -142,7 +144,46 @@ fn potential_affine(
             operand: body,
         } = kind
         {
-            return potential_affine(env, *body, vars, reading, axes);
+            return potential_affine(env, *body, vars, reading, axes, observations);
+        }
+        if let ExprKind::Call { args, .. } = kind
+            && let Some(declaration) = env.named_view(id)?
+            && let Signature::View { params, body, .. } = &declaration.signature
+        {
+            let mut local = BTreeMap::new();
+            for (parameter, arg) in params.iter().zip(args) {
+                let value = env.scoped_ast(*arg, vars, &Scope::default(), reading)?;
+                local.insert(parameter.name.clone(), value);
+            }
+            return potential_affine(env, *body, &local, &declaration.reading, axes, observations);
+        }
+        if let ExprKind::Let { name, value, body } = kind {
+            let mut local = env.copy_variables(vars)?;
+            let bound = env.scoped_ast(*value, vars, &Scope::default(), reading)?;
+            local.insert(name.name.clone(), bound);
+            return potential_affine(env, *body, &local, reading, axes, observations);
+        }
+        if let ExprKind::If {
+            cond,
+            then_branch,
+            else_branch,
+        } = kind
+        {
+            let condition = env.scoped_ast(*cond, vars, &Scope::default(), reading)?;
+            match condition.known_value.as_ref() {
+                Some(Scalar::Bool(true)) => {
+                    return potential_affine(env, *then_branch, vars, reading, axes, observations);
+                }
+                Some(Scalar::Bool(false)) => {
+                    return potential_affine(env, *else_branch, vars, reading, axes, observations);
+                }
+                _ if observation_only(env, *cond, vars, reading, axes, &condition)? => {
+                    let a = potential_affine(env, *then_branch, vars, reading, axes, observations)?;
+                    let b = potential_affine(env, *else_branch, vars, reading, axes, observations)?;
+                    return Ok(a.zip(b).map(|(a, b)| a || b));
+                }
+                _ => return Ok(None),
+            }
         }
         let ExprKind::Binary {
             op: op @ (BinOp::Add | BinOp::Sub | BinOp::Mul),
@@ -152,8 +193,8 @@ fn potential_affine(
         else {
             return Ok(None);
         };
-        let a = potential_affine(env, *lhs, vars, reading, axes)?;
-        let b = potential_affine(env, *rhs, vars, reading, axes)?;
+        let a = potential_affine(env, *lhs, vars, reading, axes, observations)?;
+        let b = potential_affine(env, *rhs, vars, reading, axes, observations)?;
         Ok(match (a, b) {
             (Some(true), Some(true)) if *op == BinOp::Mul => None,
             (Some(a), Some(b)) => Some(a || b),
@@ -209,16 +250,30 @@ fn observation_only(
                     return Ok(form.awaiting_rational_observation(&[], &env.control)?
                         || form.rational_coordinates(&[], &env.control)?.is_some());
                 }
+                let mut observations = BTreeSet::new();
                 Ok(
-                    potential_affine(env, *lhs, vars, reading, axes)? == Some(false)
-                        && potential_affine(env, *rhs, vars, reading, axes)? == Some(false),
+                    potential_affine(env, *lhs, vars, reading, axes, &mut observations)?
+                        == Some(false)
+                        && potential_affine(env, *rhs, vars, reading, axes, &mut observations)?
+                            == Some(false),
                 )
             }
             ExprKind::If {
                 cond,
                 then_branch,
                 else_branch,
-            } => Ok(child(*cond)? && child(*then_branch)? && child(*else_branch)?),
+            } => {
+                let condition = env.scoped_ast(*cond, vars, &base, reading)?;
+                match condition.known_value.as_ref() {
+                    Some(Scalar::Bool(true)) => child(*then_branch),
+                    Some(Scalar::Bool(false)) => child(*else_branch),
+                    _ => Ok(
+                        observation_only(env, *cond, vars, reading, axes, &condition)?
+                            && child(*then_branch)?
+                            && child(*else_branch)?,
+                    ),
+                }
+            }
             ExprKind::Quant {
                 split:
                     archsig_input::law::ast::QuantSplit::Fixed {
@@ -231,7 +286,10 @@ fn observation_only(
                 let (domain, members) =
                     env.scoped_quantifier_domain(&spec, vars, &base, reading)?;
                 let Some(members) = members else {
-                    return Ok(!domain.scope.assignments);
+                    let Some(id) = spec.domain else {
+                        return Ok(false);
+                    };
+                    return observation_only(env, id, vars, reading, axes, &domain);
                 };
                 let mut local = env.copy_variables(vars)?;
                 for member in members {
@@ -245,6 +303,55 @@ fn observation_only(
                 Ok(true)
             }
             _ => Ok(!value.scope.assignments && !change_affine::numeric_condition(env, id, value)?),
+        }
+    })
+}
+
+// A read which cancels out of a comparison is not a required observation.
+fn normalized_missing(
+    env: &Environment<'_>,
+    id: usize,
+    vars: &BTreeMap<String, SourceValue>,
+    reading: &str,
+) -> Result<Option<Vec<Fact>>, ValidationFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        env.tick()?;
+        let base = Scope::default();
+        let source = env.scoped_ast(id, vars, &base, reading)?;
+        if source.known_value.is_some() {
+            return Ok(Some(vec![]));
+        }
+        let law = env.indexes.inputs.law();
+        match &law.exprs()[id].kind {
+            ExprKind::Group(body) => normalized_missing(env, *body, vars, reading),
+            ExprKind::Binary {
+                op: BinOp::And | BinOp::Or | BinOp::Implies,
+                lhs,
+                rhs,
+            } => {
+                let a = normalized_missing(env, *lhs, vars, reading)?;
+                let b = normalized_missing(env, *rhs, vars, reading)?;
+                Ok(a.zip(b).map(|(mut a, b)| {
+                    a.extend(b);
+                    a
+                }))
+            }
+            ExprKind::Binary {
+                op: BinOp::Eq | BinOp::Ne | BinOp::Le | BinOp::Lt | BinOp::Ge | BinOp::Gt,
+                lhs,
+                rhs,
+            } if law.expr_type(*lhs) == Some(&Type::Q) && law.expr_type(*rhs) == Some(&Type::Q) => {
+                let left = env.scoped_ast(*lhs, vars, &base, reading)?;
+                let right = env.scoped_ast(*rhs, vars, &base, reading)?;
+                Ok(affine::binary(
+                    BinOp::Sub,
+                    left.affine.as_deref(),
+                    right.affine.as_deref(),
+                    &env.control,
+                )?
+                .map(|difference| difference.missing_facts()))
+            }
+            _ => Ok(None),
         }
     })
 }
@@ -442,13 +549,31 @@ fn equations(
                         }
                         _ => None,
                     };
-                    if !absent.is_empty()
-                        && let Axes::Parameters(parameters) = axes
+                    if let Axes::Parameters(parameters) = axes
                         && let Some((lhs, rhs)) = q_comparison
+                        && (rows.quantified || ordered.is_some())
                     {
-                        missing.awaiting_observation =
-                            potential_affine(env, lhs, vars, reading, parameters)?.is_some()
-                                && potential_affine(env, rhs, vars, reading, parameters)?.is_some();
+                        let mut observations = BTreeSet::new();
+                        let left = potential_affine(
+                            env,
+                            lhs,
+                            vars,
+                            reading,
+                            parameters,
+                            &mut observations,
+                        )?;
+                        let right = potential_affine(
+                            env,
+                            rhs,
+                            vars,
+                            reading,
+                            parameters,
+                            &mut observations,
+                        )?;
+                        missing.awaiting_observation = left.is_some()
+                            && right.is_some()
+                            && (!absent.is_empty() || !observations.is_empty());
+                        missing.facts.extend(observations);
                     }
                     if change_affine::numeric_condition(env, id, &v)? {
                         missing.unsupported = Some("numeric_change_condition");
@@ -458,7 +583,11 @@ fn equations(
                     {
                         missing.awaiting_observation = true;
                     }
-                    missing.facts.extend(absent);
+                    if !absent.is_empty() {
+                        missing
+                            .facts
+                            .extend(normalized_missing(env, id, vars, reading)?.unwrap_or(absent));
+                    }
                     return Err(unsupported(
                         env,
                         id,
@@ -842,6 +971,7 @@ fn requirement_equations(
     allow_bounds: bool,
     missing: &mut Pending,
 ) -> Result<Constraints, ValidationFailure> {
+    let _value_read = allow_bounds.then(|| env.state.value_read.scoped(true));
     missing.selective_missing = allow_bounds;
     let mut rows = Constraints {
         inequalities: allow_bounds.then(Vec::new),
