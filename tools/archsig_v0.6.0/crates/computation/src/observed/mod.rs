@@ -4,6 +4,7 @@ mod affine;
 mod architecture_result;
 mod assembly_output;
 mod assembly_plan;
+pub mod assembly_reobservation;
 mod call;
 mod circuit_pattern;
 pub(crate) mod construction_result;

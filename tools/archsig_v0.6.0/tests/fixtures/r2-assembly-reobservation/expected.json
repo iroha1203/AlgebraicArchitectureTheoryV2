@@ -1,0 +1,20 @@
+{
+  "before": {
+    "assembly": "undetermined",
+    "global": "undetermined",
+    "missing": ["before", "mb", "Assemble.Part.quantity"]
+  },
+  "after": {
+    "assembly": "established",
+    "global": "established",
+    "observed": ["after", "mb", "Assemble.Part.quantity", "observed-shared-quantity"],
+    "previous_assignment": "retained"
+  },
+  "after_with_corrected_b_quantity": {
+    "assembly": "established",
+    "global": "established",
+    "previous_assignment": "excluded",
+    "current_candidate_and_apply": "established"
+  },
+  "swapped_owner_correspondence": "invalid_correspondence"
+}

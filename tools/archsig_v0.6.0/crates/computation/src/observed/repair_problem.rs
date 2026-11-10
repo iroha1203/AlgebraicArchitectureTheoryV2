@@ -1579,3 +1579,98 @@ pub(super) fn validate_origin(
     }
     Ok(())
 }
+
+/// 同じ finite change の元個体・parameter 値を現在の解集合で照合する。
+pub(super) fn reobserved_membership(
+    previous: &Node,
+    current: &Node,
+    subject_image: impl Fn(&Scalar) -> Option<Scalar>,
+    c: &Control,
+) -> Result<Option<bool>, ValidationFailure> {
+    let (Some(Payload::Construction(old)), Some(Payload::Construction(new))) =
+        (&previous.payload, &current.payload)
+    else {
+        return Ok(None);
+    };
+    let (D::SharedRepair(old), D::SharedRepair(new)) = (&old.data, &new.data) else {
+        return Ok(None);
+    };
+    let (Some(a), Some(b), Some(chosen), Some(enabled)) = (
+        old.source.finite(),
+        new.source.finite(),
+        &old.source.chosen,
+        &new.source.range,
+    ) else {
+        return Ok(None);
+    };
+    if old.ty() != NodeType::Construction(T::Assignment)
+        || new.ty() != NodeType::Construction(T::SolutionSet)
+        || a.change != b.change
+        || subject_image(&Scalar::Subject {
+            snapshot: a.witness.construction().root().snapshot.clone(),
+            subject: a.witness.construction().root().subject.clone(),
+            entity: a.root_type.clone(),
+        }) != Some(Scalar::Subject {
+            snapshot: b.witness.construction().root().snapshot.clone(),
+            subject: b.witness.construction().root().subject.clone(),
+            entity: b.root_type.clone(),
+        })
+        || a.compiled.subjects.len() != b.compiled.subjects.len()
+        || a.compiled.parameter_count != b.compiled.parameter_count
+        || a.compiled.subjects.is_empty()
+    {
+        return Ok(None);
+    }
+    let width = a.compiled.parameter_count / a.compiled.subjects.len();
+    let mut target_pins = pins(b, enabled);
+    for (i, subject) in a.compiled.subjects.iter().enumerate() {
+        tick(c)?;
+        let Some(image) = subject_image(subject) else {
+            return Ok(None);
+        };
+        let Some(j) = b
+            .compiled
+            .subjects
+            .iter()
+            .position(|subject| subject == &image)
+        else {
+            return Ok(None);
+        };
+        for k in 0..width {
+            tick(c)?;
+            let index = i * width + k;
+            let target = j * width + k;
+            let original = &a.compiled.domains[index][chosen[index]];
+            let value = match original {
+                Scalar::Subject { .. } => {
+                    let Some(image) = subject_image(original) else {
+                        return Ok(None);
+                    };
+                    image
+                }
+                Scalar::Unit
+                | Scalar::Text(_)
+                | Scalar::Bool(_)
+                | Scalar::Z(_)
+                | Scalar::Q(_, _)
+                | Scalar::Fp { .. } => original.clone(),
+                _ => return Ok(None),
+            };
+            let mut found = None;
+            for (position, member) in b.compiled.domains[target].iter().enumerate() {
+                tick(c)?;
+                if super::data::equal(member, &value, c)? {
+                    found = Some(position);
+                    break;
+                }
+            }
+            let Some(found) = found else {
+                return Ok(Some(false));
+            };
+            target_pins[target] = Some(found);
+        }
+    }
+    Ok(Some(
+        b.compiled.relations.witness(&target_pins, c)?.is_some(),
+    ))
+}

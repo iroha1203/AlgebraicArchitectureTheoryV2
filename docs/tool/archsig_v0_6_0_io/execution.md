@@ -676,6 +676,19 @@ Rustの `observed::reevaluate_observed(previous,prepared,control)` は、同じ�
 元parameterへの復元を求め、適用対象・元Lawの検査と由来は現在入力から生成する。
 行列や適用条件が変わる場合は現在の生成・検査へ戻し、旧成功表示を採用しない。
 
+### 局所組立てと追加観測の対応
+
+Rust の `observed::assembly_reobservation::reevaluate_assembly` は前回の native 結果、
+現在の検査済み三入力と要求、明示した `AssemblyAlignment` を受け取る。対応には始終 snapshot、
+同じ reading、元組立ての要求 ID、主体対、前回 candidate と現在 solve の ID を指定する。
+同じ定義と Law で型・owner・明示した root と共有参照を照合する。前回の未観測 slot を、
+現在の同じ field と型の Atom に結ぶ。現在も未観測なら Atom の参照は空のまま返す。
+
+現在の要求は既存の native 再観測で実行する。有限修復の前回 Assignment は元個体と parameter 値を
+明示対応で運び、現在の解集合で再検査する。保持・除外・判定不能を返す。
+scalar と明示対応のある原始 Ref を扱い、対応できない parameter や未完成の解集合は判定不能とする。
+現在の組立ては通常どおり現在 snapshot のみで実行する。元の組立てや候補は現在の証拠へ転用しない。
+
 ## 8. 観測補助
 
 `evidence` は観測側のArchMapと明示したローカルファイルを照合する。

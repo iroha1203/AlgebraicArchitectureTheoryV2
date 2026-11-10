@@ -1,0 +1,7 @@
+within=evaluate(Assembly.singleton,p=@SNAP/a)
+prepareIt=prepare(Assembly.desired,using=Assembly.choose,on=@SNAP/A,p=@SNAP/a,b=@SNAP/b)
+solveIt=solve($prepareIt.problem,within=$within.value)
+pick=candidate($solveIt.solutions,index=0)
+selected=apply($pick.assignment,in=$solveIt.solutions)
+joined=assemble(Assembly.fragments,on=@SNAP/G,along=Assembly.interfaces,a=@SNAP/A,b=@SNAP/B,ma=@SNAP/ma,mb=@SNAP/mb,local.a=$selected.object)
+global=check(Assembly.boundary,p=@SNAP/ma,on=$joined.object)

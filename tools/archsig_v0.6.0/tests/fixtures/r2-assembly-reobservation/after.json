@@ -1,0 +1,232 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "Assemble",
+      "version": "1",
+      "digest": "sha256:f767c561d09c61047a1b2ec08e871469408fd70f3105b5330528a74d584893e4"
+    }
+  ],
+  "sources": [],
+  "origins": [
+    {
+      "id": "model",
+      "mode": "specification",
+      "method": "R2 P3 の局所観測を一つ追加する仕様例。",
+      "note": "snapshot と共有位置を明示対応で結ぶ。",
+      "locations": []
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "after",
+      "origin": "model",
+      "subjects": [
+        {
+          "id": "A",
+          "type": "Assemble.Root",
+          "origin": "model"
+        },
+        {
+          "id": "B",
+          "type": "Assemble.Root",
+          "origin": "model"
+        },
+        {
+          "id": "G",
+          "type": "Assemble.Root",
+          "origin": "model"
+        },
+        {
+          "id": "a",
+          "type": "Assemble.Part",
+          "origin": "model"
+        },
+        {
+          "id": "ma",
+          "type": "Assemble.Part",
+          "origin": "model"
+        },
+        {
+          "id": "mb",
+          "type": "Assemble.Part",
+          "origin": "model"
+        },
+        {
+          "id": "b",
+          "type": "Assemble.Part",
+          "origin": "model"
+        },
+        {
+          "id": "left",
+          "type": "Assemble.Step",
+          "origin": "model"
+        },
+        {
+          "id": "right",
+          "type": "Assemble.Step",
+          "origin": "model"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "a-owner",
+          "subject": "a",
+          "field": "Assemble.Part.owner",
+          "value": [
+            "after",
+            "A"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "a-quantity",
+          "subject": "a",
+          "field": "Assemble.Part.quantity",
+          "value": "1",
+          "origin": "model"
+        },
+        {
+          "id": "a-links",
+          "subject": "a",
+          "field": "Assemble.Part.links",
+          "value": [],
+          "origin": "model"
+        },
+        {
+          "id": "ma-owner",
+          "subject": "ma",
+          "field": "Assemble.Part.owner",
+          "value": [
+            "after",
+            "A"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "ma-quantity",
+          "subject": "ma",
+          "field": "Assemble.Part.quantity",
+          "value": "0",
+          "origin": "model"
+        },
+        {
+          "id": "ma-links",
+          "subject": "ma",
+          "field": "Assemble.Part.links",
+          "value": [],
+          "origin": "model"
+        },
+        {
+          "id": "mb-owner",
+          "subject": "mb",
+          "field": "Assemble.Part.owner",
+          "value": [
+            "after",
+            "B"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "observed-shared-quantity",
+          "subject": "mb",
+          "field": "Assemble.Part.quantity",
+          "value": "0",
+          "origin": "model"
+        },
+        {
+          "id": "mb-links",
+          "subject": "mb",
+          "field": "Assemble.Part.links",
+          "value": [],
+          "origin": "model"
+        },
+        {
+          "id": "b-owner",
+          "subject": "b",
+          "field": "Assemble.Part.owner",
+          "value": [
+            "after",
+            "B"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "b-quantity",
+          "subject": "b",
+          "field": "Assemble.Part.quantity",
+          "value": "0",
+          "origin": "model"
+        },
+        {
+          "id": "b-links",
+          "subject": "b",
+          "field": "Assemble.Part.links",
+          "value": [],
+          "origin": "model"
+        },
+        {
+          "id": "left-owner",
+          "subject": "left",
+          "field": "Assemble.Step.owner",
+          "value": [
+            "after",
+            "A"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "left-from",
+          "subject": "left",
+          "field": "Assemble.Step.from",
+          "value": [
+            "after",
+            "a"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "left-to",
+          "subject": "left",
+          "field": "Assemble.Step.to",
+          "value": [
+            "after",
+            "ma"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "right-owner",
+          "subject": "right",
+          "field": "Assemble.Step.owner",
+          "value": [
+            "after",
+            "B"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "right-from",
+          "subject": "right",
+          "field": "Assemble.Step.from",
+          "value": [
+            "after",
+            "mb"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "right-to",
+          "subject": "right",
+          "field": "Assemble.Step.to",
+          "value": [
+            "after",
+            "b"
+          ],
+          "origin": "model"
+        }
+      ]
+    }
+  ]
+}
