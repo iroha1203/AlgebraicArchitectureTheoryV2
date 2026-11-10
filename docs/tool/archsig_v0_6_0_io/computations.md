@@ -802,8 +802,8 @@ viewの集約値によるquotientの十分性と、原始読取りの集合に�
 有限全列挙で尽くせる追加条件は列挙する。整数不等式など、上表で定めない無限域の条件は、
 アフィン等式の torsor に置換しない。
 
-有理数の `solve` / `repair` で、線形系の抽出時に真偽が確定しない量化式に対して
-展開の算法を備えない場合、`rational_change_quantification` を返す。
+有理数の `solve` / `repair` で Law 本体または change の guard からアフィン等式を抽出するとき、
+抽出処理が真偽未確定の量化式に直接達すると `rational_change_quantification` を返す。
 理由の `location` は該当する量化式を指し、`operand_types` に `Q` を保持する。
 
 宣言の解釈、equation realization、局所状態、作用、写像とその正確性は核の責務である。
