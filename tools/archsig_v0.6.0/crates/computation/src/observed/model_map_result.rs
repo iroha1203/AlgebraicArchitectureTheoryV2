@@ -347,7 +347,7 @@ fn compute(
         }
     }
     let head = r.declaration().ok_or(internal!("対応Viewがない"))?;
-    let read = assembly_plan::read(e, head, &values)?;
+    let read = assembly_plan::read_with_domains(e, head, &values, fixed_design)?;
     let mut b = Builder {
         g,
         base,
@@ -398,6 +398,8 @@ fn compute(
     else {
         return Err(internal!("対応集合の元がViewでない").into());
     };
+    let source_inputs = bindings.iter().map(|v| v.value).collect::<Vec<_>>();
+    let scope = super::assembly_output::materialized_scope(&mut b, e, &read, &source_inputs)?;
     let expression = b.push(
         NodeType::Expression(returns.erase()),
         "expression",
@@ -422,7 +424,7 @@ fn compute(
                 ),
             ),
         ]),
-        bindings.iter().map(|v| v.value).collect(),
+        source_inputs,
         None,
     )?;
     let part = &mut b.parts[expression.0 - base];
@@ -433,7 +435,7 @@ fn compute(
         part.support.make_owned().sort();
         part.support.make_owned().dedup();
     }
-    part.scope.merge(&read.metadata.scope);
+    part.scope.merge(&scope);
     let value = if let Some(value) = read.value {
         let mut existing = None;
         for &reference in binding_refs.values() {

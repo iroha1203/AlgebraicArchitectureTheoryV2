@@ -458,6 +458,12 @@ struct DomainEnumeration<'a> {
     enumeration: &'a super::finite::Enumeration,
 }
 
+#[derive(Default)]
+struct AssemblyTrace {
+    occurrences: BTreeMap<(Option<usize>, usize, Option<usize>), usize>,
+    domains: Vec<(Option<usize>, Quantifier, Vec<Scalar>)>,
+}
+
 pub(crate) struct Environment<'a> {
     pub(super) indexes: InputIndexes<'a>,
     pub(super) results: ResultStore,
@@ -559,11 +565,48 @@ impl<'a> Environment<'a> {
         enabled: bool,
         read: impl FnOnce() -> Result<T, ValidationFailure>,
     ) -> Result<(T, Vec<(Quantifier, Vec<Scalar>)>), ValidationFailure> {
-        let capture = self.state.assembly_domains.scoped(enabled.then(Vec::new));
+        if !enabled {
+            return Ok((read()?, vec![]));
+        }
+        let capture = self
+            .state
+            .assembly_domains
+            .scoped(Some(AssemblyTrace::default()));
         let value = read();
-        let domains = capture.restore().unwrap_or_default();
-        Ok((value?, domains))
+        let trace = capture
+            .restore()
+            .ok_or(internal!("組立てViewの実量化収集がない"))?;
+        Ok((
+            value?,
+            trace
+                .domains
+                .into_iter()
+                .map(|(_, q, members)| (q, members))
+                .collect(),
+        ))
     }
+
+    fn in_assembly_occurrence<T>(
+        &self,
+        expression: usize,
+        member: Option<usize>,
+        read: impl FnOnce() -> Result<T, ValidationFailure>,
+    ) -> Result<T, ValidationFailure> {
+        let context = {
+            let mut capture = self.state.assembly_domains.borrow_mut();
+            capture.as_mut().map(|trace| {
+                let next = trace.occurrences.len();
+                *trace
+                    .occurrences
+                    .entry((self.state.assembly_occurrence.get(), expression, member))
+                    .or_insert(next)
+            })
+        };
+        let _occurrence =
+            context.map(|context| self.state.assembly_occurrence.scoped(Some(context)));
+        read()
+    }
+
     pub(in crate::observed) fn fixed_values(&self) -> Vec<(Fact, Scalar)> {
         let mut values = self
             .state
@@ -8465,8 +8508,9 @@ impl<'a> Environment<'a> {
                             return Err(internal!("内包binderが重複する").into());
                         }
                         let condition = if let Some(filter) = filter {
-                            let value =
-                                self.scoped_ast_at(*filter, &local, &input.scope, reading, None)?;
+                            let value = self.in_assembly_occurrence(id, Some(position), || {
+                                self.scoped_ast_at(*filter, &local, &input.scope, reading, None)
+                            })?;
                             condition_failed |= value.condition_failed;
                             condition_pending |= value.condition_pending;
                             scope.merge(&value.scope);
@@ -8482,7 +8526,15 @@ impl<'a> Environment<'a> {
                         match condition {
                             Some(true) => {
                                 let value =
-                                    self.scoped_ast_at(*elem, &local, &input.scope, reading, None)?;
+                                    self.in_assembly_occurrence(id, Some(position), || {
+                                        self.scoped_ast_at(
+                                            *elem,
+                                            &local,
+                                            &input.scope,
+                                            reading,
+                                            None,
+                                        )
+                                    })?;
                                 condition_failed |= value.condition_failed;
                                 condition_pending |= value.condition_pending;
                                 scope.merge(&value.scope);
@@ -8586,6 +8638,27 @@ impl<'a> Environment<'a> {
                     else_branch,
                 } => {
                     let condition = self.scoped_ast(*cond, variables, base, reading)?;
+                    // A selected assembly reads the actual branch at the fixed point.
+                    if self.state.assembly_domains.borrow().is_some()
+                        && let Some(Scalar::Bool(take)) = condition.known_value.as_ref()
+                    {
+                        let branch = if *take { *then_branch } else { *else_branch };
+                        let mut value = self.scoped_ast(branch, variables, base, reading)?;
+                        value.condition_failed |= condition.condition_failed;
+                        value.condition_pending |= condition.condition_pending;
+                        let mut scope = condition.scope;
+                        scope.merge(&value.scope);
+                        value.scope = scope;
+                        value.scalar_scope =
+                            value.known_value.as_ref().map(|_| value.scope.clone());
+                        value
+                            .support
+                            .make_owned()
+                            .extend(condition.support.into_vec());
+                        value.support.make_owned().sort();
+                        value.support.make_owned().dedup();
+                        return Ok(value);
+                    }
                     // localの必要欠測だけを選択枝へ制限する。両枝の評価・出現記録は保つ。
                     let (left, right) = if self.state.value_read.get()
                         && let Some(Scalar::Bool(take)) = condition.known_value.as_ref()
@@ -8747,13 +8820,15 @@ impl<'a> Environment<'a> {
                     for value in local.values_mut() {
                         value.scope.merge(&call_base);
                     }
-                    let body = self.scoped_ast_at(
-                        *body,
-                        &local,
-                        &call_base,
-                        &declaration.reading,
-                        self.universal_call_context(id),
-                    )?;
+                    let body = self.in_assembly_occurrence(id, None, || {
+                        self.scoped_ast_at(
+                            *body,
+                            &local,
+                            &call_base,
+                            &declaration.reading,
+                            self.universal_call_context(id),
+                        )
+                    })?;
                     call_base.merge(&body.scope);
                     support.extend(body.support.into_vec());
                     let returned = Self::owned_source_argument(
@@ -9314,12 +9389,13 @@ impl<'a> Environment<'a> {
                     scalar_scope: None,
                 });
             };
-            if let Some(domains) = self.state.assembly_domains.borrow_mut().as_mut()
-                && !domains
-                    .iter()
-                    .any(|(q, values)| q == &descriptor && values == &items)
-            {
-                domains.push((descriptor, items.clone()));
+            if let Some(trace) = self.state.assembly_domains.borrow_mut().as_mut() {
+                let context = self.state.assembly_occurrence.get();
+                if !trace.domains.iter().any(|(at, quantifier, members)| {
+                    *at == context && quantifier == &descriptor && members == &items
+                }) {
+                    trace.domains.push((context, descriptor, items.clone()));
+                }
             }
             if let Some(frame) = self
                 .state
@@ -9334,7 +9410,7 @@ impl<'a> Environment<'a> {
             let mut condition_pending = input.condition_pending;
             let mut support = input.support.clone().into_vec();
             let mut values = Vec::new();
-            for item in items {
+            for (index, item) in items.into_iter().enumerate() {
                 self.tick()?;
                 let mut local = self.copy_variables(variables)?;
                 for value in local.values_mut() {
@@ -9359,7 +9435,9 @@ impl<'a> Environment<'a> {
                 {
                     return Err(internal!("量化binderが重複する").into());
                 }
-                let body = self.scoped_ast_at(spec.body, &local, &scope, reading, None)?;
+                let body = self.in_assembly_occurrence(id, Some(index), || {
+                    self.scoped_ast_at(spec.body, &local, &scope, reading, None)
+                })?;
                 condition_failed |= body.condition_failed;
                 condition_pending |= body.condition_pending;
                 scope.merge(&body.scope);

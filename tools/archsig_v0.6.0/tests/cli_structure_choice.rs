@@ -1,5 +1,8 @@
 use crate::common::cli::*;
-use archsig_common::json::{JNode, JValue};
+use archsig_common::{
+    canonical::Json,
+    json::{JNode, JValue},
+};
 use std::collections::BTreeMap;
 
 #[test]
@@ -236,8 +239,21 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
     let map = include_str!("fixtures/r2-structure-choice/archmap.json");
     std::fs::write(dir.join("archmap.json"), map).unwrap();
     let law = include_str!("fixtures/r2-structure-choice/laws.law")
+        .replace("  view selected", concat!(
+            "  view external(p:Design):Design=let k=forall z:Z . z=z in if k then p else p;
+",
+            "  view holds(s:State):Bool=forall v in list<Option<Path<State,State>>>[some(identity(s))] . v=v;
+",
+            "  view selected",
+        ))
         .replace("selected(p:Design)", "selected(p:Design,x:State,y:State)")
-        .replace("if p.split then p.new", "if (forall b in list<Bool>[true] . p.split=b) then p.new")
+        .replace(
+            "if p.split then p.new",
+            concat!(
+                "if holds(x) and holds(x) and (forall b in list<Bool>[true] . p.split=b) then ",
+                "(if (forall absent in list<Bool>[true] . y.quantity=0) then p.new else p.new)",
+            ),
+        )
         .replace("interfaces(p:Design):Unit = unit", "interfaces(p:Design,x:State,y:State):List<(State,State)> = if p.split then list<(State,State)>[(x,y)] else list<(State,State)>[]");
     std::fs::write(dir.join("laws.law"), law).unwrap();
     let original = include_str!("fixtures/r2-structure-choice/queries.txt")
@@ -247,12 +263,13 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
         .iter()
         .map(|ask| (*ask).to_owned())
         .collect::<Vec<_>>();
+    asks.push("bindDesign=evaluate(E12Compare.external,p=@comparison/plan)".into());
     let endpoints = ",x=@comparison/native-T3-before,y=@comparison/rust-T3-before";
     for (id, selected) in [
         ("fixed0", ",design.p=$planApply0.object"),
         ("fixed1", ",design.p=$planApply1.object"),
     ] {
-        asks.push(format!("{id}=assemble(E12Compare.selected,on=@comparison/rust-output1,along=E12Compare.interfaces,p=@comparison/plan{endpoints}{selected})"));
+        asks.push(format!("{id}=assemble(E12Compare.selected,on=@comparison/rust-output1,along=E12Compare.interfaces,p=$bindDesign.value{endpoints}{selected})"));
     }
     let mut args = vec![
         "run",
@@ -293,6 +310,22 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
     };
     for answer in [fixed0, fixed1] {
         let quantifiers = arr(get(get(answer, "scope"), "quantifiers"));
+        assert!(quantifiers.iter().any(|q| s(get(q, "name")) == "z"));
+        let paths = quantifiers
+            .iter()
+            .filter(|q| s(get(q, "name")) == "v")
+            .collect::<Vec<_>>();
+        assert_eq!(paths.len(), 2);
+        for path in paths {
+            let domain = get(node(get(path, "domain")), "value");
+            let [option] = arr(get(domain, "elements")) else {
+                panic!("singleton optional Path")
+            };
+            let value = get(node(get(get(node(option), "value"), "some")), "value");
+            assert!(arr(get(value, "generators")).is_empty());
+            let source = get(node(get(value, "source")), "value");
+            assert_eq!(s(&arr(source)[1]), "native-T3-before");
+        }
         let binder = quantifiers
             .iter()
             .find(|q| s(get(q, "name")) == "b")
@@ -304,4 +337,34 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
         };
         assert_eq!(get(node(element), "value").value, JValue::Bool(true));
     }
+    let map = archsig_common::json::parse(map.as_bytes()).unwrap();
+    let mut map = crate::common::architecture_environment::owned(&map);
+    let Json::Obj(document) = &mut map else {
+        panic!("map")
+    };
+    let Json::Arr(snapshots) = document.get_mut("snapshots").unwrap() else {
+        panic!("snapshots")
+    };
+    let Json::Obj(snapshot) = &mut snapshots[0] else {
+        panic!("snapshot")
+    };
+    let Json::Arr(atoms) = snapshot.get_mut("atoms").unwrap() else {
+        panic!("atoms")
+    };
+    let original = atoms.len();
+    atoms.retain(|atom| !matches!(atom, Json::Obj(fields)
+        if fields["subject"] == Json::str("rust-T3-before") && fields["field"] == Json::str("E12.State.quantity")));
+    assert_eq!(atoms.len() + 1, original);
+    std::fs::write(dir.join("archmap.json"), map.canonical()).unwrap();
+    args[8] = "inactive";
+    args.truncate(args.len() - 2);
+    let run = run_binary(&dir, &args);
+    assert_eq!(run.code, 0, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let fixed0 = arr(get(&result, "answers"))
+        .iter()
+        .find(|a| s(get(a, "id")) == "fixed0")
+        .unwrap();
+    let quantifiers = arr(get(get(fixed0, "scope"), "quantifiers"));
+    assert!(quantifiers.iter().all(|q| s(get(q, "name")) != "absent"));
 }

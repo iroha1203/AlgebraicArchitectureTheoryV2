@@ -26,7 +26,7 @@ pub(super) fn read(
     read_with_domains(env, name, bindings, false)
 }
 
-fn read_with_domains(
+pub(super) fn read_with_domains(
     env: &Environment<'_>,
     name: &str,
     bindings: &[(String, Scalar)],

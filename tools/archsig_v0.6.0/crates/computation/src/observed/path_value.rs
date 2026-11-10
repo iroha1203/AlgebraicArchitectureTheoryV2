@@ -365,6 +365,49 @@ pub(super) fn wire(
     Ok(json)
 }
 
+/// Display a captured value using checked, earlier nodes for its constituents.
+pub(super) fn captured_wire(
+    value: &Scalar,
+    c: &Control,
+    mut child: impl FnMut(&Scalar) -> Result<NodeRef, ValidationFailure>,
+) -> Result<Json, ValidationFailure> {
+    tick(c)?;
+    Ok(match value {
+        Scalar::Path(path) => {
+            path.check(c)?;
+            let source = child(&path.object())?;
+            let target = child(&path.target())?;
+            let mut generators = Vec::new();
+            if let Some(step) = &path.step {
+                for generator in std::iter::once(&step.generator).chain(&step.word_tail) {
+                    tick(c)?;
+                    generators.push(child(generator)?.wire());
+                }
+            }
+            Json::obj([
+                ("reading", Json::str(&path.reading)),
+                ("source", source.wire()),
+                ("target", target.wire()),
+                ("generators", Json::Arr(generators)),
+            ])
+        }
+        Scalar::Tuple(items) | Scalar::List { items, .. } | Scalar::Set { items, .. } => {
+            let mut references = Vec::new();
+            for item in items {
+                tick(c)?;
+                references.push(child(item)?.wire());
+            }
+            Json::Arr(references)
+        }
+        Scalar::Option { value: None, .. } => Json::obj([("none", Json::Bool(true))]),
+        Scalar::Option {
+            value: Some(value), ..
+        } => Json::obj([("some", child(value)?.wire())]),
+        Scalar::Term(term) => term.wire(),
+        _ => return Err(internal!("実量化値のPathを含む結果型が違う").into()),
+    })
+}
+
 pub(super) fn construct(
     name: &str,
     reading: &str,

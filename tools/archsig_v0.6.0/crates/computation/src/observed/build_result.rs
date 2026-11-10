@@ -182,7 +182,7 @@ impl Part {
     pub(super) fn wire(&self) -> Json {
         match (&self.scalar, &self.wire) {
             (Some(scalar), None) => scalar.wire(),
-            (None, Some(wire)) | (Some(Scalar::Path(_)), Some(wire)) => wire.clone(),
+            (_, Some(wire)) => wire.clone(),
             _ => unreachable!(
                 "Builder が作る Part は canonical Scalar / JSON / typed Path 表示のいずれかを保持する"
             ),
@@ -400,6 +400,38 @@ impl Builder<'_> {
         arguments: Vec<NodeRef>,
     ) -> Result<NodeRef, ValidationFailure> {
         self.push_part(ty, construction, None, arguments, Some(scalar), None)
+    }
+    pub(super) fn captured_scalar(
+        &mut self,
+        scalar: &Scalar,
+        inputs: &[NodeRef],
+        control: &Control,
+    ) -> Result<NodeRef, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            let ty = scalar.ty();
+            if !super::path_value::contains_path(&ty, control)? {
+                return self.scalar(
+                    NodeType::Value(ty),
+                    "binding",
+                    scalar.clone(),
+                    inputs.to_vec(),
+                );
+            }
+            let mut dependencies = inputs.to_vec();
+            let wire = super::path_value::captured_wire(scalar, control, |item| {
+                let node = self.captured_scalar(item, inputs, control)?;
+                dependencies.push(node);
+                Ok(node)
+            })?;
+            self.push_part(
+                NodeType::Value(ty),
+                "binding",
+                Some(wire),
+                dependencies,
+                Some(scalar.clone()),
+                None,
+            )
+        })
     }
     // Path rendering uses typed existing references, not Scalar::wire().
     pub(super) fn path(

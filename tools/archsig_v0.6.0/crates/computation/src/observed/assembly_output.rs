@@ -34,18 +34,12 @@ fn field<'a>(e: &'a Environment<'_>, r: &Request, key: &str) -> Result<&'a str, 
         .map(|(n, _)| n.as_str())
         .ok_or_else(|| internal!("組立てViewの定義がない").into())
 }
-fn input(
+pub(super) fn materialized_scope(
     b: &mut Builder<'_>,
     e: &Environment<'_>,
-    name: &str,
-    a: &Assembly,
     read: &super::assembly_plan::Read,
-) -> Result<(NodeRef, Option<NodeRef>), ValidationFailure> {
-    let d = &e.indexes.inputs.law().declarations()[name];
-    let archsig_input::law::model::Signature::View { returns, body, .. } = &d.signature else {
-        return Err(internal!("組立て入力がViewでない").into());
-    };
-    let inputs: Vec<_> = a.bindings.iter().map(|v| v.value).chain(a.design).collect();
+    inputs: &[NodeRef],
+) -> Result<Scope, ValidationFailure> {
     let mut scope = read.metadata.scope.clone();
     for (quantifier, members) in &read.domains {
         if !read.metadata.scope.quantifiers.contains(quantifier) {
@@ -54,12 +48,7 @@ fn input(
         let mut elements = Vec::new();
         for member in members {
             e.control.checkpoint(Checkpoint::ConfigurationMap)?;
-            elements.push(b.scalar(
-                NodeType::Value(member.ty()),
-                "binding",
-                member.clone(),
-                inputs.clone(),
-            )?);
+            elements.push(b.captured_scalar(member, inputs, &e.control)?);
         }
         let domain = b.push(
             NodeType::Domain,
@@ -80,6 +69,21 @@ fn input(
             ..quantifier.clone()
         });
     }
+    Ok(scope)
+}
+fn input(
+    b: &mut Builder<'_>,
+    e: &Environment<'_>,
+    name: &str,
+    a: &Assembly,
+    read: &super::assembly_plan::Read,
+) -> Result<(NodeRef, Option<NodeRef>), ValidationFailure> {
+    let d = &e.indexes.inputs.law().declarations()[name];
+    let archsig_input::law::model::Signature::View { returns, body, .. } = &d.signature else {
+        return Err(internal!("組立て入力がViewでない").into());
+    };
+    let inputs: Vec<_> = a.bindings.iter().map(|v| v.value).chain(a.design).collect();
+    let scope = materialized_scope(b, e, read, &inputs)?;
     let source = b.push(
         NodeType::Expression(returns.erase()),
         "expression",
@@ -387,6 +391,21 @@ pub(super) fn append(
         vec![proof],
         Decision::Established,
     )?;
+    if a.design.is_some() {
+        let mut selected = b.parts[fragments.0 - b.base].scope.clone();
+        selected.merge_quantifiers(&b.parts[interfaces.0 - b.base].scope);
+        // Algebra proof nodes keep their own reading and scope. The assembly
+        // result describes the fragment and interface views at the fixed point.
+        b.parts[result.0 - b.base].scope.quantifiers = selected.quantifiers.clone();
+        let part = &mut b.parts[claim.0 - b.base];
+        if let Some(Json::Obj(fields)) = part.wire_mut() {
+            fields.insert(
+                "quantifiers".into(),
+                Json::Arr(selected.quantifiers.iter().map(Quantifier::wire).collect()),
+            );
+        }
+        part.scope.quantifiers = selected.quantifiers;
+    }
     Ok((result, claim, deferred))
 }
 pub(super) fn failed(
@@ -628,7 +647,10 @@ pub(super) fn failed(
     let judgment = part.judgment.as_mut().unwrap();
     judgment.evidence = evidence.clone();
     judgment.reasons = reasons.clone();
-    let scope = part.scope.clone();
+    let mut scope = part.scope.clone();
+    if a.design.is_some() {
+        scope.restrict_to_design_point();
+    }
     Ok((
         b.parts.into(),
         Answer {
