@@ -483,3 +483,64 @@ fn plan_checkpoint_stops_retain_values_and_publish_only_completed_plans() {
         }));
     }
 }
+
+#[test]
+fn saved_needed_shares_identical_expression_occurrences_and_preserves_scope() {
+    let dir = setup("needed-shared-expressions", true);
+    let law = std::fs::read_to_string(dir.join("l.law")).unwrap().replace(
+        "law required nonnegative",
+        "law required repeated(s:State): forall p:Bool . forall q:Bool . s.count>=0;\n\
+         law required other(s:State): forall p:Bool . forall q:Bool . s.count<=0;\n\
+         law required nonnegative",
+    );
+    std::fs::write(dir.join("l.law"), &law).unwrap();
+    let asks = [
+        "p=check(CountCheck.repeated,s=@v/s)",
+        "n=needed($p)",
+        "q=check(CountCheck.other,s=@v/s)",
+        "m=needed($q)",
+    ];
+    let run = execute(&dir, "out", None, &asks);
+    assert_eq!(run.code, 2, "{}", run.stdout);
+    let result = result_json(&dir, &run);
+    let mut spans = Vec::new();
+    for (question, needed) in [("p", "n"), ("q", "m")] {
+        let answer = answer(&result, question);
+        assert_eq!(s(get(answer, "status")), "undetermined");
+        let scope = get(answer, "scope");
+        let quantifiers = arr(get(scope, "quantifiers"));
+        assert_eq!(
+            quantifiers
+                .iter()
+                .map(|q| s(get(q, "name")))
+                .collect::<Vec<_>>(),
+            ["p", "q", "q"]
+        );
+        let plan = plan(&result, needed);
+        let [requirement] = arr(get(plan, "requirements")) else {
+            panic!("count が必要")
+        };
+        let field = get(requirement, "field");
+        assert_eq!(s(get(field, "snapshot")), "v");
+        assert_eq!(s(get(field, "subject")), "s");
+        assert_eq!(s(get(field, "field")), "Counter.State.count");
+        let [reference] = arr(get(requirement, "dependents")) else {
+            panic!("同じ元式への参照を一つ保持")
+        };
+        let expression = node(&result, reference);
+        assert_eq!(s(get(expression, "type")), "Expression");
+        let location = get(get(expression, "value"), "location");
+        let span = arr(get(location, "span"));
+        let (start, end) = (num(&span[0]) as usize, num(&span[1]) as usize);
+        assert_eq!(&law[start..end], "s.count");
+        spans.push(start);
+    }
+    assert_ne!(spans[0], spans[1]);
+    let rechecked = execute(&dir, "rechecked", Some("out"), &asks);
+    assert_eq!(rechecked.code, 2, "{}", rechecked.stdout);
+    let rechecked = result_json(&dir, &rechecked);
+    assert!(warnings(&rechecked).is_empty());
+    for key in ["nodes", "answers", "issues"] {
+        assert_eq!(get(&result, key), get(&rechecked, key));
+    }
+}

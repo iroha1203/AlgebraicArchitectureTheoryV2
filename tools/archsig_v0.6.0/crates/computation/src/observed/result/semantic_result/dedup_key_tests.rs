@@ -137,18 +137,26 @@ fn forced_collisions_require_full_records_and_ignore_only_root_id() {
     let bucket = vec![0, 1, 2, 3, 4];
     assert_eq!(
         shared_position(
-            &bucket,
+            bucket.iter().copied(),
             &nodes,
             &without_id(record(100, Json::obj([("id", Json::str("nested-B"))])))
         ),
         Some(1)
     );
     assert_eq!(
-        shared_position(&bucket, &nodes, &without_id(record(100, plain(&[4, 2, 4])))),
+        shared_position(
+            bucket.iter().copied(),
+            &nodes,
+            &without_id(record(100, plain(&[4, 2, 4])))
+        ),
         Some(2)
     );
     assert_eq!(
-        shared_position(&bucket, &nodes, &without_id(record(100, plain(&[2, 4, 4])))),
+        shared_position(
+            bucket.iter().copied(),
+            &nodes,
+            &without_id(record(100, plain(&[2, 4, 4])))
+        ),
         None
     );
     for (key, value) in [
@@ -163,7 +171,7 @@ fn forced_collisions_require_full_records_and_ignore_only_root_id() {
         };
         fields.insert(key.into(), value);
         assert_eq!(
-            shared_position(&bucket, &nodes, &without_id(different)),
+            shared_position(bucket.iter().copied(), &nodes, &without_id(different)),
             None
         );
     }
@@ -173,7 +181,7 @@ fn forced_collisions_require_full_records_and_ignore_only_root_id() {
     ] {
         assert_eq!(
             shared_position(
-                &bucket,
+                bucket.iter().copied(),
                 &nodes,
                 &without_id(record(100, Json::Arr(vec![malformed])))
             ),
@@ -183,7 +191,7 @@ fn forced_collisions_require_full_records_and_ignore_only_root_id() {
     let repeated = vec![record(8, Json::Bool(true)), record(9, Json::Bool(true))];
     assert_eq!(
         shared_position(
-            &[0, 1],
+            [0, 1].into_iter(),
             &repeated,
             &without_id(record(12, Json::Bool(true)))
         ),
@@ -255,7 +263,7 @@ fn sharing_matches_legacy_first_seen_and_prior_reference_renaming() {
 }
 
 #[test]
-fn only_the_existing_shared_type_boundary_is_used() {
+fn expression_is_the_only_change_to_the_shared_type_boundary() {
     for (ty, shared) in [
         (NodeType::Value(Type::Bool), true),
         (NodeType::Vector(NodeRef(0)), true),
@@ -265,13 +273,14 @@ fn only_the_existing_shared_type_boundary_is_used() {
         (NodeType::Construction(T::Ring), true),
         (NodeType::Construction(T::Module), true),
         (NodeType::Construction(T::FiniteFunction), false),
-        (NodeType::Expression(Type::Bool), false),
+        (NodeType::Expression(Type::Bool), true),
         (NodeType::Evaluation(Type::Bool), false),
         (NodeType::Proposition, false),
         (NodeType::LawInstance, false),
         (NodeType::Evidence, false),
         (NodeType::ObservationPlan, false),
     ] {
+        let is_expression = matches!(ty, NodeType::Expression(_));
         let native = vec![fixture_node(ty.clone()), fixture_node(ty)];
         let projected = BTreeMap::from([
             (0, record(0, Json::Bool(true))),
@@ -296,8 +305,13 @@ fn only_the_existing_shared_type_boundary_is_used() {
         )
         .unwrap();
         assert_eq!(new.len(), if shared { 1 } else { 2 });
-        assert_eq!(Json::Arr(new), Json::Arr(old));
-        assert_eq!(new_ids, old_ids);
+        if is_expression {
+            assert_eq!(old.len(), 2);
+            assert_eq!(new_ids["n1"], new_ids["n0"]);
+        } else {
+            assert_eq!(Json::Arr(new), Json::Arr(old));
+            assert_eq!(new_ids, old_ids);
+        }
     }
 }
 

@@ -548,11 +548,46 @@ fn same_public_record(a: &Json, b: &Json) -> bool {
         .filter(|(key, _)| key.as_str() != "id")
         .eq(b.iter().filter(|(key, _)| key.as_str() != "id"))
 }
-fn shared_position(positions: &[usize], nodes: &[Json], candidate: &Json) -> Option<usize> {
-    positions
-        .iter()
-        .copied()
-        .find(|position| same_public_record(candidate, &nodes[*position]))
+fn shared_position(
+    mut positions: impl Iterator<Item = usize>,
+    nodes: &[Json],
+    candidate: &Json,
+) -> Option<usize> {
+    positions.find(|position| same_public_record(candidate, &nodes[*position]))
+}
+
+fn dedup_plan_dependents(
+    node: &mut Json,
+    control: &Control,
+    point: Checkpoint,
+) -> Result<(), Signal> {
+    let Json::Obj(fields) = node else {
+        return Ok(());
+    };
+    let Some(Json::Obj(value)) = fields.get_mut("value") else {
+        return Ok(());
+    };
+    let Some(Json::Arr(requirements)) = value.get_mut("requirements") else {
+        return Ok(());
+    };
+    for requirement in requirements {
+        control.checkpoint(point)?;
+        let Json::Obj(requirement) = requirement else {
+            continue;
+        };
+        if let Some(Json::NodeReferences(dependents)) = requirement.get_mut("dependents") {
+            let mut seen = BTreeSet::new();
+            let mut unique = Vec::new();
+            for &reference in dependents.iter() {
+                control.checkpoint(point)?;
+                if seen.insert(reference) {
+                    unique.push(reference);
+                }
+            }
+            *dependents = unique;
+        }
+    }
+    Ok(())
 }
 fn share_projected(
     projected: BTreeMap<usize, Json>,
@@ -561,17 +596,22 @@ fn share_projected(
     control: &Control,
     point: Checkpoint,
 ) -> Result<Vec<Json>, Signal> {
-    let mut values = BTreeMap::<u64, Vec<usize>>::new();
+    let mut values = BTreeMap::<u64, Vec<(usize, usize)>>::new();
     let mut nodes = Vec::new();
     // 到達順でなく元の数値 index 順が canonical 共有の代表と番号を決める。
     for (index, mut node) in projected {
         control.checkpoint(point)?;
         let old_id = format!("n{index}");
         rename(&mut node, ids, control, point)?;
+        if native[index].ty == NodeType::ObservationPlan {
+            // 共有で同じ参照になったときだけ、同じ必要slotの参照をまとめる。
+            dedup_plan_dependents(&mut node, control, point)?;
+        }
         // 環・基底・関係を含む表示全体の一致だけを共有する。同型は推測しない。
         let shared = matches!(
             native[index].ty,
             NodeType::Value(_)
+                | NodeType::Expression(_)
                 | NodeType::Vector(_)
                 | NodeType::ModuleMap(_, _)
                 | NodeType::Domain
@@ -586,10 +626,15 @@ fn share_projected(
         };
         fields.remove("id");
         let key = shared.then(|| canonical_fingerprint(&node));
-        if let Some(position) = key
-            .and_then(|key| values.get(&key))
-            .and_then(|positions| shared_position(positions, &nodes, &node))
-        {
+        if let Some(position) = key.and_then(|key| values.get(&key)).and_then(|positions| {
+            let same_types = positions.iter().filter_map(|&(position, original)| {
+                // 保存表で Expression の結果型は省略されるため、核の型も照合する。
+                let same_type = !matches!(native[index].ty, NodeType::Expression(_))
+                    || native[original].ty == native[index].ty;
+                same_type.then_some(position)
+            });
+            shared_position(same_types, &nodes, &node)
+        }) {
             let Json::Obj(existing) = &nodes[position] else {
                 unreachable!()
             };
@@ -604,7 +649,7 @@ fn share_projected(
         };
         fields.insert("id".into(), Json::str(&old_id));
         if let Some(key) = key {
-            values.entry(key).or_default().push(nodes.len());
+            values.entry(key).or_default().push((nodes.len(), index));
         }
         nodes.push(node);
     }
@@ -993,3 +1038,113 @@ mod projection_tests;
 
 #[cfg(test)]
 mod dedup_key_tests;
+
+#[cfg(test)]
+mod expression_sharing_tests {
+    use super::*;
+    use archsig_common::types::Type;
+
+    #[test]
+    fn expression_sharing_checks_saved_record_and_native_result_type() {
+        let original = |ty| Node {
+            ty,
+            payload: None,
+            rule: super::super::Rule::Construction("expression"),
+            arguments: vec![],
+            support: Default::default(),
+            scope: Default::default(),
+            evidence: vec![],
+            judgment: None,
+            reasons: vec![],
+        };
+        let mut native = vec![original(NodeType::Value(Type::Z))];
+        let mut projected = BTreeMap::from([(
+            0,
+            Json::obj([
+                ("id", NodeRef(0).wire()),
+                ("type", Json::str("Z")),
+                ("value", Json::str("0")),
+            ]),
+        )]);
+        for index in 1..=8 {
+            let ty = if index == 8 { Type::Q } else { Type::Z };
+            native.push(original(NodeType::Expression(ty)));
+            let value = Json::obj([
+                ("kind", Json::str("source")),
+                (
+                    "location",
+                    Json::obj([(
+                        "span",
+                        Json::Arr(vec![
+                            Json::Nat(if index == 3 { 2 } else { 1 }),
+                            Json::Nat(3),
+                        ]),
+                    )]),
+                ),
+                (
+                    "bindings",
+                    if index == 4 {
+                        Json::Arr(vec![Json::obj([
+                            ("name", Json::str("x")),
+                            ("value", NodeRef(0).wire()),
+                        ])])
+                    } else {
+                        Json::Arr(vec![])
+                    },
+                ),
+                (
+                    "parameters",
+                    if index == 5 {
+                        Json::Arr(vec![Json::obj([
+                            ("name", Json::str("x")),
+                            ("type", Type::Z.wire()),
+                        ])])
+                    } else {
+                        Json::Arr(vec![])
+                    },
+                ),
+            ]);
+            projected.insert(
+                index,
+                Json::obj([
+                    ("id", NodeRef(index).wire()),
+                    ("type", Json::str("Expression")),
+                    ("value", value),
+                    (
+                        "conditions",
+                        Json::Arr(if index == 6 {
+                            vec![NodeRef(0).wire()]
+                        } else {
+                            vec![]
+                        }),
+                    ),
+                    (
+                        "reasons",
+                        Json::Arr(if index == 7 {
+                            vec![Json::obj([("code", Json::str("missing_observation"))])]
+                        } else {
+                            vec![]
+                        }),
+                    ),
+                ]),
+            );
+        }
+        let mut ids = (0..=8)
+            .map(|i| (format!("n{i}"), format!("n{i}")))
+            .collect();
+        let shared = share_projected(
+            projected,
+            &native,
+            &mut ids,
+            &Control::unlimited(),
+            Checkpoint::Expression,
+        )
+        .unwrap();
+        assert_eq!(shared.len(), 8);
+        assert_eq!(ids["n2"], "n1");
+        for index in 3..=8 {
+            let id = format!("n{index}");
+            assert_eq!(ids[&id], id);
+        }
+    }
+}
