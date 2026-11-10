@@ -1,0 +1,20 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Backing {
+ use vocabulary Pool version "0.3" digest "sha256:9281905621ac822ac2473c6b373e082702d7864aefa42bbd73d4c3164a4cdc35";
+ view claimLoad(c:Pool.Claim):Q=c.cell0.quantity+c.cell1.quantity+c.cell2.quantity;
+ view stockLoad(s:Pool.Stock):Q=s.cell0.quantity+s.cell1.quantity;
+ law required legal(w:Pool.World):
+   (forall b in Pool.Cell[w] . b.quantity>=rat(0,1) and
+    (not(b.stock in b.claim.eligible) implies b.quantity=rat(0,1)) and b.stock.quantityUnit=b.claim.quantityUnit) and
+   (forall c in Pool.Claim[w] . claimLoad(c)=c.quantity) and
+   (forall s in Pool.Stock[w] . stockLoad(s)<=s.available);
+ law required pinned(b:Pool.Cell): b.quantity=rat(1,2);
+ law required nonnegative(b:Pool.Cell): b.quantity>=rat(0,1);
+ change assign(b:Pool.Cell,q:Q)=b with {quantity=q};
+}
+reading Operations {
+ use vocabulary Ops version "0.3" digest "sha256:70a5efce496d4446c54e561c2956b70009481b5569b3ca56e6081602b9aef5f5";
+ law required accounting(s:Ops.State): s.approved=s.u+s.a+s.c+s.x and s.u>=rat(0,1) and s.a>=rat(0,1) and s.c>=rat(0,1) and s.x>=rat(0,1) and s.available>=rat(0,1) and s.used>=rat(0,1) and s.wip>=rat(0,1) and s.good>=rat(0,1) and s.rejected>=rat(0,1) and s.published>=rat(0,1) and s.published<=s.good;
+ view totalUsed(s:Ops.State):Q=s.c;
+ view edgeFamily(e:Ops.Edge):(Ops.EdgeKind,Text,Text,Option<Q>)=(e.kind,e.src.key,e.dst.key,e.quantity);
+}

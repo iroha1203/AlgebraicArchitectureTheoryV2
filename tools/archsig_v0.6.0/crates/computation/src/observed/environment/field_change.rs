@@ -127,6 +127,14 @@ fn equations(
                 equations(env, *lhs, vars, reading, axes, matrix, rhs, missing)?;
                 equations(env, *right, vars, reading, axes, matrix, rhs, missing)
             }
+            ExprKind::Quant { .. } => {
+                missing.unsupported = Some("rational_change_quantification");
+                Err(unsupported(
+                    env,
+                    id,
+                    "有理changeの未確定な量化式を線形系に展開する算法は未対応",
+                ))
+            }
             _ => {
                 let Some(p) = v
                     .comparison

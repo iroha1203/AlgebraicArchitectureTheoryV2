@@ -38,6 +38,7 @@ mod cli_path_compose;
 mod cli_path_compose_delivery;
 mod cli_public_build;
 mod cli_quotient;
+mod cli_r2_backing;
 mod cli_refuted_summary;
 mod cli_rejections;
 mod cli_relation_comparison;

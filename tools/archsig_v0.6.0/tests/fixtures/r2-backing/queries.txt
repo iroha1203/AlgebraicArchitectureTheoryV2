@@ -1,0 +1,7 @@
+before=evaluate(Operations.totalUsed,bind.s=@fixture/sourceA.s5)
+backing=solve(Backing.legal,using=Backing.assign,on=@fixture/overlapFeasible,bind.w=@fixture/overlapFeasible)
+consumer=evaluate(Backing.claimLoad,on=$backing.domain.base,bind.c=@fixture/overlapFeasible.B1)
+accounting=check(Operations.accounting)
+edgeA=evaluate(Operations.edgeFamily,bind.e=@fixture/sourceA.use)
+edgeB=evaluate(Operations.edgeFamily,bind.e=@fixture/sourceB.use)
+sameEdge=compare($edgeA.value,to=$edgeB.value,kind=value)
