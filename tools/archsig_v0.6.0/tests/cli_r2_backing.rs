@@ -797,6 +797,18 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
         ("comprehension-domain", known_bound.replacen("legal(w:Pool.World):",
             "legal(w:Pool.World): forall flag in list{true | t in Pool.Cell[w] where t.quantity-t.quantity+t.stock.available>=rat(0,1)} .", 1),
             &["missing_observation"][..]),
+        ("tuple-branch-projection", known_bound.replacen(nonnegative,
+            "(((if b.stock.available>=rat(0,1) then (b.quantity,true) else (b.quantity,false)).1) implies b.quantity>=rat(0,1))", 1),
+            &["missing_observation"][..]),
+        ("type-quantified-guard", known_bound.replacen("legal(w:Pool.World):",
+            "legal(w:Pool.World) when (forall b in Pool.Cell[w] . forall f:Bool . b.quantity-b.quantity+b.stock.available>=rat(0,1)):", 1),
+            &["missing_observation"][..]),
+        ("term-projected-guard", known_bound.replacen("legal(w:Pool.World):",
+            "legal(w:Pool.World) when (forall b in Pool.Cell[w] . ((fn(t:(Q,Q))=>t.1>=rat(0,1))((b.quantity,b.stock.available)))):", 1),
+            &["missing_observation"][..]),
+        ("candidate-filter-in-unknown-domain", known_bound.replacen("legal(w:Pool.World):",
+            "legal(w:Pool.World,x:Pool.Stock): forall flag in list{true | v in list<Q>[x.available] where (forall b in Pool.Cell[w] . b.quantity>=rat(0,1))} .", 1),
+            &["missing_observation", "unsupported_algorithm"][..]),
         ("match-ignored-tuple", known_bound.replacen(nonnegative,
             "((match (b.quantity,b.stock.available) { _=>b.stock.available>=rat(0,1); }) implies b.quantity>=rat(0,1))", 1),
             &["missing_observation"][..]),
@@ -869,7 +881,7 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
     ] {
         std::fs::write(dir.join("laws.law"), law).unwrap();
         let ask_with_stock = format!("{},bind.x=@fixture/overlapFeasible.X)", ask.strip_suffix(')').unwrap());
-        let ask = if out == "direct-equality" { ask_with_stock.as_str() } else { ask };
+        let ask = if matches!(out, "direct-equality" | "candidate-filter-in-unknown-domain") { ask_with_stock.as_str() } else { ask };
         let run = polyhedron_asks(&dir, &[ask, "plan=needed($overlapFeasible)"], out, None);
         assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
         let result = result_json(&dir, &run);

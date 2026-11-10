@@ -129,7 +129,7 @@ enum Dependence {
 struct Dependency {
     dependence: Dependence,
     facts: BTreeSet<Fact>,
-    tuple: Vec<Dependency>,
+    components: Vec<Dependency>,
 }
 
 type LexicalDependencies = BTreeMap<String, Dependency>;
@@ -138,7 +138,63 @@ impl Dependency {
     fn merge(&mut self, other: Self) {
         self.dependence = self.dependence.max(other.dependence);
         self.facts.extend(other.facts);
-        self.tuple.clear();
+        self.components.clear();
+    }
+
+    fn product(components: Vec<Self>) -> Self {
+        let mut result = Self::default();
+        for item in &components {
+            result.dependence = result.dependence.max(item.dependence);
+            result.facts.extend(item.facts.iter().cloned());
+        }
+        result.components = components;
+        result
+    }
+
+    fn alternatives(
+        test: &Self,
+        branches: &[&Self],
+        env: &Environment<'_>,
+    ) -> Result<Self, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            env.tick()?;
+            let mut result = Self {
+                dependence: test.dependence,
+                facts: test.facts.clone(),
+                components: vec![],
+            };
+            for branch in branches {
+                env.tick()?;
+                result.dependence = result.dependence.max(branch.dependence);
+            }
+            if let Some(first) = branches.first()
+                && branches
+                    .iter()
+                    .all(|branch| branch.components.len() == first.components.len())
+            {
+                for index in 0..first.components.len() {
+                    let members = branches
+                        .iter()
+                        .map(|branch| &branch.components[index])
+                        .collect::<Vec<_>>();
+                    result
+                        .components
+                        .push(Self::alternatives(test, &members, env)?);
+                }
+            }
+            Ok(result)
+        })
+    }
+
+    fn component_at(&self, path: &[usize]) -> &Self {
+        let mut selected = self;
+        for &index in path {
+            let Some(component) = selected.components.get(index) else {
+                break;
+            };
+            selected = component;
+        }
+        selected
     }
 
     fn record(self, missing: &mut Pending, maximum: Dependence) {
@@ -178,8 +234,25 @@ impl DependencyAnalysis<'_, '_> {
         Ok(Dependency {
             dependence,
             facts: form.missing_facts().into_iter().collect(),
-            tuple: vec![],
+            components: vec![],
         })
+    }
+
+    fn unknown_member(&self) -> Result<SourceValue, ValidationFailure> {
+        let mut value = value(self.env, Scalar::Unit)?;
+        value.known_value = None;
+        value.scalar_scope = None;
+        Ok(value)
+    }
+
+    fn law_term_body(&self, term: &crate::observed::term::Term) -> Option<usize> {
+        let inputs = self.env.indexes.inputs;
+        let root = term.root;
+        let source = inputs.law().exprs().get(root)?;
+        let end = term.offset.checked_add(term.body.len())?;
+        (term.nodes.get(&root) == Some(source)
+            && inputs.sources().law().bytes().get(term.offset..end) == Some(term.body.as_bytes()))
+        .then_some(root)
     }
 
     fn read(
@@ -213,7 +286,7 @@ impl DependencyAnalysis<'_, '_> {
                     Dependence::Fixed
                 },
                 facts: absent.into_iter().collect(),
-                tuple: vec![],
+                components: vec![],
             };
             match &law.exprs()[id].kind {
                 ExprKind::Dotted(parts) => {
@@ -230,7 +303,7 @@ impl DependencyAnalysis<'_, '_> {
                 ExprKind::Group(body) | ExprKind::Unary { operand: body, .. } => child(*body),
                 ExprKind::Index { base, index, .. } => {
                     let base = child(*base)?;
-                    if let Some(element) = base.tuple.get(*index) {
+                    if let Some(element) = base.components.get(*index) {
                         return Ok(element.clone());
                     }
                     let mut result = fallback();
@@ -251,7 +324,7 @@ impl DependencyAnalysis<'_, '_> {
                     dependencies.insert(name.name.clone(), dependency);
                     self.read(*body, &local, &dependencies, reading)
                 }
-                ExprKind::Call { args, .. } => {
+                ExprKind::Call { callee, args } => {
                     if let Some(declaration) = env.named_view(id)?
                         && let Signature::View { params, body, .. } = &declaration.signature
                     {
@@ -262,6 +335,21 @@ impl DependencyAnalysis<'_, '_> {
                             dependencies.insert(parameter.name.clone(), child(*arg)?);
                         }
                         self.read(*body, &local, &dependencies, &declaration.reading)
+                    } else if data::expression(law, id, &env.control)?.is_some() {
+                        let items = args.iter().map(|id| child(*id)).collect::<Result<_, _>>()?;
+                        Ok(Dependency::product(items))
+                    } else if matches!(law.expr_type(*callee), Some(Type::Term(..)))
+                        && let Some(Scalar::Term(ref term)) =
+                            self.source(*callee, vars, reading)?.known_value
+                        && let Some(body) = self.law_term_body(term)
+                    {
+                        let mut local = BTreeMap::new();
+                        let mut dependencies = BTreeMap::new();
+                        for ((name, _), arg) in term.params.iter().zip(args) {
+                            local.insert(name.clone(), self.source(*arg, vars, reading)?);
+                            dependencies.insert(name.clone(), child(*arg)?);
+                        }
+                        self.read(body, &local, &dependencies, reading)
                     } else {
                         let mut result = fallback();
                         for arg in args {
@@ -317,45 +405,65 @@ impl DependencyAnalysis<'_, '_> {
                         Some(Scalar::Bool(true)) => child(*then_branch),
                         Some(Scalar::Bool(false)) => child(*else_branch),
                         _ => {
-                            let mut condition = child(*cond)?;
-                            for branch in [then_branch, else_branch] {
-                                // Only the test is read until the branch is chosen.
-                                condition.dependence =
-                                    condition.dependence.max(child(*branch)?.dependence);
-                            }
-                            Ok(condition)
+                            // Only the test is read until the branch is chosen.
+                            let test = child(*cond)?;
+                            let then_value = child(*then_branch)?;
+                            let else_value = child(*else_branch)?;
+                            Dependency::alternatives(&test, &[&then_value, &else_value], env)
                         }
                     }
                 }
                 ExprKind::Match { scrutinee, arms } => {
                     let input = self.source(*scrutinee, vars, reading)?;
-                    let Some((arm, local)) = env.scoped_match_bindings(id, &input, vars)? else {
-                        return Ok(fallback());
-                    };
-                    let branch = &arms[arm];
-                    if let archsig_input::law::ast::Pattern::Name(name) = &branch.pattern
-                        && local.contains_key(&name.name)
-                        && !vars.contains_key(&name.name)
-                    {
-                        let mut dependencies = lexical.clone();
-                        dependencies.insert(name.name.clone(), child(*scrutinee)?);
-                        return self.read(branch.body, &local, &dependencies, reading);
+                    let dependency = child(*scrutinee)?;
+                    let ty = law
+                        .expr_type(*scrutinee)
+                        .ok_or(internal!("matchの元型がない"))?;
+                    let dependencies =
+                        |arm: usize| -> Result<LexicalDependencies, ValidationFailure> {
+                            let mut result = lexical.clone();
+                            for binder in data::binders(&arms[arm].pattern, ty, law, &env.control)?
+                            {
+                                result.insert(
+                                    binder.name,
+                                    dependency.component_at(&binder.path).clone(),
+                                );
+                            }
+                            Ok(result)
+                        };
+                    if let Some((arm, local)) = env.scoped_match_bindings(id, &input, vars)? {
+                        return self.read(arms[arm].body, &local, &dependencies(arm)?, reading);
                     }
-                    self.read(branch.body, &local, lexical, reading)
+                    let mut branches = Vec::new();
+                    for (arm, branch) in arms.iter().enumerate() {
+                        let mut local = env.copy_variables(vars)?;
+                        for binder in data::binders(&branch.pattern, ty, law, &env.control)? {
+                            local.insert(binder.name, self.unknown_member()?);
+                        }
+                        branches.push(self.read(
+                            branch.body,
+                            &local,
+                            &dependencies(arm)?,
+                            reading,
+                        )?);
+                    }
+                    let branches = branches.iter().collect::<Vec<_>>();
+                    Dependency::alternatives(&dependency, &branches, env)
                 }
-                ExprKind::Quant {
-                    split:
-                        archsig_input::law::ast::QuantSplit::Fixed {
-                            domain: archsig_input::law::ast::QuantDomain::In(_),
-                            ..
-                        },
-                    ..
-                } => {
+                ExprKind::Quant { .. } => {
                     let spec = quantifier::spec(law, id, &env.control)?;
-                    let (_, members) =
-                        env.scoped_quantifier_domain(&spec, vars, &Scope::default(), reading)?;
-                    let domain = spec.domain.ok_or(internal!("有理量化の元域がない"))?;
-                    let mut result = child(domain)?;
+                    let (domain, absent) = capture_missing(env, || {
+                        env.scoped_quantifier_domain(&spec, vars, &Scope::default(), reading)
+                    })?;
+                    let (_, members) = domain?;
+                    let mut result = if let Some(domain) = spec.domain {
+                        child(domain)?
+                    } else {
+                        Dependency {
+                            facts: absent.into_iter().collect(),
+                            ..Dependency::default()
+                        }
+                    };
                     let mut local = env.copy_variables(vars)?;
                     if let Some(members) = members {
                         for member in members {
@@ -364,13 +472,10 @@ impl DependencyAnalysis<'_, '_> {
                             result.merge(self.read(spec.body, &local, lexical, reading)?);
                         }
                     } else {
-                        // The collection cannot be expanded yet. Check whether
-                        // its body depends on the candidate even at an unspecified member.
-                        let mut unobserved_member = value(env, Scalar::Unit)?;
-                        unobserved_member.known_value = None;
-                        unobserved_member.scalar_scope = None;
-                        local.insert(spec.name.into(), unobserved_member);
-                        let body = self.read(spec.body, &local, lexical, reading)?;
+                        local.insert(spec.name.into(), self.unknown_member()?);
+                        let mut dependencies = lexical.clone();
+                        dependencies.insert(spec.name.into(), result.clone());
+                        let body = self.read(spec.body, &local, &dependencies, reading)?;
                         result.dependence = result.dependence.max(body.dependence);
                     }
                     Ok(result)
@@ -411,19 +516,30 @@ impl DependencyAnalysis<'_, '_> {
                             }
                             result.merge(member(*elem)?);
                         }
+                    } else {
+                        let mut local = env.copy_variables(vars)?;
+                        local.insert(var.name.clone(), self.unknown_member()?);
+                        let mut dependencies = lexical.clone();
+                        dependencies.insert(var.name.clone(), result.clone());
+                        let member = |id| self.read(id, &local, &dependencies, reading);
+                        if let Some(filter) = filter {
+                            result.dependence = result.dependence.max(member(*filter)?.dependence);
+                            if self.source(*filter, &local, reading)?.known_value
+                                == Some(Scalar::Bool(false))
+                            {
+                                return Ok(result);
+                            }
+                        }
+                        result.dependence = result.dependence.max(member(*elem)?.dependence);
                     }
                     Ok(result)
                 }
                 ExprKind::Tuple(items) => {
-                    let mut result = Dependency::default();
-                    let mut tuple = Vec::new();
-                    for item in items {
-                        let dependency = child(*item)?;
-                        result.merge(dependency.clone());
-                        tuple.push(dependency);
-                    }
-                    result.tuple = tuple;
-                    Ok(result)
+                    let items = items
+                        .iter()
+                        .map(|id| child(*id))
+                        .collect::<Result<_, _>>()?;
+                    Ok(Dependency::product(items))
                 }
                 ExprKind::ListLit { items, .. } | ExprKind::SetLit { items, .. } => {
                     let mut result = Dependency::default();
@@ -432,7 +548,7 @@ impl DependencyAnalysis<'_, '_> {
                     }
                     Ok(result)
                 }
-                ExprKind::Some(item) => child(*item),
+                ExprKind::Some(item) => Ok(Dependency::product(vec![child(*item)?])),
                 _ => Ok(fallback()),
             }
         })
