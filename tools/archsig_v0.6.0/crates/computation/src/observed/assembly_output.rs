@@ -417,7 +417,15 @@ pub(super) fn failed(
             let Failure::Rejected(rejection) = failure else {
                 unreachable!()
             };
-            let (left, right) = if let Some((left, right)) = &rejection.values {
+            let (left, right) = if let Some((input, expected)) = a.rejected_design_origin {
+                let expected = b.scalar(
+                    NodeType::Value(Type::Text),
+                    "binding",
+                    Scalar::Text(expected.into()),
+                    vec![head, along],
+                )?;
+                (expected, input)
+            } else if let Some((left, right)) = &rejection.values {
                 let reading = plan.architecture.witness.construction().reading();
                 let has_repaired = rejection.repaired.iter().any(Option::is_some);
                 let mut values = Vec::new();

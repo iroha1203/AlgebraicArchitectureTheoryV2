@@ -20,3 +20,5 @@ wrongEndpoint=assemble_map(E12Compare.routes,from=$native.assembly,to=$layout0.a
 lawAfter=check(E12Compare.consumed,on=$migrate.map.target,s=@comparison/rust-T3-after)
 planLabel=evaluate(E12Compare.labelOf,p=@comparison/plan)
 otherLabel=evaluate(E12Compare.labelOf,p=@comparison/lookalike)
+observedDesign=build(E12Compare,on=@comparison/plan)
+wrongProvenance=assemble(E12Compare.selected,on=@comparison/rust-output1,along=E12Compare.interfaces,p=@comparison/plan,design.p=$observedDesign.object)

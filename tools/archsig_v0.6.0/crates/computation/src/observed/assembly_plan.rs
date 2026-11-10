@@ -111,6 +111,7 @@ pub(super) struct Assembly {
     pub interfaces: Read,
     pub bindings: Vec<Binding>,
     pub design: Option<NodeRef>,
+    pub rejected_design_origin: Option<(NodeRef, &'static str)>,
     pub locals: Vec<Fragment>,
     pub restrictions: Vec<Architecture>,
     pub repaired: BTreeMap<Fact, NodeRef>,
@@ -231,6 +232,7 @@ pub(super) fn prepare(
     let mut repaired = BTreeMap::new();
     let mut selections = Vec::new();
     let mut design = None;
+    let mut rejected_design_origin = None;
     let mut rejected = None;
     for argument in &r.arguments {
         let (name, is_design) = if let Some(name) = argument.name.strip_prefix("local.") {
@@ -264,12 +266,13 @@ pub(super) fn prepare(
             _ => None,
         };
         let Some((source, value)) = source else {
-            let mut failure =
-                model_assembly::rejected("選択状態にはapplyの実Architectureを要求する", vec![root]);
-            if is_design && let Preparation::Rejected(rejection) = &mut failure {
-                rejection.values = Some((Scalar::Bool(true), Scalar::Bool(false)));
+            rejected = Some(model_assembly::rejected(
+                "選択状態にはapplyの実Architectureを要求する",
+                vec![root],
+            ));
+            if is_design {
+                rejected_design_origin = Some((at, "apply.object"));
             }
-            rejected = Some(failure);
             break;
         };
         let construction = source.construction();
@@ -313,11 +316,10 @@ pub(super) fn prepare(
                         Scalar::Text(construction.reading().into()),
                     )
                 } else {
-                    (
-                        "設計選択は未輸送の固有rootを要求する",
-                        Scalar::Bool(true),
-                        Scalar::Bool(false),
-                    )
+                    rejection.detail = "設計選択は未輸送の固有rootを要求する".into();
+                    rejected_design_origin = Some((at, "untransported apply.object"));
+                    rejected = Some(failure);
+                    break;
                 };
                 rejection.facts.dedup();
                 rejection.detail = detail.into();
@@ -495,6 +497,7 @@ pub(super) fn prepare(
         interfaces: shared,
         bindings,
         design: design.map(|(reference, _)| reference),
+        rejected_design_origin,
         locals,
         restrictions,
         repaired,

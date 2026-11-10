@@ -20,5 +20,7 @@
   "wrongEndpoint": "refuted",
   "lawAfter": "established",
   "planLabel": "established",
-  "otherLabel": "established"
+  "otherLabel": "established",
+  "observedDesign": "established",
+  "wrongProvenance": "refuted"
 }

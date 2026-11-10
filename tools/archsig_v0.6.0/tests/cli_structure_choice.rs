@@ -111,6 +111,15 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
             "{id}"
         );
     }
+    let [provenance] = arr(get(answer("wrongProvenance"), "counterexamples")) else {
+        panic!("provenance counterexample");
+    };
+    let provenance = get(value(provenance), "data");
+    assert_eq!(s(value(get(provenance, "left"))), "apply.object");
+    assert_eq!(
+        get(provenance, "right").value,
+        output("observedDesign", "object").value
+    );
     let [endpoint] = arr(get(answer("wrongEndpoint"), "counterexamples")) else {
         panic!("endpoint counterexample");
     };
