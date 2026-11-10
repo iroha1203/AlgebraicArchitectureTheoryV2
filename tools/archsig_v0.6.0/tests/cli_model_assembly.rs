@@ -281,3 +281,153 @@ fn saved_assembly_accepts_supported_law_updates_and_restores_the_original_law() 
         assert!(arr(get(&result, "issues")).is_empty());
     }
 }
+
+#[test]
+fn r2_e12_consume_assembles_local_routes_and_preserves_named_actions() {
+    use archsig_common::json::{JNode, parse};
+    use std::collections::BTreeMap;
+
+    let dir = workdir("r2-e12-consume");
+    let input = archsig_input::input::InputSources::from_bytes(
+        vec![include_bytes!("fixtures/r2-e12-consume/definitions.json").to_vec()],
+        include_bytes!("fixtures/r2-e12-consume/laws.law").to_vec(),
+        include_bytes!("fixtures/r2-e12-consume/archmap.json").to_vec(),
+    );
+    write_inputs(&dir, &input);
+    let asks: Vec<_> = include_str!("fixtures/r2-e12-consume/queries.txt")
+        .lines()
+        .collect();
+    let run = execute_asks(&dir, "first", None, &asks);
+    assert_eq!(run.code, 0, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let nodes: BTreeMap<_, _> = arr(get(&result, "nodes"))
+        .iter()
+        .map(|node| (s(get(node, "id")), node))
+        .collect();
+    let node = |reference: &JNode| nodes[s(get(reference, "node"))];
+    let value = |reference: &JNode| get(node(reference), "value");
+    let subject = |reference: &JNode| {
+        let [snapshot, id] = arr(value(reference)) else {
+            panic!("typed subject reference");
+        };
+        assert_eq!(s(snapshot), "comparison");
+        Json::str(s(id))
+    };
+    let root = |reference: &JNode| subject(get(value(reference), "root"));
+    let answers = arr(get(&result, "answers"));
+    assert!(
+        answers.iter().all(|a| s(get(a, "status")) == "established"),
+        "{:?}",
+        get(&result, "issues")
+    );
+    let output = |index: usize, field| get(get(&answers[index], "outputs"), field);
+    let assembled = value(output(2, "map"));
+    assert_eq!(s(get(node(output(2, "map")), "type")), "ModelMapAssembly");
+    assert_eq!(
+        get(assembled, "source_assembly").value,
+        output(0, "assembly").value
+    );
+    assert_eq!(
+        get(assembled, "target_assembly").value,
+        output(1, "assembly").value
+    );
+    assert_eq!(
+        get(assembled, "configuration_map").value,
+        output(2, "configuration_map").value
+    );
+    let locals = arr(get(assembled, "locals"))
+        .iter()
+        .map(|local| {
+            Json::Arr(vec![
+                subject(get(local, "correspondence")),
+                root(get(local, "source")),
+                root(get(local, "target")),
+            ])
+        })
+        .collect();
+    let generators = arr(get(assembled, "generators"))
+        .iter()
+        .map(|generator| {
+            let src = get(generator, "source");
+            let tgt = get(generator, "target");
+            let operands = arr(get(value(get(generator, "proposition")), "operands"));
+            for edge in [src, tgt, output(2, "configuration_map")] {
+                assert!(operands.iter().any(|operand| operand.value == edge.value));
+            }
+            let endpoints = |operation: &JNode| {
+                let op = value(operation);
+                let name = get(op, "name");
+                assert_eq!(s(get(node(operation), "type")), "Operation");
+                assert_eq!(s(get(name, "kind")), "generator");
+                Json::Arr(vec![
+                    subject(get(name, "subject")),
+                    root(get(op, "source")),
+                    root(get(op, "target")),
+                ])
+            };
+            Json::Arr(vec![endpoints(src), endpoints(tgt)])
+        })
+        .collect();
+    let action = value(get(value(output(2, "candidate")), "action"));
+    let atoms = arr(get(value(get(action, "universe")), "atoms"));
+    let images = arr(get(action, "images"));
+    assert_eq!(atoms.len(), images.len());
+    let point_images = [
+        "native-output1",
+        "native-N-before",
+        "native-N-after",
+        "native-T3-after",
+        "native-N-consume",
+        "native-T3-consume",
+    ]
+    .map(|id| {
+        let position = atoms
+            .iter()
+            .position(|a| s(get(a, "subject")) == id && !has(a, "field") && !has(a, "atom"));
+        let image = &images[position.expect("source point in the full action")];
+        assert_eq!(s(get(image, "snapshot")), "comparison");
+        Json::Arr(vec![Json::str(id), Json::str(s(get(image, "subject")))])
+    });
+    let report = Json::obj([
+        ("status", Json::str(s(get(&result, "status")))),
+        (
+            "roots",
+            Json::Arr(vec![
+                root(get(assembled, "source")),
+                root(get(assembled, "target")),
+            ]),
+        ),
+        ("locals", Json::Arr(locals)),
+        ("generators", Json::Arr(generators)),
+        ("point_images", Json::Arr(point_images.into())),
+        (
+            "after_quantities",
+            Json::Arr(
+                [3, 4]
+                    .into_iter()
+                    .map(|i| Json::str(s(value(output(i, "value")))))
+                    .collect(),
+            ),
+        ),
+    ]);
+    let expected = parse(include_bytes!("fixtures/r2-e12-consume/expected.json")).unwrap();
+    let actual = parse(report.canonical().as_bytes()).unwrap();
+    assert_eq!(actual.value, expected.value, "{}", report.canonical());
+
+    let bad = std::str::from_utf8(input.archmap().bytes())
+        .unwrap()
+        .replacen(
+            r#""field":"E12.Consume.to","value":["comparison","rust-N-after"]"#,
+            r#""field":"E12.Consume.to","value":["comparison","unregistered-N"]"#,
+            1,
+        );
+    assert_ne!(bad.as_bytes(), input.archmap().bytes());
+    std::fs::write(dir.join("a.json"), bad).unwrap();
+    let rejected = execute_asks(&dir, "invalid", None, &asks);
+    assert_eq!(rejected.code, 65, "{}{}", rejected.stdout, rejected.stderr);
+    assert!(arr(get(&rejected.receipt, "issues")).iter().any(|issue| {
+        s(get(issue, "code")) == "reference"
+            && s(get(issue, "message")).contains("comparison/unregistered-N")
+            && s(get(get(issue, "location"), "input")) == "archmap"
+    }));
+}

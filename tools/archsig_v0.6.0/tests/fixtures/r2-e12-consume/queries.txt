@@ -1,0 +1,5 @@
+native=assemble(E12Compare.fragments,on=@comparison/native-output1,along=E12Compare.overlap,t=@comparison/native-T3,n=@comparison/native-N,t0=@comparison/native-T3-before,n0=@comparison/native-N-before)
+rust=assemble(E12Compare.fragments,on=@comparison/rust-output1,along=E12Compare.overlap,t=@comparison/rust-T3,n=@comparison/rust-N,t0=@comparison/rust-T3-before,n0=@comparison/rust-N-before)
+move=assemble_map(E12Compare.routes,from=$native.assembly,to=$rust.assembly,t=@comparison/move-T3,n=@comparison/move-N)
+t3=evaluate(E12Compare.amount,s=@comparison/rust-T3-after,on=$move.map.target)
+untracked=evaluate(E12Compare.amount,s=@comparison/rust-N-after,on=$move.map.target)

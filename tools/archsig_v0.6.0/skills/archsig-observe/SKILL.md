@@ -410,6 +410,11 @@ subject と他の Atom は保持する。data 宣言の必須欄は上の文法�
 | 局所で読める情報を全体へ貼り合わせられるか | `build` → `localize` → `diagnose`。必要な change、degree、方程式側 `equation` / 許された変更の意味状態側 `semantic` を選ぶ |
 | 変更前後の値や二つの経路が同じか | `compare`。値は `value`、名前付き語は `word`、全域作用は `action`、宣言した同効果関係は `relation`。診断の保存は `diagnostics` と実 Operation の `along` を使う |
 
+組立ての入力を作るときは、局所ごとに snapshot、root、owner、共有対、元の名前付き操作を列挙する。
+移行では始終の実 root と局所対応表の行を明示し、`assemble_map` の後で `locals` と `generators` を読む。
+操作ごとの共通条件も元記録と照合する。未解決の参照は型・owner・元の field 位置を報告し、同名の個体を
+補わない。入力を検査できたら `configuration_map` と操作保存を分けて確認する。
+
 以下は上の座標の三入力をそのまま使う架空の設計例。
 `Sum.totalValue` は合計、`Sum.firstValue` は x を読む view。
 `Sum.pinned` は「両座標を零にする」という追加の optional Law で、修復時に明示選択する。

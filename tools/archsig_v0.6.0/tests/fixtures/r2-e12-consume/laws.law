@@ -1,0 +1,8 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading E12Compare {
+  use vocabulary E12 version "1" digest "sha256:28200115c32677e78eb9234370a898438d6ee9b1a75013bb969167a7f69f85fd";
+  view fragments(t:Root,n:Root,t0:State,n0:State):Set<Root> = set<Root>{t,n};
+  view overlap(t:Root,n:Root,t0:State,n0:State):List<(State,State)> = list<(State,State)>[(t0,n0)];
+  view routes(t:Route,n:Route):Set<Route> = set<Route>{t,n};
+  view amount(s:State):Z=s.quantity;
+}
