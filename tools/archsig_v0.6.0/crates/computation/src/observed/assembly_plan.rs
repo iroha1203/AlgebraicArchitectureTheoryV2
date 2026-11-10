@@ -243,6 +243,14 @@ pub(super) fn prepare(
         let at = reference(e, g, &argument.value)?.ok_or(internal!("修復局所の元出力がない"))?;
         input_refs.push(at);
         selections.push(at);
+        if root.snapshot != target.snapshot {
+            rejected = Some(model_assembly::foreign_snapshot(
+                &p.shared_inputs(),
+                &root,
+                "局所選択の束縛rootが別snapshotに属する",
+            )?);
+            break;
+        }
         let node = g.get(at)?;
         let source = match &node.payload {
             Some(Payload::Construction(value)) => match (&value.witness, &value.data) {

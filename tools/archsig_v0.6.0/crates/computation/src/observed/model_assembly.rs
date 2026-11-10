@@ -227,6 +227,21 @@ pub(super) fn compile(
     c: &Control,
 ) -> Result<Preparation, ValidationFailure> {
     tick(c)?;
+    for root in roots {
+        tick(c)?;
+        if root.snapshot != target.snapshot {
+            return foreign_snapshot(inputs, root, "担当rootのsnapshotが組立て標識と異なる");
+        }
+    }
+    for (left, right) in pairs {
+        tick(c)?;
+        if let Some(foreign) = [left, right]
+            .into_iter()
+            .find(|member| member.snapshot != target.snapshot)
+        {
+            return foreign_snapshot(inputs, foreign, "共有対の個体が別snapshotに属する");
+        }
+    }
     if roots.is_empty() {
         return Ok(rejected("担当rootの集合が空", vec![target.clone()]));
     }
@@ -259,9 +274,6 @@ pub(super) fn compile(
     let mut support = BTreeSet::new();
     for (i, root) in roots.iter().enumerate() {
         tick(c)?;
-        if root.snapshot != target.snapshot {
-            return foreign_snapshot(inputs, root, "担当rootのsnapshotが組立て標識と異なる");
-        }
         if root == target
             || !roots_seen.insert(root)
             || subject(inputs, root)?.ty != root_subject.ty
@@ -313,12 +325,6 @@ pub(super) fn compile(
     }
     for (a, b) in pairs {
         tick(c)?;
-        if let Some(foreign) = [a, b]
-            .into_iter()
-            .find(|fact| fact.snapshot != target.snapshot)
-        {
-            return foreign_snapshot(inputs, foreign, "共有対の個体が別snapshotに属する");
-        }
         let (Some(ia), Some(ib)) = (membership.get(a), membership.get(b)) else {
             return Ok(rejected(
                 "共有対の個体が担当rootに所属しない",

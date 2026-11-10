@@ -264,7 +264,39 @@ fn read_layout(
         .ok_or_else(|| unsupported("担当 View 宣言がない"))?;
     let fragments = assembly_plan::read(&env, head, &bindings).map_err(classify)?;
     let interfaces = assembly_plan::read(&env, along, &bindings).map_err(classify)?;
-    layout_from_reads(&fragments, &interfaces, control)
+    let layout = layout_from_reads(&fragments, &interfaces, control)?;
+    let target = request.arguments.iter().find(|arg| arg.name == "on");
+    let Some(Selector::Subject { snapshot, subject }) = target.map(|arg| &arg.value) else {
+        return Err(unsupported("組立て先の明示rootがない"));
+    };
+    let mut roots = BTreeSet::from([subject.as_str()]);
+    for root in &layout.roots {
+        control.checkpoint(Checkpoint::ConfigurationMap)?;
+        if &root.snapshot != snapshot {
+            return Err(unsupported("担当rootが別snapshotに属する"));
+        }
+        roots.insert(root.subject.as_str());
+    }
+    let reading = prepared.inputs().law().declarations()[head]
+        .reading
+        .as_str();
+    let foreign = crate::construction::foreign_owned_member(
+        prepared.inputs(),
+        reading,
+        snapshot,
+        &roots,
+        control,
+    )
+    .map_err(|failure| match failure {
+        crate::construction::ConstructionFailure::Stopped(signal) => signal.into(),
+        _ => unsupported("組立ての所属域を読めない"),
+    })?;
+    if foreign.is_some() {
+        return Err(unsupported(
+            "組立て先または担当の所属個体が別snapshotに属する",
+        ));
+    }
+    Ok(layout)
 }
 
 fn layout_from_reads(
@@ -323,50 +355,38 @@ fn checked_shared_partition(
                 "共有対が別 snapshot の参照を含む".into(),
             ));
         }
-        let mut current = roster
+        let member = roster
             .get(fact.subject.as_str())
             .copied()
             .ok_or_else(|| invalid("共有対の主体がない"))?;
-        let mut visited = BTreeSet::new();
-        loop {
-            control.checkpoint(Checkpoint::ConfigurationMap)?;
-            if !visited.insert(current.id.as_str()) {
-                return Err(invalid("共有個体の owner が循環する"));
-            }
-            let field = current
-                .fields
-                .iter()
-                .find(|field| field.name.is_owner())
-                .ok_or_else(|| invalid("共有対の個体が担当 root に所属しない"))?;
-            match &field.slot {
-                Slot::Known {
-                    value:
-                        Value::Ref {
-                            snapshot: owner_snapshot,
-                            subject,
-                        },
-                    ..
-                } => {
-                    if owner_snapshot != snapshot {
-                        return Err(ReobservationFailure::Unsupported(
-                            "共有個体の owner が別 snapshot を参照する".into(),
-                        ));
-                    }
-                    if roots.contains(subject.as_str()) {
-                        return Ok(subject.as_str());
-                    }
-                    current = roster
-                        .get(subject.as_str())
-                        .copied()
-                        .ok_or_else(|| invalid("共有個体の owner がない"))?;
+        let field = member
+            .fields
+            .iter()
+            .find(|field| field.name.is_owner())
+            .ok_or_else(|| invalid("共有対の個体が担当 root に所属しない"))?;
+        match &field.slot {
+            Slot::Known {
+                value:
+                    Value::Ref {
+                        snapshot: owner_snapshot,
+                        subject,
+                    },
+                ..
+            } => {
+                if owner_snapshot != snapshot {
+                    return Err(ReobservationFailure::Unsupported(
+                        "共有個体の owner が別 snapshot を参照する".into(),
+                    ));
                 }
-                Slot::Missing => {
-                    return Err(ReobservationFailure::MissingOwner(self::fact(
-                        current, field, None,
-                    )));
-                }
-                _ => return Err(invalid("共有個体の owner が参照でない")),
+                roots
+                    .get(subject.as_str())
+                    .copied()
+                    .ok_or_else(|| invalid("共有対の個体が担当 root に所属しない"))
             }
+            Slot::Missing => Err(ReobservationFailure::MissingOwner(self::fact(
+                member, field, None,
+            ))),
+            _ => Err(invalid("共有個体の owner が参照でない")),
         }
     };
     let classify = |failure| match failure {
@@ -1108,7 +1128,8 @@ mod tests {
         let (body, suffix) = snapshots.rsplit_once("\n  ]").unwrap();
         let foreign = body.replace("\"after\"", "\"foreign\"");
         let map = format!("{prefix}\"snapshots\": [{body},{foreign}\n  ]{suffix}");
-        let queries = QUERIES
+        let c = Control::unlimited();
+        let foreign_repair = QUERIES
             .lines()
             .map(|line| {
                 if line.starts_with("within=") || line.starts_with("prepareIt=") {
@@ -1119,37 +1140,58 @@ mod tests {
             })
             .collect::<Vec<_>>()
             .join("\n");
-        let c = Control::unlimited();
+        let foreign_binding = QUERIES.replace("a=@SNAP/A,b=@SNAP/B", "a=@foreign/A,b=@SNAP/B");
+        for queries in [&foreign_repair, &foreign_binding] {
+            let result =
+                evaluate_observed(prepared_with("after", &map, LAW, queries, &c), &c).unwrap();
+            assert_eq!(status(&result, "selected"), Decision::Established);
+            assert_eq!(status(&result, "joined"), Decision::Undetermined);
+            let joined = result
+                .answers
+                .iter()
+                .find(|answer| answer.id == "joined")
+                .unwrap();
+            assert!(matches!(joined.reasons.as_slice(), [reason]
+                if matches!(&reason.kind, ReasonKind::UnsupportedAlgorithm { .. })));
+            assert!(!joined.outputs.contains_key("assembly"));
+            let global = result
+                .answers
+                .iter()
+                .find(|answer| answer.id == "global")
+                .unwrap();
+            assert_eq!(global.status, Decision::Undetermined);
+            assert!(
+                global
+                    .reasons
+                    .iter()
+                    .any(|reason| matches!(&reason.kind, ReasonKind::DependencyBlocked { .. }))
+            );
+            assert!(
+                result
+                    .issues
+                    .iter()
+                    .all(|reason| !matches!(&reason.kind, ReasonKind::Internal(_)))
+            );
+        }
+
+        let foreign_member = r#"{
+          "id":"foreign", "origin":"model",
+          "subjects":[{"id":"b","type":"Assemble.Part","origin":"model"}],
+          "atoms":[
+            {"id":"b-owner","subject":"b","field":"Assemble.Part.owner","value":["after","B"],"origin":"model"},
+            {"id":"b-quantity","subject":"b","field":"Assemble.Part.quantity","value":"0","origin":"model"},
+            {"id":"b-links","subject":"b","field":"Assemble.Part.links","value":[],"origin":"model"}
+          ]
+        }"#;
+        let map = format!("{prefix}\"snapshots\": [{body},{foreign_member}\n  ]{suffix}");
+        let blocked = QUERIES.replace("index=0", "index=100");
         let result =
-            evaluate_observed(prepared_with("after", &map, LAW, &queries, &c), &c).unwrap();
-        assert_eq!(status(&result, "selected"), Decision::Established);
-        assert_eq!(status(&result, "joined"), Decision::Undetermined);
-        let joined = result
-            .answers
-            .iter()
-            .find(|answer| answer.id == "joined")
-            .unwrap();
-        assert!(matches!(joined.reasons.as_slice(), [reason]
-            if matches!(&reason.kind, ReasonKind::UnsupportedAlgorithm { .. })));
-        assert!(!joined.outputs.contains_key("assembly"));
-        let global = result
-            .answers
-            .iter()
-            .find(|answer| answer.id == "global")
-            .unwrap();
-        assert_eq!(global.status, Decision::Undetermined);
-        assert!(
-            global
-                .reasons
-                .iter()
-                .any(|reason| matches!(&reason.kind, ReasonKind::DependencyBlocked { .. }))
-        );
-        assert!(
-            result
-                .issues
-                .iter()
-                .all(|reason| !matches!(&reason.kind, ReasonKind::Internal(_)))
-        );
+            evaluate_observed(prepared_with("after", &map, LAW, &blocked, &c), &c).unwrap();
+        assert_eq!(status(&result, "selected"), Decision::Undetermined);
+        assert!(retained_layout(&result, "joined").is_none());
+        let request = question(result.prepared(), "joined", QuestionKind::Assemble).unwrap();
+        assert!(matches!(checked_layout(&result, request, &c),
+            Err(ReobservationFailure::Unsupported(message)) if message.contains("所属個体")));
     }
 
     #[test]
