@@ -39,7 +39,7 @@ pub(super) enum Outcome {
 }
 
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
-    c.checkpoint(Checkpoint::PrimitiveValuation)
+    c.checkpoint(Checkpoint::RationalPolyhedron)
         .map_err(Into::into)
 }
 

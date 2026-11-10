@@ -331,25 +331,29 @@ fn compute_inner(
                             location: Some(location.clone()),
                         });
                     }
-                    reasons.push(Reason {
-                        kind: ReasonKind::UnsupportedAlgorithm {
-                            question: request.kind,
-                            operand_types: vec![
-                                pending.coefficient_type.clone().unwrap_or(Type::Z),
-                            ],
-                            method: pending.unsupported.map(str::to_owned).unwrap_or_else(|| {
-                                if pending.coefficient_type == Some(Type::Q) {
-                                    "rational_change".into()
-                                } else {
-                                    "integer_change".into()
-                                }
-                            }),
-                        },
-                        request: request.id.clone(),
-                        dependencies: vec![expression],
-                        missing: vec![],
-                        location: Some(location.clone()),
-                    });
+                    if !pending.awaiting_observation || reasons.is_empty() {
+                        reasons.push(Reason {
+                            kind: ReasonKind::UnsupportedAlgorithm {
+                                question: request.kind,
+                                operand_types: vec![
+                                    pending.coefficient_type.clone().unwrap_or(Type::Z),
+                                ],
+                                method: pending.unsupported.map(str::to_owned).unwrap_or_else(
+                                    || {
+                                        if pending.coefficient_type == Some(Type::Q) {
+                                            "rational_change".into()
+                                        } else {
+                                            "integer_change".into()
+                                        }
+                                    },
+                                ),
+                            },
+                            request: request.id.clone(),
+                            dependencies: vec![expression],
+                            missing: vec![],
+                            location: Some(location.clone()),
+                        });
+                    }
                     return Ok((
                         b.parts,
                         Answer {

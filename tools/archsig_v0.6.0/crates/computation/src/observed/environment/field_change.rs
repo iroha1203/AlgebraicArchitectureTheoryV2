@@ -93,6 +93,10 @@ fn coordinates(
     axes: Axes<'_>,
     missing: &mut Pending,
 ) -> Result<(Option<Scalar>, Vec<Scalar>), ValidationFailure> {
+    if let Axes::Parameters(parameters) = axes {
+        missing.awaiting_observation =
+            form.awaiting_rational_observation(parameters, &env.control)?;
+    }
     (match axes {
         Axes::Parameters(axes) => form
             .rational_coordinates(axes, &env.control)?

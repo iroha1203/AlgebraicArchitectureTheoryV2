@@ -112,6 +112,7 @@ pub enum Checkpoint {
     PolynomialObservableCoordinate,
     FinitePolynomialTable,
     PrimitiveValuation,
+    RationalPolyhedron,
     ChangeWitness,
     Quotient,
     QuotientGuardedInstance,

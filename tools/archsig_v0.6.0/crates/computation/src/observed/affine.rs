@@ -405,6 +405,27 @@ impl Form {
         }
         Ok(Some((constant.clone(), row)))
     }
+    /// 有理制約を元parameterへ移せない理由が、固定観測だけであることを区別する。
+    pub(super) fn awaiting_rational_observation(
+        &self,
+        axes: &[Parameter],
+        c: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        if self.ty != Type::Q {
+            return Ok(false);
+        }
+        let mut missing = false;
+        for key in self.coefficients.keys() {
+            tick(c)?;
+            match key {
+                Symbol::Parameter(axis) if axes.contains(axis) => {}
+                Symbol::Missing(_) => missing = true,
+                _ => return Ok(false),
+            }
+        }
+        Ok(missing)
+    }
+
     pub(in crate::observed) fn rational_coordinates(
         &self,
         axes: &[Parameter],

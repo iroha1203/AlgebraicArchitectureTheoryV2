@@ -38,6 +38,7 @@ pub(in crate::observed) struct Pending {
     pub universal: Vec<Parameter>,
     pub coefficient_type: Option<Type>,
     pub unsupported: Option<&'static str>,
+    pub awaiting_observation: bool,
     pub facts: Vec<Fact>,
     pub expression: Option<usize>,
     pub bindings: Vec<(String, Scalar)>,
