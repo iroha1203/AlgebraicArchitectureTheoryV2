@@ -465,10 +465,10 @@ impl<E: InputError> Checker<'_, E> {
                 }
                 let t = self.check(elem, None, env, ctx)?;
                 env.vars.truncate(mark);
-                self.reject_term_or_path(&t, self.span(elem))?;
                 Ok(if list {
                     Type::List(Box::new(t))
                 } else {
+                    self.reject_term_or_path(&t, self.span(elem))?;
                     Type::Set(Box::new(t))
                 })
             }

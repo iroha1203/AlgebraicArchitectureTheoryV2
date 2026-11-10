@@ -898,6 +898,37 @@ view typed_empty(): List<Q> = list { x | x in set<Q>{} };
 }
 
 #[test]
+fn list_projection_retains_term_and_path_elements() {
+    let (wire, _) = run(
+        fixture(
+            r#"
+view terms(): List<Term<(Z)->Z>> = list { f | f in list<Term<(Z)->Z>>[fn(x:Z)=>x+1] };
+view paths(s:Sample): List<Path<Sample,Sample>> = list { identity(x) | x in list<Sample>[s,s] };
+view term_count(): Z = count(terms());
+view path_count(s:Sample): Z = count(paths(s));
+"#,
+        ),
+        &[
+            "t=evaluate(Calc.terms)",
+            "p=evaluate(Calc.paths,s=@v/sample)",
+            "tc=evaluate(Calc.term_count)",
+            "pc=evaluate(Calc.path_count,s=@v/sample)",
+        ],
+    );
+    output(&wire, "tc", &Json::str("Z"), Json::str("1"));
+    output(&wire, "pc", &Json::str("Z"), Json::str("2"));
+    let nodes = index(&wire);
+    for (id, expected, size) in [("t", "Term", 1), ("p", "Path", 2)] {
+        let output = f(f(answer(&wire, id), "outputs"), "value");
+        let node = nodes.get(text(f(output, "node"))).unwrap();
+        let ty = arr(f(node, "type"));
+        assert_eq!(text(&ty[0]), "List");
+        assert_eq!(text(&arr(&ty[1])[0]), expected);
+        assert_eq!(arr(val(node)).len(), size);
+    }
+}
+
+#[test]
 fn list_projection_rejects_noncollections_nonboolean_filters_and_unknown_references() {
     for body in [
         "list { x | x in 1 }",

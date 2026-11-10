@@ -475,7 +475,6 @@ fn reachable(c: &CheckedLaw) -> Vec<(archsig_input::law::ast::ExprId, bool)> {
             | ExprKind::ListLit { items, .. }
             | ExprKind::SetLit { items, .. } => items.iter().copied().for_each(&mut push),
             ExprKind::Comprehension {
-                list: false,
                 elem,
                 domain,
                 filter,
@@ -501,7 +500,8 @@ law required b(p: A): forall k in p.kids . k.x = p.x;
          law required c(p: A): exists n in p.pair.0 . n = p.pair.1;
          law required e(p: A): forall t: A . t.x = t.x;
          law required f(p: A): forall t: R.S . forall u: A[t] . u.x = u.x;
-         view g(p: A): Set<Z> = set{ k.x | k in p.kids where forall j in k.kids . j.x > 0 };"#,
+         view g(p: A): Set<Z> = set{ k.x | k in p.kids where forall j in k.kids . j.x > 0 };
+         view h(p: A): List<Z> = list{ k.x | k in p.kids where k.x > 0 };"#,
     );
     for (def, src) in [
         (RESERVATIONS_DEFINITION, RESERVATIONS),
