@@ -39,9 +39,9 @@ impl SquareKind {
     }
 }
 #[derive(Debug)]
-pub(super) struct FailedEndpoint {
-    pub from: bool,
-    pub subject: Fact,
+pub(super) enum CoverageWitness {
+    Outside { from: bool, subject: Fact },
+    Uncovered(Fact),
 }
 
 #[derive(Debug)]
@@ -53,7 +53,7 @@ pub(super) enum Failure {
     },
     Coverage {
         facts: Vec<Fact>,
-        endpoint: Option<FailedEndpoint>,
+        endpoint: Option<CoverageWitness>,
     },
     SharedImage {
         left_correspondence: Fact,
@@ -81,7 +81,7 @@ pub(super) fn select(
     retain_reference_difference: bool,
     c: &Control,
 ) -> Result<Result<Vec<Local>, Failure>, ConstructionFailure> {
-    use super::model_assembly::{counterexample_facts, field_fact, subject};
+    use super::model_assembly::{counterexample_facts, field_fact, observed_fact, subject};
     use archsig_input::{
         archmap::{Slot, Value},
         definition::model::PrimitiveSignature,
@@ -142,6 +142,7 @@ pub(super) fn select(
             }));
         }
         let mut endpoints = Vec::new();
+        let mut endpoint_facts = Vec::new();
         let mut missing = Vec::new();
         for name in ["from", "to"] {
             let field = holder
@@ -157,6 +158,9 @@ pub(super) fn select(
                     value: Value::Ref { snapshot, subject },
                     ..
                 } => {
+                    if retain_reference_difference {
+                        endpoint_facts.push(observed_fact(holder, field));
+                    }
                     endpoints.push(Fact::from(archsig_input::archmap::FactData {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
@@ -179,12 +183,13 @@ pub(super) fn select(
             target_index.get(&endpoints[1]),
         ) else {
             let from = !source_index.contains_key(&endpoints[0]);
+            let subject = endpoints[usize::from(!from)].clone();
+            let mut facts = vec![raw.clone()];
+            facts.extend(endpoints);
+            facts.extend(endpoint_facts);
             return Ok(Err(Failure::Coverage {
-                endpoint: Some(FailedEndpoint {
-                    from,
-                    subject: endpoints[usize::from(!from)].clone(),
-                }),
-                facts: vec![raw.clone(), endpoints[0].clone(), endpoints[1].clone()],
+                endpoint: Some(CoverageWitness::Outside { from, subject }),
+                facts,
             }));
         };
         let result = maps::correspondence_constructed(
@@ -203,6 +208,12 @@ pub(super) fn select(
             let mut facts = vec![raw.clone()];
             facts.extend(counterexample_facts(result.counterexamples()));
             let reference_difference = if retain_reference_difference {
+                for field in &holder.fields {
+                    tick(c)?;
+                    if matches!(&field.slot, Slot::Known { .. }) {
+                        facts.push(observed_fact(holder, field));
+                    }
+                }
                 first_reference_difference(inputs, &result, c)?
             } else {
                 None
@@ -478,15 +489,16 @@ pub(super) fn glue(
         }
     }
     if covered.len() != source.fragments.len() {
+        let facts = source
+            .fragments
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| !covered.contains(i))
+            .map(|(_, s)| s.root().clone())
+            .collect::<Vec<_>>();
         return Ok(Err(Failure::Coverage {
-            endpoint: None,
-            facts: source
-                .fragments
-                .iter()
-                .enumerate()
-                .filter(|(i, _)| !covered.contains(i))
-                .map(|(_, s)| s.root().clone())
-                .collect(),
+            endpoint: facts.first().cloned().map(CoverageWitness::Uncovered),
+            facts,
         }));
     }
     let mut subjects: BTreeMap<Fact, (Fact, usize)> = BTreeMap::new();

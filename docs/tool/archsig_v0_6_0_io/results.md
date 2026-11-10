@@ -95,7 +95,11 @@ EvaluationResultのPayloadはEvaluationを下表の欄へ射影した値とす�
 到達しないnodeを除き、同じ型・値・環・基底・関係を持つ表示だけを共有する。
 Expression は元式の位置、束縛、parameter、条件、理由を含む保存内容と核の結果型が一致する場合に共有する。
 同じ観測要件で複数の dependents が共有後に同じ参照を指すときは、先頭の参照を残す。
-量化域と量化子の多重度は Scope に保存する。
+量化域と量化子の多重度は Scope に保存する。設計を固定した組立てで担当・共有 View の
+量化域を列挙できたときは、組立てが反証された場合も `domain.node` から実際の要素を辿れる。
+有限修復の `apply` が反証されたときは、失敗条件の命題が Assignment と SolutionSet を取り、
+候補域の不一致を `apply_same_candidate_domain`、同じ候補域内での非所属を
+`apply_assignment_in_solution_set` で区別する。
 保存用node IDはこの値グラフの参照であり、内部導出の番号と一致することを要求しない。
 数学的な値・型・全解・条件・反例の検査と、後続要求が消費する型付き結果は射影前に保持する。
 通常の短い回答表示は[実行 §5](execution.md#5-ファイル操作と出力)に従う。

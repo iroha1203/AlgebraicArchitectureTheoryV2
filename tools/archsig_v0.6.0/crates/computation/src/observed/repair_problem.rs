@@ -1030,6 +1030,7 @@ fn consume(
     let mut selected_ranges = vec![];
     let mut target_set = None;
     let mut invalid = false;
+    let mut apply_failure = None;
     if r.kind == QuestionKind::Solve {
         let a = r
             .arguments
@@ -1124,6 +1125,7 @@ fn consume(
         };
         enabled = target_range;
         invalid |= !same_domain(&shared, &other);
+        let same_candidate_domain = !invalid;
         chosen = None;
         if !invalid {
             let original = previous_chosen
@@ -1154,6 +1156,13 @@ fn consume(
                 invalid = chosen.is_none();
             }
         }
+        if invalid {
+            apply_failure = Some(if same_candidate_domain {
+                "apply_assignment_in_solution_set"
+            } else {
+                "apply_same_candidate_domain"
+            });
+        }
         shared = other;
     }
     let mut checked_application = None;
@@ -1178,7 +1187,16 @@ fn consume(
     };
     let mut ranges = BTreeMap::new();
     let mut outputs = BTreeMap::new();
-    let (claim, status) = if invalid {
+    let (claim, status) = if let Some(requirement) = apply_failure {
+        let label = change_result::value(&mut b, &Scalar::Text(requirement.into()))?;
+        let operands = std::iter::once(label)
+            .chain(inputs.iter().copied())
+            .collect();
+        (
+            b.proposition("constructible", operands, vec![], Decision::Refuted)?,
+            Decision::Refuted,
+        )
+    } else if invalid {
         (
             condition(&mut b, r, inputs.clone(), Decision::Refuted)?,
             Decision::Refuted,

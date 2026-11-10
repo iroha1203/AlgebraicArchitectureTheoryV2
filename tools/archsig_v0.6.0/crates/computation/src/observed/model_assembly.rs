@@ -55,7 +55,7 @@ pub(super) fn rejected(detail: impl Into<String>, facts: Vec<Fact>) -> Preparati
         repaired: [None, None],
     })
 }
-fn observed_fact(s: &Subject, f: &archsig_input::archmap::Field) -> Fact {
+pub(super) fn observed_fact(s: &Subject, f: &archsig_input::archmap::Field) -> Fact {
     let mut fact = field_fact(s, f);
     if let Slot::Known { atom, .. } = &f.slot {
         fact.atom = Some(atom.clone());

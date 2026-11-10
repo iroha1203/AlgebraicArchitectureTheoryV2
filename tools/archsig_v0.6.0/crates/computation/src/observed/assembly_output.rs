@@ -45,6 +45,41 @@ fn input(
     let archsig_input::law::model::Signature::View { returns, body, .. } = &d.signature else {
         return Err(internal!("組立て入力がViewでない").into());
     };
+    let inputs: Vec<_> = a.bindings.iter().map(|v| v.value).chain(a.design).collect();
+    let mut scope = read.metadata.scope.clone();
+    for (quantifier, members) in &read.domains {
+        if !read.metadata.scope.quantifiers.contains(quantifier) {
+            continue;
+        }
+        let mut elements = Vec::new();
+        for member in members {
+            e.control.checkpoint(Checkpoint::ConfigurationMap)?;
+            elements.push(b.scalar(
+                NodeType::Value(member.ty()),
+                "binding",
+                member.clone(),
+                inputs.clone(),
+            )?);
+        }
+        let domain = b.push(
+            NodeType::Domain,
+            "domain",
+            Json::obj([
+                ("kind", Json::str("finite")),
+                ("type", quantifier.ty.wire()),
+                (
+                    "elements",
+                    Json::Arr(elements.iter().map(|element| element.wire()).collect()),
+                ),
+            ]),
+            inputs.iter().chain(&elements).copied().collect(),
+            None,
+        )?;
+        scope.add_quantifier(Quantifier {
+            domain: Some(domain),
+            ..quantifier.clone()
+        });
+    }
     let source = b.push(
         NodeType::Expression(returns.erase()),
         "expression",
@@ -69,7 +104,7 @@ fn input(
                 ),
             ),
         ]),
-        a.bindings.iter().map(|v| v.value).chain(a.design).collect(),
+        inputs,
         None,
     )?;
     let part = &mut b.parts[source.0 - b.base];
@@ -78,7 +113,7 @@ fn input(
         .extend(read.metadata.support.iter().cloned());
     part.support.make_owned().sort();
     part.support.make_owned().dedup();
-    part.scope.merge(&read.metadata.scope);
+    part.scope.merge(&scope);
     let value = read
         .value
         .as_ref()

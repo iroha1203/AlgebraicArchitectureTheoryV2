@@ -15,6 +15,7 @@ use std::{collections::BTreeMap, sync::Arc};
 pub(super) struct Read {
     pub metadata: family::Read,
     pub value: Option<Scalar>,
+    pub domains: Vec<(Quantifier, Vec<Scalar>)>,
     pub unsupported: Option<model_assembly::Unsupported>,
 }
 pub(super) fn read(
@@ -22,8 +23,17 @@ pub(super) fn read(
     name: &str,
     bindings: &[(String, Scalar)],
 ) -> Result<Read, ValidationFailure> {
-    match family::read_with_value(env, name, bindings) {
-        Ok((mut metadata, value)) => {
+    read_with_domains(env, name, bindings, false)
+}
+
+fn read_with_domains(
+    env: &Environment<'_>,
+    name: &str,
+    bindings: &[(String, Scalar)],
+    capture: bool,
+) -> Result<Read, ValidationFailure> {
+    match env.with_assembly_domains(capture, || family::read_with_value(env, name, bindings)) {
+        Ok(((mut metadata, value), domains)) => {
             // The read collector records positions; native support records actual atoms.
             metadata
                 .support
@@ -51,6 +61,7 @@ pub(super) fn read(
             Ok(Read {
                 metadata,
                 value,
+                domains,
                 unsupported: None,
             })
         }
@@ -80,6 +91,7 @@ pub(super) fn read(
                     scope,
                 },
                 value: None,
+                domains: vec![],
                 unsupported: Some(model_assembly::Unsupported {
                     detail: feature,
                     location,
@@ -367,11 +379,15 @@ pub(super) fn prepare(
                 scope: Scope::default(),
             },
             value: None,
+            domains: vec![],
             unsupported: None,
         };
         (unread(), unread())
     } else {
-        (read(reader, head, &values)?, read(reader, along, &values)?)
+        (
+            read_with_domains(reader, head, &values, design.is_some())?,
+            read_with_domains(reader, along, &values, design.is_some())?,
+        )
     };
     let mut missing = fragments.metadata.missing.clone();
     missing.extend(shared.metadata.missing.iter().cloned());

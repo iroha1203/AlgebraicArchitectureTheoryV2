@@ -554,6 +554,16 @@ impl<'a> Environment<'a> {
             nodes,
         ))
     }
+    pub(super) fn with_assembly_domains<T>(
+        &self,
+        enabled: bool,
+        read: impl FnOnce() -> Result<T, ValidationFailure>,
+    ) -> Result<(T, Vec<(Quantifier, Vec<Scalar>)>), ValidationFailure> {
+        let capture = self.state.assembly_domains.scoped(enabled.then(Vec::new));
+        let value = read();
+        let domains = capture.restore().unwrap_or_default();
+        Ok((value?, domains))
+    }
     pub(in crate::observed) fn fixed_values(&self) -> Vec<(Fact, Scalar)> {
         let mut values = self
             .state
@@ -9288,7 +9298,8 @@ impl<'a> Environment<'a> {
                     .iter()
                     .any(|old| old.occurrence == q.occurrence)
             });
-            scope.add_quantifier(spec.descriptor(None, self.state.scoped_context.get()));
+            let descriptor = spec.descriptor(None, self.state.scoped_context.get());
+            scope.add_quantifier(descriptor.clone());
             scope.merge_quantifiers(&input.scope);
             let Some(items) = members else {
                 return Ok(SourceValue {
@@ -9303,6 +9314,13 @@ impl<'a> Environment<'a> {
                     scalar_scope: None,
                 });
             };
+            if let Some(domains) = self.state.assembly_domains.borrow_mut().as_mut()
+                && !domains
+                    .iter()
+                    .any(|(q, values)| q == &descriptor && values == &items)
+            {
+                domains.push((descriptor, items.clone()));
+            }
             if let Some(frame) = self
                 .state
                 .evaluation_capture

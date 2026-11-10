@@ -4,6 +4,7 @@ reading E12Compare {
   view routes(t:Route):Set<Route> = set<Route>{t};
   view labelOf(p:Design):Text=p.label;
   view within(p:Design):Set<Design> = set<Design>{p};
+  view nowhere():Set<Design> = set<Design>{};
   law optional allowed(p:Design):true;
   change choose(p:Design,q:Bool)=p with {split=q};
   law optional consumed(s:State):s.quantity=16;

@@ -97,6 +97,14 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
                 .any(|r| s(get(r, "code")) == "condition_failed")
         );
     }
+    for (id, expected) in [
+        ("wrongDomain", "apply_same_candidate_domain"),
+        ("excludedAssignment", "apply_assignment_in_solution_set"),
+    ] {
+        let operands = arr(get(value(output(id, "proposition")), "operands"));
+        assert_eq!(s(value(&operands[0])), expected);
+        assert_eq!(operands.len(), 3);
+    }
     let [failure] = arr(get(answer("wrongIdentity"), "counterexamples")) else {
         panic!("design identity counterexample");
     };
@@ -276,6 +284,24 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
     assert_eq!(s(get(fixed1, "status")), "refuted");
     assert_eq!(s(get(get(fixed1, "scope"), "domain")), "finite_model");
     assert_eq!(s(get(get(fixed0, "scope"), "domain")), "finite_model");
-    assert!(!arr(get(get(fixed0, "scope"), "quantifiers")).is_empty());
-    assert!(!arr(get(get(fixed1, "scope"), "quantifiers")).is_empty());
+    let nodes = arr(get(&result, "nodes"));
+    let node = |reference: &JNode| {
+        nodes
+            .iter()
+            .find(|node| s(get(node, "id")) == s(get(reference, "node")))
+            .unwrap()
+    };
+    for answer in [fixed0, fixed1] {
+        let quantifiers = arr(get(get(answer, "scope"), "quantifiers"));
+        let binder = quantifiers
+            .iter()
+            .find(|q| s(get(q, "name")) == "b")
+            .unwrap();
+        let domain = get(node(get(binder, "domain")), "value");
+        assert_eq!(s(get(domain, "kind")), "finite");
+        let [element] = arr(get(domain, "elements")) else {
+            panic!("the actual singleton Bool domain");
+        };
+        assert_eq!(get(node(element), "value").value, JValue::Bool(true));
+    }
 }

@@ -942,9 +942,31 @@ fn compute(
                 ..
             }) = &failed
         {
-            let subject = e
-                .indexes
-                .subject(&endpoint.subject.snapshot, &endpoint.subject.subject)?;
+            use super::model_map_assembly::CoverageWitness;
+            let (fact, comparison, detail) = match endpoint {
+                CoverageWitness::Outside {
+                    from: true,
+                    subject,
+                } => (
+                    subject,
+                    refs[0],
+                    "correspondence source is outside the selected source fragments",
+                ),
+                CoverageWitness::Outside {
+                    from: false,
+                    subject,
+                } => (
+                    subject,
+                    refs[1],
+                    "correspondence target is outside the selected target fragments",
+                ),
+                CoverageWitness::Uncovered(subject) => (
+                    subject,
+                    value.unwrap_or(expression),
+                    "selected source fragment has no local correspondence",
+                ),
+            };
+            let subject = e.indexes.subject(&fact.snapshot, &fact.subject)?;
             let entity = subject.ty.to_string();
             left = b.scalar(
                 NodeType::Value(Type::Ref(entity.clone())),
@@ -956,12 +978,8 @@ fn compute(
                 },
                 vec![expression],
             )?;
-            right = refs[usize::from(!endpoint.from)];
-            endpoint_detail = Some(if endpoint.from {
-                "correspondence source is outside the selected source fragments"
-            } else {
-                "correspondence target is outside the selected target fragments"
-            });
+            right = comparison;
+            endpoint_detail = Some(detail);
         }
         if fixed_design
             && let Some(Failure::Preservation {
