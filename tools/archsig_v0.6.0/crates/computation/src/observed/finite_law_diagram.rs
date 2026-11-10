@@ -1225,9 +1225,24 @@ impl Source {
             return Ok(FiniteAttempt::Incomplete);
         }
         // 以後は完成した族だけを消費する。元parameter履歴をpartsと同時保持しない。
+        let mut selected = Vec::new();
+        for (slot, value) in architecture.overrides() {
+            tick(c)?;
+            let has_reference = crate::construction::has_reference(&inputs, &value.ty(), c)
+                .map_err(|failure| match failure {
+                    crate::construction::ConstructionFailure::Stopped(signal) => {
+                        ValidationFailure::Stop(signal)
+                    }
+                    other => other.internal_context("有限状態の更新型".into()).into(),
+                })?;
+            if !has_reference {
+                selected.push((slot.clone(), value.clone()));
+            }
+        }
         let family = full
             .into_family()
-            .ok_or(internal!("確認済みの自動Law族がない"))?;
+            .ok_or(internal!("確認済みの自動Law族がない"))?
+            .with_selected_state(&inputs, selected, c)?;
         let f = &family;
         let mut parts = vec![];
         let shared = basis(f, base, &mut parts, c)?;

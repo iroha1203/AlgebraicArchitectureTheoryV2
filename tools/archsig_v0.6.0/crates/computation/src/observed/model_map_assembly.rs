@@ -269,11 +269,37 @@ pub(super) fn verify(
     let declarations = Arc::new(maps::declaration_correspondence_constructed(
         &inputs, &glued.map, c,
     )?);
+    let states = if source.repaired_values.is_empty() && target.repaired_values.is_empty() {
+        None
+    } else {
+        let prepare = |model: &Model| {
+            super::environment::Environment::with_primitive_valuation(
+                &inputs,
+                &model.repaired_values,
+                c,
+            )
+            .map_err(|failure| match failure {
+                super::result::ValidationFailure::Stop(signal) => {
+                    ConstructionFailure::Stopped(signal)
+                }
+                other => ConstructionFailure::Inconsistent(
+                    other.internal_context("修復済み写像の始終状態".into()),
+                ),
+            })
+        };
+        Some([prepare(source)?, prepare(target)?])
+    };
     let mut laws = Vec::new();
     let readings = evaluations[0].readings();
     let mut unsupported_instances = Vec::new();
     for (index, row) in readings.instances().iter().enumerate() {
         if row.declaration().kind != "law" {
+            continue;
+        }
+        if !row.parameters().is_empty()
+            && (!source.repaired_values.is_empty() || !target.repaired_values.is_empty())
+        {
+            unsupported_instances.push(index);
             continue;
         }
         for parameter in row.parameters() {
@@ -305,7 +331,7 @@ pub(super) fn verify(
                 evaluations.clone(),
                 object,
                 instance,
-                [&source.repaired_values, &target.repaired_values],
+                states.as_ref().map(|[source, target]| [source, target]),
                 c,
             )?);
         }

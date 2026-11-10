@@ -411,22 +411,30 @@ pub(super) fn failed(
                 unreachable!()
             };
             let (left, right) = if let Some((left, right)) = &rejection.values {
-                let left = b.scalar(
-                    NodeType::Value(left.ty()),
-                    "binding",
-                    left.clone(),
-                    vec![head, along],
-                )?;
-                let right = b.scalar(
-                    NodeType::Value(right.ty()),
-                    "binding",
-                    right.clone(),
-                    vec![head, along],
-                )?;
                 let reading = plan.architecture.witness.construction().reading();
-                attach_facts(&mut b, e, reading, left, &rejection.facts)?;
-                attach_facts(&mut b, e, reading, right, &rejection.facts)?;
-                (left, right)
+                let has_repaired = rejection.repaired.iter().any(Option::is_some);
+                let mut values = Vec::new();
+                for (value, position) in [left, right].into_iter().zip(&rejection.repaired) {
+                    let mut operands = vec![head, along];
+                    if let Some(position) = position {
+                        operands.push(
+                            *a.repaired
+                                .get(position)
+                                .ok_or(internal!("修復済み反例の元対象がない"))?,
+                        );
+                    }
+                    let reference = b.scalar(
+                        NodeType::Value(value.ty()),
+                        "binding",
+                        value.clone(),
+                        operands,
+                    )?;
+                    if !has_repaired || position.is_none() {
+                        attach_facts(&mut b, e, reading, reference, &rejection.facts)?;
+                    }
+                    values.push(reference);
+                }
+                (values[0], values[1])
             } else {
                 (head_value.unwrap_or(head), along_value.unwrap_or(along))
             };

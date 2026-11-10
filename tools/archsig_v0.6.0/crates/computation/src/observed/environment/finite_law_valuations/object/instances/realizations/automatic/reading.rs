@@ -24,7 +24,7 @@ impl<R: LawRows> AutomaticLawValuations<R> {
         if &self.value.sources != inputs.sources() {
             return Err(internal!("有限Lawの実読取りと元三入力が違う").into());
         }
-        let mut env = Environment::new(inputs, c)?;
+        let mut env = self.observed_environment(inputs, c)?;
         *env.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
         self.value.select_column_object(&mut env, column)?;
         let row = self.value.probe_column(&env, column, 0)?.row;

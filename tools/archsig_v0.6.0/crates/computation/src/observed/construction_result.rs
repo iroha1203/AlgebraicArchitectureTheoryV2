@@ -396,6 +396,14 @@ impl ConstructionValue {
             ConstructionData::Change(d) => d.overrides(g),
             ConstructionData::Quotient(d) => d.overrides(g),
             ConstructionData::SharedRepair(d) => d.overrides(g),
+            ConstructionData::ObjectComponents(d) if d.inherited_state().is_some() => {
+                let Some(Payload::Construction(parent)) =
+                    &g.get(d.inherited_state().unwrap())?.payload
+                else {
+                    return Err(internal!("部分対象の元状態がnativeでない").into());
+                };
+                parent.architecture_overrides(g)
+            }
             _ => Ok(vec![]),
         }
     }
@@ -418,6 +426,14 @@ impl ConstructionValue {
                 references.push((*index, *value));
             }
             return Ok((a.body.overrides.clone(), references));
+        }
+        if let ConstructionData::ObjectComponents(d) = &self.data
+            && let Some(reference) = d.inherited_state()
+        {
+            let Some(Payload::Construction(parent)) = &g.get(reference)?.payload else {
+                return Err(internal!("部分対象の元状態がnativeでない").into());
+            };
+            return parent.retained_architecture_overrides(g, control);
         }
         let mut values = vec![];
         let mut references = vec![];

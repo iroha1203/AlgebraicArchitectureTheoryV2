@@ -40,8 +40,17 @@ fn collect<R: LawRows>(
     }
     let e = Environment::new(inputs, c)?;
     let mut known = vec![];
+    let mut selected = vec![];
     for (index, position) in family.positions().iter().enumerate() {
         step(c)?;
+        if let Some((_, value)) = family
+            .selected_values
+            .iter()
+            .find(|(slot, _)| slot == position)
+        {
+            selected.push((index, value));
+            continue;
+        }
         let field = e.indexes.field(
             &e.state,
             &position.snapshot,
@@ -66,11 +75,15 @@ fn collect<R: LawRows>(
             return Err(internal!("有限観測fiberの原始座標数が違う").into());
         }
         let mut matches = true;
-        for (coordinate, _, value) in &known {
+        for (coordinate, value) in known
+            .iter()
+            .map(|(i, _, v)| (*i, v))
+            .chain(selected.iter().map(|(i, v)| (*i, *v)))
+        {
             step(c)?;
             matches &= data::equal(
                 point
-                    .get(*coordinate)
+                    .get(coordinate)
                     .ok_or(internal!("有限観測の座標がない"))?,
                 value,
                 c,
@@ -80,7 +93,7 @@ fn collect<R: LawRows>(
             points.push(index);
         }
     }
-    if known.len() == family.positions().len()
+    if known.len() + selected.len() == family.positions().len()
         && (points.len() > 1 || family.observed_point() != points.first().copied())
     {
         return Err(internal!("全既知観測のfiberが元の一意観測点と違う").into());

@@ -39,6 +39,7 @@ enum Part {
         root: NodeRef,
         configuration: NodeRef,
         laws: Vec<NodeRef>,
+        state: Option<NodeRef>,
     },
     Component {
         base: bool,
@@ -68,10 +69,12 @@ impl Part {
                 root,
                 configuration,
                 laws,
+                state,
                 ..
             } => std::iter::once(*root)
                 .chain(std::iter::once(*configuration))
                 .chain(laws.iter().copied())
+                .chain(state.iter().copied())
                 .collect(),
             Self::Component {
                 subject, object, ..
@@ -131,14 +134,23 @@ impl Part {
                 root,
                 configuration,
                 laws,
-            } => Json::obj([
-                ("reading", Json::str(reading)),
-                ("root", root.wire()),
-                ("configuration", configuration.wire()),
-                ("laws", refs(laws)),
-                ("internal_arrows", Json::Arr(vec![])),
-                ("overrides", Json::Arr(vec![])),
-            ]),
+                state,
+            } => {
+                let mut wire = Json::obj([
+                    ("reading", Json::str(reading)),
+                    ("root", root.wire()),
+                    ("configuration", configuration.wire()),
+                    ("laws", refs(laws)),
+                    ("internal_arrows", Json::Arr(vec![])),
+                    ("overrides", Json::Arr(vec![])),
+                ]);
+                if let Some(state) = state
+                    && let Json::Obj(fields) = &mut wire
+                {
+                    fields.insert("state_of".into(), state.wire());
+                }
+                wire
+            }
             Self::Component {
                 base,
                 subject,
@@ -293,6 +305,12 @@ impl Data {
     fn part(&self) -> &Part {
         &self.source.parts[self.index]
     }
+    pub(super) fn inherited_state(&self) -> Option<NodeRef> {
+        match self.part() {
+            Part::Architecture { state, .. } => *state,
+            _ => None,
+        }
+    }
     pub(super) fn scalar(&self) -> Option<&Scalar> {
         match self.source.parts.get(self.index) {
             Some(Part::Subject(v)) => Some(v),
@@ -402,6 +420,23 @@ fn plan(
     if construction.base().configuration().is_none() || !construction.local_domain().is_complete() {
         return Ok(None);
     }
+    let mut inherited_state = None;
+    for (_, value) in a.overrides() {
+        tick(c)?;
+        if !crate::construction::has_reference(inputs, &value.ty(), c).map_err(
+            |error| match error {
+                crate::construction::ConstructionFailure::Stopped(signal) => {
+                    ValidationFailure::Stop(signal)
+                }
+                other => other
+                    .internal_context("部分対象の修復値型が違う".into())
+                    .into(),
+            },
+        )? {
+            inherited_state = Some(reference);
+            break;
+        }
+    }
     let readings = a.readings();
     if readings.objects().len() != construction.components().len() + 1 {
         return Err(internal!("対象族と元部分構成の件数が違う").into());
@@ -495,6 +530,7 @@ fn plan(
                     root: subject,
                     configuration,
                     laws: selected_laws,
+                    state: inherited_state,
                 },
                 c,
             )?;

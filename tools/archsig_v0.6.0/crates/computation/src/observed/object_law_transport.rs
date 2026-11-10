@@ -323,17 +323,13 @@ fn reading(e: &ObjectEvaluation, c: &Control) -> Result<LawBooleanReading, Const
 }
 
 fn reading_from_state(
-    inputs: &CheckedInputs,
+    state: &super::environment::Environment<'_>,
     readings: &ObjectReadingInstances,
     object: usize,
     instance: usize,
-    values: &[(FactPointer, super::result::Scalar)],
     c: &Control,
 ) -> Result<LawBooleanReading, ConstructionFailure> {
-    use super::{
-        environment::Environment,
-        result::{Scalar, ValidationFailure},
-    };
+    use super::result::{Scalar, ValidationFailure};
     use crate::construction::readings::InstanceApplication;
     use archsig_common::types::Type;
     let row = &readings.instances()[instance];
@@ -361,7 +357,8 @@ fn reading_from_state(
             failure.internal_context("修復状態のLaw読取り".into()),
         ),
     };
-    let env = Environment::for_constructed_state(inputs, readings, object, values, c)
+    let env = state
+        .for_constructed_state(readings, object, c)
         .map_err(classify)?;
     let mut bindings = Vec::new();
     for binding in row.bindings() {
@@ -379,7 +376,7 @@ fn reading_from_state(
             },
         ));
     }
-    let declaration = &inputs.law().declarations()[&row.declaration().name];
+    let declaration = &env.indexes.inputs.law().declarations()[&row.declaration().name];
     let evaluation = match env.local_point_without_trace(declaration, &bindings) {
         Ok((evaluation, _)) => evaluation,
         Err(ValidationFailure::UnsupportedExpression { .. }) => return Ok(result),
@@ -528,7 +525,7 @@ pub(crate) fn object_law_transport_on(
         evaluations,
         object,
         instance,
-        [&[], &[]],
+        None,
         c,
     )
 }
@@ -541,7 +538,7 @@ pub(crate) fn object_law_transport_on_state(
     evaluations: [Arc<super::object_evaluate::LawEvaluationCache>; 2],
     object: usize,
     instance: usize,
-    states: [&[(FactPointer, super::result::Scalar)]; 2],
+    states: Option<[&super::environment::Environment<'_>; 2]>,
     c: &Control,
 ) -> Result<ObjectLawTransport, ObjectLawTransportFailure> {
     let source_readings = evaluations[0].readings().clone();
@@ -645,19 +642,13 @@ pub(crate) fn object_law_transport_on_state(
             tick(c)?;
             return Ok(());
         }
-        if states.iter().any(|state| !state.is_empty()) {
+        if let Some([source_state, target_state]) = states {
             if r.instance().parameters().is_empty()
                 && r.target_readings.instances()[ti].parameters().is_empty()
             {
-                let source = reading_from_state(
-                    &inputs,
-                    &r.source_readings,
-                    object,
-                    instance,
-                    states[0],
-                    c,
-                )?;
-                let target = reading_from_state(&inputs, &r.target_readings, to, ti, states[1], c)?;
+                let source =
+                    reading_from_state(source_state, &r.source_readings, object, instance, c)?;
+                let target = reading_from_state(target_state, &r.target_readings, to, ti, c)?;
                 r.outcome = family::compare(&source, &target);
                 r.source_reading = Some(source);
                 r.target_reading = Some(target);

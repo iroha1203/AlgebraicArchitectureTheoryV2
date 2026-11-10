@@ -471,7 +471,7 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 | LawInstance | `{name:QName,role:Role,bindings:Binding[],guard?:Expression,body:Expression,occurrence:Location}` |
 | Proposition | `{predicate:Predicate,operands:Ref[],quantifiers:Quantifier[]}` |
 | Configuration | `{family:FactPointer[],requirements:FactPointer[],relations:[FactPointer,FactPointer][],identifications:[FactPointer,FactPointer][]}` |
-| Architecture | `{reading:QName,root:Ref,configuration:Configuration,laws:LawInstance[],internal_arrows:Ref[],overrides:{slot:Slot,value:Ref}[]}` |
+| Architecture | `{reading:QName,root:Ref,configuration:Configuration,laws:LawInstance[],internal_arrows:Ref[],overrides:{slot:Slot,value:Ref}[],state_of?:Architecture}` |
 | ModelAssembly | `{reading:QName,fragments:Ref,interfaces:Ref,object:Architecture,algebra:ObjectAlgebra,inclusions:{fragment:Architecture,applied?:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,generators:{source:Operation,target:Operation,proposition:Proposition}[]}[]}` |
 | ModelMapAssembly | `{source:Architecture,target:Architecture,source_assembly:ModelAssembly,target_assembly:ModelAssembly,correspondences:Ref,configuration_map:ConfigurationMap,locals:{correspondence:Ref,source:Architecture,target:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,proposition:Proposition}[],generators:{source:Operation,target:Operation,proposition:Proposition}[],laws:{source_object:ObjectComponent,target_object:ObjectComponent,source_law:LawInstance,target_law:LawInstance,proposition:Proposition}[]}` |
 | AtomUniverse | `{atoms:FactPointer[]}` |
@@ -480,6 +480,9 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 | ConfigurationMap | `{candidate:MapCandidate}` |
 | Operation | `{source:Architecture,target:Architecture,candidate:MapCandidate,configuration_map:ConfigurationMap,action:AtomMap,name:OperationName,word:Ref[]}` |
 | Path | `{reading:QName,source:Ref,target:Ref,generators:Ref[]}` |
+
+修復済みの全体から作る owned component の Architecture は `state_of` を通じて元対象の
+更新値を共有する。部分対象の所属域と Law の適用は、その component に対して確認する。
 
 ModelAssembly の fragments と interfaces は、元 View・束縛から評価した型付き値を指す。
 `local.<parameter>` を選んだ担当は `inclusions[].applied` がその `apply` の出力を直接参照する。

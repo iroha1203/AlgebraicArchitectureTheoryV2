@@ -15,16 +15,19 @@ impl<'a> Environment<'a> {
     }
 
     pub(in crate::observed) fn for_constructed_state(
-        inputs: &'a CheckedInputs,
+        &self,
         readings: &crate::construction::readings::ObjectReadingInstances,
         object: usize,
-        assignments: &[(Fact, Scalar)],
         control: &Control,
     ) -> Result<Self, ValidationFailure> {
-        let mut environment = Self::with_primitive_valuation(inputs, assignments, control)?;
+        let mut environment = self.fresh_candidate(control);
+        environment.indexes.primitive_valuation = self.indexes.primitive_valuation.clone();
         environment.indexes.object = Some(std::sync::Arc::new(
             crate::observed::object_evaluate::ObjectDomain::from_readings(
-                inputs, readings, object, control,
+                self.indexes.inputs,
+                readings,
+                object,
+                control,
             )?,
         ));
         environment.indexes.valuation_domain = super::indexes::ValuationDomain::Object;

@@ -274,7 +274,7 @@ configuration写像検査へ渡し、元担当を一件ずつ覆うことと、�
 これらの生成元と既存の合成を使い、語への延長を構成する。
 
 Lawの宣言・role・元の出現と束縛を保持する。構成済みの始終readingsと上記の写像を既存の
-Law移送へ渡し、対応instanceの適用とBool読取りを比較する。残るparameterは既存の有限値移送で
+Law移送へ渡し、対応instanceの適用とBool読取りを比較する。原始状態同士で残る parameter は既存の有限値移送で
 型域と実像を構成し、その全域で比較する。欠測・型域の構成条件不成立・算法未対応を分ける。
 この結果はconfiguration・生成操作・LawについてのModelMapAssemblyとし、各対象自身のLaw成立は
 その対象をonにした元Lawのcheckで計算する。

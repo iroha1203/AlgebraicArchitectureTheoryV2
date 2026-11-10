@@ -434,7 +434,8 @@ owned型とfield位置の対応は同じ元宣言を結ぶものとする。
 
 局所対応の型・値・参照・configuration保存、重なりの像の一致、再制限の可換性、
 全体生成操作の保存とLaw移送を核が検査する。Law移送はrequired status・適用とBool読取りを
-元の出現と束縛で比較する。初段は残るparameterの全域を既存の有限型域算法で構成できるLaw族を扱う。
+元の出現と束縛で比較する。原始状態同士では、残る parameter の全域を構成できる有限 Law 族を扱う。
+修復済み状態を含む場合は、束縛済みの Law を実際の更新値で読み、未束縛の族は算法未対応とする。
 Configuration保存を確認した時点でconfiguration_mapを保持し、操作/Law保存も確認した場合だけ
 ModelMapAssemblyを返す。確認済みの構造ごとにfieldを区別する。
 欠測は元位置付きmissing_observation、適用族外は元宣言・式と束縛付きunsupported_algorithm、
