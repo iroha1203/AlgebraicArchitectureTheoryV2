@@ -491,7 +491,8 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 ModelAssembly の fragments と interfaces は、元 View・束縛から評価した型付き値を指す。
 `design` は両 View の評価に使った実 `apply` の出力を指す。
 設計選択付きの組立てとその移行は、選択した構成を回答の範囲とする。構成上の代数の
-割当ては各導出に属し、別の設計候補まで回答の範囲を広げない。明示的な量化子は保持する。
+割当てと代数の量化域は各導出に属する。回答の Scope は実際に読んだ担当・共有・対応 View の
+量化出現を保持し、後段の構成が未決の場合も、確定した有限域を辿れる。
 `local.<parameter>` を選んだ担当は `inclusions[].applied` がその `apply` の出力を直接参照する。
 `fragment` は同じ更新値を保ち、組立てと共通の U で包含・再制限を検査するための局所対象である。
 各 inclusion.map は同じ全体 object を終域とし、generators は局所の各生成操作の像と全 U 上の

@@ -46,24 +46,28 @@ pub(super) fn materialized_scope(
             continue;
         }
         let mut elements = Vec::new();
-        for member in members {
-            e.control.checkpoint(Checkpoint::ConfigurationMap)?;
-            elements.push(b.captured_scalar(member, inputs, &e.control)?);
+        let mut wire = BTreeMap::from([("type".into(), quantifier.ty.wire())]);
+        if let Some(members) = members {
+            for member in members {
+                e.control.checkpoint(Checkpoint::ConfigurationMap)?;
+                elements.push(b.captured_scalar(member, inputs, &e.control)?);
+            }
+            wire.insert("kind".into(), Json::str("finite"));
+            wire.insert(
+                "elements".into(),
+                Json::Arr(elements.iter().map(|element| element.wire()).collect()),
+            );
+        } else {
+            wire.insert("kind".into(), Json::str("type"));
         }
         let domain = b.push(
             NodeType::Domain,
             "domain",
-            Json::obj([
-                ("kind", Json::str("finite")),
-                ("type", quantifier.ty.wire()),
-                (
-                    "elements",
-                    Json::Arr(elements.iter().map(|element| element.wire()).collect()),
-                ),
-            ]),
+            Json::Obj(wire.into()),
             inputs.iter().chain(&elements).copied().collect(),
             None,
         )?;
+        b.parts[domain.0 - b.base].domain_type = Some(quantifier.ty.clone());
         scope.add_quantifier(Quantifier {
             domain: Some(domain),
             ..quantifier.clone()
@@ -125,6 +129,37 @@ fn input(
         .transpose()?;
     Ok((source, value))
 }
+pub(super) fn view_scope(
+    b: &mut Builder<'_>,
+    e: &Environment<'_>,
+    assembly: &Assembly,
+) -> Result<Scope, ValidationFailure> {
+    let inputs = assembly
+        .bindings
+        .iter()
+        .map(|binding| binding.value)
+        .chain(assembly.design)
+        .collect::<Vec<_>>();
+    let mut scope = materialized_scope(b, e, &assembly.fragments, &inputs)?;
+    scope.merge(&materialized_scope(b, e, &assembly.interfaces, &inputs)?);
+    for input in inputs {
+        scope.merge_quantifiers(&b.g.get(input)?.scope);
+    }
+    Ok(scope)
+}
+
+pub(super) fn select_quantifiers(part: &mut super::build_result::Part, scope: Scope) {
+    if part.ty == NodeType::Proposition
+        && let Some(Json::Obj(fields)) = part.wire_mut()
+    {
+        fields.insert(
+            "quantifiers".into(),
+            Json::Arr(scope.quantifiers.iter().map(Quantifier::wire).collect()),
+        );
+    }
+    part.scope.quantifiers = scope.quantifiers;
+}
+
 fn attach_facts(
     b: &mut Builder<'_>,
     e: &Environment<'_>,
@@ -396,15 +431,8 @@ pub(super) fn append(
         selected.merge_quantifiers(&b.parts[interfaces.0 - b.base].scope);
         // Algebra proof nodes keep their own reading and scope. The assembly
         // result describes the fragment and interface views at the fixed point.
-        b.parts[result.0 - b.base].scope.quantifiers = selected.quantifiers.clone();
-        let part = &mut b.parts[claim.0 - b.base];
-        if let Some(Json::Obj(fields)) = part.wire_mut() {
-            fields.insert(
-                "quantifiers".into(),
-                Json::Arr(selected.quantifiers.iter().map(Quantifier::wire).collect()),
-            );
-        }
-        part.scope.quantifiers = selected.quantifiers;
+        select_quantifiers(&mut b.parts[result.0 - b.base], selected.clone());
+        select_quantifiers(&mut b.parts[claim.0 - b.base], selected);
     }
     Ok((result, claim, deferred))
 }

@@ -318,6 +318,9 @@ impl Data {
     pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.part().support.clone(), self.part().scope.clone())
     }
+    pub(super) fn scope_domain_type(&self) -> Option<&Type> {
+        self.part().domain_type.as_ref()
+    }
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
         (self.part().support.to_vec(), self.part().scope.clone())
     }
@@ -1205,6 +1208,42 @@ fn compute_inner(
     }
     if plan.assembly.is_some() && status != Decision::Established {
         outputs.remove("object");
+    }
+    if status != Decision::Established
+        && let Some(assembly) = plan
+            .assembly
+            .as_ref()
+            .filter(|assembly| assembly.design.is_some())
+    {
+        let scoped = super::assembly_output::view_scope(&mut b, env, assembly)?;
+        // The assembly reading is known even when the later algebra is pending.
+        // Add a new outer claim so its scope refers only to earlier domains.
+        let previous = claim;
+        let label = b.scalar(
+            NodeType::Value(Type::Text),
+            "binding",
+            Scalar::Text("model_assembly".into()),
+            vec![],
+        )?;
+        let domains = scoped
+            .quantifiers
+            .iter()
+            .filter_map(|quantifier| quantifier.domain);
+        claim = b.proposition(
+            "constructible",
+            vec![label],
+            std::iter::once(previous).chain(domains).collect(),
+            status,
+        )?;
+        let part = &mut b.parts[claim.0 - base];
+        super::assembly_output::select_quantifiers(part, scoped);
+        part.evidence = evidence.clone();
+        let judgment = part
+            .judgment
+            .as_mut()
+            .ok_or(internal!("組立ての後続判断がない"))?;
+        judgment.evidence = evidence.clone();
+        outputs.insert("proposition".into(), claim);
     }
     let mut scope = b.parts[claim.0 - base].scope.clone();
     if plan

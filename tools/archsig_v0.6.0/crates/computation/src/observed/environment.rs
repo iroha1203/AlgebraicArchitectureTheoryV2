@@ -458,10 +458,14 @@ struct DomainEnumeration<'a> {
     enumeration: &'a super::finite::Enumeration,
 }
 
+type AssemblyDomain = (Quantifier, Option<Vec<Scalar>>);
+
 #[derive(Default)]
 struct AssemblyTrace {
+    fixed_design: bool,
     occurrences: BTreeMap<(Option<usize>, usize, Option<usize>), usize>,
-    domains: Vec<(Option<usize>, Quantifier, Vec<Scalar>)>,
+    captured: BTreeMap<(Option<usize>, (usize, usize), Option<super::call::Context>), Vec<usize>>,
+    domains: Vec<AssemblyDomain>,
 }
 
 pub(crate) struct Environment<'a> {
@@ -563,27 +567,57 @@ impl<'a> Environment<'a> {
     pub(super) fn with_assembly_domains<T>(
         &self,
         enabled: bool,
+        fixed_design: bool,
         read: impl FnOnce() -> Result<T, ValidationFailure>,
-    ) -> Result<(T, Vec<(Quantifier, Vec<Scalar>)>), ValidationFailure> {
+    ) -> Result<(T, Vec<AssemblyDomain>), ValidationFailure> {
         if !enabled {
             return Ok((read()?, vec![]));
         }
-        let capture = self
-            .state
-            .assembly_domains
-            .scoped(Some(AssemblyTrace::default()));
+        let capture = self.state.assembly_domains.scoped(Some(AssemblyTrace {
+            fixed_design,
+            ..AssemblyTrace::default()
+        }));
         let value = read();
         let trace = capture
             .restore()
             .ok_or(internal!("組立てViewの実量化収集がない"))?;
-        Ok((
-            value?,
-            trace
-                .domains
-                .into_iter()
-                .map(|(_, q, members)| (q, members))
-                .collect(),
-        ))
+        Ok((value?, trace.domains))
+    }
+
+    fn fixed_assembly_read(&self) -> bool {
+        self.state
+            .assembly_domains
+            .borrow()
+            .as_ref()
+            .is_some_and(|trace| trace.fixed_design)
+    }
+
+    fn capture_assembly_domain(
+        &self,
+        descriptor: &Quantifier,
+        members: Option<&[Scalar]>,
+    ) -> Result<(), ValidationFailure> {
+        let mut capture = self.state.assembly_domains.borrow_mut();
+        let Some(trace) = capture.as_mut() else {
+            return Ok(());
+        };
+        let key = (
+            self.state.assembly_occurrence.get(),
+            descriptor.occurrence,
+            descriptor.context,
+        );
+        let prior = trace.captured.entry(key).or_default();
+        for &index in prior.iter() {
+            self.tick()?;
+            if trace.domains[index].1.as_deref() == members {
+                return Ok(());
+            }
+        }
+        prior.push(trace.domains.len());
+        trace
+            .domains
+            .push((descriptor.clone(), members.map(<[_]>::to_vec)));
+        Ok(())
     }
 
     fn in_assembly_occurrence<T>(
@@ -8639,7 +8673,7 @@ impl<'a> Environment<'a> {
                 } => {
                     let condition = self.scoped_ast(*cond, variables, base, reading)?;
                     // A selected assembly reads the actual branch at the fixed point.
-                    if self.state.assembly_domains.borrow().is_some()
+                    if self.fixed_assembly_read()
                         && let Some(Scalar::Bool(take)) = condition.known_value.as_ref()
                     {
                         let branch = if *take { *then_branch } else { *else_branch };
@@ -9193,6 +9227,27 @@ impl<'a> Environment<'a> {
                 mut support,
                 ..
             } = self.scoped_ast(*lhs, variables, base, reading)?;
+            if self.fixed_assembly_read() && !left_failed && !left_pending {
+                let decisive = match (op, left.as_ref()) {
+                    (BinOp::And, Some(Scalar::Bool(false))) => Some(false),
+                    (BinOp::Or, Some(Scalar::Bool(true)))
+                    | (BinOp::Implies, Some(Scalar::Bool(false))) => Some(true),
+                    _ => None,
+                };
+                if let Some(value) = decisive {
+                    return Ok(SourceValue {
+                        condition_failed: false,
+                        condition_pending: false,
+                        symbolic: None,
+                        comparison: None,
+                        affine: None,
+                        known_value: Some(Scalar::Bool(value)),
+                        scalar_scope: Some(scope.clone()),
+                        scope,
+                        support,
+                    });
+                }
+            }
             let right = self.scoped_ast(*rhs, variables, base, reading)?;
             scope.merge(&right.scope);
             support.make_owned().extend(right.support.into_vec());
@@ -9354,6 +9409,30 @@ impl<'a> Environment<'a> {
             if let Some(value) =
                 self.universal_quantifier_source_value(id, variables, base, reading)?
             {
+                use archsig_input::law::ast::{QuantDomain, QuantSplit};
+                let law = self.indexes.inputs.law();
+                let mut at = id;
+                while let ExprKind::Quant {
+                    var,
+                    split:
+                        QuantSplit::Fixed {
+                            domain: QuantDomain::Type(_),
+                            body,
+                        },
+                    ..
+                } = &law.exprs()[at].kind
+                {
+                    self.tick()?;
+                    if let Some(descriptor) = value
+                        .scope
+                        .quantifiers
+                        .iter()
+                        .find(|q| q.occurrence == var.span)
+                    {
+                        self.capture_assembly_domain(descriptor, None)?;
+                    }
+                    at = *body;
+                }
                 return Ok(value);
             }
             let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
@@ -9389,14 +9468,7 @@ impl<'a> Environment<'a> {
                     scalar_scope: None,
                 });
             };
-            if let Some(trace) = self.state.assembly_domains.borrow_mut().as_mut() {
-                let context = self.state.assembly_occurrence.get();
-                if !trace.domains.iter().any(|(at, quantifier, members)| {
-                    *at == context && quantifier == &descriptor && members == &items
-                }) {
-                    trace.domains.push((context, descriptor, items.clone()));
-                }
-            }
+            self.capture_assembly_domain(&descriptor, Some(&items))?;
             if let Some(frame) = self
                 .state
                 .evaluation_capture

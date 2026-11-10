@@ -100,13 +100,19 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
                 .any(|r| s(get(r, "code")) == "condition_failed")
         );
     }
-    for (id, expected) in [
-        ("wrongDomain", "apply_same_candidate_domain"),
-        ("excludedAssignment", "apply_assignment_in_solution_set"),
+    for (id, expected, solve) in [
+        ("wrongDomain", "apply_same_candidate_domain", "otherSolve"),
+        (
+            "excludedAssignment",
+            "apply_assignment_in_solution_set",
+            "restrictedSolve",
+        ),
     ] {
         let operands = arr(get(value(output(id, "proposition")), "operands"));
         assert_eq!(s(value(&operands[0])), expected);
         assert_eq!(operands.len(), 3);
+        assert_eq!(operands[1].value, output("planPick1", "assignment").value);
+        assert_eq!(operands[2].value, output(solve, "solutions").value);
     }
     let [failure] = arr(get(answer("wrongIdentity"), "counterexamples")) else {
         panic!("design identity counterexample");
@@ -242,6 +248,8 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
         .replace("  view selected", concat!(
             "  view external(p:Design):Design=let k=forall z:Z . z=z in if k then p else p;
 ",
+            "  view same(f:Set<Root>):Bool=forall r in f . r=r;
+",
             "  view holds(s:State):Bool=forall v in list<Option<Path<State,State>>>[some(identity(s))] . v=v;
 ",
             "  view selected",
@@ -250,7 +258,8 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
         .replace(
             "if p.split then p.new",
             concat!(
-                "if holds(x) and holds(x) and (forall b in list<Bool>[true] . p.split=b) then ",
+                "if holds(x) and holds(x) and (forall b in list<Bool>[true] . p.split=b) ",
+                "and (forall ignored in list<Bool>[true] . y.quantity=0) then ",
                 "(if (forall absent in list<Bool>[true] . y.quantity=0) then p.new else p.new)",
             ),
         )
@@ -271,6 +280,7 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
     ] {
         asks.push(format!("{id}=assemble(E12Compare.selected,on=@comparison/rust-output1,along=E12Compare.interfaces,p=$bindDesign.value{endpoints}{selected})"));
     }
+    asks.push("reuseFragments=evaluate(E12Compare.same,f=$fixed0.assembly.fragments)".into());
     let mut args = vec![
         "run",
         "--atom-definition",
@@ -297,6 +307,11 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
         .iter()
         .find(|a| s(get(a, "id")) == "fixed1")
         .unwrap();
+    let reused = answers
+        .iter()
+        .find(|a| s(get(a, "id")) == "reuseFragments")
+        .unwrap();
+    assert_eq!(s(get(reused, "status")), "established");
     assert_eq!(s(get(fixed0, "status")), "established");
     assert_eq!(s(get(fixed1, "status")), "refuted");
     assert_eq!(s(get(get(fixed1, "scope"), "domain")), "finite_model");
@@ -357,7 +372,7 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
     assert_eq!(atoms.len() + 1, original);
     std::fs::write(dir.join("archmap.json"), map.canonical()).unwrap();
     args[8] = "inactive";
-    args.truncate(args.len() - 2);
+    args.truncate(args.len() - 4);
     let run = run_binary(&dir, &args);
     assert_eq!(run.code, 0, "{}{}", run.stdout, run.stderr);
     let result = result_json(&dir, &run);
@@ -366,5 +381,9 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
         .find(|a| s(get(a, "id")) == "fixed0")
         .unwrap();
     let quantifiers = arr(get(get(fixed0, "scope"), "quantifiers"));
-    assert!(quantifiers.iter().all(|q| s(get(q, "name")) != "absent"));
+    assert!(
+        quantifiers
+            .iter()
+            .all(|q| !matches!(s(get(q, "name")), "absent" | "ignored"))
+    );
 }

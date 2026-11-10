@@ -7,10 +7,7 @@ use crate::construction::{
 };
 use archsig_common::control::{Checkpoint, Control};
 use archsig_input::{archmap::Fact, input::CheckedInputs};
-use std::{
-    collections::{BTreeMap, BTreeSet},
-    sync::Arc,
-};
+use std::{collections::BTreeMap, sync::Arc};
 
 #[derive(Debug)]
 pub(super) struct Local {
@@ -42,6 +39,7 @@ impl SquareKind {
 pub(super) enum CoverageWitness {
     Outside { from: bool, subject: Fact },
     Uncovered(Fact),
+    Duplicate { first: Fact, second: Fact },
 }
 
 #[derive(Debug)]
@@ -460,7 +458,7 @@ pub(super) fn glue(
     c: &Control,
 ) -> Result<Result<Glued, Failure>, ConstructionFailure> {
     tick(c)?;
-    let mut covered = BTreeSet::new();
+    let mut covered = BTreeMap::new();
     for local in &locals {
         tick(c)?;
         let (Some(s), Some(t)) = (
@@ -472,14 +470,18 @@ pub(super) fn glue(
                 facts: vec![local.correspondence.clone()],
             }));
         };
-        if !covered.insert(local.source)
+        let duplicate = covered.insert(local.source, &local.correspondence);
+        if duplicate.is_some()
             || local.map.candidate().source_root() != s.root()
             || local.map.candidate().target_root() != t.root()
             || local.map.candidate().reading() != s.reading()
             || local.map.candidate().to_reading() != t.reading()
         {
             return Ok(Err(Failure::Coverage {
-                endpoint: None,
+                endpoint: duplicate.map(|first| CoverageWitness::Duplicate {
+                    first: first.clone(),
+                    second: local.correspondence.clone(),
+                }),
                 facts: vec![
                     local.correspondence.clone(),
                     s.root().clone(),
@@ -493,7 +495,7 @@ pub(super) fn glue(
             .fragments
             .iter()
             .enumerate()
-            .filter(|(i, _)| !covered.contains(i))
+            .filter(|(i, _)| !covered.contains_key(i))
             .map(|(_, s)| s.root().clone())
             .collect::<Vec<_>>();
         return Ok(Err(Failure::Coverage {

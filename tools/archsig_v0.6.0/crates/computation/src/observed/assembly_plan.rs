@@ -15,25 +15,26 @@ use std::{collections::BTreeMap, sync::Arc};
 pub(super) struct Read {
     pub metadata: family::Read,
     pub value: Option<Scalar>,
-    pub domains: Vec<(Quantifier, Vec<Scalar>)>,
+    pub domains: Vec<(Quantifier, Option<Vec<Scalar>>)>,
     pub unsupported: Option<model_assembly::Unsupported>,
 }
 pub(super) fn read(
     env: &Environment<'_>,
     name: &str,
     bindings: &[(String, Scalar)],
-) -> Result<Read, ValidationFailure> {
-    read_with_domains(env, name, bindings, false)
-}
-
-pub(super) fn read_with_domains(
-    env: &Environment<'_>,
-    name: &str,
-    bindings: &[(String, Scalar)],
     capture: bool,
+    fixed_design: bool,
 ) -> Result<Read, ValidationFailure> {
-    match env.with_assembly_domains(capture, || family::read_with_value(env, name, bindings)) {
+    match env.with_assembly_domains(capture, fixed_design, || {
+        family::read_with_value(env, name, bindings)
+    }) {
         Ok(((mut metadata, value), domains)) => {
+            // The evaluator can determine a value for every completion, for
+            // instance when a universal test has a known counterexample.
+            if fixed_design && value.is_some() && !metadata.failed {
+                metadata.missing.clear();
+                metadata.blocked = false;
+            }
             // The read collector records positions; native support records actual atoms.
             metadata
                 .support
@@ -385,8 +386,8 @@ pub(super) fn prepare(
         (unread(), unread())
     } else {
         (
-            read_with_domains(reader, head, &values, design.is_some())?,
-            read_with_domains(reader, along, &values, design.is_some())?,
+            read(reader, head, &values, true, design.is_some())?,
+            read(reader, along, &values, true, design.is_some())?,
         )
     };
     let mut missing = fragments.metadata.missing.clone();

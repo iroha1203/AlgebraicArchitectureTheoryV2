@@ -143,6 +143,9 @@ impl Data {
     pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.part().support.clone(), self.part().scope.clone())
     }
+    pub(super) fn scope_domain_type(&self) -> Option<&Type> {
+        self.part().domain_type.as_ref()
+    }
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
         (self.part().support.to_vec(), self.part().scope.clone())
     }
@@ -347,12 +350,27 @@ fn compute(
         }
     }
     let head = r.declaration().ok_or(internal!("対応Viewがない"))?;
-    let read = assembly_plan::read_with_domains(e, head, &values, fixed_design)?;
+    let read = assembly_plan::read(e, head, &values, fixed_design, fixed_design)?;
     let mut b = Builder {
         g,
         base,
         parts: vec![],
     };
+    let mut selected_scope = Scope::default();
+    if fixed_design {
+        for (origin, reference) in [(source_plan, refs[0]), (target_plan, refs[1])] {
+            let assembly = origin
+                .assembly
+                .as_ref()
+                .ok_or(internal!("移行の元組立てがない"))?;
+            let scope = if assembly.design.is_some() {
+                g.get(reference)?.scope.clone()
+            } else {
+                super::assembly_output::view_scope(&mut b, e, assembly)?
+            };
+            selected_scope.merge_quantifiers(&scope);
+        }
+    }
     let mut bindings = Vec::new();
     for (name, value) in &values {
         let at = if let Some(&reference) = binding_refs.get(name) {
@@ -436,6 +454,7 @@ fn compute(
         part.support.make_owned().dedup();
     }
     part.scope.merge(&scope);
+    selected_scope.merge_quantifiers(&part.scope);
     let value = if let Some(value) = read.value {
         let mut existing = None;
         for &reference in binding_refs.values() {
@@ -933,63 +952,11 @@ fn compute(
                 facts.push(local.correspondence.clone());
             }
         }
-        facts.sort();
-        facts.dedup();
         let mut left = value.unwrap_or(expression);
         let mut right = refs[1];
         let mut endpoint_detail = None;
-        if fixed_design
-            && let Some(Failure::Coverage {
-                endpoint: Some(endpoint),
-                ..
-            }) = &failed
-        {
-            use super::model_map_assembly::CoverageWitness;
-            let (fact, comparison, detail) = match endpoint {
-                CoverageWitness::Outside {
-                    from: true,
-                    subject,
-                } => (
-                    subject,
-                    refs[0],
-                    "correspondence source is outside the selected source fragments",
-                ),
-                CoverageWitness::Outside {
-                    from: false,
-                    subject,
-                } => (
-                    subject,
-                    refs[1],
-                    "correspondence target is outside the selected target fragments",
-                ),
-                CoverageWitness::Uncovered(subject) => (
-                    subject,
-                    value.unwrap_or(expression),
-                    "selected source fragment has no local correspondence",
-                ),
-            };
-            let subject = e.indexes.subject(&fact.snapshot, &fact.subject)?;
-            let entity = subject.ty.to_string();
-            left = b.scalar(
-                NodeType::Value(Type::Ref(entity.clone())),
-                "binding",
-                Scalar::Subject {
-                    snapshot: subject.snapshot.clone(),
-                    subject: subject.id.clone(),
-                    entity,
-                },
-                vec![expression],
-            )?;
-            right = comparison;
-            endpoint_detail = Some(detail);
-        }
-        if fixed_design
-            && let Some(Failure::Preservation {
-                reference_difference: Some([expected, actual]),
-                ..
-            }) = &failed
-        {
-            let mut endpoint = |fact: &Fact| -> Result<NodeRef, ValidationFailure> {
+        let mut binding =
+            |fact: &Fact, arguments: Vec<NodeRef>| -> Result<NodeRef, ValidationFailure> {
                 let subject = e.indexes.subject(&fact.snapshot, &fact.subject)?;
                 let entity = subject.ty.to_string();
                 b.scalar(
@@ -1000,13 +967,52 @@ fn compute(
                         subject: subject.id.clone(),
                         entity,
                     },
-                    vec![expression, refs[0], refs[1]],
+                    arguments,
                 )
             };
-            left = endpoint(expected)?;
-            right = endpoint(actual)?;
+        if fixed_design
+            && let Some(Failure::Coverage {
+                endpoint: Some(endpoint),
+                ..
+            }) = &failed
+        {
+            use super::model_map_assembly::CoverageWitness;
+            match endpoint {
+                CoverageWitness::Outside { from, subject } => {
+                    left = binding(subject, vec![expression])?;
+                    right = refs[usize::from(!*from)];
+                    endpoint_detail = Some(if *from {
+                        "correspondence source is outside the selected source fragments"
+                    } else {
+                        "correspondence target is outside the selected target fragments"
+                    });
+                }
+                CoverageWitness::Uncovered(subject) => {
+                    left = binding(subject, vec![expression])?;
+                    right = value.unwrap_or(expression);
+                    endpoint_detail = Some("selected source fragment has no local correspondence");
+                }
+                CoverageWitness::Duplicate { first, second } => {
+                    facts.push(first.clone());
+                    left = binding(first, vec![expression, refs[0]])?;
+                    right = binding(second, vec![expression, refs[0]])?;
+                    endpoint_detail =
+                        Some("two local correspondences cover the same selected source fragment");
+                }
+            }
+        }
+        if fixed_design
+            && let Some(Failure::Preservation {
+                reference_difference: Some([expected, actual]),
+                ..
+            }) = &failed
+        {
+            left = binding(expected, vec![expression, refs[0], refs[1]])?;
+            right = binding(actual, vec![expression, refs[0], refs[1]])?;
             endpoint_detail = Some("local correspondence does not preserve an observed reference");
         }
+        facts.sort();
+        facts.dedup();
         let mut counter_bindings = bindings.clone();
         let mut counter_args = vec![local_condition];
         if let Some(v) = &verified {
@@ -1202,6 +1208,9 @@ fn compute(
         judgment.evidence = evidence.clone();
     }
     part.arguments.extend(evidence.iter().copied());
+    if fixed_design {
+        super::assembly_output::select_quantifiers(part, selected_scope);
+    }
     outputs.insert("proposition".into(), claim);
     let mut scope = b.parts[claim.0 - base].scope.clone();
     if fixed_design {
