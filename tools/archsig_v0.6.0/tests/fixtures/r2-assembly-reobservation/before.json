@@ -57,16 +57,6 @@
           "id": "b",
           "type": "Assemble.Part",
           "origin": "model"
-        },
-        {
-          "id": "left",
-          "type": "Assemble.Step",
-          "origin": "model"
-        },
-        {
-          "id": "right",
-          "type": "Assemble.Step",
-          "origin": "model"
         }
       ],
       "atoms": [
@@ -157,66 +147,6 @@
           "subject": "b",
           "field": "Assemble.Part.links",
           "value": [],
-          "origin": "model"
-        },
-        {
-          "id": "left-owner",
-          "subject": "left",
-          "field": "Assemble.Step.owner",
-          "value": [
-            "before",
-            "A"
-          ],
-          "origin": "model"
-        },
-        {
-          "id": "left-from",
-          "subject": "left",
-          "field": "Assemble.Step.from",
-          "value": [
-            "before",
-            "a"
-          ],
-          "origin": "model"
-        },
-        {
-          "id": "left-to",
-          "subject": "left",
-          "field": "Assemble.Step.to",
-          "value": [
-            "before",
-            "ma"
-          ],
-          "origin": "model"
-        },
-        {
-          "id": "right-owner",
-          "subject": "right",
-          "field": "Assemble.Step.owner",
-          "value": [
-            "before",
-            "B"
-          ],
-          "origin": "model"
-        },
-        {
-          "id": "right-from",
-          "subject": "right",
-          "field": "Assemble.Step.from",
-          "value": [
-            "before",
-            "mb"
-          ],
-          "origin": "model"
-        },
-        {
-          "id": "right-to",
-          "subject": "right",
-          "field": "Assemble.Step.to",
-          "value": [
-            "before",
-            "b"
-          ],
           "origin": "model"
         }
       ]

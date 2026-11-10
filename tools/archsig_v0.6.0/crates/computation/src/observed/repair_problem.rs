@@ -336,6 +336,20 @@ fn fail(a: &mut Answer, construction: &'static str) {
         location: None,
     });
 }
+fn domain_index(
+    domain: &[Scalar],
+    value: &Scalar,
+    c: &Control,
+) -> Result<Option<usize>, ValidationFailure> {
+    for (position, member) in domain.iter().enumerate() {
+        tick(c)?;
+        if super::data::equal(member, value, c)? {
+            return Ok(Some(position));
+        }
+    }
+    Ok(None)
+}
+
 fn pins(shared: &Shared, enabled: &[bool]) -> Vec<Option<usize>> {
     let mut pins = vec![None; shared.compiled.relations.variables()];
     for o in &shared.compiled.outputs {
@@ -1135,14 +1149,7 @@ fn consume(
             );
             for i in 0..shared.compiled.parameter_count {
                 let value = &shared.compiled.domains[i][original[i]];
-                let mut index = None;
-                for (j, candidate) in other.compiled.domains[i].iter().enumerate() {
-                    tick(c)?;
-                    if crate::observed::data::equal(value, candidate, c)? {
-                        index = Some(j);
-                        break;
-                    }
-                }
+                let index = domain_index(&other.compiled.domains[i], value, c)?;
                 if index.is_none() {
                     invalid = true;
                     break;
@@ -1660,14 +1667,7 @@ pub(super) fn reobserved_membership(
             let index = i * width + k;
             let target = j * width + k;
             let original = &a.compiled.domains[index][chosen[index]];
-            let mut found = None;
-            for (position, member) in b.compiled.domains[target].iter().enumerate() {
-                tick(c)?;
-                if super::data::equal(member, original, c)? {
-                    found = Some(position);
-                    break;
-                }
-            }
+            let found = domain_index(&b.compiled.domains[target], original, c)?;
             let Some(found) = found else {
                 return Ok(Some(false));
             };

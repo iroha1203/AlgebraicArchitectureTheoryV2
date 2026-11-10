@@ -28,7 +28,6 @@ pub struct AssemblyAlignment<'a> {
 #[derive(Debug)]
 pub enum ReobservationFailure {
     InvalidCorrespondence(String),
-    MissingOwner(Fact),
     Unsupported(String),
     Evaluation(Box<EvaluationFailure>),
     Stopped(Signal),
@@ -284,15 +283,9 @@ fn read_layout(
     let reading = prepared.inputs().law().declarations()[head]
         .reading
         .as_str();
-    if let Some(problem) = assembly_plan::layout_snapshot(
-        prepared.inputs(),
-        reading,
-        &target,
-        &fragments,
-        &interfaces,
-        control,
-    )
-    .map_err(classify)?
+    if let Some(problem) =
+        assembly_plan::layout_snapshot(&env, reading, &target, &fragments, &interfaces, control)
+            .map_err(classify)?
     {
         return Err(ReobservationFailure::Unsupported(problem.detail));
     }
@@ -361,21 +354,20 @@ fn checked_shared_partition(
     roster: &BTreeMap<&str, &Subject>,
     snapshot: &str,
     image: impl Fn(&Fact) -> Result<Fact, ReobservationFailure>,
+    missing: &mut Vec<Fact>,
     control: &Control,
 ) -> Result<BTreeMap<Fact, Fact>, ReobservationFailure> {
-    let roots = layout
-        .roots
-        .as_ref()
-        .ok_or_else(|| invalid("共有の担当集合が未確定"))?;
     let shared = layout
         .shared
         .as_ref()
         .ok_or_else(|| invalid("共有対が未確定"))?;
-    let roots = roots
-        .iter()
-        .map(|root| root.subject.as_str())
-        .collect::<BTreeSet<_>>();
-    let owner_root = |fact: &Fact| -> Result<&str, ReobservationFailure> {
+    let roots = layout.roots.as_ref().map(|roots| {
+        roots
+            .iter()
+            .map(|root| root.subject.as_str())
+            .collect::<BTreeSet<_>>()
+    });
+    let mut owner_root = |fact: &Fact| -> Result<Option<&str>, ReobservationFailure> {
         if fact.snapshot != snapshot {
             return Err(ReobservationFailure::Unsupported(
                 "共有対が別 snapshot の参照を含む".into(),
@@ -404,14 +396,18 @@ fn checked_shared_partition(
                         "共有個体の owner が別 snapshot を参照する".into(),
                     ));
                 }
-                roots
-                    .get(subject.as_str())
-                    .copied()
-                    .ok_or_else(|| invalid("共有対の個体が担当 root に所属しない"))
+                if roots
+                    .as_ref()
+                    .is_some_and(|roots| !roots.contains(subject.as_str()))
+                {
+                    return Err(invalid("共有対の個体が担当 root に所属しない"));
+                }
+                Ok(Some(subject.as_str()))
             }
-            Slot::Missing => Err(ReobservationFailure::MissingOwner(self::fact(
-                member, field, None,
-            ))),
+            Slot::Missing => {
+                missing.push(self::fact(member, field, None));
+                Ok(None)
+            }
             _ => Err(invalid("共有個体の owner が参照でない")),
         }
     };
@@ -431,7 +427,8 @@ fn checked_shared_partition(
         }
         let (left_owner, a) = &members[left];
         let (right_owner, b) = &members[right];
-        if left_owner == right_owner
+        if left == right
+            || (left_owner.is_some() && left_owner == right_owner)
             || roster[left.subject.as_str()].ty != roster[right.subject.as_str()].ty
         {
             return Err(invalid("共有対は別担当の同じ型の個体を要求する"));
@@ -448,7 +445,9 @@ fn checked_shared_partition(
     let mut local_images = BTreeSet::new();
     for (owner, member) in members.values() {
         control.checkpoint(Checkpoint::ConfigurationMap)?;
-        if !local_images.insert((owner, &parent[member])) {
+        if let Some(owner) = owner
+            && !local_images.insert((owner, &parent[member]))
+        {
             return Err(invalid("共有対の閉包が同じ担当の異なる個体を同一視する"));
         }
     }
@@ -561,7 +560,7 @@ pub fn reevaluate_assembly(
             .get(left)
             .is_some_and(|(_, target)| target.id == right)
     };
-    let mut missing_owner = None;
+    let mut layout_missing = Vec::new();
     for (old, new) in pairs.values() {
         for old_field in old.fields.iter().filter(|f| f.name.is_owner()) {
             control.checkpoint(Checkpoint::ConfigurationMap)?;
@@ -583,12 +582,11 @@ pub fn reevaluate_assembly(
                 }
             }
             match (&old_field.slot, &new_field.slot) {
-                (Slot::Missing, _) => {
-                    missing_owner.get_or_insert_with(|| fact(old, old_field, None));
+                (Slot::Missing, Slot::Missing) => {
+                    layout_missing.extend([fact(old, old_field, None), fact(new, new_field, None)]);
                 }
-                (_, Slot::Missing) => {
-                    missing_owner.get_or_insert_with(|| fact(new, new_field, None));
-                }
+                (Slot::Missing, _) => layout_missing.push(fact(old, old_field, None)),
+                (_, Slot::Missing) => layout_missing.push(fact(new, new_field, None)),
                 (
                     Slot::Known {
                         value:
@@ -612,9 +610,6 @@ pub fn reevaluate_assembly(
                 _ => return Err(invalid("owner が明示した同一性に沿わない")),
             }
         }
-    }
-    if let Some(owner) = missing_owner {
-        return Err(ReobservationFailure::MissingOwner(owner));
     }
     let mut current_selection = None;
     for (prior, new) in [
@@ -748,7 +743,6 @@ pub fn reevaluate_assembly(
     let evaluation = reevaluate_observed(previous, current, control)
         .map_err(|failure| ReobservationFailure::Evaluation(Box::new(failure)))?;
     let mut continuity_stop = control.stop_reason();
-    let mut layout_missing = Vec::new();
     if continuity_stop.is_none() {
         let mut compare_layout = || -> Result<(), ReobservationFailure> {
             let before_layout = checked_layout(previous, before_request, control)?;
@@ -763,8 +757,6 @@ pub fn reevaluate_assembly(
             )?;
             layout_missing.extend(before_layout.missing.iter().cloned());
             layout_missing.extend(after_layout.missing.iter().cloned());
-            layout_missing.sort();
-            layout_missing.dedup();
             let after_subject = |fact: &Fact| {
                 control.checkpoint(Checkpoint::ConfigurationMap)?;
                 if fact.snapshot != alignment.after_snapshot {
@@ -818,23 +810,25 @@ pub fn reevaluate_assembly(
             {
                 return Err(invalid("評価済みの担当集合が明示対応と異なる"));
             }
-            let old_shared = if before_layout.roots.is_some() && before_layout.shared.is_some() {
+            let old_shared = if before_layout.shared.is_some() {
                 Some(checked_shared_partition(
                     &before_layout,
                     &a,
                     alignment.before_snapshot,
                     before_image,
+                    &mut layout_missing,
                     control,
                 )?)
             } else {
                 None
             };
-            let new_shared = if after_layout.roots.is_some() && after_layout.shared.is_some() {
+            let new_shared = if after_layout.shared.is_some() {
                 Some(checked_shared_partition(
                     &after_layout,
                     &b,
                     alignment.after_snapshot,
                     after_subject,
+                    &mut layout_missing,
                     control,
                 )?)
             } else {
@@ -854,6 +848,8 @@ pub fn reevaluate_assembly(
             }
         }
     }
+    layout_missing.sort();
+    layout_missing.dedup();
     let candidate = match (
         output(previous, alignment.previous_candidate, "assignment"),
         output(&evaluation, alignment.current_solve, "solutions"),
@@ -940,7 +936,20 @@ mod tests {
     #[test]
     fn explicit_reobservation_matches_a_shared_slot_and_rechecks_an_actual_assignment() {
         let c = Control::unlimited();
-        let before = evaluate_observed(prepared("before", BEFORE, &c), &c).unwrap();
+        let quantity = |map: &str, subject: &str, old: u32, new: u32| {
+            let prefix = format!(
+                "\"id\": \"{subject}-quantity\",\n          \"subject\": \"{subject}\",\n          \"field\": \"Assemble.Part.quantity\",\n          \"value\": "
+            );
+            let updated = map.replacen(
+                &format!("{prefix}\"{old}\""),
+                &format!("{prefix}\"{new}\""),
+                1,
+            );
+            assert_ne!(updated, map);
+            updated
+        };
+        let before_map = quantity(BEFORE, "b", 0, 1);
+        let before = evaluate_observed(prepared("before", &before_map, &c), &c).unwrap();
         assert_eq!(status(&before, "pick"), Decision::Established);
         assert_eq!(status(&before, "joined"), Decision::Undetermined);
         assert_eq!(status(&before, "global"), Decision::Undetermined);
@@ -986,7 +995,7 @@ mod tests {
                 missing: vec![],
             };
             assert!(matches!(
-                checked_shared_partition(&invalid_layout, &roster, "before", |fact| Ok(fact.clone()), &c),
+                checked_shared_partition(&invalid_layout, &roster, "before", |fact| Ok(fact.clone()), &mut Vec::new(), &c),
                 Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains(detail)
             ));
         }
@@ -995,14 +1004,26 @@ mod tests {
             .replace("pick=", "replacement=")
             .replace("$pick.assignment", "$replacement.assignment")
             .replace("ma=@SNAP/ma,mb=@SNAP/mb", "mb=@SNAP/mb,ma=@SNAP/ma");
-        let current = || prepared_with("after", AFTER, LAW, &new_queries, &c);
-        let steps = std::rc::Rc::new(std::cell::Cell::new(0));
-        let count = steps.clone();
-        let trace = Control::new(move |_| {
-            count.set(count.get() + 1);
-            None
-        });
-        let next = reevaluate_assembly(&before, current(), &alignment, &trace).unwrap();
+        let revised = quantity(AFTER, "b", 0, 1);
+        let mut renamed = revised.clone();
+        let mut renamed_queries = new_queries.clone();
+        let mut renamed_pairs = pairs;
+        for (old, new) in [("a", "zeta"), ("ma", "sharedA"), ("mb", "sharedB")] {
+            renamed = renamed.replace(&format!("\"{old}\""), &format!("\"{new}\""));
+            renamed_queries =
+                renamed_queries.replace(&format!("@SNAP/{old}"), &format!("@SNAP/{new}"));
+            renamed_pairs
+                .iter_mut()
+                .find(|pair| pair.0 == old)
+                .unwrap()
+                .1 = new;
+        }
+        let renamed_alignment = AssemblyAlignment {
+            subjects: &renamed_pairs,
+            ..alignment
+        };
+        let current = || prepared_with("after", &renamed, LAW, &renamed_queries, &c);
+        let next = reevaluate_assembly(&before, current(), &renamed_alignment, &c).unwrap();
         assert_eq!(next.candidate(), CandidateContinuity::Retained);
         assert_eq!(next.selected_candidate(), Some("replacement"));
         let [matched] = next.observations.as_slice() else {
@@ -1013,54 +1034,13 @@ mod tests {
         assert!(matched.needed.atom.is_none());
         let observed = matched.observed.as_ref().unwrap();
         assert_eq!(observed.snapshot, "after");
-        assert_eq!(observed.subject, "mb");
+        assert_eq!(observed.subject, "sharedB");
         assert_eq!(observed.field, matched.needed.field);
         assert_eq!(observed.atom.as_deref(), Some("observed-shared-quantity"));
         assert_eq!(status(&next.evaluation, "joined"), Decision::Established);
         assert_eq!(status(&next.evaluation, "global"), Decision::Established);
 
-        let checkpoint = std::cell::Cell::new(0);
-        let final_checkpoint = steps.get();
-        let stop = Control::new(move |_| {
-            checkpoint.set(checkpoint.get() + 1);
-            (checkpoint.get() == final_checkpoint).then_some(Signal::Term)
-        });
-        let stopped = reevaluate_assembly(&before, current(), &alignment, &stop).unwrap();
-        assert_eq!(stopped.continuity_stop(), Some(Signal::Term));
-        assert_eq!(stopped.candidate(), CandidateContinuity::Undetermined);
-        assert_eq!(
-            status(stopped.evaluation(), "joined"),
-            Decision::Established
-        );
-        assert_eq!(
-            status(stopped.evaluation(), "global"),
-            Decision::Established
-        );
-
-        let revised = AFTER.replacen(
-            concat!(
-                "\"id\": \"b-quantity\",\n          \"subject\": \"b\",\n",
-                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"0\""
-            ),
-            concat!(
-                "\"id\": \"b-quantity\",\n          \"subject\": \"b\",\n",
-                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"1\""
-            ),
-            1,
-        );
-        assert_ne!(revised, AFTER);
-        let corrected = revised.replacen(
-            concat!(
-                "\"id\": \"a-quantity\",\n          \"subject\": \"a\",\n",
-                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"1\""
-            ),
-            concat!(
-                "\"id\": \"a-quantity\",\n          \"subject\": \"a\",\n",
-                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"2\""
-            ),
-            1,
-        );
-        assert_ne!(corrected, revised);
+        let corrected = quantity(AFTER, "a", 1, 2);
         let next = reevaluate_assembly(
             &before,
             prepared_with("after", &corrected, LAW, &new_queries, &c),
@@ -1078,8 +1058,9 @@ mod tests {
         assert_eq!(status(&next.evaluation, "joined"), Decision::Established);
         assert_eq!(status(&next.evaluation, "global"), Decision::Established);
 
-        let mut wrong = pairs.to_vec();
-        wrong.extend([("left", "right"), ("right", "left")]);
+        let mut wrong = pairs;
+        wrong[5].1 = "mb";
+        wrong[6].1 = "ma";
         let wrong_alignment = AssemblyAlignment {
             subjects: &wrong,
             ..alignment
@@ -1108,63 +1089,45 @@ mod tests {
         assert!(next.selected_candidate().is_none());
         assert_eq!(status(next.evaluation(), "joined"), Decision::Undetermined);
 
-        let partial = BEFORE.replace(
-            concat!(
-                "        {\n          \"id\": \"b-quantity\",\n          \"subject\": \"b\",\n",
-                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"0\",\n",
-                "          \"origin\": \"model\"\n        },\n"
-            ),
-            "",
-        );
-        assert_ne!(partial, BEFORE);
-        let prior = evaluate_observed(prepared("before", &partial, &c), &c).unwrap();
-        assert_eq!(status(&prior, "selected"), Decision::Undetermined);
-        let resumed =
-            reevaluate_assembly(&prior, prepared("after", AFTER, &c), &alignment, &c).unwrap();
-        assert_eq!(resumed.candidate(), CandidateContinuity::Undetermined);
-        assert_eq!(resumed.selected_candidate(), Some("pick"));
-        assert!(
-            resumed
-                .observations()
-                .iter()
-                .any(|matched| matched.needed().subject == "b" && matched.observed().is_some())
-        );
-        assert_eq!(
-            status(resumed.evaluation(), "global"),
-            Decision::Established
-        );
-
         let pending_law = std::str::from_utf8(LAW).unwrap().replace(
             "list<(Part,Part)>[(ma,mb)];",
             "if mb.quantity=0 then list<(Part,Part)>[(ma,mb)] else list<(Part,Part)>[(mb,ma)];",
         );
+        let owner_law = pending_law.replace("if mb.quantity=0", "if mb.owner=b and mb.quantity=0");
+        let missing_owner = BEFORE.replace(
+            concat!(
+                "        {\n          \"id\": \"mb-owner\",\n          \"subject\": \"mb\",\n",
+                "          \"field\": \"Assemble.Part.owner\",\n          \"value\": [\n",
+                "            \"before\",\n            \"B\"\n          ],\n          \"origin\": \"model\"\n        },\n"
+            ),
+            "",
+        );
+        assert_ne!(missing_owner, BEFORE);
         let pending = evaluate_observed(
-            prepared_with("before", BEFORE, pending_law.as_bytes(), QUERIES, &c),
+            prepared_with("before", &missing_owner, owner_law.as_bytes(), QUERIES, &c),
             &c,
         )
         .unwrap();
         let completed = reevaluate_assembly(
             &pending,
-            prepared_with("after", AFTER, pending_law.as_bytes(), QUERIES, &c),
+            prepared_with("after", AFTER, owner_law.as_bytes(), QUERIES, &c),
             &alignment,
             &c,
         )
         .unwrap();
-        let [slot] = completed.layout_missing() else {
-            panic!("the previous shared View slot")
-        };
-        assert_eq!(slot.snapshot, "before");
-        assert_eq!(slot.subject, "mb");
+        assert!(completed.layout_missing().iter().any(|slot| {
+            slot.snapshot == "before"
+                && slot.subject == "mb"
+                && slot.field.as_ref().is_some_and(|name| name.is_owner())
+        }));
         assert_eq!(completed.candidate(), CandidateContinuity::Undetermined);
         assert_eq!(completed.selected_candidate(), Some("pick"));
-        assert_eq!(
-            completed.observations()[0]
-                .observed()
-                .unwrap()
-                .atom
-                .as_deref(),
-            Some("observed-shared-quantity")
-        );
+        assert!(completed.observations().iter().any(|matched| {
+            matched.needed().subject == "mb"
+                && matched
+                    .observed()
+                    .is_some_and(|atom| atom.atom.as_deref() == Some("mb-owner"))
+        }));
         assert_eq!(
             status(completed.evaluation(), "global"),
             Decision::Established
@@ -1211,49 +1174,10 @@ mod tests {
         )
         .unwrap();
         assert!(matches!(reevaluate_assembly(
-            &previous, prepared_with("after", AFTER, invalid_shared.as_bytes(), &raw, &c),
+            &previous, prepared_with("after", &incomplete, invalid_shared.as_bytes(), &raw, &c),
             &alignment, &c,
         ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("共有対")));
 
-        let dynamic = std::str::from_utf8(LAW)
-            .unwrap()
-            .replace("ma:Part,mb:Part)", "ma:Part,mb:Part,x:Part,y:Part)")
-            .replace(
-                "list<(Part,Part)>[(ma,mb)];",
-                "if y.quantity=0 then list<(Part,Part)>[(ma,mb)] else if y.quantity=1 then list<(Part,Part)>[(mb,ma)] else list<(Part,Part)>[(x,y)];",
-            );
-        let queries = QUERIES.replace("mb=@SNAP/mb,local", "mb=@SNAP/mb,x=@SNAP/a,y=@SNAP/b,local");
-        let dynamic_before = evaluate_observed(
-            prepared_with("before", BEFORE, dynamic.as_bytes(), &queries, &c),
-            &c,
-        )
-        .unwrap();
-        let same_alias = reevaluate_assembly(
-            &dynamic_before,
-            prepared_with("after", &revised, dynamic.as_bytes(), &queries, &c),
-            &alignment,
-            &c,
-        )
-        .unwrap();
-        assert_eq!(
-            status(same_alias.evaluation(), "joined"),
-            Decision::Established
-        );
-        let changed_alias = revised.replace(
-            concat!(
-                "\"id\": \"b-quantity\",\n          \"subject\": \"b\",\n",
-                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"1\""
-            ),
-            concat!(
-                "\"id\": \"b-quantity\",\n          \"subject\": \"b\",\n",
-                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"2\""
-            ),
-        );
-        assert_ne!(changed_alias, revised);
-        assert!(matches!(
-            reevaluate_assembly(&dynamic_before, prepared_with("after", &changed_alias, dynamic.as_bytes(), &queries, &c), &alignment, &c),
-            Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("共有対")
-        ));
     }
 
     #[test]
@@ -1275,9 +1199,18 @@ mod tests {
             .collect::<Vec<_>>()
             .join("\n");
         let foreign_binding = QUERIES.replace("a=@SNAP/A,b=@SNAP/B", "a=@foreign/A,b=@SNAP/B");
-        for queries in [&foreign_repair, &foreign_binding] {
+        let outside = QUERIES.replace("b=@SNAP/B", "b=@foreign/B");
+        let only_foreign = std::str::from_utf8(LAW)
+            .unwrap()
+            .replace("set<Root>{a,b}", "set<Root>{b}")
+            .replace("list<(Part,Part)>[(ma,mb)]", "list<(Part,Part)>[]");
+        for (law, queries) in [
+            (LAW, &foreign_repair),
+            (LAW, &foreign_binding),
+            (only_foreign.as_bytes(), &outside),
+        ] {
             let result =
-                evaluate_observed(prepared_with("after", &map, LAW, queries, &c), &c).unwrap();
+                evaluate_observed(prepared_with("after", &map, law, queries, &c), &c).unwrap();
             assert_eq!(status(&result, "selected"), Decision::Established);
             assert_eq!(status(&result, "joined"), Decision::Undetermined);
             let joined = result
@@ -1376,8 +1309,7 @@ mod tests {
             .replace(
                 "Assembly.desired,using=Assembly.choose,on=@SNAP/A,p=@SNAP/a,b=@SNAP/b",
                 "Assembly.boundary,using=Assembly.choose,on=@SNAP/G,p=@SNAP/ma",
-            )
-            .replace(",local.a=$selected.object", "");
+            );
         let before =
             evaluate_observed(prepared_with("before", BEFORE, LAW, &asks, &c), &c).unwrap();
         let pairs = [

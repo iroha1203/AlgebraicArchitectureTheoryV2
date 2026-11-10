@@ -559,6 +559,9 @@ mod tests {
         let inputs = Arc::new(check_inputs(fixture::input(fixture::without_arrows), &c).unwrap());
         let Preparation::Ready(model) = compile(
             &inputs,
+            &super::super::environment::Environment::new(&inputs, &Control::unlimited())
+                .unwrap()
+                .indexes,
             "Assembly",
             &fact("G"),
             &[fact("A"), fact("B")],
@@ -640,6 +643,9 @@ mod tests {
         let inputs = Arc::new(check_inputs(original, &c).unwrap());
         let Preparation::Ready(model) = compile(
             &inputs,
+            &super::super::environment::Environment::new(&inputs, &Control::unlimited())
+                .unwrap()
+                .indexes,
             "Assembly",
             &fact("G"),
             &[fact("A"), fact("B")],
@@ -1180,6 +1186,9 @@ mod tests {
         );
         let Preparation::Ready(target) = compile(
             &inputs,
+            &super::super::environment::Environment::new(&inputs, &Control::unlimited())
+                .unwrap()
+                .indexes,
             "Assembly",
             &fact("G"),
             &[fact("A")],

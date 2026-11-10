@@ -88,7 +88,7 @@ pub(super) fn read(
 }
 /// A known foreign layout remains outside the assembly family when another View is pending.
 pub(super) fn layout_snapshot(
-    inputs: &archsig_input::input::CheckedInputs,
+    env: &Environment<'_>,
     reading: &str,
     target: &Fact,
     fragments: &Read,
@@ -105,7 +105,7 @@ pub(super) fn layout_snapshot(
         .map(|value| interfaces(value, control))
         .transpose()?
         .unwrap_or_default();
-    model_assembly::layout_snapshot(inputs, reading, target, &roots, &pairs, control)
+    model_assembly::layout_snapshot(&env.indexes, reading, target, &roots, &pairs, control)
 }
 
 #[derive(Debug)]
@@ -338,8 +338,10 @@ pub(super) fn prepare(
         || fragments.metadata.failed
         || shared.metadata.failed
         || !missing.is_empty()
+        || fragments.unsupported.is_some()
+        || shared.unsupported.is_some()
     {
-        layout_snapshot(&p.shared_inputs(), reading, &target, &fragments, &shared, c)?
+        layout_snapshot(e, reading, &target, &fragments, &shared, c)?
     } else {
         None
     };
@@ -373,10 +375,17 @@ pub(super) fn prepare(
             c,
         )?;
         if let Some(root) = applied.keys().find(|root| !roots.contains(root)) {
-            model_assembly::rejected("修復局所が担当Viewの選択域にない", vec![root.clone()])
+            if let Some(problem) =
+                model_assembly::layout_snapshot(&e.indexes, reading, &target, &roots, &pairs, c)?
+            {
+                Preparation::Unsupported(problem)
+            } else {
+                model_assembly::rejected("修復局所が担当Viewの選択域にない", vec![root.clone()])
+            }
         } else {
             model_assembly::compile(
                 &p.shared_inputs(),
+                &e.indexes,
                 reading,
                 &target,
                 &roots,

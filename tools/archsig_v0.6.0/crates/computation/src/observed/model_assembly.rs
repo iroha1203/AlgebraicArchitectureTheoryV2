@@ -1,5 +1,5 @@
 //! 担当別の原始モデルと明示対応から、同じ型付き構成を生成する。
-use super::{data, result::*, value_transport};
+use super::{data, environment::InputIndexes, result::*, value_transport};
 use crate::construction::{self, ConfigurationConstruction, ConstructionFailure};
 use archsig_common::{
     control::{Checkpoint, Control},
@@ -231,13 +231,14 @@ fn snapshot_problem(
 }
 
 pub(super) fn layout_snapshot(
-    inputs: &CheckedInputs,
+    indexes: &InputIndexes<'_>,
     reading: &str,
     target: &Fact,
     roots: &[Fact],
     pairs: &[(Fact, Fact)],
     c: &Control,
 ) -> Result<Option<Unsupported>, ValidationFailure> {
+    let inputs = indexes.inputs;
     let mut root_ids = BTreeSet::from([target.subject.as_str()]);
     for root in roots {
         tick(c)?;
@@ -259,7 +260,7 @@ pub(super) fn layout_snapshot(
                 "共有対の個体が別snapshotに属する",
             )?));
         }
-        let holder = subject(inputs, member)?;
+        let holder = indexes.subject(&member.snapshot, &member.subject)?;
         if holder.fields.iter().any(|field| {
             field.name.is_owner()
                 && matches!(&field.slot, Slot::Known {
@@ -289,6 +290,7 @@ pub(super) fn layout_snapshot(
 
 pub(super) fn compile(
     inputs: &std::sync::Arc<CheckedInputs>,
+    indexes: &InputIndexes<'_>,
     reading: &str,
     target: &Fact,
     roots: &[Fact],
@@ -297,7 +299,7 @@ pub(super) fn compile(
     c: &Control,
 ) -> Result<Preparation, ValidationFailure> {
     tick(c)?;
-    if let Some(problem) = layout_snapshot(inputs, reading, target, roots, pairs, c)? {
+    if let Some(problem) = layout_snapshot(indexes, reading, target, roots, pairs, c)? {
         return Ok(Preparation::Unsupported(problem));
     }
     if roots.is_empty() {
@@ -691,8 +693,11 @@ mod tests {
         })
     }
     fn build(inputs: &Arc<CheckedInputs>, pairs: &[(Fact, Fact)]) -> Preparation {
+        let env =
+            super::super::environment::Environment::new(inputs, &Control::unlimited()).unwrap();
         compile(
             inputs,
+            &env.indexes,
             "Assembly",
             &fact("G"),
             &[fact("A"), fact("B")],
