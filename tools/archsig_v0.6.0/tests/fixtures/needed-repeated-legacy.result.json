@@ -1,0 +1,58 @@
+{
+  "answers": [
+    {"applicability":"applicable","id":"p","outputs":{},"reasons":[{"code":"missing_observation","dependencies":[],"details":{},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"p"}],"scope":{"assumptions":[],"domain":"all_completions","modes":["specification"],"quantifiers":[{"domain":{"node":"n3"},"kind":"forall","name":"p","type":"Bool"},{"domain":{"node":"n3"},"kind":"forall","name":"q","type":"Bool"},{"domain":{"node":"n3"},"kind":"forall","name":"q","type":"Bool"}],"readings":["CountCheck"],"snapshots":["v"]},"status":"undetermined"},
+    {"id":"n","outputs":{"plan":{"node":"n12"}},"reasons":[],"scope":{"assumptions":[],"domain":"all_completions","modes":["specification"],"quantifiers":[{"domain":{"node":"n3"},"kind":"forall","name":"p","type":"Bool"},{"domain":{"node":"n3"},"kind":"forall","name":"q","type":"Bool"},{"domain":{"node":"n3"},"kind":"forall","name":"q","type":"Bool"}],"readings":["CountCheck"],"snapshots":["v"]},"status":"established"},
+    {"applicability":"applicable","id":"q","outputs":{},"reasons":[{"code":"missing_observation","dependencies":[],"details":{},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"q"}],"scope":{"assumptions":[],"domain":"all_completions","modes":["specification"],"quantifiers":[{"domain":{"node":"n3"},"kind":"forall","name":"p","type":"Bool"},{"domain":{"node":"n3"},"kind":"forall","name":"q","type":"Bool"},{"domain":{"node":"n3"},"kind":"forall","name":"q","type":"Bool"}],"readings":["CountCheck"],"snapshots":["v"]},"status":"undetermined"},
+    {"id":"m","outputs":{"plan":{"node":"n17"}},"reasons":[],"scope":{"assumptions":[],"domain":"all_completions","modes":["specification"],"quantifiers":[{"domain":{"node":"n3"},"kind":"forall","name":"p","type":"Bool"},{"domain":{"node":"n3"},"kind":"forall","name":"q","type":"Bool"},{"domain":{"node":"n3"},"kind":"forall","name":"q","type":"Bool"}],"readings":["CountCheck"],"snapshots":["v"]},"status":"established"}
+  ],
+  "command": "run",
+  "exit_code": 2,
+  "format": "archsig.result/4",
+  "inputs": [
+    {"bytes_digest":"sha256:89652b7e862e63a85a1604068cd653155b131f3513b433151fef4e1362ab0c0d","id":"archmap","kind":"archmap","model_digest":"sha256:8990ba70445b98c581553a4157ac45cf127b1867a60a6c8630fa482c926dd0b8","path":"inputs/archmap.json","state":"read"},
+    {"bytes_digest":"sha256:8739163fff9a143307ea56cbcdbd09490a11d438d285e85d1e0734f9c40205de","id":"definition0","kind":"atom_definition","model_digest":"sha256:35c629624f54e7eaf3a5cb9be32f91dd63f7298c2b554bdd35ad95687fa18700","path":"inputs/definitions/0.json","state":"read"},
+    {"bytes_digest":"sha256:646bf86400be75599a3ceafe07359067fd7c621e84e79b0bf5da57fc5a98ba71","id":"law","kind":"law","model_digest":"sha256:b358255b89236df60c21d46cb133ca111ddfd3cc051f457b04e8a513e24ec430","path":"inputs/law.law","state":"read"}
+  ],
+  "issues": [
+    {"code":"missing_observation","dependencies":[],"details":{},"location":{"column":67,"input":"law","line":8,"span":[401,408]},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"p"},
+    {"code":"missing_observation","dependencies":[],"details":{},"location":{"column":67,"input":"law","line":8,"span":[401,408]},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"p"},
+    {"code":"missing_observation","dependencies":[],"details":{},"location":{"column":67,"input":"law","line":8,"span":[401,408]},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"p"},
+    {"code":"missing_observation","dependencies":[],"details":{},"location":{"column":67,"input":"law","line":8,"span":[401,408]},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"p"},
+    {"code":"missing_observation","dependencies":[],"details":{},"location":{"column":82,"input":"law","line":8,"span":[416,423]},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"p"},
+    {"code":"missing_observation","dependencies":[],"details":{},"location":{"column":82,"input":"law","line":8,"span":[416,423]},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"p"},
+    {"code":"missing_observation","dependencies":[],"details":{},"location":{"column":82,"input":"law","line":8,"span":[416,423]},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"p"},
+    {"code":"missing_observation","dependencies":[],"details":{},"location":{"column":82,"input":"law","line":8,"span":[416,423]},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"p"},
+    {"code":"missing_observation","dependencies":[],"details":{},"location":{"column":62,"input":"law","line":9,"span":[490,497]},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"q"},
+    {"code":"missing_observation","dependencies":[],"details":{},"location":{"column":62,"input":"law","line":9,"span":[490,497]},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"q"},
+    {"code":"missing_observation","dependencies":[],"details":{},"location":{"column":62,"input":"law","line":9,"span":[490,497]},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"q"},
+    {"code":"missing_observation","dependencies":[],"details":{},"location":{"column":62,"input":"law","line":9,"span":[490,497]},"message":"observation of a primitive slot is required","missing":[{"field":"Counter.State.count","snapshot":"v","subject":"s"}],"request":"q"}
+  ],
+  "nodes": [
+    {"conditions":[],"id":"n0","reasons":[],"state":"value","type":["Ref","Counter.State"],"value":["v","s"]},
+    {"conditions":[],"id":"n1","reasons":[],"state":"value","type":"Bool","value":false},
+    {"conditions":[],"id":"n2","reasons":[],"state":"value","type":"Bool","value":true},
+    {"conditions":[],"id":"n3","reasons":[],"state":"value","type":"Domain","value":{"elements":[{"node":"n1"},{"node":"n2"}],"kind":"finite","type":"Bool"}},
+    {"conditions":[],"id":"n4","reasons":[],"state":"value","type":"Expression","value":{"bindings":[{"name":"s","value":{"node":"n0"}}],"kind":"source","location":{"column":67,"input":"law","line":8,"span":[401,408]},"parameters":[]}},
+    {"conditions":[],"id":"n5","reasons":[],"state":"value","type":"Expression","value":{"bindings":[{"name":"s","value":{"node":"n0"}}],"kind":"source","location":{"column":82,"input":"law","line":8,"span":[416,423]},"parameters":[]}},
+    {"conditions":[],"id":"n6","reasons":[],"state":"value","type":"Expression","value":{"bindings":[{"name":"s","value":{"node":"n0"}}],"kind":"source","location":{"column":67,"input":"law","line":8,"span":[401,408]},"parameters":[]}},
+    {"conditions":[],"id":"n7","reasons":[],"state":"value","type":"Expression","value":{"bindings":[{"name":"s","value":{"node":"n0"}}],"kind":"source","location":{"column":82,"input":"law","line":8,"span":[416,423]},"parameters":[]}},
+    {"conditions":[],"id":"n8","reasons":[],"state":"value","type":"Expression","value":{"bindings":[{"name":"s","value":{"node":"n0"}}],"kind":"source","location":{"column":67,"input":"law","line":8,"span":[401,408]},"parameters":[]}},
+    {"conditions":[],"id":"n9","reasons":[],"state":"value","type":"Expression","value":{"bindings":[{"name":"s","value":{"node":"n0"}}],"kind":"source","location":{"column":82,"input":"law","line":8,"span":[416,423]},"parameters":[]}},
+    {"conditions":[],"id":"n10","reasons":[],"state":"value","type":"Expression","value":{"bindings":[{"name":"s","value":{"node":"n0"}}],"kind":"source","location":{"column":67,"input":"law","line":8,"span":[401,408]},"parameters":[]}},
+    {"conditions":[],"id":"n11","reasons":[],"state":"value","type":"Expression","value":{"bindings":[{"name":"s","value":{"node":"n0"}}],"kind":"source","location":{"column":82,"input":"law","line":8,"span":[416,423]},"parameters":[]}},
+    {"conditions":[],"id":"n12","reasons":[],"state":"value","type":"ObservationPlan","value":{"blockers":[],"request":"p","requirements":[{"dependents":[{"node":"n4"},{"node":"n5"},{"node":"n6"},{"node":"n7"},{"node":"n8"},{"node":"n9"},{"node":"n10"},{"node":"n11"}],"field":{"field":"Counter.State.count","snapshot":"v","subject":"s"},"locations":[{"column":67,"input":"law","line":8,"span":[401,408]},{"column":82,"input":"law","line":8,"span":[416,423]}]}]}},
+    {"conditions":[],"id":"n13","reasons":[],"state":"value","type":"Expression","value":{"bindings":[{"name":"s","value":{"node":"n0"}}],"kind":"source","location":{"column":62,"input":"law","line":9,"span":[490,497]},"parameters":[]}},
+    {"conditions":[],"id":"n14","reasons":[],"state":"value","type":"Expression","value":{"bindings":[{"name":"s","value":{"node":"n0"}}],"kind":"source","location":{"column":62,"input":"law","line":9,"span":[490,497]},"parameters":[]}},
+    {"conditions":[],"id":"n15","reasons":[],"state":"value","type":"Expression","value":{"bindings":[{"name":"s","value":{"node":"n0"}}],"kind":"source","location":{"column":62,"input":"law","line":9,"span":[490,497]},"parameters":[]}},
+    {"conditions":[],"id":"n16","reasons":[],"state":"value","type":"Expression","value":{"bindings":[{"name":"s","value":{"node":"n0"}}],"kind":"source","location":{"column":62,"input":"law","line":9,"span":[490,497]},"parameters":[]}},
+    {"conditions":[],"id":"n17","reasons":[],"state":"value","type":"ObservationPlan","value":{"blockers":[],"request":"q","requirements":[{"dependents":[{"node":"n13"},{"node":"n14"},{"node":"n15"},{"node":"n16"}],"field":{"field":"Counter.State.count","snapshot":"v","subject":"s"},"locations":[{"column":62,"input":"law","line":9,"span":[490,497]}]}]}}
+  ],
+  "requests": [
+    {"arguments":[{"name":"bind.s","origin":"explicit","value":{"kind":"subject","snapshot":"v","subject":"s"}}],"defaults":[{"rule":"observed_environment"}],"dependencies":[],"head":{"kind":"declaration","name":"CountCheck.repeated"},"id":"p","kind":"check","text":"p=check(CountCheck.repeated,s=@v/s)"},
+    {"arguments":[],"defaults":[],"dependencies":["p"],"head":{"id":"p","kind":"answer","path":[]},"id":"n","kind":"needed","text":"n=needed($p)"},
+    {"arguments":[{"name":"bind.s","origin":"explicit","value":{"kind":"subject","snapshot":"v","subject":"s"}}],"defaults":[{"rule":"observed_environment"}],"dependencies":[],"head":{"kind":"declaration","name":"CountCheck.other"},"id":"q","kind":"check","text":"q=check(CountCheck.other,s=@v/s)"},
+    {"arguments":[],"defaults":[],"dependencies":["q"],"head":{"id":"q","kind":"answer","path":[]},"id":"m","kind":"needed","text":"m=needed($q)"}
+  ],
+  "semantics": "archsig/0.6.0",
+  "status": "partial"
+}

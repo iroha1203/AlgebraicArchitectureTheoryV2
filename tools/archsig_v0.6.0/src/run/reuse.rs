@@ -6,7 +6,7 @@ use archsig_computation::observed::ObservedEvaluation;
 use archsig_input::result::ResultIssue;
 use archsig_input::result::Signal;
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, BTreeSet},
     io::Read,
     path::{Path, PathBuf},
 };
@@ -367,6 +367,34 @@ fn node_content(mut node: Json, control: &Control) -> Checked<String> {
         return Err(invalid("node must be an object"));
     };
     fields.remove("id");
+    if matches!(fields.get("type"), Some(Json::Str(ty)) if ty == "ObservationPlan") {
+        let Some(Json::Obj(plan)) = fields.get_mut("value") else {
+            return Err(invalid("ObservationPlan.value must be an object"));
+        };
+        let Some(Json::Arr(requirements)) = plan.get_mut("requirements") else {
+            return Err(invalid("ObservationPlan.requirements must be an array"));
+        };
+        for requirement in requirements {
+            control.checkpoint(Checkpoint::Reuse)?;
+            let Json::Obj(requirement) = requirement else {
+                return Err(invalid("ObservationPlan requirement must be an object"));
+            };
+            let Some(Json::Arr(dependents)) = requirement.get_mut("dependents") else {
+                return Err(invalid("ObservationPlan.dependents must be an array"));
+            };
+            // 参照は既に検査した導出のキーに解決済み。旧表示の重複だけをまとめる。
+            let mut seen = BTreeSet::new();
+            for dependent in std::mem::take(dependents) {
+                control.checkpoint(Checkpoint::Reuse)?;
+                let Json::Str(key) = wire_field(&dependent, "node")? else {
+                    return Err(invalid("ObservationPlan dependent must be a Ref"));
+                };
+                if seen.insert(key.clone()) {
+                    dependents.push(dependent);
+                }
+            }
+        }
+    }
     encoding(&node, control)
 }
 fn verify(

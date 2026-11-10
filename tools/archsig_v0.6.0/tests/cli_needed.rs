@@ -489,7 +489,7 @@ fn saved_needed_shares_identical_expression_occurrences_and_preserves_scope() {
     let dir = setup("needed-shared-expressions", true);
     let law = std::fs::read_to_string(dir.join("l.law")).unwrap().replace(
         "law required nonnegative",
-        "law required repeated(s:State): forall p:Bool . forall q:Bool . s.count>=0;\n\
+        "law required repeated(s:State): forall p:Bool . forall q:Bool . s.count>=0 and s.count<=10;\n\
          law required other(s:State): forall p:Bool . forall q:Bool . s.count<=0;\n\
          law required nonnegative",
     );
@@ -500,7 +500,21 @@ fn saved_needed_shares_identical_expression_occurrences_and_preserves_scope() {
         "q=check(CountCheck.other,s=@v/s)",
         "m=needed($q)",
     ];
-    let run = execute(&dir, "out", None, &asks);
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "d.json",
+        "--law",
+        "l.law",
+        "--archmap",
+        "a.json",
+        "--out",
+        "out",
+    ];
+    for ask in asks {
+        args.extend(["--ask", ask]);
+    }
+    let run = run_binary(&dir, &args);
     assert_eq!(run.code, 2, "{}", run.stdout);
     let result = result_json(&dir, &run);
     let mut spans = Vec::new();
@@ -524,23 +538,59 @@ fn saved_needed_shares_identical_expression_occurrences_and_preserves_scope() {
         assert_eq!(s(get(field, "snapshot")), "v");
         assert_eq!(s(get(field, "subject")), "s");
         assert_eq!(s(get(field, "field")), "Counter.State.count");
-        let [reference] = arr(get(requirement, "dependents")) else {
-            panic!("同じ元式への参照を一つ保持")
-        };
-        let expression = node(&result, reference);
-        assert_eq!(s(get(expression, "type")), "Expression");
-        let location = get(get(expression, "value"), "location");
-        let span = arr(get(location, "span"));
-        let (start, end) = (num(&span[0]) as usize, num(&span[1]) as usize);
-        assert_eq!(&law[start..end], "s.count");
-        spans.push(start);
+        let references = arr(get(requirement, "dependents"));
+        assert_eq!(references.len(), if question == "p" { 2 } else { 1 });
+        for reference in references {
+            let expression = node(&result, reference);
+            assert_eq!(s(get(expression, "type")), "Expression");
+            let location = get(get(expression, "value"), "location");
+            let span = arr(get(location, "span"));
+            let (start, end) = (num(&span[0]) as usize, num(&span[1]) as usize);
+            assert_eq!(&law[start..end], "s.count");
+            spans.push(start);
+        }
     }
-    assert_ne!(spans[0], spans[1]);
-    let rechecked = execute(&dir, "rechecked", Some("out"), &asks);
-    assert_eq!(rechecked.code, 2, "{}", rechecked.stdout);
+    assert!(spans.windows(2).all(|pair| pair[0] < pair[1]));
+    // PR 変更前の result/4。二つの plan は、各元式への参照を別 ID で4件ずつ持つ。
+    let legacy = include_str!("fixtures/needed-repeated-legacy.result.json");
+    std::fs::create_dir(dir.join("legacy")).unwrap();
+    std::fs::write(dir.join("legacy/result.json"), legacy).unwrap();
+    args[8] = "rechecked";
+    args.extend(["--reuse", "legacy"]);
+    let rechecked = run_binary(&dir, &args);
+    assert_eq!(
+        rechecked.code, 2,
+        "{}{}",
+        rechecked.stdout, rechecked.stderr
+    );
     let rechecked = result_json(&dir, &rechecked);
-    assert!(warnings(&rechecked).is_empty());
+    assert!(
+        warnings(&rechecked).is_empty(),
+        "{:?}",
+        warnings(&rechecked)
+    );
     for key in ["nodes", "answers", "issues"] {
-        assert_eq!(get(&result, key), get(&rechecked, key));
+        assert_eq!(get(&result, key).value, get(&rechecked, key).value);
     }
+
+    // 同じ表示の重複を取り除いても、別の導出への参照は照合で拒否する。
+    let changed = legacy.replacen(
+        r#""dependents":[{"node":"n4"}"#,
+        r#""dependents":[{"node":"n0"}"#,
+        1,
+    );
+    assert_ne!(changed, legacy);
+    std::fs::create_dir(dir.join("changed")).unwrap();
+    std::fs::write(dir.join("changed/result.json"), changed).unwrap();
+    args[8] = "rejected";
+    *args.last_mut().unwrap() = "changed";
+    let rejected = run_binary(&dir, &args);
+    assert_eq!(rejected.code, 2, "{}{}", rejected.stdout, rejected.stderr);
+    let rejected = result_json(&dir, &rejected);
+    assert_eq!(warnings(&rejected).len(), 1);
+    assert!(s(get(&warnings(&rejected)[0], "message")).contains("cannot verify nodes["));
+    assert_eq!(
+        get(&result, "answers").value,
+        get(&rejected, "answers").value
+    );
 }
