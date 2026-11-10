@@ -334,7 +334,18 @@ pub(super) fn prepare(
     missing.extend(shared.metadata.missing.iter().cloned());
     missing.sort();
     missing.dedup();
-    let preparation = if let Some(rejected) = rejected {
+    let early_layout_problem = if rejected.is_some()
+        || fragments.metadata.failed
+        || shared.metadata.failed
+        || !missing.is_empty()
+    {
+        layout_snapshot(&p.shared_inputs(), reading, &target, &fragments, &shared, c)?
+    } else {
+        None
+    };
+    let preparation = if let Some(problem) = early_layout_problem {
+        Preparation::Unsupported(problem)
+    } else if let Some(rejected) = rejected {
         rejected
     } else if fragments.metadata.failed || shared.metadata.failed {
         model_assembly::rejected(
@@ -342,10 +353,7 @@ pub(super) fn prepare(
             vec![target.clone()],
         )
     } else if !missing.is_empty() {
-        match layout_snapshot(&p.shared_inputs(), reading, &target, &fragments, &shared, c)? {
-            Some(problem) => Preparation::Unsupported(problem),
-            None => Preparation::Missing(missing),
-        }
+        Preparation::Missing(missing)
     } else if let Some(unsupported) = fragments
         .unsupported
         .as_ref()

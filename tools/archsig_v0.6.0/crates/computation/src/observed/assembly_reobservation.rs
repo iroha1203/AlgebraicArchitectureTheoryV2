@@ -58,6 +58,7 @@ pub struct ObservationMatch {
 pub struct ReobservedAssembly {
     evaluation: ObservedEvaluation,
     observations: Vec<ObservationMatch>,
+    layout_missing: Vec<Fact>,
     candidate: CandidateContinuity,
     selected_candidate: Option<String>,
     continuity_stop: Option<Signal>,
@@ -78,6 +79,10 @@ impl ReobservedAssembly {
     }
     pub fn observations(&self) -> &[ObservationMatch] {
         &self.observations
+    }
+    /// Slots that prevented comparing the two evaluated layouts.
+    pub fn layout_missing(&self) -> &[Fact] {
+        &self.layout_missing
     }
     pub fn candidate(&self) -> CandidateContinuity {
         self.candidate
@@ -530,6 +535,7 @@ pub fn reevaluate_assembly(
             .get(left)
             .is_some_and(|(_, target)| target.id == right)
     };
+    let mut missing_owner = None;
     for (old, new) in pairs.values() {
         for old_field in old.fields.iter().filter(|f| f.name.is_owner()) {
             control.checkpoint(Checkpoint::ConfigurationMap)?;
@@ -538,16 +544,24 @@ pub fn reevaluate_assembly(
                 .iter()
                 .find(|f| f.name == old_field.name && f.ty == old_field.ty)
                 .ok_or_else(|| invalid("owner field の型が対応しない"))?;
+            for (slot, snapshot) in [
+                (&old_field.slot, alignment.before_snapshot),
+                (&new_field.slot, alignment.after_snapshot),
+            ] {
+                if matches!(slot, Slot::Known { value: Value::Ref { snapshot: owner_snapshot, .. }, .. }
+                    if owner_snapshot != snapshot)
+                {
+                    return Err(ReobservationFailure::Unsupported(
+                        "owner が別 snapshot を参照する".into(),
+                    ));
+                }
+            }
             match (&old_field.slot, &new_field.slot) {
                 (Slot::Missing, _) => {
-                    return Err(ReobservationFailure::MissingOwner(fact(
-                        old, old_field, None,
-                    )));
+                    missing_owner.get_or_insert_with(|| fact(old, old_field, None));
                 }
                 (_, Slot::Missing) => {
-                    return Err(ReobservationFailure::MissingOwner(fact(
-                        new, new_field, None,
-                    )));
+                    missing_owner.get_or_insert_with(|| fact(new, new_field, None));
                 }
                 (
                     Slot::Known {
@@ -569,23 +583,12 @@ pub fn reevaluate_assembly(
                 ) if a == alignment.before_snapshot
                     && b == alignment.after_snapshot
                     && matches_subject(x, y) => {}
-                (
-                    Slot::Known {
-                        value: Value::Ref { snapshot: a, .. },
-                        ..
-                    },
-                    Slot::Known {
-                        value: Value::Ref { snapshot: b, .. },
-                        ..
-                    },
-                ) if a != alignment.before_snapshot || b != alignment.after_snapshot => {
-                    return Err(ReobservationFailure::Unsupported(
-                        "owner が別 snapshot を参照する".into(),
-                    ));
-                }
                 _ => return Err(invalid("owner が明示した同一性に沿わない")),
             }
         }
+    }
+    if let Some(owner) = missing_owner {
+        return Err(ReobservationFailure::MissingOwner(owner));
     }
     let mut current_selection = None;
     for (prior, new) in [
@@ -719,18 +722,33 @@ pub fn reevaluate_assembly(
     let evaluation = reevaluate_observed(previous, current, control)
         .map_err(|failure| ReobservationFailure::Evaluation(Box::new(failure)))?;
     let mut continuity_stop = control.stop_reason();
+    let mut layout_missing = Vec::new();
     if continuity_stop.is_none() {
-        let compare_layout = || -> Result<(), ReobservationFailure> {
-            let before_layout = checked_layout(previous, before_request, control)?;
-            let after_layout = checked_layout(
+        let mut compare_layout = || -> Result<(), ReobservationFailure> {
+            let mut read = |evaluation: &ObservedEvaluation, request: &Request| match checked_layout(
+                evaluation, request, control,
+            ) {
+                Ok(layout) => Ok(Some(layout)),
+                Err(ReobservationFailure::MissingLayout(missing)) => {
+                    layout_missing.extend(missing);
+                    Ok(None)
+                }
+                Err(error) => Err(error),
+            };
+            let before_layout = read(previous, before_request)?;
+            let after_layout = read(
                 &evaluation,
                 question(
                     evaluation.prepared(),
                     alignment.assembly,
                     QuestionKind::Assemble,
                 )?,
-                control,
             )?;
+            let (Some(before_layout), Some(after_layout)) = (before_layout, after_layout) else {
+                layout_missing.sort();
+                layout_missing.dedup();
+                return Ok(());
+            };
             let after_subject = |fact: &Fact| {
                 control.checkpoint(Checkpoint::ConfigurationMap)?;
                 if fact.snapshot != alignment.after_snapshot {
@@ -799,7 +817,7 @@ pub fn reevaluate_assembly(
         output(previous, alignment.previous_candidate, "assignment"),
         output(&evaluation, alignment.current_solve, "solutions"),
     ) {
-        (Some(old), Some(new)) if continuity_stop.is_none() => {
+        (Some(old), Some(new)) if continuity_stop.is_none() && layout_missing.is_empty() => {
             match super::repair_problem::reobserved_membership(old, new, translate, control) {
                 Ok(Some(true)) => CandidateContinuity::Retained,
                 Ok(Some(false)) => CandidateContinuity::Excluded,
@@ -825,6 +843,7 @@ pub fn reevaluate_assembly(
     Ok(ReobservedAssembly {
         evaluation,
         observations,
+        layout_missing,
         candidate,
         selected_candidate,
         continuity_stop,
@@ -1070,6 +1089,42 @@ mod tests {
         );
         assert_eq!(
             status(resumed.evaluation(), "global"),
+            Decision::Established
+        );
+
+        let pending_law = std::str::from_utf8(LAW).unwrap().replace(
+            "list<(Part,Part)>[(ma,mb)];",
+            "if mb.quantity=0 then list<(Part,Part)>[(ma,mb)] else list<(Part,Part)>[(mb,ma)];",
+        );
+        let pending = evaluate_observed(
+            prepared_with("before", BEFORE, pending_law.as_bytes(), QUERIES, &c),
+            &c,
+        )
+        .unwrap();
+        let completed = reevaluate_assembly(
+            &pending,
+            prepared_with("after", AFTER, pending_law.as_bytes(), QUERIES, &c),
+            &alignment,
+            &c,
+        )
+        .unwrap();
+        let [slot] = completed.layout_missing() else {
+            panic!("the previous shared View slot")
+        };
+        assert_eq!(slot.snapshot, "before");
+        assert_eq!(slot.subject, "mb");
+        assert_eq!(completed.candidate(), CandidateContinuity::Undetermined);
+        assert_eq!(completed.selected_candidate(), Some("pick"));
+        assert_eq!(
+            completed.observations()[0]
+                .observed()
+                .unwrap()
+                .atom
+                .as_deref(),
+            Some("observed-shared-quantity")
+        );
+        assert_eq!(
+            status(completed.evaluation(), "global"),
             Decision::Established
         );
 
