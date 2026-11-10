@@ -601,7 +601,7 @@ impl<'a> Environment<'a> {
                 .as_deref()
                 .ok_or(internal!("構成対象のfieldがない"))?,
         )?;
-        let Slot::Known { value, atom, .. } = &field.slot else {
+        let Slot::Known { atom, .. } = &field.slot else {
             return Ok(None);
         };
         if !crate::construction::has_reference(self.indexes.inputs, &field.ty, &self.control)
@@ -614,12 +614,7 @@ impl<'a> Environment<'a> {
         {
             return Ok(None);
         }
-        let Some(raw) = data::from_input(
-            value,
-            &field.ty.erase(),
-            self.indexes.inputs.law(),
-            &self.control,
-        )?
+        let Some(raw) = self.indexes.raw_observed_scalar(field, &self.control)?
         else {
             return Ok(None);
         };

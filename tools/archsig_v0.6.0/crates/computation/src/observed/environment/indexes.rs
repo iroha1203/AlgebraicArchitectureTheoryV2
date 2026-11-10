@@ -130,14 +130,25 @@ impl<'a> InputIndexes<'a> {
             Value::Bool(_) | Value::Ref { .. } => {
                 scalar_from(value, &field.ty, self.inputs.law(), control)
             }
-            _ => data::from_input_with_maps(
-                value,
-                &field.ty.erase(),
-                self.inputs.law(),
-                control,
-                Some(&self.observed_maps),
-            ),
+            _ => self.raw_observed_scalar(field, control),
         }
+    }
+
+    pub(super) fn raw_observed_scalar(
+        &self,
+        field: &'a archsig_input::archmap::Field,
+        control: &Control,
+    ) -> Result<Option<Scalar>, ValidationFailure> {
+        let Slot::Known { value, .. } = &field.slot else {
+            return Err(internal!("既知の原始slotがない").into());
+        };
+        data::from_input_with_maps(
+            value,
+            &field.ty.erase(),
+            self.inputs.law(),
+            control,
+            Some(&self.observed_maps),
+        )
     }
     pub fn scope(
         &self,
