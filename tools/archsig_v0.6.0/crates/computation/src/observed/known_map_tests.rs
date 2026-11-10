@@ -22,21 +22,44 @@ fn known_map_private_atom(r: &ObservedEvaluation) -> usize {
 
 #[test]
 fn quantified_map_reads_share_payload_and_keep_each_source() {
-    use std::collections::BTreeSet;
+    use std::{cell::Cell, collections::BTreeSet, rc::Rc};
 
     let inputs = known_map_private_inputs();
     let law = std::str::from_utf8(inputs.law().bytes()).unwrap();
     let (reading, _) = law.rsplit_once('}').unwrap();
     let law = format!(
-        "{reading} view repeated(s:Sample):Bool = forall q:Bool . (s.m=s.n) and (s.n=s.m); }}"
+        "{reading} view repeated(s:Sample,x:Item):Bool = forall q:Bool . (s.m(x)=s.n(x)) and (s.n(x)=s.m(x)); }}"
     );
     let inputs = InputSources::from_bytes(
         vec![inputs.definitions()[0].bytes().to_vec()],
         law.into_bytes(),
         inputs.archmap().bytes().to_vec(),
     );
-    let result =
-        evaluate_observed_bytes(inputs, &["q=evaluate(Maps.repeated,s=@v/s)"], &quiet()).unwrap();
+    let counts = Rc::new(Cell::new((0, 0, 0)));
+    let seen = counts.clone();
+    data::observe_iterations(move |_, _, operation, i| {
+        let (rows, args, copied) = seen.get();
+        match operation {
+            "map_input_row" => seen.set((rows + 1, args, copied)),
+            "map_composite_copy" => seen.set((rows, args + 1, copied + i)),
+            _ => {}
+        }
+    });
+    let result = evaluate_observed_bytes(
+        inputs,
+        &["q=evaluate(Maps.repeated,s=@v/s,x=@v/a)"],
+        &quiet(),
+    );
+    data::clear_iteration_observer();
+    let result = result.unwrap();
+    let (built_rows, composite_arguments, copied_arrays) = counts.get();
+    eprintln!(
+        "(built rows, map arguments, deep-copied arrays) {:?}",
+        counts.get()
+    );
+    assert_eq!(built_rows, 4);
+    assert_eq!(composite_arguments, 8);
+    assert_eq!(copied_arrays, 0);
     assert_eq!(result.status(), "complete", "{:?}", result.issues);
     assert_eq!(
         data_scalar_at(&result, result.answers[0].outputs["value"].0),
@@ -68,36 +91,6 @@ fn quantified_map_reads_share_payload_and_keep_each_source() {
         .collect();
     eprintln!("(Map atom, reads, retained row allocations) {counts:?}");
     assert_eq!(map_reads.len(), 2);
-    let row_pointers = |value: &Scalar| {
-        let Scalar::Tuple(items) = value else {
-            panic!("Map の複合値")
-        };
-        items
-            .iter()
-            .map(|item| {
-                let Scalar::Map { pairs, .. } = item else {
-                    panic!("Map")
-                };
-                pairs.as_ptr()
-            })
-            .collect::<Vec<_>>()
-    };
-    let composite = Scalar::Tuple(
-        ["m", "n"]
-            .iter()
-            .map(|atom| data_scalar_at(&result, map_reads[atom][0].0).clone())
-            .collect(),
-    );
-    let copied = composite.clone();
-    let source_rows = row_pointers(&composite);
-    let copied_rows = row_pointers(&copied);
-    let deep_copies = source_rows
-        .iter()
-        .zip(&copied_rows)
-        .filter(|(a, b)| a != b)
-        .count();
-    eprintln!("Map row allocations when cloning two Map arguments: {deep_copies}");
-    assert_eq!(deep_copies, 0);
     for atom in ["m", "n"] {
         let reads = &map_reads[atom];
         assert_eq!(reads.len(), 4);
@@ -319,4 +312,96 @@ fn owned_map_wrapper_values_recheck_original_nested_types_and_owner_sources() {
     assert!(
         matches!(&field.ty,Type::List(t) if matches!(t.as_ref(),Type::Map(a,b) if matches!(a.as_ref(),Type::Owned(n,o) if n=="Maps.Item"&&o=="owner")&&matches!(b.as_ref(),Type::Owned(n,o) if n=="Maps.Item"&&o=="owner")))
     );
+}
+
+#[test]
+fn inherited_map_reads_keep_the_expanded_snapshot_and_atom() {
+    let fixture = |file| match file {
+        "definitions" => {
+            include_bytes!("../../../../tests/fixtures/inherited-map/definitions.json").as_slice()
+        }
+        "law" => include_bytes!("../../../../tests/fixtures/inherited-map/laws.law").as_slice(),
+        _ => include_bytes!("../../../../tests/fixtures/inherited-map/archmap.json").as_slice(),
+    };
+    for view in ["read", "direct"] {
+        for snapshots in [["v", "w"], ["w", "v"]] {
+            let asks = snapshots
+                .map(|snapshot| format!("{snapshot}=evaluate(Maps.{view},s=@{snapshot}/h)"));
+            let inputs = InputSources::from_bytes(
+                vec![fixture("definitions").to_vec()],
+                fixture("law").to_vec(),
+                fixture("archmap").to_vec(),
+            );
+            let result =
+                evaluate_observed_bytes(inputs, &asks.each_ref().map(String::as_str), &quiet())
+                    .unwrap();
+            assert_eq!(
+                result.status(),
+                "complete",
+                "{view} {snapshots:?}: {:?}",
+                result.issues
+            );
+            for (answer, snapshot) in result.answers.iter().zip(snapshots) {
+                let value = answer.outputs["value"].0;
+                let Scalar::Map { pairs, .. } = data_scalar_at(&result, value) else {
+                    panic!("観測Map")
+                };
+                let [(key, image)] = pairs.as_slice() else {
+                    panic!("1行のMap")
+                };
+                for endpoint in [key, image] {
+                    assert!(
+                        matches!(endpoint, Scalar::Subject { snapshot: actual, subject, .. }
+                        if actual == snapshot && subject == "a")
+                    );
+                }
+                assert!(
+                    result.nodes[value]
+                        .support
+                        .iter()
+                        .any(|fact| fact.snapshot == snapshot
+                            && fact.subject == "h"
+                            && fact.atom.as_deref() == Some("tables"))
+                );
+            }
+            rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+        }
+    }
+}
+
+#[test]
+fn quantified_nested_observation_does_not_rebuild_its_map_rows() {
+    use std::{cell::Cell, rc::Rc};
+
+    let definition = known_map_fixture::OWNED_DEFINITIONS.as_bytes();
+    let checked =
+        archsig_input::definition::check_definitions(&[("definition0", definition)]).unwrap();
+    let digest = &checked.vocabularies()["Maps"].digest;
+    let law = known_map_fixture::owned_law(digest);
+    let (reading, _) = law.rsplit_once('}').unwrap();
+    let law = format!(
+        "{reading} view repeated(s:Holder):Bool = forall q:Bool . (s.tables=s.tables) and (s.tables=s.tables); }}"
+    );
+    let inputs = InputSources::from_bytes(
+        vec![definition.to_vec()],
+        law.into_bytes(),
+        known_map_fixture::owned_archmap(digest).into_bytes(),
+    );
+    let builds = Rc::new(Cell::new(0));
+    let seen = builds.clone();
+    data::observe_iterations(move |_, _, operation, _| {
+        if operation == "map_input_row" {
+            seen.set(seen.get() + 1);
+        }
+    });
+    let result = evaluate_observed_bytes(inputs, &["q=evaluate(Maps.repeated,s=@v/h)"], &quiet());
+    data::clear_iteration_observer();
+    let result = result.unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    assert_eq!(
+        data_scalar_at(&result, result.answers[0].outputs["value"].0),
+        &Scalar::Bool(true)
+    );
+    assert_eq!(builds.get(), 1);
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
 }
