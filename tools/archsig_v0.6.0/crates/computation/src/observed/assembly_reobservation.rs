@@ -292,7 +292,10 @@ fn layout_from_reads(
     };
     let roots = items
         .iter()
-        .map(assembly_plan::fact)
+        .map(|item| {
+            control.checkpoint(Checkpoint::ConfigurationMap)?;
+            assembly_plan::fact(item)
+        })
         .collect::<Result<_, _>>()
         .map_err(classify)?;
     let shared = assembly_plan::interfaces(shared, control).map_err(classify)?;
@@ -471,6 +474,20 @@ pub fn reevaluate_assembly(
                 ) if a == alignment.before_snapshot
                     && b == alignment.after_snapshot
                     && matches_subject(x, y) => {}
+                (
+                    Slot::Known {
+                        value: Value::Ref { snapshot: a, .. },
+                        ..
+                    },
+                    Slot::Known {
+                        value: Value::Ref { snapshot: b, .. },
+                        ..
+                    },
+                ) if a != alignment.before_snapshot || b != alignment.after_snapshot => {
+                    return Err(ReobservationFailure::Unsupported(
+                        "owner が別 snapshot を参照する".into(),
+                    ));
+                }
                 _ => return Err(invalid("owner が明示した同一性に沿わない")),
             }
         }
@@ -555,10 +572,12 @@ pub fn reevaluate_assembly(
             if !seen.insert(needed) {
                 continue;
             }
-            let Some((old, new)) = pairs
-                .get(needed.subject.as_str())
-                .filter(|(old, _)| old.snapshot == needed.snapshot)
-            else {
+            if needed.snapshot != alignment.before_snapshot {
+                return Err(ReobservationFailure::Unsupported(
+                    "前回の欠測が対応対象外の snapshot に属する".into(),
+                ));
+            }
+            let Some((old, new)) = pairs.get(needed.subject.as_str()) else {
                 return Err(invalid("組立ての不足位置に subject 対応がない"));
             };
             let name = needed
@@ -617,6 +636,7 @@ pub fn reevaluate_assembly(
                 control,
             )?;
             let after_subject = |fact: &Fact| {
+                control.checkpoint(Checkpoint::ConfigurationMap)?;
                 if fact.snapshot != alignment.after_snapshot {
                     return Err(ReobservationFailure::Unsupported(
                         "組立て View が別 snapshot の参照を返した".into(),
@@ -625,6 +645,7 @@ pub fn reevaluate_assembly(
                 Ok(fact.clone())
             };
             let before_image = |fact: &Fact| {
+                control.checkpoint(Checkpoint::ConfigurationMap)?;
                 if fact.snapshot != alignment.before_snapshot {
                     return Err(ReobservationFailure::Unsupported(
                         "組立て View が別 snapshot の参照を返した".into(),

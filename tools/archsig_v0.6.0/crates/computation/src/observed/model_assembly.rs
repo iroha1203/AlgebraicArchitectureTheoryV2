@@ -200,6 +200,23 @@ fn selected_field(
     data::from_input(value, &field.ty.erase(), inputs.law(), c)
 }
 
+fn foreign_snapshot(
+    inputs: &CheckedInputs,
+    fact: &Fact,
+    detail: &str,
+) -> Result<Preparation, ValidationFailure> {
+    let endpoint = subject(inputs, fact)?;
+    Ok(Preparation::Unsupported(Unsupported {
+        detail: detail.into(),
+        location: Location::ArchMap {
+            pointer: endpoint.pointer.clone(),
+            span: None,
+        },
+        operand_types: vec![Type::Ref(endpoint.ty.to_string())],
+        position: None,
+    }))
+}
+
 pub(super) fn compile(
     inputs: &std::sync::Arc<CheckedInputs>,
     reading: &str,
@@ -217,6 +234,12 @@ pub(super) fn compile(
     let target_construction =
         construction::construct(inputs, reading, &target.snapshot, &target.subject, c)
             .map_err(failure)?;
+    for member in target_construction.local_domain().known() {
+        tick(c)?;
+        if member.snapshot != target.snapshot {
+            return foreign_snapshot(inputs, member, "組立て先の所属個体が別snapshotに属する");
+        }
+    }
     if !target_construction.local_domain().is_complete() {
         return Ok(Preparation::Missing(
             target_construction.base().blocking_slots().to_vec(),
@@ -237,16 +260,7 @@ pub(super) fn compile(
     for (i, root) in roots.iter().enumerate() {
         tick(c)?;
         if root.snapshot != target.snapshot {
-            let root_subject = subject(inputs, root)?;
-            return Ok(Preparation::Unsupported(Unsupported {
-                detail: "担当rootのsnapshotが組立て標識と異なる".into(),
-                location: Location::ArchMap {
-                    pointer: root_subject.pointer.clone(),
-                    span: None,
-                },
-                operand_types: vec![Type::Ref(root_subject.ty.to_string())],
-                position: None,
-            }));
+            return foreign_snapshot(inputs, root, "担当rootのsnapshotが組立て標識と異なる");
         }
         if root == target
             || !roots_seen.insert(root)
@@ -270,6 +284,9 @@ pub(super) fn compile(
         parent.insert(root.clone(), target.clone());
         for fact in local.local_domain().known() {
             tick(c)?;
+            if fact.snapshot != target.snapshot {
+                return foreign_snapshot(inputs, fact, "担当の所属個体が別snapshotに属する");
+            }
             if fact != root {
                 membership.insert(fact.clone(), i);
                 parent.insert(fact.clone(), fact.clone());
@@ -300,16 +317,7 @@ pub(super) fn compile(
             .into_iter()
             .find(|fact| fact.snapshot != target.snapshot)
         {
-            let endpoint = subject(inputs, foreign)?;
-            return Ok(Preparation::Unsupported(Unsupported {
-                detail: "共有対の個体が別snapshotに属する".into(),
-                location: Location::ArchMap {
-                    pointer: endpoint.pointer.clone(),
-                    span: None,
-                },
-                operand_types: vec![Type::Ref(endpoint.ty.to_string())],
-                position: None,
-            }));
+            return foreign_snapshot(inputs, foreign, "共有対の個体が別snapshotに属する");
         }
         let (Some(ia), Some(ib)) = (membership.get(a), membership.get(b)) else {
             return Ok(rejected(
@@ -710,13 +718,36 @@ mod tests {
     }
     #[test]
     fn cross_snapshot_fragments_and_shared_endpoints_are_outside_the_algorithm_not_refuted() {
-        for ask in [
-            fixture::ASSEMBLE
-                .replace("b=@v/B", "b=@w/B")
-                .replace("mb=@v/mb", "mb=@w/mb"),
-            fixture::ASSEMBLE.replace("mb=@v/mb", "mb=@w/mb"),
+        for (ask, foreign_owner) in [
+            (
+                fixture::ASSEMBLE
+                    .replace("b=@v/B", "b=@w/B")
+                    .replace("mb=@v/mb", "mb=@w/mb"),
+                None,
+            ),
+            (fixture::ASSEMBLE.replace("mb=@v/mb", "mb=@w/mb"), None),
+            (fixture::ASSEMBLE.to_owned(), Some("A")),
+            (fixture::ASSEMBLE.to_owned(), Some("G")),
         ] {
-            let input = fixture::with_second_snapshot();
+            let mut input = fixture::with_second_snapshot();
+            if let Some(owner) = foreign_owner {
+                let map = std::str::from_utf8(input.archmap().bytes()).unwrap();
+                let mixed = map.replacen(
+                    r#""subject":"a","value":["w","A"]"#,
+                    &format!(r#""subject":"a","value":["v","{owner}"]"#),
+                    1,
+                );
+                let mixed = mixed.replace(
+                    r#""subject":"left","value":["w","a"]"#,
+                    r#""subject":"left","value":["w","ma"]"#,
+                );
+                assert_ne!(mixed, map);
+                input = archsig_input::input::InputSources::from_bytes(
+                    vec![input.definitions()[0].bytes().to_vec()],
+                    input.law().bytes().to_vec(),
+                    mixed.into_bytes(),
+                );
+            }
             let result =
                 crate::observed::evaluate_observed_bytes(input, &[&ask], &Control::unlimited())
                     .unwrap();

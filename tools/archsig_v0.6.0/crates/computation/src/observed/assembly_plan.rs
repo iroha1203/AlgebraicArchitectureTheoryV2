@@ -144,6 +144,7 @@ pub(super) fn interfaces(
             Scalar::Tuple(items) => pending.extend(items.iter().rev()),
             Scalar::List { items, .. } => {
                 for pair in items {
+                    c.checkpoint(Checkpoint::ConfigurationMap)?;
                     let Scalar::Tuple(items) = pair else {
                         return Err(internal!("共有対応が型付きの対でない").into());
                     };
