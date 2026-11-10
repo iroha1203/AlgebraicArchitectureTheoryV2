@@ -29,7 +29,6 @@ pub struct AssemblyAlignment<'a> {
 pub enum ReobservationFailure {
     InvalidCorrespondence(String),
     MissingOwner(Fact),
-    MissingLayout(Vec<Fact>),
     Unsupported(String),
     Evaluation(Box<EvaluationFailure>),
     Stopped(Signal),
@@ -186,8 +185,9 @@ fn repair_selection<'a>(
 }
 
 struct Layout {
-    roots: Vec<Fact>,
-    shared: Vec<(Fact, Fact)>,
+    roots: Option<Vec<Fact>>,
+    shared: Option<Vec<(Fact, Fact)>>,
+    missing: Vec<Fact>,
 }
 
 fn retained_layout<'a>(
@@ -311,30 +311,49 @@ fn layout_from_reads(
     if fragments.metadata.failed || interfaces.metadata.failed {
         return Err(invalid("組立て View の適用条件が成立しない"));
     }
+    if let Some(problem) = fragments
+        .unsupported
+        .as_ref()
+        .or(interfaces.unsupported.as_ref())
+    {
+        return Err(ReobservationFailure::Unsupported(problem.detail.clone()));
+    }
     let mut missing = fragments.metadata.missing.clone();
     missing.extend(interfaces.metadata.missing.iter().cloned());
-    if !missing.is_empty() {
-        missing.sort();
-        missing.dedup();
-        return Err(ReobservationFailure::MissingLayout(missing));
-    }
-    let (Some(Scalar::Set { items, .. }), Some(shared)) =
-        (fragments.value.as_ref(), interfaces.value.as_ref())
-    else {
-        return Err(ReobservationFailure::Unsupported(
-            "担当集合または共有対を確定できない".into(),
-        ));
+    missing.sort();
+    missing.dedup();
+    let roots = match &fragments.value {
+        Some(Scalar::Set { items, .. }) => Some(
+            items
+                .iter()
+                .map(|item| {
+                    control.checkpoint(Checkpoint::ConfigurationMap)?;
+                    assembly_plan::fact(item)
+                })
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(classify)?,
+        ),
+        None if !fragments.metadata.missing.is_empty() => None,
+        _ => {
+            return Err(ReobservationFailure::Unsupported(
+                "担当集合を確定できない".into(),
+            ));
+        }
     };
-    let roots = items
-        .iter()
-        .map(|item| {
-            control.checkpoint(Checkpoint::ConfigurationMap)?;
-            assembly_plan::fact(item)
-        })
-        .collect::<Result<_, _>>()
-        .map_err(classify)?;
-    let shared = assembly_plan::interfaces(shared, control).map_err(classify)?;
-    Ok(Layout { roots, shared })
+    let shared = match &interfaces.value {
+        Some(value) => Some(assembly_plan::interfaces(value, control).map_err(classify)?),
+        None if !interfaces.metadata.missing.is_empty() => None,
+        _ => {
+            return Err(ReobservationFailure::Unsupported(
+                "共有対を確定できない".into(),
+            ));
+        }
+    };
+    Ok(Layout {
+        roots,
+        shared,
+        missing,
+    })
 }
 
 fn checked_shared_partition(
@@ -346,6 +365,13 @@ fn checked_shared_partition(
 ) -> Result<BTreeMap<Fact, Fact>, ReobservationFailure> {
     let roots = layout
         .roots
+        .as_ref()
+        .ok_or_else(|| invalid("共有の担当集合が未確定"))?;
+    let shared = layout
+        .shared
+        .as_ref()
+        .ok_or_else(|| invalid("共有対が未確定"))?;
+    let roots = roots
         .iter()
         .map(|root| root.subject.as_str())
         .collect::<BTreeSet<_>>();
@@ -395,7 +421,7 @@ fn checked_shared_partition(
     };
     let mut parent = BTreeMap::new();
     let mut members = BTreeMap::new();
-    for (left, right) in &layout.shared {
+    for (left, right) in shared {
         control.checkpoint(Checkpoint::ConfigurationMap)?;
         for endpoint in [left, right] {
             if !members.contains_key(endpoint) {
@@ -725,30 +751,20 @@ pub fn reevaluate_assembly(
     let mut layout_missing = Vec::new();
     if continuity_stop.is_none() {
         let mut compare_layout = || -> Result<(), ReobservationFailure> {
-            let mut read = |evaluation: &ObservedEvaluation, request: &Request| match checked_layout(
-                evaluation, request, control,
-            ) {
-                Ok(layout) => Ok(Some(layout)),
-                Err(ReobservationFailure::MissingLayout(missing)) => {
-                    layout_missing.extend(missing);
-                    Ok(None)
-                }
-                Err(error) => Err(error),
-            };
-            let before_layout = read(previous, before_request)?;
-            let after_layout = read(
+            let before_layout = checked_layout(previous, before_request, control)?;
+            let after_layout = checked_layout(
                 &evaluation,
                 question(
                     evaluation.prepared(),
                     alignment.assembly,
                     QuestionKind::Assemble,
                 )?,
+                control,
             )?;
-            let (Some(before_layout), Some(after_layout)) = (before_layout, after_layout) else {
-                layout_missing.sort();
-                layout_missing.dedup();
-                return Ok(());
-            };
+            layout_missing.extend(before_layout.missing.iter().cloned());
+            layout_missing.extend(after_layout.missing.iter().cloned());
+            layout_missing.sort();
+            layout_missing.dedup();
             let after_subject = |fact: &Fact| {
                 control.checkpoint(Checkpoint::ConfigurationMap)?;
                 if fact.snapshot != alignment.after_snapshot {
@@ -779,30 +795,55 @@ pub fn reevaluate_assembly(
             };
             let old_roots = before_layout
                 .roots
-                .iter()
-                .map(before_image)
-                .collect::<Result<BTreeSet<_>, _>>()?;
+                .as_ref()
+                .map(|roots| {
+                    roots
+                        .iter()
+                        .map(before_image)
+                        .collect::<Result<BTreeSet<_>, _>>()
+                })
+                .transpose()?;
             let new_roots = after_layout
                 .roots
-                .iter()
-                .map(after_subject)
-                .collect::<Result<BTreeSet<_>, _>>()?;
-            let old_shared = checked_shared_partition(
-                &before_layout,
-                &a,
-                alignment.before_snapshot,
-                before_image,
-                control,
-            )?;
-            let new_shared = checked_shared_partition(
-                &after_layout,
-                &b,
-                alignment.after_snapshot,
-                after_subject,
-                control,
-            )?;
-            if old_roots != new_roots || old_shared != new_shared {
-                return Err(invalid("評価済みの担当集合または共有対が明示対応と異なる"));
+                .as_ref()
+                .map(|roots| {
+                    roots
+                        .iter()
+                        .map(after_subject)
+                        .collect::<Result<BTreeSet<_>, _>>()
+                })
+                .transpose()?;
+            if let (Some(old), Some(new)) = (&old_roots, &new_roots)
+                && old != new
+            {
+                return Err(invalid("評価済みの担当集合が明示対応と異なる"));
+            }
+            let old_shared = if before_layout.roots.is_some() && before_layout.shared.is_some() {
+                Some(checked_shared_partition(
+                    &before_layout,
+                    &a,
+                    alignment.before_snapshot,
+                    before_image,
+                    control,
+                )?)
+            } else {
+                None
+            };
+            let new_shared = if after_layout.roots.is_some() && after_layout.shared.is_some() {
+                Some(checked_shared_partition(
+                    &after_layout,
+                    &b,
+                    alignment.after_snapshot,
+                    after_subject,
+                    control,
+                )?)
+            } else {
+                None
+            };
+            if let (Some(old), Some(new)) = (old_shared, new_shared)
+                && old != new
+            {
+                return Err(invalid("評価済みの共有対が明示対応と異なる"));
             }
             Ok(())
         };
@@ -924,7 +965,7 @@ mod tests {
         let before_input = before.prepared();
         let before_request = question(before_input, "joined", QuestionKind::Assemble).unwrap();
         let layout = checked_layout(&before, before_request, &c).unwrap();
-        let (left, right) = &layout.shared[0];
+        let (left, right) = &layout.shared.as_ref().unwrap()[0];
         let old_snapshot = before_input
             .inputs()
             .archmap()
@@ -941,7 +982,8 @@ mod tests {
         ] {
             let invalid_layout = Layout {
                 roots: layout.roots.clone(),
-                shared: vec![(left.clone(), right.clone()), edge],
+                shared: Some(vec![(left.clone(), right.clone()), edge]),
+                missing: vec![],
             };
             assert!(matches!(
                 checked_shared_partition(&invalid_layout, &roster, "before", |fact| Ok(fact.clone()), &c),
@@ -1127,6 +1169,51 @@ mod tests {
             status(completed.evaluation(), "global"),
             Decision::Established
         );
+
+        let root_law = pending_law.replace(
+            "set<Root>{a,b}",
+            "if ma.quantity=0 then set<Root>{a,b} else set<Root>{a}",
+        );
+        let previous = evaluate_observed(
+            prepared_with("before", BEFORE, root_law.as_bytes(), QUERIES, &c),
+            &c,
+        )
+        .unwrap();
+        let changed_root = AFTER.replacen(
+            concat!(
+                "\"id\": \"ma-quantity\",\n          \"subject\": \"ma\",\n",
+                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"0\"",
+            ),
+            concat!(
+                "\"id\": \"ma-quantity\",\n          \"subject\": \"ma\",\n",
+                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"1\"",
+            ),
+            1,
+        );
+        assert_ne!(changed_root, AFTER);
+        assert!(matches!(reevaluate_assembly(
+            &previous,
+            prepared_with("after", &changed_root, root_law.as_bytes(), QUERIES, &c),
+            &alignment, &c,
+        ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("担当集合")));
+
+        let invalid_shared = std::str::from_utf8(LAW)
+            .unwrap()
+            .replace(
+                "set<Root>{a,b}",
+                "if mb.quantity=0 then set<Root>{a,b} else set<Root>{a,b}",
+            )
+            .replace("list<(Part,Part)>[(ma,mb)];", "list<(Part,Part)>[(ma,ma)];");
+        let raw = QUERIES.replace(",local.a=$selected.object", "");
+        let previous = evaluate_observed(
+            prepared_with("before", BEFORE, invalid_shared.as_bytes(), &raw, &c),
+            &c,
+        )
+        .unwrap();
+        assert!(matches!(reevaluate_assembly(
+            &previous, prepared_with("after", AFTER, invalid_shared.as_bytes(), &raw, &c),
+            &alignment, &c,
+        ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("共有対")));
 
         let dynamic = std::str::from_utf8(LAW)
             .unwrap()
