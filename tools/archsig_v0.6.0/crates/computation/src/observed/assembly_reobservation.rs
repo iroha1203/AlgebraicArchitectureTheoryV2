@@ -10,7 +10,10 @@ use super::{
     result::{Fact, Node, Payload, ReasonKind, Scalar, ValidationFailure},
 };
 use archsig_common::control::{Checkpoint, Control, Signal};
-use archsig_input::archmap::{FactData, Slot, Subject, Value};
+use archsig_input::{
+    archmap::{FactData, Slot, Subject, Value},
+    law::model::Signature,
+};
 use std::collections::{BTreeMap, BTreeSet};
 
 /// 明示的な同一性の仮定。表の各行は before と after の subject ID。
@@ -215,7 +218,16 @@ fn checked_layout(
         {
             return Err(ReobservationFailure::Unsupported(detail.detail.clone()));
         }
-        return layout_from_reads(&assembly.fragments, &assembly.interfaces, control);
+        let mut layout = layout_from_reads(&assembly.fragments, &assembly.interfaces, control)?;
+        if let Some(assembly_plan::Failure::Missing(positions)) = &assembly.failure {
+            layout.missing.extend(
+                positions
+                    .iter()
+                    .filter(|fact| fact.field.as_ref().is_some_and(|field| field.is_owner()))
+                    .cloned(),
+            );
+        }
+        return Ok(layout);
     }
     read_layout(evaluation.prepared(), request, control)
 }
@@ -289,7 +301,30 @@ fn read_layout(
     {
         return Err(ReobservationFailure::Unsupported(problem.detail));
     }
-    layout_from_reads(&fragments, &interfaces, control)
+    let mut layout = layout_from_reads(&fragments, &interfaces, control)?;
+    // The target and each fragment have the same ownerless root type. A
+    // pending member can belong to any of them until its owner is observed.
+    let construction = crate::construction::construct(
+        prepared.inputs(),
+        reading,
+        &target.snapshot,
+        &target.subject,
+        control,
+    )
+    .map_err(|failure| match failure {
+        crate::construction::ConstructionFailure::Stopped(signal) => {
+            ReobservationFailure::Stopped(signal)
+        }
+        _ => unsupported("組立ての所属域を現在の原始観測で読めない"),
+    })?;
+    layout.missing.extend(
+        construction
+            .local_domain()
+            .conditional()
+            .iter()
+            .map(|member| member.owner_slot().clone()),
+    );
+    Ok(layout)
 }
 
 fn layout_from_reads(
@@ -492,6 +527,16 @@ pub fn reevaluate_assembly(
     };
     let prior_solve = question(before, prior_solve_id, QuestionKind::Solve)?;
     let new_solve = question(&current, alignment.current_solve, QuestionKind::Solve)?;
+    if [prior_solve, new_solve].iter().any(|request| {
+        request.arguments.iter().any(|argument| {
+            argument.name == "mode"
+                && matches!(&argument.value, Selector::Enum { value } if value == "existence")
+        })
+    }) {
+        return Err(ReobservationFailure::Unsupported(
+            "前後の solve は全解を要求する".into(),
+        ));
+    }
     let Selector::Answer {
         id: prior_prepare_id,
         ..
@@ -511,6 +556,39 @@ pub fn reevaluate_assembly(
     };
     let prior_prepare = question(before, prior_prepare_id, QuestionKind::Prepare)?;
     let new_prepare = question(&current, new_prepare_id, QuestionKind::Prepare)?;
+    let using = prior_prepare
+        .arguments
+        .iter()
+        .find_map(|argument| {
+            if argument.name == "using"
+                && let Selector::Declaration { name } = &argument.value
+            {
+                Some(name)
+            } else {
+                None
+            }
+        })
+        .ok_or_else(|| invalid("前回 prepare の change がない"))?;
+    let law = before.inputs().law();
+    let Signature::Change { params, .. } = &law.declarations()[using].signature else {
+        return Err(invalid("前回 prepare の using が change でない"));
+    };
+    for parameter in params.iter().skip(1) {
+        let supported =
+            super::finite::completion_supported(&parameter.ty, law, control).map_err(|error| {
+                match error {
+                    ValidationFailure::Stop(signal) => ReobservationFailure::Stopped(signal),
+                    _ => {
+                        ReobservationFailure::Unsupported("change の有限値域を確認できない".into())
+                    }
+                }
+            })?;
+        if !supported {
+            return Err(ReobservationFailure::Unsupported(
+                "change の parameter は有限値域を要求する".into(),
+            ));
+        }
+    }
     if prior_prepare.head != new_prepare.head
         || !selected_reading(before, prior_prepare, alignment.reading)
         || !selected_reading(&current, new_prepare, alignment.reading)
@@ -683,6 +761,7 @@ pub fn reevaluate_assembly(
         .find(|a| a.id == alignment.assembly)
         .ok_or_else(|| invalid("before の組立て回答がない"))?;
     let mut observations = Vec::new();
+    let mut external_missing = Vec::new();
     let mut seen = BTreeSet::new();
     let mut record_needed = |needed: &Fact| -> Result<(), ReobservationFailure> {
         control.checkpoint(Checkpoint::ConfigurationMap)?;
@@ -690,11 +769,13 @@ pub fn reevaluate_assembly(
             return Ok(());
         }
         if needed.snapshot != alignment.before_snapshot {
-            return Err(ReobservationFailure::Unsupported(
-                "前回の欠測が対応対象外の snapshot に属する".into(),
-            ));
+            external_missing.push(needed.clone());
+            return Ok(());
         }
         let Some((old, new)) = pairs.get(needed.subject.as_str()) else {
+            if needed.field.as_ref().is_some_and(|field| field.is_owner()) {
+                return Ok(());
+            }
             return Err(invalid("組立ての不足位置に subject 対応がない"));
         };
         let name = needed
@@ -727,6 +808,9 @@ pub fn reevaluate_assembly(
         .filter(|r| r.kind == ReasonKind::Missing)
         .flat_map(|reason| &reason.missing)
     {
+        if needed.field.as_ref().is_some_and(|field| field.is_owner()) {
+            before_missing.push(needed.clone());
+        }
         record_needed(needed)?;
     }
     let translate = |value: &Scalar| match value {
@@ -747,6 +831,21 @@ pub fn reevaluate_assembly(
     };
     let evaluation = reevaluate_observed(previous, current, control)
         .map_err(|failure| ReobservationFailure::Evaluation(Box::new(failure)))?;
+    if let Some(current_answer) = evaluation
+        .answers
+        .iter()
+        .find(|a| a.id == alignment.assembly)
+    {
+        layout_missing.extend(
+            current_answer
+                .reasons
+                .iter()
+                .filter(|reason| reason.kind == ReasonKind::Missing)
+                .flat_map(|reason| &reason.missing)
+                .filter(|fact| fact.field.as_ref().is_some_and(|field| field.is_owner()))
+                .cloned(),
+        );
+    }
     let mut continuity_stop = control.stop_reason();
     if continuity_stop.is_none() {
         let mut compare_layout = || -> Result<(), ReobservationFailure> {
@@ -857,6 +956,7 @@ pub fn reevaluate_assembly(
         }
     }
     layout_missing.extend(before_missing);
+    layout_missing.extend(external_missing);
     layout_missing.sort();
     layout_missing.dedup();
     let candidate = match (
@@ -1066,6 +1166,32 @@ mod tests {
         assert_eq!(status(&next.evaluation, "selected"), Decision::Established);
         assert_eq!(status(&next.evaluation, "joined"), Decision::Established);
         assert_eq!(status(&next.evaluation, "global"), Decision::Established);
+
+        let unknown = AFTER.replace(
+            r#""subjects": ["#,
+            r#""subjects": [{"id":"unknown","type":"Assemble.Step","origin":"model"},"#,
+        ).replace(
+            r#""atoms": ["#,
+            r#""atoms": [
+                {"id":"unknown-from","subject":"unknown","field":"Assemble.Step.from","value":["after","mb"],"origin":"model"},
+                {"id":"unknown-to","subject":"unknown","field":"Assemble.Step.to","value":["after","mb"],"origin":"model"},"#,
+        );
+        let unavailable = QUERIES.replace("index=0", "index=100");
+        let pending = reevaluate_assembly(
+            &before,
+            prepared_with("after", &unknown, LAW, &unavailable, &c),
+            &alignment,
+            &c,
+        )
+        .unwrap();
+        assert_eq!(
+            status(pending.evaluation(), "solveIt"),
+            Decision::Established
+        );
+        assert_eq!(pending.candidate(), CandidateContinuity::Undetermined);
+        assert!(pending.layout_missing().iter().any(|slot| {
+            slot.subject == "unknown" && slot.field.as_ref().is_some_and(|name| name.is_owner())
+        }));
 
         let mut wrong = pairs;
         wrong[5].1 = "mb";
