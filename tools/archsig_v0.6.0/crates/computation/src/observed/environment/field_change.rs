@@ -115,6 +115,140 @@ fn coordinates(
         )
     })
 }
+/// Observation-only coefficients can remain unknown during extraction. The
+/// shape check supplies no value to a missing slot and proves no constraint.
+fn potential_affine(
+    env: &Environment<'_>,
+    id: usize,
+    vars: &BTreeMap<String, SourceValue>,
+    reading: &str,
+    axes: &[Parameter],
+) -> Result<Option<bool>, ValidationFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        env.tick()?;
+        let value = env.scoped_ast(id, vars, &Scope::default(), reading)?;
+        if let Some(form) = value.affine.as_deref() {
+            if form.awaiting_rational_observation(axes, &env.control)?
+                || form.rational_coordinates(axes, &env.control)?.is_some()
+            {
+                return Ok(Some(form.varies_over(axes, &env.control)?));
+            }
+            return Ok(None);
+        }
+        let kind = &env.indexes.inputs.law().exprs()[id].kind;
+        if let ExprKind::Group(body)
+        | ExprKind::Unary {
+            op: archsig_input::law::ast::UnOp::Neg,
+            operand: body,
+        } = kind
+        {
+            return potential_affine(env, *body, vars, reading, axes);
+        }
+        let ExprKind::Binary {
+            op: op @ (BinOp::Add | BinOp::Sub | BinOp::Mul),
+            lhs,
+            rhs,
+        } = kind
+        else {
+            return Ok(None);
+        };
+        let a = potential_affine(env, *lhs, vars, reading, axes)?;
+        let b = potential_affine(env, *rhs, vars, reading, axes)?;
+        Ok(match (a, b) {
+            (Some(true), Some(true)) if *op == BinOp::Mul => None,
+            (Some(a), Some(b)) => Some(a || b),
+            _ => None,
+        })
+    })
+}
+
+fn observation_only(
+    env: &Environment<'_>,
+    id: usize,
+    vars: &BTreeMap<String, SourceValue>,
+    reading: &str,
+    axes: &[Parameter],
+    value: &SourceValue,
+) -> Result<bool, ValidationFailure> {
+    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+        env.tick()?;
+        if value.known_value.is_some() || !value.scope.assignments && axes.is_empty() {
+            return Ok(true);
+        }
+        let base = Scope::default();
+        let law = env.indexes.inputs.law();
+        let child = |id| {
+            let value = env.scoped_ast(id, vars, &base, reading)?;
+            observation_only(env, id, vars, reading, axes, &value)
+        };
+        match &law.exprs()[id].kind {
+            ExprKind::Group(body)
+            | ExprKind::Unary {
+                op: archsig_input::law::ast::UnOp::Not,
+                operand: body,
+            } => child(*body),
+            ExprKind::Binary {
+                op: BinOp::And | BinOp::Or | BinOp::Implies,
+                lhs,
+                rhs,
+            } => Ok(child(*lhs)? && child(*rhs)?),
+            ExprKind::Binary {
+                op: BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge,
+                lhs,
+                rhs,
+            } if law.expr_type(*lhs) == Some(&Type::Q) && law.expr_type(*rhs) == Some(&Type::Q) => {
+                let left = env.scoped_ast(*lhs, vars, &base, reading)?;
+                let right = env.scoped_ast(*rhs, vars, &base, reading)?;
+                let form = affine::binary(
+                    BinOp::Sub,
+                    left.affine.as_deref(),
+                    right.affine.as_deref(),
+                    &env.control,
+                )?;
+                if let Some(form) = form {
+                    return Ok(form.awaiting_rational_observation(&[], &env.control)?
+                        || form.rational_coordinates(&[], &env.control)?.is_some());
+                }
+                Ok(
+                    potential_affine(env, *lhs, vars, reading, axes)? == Some(false)
+                        && potential_affine(env, *rhs, vars, reading, axes)? == Some(false),
+                )
+            }
+            ExprKind::If {
+                cond,
+                then_branch,
+                else_branch,
+            } => Ok(child(*cond)? && child(*then_branch)? && child(*else_branch)?),
+            ExprKind::Quant {
+                split:
+                    archsig_input::law::ast::QuantSplit::Fixed {
+                        domain: archsig_input::law::ast::QuantDomain::In(_),
+                        ..
+                    },
+                ..
+            } => {
+                let spec = quantifier::spec(law, id, &env.control)?;
+                let (domain, members) =
+                    env.scoped_quantifier_domain(&spec, vars, &base, reading)?;
+                let Some(members) = members else {
+                    return Ok(!domain.scope.assignments);
+                };
+                let mut local = env.copy_variables(vars)?;
+                for member in members {
+                    let bound = self::value(env, member)?;
+                    local.insert(spec.name.into(), bound);
+                    let body = env.scoped_ast(spec.body, &local, &base, reading)?;
+                    if !observation_only(env, spec.body, &local, reading, axes, &body)? {
+                        return Ok(false);
+                    }
+                }
+                Ok(true)
+            }
+            _ => Ok(!value.scope.assignments && !change_affine::numeric_condition(env, id, value)?),
+        }
+    })
+}
+
 fn equations(
     env: &Environment<'_>,
     id: usize,
@@ -164,12 +298,19 @@ fn equations(
                 env.scoped_quantifier_domain(&spec, vars, &base, reading)
             })?;
             let (domain_value, members) = quantified?;
-            missing.awaiting_observation = !absent.is_empty();
-            usable(env, domain, &domain_value)?;
             let Some(members) = members else {
+                let mut parameters = match axes {
+                    Axes::Parameters(parameters) => parameters.to_vec(),
+                    Axes::State(_) => vec![],
+                };
+                parameters.extend_from_slice(&missing.universal);
+                missing.awaiting_observation = !absent.is_empty()
+                    && observation_only(env, domain, vars, reading, &parameters, &domain_value)?;
+                missing.facts.extend(absent);
                 missing.unsupported = Some("rational_change_quantification");
                 return Err(unsupported(env, domain, "有理changeの有限量化域が未確定"));
             };
+            usable(env, domain, &domain_value)?;
             let mut local = env.copy_variables(vars)?;
             let enclosing = rows.quantified;
             rows.quantified = true;
@@ -188,8 +329,10 @@ fn equations(
             return Ok(());
         }
 
-        missing.awaiting_observation = v.condition_pending && !absent.is_empty();
-        usable(env, id, &v)?;
+        missing.awaiting_observation = false;
+        if !allow_bounds {
+            usable(env, id, &v)?;
+        }
         match kind {
             ExprKind::Group(body) => equations(env, *body, vars, reading, axes, rows, missing),
             ExprKind::Let { name, value, body } => {
@@ -215,17 +358,24 @@ fn equations(
                 let (guard, absent) =
                     capture_missing(env, || env.scoped_ast(*lhs, vars, &base, reading))?;
                 let guard = guard?;
-                missing.awaiting_observation = guard.condition_pending && !absent.is_empty();
-                usable(env, *lhs, &guard)?;
-                match guard.known_value {
+                match guard
+                    .known_value
+                    .as_ref()
+                    .filter(|_| !guard.condition_pending && !guard.condition_failed)
+                {
                     Some(Scalar::Bool(true)) => {
                         equations(env, *rhs, vars, reading, axes, rows, missing)
                     }
                     Some(Scalar::Bool(false)) => Ok(()),
                     _ => {
+                        let mut parameters = match axes {
+                            Axes::Parameters(parameters) => parameters.to_vec(),
+                            Axes::State(_) => vec![],
+                        };
+                        parameters.extend_from_slice(&missing.universal);
                         missing.awaiting_observation = !absent.is_empty()
-                            && !guard.scope.assignments
-                            && missing.universal.is_empty();
+                            && observation_only(env, *lhs, vars, reading, &parameters, &guard)?;
+                        missing.facts.extend(absent);
                         missing.unsupported = Some("rational_change_implication");
                         Err(unsupported(env, *lhs, "有理changeの含意の前件が未確定"))
                     }
@@ -240,6 +390,12 @@ fn equations(
                 ))
             }
             _ => {
+                if v.condition_pending || v.condition_failed {
+                    missing.awaiting_observation =
+                        v.condition_pending && !absent.is_empty() && !v.scope.assignments;
+                    missing.facts.extend(absent);
+                    return usable(env, id, &v);
+                }
                 let ordered = match kind {
                     ExprKind::Binary {
                         op: BinOp::Le,
@@ -274,6 +430,26 @@ fn equations(
                     None
                 };
                 let Some(form) = form else {
+                    let q_comparison = match kind {
+                        ExprKind::Binary {
+                            op: BinOp::Eq | BinOp::Le | BinOp::Ge,
+                            lhs,
+                            rhs,
+                        } if law.expr_type(*lhs) == Some(&Type::Q)
+                            && law.expr_type(*rhs) == Some(&Type::Q) =>
+                        {
+                            Some((*lhs, *rhs))
+                        }
+                        _ => None,
+                    };
+                    if !absent.is_empty()
+                        && let Axes::Parameters(parameters) = axes
+                        && let Some((lhs, rhs)) = q_comparison
+                    {
+                        missing.awaiting_observation =
+                            potential_affine(env, lhs, vars, reading, parameters)?.is_some()
+                                && potential_affine(env, rhs, vars, reading, parameters)?.is_some();
+                    }
                     if change_affine::numeric_condition(env, id, &v)? {
                         missing.unsupported = Some("numeric_change_condition");
                     } else if !absent.is_empty()
@@ -282,6 +458,7 @@ fn equations(
                     {
                         missing.awaiting_observation = true;
                     }
+                    missing.facts.extend(absent);
                     return Err(unsupported(
                         env,
                         id,
@@ -665,6 +842,7 @@ fn requirement_equations(
     allow_bounds: bool,
     missing: &mut Pending,
 ) -> Result<Constraints, ValidationFailure> {
+    missing.selective_missing = allow_bounds;
     let mut rows = Constraints {
         inequalities: allow_bounds.then(Vec::new),
         ..Default::default()
@@ -701,6 +879,10 @@ fn requirement_equations(
             continue;
         }
         if checks.blocked {
+            missing.expression = Some(*body);
+            missing.bindings = bindings.clone();
+            missing.facts.extend(checks.missing);
+            missing.awaiting_observation = !missing.facts.is_empty();
             return Err(unsupported(env, *body, "有理Lawの適用条件が未確定"));
         }
         let (vars, universal) = change_affine::law_variables(env, law_params, bindings)?;
@@ -717,8 +899,16 @@ fn requirement_equations(
                 )
             };
             let v = v?;
-            missing.awaiting_observation =
-                !absent.is_empty() && !v.scope.assignments && missing.universal.is_empty();
+            let mut parameters = match axes {
+                Axes::Parameters(parameters) => parameters.to_vec(),
+                Axes::State(_) => vec![],
+            };
+            parameters.extend_from_slice(&missing.universal);
+            missing.awaiting_observation = !absent.is_empty()
+                && observation_only(env, *guard, &vars, &law.reading, &parameters, &v)?;
+            if v.condition_pending || v.condition_failed {
+                missing.facts.extend(absent.iter().cloned());
+            }
             usable(env, *guard, &v)?;
             match v.known_value {
                 Some(Scalar::Bool(false)) => continue,
@@ -731,6 +921,7 @@ fn requirement_equations(
                         .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
                         .map(|p| (p.name.clone(), p.ty.clone()))
                         .collect();
+                    missing.facts.extend(absent);
                     if change_affine::numeric_condition(env, *guard, &v)? {
                         missing.unsupported = Some("numeric_change_condition");
                     }

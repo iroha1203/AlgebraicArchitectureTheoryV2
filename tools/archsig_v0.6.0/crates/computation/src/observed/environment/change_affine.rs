@@ -39,6 +39,7 @@ pub(in crate::observed) struct Pending {
     pub coefficient_type: Option<Type>,
     pub unsupported: Option<&'static str>,
     pub awaiting_observation: bool,
+    pub selective_missing: bool,
     pub facts: Vec<Fact>,
     pub expression: Option<usize>,
     pub bindings: Vec<(String, Scalar)>,
@@ -1433,7 +1434,7 @@ pub(super) fn with_missing<T>(
     operation: impl FnOnce(&mut Pending) -> Result<T, ValidationFailure>,
 ) -> Result<T, ValidationFailure> {
     let (result, reads) = capture_missing(env, || operation(missing))?;
-    if result.is_err() {
+    if result.is_err() && !missing.selective_missing {
         missing.facts.extend(reads);
     }
     result

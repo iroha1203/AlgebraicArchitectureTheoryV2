@@ -748,7 +748,24 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
     let atoms = items(fields(snapshot).get_mut("atoms").unwrap());
     atoms.retain(|node| !matches!(node, Json::Obj(fields) if fields["id"] == Json::str("overlapFeasible.X.available")));
     std::fs::write(dir.join("archmap.json"), map.canonical()).unwrap();
+    let disjunction = "(b.quantity>=rat(10,1) or b.quantity<=rat(0,1))";
+    let dead_read = POLY_LAW.replacen(
+        "stockLoad(s)<=s.available",
+        "stockLoad(s)<=rat(5,1) and (false implies s.available>=rat(0,1))",
+        1,
+    );
     for (out, law, codes) in [
+        ("cancelled-symbol", POLY_LAW.replacen("legal(w:Pool.World):",
+            "legal(w:Pool.World) when (forall b in Pool.Cell[w] . b.quantity-b.quantity+b.stock.available>=rat(0,1)):", 1),
+            &["missing_observation"][..]),
+        ("unknown-coefficient", POLY_LAW.replacen("b.quantity>=rat(0,1)",
+            "b.quantity*b.stock.available>=rat(0,1)", 1), &["missing_observation"][..]),
+        ("dependent-domain", POLY_LAW.replacen("legal(w:Pool.World):",
+            "legal(w:Pool.World): forall flag in (if (forall t in Pool.Cell[w] . t.quantity<=t.stock.available) then list<Bool>[true] else list<Bool>[]) .", 1),
+            &["missing_observation", "unsupported_algorithm"][..]),
+        ("dead-read", dead_read.replacen("b.quantity>=rat(0,1)", disjunction, 1),
+            &["unsupported_algorithm"][..]),
+
         (
             "guard",
             POLY_LAW.replacen(
