@@ -1,0 +1,6 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Maps {
+ use vocabulary Maps version "1" digest "sha256:5d83dfa6bbcc933755ce5593e1a1205abff4fde374d73394bc324e9af28ae9ab";
+ view read(s:Holder):Map<Item,Item> = s.next.tables;
+ view direct(s:Holder):Map<Item,Item> = s.tables;
+}

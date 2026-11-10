@@ -360,16 +360,38 @@ pub(super) fn input_json(
     })
 }
 
+pub(super) type InputMapCache = std::cell::RefCell<std::collections::HashMap<usize, Scalar>>;
+
 pub(super) fn from_input(
     value: &Value,
     ty: &Type,
     law: &CheckedLaw,
     control: &Control,
 ) -> Result<Option<Scalar>, ValidationFailure> {
+    from_input_with_maps(value, ty, law, control, None)
+}
+
+pub(super) fn from_input_with_maps(
+    value: &Value,
+    ty: &Type,
+    law: &CheckedLaw,
+    control: &Control,
+    maps: Option<&InputMapCache>,
+) -> Result<Option<Scalar>, ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         tick(control)?;
         if !supported(ty, law, control)? {
             return Ok(None);
+        }
+        // この cache は同じ検査済み入力を借用する Environment 内だけに置く。
+        // 継承した snapshot は元の JSON Pointer を共有しても別の Value を持つ。
+        let cached_map = maps
+            .filter(|_| matches!((value, ty), (Value::Map(_), Type::Map(..))))
+            .map(|cache| (cache, std::ptr::from_ref(value).addr()));
+        if let Some((cache, key)) = cached_map
+            && let Some(map) = cache.borrow().get(&key)
+        {
+            return Ok(Some(map.clone()));
         }
         let result = match (value, ty) {
             (Value::Map(pairs), Type::Map(domain, codomain)) => {
@@ -378,11 +400,14 @@ pub(super) fn from_input(
                 let mut values = Vec::new();
                 for (_index, (key, value)) in pairs.iter().enumerate() {
                     #[cfg(test)]
-                    observe_iteration("map_input", _index);
+                    {
+                        observe_iteration("map_input", _index);
+                        observe_actual((0, 0), Default::default(), "map_input_row", _index);
+                    }
                     tick(control)?;
-                    let key = from_input(key, &domain, law, control)?
+                    let key = from_input_with_maps(key, &domain, law, control, maps)?
                         .ok_or(internal!("Mapの元key型が未対応"))?;
-                    let value = from_input(value, &codomain, law, control)?
+                    let value = from_input_with_maps(value, &codomain, law, control, maps)?
                         .ok_or(internal!("Mapの元value型が未対応"))?;
                     values.push((key, value));
                     tick(control)?;
@@ -409,7 +434,7 @@ pub(super) fn from_input(
                 for (item, ty) in items.iter().zip(types) {
                     tick(control)?;
                     result.push(
-                        from_input(item, ty, law, control)?
+                        from_input_with_maps(item, ty, law, control, maps)?
                             .ok_or(internal!("原始Tuple要素が未対応"))?,
                     );
                 }
@@ -420,7 +445,7 @@ pub(super) fn from_input(
                 for item in items {
                     tick(control)?;
                     result.push(
-                        from_input(item, element, law, control)?
+                        from_input_with_maps(item, element, law, control, maps)?
                             .ok_or(internal!("原始container要素が未対応"))?,
                     );
                 }
@@ -443,7 +468,7 @@ pub(super) fn from_input(
                 value: item
                     .as_ref()
                     .map(|item| {
-                        from_input(item, element, law, control)
+                        from_input_with_maps(item, element, law, control, maps)
                             .and_then(|value| {
                                 value.ok_or_else(|| internal!("原始Option要素が未対応").into())
                             })
@@ -466,7 +491,7 @@ pub(super) fn from_input(
                 for (arg, ty) in args.iter().zip(&ctor.arguments) {
                     tick(control)?;
                     values.push(
-                        from_input(arg, ty, law, control)?
+                        from_input_with_maps(arg, ty, law, control, maps)?
                             .ok_or(internal!("対応Dataのpayload値がない"))?,
                     );
                 }
@@ -490,6 +515,9 @@ pub(super) fn from_input(
             _ => return numeric::from_input(value, ty, control),
         };
         check(&result, law, control)?;
+        if let Some((cache, key)) = cached_map {
+            cache.borrow_mut().insert(key, result.clone());
+        }
         Ok(Some(result))
     })
 }

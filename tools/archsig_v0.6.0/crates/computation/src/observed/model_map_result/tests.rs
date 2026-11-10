@@ -304,6 +304,42 @@ fn generator_configuration_maps_keep_their_owned_endpoints_and_feed_compose_comp
 }
 
 #[test]
+fn repeated_observed_maps_on_an_assembly_build_the_raw_rows_once() {
+    use std::{cell::Cell, rc::Rc};
+
+    let input = fixture::replace_law(
+        fixture::query(|map| map),
+        "law required zero(p:Part):p.quantity=0;",
+        "view repeated(s:Move):Bool = forall q:Bool . (s.parts=s.parts) and (s.parts=s.parts);
+         law required zero(p:Part):p.quantity=0;",
+    );
+    let count = Rc::new(Cell::new(0));
+    let rows = count.clone();
+    super::super::data::observe_iterations(move |_, _, operation, _| {
+        if operation == "map_input_row" {
+            rows.set(rows.get() + 1);
+        }
+    });
+    let result = super::super::evaluate_observed_bytes(
+        input,
+        &[
+            fixture::ASSEMBLE,
+            "q=evaluate(Assembly.repeated,on=$a.object,s=@v/moveA)",
+        ],
+        &Control::unlimited(),
+    );
+    super::super::data::clear_iteration_observer();
+    let result = result.unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    assert_eq!(
+        result.nodes[result.answers[1].outputs["value"].0].payload,
+        Some(Payload::Scalar(Scalar::Bool(true)))
+    );
+    assert_eq!(count.get(), 2);
+    replay(&result, &result.nodes, &result.contexts).unwrap();
+}
+
+#[test]
 fn integer_law_assembly_keeps_unsupported_map_transport_and_blocks_only_its_model_output() {
     let input = fixture::replace_law(
         fixture::query(|s| s),

@@ -1,0 +1,82 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Maps",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Maps.Root",
+          "meaning": "Root",
+          "parameters": [],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Maps.Item",
+          "meaning": "Item",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Maps.Root"
+              ],
+              "meaning": "owner"
+            }
+          ],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Maps.Holder",
+          "meaning": "Holder",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Maps.Root"
+              ],
+              "meaning": "owner"
+            }
+          ],
+          "fields": [
+            {
+              "name": "tables",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "Maps.Item",
+                  "owner"
+                ],
+                [
+                  "Owned",
+                  "Maps.Item",
+                  "owner"
+                ]
+              ],
+              "meaning": "tables"
+            },
+            {
+              "name": "next",
+              "type": [
+                "Ref",
+                "Maps.Holder"
+              ],
+              "meaning": "next"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

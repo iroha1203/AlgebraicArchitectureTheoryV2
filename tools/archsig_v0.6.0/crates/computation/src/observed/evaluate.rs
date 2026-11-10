@@ -6,7 +6,7 @@ use super::{
     PreparedObserved, data,
     environment::{
         Environment, SourceAnalysis, conditional_branch, is_boolean_binary, is_comparison,
-        partial_binary, scalar_from, supports_binary, unary,
+        partial_binary, supports_binary, unary,
     },
     numeric, prepare_observed,
     request::{QuestionKind, Request, Selector},
@@ -2018,7 +2018,20 @@ impl Evaluator<'_, '_> {
             support.extend(child.support.iter().cloned());
             if let Some(value) = child.value {
                 arguments.push(value);
-                values.push(self.graph.scalar(value)?.clone());
+                let original = self.graph.scalar(value)?;
+                let copied = original.clone();
+                #[cfg(test)]
+                if let (Scalar::Map { pairs: a, .. }, Scalar::Map { pairs: b, .. }) =
+                    (original, &copied)
+                {
+                    data::observe_actual(
+                        span,
+                        self.graph.active,
+                        "map_composite_copy",
+                        usize::from(a.as_ptr() != b.as_ptr()),
+                    );
+                }
+                values.push(copied);
             } else {
                 known = false;
             }
@@ -2495,16 +2508,14 @@ impl Evaluator<'_, '_> {
             Slot::Known {
                 atom,
                 origin,
-                value,
                 pointer,
+                ..
             } => {
-                let value = scalar_from(
-                    value,
-                    &field.ty,
-                    self.environment.indexes.inputs.law(),
-                    self.control,
-                )?
-                .ok_or_else(|| self.unsupported(span, "Z/Bool/Ref 以外の原始値読取り"))?;
+                let value = self
+                    .environment
+                    .indexes
+                    .observed_scalar(field, self.control)?
+                    .ok_or_else(|| self.unsupported(span, "Z/Bool/Ref 以外の原始値読取り"))?;
                 let mut fact = fact;
                 fact.atom = Some(atom.clone());
                 let mut scope = self.base.clone();

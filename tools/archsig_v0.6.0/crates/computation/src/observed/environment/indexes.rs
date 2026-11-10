@@ -17,6 +17,8 @@ pub(crate) struct InputIndexes<'a> {
     pub(super) object_values: Option<&'a crate::observed::object_view_family::FiniteViewAssignment>,
     pub(super) original_requests: Option<&'a [Request]>,
     fixed: std::sync::Arc<FixedInputIndexes<'a>>,
+    // 検査済み入力の Map 値を入力内の値ごとに共有する。
+    observed_maps: data::InputMapCache,
     // 候補ごとに独立したEnvironmentへ一度だけ設定し、観測cacheと共有しない。
     pub(super) primitive_valuation: Option<BTreeMap<Fact, Scalar>>,
     pub(super) valuation_domain: ValuationDomain,
@@ -32,7 +34,7 @@ pub(crate) struct FixedInputIndexes<'a> {
     pub(super) subjects: BTreeMap<(&'a str, &'a str), &'a Subject>,
     pub(super) subjects_by_type: HashMap<(&'a str, &'a str), Vec<(usize, &'a Subject)>>,
     pub(super) fields: HashMap<(&'a str, &'a str, &'a str), &'a archsig_input::archmap::Field>,
-    pub(super) atoms: BTreeMap<String, Fact>,
+    pub(super) atoms: HashMap<(&'a str, &'a str), Fact>,
     pub(super) modes: BTreeMap<String, &'static str>,
     pub(super) snapshot_origins: BTreeMap<String, String>,
     pub(super) roster: archsig_input::archmap::value::Roster<'a>,
@@ -50,6 +52,7 @@ impl<'a> InputIndexes<'a> {
             inputs: self.inputs,
             valuation_domain: self.valuation_domain,
             fixed: self.fixed.clone(),
+            observed_maps: RefCell::default(),
             object: None,
             object_instance: None,
             object_values: None,
@@ -115,6 +118,38 @@ impl<'a> InputIndexes<'a> {
         }
         Ok(field)
     }
+    pub(in crate::observed) fn observed_scalar(
+        &self,
+        field: &'a archsig_input::archmap::Field,
+        control: &Control,
+    ) -> Result<Option<Scalar>, ValidationFailure> {
+        let Slot::Known { value, .. } = &field.slot else {
+            return Err(internal!("既知の原始slotがない").into());
+        };
+        match value {
+            Value::Bool(_) | Value::Ref { .. } => {
+                scalar_from(value, &field.ty, self.inputs.law(), control)
+            }
+            _ => self.raw_observed_scalar(field, control),
+        }
+    }
+
+    pub(super) fn raw_observed_scalar(
+        &self,
+        field: &'a archsig_input::archmap::Field,
+        control: &Control,
+    ) -> Result<Option<Scalar>, ValidationFailure> {
+        let Slot::Known { value, .. } = &field.slot else {
+            return Err(internal!("既知の原始slotがない").into());
+        };
+        data::from_input_with_maps(
+            value,
+            &field.ty.erase(),
+            self.inputs.law(),
+            control,
+            Some(&self.observed_maps),
+        )
+    }
     pub fn scope(
         &self,
         s: &Subject,
@@ -146,7 +181,7 @@ impl<'a> InputIndexes<'a> {
         let mut subjects = BTreeMap::new();
         let mut subjects_by_type = HashMap::<_, Vec<_>>::new();
         let mut fields = HashMap::new();
-        let mut atoms = BTreeMap::new();
+        let mut atoms = HashMap::new();
         let mut modes = BTreeMap::new();
         let mut snapshot_origins = BTreeMap::new();
         let mut roster_types = HashMap::new();
@@ -175,7 +210,7 @@ impl<'a> InputIndexes<'a> {
                     );
                     if let Slot::Known { atom, pointer, .. } = &field.slot {
                         atoms.insert(
-                            pointer.clone(),
+                            (s.snapshot.as_str(), pointer.as_str()),
                             Fact::from(archsig_input::archmap::FactData {
                                 snapshot: s.snapshot.clone(),
                                 subject: s.id.clone(),
@@ -208,6 +243,7 @@ impl<'a> InputIndexes<'a> {
                     types: roster_types,
                 },
             }),
+            observed_maps: RefCell::default(),
             original_requests: None,
             primitive_valuation: None,
             affine_valuation: BTreeMap::new(),

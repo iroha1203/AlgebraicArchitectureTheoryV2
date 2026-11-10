@@ -40,6 +40,33 @@ fn path_index(r: &ObservedEvaluation) -> usize {
     r.nodes.iter().enumerate().filter(|(_,n)|matches!(&n.payload,Some(Payload::Scalar(Scalar::Path(p)))if p.step.as_ref().is_some_and(|s|s.word_tail.is_empty()))).map(|(i,_)|i).next().unwrap()
 }
 #[test]
+fn repeated_correspondence_paths_share_the_original_maps() {
+    use std::{cell::Cell, rc::Rc};
+
+    let count = Rc::new(Cell::new(0));
+    let rows = count.clone();
+    data::observe_iterations(move |_, _, operation, _| {
+        if operation == "map_input_row" {
+            rows.set(rows.get() + 1);
+        }
+    });
+    let result = evaluate_observed_bytes(
+        fixture::input("normal", "r1"),
+        &["p=evaluate(Reservations.unknown_same,m=@v/m)"],
+        &quiet(),
+    );
+    data::clear_iteration_observer();
+    let result = result.unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    assert_eq!(
+        result.nodes[result.answers[0].outputs["value"].0].payload,
+        Some(Payload::Scalar(Scalar::Bool(true)))
+    );
+    assert_eq!(count.get(), 3);
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+}
+
+#[test]
 fn correspondence_action_maps_all_41_original_atoms_and_collapses_exact_external_complement() {
     let r = example(false);
     let i = path_index(&r);

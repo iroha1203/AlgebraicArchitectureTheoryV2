@@ -1,0 +1,114 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "Maps",
+      "version": "1",
+      "digest": "sha256:5d83dfa6bbcc933755ce5593e1a1205abff4fde374d73394bc324e9af28ae9ab"
+    }
+  ],
+  "sources": [
+    {
+      "id": "src",
+      "uri": "urn:fixture:owned-map-wrapper",
+      "revision": "r1",
+      "digest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    }
+  ],
+  "origins": [
+    {
+      "id": "base",
+      "mode": "specification",
+      "method": "owned map observations",
+      "locations": [
+        {
+          "source": "src",
+          "path": "owned.model",
+          "span": [
+            0,
+            3
+          ]
+        }
+      ]
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "v",
+      "origin": "base",
+      "subjects": [
+        {
+          "id": "r",
+          "type": "Maps.Root",
+          "origin": "base"
+        },
+        {
+          "id": "a",
+          "type": "Maps.Item",
+          "origin": "base"
+        },
+        {
+          "id": "h",
+          "type": "Maps.Holder",
+          "origin": "base"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "a-owner",
+          "subject": "a",
+          "field": "Maps.Item.owner",
+          "value": [
+            "v",
+            "r"
+          ],
+          "origin": "base"
+        },
+        {
+          "id": "h-owner",
+          "subject": "h",
+          "field": "Maps.Holder.owner",
+          "value": [
+            "v",
+            "r"
+          ],
+          "origin": "base"
+        },
+        {
+          "id": "tables",
+          "subject": "h",
+          "field": "Maps.Holder.tables",
+          "value": [
+            [
+              [
+                "v",
+                "a"
+              ],
+              [
+                "v",
+                "a"
+              ]
+            ]
+          ],
+          "origin": "base"
+        },
+        {
+          "id": "next",
+          "subject": "h",
+          "field": "Maps.Holder.next",
+          "value": [
+            "v",
+            "h"
+          ],
+          "origin": "base"
+        }
+      ]
+    },
+    {
+      "id": "w",
+      "base": "v",
+      "origin": "base"
+    }
+  ]
+}

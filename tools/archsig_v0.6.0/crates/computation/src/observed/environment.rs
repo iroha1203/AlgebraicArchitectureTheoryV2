@@ -601,7 +601,7 @@ impl<'a> Environment<'a> {
                 .as_deref()
                 .ok_or(internal!("構成対象のfieldがない"))?,
         )?;
-        let Slot::Known { value, atom, .. } = &field.slot else {
+        let Slot::Known { atom, .. } = &field.slot else {
             return Ok(None);
         };
         if !crate::construction::has_reference(self.indexes.inputs, &field.ty, &self.control)
@@ -614,13 +614,7 @@ impl<'a> Environment<'a> {
         {
             return Ok(None);
         }
-        let Some(raw) = data::from_input(
-            value,
-            &field.ty.erase(),
-            self.indexes.inputs.law(),
-            &self.control,
-        )?
-        else {
+        let Some(raw) = self.indexes.raw_observed_scalar(field, &self.control)? else {
             return Ok(None);
         };
         let Some(moved) = self.project_object_field(position, &raw)? else {
@@ -1637,17 +1631,9 @@ impl<'a> Environment<'a> {
                                 &subject.id,
                                 f.field.as_ref().ok_or(internal!("atom field がない"))?,
                             )?;
-                            if let Slot::Known {
-                                value, pointer: p, ..
-                            } = &field.slot
+                            if let Slot::Known { pointer: p, .. } = &field.slot
                                 && p == pointer
-                                && scalar_from(
-                                    value,
-                                    &field.ty,
-                                    self.indexes.inputs.law(),
-                                    &self.control,
-                                )?
-                                .as_ref()
+                                && self.indexes.observed_scalar(field, &self.control)?.as_ref()
                                     == Some(scalar)
                             {
                                 found = true;
@@ -4323,10 +4309,19 @@ impl<'a> Environment<'a> {
                     kind: "atom",
                     location: Location::ArchMap { pointer, .. },
                 } => {
+                    let [owner] = node.arguments.as_slice() else {
+                        return Err(internal!("Atom支持のowner引数数が違う").into());
+                    };
+                    let Scalar::Subject {
+                        snapshot, subject, ..
+                    } = graph.scalar(*owner)?
+                    else {
+                        return Err(internal!("Atom支持のownerがRefでない").into());
+                    };
                     let fact = self
                         .indexes
                         .atoms
-                        .get(pointer)
+                        .get(&(snapshot.as_str(), pointer.as_str()))
                         .ok_or(internal!("Atom支持の元入力位置がない"))?;
                     let field = self.indexes.field(
                         &self.state,
@@ -4334,23 +4329,10 @@ impl<'a> Environment<'a> {
                         &fact.subject,
                         fact.field.as_ref().ok_or(internal!("Atom fieldがない"))?,
                     )?;
-                    let Slot::Known { value: actual, .. } = &field.slot else {
-                        return Err(internal!("Atom支持が欠測slotを指す").into());
-                    };
-                    if scalar_from(actual, &field.ty, self.indexes.inputs.law(), &self.control)?
-                        .as_ref()
-                        != Some(value)
-                        || node.arguments.len() != 1
-                    {
-                        return Err(internal!("Atom支持の原始値・owner引数数が違う").into());
+                    if self.indexes.observed_scalar(field, &self.control)?.as_ref() != Some(value) {
+                        return Err(internal!("Atom支持の原始値が違う").into());
                     }
-                    let Scalar::Subject {
-                        snapshot, subject, ..
-                    } = graph.scalar(node.arguments[0])?
-                    else {
-                        return Err(internal!("Atom支持のownerがRefでない").into());
-                    };
-                    if snapshot != &fact.snapshot || subject != &fact.subject {
+                    if subject != &fact.subject {
                         return Err(internal!("Atom支持のowner identity不一致").into());
                     }
                     vec![fact.clone()]
@@ -5869,10 +5851,12 @@ impl<'a> Environment<'a> {
             subject,
             &format!("{entity}.{}", parts[count - 1].name),
         )?;
-        let Slot::Known { value, atom, .. } = &field.slot else {
+        let Slot::Known { atom, .. } = &field.slot else {
             return Err(internal!("chain fieldの既知値が欠測slotを指す").into());
         };
-        let expected = scalar_from(value, &field.ty, self.indexes.inputs.law(), &self.control)?
+        let expected = self
+            .indexes
+            .observed_scalar(field, &self.control)?
             .ok_or(internal!("chain fieldの元slotに対応する値がない"))?;
         let fact = Fact::from(archsig_input::archmap::FactData {
             snapshot: snapshot.clone(),
@@ -5913,12 +5897,15 @@ impl<'a> Environment<'a> {
         if node.arguments.len() != 1 {
             return Err(internal!("field owner数が違う").into());
         }
-        let pointer = if let Rule::Input {
+        let (input_snapshot, pointer) = if let Rule::Input {
             kind: "atom",
             location: Location::ArchMap { pointer, .. },
         } = &node.rule
         {
-            pointer
+            let Scalar::Subject { snapshot, .. } = graph.scalar(node.arguments[0])? else {
+                return Err(internal!("fieldの実ownerがRefでない").into());
+            };
+            (snapshot.as_str(), pointer.as_str())
         } else if node.rule == Rule::Construction("object_field") {
             let fact = node
                 .support
@@ -5935,14 +5922,14 @@ impl<'a> Environment<'a> {
             let Slot::Known { pointer, .. } = &field.slot else {
                 return Err(internal!("対象fieldの元Atomがない").into());
             };
-            pointer
+            (fact.snapshot.as_str(), pointer.as_str())
         } else {
             return Err(internal!("fieldの原始値に元Atom位置がない").into());
         };
         let input_fact = self
             .indexes
             .atoms
-            .get(pointer)
+            .get(&(input_snapshot, pointer))
             .ok_or(internal!("fieldの元Atom位置がない"))?;
         let input_field = input_fact
             .field
@@ -9523,12 +9510,7 @@ impl<'a> Environment<'a> {
             (Some(value), Some(scalar_scope))
         } else {
             match &field.slot {
-                Slot::Known {
-                    atom,
-                    origin,
-                    value,
-                    ..
-                } => {
+                Slot::Known { atom, origin, .. } => {
                     let owner_scope = self.indexes.scope(owner, reading, Some(origin))?;
                     scope.merge(&owner_scope);
                     let mut scalar_scope = request_base.clone();
@@ -9543,18 +9525,12 @@ impl<'a> Environment<'a> {
                         }));
                     (
                         Some(
-                            scalar_from(
-                                value,
-                                &field.ty,
-                                self.indexes.inputs.law(),
-                                &self.control,
-                            )?
-                            .ok_or_else(|| {
-                                ValidationFailure::UnsupportedExpression {
+                            self.indexes
+                                .observed_scalar(field, &self.control)?
+                                .ok_or_else(|| ValidationFailure::UnsupportedExpression {
                                     location: Location::Law { span },
                                     feature: "Z/Bool/Ref 以外の原始値読取り".into(),
-                                }
-                            })?,
+                                })?,
                         ),
                         Some(scalar_scope),
                     )
@@ -9985,28 +9961,18 @@ impl<'a> Environment<'a> {
                 Ok(())
             }
             (Slot::Missing, None) => Ok(()),
-            (
-                Slot::Known {
-                    value: expected, ..
-                },
-                Some(actual),
-            ) if scalar_from(
-                expected,
-                &field.ty,
-                self.indexes.inputs.law(),
-                &self.control,
-            )?
-            .as_ref()
-                == Some(graph.scalar(actual)?)
-                && if chained {
-                    graph.get(actual)?.arguments == [base, expression]
-                        && matches!(&graph.get(actual)?.rule, Rule::Input {
+            (Slot::Known { .. }, Some(actual))
+                if self.indexes.observed_scalar(field, &self.control)?.as_ref()
+                    == Some(graph.scalar(actual)?)
+                    && if chained {
+                        graph.get(actual)?.arguments == [base, expression]
+                            && matches!(&graph.get(actual)?.rule, Rule::Input {
                             kind: "law",
                             location: Location::Law { span: actual_span },
                         } if *actual_span == span)
-                } else {
-                    graph.get(actual)?.arguments == [base]
-                } =>
+                    } else {
+                        graph.get(actual)?.arguments == [base]
+                    } =>
             {
                 Ok(())
             }
