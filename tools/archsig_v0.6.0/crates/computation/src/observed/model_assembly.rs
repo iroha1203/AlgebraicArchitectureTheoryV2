@@ -200,7 +200,7 @@ fn selected_field(
     data::from_input(value, &field.ty.erase(), inputs.law(), c)
 }
 
-fn foreign_snapshot(
+pub(super) fn foreign_snapshot(
     inputs: &CheckedInputs,
     fact: &Fact,
     detail: &str,

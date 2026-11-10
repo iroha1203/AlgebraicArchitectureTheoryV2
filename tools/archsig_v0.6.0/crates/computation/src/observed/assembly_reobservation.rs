@@ -206,6 +206,9 @@ fn checked_layout(
     control: &Control,
 ) -> Result<Layout, ReobservationFailure> {
     if let Some(assembly) = retained_layout(evaluation, &request.id) {
+        if let Some(assembly_plan::Failure::Unsupported(detail)) = &assembly.failure {
+            return Err(ReobservationFailure::Unsupported(detail.detail.clone()));
+        }
         return layout_from_reads(&assembly.fragments, &assembly.interfaces, control);
     }
     read_layout(evaluation.prepared(), request, control)
@@ -302,12 +305,13 @@ fn layout_from_reads(
     Ok(Layout { roots, shared })
 }
 
-fn validate_shared_edges(
+fn checked_shared_partition(
     layout: &Layout,
     roster: &BTreeMap<&str, &Subject>,
     snapshot: &str,
+    image: impl Fn(&Fact) -> Result<Fact, ReobservationFailure>,
     control: &Control,
-) -> Result<(), ReobservationFailure> {
+) -> Result<BTreeMap<Fact, Fact>, ReobservationFailure> {
     let roots = layout
         .roots
         .iter()
@@ -365,32 +369,30 @@ fn validate_shared_edges(
             }
         }
     };
-    for (left, right) in &layout.shared {
-        control.checkpoint(Checkpoint::ConfigurationMap)?;
-        if owner_root(left)? == owner_root(right)?
-            || roster[left.subject.as_str()].ty != roster[right.subject.as_str()].ty
-        {
-            return Err(invalid("共有対は別担当の同じ型の個体を要求する"));
-        }
-    }
-    Ok(())
-}
-
-fn shared_partition(
-    edges: impl IntoIterator<Item = Result<(Fact, Fact), ReobservationFailure>>,
-    control: &Control,
-) -> Result<BTreeMap<Fact, Fact>, ReobservationFailure> {
     let classify = |failure| match failure {
         ValidationFailure::Stop(signal) => ReobservationFailure::Stopped(signal),
         _ => ReobservationFailure::Unsupported("共有対の同値閉包を確認できない".into()),
     };
     let mut parent = BTreeMap::new();
-    for edge in edges {
+    let mut members = BTreeMap::new();
+    for (left, right) in &layout.shared {
         control.checkpoint(Checkpoint::ConfigurationMap)?;
-        let (a, b) = edge?;
+        for endpoint in [left, right] {
+            if !members.contains_key(endpoint) {
+                let root = owner_root(endpoint)?;
+                members.insert(endpoint.clone(), (root, image(endpoint)?));
+            }
+        }
+        let (left_owner, a) = &members[left];
+        let (right_owner, b) = &members[right];
+        if left_owner == right_owner
+            || roster[left.subject.as_str()].ty != roster[right.subject.as_str()].ty
+        {
+            return Err(invalid("共有対は別担当の同じ型の個体を要求する"));
+        }
         parent.entry(a.clone()).or_insert_with(|| a.clone());
         parent.entry(b.clone()).or_insert_with(|| b.clone());
-        model_assembly::link_shared(&mut parent, &a, &b, control).map_err(classify)?;
+        model_assembly::link_shared(&mut parent, a, b, control).map_err(classify)?;
     }
     let keys = parent.keys().cloned().collect::<Vec<_>>();
     let mut classes = BTreeMap::new();
@@ -399,6 +401,13 @@ fn shared_partition(
         let representative =
             model_assembly::representative(&mut parent, &item, control).map_err(classify)?;
         classes.insert(item, representative);
+    }
+    let mut local_images = BTreeSet::new();
+    for (owner, member) in members.values() {
+        control.checkpoint(Checkpoint::ConfigurationMap)?;
+        if !local_images.insert((owner, &classes[member])) {
+            return Err(invalid("共有対の閉包が同じ担当の異なる個体を同一視する"));
+        }
     }
     Ok(classes)
 }
@@ -574,6 +583,7 @@ pub fn reevaluate_assembly(
         if prior.arguments.len() != new.arguments.len() {
             return Err(invalid("明示引数の件数が対応しない"));
         }
+        // Both request resolvers normalize named arguments to name order.
         for (a, b) in prior.arguments.iter().zip(&new.arguments) {
             control.checkpoint(Checkpoint::ConfigurationMap)?;
             if a.name != b.name {
@@ -709,8 +719,6 @@ pub fn reevaluate_assembly(
                 )?,
                 control,
             )?;
-            validate_shared_edges(&before_layout, &a, alignment.before_snapshot, control)?;
-            validate_shared_edges(&after_layout, &b, alignment.after_snapshot, control)?;
             let after_subject = |fact: &Fact| {
                 control.checkpoint(Checkpoint::ConfigurationMap)?;
                 if fact.snapshot != alignment.after_snapshot {
@@ -749,18 +757,18 @@ pub fn reevaluate_assembly(
                 .iter()
                 .map(after_subject)
                 .collect::<Result<BTreeSet<_>, _>>()?;
-            let old_shared = shared_partition(
-                before_layout
-                    .shared
-                    .iter()
-                    .map(|(a, b)| Ok((before_image(a)?, before_image(b)?))),
+            let old_shared = checked_shared_partition(
+                &before_layout,
+                &a,
+                alignment.before_snapshot,
+                before_image,
                 control,
             )?;
-            let new_shared = shared_partition(
-                after_layout
-                    .shared
-                    .iter()
-                    .map(|(a, b)| Ok((after_subject(a)?, after_subject(b)?))),
+            let new_shared = checked_shared_partition(
+                &after_layout,
+                &b,
+                alignment.after_snapshot,
+                after_subject,
                 control,
             )?;
             if old_roots != new_roots || old_shared != new_shared {
@@ -884,9 +892,8 @@ mod tests {
         };
         let before_input = before.prepared();
         let before_request = question(before_input, "joined", QuestionKind::Assemble).unwrap();
-        let mut invalid_layout = checked_layout(&before, before_request, &c).unwrap();
-        let member = invalid_layout.shared[0].0.clone();
-        invalid_layout.shared.push((member.clone(), member));
+        let layout = checked_layout(&before, before_request, &c).unwrap();
+        let (left, right) = &layout.shared[0];
         let old_snapshot = before_input
             .inputs()
             .archmap()
@@ -895,14 +902,26 @@ mod tests {
             .find(|snapshot| snapshot.id == "before")
             .unwrap();
         let roster = subject_index(&old_snapshot.subjects, &c).unwrap();
-        assert!(matches!(
-            validate_shared_edges(&invalid_layout, &roster, "before", &c),
-            Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("共有対")
-        ));
+        let mut private = left.clone();
+        private.subject = "a".into();
+        for (edge, detail) in [
+            ((left.clone(), left.clone()), "別担当"),
+            ((private, right.clone()), "閉包"),
+        ] {
+            let invalid_layout = Layout {
+                roots: layout.roots.clone(),
+                shared: vec![(left.clone(), right.clone()), edge],
+            };
+            assert!(matches!(
+                checked_shared_partition(&invalid_layout, &roster, "before", |fact| Ok(fact.clone()), &c),
+                Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains(detail)
+            ));
+        }
 
         let new_queries = QUERIES
             .replace("pick=", "replacement=")
-            .replace("$pick.assignment", "$replacement.assignment");
+            .replace("$pick.assignment", "$replacement.assignment")
+            .replace("ma=@SNAP/ma,mb=@SNAP/mb", "mb=@SNAP/mb,ma=@SNAP/ma");
         let current = || prepared_with("after", AFTER, LAW, &new_queries, &c);
         let steps = std::rc::Rc::new(std::cell::Cell::new(0));
         let count = steps.clone();
@@ -1081,6 +1100,56 @@ mod tests {
             reevaluate_assembly(&dynamic_before, prepared_with("after", &changed_alias, dynamic.as_bytes(), &queries, &c), &alignment, &c),
             Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("共有対")
         ));
+    }
+
+    #[test]
+    fn a_checked_repair_in_a_foreign_snapshot_leaves_assembly_undetermined() {
+        let (prefix, snapshots) = AFTER.split_once("\"snapshots\": [").unwrap();
+        let (body, suffix) = snapshots.rsplit_once("\n  ]").unwrap();
+        let foreign = body.replace("\"after\"", "\"foreign\"");
+        let map = format!("{prefix}\"snapshots\": [{body},{foreign}\n  ]{suffix}");
+        let queries = QUERIES
+            .lines()
+            .map(|line| {
+                if line.starts_with("within=") || line.starts_with("prepareIt=") {
+                    line.replace("@SNAP/", "@foreign/")
+                } else {
+                    line.to_owned()
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n");
+        let c = Control::unlimited();
+        let result =
+            evaluate_observed(prepared_with("after", &map, LAW, &queries, &c), &c).unwrap();
+        assert_eq!(status(&result, "selected"), Decision::Established);
+        assert_eq!(status(&result, "joined"), Decision::Undetermined);
+        let joined = result
+            .answers
+            .iter()
+            .find(|answer| answer.id == "joined")
+            .unwrap();
+        assert!(matches!(joined.reasons.as_slice(), [reason]
+            if matches!(&reason.kind, ReasonKind::UnsupportedAlgorithm { .. })));
+        assert!(!joined.outputs.contains_key("assembly"));
+        let global = result
+            .answers
+            .iter()
+            .find(|answer| answer.id == "global")
+            .unwrap();
+        assert_eq!(global.status, Decision::Undetermined);
+        assert!(
+            global
+                .reasons
+                .iter()
+                .any(|reason| matches!(&reason.kind, ReasonKind::DependencyBlocked { .. }))
+        );
+        assert!(
+            result
+                .issues
+                .iter()
+                .all(|reason| !matches!(&reason.kind, ReasonKind::Internal(_)))
+        );
     }
 
     #[test]

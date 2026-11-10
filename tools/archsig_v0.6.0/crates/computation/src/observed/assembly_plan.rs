@@ -264,6 +264,14 @@ pub(super) fn prepare(
             break;
         };
         let construction = source.construction();
+        if construction.root().snapshot != target.snapshot {
+            rejected = Some(model_assembly::foreign_snapshot(
+                &p.shared_inputs(),
+                construction.root(),
+                "修復局所の元rootが別snapshotに属する",
+            )?);
+            break;
+        }
         if construction.root() != &root
             || construction.reading() != reading
             || construction.transport().is_some()
