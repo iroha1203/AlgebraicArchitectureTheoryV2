@@ -9,9 +9,9 @@
     "global": "established",
     "observed": ["after", "mb", "Assemble.Part.quantity", "observed-shared-quantity"],
     "previous_assignment": "retained",
-    "selected_candidate": "pick"
+    "selected_candidate": "replacement"
   },
-  "after_with_corrected_b_quantity": {
+  "after_with_corrected_private_quantities": {
     "assembly": "established",
     "global": "established",
     "previous_assignment": "excluded",

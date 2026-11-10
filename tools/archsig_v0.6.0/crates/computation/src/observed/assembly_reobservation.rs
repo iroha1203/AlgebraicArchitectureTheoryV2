@@ -302,6 +302,80 @@ fn layout_from_reads(
     Ok(Layout { roots, shared })
 }
 
+fn validate_shared_edges(
+    layout: &Layout,
+    roster: &BTreeMap<&str, &Subject>,
+    snapshot: &str,
+    control: &Control,
+) -> Result<(), ReobservationFailure> {
+    let roots = layout
+        .roots
+        .iter()
+        .map(|root| root.subject.as_str())
+        .collect::<BTreeSet<_>>();
+    let owner_root = |fact: &Fact| -> Result<&str, ReobservationFailure> {
+        if fact.snapshot != snapshot {
+            return Err(ReobservationFailure::Unsupported(
+                "共有対が別 snapshot の参照を含む".into(),
+            ));
+        }
+        let mut current = roster
+            .get(fact.subject.as_str())
+            .copied()
+            .ok_or_else(|| invalid("共有対の主体がない"))?;
+        let mut visited = BTreeSet::new();
+        loop {
+            control.checkpoint(Checkpoint::ConfigurationMap)?;
+            if !visited.insert(current.id.as_str()) {
+                return Err(invalid("共有個体の owner が循環する"));
+            }
+            let field = current
+                .fields
+                .iter()
+                .find(|field| field.name.is_owner())
+                .ok_or_else(|| invalid("共有対の個体が担当 root に所属しない"))?;
+            match &field.slot {
+                Slot::Known {
+                    value:
+                        Value::Ref {
+                            snapshot: owner_snapshot,
+                            subject,
+                        },
+                    ..
+                } => {
+                    if owner_snapshot != snapshot {
+                        return Err(ReobservationFailure::Unsupported(
+                            "共有個体の owner が別 snapshot を参照する".into(),
+                        ));
+                    }
+                    if roots.contains(subject.as_str()) {
+                        return Ok(subject.as_str());
+                    }
+                    current = roster
+                        .get(subject.as_str())
+                        .copied()
+                        .ok_or_else(|| invalid("共有個体の owner がない"))?;
+                }
+                Slot::Missing => {
+                    return Err(ReobservationFailure::MissingOwner(self::fact(
+                        current, field, None,
+                    )));
+                }
+                _ => return Err(invalid("共有個体の owner が参照でない")),
+            }
+        }
+    };
+    for (left, right) in &layout.shared {
+        control.checkpoint(Checkpoint::ConfigurationMap)?;
+        if owner_root(left)? == owner_root(right)?
+            || roster[left.subject.as_str()].ty != roster[right.subject.as_str()].ty
+        {
+            return Err(invalid("共有対は別担当の同じ型の個体を要求する"));
+        }
+    }
+    Ok(())
+}
+
 fn shared_partition(
     edges: impl IntoIterator<Item = Result<(Fact, Fact), ReobservationFailure>>,
     control: &Control,
@@ -635,6 +709,8 @@ pub fn reevaluate_assembly(
                 )?,
                 control,
             )?;
+            validate_shared_edges(&before_layout, &a, alignment.before_snapshot, control)?;
+            validate_shared_edges(&after_layout, &b, alignment.after_snapshot, control)?;
             let after_subject = |fact: &Fact| {
                 control.checkpoint(Checkpoint::ConfigurationMap)?;
                 if fact.snapshot != alignment.after_snapshot {
@@ -806,16 +882,37 @@ mod tests {
             previous_candidate: "pick",
             current_solve: "solveIt",
         };
+        let before_input = before.prepared();
+        let before_request = question(before_input, "joined", QuestionKind::Assemble).unwrap();
+        let mut invalid_layout = checked_layout(&before, before_request, &c).unwrap();
+        let member = invalid_layout.shared[0].0.clone();
+        invalid_layout.shared.push((member.clone(), member));
+        let old_snapshot = before_input
+            .inputs()
+            .archmap()
+            .snapshots()
+            .iter()
+            .find(|snapshot| snapshot.id == "before")
+            .unwrap();
+        let roster = subject_index(&old_snapshot.subjects, &c).unwrap();
+        assert!(matches!(
+            validate_shared_edges(&invalid_layout, &roster, "before", &c),
+            Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("共有対")
+        ));
+
+        let new_queries = QUERIES
+            .replace("pick=", "replacement=")
+            .replace("$pick.assignment", "$replacement.assignment");
+        let current = || prepared_with("after", AFTER, LAW, &new_queries, &c);
         let steps = std::rc::Rc::new(std::cell::Cell::new(0));
         let count = steps.clone();
         let trace = Control::new(move |_| {
             count.set(count.get() + 1);
             None
         });
-        let next =
-            reevaluate_assembly(&before, prepared("after", AFTER, &c), &alignment, &trace).unwrap();
+        let next = reevaluate_assembly(&before, current(), &alignment, &trace).unwrap();
         assert_eq!(next.candidate(), CandidateContinuity::Retained);
-        assert_eq!(next.selected_candidate(), Some("pick"));
+        assert_eq!(next.selected_candidate(), Some("replacement"));
         let [matched] = next.observations.as_slice() else {
             panic!("one shared observation")
         };
@@ -836,8 +933,7 @@ mod tests {
             checkpoint.set(checkpoint.get() + 1);
             (checkpoint.get() == final_checkpoint).then_some(Signal::Term)
         });
-        let stopped =
-            reevaluate_assembly(&before, prepared("after", AFTER, &c), &alignment, &stop).unwrap();
+        let stopped = reevaluate_assembly(&before, current(), &alignment, &stop).unwrap();
         assert_eq!(stopped.continuity_stop(), Some(Signal::Term));
         assert_eq!(stopped.candidate(), CandidateContinuity::Undetermined);
         assert_eq!(
@@ -861,12 +957,21 @@ mod tests {
             1,
         );
         assert_ne!(revised, AFTER);
-        let new_queries = QUERIES
-            .replace("pick=", "replacement=")
-            .replace("$pick.assignment", "$replacement.assignment");
+        let corrected = revised.replacen(
+            concat!(
+                "\"id\": \"a-quantity\",\n          \"subject\": \"a\",\n",
+                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"1\""
+            ),
+            concat!(
+                "\"id\": \"a-quantity\",\n          \"subject\": \"a\",\n",
+                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"2\""
+            ),
+            1,
+        );
+        assert_ne!(corrected, revised);
         let next = reevaluate_assembly(
             &before,
-            prepared_with("after", &revised, LAW, &new_queries, &c),
+            prepared_with("after", &corrected, LAW, &new_queries, &c),
             &alignment,
             &c,
         )
