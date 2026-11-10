@@ -313,7 +313,8 @@ impl Environment<'_> {
         out: &mut PathResult,
     ) -> Result<Option<Scalar>, ValidationFailure> {
         self.tick()?;
-        self.indexes
+        let field = self
+            .indexes
             .field(&self.state, &owner.snapshot, &owner.id, &field.name)?;
         let position = Fact::from(archsig_input::archmap::FactData {
             snapshot: owner.snapshot.clone(),
@@ -337,12 +338,7 @@ impl Environment<'_> {
             return Ok(Some(value.clone()));
         }
         match &field.slot {
-            Slot::Known {
-                atom,
-                origin,
-                value,
-                ..
-            } => {
+            Slot::Known { atom, origin, .. } => {
                 out.scope
                     .merge(&self.indexes.scope(owner, reading, Some(origin))?);
                 out.support
@@ -352,7 +348,7 @@ impl Environment<'_> {
                         field: Some(field.name.clone()),
                         atom: Some(atom.clone()),
                     }));
-                scalar_from(value, &field.ty, self.indexes.inputs.law(), &self.control)
+                self.indexes.observed_scalar(field, &self.control)
             }
             Slot::Missing => {
                 out.scope.merge(&self.indexes.scope(owner, reading, None)?);

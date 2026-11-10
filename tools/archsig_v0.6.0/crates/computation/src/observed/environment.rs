@@ -614,8 +614,7 @@ impl<'a> Environment<'a> {
         {
             return Ok(None);
         }
-        let Some(raw) = self.indexes.raw_observed_scalar(field, &self.control)?
-        else {
+        let Some(raw) = self.indexes.raw_observed_scalar(field, &self.control)? else {
             return Ok(None);
         };
         let Some(moved) = self.project_object_field(position, &raw)? else {
