@@ -36,6 +36,12 @@ archsig run --atom-definition definitions.json --law laws.law --archmap archmap.
 同じ比較 snapshot における同じ型・field 位置の読取りを `assemble_map` の適用域とした。
 この入力の result/4 は約12 MB で、ここには検査対象の結果部分を保存した。
 
+操作保存の反例を再現するには、`rust-N-consume.to` を同じ owner の登録済み `rust-N-before` に
+変更して最初の3問を実行する。両 assembly は成立し、`move` は `condition_failed` と保存反例を返す。
+このとき後続の `$move.map.target` は利用できない。後続を含む5問で既存の依存解決が内部障害になる
+問題は、親 #6292 の [#6317](https://github.com/iroha1203/AlgebraicArchitectureTheoryV2/issues/6317)
+で追跡する。
+
 ## 原記録に残る境界
 
 - P2 の complete-first は明示 consume 後、output1 の live binding 残量が零で再消費しない条件を持つ。

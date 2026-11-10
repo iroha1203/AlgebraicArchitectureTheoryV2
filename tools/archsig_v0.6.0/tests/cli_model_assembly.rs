@@ -350,7 +350,13 @@ fn r2_e12_consume_assembles_local_routes_and_preserves_named_actions() {
         .map(|generator| {
             let src = get(generator, "source");
             let tgt = get(generator, "target");
-            let operands = arr(get(value(get(generator, "proposition")), "operands"));
+            let proposition = node(get(generator, "proposition"));
+            assert_eq!(s(get(proposition, "type")), "Proposition");
+            assert_eq!(
+                s(get(get(proposition, "judgment"), "status")),
+                "established"
+            );
+            let operands = arr(get(get(proposition, "value"), "operands"));
             for edge in [src, tgt, output(2, "configuration_map")] {
                 assert!(operands.iter().any(|operand| operand.value == edge.value));
             }
@@ -368,7 +374,10 @@ fn r2_e12_consume_assembles_local_routes_and_preserves_named_actions() {
             Json::Arr(vec![endpoints(src), endpoints(tgt)])
         })
         .collect();
-    let action = value(get(value(output(2, "candidate")), "action"));
+    let configuration_map = value(get(assembled, "configuration_map"));
+    let candidate = get(configuration_map, "candidate");
+    assert_eq!(candidate.value, output(2, "candidate").value);
+    let action = value(get(value(candidate), "action"));
     let atoms = arr(get(value(get(action, "universe")), "atoms"));
     let images = arr(get(action, "images"));
     assert_eq!(atoms.len(), images.len());
@@ -413,6 +422,32 @@ fn r2_e12_consume_assembles_local_routes_and_preserves_named_actions() {
     let expected = parse(include_bytes!("fixtures/r2-e12-consume/expected.json")).unwrap();
     let actual = parse(report.canonical().as_bytes()).unwrap();
     assert_eq!(actual.value, expected.value, "{}", report.canonical());
+
+    let wrong_endpoint = std::str::from_utf8(input.archmap().bytes())
+        .unwrap()
+        .replacen(
+            r#""field":"E12.Consume.to","value":["comparison","rust-N-after"]"#,
+            r#""field":"E12.Consume.to","value":["comparison","rust-N-before"]"#,
+            1,
+        );
+    assert_ne!(wrong_endpoint.as_bytes(), input.archmap().bytes());
+    std::fs::write(dir.join("a.json"), wrong_endpoint).unwrap();
+    let refuted = execute_asks(&dir, "refuted", None, &asks[..3]);
+    assert_eq!(refuted.code, 1, "{}{}", refuted.stdout, refuted.stderr);
+    let refuted = result_json(&dir, &refuted);
+    let answers = arr(get(&refuted, "answers"));
+    assert!(
+        answers[..2]
+            .iter()
+            .all(|a| s(get(a, "status")) == "established")
+    );
+    assert_eq!(s(get(&answers[2], "status")), "refuted");
+    assert!(
+        arr(get(&answers[2], "reasons"))
+            .iter()
+            .any(|reason| { s(get(reason, "code")) == "condition_failed" })
+    );
+    assert!(!arr(get(&answers[2], "counterexamples")).is_empty());
 
     let bad = std::str::from_utf8(input.archmap().bytes())
         .unwrap()
