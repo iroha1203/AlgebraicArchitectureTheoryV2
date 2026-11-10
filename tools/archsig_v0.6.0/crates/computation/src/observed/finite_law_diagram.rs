@@ -596,7 +596,7 @@ fn function(
         },
     )
 }
-fn value_key(value: &Scalar, c: &Control) -> Result<String, ValidationFailure> {
+pub(super) fn value_key(value: &Scalar, c: &Control) -> Result<String, ValidationFailure> {
     super::data::input_json(value, c)?
         .canonical_controlled::<archsig_common::control::CheckFailure<Box<archsig_common::issue::Issue>>>(
             c,

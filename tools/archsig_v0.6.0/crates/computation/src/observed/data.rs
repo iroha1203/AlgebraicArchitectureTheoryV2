@@ -1168,6 +1168,52 @@ pub(super) fn set(
         items: result,
     })
 }
+/// Listの位置はそのまま、SetからListへの射影は値の正規順で読む。
+pub(super) fn comprehension_positions(
+    input: &Scalar,
+    output: &Type,
+    control: &Control,
+) -> Result<impl Iterator<Item = usize> + use<>, ValidationFailure> {
+    let (items, unordered) = match input {
+        Scalar::List { items, .. } => (items, false),
+        Scalar::Set { items, .. } => (items, true),
+        _ => return Err(internal!("内包元域がList/Setでない").into()),
+    };
+    let ordered = if unordered && matches!(output, Type::List(_)) {
+        use super::finite_law_diagram::{canonical_value, value_key};
+        let mut keyed = Vec::new();
+        for (index, item) in items.iter().enumerate() {
+            tick(control)?;
+            keyed.push((value_key(&canonical_value(item, control)?, control)?, index));
+        }
+        keyed.sort_by(|a, b| a.0.as_bytes().cmp(b.0.as_bytes()));
+        tick(control)?;
+        Some(keyed)
+    } else {
+        None
+    };
+    let mut order = ordered.map(Vec::into_iter);
+    Ok((0..items.len()).map(move |index| match &mut order {
+        Some(order) => order.next().expect("正規順は各位置を一度持つ").1,
+        None => index,
+    }))
+}
+
+pub(super) fn comprehension_value(
+    output: &Type,
+    items: Vec<Scalar>,
+    control: &Control,
+) -> Result<Scalar, ValidationFailure> {
+    match output {
+        Type::List(element) => Ok(Scalar::List {
+            element: (**element).clone(),
+            items,
+        }),
+        Type::Set(element) => set((**element).clone(), &items, control),
+        _ => Err(internal!("内包結果型がList/Setでない").into()),
+    }
+}
+
 pub(super) fn aggregate(
     name: &str,
     value: &Scalar,

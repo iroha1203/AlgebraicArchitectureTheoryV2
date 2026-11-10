@@ -1289,7 +1289,7 @@ impl<'a> Environment<'a> {
         id: usize,
     ) -> Result<(Option<usize>, Vec<usize>), ValidationFailure> {
         match self.indexes.inputs.law().exprs()[id].kind {
-            ExprKind::SetComp {
+            ExprKind::Comprehension {
                 domain,
                 elem,
                 filter,
@@ -1674,7 +1674,7 @@ impl<'a> Environment<'a> {
                                 .quant_scalar(graph, node, limit)?
                                 .known_value
                                 .ok_or(internal!("量化値が確定しない"))?,
-                            ExprKind::SetComp { .. } => self
+                            ExprKind::Comprehension { .. } => self
                                 .comprehension_source_analysis(graph, node, limit)?
                                 .known_value
                                 .ok_or(internal!("内包値が確定しない"))?,
@@ -4354,7 +4354,7 @@ impl<'a> Environment<'a> {
                             ExprKind::Quant { .. } => {
                                 self.quant_scalar(graph, node, limit)?.support.into_vec()
                             }
-                            ExprKind::SetComp { .. } => self
+                            ExprKind::Comprehension { .. } => self
                                 .comprehension_source_analysis(graph, node, limit)?
                                 .support
                                 .into_vec(),
@@ -5514,7 +5514,7 @@ impl<'a> Environment<'a> {
                     },
                 ));
             }
-            if let ExprKind::SetComp {
+            if let ExprKind::Comprehension {
                 elem, var, filter, ..
             } = &expression.kind
                 && law.expr_type(id).is_some()
@@ -6518,7 +6518,7 @@ impl<'a> Environment<'a> {
             .expressions
             .get(&span)
             .ok_or(internal!("内包元ASTがない"))?;
-        let ExprKind::SetComp {
+        let ExprKind::Comprehension {
             elem,
             domain,
             filter,
@@ -6550,20 +6550,21 @@ impl<'a> Environment<'a> {
         let own = own.ok_or(internal!("内包値の既出own Sourceがない"))?;
         let analysis =
             self.resolve_analysis(graph, self.analyze_source(graph, span, bindings)?, children)?;
-        let items = match value.map(|r| graph.scalar(r)).transpose()? {
-            Some(Scalar::List { items, .. }) => Some((items, true)),
-            Some(Scalar::Set { items, .. }) => Some((items, false)),
-            None => None,
-            _ => return Err(internal!("実内包域がList/Setでない").into()),
-        };
+        let output = self
+            .indexes
+            .inputs
+            .law()
+            .expr_type(id)
+            .ok_or(internal!("内包型がない"))?;
+        let input_value = value.map(|r| graph.scalar(r)).transpose()?;
         let mut cursor = 1;
         let mut seen = Vec::new();
         let mut used_support = graph.get(input)?.support.clone().into_vec();
         let mut scope = graph.get(input)?.scope.clone();
         let mut collected = Vec::new();
-        let mut known = items.is_some();
-        if let Some((items, is_list)) = items {
-            for position in 0..items.len() {
+        let mut known = input_value.is_some();
+        if let Some(input_value) = input_value {
+            for position in data::comprehension_positions(input_value, output, &self.control)? {
                 self.tick()?;
                 let first = *children
                     .get(cursor)
@@ -6587,18 +6588,27 @@ impl<'a> Environment<'a> {
                     return Err(internal!("内包子の元Source/domain/親Contextが違う").into());
                 }
                 let inputs = self.iteration_input(graph, index)?;
-                let member = inputs.1.clone();
-                match (&record.member, is_list) {
-                    (super::call::Member::ListPosition(actual), true) if *actual == position => {}
-                    (super::call::Member::SetElement(_), false)
-                        if !data::contains(&seen, &member, &self.control)? => {}
+                match (&record.member, input_value) {
+                    (super::call::Member::ListPosition(actual), Scalar::List { .. })
+                        if *actual == position => {}
+                    (super::call::Member::SetElement(_), Scalar::Set { items, .. })
+                        if matches!(output, Type::List(_)) =>
+                    {
+                        if !data::equal(&items[position], &inputs.1, &self.control)? {
+                            return Err(internal!("List内包のSet要素が正規順と違う").into());
+                        }
+                    }
+                    (super::call::Member::SetElement(_), Scalar::Set { .. })
+                        if !data::contains(&seen, &inputs.1, &self.control)? =>
+                    {
+                        seen.push(inputs.1.clone());
+                    }
                     _ => {
                         return Err(
                             internal!("内包走査のList位置/Set要素が重複または不一致").into()
                         );
                     }
                 }
-                seen.push(member);
                 let mut consume = |expected: usize| -> Result<Option<NodeRef>, ValidationFailure> {
                     let reference = *children
                         .get(cursor)
@@ -6644,17 +6654,8 @@ impl<'a> Environment<'a> {
         }
         used_support.sort();
         used_support.dedup();
-        let Type::Set(element) = self
-            .indexes
-            .inputs
-            .law()
-            .expr_type(id)
-            .ok_or(internal!("内包型がない"))?
-        else {
-            return Err(internal!("内包型がSetでない").into());
-        };
         let computed = if known {
-            Some(data::set((**element).clone(), &collected, &self.control)?)
+            Some(data::comprehension_value(output, collected, &self.control)?)
         } else {
             None
         };
@@ -6711,7 +6712,7 @@ impl<'a> Environment<'a> {
         };
         if !matches!(
             self.indexes.inputs.law().exprs()[id].kind,
-            ExprKind::SetComp { .. }
+            ExprKind::Comprehension { .. }
         ) {
             return Ok(false);
         }
@@ -8385,26 +8386,25 @@ impl<'a> Environment<'a> {
                     }
                 }
                 ExprKind::Binary { .. } => self.scoped_binary(id, variables, base, reading)?,
-                ExprKind::SetComp {
+                ExprKind::Comprehension {
                     elem,
                     var,
                     domain,
                     filter,
+                    ..
                 } => {
-                    if !data::supported(
-                        self.indexes
-                            .inputs
-                            .law()
-                            .expr_type(id)
-                            .ok_or(internal!("内包結果型がない"))?,
-                        self.indexes.inputs.law(),
-                        &self.control,
-                    )? {
+                    let output = self
+                        .indexes
+                        .inputs
+                        .law()
+                        .expr_type(id)
+                        .ok_or(internal!("内包結果型がない"))?;
+                    if !data::supported(output, self.indexes.inputs.law(), &self.control)? {
                         return Err(ValidationFailure::UnsupportedExpression {
                             location: Location::Law {
                                 span: expression.span,
                             },
-                            feature: "未対応payload・型または再帰DataのSet内包".into(),
+                            feature: "未対応payload・型または再帰Dataの内包".into(),
                         });
                     }
                     let input = self.scoped_ast(*domain, variables, base, reading)?;
@@ -8427,8 +8427,10 @@ impl<'a> Environment<'a> {
                     let mut support = input.support.clone();
                     let mut values = Vec::new();
                     let mut known = true;
-                    for item in items {
+                    for position in data::comprehension_positions(container, output, &self.control)?
+                    {
                         self.tick()?;
+                        let item = &items[position];
                         let mut local = self.copy_variables(variables)?;
                         for value in local.values_mut() {
                             value.scope.merge(&input.scope);
@@ -8488,17 +8490,8 @@ impl<'a> Environment<'a> {
                     }
                     support.make_owned().sort();
                     support.make_owned().dedup();
-                    let Type::Set(element) = self
-                        .indexes
-                        .inputs
-                        .law()
-                        .expr_type(id)
-                        .ok_or(internal!("内包結果型がない"))?
-                    else {
-                        return Err(internal!("内包結果型がSetでない").into());
-                    };
                     let known_value = if known {
-                        Some(data::set((**element).clone(), &values, &self.control)?)
+                        Some(data::comprehension_value(output, values, &self.control)?)
                     } else {
                         None
                     };

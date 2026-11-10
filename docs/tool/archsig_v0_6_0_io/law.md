@@ -190,7 +190,7 @@ Primary = Name | QName | "then" | Integer | String | "true" | "false" | "unit"
         | "(" Expr ")" | "(" Expr "," Expr { "," Expr } ")"
         | "list" "<" Type ">" "[" [ Expr { "," Expr } ] "]"
         | "set" "<" Type ">" "{" [ Expr { "," Expr } ] "}"
-        | "set" "{" Expr "|" Name "in" Expr [ "where" Expr ] "}"
+        | ( "list" | "set" ) "{" Expr "|" Name "in" Expr [ "where" Expr ] "}"
         | "none" "<" Type ">" | "some" "(" Expr ")"
         | "fn" "(" Fields ")" "=>" Expr
         | QName "[" Expr "]" ;
@@ -224,6 +224,18 @@ constructor が一つの data への入れ子の pattern は、その引数の p
 外側の constructor の分岐を覆う。末尾の `_` を到達不能とするのは、全 constructor の分岐の引数が
 `_` か束縛だけの場合とする。
 全分岐を型検査し、if の両枝・match の各枝の結果型を一致させる。
+
+`list{e | x in xs where p}` は有限 List/Set の各要素を `x` に束縛し、`p` が真なら `e` を一つ追加する。
+filter の省略は全要素を採用する。filter の型は Bool。List を読むときは位置順で、同じ個体が複数の位置に
+あれば各位置を数える。Set を読むときは元の要素を各一回読み、要素内の Set/Map も正規化した
+値の canonical JSON を UTF-8 バイト辞書順に並べる。別個体から等しい値が得られても List の各位置に残る。
+`set{...}` では結果を Set の外延等値でまとめる。
+空の結果でも要素型は `e` の型。必要な filter が未知、または採用した要素の値が未知なら、結果の List/Set も
+未知として元の欠測を保持する。filter が偽なら、その位置の `e` は読まない。
+
+例えば `Cell[w]` が owner `w` の Cell の族で、`quantity:Q`、`stock:Stock` なら、
+`sum(list{b.quantity | b in Cell[w] where b.stock=s})` は stock `s` に属する各 Cell の数量を足す。
+数量 `rat(1,2)` の異なる2個体は合わせて `rat(1,1)` になり、該当個体が0なら型 Q の零になる。
 
 field lookup は宣言済みの field だけ。tuple は数値射影だけ。適用は view、Map、Term、constructor、
 以下の固定演算だけ。関数の名前や文字列から外部 code を実行しない。

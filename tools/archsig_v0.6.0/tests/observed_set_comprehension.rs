@@ -421,7 +421,13 @@ view ref_keep(s: Sample): Set<Sample> = set { r | r in s.refs };
         );
     }
     let body = declared_body(&checked, "Calc.ref_read");
-    let ExprKind::SetComp { elem, domain, .. } = &checked.law().exprs()[body].kind else {
+    let ExprKind::Comprehension {
+        list: false,
+        elem,
+        domain,
+        ..
+    } = &checked.law().exprs()[body].kind
+    else {
         panic!("内包")
     };
     let ch = children(&ns, root(&wire, "e"));
@@ -513,7 +519,10 @@ view prior(s: Sample): Z = s.zero;
         ("d", "Calc.unknown_filter", 2),
     ] {
         let body = declared_body(&checked, name);
-        let ExprKind::SetComp { elem, .. } = &checked.law().exprs()[body].kind else {
+        let ExprKind::Comprehension {
+            list: false, elem, ..
+        } = &checked.law().exprs()[body].kind
+        else {
             panic!("内包")
         };
         let evaluated = if id == "d" {
@@ -535,7 +544,8 @@ view prior(s: Sample): Z = s.zero;
             "不要/未確定要素を値や欠測へ昇格しない: {id}"
         );
     }
-    let ExprKind::SetComp {
+    let ExprKind::Comprehension {
+        list: false,
         elem,
         domain,
         filter: Some(filter),
@@ -767,7 +777,8 @@ law required check_set(s: Sample): set { x+1 | x in s.nums where x>1 }=set<Z>{3}
     assert_eq!(f(answer(&wire, "f"), "status"), &Json::str("established"));
     assert_eq!(f(f(claim, "judgment"), "status"), &Json::str("established"));
     let body = declared_body(&checked, "Calc.filtered");
-    let ExprKind::SetComp {
+    let ExprKind::Comprehension {
+        list: false,
         elem,
         domain,
         filter: Some(filter),
@@ -849,7 +860,10 @@ law required check_set(s: Sample): set { x+1 | x in s.nums where x>1 }=set<Z>{3}
             .any(|p| obj(p).get("field") == Some(&Json::str("Comprehensions.Sample.nums")))
     );
     let empty = declared_body(&checked, "Calc.empty_domain");
-    let ExprKind::SetComp { elem, .. } = &checked.law().exprs()[empty].kind else {
+    let ExprKind::Comprehension {
+        list: false, elem, ..
+    } = &checked.law().exprs()[empty].kind
+    else {
         panic!("内包")
     };
     assert!(
@@ -859,15 +873,65 @@ law required check_set(s: Sample): set { x+1 | x in s.nums where x>1 }=set<Z>{3}
 }
 
 #[test]
+fn list_projection_preserves_positions_and_sorts_sets_by_member_value() {
+    let (wire, _) = run(
+        fixture(
+            r#"
+view ordered(): List<Z> = list { x+1 | x in list<Z>[3,1,3] };
+view set_left(): List<Z> = list { x | x in set<Z>{3,1,3,2} };
+view set_right(): List<Z> = list { x | x in set<Z>{2,1,3} };
+view typed_empty(): List<Q> = list { x | x in set<Q>{} };
+"#,
+        ),
+        &[
+            "a=evaluate(Calc.ordered)",
+            "b=evaluate(Calc.set_left)",
+            "c=evaluate(Calc.set_right)",
+            "d=evaluate(Calc.typed_empty)",
+        ],
+    );
+    let integers = ty("List", Json::str("Z"));
+    output(&wire, "a", &integers, numbers(&["4", "2", "4"]));
+    output(&wire, "b", &integers, numbers(&["1", "2", "3"]));
+    output(&wire, "c", &integers, numbers(&["1", "2", "3"]));
+    output(&wire, "d", &ty("List", Json::str("Q")), Json::Arr(vec![]));
+}
+
+#[test]
+fn list_projection_rejects_noncollections_nonboolean_filters_and_unknown_references() {
+    for body in [
+        "list { x | x in 1 }",
+        "list { x | x in list<Z>[1] where 1 }",
+        "list { x | x in list<Z>[1] where absent(x) }",
+    ] {
+        let input = fixture(&format!("view bad(): List<Z> = {body};"));
+        assert!(check_inputs(input, &quiet()).is_err(), "{body}");
+    }
+}
+
+#[test]
 fn set_comprehension_expression_stops_preserve_completed_prefixes() {
-    let inputs = fixture(
-        r#"
+    comprehension_expression_stops_preserve_completed_prefixes(false);
+}
+
+#[test]
+fn list_comprehension_expression_stops_preserve_completed_prefixes() {
+    comprehension_expression_stops_preserve_completed_prefixes(true);
+}
+
+fn comprehension_expression_stops_preserve_completed_prefixes(list: bool) {
+    let script = r#"
 view seed(s: Sample): Z = s.zero;
 view absent(s: Sample): Z = s.missing;
 view current(s: Sample): Set<Z> = set { x | x in list<Z>[2,1] where x>1 };
 view later(s: Sample): Z = s.zero+9;
-"#,
-    );
+"#;
+    let script = if list {
+        script.replace("Set<Z> = set {", "List<Z> = list {")
+    } else {
+        script.to_owned()
+    };
+    let inputs = fixture(&script);
     let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
     let asks = [
         "seed=evaluate(Calc.seed,s=@v/sample)",
@@ -889,9 +953,16 @@ view later(s: Sample): Z = s.zero+9;
     let baseline = baseline_result.wire();
     let prior = &baseline;
     audit(&baseline, &checked);
-    output_set(&baseline, "current", Json::str("Z"), &[Json::str("2")]);
+    let container = if list { "List" } else { "Set" };
+    output(
+        &baseline,
+        "current",
+        &ty(container, Json::str("Z")),
+        numbers(&["2"]),
+    );
     let original = declared_body(&checked, "Calc.current");
-    let ExprKind::SetComp {
+    let ExprKind::Comprehension {
+        list: parsed_list,
         elem,
         domain,
         filter: Some(filter),
@@ -900,6 +971,7 @@ view later(s: Sample): Z = s.zero+9;
     else {
         panic!("内包")
     };
+    assert_eq!(*parsed_list, list);
     let domain_span = checked.law().exprs()[*domain].span;
     let filter_span = checked.law().exprs()[*filter].span;
     let elem_span = checked.law().exprs()[*elem].span;

@@ -122,7 +122,7 @@ fn dependencies(
                     add(*i)?;
                 }
             }
-            ExprKind::SetComp {
+            ExprKind::Comprehension {
                 elem,
                 domain,
                 filter,

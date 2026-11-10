@@ -140,7 +140,7 @@ fn children(e: &Expr) -> Result<Vec<usize>, ValidationFailure> {
         ExprKind::Tuple(v)
         | ExprKind::ListLit { items: v, .. }
         | ExprKind::SetLit { items: v, .. } => v.clone(),
-        ExprKind::SetComp {
+        ExprKind::Comprehension {
             elem,
             domain,
             filter,
@@ -474,13 +474,19 @@ impl Term {
                     | (ExprKind::None(_), ExprKind::None(_))
                     | (ExprKind::Some(_), ExprKind::Some(_)) => true,
                     (
-                        ExprKind::SetComp {
-                            var: p, filter: pf, ..
+                        ExprKind::Comprehension {
+                            list: pl,
+                            var: p,
+                            filter: pf,
+                            ..
                         },
-                        ExprKind::SetComp {
-                            var: q, filter: qf, ..
+                        ExprKind::Comprehension {
+                            list: ql,
+                            var: q,
+                            filter: qf,
+                            ..
                         },
-                    ) => p.name == q.name && pf.is_some() == qf.is_some(),
+                    ) => pl == ql && p.name == q.name && pf.is_some() == qf.is_some(),
                     (ExprKind::Fn { params: p, .. }, ExprKind::Fn { params: q, .. }) => p
                         .iter()
                         .map(|p| &p.name.name)
@@ -813,11 +819,12 @@ impl Term {
                             }
                         }
                     }
-                    ExprKind::SetComp {
+                    ExprKind::Comprehension {
                         elem,
                         var,
                         domain,
                         filter,
+                        ..
                     } => {
                         let input = self.eval(*domain, vars, law, c)?;
                         let values = match &input {
@@ -825,8 +832,9 @@ impl Term {
                             _ => return Err(internal!("Term内包域がList/Setでない").into()),
                         };
                         let mut result = Vec::new();
-                        for v in values {
+                        for position in data::comprehension_positions(&input, ty, c)? {
                             tick(c)?;
+                            let v = &values[position];
                             let mut local = copy_variables(vars, c)?;
                             if local.insert(var.name.clone(), v.clone()).is_some() {
                                 return Err(internal!("Term内包束縛が重複する").into());
@@ -842,10 +850,7 @@ impl Term {
                                 result.push(self.eval(*elem, &local, law, c)?);
                             }
                         }
-                        let Type::Set(t) = ty else {
-                            return Err(internal!("Term内包結果型がSetでない").into());
-                        };
-                        data::set((**t).clone(), &result, c)?
+                        data::comprehension_value(ty, result, c)?
                     }
                     ExprKind::Quant {
                         kind,

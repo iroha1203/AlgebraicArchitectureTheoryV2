@@ -474,7 +474,8 @@ fn reachable(c: &CheckedLaw) -> Vec<(archsig_input::law::ast::ExprId, bool)> {
             ExprKind::Tuple(items)
             | ExprKind::ListLit { items, .. }
             | ExprKind::SetLit { items, .. } => items.iter().copied().for_each(&mut push),
-            ExprKind::SetComp {
+            ExprKind::Comprehension {
+                list: false,
                 elem,
                 domain,
                 filter,
