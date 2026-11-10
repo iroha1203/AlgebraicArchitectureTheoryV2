@@ -1,0 +1,27 @@
+{
+  "after_quantities": ["16", "1"],
+  "generators": [
+    [
+      ["native-N-consume", "native-N-before", "native-N-after"],
+      ["rust-N-consume", "rust-N-before", "rust-N-after"]
+    ],
+    [
+      ["native-T3-consume", "native-N-before", "native-T3-after"],
+      ["rust-T3-consume", "rust-N-before", "rust-T3-after"]
+    ]
+  ],
+  "locals": [
+    ["move-T3", "native-T3", "rust-T3"],
+    ["move-N", "native-N", "rust-N"]
+  ],
+  "point_images": [
+    ["native-output1", "rust-output1"],
+    ["native-N-before", "rust-N-before"],
+    ["native-N-after", "rust-N-after"],
+    ["native-T3-after", "rust-T3-after"],
+    ["native-N-consume", "rust-N-consume"],
+    ["native-T3-consume", "rust-T3-consume"]
+  ],
+  "roots": ["native-output1", "rust-output1"],
+  "status": "complete"
+}
