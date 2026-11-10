@@ -316,6 +316,15 @@ impl DependencyAnalysis<'_, '_> {
                         }
                     }
                 }
+                ExprKind::Match { scrutinee, arms } => {
+                    let input = self.source(*scrutinee, vars, reading)?;
+                    let Some((arm, local)) = env.scoped_match_bindings(id, &input, vars)? else {
+                        return Ok(fallback());
+                    };
+                    let mut dependency = child(*scrutinee)?;
+                    dependency.merge(self.read(arms[arm].body, &local, lexical, reading)?);
+                    Ok(dependency)
+                }
                 ExprKind::Quant {
                     split:
                         archsig_input::law::ast::QuantSplit::Fixed {
