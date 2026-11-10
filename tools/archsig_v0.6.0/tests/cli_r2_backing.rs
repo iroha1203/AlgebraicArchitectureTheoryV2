@@ -817,6 +817,21 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
         ("bound-conditionally-chosen-term", known_bound.replacen(nonnegative,
             "(let f=if b.stock.available>=rat(0,1) then (fn(x:Q)=>true) else (fn(x:Q)=>false) in (f(rat(0,1)) implies b.quantity>=rat(0,1)))", 1),
             &["missing_observation"][..]),
+        ("negated-equality-with-missing-offset", known_bound.replacen(nonnegative,
+            "not(b.quantity=b.stock.available)", 1),
+            &["missing_observation", "unsupported_algorithm"][..]),
+        ("strict-bound-in-unknown-domain", known_bound.replacen(nonnegative,
+            "(forall n in list<Q>[b.stock.available] . b.quantity<n)", 1),
+            &["missing_observation", "unsupported_algorithm"][..]),
+        ("closed-bound-in-unknown-domain", known_bound.replacen(nonnegative,
+            "(forall n in list<Q>[b.stock.available] . b.quantity<=n)", 1),
+            &["missing_observation"][..]),
+        ("owned-view-guard", known_bound
+            .replacen(" law required legal", " view accept(w:Pool.World,s:Pool.Stock[w]):Bool=true;
+ law required legal", 1)
+            .replacen("legal(w:Pool.World):",
+                "legal(w:Pool.World,x:Pool.Stock,y:Pool.Stock) when accept(w,if x.available>=rat(0,1) then x else y):", 1),
+            &["missing_observation"][..]),
         ("tuple-branch-projection", known_bound.replacen(nonnegative,
             "(((if b.stock.available>=rat(0,1) then (b.quantity,true) else (b.quantity,false)).1) implies b.quantity>=rat(0,1))", 1),
             &["missing_observation"][..]),
@@ -901,7 +916,12 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
     ] {
         std::fs::write(dir.join("laws.law"), law).unwrap();
         let ask_with_stock = format!("{},bind.x=@fixture/overlapFeasible.X)", ask.strip_suffix(')').unwrap());
-        let ask = if matches!(out, "direct-equality" | "candidate-filter-in-unknown-domain") { ask_with_stock.as_str() } else { ask };
+        let ask_with_owned_guard = format!("{},bind.y=@fixture/overlapFeasible.Y)", ask_with_stock.strip_suffix(')').unwrap());
+        let ask = match out {
+            "direct-equality" | "candidate-filter-in-unknown-domain" => ask_with_stock.as_str(),
+            "owned-view-guard" => ask_with_owned_guard.as_str(),
+            _ => ask,
+        };
         let run = polyhedron_asks(&dir, &[ask, "plan=needed($overlapFeasible)"], out, None);
         assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
         let result = result_json(&dir, &run);

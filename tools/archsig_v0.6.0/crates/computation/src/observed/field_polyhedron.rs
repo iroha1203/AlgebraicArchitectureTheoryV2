@@ -281,11 +281,10 @@ struct Projection {
 }
 
 fn project(
-    rows: &[EliminationRow],
+    mut rows: Vec<EliminationRow>,
     axes: impl IntoIterator<Item = usize>,
     c: &Control,
 ) -> Result<Projection, ValidationFailure> {
-    let mut rows = rows.to_vec();
     let mut eliminated = Vec::new();
     for axis in axes {
         tick(c)?;
@@ -423,7 +422,7 @@ pub(super) fn solve(
     let Projection {
         rows,
         mut eliminated,
-    } = project(&rows, (0..n).rev(), c)?;
+    } = project(rows, (0..n).rev(), c)?;
     if let Some(row) = obstruction(&rows, c)? {
         return Ok(Outcome::Empty(row.certificate(original.len(), c)?));
     }
@@ -438,7 +437,7 @@ pub(super) fn solve(
         if next_axis != axis {
             return Err(internal!("射影の消去層が元座標順と違う").into());
         }
-        let projected = project(&prefix, (0..axis).rev(), c)?;
+        let projected = project(prefix, (0..axis).rev(), c)?;
         let (low, high) = bounds(&projected.rows, axis, &point, c)?;
         if let (Some((l, lrow)), Some((h, hrow))) = (&low, &high)
             && l == h

@@ -131,6 +131,7 @@ struct Dependency {
     facts: BTreeSet<Fact>,
     components: Vec<Dependency>,
     affine_equality: bool,
+    closed_constraint: bool,
     term_bodies: Vec<(usize, Vec<String>)>,
 }
 
@@ -142,6 +143,7 @@ impl Dependency {
         self.facts.extend(other.facts);
         self.components.clear();
         self.affine_equality = false;
+        self.closed_constraint = false;
         self.term_bodies.clear();
     }
 
@@ -200,6 +202,7 @@ impl Dependency {
                         .push(Self::alternatives(test, &members, env)?);
                 }
             }
+            result.closed_constraint = result.affine_equality;
             Ok(result)
         })
     }
@@ -218,6 +221,10 @@ impl Dependency {
     fn record(self, missing: &mut Pending, maximum: Dependence) {
         missing.awaiting_observation = !self.facts.is_empty() && self.dependence <= maximum;
         missing.facts.extend(self.facts);
+    }
+
+    fn extractable(&self) -> bool {
+        self.dependence == Dependence::Fixed || self.closed_constraint
     }
 
     fn record_equality(self, missing: &mut Pending) {
@@ -327,13 +334,21 @@ impl DependencyAnalysis<'_, '_> {
                         return Ok(fallback());
                     };
                     if parts.len() == 1 {
-                        return Ok(bound.clone());
+                        let mut result = bound.clone();
+                        result.closed_constraint = result.affine_equality;
+                        return Ok(result);
                     }
                     let mut result = fallback();
                     result.merge(bound.clone());
                     Ok(result)
                 }
-                ExprKind::Group(body) | ExprKind::Unary { operand: body, .. } => child(*body),
+                ExprKind::Group(body) => child(*body),
+                ExprKind::Unary { operand, .. } => {
+                    let mut result = child(*operand)?;
+                    result.affine_equality = false;
+                    result.closed_constraint = false;
+                    Ok(result)
+                }
                 ExprKind::Index { base, index, .. } => {
                     let base = child(*base)?;
                     if let Some(element) = base.components.get(*index) {
@@ -367,7 +382,18 @@ impl DependencyAnalysis<'_, '_> {
                             local.insert(parameter.name.clone(), self.source(*arg, vars, reading)?);
                             dependencies.insert(parameter.name.clone(), child(*arg)?);
                         }
-                        self.read(*body, &local, &dependencies, &declaration.reading)
+                        let mut result =
+                            self.read(*body, &local, &dependencies, &declaration.reading)?;
+                        if source.condition_pending || source.condition_failed {
+                            // A View with a fixed body can still need observations
+                            // to check its actual dependent arguments.
+                            result.facts.extend(fallback().facts);
+                            for dependency in dependencies.into_values() {
+                                result.merge(dependency);
+                            }
+                        }
+                        result.closed_constraint = result.affine_equality;
+                        Ok(result)
                     } else if data::expression(law, id, &env.control)?.is_some() {
                         let items = args.iter().map(|id| child(*id)).collect::<Result<_, _>>()?;
                         Ok(Dependency::product(items))
@@ -440,6 +466,9 @@ impl DependencyAnalysis<'_, '_> {
                             let mut result = self.form(&form)?;
                             result.affine_equality =
                                 *op == BinOp::Eq && result.dependence <= Dependence::Affine;
+                            result.closed_constraint =
+                                matches!(op, BinOp::Eq | BinOp::Le | BinOp::Ge)
+                                    && result.dependence <= Dependence::Affine;
                             if result.dependence == Dependence::Affine {
                                 result.dependence = Dependence::Other;
                             }
@@ -450,7 +479,18 @@ impl DependencyAnalysis<'_, '_> {
                     let right = child(*rhs)?;
                     let nonlinear = left.dependence != Dependence::Fixed
                         && right.dependence != Dependence::Fixed;
+                    let closed = match op {
+                        BinOp::And => left.extractable() && right.extractable(),
+                        BinOp::Implies => {
+                            left.dependence == Dependence::Fixed && right.extractable()
+                        }
+                        BinOp::Eq | BinOp::Le | BinOp::Ge if numeric_comparison => {
+                            left.dependence.max(right.dependence) <= Dependence::Affine
+                        }
+                        _ => false,
+                    };
                     left.merge(right);
+                    left.closed_constraint = closed;
                     left.affine_equality = numeric_comparison
                         && *op == BinOp::Eq
                         && left.dependence <= Dependence::Affine;
@@ -530,20 +570,27 @@ impl DependencyAnalysis<'_, '_> {
                             ..Dependency::default()
                         }
                     };
+                    let mut closed = spec.kind == archsig_input::law::ast::QuantKind::Forall
+                        && spec.domain.is_some()
+                        && result.dependence == Dependence::Fixed;
                     let mut local = env.copy_variables(vars)?;
                     if let Some(members) = members {
                         for member in members {
                             env.tick()?;
                             local.insert(spec.name.into(), value(env, member)?);
-                            result.merge(self.read(spec.body, &local, lexical, reading)?);
+                            let body = self.read(spec.body, &local, lexical, reading)?;
+                            closed &= body.extractable();
+                            result.merge(body);
                         }
                     } else {
                         local.insert(spec.name.into(), self.unknown_member()?);
                         let mut dependencies = lexical.clone();
                         dependencies.insert(spec.name.into(), result.clone());
                         let body = self.read(spec.body, &local, &dependencies, reading)?;
+                        closed &= body.extractable();
                         result.dependence = result.dependence.max(body.dependence);
                     }
+                    result.closed_constraint = closed;
                     Ok(result)
                 }
                 ExprKind::Comprehension {
@@ -703,9 +750,14 @@ fn collect_equations(
             let (domain_value, members) =
                 env.scoped_quantifier_domain(&spec, vars, &base, reading)?;
             let Some(members) = members else {
-                analysis
-                    .read(domain, vars, lexical, reading)?
-                    .record(missing, Dependence::Fixed);
+                let domain_dependency = analysis.read(domain, vars, lexical, reading)?;
+                let mut local = env.copy_variables(vars)?;
+                local.insert(spec.name.into(), analysis.unknown_member()?);
+                let mut dependencies = lexical.clone();
+                dependencies.insert(spec.name.into(), domain_dependency.clone());
+                let body = analysis.read(spec.body, &local, &dependencies, reading)?;
+                domain_dependency.record(missing, Dependence::Fixed);
+                missing.awaiting_observation &= body.extractable();
                 missing.unsupported = Some("rational_change_quantification");
                 return Err(unsupported(env, domain, "有理changeの有限量化域が未確定"));
             };
@@ -1344,6 +1396,13 @@ fn requirement_equations(
         let (vars, universal) = change_affine::law_variables(env, law_params, bindings)?;
         missing.universal = universal;
         if let Some(guard) = guard {
+            missing.expression = Some(*guard);
+            missing.bindings = bindings.clone();
+            missing.parameters = law_params
+                .iter()
+                .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
+                .map(|p| (p.name.clone(), p.ty.clone()))
+                .collect();
             let v = env.scoped_ast(*guard, &vars, &Scope::default(), &law.reading)?;
             if allow_bounds
                 && (v.known_value.is_none() || v.condition_pending || v.condition_failed)
@@ -1362,13 +1421,6 @@ fn requirement_equations(
                 Some(Scalar::Bool(false)) => continue,
                 Some(Scalar::Bool(true)) => {}
                 _ => {
-                    missing.expression = Some(*guard);
-                    missing.bindings = bindings.clone();
-                    missing.parameters = law_params
-                        .iter()
-                        .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
-                        .map(|p| (p.name.clone(), p.ty.clone()))
-                        .collect();
                     if change_affine::numeric_condition(env, *guard, &v)? {
                         missing.unsupported = Some("numeric_change_condition");
                     }
