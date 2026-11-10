@@ -564,7 +564,6 @@ fn configuration_transported(
         blocking_slots: canonical_facts(blocking, control)?,
     })
 }
-/// rootとreadingを選んで標準構成を生成する。値や所属の補完を入力として受け取らない。
 /// Foreign members of ownerless roots are outside same-snapshot assembly.
 pub(crate) fn foreign_owned_member(
     inputs: &CheckedInputs,
@@ -573,8 +572,12 @@ pub(crate) fn foreign_owned_member(
     roots: &BTreeSet<&str>,
     control: &Control,
 ) -> Result<Option<FactPointer>, ConstructionFailure> {
+    let snapshots = inputs.archmap().snapshots();
+    if snapshots.len() <= 1 {
+        return Ok(None);
+    }
     let namespaces = namespaces(inputs, reading, control)?;
-    for other in inputs.archmap().snapshots() {
+    for other in snapshots {
         tick(control)?;
         if other.id == snapshot {
             continue;
@@ -588,8 +591,8 @@ pub(crate) fn foreign_owned_member(
                 tick(control)?;
                 if field.name.is_owner()
                     && matches!(&field.slot, Slot::Known {
-                        value: Value::Ref { snapshot: owner_snapshot, subject: owner }, ..
-                    } if owner_snapshot == snapshot && roots.contains(owner.as_str()))
+                    value: Value::Ref { snapshot: owner_snapshot, subject: owner }, ..
+                } if owner_snapshot == snapshot && roots.contains(owner.as_str()))
                 {
                     return Ok(Some(exists(subject)));
                 }
@@ -599,6 +602,7 @@ pub(crate) fn foreign_owned_member(
     Ok(None)
 }
 
+/// rootとreadingを選んで標準構成を生成する。値や所属の補完を入力として受け取らない。
 pub fn construct(
     inputs: &CheckedInputs,
     reading: &str,

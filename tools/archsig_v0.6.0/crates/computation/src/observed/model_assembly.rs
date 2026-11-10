@@ -7,7 +7,7 @@ use archsig_common::{
     types::Type,
 };
 use archsig_input::{
-    archmap::{Slot, Subject},
+    archmap::{Slot, Subject, Value},
     input::CheckedInputs,
 };
 use std::collections::{BTreeMap, BTreeSet};
@@ -21,6 +21,7 @@ pub(super) enum Preparation {
 }
 #[derive(Clone, Debug)]
 pub(super) struct Unsupported {
+    pub affects_layout: bool,
     pub detail: String,
     pub location: Location,
     pub operand_types: Vec<Type>,
@@ -29,6 +30,7 @@ pub(super) struct Unsupported {
 fn unsupported(s: &Subject, f: &archsig_input::archmap::Field, detail: String) -> Preparation {
     match &f.slot {
         Slot::Known { pointer, .. } => Preparation::Unsupported(Unsupported {
+            affects_layout: false,
             detail,
             location: Location::ArchMap {
                 pointer: pointer.clone(),
@@ -205,8 +207,19 @@ pub(super) fn foreign_snapshot(
     fact: &Fact,
     detail: &str,
 ) -> Result<Preparation, ValidationFailure> {
+    Ok(Preparation::Unsupported(snapshot_problem(
+        inputs, fact, detail,
+    )?))
+}
+
+fn snapshot_problem(
+    inputs: &CheckedInputs,
+    fact: &Fact,
+    detail: &str,
+) -> Result<Unsupported, ValidationFailure> {
     let endpoint = subject(inputs, fact)?;
-    Ok(Preparation::Unsupported(Unsupported {
+    Ok(Unsupported {
+        affects_layout: true,
         detail: detail.into(),
         location: Location::ArchMap {
             pointer: endpoint.pointer.clone(),
@@ -214,7 +227,64 @@ pub(super) fn foreign_snapshot(
         },
         operand_types: vec![Type::Ref(endpoint.ty.to_string())],
         position: None,
-    }))
+    })
+}
+
+pub(super) fn layout_snapshot(
+    inputs: &CheckedInputs,
+    reading: &str,
+    target: &Fact,
+    roots: &[Fact],
+    pairs: &[(Fact, Fact)],
+    c: &Control,
+) -> Result<Option<Unsupported>, ValidationFailure> {
+    let mut root_ids = BTreeSet::from([target.subject.as_str()]);
+    for root in roots {
+        tick(c)?;
+        if root.snapshot != target.snapshot {
+            return Ok(Some(snapshot_problem(
+                inputs,
+                root,
+                "担当rootのsnapshotが組立て標識と異なる",
+            )?));
+        }
+        root_ids.insert(root.subject.as_str());
+    }
+    for member in pairs.iter().flat_map(|(left, right)| [left, right]) {
+        tick(c)?;
+        if member.snapshot != target.snapshot {
+            return Ok(Some(snapshot_problem(
+                inputs,
+                member,
+                "共有対の個体が別snapshotに属する",
+            )?));
+        }
+        let holder = subject(inputs, member)?;
+        if holder.fields.iter().any(|field| {
+            field.name.is_owner()
+                && matches!(&field.slot, Slot::Known {
+                value: Value::Ref { snapshot, .. }, ..
+            } if snapshot != &target.snapshot)
+        }) {
+            return Ok(Some(snapshot_problem(
+                inputs,
+                member,
+                "共有個体のownerが別snapshotに属する",
+            )?));
+        }
+    }
+    let foreign =
+        construction::foreign_owned_member(inputs, reading, &target.snapshot, &root_ids, c)
+            .map_err(failure)?;
+    foreign
+        .map(|member| {
+            snapshot_problem(
+                inputs,
+                &member,
+                "組立て先または担当の所属個体が別snapshotに属する",
+            )
+        })
+        .transpose()
 }
 
 pub(super) fn compile(
@@ -227,20 +297,8 @@ pub(super) fn compile(
     c: &Control,
 ) -> Result<Preparation, ValidationFailure> {
     tick(c)?;
-    for root in roots {
-        tick(c)?;
-        if root.snapshot != target.snapshot {
-            return foreign_snapshot(inputs, root, "担当rootのsnapshotが組立て標識と異なる");
-        }
-    }
-    for (left, right) in pairs {
-        tick(c)?;
-        if let Some(foreign) = [left, right]
-            .into_iter()
-            .find(|member| member.snapshot != target.snapshot)
-        {
-            return foreign_snapshot(inputs, foreign, "共有対の個体が別snapshotに属する");
-        }
+    if let Some(problem) = layout_snapshot(inputs, reading, target, roots, pairs, c)? {
+        return Ok(Preparation::Unsupported(problem));
     }
     if roots.is_empty() {
         return Ok(rejected("担当rootの集合が空", vec![target.clone()]));
@@ -249,12 +307,6 @@ pub(super) fn compile(
     let target_construction =
         construction::construct(inputs, reading, &target.snapshot, &target.subject, c)
             .map_err(failure)?;
-    for member in target_construction.local_domain().known() {
-        tick(c)?;
-        if member.snapshot != target.snapshot {
-            return foreign_snapshot(inputs, member, "組立て先の所属個体が別snapshotに属する");
-        }
-    }
     if !target_construction.local_domain().is_complete() {
         return Ok(Preparation::Missing(
             target_construction.base().blocking_slots().to_vec(),
@@ -296,9 +348,6 @@ pub(super) fn compile(
         parent.insert(root.clone(), target.clone());
         for fact in local.local_domain().known() {
             tick(c)?;
-            if fact.snapshot != target.snapshot {
-                return foreign_snapshot(inputs, fact, "担当の所属個体が別snapshotに属する");
-            }
             if fact != root {
                 membership.insert(fact.clone(), i);
                 parent.insert(fact.clone(), fact.clone());

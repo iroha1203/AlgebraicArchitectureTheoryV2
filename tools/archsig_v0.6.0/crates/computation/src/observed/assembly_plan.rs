@@ -75,6 +75,7 @@ pub(super) fn read(
                 },
                 value: None,
                 unsupported: Some(model_assembly::Unsupported {
+                    affects_layout: true,
                     detail: feature,
                     location,
                     operand_types,
@@ -85,6 +86,28 @@ pub(super) fn read(
         Err(e) => Err(e),
     }
 }
+/// A known foreign layout remains outside the assembly family when another View is pending.
+pub(super) fn layout_snapshot(
+    inputs: &archsig_input::input::CheckedInputs,
+    reading: &str,
+    target: &Fact,
+    fragments: &Read,
+    shared: &Read,
+    control: &Control,
+) -> Result<Option<model_assembly::Unsupported>, ValidationFailure> {
+    let roots = match &fragments.value {
+        Some(Scalar::Set { items, .. }) => items.iter().map(fact).collect::<Result<Vec<_>, _>>()?,
+        _ => vec![],
+    };
+    let pairs = shared
+        .value
+        .as_ref()
+        .map(|value| interfaces(value, control))
+        .transpose()?
+        .unwrap_or_default();
+    model_assembly::layout_snapshot(inputs, reading, target, &roots, &pairs, control)
+}
+
 #[derive(Debug)]
 pub(super) enum Failure {
     Missing(Vec<Fact>),
@@ -319,7 +342,10 @@ pub(super) fn prepare(
             vec![target.clone()],
         )
     } else if !missing.is_empty() {
-        Preparation::Missing(missing)
+        match layout_snapshot(&p.shared_inputs(), reading, &target, &fragments, &shared, c)? {
+            Some(problem) => Preparation::Unsupported(problem),
+            None => Preparation::Missing(missing),
+        }
     } else if let Some(unsupported) = fragments
         .unsupported
         .as_ref()

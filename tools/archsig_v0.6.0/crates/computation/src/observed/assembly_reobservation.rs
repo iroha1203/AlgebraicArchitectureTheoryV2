@@ -206,7 +206,9 @@ fn checked_layout(
     control: &Control,
 ) -> Result<Layout, ReobservationFailure> {
     if let Some(assembly) = retained_layout(evaluation, &request.id) {
-        if let Some(assembly_plan::Failure::Unsupported(detail)) = &assembly.failure {
+        if let Some(assembly_plan::Failure::Unsupported(detail)) = &assembly.failure
+            && detail.affects_layout
+        {
             return Err(ReobservationFailure::Unsupported(detail.detail.clone()));
         }
         return layout_from_reads(&assembly.fragments, &assembly.interfaces, control);
@@ -264,39 +266,32 @@ fn read_layout(
         .ok_or_else(|| unsupported("担当 View 宣言がない"))?;
     let fragments = assembly_plan::read(&env, head, &bindings).map_err(classify)?;
     let interfaces = assembly_plan::read(&env, along, &bindings).map_err(classify)?;
-    let layout = layout_from_reads(&fragments, &interfaces, control)?;
     let target = request.arguments.iter().find(|arg| arg.name == "on");
     let Some(Selector::Subject { snapshot, subject }) = target.map(|arg| &arg.value) else {
         return Err(unsupported("組立て先の明示rootがない"));
     };
-    let mut roots = BTreeSet::from([subject.as_str()]);
-    for root in &layout.roots {
-        control.checkpoint(Checkpoint::ConfigurationMap)?;
-        if &root.snapshot != snapshot {
-            return Err(unsupported("担当rootが別snapshotに属する"));
-        }
-        roots.insert(root.subject.as_str());
-    }
+    let target = Fact::from(FactData {
+        snapshot: snapshot.clone(),
+        subject: subject.clone(),
+        field: None,
+        atom: None,
+    });
     let reading = prepared.inputs().law().declarations()[head]
         .reading
         .as_str();
-    let foreign = crate::construction::foreign_owned_member(
+    if let Some(problem) = assembly_plan::layout_snapshot(
         prepared.inputs(),
         reading,
-        snapshot,
-        &roots,
+        &target,
+        &fragments,
+        &interfaces,
         control,
     )
-    .map_err(|failure| match failure {
-        crate::construction::ConstructionFailure::Stopped(signal) => signal.into(),
-        _ => unsupported("組立ての所属域を読めない"),
-    })?;
-    if foreign.is_some() {
-        return Err(unsupported(
-            "組立て先または担当の所属個体が別snapshotに属する",
-        ));
+    .map_err(classify)?
+    {
+        return Err(ReobservationFailure::Unsupported(problem.detail));
     }
-    Ok(layout)
+    layout_from_reads(&fragments, &interfaces, control)
 }
 
 fn layout_from_reads(
@@ -415,21 +410,18 @@ fn checked_shared_partition(
         model_assembly::link_shared(&mut parent, a, b, control).map_err(classify)?;
     }
     let keys = parent.keys().cloned().collect::<Vec<_>>();
-    let mut classes = BTreeMap::new();
     for item in keys {
         control.checkpoint(Checkpoint::ConfigurationMap)?;
-        let representative =
-            model_assembly::representative(&mut parent, &item, control).map_err(classify)?;
-        classes.insert(item, representative);
+        model_assembly::representative(&mut parent, &item, control).map_err(classify)?;
     }
     let mut local_images = BTreeSet::new();
     for (owner, member) in members.values() {
         control.checkpoint(Checkpoint::ConfigurationMap)?;
-        if !local_images.insert((owner, &classes[member])) {
+        if !local_images.insert((owner, &parent[member])) {
             return Err(invalid("共有対の閉包が同じ担当の異なる個体を同一視する"));
         }
     }
-    Ok(classes)
+    Ok(parent)
 }
 
 /// 同じ定義・Law を使用し、主体対応を検査してから現在の要求を通常評価する。
@@ -1185,13 +1177,53 @@ mod tests {
         }"#;
         let map = format!("{prefix}\"snapshots\": [{body},{foreign_member}\n  ]{suffix}");
         let blocked = QUERIES.replace("index=0", "index=100");
-        let result =
-            evaluate_observed(prepared_with("after", &map, LAW, &blocked, &c), &c).unwrap();
-        assert_eq!(status(&result, "selected"), Decision::Undetermined);
-        assert!(retained_layout(&result, "joined").is_none());
-        let request = question(result.prepared(), "joined", QuestionKind::Assemble).unwrap();
-        assert!(matches!(checked_layout(&result, request, &c),
-            Err(ReobservationFailure::Unsupported(message)) if message.contains("所属個体")));
+        let pairs = [
+            ("A", "A"),
+            ("B", "B"),
+            ("G", "G"),
+            ("a", "a"),
+            ("b", "b"),
+            ("ma", "ma"),
+            ("mb", "mb"),
+        ];
+        let alignment = AssemblyAlignment {
+            before_snapshot: "before",
+            after_snapshot: "after",
+            reading: "Assembly",
+            subjects: &pairs,
+            assembly: "joined",
+            previous_candidate: "pick",
+            current_solve: "solveIt",
+        };
+        let previous = evaluate_observed(prepared("before", BEFORE, &c), &c).unwrap();
+        assert!(matches!(reevaluate_assembly(
+            &previous, prepared_with("after", &map, LAW, &blocked, &c), &alignment, &c,
+        ), Err(ReobservationFailure::Unsupported(message)) if message.contains("所属個体")));
+
+        // The known foreign member still matters when another observation
+        // blocks the interface View independently of the local selection.
+        let (_, snapshots) = BEFORE.split_once("\"snapshots\": [").unwrap();
+        let (before_body, _) = snapshots.rsplit_once("\n  ]").unwrap();
+        let pending_body = before_body.replace("\"before\"", "\"after\"");
+        let pending_map =
+            format!("{prefix}\"snapshots\": [{pending_body},{foreign_member}\n  ]{suffix}");
+        let law = std::str::from_utf8(LAW).unwrap().replace(
+            "list<(Part,Part)>[(ma,mb)];",
+            "if mb.quantity=0 then list<(Part,Part)>[(ma,mb)] else list<(Part,Part)>[(mb,ma)];",
+        );
+        let raw = QUERIES.replace(",local.a=$selected.object", "");
+        let result = evaluate_observed(
+            prepared_with("after", &pending_map, law.as_bytes(), &raw, &c),
+            &c,
+        )
+        .unwrap();
+        let joined = result
+            .answers
+            .iter()
+            .find(|answer| answer.id == "joined")
+            .unwrap();
+        assert!(matches!(joined.reasons.as_slice(), [reason]
+            if matches!(&reason.kind, ReasonKind::UnsupportedAlgorithm { .. })));
     }
 
     #[test]
