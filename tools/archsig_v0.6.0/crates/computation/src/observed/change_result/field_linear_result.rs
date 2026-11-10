@@ -97,7 +97,41 @@ pub(super) fn build(
         vec![parameters, states, action_linear, offset],
         None,
     )?;
+    let mut quantifiers = Vec::new();
+    for (descriptor, members) in &linear.quantifiers {
+        c.checkpoint(Checkpoint::RationalPolyhedron)?;
+        let mut elements = Vec::new();
+        for member in members {
+            elements.push(b.captured_scalar(member, requirements, c)?);
+        }
+        let domain = b.push(
+            NodeType::Domain,
+            "domain",
+            Json::obj([
+                ("kind", Json::str("finite")),
+                ("type", descriptor.ty.wire()),
+                (
+                    "elements",
+                    Json::Arr(elements.iter().map(|element| element.wire()).collect()),
+                ),
+            ]),
+            requirements.iter().chain(&elements).copied().collect(),
+            None,
+        )?;
+        b.parts[domain.0 - b.base].domain_type = Some(descriptor.ty.clone());
+        quantifiers.push(Quantifier {
+            domain: Some(domain),
+            ..descriptor.clone()
+        });
+    }
     let equations = map(b, pm, em, &linear.equations, n, c)?;
+    let part = &mut b.parts[equations.0 - b.base];
+    for quantifier in quantifiers {
+        part.arguments.extend(quantifier.domain);
+        part.scope.add_quantifier(quantifier);
+    }
+    part.arguments.sort_by_key(|node| node.0);
+    part.arguments.dedup();
     let rhs = vector(b, em, &linear.rhs, c)?;
     let fiber = match &linear.solutions {
         Solutions::Affine(fiber) => fiber,

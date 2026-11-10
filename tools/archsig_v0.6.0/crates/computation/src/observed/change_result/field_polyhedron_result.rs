@@ -45,36 +45,8 @@ pub(super) fn build(
         c,
     )?;
     let upper_bounds = vector(b, inequality_module, &upper, c)?;
-    let mut quantifiers = Vec::new();
-    for (descriptor, members) in &polyhedron.quantifiers {
-        c.checkpoint(Checkpoint::RationalPolyhedron)?;
-        let mut elements = Vec::new();
-        for member in members {
-            elements.push(b.captured_scalar(member, requirements, c)?);
-        }
-        let domain = b.push(
-            NodeType::Domain,
-            "domain",
-            Json::obj([
-                ("kind", Json::str("finite")),
-                ("type", descriptor.ty.wire()),
-                (
-                    "elements",
-                    Json::Arr(elements.iter().map(|element| element.wire()).collect()),
-                ),
-            ]),
-            requirements.iter().chain(&elements).copied().collect(),
-            None,
-        )?;
-        b.parts[domain.0 - b.base].domain_type = Some(descriptor.ty.clone());
-        quantifiers.push(Quantifier {
-            domain: Some(domain),
-            ..descriptor.clone()
-        });
-    }
     let mut args = vec![equations, rhs, inequalities, upper_bounds];
     args.extend(requirements);
-    args.extend(quantifiers.iter().filter_map(|q| q.domain));
     let mut certificate_fields = BTreeMap::<String, Json>::from([
         ("equalities".into(), equations.wire()),
         ("rhs".into(), rhs.wire()),
@@ -128,10 +100,6 @@ pub(super) fn build(
         args,
         None,
     )?;
-    let part = &mut b.parts[certificate.0 - b.base];
-    for quantifier in quantifiers {
-        part.scope.add_quantifier(quantifier);
-    }
     Ok(Parts {
         parameters,
         states,

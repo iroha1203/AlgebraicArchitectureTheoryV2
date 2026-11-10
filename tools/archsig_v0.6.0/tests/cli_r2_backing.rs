@@ -889,6 +889,39 @@ fn rational_backing_reports_missing_references_units_and_unsupported_disjunction
 }
 
 #[test]
+fn finite_equalities_keep_their_original_affine_form_and_actual_domain() {
+    let dir = workdir("r2-affine-quantifier");
+    polyhedron_inputs(&dir, "overlapFeasible");
+    let law = POLY_LAW.replacen(
+        "(forall b in Pool.Cell[w] . b.quantity>=rat(0,1) and
+    (not(b.stock in b.claim.eligible) implies b.quantity=rat(0,1)) and b.stock.quantityUnit=b.claim.quantityUnit) and
+   (forall c in Pool.Claim[w] . claimLoad(c)=c.quantity) and
+   (forall s in Pool.Stock[w] . stockLoad(s)<=s.available)",
+        "(forall b in Pool.Cell[w] . b.quantity=rat(0,1))",
+        1,
+    );
+    assert_ne!(law, POLY_LAW);
+    std::fs::write(dir.join("laws.law"), law).unwrap();
+    let run = polyhedron_run(&dir, POLY_QUERIES.lines().next().unwrap(), "out", None);
+    assert_eq!(run.code, 0, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    assert_eq!(
+        s(get(
+            get(solution(&result, "solutions"), "representation"),
+            "kind"
+        )),
+        "affine"
+    );
+    let answer = &arr(get(&result, "answers"))[0];
+    let [quantifier] = arr(get(get(answer, "scope"), "quantifiers")) else {
+        panic!("finite Cell domain")
+    };
+    assert_eq!(s(get(quantifier, "name")), "b");
+    let domain = get(referenced(&result, get(quantifier, "domain")), "value");
+    assert_eq!(arr(get(domain, "elements")).len(), 12);
+}
+
+#[test]
 fn rational_backing_separates_guard_observation_from_unsupported_change_condition() {
     let case = "overlapFeasible";
     let dir = workdir("r2-polyhedron-guard");

@@ -18,6 +18,7 @@ pub(in crate::observed) struct Linear {
     pub offset: Vec<Scalar>,
     pub equations: Matrix,
     pub rhs: Vec<Scalar>,
+    pub quantifiers: Vec<(Quantifier, Vec<Scalar>)>,
     pub solutions: Solutions,
 }
 
@@ -30,7 +31,6 @@ pub(in crate::observed) enum Solutions {
 #[derive(Clone, Debug)]
 pub(in crate::observed) struct Polyhedron {
     pub inequalities: Vec<Halfspace>,
-    pub quantifiers: Vec<(Quantifier, Vec<Scalar>)>,
     pub outcome: Outcome,
 }
 
@@ -1357,7 +1357,6 @@ fn compute_inner(
         field_polyhedron::verify(&original, axes.len(), &outcome, &env.control)?;
         Solutions::Polyhedron(Polyhedron {
             inequalities,
-            quantifiers: rows.quantifiers,
             outcome,
         })
     } else {
@@ -1378,6 +1377,7 @@ fn compute_inner(
         offset,
         equations: guard_matrix,
         rhs: guard_rhs,
+        quantifiers: rows.quantifiers,
         solutions,
     })
 }
