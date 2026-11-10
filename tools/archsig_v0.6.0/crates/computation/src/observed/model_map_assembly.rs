@@ -513,6 +513,7 @@ mod tests {
             &fact("G"),
             &[fact("A"), fact("B")],
             &[(fact("ma"), fact("mb"))],
+            &BTreeMap::new(),
             &c,
         )
         .unwrap() else {
@@ -593,6 +594,7 @@ mod tests {
             &fact("G"),
             &[fact("A"), fact("B")],
             &[(fact("ma"), fact("mb"))],
+            &BTreeMap::new(),
             &c,
         )
         .unwrap() else {
@@ -1132,6 +1134,7 @@ mod tests {
             &fact("G"),
             &[fact("A")],
             &[],
+            &BTreeMap::new(),
             &Control::unlimited(),
         )
         .unwrap() else {
