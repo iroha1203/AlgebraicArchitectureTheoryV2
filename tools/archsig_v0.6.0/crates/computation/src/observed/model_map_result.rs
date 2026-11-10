@@ -350,27 +350,31 @@ fn compute(
         }
     }
     let head = r.declaration().ok_or(internal!("対応Viewがない"))?;
-    let mut overrides = BTreeMap::new();
-    // A single correspondence View reads both chosen designs. If the same
-    // design slot changes across the map, the destination supplies its value.
-    for plan in [source_plan, target_plan] {
+    let mut overrides = Vec::new();
+    let mut target_root = None;
+    // The destination's effective state includes its unchanged observed
+    // slots. Suppress the whole source overlay when both select one root.
+    for plan in [target_plan, source_plan] {
         let Some(design) = plan.assembly.as_ref().and_then(|assembly| assembly.design) else {
             continue;
         };
         let Some(Payload::Construction(value)) = &g.get(design)?.payload else {
             return Err(internal!("対応Viewの設計点が実applyでない").into());
         };
+        let Witness::Architecture(witness) = &value.witness else {
+            return Err(internal!("対応Viewの設計点の元Architectureがない").into());
+        };
+        let root = witness.construction().root();
+        if target_root == Some(root) {
+            continue;
+        }
         let (values, _) = value.retained_architecture_overrides(g, c)?;
-        overrides.extend(
-            values
-                .iter()
-                .map(|(fact, value)| (fact.clone(), value.clone())),
-        );
+        overrides.extend(values.iter().cloned());
+        target_root = Some(root);
     }
     let selected_reading = if overrides.is_empty() {
         None
     } else {
-        let overrides = overrides.into_iter().collect::<Vec<_>>();
         Some(e.with_fixed_primitive_values(&overrides, c)?)
     };
     let reader = selected_reading.as_ref().unwrap_or(e);

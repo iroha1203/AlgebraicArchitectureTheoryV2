@@ -406,7 +406,7 @@ parameter は担当 root と異なる型の ownerless 設計主体で、両 View
 設計主体の型・個体・snapshot・reading を `apply` の元と照合し、その実更新値で
 担当集合と共有対を読む。表示名はこの照合に使わない。後続 `assemble_map` は
 選ばれた担当と個体構成に対して対応の始終域と操作を検査する。対応 View は両端で選んだ設計値を読み、
-同じ設計 slot が両端で異なる場合は終域側の値を使う。
+両端で同じ設計主体を選んだ場合は、終域の更新値と更新されなかった観測値を使う。
 設計値を読む二つの View は選択済みの一点で評価する。分岐を選ぶ観測が欠けると、必要な位置を持つ未決を返す。反証の `condition_detail` は失敗した組立て条件を示す。
 
 返す field は `proposition:Proposition`、成立時 `assembly:ModelAssembly`、

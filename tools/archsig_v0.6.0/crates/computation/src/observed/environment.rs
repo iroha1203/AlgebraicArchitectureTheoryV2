@@ -478,6 +478,7 @@ pub(super) struct AssemblyCondition {
 #[derive(Default)]
 pub(super) struct AssemblyTrace {
     fixed_design: bool,
+    probing: bool,
     occurrences: BTreeMap<(Option<usize>, usize, Option<usize>), usize>,
     captured: BTreeMap<(Option<usize>, (usize, usize), Option<super::call::Context>), Vec<usize>>,
     pub(super) domains: Vec<AssemblyDomain>,
@@ -610,6 +611,27 @@ impl<'a> Environment<'a> {
             .borrow()
             .as_ref()
             .is_some_and(|trace| trace.fixed_design)
+    }
+
+    fn probe_fixed_assembly(
+        &self,
+        read: impl FnOnce() -> Result<SourceValue, ValidationFailure>,
+    ) -> Result<Option<SourceValue>, ValidationFailure> {
+        // Speculative values never enter the actual View's trace or read sets.
+        let _capture = self.state.assembly_domains.scoped(Some(AssemblyTrace {
+            fixed_design: true,
+            probing: true,
+            ..AssemblyTrace::default()
+        }));
+        let _occurrence = self.state.assembly_occurrence.scoped(None);
+        let _missing = self.state.missing_slot_reads.scoped(None);
+        let _reads = self.state.primitive_reads.scoped(None);
+        let _positions = self.state.unresolved_read_positions.scoped(Some(false));
+        match read() {
+            Ok(value) if !value.condition_failed && !value.condition_pending => Ok(Some(value)),
+            Ok(_) | Err(ValidationFailure::UnsupportedExpression { .. }) => Ok(None),
+            Err(error) => Err(error),
+        }
     }
 
     fn note_assembly_quantifier(&self, id: usize) -> Result<(), ValidationFailure> {
@@ -9407,34 +9429,50 @@ impl<'a> Environment<'a> {
                 ..
             } = self.scoped_ast(*lhs, variables, base, reading)?;
             if self.fixed_assembly_read() && matches!(op, BinOp::And | BinOp::Or | BinOp::Implies) {
-                if left.is_none() || left_failed || left_pending {
-                    return Ok(SourceValue {
-                        condition_failed: left_failed,
-                        condition_pending: left_pending,
-                        symbolic: None,
-                        comparison: None,
-                        affine: None,
-                        known_value: None,
-                        scalar_scope: None,
-                        scope,
-                        support,
-                    });
-                }
                 let decisive = match (op, left.as_ref()) {
                     (BinOp::And, Some(Scalar::Bool(false))) => Some(false),
                     (BinOp::Or, Some(Scalar::Bool(true)))
                     | (BinOp::Implies, Some(Scalar::Bool(false))) => Some(true),
                     _ => None,
                 };
-                if let Some(value) = decisive {
+                if left.is_none() || left_failed || left_pending || decisive.is_some() {
+                    let mut known_value = decisive.map(Scalar::Bool);
+                    if left.is_none() && !left_failed && !left_pending {
+                        let right = || self.scoped_ast(*rhs, variables, base, reading);
+                        if let Some(probe) = self.probe_fixed_assembly(right)? {
+                            let value = partial_binary(
+                                *op,
+                                None,
+                                probe.known_value.as_ref(),
+                                self.indexes.inputs.law(),
+                                expression.span,
+                                &self.control,
+                            )?;
+                            if value.is_some() {
+                                let probing = self
+                                    .state
+                                    .assembly_domains
+                                    .borrow()
+                                    .as_ref()
+                                    .is_some_and(|trace| trace.probing);
+                                let actual = if probing { probe } else { right()? };
+                                scope.merge(&actual.scope);
+                                let support = support.make_owned();
+                                support.extend(actual.support.into_vec());
+                                support.sort();
+                                support.dedup();
+                                known_value = value;
+                            }
+                        }
+                    }
                     return Ok(SourceValue {
-                        condition_failed: false,
-                        condition_pending: false,
+                        condition_failed: left_failed,
+                        condition_pending: left_pending,
                         symbolic: None,
                         comparison: None,
                         affine: None,
-                        known_value: Some(Scalar::Bool(value)),
-                        scalar_scope: Some(scope.clone()),
+                        scalar_scope: known_value.as_ref().map(|_| scope.clone()),
+                        known_value,
                         scope,
                         support,
                     });

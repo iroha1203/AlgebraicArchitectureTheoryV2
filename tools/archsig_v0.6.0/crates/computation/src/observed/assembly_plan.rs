@@ -41,10 +41,11 @@ pub(super) fn read(
                 metadata.blocked = false;
             }
             // The read collector records positions; native support records actual atoms.
-            metadata
-                .support
-                .retain(|fact| !env.has_primitive_override(fact));
-            for fact in &mut metadata.support {
+            let mut observed = Vec::with_capacity(metadata.support.len());
+            for mut fact in std::mem::take(&mut metadata.support) {
+                if env.has_primitive_override(&fact) {
+                    continue;
+                }
                 if fact.atom.is_none()
                     && let Some(name) = &fact.field
                 {
@@ -54,11 +55,17 @@ pub(super) fn read(
                         .iter()
                         .find(|f| &f.name == name)
                         .ok_or(internal!("読取り位置のfieldがない"))?;
-                    if let archsig_input::archmap::Slot::Known { atom, .. } = &field.slot {
-                        fact.atom = Some(atom.clone());
+                    match &field.slot {
+                        archsig_input::archmap::Slot::Known { atom, .. } => {
+                            fact.atom = Some(atom.clone());
+                        }
+                        archsig_input::archmap::Slot::Missing if fixed_design => continue,
+                        archsig_input::archmap::Slot::Missing => {}
                     }
                 }
+                observed.push(fact);
             }
+            metadata.support = observed;
             metadata
                 .missing
                 .retain(|fact| !env.has_primitive_override(fact));

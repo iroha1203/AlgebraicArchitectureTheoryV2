@@ -313,6 +313,48 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
         .find(|a| s(get(a, "id")) == "migrate")
         .unwrap();
     assert_eq!(s(get(migration, "status")), "established", "{}", run.stdout);
+    let law = include_str!("fixtures/r2-structure-choice/laws.law").replace("  view selected", concat!(
+        "  change chooseDirection(p:Design,q:Bool)=p with {reversed=q};
+",
+        "  view sourceSelected(p:Design,t:Route):Set<Root> = if p.split then set<Root>{t.from} else set<Root>{t.to};
+",
+        "  view routesByTarget(p:Design,t:Route):Set<Route> = if p.split then set<Route>{} else set<Route>{t};
+",
+        "  view routesBySource(p:Design,t:Route):Set<Route> = if p.split then set<Route>{t} else set<Route>{};
+",
+        "  view selected",
+    ));
+    std::fs::write(dir.join("laws.law"), law).unwrap();
+    let fixture_asks = include_str!("fixtures/r2-structure-choice/queries.txt")
+        .lines()
+        .collect::<Vec<_>>();
+    let mut effective_args = args[..9].to_vec();
+    effective_args[8] = "target-effective-state";
+    for ask in fixture_asks[1..8].iter().copied().chain([
+        "targetProblem=prepare(E12Compare.allowed,using=E12Compare.chooseDirection,on=@comparison/plan,p=@comparison/plan)",
+        "targetSolve=solve($targetProblem.problem,within=$planWithin.value)",
+        "targetPick1=candidate($targetSolve.solutions,index=1)",
+        "targetApply1=apply($targetPick1.assignment,in=$targetSolve.solutions)",
+        "source=assemble(E12Compare.sourceSelected,on=@comparison/native-output1,along=E12Compare.interfaces,p=@comparison/plan,t=@comparison/move-T3,design.p=$planApply1.object)",
+        "target=assemble(E12Compare.selected,on=@comparison/rust-output1,along=E12Compare.interfaces,p=@comparison/plan,t=@comparison/move-T3,design.p=$targetApply1.object)",
+        "byTarget=assemble_map(E12Compare.routesByTarget,from=$source.assembly,to=$target.assembly,p=@comparison/plan,t=@comparison/move-T3)",
+        "bySource=assemble_map(E12Compare.routesBySource,from=$source.assembly,to=$target.assembly,p=@comparison/plan,t=@comparison/move-T3)",
+    ]) {
+        effective_args.extend(["--ask", ask]);
+    }
+    let run = run_binary(&dir, &effective_args);
+    assert_eq!(run.code, 1, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let answers = arr(get(&result, "answers"));
+    for (id, expected) in [
+        ("source", "established"),
+        ("target", "established"),
+        ("byTarget", "established"),
+        ("bySource", "refuted"),
+    ] {
+        let answer = answers.iter().find(|a| s(get(a, "id")) == id).unwrap();
+        assert_eq!(s(get(answer, "status")), expected, "{id}");
+    }
 }
 
 #[test]
@@ -741,4 +783,21 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
     };
     assert_eq!(s(get(slot, "subject")), "rust-T3-before");
     assert_eq!(s(get(slot, "field")), "E12.State.quantity");
+
+    let decisive = base_law.replace(
+        selected,
+        "if p.split then (if y.quantity=0 and false then set<Root>{t.to} else set<Root>{t.from}) else set<Root>{t.to}",
+    );
+    std::fs::write(dir.join("laws.law"), decisive).unwrap();
+    let native_ask = path_ask.replace("rust-output1", "native-output1");
+    args[at] = &native_ask;
+    args[8] = "decisive-right";
+    let run = run_binary(&dir, &args);
+    let result = result_json(&dir, &run);
+    let layout = arr(get(&result, "answers"))
+        .iter()
+        .find(|a| s(get(a, "id")) == "layout")
+        .unwrap();
+    assert_eq!(s(get(layout, "status")), "established", "{}", run.stdout);
+    assert!(arr(get(layout, "reasons")).is_empty());
 }
