@@ -1390,6 +1390,31 @@ impl super::result_kind::ResultKind for Data {
     }
 }
 
+pub(super) fn validate_failure(g: &Graph, reason: &Reason) -> Result<(), ValidationFailure> {
+    let ReasonKind::ConditionFailed {
+        condition,
+        construction: "model_map_assembly",
+    } = reason.kind
+    else {
+        return Err(internal!("全体写像の構成反証が別種").into());
+    };
+    let node = g.get(condition)?;
+    let Some(Payload::Construction(value)) = &node.payload else {
+        return Err(internal!("全体写像の反証条件がnativeでない").into());
+    };
+    let D::ModelMap(data) = &value.data else {
+        return Err(internal!("全体写像の反証条件が別構成").into());
+    };
+    if node.ty != NodeType::Proposition
+        || node.judgment.as_ref().map(|j| j.status) != Some(Decision::Refuted)
+        || data.source.request.id != reason.request
+        || !data.source.computed.answer.reasons.contains(reason)
+    {
+        return Err(internal!("全体写像の構成反証と元理由が違う").into());
+    }
+    super::construction_result::validate_shape(g, node)
+}
+
 pub(super) fn validate_answer(
     e: &Environment<'_>,
     g: &Graph,
