@@ -483,7 +483,7 @@ fn compute(
             return Err(internal!("原始correspondenceの型付き集合がない").into());
         };
         let cs = items.iter().map(fact).collect::<Result<Vec<_>, _>>()?;
-        match core::select(&inputs, &source, &target, &cs, c).map_err(failure)? {
+        match core::select(&inputs, &source, &target, &cs, fixed_design, c).map_err(failure)? {
             Err(f) => failed = Some(f),
             Ok(locals) => {
                 match core::glue(&inputs, &source, &target, locals, c).map_err(failure)? {
@@ -762,7 +762,7 @@ fn compute(
         let facts = match f {
             Failure::Missing(fs)
             | Failure::Coverage { facts: fs, .. }
-            | Failure::Preservation { facts: fs } => fs.clone(),
+            | Failure::Preservation { facts: fs, .. } => fs.clone(),
             Failure::Unsupported { correspondence, .. } => vec![correspondence.clone()],
             Failure::SharedImage {
                 source,
@@ -897,7 +897,7 @@ fn compute(
 
         if let Some(f) = &failed {
             match f {
-                Failure::Coverage { facts: fs, .. } | Failure::Preservation { facts: fs } => {
+                Failure::Coverage { facts: fs, .. } | Failure::Preservation { facts: fs, .. } => {
                     facts.extend(fs.iter().cloned())
                 }
                 Failure::SharedImage {
@@ -962,6 +962,30 @@ fn compute(
             } else {
                 "correspondence target is outside the selected target fragments"
             });
+        }
+        if fixed_design
+            && let Some(Failure::Preservation {
+                reference_difference: Some([expected, actual]),
+                ..
+            }) = &failed
+        {
+            let mut endpoint = |fact: &Fact| -> Result<NodeRef, ValidationFailure> {
+                let subject = e.indexes.subject(&fact.snapshot, &fact.subject)?;
+                let entity = subject.ty.to_string();
+                b.scalar(
+                    NodeType::Value(Type::Ref(entity.clone())),
+                    "binding",
+                    Scalar::Subject {
+                        snapshot: subject.snapshot.clone(),
+                        subject: subject.id.clone(),
+                        entity,
+                    },
+                    vec![expression, refs[0], refs[1]],
+                )
+            };
+            left = endpoint(expected)?;
+            right = endpoint(actual)?;
+            endpoint_detail = Some("local correspondence does not preserve an observed reference");
         }
         let mut counter_bindings = bindings.clone();
         let mut counter_args = vec![local_condition];

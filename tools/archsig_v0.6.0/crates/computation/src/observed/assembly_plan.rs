@@ -233,6 +233,7 @@ pub(super) fn prepare(
     let mut selections = Vec::new();
     let mut design = None;
     let mut rejected_design_origin = None;
+    let mut rejected_design = false;
     let mut rejected = None;
     for argument in &r.arguments {
         let (name, is_design) = if let Some(name) = argument.name.strip_prefix("local.") {
@@ -266,10 +267,13 @@ pub(super) fn prepare(
             _ => None,
         };
         let Some((source, value)) = source else {
-            rejected = Some(model_assembly::rejected(
-                "選択状態にはapplyの実Architectureを要求する",
-                vec![root],
-            ));
+            rejected_design = is_design;
+            let detail = if is_design {
+                "設計選択にはapplyの実Architectureを要求する"
+            } else {
+                "局所入力はapplyの実Architectureを要求する"
+            };
+            rejected = Some(model_assembly::rejected(detail, vec![root]));
             if is_design {
                 rejected_design_origin = Some((at, "apply.object"));
             }
@@ -283,8 +287,9 @@ pub(super) fn prepare(
             || applied.contains_key(&root)
         {
             let selected_root = construction.root();
+            rejected_design = is_design;
             let mut failure = model_assembly::rejected(
-                "選択状態の元root・snapshot・readingまたは選択が異なる",
+                "修復局所の元root・snapshot・readingまたは選択が異なる",
                 vec![root.clone(), selected_root.clone()],
             );
             if is_design && let Preparation::Rejected(rejection) = &mut failure {
@@ -352,8 +357,22 @@ pub(super) fn prepare(
         .map(|(_, overrides)| e.with_fixed_primitive_values(overrides, c))
         .transpose()?;
     let reader = selected_reading.as_ref().unwrap_or(e);
-    let fragments = read(reader, head, &values)?;
-    let shared = read(reader, along, &values)?;
+    let (fragments, shared) = if rejected_design {
+        let unread = || Read {
+            metadata: family::Read {
+                failed: false,
+                blocked: false,
+                missing: vec![],
+                support: vec![],
+                scope: Scope::default(),
+            },
+            value: None,
+            unsupported: None,
+        };
+        (unread(), unread())
+    } else {
+        (read(reader, head, &values)?, read(reader, along, &values)?)
+    };
     let mut missing = fragments.metadata.missing.clone();
     missing.extend(shared.metadata.missing.iter().cloned());
     missing.sort();

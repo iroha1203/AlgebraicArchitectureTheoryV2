@@ -64,6 +64,7 @@ pub(super) enum Failure {
     },
     Preservation {
         facts: Vec<Fact>,
+        reference_difference: Option<[Fact; 2]>,
     },
     Square {
         kind: SquareKind,
@@ -77,6 +78,7 @@ pub(super) fn select(
     source: &Model,
     target: &Model,
     correspondences: &[Fact],
+    retain_reference_difference: bool,
     c: &Control,
 ) -> Result<Result<Vec<Local>, Failure>, ConstructionFailure> {
     use super::model_assembly::{counterexample_facts, field_fact, subject};
@@ -200,7 +202,15 @@ pub(super) fn select(
         let Some(map) = result.map() else {
             let mut facts = vec![raw.clone()];
             facts.extend(counterexample_facts(result.counterexamples()));
-            return Ok(Err(Failure::Preservation { facts }));
+            let reference_difference = if retain_reference_difference {
+                first_reference_difference(inputs, &result, c)?
+            } else {
+                None
+            };
+            return Ok(Err(Failure::Preservation {
+                facts,
+                reference_difference,
+            }));
         };
         locals.push(Local {
             correspondence: raw.clone(),
@@ -210,6 +220,46 @@ pub(super) fn select(
         });
     }
     Ok(Ok(locals))
+}
+fn first_reference_difference(
+    inputs: &CheckedInputs,
+    result: &maps::CorrespondenceResult,
+    c: &Control,
+) -> Result<Option<[Fact; 2]>, ConstructionFailure> {
+    let Some(candidate) = result.candidate() else {
+        return Ok(None);
+    };
+    let referent = |fact: &Fact| -> Option<Fact> {
+        let subject = super::model_assembly::subject(inputs, fact).ok()?;
+        let field = fact.field.as_ref()?;
+        let field = subject.fields.iter().find(|f| &f.name == field)?;
+        let archsig_input::archmap::Slot::Known {
+            value: archsig_input::archmap::Value::Ref { snapshot, subject },
+            ..
+        } = &field.slot
+        else {
+            return None;
+        };
+        Some(Fact::from(archsig_input::archmap::FactData {
+            snapshot: snapshot.clone(),
+            subject: subject.clone(),
+            field: None,
+            atom: None,
+        }))
+    };
+    for row in result.counterexamples() {
+        tick(c)?;
+        let maps::Counterexample::ReferenceStructure { source, target } = row else {
+            continue;
+        };
+        if let (Some(source), Some(actual)) = (referent(source), referent(target))
+            && let Some(expected) = candidate.image(&source)
+            && expected != &actual
+        {
+            return Ok(Some([expected.clone(), actual]));
+        }
+    }
+    Ok(None)
 }
 #[derive(Debug)]
 pub(super) struct Verified {
@@ -451,6 +501,7 @@ pub(super) fn glue(
             tick(c)?;
             let Some(image) = local.map.candidate().image(fact) else {
                 return Ok(Err(Failure::Preservation {
+                    reference_difference: None,
                     facts: vec![local.correspondence.clone(), fact.clone()],
                 }));
             };
@@ -483,6 +534,7 @@ pub(super) fn glue(
     )?
     else {
         return Ok(Err(Failure::Preservation {
+            reference_difference: None,
             facts: locals.iter().map(|l| l.correspondence.clone()).collect(),
         }));
     };
@@ -531,6 +583,7 @@ pub(super) fn glue(
             maps::assembled_map(inputs, source_image, target_image, restricted_subjects, c)?
         else {
             return Ok(Err(Failure::Preservation {
+                reference_difference: None,
                 facts: vec![local.correspondence.clone()],
             }));
         };
@@ -1106,9 +1159,16 @@ mod tests {
     fn raw_correspondences_glue_and_preserve_global_generators_and_laws() {
         let (inputs, model) = mapped(|s| s);
         let c = Control::unlimited();
-        let locals = select(&inputs, &model, &model, &[fact("moveA"), fact("moveB")], &c)
-            .unwrap()
-            .unwrap();
+        let locals = select(
+            &inputs,
+            &model,
+            &model,
+            &[fact("moveA"), fact("moveB")],
+            false,
+            &c,
+        )
+        .unwrap()
+        .unwrap();
         let glued = glue(&inputs, &model, &model, locals, &c).unwrap().unwrap();
         let readings = Arc::new(
             crate::construction::readings::object_reading_instances_checked(
@@ -1210,9 +1270,16 @@ mod tests {
     }
     fn evaluate(inputs: Arc<CheckedInputs>, source: &Arc<Model>, target: &Arc<Model>) -> Verified {
         let c = Control::unlimited();
-        let locals = select(&inputs, source, target, &[fact("moveA"), fact("moveB")], &c)
-            .unwrap()
-            .unwrap();
+        let locals = select(
+            &inputs,
+            source,
+            target,
+            &[fact("moveA"), fact("moveB")],
+            false,
+            &c,
+        )
+        .unwrap()
+        .unwrap();
         let glued = glue(&inputs, source, target, locals, &c).unwrap().unwrap();
         let caches = [source, target].map(|model| {
             let readings = Arc::new(
@@ -1280,6 +1347,7 @@ mod tests {
             &model,
             &model,
             &[fact("moveA"), fact("moveB")],
+            false,
             &Control::unlimited(),
         )
         .unwrap()

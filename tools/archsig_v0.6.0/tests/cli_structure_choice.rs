@@ -170,6 +170,51 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
     for field in ["answers", "nodes", "issues"] {
         assert_eq!(get(&result, field).value, get(&same, field).value);
     }
+    let map = include_str!("fixtures/r2-structure-choice/archmap.json");
+    let before = concat!(
+        "\"id\": \"rust-T3-consume.to\",\n          \"subject\": \"rust-T3-consume\",\n",
+        "          \"field\": \"E12.Consume.to\",\n          \"value\": [\n            \"comparison\",\n            \"rust-T3-after\"",
+    );
+    let changed = map.replacen(
+        before,
+        &before.replace("rust-T3-after", "rust-T3-before"),
+        1,
+    );
+    assert_ne!(changed, map);
+    std::fs::write(dir.join("archmap.json"), changed).unwrap();
+    args.truncate(args.len() - 2);
+    args[8] = "changed-operation";
+    let changed = run_binary(&dir, &args);
+    assert_eq!(changed.code, 2, "{}{}", changed.stdout, changed.stderr);
+    let changed = result_json(&dir, &changed);
+    let answers = arr(get(&changed, "answers"));
+    let layout = answers
+        .iter()
+        .find(|a| s(get(a, "id")) == "layout1")
+        .unwrap();
+    let map = answers
+        .iter()
+        .find(|a| s(get(a, "id")) == "migrate")
+        .unwrap();
+    assert_eq!(s(get(layout, "status")), "established");
+    assert_eq!(s(get(map, "status")), "refuted");
+    let [failure] = arr(get(map, "counterexamples")) else {
+        panic!("operation refutation");
+    };
+    let nodes = arr(get(&changed, "nodes"));
+    let value = |reference: &JNode| {
+        get(
+            nodes
+                .iter()
+                .find(|node| s(get(node, "id")) == s(get(reference, "node")))
+                .unwrap(),
+            "value",
+        )
+    };
+    let data = get(value(failure), "data");
+    assert!(s(get(data, "condition_detail")).contains("observed reference"));
+    assert_eq!(s(&arr(value(get(data, "left")))[1]), "rust-T3-after");
+    assert_eq!(s(&arr(value(get(data, "right")))[1]), "rust-T3-before");
 }
 
 #[test]
