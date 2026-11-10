@@ -123,7 +123,7 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | 問いの正確な形 | 選択と返すfield |
 | --- | --- |
 | `build(Reading,on=Handle)` | rootとreadingから対象と有限表示のobject algebraを生成する。`proposition:Proposition`、構成できた`object:Architecture`、成立時`algebra:ObjectAlgebra` |
-| `assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…,design.<parameter>=Handle)` | 局所rootと共有対から対象を構成する。`proposition:Proposition`、成立時`assembly:ModelAssembly`、`object:Architecture`、`algebra:ObjectAlgebra` |
+| `assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…,design.<parameter>=Handle?)` | 局所rootと共有対から対象を構成する。`proposition:Proposition`、成立時`assembly:ModelAssembly`、`object:Architecture`、`algebra:ObjectAlgebra` |
 | `assemble_map(View,from=Handle,to=Handle,B)` | 始終のModelAssemblyと担当別の原始correspondenceから全体写像を構成する。`proposition:Proposition`、作用構成時`candidate:MapCandidate`、configuration保存時`configuration_map:ConfigurationMap`、全条件成立時`map:ModelMapAssembly` |
 | `evaluate(View,on=Handle?,B)` | viewの全parameterを束縛して評価する。onは結果のArchitectureを読む環境。`value:T`、`evaluation:Evaluation`。TはPathやそのcontainerを含むLawの返り型 |
 | `check(Law,on=Handle?,B)` | Lawの選択instance族について、未束縛parameterと内部量化を保って成立を問う。onは結果のArchitectureを読む環境。`proposition:Proposition`、`evaluation:Evaluation` |
@@ -406,6 +406,7 @@ parameter は担当 root と異なる型の ownerless 設計主体で、両 View
 設計主体の型・個体・snapshot・reading を `apply` の元と照合し、その実更新値で
 担当集合と共有対を読む。表示名はこの照合に使わない。後続 `assemble_map` は
 選ばれた担当と個体構成に対して対応の始終域と操作を検査する。
+設計値を読む二つの View は選択済みの一点で評価する。反証の `condition_detail` は失敗した組立て条件を示す。
 
 返す field は `proposition:Proposition`、成立時 `assembly:ModelAssembly`、
 `object:Architecture`、`algebra:ObjectAlgebra` とする。

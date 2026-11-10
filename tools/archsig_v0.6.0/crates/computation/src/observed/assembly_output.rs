@@ -69,7 +69,7 @@ fn input(
                 ),
             ),
         ]),
-        a.bindings.iter().map(|v| v.value).collect(),
+        a.bindings.iter().map(|v| v.value).chain(a.design).collect(),
         None,
     )?;
     let part = &mut b.parts[source.0 - b.base];
@@ -456,6 +456,13 @@ pub(super) fn failed(
                     Json::Arr(rejection.facts.iter().map(Fact::wire).collect()),
                 ),
             ]);
+            if r.arguments
+                .iter()
+                .any(|argument| argument.name.starts_with("design."))
+                && let Json::Obj(fields) = &mut data
+            {
+                fields.insert("condition_detail".into(), Json::str(detail));
+            }
             let mut repaired = Vec::new();
             for (side, position) in ["left", "right"].into_iter().zip(&rejection.repaired) {
                 let Some(position) = position else {

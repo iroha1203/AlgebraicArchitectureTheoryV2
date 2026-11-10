@@ -1013,7 +1013,7 @@ Evidenceは結果専用。`{kind:EvidenceKind,data:EvidenceData}`をpayloadと�
 | --- | --- |
 | evaluation | `{instance:LawInstance,lhs:Ref,rhs:Ref,residual?:Ref}` |
 | finite_exhaustion | `{domain:Domain,checked:Nat,instances:Ref[]}` |
-| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[],action_difference?:AssemblyActionDifference,overlap?:AssemblyOverlap,repaired?:{side:"left"\|"right",object:Architecture,slot:Slot}[]}` |
+| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[],action_difference?:AssemblyActionDifference,overlap?:AssemblyOverlap,condition_detail?:String,repaired?:{side:"left"\|"right",object:Architecture,slot:Slot}[]}` |
 | linear_solution | `{map:ModuleMap,rhs:Vector,solution:Vector,recheck:Proposition}` |
 | linear_inconsistent | `{map:ModuleMap,rhs:Vector,annihilator:Vector,pairing:Ref,modulus?:DecimalNat}` |
 | smith | `{map:ModuleMap,left:ModuleMap,right:ModuleMap,diagonal:ModuleMap,transformed_rhs?:Vector,divisibility:Proposition[]}` |
@@ -1040,6 +1040,7 @@ restrictionではρ_target∘μ_hat_iとμ_i∘ρ_source、generatorではμ∘e
 `AssemblyOverlap={source:FactPointer,left_correspondence:FactPointer,right_correspondence:FactPointer,
 left:FactPointer,right:FactPointer}` は、同じ共有類へ異なる像を指定した二つの原始対応を保持する。
 これらは核が計算した反例の位置であり、新しい観測値や入力証書ではない。
+設計選択付き組立ての反例は `condition_detail` に具体的な失敗理由を保持する。
 組立てで共有 field の値が合わない場合、修復済みの側は `repaired` に元 `apply` と slot を保持する。
 `left` と `right` は実際に比較した値、`facts` は原始観測の支持である。
 

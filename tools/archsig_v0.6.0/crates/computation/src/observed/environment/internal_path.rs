@@ -329,9 +329,9 @@ impl Environment<'_> {
             .and_then(|v| v.get(&position))
         {
             out.scope.merge(&self.indexes.scope(owner, reading, None)?);
-            out.scope.assignments = true;
+            out.scope.assignments |= self.primitive_values_vary();
             out.support.push(position.clone());
-            if matches!(field.slot, Slot::Missing) {
+            if !self.indexes.fixed_primitive_valuation && matches!(field.slot, Slot::Missing) {
                 out.scope.completions = true;
                 out.missing.push(position);
             }
@@ -422,7 +422,7 @@ impl Environment<'_> {
             failure: None,
         };
         out.scope.readings.insert(reading.into());
-        out.scope.assignments = self.indexes.primitive_valuation.is_some();
+        out.scope.assignments = self.primitive_values_vary();
         let [
             generator @ Scalar::Subject {
                 snapshot,

@@ -43,6 +43,9 @@ pub(super) fn read(
                     }
                 }
             }
+            metadata
+                .missing
+                .retain(|fact| !env.has_primitive_override(fact));
             metadata.support.sort();
             metadata.support.dedup();
             Ok(Read {
@@ -301,7 +304,7 @@ pub(super) fn prepare(
     }
     let selected_reading = design
         .as_ref()
-        .map(|(_, overrides)| Environment::with_primitive_valuation(p.inputs(), overrides, c))
+        .map(|(_, overrides)| e.with_fixed_primitive_values(overrides, c))
         .transpose()?;
     let reader = selected_reading.as_ref().unwrap_or(e);
     let fragments = read(reader, head, &values)?;

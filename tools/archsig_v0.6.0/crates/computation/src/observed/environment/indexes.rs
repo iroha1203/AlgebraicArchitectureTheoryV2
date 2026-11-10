@@ -22,6 +22,7 @@ pub(crate) struct InputIndexes<'a> {
     // 候補ごとに独立したEnvironmentへ一度だけ設定し、観測cacheと共有しない。
     pub(super) primitive_valuation: Option<std::sync::Arc<BTreeMap<Fact, Scalar>>>,
     pub(super) valuation_domain: ValuationDomain,
+    pub(super) fixed_primitive_valuation: bool,
     // 整数changeの式を読む内部環境。観測slotと元parameterを区別する。
     pub(super) affine_valuation: BTreeMap<Fact, crate::observed::affine::Form>,
     // 参照構造とprobeの再検査に必要なdecoded値。完成候補の純leafは保存しない。
@@ -58,6 +59,7 @@ impl<'a> InputIndexes<'a> {
             object_values: None,
             original_requests: None,
             primitive_valuation: None,
+            fixed_primitive_valuation: false,
             affine_valuation: BTreeMap::new(),
             primitive_input_valuation: None,
         }
@@ -246,6 +248,7 @@ impl<'a> InputIndexes<'a> {
             observed_maps: RefCell::default(),
             original_requests: None,
             primitive_valuation: None,
+            fixed_primitive_valuation: false,
             affine_valuation: BTreeMap::new(),
             primitive_input_valuation: None,
         })

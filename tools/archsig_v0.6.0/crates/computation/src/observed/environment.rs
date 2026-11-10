@@ -9478,10 +9478,10 @@ impl<'a> Environment<'a> {
         } else if let Some(value) = assigned {
             let owner_scope = self.indexes.scope(owner, reading, None)?;
             scope.merge(&owner_scope);
-            scope.assignments = true;
+            scope.assignments |= self.primitive_values_vary();
             let mut scalar_scope = request_base.clone();
             scalar_scope.merge(&owner_scope);
-            scalar_scope.assignments = true;
+            scalar_scope.assignments |= self.primitive_values_vary();
             // 同じslotの元Atomがあっても、別の候補値の観測証拠に使わない。
             let value = if self.indexes.valuation_domain == indexes::ValuationDomain::Input {
                 self.project_object_field(&position, value)?
