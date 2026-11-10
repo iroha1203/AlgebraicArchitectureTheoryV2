@@ -754,7 +754,32 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
         "stockLoad(s)<=rat(5,1) and (false implies s.available>=rat(0,1))",
         1,
     );
+    let known_bound = POLY_LAW.replacen("stockLoad(s)<=s.available", "stockLoad(s)<=rat(5,1)", 1);
+    let nonnegative = "b.quantity>=rat(0,1)";
     for (out, law, codes) in [
+        ("let-product", known_bound.replacen(nonnegative,
+            "(let weighted=b.quantity*b.stock.available in weighted>=rat(0,1))", 1),
+            &["missing_observation"][..]),
+        ("view-argument", known_bound.replacen(" law required legal",
+            " view keep(q:Q):Q=q;\n law required legal", 1)
+            .replacen(nonnegative, "keep(b.quantity*b.stock.available)>=rat(0,1)", 1),
+            &["missing_observation"][..]),
+        ("let-implication", known_bound.replacen(nonnegative,
+            "(let cap=b.stock.available in (cap>=rat(0,1) implies b.quantity>=rat(0,1)))", 1),
+            &["missing_observation"][..]),
+        ("let-law-guard", known_bound.replacen("legal(w:Pool.World):",
+            "legal(w:Pool.World) when (forall b in Pool.Cell[w] . let cap=b.stock.available in cap>=rat(0,1)):", 1),
+            &["missing_observation"][..]),
+        ("comprehension-domain", known_bound.replacen("legal(w:Pool.World):",
+            "legal(w:Pool.World): forall flag in list{true | t in Pool.Cell[w] where t.quantity-t.quantity+t.stock.available>=rat(0,1)} .", 1),
+            &["missing_observation"][..]),
+        ("cancelled-implication", known_bound.replacen(nonnegative,
+            "((b.quantity+b.stock.available-b.stock.available>=rat(10,1)) implies b.quantity>=rat(0,1))", 1),
+            &["unsupported_algorithm"][..]),
+        ("cancelled-view", known_bound.replacen(" law required legal",
+            " view eligible(b:Pool.Cell):Bool=let cap=b.stock.available in b.quantity+cap-cap>=rat(10,1);\n law required legal", 1)
+            .replacen(nonnegative, "not(eligible(b))", 1),
+            &["unsupported_algorithm"][..]),
         ("let-coefficient", POLY_LAW.replacen("b.quantity>=rat(0,1)",
             "(let capacity=b.stock.available in b.quantity*capacity>=rat(0,1))", 1), &["missing_observation"][..]),
         ("view-coefficient", POLY_LAW.replacen(" law required legal",
@@ -801,7 +826,7 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
         ),
     ] {
         std::fs::write(dir.join("laws.law"), law).unwrap();
-        let run = polyhedron_run(&dir, ask, out, None);
+        let run = polyhedron_asks(&dir, &[ask, "plan=needed($overlapFeasible)"], out, None);
         assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
         let result = result_json(&dir, &run);
         let answer = &arr(get(&result, "answers"))[0];
@@ -812,5 +837,14 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
             .collect::<Vec<_>>();
         reasons.sort_unstable();
         assert_eq!(reasons, codes, "{out}");
+        let plan = &arr(get(&result, "answers"))[1];
+        let plan = referenced(&result, get(get(plan, "outputs"), "plan"));
+        let requirements = arr(get(get(plan, "value"), "requirements"));
+        if codes.contains(&"missing_observation") {
+            let [requirement] = requirements else { panic!("{out}: expected one requirement") };
+            assert_eq!(s(get(get(requirement, "field"), "field")), "Pool.Stock.available", "{out}");
+        } else {
+            assert!(requirements.is_empty(), "{out}");
+        }
     }
 }

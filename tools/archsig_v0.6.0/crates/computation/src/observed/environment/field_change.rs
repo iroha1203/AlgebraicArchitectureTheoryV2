@@ -115,245 +115,295 @@ fn coordinates(
         )
     })
 }
-/// Observation-only coefficients can remain unknown during extraction. The
-/// shape check supplies no value to a missing slot and proves no constraint.
-fn potential_affine(
-    env: &Environment<'_>,
-    id: usize,
-    vars: &BTreeMap<String, SourceValue>,
-    reading: &str,
-    axes: &[Parameter],
-    observations: &mut BTreeSet<Fact>,
-) -> Result<Option<bool>, ValidationFailure> {
-    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        env.tick()?;
-        let value = env.scoped_ast(id, vars, &Scope::default(), reading)?;
-        if let Some(form) = value.affine.as_deref() {
-            observations.extend(form.missing_facts());
-            if form.awaiting_rational_observation(axes, &env.control)?
-                || form.rational_coordinates(axes, &env.control)?.is_some()
-            {
-                return Ok(Some(form.varies_over(axes, &env.control)?));
-            }
-            return Ok(None);
-        }
-        let kind = &env.indexes.inputs.law().exprs()[id].kind;
-        if let ExprKind::Group(body)
-        | ExprKind::Unary {
-            op: archsig_input::law::ast::UnOp::Neg,
-            operand: body,
-        } = kind
-        {
-            return potential_affine(env, *body, vars, reading, axes, observations);
-        }
-        if let ExprKind::Call { args, .. } = kind
-            && let Some(declaration) = env.named_view(id)?
-            && let Signature::View { params, body, .. } = &declaration.signature
-        {
-            let mut local = BTreeMap::new();
-            for (parameter, arg) in params.iter().zip(args) {
-                let value = env.scoped_ast(*arg, vars, &Scope::default(), reading)?;
-                local.insert(parameter.name.clone(), value);
-            }
-            return potential_affine(env, *body, &local, &declaration.reading, axes, observations);
-        }
-        if let ExprKind::Let { name, value, body } = kind {
-            let mut local = env.copy_variables(vars)?;
-            let bound = env.scoped_ast(*value, vars, &Scope::default(), reading)?;
-            local.insert(name.name.clone(), bound);
-            return potential_affine(env, *body, &local, reading, axes, observations);
-        }
-        if let ExprKind::If {
-            cond,
-            then_branch,
-            else_branch,
-        } = kind
-        {
-            let condition = env.scoped_ast(*cond, vars, &Scope::default(), reading)?;
-            match condition.known_value.as_ref() {
-                Some(Scalar::Bool(true)) => {
-                    return potential_affine(env, *then_branch, vars, reading, axes, observations);
-                }
-                Some(Scalar::Bool(false)) => {
-                    return potential_affine(env, *else_branch, vars, reading, axes, observations);
-                }
-                _ if observation_only(env, *cond, vars, reading, axes, &condition)? => {
-                    let a = potential_affine(env, *then_branch, vars, reading, axes, observations)?;
-                    let b = potential_affine(env, *else_branch, vars, reading, axes, observations)?;
-                    return Ok(a.zip(b).map(|(a, b)| a || b));
-                }
-                _ => return Ok(None),
-            }
-        }
-        let ExprKind::Binary {
-            op: op @ (BinOp::Add | BinOp::Sub | BinOp::Mul),
-            lhs,
-            rhs,
-        } = kind
-        else {
-            return Ok(None);
-        };
-        let a = potential_affine(env, *lhs, vars, reading, axes, observations)?;
-        let b = potential_affine(env, *rhs, vars, reading, axes, observations)?;
-        Ok(match (a, b) {
-            (Some(true), Some(true)) if *op == BinOp::Mul => None,
-            (Some(a), Some(b)) => Some(a || b),
-            _ => None,
-        })
-    })
+// A diagnostic distinguishes the dependence of a value on a candidate
+// from the observations needed to obtain it. It never supplies values to
+// the solver. Affine cancellation takes precedence over syntactic reads.
+#[derive(Clone, Copy, Default, Eq, Ord, PartialEq, PartialOrd)]
+enum Dependence {
+    #[default]
+    Fixed,
+    Affine,
+    Other,
 }
 
-fn observation_only(
-    env: &Environment<'_>,
-    id: usize,
-    vars: &BTreeMap<String, SourceValue>,
-    reading: &str,
-    axes: &[Parameter],
-    value: &SourceValue,
-) -> Result<bool, ValidationFailure> {
-    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        env.tick()?;
-        if value.known_value.is_some() || !value.scope.assignments && axes.is_empty() {
-            return Ok(true);
-        }
-        let base = Scope::default();
-        let law = env.indexes.inputs.law();
-        let child = |id| {
-            let value = env.scoped_ast(id, vars, &base, reading)?;
-            observation_only(env, id, vars, reading, axes, &value)
+#[derive(Clone, Default)]
+struct Dependency {
+    dependence: Dependence,
+    facts: BTreeSet<Fact>,
+}
+
+type LexicalDependencies = BTreeMap<String, Dependency>;
+
+impl Dependency {
+    fn merge(&mut self, other: Self) {
+        self.dependence = self.dependence.max(other.dependence);
+        self.facts.extend(other.facts);
+    }
+
+    fn record(self, missing: &mut Pending, maximum: Dependence) {
+        missing.awaiting_observation = !self.facts.is_empty() && self.dependence <= maximum;
+        missing.facts.extend(self.facts);
+    }
+}
+
+struct DependencyAnalysis<'a, 'input> {
+    env: &'a Environment<'input>,
+    axes: &'a [Parameter],
+}
+
+impl DependencyAnalysis<'_, '_> {
+    fn source(
+        &self,
+        id: usize,
+        vars: &BTreeMap<String, SourceValue>,
+        reading: &str,
+    ) -> Result<SourceValue, ValidationFailure> {
+        self.env.scoped_ast(id, vars, &Scope::default(), reading)
+    }
+
+    fn form(&self, form: &Form) -> Result<Dependency, ValidationFailure> {
+        let control = &self.env.control;
+        let dependence = if form.awaiting_rational_observation(self.axes, control)?
+            || form.rational_coordinates(self.axes, control)?.is_some()
+        {
+            if form.varies_over(self.axes, control)? {
+                Dependence::Affine
+            } else {
+                Dependence::Fixed
+            }
+        } else {
+            Dependence::Other
         };
-        match &law.exprs()[id].kind {
-            ExprKind::Group(body)
-            | ExprKind::Unary {
-                op: archsig_input::law::ast::UnOp::Not,
-                operand: body,
-            } => child(*body),
-            ExprKind::Binary {
-                op: BinOp::And | BinOp::Or | BinOp::Implies,
-                lhs,
-                rhs,
-            } => Ok(child(*lhs)? && child(*rhs)?),
-            ExprKind::Binary {
-                op: BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge,
-                lhs,
-                rhs,
-            } if law.expr_type(*lhs) == Some(&Type::Q) && law.expr_type(*rhs) == Some(&Type::Q) => {
-                let left = env.scoped_ast(*lhs, vars, &base, reading)?;
-                let right = env.scoped_ast(*rhs, vars, &base, reading)?;
-                let form = affine::binary(
-                    BinOp::Sub,
-                    left.affine.as_deref(),
-                    right.affine.as_deref(),
-                    &env.control,
-                )?;
-                if let Some(form) = form {
-                    return Ok(form.awaiting_rational_observation(&[], &env.control)?
-                        || form.rational_coordinates(&[], &env.control)?.is_some());
+        Ok(Dependency {
+            dependence,
+            facts: form.missing_facts().into_iter().collect(),
+        })
+    }
+
+    fn read(
+        &self,
+        id: usize,
+        vars: &BTreeMap<String, SourceValue>,
+        lexical: &LexicalDependencies,
+        reading: &str,
+    ) -> Result<Dependency, ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            let env = self.env;
+            env.tick()?;
+            let law = env.indexes.inputs.law();
+            let (source, absent) = capture_missing(env, || self.source(id, vars, reading))?;
+            let source = source?;
+            if !source.condition_pending && !source.condition_failed {
+                if source.known_value.is_some() {
+                    return Ok(Dependency::default());
                 }
-                let mut observations = BTreeSet::new();
-                Ok(
-                    potential_affine(env, *lhs, vars, reading, axes, &mut observations)?
-                        == Some(false)
-                        && potential_affine(env, *rhs, vars, reading, axes, &mut observations)?
-                            == Some(false),
-                )
-            }
-            ExprKind::If {
-                cond,
-                then_branch,
-                else_branch,
-            } => {
-                let condition = env.scoped_ast(*cond, vars, &base, reading)?;
-                match condition.known_value.as_ref() {
-                    Some(Scalar::Bool(true)) => child(*then_branch),
-                    Some(Scalar::Bool(false)) => child(*else_branch),
-                    _ => Ok(
-                        observation_only(env, *cond, vars, reading, axes, &condition)?
-                            && child(*then_branch)?
-                            && child(*else_branch)?,
-                    ),
+                if law.expr_type(id) == Some(&Type::Q)
+                    && let Some(form) = source.affine.as_deref()
+                {
+                    return self.form(form);
                 }
             }
-            ExprKind::Quant {
-                split:
-                    archsig_input::law::ast::QuantSplit::Fixed {
-                        domain: archsig_input::law::ast::QuantDomain::In(_),
-                        ..
-                    },
-                ..
-            } => {
-                let spec = quantifier::spec(law, id, &env.control)?;
-                let (domain, members) =
-                    env.scoped_quantifier_domain(&spec, vars, &base, reading)?;
-                let Some(members) = members else {
-                    let Some(id) = spec.domain else {
-                        return Ok(false);
+            let child = |id| self.read(id, vars, lexical, reading);
+            let fallback = || Dependency {
+                dependence: if source.scope.assignments || source.condition_failed {
+                    Dependence::Other
+                } else {
+                    Dependence::Fixed
+                },
+                facts: absent.into_iter().collect(),
+            };
+            match &law.exprs()[id].kind {
+                ExprKind::Dotted(parts) => {
+                    let Some(bound) = parts.first().and_then(|name| lexical.get(&name.name)) else {
+                        return Ok(fallback());
                     };
-                    return observation_only(env, id, vars, reading, axes, &domain);
-                };
-                let mut local = env.copy_variables(vars)?;
-                for member in members {
-                    let bound = self::value(env, member)?;
-                    local.insert(spec.name.into(), bound);
-                    let body = env.scoped_ast(spec.body, &local, &base, reading)?;
-                    if !observation_only(env, spec.body, &local, reading, axes, &body)? {
-                        return Ok(false);
+                    if parts.len() == 1 {
+                        return Ok(bound.clone());
+                    }
+                    let mut result = fallback();
+                    result.merge(bound.clone());
+                    Ok(result)
+                }
+                ExprKind::Group(body) | ExprKind::Unary { operand: body, .. } => child(*body),
+                ExprKind::Field { base, .. }
+                | ExprKind::Index { base, .. }
+                | ExprKind::Family { owner: base, .. } => {
+                    let mut result = fallback();
+                    result.merge(child(*base)?);
+                    Ok(result)
+                }
+                ExprKind::Let { name, value, body } => {
+                    let mut local = env.copy_variables(vars)?;
+                    let mut dependencies = lexical.clone();
+                    let value_source = self.source(*value, vars, reading)?;
+                    let dependency = child(*value)?;
+                    local.insert(name.name.clone(), value_source);
+                    dependencies.insert(name.name.clone(), dependency);
+                    self.read(*body, &local, &dependencies, reading)
+                }
+                ExprKind::Call { args, .. } => {
+                    if let Some(declaration) = env.named_view(id)?
+                        && let Signature::View { params, body, .. } = &declaration.signature
+                    {
+                        let mut local = BTreeMap::new();
+                        let mut dependencies = BTreeMap::new();
+                        for (parameter, arg) in params.iter().zip(args) {
+                            local.insert(parameter.name.clone(), self.source(*arg, vars, reading)?);
+                            dependencies.insert(parameter.name.clone(), child(*arg)?);
+                        }
+                        self.read(*body, &local, &dependencies, &declaration.reading)
+                    } else {
+                        let mut result = fallback();
+                        for arg in args {
+                            result.merge(child(*arg)?);
+                        }
+                        if result.dependence == Dependence::Affine {
+                            result.dependence = Dependence::Other;
+                        }
+                        Ok(result)
                     }
                 }
-                Ok(true)
+                ExprKind::Binary { op, lhs, rhs } => {
+                    let numeric_comparison = matches!(
+                        op,
+                        BinOp::Eq | BinOp::Ne | BinOp::Lt | BinOp::Le | BinOp::Gt | BinOp::Ge
+                    ) && law.expr_type(*lhs) == Some(&Type::Q)
+                        && law.expr_type(*rhs) == Some(&Type::Q);
+                    if numeric_comparison && !source.condition_failed && !source.condition_pending {
+                        let lhs = self.source(*lhs, vars, reading)?;
+                        let rhs = self.source(*rhs, vars, reading)?;
+                        if let Some(form) = affine::binary(
+                            BinOp::Sub,
+                            lhs.affine.as_deref(),
+                            rhs.affine.as_deref(),
+                            &env.control,
+                        )? {
+                            let mut result = self.form(&form)?;
+                            if result.dependence == Dependence::Affine {
+                                result.dependence = Dependence::Other;
+                            }
+                            return Ok(result);
+                        }
+                    }
+                    let mut left = child(*lhs)?;
+                    let right = child(*rhs)?;
+                    let nonlinear = left.dependence != Dependence::Fixed
+                        && right.dependence != Dependence::Fixed;
+                    left.merge(right);
+                    if left.dependence == Dependence::Affine
+                        && (!matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul)
+                            || (*op == BinOp::Mul && nonlinear))
+                    {
+                        left.dependence = Dependence::Other;
+                    }
+                    Ok(left)
+                }
+                ExprKind::If {
+                    cond,
+                    then_branch,
+                    else_branch,
+                } => {
+                    match self.source(*cond, vars, reading)?.known_value {
+                        Some(Scalar::Bool(true)) => child(*then_branch),
+                        Some(Scalar::Bool(false)) => child(*else_branch),
+                        _ => {
+                            let mut condition = child(*cond)?;
+                            for branch in [then_branch, else_branch] {
+                                // Only the test is read until the branch is chosen.
+                                condition.dependence =
+                                    condition.dependence.max(child(*branch)?.dependence);
+                            }
+                            Ok(condition)
+                        }
+                    }
+                }
+                ExprKind::Quant {
+                    split:
+                        archsig_input::law::ast::QuantSplit::Fixed {
+                            domain: archsig_input::law::ast::QuantDomain::In(_),
+                            ..
+                        },
+                    ..
+                } => {
+                    let spec = quantifier::spec(law, id, &env.control)?;
+                    let (_, members) =
+                        env.scoped_quantifier_domain(&spec, vars, &Scope::default(), reading)?;
+                    let domain = spec.domain.ok_or(internal!("有理量化の元域がない"))?;
+                    let mut result = child(domain)?;
+                    if let Some(members) = members {
+                        let mut local = env.copy_variables(vars)?;
+                        for member in members {
+                            env.tick()?;
+                            local.insert(spec.name.into(), value(env, member)?);
+                            result.merge(self.read(spec.body, &local, lexical, reading)?);
+                        }
+                    }
+                    Ok(result)
+                }
+                ExprKind::Comprehension {
+                    var,
+                    domain,
+                    filter,
+                    elem,
+                    ..
+                } => {
+                    let input = self.source(*domain, vars, reading)?;
+                    let mut result = child(*domain)?;
+                    if let Some(container) = input.known_value.as_ref() {
+                        let items = match container {
+                            Scalar::List { items, .. } | Scalar::Set { items, .. } => items,
+                            _ => return Err(internal!("内包元域がList/Setでない").into()),
+                        };
+                        let output = law.expr_type(id).ok_or(internal!("内包結果型がない"))?;
+                        let mut local = env.copy_variables(vars)?;
+                        for position in
+                            data::comprehension_positions(container, output, &env.control)?
+                        {
+                            env.tick()?;
+                            local.insert(var.name.clone(), value(env, items[position].clone())?);
+                            let member = |id| self.read(id, &local, lexical, reading);
+                            if let Some(filter) = filter {
+                                result.merge(member(*filter)?);
+                                match self.source(*filter, &local, reading)?.known_value {
+                                    Some(Scalar::Bool(true)) => {}
+                                    Some(Scalar::Bool(false)) => continue,
+                                    _ => {
+                                        result.dependence =
+                                            result.dependence.max(member(*elem)?.dependence);
+                                        continue;
+                                    }
+                                }
+                            }
+                            result.merge(member(*elem)?);
+                        }
+                    }
+                    Ok(result)
+                }
+                ExprKind::Tuple(items)
+                | ExprKind::ListLit { items, .. }
+                | ExprKind::SetLit { items, .. } => {
+                    let mut result = Dependency::default();
+                    for item in items {
+                        result.merge(child(*item)?);
+                    }
+                    Ok(result)
+                }
+                ExprKind::Some(item) => child(*item),
+                _ => Ok(fallback()),
             }
-            _ => Ok(!value.scope.assignments && !change_affine::numeric_condition(env, id, value)?),
-        }
-    })
+        })
+    }
 }
 
-// A read which cancels out of a comparison is not a required observation.
-fn normalized_missing(
-    env: &Environment<'_>,
-    id: usize,
-    vars: &BTreeMap<String, SourceValue>,
-    reading: &str,
-) -> Result<Option<Vec<Fact>>, ValidationFailure> {
-    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-        env.tick()?;
-        let base = Scope::default();
-        let source = env.scoped_ast(id, vars, &base, reading)?;
-        if source.known_value.is_some() {
-            return Ok(Some(vec![]));
-        }
-        let law = env.indexes.inputs.law();
-        match &law.exprs()[id].kind {
-            ExprKind::Group(body) => normalized_missing(env, *body, vars, reading),
-            ExprKind::Binary {
-                op: BinOp::And | BinOp::Or | BinOp::Implies,
-                lhs,
-                rhs,
-            } => {
-                let a = normalized_missing(env, *lhs, vars, reading)?;
-                let b = normalized_missing(env, *rhs, vars, reading)?;
-                Ok(a.zip(b).map(|(mut a, b)| {
-                    a.extend(b);
-                    a
-                }))
-            }
-            ExprKind::Binary {
-                op: BinOp::Eq | BinOp::Ne | BinOp::Le | BinOp::Lt | BinOp::Ge | BinOp::Gt,
-                lhs,
-                rhs,
-            } if law.expr_type(*lhs) == Some(&Type::Q) && law.expr_type(*rhs) == Some(&Type::Q) => {
-                let left = env.scoped_ast(*lhs, vars, &base, reading)?;
-                let right = env.scoped_ast(*rhs, vars, &base, reading)?;
-                Ok(affine::binary(
-                    BinOp::Sub,
-                    left.affine.as_deref(),
-                    right.affine.as_deref(),
-                    &env.control,
-                )?
-                .map(|difference| difference.missing_facts()))
-            }
-            _ => Ok(None),
-        }
-    })
+fn dependency_axes<'a>(axes: Axes<'a>, missing: &Pending) -> std::borrow::Cow<'a, [Parameter]> {
+    let parameters = match axes {
+        Axes::Parameters(parameters) => parameters,
+        Axes::State(_) => &[],
+    };
+    if missing.universal.is_empty() {
+        return std::borrow::Cow::Borrowed(parameters);
+    }
+    std::borrow::Cow::Owned([parameters, &missing.universal].concat())
 }
 
 fn equations(
@@ -365,18 +415,40 @@ fn equations(
     rows: &mut Constraints,
     missing: &mut Pending,
 ) -> Result<(), ValidationFailure> {
+    collect_equations(
+        env,
+        id,
+        vars,
+        &LexicalDependencies::new(),
+        reading,
+        axes,
+        rows,
+        missing,
+    )
+}
+
+fn collect_equations(
+    env: &Environment<'_>,
+    id: usize,
+    vars: &BTreeMap<String, SourceValue>,
+    lexical: &LexicalDependencies,
+    reading: &str,
+    axes: Axes<'_>,
+    rows: &mut Constraints,
+    missing: &mut Pending,
+) -> Result<(), ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         env.tick()?;
         let base = Scope::default();
         let law = env.indexes.inputs.law();
         let kind = &law.exprs()[id].kind;
         let allow_bounds = rows.inequalities.is_some();
-        let (v, absent) = if allow_bounds {
-            capture_missing(env, || env.scoped_ast(id, vars, &base, reading))?
-        } else {
-            (env.scoped_ast(id, vars, &base, reading), vec![])
+        let v = env.scoped_ast(id, vars, &base, reading)?;
+        let parameters = dependency_axes(axes, missing);
+        let analysis = DependencyAnalysis {
+            env,
+            axes: &parameters,
         };
-        let v = v?;
         if !v.condition_pending
             && !v.condition_failed
             && let Some(Scalar::Bool(holds)) = v.known_value
@@ -401,19 +473,12 @@ fn equations(
         {
             let spec = quantifier::spec(law, id, &env.control)?;
             let domain = spec.domain.ok_or(internal!("有理量化の元域がない"))?;
-            let (quantified, absent) = capture_missing(env, || {
-                env.scoped_quantifier_domain(&spec, vars, &base, reading)
-            })?;
-            let (domain_value, members) = quantified?;
+            let (domain_value, members) =
+                env.scoped_quantifier_domain(&spec, vars, &base, reading)?;
             let Some(members) = members else {
-                let mut parameters = match axes {
-                    Axes::Parameters(parameters) => parameters.to_vec(),
-                    Axes::State(_) => vec![],
-                };
-                parameters.extend_from_slice(&missing.universal);
-                missing.awaiting_observation = !absent.is_empty()
-                    && observation_only(env, domain, vars, reading, &parameters, &domain_value)?;
-                missing.facts.extend(absent);
+                analysis
+                    .read(domain, vars, lexical, reading)?
+                    .record(missing, Dependence::Fixed);
                 missing.unsupported = Some("rational_change_quantification");
                 return Err(unsupported(env, domain, "有理changeの有限量化域が未確定"));
             };
@@ -430,7 +495,9 @@ fn equations(
                 v.scope = domain_value.scope.clone();
                 v.scalar_scope = Some(domain_value.scope.clone());
                 local.insert(spec.name.to_owned(), v);
-                equations(env, spec.body, &local, reading, axes, rows, missing)?;
+                collect_equations(
+                    env, spec.body, &local, lexical, reading, axes, rows, missing,
+                )?;
             }
             rows.quantified = enclosing;
             return Ok(());
@@ -441,48 +508,67 @@ fn equations(
             usable(env, id, &v)?;
         }
         match kind {
-            ExprKind::Group(body) => equations(env, *body, vars, reading, axes, rows, missing),
+            ExprKind::Group(body) => {
+                collect_equations(env, *body, vars, lexical, reading, axes, rows, missing)
+            }
             ExprKind::Let { name, value, body } => {
-                let mut vars = vars.clone();
-                let v = env.scoped_ast(*value, &vars, &base, reading)?;
+                let mut local = env.copy_variables(vars)?;
+                let v = env.scoped_ast(*value, vars, &base, reading)?;
+                if allow_bounds && v.condition_pending {
+                    analysis
+                        .read(*value, vars, lexical, reading)?
+                        .record(missing, Dependence::Fixed);
+                }
                 usable(env, *value, &v)?;
-                vars.insert(name.name.clone(), v);
-                equations(env, *body, &vars, reading, axes, rows, missing)
+                local.insert(name.name.clone(), v);
+                if !allow_bounds {
+                    return collect_equations(
+                        env, *body, &local, lexical, reading, axes, rows, missing,
+                    );
+                }
+                let mut dependencies = lexical.clone();
+                dependencies.insert(
+                    name.name.clone(),
+                    analysis.read(*value, vars, lexical, reading)?,
+                );
+                collect_equations(
+                    env,
+                    *body,
+                    &local,
+                    &dependencies,
+                    reading,
+                    axes,
+                    rows,
+                    missing,
+                )
             }
             ExprKind::Binary {
                 op: BinOp::And,
                 lhs,
                 rhs,
             } => {
-                equations(env, *lhs, vars, reading, axes, rows, missing)?;
-                equations(env, *rhs, vars, reading, axes, rows, missing)
+                collect_equations(env, *lhs, vars, lexical, reading, axes, rows, missing)?;
+                collect_equations(env, *rhs, vars, lexical, reading, axes, rows, missing)
             }
             ExprKind::Binary {
                 op: BinOp::Implies,
                 lhs,
                 rhs,
             } if allow_bounds => {
-                let (guard, absent) =
-                    capture_missing(env, || env.scoped_ast(*lhs, vars, &base, reading))?;
-                let guard = guard?;
+                let guard = env.scoped_ast(*lhs, vars, &base, reading)?;
                 match guard
                     .known_value
                     .as_ref()
                     .filter(|_| !guard.condition_pending && !guard.condition_failed)
                 {
                     Some(Scalar::Bool(true)) => {
-                        equations(env, *rhs, vars, reading, axes, rows, missing)
+                        collect_equations(env, *rhs, vars, lexical, reading, axes, rows, missing)
                     }
                     Some(Scalar::Bool(false)) => Ok(()),
                     _ => {
-                        let mut parameters = match axes {
-                            Axes::Parameters(parameters) => parameters.to_vec(),
-                            Axes::State(_) => vec![],
-                        };
-                        parameters.extend_from_slice(&missing.universal);
-                        missing.awaiting_observation = !absent.is_empty()
-                            && observation_only(env, *lhs, vars, reading, &parameters, &guard)?;
-                        missing.facts.extend(absent);
+                        analysis
+                            .read(*lhs, vars, lexical, reading)?
+                            .record(missing, Dependence::Fixed);
                         missing.unsupported = Some("rational_change_implication");
                         Err(unsupported(env, *lhs, "有理changeの含意の前件が未確定"))
                     }
@@ -498,9 +584,12 @@ fn equations(
             }
             _ => {
                 if v.condition_pending || v.condition_failed {
-                    missing.awaiting_observation =
-                        v.condition_pending && !absent.is_empty() && !v.scope.assignments;
-                    missing.facts.extend(absent);
+                    if allow_bounds {
+                        analysis
+                            .read(id, vars, lexical, reading)?
+                            .record(missing, Dependence::Fixed);
+                        missing.awaiting_observation &= v.condition_pending && !v.condition_failed;
+                    }
                     return usable(env, id, &v);
                 }
                 let ordered = match kind {
@@ -537,56 +626,29 @@ fn equations(
                     None
                 };
                 let Some(form) = form else {
-                    let q_comparison = match kind {
-                        ExprKind::Binary {
-                            op: BinOp::Eq | BinOp::Le | BinOp::Ge,
-                            lhs,
-                            rhs,
-                        } if law.expr_type(*lhs) == Some(&Type::Q)
-                            && law.expr_type(*rhs) == Some(&Type::Q) =>
+                    if allow_bounds {
+                        if matches!(axes, Axes::Parameters(_))
+                            && (rows.quantified || ordered.is_some())
+                            && let ExprKind::Binary {
+                                op: BinOp::Eq | BinOp::Le | BinOp::Ge,
+                                lhs,
+                                rhs,
+                            } = kind
+                            && law.expr_type(*lhs) == Some(&Type::Q)
+                            && law.expr_type(*rhs) == Some(&Type::Q)
                         {
-                            Some((*lhs, *rhs))
+                            let mut combined = analysis.read(*lhs, vars, lexical, reading)?;
+                            let right = analysis.read(*rhs, vars, lexical, reading)?;
+                            combined.merge(right);
+                            combined.record(missing, Dependence::Affine);
+                        } else {
+                            analysis
+                                .read(id, vars, lexical, reading)?
+                                .record(missing, Dependence::Fixed);
                         }
-                        _ => None,
-                    };
-                    if let Axes::Parameters(parameters) = axes
-                        && let Some((lhs, rhs)) = q_comparison
-                        && (rows.quantified || ordered.is_some())
-                    {
-                        let mut observations = BTreeSet::new();
-                        let left = potential_affine(
-                            env,
-                            lhs,
-                            vars,
-                            reading,
-                            parameters,
-                            &mut observations,
-                        )?;
-                        let right = potential_affine(
-                            env,
-                            rhs,
-                            vars,
-                            reading,
-                            parameters,
-                            &mut observations,
-                        )?;
-                        missing.awaiting_observation = left.is_some()
-                            && right.is_some()
-                            && (!absent.is_empty() || !observations.is_empty());
-                        missing.facts.extend(observations);
                     }
                     if change_affine::numeric_condition(env, id, &v)? {
                         missing.unsupported = Some("numeric_change_condition");
-                    } else if !absent.is_empty()
-                        && !v.scope.assignments
-                        && missing.universal.is_empty()
-                    {
-                        missing.awaiting_observation = true;
-                    }
-                    if !absent.is_empty() {
-                        missing
-                            .facts
-                            .extend(normalized_missing(env, id, vars, reading)?.unwrap_or(absent));
                     }
                     return Err(unsupported(
                         env,
@@ -1018,26 +1080,18 @@ fn requirement_equations(
         let (vars, universal) = change_affine::law_variables(env, law_params, bindings)?;
         missing.universal = universal;
         if let Some(guard) = guard {
-            let (v, absent) = if allow_bounds {
-                capture_missing(env, || {
-                    env.scoped_ast(*guard, &vars, &Scope::default(), &law.reading)
-                })?
-            } else {
-                (
-                    env.scoped_ast(*guard, &vars, &Scope::default(), &law.reading),
-                    vec![],
-                )
-            };
-            let v = v?;
-            let mut parameters = match axes {
-                Axes::Parameters(parameters) => parameters.to_vec(),
-                Axes::State(_) => vec![],
-            };
-            parameters.extend_from_slice(&missing.universal);
-            missing.awaiting_observation = !absent.is_empty()
-                && observation_only(env, *guard, &vars, &law.reading, &parameters, &v)?;
-            if v.condition_pending || v.condition_failed {
-                missing.facts.extend(absent.iter().cloned());
+            let v = env.scoped_ast(*guard, &vars, &Scope::default(), &law.reading)?;
+            if allow_bounds
+                && (v.known_value.is_none() || v.condition_pending || v.condition_failed)
+            {
+                let parameters = dependency_axes(axes, missing);
+                DependencyAnalysis {
+                    env,
+                    axes: &parameters,
+                }
+                .read(*guard, &vars, &LexicalDependencies::new(), &law.reading)?
+                .record(missing, Dependence::Fixed);
+                missing.awaiting_observation &= !v.condition_failed;
             }
             usable(env, *guard, &v)?;
             match v.known_value {
@@ -1051,7 +1105,6 @@ fn requirement_equations(
                         .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
                         .map(|p| (p.name.clone(), p.ty.clone()))
                         .collect();
-                    missing.facts.extend(absent);
                     if change_affine::numeric_condition(env, *guard, &v)? {
                         missing.unsupported = Some("numeric_change_condition");
                     }
