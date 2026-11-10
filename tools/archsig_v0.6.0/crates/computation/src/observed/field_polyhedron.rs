@@ -38,6 +38,31 @@ pub(super) enum Outcome {
     },
 }
 
+#[derive(Clone)]
+struct EliminationRow {
+    inequality: Halfspace,
+    combination: BTreeMap<usize, Scalar>,
+}
+
+impl EliminationRow {
+    fn certificate(self, count: usize, c: &Control) -> Result<Row, ValidationFailure> {
+        let mut weights = Vec::with_capacity(count);
+        for i in 0..count {
+            tick(c)?;
+            weights.push(
+                self.combination
+                    .get(&i)
+                    .cloned()
+                    .unwrap_or_else(|| integer(0)),
+            );
+        }
+        Ok(Row {
+            inequality: self.inequality,
+            combination: weights,
+        })
+    }
+}
+
 fn tick(c: &Control) -> Result<(), ValidationFailure> {
     c.checkpoint(Checkpoint::RationalPolyhedron)
         .map_err(Into::into)
@@ -70,27 +95,48 @@ fn add(a: &Scalar, b: &Scalar, c: &Control) -> Result<Scalar, ValidationFailure>
     numeric::binary(BinOp::Add, a, b, c)
 }
 
-fn scale_row(row: &mut Row, factor: &Scalar, c: &Control) -> Result<(), ValidationFailure> {
+fn scale_row(
+    row: &mut EliminationRow,
+    factor: &Scalar,
+    c: &Control,
+) -> Result<(), ValidationFailure> {
     for x in row
         .inequality
         .coefficients
         .iter_mut()
         .chain(std::iter::once(&mut row.inequality.rhs))
-        .chain(&mut row.combination)
+        .chain(row.combination.values_mut())
     {
         *x = mul(x, factor, c)?;
     }
     Ok(())
 }
 
-fn combine(upper: &Row, lower: &Row, axis: usize, c: &Control) -> Result<Row, ValidationFailure> {
+fn combine(
+    upper: &EliminationRow,
+    lower: &EliminationRow,
+    axis: usize,
+    c: &Control,
+) -> Result<EliminationRow, ValidationFailure> {
     let left = neg(&lower.inequality.coefficients[axis], c)?;
     let right = &upper.inequality.coefficients[axis];
     let pair = |a: &Scalar, b: &Scalar| add(&mul(a, &left, c)?, &mul(b, right, c)?, c);
     let pairs = |a: &[Scalar], b: &[Scalar]| -> Result<Vec<_>, ValidationFailure> {
         a.iter().zip(b).map(|(a, b)| pair(a, b)).collect()
     };
-    Ok(Row {
+    let mut combination = BTreeMap::new();
+    for (row, factor) in [(upper, &left), (lower, right)] {
+        for (&position, weight) in &row.combination {
+            tick(c)?;
+            let contribution = mul(weight, factor, c)?;
+            if let Some(previous) = combination.get_mut(&position) {
+                *previous = add(previous, &contribution, c)?;
+            } else {
+                combination.insert(position, contribution);
+            }
+        }
+    }
+    Ok(EliminationRow {
         inequality: Halfspace {
             coefficients: pairs(
                 &upper.inequality.coefficients,
@@ -98,15 +144,15 @@ fn combine(upper: &Row, lower: &Row, axis: usize, c: &Control) -> Result<Row, Va
             )?,
             rhs: pair(&upper.inequality.rhs, &lower.inequality.rhs)?,
         },
-        combination: pairs(&upper.combination, &lower.combination)?,
+        combination,
     })
 }
 
 type LeftSide = Vec<(BigInt, BigInt)>;
 
 fn keep_tightest(
-    rows: &mut BTreeMap<LeftSide, Row>,
-    mut row: Row,
+    rows: &mut BTreeMap<LeftSide, EliminationRow>,
+    mut row: EliminationRow,
     c: &Control,
 ) -> Result<(), ValidationFailure> {
     tick(c)?;
@@ -141,7 +187,11 @@ fn keep_tightest(
     Ok(())
 }
 
-fn eliminate(rows: &[Row], axis: usize, c: &Control) -> Result<Vec<Row>, ValidationFailure> {
+fn eliminate(
+    rows: &[EliminationRow],
+    axis: usize,
+    c: &Control,
+) -> Result<Vec<EliminationRow>, ValidationFailure> {
     let mut next = BTreeMap::new();
     let mut upper = Vec::new();
     let mut lower = Vec::new();
@@ -206,7 +256,10 @@ fn eliminate(rows: &[Row], axis: usize, c: &Control) -> Result<Vec<Row>, Validat
     Ok(next.into_values().collect())
 }
 
-fn obstruction(rows: &[Row], c: &Control) -> Result<Option<Row>, ValidationFailure> {
+fn obstruction(
+    rows: &[EliminationRow],
+    c: &Control,
+) -> Result<Option<EliminationRow>, ValidationFailure> {
     for row in rows {
         tick(c)?;
         if sign(&row.inequality.rhs)?.is_lt()
@@ -219,12 +272,12 @@ fn obstruction(rows: &[Row], c: &Control) -> Result<Option<Row>, ValidationFailu
 }
 
 struct Projection {
-    rows: Vec<Row>,
-    eliminated: Vec<(usize, Vec<Row>)>,
+    rows: Vec<EliminationRow>,
+    eliminated: Vec<(usize, Vec<EliminationRow>)>,
 }
 
 fn project(
-    rows: &[Row],
+    rows: &[EliminationRow],
     axes: impl IntoIterator<Item = usize>,
     c: &Control,
 ) -> Result<Projection, ValidationFailure> {
@@ -239,10 +292,10 @@ fn project(
     Ok(Projection { rows, eliminated })
 }
 
-type Bound<'a> = Option<(Scalar, &'a Row)>;
+type Bound<'a> = Option<(Scalar, &'a EliminationRow)>;
 
 fn bounds<'a>(
-    rows: &'a [Row],
+    rows: &'a [EliminationRow],
     axis: usize,
     values: &[Scalar],
     c: &Control,
@@ -353,13 +406,11 @@ pub(super) fn solve(
             }
             numeric::check(v, c)?;
         }
-        let mut combination = vec![zero.clone(); original.len()];
-        combination[i] = one.clone();
         keep_tightest(
             &mut tight,
-            Row {
+            EliminationRow {
                 inequality: h.clone(),
-                combination,
+                combination: BTreeMap::from([(i, one.clone())]),
             },
             c,
         )?;
@@ -368,7 +419,7 @@ pub(super) fn solve(
     let point = {
         let projected = project(&rows, (0..n).rev(), c)?;
         if let Some(row) = obstruction(&projected.rows, c)? {
-            return Ok(Outcome::Empty(row));
+            return Ok(Outcome::Empty(row.certificate(original.len(), c)?));
         }
         lift(&projected, vec![zero.clone(); n], c)?
     };
@@ -402,10 +453,16 @@ pub(super) fn solve(
             second,
         });
     }
-    Ok(Outcome::Unique {
-        point,
-        bounds: forced,
-    })
+    let bounds = forced
+        .into_iter()
+        .map(|(l, r)| {
+            Ok((
+                l.certificate(original.len(), c)?,
+                r.certificate(original.len(), c)?,
+            ))
+        })
+        .collect::<Result<Vec<_>, ValidationFailure>>()?;
+    Ok(Outcome::Unique { point, bounds })
 }
 
 /// 公開する証拠を消去器と独立に、元の座標と行へ再代入する。

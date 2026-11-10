@@ -1618,6 +1618,12 @@ pub(super) struct CandidateInput {
     pub domain_type: ProjectionType,
     pub integer_family: Option<super::repair_problem::integer::Family>,
 }
+fn is_polyhedral(part: &Part) -> bool {
+    matches!(part.wire_ref(), Some(Json::Obj(wire))
+        if matches!(wire.get("representation"), Some(Json::Obj(fields))
+            if matches!(fields.get("kind"), Some(Json::Str(kind)) if kind == "rational_polyhedron")))
+}
+
 pub(super) fn checked_polyhedron(
     env: &Environment<'_>,
     g: &Graph,
@@ -1633,12 +1639,7 @@ pub(super) fn checked_polyhedron(
     let D::Change(data) = &value.data else {
         return Ok(None);
     };
-    let Some(Json::Obj(wire)) = data.part().wire_ref() else {
-        return Ok(None);
-    };
-    if !matches!(wire.get("representation"), Some(Json::Obj(fields))
-        if matches!(fields.get("kind"), Some(Json::Str(kind)) if kind == "rational_polyhedron"))
-    {
+    if !is_polyhedral(data.part()) {
         return Ok(None);
     }
     let checked = checked_candidate(env, g, reference)?;
@@ -1665,8 +1666,26 @@ pub(super) fn candidate_input(
     let request = origin.request();
     env.with_request_context(g, request, || {
         let _selected = env.enter_architecture(g)?;
-        let search = change_search::search(env, g, &d.source.architecture.witness, request, c)
-            .map_err(|f| f.cause)?;
+        let polyhedral = d
+            .source
+            .answer
+            .outputs
+            .get("solutions")
+            .and_then(|r| r.0.checked_sub(d.source.base))
+            .and_then(|i| d.source.parts.get(i))
+            .is_some_and(is_polyhedral);
+        let search = if polyhedral && d.ty() == NodeType::Construction(T::CandidateSpace) {
+            change_search::search_rational_domain(
+                env,
+                g,
+                &d.source.architecture.witness,
+                request,
+                c,
+            )
+        } else {
+            change_search::search(env, g, &d.source.architecture.witness, request, c)
+        }
+        .map_err(|f| f.cause)?;
         Ok(CandidateInput {
             integer_family: None,
             architecture: d.source.architecture.reference,
@@ -1759,6 +1778,14 @@ impl super::result_kind::ResultKind for Data {
         let boundary = Boundary::capture(env, g, producer, vec![architecture.reference], c)?;
         let base = g.nodes.len();
         let (parts, answer, verification) = compute(env, g, &architecture, base, request, c)?;
+        let polyhedral = verification.as_ref().is_some_and(|search| {
+            search.rational.as_ref().is_some_and(|linear| {
+                matches!(
+                    linear.solutions,
+                    super::environment::field_change::Solutions::Polyhedron(_)
+                )
+            })
+        });
         let integer = verification.as_ref().and_then(|s| s.linear.clone());
         let source = Arc::new(Source {
             integer,
@@ -1781,14 +1808,6 @@ impl super::result_kind::ResultKind for Data {
                 c,
             )?;
         }
-        let polyhedral = verification.as_ref().is_some_and(|search| {
-            search.rational.as_ref().is_some_and(|linear| {
-                matches!(
-                    linear.solutions,
-                    super::environment::field_change::Solutions::Polyhedron(_)
-                )
-            })
-        });
         if polyhedral {
             for point in 1..points {
                 change_search::verify_point(

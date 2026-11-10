@@ -450,6 +450,36 @@ pub(in crate::observed) fn search_with_completions(
     completions: &[(Fact, Scalar)],
     control: &Control,
 ) -> Result<Search, SearchFailure> {
+    search_inner(
+        original,
+        graph,
+        witness,
+        request,
+        completions,
+        false,
+        control,
+    )
+}
+
+pub(in crate::observed) fn search_rational_domain(
+    original: &Environment<'_>,
+    graph: &Graph,
+    witness: &ArchitectureWitness,
+    request: &Request,
+    control: &Control,
+) -> Result<Search, SearchFailure> {
+    search_inner(original, graph, witness, request, &[], true, control)
+}
+
+fn search_inner(
+    original: &Environment<'_>,
+    graph: &Graph,
+    witness: &ArchitectureWitness,
+    request: &Request,
+    completions: &[(Fact, Scalar)],
+    rational_domain_only: bool,
+    control: &Control,
+) -> Result<Search, SearchFailure> {
     let mut result = Search {
         linear: None,
         rational: None,
@@ -592,7 +622,11 @@ pub(in crate::observed) fn search_with_completions(
                 &environment,
                 change,
                 &subjects,
-                &result.requirements,
+                if rational_domain_only {
+                    &[]
+                } else {
+                    &result.requirements
+                },
                 &mut pending,
             );
             if matches!(
@@ -604,6 +638,11 @@ pub(in crate::observed) fn search_with_completions(
                 result.pending_integer = Some(pending);
             }
             let linear = computed?;
+            if rational_domain_only {
+                result.rational = Some(linear);
+                result.complete = true;
+                return Ok(());
+            }
             let mut points = vec![];
             match &linear.solutions {
                 field_change::Solutions::Polyhedron(polyhedron) => match &polyhedron.outcome {

@@ -38,7 +38,6 @@ struct Constraints {
     equalities: Matrix,
     rhs: Vec<Option<Scalar>>,
     inequalities: Option<Vec<Halfspace>>,
-    quantified: bool,
 }
 
 impl Constraints {
@@ -443,6 +442,7 @@ fn collect_equations(
         let law = env.indexes.inputs.law();
         let kind = &law.exprs()[id].kind;
         let allow_bounds = rows.inequalities.is_some();
+        let diagnose = allow_bounds || missing.selective_missing;
         let v = env.scoped_ast(id, vars, &base, reading)?;
         let parameters = dependency_axes(axes, missing);
         let analysis = DependencyAnalysis {
@@ -484,8 +484,6 @@ fn collect_equations(
             };
             usable(env, domain, &domain_value)?;
             let mut local = env.copy_variables(vars)?;
-            let enclosing = rows.quantified;
-            rows.quantified = true;
             for member in members {
                 env.tick()?;
                 if member.ty() != spec.element {
@@ -499,7 +497,6 @@ fn collect_equations(
                     env, spec.body, &local, lexical, reading, axes, rows, missing,
                 )?;
             }
-            rows.quantified = enclosing;
             return Ok(());
         }
 
@@ -514,14 +511,14 @@ fn collect_equations(
             ExprKind::Let { name, value, body } => {
                 let mut local = env.copy_variables(vars)?;
                 let v = env.scoped_ast(*value, vars, &base, reading)?;
-                if allow_bounds && v.condition_pending {
+                if diagnose && v.condition_pending {
                     analysis
                         .read(*value, vars, lexical, reading)?
                         .record(missing, Dependence::Fixed);
                 }
                 usable(env, *value, &v)?;
                 local.insert(name.name.clone(), v);
-                if !allow_bounds {
+                if !diagnose {
                     return collect_equations(
                         env, *body, &local, lexical, reading, axes, rows, missing,
                     );
@@ -584,7 +581,7 @@ fn collect_equations(
             }
             _ => {
                 if v.condition_pending || v.condition_failed {
-                    if allow_bounds {
+                    if diagnose {
                         analysis
                             .read(id, vars, lexical, reading)?
                             .record(missing, Dependence::Fixed);
@@ -626,9 +623,8 @@ fn collect_equations(
                     None
                 };
                 let Some(form) = form else {
-                    if allow_bounds {
+                    if diagnose {
                         if matches!(axes, Axes::Parameters(_))
-                            && (rows.quantified || ordered.is_some())
                             && let ExprKind::Binary {
                                 op: BinOp::Eq | BinOp::Le | BinOp::Ge,
                                 lhs,
@@ -660,9 +656,7 @@ fn collect_equations(
                     rows.contradiction(axes.len(), env)?;
                     return Ok(());
                 }
-                if (ordered.is_some() || rows.quantified)
-                    && let Axes::Parameters(parameters) = axes
-                {
+                if diagnose && let Axes::Parameters(parameters) = axes {
                     missing.awaiting_observation =
                         form.awaiting_rational_observation(parameters, &env.control)?;
                 }
@@ -758,6 +752,7 @@ fn compute_inner(
     missing: &mut Pending,
 ) -> Result<Linear, ValidationFailure> {
     missing.coefficient_type = Some(Type::Q);
+    missing.selective_missing = allow_bounds;
     let Signature::Change {
         params,
         guard,
@@ -822,12 +817,22 @@ fn compute_inner(
         }
         missing.expression = Some(*body);
         let mut current = *body;
+        let mut lexical = LexicalDependencies::new();
+        let analysis = DependencyAnalysis { env, axes: &axes };
         loop {
             env.tick()?;
             match &env.indexes.inputs.law().exprs()[current].kind {
                 ExprKind::Group(inner) => current = *inner,
                 ExprKind::Let { name, value, body } => {
                     let v = env.scoped_ast(*value, &vars, &Scope::default(), &change.reading)?;
+                    if allow_bounds {
+                        let dependency = analysis.read(*value, &vars, &lexical, &change.reading)?;
+                        if v.condition_pending || v.condition_failed {
+                            dependency.record(missing, Dependence::Fixed);
+                        } else {
+                            lexical.insert(name.name.clone(), dependency);
+                        }
+                    }
                     usable(env, *value, &v)?;
                     vars.insert(name.name.clone(), v);
                     current = *body;
@@ -838,6 +843,13 @@ fn compute_inner(
                     else_branch,
                 } => {
                     let v = env.scoped_ast(*cond, &vars, &Scope::default(), &change.reading)?;
+                    if allow_bounds
+                        && (v.known_value.is_none() || v.condition_pending || v.condition_failed)
+                    {
+                        analysis
+                            .read(*cond, &vars, &lexical, &change.reading)?
+                            .record(missing, Dependence::Fixed);
+                    }
                     usable(env, *cond, &v)?;
                     current = match v.known_value {
                         Some(Scalar::Bool(true)) => *then_branch,
@@ -857,6 +869,15 @@ fn compute_inner(
                 } => {
                     let target =
                         env.scoped_ast(*base, &vars, &Scope::default(), &change.reading)?;
+                    if allow_bounds
+                        && (target.known_value.is_none()
+                            || target.condition_pending
+                            || target.condition_failed)
+                    {
+                        analysis
+                            .read(*base, &vars, &lexical, &change.reading)?
+                            .record(missing, Dependence::Fixed);
+                    }
                     usable(env, *base, &target)?;
                     let Some(Scalar::Subject {
                         snapshot,
@@ -868,6 +889,13 @@ fn compute_inner(
                     };
                     for (field, id) in fields {
                         let v = env.scoped_ast(*id, &vars, &Scope::default(), &change.reading)?;
+                        if allow_bounds
+                            && (v.affine.is_none() || v.condition_pending || v.condition_failed)
+                        {
+                            analysis
+                                .read(*id, &vars, &lexical, &change.reading)?
+                                .record(missing, Dependence::Affine);
+                        }
                         usable(env, *id, &v)?;
                         let form = v.affine.ok_or_else(|| {
                             if matches!(env.indexes.inputs.law().expr_type(*id), Some(Type::Q)) {
@@ -890,6 +918,10 @@ fn compute_inner(
                                 ));
                             }
                         } else {
+                            if allow_bounds {
+                                missing.awaiting_observation =
+                                    form.awaiting_rational_observation(&axes, &env.control)?;
+                            }
                             let (constant, row) =
                                 coordinates(env, *id, &form, Axes::Parameters(&axes), missing)?;
                             let constant = constant.ok_or(internal!("有理作用の固定項が未確定"))?;
@@ -955,7 +987,9 @@ fn compute_inner(
             .collect::<Option<Vec<_>>>()
             .ok_or(internal!("有理要求の固定項が未確定"))?,
     );
-    let solutions = if let Some(inequalities) = rows.inequalities
+    let solutions = if requirements.is_empty() {
+        Solutions::Affine(guard_fiber.clone())
+    } else if let Some(inequalities) = rows.inequalities
         && !inequalities.is_empty()
     {
         let original =

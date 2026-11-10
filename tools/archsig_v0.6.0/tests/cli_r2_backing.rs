@@ -647,12 +647,13 @@ fn rational_backing_keeps_unsupported_quotients_and_independent_answers_separate
     let asks = [
         ask,
         "q=quotient(Backing.stockLoad,on=$overlapInsufficient.solutions,s=@fixture/overlapInsufficient.X)",
+        "domain=quotient(Backing.stockLoad,on=$overlapInsufficient.domain,s=@fixture/overlapInsufficient.X)",
         "independent=evaluate(Backing.stockLoad,s=@fixture/overlapInsufficient.X)",
     ];
     let first = polyhedron_asks(&dir, &asks, "first", None);
     assert_eq!(first.code, 2, "{}{}", first.stdout, first.stderr);
     let result = result_json(&dir, &first);
-    let [solve, quotient, independent] = arr(get(&result, "answers")) else {
+    let [solve, quotient, domain, independent] = arr(get(&result, "answers")) else {
         panic!("all requests remain");
     };
     assert_eq!(s(get(solve, "status")), "refuted");
@@ -667,6 +668,7 @@ fn rational_backing_keeps_unsupported_quotients_and_independent_answers_separate
         s(get(get(reason, "details"), "method")),
         "rational_polyhedron_quotient"
     );
+    assert_eq!(s(get(domain, "status")), "established");
     assert_eq!(s(get(independent, "status")), "established");
     let replay = polyhedron_asks(&dir, &asks, "same", Some("first"));
     assert_eq!(replay.code, 2, "{}{}", replay.stdout, replay.stderr);
@@ -756,7 +758,20 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
     );
     let known_bound = POLY_LAW.replacen("stockLoad(s)<=s.available", "stockLoad(s)<=rat(5,1)", 1);
     let nonnegative = "b.quantity>=rat(0,1)";
+    let direct_equality = known_bound.replacen(
+        "legal(w:Pool.World):",
+        "legal(w:Pool.World,x:Pool.Stock): stockLoad(x)=x.available and",
+        1,
+    );
     for (out, law, codes) in [
+        ("direct-equality", direct_equality, &["missing_observation"][..]),
+        ("change-guard", known_bound.replacen("q:Q)=b with",
+            "q:Q) when q=b.stock.available=b with", 1), &["missing_observation"][..]),
+        ("change-offset", known_bound.replacen("quantity=q", "quantity=q+b.stock.available", 1),
+            &["missing_observation"][..]),
+        ("change-branch", known_bound.replacen("quantity=q",
+            "quantity=if b.stock.available>=rat(0,1) then q else -q", 1),
+            &["missing_observation"][..]),
         ("let-product", known_bound.replacen(nonnegative,
             "(let weighted=b.quantity*b.stock.available in weighted>=rat(0,1))", 1),
             &["missing_observation"][..]),
@@ -826,6 +841,8 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
         ),
     ] {
         std::fs::write(dir.join("laws.law"), law).unwrap();
+        let ask_with_stock = format!("{},bind.x=@fixture/overlapFeasible.X)", ask.strip_suffix(')').unwrap());
+        let ask = if out == "direct-equality" { ask_with_stock.as_str() } else { ask };
         let run = polyhedron_asks(&dir, &[ask, "plan=needed($overlapFeasible)"], out, None);
         assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
         let result = result_json(&dir, &run);

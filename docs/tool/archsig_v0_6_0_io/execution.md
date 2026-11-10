@@ -223,8 +223,9 @@ repairの構成条件をrefuted、理由を`condition_failed`とする。全解�
 保持し、repair/objectは生成しない。解が空の場合はexistenceもrefutedとなる。
 修復単独の確定した非一意・不存在はcomplete/exit1だが、両者はexistenceと証拠で区別する。
 一つへ絞る条件は、Lawの要求またはchangeのparameter/guardに明示する。
-存在を確認しても一意性・具体値・再検査が未完了なら、確認済みのexistenceを保持し、
-repairの構成条件はundeterminedとする。この場合もrepair/objectを返さない。
+存在の証拠を独立に確定していれば、一意性・具体値・再検査の中断時にも `existence` を保持する。
+有理半空間の `existence` は同じ全解の証拠を参照するため、証拠に含まれる点の再検査が完了してから返す。
+どちらも確認前の構成は `undetermined` とし、修復済み対象は生成しない。
 生成されないobjectを使う後続evaluateはundetermined、`dependency_blocked`と元の理由を保持する。
 非一意repairとそのevaluateを同じrunに指定した場合、runはpartial/exit2となる。
 
