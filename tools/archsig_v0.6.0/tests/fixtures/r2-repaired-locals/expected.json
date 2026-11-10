@@ -28,7 +28,8 @@
     "mixedOwner": "refuted",
     "shared": "established",
     "globalZero": "established",
-    "globalOne": "refuted"
+    "globalOne": "refuted",
+    "moveBetweenChoices": "refuted"
   },
   "global_quantities": {
     "made0": {

@@ -609,14 +609,20 @@ fn r2_repairs_keep_local_freedom_and_reassemble_actual_objects() {
         archsig_common::json::parse(include_bytes!("fixtures/r2-repaired-locals/expected.json"))
             .unwrap();
     assert_eq!(s(get(&result, "status")), "complete");
-    for a in answers {
-        let id = s(get(a, "id"));
-        assert_eq!(
-            s(get(a, "status")),
-            s(get(get(&expected, "answers"), id)),
-            "{id}"
-        );
-    }
+    let actual = answers
+        .iter()
+        .map(|a| (s(get(a, "id")), s(get(a, "status"))))
+        .collect::<std::collections::BTreeMap<_, _>>();
+    let archsig_common::json::JValue::Obj(expected_answers) = &get(&expected, "answers").value
+    else {
+        panic!("saved answer projection");
+    };
+    let expected_answers = expected_answers
+        .iter()
+        .map(|(id, status)| (id.as_str(), s(status)))
+        .collect::<std::collections::BTreeMap<_, _>>();
+    assert_eq!(actual.len(), answers.len());
+    assert_eq!(actual, expected_answers);
 
     for (assembled, local_a, local_b) in [
         ("made0", "aApply0", "bApply0"),
@@ -695,12 +701,33 @@ fn r2_repairs_keep_local_freedom_and_reassemble_actual_objects() {
     let conflict = get(value(conflict), "data");
     assert_eq!(s(value(get(conflict, "left"))), "1");
     assert_eq!(s(value(get(conflict, "right"))), "0");
+    assert!(arr(get(conflict, "facts")).is_empty());
+    let repaired = arr(get(conflict, "repaired"));
+    assert_eq!(repaired.len(), 2);
+    for (operand, side, subject, apply) in [
+        (&repaired[0], "left", "mb", "bApplyOne"),
+        (&repaired[1], "right", "ma", "aApply0"),
+    ] {
+        assert_eq!(s(get(operand, "side")), side);
+        assert_eq!(get(operand, "object").value, output(apply, "object").value);
+        let slot = get(operand, "slot");
+        assert_eq!(id(get(slot, "subject")), subject);
+        assert_eq!(s(get(slot, "field")), "Assemble.Part.quantity");
+    }
+    let different = answer("moveBetweenChoices");
+    assert!(has(get(different, "outputs"), "configuration_map"));
+    assert!(!has(get(different, "outputs"), "map"));
+    let [counter] = arr(get(different, "counterexamples")) else {
+        panic!("Law preservation distinguishes the chosen states");
+    };
+    let data = get(value(counter), "data");
     assert_eq!(
-        arr(get(conflict, "facts"))
-            .iter()
-            .map(|fact| (s(get(fact, "subject")), has(fact, "atom")))
-            .collect::<Vec<_>>(),
-        [("mb", false), ("ma", false)]
+        value(get(data, "left")).value,
+        archsig_common::json::JValue::Bool(true)
+    );
+    assert_eq!(
+        value(get(data, "right")).value,
+        archsig_common::json::JValue::Bool(false)
     );
     for rejected in ["raw", "madeConflict", "madePartial", "mixedOwner"] {
         assert!(!has(get(answer(rejected), "outputs"), "object"));

@@ -106,6 +106,8 @@ pub(super) struct Assembly {
     pub bindings: Vec<Binding>,
     pub locals: Vec<Fragment>,
     pub restrictions: Vec<Architecture>,
+    pub repaired: BTreeMap<Fact, NodeRef>,
+    pub selections: Vec<NodeRef>,
 }
 fn failure(e: crate::construction::ConstructionFailure) -> ValidationFailure {
     match e {
@@ -219,6 +221,8 @@ pub(super) fn prepare(
     }
     let mut applied = BTreeMap::new();
     let mut selected = BTreeMap::new();
+    let mut repaired = BTreeMap::new();
+    let mut selections = Vec::new();
     let mut rejected = None;
     for argument in &r.arguments {
         let Some(name) = argument.name.strip_prefix("local.") else {
@@ -234,6 +238,7 @@ pub(super) fn prepare(
         )?;
         let at = reference(e, g, &argument.value)?.ok_or(internal!("修復局所の元出力がない"))?;
         input_refs.push(at);
+        selections.push(at);
         let node = g.get(at)?;
         let source = match &node.payload {
             Some(Payload::Construction(value)) => match (&value.witness, &value.data) {
@@ -276,6 +281,7 @@ pub(super) fn prepare(
             {
                 return Err(internal!("修復済み局所の更新が対象域と違う").into());
             }
+            repaired.insert(position.clone(), at);
         }
         applied.insert(root, (at, source, overrides));
     }
@@ -425,6 +431,8 @@ pub(super) fn prepare(
         bindings,
         locals,
         restrictions,
+        repaired,
+        selections,
     });
     let mut plan = if assembly.failure.is_none() {
         let core = assembly

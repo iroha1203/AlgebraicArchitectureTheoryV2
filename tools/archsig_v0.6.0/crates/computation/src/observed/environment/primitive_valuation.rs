@@ -14,6 +14,23 @@ impl<'a> Environment<'a> {
             .ok_or_else(|| internal!("候補代入が原始型・所属・Map全域性を満たさない").into())
     }
 
+    pub(in crate::observed) fn for_constructed_state(
+        inputs: &'a CheckedInputs,
+        readings: &crate::construction::readings::ObjectReadingInstances,
+        object: usize,
+        assignments: &[(Fact, Scalar)],
+        control: &Control,
+    ) -> Result<Self, ValidationFailure> {
+        let mut environment = Self::with_primitive_valuation(inputs, assignments, control)?;
+        environment.indexes.object = Some(std::sync::Arc::new(
+            crate::observed::object_evaluate::ObjectDomain::from_readings(
+                inputs, readings, object, control,
+            )?,
+        ));
+        environment.indexes.valuation_domain = super::indexes::ValuationDomain::Object;
+        Ok(environment)
+    }
+
     /// 型の正しい候補のうち、原始制約に適合する点だけを返す。停止/不正値は黙殺しない。
     pub(in crate::observed) fn try_primitive_valuation(
         inputs: &'a CheckedInputs,

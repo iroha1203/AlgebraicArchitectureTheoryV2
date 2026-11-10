@@ -50,12 +50,13 @@ Kind     ::= build | assemble | assemble_map | evaluate | check | map | compose 
 Head     ::= QName | Handle
 Argument ::= QName | Handle | Enum | Degree | Ordinal
 Handle   ::= "@" Id "/" Id | "$" Name ("." Name | "[" Index "]")*
-Key      ::= Name | "bind." Name
+Key      ::= Name | "bind." Name | "local." Name
 Index    ::= "0" | [1-9][0-9]*
 Degree   ::= Index
 Ordinal  ::= Index
 ```
 
+`local.` の Key は `assemble` にだけ指定できる。
 QName、Id、Nameは[入力](inputs.md)と[Law](law.md)の定義に従う。
 ただし固定引数名と公開された射影名の位置では、then、law、some等の当該固定語を受理する。
 Lawの予約語と重なることを理由に、これらの位置の固定語を拒否しない。
@@ -381,7 +382,7 @@ apply は現在入力の通常の所属・更新式・元Law検査を行い、�
 
 ### 有限の局所モデルを組み立てる問い
 
-`assemble(View,on=Handle,along=View,B)` は、担当別の root の有限集合を返す View と、
+`assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…)` は、担当別の root の有限集合を返す View と、
 共有する個体の対を返す along の View を同じ明示束縛 B で評価する。
 両 View は同じ reading に属し、parameter の名前・型を共有する。全 parameter を束縛する。
 第1 View の戻り型は owner を持たない同じ entity 型の `Set<Root>` とする。
@@ -396,7 +397,8 @@ on は同じ snapshot・root 型の原始参照で、組立て後の root の id
 
 任意の `local.<parameter>=$applyId.object` で、担当 root に対して選んだ修復済みの局所状態を使う。
 parameter は第1 View の root 型引数で、束縛値と `apply` の元 root、snapshot、reading、所属域を照合する。
-同じ担当への二重選択と、別担当の `apply` 結果は整合失敗になる。指定のない担当は原始状態を読む。
+異なる引数で同じ担当を二重選択した場合や別担当の `apply` を選んだ場合は整合失敗になる。
+同じ Key を二度書くと不正な問いになる。指定のない担当は原始状態を読む。
 局所の全候補を自動選択する処理は行わず、利用者が各 `candidate` と `apply` を明示する。
 
 返す field は `proposition:Proposition`、成立時 `assembly:ModelAssembly`、

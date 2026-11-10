@@ -5,7 +5,7 @@
     {
       "namespace": "Assemble",
       "version": "1",
-      "digest": "sha256:f767c561d09c61047a1b2ec08e871469408fd70f3105b5330528a74d584893e4"
+      "digest": "sha256:70e64f16f80c3bbf72183abe6484522a516abf45472ce742952a557faa23abe2"
     }
   ],
   "sources": [],
@@ -66,6 +66,16 @@
         {
           "id": "right",
           "type": "Assemble.Step",
+          "origin": "model"
+        },
+        {
+          "id": "moveA",
+          "type": "Assemble.Move",
+          "origin": "model"
+        },
+        {
+          "id": "moveB",
+          "type": "Assemble.Move",
           "origin": "model"
         }
       ],
@@ -223,6 +233,138 @@
           "value": [
             "v",
             "b"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveA-from",
+          "subject": "moveA",
+          "field": "Assemble.Move.from",
+          "value": [
+            "v",
+            "A"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveA-to",
+          "subject": "moveA",
+          "field": "Assemble.Move.to",
+          "value": [
+            "v",
+            "A"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveA-parts",
+          "subject": "moveA",
+          "field": "Assemble.Move.parts",
+          "value": [
+            [
+              [
+                "v",
+                "a"
+              ],
+              [
+                "v",
+                "a"
+              ]
+            ],
+            [
+              [
+                "v",
+                "ma"
+              ],
+              [
+                "v",
+                "ma"
+              ]
+            ]
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveA-steps",
+          "subject": "moveA",
+          "field": "Assemble.Move.steps",
+          "value": [
+            [
+              [
+                "v",
+                "left"
+              ],
+              [
+                "v",
+                "left"
+              ]
+            ]
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveB-from",
+          "subject": "moveB",
+          "field": "Assemble.Move.from",
+          "value": [
+            "v",
+            "B"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveB-to",
+          "subject": "moveB",
+          "field": "Assemble.Move.to",
+          "value": [
+            "v",
+            "B"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveB-parts",
+          "subject": "moveB",
+          "field": "Assemble.Move.parts",
+          "value": [
+            [
+              [
+                "v",
+                "mb"
+              ],
+              [
+                "v",
+                "mb"
+              ]
+            ],
+            [
+              [
+                "v",
+                "b"
+              ],
+              [
+                "v",
+                "b"
+              ]
+            ]
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveB-steps",
+          "subject": "moveB",
+          "field": "Assemble.Move.steps",
+          "value": [
+            [
+              [
+                "v",
+                "right"
+              ],
+              [
+                "v",
+                "right"
+              ]
+            ]
           ],
           "origin": "model"
         }

@@ -1,6 +1,7 @@
 law "archsig.law/2" semantics "archsig/0.6.0";
 reading Assembly {
-  use vocabulary Assemble version "1" digest "sha256:f767c561d09c61047a1b2ec08e871469408fd70f3105b5330528a74d584893e4";
+  use vocabulary Assemble version "1" digest "sha256:70e64f16f80c3bbf72183abe6484522a516abf45472ce742952a557faa23abe2";
+  view moves(x:Move,y:Move):Set<Move> = set<Move>{x,y};
   view amount(p:Part):Z = p.quantity;
   view ownerOf(p:Part):Root = p.owner;
   view fragments(a:Root,b:Root,ma:Part,mb:Part):Set<Root> = set<Root>{a,b};

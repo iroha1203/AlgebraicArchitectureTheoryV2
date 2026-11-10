@@ -45,12 +45,14 @@ pub(super) struct Rejection {
     pub detail: String,
     pub facts: Vec<Fact>,
     pub values: Option<(Scalar, Scalar)>,
+    pub repaired: [Option<Fact>; 2],
 }
 pub(super) fn rejected(detail: impl Into<String>, facts: Vec<Fact>) -> Preparation {
     Preparation::Rejected(Rejection {
         detail: detail.into(),
         facts,
         values: None,
+        repaired: [None, None],
     })
 }
 fn observed_fact(s: &Subject, f: &archsig_input::archmap::Field) -> Fact {
@@ -105,6 +107,7 @@ pub(super) struct Model {
     pub construction: std::sync::Arc<ConfigurationConstruction>,
     pub fragments: Vec<std::sync::Arc<ConfigurationConstruction>>,
     pub overrides: std::sync::Arc<Vec<(Fact, Scalar)>>,
+    pub repaired_values: Vec<(Fact, Scalar)>,
     pub support: Vec<Fact>,
     pub inclusions: Vec<crate::construction::maps::ConfigurationTransport>,
     pub restrictions: Vec<crate::construction::maps::ConfigurationMap>,
@@ -386,20 +389,21 @@ pub(super) fn compile(
                 .map_err(failure)?;
             drop(bv);
             if !data::equal(&moved_a, &moved_b, c)? {
+                let mut facts = Vec::new();
+                let mut repaired = [None, None];
+                for (index, (subject, field)) in [(a, af), (b, bf)].into_iter().enumerate() {
+                    let position = field_fact(subject, field);
+                    if selected.contains_key(&position) {
+                        repaired[index] = Some(position);
+                    } else {
+                        facts.push(observed_fact(subject, field));
+                    }
+                }
                 return Ok(Preparation::Rejected(Rejection {
                     detail: format!("共有個体のfield `{}` が参照輸送後に一致しない", af.name),
-                    facts: [(a, af), (b, bf)]
-                        .into_iter()
-                        .map(|(subject, field)| {
-                            let position = field_fact(subject, field);
-                            if selected.contains_key(&position) {
-                                position
-                            } else {
-                                observed_fact(subject, field)
-                            }
-                        })
-                        .collect(),
+                    facts,
                     values: Some((moved_a, moved_b)),
+                    repaired,
                 }));
             }
         }
@@ -540,9 +544,15 @@ pub(super) fn compile(
         restrictions.push(restriction);
     }
     tick(c)?;
+    let repaired_values = overrides
+        .iter()
+        .filter(|(slot, _)| selected.contains_key(slot))
+        .cloned()
+        .collect();
     Ok(Preparation::Ready(Model {
         construction,
         fragments,
+        repaired_values,
         overrides: std::sync::Arc::new(overrides),
         support: support.into_iter().collect(),
         inclusions,

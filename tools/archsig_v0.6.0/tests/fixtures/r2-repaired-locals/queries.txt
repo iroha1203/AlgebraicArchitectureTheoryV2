@@ -27,3 +27,4 @@ mixedOwner=assemble(Assembly.fragments,on=@v/G,along=Assembly.interfaces,a=@v/A,
 shared=evaluate(Assembly.ownerOf,p=@v/ma,on=$made0.object)
 globalZero=check(Assembly.boundary,p=@v/a,on=$made0.object)
 globalOne=check(Assembly.boundary,p=@v/a,on=$made1.object)
+moveBetweenChoices=assemble_map(Assembly.moves,from=$made0.assembly,to=$made1.assembly,x=@v/moveA,y=@v/moveB)

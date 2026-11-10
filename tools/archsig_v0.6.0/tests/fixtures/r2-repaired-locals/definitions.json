@@ -84,6 +84,66 @@
           ],
           "fields": [],
           "alignments": []
+        },
+        {
+          "kind": "correspondence",
+          "name": "Assemble.Move",
+          "meaning": "担当の原始新旧対応。",
+          "parameters": [
+            {
+              "name": "from",
+              "type": [
+                "Ref",
+                "Assemble.Root"
+              ],
+              "meaning": "対応の端点。"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Ref",
+                "Assemble.Root"
+              ],
+              "meaning": "対応の端点。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "parts",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "Assemble.Part",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "Assemble.Part",
+                  "to"
+                ]
+              ],
+              "meaning": "担当が指定した個体対応。"
+            },
+            {
+              "name": "steps",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "Assemble.Step",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "Assemble.Step",
+                  "to"
+                ]
+              ],
+              "meaning": "担当が指定した個体対応。"
+            }
+          ],
+          "alignments": []
         }
       ]
     }

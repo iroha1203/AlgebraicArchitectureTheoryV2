@@ -243,7 +243,7 @@ pub(super) fn verify(
     evaluations: [Arc<super::object_evaluate::LawEvaluationCache>; 2],
     c: &Control,
 ) -> Result<Verified, super::object_law_transport::ObjectLawTransportFailure> {
-    use super::object_law_transport::{ObjectLawTransportFailure, object_law_transport_on};
+    use super::object_law_transport::{ObjectLawTransportFailure, object_law_transport_on_state};
     tick(c)?;
     // 組立てには少なくとも一つの担当がある。global操作族は包含が既に共有している。
     let source_arrows = source
@@ -298,13 +298,14 @@ pub(super) fn verify(
             {
                 continue;
             }
-            laws.push(object_law_transport_on(
+            laws.push(object_law_transport_on_state(
                 Arc::clone(&inputs),
                 Arc::clone(&declarations),
                 Arc::clone(&transport),
                 evaluations.clone(),
                 object,
                 instance,
+                [&source.repaired_values, &target.repaired_values],
                 c,
             )?);
         }

@@ -430,26 +430,70 @@ pub(super) fn failed(
             } else {
                 (head_value.unwrap_or(head), along_value.unwrap_or(along))
             };
-            let counterexample = b.push(
-                NodeType::Evidence,
-                "evidence",
-                Json::obj([
-                    ("kind", Json::str("counterexample")),
+            let mut operands = vec![left, right, actual];
+            let mut data = Json::obj([
+                ("bindings", Json::Arr(vec![])),
+                ("paths", Json::Arr(vec![])),
+                ("left", left.wire()),
+                ("right", right.wire()),
+                (
+                    "facts",
+                    Json::Arr(rejection.facts.iter().map(Fact::wire).collect()),
+                ),
+            ]);
+            let mut repaired = Vec::new();
+            for (side, position) in ["left", "right"].into_iter().zip(&rejection.repaired) {
+                let Some(position) = position else {
+                    continue;
+                };
+                let object = *a
+                    .repaired
+                    .get(position)
+                    .ok_or(internal!("共有部反例の修復済み対象がない"))?;
+                let subject = e.indexes.subject(&position.snapshot, &position.subject)?;
+                let subject = b.scalar(
+                    NodeType::Value(Type::Ref(subject.ty.to_string())),
+                    "binding",
+                    Scalar::Subject {
+                        snapshot: position.snapshot.clone(),
+                        subject: position.subject.clone(),
+                        entity: subject.ty.to_string(),
+                    },
+                    vec![object],
+                )?;
+                operands.extend([object, subject]);
+                dependencies.push(object);
+                repaired.push(Json::obj([
+                    ("side", Json::str(side)),
+                    ("object", object.wire()),
                     (
-                        "data",
+                        "slot",
                         Json::obj([
-                            ("bindings", Json::Arr(vec![])),
-                            ("paths", Json::Arr(vec![])),
-                            ("left", left.wire()),
-                            ("right", right.wire()),
+                            ("subject", subject.wire()),
                             (
-                                "facts",
-                                Json::Arr(rejection.facts.iter().map(Fact::wire).collect()),
+                                "field",
+                                Json::str(
+                                    position
+                                        .field
+                                        .as_ref()
+                                        .ok_or(internal!("修復slotのfieldがない"))?
+                                        .as_str(),
+                                ),
                             ),
                         ]),
                     ),
-                ]),
-                vec![left, right, actual],
+                ]));
+            }
+            if !repaired.is_empty()
+                && let Json::Obj(fields) = &mut data
+            {
+                fields.insert("repaired".into(), Json::Arr(repaired));
+            }
+            let counterexample = b.push(
+                NodeType::Evidence,
+                "evidence",
+                Json::obj([("kind", Json::str("counterexample")), ("data", data)]),
+                operands,
                 None,
             )?;
             attach_facts(
@@ -463,10 +507,12 @@ pub(super) fn failed(
         }
     }
     dependencies.extend(evidence.iter().copied());
+    let mut operands = vec![label, head, along];
+    operands.extend_from_slice(&a.selections);
     let condition = if status == Decision::Refuted {
         let condition = b.proposition(
             "constructible",
-            vec![label, head, along],
+            operands.clone(),
             dependencies.clone(),
             status,
         )?;
@@ -478,12 +524,7 @@ pub(super) fn failed(
     } else {
         None
     };
-    let claim = b.proposition(
-        "constructible",
-        vec![label, head, along],
-        dependencies.clone(),
-        status,
-    )?;
+    let claim = b.proposition("constructible", operands, dependencies.clone(), status)?;
     let mut reasons = match failure {
         Failure::Missing(facts) => native::missing(r, facts.clone()),
         Failure::Rejected(_) => vec![Reason {
