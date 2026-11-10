@@ -9121,7 +9121,10 @@ impl<'a> Environment<'a> {
                 &self.control,
             )?
             .map(Box::new);
-            let comparison = if matches!(op, BinOp::Eq | BinOp::Ne) {
+            let ordered_q = matches!(op, BinOp::Le | BinOp::Ge)
+                && self.state.finite_domain_reads.borrow().is_some()
+                && self.indexes.inputs.law().expr_type(*lhs) == Some(&Type::Q);
+            let comparison = if matches!(op, BinOp::Eq | BinOp::Ne) || ordered_q {
                 left_affine
                     .as_deref()
                     .zip(right.affine.as_deref())

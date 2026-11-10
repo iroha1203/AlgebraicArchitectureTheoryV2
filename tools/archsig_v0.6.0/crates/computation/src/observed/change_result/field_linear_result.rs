@@ -163,23 +163,31 @@ pub(super) fn build(
     let quantifiers = materialize_quantifiers(b, &linear.quantifiers, requirements, c)?;
     let equations = map(b, pm, em, &linear.equations, n, c)?;
     let part = &mut b.parts[equations.0 - b.base];
+    part.scope.merge(&linear.scope);
+    part.support
+        .make_owned()
+        .extend(linear.constraint_support.iter().cloned());
     for quantifier in quantifiers {
         part.arguments.extend(quantifier.domain);
         part.scope.add_quantifier(quantifier);
     }
+    part.scope.merge(&linear.scope);
     part.arguments.sort_by_key(|node| node.0);
     part.arguments.dedup();
     let rhs = vector(b, em, &linear.rhs, c)?;
     let partial_obstruction = if partial_architecture
-        && matches!(&linear.solutions, Solutions::Affine(fiber) if fiber.particular.is_none())
+        && let Solutions::Affine(fiber) = &linear.solutions
+        && let Some(index) = fiber.obstruction
     {
         use crate::observed::{environment::field_change::Polyhedron, field_polyhedron};
         let rows = field_polyhedron::halfspaces(&linear.equations, &linear.rhs, &[], c)?;
-        let outcome = field_polyhedron::solve(&rows, n, c)?;
+        let outcome = field_polyhedron::affine_obstruction(
+            &fiber.left[index],
+            &fiber.transformed_rhs[index],
+            n,
+            c,
+        )?;
         field_polyhedron::verify(&rows, n, &outcome, c)?;
-        if !matches!(outcome, field_polyhedron::Outcome::Empty(_)) {
-            return Err(internal!("有理空解の公開矛盾を確認できない").into());
-        }
         Some(Solutions::Polyhedron(Polyhedron {
             inequalities: vec![],
             outcome,

@@ -19,7 +19,8 @@ pub(in crate::observed) struct Linear {
     pub equations: Matrix,
     pub rhs: Vec<Scalar>,
     pub quantifiers: Vec<(Quantifier, Vec<Scalar>)>,
-    pub fixed_support: Vec<Fact>,
+    pub constraint_support: BTreeSet<Fact>,
+    pub scope: Scope,
     pub solutions: Solutions,
 }
 
@@ -42,7 +43,8 @@ struct Constraints {
     inequalities: Option<Vec<Halfspace>>,
     quantifiers: Vec<(Quantifier, Vec<Scalar>)>,
     refuted: bool,
-    fixed_support: Vec<Fact>,
+    constraint_support: BTreeSet<Fact>,
+    scope: Scope,
     pending_failure: Option<ValidationFailure>,
 }
 
@@ -794,15 +796,27 @@ impl Conjuncts {
         Ok(())
     }
 
-    fn finish(self, rows: &Constraints, missing: &mut Pending) -> Result<(), ValidationFailure> {
-        if !rows.refuted
-            && let Some((error, pending)) = self.blocked
-        {
-            *missing = pending;
-            return Err(error);
+    fn finish(
+        self,
+        rows: &mut Constraints,
+        missing: &mut Pending,
+    ) -> Result<(), ValidationFailure> {
+        if let Some((error, pending)) = self.blocked {
+            if !rows.refuted {
+                *missing = pending;
+                return Err(error);
+            }
+            rows.scope.completions |= needs_observation(&pending);
         }
         Ok(())
     }
+}
+fn needs_observation(pending: &Pending) -> bool {
+    !pending.facts.is_empty()
+        || pending
+            .additional
+            .iter()
+            .any(|(_, pending)| !pending.facts.is_empty())
 }
 
 fn observed_source(
@@ -818,7 +832,28 @@ fn observed_source(
     if rows.inequalities.is_none() {
         return read();
     }
+    let first = rows.quantifiers.len();
     let result = env.with_finite_domain_reads(&mut rows.quantifiers, read);
+    if let Ok(value) = &result
+        && !value.condition_failed
+        && !value.condition_pending
+    {
+        let mut scope = value.scope.clone();
+        scope.quantifiers.retain(|q| {
+            q.domain.is_none()
+                && !rows.quantifiers[first..]
+                    .iter()
+                    .any(|(finite, _)| finite.occurrence == q.occurrence)
+                && !env
+                    .indexes
+                    .inputs
+                    .law()
+                    .program()
+                    .expressions
+                    .contains_key(&q.occurrence)
+        });
+        rows.scope.merge(&scope);
+    }
     if let Err(ValidationFailure::UnsupportedExpression {
         location: Location::Law { span },
         ..
@@ -893,6 +928,8 @@ fn collect_equations(
                 return Err(unsupported(env, domain, "有理changeの有限量化域が未確定"));
             };
             usable(env, domain, &domain_value)?;
+            rows.constraint_support
+                .extend(domain_value.support.iter().cloned());
             rows.quantifiers
                 .insert(domain_start, (spec.descriptor(None, None), members.clone()));
             let mut local = env.copy_variables(vars)?;
@@ -935,7 +972,7 @@ fn collect_equations(
             {
                 if !holds {
                     rows.contradiction(axes.len(), env)?;
-                    rows.fixed_support.extend(v.support.iter().cloned());
+                    rows.constraint_support.extend(v.support.iter().cloned());
                 }
                 return Ok(());
             }
@@ -1038,6 +1075,8 @@ fn collect_equations(
                     .filter(|_| !guard.condition_pending && !guard.condition_failed)
                 {
                     Some(Scalar::Bool(true)) => {
+                        rows.constraint_support
+                            .extend(guard.support.iter().cloned());
                         collect_equations(env, *rhs, vars, lexical, reading, axes, rows, missing)
                     }
                     Some(Scalar::Bool(false)) => Ok(()),
@@ -1049,7 +1088,8 @@ fn collect_equations(
                         {
                             if !holds {
                                 rows.contradiction(axes.len(), env)?;
-                                rows.fixed_support.extend(actual.support.iter().cloned());
+                                rows.constraint_support
+                                    .extend(actual.support.iter().cloned());
                             }
                             return Ok(());
                         }
@@ -1098,23 +1138,20 @@ fn collect_equations(
                     } if allow_bounds => Some((*rhs, *lhs)),
                     _ => None,
                 };
-                let form = if let Some((lhs, rhs)) = ordered {
-                    let left = env.scoped_ast(lhs, vars, &base, reading)?;
-                    let right = env.scoped_ast(rhs, vars, &base, reading)?;
-                    usable(env, lhs, &left)?;
-                    usable(env, rhs, &right)?;
-                    affine::binary(
-                        BinOp::Sub,
-                        left.affine.as_deref(),
-                        right.affine.as_deref(),
-                        &env.control,
-                    )?
-                } else if let Some(p) = v
-                    .comparison
-                    .as_ref()
-                    .filter(|p| p.op == BinOp::Eq && p.bound_axes.is_empty())
-                {
-                    affine::binary(BinOp::Sub, Some(&p.left), Some(&p.right), &env.control)?
+                let form = if let Some(predicate) = v.comparison.as_ref().filter(|p| {
+                    p.bound_axes.is_empty()
+                        && if ordered.is_some() {
+                            p.expression == id && matches!(p.op, BinOp::Le | BinOp::Ge)
+                        } else {
+                            p.op == BinOp::Eq
+                        }
+                }) {
+                    let (left, right) = if predicate.op == BinOp::Ge {
+                        (&predicate.right, &predicate.left)
+                    } else {
+                        (&predicate.left, &predicate.right)
+                    };
+                    affine::binary(BinOp::Sub, Some(left), Some(right), &env.control)?
                 } else {
                     None
                 };
@@ -1158,6 +1195,7 @@ fn collect_equations(
                     .as_ref()
                     .map(|c| numeric::unary(archsig_input::law::ast::UnOp::Neg, c, &env.control))
                     .transpose()?;
+                rows.constraint_support.extend(v.support.iter().cloned());
                 if ordered.is_none() {
                     rows.equalities.push(coefficients);
                     rows.rhs.push(rhs);
@@ -1460,7 +1498,7 @@ fn compute_inner(
     )?;
     updated.indexes.object = env.object_domain();
     updated.indexes.affine_valuation = valuation;
-    let rows = if candidates_empty {
+    let mut rows = if candidates_empty {
         Constraints::default()
     } else {
         with_missing(&updated, missing, |missing| {
@@ -1480,6 +1518,7 @@ fn compute_inner(
             .collect::<Option<Vec<_>>>()
             .ok_or(internal!("有理要求の固定項が未確定"))?,
     );
+    let mut pending_failure = rows.pending_failure.take();
     let solutions = if requirements.is_empty() {
         Solutions::Affine(guard_fiber.clone())
     } else if let Some(inequalities) = rows.inequalities
@@ -1487,7 +1526,21 @@ fn compute_inner(
     {
         let original =
             field_polyhedron::halfspaces(&guard_matrix, &guard_rhs, &inequalities, &env.control)?;
-        let outcome = field_polyhedron::solve(&original, axes.len(), &env.control)?;
+        let outcome = if let Some(error) = pending_failure.take() {
+            let Some(outcome) =
+                field_polyhedron::contradiction(&original, axes.len(), &env.control)?
+            else {
+                missing.finite_domains = rows.quantifiers;
+                return Err(error);
+            };
+            rows.scope.completions |= needs_observation(missing);
+            missing.facts.clear();
+            missing.additional.clear();
+            missing.unsupported = None;
+            outcome
+        } else {
+            field_polyhedron::solve(&original, axes.len(), &env.control)?
+        };
         field_polyhedron::verify(&original, axes.len(), &outcome, &env.control)?;
         Solutions::Polyhedron(Polyhedron {
             inequalities,
@@ -1502,7 +1555,7 @@ fn compute_inner(
             &env.control,
         )?)
     };
-    if let Some(error) = rows.pending_failure {
+    if let Some(error) = pending_failure {
         let empty = match &solutions {
             Solutions::Affine(fiber) => fiber.particular.is_none(),
             Solutions::Polyhedron(polyhedron) => matches!(polyhedron.outcome, Outcome::Empty(_)),
@@ -1511,6 +1564,7 @@ fn compute_inner(
             missing.finite_domains = rows.quantifiers;
             return Err(error);
         }
+        rows.scope.completions |= needs_observation(missing);
         missing.facts.clear();
         missing.additional.clear();
         missing.unsupported = None;
@@ -1525,7 +1579,8 @@ fn compute_inner(
         equations: guard_matrix,
         rhs: guard_rhs,
         quantifiers: rows.quantifiers,
-        fixed_support: rows.fixed_support,
+        constraint_support: rows.constraint_support,
+        scope: rows.scope,
         solutions,
     })
 }
@@ -1657,7 +1712,9 @@ fn requirement_equations(
                 usable(env, *guard, &v)?;
                 match v.known_value {
                     Some(Scalar::Bool(false)) => return Ok(()),
-                    Some(Scalar::Bool(true)) => {}
+                    Some(Scalar::Bool(true)) => {
+                        rows.constraint_support.extend(v.support.iter().cloned());
+                    }
                     _ => {
                         if change_affine::numeric_condition(env, *guard, &v)? {
                             missing.unsupported = Some("numeric_change_condition");
@@ -1685,7 +1742,7 @@ fn requirement_equations(
             break;
         }
     }
-    if let Err(error) = conjuncts.finish(&rows, missing) {
+    if let Err(error) = conjuncts.finish(&mut rows, missing) {
         if !allow_bounds {
             return Err(error);
         }

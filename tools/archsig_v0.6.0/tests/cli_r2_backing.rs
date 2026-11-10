@@ -999,6 +999,26 @@ fn rational_backing_keeps_fixed_quantifiers_and_independent_stops() {
     let domain = referenced(&result, get(observed, "domain"));
     assert_eq!(arr(get(get(domain, "value"), "elements")).len(), 3);
 
+    let (header, _) = POLY_LAW.split_once("   (forall b").unwrap();
+    let (_, change) = POLY_LAW.split_once(" change ").unwrap();
+    let symbolic = format!(
+        "{header}(forall b in Pool.Cell[w] . (forall q:Q . q=q) implies b.quantity>=rat(0,1));
+ change {change}"
+    );
+    std::fs::write(dir.join("laws.law"), symbolic).unwrap();
+    let run = polyhedron_run(&dir, ask, "symbolic-guard-scope", None);
+    assert_eq!(run.code, 0, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let [answer] = arr(get(&result, "answers")) else {
+        panic!("one solve")
+    };
+    let scope = arr(get(get(answer, "scope"), "quantifiers"));
+    let binder = scope
+        .iter()
+        .find(|q| s(get(q, "name")) == "q")
+        .expect("symbolic guard binder");
+    assert_eq!(s(get(binder, "type")), "Q");
+
     let snapshot = &mut items(fields(&mut map).get_mut("snapshots").unwrap())[0];
     items(fields(snapshot).get_mut("atoms").unwrap()).retain(|atom| {
         !matches!(atom, Json::Obj(fields) if fields["id"] == Json::str("overlapFeasible.X.available"))
@@ -1023,6 +1043,20 @@ fn rational_backing_keeps_fixed_quantifiers_and_independent_stops() {
         s(get(&arr(get(&result, "answers"))[0], "status")),
         "refuted"
     );
+
+    let law = format!(
+        "{prefix}(forall s in Pool.Stock[w] . stockLoad(s)<=s.available) and (forall b in Pool.Cell[w] . b.quantity>=rat(2,1) and b.quantity<=rat(1,1));
+ change {change}"
+    );
+    std::fs::write(dir.join("laws.law"), law).unwrap();
+    let run = polyhedron_run(&dir, ask, "contradiction-across-completions", None);
+    assert_eq!(run.code, 1, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let [answer] = arr(get(&result, "answers")) else {
+        panic!("one solve")
+    };
+    assert_eq!(s(get(get(answer, "scope"), "domain")), "all_completions");
+    assert_eq!(s(get(certificate(&result), "outcome")), "empty");
 
     let capacity = "(forall s in Pool.Stock[w] . stockLoad(s)<=s.available)";
     let strict = "(forall b in Pool.Cell[w] . b.quantity > -rat(1,1))";

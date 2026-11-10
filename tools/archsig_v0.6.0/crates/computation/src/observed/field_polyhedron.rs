@@ -395,12 +395,42 @@ pub(super) fn halfspaces(
     Ok(out)
 }
 
-pub(super) fn solve(
-    original: &[Halfspace],
+pub(super) fn affine_obstruction(
+    weights: &[Scalar],
+    rhs: &Scalar,
     n: usize,
     c: &Control,
 ) -> Result<Outcome, ValidationFailure> {
     let zero = integer(0);
+    let negate = sign(rhs)? == Ordering::Greater;
+    let mut combination = Vec::with_capacity(2 * weights.len());
+    for weight in weights {
+        tick(c)?;
+        let weight = if negate {
+            neg(weight, c)?
+        } else {
+            weight.clone()
+        };
+        if sign(&weight)? == Ordering::Less {
+            combination.extend([zero.clone(), neg(&weight, c)?]);
+        } else {
+            combination.extend([weight, zero.clone()]);
+        }
+    }
+    Ok(Outcome::Empty(Row {
+        inequality: Halfspace {
+            coefficients: vec![zero; n],
+            rhs: if negate { neg(rhs, c)? } else { rhs.clone() },
+        },
+        combination,
+    }))
+}
+
+fn project_all(
+    original: &[Halfspace],
+    n: usize,
+    c: &Control,
+) -> Result<Projected, ValidationFailure> {
     let one = integer(1);
     let mut tight = BTreeMap::new();
     for (i, h) in original.iter().enumerate() {
@@ -425,9 +455,33 @@ pub(super) fn solve(
     }
     let zero_row = vec![(BigInt::from(0), BigInt::from(1)); n];
     if let Some(row) = obstruction(&mut tight, &zero_row, c)? {
-        return Ok(Outcome::Empty(row.certificate(original.len(), c)?));
+        return Ok(Projected::Obstruction(row));
     }
-    let mut eliminated = match project(tight.into_values().collect(), (0..n).rev(), &zero_row, c)? {
+    project(tight.into_values().collect(), (0..n).rev(), &zero_row, c)
+}
+
+pub(super) fn contradiction(
+    original: &[Halfspace],
+    n: usize,
+    c: &Control,
+) -> Result<Option<Outcome>, ValidationFailure> {
+    match project_all(original, n, c)? {
+        Projected::Rows(_) => Ok(None),
+        Projected::Obstruction(row) => {
+            Ok(Some(Outcome::Empty(row.certificate(original.len(), c)?)))
+        }
+    }
+}
+
+pub(super) fn solve(
+    original: &[Halfspace],
+    n: usize,
+    c: &Control,
+) -> Result<Outcome, ValidationFailure> {
+    let zero = integer(0);
+    let one = integer(1);
+    let zero_row = vec![(BigInt::from(0), BigInt::from(1)); n];
+    let mut eliminated = match project_all(original, n, c)? {
         Projected::Rows(Projection { eliminated, .. }) => eliminated,
         Projected::Obstruction(row) => {
             return Ok(Outcome::Empty(row.certificate(original.len(), c)?));

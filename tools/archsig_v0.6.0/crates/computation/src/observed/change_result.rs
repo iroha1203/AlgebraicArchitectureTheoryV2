@@ -808,14 +808,6 @@ pub(super) fn render_search(
         let linear = linear_parts
             .as_ref()
             .ok_or(internal!("未完成対象の有理反証に証拠がない"))?;
-        let source = search
-            .rational
-            .as_ref()
-            .ok_or(internal!("未完成対象の有理反証がない"))?;
-        b.parts[linear.certificate.0 - base]
-            .support
-            .make_owned()
-            .extend(source.fixed_support.iter().cloned());
         let label = value(&mut b, &Scalar::Text("rational_solution".into()))?;
         let root = architecture.witness.construction().root();
         let entity = env
@@ -2042,5 +2034,55 @@ impl super::result_kind::ResultKind for Data {
     ) -> Result<(), ValidationFailure> {
         env.recheck_change(graph, value, limit)?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod rational_scope_tests {
+    use super::*;
+    use crate::observed::{evaluate_observed, prepare_observed};
+    use archsig_input::input::InputSources;
+
+    const DEFINITIONS: &[u8] =
+        include_bytes!("../../../../tests/fixtures/r2-backing-polyhedron/definitions.json");
+    const MAP: &str = include_str!("../../../../tests/fixtures/r2-backing-polyhedron/archmap.json");
+    const LAW: &str = include_str!("../../../../tests/fixtures/r2-backing-polyhedron/laws.law");
+    const SOLVE: &str = "solveIt=solve(Backing.legal,using=Backing.assign,on=@fixture/threeUsesMicroShortage,bind.w=@fixture/threeUsesMicroShortage)";
+
+    #[test]
+    fn partial_rational_refutation_keeps_the_observed_capacity() {
+        let map = MAP
+            .lines()
+            .filter(|line| !line.contains(r#""id":"threeUsesMicroShortage.M1.N.stock""#))
+            .collect::<Vec<_>>()
+            .join(
+                "
+",
+            );
+        let control = Control::unlimited();
+        let input = prepare_observed(
+            InputSources::from_bytes(
+                vec![DEFINITIONS.to_vec()],
+                LAW.as_bytes().to_vec(),
+                map.into_bytes(),
+            ),
+            &[SOLVE],
+            &control,
+        )
+        .unwrap();
+        let evaluation = evaluate_observed(input, &control).unwrap();
+        let [answer] = evaluation.answers.as_slice() else {
+            panic!("one solve")
+        };
+        assert_eq!(answer.status, Decision::Refuted);
+        assert!(answer.scope.completions);
+        let [certificate] = answer.evidence.as_slice() else {
+            panic!("exact obstruction")
+        };
+        for reference in [*certificate, answer.claim.unwrap()] {
+            assert!(evaluation.nodes[reference.0].support.iter().any(|fact| {
+                fact.atom.as_deref() == Some("threeUsesMicroShortage.N.available")
+            }));
+        }
     }
 }
