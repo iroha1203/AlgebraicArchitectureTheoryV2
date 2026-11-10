@@ -175,3 +175,5 @@ mod reference_type_transport;
 mod shared_inputs;
 
 mod cli_ux;
+
+mod cli_repaired_migration;
