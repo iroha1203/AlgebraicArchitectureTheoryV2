@@ -572,6 +572,11 @@ fn collect_equations(
                 }
             }
             ExprKind::Quant { .. } => {
+                if diagnose {
+                    analysis
+                        .read(id, vars, lexical, reading)?
+                        .record(missing, Dependence::Fixed);
+                }
                 missing.unsupported = Some("rational_change_quantification");
                 Err(unsupported(
                     env,
@@ -625,11 +630,8 @@ fn collect_equations(
                 let Some(form) = form else {
                     if diagnose {
                         if matches!(axes, Axes::Parameters(_))
-                            && let ExprKind::Binary {
-                                op: BinOp::Eq | BinOp::Le | BinOp::Ge,
-                                lhs,
-                                rhs,
-                            } = kind
+                            && let ExprKind::Binary { op, lhs, rhs } = kind
+                            && (*op == BinOp::Eq || ordered.is_some())
                             && law.expr_type(*lhs) == Some(&Type::Q)
                             && law.expr_type(*rhs) == Some(&Type::Q)
                         {

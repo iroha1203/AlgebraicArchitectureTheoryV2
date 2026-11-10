@@ -161,7 +161,10 @@ fn keep_tightest(
         .coefficients
         .iter()
         .find(|x| **x != integer(0));
-    if let Some(first) = first {
+    if let Some(first) = first
+        && *first != integer(1)
+        && *first != integer(-1)
+    {
         let factor = inverse(first, c)?;
         let factor = if sign(&factor)?.is_lt() {
             neg(&factor, c)?
@@ -501,16 +504,15 @@ pub(super) fn verify(
         {
             return Err(internal!("有理証拠の結合または行の次元が違う").into());
         }
-        for weight in &derived.combination {
-            tick(c)?;
-            if sign(weight)?.is_lt() {
-                return Err(internal!("有理証拠の行の重みが負").into());
-            }
-        }
         let mut coefficients = vec![zero.clone(); n];
         let mut rhs = zero.clone();
         for (weight, h) in derived.combination.iter().zip(original) {
             tick(c)?;
+            match sign(weight)? {
+                Ordering::Less => return Err(internal!("有理証拠の行の重みが負").into()),
+                Ordering::Equal => continue,
+                Ordering::Greater => {}
+            }
             for (sum, coef) in coefficients.iter_mut().zip(&h.coefficients) {
                 tick(c)?;
                 *sum = add(sum, &mul(weight, coef, c)?, c)?;
