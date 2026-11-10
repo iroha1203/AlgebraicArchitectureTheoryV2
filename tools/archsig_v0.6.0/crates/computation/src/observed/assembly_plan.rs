@@ -28,7 +28,7 @@ pub(super) fn read(
     match env.with_assembly_domains(capture, fixed_design, || {
         family::read_with_value(env, name, bindings)
     }) {
-        Ok(((mut metadata, value), domains)) => {
+        Ok((Ok((mut metadata, value)), domains)) => {
             // The evaluator can determine a value for every completion, for
             // instance when a universal test has a known counterexample.
             if fixed_design && value.is_some() && !metadata.failed {
@@ -66,23 +66,31 @@ pub(super) fn read(
                 unsupported: None,
             })
         }
-        Err(ValidationFailure::UnsupportedExpression { location, feature }) => {
+        Ok((Err(ValidationFailure::UnsupportedExpression { location, feature }), domains)) => {
             let law = env.indexes.inputs.law();
-            let operand_types = if let archsig_common::issue::Location::Law { span } = &location {
+            let expression_type = if let archsig_common::issue::Location::Law { span } = &location {
                 law.program()
                     .expressions
                     .get(span)
                     .and_then(|id| law.expr_type(*id))
                     .cloned()
-                    .into_iter()
-                    .collect()
             } else {
-                vec![]
+                None
             };
+            let output_type = match &law.declarations()[name].signature {
+                archsig_input::law::model::Signature::View { returns, .. } => returns.erase(),
+                _ => return Err(internal!("未対応の組立て入力がViewでない").into()),
+            };
+            let operand_types = vec![expression_type.unwrap_or(output_type)];
             let mut scope = Scope::default();
             scope
                 .readings
                 .insert(law.declarations()[name].reading.clone());
+            if fixed_design {
+                for (descriptor, _) in &domains {
+                    scope.add_quantifier(descriptor.clone());
+                }
+            }
             Ok(Read {
                 metadata: family::Read {
                     failed: false,
@@ -92,7 +100,7 @@ pub(super) fn read(
                     scope,
                 },
                 value: None,
-                domains: vec![],
+                domains,
                 unsupported: Some(model_assembly::Unsupported {
                     detail: feature,
                     location,
@@ -101,7 +109,7 @@ pub(super) fn read(
                 }),
             })
         }
-        Err(e) => Err(e),
+        Ok((Err(error), _)) | Err(error) => Err(error),
     }
 }
 #[derive(Debug)]

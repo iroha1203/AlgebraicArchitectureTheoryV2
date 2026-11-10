@@ -569,9 +569,9 @@ impl<'a> Environment<'a> {
         enabled: bool,
         fixed_design: bool,
         read: impl FnOnce() -> Result<T, ValidationFailure>,
-    ) -> Result<(T, Vec<AssemblyDomain>), ValidationFailure> {
+    ) -> Result<(Result<T, ValidationFailure>, Vec<AssemblyDomain>), ValidationFailure> {
         if !enabled {
-            return Ok((read()?, vec![]));
+            return Ok((read(), vec![]));
         }
         let capture = self.state.assembly_domains.scoped(Some(AssemblyTrace {
             fixed_design,
@@ -581,7 +581,7 @@ impl<'a> Environment<'a> {
         let trace = capture
             .restore()
             .ok_or(internal!("組立てViewの実量化収集がない"))?;
-        Ok((value?, trace.domains))
+        Ok((value, trace.domains))
     }
 
     fn fixed_assembly_read(&self) -> bool {

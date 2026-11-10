@@ -387,3 +387,80 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
             .all(|q| !matches!(s(get(q, "name")), "absent" | "ignored"))
     );
 }
+
+#[test]
+fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
+    let dir = workdir("structure-choice-unsupported-domain");
+    std::fs::write(
+        dir.join("definitions.json"),
+        include_bytes!("fixtures/r2-structure-choice/definitions.json"),
+    )
+    .unwrap();
+    std::fs::write(
+        dir.join("archmap.json"),
+        include_bytes!("fixtures/r2-structure-choice/archmap.json"),
+    )
+    .unwrap();
+    let law = include_str!("fixtures/r2-structure-choice/laws.law").replace(
+        "if p.split then p.new else p.old",
+        "let seen=forall b in list<Bool>[true] . b in if seen and (exists z:Z . z*z=2) then p.new else p.old",
+    );
+    std::fs::write(dir.join("laws.law"), law).unwrap();
+    let original = include_str!("fixtures/r2-structure-choice/queries.txt")
+        .lines()
+        .collect::<Vec<_>>();
+    let mut asks = original[1..8].to_vec();
+    asks.extend([
+        "layout=assemble(E12Compare.selected,on=@comparison/rust-output1,along=E12Compare.interfaces,p=@comparison/plan,design.p=$planApply1.object)",
+        "blocked=check(E12Compare.consumed,on=$layout.object,s=@comparison/rust-T3-after)",
+    ]);
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "definitions.json",
+        "--law",
+        "laws.law",
+        "--archmap",
+        "archmap.json",
+        "--out",
+        "out",
+    ];
+    for ask in &asks {
+        args.extend(["--ask", ask]);
+    }
+    let run = run_binary(&dir, &args);
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let answers = arr(get(&result, "answers"));
+    let layout = answers
+        .iter()
+        .find(|a| s(get(a, "id")) == "layout")
+        .unwrap();
+    assert_eq!(s(get(layout, "status")), "undetermined");
+    let quantifiers = arr(get(get(layout, "scope"), "quantifiers"));
+    let finite = quantifiers
+        .iter()
+        .find(|q| s(get(q, "name")) == "b")
+        .unwrap();
+    let nodes = arr(get(&result, "nodes"));
+    let domain = nodes
+        .iter()
+        .find(|node| s(get(node, "id")) == s(get(get(finite, "domain"), "node")))
+        .unwrap();
+    assert_eq!(arr(get(get(domain, "value"), "elements")).len(), 1);
+    let blocked = answers
+        .iter()
+        .find(|a| s(get(a, "id")) == "blocked")
+        .unwrap();
+    let reasons = arr(get(blocked, "reasons"));
+    assert!(
+        reasons
+            .iter()
+            .any(|reason| s(get(reason, "code")) == "dependency_blocked")
+    );
+    assert!(
+        arr(get(&result, "issues"))
+            .iter()
+            .all(|reason| s(get(reason, "code")) != "internal")
+    );
+}
