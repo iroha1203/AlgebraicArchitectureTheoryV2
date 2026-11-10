@@ -43,6 +43,7 @@ mod cli_rejections;
 mod cli_relation_comparison;
 mod cli_repair_problem;
 mod cli_request_acceptance;
+mod cli_r2_backing;
 mod cli_reuse;
 mod cli_run;
 mod cli_shell_expansion;

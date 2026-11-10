@@ -1,0 +1,556 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Pool",
+      "version": "0.3",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Pool.Cell",
+          "meaning": "一つの権利を一つの材料量で裏付ける非負の数量対応。0も実量で、欠測の代用ではない。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Pool.World"
+              ],
+              "meaning": "所属する比較対象。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "claim",
+              "type": [
+                "Owned",
+                "Pool.Claim",
+                "owner"
+              ],
+              "meaning": "裏付けられる権利。"
+            },
+            {
+              "name": "stock",
+              "type": [
+                "Owned",
+                "Pool.Stock",
+                "owner"
+              ],
+              "meaning": "裏付け元材料。"
+            },
+            {
+              "name": "quantity",
+              "type": "Q",
+              "meaning": "この材料からこの権利へ対応する実量。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Pool.Claim",
+          "meaning": "Pool.Claimの原始情報。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Pool.World"
+              ],
+              "meaning": "所属する比較対象。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "key",
+              "type": "Text",
+              "meaning": "承認を求める用途/指図。"
+            },
+            {
+              "name": "useKind",
+              "type": [
+                "Data",
+                "Pool.UseKind"
+              ],
+              "meaning": "製造/販売/移送を区別。"
+            },
+            {
+              "name": "quantityUnit",
+              "type": "Text",
+              "meaning": "求める材料単位。"
+            },
+            {
+              "name": "quantity",
+              "type": "Q",
+              "meaning": "全承認量。"
+            },
+            {
+              "name": "eligible",
+              "type": [
+                "Set",
+                [
+                  "Owned",
+                  "Pool.Stock",
+                  "owner"
+                ]
+              ],
+              "meaning": "その権利を満たす適格材料集合。"
+            },
+            {
+              "name": "cell0",
+              "type": [
+                "Owned",
+                "Pool.Cell",
+                "owner"
+              ],
+              "meaning": "この権利の材料slot 0へのbacking。"
+            },
+            {
+              "name": "cell1",
+              "type": [
+                "Owned",
+                "Pool.Cell",
+                "owner"
+              ],
+              "meaning": "この権利の材料slot 1へのbacking。"
+            },
+            {
+              "name": "cell2",
+              "type": [
+                "Owned",
+                "Pool.Cell",
+                "owner"
+              ],
+              "meaning": "この権利の材料slot 2へのbacking。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Pool.Stock",
+          "meaning": "Pool.Stockの原始情報。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Pool.World"
+              ],
+              "meaning": "所属する比較対象。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "key",
+              "type": "Text",
+              "meaning": "材料identity。"
+            },
+            {
+              "name": "quantityUnit",
+              "type": "Text",
+              "meaning": "材料単位。"
+            },
+            {
+              "name": "available",
+              "type": "Q",
+              "meaning": "他の固定義務を除いた利用可能量。"
+            },
+            {
+              "name": "cell0",
+              "type": [
+                "Owned",
+                "Pool.Cell",
+                "owner"
+              ],
+              "meaning": "この材料に対する用途slot 0のbacking。"
+            },
+            {
+              "name": "cell1",
+              "type": [
+                "Owned",
+                "Pool.Cell",
+                "owner"
+              ],
+              "meaning": "この材料に対する用途slot 1のbacking。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "data",
+          "name": "Pool.UseKind",
+          "meaning": "Pool.UseKindの区別。合否ではなく比較する原始の選択/区分。",
+          "constructors": [
+            {
+              "name": "Manufacture",
+              "arguments": [],
+              "meaning": "Manufacture"
+            },
+            {
+              "name": "Sale",
+              "arguments": [],
+              "meaning": "Sale"
+            },
+            {
+              "name": "Transfer",
+              "arguments": [],
+              "meaning": "Transfer"
+            }
+          ]
+        },
+        {
+          "kind": "entity",
+          "name": "Pool.World",
+          "meaning": "数量・適格性が重なる承認権利の同時裏付け問題。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "label",
+              "type": "Text",
+              "meaning": "合成問題の識別。"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    },
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Ops",
+      "version": "0.3",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "Ops.Edge",
+          "meaning": "Ops.Edgeの原始情報。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Ops.World"
+              ],
+              "meaning": "所属する比較対象。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "kind",
+              "type": [
+                "Data",
+                "Ops.EdgeKind"
+              ],
+              "meaning": "分割/製造/使用/組込/販売/移送を区別。"
+            },
+            {
+              "name": "src",
+              "type": [
+                "Owned",
+                "Ops.Node",
+                "owner"
+              ],
+              "meaning": "関係の始対象。"
+            },
+            {
+              "name": "dst",
+              "type": [
+                "Owned",
+                "Ops.Node",
+                "owner"
+              ],
+              "meaning": "関係の終対象。"
+            },
+            {
+              "name": "quantity",
+              "type": [
+                "Option",
+                "Q"
+              ],
+              "meaning": "記録済みの実量。量未記録の関係はnone。"
+            },
+            {
+              "name": "knowledge",
+              "type": [
+                "Data",
+                "Ops.Knowledge"
+              ],
+              "meaning": "既知の由来粒度。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "data",
+          "name": "Ops.EdgeKind",
+          "meaning": "Ops.EdgeKindの区別。合否ではなく比較する原始の選択/区分。",
+          "constructors": [
+            {
+              "name": "Split",
+              "arguments": [],
+              "meaning": "Split"
+            },
+            {
+              "name": "Production",
+              "arguments": [],
+              "meaning": "Production"
+            },
+            {
+              "name": "Use",
+              "arguments": [],
+              "meaning": "Use"
+            },
+            {
+              "name": "Install",
+              "arguments": [],
+              "meaning": "Install"
+            },
+            {
+              "name": "Sale",
+              "arguments": [],
+              "meaning": "Sale"
+            },
+            {
+              "name": "Transfer",
+              "arguments": [],
+              "meaning": "Transfer"
+            }
+          ]
+        },
+        {
+          "kind": "data",
+          "name": "Ops.Knowledge",
+          "meaning": "Ops.Knowledgeの区別。合否ではなく比較する原始の選択/区分。",
+          "constructors": [
+            {
+              "name": "Known",
+              "arguments": [],
+              "meaning": "当該owner効果を照会済み"
+            },
+            {
+              "name": "Unreceived",
+              "arguments": [],
+              "meaning": "相手結果を未受信"
+            },
+            {
+              "name": "BuildLevelOnly",
+              "arguments": [],
+              "meaning": "Build量だけ既知、output配賦は未記録"
+            }
+          ]
+        },
+        {
+          "kind": "entity",
+          "name": "Ops.Node",
+          "meaning": "Ops.Nodeの原始情報。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Ops.World"
+              ],
+              "meaning": "所属する比較対象。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "key",
+              "type": "Text",
+              "meaning": "同じ文字列内容だけでなく由来を伴う対象識別。"
+            },
+            {
+              "name": "kind",
+              "type": [
+                "Data",
+                "Ops.NodeKind"
+              ],
+              "meaning": "型付きidentityの意味。"
+            },
+            {
+              "name": "quantityUnit",
+              "type": "Text",
+              "meaning": "量を持つ対象の単位。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "data",
+          "name": "Ops.NodeKind",
+          "meaning": "Ops.NodeKindの区別。合否ではなく比較する原始の選択/区分。",
+          "constructors": [
+            {
+              "name": "Stock",
+              "arguments": [],
+              "meaning": "Stock"
+            },
+            {
+              "name": "Build",
+              "arguments": [],
+              "meaning": "Build"
+            },
+            {
+              "name": "Line",
+              "arguments": [],
+              "meaning": "Line"
+            },
+            {
+              "name": "Claim",
+              "arguments": [],
+              "meaning": "Claim"
+            },
+            {
+              "name": "Intent",
+              "arguments": [],
+              "meaning": "Intent"
+            },
+            {
+              "name": "Receipt",
+              "arguments": [],
+              "meaning": "Receipt"
+            },
+            {
+              "name": "Output",
+              "arguments": [],
+              "meaning": "Output"
+            },
+            {
+              "name": "FacetSlice",
+              "arguments": [],
+              "meaning": "FacetSlice"
+            }
+          ]
+        },
+        {
+          "kind": "entity",
+          "name": "Ops.State",
+          "meaning": "一承認権利の量会計と知識状態、物理/出力facetの観測。unknownは量bucketではない。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Ops.World"
+              ],
+              "meaning": "所属する比較対象。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "approved",
+              "type": "Q",
+              "meaning": "承認量。"
+            },
+            {
+              "name": "u",
+              "type": "Q",
+              "meaning": "未特定未使用量。"
+            },
+            {
+              "name": "a",
+              "type": "Q",
+              "meaning": "特定済未使用量。"
+            },
+            {
+              "name": "c",
+              "type": "Q",
+              "meaning": "消費済確定量。"
+            },
+            {
+              "name": "x",
+              "type": "Q",
+              "meaning": "解放済確定量。"
+            },
+            {
+              "name": "used",
+              "type": "Q",
+              "meaning": "製造行へ計上した実消費量。"
+            },
+            {
+              "name": "available",
+              "type": "Q",
+              "meaning": "この操作領域の共有可用量。"
+            },
+            {
+              "name": "wip",
+              "type": "Q",
+              "meaning": "未完出力量。"
+            },
+            {
+              "name": "good",
+              "type": "Q",
+              "meaning": "良品完成量。"
+            },
+            {
+              "name": "rejected",
+              "type": "Q",
+              "meaning": "不良完成量。"
+            },
+            {
+              "name": "published",
+              "type": "Q",
+              "meaning": "販売可用へ公開した良品量。"
+            },
+            {
+              "name": "source",
+              "type": [
+                "Option",
+                [
+                  "Owned",
+                  "Ops.Node",
+                  "owner"
+                ]
+              ],
+              "meaning": "特定済み材料identity。未選択はnone。"
+            },
+            {
+              "name": "output",
+              "type": [
+                "Option",
+                [
+                  "Owned",
+                  "Ops.Node",
+                  "owner"
+                ]
+              ],
+              "meaning": "結合した出力identity。未生成/未結合はnone。"
+            },
+            {
+              "name": "knowledge",
+              "type": [
+                "Data",
+                "Ops.Knowledge"
+              ],
+              "meaning": "相手効果を知っているか。追加の物理量ではない。"
+            },
+            {
+              "name": "effectSequence",
+              "type": "Z",
+              "meaning": "ownerが確定した効果の順序番号。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Ops.World",
+          "meaning": "名前付き操作と状態、由来、移行の比較領域。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "label",
+              "type": "Text",
+              "meaning": "履歴/移行比較の識別。"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}
