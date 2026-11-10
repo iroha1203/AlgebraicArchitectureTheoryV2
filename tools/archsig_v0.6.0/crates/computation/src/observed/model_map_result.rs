@@ -332,6 +332,11 @@ fn compute(
     tick(c)?;
     let source_plan = plan(g, refs[0])?;
     let target_plan = plan(g, refs[1])?;
+    let fixed_design = [source_plan, target_plan].iter().any(|plan| {
+        plan.assembly
+            .as_ref()
+            .is_some_and(|assembly| assembly.design.is_some())
+    });
     let source = model(source_plan)?;
     let target = model(target_plan)?;
     let mut values = Vec::new();
@@ -456,6 +461,7 @@ fn compute(
         failed = Some(Failure::Missing(read.metadata.missing.clone()));
     } else if read.metadata.failed {
         failed = Some(Failure::Coverage {
+            endpoint: None,
             facts: read.metadata.support.clone(),
         });
     } else if source.construction.root().snapshot != target.construction.root().snapshot
@@ -755,7 +761,7 @@ fn compute(
     if let Some(f) = &failed {
         let facts = match f {
             Failure::Missing(fs)
-            | Failure::Coverage { facts: fs }
+            | Failure::Coverage { facts: fs, .. }
             | Failure::Preservation { facts: fs } => fs.clone(),
             Failure::Unsupported { correspondence, .. } => vec![correspondence.clone()],
             Failure::SharedImage {
@@ -891,7 +897,7 @@ fn compute(
 
         if let Some(f) = &failed {
             match f {
-                Failure::Coverage { facts: fs } | Failure::Preservation { facts: fs } => {
+                Failure::Coverage { facts: fs, .. } | Failure::Preservation { facts: fs } => {
                     facts.extend(fs.iter().cloned())
                 }
                 Failure::SharedImage {
@@ -929,6 +935,34 @@ fn compute(
         facts.dedup();
         let mut left = value.unwrap_or(expression);
         let mut right = refs[1];
+        let mut endpoint_detail = None;
+        if fixed_design
+            && let Some(Failure::Coverage {
+                endpoint: Some(endpoint),
+                ..
+            }) = &failed
+        {
+            let subject = e
+                .indexes
+                .subject(&endpoint.subject.snapshot, &endpoint.subject.subject)?;
+            let entity = subject.ty.to_string();
+            left = b.scalar(
+                NodeType::Value(Type::Ref(entity.clone())),
+                "binding",
+                Scalar::Subject {
+                    snapshot: subject.snapshot.clone(),
+                    subject: subject.id.clone(),
+                    entity,
+                },
+                vec![expression],
+            )?;
+            right = refs[usize::from(!endpoint.from)];
+            endpoint_detail = Some(if endpoint.from {
+                "correspondence source is outside the selected source fragments"
+            } else {
+                "correspondence target is outside the selected target fragments"
+            });
+        }
         let mut counter_bindings = bindings.clone();
         let mut counter_args = vec![local_condition];
         if let Some(v) = &verified {
@@ -1070,6 +1104,9 @@ fn compute(
         ]
         .into_iter()
         .collect();
+        if let Some(detail) = endpoint_detail {
+            details.insert("condition_detail".into(), Json::str(detail));
+        }
         if let Some(value) = action_difference {
             details.insert("action_difference".into(), value);
         }
@@ -1123,11 +1160,7 @@ fn compute(
     part.arguments.extend(evidence.iter().copied());
     outputs.insert("proposition".into(), claim);
     let mut scope = b.parts[claim.0 - base].scope.clone();
-    if [source_plan, target_plan].iter().any(|plan| {
-        plan.assembly
-            .as_ref()
-            .is_some_and(|assembly| assembly.design.is_some())
-    }) {
+    if fixed_design {
         scope.restrict_to_design_point();
     }
     Ok(Computed {

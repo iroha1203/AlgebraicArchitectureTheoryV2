@@ -111,6 +111,16 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
             "{id}"
         );
     }
+    let [endpoint] = arr(get(answer("wrongEndpoint"), "counterexamples")) else {
+        panic!("endpoint counterexample");
+    };
+    let endpoint = get(value(endpoint), "data");
+    assert_eq!(subject(get(endpoint, "left")), "rust-T3");
+    assert_eq!(
+        get(endpoint, "right").value,
+        output("layout0", "assembly").value
+    );
+    assert!(s(get(endpoint, "condition_detail")).contains("target fragments"));
     let migration = value(output("migrate", "map"));
     assert_eq!(
         get(migration, "target_assembly").value,
@@ -165,6 +175,7 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
     std::fs::write(dir.join("archmap.json"), map).unwrap();
     let law = include_str!("fixtures/r2-structure-choice/laws.law")
         .replace("selected(p:Design)", "selected(p:Design,x:State,y:State)")
+        .replace("if p.split then p.new", "if (forall b in list<Bool>[true] . p.split=b) then p.new")
         .replace("interfaces(p:Design):Unit = unit", "interfaces(p:Design,x:State,y:State):List<(State,State)> = if p.split then list<(State,State)>[(x,y)] else list<(State,State)>[]");
     std::fs::write(dir.join("laws.law"), law).unwrap();
     let original = include_str!("fixtures/r2-structure-choice/queries.txt")
@@ -210,5 +221,7 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
     assert_eq!(s(get(fixed0, "status")), "established");
     assert_eq!(s(get(fixed1, "status")), "refuted");
     assert_eq!(s(get(get(fixed1, "scope"), "domain")), "finite_model");
-    assert!(arr(get(get(fixed1, "scope"), "quantifiers")).is_empty());
+    assert_eq!(s(get(get(fixed0, "scope"), "domain")), "finite_model");
+    assert!(!arr(get(get(fixed0, "scope"), "quantifiers")).is_empty());
+    assert!(!arr(get(get(fixed1, "scope"), "quantifiers")).is_empty());
 }

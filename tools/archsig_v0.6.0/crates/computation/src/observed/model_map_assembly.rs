@@ -39,6 +39,12 @@ impl SquareKind {
     }
 }
 #[derive(Debug)]
+pub(super) struct FailedEndpoint {
+    pub from: bool,
+    pub subject: Fact,
+}
+
+#[derive(Debug)]
 pub(super) enum Failure {
     Missing(Vec<Fact>),
     Unsupported {
@@ -47,6 +53,7 @@ pub(super) enum Failure {
     },
     Coverage {
         facts: Vec<Fact>,
+        endpoint: Option<FailedEndpoint>,
     },
     SharedImage {
         left_correspondence: Fact,
@@ -114,6 +121,7 @@ pub(super) fn select(
         } = &declaration.signature
         else {
             return Ok(Err(Failure::Coverage {
+                endpoint: None,
                 facts: vec![raw.clone()],
             }));
         };
@@ -168,7 +176,12 @@ pub(super) fn select(
             source_index.get(&endpoints[0]),
             target_index.get(&endpoints[1]),
         ) else {
+            let from = !source_index.contains_key(&endpoints[0]);
             return Ok(Err(Failure::Coverage {
+                endpoint: Some(FailedEndpoint {
+                    from,
+                    subject: endpoints[usize::from(!from)].clone(),
+                }),
                 facts: vec![raw.clone(), endpoints[0].clone(), endpoints[1].clone()],
             }));
         };
@@ -394,6 +407,7 @@ pub(super) fn glue(
             target.fragments.get(local.target),
         ) else {
             return Ok(Err(Failure::Coverage {
+                endpoint: None,
                 facts: vec![local.correspondence.clone()],
             }));
         };
@@ -404,6 +418,7 @@ pub(super) fn glue(
             || local.map.candidate().to_reading() != t.reading()
         {
             return Ok(Err(Failure::Coverage {
+                endpoint: None,
                 facts: vec![
                     local.correspondence.clone(),
                     s.root().clone(),
@@ -414,6 +429,7 @@ pub(super) fn glue(
     }
     if covered.len() != source.fragments.len() {
         return Ok(Err(Failure::Coverage {
+            endpoint: None,
             facts: source
                 .fragments
                 .iter()

@@ -264,10 +264,12 @@ pub(super) fn prepare(
             _ => None,
         };
         let Some((source, value)) = source else {
-            rejected = Some(model_assembly::rejected(
-                "選択状態にはapplyの実Architectureを要求する",
-                vec![root],
-            ));
+            let mut failure =
+                model_assembly::rejected("選択状態にはapplyの実Architectureを要求する", vec![root]);
+            if is_design && let Preparation::Rejected(rejection) = &mut failure {
+                rejection.values = Some((Scalar::Bool(true), Scalar::Bool(false)));
+            }
+            rejected = Some(failure);
             break;
         };
         let construction = source.construction();
@@ -282,19 +284,44 @@ pub(super) fn prepare(
                 "選択状態の元root・snapshot・readingまたは選択が異なる",
                 vec![root.clone(), selected_root.clone()],
             );
-            if is_design
-                && selected_root != &root
-                && let Preparation::Rejected(rejection) = &mut failure
-            {
-                let original_root = |fact: &Fact| -> Result<Scalar, ValidationFailure> {
-                    let subject = e.indexes.subject(&fact.snapshot, &fact.subject)?;
-                    Ok(Scalar::Subject {
-                        snapshot: fact.snapshot.clone(),
-                        subject: fact.subject.clone(),
-                        entity: subject.ty.to_string(),
-                    })
+            if is_design && let Preparation::Rejected(rejection) = &mut failure {
+                let (detail, left, right) = if selected_root != &root {
+                    let original_root = |fact: &Fact| -> Result<Scalar, ValidationFailure> {
+                        let subject = e.indexes.subject(&fact.snapshot, &fact.subject)?;
+                        Ok(Scalar::Subject {
+                            snapshot: fact.snapshot.clone(),
+                            subject: fact.subject.clone(),
+                            entity: subject.ty.to_string(),
+                        })
+                    };
+                    (
+                        "設計選択の元rootが明示束縛と異なる",
+                        original_root(&root)?,
+                        original_root(selected_root)?,
+                    )
+                } else if root.snapshot != target.snapshot {
+                    rejection.facts.push(target.clone());
+                    (
+                        "設計選択のsnapshotが組立て先と異なる",
+                        Scalar::Text(target.snapshot.clone()),
+                        Scalar::Text(root.snapshot.clone()),
+                    )
+                } else if construction.reading() != reading {
+                    (
+                        "設計選択のreadingが組立てのreadingと異なる",
+                        Scalar::Text(reading.into()),
+                        Scalar::Text(construction.reading().into()),
+                    )
+                } else {
+                    (
+                        "設計選択は未輸送の固有rootを要求する",
+                        Scalar::Bool(true),
+                        Scalar::Bool(false),
+                    )
                 };
-                rejection.values = Some((original_root(&root)?, original_root(selected_root)?));
+                rejection.facts.dedup();
+                rejection.detail = detail.into();
+                rejection.values = Some((left, right));
             }
             rejected = Some(failure);
             break;

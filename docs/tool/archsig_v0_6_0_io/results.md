@@ -1043,6 +1043,7 @@ restrictionではρ_target∘μ_hat_iとμ_i∘ρ_source、generatorではμ∘e
 left:FactPointer,right:FactPointer}` は、同じ共有類へ異なる像を指定した二つの原始対応を保持する。
 これらは核が計算した反例の位置であり、新しい観測値や入力証書ではない。
 設計選択付き組立ての反例は `condition_detail` に具体的な失敗理由を保持する。
+選択済み構成を使う移行の端点不一致は、欠けている側、実端点とその側の組立てを保持する。
 組立てで共有 field の値が合わない場合、修復済みの側は `repaired` に元 `apply` と slot を保持する。
 `left` と `right` は実際に比較した値、`facts` は原始観測の支持である。
 
