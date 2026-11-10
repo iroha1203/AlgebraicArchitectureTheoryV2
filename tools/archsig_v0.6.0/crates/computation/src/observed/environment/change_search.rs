@@ -263,7 +263,7 @@ pub(in crate::observed) fn domain(
             &mut Scope::default(),
             &environment.control,
             &[],
-            environment.indexes.primitive_valuation.as_ref(),
+            environment.indexes.primitive_valuation.as_deref(),
         )?;
     }
     Ok(values)

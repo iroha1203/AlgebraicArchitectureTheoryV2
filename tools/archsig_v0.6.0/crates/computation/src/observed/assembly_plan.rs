@@ -93,6 +93,7 @@ pub(super) enum Failure {
 }
 #[derive(Debug)]
 pub(super) struct Fragment {
+    pub applied: Option<NodeRef>,
     pub architecture: Architecture,
     pub arrows: super::internal_arrow_diagram::Diagram,
 }
@@ -105,6 +106,8 @@ pub(super) struct Assembly {
     pub bindings: Vec<Binding>,
     pub locals: Vec<Fragment>,
     pub restrictions: Vec<Architecture>,
+    pub repaired: BTreeMap<Fact, NodeRef>,
+    pub selections: Vec<NodeRef>,
 }
 fn failure(e: crate::construction::ConstructionFailure) -> ValidationFailure {
     match e {
@@ -216,13 +219,81 @@ pub(super) fn prepare(
             ));
         }
     }
+    let mut applied = BTreeMap::new();
+    let mut selected = BTreeMap::new();
+    let mut repaired = BTreeMap::new();
+    let mut selections = Vec::new();
+    let mut rejected = None;
+    for argument in &r.arguments {
+        let Some(name) = argument.name.strip_prefix("local.") else {
+            continue;
+        };
+        c.checkpoint(Checkpoint::ConfigurationMap)?;
+        let root = fact(
+            &values
+                .iter()
+                .find(|(binding, _)| binding == name)
+                .ok_or(internal!("修復局所の元root束縛がない"))?
+                .1,
+        )?;
+        let at = reference(e, g, &argument.value)?.ok_or(internal!("修復局所の元出力がない"))?;
+        input_refs.push(at);
+        selections.push(at);
+        let node = g.get(at)?;
+        let source = match &node.payload {
+            Some(Payload::Construction(value)) => match (&value.witness, &value.data) {
+                (Witness::Architecture(witness), native::ConstructionData::SharedRepair(data))
+                    if data.request().kind == super::request::QuestionKind::Apply =>
+                {
+                    let (overrides, _) = value.retained_architecture_overrides(g, c)?;
+                    Some((Arc::clone(witness), overrides))
+                }
+                _ => None,
+            },
+            _ => None,
+        };
+        let Some((source, overrides)) = source else {
+            rejected = Some(model_assembly::rejected(
+                "局所入力はapplyの実Architectureを要求する",
+                vec![root],
+            ));
+            break;
+        };
+        let construction = source.construction();
+        if construction.root() != &root
+            || construction.reading() != reading
+            || construction.transport().is_some()
+            || applied.contains_key(&root)
+        {
+            rejected = Some(model_assembly::rejected(
+                "修復局所の元root・snapshot・readingまたは選択が異なる",
+                vec![root, construction.root().clone()],
+            ));
+            break;
+        }
+        for (position, value) in overrides.iter() {
+            c.checkpoint(Checkpoint::ConfigurationMap)?;
+            let mut subject = position.clone();
+            subject.field = None;
+            subject.atom = None;
+            if !construction.local_domain().known().contains(&subject)
+                || selected.insert(position.clone(), value.clone()).is_some()
+            {
+                return Err(internal!("修復済み局所の更新が対象域と違う").into());
+            }
+            repaired.insert(position.clone(), at);
+        }
+        applied.insert(root, (at, source, overrides));
+    }
     let fragments = read(e, head, &values)?;
     let shared = read(e, along, &values)?;
     let mut missing = fragments.metadata.missing.clone();
     missing.extend(shared.metadata.missing.iter().cloned());
     missing.sort();
     missing.dedup();
-    let preparation = if fragments.metadata.failed || shared.metadata.failed {
+    let preparation = if let Some(rejected) = rejected {
+        rejected
+    } else if fragments.metadata.failed || shared.metadata.failed {
         model_assembly::rejected(
             "組立てViewの束縛または適用条件が成立しない",
             vec![target.clone()],
@@ -247,7 +318,19 @@ pub(super) fn prepare(
                 .ok_or(internal!("共有Viewの型付き値がない"))?,
             c,
         )?;
-        model_assembly::compile(&p.shared_inputs(), reading, &target, &roots, &pairs, c)?
+        if let Some(root) = applied.keys().find(|root| !roots.contains(root)) {
+            model_assembly::rejected("修復局所が担当Viewの選択域にない", vec![root.clone()])
+        } else {
+            model_assembly::compile(
+                &p.shared_inputs(),
+                reading,
+                &target,
+                &roots,
+                &pairs,
+                &selected,
+                c,
+            )?
+        }
     };
     let (model, failed) = match preparation {
         Preparation::Ready(model) => (Some(Arc::new(model)), None),
@@ -298,8 +381,14 @@ pub(super) fn prepare(
     if let Some(model) = &model {
         for (index, local) in model.fragments.iter().enumerate() {
             c.checkpoint(Checkpoint::ConfigurationMap)?;
-            let local = ArchitectureWitness::assembly_fragment(&witness, local.clone(), c)
-                .map_err(failure)?;
+            let source = applied.get(local.root());
+            let local = ArchitectureWitness::assembly_fragment(
+                &witness,
+                local.clone(),
+                source.map(|(_, source, overrides)| (source.as_ref(), Arc::clone(overrides))),
+                c,
+            )
+            .map_err(failure)?;
             let local = architecture_result::architecture(g, local, c)?;
             let objects =
                 super::object_component_diagram::retain(g, p.shared_inputs(), local.reference, c)?
@@ -314,6 +403,7 @@ pub(super) fn prepare(
                 c,
             )?;
             locals.push(Fragment {
+                applied: source.map(|(reference, _, _)| *reference),
                 architecture: local,
                 arrows,
             });
@@ -341,6 +431,8 @@ pub(super) fn prepare(
         bindings,
         locals,
         restrictions,
+        repaired,
+        selections,
     });
     let mut plan = if assembly.failure.is_none() {
         let core = assembly

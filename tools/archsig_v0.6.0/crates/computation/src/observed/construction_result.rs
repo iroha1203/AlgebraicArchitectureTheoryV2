@@ -396,6 +396,14 @@ impl ConstructionValue {
             ConstructionData::Change(d) => d.overrides(g),
             ConstructionData::Quotient(d) => d.overrides(g),
             ConstructionData::SharedRepair(d) => d.overrides(g),
+            ConstructionData::ObjectComponents(d) if d.inherited_state().is_some() => {
+                let Some(Payload::Construction(parent)) =
+                    &g.get(d.inherited_state().unwrap())?.payload
+                else {
+                    return Err(internal!("部分対象の元状態がnativeでない").into());
+                };
+                parent.architecture_overrides(g)
+            }
             _ => Ok(vec![]),
         }
     }
@@ -418,6 +426,14 @@ impl ConstructionValue {
                 references.push((*index, *value));
             }
             return Ok((a.body.overrides.clone(), references));
+        }
+        if let ConstructionData::ObjectComponents(d) = &self.data
+            && let Some(reference) = d.inherited_state()
+        {
+            let Some(Payload::Construction(parent)) = &g.get(reference)?.payload else {
+                return Err(internal!("部分対象の元状態がnativeでない").into());
+            };
+            return parent.retained_architecture_overrides(g, control);
         }
         let mut values = vec![];
         let mut references = vec![];
@@ -1557,6 +1573,7 @@ impl ArchitectureWitness {
     pub(super) fn assembly_fragment(
         parent: &Arc<Self>,
         construction: Arc<ConfigurationConstruction>,
+        source: Option<(&Self, Arc<Vec<(Fact, Scalar)>>)>,
         control: &Control,
     ) -> Result<Arc<Self>, ConstructionFailure> {
         let Some(transport) = parent.construction().transport() else {
@@ -1572,12 +1589,31 @@ impl ArchitectureWitness {
                 "局所対象が組立て元のrootでない".into(),
             ));
         }
-        let a = Self::from_construction(
-            parent.inputs.clone(),
-            &parent.request,
-            construction,
-            control,
-        )?;
+        let a = if let Some((source, overrides)) = source {
+            if source.construction().root() != construction.root()
+                || source.construction().local_domain().known()
+                    != construction.local_domain().known()
+            {
+                return Err(ConstructionFailure::InvalidSelection(
+                    "修復局所の所属域が組立ての元域と違う".into(),
+                ));
+            }
+            Self::from_parts(
+                parent.inputs.clone(),
+                &parent.request,
+                construction,
+                overrides,
+                ArchitectureSupport::Shared(source.body.support.clone()),
+                control,
+            )?
+        } else {
+            Self::from_construction(
+                parent.inputs.clone(),
+                &parent.request,
+                construction,
+                control,
+            )?
+        };
         Ok(Arc::new(Self {
             inputs: a.inputs.clone(),
             request: a.request.clone(),

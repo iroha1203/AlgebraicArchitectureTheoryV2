@@ -626,7 +626,8 @@ pub(in crate::observed) fn solution_row(
     let mut assignments = environment
         .indexes
         .primitive_valuation
-        .clone()
+        .as_deref()
+        .cloned()
         .unwrap_or_default();
     assignments.extend(candidate.update.values.iter().cloned());
     let assignments = assignments.into_iter().collect::<Vec<_>>();

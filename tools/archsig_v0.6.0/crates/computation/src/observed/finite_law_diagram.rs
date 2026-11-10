@@ -907,7 +907,7 @@ fn object_plan(
     })
 }
 fn append_readings(
-    inputs: &CheckedInputs,
+    state: &Environment<'_>,
     architecture: &Arc<ArchitectureWitness>,
     family: &AutomaticLawFunctions,
     parts: &mut Vec<Part>,
@@ -921,7 +921,7 @@ fn append_readings(
     })?;
     for original in &out.originals {
         tick(c)?;
-        let reading = family.observed_law(inputs, original.column, c)?;
+        let reading = family.observed_law(state, original.column, c)?;
         let mut support = base_support.clone();
         support.extend_from_slice(&reading.support);
         support.sort();
@@ -961,6 +961,7 @@ fn append_readings(
 }
 fn append_presentation(
     inputs: &CheckedInputs,
+    state: &Environment<'_>,
     a: &Arc<ArchitectureWitness>,
     reference: NodeRef,
     f: &AutomaticLawFunctions,
@@ -982,7 +983,7 @@ fn append_presentation(
             .components
             .get(i)
             .ok_or(internal!("有限表示の元成分がない"))?;
-        let (value, support) = f.observed_indicator(inputs, column, component.as_deref(), c)?;
+        let (value, support) = f.observed_indicator(state, column, component.as_deref(), c)?;
         observed.push(value);
         for mut fact in support {
             tick(c)?;
@@ -1225,16 +1226,37 @@ impl Source {
             return Ok(FiniteAttempt::Incomplete);
         }
         // 以後は完成した族だけを消費する。元parameter履歴をpartsと同時保持しない。
+        let mut selected = Vec::new();
+        for (slot, value) in architecture.overrides() {
+            tick(c)?;
+            let has_reference = crate::construction::has_reference(&inputs, &value.ty(), c)
+                .map_err(|failure| match failure {
+                    crate::construction::ConstructionFailure::Stopped(signal) => {
+                        ValidationFailure::Stop(signal)
+                    }
+                    other => other.internal_context("有限状態の更新型".into()).into(),
+                })?;
+            if !has_reference {
+                selected.push((slot.clone(), value.clone()));
+            }
+        }
+        let state = if selected.is_empty() {
+            Environment::new(&inputs, c)?
+        } else {
+            Environment::with_primitive_valuation(&inputs, &selected, c)?
+        };
         let family = full
             .into_family()
-            .ok_or(internal!("確認済みの自動Law族がない"))?;
+            .ok_or(internal!("確認済みの自動Law族がない"))?
+            .with_selected_state(&state, c)?;
         let f = &family;
         let mut parts = vec![];
         let shared = basis(f, base, &mut parts, c)?;
         let mut outputs = object_plan(f, &inputs, object, base, &mut parts, &shared, c)?;
-        append_readings(&inputs, &architecture, f, &mut parts, &mut outputs, base, c)?;
+        append_readings(&state, &architecture, f, &mut parts, &mut outputs, base, c)?;
         append_presentation(
             &inputs,
+            &state,
             &architecture,
             reference,
             f,
@@ -1248,9 +1270,10 @@ impl Source {
             for object in 1..architecture.readings().objects().len() {
                 tick(c)?;
                 let mut output = object_plan(f, &inputs, object, base, &mut parts, &shared, c)?;
-                append_readings(&inputs, &architecture, f, &mut parts, &mut output, base, c)?;
+                append_readings(&state, &architecture, f, &mut parts, &mut output, base, c)?;
                 append_presentation(
                     &inputs,
+                    &state,
                     &architecture,
                     reference,
                     f,

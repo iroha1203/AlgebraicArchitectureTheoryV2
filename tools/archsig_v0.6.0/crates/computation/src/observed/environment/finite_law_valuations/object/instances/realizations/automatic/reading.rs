@@ -16,15 +16,15 @@ pub(in crate::observed) struct ObservedLawReading {
 impl<R: LawRows> AutomaticLawValuations<R> {
     pub(in crate::observed) fn observed_law(
         &self,
-        inputs: &CheckedInputs,
+        state: &Environment<'_>,
         column: usize,
         c: &Control,
     ) -> Result<ObservedLawReading, ValidationFailure> {
         tick(c)?;
-        if &self.value.sources != inputs.sources() {
+        if &self.value.sources != state.indexes.inputs.sources() {
             return Err(internal!("有限Lawの実読取りと元三入力が違う").into());
         }
-        let mut env = Environment::new(inputs, c)?;
+        let mut env = state.fork_primitive_read(c);
         *env.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
         self.value.select_column_object(&mut env, column)?;
         let row = self.value.probe_column(&env, column, 0)?.row;

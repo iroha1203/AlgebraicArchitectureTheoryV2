@@ -471,8 +471,8 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 | LawInstance | `{name:QName,role:Role,bindings:Binding[],guard?:Expression,body:Expression,occurrence:Location}` |
 | Proposition | `{predicate:Predicate,operands:Ref[],quantifiers:Quantifier[]}` |
 | Configuration | `{family:FactPointer[],requirements:FactPointer[],relations:[FactPointer,FactPointer][],identifications:[FactPointer,FactPointer][]}` |
-| Architecture | `{reading:QName,root:Ref,configuration:Configuration,laws:LawInstance[],internal_arrows:Ref[],overrides:{slot:Slot,value:Ref}[]}` |
-| ModelAssembly | `{reading:QName,fragments:Ref,interfaces:Ref,object:Architecture,algebra:ObjectAlgebra,inclusions:{fragment:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,generators:{source:Operation,target:Operation,proposition:Proposition}[]}[]}` |
+| Architecture | `{reading:QName,root:Ref,configuration:Configuration,laws:LawInstance[],internal_arrows:Ref[],overrides:{slot:Slot,value:Ref}[],state_of?:Architecture}` |
+| ModelAssembly | `{reading:QName,fragments:Ref,interfaces:Ref,object:Architecture,algebra:ObjectAlgebra,inclusions:{fragment:Architecture,applied?:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,generators:{source:Operation,target:Operation,proposition:Proposition}[]}[]}` |
 | ModelMapAssembly | `{source:Architecture,target:Architecture,source_assembly:ModelAssembly,target_assembly:ModelAssembly,correspondences:Ref,configuration_map:ConfigurationMap,locals:{correspondence:Ref,source:Architecture,target:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,proposition:Proposition}[],generators:{source:Operation,target:Operation,proposition:Proposition}[],laws:{source_object:ObjectComponent,target_object:ObjectComponent,source_law:LawInstance,target_law:LawInstance,proposition:Proposition}[]}` |
 | AtomUniverse | `{atoms:FactPointer[]}` |
 | AtomMap | `{universe:AtomUniverse,images:FactPointer[]}` |
@@ -481,7 +481,12 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 | Operation | `{source:Architecture,target:Architecture,candidate:MapCandidate,configuration_map:ConfigurationMap,action:AtomMap,name:OperationName,word:Ref[]}` |
 | Path | `{reading:QName,source:Ref,target:Ref,generators:Ref[]}` |
 
+修復済みの全体から作る owned component の Architecture は `state_of` を通じて元対象の
+更新値を共有する。部分対象の所属域と Law の適用は、その component に対して確認する。
+
 ModelAssembly の fragments と interfaces は、元 View・束縛から評価した型付き値を指す。
+`local.<parameter>` を選んだ担当は `inclusions[].applied` がその `apply` の出力を直接参照する。
+`fragment` は同じ更新値を保ち、組立てと共通の U で包含・再制限を検査するための局所対象である。
 各 inclusion.map は同じ全体 object を終域とし、generators は局所の各生成操作の像と全 U 上の
 自然性を確認した命題を持つ。この有限表示を語へ延長する。局所にある全称 Law と、対象域の増えた
 全体の Law の成立はそれぞれ元の式で検査し、包含の構造保存から成立を推論しない。
@@ -1007,7 +1012,7 @@ Evidenceは結果専用。`{kind:EvidenceKind,data:EvidenceData}`をpayloadと�
 | --- | --- |
 | evaluation | `{instance:LawInstance,lhs:Ref,rhs:Ref,residual?:Ref}` |
 | finite_exhaustion | `{domain:Domain,checked:Nat,instances:Ref[]}` |
-| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[],action_difference?:AssemblyActionDifference,overlap?:AssemblyOverlap}` |
+| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[],action_difference?:AssemblyActionDifference,overlap?:AssemblyOverlap,repaired?:{side:"left"\|"right",object:Architecture,slot:Slot}[]}` |
 | linear_solution | `{map:ModuleMap,rhs:Vector,solution:Vector,recheck:Proposition}` |
 | linear_inconsistent | `{map:ModuleMap,rhs:Vector,annihilator:Vector,pairing:Ref,modulus?:DecimalNat}` |
 | smith | `{map:ModuleMap,left:ModuleMap,right:ModuleMap,diagonal:ModuleMap,transformed_rhs?:Vector,divisibility:Proposition[]}` |
@@ -1034,6 +1039,8 @@ restrictionではρ_target∘μ_hat_iとμ_i∘ρ_source、generatorではμ∘e
 `AssemblyOverlap={source:FactPointer,left_correspondence:FactPointer,right_correspondence:FactPointer,
 left:FactPointer,right:FactPointer}` は、同じ共有類へ異なる像を指定した二つの原始対応を保持する。
 これらは核が計算した反例の位置であり、新しい観測値や入力証書ではない。
+組立てで共有 field の値が合わない場合、修復済みの側は `repaired` に元 `apply` と slot を保持する。
+`left` と `right` は実際に比較した値、`facts` は原始観測の支持である。
 
 completion_pairは未知slotの型を保つ補完対、separating_pairは宣言済み候補域の二候補であり、
 観測された反例と区別する。反証には元の名前・入力値・結果・source位置を保持する。

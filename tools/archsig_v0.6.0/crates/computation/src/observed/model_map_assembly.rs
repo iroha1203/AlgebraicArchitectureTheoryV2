@@ -243,7 +243,7 @@ pub(super) fn verify(
     evaluations: [Arc<super::object_evaluate::LawEvaluationCache>; 2],
     c: &Control,
 ) -> Result<Verified, super::object_law_transport::ObjectLawTransportFailure> {
-    use super::object_law_transport::{ObjectLawTransportFailure, object_law_transport_on};
+    use super::object_law_transport::{ObjectLawTransportFailure, object_law_transport_on_state};
     tick(c)?;
     // 組立てには少なくとも一つの担当がある。global操作族は包含が既に共有している。
     let source_arrows = source
@@ -269,11 +269,53 @@ pub(super) fn verify(
     let declarations = Arc::new(maps::declaration_correspondence_constructed(
         &inputs, &glued.map, c,
     )?);
+    let states = if source.repaired_values.is_empty() && target.repaired_values.is_empty() {
+        None
+    } else {
+        let prepare =
+            |model: &Model, readings: &crate::construction::readings::ObjectReadingInstances| {
+                let classify = |failure: super::result::ValidationFailure| match failure {
+                    super::result::ValidationFailure::Stop(signal) => {
+                        ConstructionFailure::Stopped(signal)
+                    }
+                    other => ConstructionFailure::Inconsistent(
+                        other.internal_context("修復済み写像の始終状態".into()),
+                    ),
+                };
+                let state = super::environment::Environment::with_primitive_valuation(
+                    &inputs,
+                    &model.repaired_values,
+                    c,
+                )
+                .map_err(classify)?;
+                let domains = (0..readings.objects().len())
+                    .map(|object| {
+                        tick(c)?;
+                        super::object_evaluate::ObjectDomain::from_readings(
+                            &inputs, readings, object, c,
+                        )
+                        .map(Arc::new)
+                        .map_err(classify)
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok::<_, ConstructionFailure>((state, domains))
+            };
+        Some([
+            prepare(source, evaluations[0].readings())?,
+            prepare(target, evaluations[1].readings())?,
+        ])
+    };
     let mut laws = Vec::new();
     let readings = evaluations[0].readings();
     let mut unsupported_instances = Vec::new();
     for (index, row) in readings.instances().iter().enumerate() {
         if row.declaration().kind != "law" {
+            continue;
+        }
+        if !row.parameters().is_empty()
+            && (!source.repaired_values.is_empty() || !target.repaired_values.is_empty())
+        {
+            unsupported_instances.push(index);
             continue;
         }
         for parameter in row.parameters() {
@@ -298,13 +340,21 @@ pub(super) fn verify(
             {
                 continue;
             }
-            laws.push(object_law_transport_on(
+            laws.push(object_law_transport_on_state(
                 Arc::clone(&inputs),
                 Arc::clone(&declarations),
                 Arc::clone(&transport),
                 evaluations.clone(),
                 object,
                 instance,
+                states
+                    .as_ref()
+                    .map(|[(source, source_domains), (target, target_domains)]| {
+                        [
+                            (source, source_domains.as_slice()),
+                            (target, target_domains.as_slice()),
+                        ]
+                    }),
                 c,
             )?);
         }
@@ -513,6 +563,7 @@ mod tests {
             &fact("G"),
             &[fact("A"), fact("B")],
             &[(fact("ma"), fact("mb"))],
+            &BTreeMap::new(),
             &c,
         )
         .unwrap() else {
@@ -593,6 +644,7 @@ mod tests {
             &fact("G"),
             &[fact("A"), fact("B")],
             &[(fact("ma"), fact("mb"))],
+            &BTreeMap::new(),
             &c,
         )
         .unwrap() else {
@@ -1132,6 +1184,7 @@ mod tests {
             &fact("G"),
             &[fact("A")],
             &[],
+            &BTreeMap::new(),
             &Control::unlimited(),
         )
         .unwrap() else {

@@ -382,15 +382,14 @@ fn raw_reading_rejects_other_inputs_and_preserves_pending_and_failed_owned_condi
             {
                 continue;
             }
-            let reading = f.observed_law(p.inputs(), column, &quiet()).unwrap();
+            let reading = f.observed_law(&env, column, &quiet()).unwrap();
             found = true;
             assert_eq!(reading.condition_pending, pending);
             assert_eq!(reading.condition_failed, failed);
             assert_eq!(reading.holds, (!pending && !failed).then_some(true));
-            assert!(
-                f.observed_law(prepared(true, BODY, "root").inputs(), column, &quiet())
-                    .is_err()
-            );
+            let other = prepared(true, BODY, "root");
+            let other_env = Environment::new(other.inputs(), &quiet()).unwrap();
+            assert!(f.observed_law(&other_env, column, &quiet()).is_err());
         }
         assert!(found);
     }

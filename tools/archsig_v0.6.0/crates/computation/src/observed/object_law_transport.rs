@@ -322,6 +322,81 @@ fn reading(e: &ObjectEvaluation, c: &Control) -> Result<LawBooleanReading, Const
     Ok(r)
 }
 
+fn reading_from_state(
+    state: &super::environment::Environment<'_>,
+    domains: &[Arc<super::object_evaluate::ObjectDomain>],
+    readings: &ObjectReadingInstances,
+    object: usize,
+    instance: usize,
+    c: &Control,
+) -> Result<LawBooleanReading, ConstructionFailure> {
+    use super::result::{Scalar, ValidationFailure};
+    use crate::construction::readings::InstanceApplication;
+    use archsig_common::types::Type;
+    let row = &readings.instances()[instance];
+    let mut result = LawBooleanReading {
+        required: required(row)?,
+        application: LawApplication::Guard(None),
+        body: None,
+        conditional: None,
+    };
+    match &row.applications()[object] {
+        InstanceApplication::NotApplicable => {
+            result.application = LawApplication::OutsideObject;
+            result.conditional = Some(true);
+            return Ok(result);
+        }
+        InstanceApplication::Applicable { conditions } if !conditions.is_empty() => {
+            result.application = LawApplication::ConditionalMembership(conditions.clone());
+            return Ok(result);
+        }
+        InstanceApplication::Applicable { .. } => {}
+    }
+    let classify = |failure: ValidationFailure| match failure {
+        ValidationFailure::Stop(signal) => ConstructionFailure::Stopped(signal),
+        failure => ConstructionFailure::Inconsistent(
+            failure.internal_context("修復状態のLaw読取り".into()),
+        ),
+    };
+    let domain = domains
+        .get(object)
+        .ok_or_else(|| inconsistent("修復状態の対象域がない"))?;
+    let env = state.for_constructed_state(domain, c);
+    let mut bindings = Vec::new();
+    for binding in row.bindings() {
+        tick(c)?;
+        let Type::Ref(ref entity) = binding.parameter().ty.erase() else {
+            return Err(inconsistent("修復状態の固定Law束縛がRefでない"));
+        };
+        let fact = binding.subject();
+        bindings.push((
+            binding.parameter().name.clone(),
+            Scalar::Subject {
+                snapshot: fact.snapshot.clone(),
+                subject: fact.subject.clone(),
+                entity: entity.clone(),
+            },
+        ));
+    }
+    let declaration = &env.indexes.inputs.law().declarations()[&row.declaration().name];
+    let evaluation = match env.local_point_without_trace(declaration, &bindings) {
+        Ok((evaluation, _)) => evaluation,
+        Err(ValidationFailure::UnsupportedExpression { .. }) => return Ok(result),
+        Err(failure) => return Err(classify(failure)),
+    };
+    if evaluation.condition_failed || evaluation.condition_pending {
+        return Ok(result);
+    }
+    result.application = LawApplication::Guard(evaluation.guard);
+    result.body = evaluation.predicate;
+    result.conditional = match (evaluation.guard, evaluation.predicate) {
+        (Some(false), _) | (_, Some(true)) => Some(true),
+        (Some(true), predicate) => predicate,
+        _ => None,
+    };
+    Ok(result)
+}
+
 /// 補完族の集約ではなく、元DAGの指定caseの適用と述語を読む。
 pub(super) fn native_case_reading(
     e: &ObjectEvaluation,
@@ -445,6 +520,34 @@ pub(crate) fn object_law_transport_on(
     c: &Control,
 ) -> Result<ObjectLawTransport, ObjectLawTransportFailure> {
     tick(c)?;
+    object_law_transport_on_state(
+        inputs,
+        declarations,
+        objects,
+        evaluations,
+        object,
+        instance,
+        None,
+        c,
+    )
+}
+
+pub(super) type SelectedState<'state, 'input> = (
+    &'state super::environment::Environment<'input>,
+    &'state [Arc<super::object_evaluate::ObjectDomain>],
+);
+
+#[allow(clippy::too_many_arguments)]
+pub(super) fn object_law_transport_on_state(
+    inputs: Arc<CheckedInputs>,
+    declarations: Arc<DeclarationCorrespondence>,
+    objects: Arc<ConfigurationTransport>,
+    evaluations: [Arc<super::object_evaluate::LawEvaluationCache>; 2],
+    object: usize,
+    instance: usize,
+    states: Option<[SelectedState<'_, '_>; 2]>,
+    c: &Control,
+) -> Result<ObjectLawTransport, ObjectLawTransportFailure> {
     let source_readings = evaluations[0].readings().clone();
     let target_readings = evaluations[1].readings().clone();
     if !std::ptr::eq(
@@ -542,6 +645,40 @@ pub(crate) fn object_law_transport_on(
                 source: source_required,
                 target: target_required,
             });
+            decided = true;
+            tick(c)?;
+            return Ok(());
+        }
+        if let Some(
+            [
+                (source_state, source_domains),
+                (target_state, target_domains),
+            ],
+        ) = states
+        {
+            if r.instance().parameters().is_empty()
+                && r.target_readings.instances()[ti].parameters().is_empty()
+            {
+                let source = reading_from_state(
+                    source_state,
+                    source_domains,
+                    &r.source_readings,
+                    object,
+                    instance,
+                    c,
+                )?;
+                let target = reading_from_state(
+                    target_state,
+                    target_domains,
+                    &r.target_readings,
+                    to,
+                    ti,
+                    c,
+                )?;
+                r.outcome = family::compare(&source, &target);
+                r.source_reading = Some(source);
+                r.target_reading = Some(target);
+            }
             decided = true;
             tick(c)?;
             return Ok(());

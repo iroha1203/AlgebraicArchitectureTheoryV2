@@ -2241,8 +2241,8 @@ impl<'a> Parser<'a> {
             self.tick()?;
             let mut key = self.name(false)?;
             if self.take(b'.')? {
-                if key != "bind" {
-                    return Err(self.error("binding key prefix must be bind"));
+                if key != "bind" && !(kind == "assemble" && key == "local") {
+                    return Err(self.error("invalid dotted argument prefix"));
                 }
                 key.push('.');
                 key.push_str(&self.name(false)?);

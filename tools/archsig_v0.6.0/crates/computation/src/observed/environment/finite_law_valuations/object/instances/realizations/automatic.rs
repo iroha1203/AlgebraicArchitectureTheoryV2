@@ -220,6 +220,7 @@ fn automatic_with_sink<S: ParameterSink, R: LawRows>(
             let family = AutomaticLawValuations {
                 readings: readings.clone(),
                 value,
+                selected_values: None,
             };
             if family.domain_complete()
                 && (family.positions() != result.parameters.positions
@@ -240,6 +241,7 @@ fn automatic_with_sink<S: ParameterSink, R: LawRows>(
             result.family = error.partial.map(|p| AutomaticLawValuations {
                 readings: readings.clone(),
                 value: *p,
+                selected_values: None,
             });
             Err(AutomaticLawFailure {
                 cause: error.cause,
@@ -252,6 +254,7 @@ fn automatic_with_sink<S: ParameterSink, R: LawRows>(
 pub(in crate::observed) struct AutomaticLawValuations<R = Vec<FiniteLawRow>> {
     readings: ObjectReadingInstances,
     value: FiniteLawFamilyValuations<R>,
+    selected_values: Option<Arc<BTreeMap<Fact, Scalar>>>,
 }
 pub(in crate::observed) type AutomaticLawFunctions = AutomaticLawValuations<IntegerRows>;
 pub(in crate::observed) struct AutomaticLawQuotient<'a, R = Vec<FiniteLawRow>> {
@@ -259,6 +262,56 @@ pub(in crate::observed) struct AutomaticLawQuotient<'a, R = Vec<FiniteLawRow>> {
     value: FiniteLawQuotient<'a, R>,
 }
 impl<R: LawRows> AutomaticLawValuations<R> {
+    pub(in crate::observed) fn with_selected_state(
+        mut self,
+        environment: &Environment<'_>,
+        c: &Control,
+    ) -> Result<Self, ValidationFailure> {
+        let Some(values) = &environment.indexes.primitive_valuation else {
+            return Ok(self);
+        };
+        self.selected_values = Some(Arc::clone(values));
+        let inputs = environment.indexes.inputs;
+        let mut observed = Vec::new();
+        for position in self.positions() {
+            tick(c)?;
+            if let Some(value) = values.get(position) {
+                observed.push(value.clone());
+                continue;
+            }
+            let field = environment.indexes.field(
+                &environment.state,
+                &position.snapshot,
+                &position.subject,
+                position
+                    .field
+                    .as_deref()
+                    .ok_or(internal!("元 field がない"))?,
+            )?;
+            let archsig_input::archmap::Slot::Known { value, .. } = &field.slot else {
+                self.value.observed_point = None;
+                return Ok(self);
+            };
+            observed.push(
+                scalar_from(value, &field.ty, inputs.law(), c)?
+                    .ok_or(internal!("元の有限値が読めない"))?,
+            );
+        }
+        let mut selected = None;
+        for (index, row) in self.domain().iter().enumerate() {
+            tick(c)?;
+            let mut equal = row.len() == observed.len();
+            for (a, b) in row.iter().zip(&observed) {
+                equal &= data::equal(a, b, c)?;
+            }
+            if equal && selected.replace(index).is_some() {
+                return Err(internal!("選択した有限状態が重複する").into());
+            }
+        }
+        self.value.observed_point = selected;
+        Ok(self)
+    }
+
     pub(in crate::observed) fn columns(&self) -> &[FiniteLawColumn<R>] {
         self.value.columns()
     }
@@ -301,16 +354,16 @@ impl<R: LawRows> AutomaticLawValuations<R> {
     /// 補完代入を入れず、同じ元列のoperandとその読取りを現在の観測から得る。
     pub(in crate::observed) fn observed_indicator(
         &self,
-        inputs: &CheckedInputs,
+        state: &Environment<'_>,
         column: usize,
         component: Option<&[usize]>,
         c: &Control,
     ) -> Result<(Option<BigInt>, Vec<Fact>), ValidationFailure> {
         tick(c)?;
-        if &self.value.sources != inputs.sources() {
+        if &self.value.sources != state.indexes.inputs.sources() {
             return Err(internal!("有限Lawの実評価と元三入力が違う").into());
         }
-        let mut e = Environment::new(inputs, c)?;
+        let mut e = state.fork_primitive_read(c);
         *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
         self.value.select_column_object(&mut e, column)?;
         let reads = || -> Result<Vec<Fact>, ValidationFailure> {

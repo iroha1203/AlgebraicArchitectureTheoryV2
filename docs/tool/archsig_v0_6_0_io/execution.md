@@ -50,12 +50,13 @@ Kind     ::= build | assemble | assemble_map | evaluate | check | map | compose 
 Head     ::= QName | Handle
 Argument ::= QName | Handle | Enum | Degree | Ordinal
 Handle   ::= "@" Id "/" Id | "$" Name ("." Name | "[" Index "]")*
-Key      ::= Name | "bind." Name
+Key      ::= Name | "bind." Name | "local." Name
 Index    ::= "0" | [1-9][0-9]*
 Degree   ::= Index
 Ordinal  ::= Index
 ```
 
+`local.` の Key は `assemble` にだけ指定できる。
 QName、Id、Nameは[入力](inputs.md)と[Law](law.md)の定義に従う。
 ただし固定引数名と公開された射影名の位置では、then、law、some等の当該固定語を受理する。
 Lawの予約語と重なることを理由に、これらの位置の固定語を拒否しない。
@@ -122,7 +123,7 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | 問いの正確な形 | 選択と返すfield |
 | --- | --- |
 | `build(Reading,on=Handle)` | rootとreadingから対象と有限表示のobject algebraを生成する。`proposition:Proposition`、構成できた`object:Architecture`、成立時`algebra:ObjectAlgebra` |
-| `assemble(View,on=Handle,along=View,B)` | 局所rootと共有対から対象を構成する。`proposition:Proposition`、成立時`assembly:ModelAssembly`、`object:Architecture`、`algebra:ObjectAlgebra` |
+| `assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…)` | 局所rootと共有対から対象を構成する。`proposition:Proposition`、成立時`assembly:ModelAssembly`、`object:Architecture`、`algebra:ObjectAlgebra` |
 | `assemble_map(View,from=Handle,to=Handle,B)` | 始終のModelAssemblyと担当別の原始correspondenceから全体写像を構成する。`proposition:Proposition`、作用構成時`candidate:MapCandidate`、configuration保存時`configuration_map:ConfigurationMap`、全条件成立時`map:ModelMapAssembly` |
 | `evaluate(View,on=Handle?,B)` | viewの全parameterを束縛して評価する。onは結果のArchitectureを読む環境。`value:T`、`evaluation:Evaluation`。TはPathやそのcontainerを含むLawの返り型 |
 | `check(Law,on=Handle?,B)` | Lawの選択instance族について、未束縛parameterと内部量化を保って成立を問う。onは結果のArchitectureを読む環境。`proposition:Proposition`、`evaluation:Evaluation` |
@@ -381,7 +382,7 @@ apply は現在入力の通常の所属・更新式・元Law検査を行い、�
 
 ### 有限の局所モデルを組み立てる問い
 
-`assemble(View,on=Handle,along=View,B)` は、担当別の root の有限集合を返す View と、
+`assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…)` は、担当別の root の有限集合を返す View と、
 共有する個体の対を返す along の View を同じ明示束縛 B で評価する。
 両 View は同じ reading に属し、parameter の名前・型を共有する。全 parameter を束縛する。
 第1 View の戻り型は owner を持たない同じ entity 型の `Set<Root>` とする。
@@ -393,6 +394,12 @@ on は同じ snapshot・root 型の原始参照で、組立て後の root の id
 担当 root は空でない有限集合とし、on と異なる。on には既存の owned 個体がないことを要求する。
 初段の適用族は、同じ snapshot・定義環境・reading で、各局所 root とその所属個体、および on の field がすべて既知である族とする。
 関数値 Term を含む field はこの算法の対象外とする。入力の通常の型・参照検査は先に行う。
+
+任意の `local.<parameter>=$applyId.object` で、担当 root に対して選んだ修復済みの局所状態を使う。
+parameter は第1 View の root 型引数で、束縛値と `apply` の元 root、snapshot、reading、所属域を照合する。
+異なる引数で同じ担当を二重選択した場合や別担当の `apply` を選んだ場合は整合失敗になる。
+同じ Key を二度書くと不正な問いになる。指定のない担当は原始状態を読む。
+局所の全候補を自動選択する処理は行わず、利用者が各 `candidate` と `apply` を明示する。
 
 返す field は `proposition:Proposition`、成立時 `assembly:ModelAssembly`、
 `object:Architecture`、`algebra:ObjectAlgebra` とする。
@@ -427,10 +434,12 @@ owned型とfield位置の対応は同じ元宣言を結ぶものとする。
 
 局所対応の型・値・参照・configuration保存、重なりの像の一致、再制限の可換性、
 全体生成操作の保存とLaw移送を核が検査する。Law移送はrequired status・適用とBool読取りを
-元の出現と束縛で比較する。初段は残るparameterの全域を既存の有限型域算法で構成できるLaw族を扱う。
+元の出現と束縛で比較する。原始状態同士では、残る parameter の全域を構成できる有限 Law 族を扱う。
+修復済み状態を含む場合は、束縛済みの Law を実際の更新値で読む。未束縛の族の未対応理由は
+元 Law 宣言の位置と残る parameter の型を示す。
 Configuration保存を確認した時点でconfiguration_mapを保持し、操作/Law保存も確認した場合だけ
 ModelMapAssemblyを返す。確認済みの構造ごとにfieldを区別する。
-欠測は元位置付きmissing_observation、適用族外は元宣言・式と束縛付きunsupported_algorithm、
+欠測は元位置付きmissing_observation、その他の適用族外は元位置付きunsupported_algorithm、
 共有像・保存・可換性の不一致は実像と元位置付きcondition_failedとする。
 複数の保存条件のうち一つでも実際の反証を得た場合は、別条件が未対応・未決でも全体をrefutedとし、
 その反例と失敗条件を保持する。未対応条件の理由も消さず、反証がなく確認を終えられない場合はundeterminedとする。

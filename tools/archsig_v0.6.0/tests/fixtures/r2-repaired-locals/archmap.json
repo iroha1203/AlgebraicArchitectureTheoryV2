@@ -1,0 +1,374 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "Assemble",
+      "version": "1",
+      "digest": "sha256:70e64f16f80c3bbf72183abe6484522a516abf45472ce742952a557faa23abe2"
+    }
+  ],
+  "sources": [],
+  "origins": [
+    {
+      "id": "model",
+      "mode": "specification",
+      "method": "R2 P3 の二拠点の共有 origin と私有の選択を、仕様上の個体と操作で読む。",
+      "note": "ArchSig の縮約入力。",
+      "locations": []
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "v",
+      "origin": "model",
+      "subjects": [
+        {
+          "id": "A",
+          "type": "Assemble.Root",
+          "origin": "model"
+        },
+        {
+          "id": "B",
+          "type": "Assemble.Root",
+          "origin": "model"
+        },
+        {
+          "id": "G",
+          "type": "Assemble.Root",
+          "origin": "model"
+        },
+        {
+          "id": "a",
+          "type": "Assemble.Part",
+          "origin": "model"
+        },
+        {
+          "id": "ma",
+          "type": "Assemble.Part",
+          "origin": "model"
+        },
+        {
+          "id": "mb",
+          "type": "Assemble.Part",
+          "origin": "model"
+        },
+        {
+          "id": "b",
+          "type": "Assemble.Part",
+          "origin": "model"
+        },
+        {
+          "id": "left",
+          "type": "Assemble.Step",
+          "origin": "model"
+        },
+        {
+          "id": "right",
+          "type": "Assemble.Step",
+          "origin": "model"
+        },
+        {
+          "id": "moveA",
+          "type": "Assemble.Move",
+          "origin": "model"
+        },
+        {
+          "id": "moveB",
+          "type": "Assemble.Move",
+          "origin": "model"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "a-owner",
+          "subject": "a",
+          "field": "Assemble.Part.owner",
+          "value": [
+            "v",
+            "A"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "a-quantity",
+          "subject": "a",
+          "field": "Assemble.Part.quantity",
+          "value": "1",
+          "origin": "model"
+        },
+        {
+          "id": "a-links",
+          "subject": "a",
+          "field": "Assemble.Part.links",
+          "value": [],
+          "origin": "model"
+        },
+        {
+          "id": "ma-owner",
+          "subject": "ma",
+          "field": "Assemble.Part.owner",
+          "value": [
+            "v",
+            "A"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "ma-quantity",
+          "subject": "ma",
+          "field": "Assemble.Part.quantity",
+          "value": "0",
+          "origin": "model"
+        },
+        {
+          "id": "ma-links",
+          "subject": "ma",
+          "field": "Assemble.Part.links",
+          "value": [],
+          "origin": "model"
+        },
+        {
+          "id": "mb-owner",
+          "subject": "mb",
+          "field": "Assemble.Part.owner",
+          "value": [
+            "v",
+            "B"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "mb-quantity",
+          "subject": "mb",
+          "field": "Assemble.Part.quantity",
+          "value": "1",
+          "origin": "model"
+        },
+        {
+          "id": "mb-links",
+          "subject": "mb",
+          "field": "Assemble.Part.links",
+          "value": [],
+          "origin": "model"
+        },
+        {
+          "id": "b-owner",
+          "subject": "b",
+          "field": "Assemble.Part.owner",
+          "value": [
+            "v",
+            "B"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "b-quantity",
+          "subject": "b",
+          "field": "Assemble.Part.quantity",
+          "value": "0",
+          "origin": "model"
+        },
+        {
+          "id": "b-links",
+          "subject": "b",
+          "field": "Assemble.Part.links",
+          "value": [],
+          "origin": "model"
+        },
+        {
+          "id": "left-owner",
+          "subject": "left",
+          "field": "Assemble.Step.owner",
+          "value": [
+            "v",
+            "A"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "left-from",
+          "subject": "left",
+          "field": "Assemble.Step.from",
+          "value": [
+            "v",
+            "a"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "left-to",
+          "subject": "left",
+          "field": "Assemble.Step.to",
+          "value": [
+            "v",
+            "ma"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "right-owner",
+          "subject": "right",
+          "field": "Assemble.Step.owner",
+          "value": [
+            "v",
+            "B"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "right-from",
+          "subject": "right",
+          "field": "Assemble.Step.from",
+          "value": [
+            "v",
+            "mb"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "right-to",
+          "subject": "right",
+          "field": "Assemble.Step.to",
+          "value": [
+            "v",
+            "b"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveA-from",
+          "subject": "moveA",
+          "field": "Assemble.Move.from",
+          "value": [
+            "v",
+            "A"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveA-to",
+          "subject": "moveA",
+          "field": "Assemble.Move.to",
+          "value": [
+            "v",
+            "A"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveA-parts",
+          "subject": "moveA",
+          "field": "Assemble.Move.parts",
+          "value": [
+            [
+              [
+                "v",
+                "a"
+              ],
+              [
+                "v",
+                "a"
+              ]
+            ],
+            [
+              [
+                "v",
+                "ma"
+              ],
+              [
+                "v",
+                "ma"
+              ]
+            ]
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveA-steps",
+          "subject": "moveA",
+          "field": "Assemble.Move.steps",
+          "value": [
+            [
+              [
+                "v",
+                "left"
+              ],
+              [
+                "v",
+                "left"
+              ]
+            ]
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveB-from",
+          "subject": "moveB",
+          "field": "Assemble.Move.from",
+          "value": [
+            "v",
+            "B"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveB-to",
+          "subject": "moveB",
+          "field": "Assemble.Move.to",
+          "value": [
+            "v",
+            "B"
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveB-parts",
+          "subject": "moveB",
+          "field": "Assemble.Move.parts",
+          "value": [
+            [
+              [
+                "v",
+                "mb"
+              ],
+              [
+                "v",
+                "mb"
+              ]
+            ],
+            [
+              [
+                "v",
+                "b"
+              ],
+              [
+                "v",
+                "b"
+              ]
+            ]
+          ],
+          "origin": "model"
+        },
+        {
+          "id": "moveB-steps",
+          "subject": "moveB",
+          "field": "Assemble.Move.steps",
+          "value": [
+            [
+              [
+                "v",
+                "right"
+              ],
+              [
+                "v",
+                "right"
+              ]
+            ]
+          ],
+          "origin": "model"
+        }
+      ]
+    }
+  ]
+}
