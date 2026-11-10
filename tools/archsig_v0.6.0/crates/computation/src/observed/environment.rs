@@ -183,8 +183,9 @@ struct ValidationSnapshot {
     context_len: usize,
     frames: Vec<super::call::Frame>,
     iterations: Vec<super::call::Iteration>,
-    // Someは保存表全体が従来比較を通過済みのidentity。copyだけでは認証しない。
+    // 検査付き追加だけを経た表の旧prefixは、内容を複製せず同一性で照合する。
     iteration_identity: Option<std::rc::Rc<()>>,
+    iteration_len: usize,
     instances: Vec<super::call::Instance>,
     cases: Vec<super::call::CompletionCase>,
     witnesses: Vec<super::result::UniversalWitness>,
@@ -256,7 +257,7 @@ impl ValidationSnapshot {
             || g.frames.len() < self.frames.len()
             || g.cases.len() < self.cases.len()
             || g.instances.len() < self.instances.len()
-            || g.iterations.len() < self.iterations.len()
+            || g.iterations.len() < self.iteration_len
         {
             return Ok(false);
         }
@@ -278,19 +279,21 @@ impl ValidationSnapshot {
         {
             return Ok(false);
         }
-        if !self
-            .iteration_identity
-            .as_ref()
-            .is_some_and(|saved| std::rc::Rc::ptr_eq(saved, &g.iterations.prefix_identity()))
-        {
-            for (a, b) in g.iterations.iter().zip(&self.iterations) {
-                if !validation_identity::iteration(a, b, control)? {
+        if self.iteration_len > 0 {
+            if let Some(saved) = &self.iteration_identity {
+                if !std::rc::Rc::ptr_eq(saved, &g.iterations.prefix_identity()) {
                     return Ok(false);
+                }
+            } else {
+                for (a, b) in g.iterations.iter().zip(&self.iterations) {
+                    if !validation_identity::iteration(a, b, control)? {
+                        return Ok(false);
+                    }
                 }
             }
         }
         // 全registryの不在・一意性を読んだ成功だけが、旧producerを使う
-        // 兄弟の追加に依存する。旧recordの全内容照合は常に上で実施する。
+        // 兄弟の追加に依存する。旧反復は上で identity または内容を照合済み。
         if registry_read {
             for frame in &g.frames[self.frames.len()..] {
                 if !Self::after(
@@ -301,10 +304,10 @@ impl ValidationSnapshot {
                     return Ok(false);
                 }
             }
-            // 既存iterationの全内容は上で照合済み。universal_graph_contextと同じ
+            // universal_graph_context と同じ
             // source/domainのcutoffで旧prefixから除外される追加だけを許す。
             // finiteだけが新しい反復は旧registryへ入るため、成功を失効させる。
-            for iteration in &g.iterations[self.iterations.len()..] {
+            for iteration in &g.iterations[self.iteration_len..] {
                 if !Self::after(
                     [iteration.source, iteration.domain].into_iter(),
                     self.node_len,
@@ -340,14 +343,20 @@ impl ValidationSnapshot {
         Ok(true)
     }
     fn from_graph(g: &Graph, control: &Control) -> Result<Self, ValidationFailure> {
+        let iteration_identity = g.iterations.checked_prefix_identity();
         Ok(Self {
             node_identity: g.nodes.prefix_identity(),
             node_len: g.nodes.len(),
             context_identity: g.contexts.prefix_identity(),
             context_len: g.contexts.len(),
             frames: Self::copy(&g.frames, control)?,
-            iterations: Self::copy(&g.iterations, control)?,
-            iteration_identity: None,
+            iterations: if iteration_identity.is_none() {
+                Self::copy(&g.iterations, control)?
+            } else {
+                vec![]
+            },
+            iteration_identity,
+            iteration_len: g.iterations.len(),
             instances: Self::copy(&g.instances, control)?,
             cases: Self::copy(&g.cases, control)?,
             witnesses: Self::copy(&g.universal_witnesses, control)?,
@@ -359,9 +368,6 @@ impl ValidationSnapshot {
     // 検査済末尾追加だけを許し、metadataは既存内容の照合後に延長する。
     fn extend_matching(&mut self, g: &Graph, control: &Control) -> Result<(), ValidationFailure> {
         Self::tick(control)?;
-        // 新suffixはcopyしただけでは未照合。全保存表を比較できた場合だけ候補にする。
-        let iteration_identity =
-            (self.iterations.len() == g.iterations.len()).then(|| g.iterations.prefix_identity());
         self.node_identity = g.nodes.prefix_identity();
         self.context_identity = g.contexts.prefix_identity();
         self.node_len = g.nodes.len();
@@ -372,8 +378,15 @@ impl ValidationSnapshot {
             .extend(Self::copy(&g.instances[self.instances.len()..], control)?);
         self.cases
             .extend(Self::copy(&g.cases[self.cases.len()..], control)?);
-        self.iterations
-            .extend(Self::copy(&g.iterations[self.iterations.len()..], control)?);
+        let iteration_identity = g.iterations.checked_prefix_identity();
+        if iteration_identity.is_some() {
+            self.iterations.clear();
+        } else {
+            // 一般の可変アクセスを経たsuffixは、次回も内容を照合する。
+            self.iterations
+                .extend(Self::copy(&g.iterations[self.iteration_len..], control)?);
+        }
+        self.iteration_len = g.iterations.len();
         // witnesses/requests/answersはmatchesで長さと全内容が一致済み。
         Self::tick(control)?;
         self.iteration_identity = iteration_identity;

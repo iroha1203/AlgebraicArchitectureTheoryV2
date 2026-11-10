@@ -1952,12 +1952,13 @@ impl ObservedEvaluation {
     }
 }
 
-// nodeとContextの表は、正当な末尾追加だけが旧prefix identityを保つ。
+// Graph の表は、検査付きの末尾追加だけが旧prefix identityを保つ。
 // 可変アクセス・表の複製では、内容が同じでも保存済みprefixを失効させる。
 #[derive(Debug)]
 pub(crate) struct GraphEntries<T> {
     values: Vec<T>,
     identity: std::rc::Rc<()>,
+    checked_append_only: bool,
 }
 type GraphNodes = GraphEntries<Node>;
 impl<T> Default for GraphEntries<T> {
@@ -1968,6 +1969,7 @@ impl<T> Default for GraphEntries<T> {
 impl<T> From<Vec<T>> for GraphEntries<T> {
     fn from(values: Vec<T>) -> Self {
         Self {
+            checked_append_only: values.is_empty(),
             values,
             identity: std::rc::Rc::new(()),
         }
@@ -1987,6 +1989,7 @@ impl<T> std::ops::Deref for GraphEntries<T> {
 impl<T> std::ops::DerefMut for GraphEntries<T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.identity = std::rc::Rc::new(());
+        self.checked_append_only = false;
         &mut self.values
     }
 }
@@ -2027,6 +2030,9 @@ impl<'a, T> IntoIterator for &'a mut GraphEntries<T> {
 impl<T> GraphEntries<T> {
     pub(super) fn prefix_identity(&self) -> std::rc::Rc<()> {
         self.identity.clone()
+    }
+    pub(super) fn checked_prefix_identity(&self) -> Option<std::rc::Rc<()>> {
+        self.checked_append_only.then(|| self.prefix_identity())
     }
     // このmoduleのGraph構築入口だけが旧prefixを変更しない追加を行える。
     fn append_checked(&mut self, value: T) {
@@ -2160,6 +2166,89 @@ impl Graph {
             checked_answers: vec![],
             control: control.clone(),
         }
+    }
+    pub(super) fn append_iteration_from(
+        &mut self,
+        source: NodeRef,
+        domain: NodeRef,
+        finite: Option<NodeRef>,
+        position: usize,
+    ) -> Result<usize, ValidationFailure> {
+        use super::call::{Iteration, Member};
+
+        self.tick()?;
+        // Domain の要素と collection Scalar の形は Graph の挿入時に検査済み。
+        let member = if let Some(finite) = finite {
+            let Some(Payload::Domain { elements, .. }) = &self.get(finite)?.payload else {
+                return Err(internal!("反復の有限域がDomainでない").into());
+            };
+            let element = elements
+                .get(position)
+                .ok_or(internal!("有限域の要素がない"))?;
+            Member::SetElement(self.scalar(*element)?.clone())
+        } else {
+            let Some(Payload::Evaluation {
+                value: Some(value), ..
+            }) = &self.get(domain)?.payload
+            else {
+                return Err(internal!("内包域の評価値がない").into());
+            };
+            match self.scalar(*value)? {
+                Scalar::List { items, .. } if position < items.len() => {
+                    Member::ListPosition(position)
+                }
+                Scalar::Set { items, .. } => Member::SetElement(
+                    items
+                        .get(position)
+                        .ok_or(internal!("内包域の要素がない"))?
+                        .clone(),
+                ),
+                _ => return Err(internal!("内包域がList/Setでないか要素がない").into()),
+            }
+        };
+        self.store_iteration(Iteration {
+            caller: self.active,
+            source,
+            domain,
+            member,
+            finite,
+        })
+    }
+
+    #[cfg(test)]
+    pub(super) fn append_iteration(
+        &mut self,
+        iteration: super::call::Iteration,
+    ) -> Result<usize, ValidationFailure> {
+        if let super::call::Member::SetElement(value) = &iteration.member {
+            super::data::check_shape(value, &self.control)?;
+        }
+        self.store_iteration(iteration)
+    }
+
+    fn store_iteration(
+        &mut self,
+        iteration: super::call::Iteration,
+    ) -> Result<usize, ValidationFailure> {
+        self.tick()?;
+        if iteration.caller != self.active {
+            return Err(internal!("反復のcallerが現在のContextと違う").into());
+        }
+        for reference in [
+            Some(iteration.source),
+            Some(iteration.domain),
+            iteration.finite,
+        ]
+        .into_iter()
+        .flatten()
+        {
+            self.get(reference)?;
+        }
+        self.tick()?;
+        let index = self.iterations.len();
+        // 元式・domain と member の対応は従来どおり実 Context の再検証で照合する。
+        self.iterations.append_checked(iteration);
+        Ok(index)
     }
     pub(super) fn context_at(&self, index: usize) -> super::call::Context {
         self.contexts.get(index).copied().unwrap_or(self.active)

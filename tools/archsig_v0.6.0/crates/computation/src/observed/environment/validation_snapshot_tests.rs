@@ -415,3 +415,77 @@ fn appended_uncompared_iteration_is_not_certified_by_snapshot_extension() {
         "new suffix must pass comparison before reuse"
     );
 }
+
+#[test]
+fn checked_iteration_append_compares_only_the_new_suffix() {
+    use std::{cell::Cell, rc::Rc};
+
+    let c = quiet();
+    let mut measured = Vec::new();
+    for count in [8, 16, 32] {
+        let mut graph = Graph::new(&c);
+        graph.push(node(1)).unwrap();
+        let probes = Rc::new(Cell::new(0));
+        let observed = probes.clone();
+        let count_checks = Control::new(move |_| {
+            observed.set(observed.get() + 1);
+            None
+        });
+        let mut saved = ValidationSnapshot::from_graph(&graph, &c).unwrap();
+        for member in 0..count {
+            let fresh = graph.push(node(2)).unwrap();
+            let mut record = iteration(0, fresh.0);
+            record.member = crate::observed::call::Member::ListPosition(member);
+            graph.append_iteration(record).unwrap();
+            assert!(saved.matches(&graph, &count_checks).unwrap());
+            saved.extend_matching(&graph, &count_checks).unwrap();
+        }
+        measured.push((count, probes.get()));
+        assert!(
+            saved.iterations.is_empty(),
+            "検査付きprefixは内容をコピーしない"
+        );
+    }
+    eprintln!("(iterations, validation checkpoints) {measured:?}");
+    assert_eq!(measured[1].1, measured[0].1 * 2);
+    assert_eq!(measured[2].1, measured[1].1 * 2);
+}
+
+#[test]
+fn checked_iteration_append_rejects_invalid_member_and_preserves_registry_invalidation() {
+    let c = quiet();
+    let mut graph = Graph::new(&c);
+    graph.push(node(1)).unwrap();
+    let saved = ValidationSnapshot::from_graph(&graph, &c).unwrap();
+    let bad = non_reflexive_path_iteration(0, 0);
+    assert!(matches!(
+        graph.append_iteration(bad),
+        Err(ValidationFailure::Internal(_))
+    ));
+    assert!(graph.iterations.is_empty());
+    assert!(saved.matches(&graph, &c).unwrap());
+
+    graph.append_iteration(iteration(0, 0)).unwrap();
+    assert!(saved.matches_with_registry(&graph, &c, false).unwrap());
+    assert!(
+        !saved.matches(&graph, &c).unwrap(),
+        "旧producerの追加は一意性を変え得る"
+    );
+    let saved = ValidationSnapshot::from_graph(&graph, &c).unwrap();
+    assert!(saved.matches(&graph, &c).unwrap());
+    graph.iterations[0].member = crate::observed::call::Member::ListPosition(1);
+    assert!(!saved.matches(&graph, &c).unwrap());
+    graph.iterations[0].member = crate::observed::call::Member::ListPosition(0);
+    assert!(!saved.matches(&graph, &c).unwrap());
+}
+
+#[test]
+fn checked_iteration_append_does_not_reuse_a_cloned_table() {
+    let c = quiet();
+    let mut graph = Graph::new(&c);
+    graph.push(node(1)).unwrap();
+    graph.append_iteration(iteration(0, 0)).unwrap();
+    let saved = ValidationSnapshot::from_graph(&graph, &c).unwrap();
+    graph.iterations = graph.iterations.clone();
+    assert!(!saved.matches(&graph, &c).unwrap());
+}
