@@ -4,6 +4,7 @@ use super::*;
 use crate::observed::{
     affine::{self, Form, NumberType, Parameter},
     field_fiber::{self, Fiber, Matrix},
+    field_polyhedron::{self, Halfspace, Outcome},
     numeric,
 };
 use archsig_input::law::model::{Declaration, Signature};
@@ -20,6 +21,30 @@ pub(in crate::observed) struct Linear {
     pub equations: Matrix,
     pub rhs: Vec<Scalar>,
     pub fiber: Fiber,
+    pub polyhedron: Option<Polyhedron>,
+}
+
+#[derive(Clone, Debug)]
+pub(in crate::observed) struct Polyhedron {
+    pub inequalities: Vec<Halfspace>,
+    pub outcome: Outcome,
+}
+
+#[derive(Default)]
+struct Constraints {
+    equalities: Matrix,
+    rhs: Vec<Option<Scalar>>,
+    inequalities: Option<Vec<Halfspace>>,
+}
+
+impl Constraints {
+    fn contradiction(&mut self, n: usize, env: &Environment<'_>) -> Result<(), ValidationFailure> {
+        self.equalities
+            .push(vec![numeric::zero(&Type::Q, &env.control)?; n]);
+        self.rhs
+            .push(Some(numeric::literal("1", &Type::Q, &env.control)?));
+        Ok(())
+    }
 }
 fn unsupported(env: &Environment<'_>, id: usize, feature: &str) -> ValidationFailure {
     ValidationFailure::UnsupportedExpression {
@@ -92,86 +117,173 @@ fn equations(
     vars: &BTreeMap<String, SourceValue>,
     reading: &str,
     axes: Axes<'_>,
-    matrix: &mut Matrix,
-    rhs: &mut Vec<Option<Scalar>>,
+    rows: &mut Constraints,
     missing: &mut Pending,
 ) -> Result<(), ValidationFailure> {
     stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
         env.tick()?;
         let base = Scope::default();
+        let law = env.indexes.inputs.law();
+        let kind = &law.exprs()[id].kind;
+        let allow_bounds = rows.inequalities.is_some();
+        if allow_bounds
+            && matches!(
+                kind,
+                ExprKind::Quant {
+                    kind: archsig_input::law::ast::QuantKind::Forall,
+                    split: archsig_input::law::ast::QuantSplit::Fixed {
+                        domain: archsig_input::law::ast::QuantDomain::In(_),
+                        ..
+                    },
+                    ..
+                }
+            )
+        {
+            let spec = quantifier::spec(law, id, &env.control)?;
+            let domain = spec.domain.ok_or(internal!("有理量化の元域がない"))?;
+            let domain_value = env.scoped_ast(domain, vars, &base, reading)?;
+            usable(env, domain, &domain_value)?;
+            missing.support.extend(domain_value.support.into_vec());
+            missing.scope.merge(&domain_value.scope);
+            let Some(Scalar::List { items, .. } | Scalar::Set { items, .. }) =
+                domain_value.known_value.as_ref()
+            else {
+                missing.expression = Some(domain);
+                missing.unsupported = Some("rational_change_quantification");
+                return Err(unsupported(env, domain, "有理changeの有限量化域が未確定"));
+            };
+            let mut local = vars.clone();
+            for member in items {
+                env.tick()?;
+                if member.ty() != spec.element {
+                    return Err(internal!("有理量化の元要素型が異なる").into());
+                }
+                let mut v = value(env, member.clone())?;
+                v.scope = domain_value.scope.clone();
+                v.scalar_scope = Some(domain_value.scope.clone());
+                local.insert(spec.name.to_owned(), v);
+                equations(env, spec.body, &local, reading, axes, rows, missing)?;
+            }
+            return Ok(());
+        }
+
         let v = env.scoped_ast(id, vars, &base, reading)?;
         usable(env, id, &v)?;
         if let Some(Scalar::Bool(holds)) = v.known_value {
             if !holds {
-                matrix.push(vec![numeric::zero(&Type::Q, &env.control)?; axes.len()]);
-                rhs.push(Some(numeric::literal("1", &Type::Q, &env.control)?));
+                rows.contradiction(axes.len(), env)?;
             }
             return Ok(());
         }
-        match &env.indexes.inputs.law().exprs()[id].kind {
-            ExprKind::Group(body) => {
-                equations(env, *body, vars, reading, axes, matrix, rhs, missing)
-            }
+        match kind {
+            ExprKind::Group(body) => equations(env, *body, vars, reading, axes, rows, missing),
             ExprKind::Let { name, value, body } => {
                 let mut vars = vars.clone();
                 let v = env.scoped_ast(*value, &vars, &base, reading)?;
                 usable(env, *value, &v)?;
                 vars.insert(name.name.clone(), v);
-                equations(env, *body, &vars, reading, axes, matrix, rhs, missing)
+                equations(env, *body, &vars, reading, axes, rows, missing)
             }
             ExprKind::Binary {
                 op: BinOp::And,
                 lhs,
-                rhs: right,
+                rhs,
             } => {
-                equations(env, *lhs, vars, reading, axes, matrix, rhs, missing)?;
-                equations(env, *right, vars, reading, axes, matrix, rhs, missing)
+                equations(env, *lhs, vars, reading, axes, rows, missing)?;
+                equations(env, *rhs, vars, reading, axes, rows, missing)
+            }
+            ExprKind::Binary {
+                op: BinOp::Implies,
+                lhs,
+                rhs,
+            } if allow_bounds => {
+                let guard = env.scoped_ast(*lhs, vars, &base, reading)?;
+                usable(env, *lhs, &guard)?;
+                match guard.known_value {
+                    Some(Scalar::Bool(true)) => {
+                        equations(env, *rhs, vars, reading, axes, rows, missing)
+                    }
+                    Some(Scalar::Bool(false)) => Ok(()),
+                    _ => {
+                        missing.expression = Some(*lhs);
+                        missing.unsupported = Some("rational_change_implication");
+                        Err(unsupported(env, *lhs, "有理changeの含意の前件が未確定"))
+                    }
+                }
             }
             ExprKind::Quant { .. } => {
                 missing.unsupported = Some("rational_change_quantification");
                 Err(unsupported(
                     env,
                     id,
-                    "有理changeの未確定な量化式を線形系に展開する算法は未対応",
+                    "有理changeで既知の有限In全称量化以外を線形系に展開する算法は未対応",
                 ))
             }
             _ => {
-                let Some(p) = v
+                let ordered = match kind {
+                    ExprKind::Binary {
+                        op: BinOp::Le,
+                        lhs,
+                        rhs,
+                    } if allow_bounds => Some((*lhs, *rhs)),
+                    ExprKind::Binary {
+                        op: BinOp::Ge,
+                        lhs,
+                        rhs,
+                    } if allow_bounds => Some((*rhs, *lhs)),
+                    _ => None,
+                };
+                let form = if let Some((lhs, rhs)) = ordered {
+                    let left = env.scoped_ast(lhs, vars, &base, reading)?;
+                    let right = env.scoped_ast(rhs, vars, &base, reading)?;
+                    usable(env, lhs, &left)?;
+                    usable(env, rhs, &right)?;
+                    affine::binary(
+                        BinOp::Sub,
+                        left.affine.as_deref(),
+                        right.affine.as_deref(),
+                        &env.control,
+                    )?
+                } else if let Some(p) = v
                     .comparison
                     .as_ref()
                     .filter(|p| p.op == BinOp::Eq && p.bound_axes.is_empty())
-                else {
+                {
+                    affine::binary(BinOp::Sub, Some(&p.left), Some(&p.right), &env.control)?
+                } else {
+                    None
+                };
+                let Some(form) = form else {
                     if change_affine::numeric_condition(env, id, &v)? {
                         missing.unsupported = Some("numeric_change_condition");
                     }
                     return Err(unsupported(
                         env,
                         id,
-                        "有理changeの全解は既知係数のアフィン等式の連言を要する",
+                        "有理changeの全解は既知係数のアフィン等式・対応する非狭義不等式の連言を要する",
                     ));
                 };
-                let form = affine::binary(BinOp::Sub, Some(&p.left), Some(&p.right), &env.control)?
-                    .ok_or(internal!("有理等式の差がない"))?;
                 if form.varies_over(&missing.universal, &env.control)? {
-                    matrix.push(vec![numeric::zero(&Type::Q, &env.control)?; axes.len()]);
-                    rhs.push(Some(numeric::literal("1", &Type::Q, &env.control)?));
+                    rows.contradiction(axes.len(), env)?;
                     return Ok(());
                 }
                 let (constant, coefficients) = coordinates(env, id, &form, axes, missing)?;
-                matrix.push(coefficients);
-                rhs.push(
-                    constant
-                        .as_ref()
-                        .map(|constant| {
-                            numeric::binary(
-                                BinOp::Sub,
-                                &numeric::zero(&Type::Q, &env.control)?,
-                                constant,
-                                &env.control,
-                            )
-                        })
-                        .transpose()?,
-                );
+                let rhs = constant
+                    .as_ref()
+                    .map(|c| numeric::unary(archsig_input::law::ast::UnOp::Neg, c, &env.control))
+                    .transpose()?;
+                if ordered.is_none() {
+                    rows.equalities.push(coefficients);
+                    rows.rhs.push(rhs);
+                } else {
+                    rows.inequalities
+                        .as_mut()
+                        .ok_or(internal!("有理局所等式に不等式がある"))?
+                        .push(Halfspace {
+                            coefficients,
+                            rhs: rhs.ok_or(internal!("有理不等式の右辺が未確定"))?,
+                        });
+                }
                 Ok(())
             }
         }
@@ -190,8 +302,7 @@ pub(super) fn parameter_guard_domain(
     if axes.iter().any(|axis| axis.kind != NumberType::Q) {
         return Err(internal!("rational guard requires Q parameters").into());
     }
-    let mut matrix = vec![];
-    let mut rhs = vec![];
+    let mut rows = Constraints::default();
     if let Some(id) = guard {
         missing.expression = Some(id);
         let value = env.scoped_ast(id, vars, &Scope::default(), reading)?;
@@ -203,17 +314,17 @@ pub(super) fn parameter_guard_domain(
             vars,
             reading,
             Axes::Parameters(axes),
-            &mut matrix,
-            &mut rhs,
+            &mut rows,
             missing,
         )?;
     }
-    let rhs = rhs
+    let rhs = rows
+        .rhs
         .into_iter()
         .collect::<Option<Vec<_>>>()
         .ok_or(internal!("rational guard constant is undetermined"))?;
-    let fiber = field_fiber::solve(&Type::Q, &matrix, axes.len(), &rhs, &env.control)?;
-    Ok((matrix, rhs, fiber))
+    let fiber = field_fiber::solve(&Type::Q, &rows.equalities, axes.len(), &rhs, &env.control)?;
+    Ok((rows.equalities, rhs, fiber))
 }
 
 pub(in crate::observed) fn compute(
@@ -224,14 +335,27 @@ pub(in crate::observed) fn compute(
     missing: &mut Pending,
 ) -> Result<Linear, ValidationFailure> {
     with_missing(env, missing, |missing| {
-        compute_inner(env, change, subjects, requirements, missing)
+        compute_inner(env, change, subjects, requirements, false, missing)
     })
 }
+pub(in crate::observed) fn compute_with_bounds(
+    env: &Environment<'_>,
+    change: &Declaration,
+    subjects: &[Scalar],
+    requirements: &[(String, Vec<(String, Scalar)>)],
+    missing: &mut Pending,
+) -> Result<Linear, ValidationFailure> {
+    with_missing(env, missing, |missing| {
+        compute_inner(env, change, subjects, requirements, true, missing)
+    })
+}
+
 fn compute_inner(
     env: &Environment<'_>,
     change: &Declaration,
     subjects: &[Scalar],
     requirements: &[(String, Vec<(String, Scalar)>)],
+    allow_bounds: bool,
     missing: &mut Pending,
 ) -> Result<Linear, ValidationFailure> {
     missing.coefficient_type = Some(Type::Q);
@@ -266,8 +390,7 @@ fn compute_inner(
         }
     }
     let mut updates = BTreeMap::<Fact, Form>::new();
-    let mut guard_matrix = vec![];
-    let mut guard_rhs = vec![];
+    let mut guards = Constraints::default();
     for (i, subject) in subjects.iter().enumerate() {
         let mut vars = BTreeMap::from([(params[0].name.clone(), value(env, subject.clone())?)]);
         for (p, axis) in params[1..]
@@ -294,8 +417,7 @@ fn compute_inner(
                 &vars,
                 &change.reading,
                 Axes::Parameters(&axes),
-                &mut guard_matrix,
-                &mut guard_rhs,
+                &mut guards,
                 missing,
             )?;
         }
@@ -389,7 +511,9 @@ fn compute_inner(
         offset.push(constant.ok_or(internal!("有理作用の固定項が未確定"))?);
     }
 
-    let mut guard_rhs = guard_rhs
+    let mut guard_matrix = guards.equalities;
+    let mut guard_rhs = guards
+        .rhs
         .into_iter()
         .collect::<Option<Vec<_>>>()
         .ok_or(internal!("有理guardの固定項が未確定"))?;
@@ -408,16 +532,23 @@ fn compute_inner(
     )?;
     updated.indexes.object = env.object_domain();
     updated.indexes.affine_valuation = updates;
-    let (matrix, rhs) = if candidates_empty {
-        (vec![], vec![])
+    let rows = if candidates_empty {
+        Constraints::default()
     } else {
         with_missing(&updated, missing, |missing| {
-            requirement_equations(&updated, Axes::Parameters(&axes), requirements, missing)
+            requirement_equations(
+                &updated,
+                Axes::Parameters(&axes),
+                requirements,
+                allow_bounds,
+                missing,
+            )
         })?
     };
-    guard_matrix.extend(matrix);
+    guard_matrix.extend(rows.equalities);
     guard_rhs.extend(
-        rhs.into_iter()
+        rows.rhs
+            .into_iter()
             .collect::<Option<Vec<_>>>()
             .ok_or(internal!("有理要求の固定項が未確定"))?,
     );
@@ -428,6 +559,19 @@ fn compute_inner(
         &guard_rhs,
         &env.control,
     )?;
+    let polyhedron = if let Some(inequalities) = rows.inequalities
+        && !inequalities.is_empty()
+    {
+        let original =
+            field_polyhedron::halfspaces(&guard_matrix, &guard_rhs, &inequalities, &env.control)?;
+        let outcome = field_polyhedron::solve(&original, axes.len(), &env.control)?;
+        Some(Polyhedron {
+            inequalities,
+            outcome,
+        })
+    } else {
+        None
+    };
     Ok(Linear {
         parameter_count: axes.len(),
         axes,
@@ -440,6 +584,7 @@ fn compute_inner(
         equations: guard_matrix,
         rhs: guard_rhs,
         fiber,
+        polyhedron,
     })
 }
 pub(in crate::observed) fn state_equations(
@@ -478,17 +623,21 @@ pub(in crate::observed) fn state_equations(
         );
     }
     with_missing(&state, missing, |missing| {
-        requirement_equations(&state, Axes::State(slots), requirements, missing)
+        let rows = requirement_equations(&state, Axes::State(slots), requirements, false, missing)?;
+        Ok((rows.equalities, rows.rhs))
     })
 }
 fn requirement_equations(
     env: &Environment<'_>,
     axes: Axes<'_>,
     requirements: &[(String, Vec<(String, Scalar)>)],
+    allow_bounds: bool,
     missing: &mut Pending,
-) -> Result<(Matrix, Vec<Option<Scalar>>), ValidationFailure> {
-    let mut matrix = vec![];
-    let mut rhs = vec![];
+) -> Result<Constraints, ValidationFailure> {
+    let mut rows = Constraints {
+        inequalities: allow_bounds.then(Vec::new),
+        ..Default::default()
+    };
     for (name, bindings) in requirements {
         let law = &env.indexes.inputs.law().declarations()[name];
         let Signature::Law {
@@ -557,16 +706,7 @@ fn requirement_equations(
             .filter(|p| !bindings.iter().any(|(n, _)| *n == p.name))
             .map(|p| (p.name.clone(), p.ty.clone()))
             .collect();
-        equations(
-            env,
-            *body,
-            &vars,
-            &law.reading,
-            axes,
-            &mut matrix,
-            &mut rhs,
-            missing,
-        )?;
+        equations(env, *body, &vars, &law.reading, axes, &mut rows, missing)?;
     }
-    Ok((matrix, rhs))
+    Ok(rows)
 }

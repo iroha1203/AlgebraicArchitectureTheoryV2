@@ -683,6 +683,7 @@ pub(super) fn compact(
         control.checkpoint(point)?;
         let id = format!("n{index}");
         match class {
+            EvidenceClass::Certificate => {}
             EvidenceClass::Example => {
                 examples.insert(id);
             }

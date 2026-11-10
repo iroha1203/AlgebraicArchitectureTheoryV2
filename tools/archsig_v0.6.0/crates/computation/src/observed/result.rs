@@ -1167,6 +1167,7 @@ pub(in crate::observed) enum EvidenceKind {
     CompletionPair,
     SeparatingPair,
     CompletionFibers,
+    RationalPolyhedron,
 }
 impl EvidenceKind {
     pub(in crate::observed) fn name(self) -> &'static str {
@@ -1175,6 +1176,7 @@ impl EvidenceKind {
             Self::CompletionPair => "completion_pair",
             Self::SeparatingPair => "separating_pair",
             Self::CompletionFibers => "completion_fibers",
+            Self::RationalPolyhedron => "rational_polyhedron",
         }
     }
     pub(in crate::observed) fn from_wire(wire: &Json) -> Option<Self> {
@@ -1187,6 +1189,7 @@ impl EvidenceKind {
             Self::CompletionPair,
             Self::SeparatingPair,
             Self::CompletionFibers,
+            Self::RationalPolyhedron,
         ]
         .into_iter()
         .find(|candidate| candidate.name() == kind)
@@ -1197,6 +1200,7 @@ impl EvidenceKind {
                 EvidenceClass::Example
             }
             Self::CompletionFibers => EvidenceClass::Completion,
+            Self::RationalPolyhedron => EvidenceClass::Certificate,
         }
     }
 }
@@ -1204,6 +1208,7 @@ impl EvidenceKind {
 pub(super) enum EvidenceClass {
     Example,
     Completion,
+    Certificate,
     Proof,
 }
 impl Payload {

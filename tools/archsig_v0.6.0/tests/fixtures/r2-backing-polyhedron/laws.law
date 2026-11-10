@@ -1,0 +1,12 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading Backing {
+ use vocabulary Pool version "0.3" digest "sha256:b3d92df1cada5945de8d87eba0679b235b2de77ad5d4e57d069e8cf85a227887";
+ view claimLoad(c:Pool.Claim):Q=c.cell0.quantity+c.cell1.quantity+c.cell2.quantity;
+ view stockLoad(s:Pool.Stock):Q=s.cell0.quantity+s.cell1.quantity+s.cell2.quantity+s.cell3.quantity;
+ law required legal(w:Pool.World):
+   (forall b in Pool.Cell[w] . b.quantity>=rat(0,1) and
+    (not(b.stock in b.claim.eligible) implies b.quantity=rat(0,1)) and b.stock.quantityUnit=b.claim.quantityUnit) and
+   (forall c in Pool.Claim[w] . claimLoad(c)=c.quantity) and
+   (forall s in Pool.Stock[w] . stockLoad(s)<=s.available);
+ change assign(b:Pool.Cell,q:Q)=b with {quantity=q};
+}

@@ -96,6 +96,22 @@ pub(super) fn build(
     )?;
     let equations = map(b, pm, em, &linear.equations, n, c)?;
     let rhs = vector(b, em, &linear.rhs, c)?;
+    if let Some(polyhedron) = &linear.polyhedron {
+        return super::field_polyhedron_result::build(
+            b,
+            linear,
+            polyhedron,
+            ring,
+            pm,
+            parameters,
+            states,
+            action,
+            equations,
+            rhs,
+            requirements,
+            c,
+        );
+    }
     let mut args = vec![equations, rhs];
     args.extend(requirements);
     let (certificate, representation, representation_args) = if let Some(p) = &linear.particular {

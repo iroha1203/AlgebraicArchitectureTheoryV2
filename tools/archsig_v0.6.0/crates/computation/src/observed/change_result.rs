@@ -18,6 +18,7 @@ use archsig_common::{canonical::Json, issue::Location, types::Type};
 use archsig_input::law::model::Signature;
 use std::{collections::BTreeMap, sync::Arc};
 pub(super) mod field_linear_result;
+mod field_polyhedron_result;
 pub(super) mod linear_result;
 
 mod owner_completion;

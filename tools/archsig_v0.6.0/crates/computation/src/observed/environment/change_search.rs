@@ -1,6 +1,9 @@
 //! 元Architecture内のchange全instanceとLaw全束縛を同じ候補状態で読む。
 use super::*;
-use crate::observed::{construction_result::ArchitectureWitness, object_evaluate::ObjectDomain};
+use crate::observed::{
+    construction_result::ArchitectureWitness, field_polyhedron::Outcome,
+    object_evaluate::ObjectDomain,
+};
 use archsig_input::law::model::Signature;
 use change_evaluation::{Candidates, SolutionRow};
 use std::sync::Arc;
@@ -585,7 +588,7 @@ pub(in crate::observed) fn search_with_completions(
         }
         if change_params.iter().skip(1).any(|p| p.ty == Type::Q) {
             let mut pending = change_affine::Pending::default();
-            let computed = field_change::compute(
+            let computed = field_change::compute_with_bounds(
                 &environment,
                 change,
                 &subjects,
@@ -598,7 +601,15 @@ pub(in crate::observed) fn search_with_completions(
             }
             let linear = computed?;
             let mut points = vec![];
-            if let Some(particular) = &linear.particular {
+            if let Some(polyhedron) = &linear.polyhedron {
+                match &polyhedron.outcome {
+                    Outcome::Empty(_) => {}
+                    Outcome::Unique { point, .. } => points.push(point.clone()),
+                    Outcome::Multiple { first, second } => {
+                        points.extend([first.clone(), second.clone()]);
+                    }
+                }
+            } else if let Some(particular) = &linear.particular {
                 points.push(particular.clone());
                 if linear.fiber.pivots.len() < linear.parameter_count {
                     points.push(
