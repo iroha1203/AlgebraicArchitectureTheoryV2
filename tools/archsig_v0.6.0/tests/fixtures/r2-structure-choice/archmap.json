@@ -5,7 +5,7 @@
     {
       "namespace": "E12",
       "version": "1",
-      "digest": "sha256:5a12aea89b9efafd94100163205d529bfc4d7da92f1143b9327538c391fa1326"
+      "digest": "sha256:f9a50b83fbbcedae61d81ca66821d2e36765ae4b62dc4f705c1c4889e581a79a"
     }
   ],
   "sources": [],
@@ -310,6 +310,20 @@
           "subject": "lookalike",
           "field": "E12.Design.split",
           "value": false,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "plan-reversed",
+          "subject": "plan",
+          "field": "E12.Design.reversed",
+          "value": false,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "lookalike-reversed",
+          "subject": "lookalike",
+          "field": "E12.Design.reversed",
+          "value": true,
           "origin": "reduced-e12"
         }
       ]

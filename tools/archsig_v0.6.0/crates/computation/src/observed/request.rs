@@ -332,6 +332,7 @@ pub struct ResolvedRequests {
     requests: Vec<Request>,
     /// 同順位の要求を指定順にする、依存先からの評価順。
     evaluation_order: Vec<usize>,
+    assembly_domain_reads: BTreeSet<String>,
 }
 impl ResolvedRequests {
     pub fn requests(&self) -> &[Request] {
@@ -339,6 +340,9 @@ impl ResolvedRequests {
     }
     pub fn evaluation_order(&self) -> &[usize] {
         &self.evaluation_order
+    }
+    pub(super) fn reads_assembly_domains(&self, id: &str) -> bool {
+        self.assembly_domain_reads.contains(id)
     }
 }
 
@@ -1154,9 +1158,38 @@ fn resolve_inner(
         evaluation_order
     };
     phase(control, Checkpoint::RequestDependency)?;
+    let mut assembly_domain_reads = BTreeSet::new();
+    for request in requests
+        .iter()
+        .filter(|request| request.kind == QuestionKind::AssembleMap)
+    {
+        checkpoint(control)?;
+        let endpoints = request
+            .arguments
+            .iter()
+            .filter_map(|argument| {
+                if matches!(argument.name.as_str(), "from" | "to")
+                    && let Selector::Answer { id, .. } = &argument.value
+                {
+                    Some(id)
+                } else {
+                    None
+                }
+            })
+            .collect::<Vec<_>>();
+        if endpoints.iter().any(|id| {
+            requests[names[*id]]
+                .arguments
+                .iter()
+                .any(|argument| argument.name.starts_with("design."))
+        }) {
+            assembly_domain_reads.extend(endpoints.into_iter().cloned());
+        }
+    }
     Ok(ResolvedRequests {
         requests,
         evaluation_order,
+        assembly_domain_reads,
     })
 }
 

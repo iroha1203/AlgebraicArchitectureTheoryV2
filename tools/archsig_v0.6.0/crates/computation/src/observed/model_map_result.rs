@@ -350,7 +350,31 @@ fn compute(
         }
     }
     let head = r.declaration().ok_or(internal!("対応Viewがない"))?;
-    let read = assembly_plan::read(e, head, &values, fixed_design, fixed_design)?;
+    let mut overrides = BTreeMap::new();
+    // A single correspondence View reads both chosen designs. If the same
+    // design slot changes across the map, the destination supplies its value.
+    for plan in [source_plan, target_plan] {
+        let Some(design) = plan.assembly.as_ref().and_then(|assembly| assembly.design) else {
+            continue;
+        };
+        let Some(Payload::Construction(value)) = &g.get(design)?.payload else {
+            return Err(internal!("対応Viewの設計点が実applyでない").into());
+        };
+        let (values, _) = value.retained_architecture_overrides(g, c)?;
+        overrides.extend(
+            values
+                .iter()
+                .map(|(fact, value)| (fact.clone(), value.clone())),
+        );
+    }
+    let selected_reading = if overrides.is_empty() {
+        None
+    } else {
+        let overrides = overrides.into_iter().collect::<Vec<_>>();
+        Some(e.with_fixed_primitive_values(&overrides, c)?)
+    };
+    let reader = selected_reading.as_ref().unwrap_or(e);
+    let read = assembly_plan::read(reader, head, &values, fixed_design, fixed_design)?;
     let mut b = Builder {
         g,
         base,
@@ -884,7 +908,10 @@ fn compute(
             location: Some(unsupported.location.clone()),
         });
     }
+    let mut failed_law = Vec::new();
     if status == Decision::Refuted {
+        let mut refutation_location = view_condition
+            .map(|failure| archsig_common::issue::Location::Law { span: failure.span });
         let mut facts = Vec::new();
         let mut action_difference = None;
         let mut overlap = None;
@@ -1047,6 +1074,27 @@ fn compute(
                 .find(|law| matches!(law.outcome(), O::Refuted(_)))
             {
                 let nodes = law_nodes(law, source_plan, target_plan)?;
+                if fixed_design {
+                    failed_law.extend([nodes.source[1], nodes.source[2]]);
+                    if let Some(target) = nodes.target {
+                        failed_law.extend([target[1], target[2]]);
+                    }
+                    refutation_location = Some(archsig_common::issue::Location::Law {
+                        span: law.instance().declaration().span,
+                    });
+                    endpoint_detail = Some(match law.outcome() {
+                        O::Refuted(F::RequiredStatus { .. }) => {
+                            "the corresponding Law has a different required status"
+                        }
+                        O::Refuted(F::Applicability) => {
+                            "the corresponding Law has a different applicability"
+                        }
+                        O::Refuted(F::Holds) => {
+                            "the corresponding Law has a different evaluated truth value"
+                        }
+                        _ => "the selected configuration does not preserve the corresponding Law",
+                    });
+                }
                 counter_args.extend(nodes.source);
                 facts.extend(g.get(nodes.source[2])?.support.iter().cloned());
                 left = nodes.source[2];
@@ -1200,7 +1248,9 @@ fn compute(
         evidence.push(counterexample);
         let condition = b.proposition(
             "constructible",
-            vec![label],
+            std::iter::once(label)
+                .chain(failed_law.iter().copied())
+                .collect(),
             vec![local_condition, counterexample],
             Decision::Refuted,
         )?;
@@ -1213,14 +1263,13 @@ fn compute(
             request: r.id.clone(),
             dependencies: vec![condition],
             missing: vec![],
-            location: view_condition
-                .map(|failure| archsig_common::issue::Location::Law { span: failure.span }),
+            location: refutation_location,
         });
     }
     sort_reasons(&mut reasons);
     let claim = b.proposition(
         "constructible",
-        vec![label],
+        std::iter::once(label).chain(failed_law).collect(),
         outputs.values().copied().chain(conditions).collect(),
         status,
     )?;

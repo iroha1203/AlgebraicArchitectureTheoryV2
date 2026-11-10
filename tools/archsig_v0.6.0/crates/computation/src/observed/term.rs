@@ -12,6 +12,8 @@ use archsig_input::law::{
 use std::collections::{BTreeMap, BTreeSet};
 pub(super) mod affine;
 mod walk;
+type DomainRead<'a> =
+    dyn Fn(QuantKind, &str, &Type, Span, Option<&[Scalar]>) -> Result<(), ValidationFailure> + 'a;
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Term {
     pub params: Vec<(String, Type)>,
@@ -667,6 +669,15 @@ impl Term {
         law: &CheckedLaw,
         c: &Control,
     ) -> Result<Scalar, ValidationFailure> {
+        self.apply_with_domains(args, law, c, None)
+    }
+    fn apply_with_domains(
+        &self,
+        args: &[Scalar],
+        law: &CheckedLaw,
+        c: &Control,
+        domains: Option<&DomainRead<'_>>,
+    ) -> Result<Scalar, ValidationFailure> {
         self.check(c)?;
         if args.len() != self.params.len() {
             return Err(internal!("Term適用の引数数が違う").into());
@@ -680,7 +691,7 @@ impl Term {
             data::check(v, law, c)?;
             vars.insert(name.clone(), v.clone());
         }
-        let value = self.eval(self.root, &vars, law, c)?;
+        let value = self.eval(self.root, &vars, law, c, domains)?;
         if value.ty() != self.returns {
             return Err(internal!("Term適用の戻り型が違う").into());
         }
@@ -693,6 +704,7 @@ impl Term {
         vars: &BTreeMap<String, Scalar>,
         law: &CheckedLaw,
         c: &Control,
+        domains: Option<&DomainRead<'_>>,
     ) -> Result<Scalar, ValidationFailure> {
         stacker::maybe_grow(128 * 1024, 1024 * 1024, || {
             tick(c)?;
@@ -702,7 +714,7 @@ impl Term {
             let e = self.nodes.get(&id).ok_or(internal!("Term元式がない"))?;
             let ty = self.types.get(&id).ok_or(internal!("Term元式の型がない"))?;
             let value = if let Some(value) =
-                walk::expression::<Concrete>(self, e, ty, vars, law, c)?
+                walk::expression::<Concrete>(self, e, ty, vars, law, c, domains)?
             {
                 value
             } else {
@@ -745,7 +757,7 @@ impl Term {
                         };
                         data::set(
                             (**element).clone(),
-                            &self.eval_items(items, vars, law, c)?,
+                            &self.eval_items(items, vars, law, c, domains)?,
                             c,
                         )?
                     }
@@ -764,11 +776,11 @@ impl Term {
                         };
                         Scalar::Option {
                             element: (**element).clone(),
-                            value: Some(Box::new(self.eval(*i, vars, law, c)?)),
+                            value: Some(Box::new(self.eval(*i, vars, law, c, domains)?)),
                         }
                     }
                     ExprKind::Call { callee, args } => {
-                        let values = self.eval_items(args, vars, law, c)?;
+                        let values = self.eval_items(args, vars, law, c, domains)?;
                         let mut callee = *callee;
                         while let ExprKind::Group(inner) = self
                             .nodes
@@ -826,7 +838,7 @@ impl Term {
                         filter,
                         ..
                     } => {
-                        let input = self.eval(*domain, vars, law, c)?;
+                        let input = self.eval(*domain, vars, law, c, domains)?;
                         let values = match &input {
                             Scalar::List { items, .. } | Scalar::Set { items, .. } => items,
                             _ => return Err(internal!("Term内包域がList/Setでない").into()),
@@ -841,13 +853,13 @@ impl Term {
                             }
                             let keep = match filter {
                                 None => true,
-                                Some(f) => match self.eval(*f, &local, law, c)? {
+                                Some(f) => match self.eval(*f, &local, law, c, domains)? {
                                     Scalar::Bool(b) => b,
                                     _ => return Err(internal!("Term内包filterがBoolでない").into()),
                                 },
                             };
                             if keep {
-                                result.push(self.eval(*elem, &local, law, c)?);
+                                result.push(self.eval(*elem, &local, law, c, domains)?);
                             }
                         }
                         data::comprehension_value(ty, result, c)?
@@ -862,7 +874,7 @@ impl Term {
                             .get(&id)
                             .ok_or(internal!("Term量化の元binder型がない"))?;
                         let values = match domain {
-                            QuantDomain::In(i) => match self.eval(*i, vars, law, c)? {
+                            QuantDomain::In(i) => match self.eval(*i, vars, law, c, domains)? {
                                 Scalar::List { ref items, .. } | Scalar::Set { ref items, .. } => {
                                     items.clone()
                                 }
@@ -870,6 +882,9 @@ impl Term {
                             },
                             QuantDomain::Type(_) => {
                                 if !super::finite::completion_supported(element, law, c)? {
+                                    if let Some(read) = domains {
+                                        read(*kind, &var.name, element, e.span, None)?;
+                                    }
                                     return Err(ValidationFailure::UnsupportedExpression {
                                         location: archsig_common::issue::Location::Law {
                                             span: e.span,
@@ -887,12 +902,15 @@ impl Term {
                                 .values
                             }
                         };
+                        if let Some(read) = domains {
+                            read(*kind, &var.name, element, e.span, Some(&values))?;
+                        }
                         let result = walk::quantifier(*kind, values, c, |v| {
                             let mut local = copy_variables(vars, c)?;
                             if local.insert(var.name.clone(), v).is_some() {
                                 return Err(internal!("Term量化束縛が重複する").into());
                             }
-                            let Scalar::Bool(b) = self.eval(*body, &local, law, c)? else {
+                            let Scalar::Bool(b) = self.eval(*body, &local, law, c, domains)? else {
                                 return Err(internal!("Term量化bodyがBoolでない").into());
                             };
                             Ok(Some(b))
@@ -947,8 +965,9 @@ impl Term {
         vars: &BTreeMap<String, Scalar>,
         law: &CheckedLaw,
         c: &Control,
+        domains: Option<&DomainRead<'_>>,
     ) -> Result<Vec<Scalar>, ValidationFailure> {
-        walk::items::<Concrete>(self, items, vars, law, c)
+        walk::items::<Concrete>(self, items, vars, law, c, domains)
     }
 }
 struct Concrete;
@@ -1006,8 +1025,9 @@ impl walk::Interpretation for Concrete {
         vars: &BTreeMap<String, Scalar>,
         law: &CheckedLaw,
         c: &Control,
+        domains: Option<&DomainRead<'_>>,
     ) -> Result<Scalar, ValidationFailure> {
-        t.eval(id, vars, law, c)
+        t.eval(id, vars, law, c, domains)
     }
     fn bind(
         vars: &BTreeMap<String, Scalar>,

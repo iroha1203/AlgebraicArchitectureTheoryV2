@@ -382,7 +382,7 @@ apply は現在入力の通常の所属・更新式・元Law検査を行い、�
 
 ### 有限の局所モデルを組み立てる問い
 
-`assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…,design.<parameter>=Handle)` は、担当別の root の有限集合を返す View と、
+`assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…,design.<parameter>=Handle?)` は、担当別の root の有限集合を返す View と、
 共有する個体の対を返す along の View を同じ明示束縛 B で評価する。
 両 View は同じ reading に属し、parameter の名前・型を共有する。全 parameter を束縛する。
 第1 View の戻り型は owner を持たない同じ entity 型の `Set<Root>` とする。
@@ -405,8 +405,9 @@ parameter は第1 View の root 型引数で、束縛値と `apply` の元 root�
 parameter は担当 root と異なる型の ownerless 設計主体で、両 View に明示束縛する。
 設計主体の型・個体・snapshot・reading を `apply` の元と照合し、その実更新値で
 担当集合と共有対を読む。表示名はこの照合に使わない。後続 `assemble_map` は
-選ばれた担当と個体構成に対して対応の始終域と操作を検査する。
-設計値を読む二つの View は選択済みの一点で評価する。反証の `condition_detail` は失敗した組立て条件を示す。
+選ばれた担当と個体構成に対して対応の始終域と操作を検査する。対応 View は両端で選んだ設計値を読み、
+同じ設計 slot が両端で異なる場合は終域側の値を使う。
+設計値を読む二つの View は選択済みの一点で評価する。分岐を選ぶ観測が欠けると、必要な位置を持つ未決を返す。反証の `condition_detail` は失敗した組立て条件を示す。
 
 返す field は `proposition:Proposition`、成立時 `assembly:ModelAssembly`、
 `object:Architecture`、`algebra:ObjectAlgebra` とする。

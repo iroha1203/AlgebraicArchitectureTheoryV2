@@ -481,6 +481,7 @@ pub(super) struct AssemblyTrace {
     occurrences: BTreeMap<(Option<usize>, usize, Option<usize>), usize>,
     captured: BTreeMap<(Option<usize>, (usize, usize), Option<super::call::Context>), Vec<usize>>,
     pub(super) domains: Vec<AssemblyDomain>,
+    pub(super) term_scope: Scope,
     finite_domains: BTreeMap<((usize, usize), usize), Vec<CapturedMembers>>,
     pub(super) condition: Option<AssemblyCondition>,
     pub(super) scope: Scope,
@@ -8168,8 +8169,8 @@ impl<'a> Environment<'a> {
         let ExprKind::Call { callee, args } = &law.program().nodes[id].kind else {
             return Err(internal!("Term元callがない").into());
         };
-        let f = self.scoped_ast(*callee, variables, base, reading)?;
-        let Some(Scalar::Term(ref f)) = f.known_value else {
+        let source = self.scoped_ast(*callee, variables, base, reading)?;
+        let Some(Scalar::Term(ref f)) = source.known_value else {
             return Ok(Value::Unsupported(
                 law.expr_type(id)
                     .ok_or(internal!("Term元戻り型がない"))?
@@ -8180,7 +8181,36 @@ impl<'a> Environment<'a> {
             .iter()
             .map(|i| self.symbolic_source(*i, variables, base, reading))
             .collect::<Result<Vec<_>, _>>()?;
-        f.apply_symbolic(&args, law, &self.control)
+        if !self.fixed_assembly_read() {
+            return f.apply_symbolic(&args, law, &self.control);
+        }
+        let position = std::cell::Cell::new(0);
+        self.in_assembly_occurrence(id, None, || {
+            f.apply_symbolic_with_domains(
+                &args,
+                law,
+                &self.control,
+                Some(&|kind, name, ty, span, members| {
+                    let index = position.get();
+                    position.set(index + 1);
+                    let descriptor = Quantifier {
+                        kind,
+                        name: name.into(),
+                        ty: ty.clone(),
+                        domain: None,
+                        occurrence: span,
+                        assembly_instance: None,
+                        context: self.state.scoped_context.get(),
+                    };
+                    if let Some(trace) = self.state.assembly_domains.borrow_mut().as_mut() {
+                        trace.term_scope.add_quantifier(descriptor.clone());
+                    }
+                    self.in_assembly_occurrence(id, Some(index), || {
+                        self.capture_assembly_domain(&descriptor, &source, members, false)
+                    })
+                }),
+            )
+        })
     }
     // 通常Evaluatorと数値guardが同じ選択arm・pattern束縛を使う。
     fn scoped_match_bindings(
@@ -8776,9 +8806,20 @@ impl<'a> Environment<'a> {
                 } => {
                     let condition = self.scoped_ast(*cond, variables, base, reading)?;
                     // A selected assembly reads the actual branch at the fixed point.
-                    if self.fixed_assembly_read()
-                        && let Some(Scalar::Bool(take)) = condition.known_value.as_ref()
-                    {
+                    if self.fixed_assembly_read() {
+                        let Some(Scalar::Bool(take)) = condition.known_value.as_ref() else {
+                            return Ok(SourceValue {
+                                condition_failed: condition.condition_failed,
+                                condition_pending: condition.condition_pending,
+                                scope: condition.scope,
+                                support: condition.support,
+                                symbolic: None,
+                                comparison: None,
+                                affine: None,
+                                known_value: None,
+                                scalar_scope: None,
+                            });
+                        };
                         let branch = if *take { *then_branch } else { *else_branch };
                         let mut value = self.scoped_ast(branch, variables, base, reading)?;
                         value.condition_failed |= condition.condition_failed;
@@ -9159,6 +9200,17 @@ impl<'a> Environment<'a> {
                         && known_value.is_none()
                         && matches!(&expression.kind, ExprKind::Call { callee, .. } if matches!(self.indexes.inputs.law().expr_type(*callee), Some(Type::Map(..))))
                     {
+                        if self.fixed_assembly_read() {
+                            let [table, argument] = values.as_slice() else {
+                                return Err(internal!("Map適用の実引数数が違う").into());
+                            };
+                            self.capture_assembly_condition(
+                                expression.span,
+                                "Mapの実引数が定義域にない",
+                                &(table.clone(), argument.clone()),
+                                &support,
+                            );
+                        }
                         condition_failed = true;
                     }
                     let affine = symbolic
@@ -9354,7 +9406,20 @@ impl<'a> Environment<'a> {
                 mut support,
                 ..
             } = self.scoped_ast(*lhs, variables, base, reading)?;
-            if self.fixed_assembly_read() && !left_failed && !left_pending {
+            if self.fixed_assembly_read() && matches!(op, BinOp::And | BinOp::Or | BinOp::Implies) {
+                if left.is_none() || left_failed || left_pending {
+                    return Ok(SourceValue {
+                        condition_failed: left_failed,
+                        condition_pending: left_pending,
+                        symbolic: None,
+                        comparison: None,
+                        affine: None,
+                        known_value: None,
+                        scalar_scope: None,
+                        scope,
+                        support,
+                    });
+                }
                 let decisive = match (op, left.as_ref()) {
                     (BinOp::And, Some(Scalar::Bool(false))) => Some(false),
                     (BinOp::Or, Some(Scalar::Bool(true)))

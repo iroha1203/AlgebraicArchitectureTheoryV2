@@ -150,6 +150,11 @@
               "name": "split",
               "type": "Bool",
               "meaning": "二つの配置の選択値。"
+            },
+            {
+              "name": "reversed",
+              "type": "Bool",
+              "meaning": "対応の向きを逆に読む設計入力。"
             }
           ]
         }

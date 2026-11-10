@@ -25,5 +25,6 @@
   "planLabel": "established",
   "otherLabel": "established",
   "observedDesign": "established",
-  "wrongProvenance": "refuted"
+  "wrongProvenance": "refuted",
+  "otherLayout": "established"
 }

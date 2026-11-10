@@ -33,6 +33,7 @@ pub(super) fn read(
         family::read_with_value(env, name, bindings)
     }) {
         Ok((Ok((mut metadata, value)), trace)) => {
+            metadata.scope.merge_quantifiers(&trace.term_scope);
             // The evaluator can determine a value for every completion, for
             // instance when a universal test has a known counterexample.
             if fixed_design && value.is_some() && !metadata.failed {
@@ -404,9 +405,10 @@ pub(super) fn prepare(
         };
         (unread(), unread())
     } else {
+        let capture = design.is_some() || p.requests().reads_assembly_domains(&r.id);
         (
-            read(reader, head, &values, true, design.is_some())?,
-            read(reader, along, &values, true, design.is_some())?,
+            read(reader, head, &values, capture, design.is_some())?,
+            read(reader, along, &values, capture, design.is_some())?,
         )
     };
     let mut missing = fragments.metadata.missing.clone();

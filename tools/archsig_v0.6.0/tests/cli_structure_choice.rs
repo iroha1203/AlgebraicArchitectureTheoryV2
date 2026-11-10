@@ -73,6 +73,7 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
     for (layout, selected, root, value_) in [
         ("layout0", "planApply0", "native-T3", false),
         ("layout1", "planApply1", "rust-T3", true),
+        ("otherLayout", "otherApply1", "native-T3", true),
     ] {
         let assembly = value(output(layout, "assembly"));
         assert_eq!(
@@ -268,6 +269,50 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
     let evidence = get(value(counterexample), "data");
     assert_eq!(value(get(evidence, "left")).value, JValue::Bool(true));
     assert_eq!(value(get(evidence, "right")).value, JValue::Bool(false));
+    let proposition = value(get(outputs, "proposition"));
+    assert_eq!(
+        arr(get(proposition, "operands"))
+            .iter()
+            .filter(|operand| nodes.iter().any(|node| {
+                s(get(node, "id")) == s(get(operand, "node"))
+                    && s(get(node, "type")) == "LawInstance"
+            }))
+            .count(),
+        2
+    );
+    let [reason] = arr(get(migration, "reasons")) else {
+        panic!("one actual Law refutation");
+    };
+    assert_eq!(s(get(get(reason, "location"), "input")), "law");
+
+    std::fs::write(dir.join("archmap.json"), original).unwrap();
+    let law = include_str!("fixtures/r2-structure-choice/laws.law").replace(
+        "routes(t:Route):Set<Route> = set<Route>{t}",
+        "routes(t:Route,p:Design):Set<Route> = if p.split then set<Route>{t} else set<Route>{}",
+    );
+    std::fs::write(dir.join("laws.law"), law).unwrap();
+    let mut map_asks = args[9..]
+        .chunks_exact(2)
+        .filter(|pair| !pair[1].starts_with("wrongEndpoint="))
+        .map(|pair| pair[1].to_owned())
+        .collect::<Vec<_>>();
+    let migrate = map_asks
+        .iter_mut()
+        .find(|ask| ask.starts_with("migrate="))
+        .unwrap();
+    *migrate = format!("{},p=@comparison/plan)", migrate.strip_suffix(')').unwrap());
+    let mut conditional_args = args[..9].to_vec();
+    conditional_args[8] = "conditional-route";
+    for ask in &map_asks {
+        conditional_args.extend(["--ask", ask]);
+    }
+    let run = run_binary(&dir, &conditional_args);
+    let result = result_json(&dir, &run);
+    let migration = arr(get(&result, "answers"))
+        .iter()
+        .find(|a| s(get(a, "id")) == "migrate")
+        .unwrap();
+    assert_eq!(s(get(migration, "status")), "established", "{}", run.stdout);
 }
 
 #[test]
@@ -292,7 +337,7 @@ fn a_selected_shared_view_refutation_is_scoped_to_its_concrete_point() {
         ))
         .replace("selected(p:Design,t:Route)", "selected(p:Design,t:Route,x:State,y:State)")
         .replace(
-            "if p.split then set<Root>{t.to}",
+            "if p.split!=p.reversed then set<Root>{t.to}",
             concat!(
                 "if holds(x) and holds(x) and (forall b in list<Bool>[true] . p.split=b) ",
                 "and (forall ignored in list<Bool>[true] . y.quantity=0) then ",
@@ -446,7 +491,7 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
         );
     std::fs::write(dir.join("archmap.json"), map).unwrap();
     let law = include_str!("fixtures/r2-structure-choice/laws.law").replace(
-        "if p.split then set<Root>{t.to} else set<Root>{t.from}",
+        "if p.split!=p.reversed then set<Root>{t.to} else set<Root>{t.from}",
         "let seen=forall b:Root . b=b in if seen and (exists z:Z . z*z=2) then set<Root>{t.to} else set<Root>{t.from}",
     );
     std::fs::write(dir.join("laws.law"), law).unwrap();
@@ -583,7 +628,7 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
             "interfaces(p:Design,t:Route,x:State,y:State)",
         )
         .replace(
-            "if p.split then set<Root>{t.to}",
+            "if p.split!=p.reversed then set<Root>{t.to}",
             "if source(then(identity(x),identity(y)))=x and p.split then set<Root>{t.to}",
         );
     std::fs::write(dir.join("laws.law"), law).unwrap();
@@ -622,4 +667,78 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
         panic!("one checked condition failure");
     };
     assert_eq!(s(get(get(reason, "location"), "input")), "law");
+
+    let base_law = include_str!("fixtures/r2-structure-choice/laws.law")
+        .replace(
+            "selected(p:Design,t:Route)",
+            "selected(p:Design,t:Route,x:State,y:State)",
+        )
+        .replace(
+            "interfaces(p:Design,t:Route)",
+            "interfaces(p:Design,t:Route,x:State,y:State)",
+        );
+    let selected = "if p.split!=p.reversed then set<Root>{t.to} else set<Root>{t.from}";
+    let term = base_law.replace(
+        selected,
+        "if (fn(k:Z)=>forall b in list<Z>[k] . b=0)(x.quantity) then set<Root>{t.to} else set<Root>{t.from}",
+    );
+    std::fs::write(dir.join("laws.law"), term).unwrap();
+    args[8] = "term-domain";
+    let run = run_binary(&dir, &args);
+    assert_eq!(run.code, 0, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let layout = arr(get(&result, "answers"))
+        .iter()
+        .find(|a| s(get(a, "id")) == "layout")
+        .unwrap();
+    let quantifier = arr(get(get(layout, "scope"), "quantifiers"))
+        .iter()
+        .find(|q| s(get(q, "name")) == "b")
+        .expect("evaluated Term body quantifier");
+    let nodes = arr(get(&result, "nodes"));
+    let resolve = |reference: &JNode| {
+        nodes
+            .iter()
+            .find(|node| s(get(node, "id")) == s(get(reference, "node")))
+            .unwrap()
+    };
+    let domain = resolve(get(quantifier, "domain"));
+    let [member] = arr(get(get(domain, "value"), "elements")) else {
+        panic!("actual singleton Term domain");
+    };
+    assert_eq!(s(get(resolve(member), "value")), "0");
+
+    let unavailable = concat!(
+        "        {\n          \"id\": \"rust-T3-before.quantity\",\n",
+        "          \"subject\": \"rust-T3-before\",\n",
+        "          \"field\": \"E12.State.quantity\",\n",
+        "          \"value\": \"0\",\n          \"origin\": \"reduced-e12\"\n        },\n",
+    );
+    let original = include_str!("fixtures/r2-structure-choice/archmap.json");
+    let missing = original.replacen(unavailable, "", 1);
+    assert_ne!(original, missing);
+    std::fs::write(dir.join("archmap.json"), missing).unwrap();
+    let conditional = base_law.replace(
+        selected,
+        "if y.quantity=0 then (if source(then(identity(x),identity(y)))=x then set<Root>{t.to} else set<Root>{t.from}) else set<Root>{t.to}",
+    );
+    std::fs::write(dir.join("laws.law"), conditional).unwrap();
+    args[8] = "unknown-branch";
+    let run = run_binary(&dir, &args);
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let layout = arr(get(&result, "answers"))
+        .iter()
+        .find(|a| s(get(a, "id")) == "layout")
+        .unwrap();
+    assert_eq!(s(get(layout, "status")), "undetermined");
+    let [reason] = arr(get(layout, "reasons")) else {
+        panic!("the missing branch condition");
+    };
+    assert_eq!(s(get(reason, "code")), "missing_observation");
+    let [slot] = arr(get(reason, "missing")) else {
+        panic!("the actual missing slot");
+    };
+    assert_eq!(s(get(slot, "subject")), "rust-T3-before");
+    assert_eq!(s(get(slot, "field")), "E12.State.quantity");
 }

@@ -391,7 +391,7 @@ pub(super) fn captured_wire(
                 ("generators", Json::Arr(generators)),
             ])
         }
-        Scalar::Tuple(items) | Scalar::List { items, .. } | Scalar::Set { items, .. } => {
+        Scalar::Tuple(items) | Scalar::List { items, .. } => {
             let mut references = Vec::new();
             for item in items {
                 tick(c)?;
@@ -403,7 +403,6 @@ pub(super) fn captured_wire(
         Scalar::Option {
             value: Some(value), ..
         } => Json::obj([("some", child(value)?.wire())]),
-        Scalar::Term(term) => term.wire(),
         _ => return Err(internal!("実量化値のPathを含む結果型が違う").into()),
     })
 }
