@@ -25,6 +25,9 @@ pub(super) fn read(
     match family::read_with_value(env, name, bindings) {
         Ok((mut metadata, value)) => {
             // The read collector records positions; native support records actual atoms.
+            metadata
+                .support
+                .retain(|fact| !env.has_primitive_override(fact));
             for fact in &mut metadata.support {
                 if fact.atom.is_none()
                     && let Some(name) = &fact.field
@@ -104,6 +107,7 @@ pub(super) struct Assembly {
     pub fragments: Read,
     pub interfaces: Read,
     pub bindings: Vec<Binding>,
+    pub design: Option<NodeRef>,
     pub locals: Vec<Fragment>,
     pub restrictions: Vec<Architecture>,
     pub repaired: BTreeMap<Fact, NodeRef>,
@@ -223,9 +227,14 @@ pub(super) fn prepare(
     let mut selected = BTreeMap::new();
     let mut repaired = BTreeMap::new();
     let mut selections = Vec::new();
+    let mut design = None;
     let mut rejected = None;
     for argument in &r.arguments {
-        let Some(name) = argument.name.strip_prefix("local.") else {
+        let (name, is_design) = if let Some(name) = argument.name.strip_prefix("local.") {
+            (name, false)
+        } else if let Some(name) = argument.name.strip_prefix("design.") {
+            (name, true)
+        } else {
             continue;
         };
         c.checkpoint(Checkpoint::ConfigurationMap)?;
@@ -233,10 +242,10 @@ pub(super) fn prepare(
             &values
                 .iter()
                 .find(|(binding, _)| binding == name)
-                .ok_or(internal!("修復局所の元root束縛がない"))?
+                .ok_or(internal!("選択状態の元root束縛がない"))?
                 .1,
         )?;
-        let at = reference(e, g, &argument.value)?.ok_or(internal!("修復局所の元出力がない"))?;
+        let at = reference(e, g, &argument.value)?.ok_or(internal!("選択状態の元出力がない"))?;
         input_refs.push(at);
         selections.push(at);
         let node = g.get(at)?;
@@ -254,22 +263,27 @@ pub(super) fn prepare(
         };
         let Some((source, overrides)) = source else {
             rejected = Some(model_assembly::rejected(
-                "局所入力はapplyの実Architectureを要求する",
+                "選択状態にはapplyの実Architectureを要求する",
                 vec![root],
             ));
             break;
         };
         let construction = source.construction();
         if construction.root() != &root
+            || (is_design && root.snapshot != target.snapshot)
             || construction.reading() != reading
             || construction.transport().is_some()
             || applied.contains_key(&root)
         {
             rejected = Some(model_assembly::rejected(
-                "修復局所の元root・snapshot・readingまたは選択が異なる",
+                "選択状態の元root・snapshot・readingまたは選択が異なる",
                 vec![root, construction.root().clone()],
             ));
             break;
+        }
+        if is_design {
+            design = Some((at, overrides));
+            continue;
         }
         for (position, value) in overrides.iter() {
             c.checkpoint(Checkpoint::ConfigurationMap)?;
@@ -285,8 +299,13 @@ pub(super) fn prepare(
         }
         applied.insert(root, (at, source, overrides));
     }
-    let fragments = read(e, head, &values)?;
-    let shared = read(e, along, &values)?;
+    let selected_reading = design
+        .as_ref()
+        .map(|(_, overrides)| Environment::with_primitive_valuation(p.inputs(), overrides, c))
+        .transpose()?;
+    let reader = selected_reading.as_ref().unwrap_or(e);
+    let fragments = read(reader, head, &values)?;
+    let shared = read(reader, along, &values)?;
     let mut missing = fragments.metadata.missing.clone();
     missing.extend(shared.metadata.missing.iter().cloned());
     missing.sort();
@@ -429,6 +448,7 @@ pub(super) fn prepare(
         fragments,
         interfaces: shared,
         bindings,
+        design: design.map(|(reference, _)| reference),
         locals,
         restrictions,
         repaired,

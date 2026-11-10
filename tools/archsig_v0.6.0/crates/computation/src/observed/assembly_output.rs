@@ -316,20 +316,27 @@ pub(super) fn append(
         }
         inclusions.push(wire);
     }
+    let mut wire = Json::obj([
+        (
+            "reading",
+            Json::str(plan.architecture.witness.construction().reading()),
+        ),
+        ("fragments", fragments.wire()),
+        ("interfaces", interfaces.wire()),
+        ("object", plan.architecture.reference.wire()),
+        ("algebra", algebra.wire()),
+        ("inclusions", Json::Arr(inclusions)),
+    ]);
+    if let Some(design) = a.design
+        && let Json::Obj(fields) = &mut wire
+    {
+        fields.insert("design".into(), design.wire());
+        args.push(design);
+    }
     let result = b.push(
         NodeType::Construction(T::ModelAssembly),
         "model_assembly",
-        Json::obj([
-            (
-                "reading",
-                Json::str(plan.architecture.witness.construction().reading()),
-            ),
-            ("fragments", fragments.wire()),
-            ("interfaces", interfaces.wire()),
-            ("object", plan.architecture.reference.wire()),
-            ("algebra", algebra.wire()),
-            ("inclusions", Json::Arr(inclusions)),
-        ]),
+        wire,
         args,
         None,
     )?;

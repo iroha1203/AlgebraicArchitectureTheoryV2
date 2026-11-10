@@ -1,0 +1,12 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading E12Compare {
+  use vocabulary E12 version "1" digest "sha256:2558b11807584c79ca619e6b58a6869461de8a82f2de797e705da321c11c1d71";
+  view routes(t:Route):Set<Route> = set<Route>{t};
+  view labelOf(p:Design):Text=p.label;
+  view within(p:Design):Set<Design> = set<Design>{p};
+  law optional allowed(p:Design):true;
+  change choose(p:Design,q:Bool)=p with {split=q};
+  law optional consumed(s:State):s.quantity=16;
+  view selected(p:Design):Set<Root> = if p.split then p.new else p.old;
+  view interfaces(p:Design):Unit = unit;
+}

@@ -1,0 +1,181 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "E12",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "E12.Root",
+          "meaning": "output1 の全体または source 別の局所読取り。",
+          "parameters": [],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "E12.State",
+          "meaning": "選択した消費の前後状態。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "E12.Root"
+              ],
+              "meaning": "担当モデル。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "quantity",
+              "type": "Z",
+              "meaning": "選択した source から新たに消費した量。単位は 1/16。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "arrow",
+          "name": "E12.Consume",
+          "meaning": "共通操作域で選んだ output1 の消費の一成分。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "E12.Root"
+              ],
+              "meaning": "担当モデル。"
+            },
+            {
+              "name": "from",
+              "type": [
+                "Owned",
+                "E12.State",
+                "owner"
+              ],
+              "meaning": "始域。"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Owned",
+                "E12.State",
+                "owner"
+              ],
+              "meaning": "終域。"
+            }
+          ],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "correspondence",
+          "name": "E12.Route",
+          "meaning": "native から P2 Rust への担当別の原始対応。",
+          "parameters": [
+            {
+              "name": "from",
+              "type": [
+                "Ref",
+                "E12.Root"
+              ],
+              "meaning": "対応の端点。"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Ref",
+                "E12.Root"
+              ],
+              "meaning": "対応の端点。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "states",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "E12.State",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "E12.State",
+                  "to"
+                ]
+              ],
+              "meaning": "担当が指定した個体対応。"
+            },
+            {
+              "name": "consumes",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "E12.Consume",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "E12.Consume",
+                  "to"
+                ]
+              ],
+              "meaning": "担当が指定した個体対応。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "E12.Design",
+          "parameters": [],
+          "alignments": [],
+          "meaning": "有限候補を選ぶ仕様状態。",
+          "fields": [
+            {
+              "name": "label",
+              "type": "Text",
+              "meaning": "表示名。構造の同一性には使わない。"
+            },
+            {
+              "name": "split",
+              "type": "Bool",
+              "meaning": "二つの配置の選択値。"
+            },
+            {
+              "name": "old",
+              "type": [
+                "Set",
+                [
+                  "Ref",
+                  "E12.Root"
+                ]
+              ],
+              "meaning": "元配置の担当集合。"
+            },
+            {
+              "name": "new",
+              "type": [
+                "Set",
+                [
+                  "Ref",
+                  "E12.Root"
+                ]
+              ],
+              "meaning": "新配置の担当集合。"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

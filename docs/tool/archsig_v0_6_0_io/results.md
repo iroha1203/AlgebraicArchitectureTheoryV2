@@ -472,7 +472,7 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 | Proposition | `{predicate:Predicate,operands:Ref[],quantifiers:Quantifier[]}` |
 | Configuration | `{family:FactPointer[],requirements:FactPointer[],relations:[FactPointer,FactPointer][],identifications:[FactPointer,FactPointer][]}` |
 | Architecture | `{reading:QName,root:Ref,configuration:Configuration,laws:LawInstance[],internal_arrows:Ref[],overrides:{slot:Slot,value:Ref}[],state_of?:Architecture}` |
-| ModelAssembly | `{reading:QName,fragments:Ref,interfaces:Ref,object:Architecture,algebra:ObjectAlgebra,inclusions:{fragment:Architecture,applied?:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,generators:{source:Operation,target:Operation,proposition:Proposition}[]}[]}` |
+| ModelAssembly | `{reading:QName,fragments:Ref,interfaces:Ref,design?:Architecture,object:Architecture,algebra:ObjectAlgebra,inclusions:{fragment:Architecture,applied?:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,generators:{source:Operation,target:Operation,proposition:Proposition}[]}[]}` |
 | ModelMapAssembly | `{source:Architecture,target:Architecture,source_assembly:ModelAssembly,target_assembly:ModelAssembly,correspondences:Ref,configuration_map:ConfigurationMap,locals:{correspondence:Ref,source:Architecture,target:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,proposition:Proposition}[],generators:{source:Operation,target:Operation,proposition:Proposition}[],laws:{source_object:ObjectComponent,target_object:ObjectComponent,source_law:LawInstance,target_law:LawInstance,proposition:Proposition}[]}` |
 | AtomUniverse | `{atoms:FactPointer[]}` |
 | AtomMap | `{universe:AtomUniverse,images:FactPointer[]}` |
@@ -485,6 +485,7 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 更新値を共有する。部分対象の所属域と Law の適用は、その component に対して確認する。
 
 ModelAssembly の fragments と interfaces は、元 View・束縛から評価した型付き値を指す。
+`design` は両 View の評価に使った実 `apply` の出力を指す。
 `local.<parameter>` を選んだ担当は `inclusions[].applied` がその `apply` の出力を直接参照する。
 `fragment` は同じ更新値を保ち、組立てと共通の U で包含・再制限を検査するための局所対象である。
 各 inclusion.map は同じ全体 object を終域とし、generators は局所の各生成操作の像と全 U 上の
