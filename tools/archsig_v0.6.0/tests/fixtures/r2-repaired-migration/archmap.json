@@ -14,7 +14,7 @@
       "id": "reduced-e12",
       "mode": "specification",
       "method": "E12 T3 Consume first と raw cancel の始終状態を縮約する。",
-      "note": "修復前の数量15と、raw cancel の反証に使う対応先は仕様例の構成。",
+      "note": "修復前の数量15と、raw cancel の反証に使う対応先は仕様例の構成。 output1 T3 and output2 raw cancel share a synthetic comparison root.",
       "locations": []
     }
   ],
@@ -90,11 +90,6 @@
         },
         {
           "id": "native-cancel-retained",
-          "type": "E12.State",
-          "origin": "reduced-e12"
-        },
-        {
-          "id": "native-cancel-stopped",
           "type": "E12.State",
           "origin": "reduced-e12"
         },
@@ -333,56 +328,56 @@
           "id": "native-T3-before.building",
           "subject": "native-T3-before",
           "field": "E12.State.building",
-          "value": false,
+          "value": true,
           "origin": "reduced-e12"
         },
         {
           "id": "native-T3-before.status",
           "subject": "native-T3-before",
           "field": "E12.State.status",
-          "value": "0",
+          "value": "10",
           "origin": "reduced-e12"
         },
         {
           "id": "native-T3-after.building",
           "subject": "native-T3-after",
           "field": "E12.State.building",
-          "value": false,
+          "value": true,
           "origin": "reduced-e12"
         },
         {
           "id": "native-T3-after.status",
           "subject": "native-T3-after",
           "field": "E12.State.status",
-          "value": "0",
+          "value": "10",
           "origin": "reduced-e12"
         },
         {
           "id": "rust-T3-before.building",
           "subject": "rust-T3-before",
           "field": "E12.State.building",
-          "value": false,
+          "value": true,
           "origin": "reduced-e12"
         },
         {
           "id": "rust-T3-before.status",
           "subject": "rust-T3-before",
           "field": "E12.State.status",
-          "value": "0",
+          "value": "10",
           "origin": "reduced-e12"
         },
         {
           "id": "rust-T3-after.building",
           "subject": "rust-T3-after",
           "field": "E12.State.building",
-          "value": false,
+          "value": true,
           "origin": "reduced-e12"
         },
         {
           "id": "rust-T3-after.status",
           "subject": "rust-T3-after",
           "field": "E12.State.status",
-          "value": "0",
+          "value": "10",
           "origin": "reduced-e12"
         },
         {
@@ -445,37 +440,6 @@
           "subject": "native-cancel-retained",
           "field": "E12.State.status",
           "value": "10",
-          "origin": "reduced-e12"
-        },
-        {
-          "id": "native-cancel-stopped.owner",
-          "subject": "native-cancel-stopped",
-          "field": "E12.State.owner",
-          "value": [
-            "comparison",
-            "native-cancel"
-          ],
-          "origin": "reduced-e12"
-        },
-        {
-          "id": "native-cancel-stopped.quantity",
-          "subject": "native-cancel-stopped",
-          "field": "E12.State.quantity",
-          "value": "0",
-          "origin": "reduced-e12"
-        },
-        {
-          "id": "native-cancel-stopped.building",
-          "subject": "native-cancel-stopped",
-          "field": "E12.State.building",
-          "value": false,
-          "origin": "reduced-e12"
-        },
-        {
-          "id": "native-cancel-stopped.status",
-          "subject": "native-cancel-stopped",
-          "field": "E12.State.status",
-          "value": "65",
           "origin": "reduced-e12"
         },
         {
@@ -674,16 +638,6 @@
               [
                 "comparison",
                 "rust-cancel-retained"
-              ]
-            ],
-            [
-              [
-                "comparison",
-                "native-cancel-stopped"
-              ],
-              [
-                "comparison",
-                "rust-cancel-stopped"
               ]
             ]
           ],

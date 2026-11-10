@@ -14,5 +14,5 @@ rustWide=assemble(E12Compare.wide,on=@comparison/rust-output1,along=E12Compare.n
 nativeState=check(E12Compare.committed,s=@comparison/native-T3-after,on=$nativeWide.object)
 rustState=check(E12Compare.committed,s=@comparison/rust-T3-after,on=$rustWide.object)
 extended=assemble_map(E12Compare.routes,from=$nativeWide.assembly,to=$rustWide.assembly,t=@comparison/move-T3,c=@comparison/move-cancel)
-nativeCancel=evaluate(E12Compare.observed,s=@comparison/native-cancel-retained,on=$nativeWide.object)
-rustCancel=evaluate(E12Compare.observed,s=@comparison/rust-cancel-stopped,on=$rustWide.object)
+nativeCancel=evaluate(E12Compare.observed,o=@comparison/native-cancel-raw,on=$nativeWide.object)
+rustCancel=evaluate(E12Compare.observed,o=@comparison/rust-cancel-raw,on=$rustWide.object)

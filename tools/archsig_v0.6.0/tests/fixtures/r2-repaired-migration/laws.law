@@ -8,7 +8,7 @@ reading E12Compare {
   view consume(t:Route):Set<Route> = set<Route>{t};
   view routes(t:Route,c:Route):Set<Route> = set<Route>{t,c};
   view singleton(s:State):Set<State> = set<State>{s};
-  view observed(s:State):(Bool,Z) = (s.building,s.status);
+  view observed(o:Operation):(Bool,Z) = (o.to.building,o.to.status);
   law optional committed(s:State):s.quantity=16;
   change tune(s:State, q:Bool)=s with {quantity=if q then 16 else s.quantity};
 }
