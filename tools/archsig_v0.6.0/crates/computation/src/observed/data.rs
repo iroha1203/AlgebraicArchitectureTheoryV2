@@ -1168,6 +1168,89 @@ pub(super) fn set(
         items: result,
     })
 }
+pub(super) fn value_key(
+    value: &Scalar,
+    c: &Control,
+    point: Checkpoint,
+) -> Result<String, ValidationFailure> {
+    input_json(value, c)?
+        .canonical_controlled::<archsig_common::control::CheckFailure<Box<archsig_common::issue::Issue>>>(
+            c,
+            point,
+        )
+        .map_err(|e| match e {
+            archsig_common::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
+            archsig_common::control::CheckFailure::Input(_) => {
+                ValidationFailure::Internal(internal!("canonical値が構成できない"))
+            }
+        })
+}
+// JSONのarray順ではなく、元型のSet/Mapの意味に沿って再帰的に並べる。
+// 値と所属条件を保ち、表示順を正規化する。
+pub(super) fn canonical_value(
+    value: &Scalar,
+    c: &Control,
+    point: Checkpoint,
+) -> Result<Scalar, ValidationFailure> {
+    fn visit(value: &mut Scalar, c: &Control, point: Checkpoint) -> Result<(), ValidationFailure> {
+        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+            c.checkpoint(point).map_err(ValidationFailure::from)?;
+            match value {
+                Scalar::Set { items, .. } => {
+                    let mut ordered = Vec::new();
+                    for mut item in std::mem::take(items) {
+                        visit(&mut item, c, point)?;
+                        ordered.push((value_key(&item, c, point)?, item));
+                    }
+                    ordered.sort_by(|a, b| a.0.as_bytes().cmp(b.0.as_bytes()));
+                    c.checkpoint(point).map_err(ValidationFailure::from)?;
+                    for (_, item) in ordered {
+                        c.checkpoint(point).map_err(ValidationFailure::from)?;
+                        items.push(item);
+                    }
+                }
+                Scalar::Map { pairs, .. } => {
+                    let mut ordered = Vec::new();
+                    for (key, image) in pairs.iter() {
+                        c.checkpoint(point).map_err(ValidationFailure::from)?;
+                        let (mut key, mut image) = (key.clone(), image.clone());
+                        visit(&mut key, c, point)?;
+                        visit(&mut image, c, point)?;
+                        ordered.push((value_key(&key, c, point)?, (key, image)));
+                    }
+                    ordered.sort_by(|a, b| a.0.as_bytes().cmp(b.0.as_bytes()));
+                    c.checkpoint(point).map_err(ValidationFailure::from)?;
+                    *pairs = ordered
+                        .into_iter()
+                        .map(|(_, pair)| {
+                            c.checkpoint(point).map_err(ValidationFailure::from)?;
+                            Ok(pair)
+                        })
+                        .collect::<Result<_, ValidationFailure>>()?;
+                }
+                Scalar::Tuple(items)
+                | Scalar::List { items, .. }
+                | Scalar::Data { args: items, .. } => {
+                    for item in items {
+                        visit(item, c, point)?;
+                    }
+                }
+                Scalar::Option {
+                    value: Some(item), ..
+                } => visit(item, c, point)?,
+                Scalar::Path(_) | Scalar::Term(_) => {
+                    return Err(internal!("正規順の対象が原始値でない").into());
+                }
+                _ => {}
+            }
+            c.checkpoint(point).map_err(ValidationFailure::from)
+        })
+    }
+    c.checkpoint(point).map_err(ValidationFailure::from)?;
+    let mut result = value.clone();
+    visit(&mut result, c, point)?;
+    Ok(result)
+}
 /// Listの位置はそのまま、SetからListへの射影は値の正規順で読む。
 pub(super) fn comprehension_positions(
     input: &Scalar,
@@ -1180,21 +1263,27 @@ pub(super) fn comprehension_positions(
         _ => return Err(internal!("内包元域がList/Setでない").into()),
     };
     let ordered = if unordered && matches!(output, Type::List(_)) {
-        use super::finite_law_diagram::{canonical_value, value_key};
+        let point = Checkpoint::FiniteIteration;
         let mut keyed = Vec::new();
         for (index, item) in items.iter().enumerate() {
             tick(control)?;
-            keyed.push((value_key(&canonical_value(item, control)?, control)?, index));
+            let item = canonical_value(item, control, point)?;
+            keyed.push((value_key(&item, control, point)?, index));
         }
         keyed.sort_by(|a, b| a.0.as_bytes().cmp(b.0.as_bytes()));
         tick(control)?;
-        Some(keyed)
+        Some(
+            keyed
+                .into_iter()
+                .map(|(_, index)| index)
+                .collect::<Vec<_>>(),
+        )
     } else {
         None
     };
     let mut order = ordered.map(Vec::into_iter);
     Ok((0..items.len()).map(move |index| match &mut order {
-        Some(order) => order.next().expect("正規順は各位置を一度持つ").1,
+        Some(order) => order.next().expect("正規順は各位置を一度持つ"),
         None => index,
     }))
 }

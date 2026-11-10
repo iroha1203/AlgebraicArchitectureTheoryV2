@@ -874,22 +874,31 @@ law required check_set(s: Sample): set { x+1 | x in s.nums where x>1 }=set<Z>{3}
 
 #[test]
 fn list_projection_preserves_positions_and_sorts_sets_by_member_value() {
-    let (wire, _) = run(
-        fixture(
-            r#"
+    let inputs = fixture(
+        r#"
 view ordered(): List<Z> = list { x+1 | x in list<Z>[3,1,3] };
 view set_left(): List<Z> = list { x | x in set<Z>{3,1,3,2} };
 view set_right(): List<Z> = list { x | x in set<Z>{2,1,3} };
 view typed_empty(): List<Q> = list { x | x in set<Q>{} };
 "#,
-        ),
+    );
+    let checked = check_inputs(inputs.clone(), &quiet()).unwrap();
+    // 通常の式の正規順を決めるとき、有限Lawの構成だけを止めるsignalでは停止しない。
+    let control =
+        Control::new(|point| (point == Checkpoint::FiniteLawFunction).then_some(Signal::Term));
+    let wire = evaluate_observed_bytes(
+        inputs,
         &[
             "a=evaluate(Calc.ordered)",
             "b=evaluate(Calc.set_left)",
             "c=evaluate(Calc.set_right)",
             "d=evaluate(Calc.typed_empty)",
         ],
-    );
+        &control,
+    )
+    .unwrap()
+    .wire();
+    audit(&wire, &checked);
     let integers = ty("List", Json::str("Z"));
     output(&wire, "a", &integers, numbers(&["4", "2", "4"]));
     output(&wire, "b", &integers, numbers(&["1", "2", "3"]));

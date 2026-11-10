@@ -596,80 +596,8 @@ fn function(
         },
     )
 }
-pub(super) fn value_key(value: &Scalar, c: &Control) -> Result<String, ValidationFailure> {
-    super::data::input_json(value, c)?
-        .canonical_controlled::<archsig_common::control::CheckFailure<Box<archsig_common::issue::Issue>>>(
-            c,
-            Checkpoint::FiniteLawFunction,
-        )
-        .map_err(|e| match e {
-            archsig_common::control::CheckFailure::Stopped(stop) => ValidationFailure::Stop(stop),
-            archsig_common::control::CheckFailure::Input(_) => {
-                ValidationFailure::Internal(internal!("有限Lawのcanonical値が構成できない"))
-            }
-        })
-}
-// JSONのarray順ではなく、元型のSet/Mapの意味に沿って再帰的に並べる。
-// 元のDの値・所属条件は保ち、公開する値の表示順だけを変える。
 pub(super) fn canonical_value(value: &Scalar, c: &Control) -> Result<Scalar, ValidationFailure> {
-    fn visit(value: &mut Scalar, c: &Control) -> Result<(), ValidationFailure> {
-        stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
-            tick(c)?;
-            match value {
-                Scalar::Set { items, .. } => {
-                    let mut ordered = Vec::new();
-                    for mut item in std::mem::take(items) {
-                        visit(&mut item, c)?;
-                        ordered.push((value_key(&item, c)?, item));
-                    }
-                    ordered.sort_by(|a, b| a.0.as_bytes().cmp(b.0.as_bytes()));
-                    tick(c)?;
-                    for (_, item) in ordered {
-                        tick(c)?;
-                        items.push(item);
-                    }
-                }
-                Scalar::Map { pairs, .. } => {
-                    let mut ordered = Vec::new();
-                    for (key, image) in pairs.iter() {
-                        tick(c)?;
-                        let (mut key, mut image) = (key.clone(), image.clone());
-                        visit(&mut key, c)?;
-                        visit(&mut image, c)?;
-                        ordered.push((value_key(&key, c)?, (key, image)));
-                    }
-                    ordered.sort_by(|a, b| a.0.as_bytes().cmp(b.0.as_bytes()));
-                    tick(c)?;
-                    *pairs = ordered
-                        .into_iter()
-                        .map(|(_, pair)| {
-                            tick(c)?;
-                            Ok(pair)
-                        })
-                        .collect::<Result<_, ValidationFailure>>()?;
-                }
-                Scalar::Tuple(items)
-                | Scalar::List { items, .. }
-                | Scalar::Data { args: items, .. } => {
-                    for item in items {
-                        visit(item, c)?;
-                    }
-                }
-                Scalar::Option {
-                    value: Some(item), ..
-                } => visit(item, c)?,
-                Scalar::Path(_) | Scalar::Term(_) => {
-                    return Err(internal!("有限LawのDに原始値でない値がある").into());
-                }
-                _ => {}
-            }
-            tick(c)
-        })
-    }
-    tick(c)?;
-    let mut result = value.clone();
-    visit(&mut result, c)?;
-    Ok(result)
+    super::data::canonical_value(value, c, Checkpoint::FiniteLawFunction)
 }
 fn original_rows(
     f: &AutomaticLawFunctions,
@@ -838,7 +766,7 @@ fn basis(
             return Err(internal!("有限Lawの全Dの型が違う").into());
         }
         let value = canonical_value(&value, c)?;
-        let key = value_key(&value, c)?;
+        let key = super::data::value_key(&value, c, Checkpoint::FiniteLawFunction)?;
         ordered.push((key, point, value));
     }
     // 内部の数値/直積順を変えず、公開集合表のUTF-8 byte辞書順と対応させる。
