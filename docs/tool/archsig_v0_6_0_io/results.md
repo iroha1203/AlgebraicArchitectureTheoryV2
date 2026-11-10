@@ -220,10 +220,13 @@ checkの`reuse`は`requested=false`、両件数0、`rejected=[]`の固定metadat
 量化子の順序と多重度は保存値どおりに残す。出力の参照は ID・型・状態を表示し、参照値の個体はその値も表示する。
 全 Map 行や反例の内容は、表示した参照で元の `nodes` から読む。
 
-answer selector の path は問いで指定した経路を保持する。例えば `$t.evaluation.value` の保存先は
-`t.outputs.value` で、`outputs.evaluation` は保存射影で除かれる。`needed($t)` の空の path は回答全体を指す。
-下の例では単一の出力欄と `evaluation.value` の保存先を解決する。
-残りの path は元の selector を表示し、対応する保存先を確認できない場合は同梱入力と同じ問いで再検査する。
+answer selector の path は問いで指定した経路を保持する。`outputs.evaluation` は保存射影で除かれる。
+`evaluate` が `outputs.value` を保存した場合、`$t.evaluation.value` はその欄へ対応する。
+`check` の評価値は、後続の問いが選択できる場合でも、保存結果で対応する出力欄がないことがある。
+`needed($t)` の空の path は回答全体を指す。
+下の例では、問いの head と arguments の両方について、単一の出力欄と上記の `evaluate` の
+対応を解決する。対応する値を表示できない場合は、元の selector と `saved_node: null` を表示する。
+その値の確認には同梱入力と同じ問いで再検査する。
 
 ```jq
 def describe($nodes):
@@ -234,25 +237,29 @@ def describe($nodes):
     )
   else null end;
 
+def describe_selector($requests; $answers; $nodes):
+  if .kind == "answer" then
+    . as $selector
+    | $answers[$selector.id].outputs as $outputs
+    | . + {saved_node: (
+        if $selector.path == ["evaluation", "value"]
+           and $requests[$selector.id].kind == "evaluate" then $outputs.value
+        elif ($selector.path | length) == 1 then $outputs[$selector.path[0]]
+        else null end
+        | describe($nodes)
+      )}
+  else . end;
+
 INDEX(.nodes[]; .id) as $node
 | INDEX(.requests[]; .id) as $request
 | INDEX(.answers[]; .id) as $answer
 | .answers[]
 | $request[.id] as $ask
 | {
-    id, status, applicability, text: $ask.text, head: $ask.head,
+    id, status, applicability, text: $ask.text,
+    head: ($ask.head | describe_selector($request; $answer; $node)),
     arguments: [
-      $ask.arguments[]?
-      | if .value.kind == "answer" then
-          .value as $selector
-          | $answer[$selector.id].outputs as $outputs
-          | . + {saved_node: (
-              if $selector.path == ["evaluation", "value"] then $outputs.value
-              elif ($selector.path | length) == 1 then $outputs[$selector.path[0]]
-              else null end
-              | describe($node)
-            )}
-        else . end
+      $ask.arguments[]? | .value |= describe_selector($request; $answer; $node)
     ],
     defaults: $ask.defaults,
     readings: .scope.readings, snapshots: .scope.snapshots,
