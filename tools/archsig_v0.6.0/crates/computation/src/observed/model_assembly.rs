@@ -44,18 +44,52 @@ fn unsupported(s: &Subject, f: &archsig_input::archmap::Field, detail: String) -
 }
 #[derive(Debug)]
 pub(super) struct Rejection {
+    pub affects_layout: bool,
     pub detail: String,
     pub facts: Vec<Fact>,
     pub values: Option<(Scalar, Scalar)>,
     pub repaired: [Option<Fact>; 2],
 }
 pub(super) fn rejected(detail: impl Into<String>, facts: Vec<Fact>) -> Preparation {
-    Preparation::Rejected(Rejection {
+    Preparation::Rejected(rejection(detail, facts, false))
+}
+fn rejection(detail: impl Into<String>, facts: Vec<Fact>, affects_layout: bool) -> Rejection {
+    Rejection {
+        affects_layout,
         detail: detail.into(),
         facts,
         values: None,
         repaired: [None, None],
-    })
+    }
+}
+fn rejected_layout(detail: impl Into<String>, facts: Vec<Fact>) -> Preparation {
+    Preparation::Rejected(rejection(detail, facts, true))
+}
+pub(super) fn layout_root_condition(
+    indexes: &InputIndexes<'_>,
+    target: &Fact,
+    roots: &[Fact],
+    c: &Control,
+) -> Result<Option<Rejection>, ValidationFailure> {
+    if roots.is_empty() {
+        return Ok(Some(rejection("担当集合が空", vec![target.clone()], true)));
+    }
+    let root_subject = indexes.subject(&target.snapshot, &target.subject)?;
+    let mut seen = BTreeSet::new();
+    for root in roots {
+        tick(c)?;
+        if root == target
+            || !seen.insert(root)
+            || indexes.subject(&root.snapshot, &root.subject)?.ty != root_subject.ty
+        {
+            return Ok(Some(rejection(
+                "担当rootは同一snapshot・同一型の異なるrootを要求する",
+                vec![root.clone(), target.clone()],
+                true,
+            )));
+        }
+    }
+    Ok(None)
 }
 fn observed_fact(s: &Subject, f: &archsig_input::archmap::Field) -> Fact {
     let mut fact = field_fact(s, f);
@@ -288,7 +322,7 @@ pub(super) fn layout_snapshot(
         .transpose()
 }
 
-/// Construct a layout after the shared snapshot check.
+/// Construct a layout after the shared snapshot and root checks.
 pub(super) fn compile_same_snapshot(
     inputs: &std::sync::Arc<CheckedInputs>,
     reading: &str,
@@ -299,41 +333,28 @@ pub(super) fn compile_same_snapshot(
     c: &Control,
 ) -> Result<Preparation, ValidationFailure> {
     tick(c)?;
-    if roots.is_empty() {
-        return Ok(rejected("担当rootの集合が空", vec![target.clone()]));
-    }
     let root_subject = subject(inputs, target)?;
     let target_construction =
         construction::construct(inputs, reading, &target.snapshot, &target.subject, c)
             .map_err(failure)?;
+    if target_construction.local_domain().known().len() != 1 {
+        return Ok(rejected_layout(
+            "組立て先rootに既存の所属個体がある",
+            target_construction.local_domain().known().to_vec(),
+        ));
+    }
     if !target_construction.local_domain().is_complete() {
         return Ok(Preparation::Missing(
             target_construction.base().blocking_slots().to_vec(),
         ));
     }
-    if target_construction.local_domain().known().len() != 1 {
-        return Ok(rejected(
-            "組立て先rootに既存または所属未決の個体がある",
-            target_construction.local_domain().known().to_vec(),
-        ));
-    }
     let mut fragments = Vec::new();
     let mut membership = BTreeMap::new();
     let mut parent = BTreeMap::new();
-    let mut roots_seen = BTreeSet::new();
     let mut missing = BTreeSet::new();
     let mut support = BTreeSet::new();
     for (i, root) in roots.iter().enumerate() {
         tick(c)?;
-        if root == target
-            || !roots_seen.insert(root)
-            || subject(inputs, root)?.ty != root_subject.ty
-        {
-            return Ok(rejected(
-                "担当rootは同一snapshot・同一型の異なるrootを要求する",
-                vec![root.clone(), target.clone()],
-            ));
-        }
         let local = construction::construct_fragment(
             inputs,
             &target_construction,
@@ -374,13 +395,13 @@ pub(super) fn compile_same_snapshot(
     for (a, b) in pairs {
         tick(c)?;
         let (Some(ia), Some(ib)) = (membership.get(a), membership.get(b)) else {
-            return Ok(rejected(
+            return Ok(rejected_layout(
                 "共有対の個体が担当rootに所属しない",
                 vec![a.clone(), b.clone()],
             ));
         };
         if ia == ib || subject(inputs, a)?.ty != subject(inputs, b)?.ty {
-            return Ok(rejected(
+            return Ok(rejected_layout(
                 "共有対は異なる担当の同じ型の個体を要求する",
                 vec![a.clone(), b.clone()],
             ));
@@ -405,7 +426,7 @@ pub(super) fn compile_same_snapshot(
         {
             tick(c)?;
             if !images.insert(transport.get(fact).unwrap_or(fact)) {
-                return Ok(rejected(
+                return Ok(rejected_layout(
                     "共有対応の推移閉包が局所の異なる個体を同一視する",
                     local
                         .base()
@@ -487,6 +508,7 @@ pub(super) fn compile_same_snapshot(
                     }
                 }
                 return Ok(Preparation::Rejected(Rejection {
+                    affects_layout: false,
                     detail: format!("共有個体のfield `{}` が参照輸送後に一致しない", af.name),
                     facts,
                     values: Some((moved_a, moved_b)),

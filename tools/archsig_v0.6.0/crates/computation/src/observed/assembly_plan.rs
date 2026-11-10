@@ -86,26 +86,22 @@ pub(super) fn read(
         Err(e) => Err(e),
     }
 }
-/// A known foreign layout remains outside the assembly family when another View is pending.
-pub(super) fn layout_snapshot(
-    env: &Environment<'_>,
-    reading: &str,
-    target: &Fact,
+pub(super) fn fragment_roots(
     fragments: &Read,
-    shared: &Read,
     control: &Control,
-) -> Result<Option<model_assembly::Unsupported>, ValidationFailure> {
-    let roots = match &fragments.value {
-        Some(Scalar::Set { items, .. }) => items.iter().map(fact).collect::<Result<Vec<_>, _>>()?,
-        _ => vec![],
-    };
-    let pairs = shared
-        .value
-        .as_ref()
-        .map(|value| interfaces(value, control))
-        .transpose()?
-        .unwrap_or_default();
-    model_assembly::layout_snapshot(&env.indexes, reading, target, &roots, &pairs, control)
+) -> Result<Option<Vec<Fact>>, ValidationFailure> {
+    match &fragments.value {
+        Some(Scalar::Set { items, .. }) => items
+            .iter()
+            .map(|item| {
+                control.checkpoint(Checkpoint::ConfigurationMap)?;
+                fact(item)
+            })
+            .collect::<Result<Vec<_>, _>>()
+            .map(Some),
+        Some(_) => Err(internal!("担当Viewの型が集合でない").into()),
+        None => Ok(None),
+    }
 }
 
 #[derive(Debug)]
@@ -122,6 +118,7 @@ pub(super) struct Fragment {
 }
 #[derive(Debug)]
 pub(super) struct Assembly {
+    pub checked_ownership: bool,
     pub model: Option<Arc<Model>>,
     pub failure: Option<Failure>,
     pub fragments: Read,
@@ -334,10 +331,7 @@ pub(super) fn prepare(
     missing.extend(shared.metadata.missing.iter().cloned());
     missing.sort();
     missing.dedup();
-    let roots = match &fragments.value {
-        Some(Scalar::Set { items, .. }) => items.iter().map(fact).collect::<Result<Vec<_>, _>>()?,
-        _ => vec![],
-    };
+    let roots = fragment_roots(&fragments, c)?.unwrap_or_default();
     let pairs = shared
         .value
         .as_ref()
@@ -346,8 +340,16 @@ pub(super) fn prepare(
         .unwrap_or_default();
     let layout_problem =
         model_assembly::layout_snapshot(&e.indexes, reading, &target, &roots, &pairs, c)?;
+    let root_problem = if layout_problem.is_none() && fragments.value.is_some() {
+        model_assembly::layout_root_condition(&e.indexes, &target, &roots, c)?
+    } else {
+        None
+    };
+    let mut checked_ownership = false;
     let preparation = if let Some(problem) = layout_problem {
         Preparation::Unsupported(problem)
+    } else if let Some(problem) = root_problem {
+        Preparation::Rejected(problem)
     } else if let Some(rejected) = rejected {
         rejected
     } else if fragments.metadata.failed || shared.metadata.failed {
@@ -370,6 +372,7 @@ pub(super) fn prepare(
         if let Some(root) = applied.keys().find(|root| !roots.contains(root)) {
             model_assembly::rejected("修復局所が担当Viewの選択域にない", vec![root.clone()])
         } else {
+            checked_ownership = true;
             model_assembly::compile_same_snapshot(
                 &p.shared_inputs(),
                 reading,
@@ -473,6 +476,7 @@ pub(super) fn prepare(
     input_refs.extend(locals.iter().map(|a| a.architecture.reference));
     input_refs.extend(restrictions.iter().map(|a| a.reference));
     let assembly = Arc::new(Assembly {
+        checked_ownership,
         model,
         failure: failed,
         fragments,

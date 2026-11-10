@@ -596,12 +596,13 @@ fn owner_slot_for<'a>(
     )))
 }
 
-pub(crate) fn pending_owner_slots(
+pub(crate) fn layout_ownership(
     inputs: &CheckedInputs,
     reading: &str,
     root_type: &str,
+    target: &FactPointer,
     control: &Control,
-) -> Result<Vec<FactPointer>, ConstructionFailure> {
+) -> Result<(Option<FactPointer>, Vec<FactPointer>), ConstructionFailure> {
     let namespaces = namespaces(inputs, reading, control)?;
     let mut missing = Vec::new();
     for snapshot in inputs.archmap().snapshots() {
@@ -610,13 +611,25 @@ pub(crate) fn pending_owner_slots(
             tick(control)?;
             if visible(inputs, &subject.ty, &namespaces)
                 && let Some((field, _)) = owner_slot_for(inputs, subject, root_type, control)?
-                && matches!(field.slot, Slot::Missing)
             {
-                missing.push(slot(subject, &field.name));
+                match &field.slot {
+                    Slot::Missing => missing.push(slot(subject, &field.name)),
+                    Slot::Known {
+                        value:
+                            Value::Ref {
+                                snapshot,
+                                subject: owner,
+                            },
+                        ..
+                    } if *snapshot == target.snapshot && *owner == target.subject => {
+                        return Ok((Some(exists(subject)), missing));
+                    }
+                    _ => {}
+                }
             }
         }
     }
-    Ok(missing)
+    Ok((None, missing))
 }
 
 /// Foreign members of ownerless roots are outside same-snapshot assembly.

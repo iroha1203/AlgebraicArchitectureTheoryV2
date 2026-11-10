@@ -213,19 +213,30 @@ fn checked_layout(
     control: &Control,
 ) -> Result<Layout, ReobservationFailure> {
     if let Some(assembly) = retained_layout(evaluation, &request.id) {
-        if let Some(assembly_plan::Failure::Unsupported(detail)) = &assembly.failure
-            && detail.affects_layout
-        {
-            return Err(ReobservationFailure::Unsupported(detail.detail.clone()));
+        match &assembly.failure {
+            Some(assembly_plan::Failure::Unsupported(detail)) if detail.affects_layout => {
+                return Err(ReobservationFailure::Unsupported(detail.detail.clone()));
+            }
+            Some(assembly_plan::Failure::Rejected(detail)) if detail.affects_layout => {
+                return Err(invalid(&detail.detail));
+            }
+            _ => {}
         }
-        let mut layout = layout_from_reads(&assembly.fragments, &assembly.interfaces, control)?;
-        if let Some(assembly_plan::Failure::Missing(positions)) = &assembly.failure {
-            layout.missing.extend(
-                positions
-                    .iter()
-                    .filter(|fact| fact.field.as_ref().is_some_and(|field| field.is_owner()))
-                    .cloned(),
-            );
+        let mut layout =
+            layout_from_reads(&assembly.fragments, &assembly.interfaces, control, |_| {
+                Ok(())
+            })?;
+        if assembly.checked_ownership {
+            if let Some(assembly_plan::Failure::Missing(positions)) = &assembly.failure {
+                layout.missing.extend(
+                    positions
+                        .iter()
+                        .filter(|fact| fact.field.as_ref().is_some_and(|field| field.is_owner()))
+                        .cloned(),
+                );
+            }
+        } else {
+            check_target_ownership(evaluation.prepared(), request, &mut layout, control)?;
         }
         return Ok(layout);
     }
@@ -282,58 +293,114 @@ fn read_layout(
         .ok_or_else(|| unsupported("担当 View 宣言がない"))?;
     let fragments = assembly_plan::read(&env, head, &bindings).map_err(classify)?;
     let interfaces = assembly_plan::read(&env, along, &bindings).map_err(classify)?;
+    let target = layout_target(request)?;
+    let reading = prepared.inputs().law().declarations()[head]
+        .reading
+        .as_str();
+    let mut layout = layout_from_reads(&fragments, &interfaces, control, |layout| {
+        if let Some(problem) = super::model_assembly::layout_snapshot(
+            &env.indexes,
+            reading,
+            &target,
+            layout.roots.as_deref().unwrap_or_default(),
+            layout.shared.as_deref().unwrap_or_default(),
+            control,
+        )
+        .map_err(classify)?
+        {
+            return Err(ReobservationFailure::Unsupported(problem.detail));
+        }
+        Ok(())
+    })?;
+    if let Some(roots) = &layout.roots
+        && let Some(problem) =
+            super::model_assembly::layout_root_condition(&env.indexes, &target, roots, control)
+                .map_err(classify)?
+    {
+        return Err(invalid(&problem.detail));
+    }
+    check_target_ownership(prepared, request, &mut layout, control)?;
+    Ok(layout)
+}
+
+fn layout_target(request: &Request) -> Result<Fact, ReobservationFailure> {
     let target = request.arguments.iter().find(|arg| arg.name == "on");
     let Some(Selector::Subject { snapshot, subject }) = target.map(|arg| &arg.value) else {
-        return Err(unsupported("組立て先の明示rootがない"));
+        return Err(invalid("組立て先の明示rootがない"));
     };
-    let target = Fact::from(FactData {
+    Ok(Fact::from(FactData {
         snapshot: snapshot.clone(),
         subject: subject.clone(),
         field: None,
         atom: None,
-    });
-    let reading = prepared.inputs().law().declarations()[head]
-        .reading
-        .as_str();
-    if let Some(problem) =
-        assembly_plan::layout_snapshot(&env, reading, &target, &fragments, &interfaces, control)
-            .map_err(classify)?
-    {
-        return Err(ReobservationFailure::Unsupported(problem.detail));
+    }))
+}
+
+fn check_target_ownership(
+    prepared: &PreparedObserved,
+    request: &Request,
+    layout: &mut Layout,
+    control: &Control,
+) -> Result<(), ReobservationFailure> {
+    let target = layout_target(request)?;
+    let root = model_assembly::subject(prepared.inputs(), &target)
+        .map_err(|_| invalid("組立て先の root がない"))?;
+    let head = request
+        .declaration()
+        .ok_or_else(|| invalid("担当 View 宣言がない"))?;
+    let reading = &prepared.inputs().law().declarations()[head].reading;
+    let (occupied, missing) = crate::construction::layout_ownership(
+        prepared.inputs(),
+        reading,
+        root.ty.as_str(),
+        &target,
+        control,
+    )
+    .map_err(|failure| match failure {
+        crate::construction::ConstructionFailure::Stopped(signal) => {
+            ReobservationFailure::Stopped(signal)
+        }
+        _ => ReobservationFailure::Unsupported("組立ての所属域を現在の原始観測で読めない".into()),
+    })?;
+    if let Some(occupied) = occupied {
+        if occupied.snapshot != target.snapshot {
+            return Err(ReobservationFailure::Unsupported(
+                "組立て先の所属個体が別 snapshot に属する".into(),
+            ));
+        }
+        return Err(invalid("組立て先rootに既存の所属個体がある"));
     }
-    let mut layout = layout_from_reads(&fragments, &interfaces, control)?;
-    // The target and each fragment have the same ownerless root type. A
-    // pending member can belong to any of them until its owner is observed.
-    let root = env
-        .indexes
-        .subject(&target.snapshot, &target.subject)
-        .map_err(|_| unsupported("組立て先の root がない"))?;
-    layout.missing.extend(
-        crate::construction::pending_owner_slots(
-            prepared.inputs(),
-            reading,
-            root.ty.as_str(),
-            control,
-        )
-        .map_err(|failure| match failure {
-            crate::construction::ConstructionFailure::Stopped(signal) => {
-                ReobservationFailure::Stopped(signal)
-            }
-            _ => unsupported("組立ての所属域を現在の原始観測で読めない"),
-        })?,
-    );
-    Ok(layout)
+    layout.missing.extend(missing);
+    Ok(())
 }
 
 fn layout_from_reads(
     fragments: &assembly_plan::Read,
     interfaces: &assembly_plan::Read,
     control: &Control,
+    validate_snapshot: impl FnOnce(&Layout) -> Result<(), ReobservationFailure>,
 ) -> Result<Layout, ReobservationFailure> {
     let classify = |failure| match failure {
         ValidationFailure::Stop(signal) => ReobservationFailure::Stopped(signal),
         _ => ReobservationFailure::Unsupported("組立ての View を現在の原始観測で読めない".into()),
     };
+    let roots = assembly_plan::fragment_roots(fragments, control).map_err(classify)?;
+    let shared = interfaces
+        .value
+        .as_ref()
+        .map(|value| assembly_plan::interfaces(value, control))
+        .transpose()
+        .map_err(classify)?;
+    let mut missing = fragments.metadata.missing.clone();
+    missing.extend(interfaces.metadata.missing.iter().cloned());
+    missing.sort();
+    missing.dedup();
+    let layout = Layout {
+        roots,
+        shared,
+        missing,
+    };
+    validate_snapshot(&layout)?;
     if fragments.metadata.failed || interfaces.metadata.failed {
         return Err(invalid("組立て View の適用条件が成立しない"));
     }
@@ -344,45 +411,17 @@ fn layout_from_reads(
     {
         return Err(ReobservationFailure::Unsupported(problem.detail.clone()));
     }
-    let mut missing = fragments.metadata.missing.clone();
-    missing.extend(interfaces.metadata.missing.iter().cloned());
-    missing.sort();
-    missing.dedup();
-    let roots = match &fragments.value {
-        Some(Scalar::Set { items, .. }) => Some(
-            items
-                .iter()
-                .map(|item| {
-                    control.checkpoint(Checkpoint::ConfigurationMap)?;
-                    assembly_plan::fact(item)
-                })
-                .collect::<Result<Vec<_>, _>>()
-                .map_err(classify)?,
-        ),
-        None if !fragments.metadata.missing.is_empty() => None,
-        _ => {
-            return Err(ReobservationFailure::Unsupported(
-                "担当集合を確定できない".into(),
-            ));
-        }
-    };
-    if roots.as_ref().is_some_and(Vec::is_empty) {
-        return Err(invalid("担当集合が空"));
+    if layout.roots.is_none() && fragments.metadata.missing.is_empty() {
+        return Err(ReobservationFailure::Unsupported(
+            "担当集合を確定できない".into(),
+        ));
     }
-    let shared = match &interfaces.value {
-        Some(value) => Some(assembly_plan::interfaces(value, control).map_err(classify)?),
-        None if !interfaces.metadata.missing.is_empty() => None,
-        _ => {
-            return Err(ReobservationFailure::Unsupported(
-                "共有対を確定できない".into(),
-            ));
-        }
-    };
-    Ok(Layout {
-        roots,
-        shared,
-        missing,
-    })
+    if layout.shared.is_none() && interfaces.metadata.missing.is_empty() {
+        return Err(ReobservationFailure::Unsupported(
+            "共有対を確定できない".into(),
+        ));
+    }
+    Ok(layout)
 }
 
 fn checked_shared_partition(
@@ -1320,10 +1359,13 @@ mod tests {
             Decision::Established
         );
 
-        let root_law = pending_law.replace(
-            "set<Root>{a,b}",
-            "if ma.quantity=0 then set<Root>{a,b} else set<Root>{a}",
-        );
+        let root_law = std::str::from_utf8(LAW)
+            .unwrap()
+            .replace(
+                "set<Root>{a,b}",
+                "if ma.quantity=0 then set<Root>{a,b} else set<Root>{a}",
+            )
+            .replace("list<(Part,Part)>[(ma,mb)]", "list<(Part,Part)>[]");
         let previous = evaluate_observed(
             prepared_with("before", BEFORE, root_law.as_bytes(), QUERIES, &c),
             &c,
@@ -1488,7 +1530,7 @@ mod tests {
     }
 
     #[test]
-    fn layout_alignment_rejects_empty_fragments_and_mismatched_local_sources() {
+    fn layout_alignment_checks_both_target_and_fragment_structure() {
         let c = Control::unlimited();
         let alignment = AssemblyAlignment {
             before_snapshot: "before",
@@ -1508,22 +1550,43 @@ mod tests {
             current_solve: "solveIt",
         };
         let law = std::str::from_utf8(LAW).unwrap();
-        for (law, asks, detail) in [
+        let occupied = AFTER.replacen(
+            r#""subjects": ["#,
+            r#""subjects": [{"id":"occupied","type":"Assemble.Part","origin":"model"},"#,
+            1,
+        ).replacen(
+            r#""atoms": ["#,
+            r#""atoms": [{"id":"occupied-owner","subject":"occupied","field":"Assemble.Part.owner","value":["after","G"],"origin":"model"},"#,
+            1,
+        );
+        let with_target = law.replace("list<(Part,Part)>[(ma,mb)]", "list<(Part,Part)>[]");
+        let target_in_roster = QUERIES.replace("a=@SNAP/A,b=@SNAP/B", "a=@SNAP/A,b=@SNAP/G");
+        for (law, asks, after, detail) in [
             (
                 law.replace("set<Root>{a,b}", "set<Root>{}"),
                 QUERIES.replace(",local.a=$selected.object", ""),
+                AFTER,
                 "担当集合が空",
             ),
             (
                 law.to_owned(),
                 QUERIES.replace("local.a=", "local.b="),
+                AFTER,
                 "担当の明示束縛",
             ),
             (
                 law.replace("set<Root>{a,b}", "set<Root>{b}")
                     .replace("list<(Part,Part)>[(ma,mb)]", "list<(Part,Part)>[]"),
                 QUERIES.to_owned(),
+                AFTER,
                 "評価済みの担当集合",
+            ),
+            (with_target, target_in_roster, AFTER, "異なるroot"),
+            (
+                law.to_owned(),
+                QUERIES.to_owned(),
+                &occupied,
+                "既存の所属個体",
             ),
         ] {
             let previous = evaluate_observed(
@@ -1532,7 +1595,7 @@ mod tests {
             )
             .unwrap();
             assert!(matches!(reevaluate_assembly(
-                &previous, prepared_with("after", AFTER, law.as_bytes(), &asks, &c),
+                &previous, prepared_with("after", after, law.as_bytes(), &asks, &c),
                 &alignment, &c,
             ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains(detail)));
         }
