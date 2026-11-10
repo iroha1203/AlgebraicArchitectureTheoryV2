@@ -419,6 +419,9 @@ pub(super) fn solve(
         )?;
     }
     let rows = tight.into_values().collect::<Vec<_>>();
+    if let Some(row) = obstruction(&rows, c)? {
+        return Ok(Outcome::Empty(row.certificate(original.len(), c)?));
+    }
     let Projection {
         rows,
         mut eliminated,

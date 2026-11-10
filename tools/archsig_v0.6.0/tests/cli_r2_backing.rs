@@ -336,6 +336,112 @@ fn coordinates<'a>(result: &'a JNode, vector: &JNode) -> Vec<(&'a str, &'a str)>
         .collect()
 }
 
+// Recompute the certificate using only the saved rows, points and weights.
+fn verify_polyhedron_wire(result: &JNode, proof: &JNode, contradiction: Option<(&str, &str)>) {
+    use num_bigint::BigInt;
+    use std::cmp::Ordering;
+
+    type Q = (BigInt, BigInt);
+    let parse = |(n, d): (&str, &str)| (n.parse().unwrap(), d.parse().unwrap());
+    let integer = |n: i32| (BigInt::from(n), BigInt::from(1));
+    let neg = |(n, d): &Q| (-n, d.clone());
+    let compare = |(a, b): &Q, (c, d): &Q| (a * d).cmp(&(c * b));
+    let dot = |a: &[Q], b: &[Q]| -> Q {
+        assert_eq!(a.len(), b.len());
+        a.iter()
+            .zip(b)
+            .fold(integer(0), |(n, d), ((x, y), (u, v))| {
+                (&n * y * v + x * u * &d, d * y * v)
+            })
+    };
+    let vector = |key: &JNode| {
+        coordinates(result, key)
+            .into_iter()
+            .map(parse)
+            .collect::<Vec<Q>>()
+    };
+    let rows = |matrix: &str, bounds: &str| {
+        let columns = arr(get(
+            get(referenced(result, get(proof, matrix)), "value"),
+            "columns",
+        ));
+        let bounds = vector(get(proof, bounds));
+        let mut rows = vec![vec![]; bounds.len()];
+        for column in columns {
+            assert_eq!(arr(column).len(), rows.len());
+            for (entry, row) in arr(column).iter().zip(&mut rows) {
+                let [n, d] = arr(get(referenced(result, entry), "value")) else {
+                    panic!("Q")
+                };
+                row.push(parse((s(n), s(d))));
+            }
+        }
+        rows.into_iter().zip(bounds).collect::<Vec<_>>()
+    };
+    let mut halfspaces = Vec::new();
+    for (row, rhs) in rows("equalities", "rhs") {
+        let negative = row.iter().map(neg).collect();
+        let negative_rhs = neg(&rhs);
+        halfspaces.push((row, rhs));
+        halfspaces.push((negative, negative_rhs));
+    }
+    halfspaces.extend(rows("inequalities", "upper_bounds"));
+    let combine = |reference| {
+        let weights = vector(reference);
+        assert_eq!(weights.len(), halfspaces.len());
+        assert!(
+            weights
+                .iter()
+                .all(|weight| !compare(weight, &integer(0)).is_lt())
+        );
+        let coefficients = (0..halfspaces[0].0.len())
+            .map(|axis| {
+                let column = halfspaces
+                    .iter()
+                    .map(|(row, _)| row[axis].clone())
+                    .collect::<Vec<_>>();
+                dot(&weights, &column)
+            })
+            .collect::<Vec<_>>();
+        let rhs = halfspaces
+            .iter()
+            .map(|(_, b)| b.clone())
+            .collect::<Vec<_>>();
+        (coefficients, dot(&weights, &rhs))
+    };
+    if let Some(expected) = contradiction {
+        let (row, bound) = combine(get(proof, "contradiction"));
+        assert!(row.iter().all(|value| compare(value, &integer(0)).is_eq()));
+        assert_eq!(compare(&bound, &parse(expected)), Ordering::Equal);
+        return;
+    }
+    let feasible = |point: &[Q]| {
+        for (row, rhs) in &halfspaces {
+            assert!(!compare(&dot(row, point), rhs).is_gt());
+        }
+    };
+    let point = vector(get(proof, "point"));
+    feasible(&point);
+    if s(get(proof, "outcome")) == "multiple" {
+        feasible(&vector(get(proof, "second")));
+        return;
+    }
+    let bounds = arr(get(proof, "coordinate_bounds"));
+    assert_eq!(bounds.len(), point.len());
+    for (axis, bound) in bounds.iter().enumerate() {
+        for (key, sign) in [("lower", -1), ("upper", 1)] {
+            let (row, rhs) = combine(get(bound, key));
+            assert!(compare(&row[axis], &integer(0)) == sign.cmp(&0));
+            assert!(
+                row.iter()
+                    .enumerate()
+                    .all(|(i, value)| i == axis || compare(value, &integer(0)).is_eq())
+            );
+            assert!(compare(&dot(&row, &point), &rhs).is_eq());
+        }
+    }
+}
+
 #[test]
 fn r2_exact_backing_solves_all_four_frozen_constraint_sets() {
     let asks: Vec<_> = POLY_QUERIES.lines().collect();
@@ -360,13 +466,25 @@ fn r2_exact_backing_solves_all_four_frozen_constraint_sets() {
         );
         let proof = certificate(&result);
         assert_eq!(s(get(proof, "outcome")), outcome);
-        if exit == 1 {
-            assert!(
-                coordinates(&result, get(proof, "contradiction"))
-                    .iter()
-                    .all(|(n, _)| !n.starts_with('-'))
-            );
+        let quantifiers = arr(get(get(answer, "scope"), "quantifiers"));
+        for (binder, count) in [("b", 12), ("c", 4), ("s", 3)] {
+            let q = quantifiers
+                .iter()
+                .find(|q| s(get(q, "name")) == binder)
+                .unwrap();
+            let domain = get(referenced(&result, get(q, "domain")), "value");
+            assert_eq!(s(get(domain, "kind")), "finite");
+            assert_eq!(arr(get(domain, "elements")).len(), count);
         }
+        verify_polyhedron_wire(
+            &result,
+            proof,
+            match case {
+                "overlapInsufficient" => Some(("-5", "1")),
+                "threeUsesMicroShortage" => Some(("-1", "100000")),
+                _ => None,
+            },
+        );
         if case == "threeUsesExact" {
             let point = coordinates(&result, get(proof, "point"));
             let instances = arr(get(solution(&result, "domain"), "instances"));
@@ -508,6 +626,7 @@ fn rational_backing_distinguishes_nonunique_repair_and_missing_capacity() {
     let result = result_json(&dir, &run);
     let proof = certificate(&result);
     assert_eq!(s(get(proof, "outcome")), "multiple");
+    verify_polyhedron_wire(&result, proof, None);
     assert_ne!(
         coordinates(&result, get(proof, "point")),
         coordinates(&result, get(proof, "second"))
@@ -723,6 +842,30 @@ fn rational_backing_reports_missing_references_units_and_unsupported_disjunction
                 && s(get(fact, "field")) == field
         }));
     }
+    let mut refuted = map.clone();
+    let snapshot = &mut items(fields(&mut refuted).get_mut("snapshots").unwrap())[0];
+    let atoms = items(fields(snapshot).get_mut("atoms").unwrap());
+    atoms.retain(|atom| !matches!(atom, Json::Obj(fields) if fields["id"] == Json::str("overlapFeasible.B1.eligible")));
+    let unit = atoms
+        .iter_mut()
+        .find(|atom| {
+            matches!(atom, Json::Obj(fields)
+        if fields["id"] == Json::str("overlapFeasible.B2.quantityUnit"))
+        })
+        .unwrap();
+    fields(unit).insert("value".into(), Json::str("kg"));
+    std::fs::write(dir.join("archmap.json"), refuted.canonical()).unwrap();
+    let run = polyhedron_asks(
+        &dir,
+        &[ask, independent],
+        "unit-refutation-with-missing",
+        None,
+    );
+    assert_eq!(run.code, 1, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let answers = arr(get(&result, "answers"));
+    assert_eq!(s(get(&answers[0], "status")), "refuted");
+    assert_eq!(s(get(&answers[1], "status")), "established");
     std::fs::write(dir.join("archmap.json"), map.canonical()).unwrap();
     let law = POLY_LAW.replacen(
         "b.quantity>=rat(0,1)",

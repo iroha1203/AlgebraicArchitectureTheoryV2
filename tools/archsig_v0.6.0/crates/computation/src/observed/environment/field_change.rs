@@ -30,6 +30,7 @@ pub(in crate::observed) enum Solutions {
 #[derive(Clone, Debug)]
 pub(in crate::observed) struct Polyhedron {
     pub inequalities: Vec<Halfspace>,
+    pub quantifiers: Vec<(Quantifier, Vec<Scalar>)>,
     pub outcome: Outcome,
 }
 
@@ -38,6 +39,8 @@ struct Constraints {
     equalities: Matrix,
     rhs: Vec<Option<Scalar>>,
     inequalities: Option<Vec<Halfspace>>,
+    quantifiers: Vec<(Quantifier, Vec<Scalar>)>,
+    refuted: bool,
 }
 
 impl Constraints {
@@ -46,6 +49,7 @@ impl Constraints {
             .push(vec![numeric::zero(&Type::Q, &env.control)?; n]);
         self.rhs
             .push(Some(numeric::literal("1", &Type::Q, &env.control)?));
+        self.refuted = true;
         Ok(())
     }
 }
@@ -227,6 +231,11 @@ impl Dependency {
         self.dependence == Dependence::Fixed || self.closed_constraint
     }
 
+    fn record_constraint(self, missing: &mut Pending) {
+        missing.awaiting_observation = !self.facts.is_empty() && self.extractable();
+        missing.facts.extend(self.facts);
+    }
+
     fn record_equality(self, missing: &mut Pending) {
         missing.awaiting_observation = !self.facts.is_empty()
             && (self.dependence == Dependence::Fixed || self.affine_equality);
@@ -378,19 +387,27 @@ impl DependencyAnalysis<'_, '_> {
                     {
                         let mut local = BTreeMap::new();
                         let mut dependencies = BTreeMap::new();
+                        let mut checks = Dependency::default();
                         for (parameter, arg) in params.iter().zip(args) {
-                            local.insert(parameter.name.clone(), self.source(*arg, vars, reading)?);
-                            dependencies.insert(parameter.name.clone(), child(*arg)?);
+                            let argument = self.source(*arg, vars, reading)?;
+                            let dependency = child(*arg)?;
+                            if argument.condition_pending
+                                || argument.condition_failed
+                                || matches!(parameter.ty, Type::Ref(_))
+                                || env.call_type_has_owned(&parameter.ty)?
+                            {
+                                checks.merge(dependency.clone());
+                            }
+                            local.insert(parameter.name.clone(), argument);
+                            dependencies.insert(parameter.name.clone(), dependency);
                         }
                         let mut result =
                             self.read(*body, &local, &dependencies, &declaration.reading)?;
                         if source.condition_pending || source.condition_failed {
-                            // A View with a fixed body can still need observations
-                            // to check its actual dependent arguments.
                             result.facts.extend(fallback().facts);
-                            for dependency in dependencies.into_values() {
-                                result.merge(dependency);
-                            }
+                            result.facts.extend(checks.facts);
+                            result.dependence = result.dependence.max(checks.dependence);
+                            result.affine_equality &= checks.dependence == Dependence::Fixed;
                         }
                         result.closed_constraint = result.affine_equality;
                         Ok(result)
@@ -700,6 +717,42 @@ fn equations(
     )
 }
 
+// A fixed refutation of any conjunct survives a different conjunct's
+// missing observation or unsupported construction.
+#[derive(Default)]
+struct Conjuncts {
+    blocked: Option<(ValidationFailure, Pending)>,
+}
+
+impl Conjuncts {
+    fn record(
+        &mut self,
+        outcome: Result<(), ValidationFailure>,
+        allow_bounds: bool,
+        missing: &Pending,
+    ) -> Result<(), ValidationFailure> {
+        if let Err(error) = outcome {
+            if !allow_bounds || !matches!(error, ValidationFailure::UnsupportedExpression { .. }) {
+                return Err(error);
+            }
+            if self.blocked.is_none() {
+                self.blocked = Some((error, missing.clone()));
+            }
+        }
+        Ok(())
+    }
+
+    fn finish(self, rows: &Constraints, missing: &mut Pending) -> Result<(), ValidationFailure> {
+        if !rows.refuted
+            && let Some((error, pending)) = self.blocked
+        {
+            *missing = pending;
+            return Err(error);
+        }
+        Ok(())
+    }
+}
+
 fn collect_equations(
     env: &Environment<'_>,
     id: usize,
@@ -762,7 +815,10 @@ fn collect_equations(
                 return Err(unsupported(env, domain, "有理changeの有限量化域が未確定"));
             };
             usable(env, domain, &domain_value)?;
+            rows.quantifiers
+                .push((spec.descriptor(None, None), members.clone()));
             let mut local = env.copy_variables(vars)?;
+            let mut conjuncts = Conjuncts::default();
             for member in members {
                 env.tick()?;
                 if member.ty() != spec.element {
@@ -772,15 +828,25 @@ fn collect_equations(
                 v.scope = domain_value.scope.clone();
                 v.scalar_scope = Some(domain_value.scope.clone());
                 local.insert(spec.name.to_owned(), v);
-                collect_equations(
+                let result = collect_equations(
                     env, spec.body, &local, lexical, reading, axes, rows, missing,
-                )?;
+                );
+                conjuncts.record(result, allow_bounds, missing)?;
+                if rows.refuted {
+                    break;
+                }
             }
-            return Ok(());
+            return conjuncts.finish(rows, missing);
         }
 
         missing.awaiting_observation = false;
         if !allow_bounds {
+            if diagnose && (v.condition_pending || v.condition_failed) {
+                analysis
+                    .read(id, vars, lexical, reading)?
+                    .record(missing, Dependence::Fixed);
+                missing.awaiting_observation &= !v.condition_failed;
+            }
             usable(env, id, &v)?;
         }
         match kind {
@@ -791,9 +857,13 @@ fn collect_equations(
                 let mut local = env.copy_variables(vars)?;
                 let v = env.scoped_ast(*value, vars, &base, reading)?;
                 if diagnose && v.condition_pending {
-                    analysis
-                        .read(*value, vars, lexical, reading)?
-                        .record(missing, Dependence::Fixed);
+                    let dependency = analysis.read(*value, vars, lexical, reading)?;
+                    local.insert(name.name.clone(), v.clone());
+                    let mut dependencies = lexical.clone();
+                    dependencies.insert(name.name.clone(), dependency.clone());
+                    let result = analysis.read(*body, &local, &dependencies, reading)?;
+                    dependency.record(missing, Dependence::Affine);
+                    missing.awaiting_observation &= result.extractable();
                 }
                 usable(env, *value, &v)?;
                 local.insert(name.name.clone(), v);
@@ -823,8 +893,16 @@ fn collect_equations(
                 lhs,
                 rhs,
             } => {
-                collect_equations(env, *lhs, vars, lexical, reading, axes, rows, missing)?;
-                collect_equations(env, *rhs, vars, lexical, reading, axes, rows, missing)
+                let mut conjuncts = Conjuncts::default();
+                for body in [lhs, rhs] {
+                    let result =
+                        collect_equations(env, *body, vars, lexical, reading, axes, rows, missing);
+                    conjuncts.record(result, allow_bounds, missing)?;
+                    if rows.refuted && allow_bounds {
+                        break;
+                    }
+                }
+                conjuncts.finish(rows, missing)
             }
             ExprKind::Binary {
                 op: BinOp::Implies,
@@ -868,7 +946,7 @@ fn collect_equations(
                     if diagnose {
                         analysis
                             .read(id, vars, lexical, reading)?
-                            .record(missing, Dependence::Fixed);
+                            .record_constraint(missing);
                         missing.awaiting_observation &= v.condition_pending && !v.condition_failed;
                     }
                     return usable(env, id, &v);
@@ -1279,6 +1357,7 @@ fn compute_inner(
         field_polyhedron::verify(&original, axes.len(), &outcome, &env.control)?;
         Solutions::Polyhedron(Polyhedron {
             inequalities,
+            quantifiers: rows.quantifiers,
             outcome,
         })
     } else {

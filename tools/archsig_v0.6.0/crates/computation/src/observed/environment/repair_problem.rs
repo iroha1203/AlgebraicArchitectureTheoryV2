@@ -331,7 +331,8 @@ pub(in crate::observed) fn compile_inputs(
     let fixed = original
         .try_object_primitive_valuation_from(&original.fixed_values(), witness, c)?
         .ok_or(internal!("有限修復の基準代入が不適合"))?;
-    let selected = change_search::selection(original, &fixed, graph, witness, request, &[], c)?;
+    let selected =
+        change_search::selection(original, &fixed, graph, witness, request, &[], true, c)?;
     let Some(mut subjects) = selected.subjects else {
         return Ok(Compilation::Pending(selected.missing));
     };

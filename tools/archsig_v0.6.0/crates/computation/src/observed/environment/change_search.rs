@@ -313,6 +313,7 @@ pub(in crate::observed) fn selection(
     witness: &ArchitectureWitness,
     request: &Request,
     completions: &[(Fact, Scalar)],
+    include_requirements: bool,
     control: &Control,
 ) -> Result<Selection, ValidationFailure> {
     let inputs = environment.indexes.inputs;
@@ -388,6 +389,10 @@ pub(in crate::observed) fn selection(
                         })
                 })
     });
+    if !include_requirements {
+        result.subjects = Some(subjects);
+        return Ok(result);
+    }
     let mut rows = vec![vec![]];
     for parameter in params {
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
@@ -535,6 +540,7 @@ fn search_inner(
             witness,
             request,
             completions,
+            !rational_domain_only,
             control,
         )?;
         result.requirements = selected.requirements;
@@ -622,11 +628,7 @@ fn search_inner(
                 &environment,
                 change,
                 &subjects,
-                if rational_domain_only {
-                    &[]
-                } else {
-                    &result.requirements
-                },
+                &result.requirements,
                 &mut pending,
             );
             if matches!(

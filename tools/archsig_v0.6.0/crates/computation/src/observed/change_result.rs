@@ -55,6 +55,9 @@ impl Data {
         self.part().ty == NodeType::Construction(T::SolutionSet)
             && self.part().wire_ref() == Some(&Json::obj([]))
     }
+    pub(super) fn scope_domain_type(&self) -> Option<&Type> {
+        self.part().domain_type.as_ref()
+    }
     pub(super) fn ty(&self) -> NodeType {
         self.part().ty.clone()
     }
@@ -283,15 +286,41 @@ fn compute_inner(
     request: &Request,
     c: &Control,
 ) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
-    if !architecture.complete {
-        let law = env.indexes.inputs.law();
-        let rational = request.arguments.iter().any(|argument| {
-            argument.name == "using"
-                && matches!(&argument.value, super::request::Selector::Declaration { name }
-                    if matches!(&law.declarations()[name].signature,
-                        Signature::Change { params, .. }
-                            if params.iter().skip(1).any(|param| param.ty == Type::Q)))
-        });
+    let law = env.indexes.inputs.law();
+    let rational = request.arguments.iter().any(|argument| {
+        argument.name == "using"
+            && matches!(&argument.value, super::request::Selector::Declaration { name }
+                if matches!(&law.declarations()[name].signature,
+                    Signature::Change { params, .. }
+                        if params.iter().skip(1).any(|param| param.ty == Type::Q)))
+    });
+    let mut fixed_refutation = None;
+    if !architecture.complete
+        && rational
+        && architecture
+            .witness
+            .construction()
+            .local_domain()
+            .is_complete()
+    {
+        // An ordinary reference can prevent materializing an object while a
+        // different conjunct already refutes every assignment on the known roster.
+        match change_search::search(env, g, &architecture.witness, request, c) {
+            Ok(search)
+                if search.complete && search.rational.is_some() && search.solutions.is_empty() =>
+            {
+                fixed_refutation = Some(search);
+            }
+            Ok(_) => {}
+            Err(failure)
+                if matches!(
+                    &failure.cause,
+                    ValidationFailure::UnsupportedExpression { .. }
+                ) => {}
+            Err(failure) => return Err(failure.cause),
+        }
+    }
+    if !architecture.complete && fixed_refutation.is_none() {
         if rational
             && !architecture.reasons.is_empty()
             && architecture
@@ -370,7 +399,12 @@ fn compute_inner(
             feature: "未完成Architecture上のchange候補の公開配送は未実装".into(),
         });
     }
-    let search = match change_search::search(env, g, &architecture.witness, request, c) {
+    let searched = if let Some(search) = fixed_refutation {
+        Ok(search)
+    } else {
+        change_search::search(env, g, &architecture.witness, request, c)
+    };
+    let search = match searched {
         Ok(search) => search,
         Err(failure) => {
             if let Some(pending) = &failure.partial.pending_integer {

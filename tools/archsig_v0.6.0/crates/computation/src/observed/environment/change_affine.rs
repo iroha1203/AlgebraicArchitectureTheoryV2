@@ -31,7 +31,7 @@ pub(in crate::observed) struct Linear {
     pub rhs: Vec<Z>,
     pub fiber: Fiber,
 }
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub(in crate::observed) struct Pending {
     pub support: Vec<Fact>,
     pub scope: Scope,

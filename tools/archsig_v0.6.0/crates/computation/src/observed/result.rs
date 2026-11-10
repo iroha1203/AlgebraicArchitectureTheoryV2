@@ -4682,6 +4682,9 @@ impl Graph {
                 let domain_type = match &self.get(domain)?.payload {
                     Some(Payload::TypeDomain { ty }) | Some(Payload::Domain { ty, .. }) => ty,
                     Some(Payload::Construction(value)) => match &value.data {
+                        super::construction_result::ConstructionData::Change(data) => data
+                            .scope_domain_type()
+                            .ok_or(internal!("Scopeの修復参照が量化Domainでない"))?,
                         super::construction_result::ConstructionData::PolynomialLaw(data) => data
                             .scope_domain_type()
                             .ok_or(internal!("Scopeの多項式読取り参照がDomainでない"))?,
