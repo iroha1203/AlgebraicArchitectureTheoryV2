@@ -2,7 +2,7 @@
 use super::*;
 use crate::observed::{
     environment::field_change::{Linear, Polyhedron},
-    field_polyhedron::{self, Outcome},
+    field_polyhedron::Outcome,
 };
 use field_linear_result::{map, vector};
 use linear_result::{Parts, module};
@@ -22,9 +22,12 @@ pub(super) fn build(
     requirements: &[NodeRef],
     c: &Control,
 ) -> Result<Parts, ValidationFailure> {
-    let original =
-        field_polyhedron::halfspaces(&linear.equations, &linear.rhs, &polyhedron.inequalities, c)?;
-    field_polyhedron::verify(&original, linear.parameter_count, &polyhedron.outcome, c)?;
+    let weight_count = linear
+        .equations
+        .len()
+        .checked_mul(2)
+        .and_then(|rows| rows.checked_add(polyhedron.inequalities.len()))
+        .ok_or(internal!("証明書の重みの個数が範囲外"))?;
     let mut a = Vec::new();
     let mut upper = Vec::new();
     for halfspace in &polyhedron.inequalities {
@@ -52,7 +55,7 @@ pub(super) fn build(
     ]);
     let outcome = match &polyhedron.outcome {
         Outcome::Empty(row) => {
-            let weight_module = module(b, ring, original.len(), "free", vec![])?;
+            let weight_module = module(b, ring, weight_count, "free", vec![])?;
             let weights = vector(b, weight_module, &row.combination, c)?;
             args.push(weights);
             certificate_fields.insert("contradiction".into(), weights.wire());
@@ -62,7 +65,7 @@ pub(super) fn build(
             let point = vector(b, parameter_module, point, c)?;
             args.push(point);
             certificate_fields.insert("point".into(), point.wire());
-            let weight_module = module(b, ring, original.len(), "free", vec![])?;
+            let weight_module = module(b, ring, weight_count, "free", vec![])?;
             let mut entries = Vec::new();
             for (lower, upper) in bounds {
                 c.checkpoint(Checkpoint::PrimitiveValuation)?;

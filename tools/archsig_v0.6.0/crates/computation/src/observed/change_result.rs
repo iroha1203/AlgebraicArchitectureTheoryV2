@@ -31,6 +31,7 @@ pub(super) struct Source {
     parts: Vec<Part>,
     answer: Answer,
     integer: Option<Arc<super::environment::change_affine::Linear>>,
+    rational_polyhedron: bool,
 }
 #[derive(Clone, Debug)]
 pub(crate) struct Data {
@@ -298,43 +299,53 @@ fn compute_inner(
                 .iter()
                 .all(|reason| matches!(reason.kind, ReasonKind::Missing))
         {
-            let declaration = &law.declarations()[request
-                .declaration()
-                .ok_or(internal!("欠測した有理solveのLawがない"))?];
-            let Signature::Law { body, params, .. } = &declaration.signature else {
-                return Err(internal!("有理solveの要求がLawでない").into());
-            };
             let mut b = Builder {
                 g,
                 base,
                 parts: vec![],
             };
-            let parameters = params
-                .iter()
-                .map(|p| (p.name.clone(), p.ty.clone()))
-                .collect::<Vec<_>>();
-            let expression = source_expression(&mut b, env, *body, &[], &parameters)?;
-            let part = &mut b.parts[expression.0 - base];
-            part.arguments.push(architecture.reference);
-            part.scope.merge(&g.get(architecture.reference)?.scope);
-            let scope = part.scope.clone();
-            let mut missing = architecture
-                .reasons
-                .iter()
-                .flat_map(|reason| reason.missing.iter().cloned())
-                .collect::<Vec<_>>();
-            missing.sort();
-            missing.dedup();
-            let reason = Reason {
-                kind: ReasonKind::Missing,
-                request: request.id.clone(),
-                dependencies: vec![expression],
-                missing,
-                location: Some(Location::Law {
-                    span: declaration.span,
-                }),
-            };
-            part.reasons.push(reason.clone());
+            let mut reasons = Vec::new();
+            let reading = architecture.witness.construction().reading();
+            for reason in &architecture.reasons {
+                for position in &reason.missing {
+                    env.tick()?;
+                    let subject = env.indexes.subject(&position.snapshot, &position.subject)?;
+                    let name = position
+                        .field
+                        .as_ref()
+                        .ok_or(internal!("構成の欠測fieldがない"))?;
+                    let field = env.indexes.field(
+                        &env.state,
+                        &position.snapshot,
+                        &position.subject,
+                        name,
+                    )?;
+                    let location = reason
+                        .location
+                        .clone()
+                        .unwrap_or_else(|| Location::ArchMap {
+                            pointer: subject.pointer.clone(),
+                            span: None,
+                        });
+                    let expression = b.field_source(
+                        env,
+                        position,
+                        &field.ty.erase(),
+                        &location,
+                        reading,
+                        vec![architecture.reference],
+                    )?;
+                    let reason = Reason {
+                        kind: ReasonKind::Missing,
+                        request: request.id.clone(),
+                        dependencies: vec![expression],
+                        missing: vec![position.clone()],
+                        location: Some(location),
+                    };
+                    b.parts[expression.0 - base].reasons.push(reason.clone());
+                    reasons.push(reason);
+                }
+            }
             return Ok((
                 b.parts,
                 Answer {
@@ -343,8 +354,8 @@ fn compute_inner(
                     outputs: BTreeMap::new(),
                     claim: None,
                     evidence: vec![],
-                    reasons: vec![reason],
-                    scope,
+                    reasons,
+                    scope: g.get(architecture.reference)?.scope.clone(),
                 },
                 None,
             ));
@@ -1618,12 +1629,6 @@ pub(super) struct CandidateInput {
     pub domain_type: ProjectionType,
     pub integer_family: Option<super::repair_problem::integer::Family>,
 }
-fn is_polyhedral(part: &Part) -> bool {
-    matches!(part.wire_ref(), Some(Json::Obj(wire))
-        if matches!(wire.get("representation"), Some(Json::Obj(fields))
-            if matches!(fields.get("kind"), Some(Json::Str(kind)) if kind == "rational_polyhedron")))
-}
-
 pub(super) fn checked_polyhedron(
     env: &Environment<'_>,
     g: &Graph,
@@ -1639,7 +1644,7 @@ pub(super) fn checked_polyhedron(
     let D::Change(data) = &value.data else {
         return Ok(None);
     };
-    if !is_polyhedral(data.part()) {
+    if !data.source.rational_polyhedron {
         return Ok(None);
     }
     let checked = checked_candidate(env, g, reference)?;
@@ -1666,15 +1671,9 @@ pub(super) fn candidate_input(
     let request = origin.request();
     env.with_request_context(g, request, || {
         let _selected = env.enter_architecture(g)?;
-        let polyhedral = d
-            .source
-            .answer
-            .outputs
-            .get("solutions")
-            .and_then(|r| r.0.checked_sub(d.source.base))
-            .and_then(|i| d.source.parts.get(i))
-            .is_some_and(is_polyhedral);
-        let search = if polyhedral && d.ty() == NodeType::Construction(T::CandidateSpace) {
+        let search = if d.source.rational_polyhedron
+            && d.ty() == NodeType::Construction(T::CandidateSpace)
+        {
             change_search::search_rational_domain(
                 env,
                 g,
@@ -1789,6 +1788,7 @@ impl super::result_kind::ResultKind for Data {
         let integer = verification.as_ref().and_then(|s| s.linear.clone());
         let source = Arc::new(Source {
             integer,
+            rational_polyhedron: polyhedral,
             architecture,
             boundary,
             base,

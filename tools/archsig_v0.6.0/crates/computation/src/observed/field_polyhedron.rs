@@ -195,6 +195,7 @@ fn eliminate(
     axis: usize,
     c: &Control,
 ) -> Result<Vec<EliminationRow>, ValidationFailure> {
+    c.checkpoint(Checkpoint::RationalPolyhedronElimination)?;
     let mut next = BTreeMap::new();
     let mut upper = Vec::new();
     let mut lower = Vec::new();
@@ -342,12 +343,12 @@ fn bounds<'a>(
 }
 
 fn lift(
-    projected: &Projection,
+    eliminated: &[(usize, Vec<EliminationRow>)],
     mut values: Vec<Scalar>,
     c: &Control,
 ) -> Result<Vec<Scalar>, ValidationFailure> {
     let zero = integer(0);
-    for (axis, rows) in projected.eliminated.iter().rev() {
+    for (axis, rows) in eliminated.iter().rev() {
         let (low, high) = bounds(rows, *axis, &values, c)?;
         values[*axis] = match (low, high) {
             (Some((l, _)), Some((h, _))) if less(&h, &l, c)? => {
@@ -419,17 +420,25 @@ pub(super) fn solve(
         )?;
     }
     let rows = tight.into_values().collect::<Vec<_>>();
-    let point = {
-        let projected = project(&rows, (0..n).rev(), c)?;
-        if let Some(row) = obstruction(&projected.rows, c)? {
-            return Ok(Outcome::Empty(row.certificate(original.len(), c)?));
-        }
-        lift(&projected, vec![zero.clone(); n], c)?
-    };
+    let Projection {
+        rows,
+        mut eliminated,
+    } = project(&rows, (0..n).rev(), c)?;
+    if let Some(row) = obstruction(&rows, c)? {
+        return Ok(Outcome::Empty(row.certificate(original.len(), c)?));
+    }
+    drop(rows);
+    let point = lift(&eliminated, vec![zero.clone(); n], c)?;
     let mut forced = Vec::new();
     for axis in 0..n {
         tick(c)?;
-        let projected = project(&rows, (0..n).rev().filter(|i| *i != axis), c)?;
+        // Projection onto this axis shares the already eliminated higher axes.
+        // Release each no-longer-needed layer as the prefix gets shorter.
+        let (next_axis, prefix) = eliminated.pop().ok_or(internal!("射影の消去層がない"))?;
+        if next_axis != axis {
+            return Err(internal!("射影の消去層が元座標順と違う").into());
+        }
+        let projected = project(&prefix, (0..axis).rev(), c)?;
         let (low, high) = bounds(&projected.rows, axis, &point, c)?;
         if let (Some((l, lrow)), Some((h, hrow))) = (&low, &high)
             && l == h
@@ -450,7 +459,8 @@ pub(super) fn solve(
         };
         let mut pin = vec![zero; n];
         pin[axis] = alternate;
-        let second = lift(&projected, pin, c)?;
+        let second = lift(&projected.eliminated, pin, c)?;
+        let second = lift(&eliminated, second, c)?;
         return Ok(Outcome::Multiple {
             first: point,
             second,

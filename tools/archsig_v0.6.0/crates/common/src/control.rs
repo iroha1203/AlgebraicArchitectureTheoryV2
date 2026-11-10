@@ -113,6 +113,7 @@ pub enum Checkpoint {
     FinitePolynomialTable,
     PrimitiveValuation,
     RationalPolyhedron,
+    RationalPolyhedronElimination,
     ChangeWitness,
     Quotient,
     QuotientGuardedInstance,

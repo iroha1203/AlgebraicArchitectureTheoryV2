@@ -579,7 +579,12 @@ fn rational_backing_stops_before_unchecked_solutions_and_saves_the_completed_pre
     std::fs::write(dir.join("archmap.json"), slack.canonical()).unwrap();
     let repair = ask.replacen("=solve(", "=repair(", 1);
     for (checkpoint, at, ask, out) in [
-        (Checkpoint::RationalPolyhedron, 800, ask, "elimination"),
+        (
+            Checkpoint::RationalPolyhedronElimination,
+            1,
+            ask,
+            "elimination",
+        ),
         (
             Checkpoint::ChangeWitness,
             2,
@@ -796,6 +801,21 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
             &["missing_observation"][..]),
         ("comprehension-domain", known_bound.replacen("legal(w:Pool.World):",
             "legal(w:Pool.World): forall flag in list{true | t in Pool.Cell[w] where t.quantity-t.quantity+t.stock.available>=rat(0,1)} .", 1),
+            &["missing_observation"][..]),
+        ("sum-coefficient", known_bound.replacen(nonnegative,
+            "sum(list<Q>[b.quantity*b.stock.available])>=rat(0,1)", 1),
+            &["missing_observation"][..]),
+        ("sum-update", known_bound.replacen("quantity=q",
+            "quantity=sum(list<Q>[q*b.stock.available])", 1),
+            &["missing_observation"][..]),
+        ("observational-branch-equalities", known_bound.replacen(nonnegative,
+            "(if b.stock.available>=rat(0,1) then b.quantity=rat(0,1) else b.quantity=rat(1,1))", 1),
+            &["missing_observation"][..]),
+        ("conditionally-chosen-term", known_bound.replacen(nonnegative,
+            "(((if b.stock.available>=rat(0,1) then fn(x:Q)=>true else fn(x:Q)=>false)(b.quantity)) implies b.quantity>=rat(0,1))", 1),
+            &["missing_observation"][..]),
+        ("bound-conditionally-chosen-term", known_bound.replacen(nonnegative,
+            "(let f=if b.stock.available>=rat(0,1) then (fn(x:Q)=>true) else (fn(x:Q)=>false) in (f(rat(0,1)) implies b.quantity>=rat(0,1)))", 1),
             &["missing_observation"][..]),
         ("tuple-branch-projection", known_bound.replacen(nonnegative,
             "(((if b.stock.available>=rat(0,1) then (b.quantity,true) else (b.quantity,false)).1) implies b.quantity>=rat(0,1))", 1),

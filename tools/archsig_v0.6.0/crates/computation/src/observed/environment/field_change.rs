@@ -130,6 +130,8 @@ struct Dependency {
     dependence: Dependence,
     facts: BTreeSet<Fact>,
     components: Vec<Dependency>,
+    affine_equality: bool,
+    term_bodies: Vec<(usize, Vec<String>)>,
 }
 
 type LexicalDependencies = BTreeMap<String, Dependency>;
@@ -139,6 +141,8 @@ impl Dependency {
         self.dependence = self.dependence.max(other.dependence);
         self.facts.extend(other.facts);
         self.components.clear();
+        self.affine_equality = false;
+        self.term_bodies.clear();
     }
 
     fn product(components: Vec<Self>) -> Self {
@@ -161,8 +165,22 @@ impl Dependency {
             let mut result = Self {
                 dependence: test.dependence,
                 facts: test.facts.clone(),
-                components: vec![],
+                affine_equality: test.dependence == Dependence::Fixed
+                    && branches.iter().all(|branch| {
+                        branch.dependence == Dependence::Fixed || branch.affine_equality
+                    }),
+                ..Self::default()
             };
+            if branches.iter().all(|branch| !branch.term_bodies.is_empty()) {
+                for branch in branches {
+                    for term in &branch.term_bodies {
+                        env.tick()?;
+                        if !result.term_bodies.contains(term) {
+                            result.term_bodies.push(term.clone());
+                        }
+                    }
+                }
+            }
             for branch in branches {
                 env.tick()?;
                 result.dependence = result.dependence.max(branch.dependence);
@@ -201,6 +219,12 @@ impl Dependency {
         missing.awaiting_observation = !self.facts.is_empty() && self.dependence <= maximum;
         missing.facts.extend(self.facts);
     }
+
+    fn record_equality(self, missing: &mut Pending) {
+        missing.awaiting_observation = !self.facts.is_empty()
+            && (self.dependence == Dependence::Fixed || self.affine_equality);
+        missing.facts.extend(self.facts);
+    }
 }
 
 struct DependencyAnalysis<'a, 'input> {
@@ -234,7 +258,7 @@ impl DependencyAnalysis<'_, '_> {
         Ok(Dependency {
             dependence,
             facts: form.missing_facts().into_iter().collect(),
-            components: vec![],
+            ..Dependency::default()
         })
     }
 
@@ -269,8 +293,17 @@ impl DependencyAnalysis<'_, '_> {
             let (source, absent) = capture_missing(env, || self.source(id, vars, reading))?;
             let source = source?;
             if !source.condition_pending && !source.condition_failed {
-                if source.known_value.is_some() {
-                    return Ok(Dependency::default());
+                if let Some(value) = &source.known_value {
+                    let mut result = Dependency::default();
+                    if let Scalar::Term(term) = value
+                        && let Some(body) = self.law_term_body(term)
+                    {
+                        result.term_bodies.push((
+                            body,
+                            term.params.iter().map(|(name, _)| name.clone()).collect(),
+                        ));
+                    }
+                    return Ok(result);
                 }
                 if law.expr_type(id) == Some(&Type::Q)
                     && let Some(form) = source.affine.as_deref()
@@ -286,7 +319,7 @@ impl DependencyAnalysis<'_, '_> {
                     Dependence::Fixed
                 },
                 facts: absent.into_iter().collect(),
-                components: vec![],
+                ..Dependency::default()
             };
             match &law.exprs()[id].kind {
                 ExprKind::Dotted(parts) => {
@@ -338,20 +371,48 @@ impl DependencyAnalysis<'_, '_> {
                     } else if data::expression(law, id, &env.control)?.is_some() {
                         let items = args.iter().map(|id| child(*id)).collect::<Result<_, _>>()?;
                         Ok(Dependency::product(items))
-                    } else if matches!(law.expr_type(*callee), Some(Type::Term(..)))
-                        && let Some(Scalar::Term(ref term)) =
-                            self.source(*callee, vars, reading)?.known_value
-                        && let Some(body) = self.law_term_body(term)
+                    } else if matches!(
+                        law.program().callees.get(callee),
+                        Some(archsig_input::law::ir::Callee::Builtin("sum"))
+                    ) && law.expr_type(id) == Some(&Type::Q)
                     {
-                        let mut local = BTreeMap::new();
-                        let mut dependencies = BTreeMap::new();
-                        for ((name, _), arg) in term.params.iter().zip(args) {
-                            local.insert(name.clone(), self.source(*arg, vars, reading)?);
-                            dependencies.insert(name.clone(), child(*arg)?);
-                        }
-                        self.read(body, &local, &dependencies, reading)
+                        child(args[0])
                     } else {
+                        let callee_dependency =
+                            if matches!(law.expr_type(*callee), Some(Type::Term(..))) {
+                                child(*callee)?
+                            } else {
+                                Dependency::default()
+                            };
+                        if !callee_dependency.term_bodies.is_empty() {
+                            let arguments = args
+                                .iter()
+                                .map(|arg| Ok((self.source(*arg, vars, reading)?, child(*arg)?)))
+                                .collect::<Result<Vec<_>, ValidationFailure>>()?;
+                            let mut branches = Vec::new();
+                            for (body, params) in &callee_dependency.term_bodies {
+                                let mut local = BTreeMap::new();
+                                let mut dependencies = BTreeMap::new();
+                                for (name, (source, dependency)) in params.iter().zip(&arguments) {
+                                    env.tick()?;
+                                    local.insert(name.clone(), source.clone());
+                                    dependencies.insert(name.clone(), dependency.clone());
+                                }
+                                branches.push(self.read(*body, &local, &dependencies, reading)?);
+                            }
+                            if branches.len() == 1
+                                && callee_dependency.facts.is_empty()
+                                && callee_dependency.dependence == Dependence::Fixed
+                            {
+                                return branches
+                                    .pop()
+                                    .ok_or(internal!("Termの元本体がない").into());
+                            }
+                            let branches = branches.iter().collect::<Vec<_>>();
+                            return Dependency::alternatives(&callee_dependency, &branches, env);
+                        }
                         let mut result = fallback();
+                        result.merge(callee_dependency);
                         for arg in args {
                             result.merge(child(*arg)?);
                         }
@@ -377,6 +438,8 @@ impl DependencyAnalysis<'_, '_> {
                             &env.control,
                         )? {
                             let mut result = self.form(&form)?;
+                            result.affine_equality =
+                                *op == BinOp::Eq && result.dependence <= Dependence::Affine;
                             if result.dependence == Dependence::Affine {
                                 result.dependence = Dependence::Other;
                             }
@@ -388,6 +451,9 @@ impl DependencyAnalysis<'_, '_> {
                     let nonlinear = left.dependence != Dependence::Fixed
                         && right.dependence != Dependence::Fixed;
                     left.merge(right);
+                    left.affine_equality = numeric_comparison
+                        && *op == BinOp::Eq
+                        && left.dependence <= Dependence::Affine;
                     if left.dependence == Dependence::Affine
                         && (!matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul)
                             || (*op == BinOp::Mul && nonlinear))
@@ -803,7 +869,7 @@ fn collect_equations(
                         } else {
                             analysis
                                 .read(id, vars, lexical, reading)?
-                                .record(missing, Dependence::Fixed);
+                                .record_equality(missing);
                         }
                     }
                     if change_affine::numeric_condition(env, id, &v)? {
@@ -1158,6 +1224,7 @@ fn compute_inner(
         let original =
             field_polyhedron::halfspaces(&guard_matrix, &guard_rhs, &inequalities, &env.control)?;
         let outcome = field_polyhedron::solve(&original, axes.len(), &env.control)?;
+        field_polyhedron::verify(&original, axes.len(), &outcome, &env.control)?;
         Solutions::Polyhedron(Polyhedron {
             inequalities,
             outcome,
