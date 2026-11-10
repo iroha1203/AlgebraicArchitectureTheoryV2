@@ -1,6 +1,6 @@
 law "archsig.law/2" semantics "archsig/0.6.0";
 reading E12Compare {
-  use vocabulary E12 version "1" digest "sha256:de1a1eb9376916a20075cd753347233455abde13542db0d39d68632d6b22f60e";
+  use vocabulary E12 version "2" digest "sha256:e1686cda6b1684964d234633797c255e0b327664023320b803bae7ddd846e4ef";
   view only(t:Root):Set<Root> = set<Root>{t};
   view noOverlap(t:Root):Unit = unit;
   view wide(t:Root,c:Root):Set<Root> = set<Root>{t,c};

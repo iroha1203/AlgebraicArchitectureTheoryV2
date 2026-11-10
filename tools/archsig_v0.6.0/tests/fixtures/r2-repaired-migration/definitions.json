@@ -5,13 +5,13 @@
     {
       "semantics": "archsig/0.6.0",
       "namespace": "E12",
-      "version": "1",
+      "version": "2",
       "dependencies": [],
       "declarations": [
         {
           "kind": "entity",
           "name": "E12.Root",
-          "meaning": "output1 の全体または source 別の局所読取り。",
+          "meaning": "T3 消費と raw cancel の局所、およびその比較用全体。",
           "parameters": [],
           "fields": [],
           "alignments": []
@@ -19,7 +19,7 @@
         {
           "kind": "entity",
           "name": "E12.State",
-          "meaning": "選択した消費の前後状態。",
+          "meaning": "T3 消費または raw cancel の端点状態。",
           "parameters": [
             {
               "name": "owner",
