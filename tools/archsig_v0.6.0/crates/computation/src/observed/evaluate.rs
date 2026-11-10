@@ -1756,8 +1756,7 @@ impl Evaluator<'_, '_> {
                 let position = results.len();
                 self.tick(Checkpoint::FiniteIteration)?;
                 let caller = self.graph.active;
-                let index = self.graph.iterations.len();
-                self.graph.iterations.push(super::call::Iteration {
+                let index = self.graph.append_iteration(super::call::Iteration {
                     caller,
                     source,
                     domain: input
@@ -1766,7 +1765,7 @@ impl Evaluator<'_, '_> {
                         .unwrap_or(domain),
                     member: super::call::Member::SetElement(item.clone()),
                     finite,
-                });
+                })?;
                 let evaluated = self.with_iteration_state(index, scope.clone(), |this| {
                     let body = this.eval(spec.body)?;
                     if spec.kind == archsig_input::law::ast::QuantKind::Forall
@@ -1959,8 +1958,7 @@ impl Evaluator<'_, '_> {
             data::observe_actual(span, self.graph.active, "comprehension_iteration", position);
             self.tick(Checkpoint::FiniteIteration)?;
             let caller = self.graph.active;
-            let index = self.graph.iterations.len();
-            self.graph.iterations.push(super::call::Iteration {
+            let index = self.graph.append_iteration(super::call::Iteration {
                 caller,
                 source,
                 domain: input.evaluation,
@@ -1970,7 +1968,7 @@ impl Evaluator<'_, '_> {
                 } else {
                     super::call::Member::SetElement(member.clone())
                 },
-            });
+            })?;
             let result = self.with_iteration_state(index, input.scope.clone(), |this| {
                 let condition = if let Some(filter) = filter {
                     let evaluated = this.eval(filter)?;
