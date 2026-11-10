@@ -2332,6 +2332,10 @@ impl Graph {
                     super::build_result::validate_failure(self, reason)?;
                     continue;
                 }
+                if construction == "model_map_assembly" {
+                    super::model_map_result::validate_failure(self, reason)?;
+                    continue;
+                }
                 if construction == "composition" {
                     super::public_compose::validate_failure(self, reason)?;
                     continue;
