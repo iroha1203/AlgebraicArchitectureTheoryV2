@@ -3,13 +3,18 @@ use super::*;
 use crate::observed::environment::state::ScopedReplace;
 use archsig_input::definition::PrimitiveSignature;
 
+#[cfg(test)]
+thread_local! {
+    static MATERIALIZED_SUBJECTS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 pub(in crate::observed) struct OwnedMembers {
     pub enumeration: super::super::finite::Enumeration,
     pub missing: Vec<Fact>,
 }
 
 impl Environment<'_> {
-    /// 宣言族と式族で同じ原始rosterを読む。既存依存族のobserver名と列挙順を保つ。
+    /// 宣言族と式族で同じ原始rosterを読む。対象型の元indexと列挙順を保つ。
     pub(super) fn owned_members(
         &self,
         entity: &str,
@@ -73,8 +78,9 @@ impl Environment<'_> {
             }) {
                 continue;
             }
-            let mut value = || {
-                observer("dependent_subject_value", index);
+            let value = || {
+                #[cfg(test)]
+                MATERIALIZED_SUBJECTS.with(|count| count.set(count.get() + 1));
                 Scalar::Subject {
                     snapshot: owner_snapshot.clone(),
                     subject: subject.id.clone(),
@@ -721,6 +727,15 @@ reading R {
   view states(a:Reservations.System):Set<Reservations.State> = Reservations.State[a];
 }"#;
         let map = include_str!("../../../../../tests/fixtures/reservations.archmap.json");
+        let base = map.trim_end().strip_suffix("  }]\n}").unwrap();
+        let map = format!(
+            r#"{base}  }},{{"id":"w","origin":"model","subjects":[
+              {{"id":"A","type":"Reservations.System","origin":"model"}},
+              {{"id":"p","type":"Reservations.State","origin":"model"}}
+            ],"atoms":[
+              {{"id":"p-owner","subject":"p","field":"Reservations.State.owner","value":["w","A"],"origin":"model"}}
+            ]}}]}}"#
+        );
         let c = quiet();
         let mut measurements = Vec::new();
         for unrelated in [0, 8, 24] {
@@ -750,21 +765,25 @@ reading R {
                 entity: "Reservations.System".into(),
             };
             let mut visits = 0;
-            let mut values = 0;
+            MATERIALIZED_SUBJECTS.with(|count| count.set(0));
             let actual = environment
                 .owned_members(
                     "Reservations.State",
                     &owner,
                     None,
                     "R",
-                    &mut |operation, _| match operation {
-                        "dependent_subject" => visits += 1,
-                        "dependent_subject_value" => values += 1,
-                        _ => {}
+                    &mut |operation, _| {
+                        if operation == "dependent_subject" {
+                            visits += 1;
+                        }
                     },
                 )
                 .unwrap();
-            measurements.push((unrelated, visits, values));
+            measurements.push((
+                unrelated,
+                visits,
+                MATERIALIZED_SUBJECTS.with(|count| count.get()),
+            ));
             assert!(actual.missing.is_empty());
             let included: Vec<_> = actual
                 .enumeration

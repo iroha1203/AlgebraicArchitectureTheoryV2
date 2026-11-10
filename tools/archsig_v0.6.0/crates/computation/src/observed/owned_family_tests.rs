@@ -274,9 +274,17 @@ fn owned_expression_family_enumeration_cancel_preserves_owner_prefix_and_prior_a
         }
     });
     let prepared = prepare_observed(inputs, &asks, &control).unwrap();
-    let first_state = prepared.inputs().archmap().snapshots().iter()
-        .find(|snapshot| snapshot.id == "v").unwrap().subjects.iter()
-        .position(|subject| subject.ty == "Reservations.State").unwrap();
+    let first_state = prepared
+        .inputs()
+        .archmap()
+        .snapshots()
+        .iter()
+        .find(|snapshot| snapshot.id == "v")
+        .unwrap()
+        .subjects
+        .iter()
+        .position(|subject| subject.ty == "Reservations.State")
+        .unwrap();
     let stopped = evaluate_observed_with_validator(
         prepared,
         &control,
