@@ -591,7 +591,7 @@ fn incomplete_non_owned_map_binding_must_be_rejected() {
     let v = Scalar::Map {
         domain: "Pattern.Part".into(),
         codomain: "Pattern.Part".into(),
-        pairs: vec![],
+        pairs: vec![].into(),
     };
     let r = finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &quiet());
     assert!(
@@ -622,7 +622,7 @@ fn single_key_map_binding_must_be_rejected() {
     let v = Scalar::Map {
         domain: "Pattern.Part".into(),
         codomain: "Pattern.Part".into(),
-        pairs: vec![(subject("p"), subject("q"))],
+        pairs: vec![(subject("p"), subject("q"))].into(),
     };
     assert!(finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &quiet()).is_err());
 }
@@ -632,7 +632,7 @@ fn total_map_binding_is_accepted() {
     let v = Scalar::Map {
         domain: "Pattern.Part".into(),
         codomain: "Pattern.Part".into(),
-        pairs: vec![(subject("p"), subject("q")), (subject("q"), subject("p"))],
+        pairs: vec![(subject("p"), subject("q")), (subject("q"), subject("p"))].into(),
     };
     let r = finite_law_valuations(&i, "Selected.fixed", &[("t".into(), v)], &quiet()).unwrap();
     assert!(r.is_complete());
@@ -747,9 +747,9 @@ fn nested_maps_keep_their_original_full_domain_check() {
                 domain: "Pattern.Part".into(),
                 codomain: "Pattern.Part".into(),
                 pairs: if full {
-                    vec![(subject("p"), subject("p")), (subject("q"), subject("q"))]
+                    vec![(subject("p"), subject("p")), (subject("q"), subject("q"))].into()
                 } else {
-                    vec![]
+                    vec![].into()
                 },
             };
             let value = match wrap {

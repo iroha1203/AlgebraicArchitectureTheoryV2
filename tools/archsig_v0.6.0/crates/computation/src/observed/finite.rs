@@ -477,7 +477,7 @@ fn enumerate_values_maybe(
                             Scalar::Map {
                                 domain: domain_entity.to_owned(),
                                 codomain: codomain_entity.to_owned(),
-                                pairs,
+                                pairs: pairs.into(),
                             },
                             control,
                             visitor,

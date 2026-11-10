@@ -927,7 +927,7 @@ fn nested_primitive_containers_canonicalize_sets_and_maps_but_preserve_sequences
         Scalar::Map {
             domain: "Finite.Root".into(),
             codomain: "Finite.Root".into(),
-            pairs: vec![(subject("b"), subject("a")), (subject("a"), subject("b"))],
+            pairs: vec![(subject("b"), subject("a")), (subject("a"), subject("b"))].into(),
         },
     ]);
     let original = value.wire().canonical();

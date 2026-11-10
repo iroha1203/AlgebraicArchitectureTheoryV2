@@ -396,7 +396,7 @@ pub(super) fn from_input(
                 Scalar::Map {
                     domain: std::mem::take(domain),
                     codomain: std::mem::take(codomain),
-                    pairs: values,
+                    pairs: values.into(),
                 }
             }
             (Value::Unit, Type::Unit) => Scalar::Unit,
@@ -832,55 +832,60 @@ fn equal_with_retained(
             // 同じ元programならifの両枝で同じ値を保持できる。
             // LawのTerm等値はsupports_binaryで別に判定する。
             (Scalar::Term(a), Scalar::Term(b)) => a == b,
-            (Scalar::Map { pairs: a, .. }, Scalar::Map { pairs: b, .. }) => {
-                let mut same = a.len() == b.len();
-                for (_index, (key, value)) in a.iter().enumerate() {
-                    #[cfg(test)]
-                    observe_iteration("map_equal", _index);
-                    tick(control)?;
-                    let mut found = false;
-                    for (j, (other_key, other_value)) in b.iter().enumerate() {
+            (
+                Scalar::Map {
+                    domain,
+                    codomain,
+                    pairs: a,
+                },
+                Scalar::Map { pairs: b, .. },
+            ) if !candidates => {
+                let ordered_a = a.ordered(domain, codomain, control)?;
+                let ordered_b = b.ordered(domain, codomain, control)?;
+                if a.len() != b.len() {
+                    false
+                } else if a.shared_with(b) {
+                    true
+                } else {
+                    let mut same = true;
+                    for (index, (left, right)) in ordered_a.zip(ordered_b).enumerate() {
                         tick(control)?;
-                        let key_equal = if retain.is_some() && !candidates && j + 1 == b.len() {
-                            equal_with_retained(
-                                key,
-                                other_key,
-                                control,
-                                candidates,
-                                Some(&mut |answer: bool| {
-                                    if !answer {
-                                        publish_equal(&mut retain, false);
-                                    }
-                                }),
-                            )?
-                        } else {
-                            equal_with_candidates(key, other_key, control, candidates)?
-                        };
-                        if key_equal {
-                            found = if retain.is_some() && !candidates {
-                                equal_with_retained(
-                                    value,
-                                    other_value,
-                                    control,
-                                    candidates,
-                                    Some(&mut |answer: bool| {
-                                        if !answer || _index + 1 == a.len() {
-                                            publish_equal(&mut retain, same && answer);
-                                        }
-                                    }),
-                                )?
-                            } else {
-                                equal_with_candidates(value, other_value, control, candidates)?
-                            };
-                            if found || !candidates {
-                                break;
-                            }
+                        // 両方の行は型の一致を確認した参照対。索引の順序で同じkeyが並ぶ。
+                        same = left == right;
+                        if !same || index + 1 == a.len() {
+                            publish_equal(&mut retain, same);
+                        }
+                        tick(control)?;
+                        if !same {
+                            break;
                         }
                     }
-                    same &= found;
+                    same
+                }
+            }
+            (Scalar::Map { pairs: a, .. }, Scalar::Map { pairs: b, .. }) => {
+                // 候補関係は同じkeyに複数の像がある中間値を含む。
+                if a.len() != b.len() {
+                    return Ok(false);
+                }
+                for (key, value) in a {
+                    tick(control)?;
+                    let mut found = false;
+                    for (other_key, other_value) in b {
+                        tick(control)?;
+                        if equal_with_candidates(key, other_key, control, true)?
+                            && equal_with_candidates(value, other_value, control, true)?
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if !found {
+                        return Ok(false);
+                    }
                     tick(control)?;
                 }
-                same
+                true
             }
             (
                 Scalar::Data {
@@ -1006,28 +1011,7 @@ pub(super) fn check_shape(value: &Scalar, control: &Control) -> Result<(), Valid
                 domain,
                 codomain,
                 pairs,
-            } => {
-                for (index, (key, value)) in pairs.iter().enumerate() {
-                    #[cfg(test)]
-                    observe_iteration("map_check", index);
-                    tick(control)?;
-                    if !matches!(key.ty(), Type::Ref(ref entity) if entity == domain)
-                        || !matches!(value.ty(), Type::Ref(ref entity) if entity == codomain)
-                    {
-                        return Err(internal!("Mapのkey/value型が違う").into());
-                    }
-                    check_shape(key, control)?;
-                    check_shape(value, control)?;
-                    for (previous, _) in &pairs[..index] {
-                        tick(control)?;
-                        if equal(key, previous, control)? {
-                            return Err(internal!("Mapに重複keyがある").into());
-                        }
-                    }
-                    tick(control)?;
-                }
-                Ok(())
-            }
+            } => pairs.check(domain, codomain, control),
             Scalar::Unit | Scalar::Text(_) => Ok(()),
             Scalar::Tuple(items) => {
                 for item in items {
@@ -1193,7 +1177,6 @@ pub(super) fn map_apply(
     control: &Control,
 ) -> Result<Option<Scalar>, ValidationFailure> {
     tick(control)?;
-    check(map, law, control)?;
     check(key, law, control)?;
     let Scalar::Map {
         domain,
@@ -1203,24 +1186,7 @@ pub(super) fn map_apply(
     else {
         return Err(internal!("Map適用のcalleeがMap値でない").into());
     };
-    if !matches!(key.ty(), Type::Ref(ref entity) if entity == domain) {
-        return Err(internal!("Map適用の実key型が始域型と違う").into());
-    }
-    let mut selected = None;
-    for (_index, (candidate, image)) in pairs.iter().enumerate() {
-        #[cfg(test)]
-        observe_iteration("map_lookup", _index);
-        tick(control)?;
-        if equal(candidate, key, control)? {
-            if selected.is_some()
-                || !matches!(image.ty(), Type::Ref(ref entity) if entity == codomain)
-            {
-                return Err(internal!("Map適用の像が一意・型付きでない").into());
-            }
-            selected = Some(image.clone());
-        }
-        tick(control)?;
-    }
+    let selected = pairs.lookup(domain, codomain, key, control)?.cloned();
     tick(control)?;
     Ok(selected)
 }

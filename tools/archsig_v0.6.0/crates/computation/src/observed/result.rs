@@ -1,7 +1,7 @@
 //! 評価内部の型付き DAG。JSON はこの不変データの表示に限定する。
 use archsig_common::internal::InternalError;
 
-use super::{PrepareFailure, PreparedObserved};
+use super::{PrepareFailure, PreparedObserved, map_pairs::MapPairs};
 
 use archsig_common::control::{Checkpoint, Control};
 use archsig_common::{canonical::Json, issue::Location, types::Type};
@@ -164,7 +164,7 @@ pub(crate) enum Scalar {
         // Checked Map endpoints are erased references; original Owned constraints live in input metadata.
         domain: String,
         codomain: String,
-        pairs: Vec<(Scalar, Scalar)>,
+        pairs: MapPairs,
     },
     List {
         element: Type,
@@ -263,7 +263,7 @@ impl Drop for Scalar {
         fn take(value: &mut Scalar, pending: &mut Vec<Scalar>) {
             match value {
                 Scalar::Map { pairs, .. } => {
-                    for (key, value) in std::mem::take(pairs) {
+                    for (key, value) in pairs.take_unique_rows() {
                         pending.push(key);
                         pending.push(value);
                     }
@@ -429,6 +429,12 @@ impl PartialEq for Scalar {
             ) => {
                 if a != d || b != e || c.len() != f.len() {
                     return false;
+                }
+                if c.shared_with(f) {
+                    return true;
+                }
+                if let Some(equal) = c.equal_references(f) {
+                    return equal;
                 }
                 // Compare each pair once: repeating recursive containment in both
                 // directions would double work at every nested container level.
@@ -5430,7 +5436,7 @@ mod invariant_tests {
         let wrong = Scalar::Map {
             domain: "R.Other".into(),
             codomain: "R.Item".into(),
-            pairs: vec![(reference(false), reference(true))],
+            pairs: vec![(reference(false), reference(true))].into(),
         };
         assert!(
             super::super::data::check_shape(&wrong, &archsig_common::control::Control::unlimited())
@@ -5470,7 +5476,7 @@ mod invariant_tests {
             Scalar::Map {
                 domain: "R.Other".into(),
                 codomain: "R.Item".into(),
-                pairs: vec![]
+                pairs: vec![].into()
             }
         );
         assert_ne!(
@@ -5478,7 +5484,7 @@ mod invariant_tests {
             Scalar::Map {
                 domain: "R.Item".into(),
                 codomain: "R.Other".into(),
-                pairs: vec![]
+                pairs: vec![].into()
             }
         );
     }
@@ -5539,12 +5545,12 @@ mod invariant_tests {
             left = Scalar::Map {
                 domain: "R.Item".into(),
                 codomain: "R.Item".into(),
-                pairs: vec![(Scalar::Bool(false), left)],
+                pairs: vec![(Scalar::Bool(false), left)].into(),
             };
             right = Scalar::Map {
                 domain: "R.Item".into(),
                 codomain: "R.Item".into(),
-                pairs: vec![(Scalar::Bool(false), right)],
+                pairs: vec![(Scalar::Bool(false), right)].into(),
             };
         }
         assert_eq!(left, right);

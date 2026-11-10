@@ -19,6 +19,69 @@ fn application_condition(r: &ObservedEvaluation) -> usize {
         })
         .unwrap()
 }
+
+#[test]
+fn repeated_map_application_reuses_shape_and_searches_the_index() {
+    use std::{cell::Cell, rc::Rc};
+
+    let prepared = prepare_observed(
+        application_fixture::plain("r1"),
+        &["seed=evaluate(Maps.seed)"],
+        &quiet(),
+    )
+    .unwrap();
+    let law = prepared.inputs().law();
+    let subject = |i: usize| Scalar::Subject {
+        snapshot: "v".into(),
+        subject: format!("row-{i:03}"),
+        entity: "Maps.Item".into(),
+    };
+    let counts = Rc::new(Cell::new((0, 0)));
+    let observed = counts.clone();
+    data::observe_iterations(move |_, _, operation, _| {
+        let (rows, probes) = observed.get();
+        observed.set(match operation {
+            "map_check" => (rows + 1, probes),
+            "map_lookup" => (rows, probes + 1),
+            _ => (rows, probes),
+        });
+    });
+    let previous_context = data::evaluation_context(Some(((0, 0), Default::default())));
+    let mut measured = Vec::new();
+    for size in [8usize, 16, 32] {
+        counts.set((0, 0));
+        let map = Scalar::Map {
+            domain: "Maps.Item".into(),
+            codomain: "Maps.Item".into(),
+            pairs: (0..size)
+                .rev()
+                .map(|i| (subject(i), subject(size - 1 - i)))
+                .collect(),
+        };
+        let checkpoints = Rc::new(Cell::new(0));
+        let seen = checkpoints.clone();
+        let control = Control::new(move |_| {
+            seen.set(seen.get() + 1);
+            None
+        });
+        for key in 0..size {
+            assert_eq!(
+                data::map_apply(&map.clone(), &subject(key), law, &control).unwrap(),
+                Some(subject(size - 1 - key))
+            );
+        }
+        let (checked_rows, probes) = counts.get();
+        measured.push((size, checked_rows, probes, checkpoints.get()));
+    }
+    data::evaluation_context(previous_context);
+    data::clear_iteration_observer();
+    eprintln!("(rows, checked rows, key probes, checkpoints) {measured:?}");
+    for (size, checked_rows, probes, _) in measured {
+        assert_eq!(checked_rows, size);
+        assert!(probes <= size * (size.ilog2() as usize + 1));
+    }
+}
+
 #[test]
 fn map_application_rechecks_value_key_image_type_support_scope_and_source() {
     let r = application_result(&["a=evaluate(Applications.apply,m=@v/m,x=@v/p)"], "known");

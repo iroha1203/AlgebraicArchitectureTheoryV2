@@ -567,7 +567,7 @@ fn image(
                 Scalar::Map {
                     domain: moved_reference(domain, mu, control)?,
                     codomain: moved_reference(codomain, mu, control)?,
-                    pairs: moved,
+                    pairs: moved.into(),
                 }
             }
             Scalar::Data { constructor, args } => {
@@ -1136,7 +1136,7 @@ mod tests {
             Scalar::Map {
                 domain: "Right.Child".into(),
                 codomain: "Left.Child".into(),
-                pairs,
+                pairs: pairs.into(),
             }
         };
         let a = map(false);

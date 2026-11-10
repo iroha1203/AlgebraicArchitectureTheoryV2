@@ -25,6 +25,7 @@ mod law_instantiation;
 mod law_proposition;
 mod law_table;
 mod local_result;
+mod map_pairs;
 mod model_assembly;
 mod model_map_assembly;
 mod model_map_result;
