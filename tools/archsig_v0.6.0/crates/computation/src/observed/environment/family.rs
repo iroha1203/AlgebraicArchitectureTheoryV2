@@ -190,6 +190,7 @@ impl Environment<'_> {
                     .and_then(|i| domains.get(i))
                     .copied(),
                 occurrence: p.span,
+                assembly_instance: None,
                 context: (numeric_parameters::numeric_width(&p.ty).is_none()).then_some(context),
             })
             .collect()

@@ -333,6 +333,12 @@ impl Data {
     pub(super) fn plan(&self) -> &Plan {
         &self.source.plan
     }
+    pub(super) fn assembly_views(&self) -> Option<[NodeRef; 2]> {
+        Some([
+            self.part().reference("fragments")?,
+            self.part().reference("interfaces")?,
+        ])
+    }
     pub(super) fn assembly_projection_type(&self) -> Option<super::projection::ProjectionType> {
         use super::projection::{MapProjection, ProjectionType as P};
         self.source.plan.assembly.as_ref()?;
@@ -1215,7 +1221,7 @@ fn compute_inner(
             .as_ref()
             .filter(|assembly| assembly.design.is_some())
     {
-        let scoped = super::assembly_output::view_scope(&mut b, env, assembly)?;
+        let scoped = super::assembly_output::view_scope(&mut b, env, request, assembly)?;
         // The assembly reading is known even when the later algebra is pending.
         // Add a new outer claim so its scope refers only to earlier domains.
         let previous = claim;

@@ -413,6 +413,7 @@ fn base_metadata(
             ty: parameter.ty.clone(),
             domain: Some(parameter.reference),
             occurrence: parameter.occurrence,
+            assembly_instance: None,
             context: None,
         })
     }

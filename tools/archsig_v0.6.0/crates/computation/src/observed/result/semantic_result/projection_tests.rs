@@ -268,6 +268,7 @@ fn projection_keeps_payload_quantifiers_and_prunes_proofs_without_changing_full_
         ty: Type::Bool,
         domain: Some(NodeRef(2)),
         occurrence: (0, 0),
+        assembly_instance: None,
         context: None,
     });
     nodes[7].scope.readings.insert("Fixture".into());

@@ -1091,6 +1091,7 @@ impl Environment<'_> {
             ty: ty.clone(),
             domain: axis.domain,
             occurrence: var.span,
+            assembly_instance: None,
             context: axis.actual.then_some(origin),
         });
         self.with_universal(context, || {
@@ -1243,6 +1244,7 @@ impl Environment<'_> {
                     ty: parameter.ty.clone(),
                     domain: context.domains.get(index).copied(),
                     occurrence: parameter.binder,
+                    assembly_instance: None,
                     context: Some(parameter.context),
                 });
             }
@@ -1270,6 +1272,7 @@ impl Environment<'_> {
                     ty: axis.parameter.ty.clone(),
                     domain: axis.domain,
                     occurrence: axis.parameter.binder,
+                    assembly_instance: None,
                     context: axis.actual.then_some(axis.parameter.context),
                 });
             }

@@ -243,6 +243,7 @@ impl Spec<'_> {
             ty: self.element.clone(),
             domain,
             occurrence: self.span,
+            assembly_instance: None,
             context,
         }
     }

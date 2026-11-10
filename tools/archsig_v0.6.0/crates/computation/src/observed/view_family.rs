@@ -630,6 +630,7 @@ fn family_node(g: &Graph, s: &Source, rows: &[NodeRef]) -> Result<Node, Validati
             ty: p.declaration.ty.erase(),
             occurrence: p.declaration.span,
             domain: Some(*r),
+            assembly_instance: None,
             context: None,
         });
     }

@@ -458,14 +458,22 @@ struct DomainEnumeration<'a> {
     enumeration: &'a super::finite::Enumeration,
 }
 
-type AssemblyDomain = (Quantifier, Option<Vec<Scalar>>);
+#[derive(Debug, PartialEq, Eq)]
+pub(super) enum CapturedDomain {
+    Finite(Vec<Scalar>),
+    Type,
+    Pending,
+}
+type AssemblyDomain = (Quantifier, CapturedDomain);
 
 #[derive(Default)]
-struct AssemblyTrace {
+pub(super) struct AssemblyTrace {
     fixed_design: bool,
     occurrences: BTreeMap<(Option<usize>, usize, Option<usize>), usize>,
     captured: BTreeMap<(Option<usize>, (usize, usize), Option<super::call::Context>), Vec<usize>>,
-    domains: Vec<AssemblyDomain>,
+    pub(super) domains: Vec<AssemblyDomain>,
+    pub(super) scope: Scope,
+    pub(super) support: BTreeSet<Fact>,
 }
 
 pub(crate) struct Environment<'a> {
@@ -569,9 +577,9 @@ impl<'a> Environment<'a> {
         enabled: bool,
         fixed_design: bool,
         read: impl FnOnce() -> Result<T, ValidationFailure>,
-    ) -> Result<(Result<T, ValidationFailure>, Vec<AssemblyDomain>), ValidationFailure> {
+    ) -> Result<(Result<T, ValidationFailure>, AssemblyTrace), ValidationFailure> {
         if !enabled {
-            return Ok((read(), vec![]));
+            return Ok((read(), AssemblyTrace::default()));
         }
         let capture = self.state.assembly_domains.scoped(Some(AssemblyTrace {
             fixed_design,
@@ -581,7 +589,7 @@ impl<'a> Environment<'a> {
         let trace = capture
             .restore()
             .ok_or(internal!("組立てViewの実量化収集がない"))?;
-        Ok((value, trace.domains))
+        Ok((value, trace))
     }
 
     fn fixed_assembly_read(&self) -> bool {
@@ -595,12 +603,18 @@ impl<'a> Environment<'a> {
     fn capture_assembly_domain(
         &self,
         descriptor: &Quantifier,
+        value: &SourceValue,
         members: Option<&[Scalar]>,
+        symbolic: bool,
     ) -> Result<(), ValidationFailure> {
         let mut capture = self.state.assembly_domains.borrow_mut();
         let Some(trace) = capture.as_mut() else {
             return Ok(());
         };
+        if trace.fixed_design {
+            trace.scope.merge_metadata(&value.scope);
+            trace.support.extend(value.support.iter().cloned());
+        }
         let key = (
             self.state.assembly_occurrence.get(),
             descriptor.occurrence,
@@ -609,14 +623,22 @@ impl<'a> Environment<'a> {
         let prior = trace.captured.entry(key).or_default();
         for &index in prior.iter() {
             self.tick()?;
-            if trace.domains[index].1.as_deref() == members {
+            let same = match (&trace.domains[index].1, members, symbolic) {
+                (CapturedDomain::Finite(old), Some(new), _) => old == new,
+                (CapturedDomain::Type, None, true) | (CapturedDomain::Pending, None, false) => true,
+                _ => false,
+            };
+            if same {
                 return Ok(());
             }
         }
         prior.push(trace.domains.len());
-        trace
-            .domains
-            .push((descriptor.clone(), members.map(<[_]>::to_vec)));
+        let domain = match members {
+            Some(items) => CapturedDomain::Finite(items.to_vec()),
+            None if symbolic => CapturedDomain::Type,
+            None => CapturedDomain::Pending,
+        };
+        trace.domains.push((descriptor.clone(), domain));
         Ok(())
     }
 
@@ -9409,29 +9431,33 @@ impl<'a> Environment<'a> {
             if let Some(value) =
                 self.universal_quantifier_source_value(id, variables, base, reading)?
             {
-                use archsig_input::law::ast::{QuantDomain, QuantSplit};
-                let law = self.indexes.inputs.law();
-                let mut at = id;
-                while let ExprKind::Quant {
-                    var,
-                    split:
-                        QuantSplit::Fixed {
-                            domain: QuantDomain::Type(_),
-                            body,
-                        },
-                    ..
-                } = &law.exprs()[at].kind
-                {
-                    self.tick()?;
-                    if let Some(descriptor) = value
+                let tracing = self.state.assembly_domains.borrow().is_some();
+                if tracing {
+                    use archsig_input::law::ast::{QuantDomain, QuantSplit};
+                    let law = self.indexes.inputs.law();
+                    let descriptors = value
                         .scope
                         .quantifiers
                         .iter()
-                        .find(|q| q.occurrence == var.span)
+                        .map(|q| (q.occurrence, q))
+                        .collect::<BTreeMap<_, _>>();
+                    let mut at = id;
+                    while let ExprKind::Quant {
+                        var,
+                        split:
+                            QuantSplit::Fixed {
+                                domain: QuantDomain::Type(_),
+                                body,
+                            },
+                        ..
+                    } = &law.exprs()[at].kind
                     {
-                        self.capture_assembly_domain(descriptor, None)?;
+                        self.tick()?;
+                        if let Some(descriptor) = descriptors.get(&var.span) {
+                            self.capture_assembly_domain(descriptor, &value, None, true)?;
+                        }
+                        at = *body;
                     }
-                    at = *body;
                 }
                 return Ok(value);
             }
@@ -9455,6 +9481,7 @@ impl<'a> Environment<'a> {
             let descriptor = spec.descriptor(None, self.state.scoped_context.get());
             scope.add_quantifier(descriptor.clone());
             scope.merge_quantifiers(&input.scope);
+            self.capture_assembly_domain(&descriptor, &input, members.as_deref(), false)?;
             let Some(items) = members else {
                 return Ok(SourceValue {
                     condition_failed: input.condition_failed,
@@ -9468,7 +9495,6 @@ impl<'a> Environment<'a> {
                     scalar_scope: None,
                 });
             };
-            self.capture_assembly_domain(&descriptor, Some(&items))?;
             if let Some(frame) = self
                 .state
                 .evaluation_capture

@@ -34,15 +34,21 @@ pub(super) fn compute_model(env: &Environment<'_>, g: &Graph, request: &Request,
                 let reference = domain(&mut b, &parameter.ty.erase(), &items)?;
                 scope_domains.push((reference, parameter.ty.erase()));
                 Some(reference)
-            } else { None };
-            quantifiers.push((name, Quantifier {
-                kind: archsig_input::law::ast::QuantKind::Forall,
-                name: parameter.name.clone(),
-                ty: parameter.ty.erase(),
-                domain: reference,
-                occurrence: parameter.span,
-                context: Some(env.current_context(g)),
-            }));
+            } else {
+                None
+            };
+            quantifiers.push((
+                name,
+                Quantifier {
+                    kind: archsig_input::law::ast::QuantKind::Forall,
+                    name: parameter.name.clone(),
+                    ty: parameter.ty.erase(),
+                    domain: reference,
+                    occurrence: parameter.span,
+                    assembly_instance: None,
+                    context: Some(env.current_context(g)),
+                },
+            ));
         }
         for (name, bindings) in &model.requirements {
             c.checkpoint(archsig_common::control::Checkpoint::Localize)?;

@@ -396,14 +396,22 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
         include_bytes!("fixtures/r2-structure-choice/definitions.json"),
     )
     .unwrap();
-    std::fs::write(
-        dir.join("archmap.json"),
-        include_bytes!("fixtures/r2-structure-choice/archmap.json"),
-    )
-    .unwrap();
+    let map = include_str!("fixtures/r2-structure-choice/archmap.json")
+        .replace(
+            r#""origins": ["#,
+            r#""origins": [
+          {"id":"alternate","mode":"proposed","method":"fixture","note":"scope","locations":[]},"#,
+        )
+        .replace(
+            r#""snapshots": ["#,
+            r#""snapshots": [
+          {"id":"alternate","origin":"alternate",
+           "subjects":[{"id":"extra","type":"E12.Root","origin":"alternate"}],"atoms":[]},"#,
+        );
+    std::fs::write(dir.join("archmap.json"), map).unwrap();
     let law = include_str!("fixtures/r2-structure-choice/laws.law").replace(
         "if p.split then p.new else p.old",
-        "let seen=forall b in list<Bool>[true] . b in if seen and (exists z:Z . z*z=2) then p.new else p.old",
+        "let seen=forall b:Root . b=b in if seen and (exists z:Z . z*z=2) then p.new else p.old",
     );
     std::fs::write(dir.join("laws.law"), law).unwrap();
     let original = include_str!("fixtures/r2-structure-choice/queries.txt")
@@ -447,11 +455,35 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
         .iter()
         .find(|node| s(get(node, "id")) == s(get(get(finite, "domain"), "node")))
         .unwrap();
-    assert_eq!(arr(get(get(domain, "value"), "elements")).len(), 1);
+    assert!(
+        arr(get(get(domain, "value"), "elements"))
+            .iter()
+            .any(|element| {
+                let node = nodes
+                    .iter()
+                    .find(|n| s(get(n, "id")) == s(get(element, "node")))
+                    .unwrap();
+                let value = arr(get(node, "value"));
+                s(&value[0]) == "alternate" && s(&value[1]) == "extra"
+            })
+    );
     let blocked = answers
         .iter()
         .find(|a| s(get(a, "id")) == "blocked")
         .unwrap();
+    for answer in [layout, blocked] {
+        let scope = get(answer, "scope");
+        assert!(
+            arr(get(scope, "snapshots"))
+                .iter()
+                .any(|value| s(value) == "alternate")
+        );
+        assert!(
+            arr(get(scope, "modes"))
+                .iter()
+                .any(|value| s(value) == "proposed")
+        );
+    }
     let reasons = arr(get(blocked, "reasons"));
     assert!(
         reasons

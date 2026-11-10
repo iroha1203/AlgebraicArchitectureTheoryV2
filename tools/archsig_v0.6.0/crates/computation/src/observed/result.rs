@@ -580,6 +580,8 @@ pub(crate) struct Quantifier {
     // 元AST出現を区別する内部索引。wireの名前だけをidentityにしない。
     pub occurrence: (usize, usize),
     pub(super) context: Option<super::call::Context>,
+    // Unresolved domains have no Domain node to distinguish their actual occurrences.
+    pub(super) assembly_instance: Option<(NodeRef, usize)>,
 }
 impl Quantifier {
     pub(super) fn wire(&self) -> Json {
@@ -634,6 +636,7 @@ impl Scope {
             }
             let same = |old: &Quantifier| {
                 old.occurrence == q.occurrence
+                    && old.assembly_instance == q.assembly_instance
                     && old.kind == q.kind
                     && old.name == q.name
                     && old.ty == q.ty
@@ -667,6 +670,7 @@ impl Scope {
                 let mut q = q.clone();
                 q.domain = None;
                 q.context = None;
+                q.assembly_instance = None;
                 if !qs.contains(&q) {
                     qs.push(q);
                 }
@@ -679,12 +683,15 @@ impl Scope {
         )
     }
     pub(crate) fn merge(&mut self, other: &Self) {
+        self.merge_metadata(other);
+        self.merge_quantifiers(other);
+    }
+    pub(super) fn merge_metadata(&mut self, other: &Self) {
         self.readings.extend(other.readings.iter().cloned());
         self.snapshots.extend(other.snapshots.iter().cloned());
         self.modes.extend(other.modes.iter().cloned());
         self.completions |= other.completions;
         self.assignments |= other.assignments;
-        self.merge_quantifiers(other);
     }
     /// A fixed design point is the outer scope. Symbolic algebra on that
     /// object keeps its own scope on the native nodes.
@@ -5309,6 +5316,7 @@ mod invariant_tests {
             ty: Type::Bool,
             domain: Some(NodeRef(1)),
             occurrence: (10, 20),
+            assembly_instance: None,
             context: Some(super::super::call::Context::default()),
         };
         let a_other_domain = Quantifier {
@@ -5361,6 +5369,7 @@ mod invariant_tests {
             ty: Type::Bool,
             domain: None,
             occurrence: (10, 20),
+            assembly_instance: None,
             context: None,
         }]);
         for case in 0..5 {
@@ -5393,6 +5402,7 @@ mod invariant_tests {
             ty: Type::Bool,
             domain: Some(NodeRef(1)),
             occurrence: (10, 20),
+            assembly_instance: None,
             context: Some(super::super::call::Context::default()),
         };
         let mut changed_context = q.clone();
@@ -5432,6 +5442,7 @@ mod invariant_tests {
             ty: Type::Bool,
             domain: None,
             occurrence: (10, 20),
+            assembly_instance: None,
             context: None,
         };
         let b = Quantifier {

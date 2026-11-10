@@ -4,7 +4,7 @@ use super::{
     build_plan::Plan,
     build_result::Builder,
     construction_result::{self as native, ConstructionType as T},
-    environment::Environment,
+    environment::{CapturedDomain, Environment},
     request::Request,
     result::*,
 };
@@ -41,13 +41,19 @@ pub(super) fn materialized_scope(
     inputs: &[NodeRef],
 ) -> Result<Scope, ValidationFailure> {
     let mut scope = read.metadata.scope.clone();
-    for (quantifier, members) in &read.domains {
+    let source = NodeRef(b.base + b.parts.len());
+    let mut pending = Vec::new();
+    for (index, (quantifier, captured)) in read.domains.iter().enumerate() {
         if !read.metadata.scope.quantifiers.contains(quantifier) {
+            continue;
+        }
+        if *captured == CapturedDomain::Pending {
+            pending.push((index, quantifier));
             continue;
         }
         let mut elements = Vec::new();
         let mut wire = BTreeMap::from([("type".into(), quantifier.ty.wire())]);
-        if let Some(members) = members {
+        if let CapturedDomain::Finite(members) = captured {
             for member in members {
                 e.control.checkpoint(Checkpoint::ConfigurationMap)?;
                 elements.push(b.captured_scalar(member, inputs, &e.control)?);
@@ -73,6 +79,14 @@ pub(super) fn materialized_scope(
             ..quantifier.clone()
         });
     }
+    for (index, quantifier) in pending {
+        scope.quantifiers.retain(|q| q != quantifier);
+        scope.add_quantifier(Quantifier {
+            assembly_instance: Some((source, index)),
+            ..quantifier.clone()
+        });
+    }
+    scope.order_quantifiers_like(&read.metadata.scope);
     Ok(scope)
 }
 fn input(
@@ -132,19 +146,25 @@ fn input(
 pub(super) fn view_scope(
     b: &mut Builder<'_>,
     e: &Environment<'_>,
+    request: &Request,
     assembly: &Assembly,
 ) -> Result<Scope, ValidationFailure> {
-    let inputs = assembly
-        .bindings
-        .iter()
-        .map(|binding| binding.value)
-        .chain(assembly.design)
-        .collect::<Vec<_>>();
-    let mut scope = materialized_scope(b, e, &assembly.fragments, &inputs)?;
-    scope.merge(&materialized_scope(b, e, &assembly.interfaces, &inputs)?);
-    for input in inputs {
-        scope.merge_quantifiers(&b.g.get(input)?.scope);
-    }
+    let (head, _) = input(
+        b,
+        e,
+        field(e, request, "head")?,
+        assembly,
+        &assembly.fragments,
+    )?;
+    let (along, _) = input(
+        b,
+        e,
+        field(e, request, "along")?,
+        assembly,
+        &assembly.interfaces,
+    )?;
+    let mut scope = b.parts[head.0 - b.base].scope.clone();
+    scope.merge(&b.parts[along.0 - b.base].scope);
     Ok(scope)
 }
 

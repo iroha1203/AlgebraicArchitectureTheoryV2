@@ -216,6 +216,7 @@ pub(super) fn quantify_parameters(
             ty: parameter.ty.erase(),
             domain: None,
             occurrence: parameter.span,
+            assembly_instance: None,
             context: None,
         };
         p.scope.quantifiers.push(q.clone());
@@ -247,6 +248,7 @@ fn inverse(
         ty: ty.clone(),
         domain: None,
         occurrence: (origin.0, 0),
+        assembly_instance: None,
         context: None,
     };
     p.scope.quantifiers.push(q.clone());

@@ -448,6 +448,7 @@ pub(super) fn requirements(
                 ty: parameter.ty.erase(),
                 domain: None,
                 occurrence: parameter.span,
+                assembly_instance: None,
                 context: Some(env.current_context(g)),
             });
         }

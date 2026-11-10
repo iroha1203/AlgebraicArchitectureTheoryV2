@@ -414,6 +414,7 @@ pub(in crate::observed) fn compute(
                     ty: param.ty.clone(),
                     domain: None,
                     occurrence: param.span,
+                    assembly_instance: None,
                     context: None,
                 });
             }

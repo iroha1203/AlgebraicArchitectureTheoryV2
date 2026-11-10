@@ -339,6 +339,7 @@ pub(in crate::observed) fn compute(
                     ty: p.ty.clone(),
                     domain: None,
                     occurrence: p.span,
+                    assembly_instance: None,
                     context: None,
                 });
                 let values = change_search::domain(&env, &p.ty, p.span, &mut result.missing)?;

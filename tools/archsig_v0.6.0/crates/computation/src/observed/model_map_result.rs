@@ -363,12 +363,23 @@ fn compute(
                 .assembly
                 .as_ref()
                 .ok_or(internal!("移行の元組立てがない"))?;
-            let scope = if assembly.design.is_some() {
-                g.get(reference)?.scope.clone()
+            let node = g.get(reference)?;
+            if assembly.design.is_some() {
+                selected_scope.merge_quantifiers(&node.scope);
             } else {
-                super::assembly_output::view_scope(&mut b, e, assembly)?
-            };
-            selected_scope.merge_quantifiers(&scope);
+                let Some(Payload::Construction(value)) = &node.payload else {
+                    return Err(internal!("移行の元組立てが構成でない").into());
+                };
+                let D::Build(data) = &value.data else {
+                    return Err(internal!("移行の元組立てがbuildでない").into());
+                };
+                let views = data
+                    .assembly_views()
+                    .ok_or(internal!("移行の元組立てにViewがない"))?;
+                for view in views {
+                    selected_scope.merge_quantifiers(&g.get(view)?.scope);
+                }
+            }
         }
     }
     let mut bindings = Vec::new();

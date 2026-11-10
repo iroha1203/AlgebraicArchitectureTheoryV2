@@ -4,7 +4,9 @@ use super::{
     architecture_result::{self, Architecture},
     build_plan::{self, Plan},
     construction_result::{self as native, ArchitectureWitness, Witness},
-    environment::{AnswerBinding, Environment, change_search, repair_problem::family},
+    environment::{
+        AnswerBinding, CapturedDomain, Environment, change_search, repair_problem::family,
+    },
     model_assembly::{self, Model, Preparation},
     request::{Request, Selector},
     result::*,
@@ -15,7 +17,7 @@ use std::{collections::BTreeMap, sync::Arc};
 pub(super) struct Read {
     pub metadata: family::Read,
     pub value: Option<Scalar>,
-    pub domains: Vec<(Quantifier, Option<Vec<Scalar>>)>,
+    pub domains: Vec<(Quantifier, CapturedDomain)>,
     pub unsupported: Option<model_assembly::Unsupported>,
 }
 pub(super) fn read(
@@ -28,7 +30,7 @@ pub(super) fn read(
     match env.with_assembly_domains(capture, fixed_design, || {
         family::read_with_value(env, name, bindings)
     }) {
-        Ok((Ok((mut metadata, value)), domains)) => {
+        Ok((Ok((mut metadata, value)), trace)) => {
             // The evaluator can determine a value for every completion, for
             // instance when a universal test has a known counterexample.
             if fixed_design && value.is_some() && !metadata.failed {
@@ -62,11 +64,11 @@ pub(super) fn read(
             Ok(Read {
                 metadata,
                 value,
-                domains,
+                domains: trace.domains,
                 unsupported: None,
             })
         }
-        Ok((Err(ValidationFailure::UnsupportedExpression { location, feature }), domains)) => {
+        Ok((Err(ValidationFailure::UnsupportedExpression { location, feature }), trace)) => {
             let law = env.indexes.inputs.law();
             let expression_type = if let archsig_common::issue::Location::Law { span } = &location {
                 law.program()
@@ -82,12 +84,12 @@ pub(super) fn read(
                 _ => return Err(internal!("未対応の組立て入力がViewでない").into()),
             };
             let operand_types = vec![expression_type.unwrap_or(output_type)];
-            let mut scope = Scope::default();
+            let mut scope = trace.scope;
             scope
                 .readings
                 .insert(law.declarations()[name].reading.clone());
             if fixed_design {
-                for (descriptor, _) in &domains {
+                for (descriptor, _) in &trace.domains {
                     scope.add_quantifier(descriptor.clone());
                 }
             }
@@ -96,11 +98,15 @@ pub(super) fn read(
                     failed: false,
                     blocked: true,
                     missing: vec![],
-                    support: vec![],
+                    support: trace
+                        .support
+                        .into_iter()
+                        .filter(|fact| !env.has_primitive_override(fact))
+                        .collect(),
                     scope,
                 },
                 value: None,
-                domains,
+                domains: trace.domains,
                 unsupported: Some(model_assembly::Unsupported {
                     detail: feature,
                     location,

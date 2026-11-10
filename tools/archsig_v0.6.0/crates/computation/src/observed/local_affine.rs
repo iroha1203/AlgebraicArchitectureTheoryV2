@@ -163,6 +163,7 @@ fn analyze(
             scope.add_quantifier(Quantifier {
                 kind: archsig_input::law::ast::QuantKind::Forall, name: parameter.name.clone(),
                 ty: parameter.ty.erase(), domain: None, occurrence: parameter.span,
+                assembly_instance: None,
                 context: Some(original.current_context(g)),
             });
         }
