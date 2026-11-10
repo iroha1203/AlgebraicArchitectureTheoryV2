@@ -143,7 +143,24 @@ pub(super) fn field_fact(s: &Subject, field: &archsig_input::archmap::Field) -> 
     })
 }
 /// 同値類のrootだけを保持し、全対・全域の積を作らない。
-fn representative(
+pub(super) fn link_shared(
+    parent: &mut BTreeMap<Fact, Fact>,
+    a: &Fact,
+    b: &Fact,
+    c: &Control,
+) -> Result<(), ValidationFailure> {
+    let a = representative(parent, a, c)?;
+    let b = representative(parent, b, c)?;
+    let (small, large) = if a.wire().canonical() < b.wire().canonical() {
+        (a, b)
+    } else {
+        (b, a)
+    };
+    parent.insert(large, small);
+    Ok(())
+}
+
+pub(super) fn representative(
     parent: &mut BTreeMap<Fact, Fact>,
     fact: &Fact,
     c: &Control,
@@ -306,14 +323,7 @@ pub(super) fn compile(
                 vec![a.clone(), b.clone()],
             ));
         }
-        let a = representative(&mut parent, a, c)?;
-        let b = representative(&mut parent, b, c)?;
-        let (small, large) = if a.wire().canonical() < b.wire().canonical() {
-            (a, b)
-        } else {
-            (b, a)
-        };
-        parent.insert(large, small);
+        link_shared(&mut parent, a, b, c)?;
     }
     // 一度だけ平坦化し、以後の参照輸送・後続評価で同じ対応を使う。
     let mut transport = BTreeMap::new();
@@ -706,27 +716,27 @@ mod tests {
                 .replace("mb=@v/mb", "mb=@w/mb"),
             fixture::ASSEMBLE.replace("mb=@v/mb", "mb=@w/mb"),
         ] {
-        let input = fixture::with_second_snapshot();
-        let result =
-            crate::observed::evaluate_observed_bytes(input, &[&ask], &Control::unlimited())
-                .unwrap();
-        assert_eq!(
-            result.answers[0].status,
-            Decision::Undetermined,
-            "{:?}",
-            result.issues
-        );
-        assert!(!result.answers[0].outputs.contains_key("object"));
-        assert!(!result.answers[0].outputs.contains_key("assembly"));
-        assert!(result.issues.iter().any(|r| matches!(
-            r.kind,
-            ReasonKind::UnsupportedAlgorithm { .. }
-        ) && !r.dependencies.is_empty()
-            && matches!(r.location, Some(Location::ArchMap { .. }))));
-        assert!(result.issues.iter().all(|r| !matches!(
-            r.kind,
-            ReasonKind::Internal(_) | ReasonKind::ConditionFailed { .. }
-        )));
+            let input = fixture::with_second_snapshot();
+            let result =
+                crate::observed::evaluate_observed_bytes(input, &[&ask], &Control::unlimited())
+                    .unwrap();
+            assert_eq!(
+                result.answers[0].status,
+                Decision::Undetermined,
+                "{:?}",
+                result.issues
+            );
+            assert!(!result.answers[0].outputs.contains_key("object"));
+            assert!(!result.answers[0].outputs.contains_key("assembly"));
+            assert!(result.issues.iter().any(|r| matches!(
+                r.kind,
+                ReasonKind::UnsupportedAlgorithm { .. }
+            ) && !r.dependencies.is_empty()
+                && matches!(r.location, Some(Location::ArchMap { .. }))));
+            assert!(result.issues.iter().all(|r| !matches!(
+                r.kind,
+                ReasonKind::Internal(_) | ReasonKind::ConditionFailed { .. }
+            )));
         }
     }
     #[test]

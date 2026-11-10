@@ -1,11 +1,13 @@
 //! 明示した同一性の下で、局所組立ての不足位置と有限候補を現在の入力へ照合する。
 use super::{
     EvaluationFailure, ObservedEvaluation, PreparedObserved, assembly_plan,
+    construction_result::ConstructionData,
     environment::Environment,
+    model_assembly,
     projection::ProjectionStep,
     reevaluate_observed,
     request::{QuestionKind, Request, Selector},
-    result::{Fact, Node, ReasonKind, Scalar, ValidationFailure},
+    result::{Fact, Node, Payload, ReasonKind, Scalar, ValidationFailure},
 };
 use archsig_common::control::{Checkpoint, Control, Signal};
 use archsig_input::archmap::{FactData, Slot, Subject, Value};
@@ -183,7 +185,33 @@ struct Layout {
     shared: Vec<(Fact, Fact)>,
 }
 
+fn retained_layout<'a>(
+    evaluation: &'a ObservedEvaluation,
+    id: &str,
+) -> Option<&'a assembly_plan::Assembly> {
+    let answer = evaluation.answers.iter().find(|answer| answer.id == id)?;
+    let node = evaluation.nodes.get(answer.claim?.0)?;
+    let Some(Payload::Construction(value)) = &node.payload else {
+        return None;
+    };
+    let ConstructionData::Build(data) = &value.data else {
+        return None;
+    };
+    data.plan().assembly.as_deref()
+}
+
 fn checked_layout(
+    evaluation: &ObservedEvaluation,
+    request: &Request,
+    control: &Control,
+) -> Result<Layout, ReobservationFailure> {
+    if let Some(assembly) = retained_layout(evaluation, &request.id) {
+        return layout_from_reads(&assembly.fragments, &assembly.interfaces, control);
+    }
+    read_layout(evaluation.prepared(), request, control)
+}
+
+fn read_layout(
     prepared: &PreparedObserved,
     request: &Request,
     control: &Control,
@@ -233,11 +261,23 @@ fn checked_layout(
         .ok_or_else(|| unsupported("担当 View 宣言がない"))?;
     let fragments = assembly_plan::read(&env, head, &bindings).map_err(classify)?;
     let interfaces = assembly_plan::read(&env, along, &bindings).map_err(classify)?;
+    layout_from_reads(&fragments, &interfaces, control)
+}
+
+fn layout_from_reads(
+    fragments: &assembly_plan::Read,
+    interfaces: &assembly_plan::Read,
+    control: &Control,
+) -> Result<Layout, ReobservationFailure> {
+    let classify = |failure| match failure {
+        ValidationFailure::Stop(signal) => ReobservationFailure::Stopped(signal),
+        _ => ReobservationFailure::Unsupported("組立ての View を現在の原始観測で読めない".into()),
+    };
     if fragments.metadata.failed || interfaces.metadata.failed {
         return Err(invalid("組立て View の適用条件が成立しない"));
     }
-    let mut missing = fragments.metadata.missing;
-    missing.extend(interfaces.metadata.missing);
+    let mut missing = fragments.metadata.missing.clone();
+    missing.extend(interfaces.metadata.missing.iter().cloned());
     if !missing.is_empty() {
         missing.sort();
         missing.dedup();
@@ -246,7 +286,9 @@ fn checked_layout(
     let (Some(Scalar::Set { items, .. }), Some(shared)) =
         (fragments.value.as_ref(), interfaces.value.as_ref())
     else {
-        return Err(unsupported("担当集合または共有対を確定できない"));
+        return Err(ReobservationFailure::Unsupported(
+            "担当集合または共有対を確定できない".into(),
+        ));
     };
     let roots = items
         .iter()
@@ -255,6 +297,33 @@ fn checked_layout(
         .map_err(classify)?;
     let shared = assembly_plan::interfaces(shared, control).map_err(classify)?;
     Ok(Layout { roots, shared })
+}
+
+fn shared_partition(
+    edges: impl IntoIterator<Item = Result<(Fact, Fact), ReobservationFailure>>,
+    control: &Control,
+) -> Result<BTreeMap<Fact, Fact>, ReobservationFailure> {
+    let classify = |failure| match failure {
+        ValidationFailure::Stop(signal) => ReobservationFailure::Stopped(signal),
+        _ => ReobservationFailure::Unsupported("共有対の同値閉包を確認できない".into()),
+    };
+    let mut parent = BTreeMap::new();
+    for edge in edges {
+        control.checkpoint(Checkpoint::ConfigurationMap)?;
+        let (a, b) = edge?;
+        parent.entry(a.clone()).or_insert_with(|| a.clone());
+        parent.entry(b.clone()).or_insert_with(|| b.clone());
+        model_assembly::link_shared(&mut parent, &a, &b, control).map_err(classify)?;
+    }
+    let keys = parent.keys().cloned().collect::<Vec<_>>();
+    let mut classes = BTreeMap::new();
+    for item in keys {
+        control.checkpoint(Checkpoint::ConfigurationMap)?;
+        let representative =
+            model_assembly::representative(&mut parent, &item, control).map_err(classify)?;
+        classes.insert(item, representative);
+    }
+    Ok(classes)
 }
 
 /// 同じ定義・Law を使用し、主体対応を検査してから現在の要求を通常評価する。
@@ -446,13 +515,10 @@ pub fn reevaluate_assembly(
                             "再照合する局所 apply は一つまで".into(),
                         ));
                     }
-                    let (old_apply, old_candidate) =
-                        repair_selection(before, &a.value, prior_solve)?;
+                    let (_, old_candidate) = repair_selection(before, &a.value, prior_solve)?;
                     let (new_apply, new_candidate) =
                         repair_selection(&current, &b.value, new_solve)?;
-                    if old_candidate.id != alignment.previous_candidate
-                        || output(previous, &old_apply.id, "object").is_none()
-                    {
+                    if old_candidate.id != alignment.previous_candidate {
                         return Err(invalid(
                             "前回の局所 apply が照合対象の前回候補を使用していない",
                         ));
@@ -472,50 +538,6 @@ pub fn reevaluate_assembly(
         }
     }
 
-    let before_layout = checked_layout(before, before_request, control)?;
-    let after_layout = checked_layout(&current, after_request, control)?;
-    let after_subject = |fact: &Fact| {
-        if fact.snapshot != alignment.after_snapshot {
-            return Err(ReobservationFailure::Unsupported(
-                "組立て View が別 snapshot の参照を返した".into(),
-            ));
-        }
-        Ok(fact.subject.clone())
-    };
-    let before_image = |fact: &Fact| {
-        if fact.snapshot != alignment.before_snapshot {
-            return Err(ReobservationFailure::Unsupported(
-                "組立て View が別 snapshot の参照を返した".into(),
-            ));
-        }
-        pairs
-            .get(fact.subject.as_str())
-            .map(|(_, new)| new.id.clone())
-            .ok_or_else(|| invalid("組立て View の参照先に明示対応がない"))
-    };
-    let old_roots = before_layout
-        .roots
-        .iter()
-        .map(before_image)
-        .collect::<Result<BTreeSet<_>, _>>()?;
-    let new_roots = after_layout
-        .roots
-        .iter()
-        .map(after_subject)
-        .collect::<Result<BTreeSet<_>, _>>()?;
-    let old_shared = before_layout
-        .shared
-        .iter()
-        .map(|(a, b)| Ok((before_image(a)?, before_image(b)?)))
-        .collect::<Result<Vec<_>, ReobservationFailure>>()?;
-    let new_shared = after_layout
-        .shared
-        .iter()
-        .map(|(a, b)| Ok((after_subject(a)?, after_subject(b)?)))
-        .collect::<Result<Vec<_>, ReobservationFailure>>()?;
-    if old_roots != new_roots || old_shared != new_shared {
-        return Err(invalid("評価済みの担当集合または共有対が明示対応と異なる"));
-    }
     let before_answer = previous
         .answers
         .iter()
@@ -582,6 +604,80 @@ pub fn reevaluate_assembly(
     let evaluation = reevaluate_observed(previous, current, control)
         .map_err(|failure| ReobservationFailure::Evaluation(Box::new(failure)))?;
     let mut continuity_stop = control.stop_reason();
+    if continuity_stop.is_none() {
+        let compare_layout = || -> Result<(), ReobservationFailure> {
+            let before_layout = checked_layout(previous, before_request, control)?;
+            let after_layout = checked_layout(
+                &evaluation,
+                question(
+                    evaluation.prepared(),
+                    alignment.assembly,
+                    QuestionKind::Assemble,
+                )?,
+                control,
+            )?;
+            let after_subject = |fact: &Fact| {
+                if fact.snapshot != alignment.after_snapshot {
+                    return Err(ReobservationFailure::Unsupported(
+                        "組立て View が別 snapshot の参照を返した".into(),
+                    ));
+                }
+                Ok(fact.clone())
+            };
+            let before_image = |fact: &Fact| {
+                if fact.snapshot != alignment.before_snapshot {
+                    return Err(ReobservationFailure::Unsupported(
+                        "組立て View が別 snapshot の参照を返した".into(),
+                    ));
+                }
+                pairs
+                    .get(fact.subject.as_str())
+                    .map(|(_, new)| {
+                        Fact::from(FactData {
+                            snapshot: new.snapshot.clone(),
+                            subject: new.id.clone(),
+                            field: None,
+                            atom: None,
+                        })
+                    })
+                    .ok_or_else(|| invalid("組立て View の参照先に明示対応がない"))
+            };
+            let old_roots = before_layout
+                .roots
+                .iter()
+                .map(before_image)
+                .collect::<Result<BTreeSet<_>, _>>()?;
+            let new_roots = after_layout
+                .roots
+                .iter()
+                .map(after_subject)
+                .collect::<Result<BTreeSet<_>, _>>()?;
+            let old_shared = shared_partition(
+                before_layout
+                    .shared
+                    .iter()
+                    .map(|(a, b)| Ok((before_image(a)?, before_image(b)?))),
+                control,
+            )?;
+            let new_shared = shared_partition(
+                after_layout
+                    .shared
+                    .iter()
+                    .map(|(a, b)| Ok((after_subject(a)?, after_subject(b)?))),
+                control,
+            )?;
+            if old_roots != new_roots || old_shared != new_shared {
+                return Err(invalid("評価済みの担当集合または共有対が明示対応と異なる"));
+            }
+            Ok(())
+        };
+        if let Err(error) = compare_layout() {
+            match error {
+                ReobservationFailure::Stopped(signal) => continuity_stop = Some(signal),
+                other => return Err(other),
+            }
+        }
+    }
     let candidate = match (
         output(previous, alignment.previous_candidate, "assignment"),
         output(&evaluation, alignment.current_solve, "solutions"),
@@ -689,8 +785,14 @@ mod tests {
             previous_candidate: "pick",
             current_solve: "solveIt",
         };
+        let steps = std::rc::Rc::new(std::cell::Cell::new(0));
+        let count = steps.clone();
+        let trace = Control::new(move |_| {
+            count.set(count.get() + 1);
+            None
+        });
         let next =
-            reevaluate_assembly(&before, prepared("after", AFTER, &c), &alignment, &c).unwrap();
+            reevaluate_assembly(&before, prepared("after", AFTER, &c), &alignment, &trace).unwrap();
         assert_eq!(next.candidate(), CandidateContinuity::Retained);
         assert_eq!(next.selected_candidate(), Some("pick"));
         let [matched] = next.observations.as_slice() else {
@@ -706,6 +808,25 @@ mod tests {
         assert_eq!(observed.atom.as_deref(), Some("observed-shared-quantity"));
         assert_eq!(status(&next.evaluation, "joined"), Decision::Established);
         assert_eq!(status(&next.evaluation, "global"), Decision::Established);
+
+        let checkpoint = std::cell::Cell::new(0);
+        let final_checkpoint = steps.get();
+        let stop = Control::new(move |_| {
+            checkpoint.set(checkpoint.get() + 1);
+            (checkpoint.get() == final_checkpoint).then_some(Signal::Term)
+        });
+        let stopped =
+            reevaluate_assembly(&before, prepared("after", AFTER, &c), &alignment, &stop).unwrap();
+        assert_eq!(stopped.continuity_stop(), Some(Signal::Term));
+        assert_eq!(stopped.candidate(), CandidateContinuity::Undetermined);
+        assert_eq!(
+            status(stopped.evaluation(), "joined"),
+            Decision::Established
+        );
+        assert_eq!(
+            status(stopped.evaluation(), "global"),
+            Decision::Established
+        );
 
         let revised = AFTER.replacen(
             concat!(
@@ -769,12 +890,38 @@ mod tests {
         assert!(next.selected_candidate().is_none());
         assert_eq!(status(next.evaluation(), "joined"), Decision::Undetermined);
 
+        let partial = BEFORE.replace(
+            concat!(
+                "        {\n          \"id\": \"b-quantity\",\n          \"subject\": \"b\",\n",
+                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"0\",\n",
+                "          \"origin\": \"model\"\n        },\n"
+            ),
+            "",
+        );
+        assert_ne!(partial, BEFORE);
+        let prior = evaluate_observed(prepared("before", &partial, &c), &c).unwrap();
+        assert_eq!(status(&prior, "selected"), Decision::Undetermined);
+        let resumed =
+            reevaluate_assembly(&prior, prepared("after", AFTER, &c), &alignment, &c).unwrap();
+        assert_eq!(resumed.candidate(), CandidateContinuity::Undetermined);
+        assert_eq!(resumed.selected_candidate(), Some("pick"));
+        assert!(
+            resumed
+                .observations()
+                .iter()
+                .any(|matched| matched.needed().subject == "b" && matched.observed().is_some())
+        );
+        assert_eq!(
+            status(resumed.evaluation(), "global"),
+            Decision::Established
+        );
+
         let dynamic = std::str::from_utf8(LAW)
             .unwrap()
             .replace("ma:Part,mb:Part)", "ma:Part,mb:Part,x:Part,y:Part)")
             .replace(
                 "list<(Part,Part)>[(ma,mb)];",
-                "if y.quantity=0 then list<(Part,Part)>[(ma,mb)] else list<(Part,Part)>[(x,y)];",
+                "if y.quantity=0 then list<(Part,Part)>[(ma,mb)] else if y.quantity=1 then list<(Part,Part)>[(mb,ma)] else list<(Part,Part)>[(x,y)];",
             );
         let queries = QUERIES.replace("mb=@SNAP/mb,local", "mb=@SNAP/mb,x=@SNAP/a,y=@SNAP/b,local");
         let dynamic_before = evaluate_observed(
@@ -782,8 +929,30 @@ mod tests {
             &c,
         )
         .unwrap();
+        let same_alias = reevaluate_assembly(
+            &dynamic_before,
+            prepared_with("after", &revised, dynamic.as_bytes(), &queries, &c),
+            &alignment,
+            &c,
+        )
+        .unwrap();
+        assert_eq!(
+            status(same_alias.evaluation(), "joined"),
+            Decision::Established
+        );
+        let changed_alias = revised.replace(
+            concat!(
+                "\"id\": \"b-quantity\",\n          \"subject\": \"b\",\n",
+                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"1\""
+            ),
+            concat!(
+                "\"id\": \"b-quantity\",\n          \"subject\": \"b\",\n",
+                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"2\""
+            ),
+        );
+        assert_ne!(changed_alias, revised);
         assert!(matches!(
-            reevaluate_assembly(&dynamic_before, prepared_with("after", &revised, dynamic.as_bytes(), &queries, &c), &alignment, &c),
+            reevaluate_assembly(&dynamic_before, prepared_with("after", &changed_alias, dynamic.as_bytes(), &queries, &c), &alignment, &c),
             Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("共有対")
         ));
     }
