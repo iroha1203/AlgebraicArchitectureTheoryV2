@@ -522,10 +522,18 @@ fn refuted_e12_map_blocks_only_its_target_consumers_and_rechecks() {
             .find(|node| s(get(node, "id")) == s(get(reference, "node")))
             .unwrap()
     };
-    assert_eq!(
-        s(get(dereference(counterexample), "type")),
-        "Counterexample"
-    );
+    let counterexample = dereference(counterexample);
+    assert_eq!(s(get(counterexample, "type")), "Counterexample");
+    let facts = arr(get(get(get(counterexample, "value"), "data"), "facts"));
+    assert!(facts.iter().any(|fact| s(get(fact, "subject")) == "move-N"));
+    for endpoint in ["native-N-consume.to", "rust-N-consume.to"] {
+        assert!(facts.iter().any(|fact| {
+            has(fact, "atom")
+                && s(get(fact, "snapshot")) == "comparison"
+                && s(get(fact, "field")) == "E12.Consume.to"
+                && s(get(fact, "atom")) == endpoint
+        }));
+    }
     for consumer in &answers[3..5] {
         let reasons = arr(get(consumer, "reasons"));
         assert!(
