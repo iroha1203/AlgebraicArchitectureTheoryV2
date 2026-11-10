@@ -1751,21 +1751,14 @@ impl Evaluator<'_, '_> {
             finite = Some(domain);
             scope.add_quantifier(spec.descriptor(finite, Some(self.graph.active)));
             scope.order_quantifiers_like(&self.graph.get(source)?.scope);
-            for item in &items {
-                #[cfg(test)]
-                let position = results.len();
+            for position in 0..items.len() {
                 self.tick(Checkpoint::FiniteIteration)?;
-                let caller = self.graph.active;
-                let index = self.graph.append_iteration(super::call::Iteration {
-                    caller,
+                let index = self.graph.append_iteration_from(
                     source,
-                    domain: input
-                        .as_ref()
-                        .map(|input| input.evaluation)
-                        .unwrap_or(domain),
-                    member: super::call::Member::SetElement(item.clone()),
+                    input.as_ref().map_or(domain, |input| input.evaluation),
                     finite,
-                })?;
+                    position,
+                )?;
                 let evaluated = self.with_iteration_state(index, scope.clone(), |this| {
                     let body = this.eval(spec.body)?;
                     if spec.kind == archsig_input::law::ast::QuantKind::Forall
@@ -1945,30 +1938,19 @@ impl Evaluator<'_, '_> {
         let Some(value) = input.value else {
             return self.lexical_result(span, ty, None, children);
         };
-        let container = self.graph.scalar(value)?.clone();
-        let (members, is_list) = match &container {
-            Scalar::List { items, .. } => (items, true),
-            Scalar::Set { items, .. } => (items, false),
+        let member_count = match self.graph.scalar(value)? {
+            Scalar::List { items, .. } | Scalar::Set { items, .. } => items.len(),
             _ => return Err(Failure::Internal(internal!("内包域がList/Setでない"))),
         };
         let mut values = Vec::new();
         let mut known = true;
-        for (position, member) in members.iter().enumerate() {
+        for position in 0..member_count {
             #[cfg(test)]
             data::observe_actual(span, self.graph.active, "comprehension_iteration", position);
             self.tick(Checkpoint::FiniteIteration)?;
-            let caller = self.graph.active;
-            let index = self.graph.append_iteration(super::call::Iteration {
-                caller,
-                source,
-                domain: input.evaluation,
-                finite: None,
-                member: if is_list {
-                    super::call::Member::ListPosition(position)
-                } else {
-                    super::call::Member::SetElement(member.clone())
-                },
-            })?;
+            let index =
+                self.graph
+                    .append_iteration_from(source, input.evaluation, None, position)?;
             let result = self.with_iteration_state(index, input.scope.clone(), |this| {
                 let condition = if let Some(filter) = filter {
                     let evaluated = this.eval(filter)?;

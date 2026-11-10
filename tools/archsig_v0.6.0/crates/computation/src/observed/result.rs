@@ -2161,7 +2161,66 @@ impl Graph {
             control: control.clone(),
         }
     }
+    pub(super) fn append_iteration_from(
+        &mut self,
+        source: NodeRef,
+        domain: NodeRef,
+        finite: Option<NodeRef>,
+        position: usize,
+    ) -> Result<usize, ValidationFailure> {
+        use super::call::{Iteration, Member};
+
+        self.tick()?;
+        // Domain の要素と collection Scalar の形は Graph の挿入時に検査済み。
+        let member = if let Some(finite) = finite {
+            let Some(Payload::Domain { elements, .. }) = &self.get(finite)?.payload else {
+                return Err(internal!("反復の有限域がDomainでない").into());
+            };
+            let element = elements
+                .get(position)
+                .ok_or(internal!("有限域の要素がない"))?;
+            Member::SetElement(self.scalar(*element)?.clone())
+        } else {
+            let Some(Payload::Evaluation {
+                value: Some(value), ..
+            }) = &self.get(domain)?.payload
+            else {
+                return Err(internal!("内包域の評価値がない").into());
+            };
+            match self.scalar(*value)? {
+                Scalar::List { items, .. } if position < items.len() => {
+                    Member::ListPosition(position)
+                }
+                Scalar::Set { items, .. } => Member::SetElement(
+                    items
+                        .get(position)
+                        .ok_or(internal!("内包域の要素がない"))?
+                        .clone(),
+                ),
+                _ => return Err(internal!("内包域がList/Setでないか要素がない").into()),
+            }
+        };
+        self.store_iteration(Iteration {
+            caller: self.active,
+            source,
+            domain,
+            member,
+            finite,
+        })
+    }
+
+    #[cfg(test)]
     pub(super) fn append_iteration(
+        &mut self,
+        iteration: super::call::Iteration,
+    ) -> Result<usize, ValidationFailure> {
+        if let super::call::Member::SetElement(value) = &iteration.member {
+            super::data::check_shape(value, &self.control)?;
+        }
+        self.store_iteration(iteration)
+    }
+
+    fn store_iteration(
         &mut self,
         iteration: super::call::Iteration,
     ) -> Result<usize, ValidationFailure> {
@@ -2178,9 +2237,6 @@ impl Graph {
         .flatten()
         {
             self.get(reference)?;
-        }
-        if let super::call::Member::SetElement(value) = &iteration.member {
-            super::data::check_shape(value, &self.control)?;
         }
         self.tick()?;
         let index = self.iterations.len();

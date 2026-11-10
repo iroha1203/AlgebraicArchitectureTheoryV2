@@ -293,7 +293,7 @@ impl ValidationSnapshot {
             }
         }
         // 全registryの不在・一意性を読んだ成功だけが、旧producerを使う
-        // 兄弟の追加に依存する。旧recordの全内容照合は常に上で実施する。
+        // 兄弟の追加に依存する。旧反復は上で identity または内容を照合済み。
         if registry_read {
             for frame in &g.frames[self.frames.len()..] {
                 if !Self::after(
@@ -304,7 +304,7 @@ impl ValidationSnapshot {
                     return Ok(false);
                 }
             }
-            // 既存iterationの全内容は上で照合済み。universal_graph_contextと同じ
+            // universal_graph_context と同じ
             // source/domainのcutoffで旧prefixから除外される追加だけを許す。
             // finiteだけが新しい反復は旧registryへ入るため、成功を失効させる。
             for iteration in &g.iterations[self.iteration_len..] {
