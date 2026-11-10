@@ -644,7 +644,7 @@
           "origin": "reduced-e12"
         },
         {
-          "id": "move-cancel.consumes",
+          "id": "move-cancel.operations",
           "subject": "move-cancel",
           "field": "E12.Route.operations",
           "value": [
