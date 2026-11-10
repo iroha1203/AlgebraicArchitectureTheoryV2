@@ -62,6 +62,68 @@ pub(in crate::observed) fn vector(
     )
 }
 
+pub(super) fn materialize_quantifiers(
+    b: &mut Builder<'_>,
+    domains: &[(Quantifier, Vec<Scalar>)],
+    requirements: &[NodeRef],
+    c: &Control,
+) -> Result<Vec<Quantifier>, ValidationFailure> {
+    let mut quantifiers = Vec::new();
+    let mut known = BTreeMap::<((usize, usize), usize), Vec<(&[Scalar], NodeRef)>>::new();
+    let frame = b.base + b.parts.len();
+    for (index, (descriptor, members)) in domains.iter().enumerate() {
+        c.checkpoint(Checkpoint::RationalPolyhedron)?;
+        let alternatives = known
+            .entry((descriptor.occurrence, members.len()))
+            .or_default();
+        let mut previous = None;
+        for (elements, domain) in alternatives.iter() {
+            c.checkpoint(Checkpoint::RationalPolyhedron)?;
+            if *elements == members {
+                previous = Some(*domain);
+                break;
+            }
+        }
+        let domain = if let Some(domain) = previous {
+            domain
+        } else {
+            let mut elements = Vec::new();
+            for member in members {
+                elements.push(b.captured_scalar(member, requirements, c)?);
+            }
+            let domain = b.push(
+                NodeType::Domain,
+                "domain",
+                Json::obj([
+                    ("kind", Json::str("finite")),
+                    ("type", descriptor.ty.wire()),
+                    (
+                        "elements",
+                        Json::Arr(elements.iter().map(|element| element.wire()).collect()),
+                    ),
+                ]),
+                requirements.iter().chain(&elements).copied().collect(),
+                None,
+            )?;
+            b.parts[domain.0 - b.base].domain_type = Some(descriptor.ty.clone());
+            alternatives.push((members, domain));
+            domain
+        };
+        let context = crate::observed::call::Context {
+            request: b.base,
+            frame: Some(frame),
+            iteration: Some(index),
+            ..descriptor.context.unwrap_or_default()
+        };
+        quantifiers.push(Quantifier {
+            domain: Some(domain),
+            context: Some(context),
+            ..descriptor.clone()
+        });
+    }
+    Ok(quantifiers)
+}
+
 pub(super) fn build(
     b: &mut Builder<'_>,
     linear: &Linear,
@@ -97,33 +159,7 @@ pub(super) fn build(
         vec![parameters, states, action_linear, offset],
         None,
     )?;
-    let mut quantifiers = Vec::new();
-    for (descriptor, members) in &linear.quantifiers {
-        c.checkpoint(Checkpoint::RationalPolyhedron)?;
-        let mut elements = Vec::new();
-        for member in members {
-            elements.push(b.captured_scalar(member, requirements, c)?);
-        }
-        let domain = b.push(
-            NodeType::Domain,
-            "domain",
-            Json::obj([
-                ("kind", Json::str("finite")),
-                ("type", descriptor.ty.wire()),
-                (
-                    "elements",
-                    Json::Arr(elements.iter().map(|element| element.wire()).collect()),
-                ),
-            ]),
-            requirements.iter().chain(&elements).copied().collect(),
-            None,
-        )?;
-        b.parts[domain.0 - b.base].domain_type = Some(descriptor.ty.clone());
-        quantifiers.push(Quantifier {
-            domain: Some(domain),
-            ..descriptor.clone()
-        });
-    }
+    let quantifiers = materialize_quantifiers(b, &linear.quantifiers, requirements, c)?;
     let equations = map(b, pm, em, &linear.equations, n, c)?;
     let part = &mut b.parts[equations.0 - b.base];
     for quantifier in quantifiers {

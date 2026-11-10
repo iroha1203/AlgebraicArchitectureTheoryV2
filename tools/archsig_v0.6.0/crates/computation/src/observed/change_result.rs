@@ -490,6 +490,14 @@ fn compute_inner(
                             });
                         }
                     }
+                    for descriptor in field_linear_result::materialize_quantifiers(
+                        &mut b,
+                        &pending.finite_domains,
+                        &[],
+                        c,
+                    )? {
+                        scope.add_quantifier(descriptor);
+                    }
                     return Ok((
                         b.parts,
                         Answer {
@@ -795,6 +803,51 @@ pub(super) fn render_search(
             .map(|linear| linear_result::build(&mut b, linear, &requirements, c))
             .transpose()?
     };
+    if !architecture.complete && search.rational.is_some() && search.solutions.is_empty() {
+        let linear = linear_parts
+            .as_ref()
+            .ok_or(internal!("未完成対象の有理反証に証拠がない"))?;
+        let source = search
+            .rational
+            .as_ref()
+            .ok_or(internal!("未完成対象の有理反証がない"))?;
+        b.parts[linear.certificate.0 - base]
+            .support
+            .make_owned()
+            .extend(source.fixed_support.iter().cloned());
+        let label = value(&mut b, &Scalar::Text("rational_solution".into()))?;
+        let claim = b.proposition(
+            "constructible",
+            [label, linear.parameters, linear.certificate]
+                .into_iter()
+                .chain(subjects)
+                .chain(requirements)
+                .collect(),
+            vec![linear.certificate],
+            Decision::Refuted,
+        )?;
+        let part = &mut b.parts[claim.0 - base];
+        part.evidence.push(linear.certificate);
+        part.judgment
+            .as_mut()
+            .ok_or(internal!("有理反証の判断がない"))?
+            .evidence
+            .push(linear.certificate);
+        let scope = part.scope.clone();
+        return Ok((
+            b.parts,
+            Answer {
+                id: request.id.clone(),
+                status: Decision::Refuted,
+                outputs: BTreeMap::from([("proposition".into(), claim)]),
+                claim: Some(claim),
+                evidence: vec![linear.certificate],
+                reasons: vec![],
+                scope,
+            },
+            None,
+        ));
+    }
     let parameters = if let Some(linear) = &linear_parts {
         linear.parameters
     } else {

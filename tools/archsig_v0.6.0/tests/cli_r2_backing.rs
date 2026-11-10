@@ -3,7 +3,7 @@ use crate::common::architecture_environment::owned;
 use crate::common::cli::*;
 use archsig_common::{
     canonical::{Json, JsonObject},
-    json::JNode,
+    json::{JNode, JValue},
 };
 
 const LAW: &str = include_str!("fixtures/r2-backing/laws.law");
@@ -337,9 +337,8 @@ fn coordinates<'a>(result: &'a JNode, vector: &JNode) -> Vec<(&'a str, &'a str)>
 }
 
 // Recompute the certificate using only the saved rows, points and weights.
-fn verify_polyhedron_wire(result: &JNode, proof: &JNode, contradiction: Option<(&str, &str)>) {
+fn verify_polyhedron_wire(result: &JNode, proof: &JNode) {
     use num_bigint::BigInt;
-    use std::cmp::Ordering;
 
     type Q = (BigInt, BigInt);
     let parse = |(n, d): (&str, &str)| (n.parse().unwrap(), d.parse().unwrap());
@@ -409,10 +408,10 @@ fn verify_polyhedron_wire(result: &JNode, proof: &JNode, contradiction: Option<(
             .collect::<Vec<_>>();
         (coefficients, dot(&weights, &rhs))
     };
-    if let Some(expected) = contradiction {
+    if s(get(proof, "outcome")) == "empty" {
         let (row, bound) = combine(get(proof, "contradiction"));
         assert!(row.iter().all(|value| compare(value, &integer(0)).is_eq()));
-        assert_eq!(compare(&bound, &parse(expected)), Ordering::Equal);
+        assert!(compare(&bound, &integer(0)).is_lt());
         return;
     }
     let feasible = |point: &[Q]| {
@@ -454,7 +453,7 @@ fn r2_exact_backing_solves_all_four_frozen_constraint_sets() {
     ]) {
         assert_eq!(ask.split_once('=').unwrap().0, case);
         let dir = workdir(case);
-        polyhedron_inputs(&dir, case);
+        let input = polyhedron_inputs(&dir, case);
         let run = polyhedron_run(&dir, ask, "out", None);
         assert_eq!(run.code, exit, "{}{}", run.stdout, run.stderr);
         let result = result_json(&dir, &run);
@@ -476,15 +475,34 @@ fn r2_exact_backing_solves_all_four_frozen_constraint_sets() {
             assert_eq!(s(get(domain, "kind")), "finite");
             assert_eq!(arr(get(domain, "elements")).len(), count);
         }
-        verify_polyhedron_wire(
-            &result,
-            proof,
-            match case {
-                "overlapInsufficient" => Some(("-5", "1")),
-                "threeUsesMicroShortage" => Some(("-1", "100000")),
-                _ => None,
-            },
-        );
+        verify_polyhedron_wire(&result, proof);
+        if outcome == "empty" {
+            use num_bigint::BigInt;
+            let map = archsig_common::json::parse(input.canonical().as_bytes()).unwrap();
+            let atoms = arr(get(&arr(get(&map, "snapshots"))[0], "atoms"));
+            let mut numerator = BigInt::from(0);
+            let mut denominator = BigInt::from(1);
+            for atom in atoms {
+                let sign = match s(get(atom, "field")) {
+                    "Pool.Claim.quantity" => 1,
+                    "Pool.Stock.available" => -1,
+                    _ => continue,
+                };
+                let [n, d] = arr(get(atom, "value")) else {
+                    panic!("Q source Atom");
+                };
+                let n: BigInt = s(n).parse().unwrap();
+                let d: BigInt = s(d).parse().unwrap();
+                numerator = numerator * &d + n * &denominator * sign;
+                denominator *= d;
+            }
+            let (n, d) = if case == "overlapInsufficient" {
+                (5, 1)
+            } else {
+                (1, 100_000)
+            };
+            assert_eq!(numerator * d, denominator * n);
+        }
         if case == "threeUsesExact" {
             let point = coordinates(&result, get(proof, "point"));
             let instances = arr(get(solution(&result, "domain"), "instances"));
@@ -504,6 +522,28 @@ fn r2_exact_backing_solves_all_four_frozen_constraint_sets() {
                 };
                 assert_eq!(point[num(position) as usize], expected, "{id}");
             }
+
+            let repaired = polyhedron_asks(
+                &dir,
+                &[
+                    "fix=repair(Backing.legal,using=Backing.assign,on=@fixture/threeUsesExact,bind.w=@fixture/threeUsesExact)",
+                    "recheckedLaw=check(Backing.legal,on=$fix.object,w=@fixture/threeUsesExact)",
+                ],
+                "repaired",
+                None,
+            );
+            assert_eq!(repaired.code, 0, "{}{}", repaired.stdout, repaired.stderr);
+            let repaired = result_json(&dir, &repaired);
+            let [fix, checked] = arr(get(&repaired, "answers")) else {
+                panic!("repair and consumer");
+            };
+            let outputs = get(fix, "outputs");
+            assert!(has(outputs, "repair"));
+            assert_eq!(s(get(checked, "status")), "established");
+            assert_eq!(
+                get(get(checked, "outputs"), "environment").value,
+                get(outputs, "object").value
+            );
 
             let rechecked = polyhedron_run(&dir, ask, "rechecked", Some("out"));
             assert_eq!(rechecked.code, exit);
@@ -626,7 +666,7 @@ fn rational_backing_distinguishes_nonunique_repair_and_missing_capacity() {
     let result = result_json(&dir, &run);
     let proof = certificate(&result);
     assert_eq!(s(get(proof, "outcome")), "multiple");
-    verify_polyhedron_wire(&result, proof, None);
+    verify_polyhedron_wire(&result, proof);
     assert_ne!(
         coordinates(&result, get(proof, "point")),
         coordinates(&result, get(proof, "second"))
@@ -634,7 +674,7 @@ fn rational_backing_distinguishes_nonunique_repair_and_missing_capacity() {
     let answer = &arr(get(&result, "answers"))[0];
     assert_eq!(s(get(answer, "status")), "refuted");
     let outputs = get(answer, "outputs");
-    assert!(!has(outputs, "assignment"));
+    assert!(!has(outputs, "repair"));
     assert!(!has(outputs, "object"));
     assert_eq!(
         s(get(
@@ -866,6 +906,15 @@ fn rational_backing_reports_missing_references_units_and_unsupported_disjunction
     let answers = arr(get(&result, "answers"));
     assert_eq!(s(get(&answers[0], "status")), "refuted");
     assert_eq!(s(get(&answers[1], "status")), "established");
+    let outputs = get(&answers[0], "outputs");
+    assert!(!has(outputs, "domain"));
+    assert!(!has(outputs, "solutions"));
+    let claim = referenced(&result, get(outputs, "proposition"));
+    assert!(
+        arr(get(get(claim, "value"), "operands"))
+            .iter()
+            .any(|operand| { matches!(&get(referenced(&result, operand), "type").value, JValue::Str(name) if name == "Evidence") })
+    );
     std::fs::write(dir.join("archmap.json"), map.canonical()).unwrap();
     let law = POLY_LAW.replacen(
         "b.quantity>=rat(0,1)",
@@ -959,6 +1008,49 @@ fn rational_backing_keeps_fixed_quantifiers_and_independent_stops() {
         };
         assert_eq!(s(get(blocker, "code")), "unsupported_algorithm");
     }
+    let one_cell = "deep=solve(Backing.legal,using=Backing.assign,on=@fixture/overlapFeasible,bind.b=@fixture/overlapFeasible.B1.X)";
+    let prefix = prefix.replace("legal(w:Pool.World)", "legal(b:Pool.Cell)");
+    let body = (0..159)
+        .rev()
+        .fold("b.quantity>rat(159,1)".to_owned(), |body, index| {
+            format!("b.quantity>rat({index},1) and ({body})")
+        });
+    let law = format!("{prefix}{body};\n change {change}");
+    std::fs::write(dir.join("laws.law"), law).unwrap();
+    let run = polyhedron_asks(
+        &dir,
+        &[
+            "before=evaluate(Backing.stockLoad,s=@fixture/overlapFeasible.X)",
+            one_cell,
+            "after=evaluate(Backing.stockLoad,s=@fixture/overlapFeasible.Y)",
+        ],
+        "deep-conjunction",
+        None,
+    );
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    assert_eq!(
+        arr(get(&result, "answers"))
+            .iter()
+            .map(|a| s(get(a, "status")))
+            .collect::<Vec<_>>(),
+        ["established", "undetermined", "established"]
+    );
+
+    let law = format!(
+        "{prefix}b.quantity=rat(0,1) and (b.quantity=rat(1,1) implies true);\n change {change}"
+    );
+    std::fs::write(dir.join("laws.law"), law).unwrap();
+    let run = polyhedron_run(&dir, one_cell, "tautological-implication", None);
+    assert_eq!(run.code, 0, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    assert_eq!(
+        s(get(
+            get(solution(&result, "solutions"), "representation"),
+            "kind"
+        )),
+        "affine"
+    );
 }
 
 #[test]

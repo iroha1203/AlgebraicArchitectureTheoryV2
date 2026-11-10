@@ -19,6 +19,7 @@ pub(in crate::observed) struct Linear {
     pub equations: Matrix,
     pub rhs: Vec<Scalar>,
     pub quantifiers: Vec<(Quantifier, Vec<Scalar>)>,
+    pub fixed_support: Vec<Fact>,
     pub solutions: Solutions,
 }
 
@@ -41,6 +42,7 @@ struct Constraints {
     inequalities: Option<Vec<Halfspace>>,
     quantifiers: Vec<(Quantifier, Vec<Scalar>)>,
     refuted: bool,
+    fixed_support: Vec<Fact>,
 }
 
 impl Constraints {
@@ -730,6 +732,7 @@ impl Conjuncts {
         outcome: Result<(), ValidationFailure>,
         allow_bounds: bool,
         missing: &mut Pending,
+        control: &Control,
     ) -> Result<(), ValidationFailure> {
         if let Err(error) = outcome {
             let ValidationFailure::UnsupportedExpression { location, .. } = &error else {
@@ -757,6 +760,7 @@ impl Conjuncts {
                 for (location, mut pending) in
                     std::iter::once((location.clone(), pending)).chain(additional)
                 {
+                    control.checkpoint(Checkpoint::RationalPolyhedron)?;
                     let same_source = |other: &Pending| {
                         other.expression == pending.expression
                             && other.bindings == pending.bindings
@@ -766,14 +770,20 @@ impl Conjuncts {
                     };
                     if first_location == &location && same_source(first) {
                         first.facts.append(&mut pending.facts);
-                    } else if let Some((_, other)) = first
-                        .additional
-                        .iter_mut()
-                        .find(|(old, other)| old == &location && same_source(other))
-                    {
-                        other.facts.append(&mut pending.facts);
                     } else {
-                        first.additional.push((location, pending));
+                        let mut same = None;
+                        for (old, other) in &mut first.additional {
+                            control.checkpoint(Checkpoint::RationalPolyhedron)?;
+                            if old == &location && same_source(other) {
+                                same = Some(other);
+                                break;
+                            }
+                        }
+                        if let Some(other) = same {
+                            other.facts.append(&mut pending.facts);
+                        } else {
+                            first.additional.push((location, pending));
+                        }
                     }
                 }
             } else {
@@ -794,6 +804,35 @@ impl Conjuncts {
     }
 }
 
+fn observed_source(
+    env: &Environment<'_>,
+    id: usize,
+    vars: &BTreeMap<String, SourceValue>,
+    base: &Scope,
+    reading: &str,
+    rows: &mut Constraints,
+    missing: &mut Pending,
+) -> Result<SourceValue, ValidationFailure> {
+    let read = || env.scoped_ast(id, vars, base, reading);
+    if rows.inequalities.is_none() {
+        return read();
+    }
+    let result = env.with_finite_domain_reads(&mut rows.quantifiers, read);
+    if let Err(ValidationFailure::UnsupportedExpression {
+        location: Location::Law { span },
+        ..
+    }) = &result
+        && let Some(&expression) = env.indexes.inputs.law().program().expressions.get(span)
+        && matches!(
+            env.indexes.inputs.law().exprs()[expression].kind,
+            ExprKind::Quant { .. }
+        )
+    {
+        missing.unsupported = Some("rational_change_quantification");
+    }
+    result
+}
+
 fn collect_equations(
     env: &Environment<'_>,
     id: usize,
@@ -804,7 +843,7 @@ fn collect_equations(
     rows: &mut Constraints,
     missing: &mut Pending,
 ) -> Result<(), ValidationFailure> {
-    stacker::maybe_grow(64 * 1024, 1024 * 1024, || {
+    stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
         env.tick()?;
         let base = Scope::default();
         let law = env.indexes.inputs.law();
@@ -829,10 +868,17 @@ fn collect_equations(
                 }
             )
         {
-            let spec = quantifier::spec(law, id, &env.control)?;
+            let spec = quantifier::spec(law, id, &env.control).inspect_err(|error| {
+                if matches!(error, ValidationFailure::UnsupportedExpression { .. }) {
+                    missing.unsupported = Some("rational_change_quantification");
+                }
+            })?;
             let domain = spec.domain.ok_or(internal!("有理量化の元域がない"))?;
-            let (domain_value, members) =
-                env.scoped_quantifier_domain(&spec, vars, &base, reading)?;
+            let domain_start = rows.quantifiers.len();
+            let (domain_value, members) = env
+                .with_finite_domain_reads(&mut rows.quantifiers, || {
+                    env.scoped_quantifier_domain(&spec, vars, &base, reading)
+                })?;
             let Some(members) = members else {
                 let domain_dependency = analysis.read(domain, vars, lexical, reading)?;
                 let mut local = env.copy_variables(vars)?;
@@ -847,7 +893,7 @@ fn collect_equations(
             };
             usable(env, domain, &domain_value)?;
             rows.quantifiers
-                .push((spec.descriptor(None, None), members.clone()));
+                .insert(domain_start, (spec.descriptor(None, None), members.clone()));
             let mut local = env.copy_variables(vars)?;
             let mut conjuncts = Conjuncts::default();
             for member in members {
@@ -862,7 +908,7 @@ fn collect_equations(
                 let result = collect_equations(
                     env, spec.body, &local, lexical, reading, axes, rows, missing,
                 );
-                conjuncts.record(result, allow_bounds, missing)?;
+                conjuncts.record(result, allow_bounds, missing, &env.control)?;
                 if rows.refuted {
                     break;
                 }
@@ -881,13 +927,14 @@ fn collect_equations(
         );
         missing.awaiting_observation = false;
         let value = if !allow_bounds || !structural {
-            let v = env.scoped_ast(id, vars, &base, reading)?;
+            let v = observed_source(env, id, vars, &base, reading, rows, missing)?;
             if !v.condition_pending
                 && !v.condition_failed
                 && let Some(Scalar::Bool(holds)) = v.known_value
             {
                 if !holds {
                     rows.contradiction(axes.len(), env)?;
+                    rows.fixed_support.extend(v.support.iter().cloned());
                 }
                 return Ok(());
             }
@@ -910,7 +957,7 @@ fn collect_equations(
             }
             ExprKind::Let { name, value, body } => {
                 let mut local = env.copy_variables(vars)?;
-                let v = env.scoped_ast(*value, vars, &base, reading)?;
+                let v = observed_source(env, *value, vars, &base, reading, rows, missing)?;
                 if diagnose && v.condition_pending {
                     let dependency = analysis.read(*value, vars, lexical, reading)?;
                     local.insert(name.name.clone(), v.clone());
@@ -949,10 +996,29 @@ fn collect_equations(
                 rhs,
             } => {
                 let mut conjuncts = Conjuncts::default();
-                for body in [lhs, rhs] {
+                let mut remaining = vec![*rhs, *lhs];
+                while let Some(body) = remaining.pop() {
+                    env.tick()?;
+                    if allow_bounds {
+                        match &law.exprs()[body].kind {
+                            ExprKind::Group(inner) => {
+                                remaining.push(*inner);
+                                continue;
+                            }
+                            ExprKind::Binary {
+                                op: BinOp::And,
+                                lhs,
+                                rhs,
+                            } => {
+                                remaining.extend([*rhs, *lhs]);
+                                continue;
+                            }
+                            _ => {}
+                        }
+                    }
                     let result =
-                        collect_equations(env, *body, vars, lexical, reading, axes, rows, missing);
-                    conjuncts.record(result, allow_bounds, missing)?;
+                        collect_equations(env, body, vars, lexical, reading, axes, rows, missing);
+                    conjuncts.record(result, allow_bounds, missing, &env.control)?;
                     if rows.refuted && allow_bounds {
                         break;
                     }
@@ -964,7 +1030,7 @@ fn collect_equations(
                 lhs,
                 rhs,
             } if allow_bounds => {
-                let guard = env.scoped_ast(*lhs, vars, &base, reading)?;
+                let guard = observed_source(env, *lhs, vars, &base, reading, rows, missing)?;
                 match guard
                     .known_value
                     .as_ref()
@@ -975,6 +1041,17 @@ fn collect_equations(
                     }
                     Some(Scalar::Bool(false)) => Ok(()),
                     _ => {
+                        let actual = observed_source(env, id, vars, &base, reading, rows, missing)?;
+                        if !actual.condition_failed
+                            && !actual.condition_pending
+                            && let Some(Scalar::Bool(holds)) = actual.known_value
+                        {
+                            if !holds {
+                                rows.contradiction(axes.len(), env)?;
+                                rows.fixed_support.extend(actual.support.iter().cloned());
+                            }
+                            return Ok(());
+                        }
                         analysis
                             .read(*lhs, vars, lexical, reading)?
                             .record(missing, Dependence::Fixed);
@@ -1434,6 +1511,7 @@ fn compute_inner(
         equations: guard_matrix,
         rhs: guard_rhs,
         quantifiers: rows.quantifiers,
+        fixed_support: rows.fixed_support,
         solutions,
     })
 }
@@ -1541,7 +1619,15 @@ fn requirement_equations(
                     .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
                     .map(|p| (p.name.clone(), p.ty.clone()))
                     .collect();
-                let v = env.scoped_ast(*guard, &vars, &Scope::default(), &law.reading)?;
+                let v = observed_source(
+                    env,
+                    *guard,
+                    &vars,
+                    &Scope::default(),
+                    &law.reading,
+                    &mut rows,
+                    missing,
+                )?;
                 if allow_bounds
                     && (v.known_value.is_none() || v.condition_pending || v.condition_failed)
                 {
@@ -1580,11 +1666,14 @@ fn requirement_equations(
                 .collect();
             equations(env, *body, &vars, &law.reading, axes, &mut rows, missing)
         })();
-        conjuncts.record(outcome, allow_bounds, missing)?;
+        conjuncts.record(outcome, allow_bounds, missing, &env.control)?;
         if allow_bounds && rows.refuted {
             break;
         }
     }
-    conjuncts.finish(&rows, missing)?;
+    if let Err(error) = conjuncts.finish(&rows, missing) {
+        missing.finite_domains = rows.quantifiers;
+        return Err(error);
+    }
     Ok(rows)
 }

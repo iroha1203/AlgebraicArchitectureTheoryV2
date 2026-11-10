@@ -45,6 +45,7 @@ pub(in crate::observed) struct Pending {
     pub bindings: Vec<(String, Scalar)>,
     pub parameters: Vec<(String, Type)>,
     pub additional: Vec<(Location, Pending)>,
+    pub finite_domains: Vec<(Quantifier, Vec<Scalar>)>,
 }
 fn unsupported(env: &Environment<'_>, id: usize, feature: &str) -> ValidationFailure {
     ValidationFailure::UnsupportedExpression {
