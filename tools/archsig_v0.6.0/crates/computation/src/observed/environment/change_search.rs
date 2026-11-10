@@ -575,7 +575,10 @@ fn search_inner(
                 &result.requirements,
                 &mut pending,
             );
-            if !pending.facts.is_empty() || pending.unsupported.is_some() {
+            if !pending.facts.is_empty()
+                || pending.unsupported.is_some()
+                || !pending.additional.is_empty()
+            {
                 result.missing.extend(pending.facts.iter().cloned());
                 result.pending_integer = Some(pending);
             }
@@ -637,6 +640,9 @@ fn search_inner(
             ) && pending.expression.is_some()
             {
                 result.missing.extend(pending.facts.iter().cloned());
+                for (_, other) in &pending.additional {
+                    result.missing.extend(other.facts.iter().cloned());
+                }
                 result.pending_integer = Some(pending);
             }
             let linear = computed?;

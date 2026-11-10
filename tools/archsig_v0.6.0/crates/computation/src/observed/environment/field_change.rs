@@ -729,14 +729,55 @@ impl Conjuncts {
         &mut self,
         outcome: Result<(), ValidationFailure>,
         allow_bounds: bool,
-        missing: &Pending,
+        missing: &mut Pending,
     ) -> Result<(), ValidationFailure> {
         if let Err(error) = outcome {
-            if !allow_bounds || !matches!(error, ValidationFailure::UnsupportedExpression { .. }) {
+            let ValidationFailure::UnsupportedExpression { location, .. } = &error else {
+                return Err(error);
+            };
+            if !allow_bounds {
                 return Err(error);
             }
-            if self.blocked.is_none() {
-                self.blocked = Some((error, missing.clone()));
+            let mut pending = Pending {
+                facts: std::mem::take(&mut missing.facts),
+                unsupported: missing.unsupported.take(),
+                awaiting_observation: std::mem::take(&mut missing.awaiting_observation),
+                additional: std::mem::take(&mut missing.additional),
+                ..missing.clone()
+            };
+            if let Some((first_error, first)) = self.blocked.as_mut() {
+                let ValidationFailure::UnsupportedExpression {
+                    location: first_location,
+                    ..
+                } = first_error
+                else {
+                    return Err(internal!("有理制約の停止位置がない").into());
+                };
+                let additional = std::mem::take(&mut pending.additional);
+                for (location, mut pending) in
+                    std::iter::once((location.clone(), pending)).chain(additional)
+                {
+                    let same_source = |other: &Pending| {
+                        other.expression == pending.expression
+                            && other.bindings == pending.bindings
+                            && other.parameters == pending.parameters
+                            && other.unsupported == pending.unsupported
+                            && other.awaiting_observation == pending.awaiting_observation
+                    };
+                    if first_location == &location && same_source(first) {
+                        first.facts.append(&mut pending.facts);
+                    } else if let Some((_, other)) = first
+                        .additional
+                        .iter_mut()
+                        .find(|(old, other)| old == &location && same_source(other))
+                    {
+                        other.facts.append(&mut pending.facts);
+                    } else {
+                        first.additional.push((location, pending));
+                    }
+                }
+            } else {
+                self.blocked = Some((error, pending));
             }
         }
         Ok(())
@@ -770,21 +811,11 @@ fn collect_equations(
         let kind = &law.exprs()[id].kind;
         let allow_bounds = rows.inequalities.is_some();
         let diagnose = allow_bounds || missing.selective_missing;
-        let v = env.scoped_ast(id, vars, &base, reading)?;
         let parameters = dependency_axes(axes, missing);
         let analysis = DependencyAnalysis {
             env,
             axes: &parameters,
         };
-        if !v.condition_pending
-            && !v.condition_failed
-            && let Some(Scalar::Bool(holds)) = v.known_value
-        {
-            if !holds {
-                rows.contradiction(axes.len(), env)?;
-            }
-            return Ok(());
-        }
         if allow_bounds
             && matches!(
                 kind,
@@ -839,16 +870,40 @@ fn collect_equations(
             return conjuncts.finish(rows, missing);
         }
 
+        let structural = matches!(
+            kind,
+            ExprKind::Group(_)
+                | ExprKind::Let { .. }
+                | ExprKind::Binary {
+                    op: BinOp::And | BinOp::Implies,
+                    ..
+                }
+        );
         missing.awaiting_observation = false;
-        if !allow_bounds {
-            if diagnose && (v.condition_pending || v.condition_failed) {
-                analysis
-                    .read(id, vars, lexical, reading)?
-                    .record(missing, Dependence::Fixed);
-                missing.awaiting_observation &= !v.condition_failed;
+        let value = if !allow_bounds || !structural {
+            let v = env.scoped_ast(id, vars, &base, reading)?;
+            if !v.condition_pending
+                && !v.condition_failed
+                && let Some(Scalar::Bool(holds)) = v.known_value
+            {
+                if !holds {
+                    rows.contradiction(axes.len(), env)?;
+                }
+                return Ok(());
             }
-            usable(env, id, &v)?;
-        }
+            if !allow_bounds {
+                if diagnose && (v.condition_pending || v.condition_failed) {
+                    analysis
+                        .read(id, vars, lexical, reading)?
+                        .record(missing, Dependence::Fixed);
+                    missing.awaiting_observation &= !v.condition_failed;
+                }
+                usable(env, id, &v)?;
+            }
+            Some(v)
+        } else {
+            None
+        };
         match kind {
             ExprKind::Group(body) => {
                 collect_equations(env, *body, vars, lexical, reading, axes, rows, missing)
@@ -942,6 +997,7 @@ fn collect_equations(
                 ))
             }
             _ => {
+                let v = value.ok_or(internal!("有理制約の元値がない"))?;
                 if v.condition_pending || v.condition_failed {
                     if diagnose {
                         analysis
@@ -1434,92 +1490,101 @@ fn requirement_equations(
         inequalities: allow_bounds.then(Vec::new),
         ..Default::default()
     };
+    let mut conjuncts = Conjuncts::default();
     for (name, bindings) in requirements {
-        let law = &env.indexes.inputs.law().declarations()[name];
-        let Signature::Law {
-            body,
-            guard,
-            params: law_params,
-            ..
-        } = &law.signature
-        else {
-            return Err(internal!("有理候補の要求がLawでない").into());
-        };
-        let mut checked = BTreeMap::new();
-        let mut checks = owned_call::Checks::default();
-        for (name, v) in bindings {
-            let p = law_params
-                .iter()
-                .find(|p| p.name == *name)
-                .ok_or(internal!("有理Lawの束縛名が異なる"))?;
-            env.owned_call_value_check(
-                &p.ty,
-                &crate::observed::term::affine::Value::Known(v.clone()),
-                &checked,
-                &law.reading,
-                law.span,
-                &mut checks,
-            )?;
-            checked.insert(name.as_str(), Some(v));
-        }
-        if checks.failure.is_some() {
-            continue;
-        }
-        if checks.blocked {
+        env.tick()?;
+        let outcome = (|| {
+            let law = &env.indexes.inputs.law().declarations()[name];
+            let Signature::Law {
+                body,
+                guard,
+                params: law_params,
+                ..
+            } = &law.signature
+            else {
+                return Err(internal!("有理候補の要求がLawでない").into());
+            };
+            let mut checked = BTreeMap::new();
+            let mut checks = owned_call::Checks::default();
+            for (name, v) in bindings {
+                let p = law_params
+                    .iter()
+                    .find(|p| p.name == *name)
+                    .ok_or(internal!("有理Lawの束縛名が異なる"))?;
+                env.owned_call_value_check(
+                    &p.ty,
+                    &crate::observed::term::affine::Value::Known(v.clone()),
+                    &checked,
+                    &law.reading,
+                    law.span,
+                    &mut checks,
+                )?;
+                checked.insert(name.as_str(), Some(v));
+            }
+            if checks.failure.is_some() {
+                return Ok(());
+            }
+            if checks.blocked {
+                missing.expression = Some(*body);
+                missing.bindings = bindings.clone();
+                missing.facts.extend(checks.missing);
+                missing.awaiting_observation = !missing.facts.is_empty();
+                return Err(unsupported(env, *body, "有理Lawの適用条件が未確定"));
+            }
+            let (vars, universal) = change_affine::law_variables(env, law_params, bindings)?;
+            missing.universal = universal;
+            if let Some(guard) = guard {
+                missing.expression = Some(*guard);
+                missing.bindings = bindings.clone();
+                missing.parameters = law_params
+                    .iter()
+                    .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
+                    .map(|p| (p.name.clone(), p.ty.clone()))
+                    .collect();
+                let v = env.scoped_ast(*guard, &vars, &Scope::default(), &law.reading)?;
+                if allow_bounds
+                    && (v.known_value.is_none() || v.condition_pending || v.condition_failed)
+                {
+                    let parameters = dependency_axes(axes, missing);
+                    DependencyAnalysis {
+                        env,
+                        axes: &parameters,
+                    }
+                    .read(*guard, &vars, &LexicalDependencies::new(), &law.reading)?
+                    .record(missing, Dependence::Fixed);
+                    missing.awaiting_observation &= !v.condition_failed;
+                }
+                usable(env, *guard, &v)?;
+                match v.known_value {
+                    Some(Scalar::Bool(false)) => return Ok(()),
+                    Some(Scalar::Bool(true)) => {}
+                    _ => {
+                        if change_affine::numeric_condition(env, *guard, &v)? {
+                            missing.unsupported = Some("numeric_change_condition");
+                        }
+                        return Err(unsupported(
+                            env,
+                            *guard,
+                            "有理候補で未確定のLaw guardの全解は未実装",
+                        ));
+                    }
+                }
+            }
+            missing.awaiting_observation = false;
             missing.expression = Some(*body);
-            missing.bindings = bindings.clone();
-            missing.facts.extend(checks.missing);
-            missing.awaiting_observation = !missing.facts.is_empty();
-            return Err(unsupported(env, *body, "有理Lawの適用条件が未確定"));
-        }
-        let (vars, universal) = change_affine::law_variables(env, law_params, bindings)?;
-        missing.universal = universal;
-        if let Some(guard) = guard {
-            missing.expression = Some(*guard);
             missing.bindings = bindings.clone();
             missing.parameters = law_params
                 .iter()
-                .filter(|p| !bindings.iter().any(|(name, _)| *name == p.name))
+                .filter(|p| !bindings.iter().any(|(n, _)| *n == p.name))
                 .map(|p| (p.name.clone(), p.ty.clone()))
                 .collect();
-            let v = env.scoped_ast(*guard, &vars, &Scope::default(), &law.reading)?;
-            if allow_bounds
-                && (v.known_value.is_none() || v.condition_pending || v.condition_failed)
-            {
-                let parameters = dependency_axes(axes, missing);
-                DependencyAnalysis {
-                    env,
-                    axes: &parameters,
-                }
-                .read(*guard, &vars, &LexicalDependencies::new(), &law.reading)?
-                .record(missing, Dependence::Fixed);
-                missing.awaiting_observation &= !v.condition_failed;
-            }
-            usable(env, *guard, &v)?;
-            match v.known_value {
-                Some(Scalar::Bool(false)) => continue,
-                Some(Scalar::Bool(true)) => {}
-                _ => {
-                    if change_affine::numeric_condition(env, *guard, &v)? {
-                        missing.unsupported = Some("numeric_change_condition");
-                    }
-                    return Err(unsupported(
-                        env,
-                        *guard,
-                        "有理候補で未確定のLaw guardの全解は未実装",
-                    ));
-                }
-            }
+            equations(env, *body, &vars, &law.reading, axes, &mut rows, missing)
+        })();
+        conjuncts.record(outcome, allow_bounds, missing)?;
+        if allow_bounds && rows.refuted {
+            break;
         }
-        missing.awaiting_observation = false;
-        missing.expression = Some(*body);
-        missing.bindings = bindings.clone();
-        missing.parameters = law_params
-            .iter()
-            .filter(|p| !bindings.iter().any(|(n, _)| *n == p.name))
-            .map(|p| (p.name.clone(), p.ty.clone()))
-            .collect();
-        equations(env, *body, &vars, &law.reading, axes, &mut rows, missing)?;
     }
+    conjuncts.finish(&rows, missing)?;
     Ok(rows)
 }

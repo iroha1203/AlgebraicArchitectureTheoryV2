@@ -149,9 +149,10 @@ fn combine(
 }
 
 type LeftSide = Vec<(BigInt, BigInt)>;
+type Rows = BTreeMap<LeftSide, EliminationRow>;
 
 fn keep_tightest(
-    rows: &mut BTreeMap<LeftSide, EliminationRow>,
+    rows: &mut Rows,
     mut row: EliminationRow,
     c: &Control,
 ) -> Result<(), ValidationFailure> {
@@ -190,11 +191,7 @@ fn keep_tightest(
     Ok(())
 }
 
-fn eliminate(
-    rows: &[EliminationRow],
-    axis: usize,
-    c: &Control,
-) -> Result<Vec<EliminationRow>, ValidationFailure> {
+fn eliminate(rows: &[EliminationRow], axis: usize, c: &Control) -> Result<Rows, ValidationFailure> {
     c.checkpoint(Checkpoint::RationalPolyhedronElimination)?;
     let mut next = BTreeMap::new();
     let mut upper = Vec::new();
@@ -257,20 +254,19 @@ fn eliminate(
             }
         }
     }
-    Ok(next.into_values().collect())
+    Ok(next)
 }
 
 fn obstruction(
-    rows: &[EliminationRow],
+    rows: &mut Rows,
+    zero: &LeftSide,
     c: &Control,
 ) -> Result<Option<EliminationRow>, ValidationFailure> {
-    for row in rows {
-        tick(c)?;
-        if sign(&row.inequality.rhs)?.is_lt()
-            && row.inequality.coefficients.iter().all(|v| v == &integer(0))
-        {
-            return Ok(Some(row.clone()));
-        }
+    tick(c)?;
+    if let Some(row) = rows.get(zero)
+        && sign(&row.inequality.rhs)?.is_lt()
+    {
+        return Ok(rows.remove(zero));
     }
     Ok(None)
 }
@@ -280,19 +276,28 @@ struct Projection {
     eliminated: Vec<(usize, Vec<EliminationRow>)>,
 }
 
+enum Projected {
+    Rows(Projection),
+    Obstruction(EliminationRow),
+}
+
 fn project(
     mut rows: Vec<EliminationRow>,
     axes: impl IntoIterator<Item = usize>,
+    zero: &LeftSide,
     c: &Control,
-) -> Result<Projection, ValidationFailure> {
+) -> Result<Projected, ValidationFailure> {
     let mut eliminated = Vec::new();
     for axis in axes {
         tick(c)?;
-        let next = eliminate(&rows, axis, c)?;
+        let mut next = eliminate(&rows, axis, c)?;
+        if let Some(row) = obstruction(&mut next, zero, c)? {
+            return Ok(Projected::Obstruction(row));
+        }
         eliminated.push((axis, rows));
-        rows = next;
+        rows = next.into_values().collect();
     }
-    Ok(Projection { rows, eliminated })
+    Ok(Projected::Rows(Projection { rows, eliminated }))
 }
 
 type Bound<'a> = Option<(Scalar, &'a EliminationRow)>;
@@ -418,18 +423,16 @@ pub(super) fn solve(
             c,
         )?;
     }
-    let rows = tight.into_values().collect::<Vec<_>>();
-    if let Some(row) = obstruction(&rows, c)? {
+    let zero_row = vec![(BigInt::from(0), BigInt::from(1)); n];
+    if let Some(row) = obstruction(&mut tight, &zero_row, c)? {
         return Ok(Outcome::Empty(row.certificate(original.len(), c)?));
     }
-    let Projection {
-        rows,
-        mut eliminated,
-    } = project(rows, (0..n).rev(), c)?;
-    if let Some(row) = obstruction(&rows, c)? {
-        return Ok(Outcome::Empty(row.certificate(original.len(), c)?));
-    }
-    drop(rows);
+    let mut eliminated = match project(tight.into_values().collect(), (0..n).rev(), &zero_row, c)? {
+        Projected::Rows(Projection { eliminated, .. }) => eliminated,
+        Projected::Obstruction(row) => {
+            return Ok(Outcome::Empty(row.certificate(original.len(), c)?));
+        }
+    };
     let point = lift(&eliminated, vec![zero.clone(); n], c)?;
     let mut forced = Vec::new();
     for axis in 0..n {
@@ -440,7 +443,9 @@ pub(super) fn solve(
         if next_axis != axis {
             return Err(internal!("射影の消去層が元座標順と違う").into());
         }
-        let projected = project(prefix, (0..axis).rev(), c)?;
+        let Projected::Rows(projected) = project(prefix, (0..axis).rev(), &zero_row, c)? else {
+            return Err(internal!("可解な半空間系の射影が矛盾する").into());
+        };
         let (low, high) = bounds(&projected.rows, axis, &point, c)?;
         if let (Some((l, lrow)), Some((h, hrow))) = (&low, &high)
             && l == h

@@ -889,6 +889,79 @@ fn rational_backing_reports_missing_references_units_and_unsupported_disjunction
 }
 
 #[test]
+fn rational_backing_keeps_fixed_quantifiers_and_independent_stops() {
+    let case = "overlapFeasible";
+    let dir = workdir("r2-polyhedron-conjuncts");
+    let mut map = polyhedron_inputs(&dir, case);
+    let ask = POLY_QUERIES.lines().next().unwrap();
+    let fixed = "   (forall t in Pool.Stock[w] . t.available>=rat(0,1)) and\n   (forall b";
+    let law = POLY_LAW.replacen("   (forall b", fixed, 1);
+    std::fs::write(dir.join("laws.law"), &law).unwrap();
+    let run = polyhedron_run(&dir, ask, "fixed-quantifier", None);
+    assert_eq!(run.code, 0, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let answer = &arr(get(&result, "answers"))[0];
+    let scope = arr(get(get(answer, "scope"), "quantifiers"));
+    let observed = scope.iter().find(|q| s(get(q, "name")) == "t").unwrap();
+    let domain = referenced(&result, get(observed, "domain"));
+    assert_eq!(arr(get(get(domain, "value"), "elements")).len(), 3);
+
+    let snapshot = &mut items(fields(&mut map).get_mut("snapshots").unwrap())[0];
+    items(fields(snapshot).get_mut("atoms").unwrap()).retain(|atom| {
+        !matches!(atom, Json::Obj(fields) if fields["id"] == Json::str("overlapFeasible.X.available"))
+    });
+    std::fs::write(dir.join("archmap.json"), map.canonical()).unwrap();
+    let (prefix, _) = POLY_LAW.split_once("   (forall b").unwrap();
+    let (_, change) = POLY_LAW.split_once(" change ").unwrap();
+    let implicit = prefix.replace("legal(w:Pool.World)", "legal(s:Pool.Stock)");
+    let implicit = format!(
+        "{implicit}s.available>=rat(100,1) and s.cell0.quantity>=rat(0,1);\n change {change}"
+    );
+    std::fs::write(dir.join("laws.law"), implicit).unwrap();
+    let run = polyhedron_run(
+        &dir,
+        "root=solve(Backing.legal,using=Backing.assign,on=@fixture/overlapFeasible)",
+        "fixed-refutation",
+        None,
+    );
+    assert_eq!(run.code, 1, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    assert_eq!(
+        s(get(&arr(get(&result, "answers"))[0], "status")),
+        "refuted"
+    );
+
+    let capacity = "(forall s in Pool.Stock[w] . stockLoad(s)<=s.available)";
+    let strict = "(forall b in Pool.Cell[w] . b.quantity > -rat(1,1))";
+    for (name, left, right) in [
+        ("missing-first", capacity, strict),
+        ("unsupported-first", strict, capacity),
+    ] {
+        let law = format!("{prefix}{left} and {right};\n change {change}");
+        std::fs::write(dir.join("laws.law"), law).unwrap();
+        let run = polyhedron_asks(&dir, &[ask, "plan=needed($overlapFeasible)"], name, None);
+        assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+        let result = result_json(&dir, &run);
+        let plan = &arr(get(&result, "answers"))[1];
+        let plan = get(
+            referenced(&result, get(get(plan, "outputs"), "plan")),
+            "value",
+        );
+        let [needed] = arr(get(plan, "requirements")) else {
+            panic!("missing capacity");
+        };
+        assert_eq!(
+            s(get(get(needed, "field"), "field")),
+            "Pool.Stock.available"
+        );
+        let [blocker] = arr(get(plan, "blockers")) else {
+            panic!("unsupported strict bound");
+        };
+        assert_eq!(s(get(blocker, "code")), "unsupported_algorithm");
+    }
+}
+
+#[test]
 fn finite_equalities_keep_their_original_affine_form_and_actual_domain() {
     let dir = workdir("r2-affine-quantifier");
     polyhedron_inputs(&dir, "overlapFeasible");
@@ -1108,6 +1181,7 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
             .map(|r| s(get(r, "code")))
             .collect::<Vec<_>>();
         reasons.sort_unstable();
+        reasons.dedup();
         assert_eq!(reasons, codes, "{out}");
         let plan = &arr(get(&result, "answers"))[1];
         let plan = referenced(&result, get(get(plan, "outputs"), "plan"));

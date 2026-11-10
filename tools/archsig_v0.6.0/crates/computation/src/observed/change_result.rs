@@ -414,56 +414,81 @@ fn compute_inner(
                         base,
                         parts: vec![],
                     };
-                    let bindings = pending
-                        .bindings
-                        .iter()
-                        .map(|(name, scalar)| Ok((name.clone(), value(&mut b, scalar)?)))
-                        .collect::<Result<Vec<_>, ValidationFailure>>()?;
-                    let expression = source_expression(
-                        &mut b,
-                        env,
-                        pending
-                            .expression
-                            .ok_or(internal!("整数欠測の元式がない"))?,
-                        &bindings,
-                        &pending.parameters,
-                    )?;
-                    let part = &mut b.parts[expression.0 - base];
-                    part.arguments.push(architecture.reference);
-                    part.scope.merge(&g.get(architecture.reference)?.scope);
-                    let scope = part.scope.clone();
+                    let mut scope = Scope::default();
                     let mut reasons = vec![];
-                    if !failure.partial.missing.is_empty() {
-                        reasons.push(Reason {
-                            kind: ReasonKind::Missing,
-                            request: request.id.clone(),
-                            dependencies: vec![expression],
-                            missing: failure.partial.missing,
-                            location: Some(location.clone()),
-                        });
+                    let diagnostics = || {
+                        std::iter::once((&location, pending)).chain(
+                            pending
+                                .additional
+                                .iter()
+                                .map(|(location, other)| (location, other)),
+                        )
+                    };
+                    let mut other_missing = failure.partial.missing;
+                    if !pending.additional.is_empty() {
+                        let explained = diagnostics()
+                            .flat_map(|(_, reason)| &reason.facts)
+                            .collect::<std::collections::BTreeSet<_>>();
+                        other_missing.retain(|fact| !explained.contains(fact));
                     }
-                    if !pending.awaiting_observation || reasons.is_empty() {
-                        reasons.push(Reason {
-                            kind: ReasonKind::UnsupportedAlgorithm {
-                                question: request.kind,
-                                operand_types: vec![
-                                    pending.coefficient_type.clone().unwrap_or(Type::Z),
-                                ],
-                                method: pending.unsupported.map(str::to_owned).unwrap_or_else(
-                                    || {
-                                        if pending.coefficient_type == Some(Type::Q) {
-                                            "rational_change".into()
-                                        } else {
-                                            "integer_change".into()
-                                        }
-                                    },
-                                ),
-                            },
-                            request: request.id.clone(),
-                            dependencies: vec![expression],
-                            missing: vec![],
-                            location: Some(location.clone()),
-                        });
+                    for (i, (location, pending)) in diagnostics().enumerate() {
+                        let bindings = pending
+                            .bindings
+                            .iter()
+                            .map(|(name, scalar)| Ok((name.clone(), value(&mut b, scalar)?)))
+                            .collect::<Result<Vec<_>, ValidationFailure>>()?;
+                        let expression = source_expression(
+                            &mut b,
+                            env,
+                            pending
+                                .expression
+                                .ok_or(internal!("整数欠測の元式がない"))?,
+                            &bindings,
+                            &pending.parameters,
+                        )?;
+                        let part = &mut b.parts[expression.0 - base];
+                        part.arguments.push(architecture.reference);
+                        part.scope.merge(&g.get(architecture.reference)?.scope);
+                        scope.merge(&part.scope);
+                        let mut missing = pending.facts.clone();
+                        if i == 0 {
+                            missing.append(&mut other_missing);
+                        }
+                        missing.sort();
+                        missing.dedup();
+                        let has_missing = !missing.is_empty();
+                        if has_missing {
+                            reasons.push(Reason {
+                                kind: ReasonKind::Missing,
+                                request: request.id.clone(),
+                                dependencies: vec![expression],
+                                missing,
+                                location: Some(location.clone()),
+                            });
+                        }
+                        if !pending.awaiting_observation || !has_missing {
+                            reasons.push(Reason {
+                                kind: ReasonKind::UnsupportedAlgorithm {
+                                    question: request.kind,
+                                    operand_types: vec![
+                                        pending.coefficient_type.clone().unwrap_or(Type::Z),
+                                    ],
+                                    method: pending.unsupported.map(str::to_owned).unwrap_or_else(
+                                        || {
+                                            if pending.coefficient_type == Some(Type::Q) {
+                                                "rational_change".into()
+                                            } else {
+                                                "integer_change".into()
+                                            }
+                                        },
+                                    ),
+                                },
+                                request: request.id.clone(),
+                                dependencies: vec![expression],
+                                missing: vec![],
+                                location: Some(location.clone()),
+                            });
+                        }
                     }
                     return Ok((
                         b.parts,
