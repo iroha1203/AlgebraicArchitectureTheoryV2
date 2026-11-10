@@ -201,6 +201,98 @@ runの再利用候補は現在入力から再計算した結果と照合する�
 checkの`reuse`は`requested=false`、両件数0、`rejected=[]`の固定metadataである。
 再検査と決定性の条件は[実行 §7](execution.md#7-版正規化再利用)に従う。
 
+### 保存結果から検査範囲を読む
+
+`check` は `declarations` に型検査済みの宣言を列挙する。
+`run` で何を検査したかは `requests` と `answers` を同じ `id` で結び、
+問いの選択、実引数、量化域、判定を一緒に読む。
+
+| 表示する情報 | 保存結果で読む欄 |
+| --- | --- |
+| 問いと選択した宣言 | `requests[].text` と `head`。元の入力で宣言の意味を確認する |
+| 束縛と省略規則 | `requests[].arguments` と `defaults`。subject selector から snapshot と個体を読む。answer selector は元の Answer と path を示し、保存先のある出力は `outputs` の参照から型と値を辿る |
+| 評価結果に残る束縛 | 保存結果から `EvaluationResult` に到達した場合は `value.bindings` を読む。例えば `completion_pair` の `first_result` と `second_result` が指す評価は、各補完の場合に分けて読む |
+| 検査対象と量化域 | `answers[].scope` の `readings`、`snapshots`、`modes`、`domain` と `quantifiers`。量化子の `domain.node` で `kind=finite` の Domain を辿れる場合、`elements` の件数を表示する |
+| 成立・反証・未決 | `answers[].status` と、適用可否がある場合は `applicability`。未決は `reasons` の理由と `missing`、反証は `counterexamples` の参照を辿る |
+
+次を `read-scope.jq` として保存し、`jq -f read-scope.jq RUN_DIR/result.json` を実行すると、
+出力先 `RUN_DIR` の結果を問いごとの表示用 JSON として読める。量化域の件数が取得できない場合は `null`、有限空域は `0` と表示する。
+量化子の順序と多重度は保存値どおりに残す。出力の参照は ID・型・状態を表示し、参照値の個体はその値も表示する。
+全 Map 行や反例の内容は、表示した参照で元の `nodes` から読む。
+
+answer selector の path は問いで指定した経路を保持する。`outputs.evaluation` は保存射影で除かれる。
+`evaluate` が `outputs.value` を保存した場合、`$t.evaluation.value` はその欄へ対応する。
+同様に、`$t.evaluation.environment` の環境が保存される場合は `t.outputs.environment` に対応する。
+`check` の評価値は、後続の問いが選択できる場合でも、保存結果で対応する出力欄がないことがある。
+`needed($t)` の空の path は回答全体を指す。
+下の例では、問いの head と arguments の両方について、単一の出力欄と上記の保存先を展開する。
+`saved_node: null` は、この表示で参照を展開しなかった場合に付く。
+例えば `$m.candidate.source` の始域は、元の保存結果で `outputs.candidate` の node の
+`value.source` を辿って確認する。他の経路は[公開する意味上の射影](#公開する意味上の射影)に従う。
+確認に必要な値が保存されていない場合は、同梱入力と同じ問いで再検査する。
+
+```jq
+def describe($nodes):
+  if .node? then
+    $nodes[.node] | {id, type, state} + (
+      if (.type | if type == "array" then .[0] else null end) == "Ref"
+      then {value} else {} end
+    )
+  else null end;
+
+def describe_selector($requests; $answers; $nodes):
+  if .kind == "answer" then
+    . as $selector
+    | $answers[$selector.id].outputs as $outputs
+    | . + {saved_node: (
+        if $selector.path == ["evaluation", "value"]
+           and $requests[$selector.id].kind == "evaluate" then $outputs.value
+        elif $selector.path == ["evaluation", "environment"]
+        then $outputs.environment
+        elif ($selector.path | length) == 1 then $outputs[$selector.path[0]]
+        else null end
+        | describe($nodes)
+      )}
+  else . end;
+
+INDEX(.nodes[]; .id) as $node
+| INDEX(.requests[]; .id) as $request
+| INDEX(.answers[]; .id) as $answer
+| .answers[]
+| $request[.id] as $ask
+| {
+    id, status, applicability, text: $ask.text,
+    head: ($ask.head | describe_selector($request; $answer; $node)),
+    arguments: [
+      $ask.arguments[]? | .value |= describe_selector($request; $answer; $node)
+    ],
+    defaults: $ask.defaults,
+    readings: .scope.readings, snapshots: .scope.snapshots,
+    modes: .scope.modes, domain: .scope.domain,
+    quantifiers: [
+      .scope.quantifiers[]?
+      | ($node[.domain.node // ""] | .value) as $d
+      | . + {finite_members: (
+          if $d.kind == "finite" and ($d.elements | type) == "array"
+          then ($d.elements | length) else null end
+        )}
+    ],
+    outputs: (.outputs | with_entries(.value |= describe($node))),
+    reasons: [.reasons[]? | {code, message, missing}],
+    counterexamples: (.counterexamples // [])
+  }
+```
+
+| 入力と問い | 表示と読み方 |
+| --- | --- |
+| R2 の P3 縮約の入力 `check` と消費処理の9問 | `check` の `declarations` に `P3Main.Carry` がある。9件の `requests` は消費処理の view・Law と `needed` を選び、9件が成立。Carry と global Map は今回の9問では未束縛で、操作保存は検査対象外 |
+| Map を選んだ評価 | `t=evaluate(R.table,bind.s=@v/s)` の Map 値を `bound=evaluate(R.lookup,bind.f=$t.value,bind.x=@v/row-000)` が消費する。selector を `t.outputs.value` から型付き Map へ辿り、`bound` の成立と lookup の像 `@v/row-001` を表示する |
+| R2 の `beforeSource` 欠測例 | `probe` は `case01/consume_chunk` を束縛し、`undetermined` と `missing_observation` を返す。`P3Main.Effect.beforeSource` が必要な slot。後続の `needed` の成立は観測計画を得たことを表す |
+| `empty=check(R.empty)`。元式は `forall q in set<Bool>{}. q` | `established`、`q` の有限域は0件。型の検査と、空域での全称条件の成立を分けて表示する |
+
+この表示で読める具体的な対象は、保存された selector、Scope、値と参照の範囲で確認できる。
+ノードごとの内部支持を要する確認には、同梱の三入力と同じ問いで核の再検査を行う。
+
 ## 2. 回答、条件、導出
 
 各選択問いにちょうど一件のAnswerを返す。値を返す問いは必要な出力が構成できればestablished。
