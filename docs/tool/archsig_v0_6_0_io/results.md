@@ -222,11 +222,14 @@ checkの`reuse`は`requested=false`、両件数0、`rejected=[]`の固定metadat
 
 answer selector の path は問いで指定した経路を保持する。`outputs.evaluation` は保存射影で除かれる。
 `evaluate` が `outputs.value` を保存した場合、`$t.evaluation.value` はその欄へ対応する。
+同様に、`$t.evaluation.environment` の環境が保存される場合は `t.outputs.environment` に対応する。
 `check` の評価値は、後続の問いが選択できる場合でも、保存結果で対応する出力欄がないことがある。
 `needed($t)` の空の path は回答全体を指す。
-下の例では、問いの head と arguments の両方について、単一の出力欄と上記の `evaluate` の
-対応を解決する。対応する値を表示できない場合は、元の selector と `saved_node: null` を表示する。
-その値の確認には同梱入力と同じ問いで再検査する。
+下の例では、問いの head と arguments の両方について、単一の出力欄と上記の保存先を展開する。
+`saved_node: null` は、この表示で参照を展開しなかった場合に付く。
+例えば `$m.candidate.source` の始域は、元の保存結果で `outputs.candidate` の node の
+`value.source` を辿って確認する。他の経路は[公開する意味上の射影](#公開する意味上の射影)に従う。
+確認に必要な値が保存されていない場合は、同梱入力と同じ問いで再検査する。
 
 ```jq
 def describe($nodes):
@@ -244,6 +247,8 @@ def describe_selector($requests; $answers; $nodes):
     | . + {saved_node: (
         if $selector.path == ["evaluation", "value"]
            and $requests[$selector.id].kind == "evaluate" then $outputs.value
+        elif $selector.path == ["evaluation", "environment"]
+        then $outputs.environment
         elif ($selector.path | length) == 1 then $outputs[$selector.path[0]]
         else null end
         | describe($nodes)
