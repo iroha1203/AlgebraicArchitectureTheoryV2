@@ -3,13 +3,18 @@ use super::*;
 use crate::observed::environment::state::ScopedReplace;
 use archsig_input::definition::PrimitiveSignature;
 
+#[cfg(test)]
+thread_local! {
+    static MATERIALIZED_SUBJECTS: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 pub(in crate::observed) struct OwnedMembers {
     pub enumeration: super::super::finite::Enumeration,
     pub missing: Vec<Fact>,
 }
 
 impl Environment<'_> {
-    /// 宣言族と式族で同じ原始rosterを読む。既存依存族のobserver名と列挙順を保つ。
+    /// 宣言族と式族で同じ原始rosterを読む。対象型の元indexと列挙順を保つ。
     pub(super) fn owned_members(
         &self,
         entity: &str,
@@ -57,183 +62,174 @@ impl Environment<'_> {
                 atom: None,
             }));
         let field_name = format!("{entity}.owner");
-        for (snapshot_index, snapshot) in
-            self.indexes.inputs.archmap().snapshots().iter().enumerate()
-        {
-            observer("dependent_snapshot", snapshot_index);
+        let subjects = self
+            .indexes
+            .subjects_by_type
+            .get(&(owner_snapshot.as_str(), entity))
+            .map_or(&[][..], Vec::as_slice);
+        for &(index, subject) in subjects {
+            observer("dependent_subject", index);
             self.tick()?;
-            if snapshot.id != *owner_snapshot {
+            if fixed.is_some_and(|fixed| {
+                !matches!(fixed,
+                    Scalar::Subject { snapshot, subject: id, entity: ty }
+                        if snapshot == owner_snapshot && id == &subject.id && ty == entity
+                )
+            }) {
                 continue;
             }
-            result
-                .enumeration
-                .scope
-                .snapshots
-                .insert(snapshot.id.clone());
-            result
-                .enumeration
-                .scope
-                .modes
-                .insert(self.indexes.origin_mode(&snapshot.origin)?.into());
-            for (index, subject) in snapshot.subjects.iter().enumerate() {
-                observer("dependent_subject", index);
-                self.tick()?;
-                let value = Scalar::Subject {
-                    snapshot: snapshot.id.clone(),
+            let value = || {
+                #[cfg(test)]
+                MATERIALIZED_SUBJECTS.with(|count| count.set(count.get() + 1));
+                Scalar::Subject {
+                    snapshot: owner_snapshot.clone(),
                     subject: subject.id.clone(),
                     entity: subject.ty.to_string(),
-                };
-                if subject.ty != entity || fixed.is_some_and(|fixed| fixed != &value) {
-                    continue;
                 }
-                result
-                    .enumeration
-                    .scope
-                    .merge(&self.indexes.scope(subject, reading, None)?);
-                result
-                    .enumeration
-                    .support
-                    .push(Fact::from(archsig_input::archmap::FactData {
-                        snapshot: snapshot.id.clone(),
-                        subject: subject.id.clone(),
-                        field: None,
-                        atom: None,
-                    }));
-                let field =
-                    self.indexes
-                        .field(&self.state, &snapshot.id, &subject.id, &field_name)?;
-                let position = Fact::from(archsig_input::archmap::FactData {
-                    snapshot: snapshot.id.clone(),
+            };
+            result
+                .enumeration
+                .scope
+                .merge(&self.indexes.scope(subject, reading, None)?);
+            result
+                .enumeration
+                .support
+                .push(Fact::from(archsig_input::archmap::FactData {
+                    snapshot: owner_snapshot.clone(),
                     subject: subject.id.clone(),
-                    field: Some(field.name.clone()),
+                    field: None,
                     atom: None,
-                });
-                if let Some(assigned) = self
-                    .indexes
-                    .primitive_valuation
-                    .as_ref()
-                    .and_then(|values| values.get(&position))
-                {
-                    let projected = if self.indexes.valuation_domain
-                        == super::indexes::ValuationDomain::Input
-                    {
+                }));
+            let field =
+                self.indexes
+                    .field(&self.state, owner_snapshot, &subject.id, &field_name)?;
+            let position = Fact::from(archsig_input::archmap::FactData {
+                snapshot: owner_snapshot.clone(),
+                subject: subject.id.clone(),
+                field: Some(field.name.clone()),
+                atom: None,
+            });
+            if let Some(assigned) = self
+                .indexes
+                .primitive_valuation
+                .as_ref()
+                .and_then(|values| values.get(&position))
+            {
+                let projected =
+                    if self.indexes.valuation_domain == super::indexes::ValuationDomain::Input {
                         self.project_object_field(&position, assigned)?
                     } else {
                         None
                     };
-                    let Scalar::Subject {
-                        snapshot: target_snapshot,
-                        subject: target_subject,
-                        ..
-                    } = projected.as_ref().unwrap_or(assigned)
-                    else {
-                        return Err(internal!("候補の原始owner値がRefでない").into());
-                    };
-                    result.enumeration.scope.assignments = true;
-                    result.enumeration.support.push(position);
-                    if target_snapshot == owner_snapshot && target_subject == owner_subject {
-                        result.enumeration.values.push(value);
-                    }
-                    self.tick()?;
-                    continue;
+                let Scalar::Subject {
+                    snapshot: target_snapshot,
+                    subject: target_subject,
+                    ..
+                } = projected.as_ref().unwrap_or(assigned)
+                else {
+                    return Err(internal!("候補の原始owner値がRefでない").into());
+                };
+                result.enumeration.scope.assignments = true;
+                result.enumeration.support.push(position);
+                if target_snapshot == owner_snapshot && target_subject == owner_subject {
+                    result.enumeration.values.push(value());
                 }
-                if let Some((projected, fact)) = self.object_field_value(&position)? {
-                    let Scalar::Subject {
-                        snapshot,
-                        subject: target,
-                        ..
-                    } = &projected
-                    else {
-                        return Err(internal!("輸送されたowner値がRefでない").into());
-                    };
-                    let Slot::Known { origin, .. } = &field.slot else {
-                        return Err(internal!("輸送されたownerの元slotがない").into());
-                    };
+                self.tick()?;
+                continue;
+            }
+            if let Some((projected, fact)) = self.object_field_value(&position)? {
+                let Scalar::Subject {
+                    snapshot,
+                    subject: target,
+                    ..
+                } = &projected
+                else {
+                    return Err(internal!("輸送されたowner値がRefでない").into());
+                };
+                let Slot::Known { origin, .. } = &field.slot else {
+                    return Err(internal!("輸送されたownerの元slotがない").into());
+                };
+                result.enumeration.scope.merge(&self.indexes.scope(
+                    subject,
+                    reading,
+                    Some(origin),
+                )?);
+                result.enumeration.support.push(fact);
+                if snapshot == owner_snapshot && target == owner_subject {
+                    result.enumeration.values.push(value());
+                }
+                self.tick()?;
+                continue;
+            }
+            match &field.slot {
+                Slot::Known {
+                    value:
+                        Value::Ref {
+                            snapshot: target_snapshot,
+                            subject: target_subject,
+                        },
+                    atom,
+                    origin,
+                    ..
+                } => {
                     result.enumeration.scope.merge(&self.indexes.scope(
                         subject,
                         reading,
                         Some(origin),
                     )?);
-                    result.enumeration.support.push(fact);
-                    if snapshot == owner_snapshot && target == owner_subject {
-                        result.enumeration.values.push(value);
-                    }
-                    self.tick()?;
-                    continue;
-                }
-                match &field.slot {
-                    Slot::Known {
-                        value:
-                            Value::Ref {
-                                snapshot: target_snapshot,
-                                subject: target_subject,
-                            },
-                        atom,
-                        origin,
-                        ..
-                    } => {
-                        result.enumeration.scope.merge(&self.indexes.scope(
-                            subject,
-                            reading,
-                            Some(origin),
-                        )?);
-                        result.enumeration.support.push(Fact::from(
-                            archsig_input::archmap::FactData {
-                                snapshot: snapshot.id.clone(),
-                                subject: subject.id.clone(),
-                                field: Some(field.name.clone()),
-                                atom: Some(atom.clone()),
-                            },
-                        ));
-                        if target_snapshot == owner_snapshot && target_subject == owner_subject {
-                            result.enumeration.values.push(value);
-                        }
-                    }
-                    Slot::Missing => {
-                        result.enumeration.scope.completions = true;
-                        let fact = Fact::from(archsig_input::archmap::FactData {
-                            snapshot: snapshot.id.clone(),
+                    result
+                        .enumeration
+                        .support
+                        .push(Fact::from(archsig_input::archmap::FactData {
+                            snapshot: owner_snapshot.clone(),
                             subject: subject.id.clone(),
                             field: Some(field.name.clone()),
-                            atom: None,
-                        });
-                        let completed = assignment
-                            .and_then(|values| values.get(&fact))
-                            .cloned()
-                            .or_else(|| {
-                                self.state
-                                    .completion_values
-                                    .borrow()
-                                    .iter()
-                                    .find(|(field, _, _)| field == &fact)
-                                    .map(|(_, _, value)| value.clone())
-                            });
-                        if let Some(completed) = completed {
-                            let Scalar::Subject {
-                                snapshot: target_snapshot,
-                                subject: target_subject,
-                                entity: target_entity,
-                            } = &completed
-                            else {
-                                return Err(internal!("所属補完の原始owner値がRefでない").into());
-                            };
-                            let target = self.indexes.subject(target_snapshot, target_subject)?;
-                            if target.ty != *target_entity || completed.ty() != field.ty {
-                                return Err(
-                                    internal!("所属補完の原始owner型が元fieldと違う").into()
-                                );
-                            }
-                            if target_snapshot == owner_snapshot && target_subject == owner_subject
-                            {
-                                result.enumeration.values.push(value);
-                            }
-                        } else {
-                            result.missing.push(fact);
-                        }
+                            atom: Some(atom.clone()),
+                        }));
+                    if target_snapshot == owner_snapshot && target_subject == owner_subject {
+                        result.enumeration.values.push(value());
                     }
-                    _ => return Err(internal!("元owner slotがRef型でない").into()),
                 }
-                self.tick()?;
+                Slot::Missing => {
+                    result.enumeration.scope.completions = true;
+                    let fact = Fact::from(archsig_input::archmap::FactData {
+                        snapshot: owner_snapshot.clone(),
+                        subject: subject.id.clone(),
+                        field: Some(field.name.clone()),
+                        atom: None,
+                    });
+                    let completed = assignment
+                        .and_then(|values| values.get(&fact))
+                        .cloned()
+                        .or_else(|| {
+                            self.state
+                                .completion_values
+                                .borrow()
+                                .iter()
+                                .find(|(field, _, _)| field == &fact)
+                                .map(|(_, _, value)| value.clone())
+                        });
+                    if let Some(completed) = completed {
+                        let Scalar::Subject {
+                            snapshot: target_snapshot,
+                            subject: target_subject,
+                            entity: target_entity,
+                        } = &completed
+                        else {
+                            return Err(internal!("所属補完の原始owner値がRefでない").into());
+                        };
+                        let target = self.indexes.subject(target_snapshot, target_subject)?;
+                        if target.ty != *target_entity || completed.ty() != field.ty {
+                            return Err(internal!("所属補完の原始owner型が元fieldと違う").into());
+                        }
+                        if target_snapshot == owner_snapshot && target_subject == owner_subject {
+                            result.enumeration.values.push(value());
+                        }
+                    } else {
+                        result.missing.push(fact);
+                    }
+                }
+                _ => return Err(internal!("元owner slotがRef型でない").into()),
             }
             self.tick()?;
         }
@@ -713,5 +709,105 @@ impl Environment<'_> {
             return Err(internal!("Family評価が元owner欠測・未実装理由を保持しない").into());
         }
         Ok(true)
+    }
+}
+
+#[cfg(test)]
+mod roster_index_tests {
+    use super::*;
+    use archsig_common::control::quiet;
+    use archsig_input::input::InputSources;
+
+    #[test]
+    fn owned_roster_visits_only_the_type_and_builds_only_included_subjects() {
+        let definition = include_bytes!("../../../../../tests/fixtures/reservations.atoms.json");
+        let law = r#"law "archsig.law/2" semantics "archsig/0.6.0";
+reading R {
+  use vocabulary Reservations version "1" digest "sha256:8427a2712c22d6eed1cdd5f48258bea102904173558a7087bb82c7d95665c9ff";
+  view states(a:Reservations.System):Set<Reservations.State> = Reservations.State[a];
+}"#;
+        let map = include_str!("../../../../../tests/fixtures/reservations.archmap.json");
+        let base = map.trim_end().strip_suffix("  }]\n}").unwrap();
+        let map = format!(
+            r#"{base}  }},{{"id":"w","origin":"model","subjects":[
+              {{"id":"A","type":"Reservations.System","origin":"model"}},
+              {{"id":"p","type":"Reservations.State","origin":"model"}}
+            ],"atoms":[
+              {{"id":"p-owner","subject":"p","field":"Reservations.State.owner","value":["w","A"],"origin":"model"}}
+            ]}}]}}"#
+        );
+        let c = quiet();
+        let mut measurements = Vec::new();
+        for unrelated in [0, 8, 24] {
+            let extra = (0..unrelated)
+                .map(|i| {
+                    format!(
+                        r#"{{"id":"system{i}","type":"Reservations.System","origin":"model"}},"#
+                    )
+                })
+                .collect::<String>();
+            let archmap = map.replacen("\"subjects\": [", &format!("\"subjects\": [{extra}"), 1);
+            let sources = InputSources::from_bytes(
+                vec![definition.to_vec()],
+                law.as_bytes().to_vec(),
+                archmap.into_bytes(),
+            );
+            let prepared = super::super::super::prepare_observed(
+                sources,
+                &["q=evaluate(R.states,bind.a=@v/A)"],
+                &c,
+            )
+            .unwrap();
+            let environment = Environment::new(prepared.inputs(), &c).unwrap();
+            let owner = Scalar::Subject {
+                snapshot: "v".into(),
+                subject: "A".into(),
+                entity: "Reservations.System".into(),
+            };
+            let mut visits = 0;
+            MATERIALIZED_SUBJECTS.with(|count| count.set(0));
+            let actual = environment
+                .owned_members(
+                    "Reservations.State",
+                    &owner,
+                    None,
+                    "R",
+                    &mut |operation, _| {
+                        if operation == "dependent_subject" {
+                            visits += 1;
+                        }
+                    },
+                )
+                .unwrap();
+            measurements.push((
+                unrelated,
+                visits,
+                MATERIALIZED_SUBJECTS.with(|count| count.get()),
+            ));
+            assert!(actual.missing.is_empty());
+            let included: Vec<_> = actual
+                .enumeration
+                .values
+                .iter()
+                .map(|v| match v {
+                    Scalar::Subject { subject, .. } => subject.as_str(),
+                    _ => panic!("所属個体"),
+                })
+                .collect();
+            assert_eq!(included, ["p", "q"]);
+            for excluded in ["r", "s"] {
+                assert!(
+                    actual
+                        .enumeration
+                        .support
+                        .iter()
+                        .any(|fact| fact.subject == excluded
+                            && fact.field.as_deref() == Some("Reservations.State.owner")
+                            && fact.atom.is_some())
+                );
+            }
+        }
+        eprintln!("(unrelated, visited, values) {measurements:?}");
+        assert_eq!(measurements, [(0, 4, 2), (8, 4, 2), (24, 4, 2)]);
     }
 }
