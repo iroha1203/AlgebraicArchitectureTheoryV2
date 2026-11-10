@@ -210,25 +210,53 @@ checkの`reuse`は`requested=false`、両件数0、`rejected=[]`の固定metadat
 | 表示する情報 | 保存結果で読む欄 |
 | --- | --- |
 | 問いと選択した宣言 | `requests[].text` と `head`。元の入力で宣言の意味を確認する |
-| 束縛と省略規則 | `requests[].arguments` と `defaults`。subject selector から snapshot と個体を読み、answer selector は参照先 Answer の `outputs` から値と型を辿る |
-| 評価結果に残る束縛 | `outputs` が参照する `EvaluationResult.value.bindings` があれば読み、各 `value` の node を辿る |
+| 束縛と省略規則 | `requests[].arguments` と `defaults`。subject selector から snapshot と個体を読む。answer selector は元の Answer と path を示し、保存先のある出力は `outputs` の参照から型と値を辿る |
+| 評価結果に残る束縛 | 保存結果から `EvaluationResult` に到達した場合は `value.bindings` を読む。例えば `completion_pair` の `first_result` と `second_result` が指す評価は、各補完の場合に分けて読む |
 | 検査対象と量化域 | `answers[].scope` の `readings`、`snapshots`、`modes`、`domain` と `quantifiers`。量化子の `domain.node` で `kind=finite` の Domain を辿れる場合、`elements` の件数を表示する |
 | 成立・反証・未決 | `answers[].status` と、適用可否がある場合は `applicability`。未決は `reasons` の理由と `missing`、反証は `counterexamples` の参照を辿る |
 
 次を `read-scope.jq` として保存し、`jq -f read-scope.jq RUN_DIR/result.json` を実行すると、
 出力先 `RUN_DIR` の結果を問いごとの表示用 JSON として読める。量化域の件数が取得できない場合は `null`、有限空域は `0` と表示する。
-量化子の順序と多重度は保存値どおりに残す。
+量化子の順序と多重度は保存値どおりに残す。出力の参照は ID・型・状態を表示し、参照値の個体はその値も表示する。
+全 Map 行や反例の内容は、表示した参照で元の `nodes` から読む。
+
+answer selector の path は問いで指定した経路を保持する。例えば `$t.evaluation.value` の保存先は
+`t.outputs.value` で、`outputs.evaluation` は保存射影で除かれる。`needed($t)` の空の path は回答全体を指す。
+下の例では単一の出力欄と `evaluation.value` の保存先を解決する。
+残りの path は元の selector を表示し、対応する保存先を確認できない場合は同梱入力と同じ問いで再検査する。
 
 ```jq
+def describe($nodes):
+  if .node? then
+    $nodes[.node] | {id, type, state} + (
+      if (.type | if type == "array" then .[0] else null end) == "Ref"
+      then {value} else {} end
+    )
+  else null end;
+
 INDEX(.nodes[]; .id) as $node
 | INDEX(.requests[]; .id) as $request
+| INDEX(.answers[]; .id) as $answer
 | .answers[]
-| . as $answer
 | $request[.id] as $ask
 | {
-    id, status, applicability, text: $ask.text,
-    arguments: $ask.arguments, defaults: $ask.defaults,
-    snapshots: .scope.snapshots, modes: .scope.modes, domain: .scope.domain,
+    id, status, applicability, text: $ask.text, head: $ask.head,
+    arguments: [
+      $ask.arguments[]?
+      | if .value.kind == "answer" then
+          .value as $selector
+          | $answer[$selector.id].outputs as $outputs
+          | . + {saved_node: (
+              if $selector.path == ["evaluation", "value"] then $outputs.value
+              elif ($selector.path | length) == 1 then $outputs[$selector.path[0]]
+              else null end
+              | describe($node)
+            )}
+        else . end
+    ],
+    defaults: $ask.defaults,
+    readings: .scope.readings, snapshots: .scope.snapshots,
+    modes: .scope.modes, domain: .scope.domain,
     quantifiers: [
       .scope.quantifiers[]?
       | ($node[.domain.node // ""] | .value) as $d
@@ -237,11 +265,8 @@ INDEX(.nodes[]; .id) as $node
           then ($d.elements | length) else null end
         )}
     ],
-    evaluation_bindings: [
-      $answer.outputs[]? | $node[.node]
-      | select(.type == "EvaluationResult") | .value.bindings[]?
-    ],
-    reasons: [.reasons[]? | {code, missing}],
+    outputs: (.outputs | with_entries(.value |= describe($node))),
+    reasons: [.reasons[]? | {code, message, missing}],
     counterexamples: (.counterexamples // [])
   }
 ```
@@ -253,7 +278,7 @@ INDEX(.nodes[]; .id) as $node
 | R2 の `beforeSource` 欠測例 | `probe` は `case01/consume_chunk` を束縛し、`undetermined` と `missing_observation` を返す。`P3Main.Effect.beforeSource` が必要な slot。後続の `needed` の成立は観測計画を得たことを表す |
 | `empty=check(R.empty)`。元式は `forall q in set<Bool>{}. q` | `established`、`q` の有限域は0件。型の検査と、空域での全称条件の成立を分けて表示する |
 
-この表示で読める具体的な対象は、保存された selector、Scope、値と参照の範囲に限る。
+この表示で読める具体的な対象は、保存された selector、Scope、値と参照の範囲で確認できる。
 ノードごとの内部支持を要する確認には、同梱の三入力と同じ問いで核の再検査を行う。
 
 ## 2. 回答、条件、導出
