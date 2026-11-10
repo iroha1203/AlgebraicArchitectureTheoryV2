@@ -560,6 +560,7 @@ pub fn reevaluate_assembly(
             .get(left)
             .is_some_and(|(_, target)| target.id == right)
     };
+    let mut before_missing = Vec::new();
     let mut layout_missing = Vec::new();
     for (old, new) in pairs.values() {
         for old_field in old.fields.iter().filter(|f| f.name.is_owner()) {
@@ -583,9 +584,10 @@ pub fn reevaluate_assembly(
             }
             match (&old_field.slot, &new_field.slot) {
                 (Slot::Missing, Slot::Missing) => {
-                    layout_missing.extend([fact(old, old_field, None), fact(new, new_field, None)]);
+                    before_missing.push(fact(old, old_field, None));
+                    layout_missing.push(fact(new, new_field, None));
                 }
-                (Slot::Missing, _) => layout_missing.push(fact(old, old_field, None)),
+                (Slot::Missing, _) => before_missing.push(fact(old, old_field, None)),
                 (_, Slot::Missing) => layout_missing.push(fact(new, new_field, None)),
                 (
                     Slot::Known {
@@ -682,47 +684,50 @@ pub fn reevaluate_assembly(
         .ok_or_else(|| invalid("before の組立て回答がない"))?;
     let mut observations = Vec::new();
     let mut seen = BTreeSet::new();
-    for reason in before_answer
+    let mut record_needed = |needed: &Fact| -> Result<(), ReobservationFailure> {
+        control.checkpoint(Checkpoint::ConfigurationMap)?;
+        if !seen.insert(needed.clone()) {
+            return Ok(());
+        }
+        if needed.snapshot != alignment.before_snapshot {
+            return Err(ReobservationFailure::Unsupported(
+                "前回の欠測が対応対象外の snapshot に属する".into(),
+            ));
+        }
+        let Some((old, new)) = pairs.get(needed.subject.as_str()) else {
+            return Err(invalid("組立ての不足位置に subject 対応がない"));
+        };
+        let name = needed
+            .field
+            .as_ref()
+            .ok_or_else(|| invalid("不足位置に field がない"))?;
+        let old_field = old
+            .fields
+            .iter()
+            .find(|f| &f.name == name && matches!(f.slot, Slot::Missing))
+            .ok_or_else(|| invalid("before の不足位置が原始 slot と一致しない"))?;
+        let field = new
+            .fields
+            .iter()
+            .find(|f| &f.name == name && f.ty == old_field.ty)
+            .ok_or_else(|| invalid("after の field と型が一致しない"))?;
+        let observed = match &field.slot {
+            Slot::Missing => None,
+            Slot::Known { atom, .. } => Some(fact(new, field, Some(atom.clone()))),
+        };
+        observations.push(ObservationMatch {
+            needed: needed.clone(),
+            observed,
+        });
+        Ok(())
+    };
+    for needed in before_answer
         .reasons
         .iter()
         .filter(|r| r.kind == ReasonKind::Missing)
+        .flat_map(|reason| &reason.missing)
     {
-        for needed in &reason.missing {
-            control.checkpoint(Checkpoint::ConfigurationMap)?;
-            if !seen.insert(needed) {
-                continue;
-            }
-            if needed.snapshot != alignment.before_snapshot {
-                return Err(ReobservationFailure::Unsupported(
-                    "前回の欠測が対応対象外の snapshot に属する".into(),
-                ));
-            }
-            let Some((old, new)) = pairs.get(needed.subject.as_str()) else {
-                return Err(invalid("組立ての不足位置に subject 対応がない"));
-            };
-            let name = needed
-                .field
-                .as_ref()
-                .ok_or_else(|| invalid("不足位置に field がない"))?;
-            let old_field = old
-                .fields
-                .iter()
-                .find(|f| &f.name == name && matches!(f.slot, Slot::Missing))
-                .ok_or_else(|| invalid("before の不足位置が原始 slot と一致しない"))?;
-            let field = new
-                .fields
-                .iter()
-                .find(|f| &f.name == name && f.ty == old_field.ty)
-                .ok_or_else(|| invalid("after の field と型が一致しない"))?;
-            let observed = match &field.slot {
-                Slot::Missing => None,
-                Slot::Known { atom, .. } => Some(fact(new, field, Some(atom.clone()))),
-            };
-            observations.push(ObservationMatch {
-                needed: needed.clone(),
-                observed,
-            });
-        }
+        record_needed(needed)?;
     }
     let translate = |value: &Scalar| match value {
         Scalar::Subject {
@@ -755,7 +760,7 @@ pub fn reevaluate_assembly(
                 )?,
                 control,
             )?;
-            layout_missing.extend(before_layout.missing.iter().cloned());
+            before_missing.extend(before_layout.missing.iter().cloned());
             layout_missing.extend(after_layout.missing.iter().cloned());
             let after_subject = |fact: &Fact| {
                 control.checkpoint(Checkpoint::ConfigurationMap)?;
@@ -816,7 +821,7 @@ pub fn reevaluate_assembly(
                     &a,
                     alignment.before_snapshot,
                     before_image,
-                    &mut layout_missing,
+                    &mut before_missing,
                     control,
                 )?)
             } else {
@@ -834,6 +839,9 @@ pub fn reevaluate_assembly(
             } else {
                 None
             };
+            for needed in &before_missing {
+                record_needed(needed)?;
+            }
             if let (Some(old), Some(new)) = (old_shared, new_shared)
                 && old != new
             {
@@ -848,6 +856,7 @@ pub fn reevaluate_assembly(
             }
         }
     }
+    layout_missing.extend(before_missing);
     layout_missing.sort();
     layout_missing.dedup();
     let candidate = match (
@@ -1093,24 +1102,28 @@ mod tests {
             "list<(Part,Part)>[(ma,mb)];",
             "if mb.quantity=0 then list<(Part,Part)>[(ma,mb)] else list<(Part,Part)>[(mb,ma)];",
         );
-        let owner_law = pending_law.replace("if mb.quantity=0", "if mb.owner=b and mb.quantity=0");
-        let missing_owner = BEFORE.replace(
+        let missing_private = BEFORE.replace(
             concat!(
-                "        {\n          \"id\": \"mb-owner\",\n          \"subject\": \"mb\",\n",
-                "          \"field\": \"Assemble.Part.owner\",\n          \"value\": [\n",
-                "            \"before\",\n            \"B\"\n          ],\n          \"origin\": \"model\"\n        },\n"
+                "        {\n          \"id\": \"b-quantity\",\n          \"subject\": \"b\",\n",
+                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"0\",\n",
+                "          \"origin\": \"model\"\n        },\n"
             ),
             "",
         );
-        assert_ne!(missing_owner, BEFORE);
         let pending = evaluate_observed(
-            prepared_with("before", &missing_owner, owner_law.as_bytes(), QUERIES, &c),
+            prepared_with(
+                "before",
+                &missing_private,
+                pending_law.as_bytes(),
+                QUERIES,
+                &c,
+            ),
             &c,
         )
         .unwrap();
         let completed = reevaluate_assembly(
             &pending,
-            prepared_with("after", AFTER, owner_law.as_bytes(), QUERIES, &c),
+            prepared_with("after", AFTER, pending_law.as_bytes(), QUERIES, &c),
             &alignment,
             &c,
         )
@@ -1118,7 +1131,17 @@ mod tests {
         assert!(completed.layout_missing().iter().any(|slot| {
             slot.snapshot == "before"
                 && slot.subject == "mb"
-                && slot.field.as_ref().is_some_and(|name| name.is_owner())
+                && slot
+                    .field
+                    .as_ref()
+                    .is_some_and(|name| name == "Assemble.Part.quantity")
+        }));
+        assert_eq!(status(&pending, "selected"), Decision::Undetermined);
+        assert!(completed.observations().iter().any(|matched| {
+            matched.needed().subject == "b"
+                && matched
+                    .observed()
+                    .is_some_and(|atom| atom.atom.as_deref() == Some("b-quantity"))
         }));
         assert_eq!(completed.candidate(), CandidateContinuity::Undetermined);
         assert_eq!(completed.selected_candidate(), Some("pick"));
@@ -1126,7 +1149,7 @@ mod tests {
             matched.needed().subject == "mb"
                 && matched
                     .observed()
-                    .is_some_and(|atom| atom.atom.as_deref() == Some("mb-owner"))
+                    .is_some_and(|atom| atom.atom.as_deref() == Some("observed-shared-quantity"))
         }));
         assert_eq!(
             status(completed.evaluation(), "global"),
@@ -1177,7 +1200,6 @@ mod tests {
             &previous, prepared_with("after", &incomplete, invalid_shared.as_bytes(), &raw, &c),
             &alignment, &c,
         ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("共有対")));
-
     }
 
     #[test]

@@ -298,6 +298,9 @@ pub(super) fn compile(
     selected: &BTreeMap<Fact, Scalar>,
     c: &Control,
 ) -> Result<Preparation, ValidationFailure> {
+    if !std::ptr::eq(inputs.as_ref(), indexes.inputs) {
+        return Err(internal!("組立ての入力と索引の由来が違う").into());
+    }
     tick(c)?;
     if let Some(problem) = layout_snapshot(indexes, reading, target, roots, pairs, c)? {
         return Ok(Preparation::Unsupported(problem));
