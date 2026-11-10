@@ -794,6 +794,7 @@ pub(super) fn render_search(
             &mut b,
             linear,
             &requirements,
+            !architecture.complete,
             c,
         )?)
     } else {
@@ -816,9 +817,23 @@ pub(super) fn render_search(
             .make_owned()
             .extend(source.fixed_support.iter().cloned());
         let label = value(&mut b, &Scalar::Text("rational_solution".into()))?;
-        let claim = b.proposition(
+        let root = architecture.witness.construction().root();
+        let entity = env
+            .indexes
+            .subject(&root.snapshot, &root.subject)?
+            .ty
+            .to_string();
+        let root = value(
+            &mut b,
+            &Scalar::Subject {
+                snapshot: root.snapshot.clone(),
+                subject: root.subject.clone(),
+                entity,
+            },
+        )?;
+        let existence = b.proposition(
             "constructible",
-            [label, linear.parameters, linear.certificate]
+            [label, root, linear.parameters, linear.certificate]
                 .into_iter()
                 .chain(subjects)
                 .chain(requirements)
@@ -826,20 +841,38 @@ pub(super) fn render_search(
             vec![linear.certificate],
             Decision::Refuted,
         )?;
-        let part = &mut b.parts[claim.0 - base];
-        part.evidence.push(linear.certificate);
-        part.judgment
-            .as_mut()
-            .ok_or(internal!("有理反証の判断がない"))?
-            .evidence
-            .push(linear.certificate);
-        let scope = part.scope.clone();
+        let mut scope = b.parts[existence.0 - base].scope.clone();
+        scope.merge(&g.get(architecture.reference)?.scope);
+        scope.completions = true;
+        let mut outputs = BTreeMap::new();
+        let claim = if request.kind == QuestionKind::Repair {
+            outputs.insert("existence".into(), existence);
+            let label = value(&mut b, &Scalar::Text("repair".into()))?;
+            b.proposition(
+                "constructible",
+                vec![label, existence],
+                vec![linear.certificate],
+                Decision::Refuted,
+            )?
+        } else {
+            existence
+        };
+        outputs.insert("proposition".into(), claim);
+        for reference in [existence, claim] {
+            let part = &mut b.parts[reference.0 - base];
+            part.scope.merge(&scope);
+            part.evidence = vec![linear.certificate];
+            part.judgment
+                .as_mut()
+                .ok_or(internal!("有理反証の判断がない"))?
+                .evidence = vec![linear.certificate];
+        }
         return Ok((
             b.parts,
             Answer {
                 id: request.id.clone(),
                 status: Decision::Refuted,
-                outputs: BTreeMap::from([("proposition".into(), claim)]),
+                outputs,
                 claim: Some(claim),
                 evidence: vec![linear.certificate],
                 reasons: vec![],

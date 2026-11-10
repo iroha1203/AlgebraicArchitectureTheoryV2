@@ -307,9 +307,12 @@ repairの構成条件は、許された候補域の全解における[元Assignm
 その割当てと更新後の具体値の確定、元の更新・Lawへの再検査を含む。
 全解集合の非空性は別のinhabited命題として、repairのoutputs.existenceに保持する。
 この命題はsolveのclaimと同じ意味を持ち、repairの構成条件を表すoutputs.propositionとは区別する。
-存在が成立しても一意性・具体値・再検査が未完了なら、existenceを残しrepairのclaimは未決、
+存在の証拠を独立に検査済みで、一意性・具体値・再検査が未完了なら、existenceを残しrepairのclaimは未決、
 Repair/objectは未生成とする。全補完で一意でも値が補完に依存する場合もこれに含む。
 解が空ならinhabitedとunique_solutionを反証し、repairの構成条件もrefutedとする。
+原始対象が欠測で未完成でも、既知の有理制約が全候補を反証する場合は、
+原始 root、元 parameter 域と空集合の証明書を参照する `constructible` 命題で不存在を示す。
+solve はその命題を proposition に、repair は existence に出す。Scope は全補完を含む。
 異なる二つの解Assignmentがあればunique_solutionと構成条件をrefuted、理由をcondition_failedとする。
 この場合はinhabitedの成立と全解集合を保持し、Repair/objectを生成しない。
 どちらの反証も修復構成の不成立だが、非一意を修復不存在と読み替えない。

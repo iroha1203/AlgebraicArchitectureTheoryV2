@@ -43,6 +43,7 @@ struct Constraints {
     quantifiers: Vec<(Quantifier, Vec<Scalar>)>,
     refuted: bool,
     fixed_support: Vec<Fact>,
+    pending_failure: Option<ValidationFailure>,
 }
 
 impl Constraints {
@@ -1501,6 +1502,19 @@ fn compute_inner(
             &env.control,
         )?)
     };
+    if let Some(error) = rows.pending_failure {
+        let empty = match &solutions {
+            Solutions::Affine(fiber) => fiber.particular.is_none(),
+            Solutions::Polyhedron(polyhedron) => matches!(polyhedron.outcome, Outcome::Empty(_)),
+        };
+        if !empty {
+            missing.finite_domains = rows.quantifiers;
+            return Err(error);
+        }
+        missing.facts.clear();
+        missing.additional.clear();
+        missing.unsupported = None;
+    }
     Ok(Linear {
         parameter_count: axes.len(),
         axes,
@@ -1672,8 +1686,10 @@ fn requirement_equations(
         }
     }
     if let Err(error) = conjuncts.finish(&rows, missing) {
-        missing.finite_domains = rows.quantifiers;
-        return Err(error);
+        if !allow_bounds {
+            return Err(error);
+        }
+        rows.pending_failure = Some(error);
     }
     Ok(rows)
 }

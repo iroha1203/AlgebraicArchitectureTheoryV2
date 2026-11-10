@@ -895,26 +895,70 @@ fn rational_backing_reports_missing_references_units_and_unsupported_disjunction
         .unwrap();
     fields(unit).insert("value".into(), Json::str("kg"));
     std::fs::write(dir.join("archmap.json"), refuted.canonical()).unwrap();
-    let run = polyhedron_asks(
-        &dir,
-        &[ask, independent],
-        "unit-refutation-with-missing",
-        None,
+    let repair = ask.replacen("overlapFeasible=solve(", "repairIt=repair(", 1);
+    let units_first = POLY_LAW
+        .replace(
+            "   (forall b in Pool.Cell[w] . b.quantity",
+            "   (forall b in Pool.Cell[w] . b.stock.quantityUnit=b.claim.quantityUnit) and
+   (forall b in Pool.Cell[w] . b.quantity",
+        )
+        .replace(" and b.stock.quantityUnit=b.claim.quantityUnit", "");
+    let contradiction = POLY_LAW.replace(
+        "b.quantity>=rat(0,1)",
+        "b.quantity>=rat(1,1) and b.quantity<=rat(0,1)",
     );
-    assert_eq!(run.code, 1, "{}{}", run.stdout, run.stderr);
-    let result = result_json(&dir, &run);
-    let answers = arr(get(&result, "answers"));
-    assert_eq!(s(get(&answers[0], "status")), "refuted");
-    assert_eq!(s(get(&answers[1], "status")), "established");
-    let outputs = get(&answers[0], "outputs");
-    assert!(!has(outputs, "domain"));
-    assert!(!has(outputs, "solutions"));
-    let claim = referenced(&result, get(outputs, "proposition"));
-    assert!(
-        arr(get(get(claim, "value"), "operands"))
-            .iter()
-            .any(|operand| { matches!(&get(referenced(&result, operand), "type").value, JValue::Str(name) if name == "Evidence") })
-    );
+    for (label, law) in [
+        ("unit-refutation-with-missing", POLY_LAW.to_string()),
+        ("affine-refutation-with-missing", units_first),
+        (
+            "bounded-refutation-with-missing",
+            contradiction.replace(" and b.stock.quantityUnit=b.claim.quantityUnit", ""),
+        ),
+    ] {
+        std::fs::write(dir.join("laws.law"), law).unwrap();
+        let run = polyhedron_asks(&dir, &[ask, &repair, independent], label, None);
+        assert_eq!(run.code, 1, "{label}: {}{}", run.stdout, run.stderr);
+        let result = result_json(&dir, &run);
+        let [solve, repair, independent] = arr(get(&result, "answers")) else {
+            panic!("both refutations and the independent answer")
+        };
+        assert_eq!(s(get(independent, "status")), "established");
+        for answer in [solve, repair] {
+            assert_eq!(s(get(answer, "status")), "refuted", "{label}");
+            let scope = get(answer, "scope");
+            for (key, member) in [
+                ("readings", "Backing"),
+                ("snapshots", "fixture"),
+                ("modes", "specification"),
+            ] {
+                assert!(
+                    arr(get(scope, key)).iter().any(|v| s(v) == member),
+                    "{label}: {key}"
+                );
+            }
+            assert_eq!(s(get(scope, "domain")), "all_completions");
+            let outputs = get(answer, "outputs");
+            assert!(!has(outputs, "domain"));
+            assert!(!has(outputs, "solutions"));
+            let field = if s(get(answer, "id")) == "repairIt" {
+                "existence"
+            } else {
+                "proposition"
+            };
+            let claim = referenced(&result, get(outputs, field));
+            assert!(
+                arr(get(get(claim, "value"), "operands"))
+                    .iter()
+                    .any(|operand| {
+                        let node = referenced(&result, operand);
+                        matches!(&get(node, "type").value, JValue::Str(name) if name == "Evidence")
+                            && s(get(get(node, "value"), "kind")) == "rational_polyhedron"
+                            && s(get(get(get(node, "value"), "data"), "outcome")) == "empty"
+                    }),
+                "{label}: the retained contradiction certificate"
+            );
+        }
+    }
     std::fs::write(dir.join("archmap.json"), map.canonical()).unwrap();
     let law = POLY_LAW.replacen(
         "b.quantity>=rat(0,1)",
@@ -1149,7 +1193,7 @@ fn rational_backing_separates_guard_observation_from_unsupported_change_conditio
         ("sum-update", known_bound.replacen("quantity=q",
             "quantity=sum(list<Q>[q*b.stock.available])", 1),
             &["missing_observation"][..]),
-        ("observational-branch-equalities", known_bound.replacen(nonnegative,
+        ("observational-branch-equalities", known_bound.replace("stockLoad(s)<=rat(5,1)", "stockLoad(s)<=rat(100,1)").replacen(nonnegative,
             "(if b.stock.available>=rat(0,1) then b.quantity=rat(0,1) else b.quantity=rat(1,1))", 1),
             &["missing_observation"][..]),
         ("conditionally-chosen-term", known_bound.replacen(nonnegative,
