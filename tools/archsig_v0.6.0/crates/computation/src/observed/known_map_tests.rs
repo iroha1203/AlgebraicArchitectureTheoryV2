@@ -19,6 +19,103 @@ fn known_map_private_result(asks: &[&str]) -> ObservedEvaluation {
 fn known_map_private_atom(r: &ObservedEvaluation) -> usize {
     r.nodes.iter().position(|n|matches!((&n.payload,&n.rule),(Some(Payload::Scalar(Scalar::Map{pairs,..})),Rule::Input{kind:"atom",..}) if !pairs.is_empty())).unwrap()
 }
+
+#[test]
+fn quantified_map_reads_share_payload_and_keep_each_source() {
+    use std::collections::BTreeSet;
+
+    let inputs = known_map_private_inputs();
+    let law = std::str::from_utf8(inputs.law().bytes()).unwrap();
+    let (reading, _) = law.rsplit_once('}').unwrap();
+    let law = format!(
+        "{reading} view repeated(s:Sample):Bool = forall q:Bool . (s.m=s.n) and (s.n=s.m); }}"
+    );
+    let inputs = InputSources::from_bytes(
+        vec![inputs.definitions()[0].bytes().to_vec()],
+        law.into_bytes(),
+        inputs.archmap().bytes().to_vec(),
+    );
+    let result =
+        evaluate_observed_bytes(inputs, &["q=evaluate(Maps.repeated,s=@v/s)"], &quiet()).unwrap();
+    assert_eq!(result.status(), "complete", "{:?}", result.issues);
+    assert_eq!(
+        data_scalar_at(&result, result.answers[0].outputs["value"].0),
+        &Scalar::Bool(true)
+    );
+
+    let mut map_reads = BTreeMap::<_, Vec<_>>::new();
+    for (index, node) in result.nodes.iter().enumerate() {
+        let (Rule::Input { kind: "atom", .. }, Some(Payload::Scalar(Scalar::Map { pairs, .. }))) =
+            (&node.rule, &node.payload)
+        else {
+            continue;
+        };
+        let [fact] = node.support.as_slice() else {
+            panic!("Map atom の元支持")
+        };
+        let atom = fact.atom.as_deref().unwrap();
+        map_reads.entry(atom).or_default().push((index, pairs));
+    }
+    let counts: Vec<_> = map_reads
+        .iter()
+        .map(|(atom, reads)| {
+            let allocations = reads
+                .iter()
+                .map(|(_, pairs)| pairs.as_ptr())
+                .collect::<BTreeSet<_>>();
+            (*atom, reads.len(), allocations.len())
+        })
+        .collect();
+    eprintln!("(Map atom, reads, retained row allocations) {counts:?}");
+    assert_eq!(map_reads.len(), 2);
+    let row_pointers = |value: &Scalar| {
+        let Scalar::Tuple(items) = value else {
+            panic!("Map の複合値")
+        };
+        items
+            .iter()
+            .map(|item| {
+                let Scalar::Map { pairs, .. } = item else {
+                    panic!("Map")
+                };
+                pairs.as_ptr()
+            })
+            .collect::<Vec<_>>()
+    };
+    let composite = Scalar::Tuple(
+        ["m", "n"]
+            .iter()
+            .map(|atom| data_scalar_at(&result, map_reads[atom][0].0).clone())
+            .collect(),
+    );
+    let copied = composite.clone();
+    let source_rows = row_pointers(&composite);
+    let copied_rows = row_pointers(&copied);
+    let deep_copies = source_rows
+        .iter()
+        .zip(&copied_rows)
+        .filter(|(a, b)| a != b)
+        .count();
+    eprintln!("Map row allocations when cloning two Map arguments: {deep_copies}");
+    assert_eq!(deep_copies, 0);
+    for atom in ["m", "n"] {
+        let reads = &map_reads[atom];
+        assert_eq!(reads.len(), 4);
+        let mut iterations = BTreeSet::new();
+        for (index, pairs) in reads {
+            assert_eq!(
+                pairs.as_ptr(),
+                reads[0].1.as_ptr(),
+                "同じ入力 Map の行を共有する"
+            );
+            iterations.insert(result.contexts[*index].iteration.unwrap());
+        }
+        assert_eq!(iterations.len(), 2);
+    }
+    assert_ne!(map_reads["m"][0].1.as_ptr(), map_reads["n"][0].1.as_ptr());
+    rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
+}
+
 fn known_map_private_change(value: &mut Scalar) {
     let Scalar::Map { pairs, .. } = value else {
         panic!("map")

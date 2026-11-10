@@ -2495,16 +2495,14 @@ impl Evaluator<'_, '_> {
             Slot::Known {
                 atom,
                 origin,
-                value,
                 pointer,
+                ..
             } => {
-                let value = scalar_from(
-                    value,
-                    &field.ty,
-                    self.environment.indexes.inputs.law(),
-                    self.control,
-                )?
-                .ok_or_else(|| self.unsupported(span, "Z/Bool/Ref 以外の原始値読取り"))?;
+                let value = self
+                    .environment
+                    .indexes
+                    .observed_scalar(field, self.control)?
+                    .ok_or_else(|| self.unsupported(span, "Z/Bool/Ref 以外の原始値読取り"))?;
                 let mut fact = fact;
                 fact.atom = Some(atom.clone());
                 let mut scope = self.base.clone();

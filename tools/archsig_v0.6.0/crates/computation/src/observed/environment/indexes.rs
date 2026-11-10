@@ -17,6 +17,8 @@ pub(crate) struct InputIndexes<'a> {
     pub(super) object_values: Option<&'a crate::observed::object_view_family::FiniteViewAssignment>,
     pub(super) original_requests: Option<&'a [Request]>,
     fixed: std::sync::Arc<FixedInputIndexes<'a>>,
+    // 検査済み入力の Map 値だけを、元 Atom の一意な JSON Pointer で共有する。
+    observed_maps: RefCell<HashMap<String, Scalar>>,
     // 候補ごとに独立したEnvironmentへ一度だけ設定し、観測cacheと共有しない。
     pub(super) primitive_valuation: Option<BTreeMap<Fact, Scalar>>,
     pub(super) valuation_domain: ValuationDomain,
@@ -50,6 +52,7 @@ impl<'a> InputIndexes<'a> {
             inputs: self.inputs,
             valuation_domain: self.valuation_domain,
             fixed: self.fixed.clone(),
+            observed_maps: RefCell::default(),
             object: None,
             object_instance: None,
             object_values: None,
@@ -114,6 +117,29 @@ impl<'a> InputIndexes<'a> {
             }));
         }
         Ok(field)
+    }
+    pub(in crate::observed) fn observed_scalar(
+        &self,
+        field: &'a archsig_input::archmap::Field,
+        control: &Control,
+    ) -> Result<Option<Scalar>, ValidationFailure> {
+        let Slot::Known { value, pointer, .. } = &field.slot else {
+            return Err(internal!("既知の原始slotがない").into());
+        };
+        if !matches!(value, Value::Map(_)) {
+            return scalar_from(value, &field.ty, self.inputs.law(), control);
+        }
+        control.checkpoint(Checkpoint::FiniteIteration)?;
+        if let Some(map) = self.observed_maps.borrow().get(pointer.as_str()) {
+            return Ok(Some(map.clone()));
+        }
+        let scalar = scalar_from(value, &field.ty, self.inputs.law(), control)?;
+        if let Some(map) = &scalar {
+            self.observed_maps
+                .borrow_mut()
+                .insert(pointer.clone(), map.clone());
+        }
+        Ok(scalar)
     }
     pub fn scope(
         &self,
@@ -208,6 +234,7 @@ impl<'a> InputIndexes<'a> {
                     types: roster_types,
                 },
             }),
+            observed_maps: RefCell::default(),
             original_requests: None,
             primitive_valuation: None,
             affine_valuation: BTreeMap::new(),
