@@ -1174,7 +1174,14 @@ fn compute_inner(
     if plan.assembly.is_some() && status != Decision::Established {
         outputs.remove("object");
     }
-    let scope = b.parts[claim.0 - base].scope.clone();
+    let mut scope = b.parts[claim.0 - base].scope.clone();
+    if plan
+        .assembly
+        .as_ref()
+        .is_some_and(|assembly| assembly.design.is_some())
+    {
+        scope.restrict_to_design_point();
+    }
     Ok((
         Parts {
             nodes: b.parts,

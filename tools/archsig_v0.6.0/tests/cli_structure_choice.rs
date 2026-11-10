@@ -101,6 +101,16 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
         panic!("design identity counterexample");
     };
     assert!(s(get(get(value(failure), "data"), "condition_detail")).contains("元root"));
+    let details = get(value(failure), "data");
+    assert_eq!(subject(get(details, "left")), "plan");
+    assert_eq!(subject(get(details, "right")), "lookalike");
+    for id in ["layout0", "layout1", "migrate", "wrongEndpoint"] {
+        assert_eq!(
+            s(get(get(answer(id), "scope"), "domain")),
+            "finite_model",
+            "{id}"
+        );
+    }
     let migration = value(output("migrate", "map"));
     assert_eq!(
         get(migration, "target_assembly").value,

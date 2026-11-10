@@ -686,6 +686,13 @@ impl Scope {
         self.assignments |= other.assignments;
         self.merge_quantifiers(other);
     }
+    /// A fixed design point is the outer scope. Symbolic algebra on that
+    /// object keeps its own scope on the native nodes.
+    pub(super) fn restrict_to_design_point(&mut self) {
+        if self.quantifiers.is_empty() {
+            self.assignments = false;
+        }
+    }
     pub(crate) fn wire(&self) -> Json {
         Json::obj([
             (

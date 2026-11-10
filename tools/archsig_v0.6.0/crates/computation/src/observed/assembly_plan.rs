@@ -257,14 +257,13 @@ pub(super) fn prepare(
                 (Witness::Architecture(witness), native::ConstructionData::SharedRepair(data))
                     if data.request().kind == super::request::QuestionKind::Apply =>
                 {
-                    let (overrides, _) = value.retained_architecture_overrides(g, c)?;
-                    Some((Arc::clone(witness), overrides))
+                    Some((Arc::clone(witness), value))
                 }
                 _ => None,
             },
             _ => None,
         };
-        let Some((source, overrides)) = source else {
+        let Some((source, value)) = source else {
             rejected = Some(model_assembly::rejected(
                 "選択状態にはapplyの実Architectureを要求する",
                 vec![root],
@@ -278,12 +277,29 @@ pub(super) fn prepare(
             || construction.transport().is_some()
             || applied.contains_key(&root)
         {
-            rejected = Some(model_assembly::rejected(
+            let selected_root = construction.root();
+            let mut failure = model_assembly::rejected(
                 "選択状態の元root・snapshot・readingまたは選択が異なる",
-                vec![root, construction.root().clone()],
-            ));
+                vec![root.clone(), selected_root.clone()],
+            );
+            if is_design
+                && selected_root != &root
+                && let Preparation::Rejected(rejection) = &mut failure
+            {
+                let original_root = |fact: &Fact| -> Result<Scalar, ValidationFailure> {
+                    let subject = e.indexes.subject(&fact.snapshot, &fact.subject)?;
+                    Ok(Scalar::Subject {
+                        snapshot: fact.snapshot.clone(),
+                        subject: fact.subject.clone(),
+                        entity: subject.ty.to_string(),
+                    })
+                };
+                rejection.values = Some((original_root(&root)?, original_root(selected_root)?));
+            }
+            rejected = Some(failure);
             break;
         }
+        let (overrides, _) = value.retained_architecture_overrides(g, c)?;
         if is_design {
             design = Some((at, overrides));
             continue;

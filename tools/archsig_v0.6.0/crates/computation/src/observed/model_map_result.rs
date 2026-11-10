@@ -1122,7 +1122,14 @@ fn compute(
     }
     part.arguments.extend(evidence.iter().copied());
     outputs.insert("proposition".into(), claim);
-    let scope = b.parts[claim.0 - base].scope.clone();
+    let mut scope = b.parts[claim.0 - base].scope.clone();
+    if [source_plan, target_plan].iter().any(|plan| {
+        plan.assembly
+            .as_ref()
+            .is_some_and(|assembly| assembly.design.is_some())
+    }) {
+        scope.restrict_to_design_point();
+    }
     Ok(Computed {
         parts: b.parts,
         answer: Answer {
