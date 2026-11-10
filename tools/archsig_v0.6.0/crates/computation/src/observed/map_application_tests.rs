@@ -24,7 +24,12 @@ fn application_condition(r: &ObservedEvaluation) -> usize {
 fn repeated_map_application_reuses_shape_and_searches_the_index() {
     use std::{cell::Cell, rc::Rc};
 
-    let prepared = prepare_observed(application_fixture::plain("r1"), &["seed=evaluate(Maps.seed)"], &quiet()).unwrap();
+    let prepared = prepare_observed(
+        application_fixture::plain("r1"),
+        &["seed=evaluate(Maps.seed)"],
+        &quiet(),
+    )
+    .unwrap();
     let law = prepared.inputs().law();
     let subject = |i: usize| Scalar::Subject {
         snapshot: "v".into(),
@@ -48,7 +53,10 @@ fn repeated_map_application_reuses_shape_and_searches_the_index() {
         let map = Scalar::Map {
             domain: "Maps.Item".into(),
             codomain: "Maps.Item".into(),
-            pairs: (0..size).rev().map(|i| (subject(i), subject(size - i))).collect(),
+            pairs: (0..size)
+                .rev()
+                .map(|i| (subject(i), subject(size - 1 - i)))
+                .collect(),
         };
         let checkpoints = Rc::new(Cell::new(0));
         let seen = checkpoints.clone();
@@ -59,7 +67,7 @@ fn repeated_map_application_reuses_shape_and_searches_the_index() {
         for key in 0..size {
             assert_eq!(
                 data::map_apply(&map.clone(), &subject(key), law, &control).unwrap(),
-                Some(subject(size - key))
+                Some(subject(size - 1 - key))
             );
         }
         let (checked_rows, probes) = counts.get();
@@ -73,6 +81,7 @@ fn repeated_map_application_reuses_shape_and_searches_the_index() {
         assert!(probes <= size * (size.ilog2() as usize + 1));
     }
 }
+
 #[test]
 fn map_application_rechecks_value_key_image_type_support_scope_and_source() {
     let r = application_result(&["a=evaluate(Applications.apply,m=@v/m,x=@v/p)"], "known");

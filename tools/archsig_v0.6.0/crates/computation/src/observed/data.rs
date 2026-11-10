@@ -840,31 +840,23 @@ fn equal_with_retained(
                 },
                 Scalar::Map { pairs: b, .. },
             ) if !candidates => {
-                a.check(domain, codomain, control)?;
-                b.check(domain, codomain, control)?;
+                let ordered_a = a.ordered(domain, codomain, control)?;
+                let ordered_b = b.ordered(domain, codomain, control)?;
                 if a.len() != b.len() {
                     false
                 } else if a.shared_with(b) {
                     true
                 } else {
                     let mut same = true;
-                    for (index, (key, value)) in a.iter().enumerate() {
-                        let Some(other) = b.lookup(domain, codomain, key, control)? else {
-                            same = false;
-                            break;
-                        };
-                        if !equal_with_retained(
-                            value,
-                            other,
-                            control,
-                            false,
-                            Some(&mut |answer| {
-                                if !answer || index + 1 == a.len() {
-                                    publish_equal(&mut retain, answer);
-                                }
-                            }),
-                        )? {
-                            same = false;
+                    for (index, (left, right)) in ordered_a.zip(ordered_b).enumerate() {
+                        tick(control)?;
+                        // 両方の行は型の一致を確認した参照対。索引の順序で同じkeyが並ぶ。
+                        same = left == right;
+                        if !same || index + 1 == a.len() {
+                            publish_equal(&mut retain, same);
+                        }
+                        tick(control)?;
+                        if !same {
                             break;
                         }
                     }

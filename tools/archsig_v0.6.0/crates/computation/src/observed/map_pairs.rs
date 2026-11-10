@@ -96,6 +96,16 @@ impl MapPairs {
         self.indexed(domain, codomain, control).map(|_| ())
     }
 
+    pub(super) fn ordered(
+        &self,
+        domain: &str,
+        codomain: &str,
+        control: &Control,
+    ) -> Result<impl Iterator<Item = &(Scalar, Scalar)>, ValidationFailure> {
+        let index = self.indexed(domain, codomain, control)?;
+        Ok(index.order.iter().map(|&row| &self[row]))
+    }
+
     pub(super) fn lookup(
         &self,
         domain: &str,
