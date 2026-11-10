@@ -466,3 +466,103 @@ fn r2_e12_consume_assembles_local_routes_and_preserves_named_actions() {
             && s(get(get(issue, "location"), "input")) == "archmap"
     }));
 }
+
+#[test]
+fn refuted_e12_map_blocks_only_its_target_consumers_and_rechecks() {
+    let dir = workdir("r2-e12-refuted-dependent");
+    let original = include_str!("fixtures/r2-e12-consume/archmap.json");
+    let refuted = original.replacen(
+        r#""field":"E12.Consume.to","value":["comparison","rust-N-after"]"#,
+        r#""field":"E12.Consume.to","value":["comparison","rust-N-before"]"#,
+        1,
+    );
+    assert_ne!(refuted, original);
+    write_inputs(
+        &dir,
+        &archsig_input::input::InputSources::from_bytes(
+            vec![include_bytes!("fixtures/r2-e12-consume/definitions.json").to_vec()],
+            include_bytes!("fixtures/r2-e12-consume/laws.law").to_vec(),
+            refuted.into_bytes(),
+        ),
+    );
+    let mut asks: Vec<_> = include_str!("fixtures/r2-e12-consume/queries.txt")
+        .lines()
+        .collect();
+    asks.push("independent=evaluate(E12Compare.amount,s=@comparison/rust-N-after,on=$rust.object)");
+    let run = execute_asks(&dir, "first", None, &asks);
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    assert_eq!(s(get(&result, "status")), "partial");
+    let answers = arr(get(&result, "answers"));
+    assert_eq!(
+        answers
+            .iter()
+            .map(|answer| s(get(answer, "status")))
+            .collect::<Vec<_>>(),
+        [
+            "established",
+            "established",
+            "refuted",
+            "undetermined",
+            "undetermined",
+            "established"
+        ]
+    );
+    let [original_reason] = arr(get(&answers[2], "reasons")) else {
+        panic!("the map has one original refutation");
+    };
+    assert_eq!(s(get(original_reason, "code")), "condition_failed");
+    let [counterexample] = arr(get(&answers[2], "counterexamples")) else {
+        panic!("the refutation keeps its witness");
+    };
+    let nodes = arr(get(&result, "nodes"));
+    let dereference = |reference: &archsig_common::json::JNode| {
+        nodes
+            .iter()
+            .find(|node| s(get(node, "id")) == s(get(reference, "node")))
+            .unwrap()
+    };
+    assert_eq!(
+        s(get(dereference(counterexample), "type")),
+        "Counterexample"
+    );
+    for consumer in &answers[3..5] {
+        let reasons = arr(get(consumer, "reasons"));
+        assert!(
+            reasons
+                .iter()
+                .any(|reason| reason.value == original_reason.value)
+        );
+        let dependency = reasons
+            .iter()
+            .find(|reason| s(get(reason, "code")) == "dependency_blocked")
+            .unwrap();
+        assert_eq!(s(get(get(dependency, "details"), "request")), "move");
+        assert!(!has(get(consumer, "outputs"), "value"));
+    }
+    let independent = dereference(get(get(&answers[5], "outputs"), "value"));
+    assert_eq!(s(get(independent, "value")), "1");
+
+    let rechecked = execute_asks(&dir, "rechecked", Some("first"), &asks);
+    assert_eq!(
+        rechecked.code, 2,
+        "{}{}",
+        rechecked.stdout, rechecked.stderr
+    );
+    let rechecked = result_json(&dir, &rechecked);
+    assert!(warnings(&rechecked).is_empty());
+    for key in ["nodes", "answers", "issues"] {
+        assert_eq!(get(&result, key).value, get(&rechecked, key).value);
+    }
+
+    let mut invalid_asks = asks[..3].to_vec();
+    invalid_asks.push(
+        "invalid=evaluate(E12Compare.amount,s=@comparison/rust-N-after,on=$move.map.unknown)",
+    );
+    let invalid = execute_asks(&dir, "invalid", None, &invalid_asks);
+    assert_eq!(invalid.code, 64, "{}{}", invalid.stdout, invalid.stderr);
+    assert!(arr(get(&invalid.receipt, "issues")).iter().any(|issue| {
+        s(get(issue, "code")) == "usage" && s(get(issue, "request")) == "invalid"
+    }));
+    assert!(!dir.join("invalid").exists());
+}
