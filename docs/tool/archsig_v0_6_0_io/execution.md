@@ -681,13 +681,17 @@ Rustの `observed::reevaluate_observed(previous,prepared,control)` は、同じ�
 Rust の `observed::assembly_reobservation::reevaluate_assembly` は前回の native 結果、
 現在の検査済み三入力と要求、明示した `AssemblyAlignment` を受け取る。対応には始終 snapshot、
 同じ reading、元組立ての要求 ID、主体対、前回 candidate と現在 solve の ID を指定する。
-同じ定義と Law で型・owner・明示した root と共有参照を照合する。前回の未観測 slot を、
-現在の同じ field と型の Atom に結ぶ。現在も未観測なら Atom の参照は空のまま返す。
+主体対は観測側で呼出し側が与える同一性の仮定であり、以下の継続判定はこの対応に従う。
+同じ定義と Law で型・owner・明示束縛を検査し、両 View が実際に返した担当集合と共有対を照合する。
+共有対の読取りに必要な欠測や、別 snapshot を混在させる適用族外を、対応そのものの不一致と分ける。
+組立ての前回未観測 slot は、現在の同じ field と型の Atom に結ぶ。現在も未観測なら Atom の参照は空になる。
 
-現在の要求は既存の native 再観測で実行する。有限修復の前回 Assignment は元個体と parameter 値を
-明示対応で運び、現在の解集合で再検査する。保持・除外・判定不能を返す。
-scalar と明示対応のある原始 Ref を扱い、対応できない parameter や未完成の解集合は判定不能とする。
-現在の組立ては通常どおり現在 snapshot のみで実行する。元の組立てや候補は現在の証拠へ転用しない。
+現在の要求は既存の native 再観測で実行する。有限修復の前回 Assignment は元個体を明示対応で運び、
+有限 `prepare` で扱う parameter 値を現在の解集合で再検査する。保持・除外・判定不能を返す。
+局所 `apply` を指定する場合は一つの担当を追跡する。前回の適用は指定した前回候補を使い、
+現在の適用と選択候補は同じ現在 `solve` の全解を消費する。組立て成立時に実際の候補 ID を返す。
+候補照合中に停止した場合も現在の確定済み回答を保持する。
+現在の組立ては現在 snapshot のみで行い、以前の組立てや候補を現在の証拠へ転用しない。
 
 ## 8. 観測補助
 

@@ -1,6 +1,9 @@
 //! 明示した同一性の下で、局所組立ての不足位置と有限候補を現在の入力へ照合する。
 use super::{
-    EvaluationFailure, ObservedEvaluation, PreparedObserved, reevaluate_observed,
+    EvaluationFailure, ObservedEvaluation, PreparedObserved, assembly_plan,
+    environment::Environment,
+    projection::ProjectionStep,
+    reevaluate_observed,
     request::{QuestionKind, Request, Selector},
     result::{Fact, Node, ReasonKind, Scalar, ValidationFailure},
 };
@@ -24,6 +27,7 @@ pub struct AssemblyAlignment<'a> {
 pub enum ReobservationFailure {
     InvalidCorrespondence(String),
     MissingOwner(Fact),
+    MissingLayout(Vec<Fact>),
     Unsupported(String),
     Evaluation(Box<EvaluationFailure>),
     Stopped(Signal),
@@ -35,7 +39,7 @@ impl From<Signal> for ReobservationFailure {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CandidateContinuity {
     Retained,
     Excluded,
@@ -44,15 +48,45 @@ pub enum CandidateContinuity {
 
 #[derive(Debug)]
 pub struct ObservationMatch {
-    pub needed: Fact,
-    pub observed: Option<Fact>,
+    needed: Fact,
+    observed: Option<Fact>,
 }
 
 #[derive(Debug)]
 pub struct ReobservedAssembly {
-    pub evaluation: ObservedEvaluation,
-    pub observations: Vec<ObservationMatch>,
-    pub candidate: CandidateContinuity,
+    evaluation: ObservedEvaluation,
+    observations: Vec<ObservationMatch>,
+    candidate: CandidateContinuity,
+    selected_candidate: Option<String>,
+    continuity_stop: Option<Signal>,
+}
+
+impl ObservationMatch {
+    pub fn needed(&self) -> &Fact {
+        &self.needed
+    }
+    pub fn observed(&self) -> Option<&Fact> {
+        self.observed.as_ref()
+    }
+}
+
+impl ReobservedAssembly {
+    pub fn evaluation(&self) -> &ObservedEvaluation {
+        &self.evaluation
+    }
+    pub fn observations(&self) -> &[ObservationMatch] {
+        &self.observations
+    }
+    pub fn candidate(&self) -> CandidateContinuity {
+        self.candidate
+    }
+    /// Candidate consumed by the current local apply when the current assembly established.
+    pub fn selected_candidate(&self) -> Option<&str> {
+        self.selected_candidate.as_deref()
+    }
+    pub fn continuity_stop(&self) -> Option<Signal> {
+        self.continuity_stop
+    }
 }
 
 fn invalid(message: &str) -> ReobservationFailure {
@@ -73,18 +107,154 @@ fn question<'a>(
     id: &str,
     kind: QuestionKind,
 ) -> Result<&'a Request, ReobservationFailure> {
-    prepared.requests().requests().iter().find(|r| r.id == id && r.kind == kind)
+    prepared
+        .requests()
+        .requests()
+        .iter()
+        .find(|r| r.id == id && r.kind == kind)
         .ok_or_else(|| invalid("対応する種類・ID の元要求がない"))
 }
 
 fn output<'a>(evaluation: &'a ObservedEvaluation, id: &str, field: &str) -> Option<&'a Node> {
-    let reference = evaluation.answers.iter().find(|a| a.id == id)?.outputs.get(field)?;
+    let reference = evaluation
+        .answers
+        .iter()
+        .find(|a| a.id == id)?
+        .outputs
+        .get(field)?;
     evaluation.nodes.get(reference.0)
 }
 
 fn selected_reading(prepared: &PreparedObserved, question: &Request, reading: &str) -> bool {
-    question.declaration().is_some_and(|name|
-        prepared.inputs().law().declarations()[name].reading == reading)
+    question
+        .declaration()
+        .is_some_and(|name| prepared.inputs().law().declarations()[name].reading == reading)
+}
+
+fn subject_index<'a>(
+    subjects: &'a [Subject],
+    control: &Control,
+) -> Result<BTreeMap<&'a str, &'a Subject>, ReobservationFailure> {
+    let mut roster = BTreeMap::new();
+    for subject in subjects {
+        control.checkpoint(Checkpoint::ConfigurationMap)?;
+        roster.insert(subject.id.as_str(), subject);
+    }
+    Ok(roster)
+}
+
+fn answer_field<'a>(selector: &'a Selector, field: &str) -> Option<&'a str> {
+    match selector {
+        Selector::Answer { id, path } if matches!(path.as_slice(), [ProjectionStep::Field(name)] if name == field) => {
+            Some(id)
+        }
+        _ => None,
+    }
+}
+
+fn repair_selection<'a>(
+    prepared: &'a PreparedObserved,
+    selector: &Selector,
+    solve: &Request,
+) -> Result<(&'a Request, &'a Request), ReobservationFailure> {
+    let apply = answer_field(selector, "object")
+        .ok_or_else(|| invalid("局所選択が apply.object を指さない"))?;
+    let apply = question(prepared, apply, QuestionKind::Apply)?;
+    let selected = answer_field(&apply.head, "assignment")
+        .ok_or_else(|| invalid("局所 apply に選択 Assignment がない"))?;
+    let selected = question(prepared, selected, QuestionKind::Candidate)?;
+    let in_solutions = apply
+        .arguments
+        .iter()
+        .find(|a| a.name == "in")
+        .and_then(|a| answer_field(&a.value, "solutions"));
+    if in_solutions != Some(solve.id.as_str())
+        || answer_field(&selected.head, "solutions") != Some(solve.id.as_str())
+    {
+        return Err(invalid(
+            "局所 apply と選択候補が照合対象の solve を消費しない",
+        ));
+    }
+    Ok((apply, selected))
+}
+
+struct Layout {
+    roots: Vec<Fact>,
+    shared: Vec<(Fact, Fact)>,
+}
+
+fn checked_layout(
+    prepared: &PreparedObserved,
+    request: &Request,
+    control: &Control,
+) -> Result<Layout, ReobservationFailure> {
+    let unsupported = |message: &str| ReobservationFailure::Unsupported(message.into());
+    let classify = |failure| match failure {
+        ValidationFailure::Stop(signal) => ReobservationFailure::Stopped(signal),
+        _ => unsupported("組立ての View を現在の原始観測で読めない"),
+    };
+    let env = Environment::with_prepared(prepared, control)?;
+    let mut bindings = Vec::new();
+    for arg in &request.arguments {
+        if let Some(name) = arg.name.strip_prefix("bind.") {
+            control.checkpoint(Checkpoint::ConfigurationMap)?;
+            let Selector::Subject { snapshot, subject } = &arg.value else {
+                return Err(unsupported(
+                    "組立て View の束縛には明示した原始参照を要求する",
+                ));
+            };
+            let entity = env
+                .indexes
+                .subject(snapshot, subject)
+                .map_err(|_| invalid("組立て View の参照先がない"))?
+                .ty
+                .to_string();
+            bindings.push((
+                name.to_owned(),
+                Scalar::Subject {
+                    snapshot: snapshot.clone(),
+                    subject: subject.clone(),
+                    entity,
+                },
+            ));
+        }
+    }
+    let along = request
+        .arguments
+        .iter()
+        .find(|a| a.name == "along")
+        .and_then(|a| match &a.value {
+            Selector::Declaration { name } => Some(name.as_str()),
+            _ => None,
+        })
+        .ok_or_else(|| unsupported("共有 View 宣言がない"))?;
+    let head = request
+        .declaration()
+        .ok_or_else(|| unsupported("担当 View 宣言がない"))?;
+    let fragments = assembly_plan::read(&env, head, &bindings).map_err(classify)?;
+    let interfaces = assembly_plan::read(&env, along, &bindings).map_err(classify)?;
+    if fragments.metadata.failed || interfaces.metadata.failed {
+        return Err(invalid("組立て View の適用条件が成立しない"));
+    }
+    let mut missing = fragments.metadata.missing;
+    missing.extend(interfaces.metadata.missing);
+    if !missing.is_empty() {
+        missing.sort();
+        missing.dedup();
+        return Err(ReobservationFailure::MissingLayout(missing));
+    }
+    let (Some(Scalar::Set { items, .. }), Some(shared)) =
+        (fragments.value.as_ref(), interfaces.value.as_ref())
+    else {
+        return Err(unsupported("担当集合または共有対を確定できない"));
+    };
+    let roots = items
+        .iter()
+        .map(assembly_plan::fact)
+        .collect::<Result<_, _>>()
+        .map_err(classify)?;
+    let shared = assembly_plan::interfaces(shared, control).map_err(classify)?;
+    Ok(Layout { roots, shared })
 }
 
 /// 同じ定義・Law を使用し、主体対応を検査してから現在の要求を通常評価する。
@@ -100,23 +270,47 @@ pub fn reevaluate_assembly(
     let new = current.inputs().sources();
     if old.law().bytes() != new.law().bytes()
         || old.definitions().len() != new.definitions().len()
-        || !old.definitions().iter().zip(new.definitions()).all(|(a,b)| a.bytes() == b.bytes())
+        || !old
+            .definitions()
+            .iter()
+            .zip(new.definitions())
+            .all(|(a, b)| a.bytes() == b.bytes())
     {
-        return Err(ReobservationFailure::Unsupported("定義と Law が同一の読みを要求する".into()));
+        return Err(ReobservationFailure::Unsupported(
+            "定義と Law が同一の読みを要求する".into(),
+        ));
     }
     let before_request = question(before, alignment.assembly, QuestionKind::Assemble)?;
     let after_request = question(&current, alignment.assembly, QuestionKind::Assemble)?;
-    let before_candidate = question(before, alignment.previous_candidate, QuestionKind::Candidate)?;
-    let Selector::Answer { id: prior_solve_id, .. } = &before_candidate.head else {
+    let before_candidate = question(
+        before,
+        alignment.previous_candidate,
+        QuestionKind::Candidate,
+    )?;
+    let Selector::Answer {
+        id: prior_solve_id, ..
+    } = &before_candidate.head
+    else {
         return Err(invalid("前候補に元 solve がない"));
     };
     let prior_solve = question(before, prior_solve_id, QuestionKind::Solve)?;
     let new_solve = question(&current, alignment.current_solve, QuestionKind::Solve)?;
-    let Selector::Answer { id: prior_prepare_id, .. } = &prior_solve.head else {
-        return Err(ReobservationFailure::Unsupported("finite prepare の前回 solve を要求する".into()));
+    let Selector::Answer {
+        id: prior_prepare_id,
+        ..
+    } = &prior_solve.head
+    else {
+        return Err(ReobservationFailure::Unsupported(
+            "finite prepare の前回 solve を要求する".into(),
+        ));
     };
-    let Selector::Answer { id: new_prepare_id, .. } = &new_solve.head else {
-        return Err(ReobservationFailure::Unsupported("finite prepare の現在 solve を要求する".into()));
+    let Selector::Answer {
+        id: new_prepare_id, ..
+    } = &new_solve.head
+    else {
+        return Err(ReobservationFailure::Unsupported(
+            "finite prepare の現在 solve を要求する".into(),
+        ));
     };
     let prior_prepare = question(before, prior_prepare_id, QuestionKind::Prepare)?;
     let new_prepare = question(&current, new_prepare_id, QuestionKind::Prepare)?;
@@ -124,7 +318,9 @@ pub fn reevaluate_assembly(
         || !selected_reading(before, prior_prepare, alignment.reading)
         || !selected_reading(&current, new_prepare, alignment.reading)
     {
-        return Err(invalid("finite repair の要求 Law または reading が対応しない"));
+        return Err(invalid(
+            "finite repair の要求 Law または reading が対応しない",
+        ));
     }
     if before_request.head != after_request.head
         || !selected_reading(before, before_request, alignment.reading)
@@ -133,39 +329,88 @@ pub fn reevaluate_assembly(
         return Err(invalid("組立ての View または reading が対応しない"));
     }
     let snapshot = |prepared: &PreparedObserved, id: &str| {
-        prepared.inputs().archmap().snapshots().iter().position(|s| s.id == id)
+        prepared
+            .inputs()
+            .archmap()
+            .snapshots()
+            .iter()
+            .position(|s| s.id == id)
             .ok_or_else(|| invalid("明示された snapshot がない"))
     };
     let a = &before.inputs().archmap().snapshots()[snapshot(before, alignment.before_snapshot)?];
     let current_inputs = current.shared_inputs();
     let b = &current_inputs.archmap().snapshots()[snapshot(&current, alignment.after_snapshot)?];
+    let a = subject_index(&a.subjects, control)?;
+    let b = subject_index(&b.subjects, control)?;
     let mut pairs = BTreeMap::new();
     let mut used = BTreeSet::new();
     for &(left, right) in alignment.subjects {
         control.checkpoint(Checkpoint::ConfigurationMap)?;
-        let old = a.subjects.iter().find(|s| s.id == left).ok_or_else(|| invalid("before subject がない"))?;
-        let new = b.subjects.iter().find(|s| s.id == right).ok_or_else(|| invalid("after subject がない"))?;
+        let old = a
+            .get(left)
+            .copied()
+            .ok_or_else(|| invalid("before subject がない"))?;
+        let new = b
+            .get(right)
+            .copied()
+            .ok_or_else(|| invalid("after subject がない"))?;
         if old.ty != new.ty || pairs.insert(left, (old, new)).is_some() || !used.insert(right) {
             return Err(invalid("subject 対応は同型の一対一を要求する"));
         }
     }
-    let matches_subject = |left: &str, right: &str| pairs.get(left).is_some_and(|(_, target)| target.id == right);
+    let matches_subject = |left: &str, right: &str| {
+        pairs
+            .get(left)
+            .is_some_and(|(_, target)| target.id == right)
+    };
     for (old, new) in pairs.values() {
         for old_field in old.fields.iter().filter(|f| f.name.is_owner()) {
             control.checkpoint(Checkpoint::ConfigurationMap)?;
-            let new_field = new.fields.iter().find(|f| f.name == old_field.name && f.ty == old_field.ty)
+            let new_field = new
+                .fields
+                .iter()
+                .find(|f| f.name == old_field.name && f.ty == old_field.ty)
                 .ok_or_else(|| invalid("owner field の型が対応しない"))?;
             match (&old_field.slot, &new_field.slot) {
-                (Slot::Missing, _) => return Err(ReobservationFailure::MissingOwner(fact(old, old_field, None))),
-                (_, Slot::Missing) => return Err(ReobservationFailure::MissingOwner(fact(new, new_field, None))),
-                (Slot::Known { value: Value::Ref {snapshot: a, subject: x}, .. },
-                 Slot::Known { value: Value::Ref {snapshot: b, subject: y}, .. })
-                    if a == alignment.before_snapshot && b == alignment.after_snapshot && matches_subject(x, y) => {}
+                (Slot::Missing, _) => {
+                    return Err(ReobservationFailure::MissingOwner(fact(
+                        old, old_field, None,
+                    )));
+                }
+                (_, Slot::Missing) => {
+                    return Err(ReobservationFailure::MissingOwner(fact(
+                        new, new_field, None,
+                    )));
+                }
+                (
+                    Slot::Known {
+                        value:
+                            Value::Ref {
+                                snapshot: a,
+                                subject: x,
+                            },
+                        ..
+                    },
+                    Slot::Known {
+                        value:
+                            Value::Ref {
+                                snapshot: b,
+                                subject: y,
+                            },
+                        ..
+                    },
+                ) if a == alignment.before_snapshot
+                    && b == alignment.after_snapshot
+                    && matches_subject(x, y) => {}
                 _ => return Err(invalid("owner が明示した同一性に沿わない")),
             }
         }
     }
-    for (prior, new) in [(before_request, after_request), (prior_prepare, new_prepare)] {
+    let mut current_selection = None;
+    for (prior, new) in [
+        (before_request, after_request),
+        (prior_prepare, new_prepare),
+    ] {
         if prior.arguments.len() != new.arguments.len() {
             return Err(invalid("明示引数の件数が対応しない"));
         }
@@ -175,12 +420,51 @@ pub fn reevaluate_assembly(
                 return Err(invalid("明示引数名が対応しない"));
             }
             let matching = match (&a.value, &b.value) {
-                (Selector::Subject {snapshot: s, subject: x}, Selector::Subject {snapshot: t, subject: y}) =>
-                    s == alignment.before_snapshot && t == alignment.after_snapshot && matches_subject(x, y),
+                (
+                    Selector::Subject {
+                        snapshot: s,
+                        subject: x,
+                    },
+                    Selector::Subject {
+                        snapshot: t,
+                        subject: y,
+                    },
+                ) => {
+                    if s != alignment.before_snapshot || t != alignment.after_snapshot {
+                        return Err(ReobservationFailure::Unsupported(
+                            "一つの組立て要求に別 snapshot を混在できない".into(),
+                        ));
+                    }
+                    matches_subject(x, y)
+                }
                 (Selector::Declaration { .. }, Selector::Declaration { .. }) => a.value == b.value,
-                (Selector::Answer { .. }, Selector::Answer { .. }) if a.name.starts_with("local.") =>
-                    a.value == b.value,
-                _ => return Err(ReobservationFailure::Unsupported("root、共有位置と修復束縛を明示する".into())),
+                (Selector::Answer { .. }, Selector::Answer { .. })
+                    if a.name.starts_with("local.") =>
+                {
+                    if current_selection.is_some() {
+                        return Err(ReobservationFailure::Unsupported(
+                            "再照合する局所 apply は一つまで".into(),
+                        ));
+                    }
+                    let (old_apply, old_candidate) =
+                        repair_selection(before, &a.value, prior_solve)?;
+                    let (new_apply, new_candidate) =
+                        repair_selection(&current, &b.value, new_solve)?;
+                    if old_candidate.id != alignment.previous_candidate
+                        || output(previous, &old_apply.id, "object").is_none()
+                    {
+                        return Err(invalid(
+                            "前回の局所 apply が照合対象の前回候補を使用していない",
+                        ));
+                    }
+                    current_selection = Some((new_apply.id.clone(), new_candidate.id.clone()));
+                    true
+                }
+                _ => {
+                    return Err(ReobservationFailure::Unsupported(
+                        "root、共有位置と修復束縛を明示する".into(),
+                    ));
+                }
             };
             if !matching {
                 return Err(invalid("root・共有個体・宣言・明示束縛の対応が違う"));
@@ -188,54 +472,150 @@ pub fn reevaluate_assembly(
         }
     }
 
-    let before_answer = previous.answers.iter().find(|a| a.id == alignment.assembly)
+    let before_layout = checked_layout(before, before_request, control)?;
+    let after_layout = checked_layout(&current, after_request, control)?;
+    let after_subject = |fact: &Fact| {
+        if fact.snapshot != alignment.after_snapshot {
+            return Err(ReobservationFailure::Unsupported(
+                "組立て View が別 snapshot の参照を返した".into(),
+            ));
+        }
+        Ok(fact.subject.clone())
+    };
+    let before_image = |fact: &Fact| {
+        if fact.snapshot != alignment.before_snapshot {
+            return Err(ReobservationFailure::Unsupported(
+                "組立て View が別 snapshot の参照を返した".into(),
+            ));
+        }
+        pairs
+            .get(fact.subject.as_str())
+            .map(|(_, new)| new.id.clone())
+            .ok_or_else(|| invalid("組立て View の参照先に明示対応がない"))
+    };
+    let old_roots = before_layout
+        .roots
+        .iter()
+        .map(before_image)
+        .collect::<Result<BTreeSet<_>, _>>()?;
+    let new_roots = after_layout
+        .roots
+        .iter()
+        .map(after_subject)
+        .collect::<Result<BTreeSet<_>, _>>()?;
+    let old_shared = before_layout
+        .shared
+        .iter()
+        .map(|(a, b)| Ok((before_image(a)?, before_image(b)?)))
+        .collect::<Result<Vec<_>, ReobservationFailure>>()?;
+    let new_shared = after_layout
+        .shared
+        .iter()
+        .map(|(a, b)| Ok((after_subject(a)?, after_subject(b)?)))
+        .collect::<Result<Vec<_>, ReobservationFailure>>()?;
+    if old_roots != new_roots || old_shared != new_shared {
+        return Err(invalid("評価済みの担当集合または共有対が明示対応と異なる"));
+    }
+    let before_answer = previous
+        .answers
+        .iter()
+        .find(|a| a.id == alignment.assembly)
         .ok_or_else(|| invalid("before の組立て回答がない"))?;
     let mut observations = Vec::new();
     let mut seen = BTreeSet::new();
-    for reason in before_answer.reasons.iter().filter(|r| r.kind == ReasonKind::Missing) {
+    for reason in before_answer
+        .reasons
+        .iter()
+        .filter(|r| r.kind == ReasonKind::Missing)
+    {
         for needed in &reason.missing {
             control.checkpoint(Checkpoint::ConfigurationMap)?;
-            if !seen.insert(needed) { continue; }
-            let Some((old, new)) = pairs.get(needed.subject.as_str())
+            if !seen.insert(needed) {
+                continue;
+            }
+            let Some((old, new)) = pairs
+                .get(needed.subject.as_str())
                 .filter(|(old, _)| old.snapshot == needed.snapshot)
             else {
                 return Err(invalid("組立ての不足位置に subject 対応がない"));
             };
-            let name = needed.field.as_ref().ok_or_else(|| invalid("不足位置に field がない"))?;
-            let old_field = old.fields.iter().find(|f| &f.name == name && matches!(f.slot, Slot::Missing))
+            let name = needed
+                .field
+                .as_ref()
+                .ok_or_else(|| invalid("不足位置に field がない"))?;
+            let old_field = old
+                .fields
+                .iter()
+                .find(|f| &f.name == name && matches!(f.slot, Slot::Missing))
                 .ok_or_else(|| invalid("before の不足位置が原始 slot と一致しない"))?;
-            let field = new.fields.iter().find(|f| &f.name == name && f.ty == old_field.ty)
+            let field = new
+                .fields
+                .iter()
+                .find(|f| &f.name == name && f.ty == old_field.ty)
                 .ok_or_else(|| invalid("after の field と型が一致しない"))?;
             let observed = match &field.slot {
                 Slot::Missing => None,
                 Slot::Known { atom, .. } => Some(fact(new, field, Some(atom.clone()))),
             };
-            observations.push(ObservationMatch { needed: needed.clone(), observed });
+            observations.push(ObservationMatch {
+                needed: needed.clone(),
+                observed,
+            });
         }
     }
     let translate = |value: &Scalar| match value {
-        Scalar::Subject { snapshot, subject, entity } if snapshot == alignment.before_snapshot =>
-            pairs.get(subject.as_str()).map(|(_, target)| Scalar::Subject {
-                snapshot: target.snapshot.clone(), subject: target.id.clone(), entity: entity.clone(),
-            }),
+        Scalar::Subject {
+            snapshot,
+            subject,
+            entity,
+        } if snapshot == alignment.before_snapshot => {
+            pairs
+                .get(subject.as_str())
+                .map(|(_, target)| Scalar::Subject {
+                    snapshot: target.snapshot.clone(),
+                    subject: target.id.clone(),
+                    entity: entity.clone(),
+                })
+        }
         _ => None,
     };
     let evaluation = reevaluate_observed(previous, current, control)
         .map_err(|failure| ReobservationFailure::Evaluation(Box::new(failure)))?;
+    let mut continuity_stop = control.stop_reason();
     let candidate = match (
         output(previous, alignment.previous_candidate, "assignment"),
         output(&evaluation, alignment.current_solve, "solutions"),
     ) {
-        (Some(old), Some(new)) => match super::repair_problem::reobserved_membership(old, new, translate, control) {
-            Ok(Some(true)) => CandidateContinuity::Retained,
-            Ok(Some(false)) => CandidateContinuity::Excluded,
-            Ok(None) => CandidateContinuity::Undetermined,
-            Err(ValidationFailure::Stop(signal)) => return Err(ReobservationFailure::Stopped(signal)),
-            Err(_) => return Err(ReobservationFailure::Unsupported("有限割当ての対応を照合できない".into())),
-        },
+        (Some(old), Some(new)) if continuity_stop.is_none() => {
+            match super::repair_problem::reobserved_membership(old, new, translate, control) {
+                Ok(Some(true)) => CandidateContinuity::Retained,
+                Ok(Some(false)) => CandidateContinuity::Excluded,
+                Ok(None) => CandidateContinuity::Undetermined,
+                Err(ValidationFailure::Stop(signal)) => {
+                    continuity_stop = Some(signal);
+                    CandidateContinuity::Undetermined
+                }
+                Err(_) => {
+                    return Err(ReobservationFailure::Unsupported(
+                        "有限割当ての対応を照合できない".into(),
+                    ));
+                }
+            }
+        }
         _ => CandidateContinuity::Undetermined,
     };
-    Ok(ReobservedAssembly { evaluation, observations, candidate })
+    let selected_candidate = current_selection.and_then(|(apply, candidate)| {
+        (output(&evaluation, alignment.assembly, "assembly").is_some()
+            && output(&evaluation, &apply, "object").is_some())
+        .then_some(candidate)
+    });
+    Ok(ReobservedAssembly {
+        evaluation,
+        observations,
+        candidate,
+        selected_candidate,
+        continuity_stop,
+    })
 }
 
 #[cfg(test)]
@@ -244,16 +624,40 @@ mod tests {
     use crate::observed::{evaluate_observed, prepare_observed, result::Decision};
     use archsig_input::input::InputSources;
 
-    const DEFINITIONS: &[u8] = include_bytes!("../../../../tests/fixtures/r2-assembly-reobservation/definitions.json");
-    const LAW: &[u8] = include_bytes!("../../../../tests/fixtures/r2-assembly-reobservation/laws.law");
-    const BEFORE: &str = include_str!("../../../../tests/fixtures/r2-assembly-reobservation/before.json");
-    const AFTER: &str = include_str!("../../../../tests/fixtures/r2-assembly-reobservation/after.json");
-    const QUERIES: &str = include_str!("../../../../tests/fixtures/r2-assembly-reobservation/queries.txt");
+    const DEFINITIONS: &[u8] =
+        include_bytes!("../../../../tests/fixtures/r2-assembly-reobservation/definitions.json");
+    const LAW: &[u8] =
+        include_bytes!("../../../../tests/fixtures/r2-assembly-reobservation/laws.law");
+    const BEFORE: &str =
+        include_str!("../../../../tests/fixtures/r2-assembly-reobservation/before.json");
+    const AFTER: &str =
+        include_str!("../../../../tests/fixtures/r2-assembly-reobservation/after.json");
+    const QUERIES: &str =
+        include_str!("../../../../tests/fixtures/r2-assembly-reobservation/queries.txt");
 
     fn prepared(snapshot: &str, map: &str, c: &Control) -> PreparedObserved {
-        let asks = QUERIES.replace("SNAP", snapshot);
+        prepared_with(snapshot, map, LAW, QUERIES, c)
+    }
+
+    fn prepared_with(
+        snapshot: &str,
+        map: &str,
+        law: &[u8],
+        queries: &str,
+        c: &Control,
+    ) -> PreparedObserved {
+        let asks = queries.replace("SNAP", snapshot);
         let asks = asks.lines().collect::<Vec<_>>();
-        prepare_observed(InputSources::from_bytes(vec![DEFINITIONS.to_vec()], LAW.to_vec(), map.as_bytes().to_vec()), &asks, c).unwrap()
+        prepare_observed(
+            InputSources::from_bytes(
+                vec![DEFINITIONS.to_vec()],
+                law.to_vec(),
+                map.as_bytes().to_vec(),
+            ),
+            &asks,
+            c,
+        )
+        .unwrap()
     }
 
     fn status(result: &ObservedEvaluation, id: &str) -> Decision {
@@ -267,8 +671,16 @@ mod tests {
         assert_eq!(status(&before, "pick"), Decision::Established);
         assert_eq!(status(&before, "joined"), Decision::Undetermined);
         assert_eq!(status(&before, "global"), Decision::Undetermined);
-        let pairs = [("A", "A"), ("B", "B"), ("G", "G"), ("a", "a"), ("b", "b"), ("ma", "ma"), ("mb", "mb")];
-        let mut alignment = AssemblyAlignment {
+        let pairs = [
+            ("A", "A"),
+            ("B", "B"),
+            ("G", "G"),
+            ("a", "a"),
+            ("b", "b"),
+            ("ma", "ma"),
+            ("mb", "mb"),
+        ];
+        let alignment = AssemblyAlignment {
             before_snapshot: "before",
             after_snapshot: "after",
             reading: "Assembly",
@@ -277,9 +689,13 @@ mod tests {
             previous_candidate: "pick",
             current_solve: "solveIt",
         };
-        let next = reevaluate_assembly(&before, prepared("after", AFTER, &c), &alignment, &c).unwrap();
-        assert_eq!(next.candidate, CandidateContinuity::Retained);
-        let [matched] = next.observations.as_slice() else { panic!("one shared observation") };
+        let next =
+            reevaluate_assembly(&before, prepared("after", AFTER, &c), &alignment, &c).unwrap();
+        assert_eq!(next.candidate(), CandidateContinuity::Retained);
+        assert_eq!(next.selected_candidate(), Some("pick"));
+        let [matched] = next.observations.as_slice() else {
+            panic!("one shared observation")
+        };
         assert_eq!(matched.needed.snapshot, "before");
         assert_eq!(matched.needed.subject, "mb");
         assert!(matched.needed.atom.is_none());
@@ -292,28 +708,125 @@ mod tests {
         assert_eq!(status(&next.evaluation, "global"), Decision::Established);
 
         let revised = AFTER.replacen(
-            concat!("\"id\": \"b-quantity\",\n          \"subject\": \"b\",\n",
-                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"0\""),
-            concat!("\"id\": \"b-quantity\",\n          \"subject\": \"b\",\n",
-                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"1\""),
+            concat!(
+                "\"id\": \"b-quantity\",\n          \"subject\": \"b\",\n",
+                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"0\""
+            ),
+            concat!(
+                "\"id\": \"b-quantity\",\n          \"subject\": \"b\",\n",
+                "          \"field\": \"Assemble.Part.quantity\",\n          \"value\": \"1\""
+            ),
             1,
         );
         assert_ne!(revised, AFTER);
-        let next = reevaluate_assembly(&before, prepared("after", &revised, &c), &alignment, &c).unwrap();
-        assert_eq!(next.candidate, CandidateContinuity::Excluded);
-        assert_eq!(status(&next.evaluation, "pick"), Decision::Established);
+        let new_queries = QUERIES
+            .replace("pick=", "replacement=")
+            .replace("$pick.assignment", "$replacement.assignment");
+        let next = reevaluate_assembly(
+            &before,
+            prepared_with("after", &revised, LAW, &new_queries, &c),
+            &alignment,
+            &c,
+        )
+        .unwrap();
+        assert_eq!(next.candidate(), CandidateContinuity::Excluded);
+        assert_eq!(next.selected_candidate(), Some("replacement"));
+        assert_eq!(
+            status(&next.evaluation, "replacement"),
+            Decision::Established
+        );
         assert_eq!(status(&next.evaluation, "selected"), Decision::Established);
         assert_eq!(status(&next.evaluation, "joined"), Decision::Established);
         assert_eq!(status(&next.evaluation, "global"), Decision::Established);
 
-        let mut wrong = pairs;
-        wrong.swap(0, 1);
-        wrong[0].1 = "A";
-        wrong[1].1 = "B";
-        alignment.subjects = &wrong;
+        let mut wrong = pairs.to_vec();
+        wrong.extend([("left", "right"), ("right", "left")]);
+        let wrong_alignment = AssemblyAlignment {
+            subjects: &wrong,
+            ..alignment
+        };
         assert!(matches!(
-            reevaluate_assembly(&before, prepared("after", AFTER, &c), &alignment, &c),
-            Err(ReobservationFailure::InvalidCorrespondence(_))
+            reevaluate_assembly(&before, prepared("after", AFTER, &c), &wrong_alignment, &c),
+            Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("owner")
         ));
+
+        let wrong_queries = QUERIES
+            .replace("selected=apply", "other=apply")
+            .replace("local.a=$selected.object", "local.a=$other.object");
+        let wrong_queries = wrong_queries
+            .replace("other=apply($pick.assignment,in=$solveIt.solutions)",
+                "unrelated=solve($prepareIt.problem,within=$within.value)\nother=apply($pick.assignment,in=$unrelated.solutions)");
+        assert!(matches!(
+            reevaluate_assembly(&before, prepared_with("after", AFTER, LAW, &wrong_queries, &c), &alignment, &c),
+            Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("solve")
+        ));
+
+        let incomplete = BEFORE.replace("\"before\"", "\"after\"");
+        let next = reevaluate_assembly(&before, prepared("after", &incomplete, &c), &alignment, &c)
+            .unwrap();
+        assert_eq!(next.observations().len(), 1);
+        assert!(next.observations()[0].observed().is_none());
+        assert!(next.selected_candidate().is_none());
+        assert_eq!(status(next.evaluation(), "joined"), Decision::Undetermined);
+
+        let dynamic = std::str::from_utf8(LAW)
+            .unwrap()
+            .replace("ma:Part,mb:Part)", "ma:Part,mb:Part,x:Part,y:Part)")
+            .replace(
+                "list<(Part,Part)>[(ma,mb)];",
+                "if y.quantity=0 then list<(Part,Part)>[(ma,mb)] else list<(Part,Part)>[(x,y)];",
+            );
+        let queries = QUERIES.replace("mb=@SNAP/mb,local", "mb=@SNAP/mb,x=@SNAP/a,y=@SNAP/b,local");
+        let dynamic_before = evaluate_observed(
+            prepared_with("before", BEFORE, dynamic.as_bytes(), &queries, &c),
+            &c,
+        )
+        .unwrap();
+        assert!(matches!(
+            reevaluate_assembly(&dynamic_before, prepared_with("after", &revised, dynamic.as_bytes(), &queries, &c), &alignment, &c),
+            Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("共有対")
+        ));
+    }
+
+    #[test]
+    fn an_empty_change_roster_has_the_single_empty_assignment() {
+        let c = Control::unlimited();
+        let asks = QUERIES
+            .replace("Assembly.singleton,p=@SNAP/a", "Assembly.within,r=@SNAP/G")
+            .replace(
+                "Assembly.desired,using=Assembly.choose,on=@SNAP/A,p=@SNAP/a,b=@SNAP/b",
+                "Assembly.boundary,using=Assembly.choose,on=@SNAP/G,p=@SNAP/ma",
+            )
+            .replace(",local.a=$selected.object", "");
+        let before =
+            evaluate_observed(prepared_with("before", BEFORE, LAW, &asks, &c), &c).unwrap();
+        let pairs = [
+            ("A", "A"),
+            ("B", "B"),
+            ("G", "G"),
+            ("ma", "ma"),
+            ("mb", "mb"),
+        ];
+        let alignment = AssemblyAlignment {
+            before_snapshot: "before",
+            after_snapshot: "after",
+            reading: "Assembly",
+            subjects: &pairs,
+            assembly: "joined",
+            previous_candidate: "pick",
+            current_solve: "solveIt",
+        };
+        let result = reevaluate_assembly(
+            &before,
+            prepared_with("after", AFTER, LAW, &asks, &c),
+            &alignment,
+            &c,
+        )
+        .unwrap();
+        assert_eq!(
+            status(result.evaluation(), "solveIt"),
+            Decision::Established
+        );
+        assert_eq!(result.candidate(), CandidateContinuity::Retained);
     }
 }

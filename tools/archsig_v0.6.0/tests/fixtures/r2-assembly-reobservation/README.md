@@ -21,3 +21,7 @@ cargo test --locked --manifest-path tools/archsig_v0.6.0/Cargo.toml -p archsig-c
 [期待する証拠](expected.json) は before/after と訂正の区別を示す。各 snapshot 単独の公開 CLI では、
 `queries.txt` の `SNAP` を `before` または `after` に置き換え、対応する ArchMap と実行する。
 snapshot 間の対応は Rust API へ明示し、CLI の `--reuse` は保存結果の通常の再検査に使う。
+
+全体判定は選択した局所の私有量を読む。追加 Atom だけのケースでは `pick` を、
+B の既存観測も訂正したケースでは現在の解から `replacement` を採用する。
+同じ View が異なる共有対を返した場合や、適用を別の solve に付け替えた場合も検査する。

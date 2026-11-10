@@ -279,6 +279,21 @@ pub(super) fn compile(
     }
     for (a, b) in pairs {
         tick(c)?;
+        if let Some(foreign) = [a, b]
+            .into_iter()
+            .find(|fact| fact.snapshot != target.snapshot)
+        {
+            let endpoint = subject(inputs, foreign)?;
+            return Ok(Preparation::Unsupported(Unsupported {
+                detail: "共有対の個体が別snapshotに属する".into(),
+                location: Location::ArchMap {
+                    pointer: endpoint.pointer.clone(),
+                    span: None,
+                },
+                operand_types: vec![Type::Ref(endpoint.ty.to_string())],
+                position: None,
+            }));
+        }
         let (Some(ia), Some(ib)) = (membership.get(a), membership.get(b)) else {
             return Ok(rejected(
                 "共有対の個体が担当rootに所属しない",
@@ -684,11 +699,14 @@ mod tests {
         assert_eq!(seen.get(), 1);
     }
     #[test]
-    fn cross_snapshot_fragments_are_outside_the_algorithm_not_refuted() {
+    fn cross_snapshot_fragments_and_shared_endpoints_are_outside_the_algorithm_not_refuted() {
+        for ask in [
+            fixture::ASSEMBLE
+                .replace("b=@v/B", "b=@w/B")
+                .replace("mb=@v/mb", "mb=@w/mb"),
+            fixture::ASSEMBLE.replace("mb=@v/mb", "mb=@w/mb"),
+        ] {
         let input = fixture::with_second_snapshot();
-        let ask = fixture::ASSEMBLE
-            .replace("b=@v/B", "b=@w/B")
-            .replace("mb=@v/mb", "mb=@w/mb");
         let result =
             crate::observed::evaluate_observed_bytes(input, &[&ask], &Control::unlimited())
                 .unwrap();
@@ -709,6 +727,7 @@ mod tests {
             r.kind,
             ReasonKind::Internal(_) | ReasonKind::ConditionFailed { .. }
         )));
+        }
     }
     #[test]
     fn unavailable_parameter_handles_block_assembly_before_reading_views() {

@@ -1617,22 +1617,41 @@ pub(super) fn reobserved_membership(
         })
         || a.compiled.subjects.len() != b.compiled.subjects.len()
         || a.compiled.parameter_count != b.compiled.parameter_count
-        || a.compiled.subjects.is_empty()
     {
         return Ok(None);
     }
-    let width = a.compiled.parameter_count / a.compiled.subjects.len();
+    let width = a
+        .compiled
+        .parameter_count
+        .checked_div(a.compiled.subjects.len())
+        .unwrap_or(0);
+    let mut target_subjects = BTreeMap::new();
+    for (i, subject) in b.compiled.subjects.iter().enumerate() {
+        tick(c)?;
+        let Scalar::Subject {
+            snapshot,
+            subject,
+            entity,
+        } = subject
+        else {
+            return Ok(None);
+        };
+        target_subjects.insert((snapshot.as_str(), subject.as_str(), entity.as_str()), i);
+    }
     let mut target_pins = pins(b, enabled);
     for (i, subject) in a.compiled.subjects.iter().enumerate() {
         tick(c)?;
-        let Some(image) = subject_image(subject) else {
+        let image = subject_image(subject);
+
+        let Some(Scalar::Subject {
+            snapshot,
+            subject,
+            entity,
+        }) = image.as_ref()
+        else {
             return Ok(None);
         };
-        let Some(j) = b
-            .compiled
-            .subjects
-            .iter()
-            .position(|subject| subject == &image)
+        let Some(&j) = target_subjects.get(&(snapshot.as_str(), subject.as_str(), entity.as_str()))
         else {
             return Ok(None);
         };
@@ -1641,25 +1660,10 @@ pub(super) fn reobserved_membership(
             let index = i * width + k;
             let target = j * width + k;
             let original = &a.compiled.domains[index][chosen[index]];
-            let value = match original {
-                Scalar::Subject { .. } => {
-                    let Some(image) = subject_image(original) else {
-                        return Ok(None);
-                    };
-                    image
-                }
-                Scalar::Unit
-                | Scalar::Text(_)
-                | Scalar::Bool(_)
-                | Scalar::Z(_)
-                | Scalar::Q(_, _)
-                | Scalar::Fp { .. } => original.clone(),
-                _ => return Ok(None),
-            };
             let mut found = None;
             for (position, member) in b.compiled.domains[target].iter().enumerate() {
                 tick(c)?;
-                if super::data::equal(member, &value, c)? {
+                if super::data::equal(member, original, c)? {
                     found = Some(position);
                     break;
                 }
@@ -1670,7 +1674,5 @@ pub(super) fn reobserved_membership(
             target_pins[target] = Some(found);
         }
     }
-    Ok(Some(
-        b.compiled.relations.witness(&target_pins, c)?.is_some(),
-    ))
+    Ok(Some(b.compiled.relations.exists(&target_pins, c)?))
 }

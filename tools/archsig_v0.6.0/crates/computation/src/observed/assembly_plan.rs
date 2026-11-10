@@ -117,7 +117,7 @@ fn failure(e: crate::construction::ConstructionFailure) -> ValidationFailure {
             .into(),
     }
 }
-fn fact(value: &Scalar) -> Result<Fact, ValidationFailure> {
+pub(super) fn fact(value: &Scalar) -> Result<Fact, ValidationFailure> {
     let Scalar::Subject {
         snapshot, subject, ..
     } = value
@@ -131,7 +131,10 @@ fn fact(value: &Scalar) -> Result<Fact, ValidationFailure> {
         atom: None,
     }))
 }
-fn interfaces(value: &Scalar, c: &Control) -> Result<Vec<(Fact, Fact)>, ValidationFailure> {
+pub(super) fn interfaces(
+    value: &Scalar,
+    c: &Control,
+) -> Result<Vec<(Fact, Fact)>, ValidationFailure> {
     let mut pending = vec![value];
     let mut pairs = Vec::new();
     while let Some(value) = pending.pop() {
