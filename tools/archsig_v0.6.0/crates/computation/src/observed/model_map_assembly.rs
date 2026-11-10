@@ -272,22 +272,38 @@ pub(super) fn verify(
     let states = if source.repaired_values.is_empty() && target.repaired_values.is_empty() {
         None
     } else {
-        let prepare = |model: &Model| {
-            super::environment::Environment::with_primitive_valuation(
-                &inputs,
-                &model.repaired_values,
-                c,
-            )
-            .map_err(|failure| match failure {
-                super::result::ValidationFailure::Stop(signal) => {
-                    ConstructionFailure::Stopped(signal)
-                }
-                other => ConstructionFailure::Inconsistent(
-                    other.internal_context("修復済み写像の始終状態".into()),
-                ),
-            })
-        };
-        Some([prepare(source)?, prepare(target)?])
+        let prepare =
+            |model: &Model, readings: &crate::construction::readings::ObjectReadingInstances| {
+                let classify = |failure: super::result::ValidationFailure| match failure {
+                    super::result::ValidationFailure::Stop(signal) => {
+                        ConstructionFailure::Stopped(signal)
+                    }
+                    other => ConstructionFailure::Inconsistent(
+                        other.internal_context("修復済み写像の始終状態".into()),
+                    ),
+                };
+                let state = super::environment::Environment::with_primitive_valuation(
+                    &inputs,
+                    &model.repaired_values,
+                    c,
+                )
+                .map_err(classify)?;
+                let domains = (0..readings.objects().len())
+                    .map(|object| {
+                        tick(c)?;
+                        super::object_evaluate::ObjectDomain::from_readings(
+                            &inputs, readings, object, c,
+                        )
+                        .map(Arc::new)
+                        .map_err(classify)
+                    })
+                    .collect::<Result<Vec<_>, _>>()?;
+                Ok::<_, ConstructionFailure>((state, domains))
+            };
+        Some([
+            prepare(source, evaluations[0].readings())?,
+            prepare(target, evaluations[1].readings())?,
+        ])
     };
     let mut laws = Vec::new();
     let readings = evaluations[0].readings();
@@ -331,7 +347,14 @@ pub(super) fn verify(
                 evaluations.clone(),
                 object,
                 instance,
-                states.as_ref().map(|[source, target]| [source, target]),
+                states
+                    .as_ref()
+                    .map(|[(source, source_domains), (target, target_domains)]| {
+                        [
+                            (source, source_domains.as_slice()),
+                            (target, target_domains.as_slice()),
+                        ]
+                    }),
                 c,
             )?);
         }

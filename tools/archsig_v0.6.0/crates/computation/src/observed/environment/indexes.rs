@@ -20,7 +20,7 @@ pub(crate) struct InputIndexes<'a> {
     // 検査済み入力の Map 値を入力内の値ごとに共有する。
     observed_maps: data::InputMapCache,
     // 候補ごとに独立したEnvironmentへ一度だけ設定し、観測cacheと共有しない。
-    pub(super) primitive_valuation: Option<BTreeMap<Fact, Scalar>>,
+    pub(super) primitive_valuation: Option<std::sync::Arc<BTreeMap<Fact, Scalar>>>,
     pub(super) valuation_domain: ValuationDomain,
     // 整数changeの式を読む内部環境。観測slotと元parameterを区別する。
     pub(super) affine_valuation: BTreeMap<Fact, crate::observed::affine::Form>,

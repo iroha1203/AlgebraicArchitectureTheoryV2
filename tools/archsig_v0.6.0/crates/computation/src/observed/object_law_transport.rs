@@ -324,6 +324,7 @@ fn reading(e: &ObjectEvaluation, c: &Control) -> Result<LawBooleanReading, Const
 
 fn reading_from_state(
     state: &super::environment::Environment<'_>,
+    domains: &[Arc<super::object_evaluate::ObjectDomain>],
     readings: &ObjectReadingInstances,
     object: usize,
     instance: usize,
@@ -357,9 +358,10 @@ fn reading_from_state(
             failure.internal_context("修復状態のLaw読取り".into()),
         ),
     };
-    let env = state
-        .for_constructed_state(readings, object, c)
-        .map_err(classify)?;
+    let domain = domains
+        .get(object)
+        .ok_or_else(|| inconsistent("修復状態の対象域がない"))?;
+    let env = state.for_constructed_state(domain, c);
     let mut bindings = Vec::new();
     for binding in row.bindings() {
         tick(c)?;
@@ -530,15 +532,20 @@ pub(crate) fn object_law_transport_on(
     )
 }
 
+pub(super) type SelectedState<'state, 'input> = (
+    &'state super::environment::Environment<'input>,
+    &'state [Arc<super::object_evaluate::ObjectDomain>],
+);
+
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn object_law_transport_on_state(
+pub(super) fn object_law_transport_on_state(
     inputs: Arc<CheckedInputs>,
     declarations: Arc<DeclarationCorrespondence>,
     objects: Arc<ConfigurationTransport>,
     evaluations: [Arc<super::object_evaluate::LawEvaluationCache>; 2],
     object: usize,
     instance: usize,
-    states: Option<[&super::environment::Environment<'_>; 2]>,
+    states: Option<[SelectedState<'_, '_>; 2]>,
     c: &Control,
 ) -> Result<ObjectLawTransport, ObjectLawTransportFailure> {
     let source_readings = evaluations[0].readings().clone();
@@ -642,13 +649,32 @@ pub(crate) fn object_law_transport_on_state(
             tick(c)?;
             return Ok(());
         }
-        if let Some([source_state, target_state]) = states {
+        if let Some(
+            [
+                (source_state, source_domains),
+                (target_state, target_domains),
+            ],
+        ) = states
+        {
             if r.instance().parameters().is_empty()
                 && r.target_readings.instances()[ti].parameters().is_empty()
             {
-                let source =
-                    reading_from_state(source_state, &r.source_readings, object, instance, c)?;
-                let target = reading_from_state(target_state, &r.target_readings, to, ti, c)?;
+                let source = reading_from_state(
+                    source_state,
+                    source_domains,
+                    &r.source_readings,
+                    object,
+                    instance,
+                    c,
+                )?;
+                let target = reading_from_state(
+                    target_state,
+                    target_domains,
+                    &r.target_readings,
+                    to,
+                    ti,
+                    c,
+                )?;
                 r.outcome = family::compare(&source, &target);
                 r.source_reading = Some(source);
                 r.target_reading = Some(target);

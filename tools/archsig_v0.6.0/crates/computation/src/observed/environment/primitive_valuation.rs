@@ -14,24 +14,21 @@ impl<'a> Environment<'a> {
             .ok_or_else(|| internal!("候補代入が原始型・所属・Map全域性を満たさない").into())
     }
 
-    pub(in crate::observed) fn for_constructed_state(
-        &self,
-        readings: &crate::construction::readings::ObjectReadingInstances,
-        object: usize,
-        control: &Control,
-    ) -> Result<Self, ValidationFailure> {
+    pub(super) fn fork_primitive_read(&self, control: &Control) -> Self {
         let mut environment = self.fresh_candidate(control);
         environment.indexes.primitive_valuation = self.indexes.primitive_valuation.clone();
-        environment.indexes.object = Some(std::sync::Arc::new(
-            crate::observed::object_evaluate::ObjectDomain::from_readings(
-                self.indexes.inputs,
-                readings,
-                object,
-                control,
-            )?,
-        ));
+        environment
+    }
+
+    pub(in crate::observed) fn for_constructed_state(
+        &self,
+        domain: &std::sync::Arc<crate::observed::object_evaluate::ObjectDomain>,
+        control: &Control,
+    ) -> Self {
+        let mut environment = self.fork_primitive_read(control);
+        environment.indexes.object = Some(domain.clone());
         environment.indexes.valuation_domain = super::indexes::ValuationDomain::Object;
-        Ok(environment)
+        environment
     }
 
     /// 型の正しい候補のうち、原始制約に適合する点だけを返す。停止/不正値は黙殺しない。
@@ -213,7 +210,7 @@ impl<'a> Environment<'a> {
         }
         let mut pinned = Vec::new();
         if !structurally_neutral {
-            for (position, value) in values {
+            for (position, value) in values.iter() {
                 control.checkpoint(Checkpoint::PrimitiveValuation)?;
                 // field()はread記録を変更する。ここでは初回検査と同じ不変metadataだけを読む。
                 let field = self
@@ -351,7 +348,7 @@ impl<'a> Environment<'a> {
         {
             return Ok(None);
         }
-        environment.indexes.primitive_valuation = Some(values);
+        environment.indexes.primitive_valuation = Some(std::sync::Arc::new(values));
         environment.indexes.primitive_input_valuation = Some(original_values);
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
         Ok(Some(environment))

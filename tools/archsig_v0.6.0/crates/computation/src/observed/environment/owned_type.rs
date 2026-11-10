@@ -161,7 +161,7 @@ impl Environment<'_> {
                 &mut domain.scope,
                 &self.control,
                 &self.state.completion_values.borrow(),
-                self.indexes.primitive_valuation.as_ref(),
+                self.indexes.primitive_valuation.as_deref(),
             )?;
             // 同じ対象域の所属を決める既知ownerを、除外された候補も含めて保持する。
             // 部分対象ではそのsubjectを選んだownerだけが根拠となる。

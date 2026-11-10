@@ -43,10 +43,10 @@ fn collect<R: LawRows>(
     let mut selected = vec![];
     for (index, position) in family.positions().iter().enumerate() {
         step(c)?;
-        if let Some((_, value)) = family
+        if let Some(value) = family
             .selected_values
-            .iter()
-            .find(|(slot, _)| slot == position)
+            .as_ref()
+            .and_then(|values| values.get(position))
         {
             selected.push((index, value));
             continue;

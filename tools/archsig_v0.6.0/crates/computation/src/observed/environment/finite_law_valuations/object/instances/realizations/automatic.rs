@@ -220,7 +220,7 @@ fn automatic_with_sink<S: ParameterSink, R: LawRows>(
             let family = AutomaticLawValuations {
                 readings: readings.clone(),
                 value,
-                selected_values: vec![],
+                selected_values: None,
             };
             if family.domain_complete()
                 && (family.positions() != result.parameters.positions
@@ -241,7 +241,7 @@ fn automatic_with_sink<S: ParameterSink, R: LawRows>(
             result.family = error.partial.map(|p| AutomaticLawValuations {
                 readings: readings.clone(),
                 value: *p,
-                selected_values: vec![],
+                selected_values: None,
             });
             Err(AutomaticLawFailure {
                 cause: error.cause,
@@ -254,7 +254,7 @@ fn automatic_with_sink<S: ParameterSink, R: LawRows>(
 pub(in crate::observed) struct AutomaticLawValuations<R = Vec<FiniteLawRow>> {
     readings: ObjectReadingInstances,
     value: FiniteLawFamilyValuations<R>,
-    selected_values: Vec<(Fact, Scalar)>,
+    selected_values: Option<Arc<BTreeMap<Fact, Scalar>>>,
 }
 pub(in crate::observed) type AutomaticLawFunctions = AutomaticLawValuations<IntegerRows>;
 pub(in crate::observed) struct AutomaticLawQuotient<'a, R = Vec<FiniteLawRow>> {
@@ -264,23 +264,18 @@ pub(in crate::observed) struct AutomaticLawQuotient<'a, R = Vec<FiniteLawRow>> {
 impl<R: LawRows> AutomaticLawValuations<R> {
     pub(in crate::observed) fn with_selected_state(
         mut self,
-        inputs: &CheckedInputs,
-        values: Vec<(Fact, Scalar)>,
+        environment: &Environment<'_>,
         c: &Control,
     ) -> Result<Self, ValidationFailure> {
-        if values.is_empty() {
+        let Some(values) = &environment.indexes.primitive_valuation else {
             return Ok(self);
-        }
-        self.selected_values = values;
-        let environment = self.observed_environment(inputs, c)?;
+        };
+        self.selected_values = Some(Arc::clone(values));
+        let inputs = environment.indexes.inputs;
         let mut observed = Vec::new();
         for position in self.positions() {
             tick(c)?;
-            if let Some((_, value)) = self
-                .selected_values
-                .iter()
-                .find(|(slot, _)| slot == position)
-            {
+            if let Some(value) = values.get(position) {
                 observed.push(value.clone());
                 continue;
             }
@@ -315,18 +310,6 @@ impl<R: LawRows> AutomaticLawValuations<R> {
         }
         self.value.observed_point = selected;
         Ok(self)
-    }
-
-    fn observed_environment<'a>(
-        &self,
-        inputs: &'a CheckedInputs,
-        c: &Control,
-    ) -> Result<Environment<'a>, ValidationFailure> {
-        if self.selected_values.is_empty() {
-            Ok(Environment::new(inputs, c)?)
-        } else {
-            Environment::with_primitive_valuation(inputs, &self.selected_values, c)
-        }
     }
 
     pub(in crate::observed) fn columns(&self) -> &[FiniteLawColumn<R>] {
@@ -371,16 +354,16 @@ impl<R: LawRows> AutomaticLawValuations<R> {
     /// 補完代入を入れず、同じ元列のoperandとその読取りを現在の観測から得る。
     pub(in crate::observed) fn observed_indicator(
         &self,
-        inputs: &CheckedInputs,
+        state: &Environment<'_>,
         column: usize,
         component: Option<&[usize]>,
         c: &Control,
     ) -> Result<(Option<BigInt>, Vec<Fact>), ValidationFailure> {
         tick(c)?;
-        if &self.value.sources != inputs.sources() {
+        if &self.value.sources != state.indexes.inputs.sources() {
             return Err(internal!("有限Lawの実評価と元三入力が違う").into());
         }
-        let mut e = self.observed_environment(inputs, c)?;
+        let mut e = state.fork_primitive_read(c);
         *e.state.primitive_reads.borrow_mut() = Some(BTreeSet::new());
         self.value.select_column_object(&mut e, column)?;
         let reads = || -> Result<Vec<Fact>, ValidationFailure> {
