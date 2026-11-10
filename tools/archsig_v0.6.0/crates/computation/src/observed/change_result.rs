@@ -283,6 +283,72 @@ fn compute_inner(
     c: &Control,
 ) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
     if !architecture.complete {
+        let law = env.indexes.inputs.law();
+        let rational = request.arguments.iter().any(|argument| {
+            argument.name == "using"
+                && matches!(&argument.value, super::request::Selector::Declaration { name }
+                    if matches!(&law.declarations()[name].signature,
+                        Signature::Change { params, .. }
+                            if params.iter().skip(1).any(|param| param.ty == Type::Q)))
+        });
+        if rational
+            && !architecture.reasons.is_empty()
+            && architecture
+                .reasons
+                .iter()
+                .all(|reason| matches!(reason.kind, ReasonKind::Missing))
+        {
+            let declaration = &law.declarations()[request
+                .declaration()
+                .ok_or(internal!("欠測した有理solveのLawがない"))?];
+            let Signature::Law { body, params, .. } = &declaration.signature else {
+                return Err(internal!("有理solveの要求がLawでない").into());
+            };
+            let mut b = Builder {
+                g,
+                base,
+                parts: vec![],
+            };
+            let parameters = params
+                .iter()
+                .map(|p| (p.name.clone(), p.ty.clone()))
+                .collect::<Vec<_>>();
+            let expression = source_expression(&mut b, env, *body, &[], &parameters)?;
+            let part = &mut b.parts[expression.0 - base];
+            part.arguments.push(architecture.reference);
+            part.scope.merge(&g.get(architecture.reference)?.scope);
+            let scope = part.scope.clone();
+            let mut missing = architecture
+                .reasons
+                .iter()
+                .flat_map(|reason| reason.missing.iter().cloned())
+                .collect::<Vec<_>>();
+            missing.sort();
+            missing.dedup();
+            let reason = Reason {
+                kind: ReasonKind::Missing,
+                request: request.id.clone(),
+                dependencies: vec![expression],
+                missing,
+                location: Some(Location::Law {
+                    span: declaration.span,
+                }),
+            };
+            part.reasons.push(reason.clone());
+            return Ok((
+                b.parts,
+                Answer {
+                    id: request.id.clone(),
+                    status: Decision::Undetermined,
+                    outputs: BTreeMap::new(),
+                    claim: None,
+                    evidence: vec![],
+                    reasons: vec![reason],
+                    scope,
+                },
+                None,
+            ));
+        }
         if let Some(result) =
             owner_completion::compute(env, g, architecture, base, request, c, &[])?
         {
@@ -1683,6 +1749,25 @@ impl super::result_kind::ResultKind for Data {
                 c,
             )?;
         }
+        let polyhedral = verification.as_ref().is_some_and(|search| {
+            search.rational.as_ref().is_some_and(|linear| {
+                matches!(
+                    linear.solutions,
+                    super::environment::field_change::Solutions::Polyhedron(_)
+                )
+            })
+        });
+        if polyhedral {
+            for point in 1..points {
+                change_search::verify_point(
+                    env,
+                    &source.architecture.witness,
+                    verification.as_ref().unwrap(),
+                    point,
+                    c,
+                )?;
+            }
+        }
         let existence = source
             .answer
             .outputs
@@ -1714,7 +1799,7 @@ impl super::result_kind::ResultKind for Data {
                 part.evidence.clone(),
                 part.judgment.clone(),
             )?;
-            if base + index == existence.0 && points > 1 {
+            if base + index == existence.0 && points > 1 && !polyhedral {
                 for point in 1..points {
                     if let Err(failure) = change_search::verify_point(
                         env,

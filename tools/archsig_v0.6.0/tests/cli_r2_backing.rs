@@ -271,6 +271,15 @@ fn polyhedron_inputs(dir: &std::path::Path, case: &str) -> Json {
 }
 
 fn polyhedron_run(dir: &std::path::Path, ask: &str, out: &str, reuse: Option<&str>) -> BinaryRun {
+    polyhedron_asks(dir, &[ask], out, reuse)
+}
+
+fn polyhedron_asks(
+    dir: &std::path::Path,
+    asks: &[&str],
+    out: &str,
+    reuse: Option<&str>,
+) -> BinaryRun {
     let mut args = vec![
         "run",
         "--atom-definition",
@@ -279,11 +288,12 @@ fn polyhedron_run(dir: &std::path::Path, ask: &str, out: &str, reuse: Option<&st
         "laws.law",
         "--archmap",
         "archmap.json",
-        "--ask",
-        ask,
         "--out",
         out,
     ];
+    for ask in asks {
+        args.extend(["--ask", ask]);
+    }
     if let Some(reuse) = reuse {
         args.extend(["--reuse", reuse]);
     }
@@ -328,12 +338,15 @@ fn coordinates<'a>(result: &'a JNode, vector: &JNode) -> Vec<(&'a str, &'a str)>
 
 #[test]
 fn r2_exact_backing_solves_all_four_frozen_constraint_sets() {
-    for (ask, (exit, outcome)) in
-        POLY_QUERIES
-            .lines()
-            .zip([(0, "unique"), (1, "empty"), (0, "unique"), (1, "empty")])
-    {
-        let case = ask.split_once('=').unwrap().0;
+    let asks: Vec<_> = POLY_QUERIES.lines().collect();
+    assert_eq!(asks.len(), 4);
+    for (ask, (case, exit, outcome)) in asks.into_iter().zip([
+        ("overlapFeasible", 0, "unique"),
+        ("overlapInsufficient", 1, "empty"),
+        ("threeUsesExact", 0, "unique"),
+        ("threeUsesMicroShortage", 1, "empty"),
+    ]) {
+        assert_eq!(ask.split_once('=').unwrap().0, case);
         let dir = workdir(case);
         polyhedron_inputs(&dir, case);
         let run = polyhedron_run(&dir, ask, "out", None);
@@ -501,7 +514,7 @@ fn rational_backing_distinguishes_nonunique_repair_and_missing_capacity() {
 }
 
 #[test]
-fn rational_backing_stops_inside_elimination_and_saves_the_completed_prefix() {
+fn rational_backing_stops_before_unchecked_solutions_and_saves_the_completed_prefix() {
     use archsig::run::{CheckArgs, FileIo, RunArgs, Signals, run_requests};
     use archsig_common::control::{Checkpoint, Control, Signal};
     use std::{cell::Cell, rc::Rc};
@@ -516,52 +529,170 @@ fn rational_backing_stops_inside_elimination_and_saves_the_completed_prefix() {
     }
 
     let dir = workdir("r2-polyhedron-stop");
-    polyhedron_inputs(&dir, "overlapFeasible");
     let ask = POLY_QUERIES.lines().next().unwrap();
     let before = "before=evaluate(Backing.claimLoad,c=@fixture/overlapFeasible.B1)";
     let after = "after=evaluate(Backing.claimLoad,c=@fixture/overlapFeasible.B2)";
-    let args = RunArgs {
-        inputs: CheckArgs {
-            atom_definitions: vec![dir.join("definitions.json")],
-            law: dir.join("laws.law"),
-            archmap: Some(dir.join("archmap.json")),
-            out: Some(dir.join("out")),
-        },
-        asks: [before, ask, after].map(str::to_owned).to_vec(),
-        reuse: None,
-    };
-    let seen = Rc::new(Cell::new(0));
-    let count = Rc::clone(&seen);
-    let control = Control::new(move |point| {
-        if point == Checkpoint::RationalPolyhedron {
-            count.set(count.get() + 1);
-        }
-        (count.get() == 800).then_some(Signal::Term)
-    });
-    let mut signals = NoSignal::default();
-    let outcome = run_requests(&mut FileIo, &mut signals, &args, &control);
-    assert_eq!(outcome.exit_code, 143, "{}", outcome.receipt());
-    assert_eq!(seen.get(), 800);
-    assert_eq!(signals.0, 1);
-    let saved = std::fs::read(dir.join("out/result.json")).unwrap();
-    let result = archsig_common::json::parse(&saved).unwrap();
-    assert_eq!(s(get(&result, "status")), "interrupted");
-    let answers = arr(get(&result, "answers"));
-    assert_eq!(s(get(&answers[0], "id")), "before");
-    assert_eq!(s(get(&answers[0], "status")), "established");
-    let value = referenced(&result, get(get(&answers[0], "outputs"), "value"));
-    let [n, d] = arr(get(value, "value")) else {
-        panic!("completed exact Q answer");
-    };
-    assert_eq!((s(n), s(d)), ("0", "1"));
-    assert!(
-        answers[1..]
-            .iter()
-            .all(|a| s(get(a, "status")) != "refuted")
+    let mut slack = polyhedron_inputs(&dir, "overlapFeasible");
+    let snapshot = &mut items(fields(&mut slack).get_mut("snapshots").unwrap())[0];
+    let stock = items(fields(snapshot).get_mut("atoms").unwrap()).iter_mut()
+        .find(|node| matches!(node, Json::Obj(fields) if fields["id"] == Json::str("overlapFeasible.X.available")))
+        .unwrap();
+    fields(stock).insert(
+        "value".into(),
+        Json::Arr(vec![Json::str("6"), Json::str("1")]),
     );
-    assert!(
-        answers[1..]
-            .iter()
-            .all(|a| !has(get(a, "outputs"), "solutions"))
+    std::fs::write(dir.join("archmap.json"), slack.canonical()).unwrap();
+    let repair = ask.replacen("=solve(", "=repair(", 1);
+    for (checkpoint, at, ask, out) in [
+        (Checkpoint::RationalPolyhedron, 800, ask, "elimination"),
+        (
+            Checkpoint::ChangeWitness,
+            2,
+            repair.as_str(),
+            "second-witness",
+        ),
+    ] {
+        let args = RunArgs {
+            inputs: CheckArgs {
+                atom_definitions: vec![dir.join("definitions.json")],
+                law: dir.join("laws.law"),
+                archmap: Some(dir.join("archmap.json")),
+                out: Some(dir.join(out)),
+            },
+            asks: [before, ask, after].map(str::to_owned).to_vec(),
+            reuse: None,
+        };
+        let seen = Rc::new(Cell::new(0));
+        let count = Rc::clone(&seen);
+        let control = Control::new(move |point| {
+            if point == checkpoint {
+                count.set(count.get() + 1);
+            }
+            (count.get() == at).then_some(Signal::Term)
+        });
+        let mut signals = NoSignal::default();
+        let outcome = run_requests(&mut FileIo, &mut signals, &args, &control);
+        assert_eq!(outcome.exit_code, 143, "{}", outcome.receipt());
+        assert_eq!(seen.get(), at);
+        assert_eq!(signals.0, 1);
+        let saved = std::fs::read(dir.join(out).join("result.json")).unwrap();
+        let result = archsig_common::json::parse(&saved).unwrap();
+        assert_eq!(s(get(&result, "status")), "interrupted");
+        let answers = arr(get(&result, "answers"));
+        assert_eq!(s(get(&answers[0], "id")), "before");
+        assert_eq!(s(get(&answers[0], "status")), "established");
+        let value = referenced(&result, get(get(&answers[0], "outputs"), "value"));
+        let [n, d] = arr(get(value, "value")) else {
+            panic!("completed exact Q answer");
+        };
+        assert_eq!((s(n), s(d)), ("0", "1"));
+        assert!(
+            answers[1..]
+                .iter()
+                .all(|a| s(get(a, "status")) != "refuted")
+        );
+        assert!(
+            answers[1..]
+                .iter()
+                .all(|a| !has(get(a, "outputs"), "solutions"))
+        );
+    }
+}
+
+#[test]
+fn rational_backing_keeps_unsupported_quotients_and_independent_answers_separate() {
+    let ask = POLY_QUERIES.lines().nth(1).unwrap();
+    let dir = workdir("r2-polyhedron-quotient");
+    polyhedron_inputs(&dir, "overlapInsufficient");
+    let asks = [
+        ask,
+        "q=quotient(Backing.stockLoad,on=$overlapInsufficient.solutions,s=@fixture/overlapInsufficient.X)",
+        "independent=evaluate(Backing.stockLoad,s=@fixture/overlapInsufficient.X)",
+    ];
+    let first = polyhedron_asks(&dir, &asks, "first", None);
+    assert_eq!(first.code, 2, "{}{}", first.stdout, first.stderr);
+    let result = result_json(&dir, &first);
+    let [solve, quotient, independent] = arr(get(&result, "answers")) else {
+        panic!("all requests remain");
+    };
+    assert_eq!(s(get(solve, "status")), "refuted");
+    assert_eq!(s(get(certificate(&result), "outcome")), "empty");
+    assert_eq!(s(get(quotient, "status")), "undetermined");
+    assert!(!has(get(quotient, "outputs"), "quotient"));
+    let [reason] = arr(get(quotient, "reasons")) else {
+        panic!("typed quotient reason")
+    };
+    assert_eq!(s(get(reason, "code")), "unsupported_algorithm");
+    assert_eq!(
+        s(get(get(reason, "details"), "method")),
+        "rational_polyhedron_quotient"
     );
+    assert_eq!(s(get(independent, "status")), "established");
+    let replay = polyhedron_asks(&dir, &asks, "same", Some("first"));
+    assert_eq!(replay.code, 2, "{}{}", replay.stdout, replay.stderr);
+    let replay = result_json(&dir, &replay);
+    assert!(warnings(&replay).is_empty());
+    for key in ["answers", "nodes", "issues"] {
+        assert_eq!(get(&result, key).value, get(&replay, key).value);
+    }
+}
+
+#[test]
+fn rational_backing_reports_missing_references_units_and_unsupported_disjunction() {
+    let case = "overlapFeasible";
+    let dir = workdir("r2-polyhedron-scope");
+    let map = polyhedron_inputs(&dir, case);
+    let ask = POLY_QUERIES.lines().next().unwrap();
+    let independent = "independent=evaluate(Backing.stockLoad,s=@fixture/overlapFeasible.Y)";
+    for (atom, subject, field) in [
+        ("B1.eligible", "B1", "Pool.Claim.eligible"),
+        ("B1.X.stock", "B1.X", "Pool.Cell.stock"),
+        ("B1.X.owner", "B1.X", "Pool.Cell.owner"),
+        ("X.quantityUnit", "X", "Pool.Stock.quantityUnit"),
+    ] {
+        let mut missing = map.clone();
+        let snapshot = &mut items(fields(&mut missing).get_mut("snapshots").unwrap())[0];
+        let atom = Json::str(format!("{case}.{atom}"));
+        items(fields(snapshot).get_mut("atoms").unwrap())
+            .retain(|node| !matches!(node, Json::Obj(fields) if fields["id"] == atom));
+        std::fs::write(dir.join("archmap.json"), missing.canonical()).unwrap();
+        let run = polyhedron_asks(&dir, &[ask, independent], &format!("missing-{field}"), None);
+        assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+        let result = result_json(&dir, &run);
+        let [solve, independent] = arr(get(&result, "answers")) else {
+            panic!("retained answers")
+        };
+        assert_eq!(s(get(solve, "status")), "undetermined");
+        assert_eq!(s(get(independent, "status")), "established");
+        assert!(!has(get(solve, "outputs"), "solutions"));
+        let [reason] = arr(get(solve, "reasons")) else {
+            panic!("only missing observations")
+        };
+        assert_eq!(s(get(reason, "code")), "missing_observation");
+        assert!(arr(get(reason, "missing")).iter().any(|fact| {
+            s(get(fact, "snapshot")) == "fixture"
+                && s(get(fact, "subject")) == format!("{case}.{subject}")
+                && s(get(fact, "field")) == field
+        }));
+    }
+    std::fs::write(dir.join("archmap.json"), map.canonical()).unwrap();
+    let law = POLY_LAW.replacen(
+        "b.quantity>=rat(0,1)",
+        "(b.quantity>=rat(1,1) or b.quantity<=rat(0,1))",
+        1,
+    );
+    std::fs::write(dir.join("laws.law"), law).unwrap();
+    let run = polyhedron_asks(&dir, &[ask, independent], "unsupported", None);
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let [solve, independent] = arr(get(&result, "answers")) else {
+        panic!("retained answers")
+    };
+    assert_eq!(s(get(independent, "status")), "established");
+    assert_eq!(s(get(solve, "status")), "undetermined");
+    assert!(!has(get(solve, "outputs"), "solutions"));
+    let [reason] = arr(get(solve, "reasons")) else {
+        panic!("only unsupported")
+    };
+    assert_eq!(s(get(reason, "code")), "unsupported_algorithm");
 }

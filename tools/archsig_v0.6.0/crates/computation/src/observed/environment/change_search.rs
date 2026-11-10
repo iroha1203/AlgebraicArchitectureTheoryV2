@@ -595,32 +595,44 @@ pub(in crate::observed) fn search_with_completions(
                 &result.requirements,
                 &mut pending,
             );
-            if !pending.facts.is_empty() || pending.unsupported.is_some() {
+            if matches!(
+                &computed,
+                Err(ValidationFailure::UnsupportedExpression { .. })
+            ) && pending.expression.is_some()
+            {
                 result.missing.extend(pending.facts.iter().cloned());
                 result.pending_integer = Some(pending);
             }
             let linear = computed?;
             let mut points = vec![];
-            if let Some(polyhedron) = &linear.polyhedron {
-                match &polyhedron.outcome {
+            match &linear.solutions {
+                field_change::Solutions::Polyhedron(polyhedron) => match &polyhedron.outcome {
                     Outcome::Empty(_) => {}
                     Outcome::Unique { point, .. } => points.push(point.clone()),
                     Outcome::Multiple { first, second } => {
                         points.extend([first.clone(), second.clone()]);
                     }
-                }
-            } else if let Some(particular) = &linear.particular {
-                points.push(particular.clone());
-                if linear.fiber.pivots.len() < linear.parameter_count {
-                    points.push(
-                        particular
-                            .iter()
-                            .zip(&linear.kernel)
-                            .map(|(p, k)| {
-                                crate::observed::numeric::binary(BinOp::Add, p, &k[0], control)
-                            })
-                            .collect::<Result<Vec<_>, _>>()?,
-                    );
+                },
+                field_change::Solutions::Affine(fiber) => {
+                    if let Some(particular) = &fiber.particular {
+                        points.push(particular.clone());
+                        if fiber.pivots.len() < linear.parameter_count {
+                            points.push(
+                                particular
+                                    .iter()
+                                    .zip(&fiber.kernel)
+                                    .map(|(p, k)| {
+                                        crate::observed::numeric::binary(
+                                            BinOp::Add,
+                                            p,
+                                            &k[0],
+                                            control,
+                                        )
+                                    })
+                                    .collect::<Result<Vec<_>, _>>()?,
+                            );
+                        }
+                    }
                 }
             }
             let mut candidates = Candidates {

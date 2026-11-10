@@ -1,6 +1,9 @@
 //! 有理数の全解を元parameter座標のアフィン空間として公開する。
 use super::*;
-use crate::observed::{environment::field_change::Linear, numeric};
+use crate::observed::{
+    environment::field_change::{Linear, Solutions},
+    numeric,
+};
 use archsig_input::law::ast::BinOp;
 use linear_result::{Parts, domain, module};
 pub(in crate::observed) fn map(
@@ -96,25 +99,28 @@ pub(super) fn build(
     )?;
     let equations = map(b, pm, em, &linear.equations, n, c)?;
     let rhs = vector(b, em, &linear.rhs, c)?;
-    if let Some(polyhedron) = &linear.polyhedron {
-        return super::field_polyhedron_result::build(
-            b,
-            linear,
-            polyhedron,
-            ring,
-            pm,
-            parameters,
-            states,
-            action,
-            equations,
-            rhs,
-            requirements,
-            c,
-        );
-    }
+    let fiber = match &linear.solutions {
+        Solutions::Affine(fiber) => fiber,
+        Solutions::Polyhedron(polyhedron) => {
+            return super::field_polyhedron_result::build(
+                b,
+                linear,
+                polyhedron,
+                ring,
+                pm,
+                parameters,
+                states,
+                action,
+                equations,
+                rhs,
+                requirements,
+                c,
+            );
+        }
+    };
     let mut args = vec![equations, rhs];
     args.extend(requirements);
-    let (certificate, representation, representation_args) = if let Some(p) = &linear.particular {
+    let (certificate, representation, representation_args) = if let Some(p) = &fiber.particular {
         let particular = vector(b, pm, p, c)?;
         let mut applied = vec![];
         for row in &linear.equations {
@@ -153,9 +159,9 @@ pub(super) fn build(
             args,
             None,
         )?;
-        let rank = n - linear.fiber.pivots.len();
+        let rank = n - fiber.pivots.len();
         let directions = module(b, ring, rank, "kernel", vec![equations])?;
-        let embedding = map(b, directions, pm, &linear.kernel, rank, c)?;
+        let embedding = map(b, directions, pm, &fiber.kernel, rank, c)?;
         (
             certificate,
             Json::obj([
@@ -167,11 +173,10 @@ pub(super) fn build(
             vec![particular, directions, embedding],
         )
     } else {
-        let row = linear
-            .fiber
+        let row = fiber
             .obstruction
             .ok_or(internal!("有理不整合の左零化子がない"))?;
-        let coefficients = &linear.fiber.left[row];
+        let coefficients = &fiber.left[row];
         let zero = numeric::zero(&Type::Q, c)?;
         for column in 0..n {
             let mut sum = zero.clone();
@@ -196,7 +201,7 @@ pub(super) fn build(
                 c,
             )?;
         }
-        if paired == zero || paired != linear.fiber.transformed_rhs[row] {
+        if paired == zero || paired != fiber.transformed_rhs[row] {
             return Err(internal!("有理空解の左零化子と元右辺の非零積が不一致").into());
         }
         let annihilator = vector(b, em, coefficients, c)?;

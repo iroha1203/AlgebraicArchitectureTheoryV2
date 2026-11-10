@@ -1,5 +1,5 @@
 //! 元の有理parameter上で作用とLawを正規化し、完全な線形fiberを求める。
-use super::change_affine::{Pending, with_missing};
+use super::change_affine::{Pending, capture_missing, with_missing};
 use super::*;
 use crate::observed::{
     affine::{self, Form, NumberType, Parameter},
@@ -13,15 +13,18 @@ pub(in crate::observed) struct Linear {
     pub parameter_count: usize,
     pub axes: Vec<Parameter>,
     pub guard_fiber: Fiber,
-    pub particular: Option<Vec<Scalar>>,
-    pub kernel: Matrix,
     pub slots: Vec<Fact>,
     pub action: Matrix,
     pub offset: Vec<Scalar>,
     pub equations: Matrix,
     pub rhs: Vec<Scalar>,
-    pub fiber: Fiber,
-    pub polyhedron: Option<Polyhedron>,
+    pub solutions: Solutions,
+}
+
+#[derive(Clone, Debug)]
+pub(in crate::observed) enum Solutions {
+    Affine(Fiber),
+    Polyhedron(Polyhedron),
 }
 
 #[derive(Clone, Debug)]
@@ -93,10 +96,6 @@ fn coordinates(
     axes: Axes<'_>,
     missing: &mut Pending,
 ) -> Result<(Option<Scalar>, Vec<Scalar>), ValidationFailure> {
-    if let Axes::Parameters(parameters) = axes {
-        missing.awaiting_observation =
-            form.awaiting_rational_observation(parameters, &env.control)?;
-    }
     (match axes {
         Axes::Parameters(axes) => form
             .rational_coordinates(axes, &env.control)?
@@ -145,24 +144,25 @@ fn equations(
         {
             let spec = quantifier::spec(law, id, &env.control)?;
             let domain = spec.domain.ok_or(internal!("有理量化の元域がない"))?;
-            let domain_value = env.scoped_ast(domain, vars, &base, reading)?;
+            let (quantified, absent) = capture_missing(env, || {
+                env.scoped_quantifier_domain(&spec, vars, &base, reading)
+            })?;
+            let (domain_value, members) = quantified?;
+            missing.awaiting_observation = !absent.is_empty();
             usable(env, domain, &domain_value)?;
             missing.support.extend(domain_value.support.into_vec());
             missing.scope.merge(&domain_value.scope);
-            let Some(Scalar::List { items, .. } | Scalar::Set { items, .. }) =
-                domain_value.known_value.as_ref()
-            else {
-                missing.expression = Some(domain);
+            let Some(members) = members else {
                 missing.unsupported = Some("rational_change_quantification");
                 return Err(unsupported(env, domain, "有理changeの有限量化域が未確定"));
             };
-            let mut local = vars.clone();
-            for member in items {
+            let mut local = env.copy_variables(vars)?;
+            for member in members {
                 env.tick()?;
                 if member.ty() != spec.element {
                     return Err(internal!("有理量化の元要素型が異なる").into());
                 }
-                let mut v = value(env, member.clone())?;
+                let mut v = value(env, member)?;
                 v.scope = domain_value.scope.clone();
                 v.scalar_scope = Some(domain_value.scope.clone());
                 local.insert(spec.name.to_owned(), v);
@@ -171,7 +171,13 @@ fn equations(
             return Ok(());
         }
 
-        let v = env.scoped_ast(id, vars, &base, reading)?;
+        let (v, absent) = if allow_bounds {
+            capture_missing(env, || env.scoped_ast(id, vars, &base, reading))?
+        } else {
+            (env.scoped_ast(id, vars, &base, reading), vec![])
+        };
+        let v = v?;
+        missing.awaiting_observation = v.condition_pending && !absent.is_empty();
         usable(env, id, &v)?;
         if let Some(Scalar::Bool(holds)) = v.known_value {
             if !holds {
@@ -201,7 +207,10 @@ fn equations(
                 lhs,
                 rhs,
             } if allow_bounds => {
-                let guard = env.scoped_ast(*lhs, vars, &base, reading)?;
+                let (guard, absent) =
+                    capture_missing(env, || env.scoped_ast(*lhs, vars, &base, reading))?;
+                let guard = guard?;
+                missing.awaiting_observation = guard.condition_pending && !absent.is_empty();
                 usable(env, *lhs, &guard)?;
                 match guard.known_value {
                     Some(Scalar::Bool(true)) => {
@@ -209,7 +218,7 @@ fn equations(
                     }
                     Some(Scalar::Bool(false)) => Ok(()),
                     _ => {
-                        missing.expression = Some(*lhs);
+                        missing.awaiting_observation = !absent.is_empty();
                         missing.unsupported = Some("rational_change_implication");
                         Err(unsupported(env, *lhs, "有理changeの含意の前件が未確定"))
                     }
@@ -260,6 +269,8 @@ fn equations(
                 let Some(form) = form else {
                     if change_affine::numeric_condition(env, id, &v)? {
                         missing.unsupported = Some("numeric_change_condition");
+                    } else if !absent.is_empty() {
+                        missing.awaiting_observation = true;
                     }
                     return Err(unsupported(
                         env,
@@ -270,6 +281,12 @@ fn equations(
                 if form.varies_over(&missing.universal, &env.control)? {
                     rows.contradiction(axes.len(), env)?;
                     return Ok(());
+                }
+                if ordered.is_some()
+                    && let Axes::Parameters(parameters) = axes
+                {
+                    missing.awaiting_observation =
+                        form.awaiting_rational_observation(parameters, &env.control)?;
                 }
                 let (constant, coefficients) = coordinates(env, id, &form, axes, missing)?;
                 let rhs = constant
@@ -393,7 +410,7 @@ fn compute_inner(
             });
         }
     }
-    let mut updates = BTreeMap::<Fact, Form>::new();
+    let mut updates = BTreeMap::<Fact, (Form, Scalar, Vec<Scalar>)>::new();
     let mut guards = Constraints::default();
     for (i, subject) in subjects.iter().enumerate() {
         let mut vars = BTreeMap::from([(params[0].name.clone(), value(env, subject.clone())?)]);
@@ -480,14 +497,13 @@ fn compute_inner(
                             }
                             unsupported(env, *id, "有理changeの更新式がQアフィンでない")
                         })?;
-                        coordinates(env, *id, &form, Axes::Parameters(&axes), missing)?;
                         let position = Fact::from(archsig_input::archmap::FactData {
                             snapshot: snapshot.clone(),
                             subject: subject.clone(),
                             field: Some(env.input_name(&format!("{entity}.{}", field.name))?),
                             atom: None,
                         });
-                        if let Some(prior) = updates.get(&position) {
+                        if let Some((prior, _, _)) = updates.get(&position) {
                             if prior != form.as_ref() {
                                 return Err(unsupported(
                                     env,
@@ -496,7 +512,10 @@ fn compute_inner(
                                 ));
                             }
                         } else {
-                            updates.insert(position, *form);
+                            let (constant, row) =
+                                coordinates(env, *id, &form, Axes::Parameters(&axes), missing)?;
+                            let constant = constant.ok_or(internal!("有理作用の固定項が未確定"))?;
+                            updates.insert(position, (*form, constant, row));
                         }
                     }
                     break;
@@ -508,11 +527,13 @@ fn compute_inner(
     let mut slots = vec![];
     let mut action = vec![];
     let mut offset = vec![];
-    for (slot, form) in &updates {
-        let (constant, row) = coordinates(env, *body, form, Axes::Parameters(&axes), missing)?;
+    let mut valuation = BTreeMap::new();
+    for (slot, (form, constant, row)) in updates {
+        env.tick()?;
         slots.push(slot.clone());
         action.push(row);
-        offset.push(constant.ok_or(internal!("有理作用の固定項が未確定"))?);
+        offset.push(constant);
+        valuation.insert(slot, form);
     }
 
     let mut guard_matrix = guards.equalities;
@@ -535,7 +556,7 @@ fn compute_inner(
         &env.control,
     )?;
     updated.indexes.object = env.object_domain();
-    updated.indexes.affine_valuation = updates;
+    updated.indexes.affine_valuation = valuation;
     let rows = if candidates_empty {
         Constraints::default()
     } else {
@@ -556,39 +577,35 @@ fn compute_inner(
             .collect::<Option<Vec<_>>>()
             .ok_or(internal!("有理要求の固定項が未確定"))?,
     );
-    let fiber = field_fiber::solve(
-        &Type::Q,
-        &guard_matrix,
-        axes.len(),
-        &guard_rhs,
-        &env.control,
-    )?;
-    let polyhedron = if let Some(inequalities) = rows.inequalities
+    let solutions = if let Some(inequalities) = rows.inequalities
         && !inequalities.is_empty()
     {
         let original =
             field_polyhedron::halfspaces(&guard_matrix, &guard_rhs, &inequalities, &env.control)?;
         let outcome = field_polyhedron::solve(&original, axes.len(), &env.control)?;
-        Some(Polyhedron {
+        Solutions::Polyhedron(Polyhedron {
             inequalities,
             outcome,
         })
     } else {
-        None
+        Solutions::Affine(field_fiber::solve(
+            &Type::Q,
+            &guard_matrix,
+            axes.len(),
+            &guard_rhs,
+            &env.control,
+        )?)
     };
     Ok(Linear {
         parameter_count: axes.len(),
         axes,
         guard_fiber,
-        particular: fiber.particular.clone(),
-        kernel: fiber.kernel.clone(),
         slots,
         action,
         offset,
         equations: guard_matrix,
         rhs: guard_rhs,
-        fiber,
-        polyhedron,
+        solutions,
     })
 }
 pub(in crate::observed) fn state_equations(
