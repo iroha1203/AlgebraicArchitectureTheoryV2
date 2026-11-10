@@ -564,6 +564,61 @@ fn configuration_transported(
         blocking_slots: canonical_facts(blocking, control)?,
     })
 }
+fn owner_slot_for<'a>(
+    inputs: &CheckedInputs,
+    subject: &'a Subject,
+    root_type: &str,
+    control: &Control,
+) -> Result<Option<(&'a archsig_input::archmap::Field, bool)>, ConstructionFailure> {
+    let signature = inputs
+        .definitions()
+        .declarations()
+        .get(subject.ty.as_str())
+        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("subjectの元定義がない")))?;
+    let (owner, entity) = match &signature.signature {
+        PrimitiveSignature::Entity {
+            owner: Some(owner), ..
+        } => (owner, true),
+        PrimitiveSignature::Arrow { owner, .. } => (owner, false),
+        _ => return Ok(None),
+    };
+    if owner.as_str() != root_type {
+        return Ok(None);
+    }
+    for field in &subject.fields {
+        tick(control)?;
+        if field.name.is_owner() {
+            return Ok(Some((field, entity)));
+        }
+    }
+    Err(ConstructionFailure::Inconsistent(internal!(
+        "owned subjectのowner slotがない"
+    )))
+}
+
+pub(crate) fn pending_owner_slots(
+    inputs: &CheckedInputs,
+    reading: &str,
+    root_type: &str,
+    control: &Control,
+) -> Result<Vec<FactPointer>, ConstructionFailure> {
+    let namespaces = namespaces(inputs, reading, control)?;
+    let mut missing = Vec::new();
+    for snapshot in inputs.archmap().snapshots() {
+        tick(control)?;
+        for subject in &snapshot.subjects {
+            tick(control)?;
+            if visible(inputs, &subject.ty, &namespaces)
+                && let Some((field, _)) = owner_slot_for(inputs, subject, root_type, control)?
+                && matches!(field.slot, Slot::Missing)
+            {
+                missing.push(slot(subject, &field.name));
+            }
+        }
+    }
+    Ok(missing)
+}
+
 /// Foreign members of ownerless roots are outside same-snapshot assembly.
 pub(crate) fn foreign_owned_member(
     inputs: &CheckedInputs,
@@ -772,31 +827,11 @@ fn construct_inner(
         if !visible(inputs, &subject.ty, &namespaces) {
             continue;
         }
-        let signature = inputs
-            .definitions()
-            .declarations()
-            .get(subject.ty.as_str())
-            .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("subjectの元定義がない")))?;
-        let (owner, is_entity) = match &signature.signature {
-            PrimitiveSignature::Entity {
-                owner: Some(owner), ..
-            } => (owner, true),
-            PrimitiveSignature::Arrow { owner, .. } => (owner, false),
-            _ => continue,
-        };
-        if owner != &selected.ty {
+        let Some((field, is_entity)) =
+            owner_slot_for(inputs, subject, selected.ty.as_str(), control)?
+        else {
             continue;
-        }
-        let mut owner_field = None;
-        for field in &subject.fields {
-            tick(control)?;
-            if field.name.is_owner() {
-                owner_field = Some(field);
-            }
-        }
-        let field = owner_field.ok_or_else(|| {
-            ConstructionFailure::Inconsistent(internal!("owned subjectのowner slotがない"))
-        })?;
+        };
         match &field.slot {
             Slot::Known {
                 value:

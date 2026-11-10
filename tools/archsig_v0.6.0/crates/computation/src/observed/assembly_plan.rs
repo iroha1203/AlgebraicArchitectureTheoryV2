@@ -334,18 +334,19 @@ pub(super) fn prepare(
     missing.extend(shared.metadata.missing.iter().cloned());
     missing.sort();
     missing.dedup();
-    let early_layout_problem = if rejected.is_some()
-        || fragments.metadata.failed
-        || shared.metadata.failed
-        || !missing.is_empty()
-        || fragments.unsupported.is_some()
-        || shared.unsupported.is_some()
-    {
-        layout_snapshot(e, reading, &target, &fragments, &shared, c)?
-    } else {
-        None
+    let roots = match &fragments.value {
+        Some(Scalar::Set { items, .. }) => items.iter().map(fact).collect::<Result<Vec<_>, _>>()?,
+        _ => vec![],
     };
-    let preparation = if let Some(problem) = early_layout_problem {
+    let pairs = shared
+        .value
+        .as_ref()
+        .map(|value| interfaces(value, c))
+        .transpose()?
+        .unwrap_or_default();
+    let layout_problem =
+        model_assembly::layout_snapshot(&e.indexes, reading, &target, &roots, &pairs, c)?;
+    let preparation = if let Some(problem) = layout_problem {
         Preparation::Unsupported(problem)
     } else if let Some(rejected) = rejected {
         rejected
@@ -363,29 +364,14 @@ pub(super) fn prepare(
     {
         Preparation::Unsupported(unsupported.clone())
     } else {
-        let Some(Scalar::Set { items, .. }) = &fragments.value else {
-            return Err(internal!("担当Viewの型付き集合がない").into());
-        };
-        let roots = items.iter().map(fact).collect::<Result<Vec<_>, _>>()?;
-        let pairs = interfaces(
-            shared
-                .value
-                .as_ref()
-                .ok_or(internal!("共有Viewの型付き値がない"))?,
-            c,
-        )?;
+        if fragments.value.is_none() || shared.value.is_none() {
+            return Err(internal!("組立ての担当または共有Viewの値がない").into());
+        }
         if let Some(root) = applied.keys().find(|root| !roots.contains(root)) {
-            if let Some(problem) =
-                model_assembly::layout_snapshot(&e.indexes, reading, &target, &roots, &pairs, c)?
-            {
-                Preparation::Unsupported(problem)
-            } else {
-                model_assembly::rejected("修復局所が担当Viewの選択域にない", vec![root.clone()])
-            }
+            model_assembly::rejected("修復局所が担当Viewの選択域にない", vec![root.clone()])
         } else {
-            model_assembly::compile(
+            model_assembly::compile_same_snapshot(
                 &p.shared_inputs(),
-                &e.indexes,
                 reading,
                 &target,
                 &roots,

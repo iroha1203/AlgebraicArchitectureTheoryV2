@@ -304,25 +304,23 @@ fn read_layout(
     let mut layout = layout_from_reads(&fragments, &interfaces, control)?;
     // The target and each fragment have the same ownerless root type. A
     // pending member can belong to any of them until its owner is observed.
-    let construction = crate::construction::construct(
-        prepared.inputs(),
-        reading,
-        &target.snapshot,
-        &target.subject,
-        control,
-    )
-    .map_err(|failure| match failure {
-        crate::construction::ConstructionFailure::Stopped(signal) => {
-            ReobservationFailure::Stopped(signal)
-        }
-        _ => unsupported("組立ての所属域を現在の原始観測で読めない"),
-    })?;
+    let root = env
+        .indexes
+        .subject(&target.snapshot, &target.subject)
+        .map_err(|_| unsupported("組立て先の root がない"))?;
     layout.missing.extend(
-        construction
-            .local_domain()
-            .conditional()
-            .iter()
-            .map(|member| member.owner_slot().clone()),
+        crate::construction::pending_owner_slots(
+            prepared.inputs(),
+            reading,
+            root.ty.as_str(),
+            control,
+        )
+        .map_err(|failure| match failure {
+            crate::construction::ConstructionFailure::Stopped(signal) => {
+                ReobservationFailure::Stopped(signal)
+            }
+            _ => unsupported("組立ての所属域を現在の原始観測で読めない"),
+        })?,
     );
     Ok(layout)
 }
@@ -368,6 +366,9 @@ fn layout_from_reads(
             ));
         }
     };
+    if roots.as_ref().is_some_and(Vec::is_empty) {
+        return Err(invalid("担当集合が空"));
+    }
     let shared = match &interfaces.value {
         Some(value) => Some(assembly_plan::interfaces(value, control).map_err(classify)?),
         None if !interfaces.metadata.missing.is_empty() => None,
@@ -692,6 +693,7 @@ pub fn reevaluate_assembly(
         }
     }
     let mut current_selection = None;
+    let mut local_sources = Vec::new();
     for (prior, new) in [
         (before_request, after_request),
         (prior_prepare, new_prepare),
@@ -731,6 +733,30 @@ pub fn reevaluate_assembly(
                         return Err(ReobservationFailure::Unsupported(
                             "再照合する局所 apply は一つまで".into(),
                         ));
+                    }
+                    let local = a.name.strip_prefix("local.").unwrap();
+                    let binding = format!("bind.{local}");
+                    for (assemble, prepare) in [
+                        (before_request, prior_prepare),
+                        (after_request, new_prepare),
+                    ] {
+                        let selected = assemble
+                            .arguments
+                            .iter()
+                            .find(|a| a.name == binding)
+                            .map(|a| &a.value);
+                        let source = prepare
+                            .arguments
+                            .iter()
+                            .find(|a| a.name == "on")
+                            .map(|a| &a.value);
+                        let Some(Selector::Subject { snapshot, subject }) = source else {
+                            return Err(invalid("局所 apply の元rootが明示されていない"));
+                        };
+                        if selected != source {
+                            return Err(invalid("局所 apply の元rootが担当の明示束縛と異なる"));
+                        }
+                        local_sources.push((snapshot.clone(), subject.clone()));
                     }
                     let (_, old_candidate) = repair_selection(before, &a.value, prior_solve)?;
                     let (new_apply, new_candidate) =
@@ -859,6 +885,18 @@ pub fn reevaluate_assembly(
                 )?,
                 control,
             )?;
+            for (layout, (snapshot, subject)) in [&before_layout, &after_layout]
+                .into_iter()
+                .zip(&local_sources)
+            {
+                if layout.roots.as_ref().is_some_and(|roots| {
+                    !roots
+                        .iter()
+                        .any(|root| root.snapshot == *snapshot && root.subject == *subject)
+                }) {
+                    return Err(invalid("局所 apply の元rootが評価済みの担当集合にない"));
+                }
+            }
             before_missing.extend(before_layout.missing.iter().cloned());
             layout_missing.extend(after_layout.missing.iter().cloned());
             let after_subject = |fact: &Fact| {
@@ -1450,9 +1488,61 @@ mod tests {
     }
 
     #[test]
+    fn layout_alignment_rejects_empty_fragments_and_mismatched_local_sources() {
+        let c = Control::unlimited();
+        let alignment = AssemblyAlignment {
+            before_snapshot: "before",
+            after_snapshot: "after",
+            reading: "Assembly",
+            subjects: &[
+                ("A", "A"),
+                ("B", "B"),
+                ("G", "G"),
+                ("a", "a"),
+                ("b", "b"),
+                ("ma", "ma"),
+                ("mb", "mb"),
+            ],
+            assembly: "joined",
+            previous_candidate: "pick",
+            current_solve: "solveIt",
+        };
+        let law = std::str::from_utf8(LAW).unwrap();
+        for (law, asks, detail) in [
+            (
+                law.replace("set<Root>{a,b}", "set<Root>{}"),
+                QUERIES.replace(",local.a=$selected.object", ""),
+                "担当集合が空",
+            ),
+            (
+                law.to_owned(),
+                QUERIES.replace("local.a=", "local.b="),
+                "担当の明示束縛",
+            ),
+            (
+                law.replace("set<Root>{a,b}", "set<Root>{b}")
+                    .replace("list<(Part,Part)>[(ma,mb)]", "list<(Part,Part)>[]"),
+                QUERIES.to_owned(),
+                "評価済みの担当集合",
+            ),
+        ] {
+            let previous = evaluate_observed(
+                prepared_with("before", BEFORE, law.as_bytes(), &asks, &c),
+                &c,
+            )
+            .unwrap();
+            assert!(matches!(reevaluate_assembly(
+                &previous, prepared_with("after", AFTER, law.as_bytes(), &asks, &c),
+                &alignment, &c,
+            ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains(detail)));
+        }
+    }
+
+    #[test]
     fn an_empty_change_roster_has_the_single_empty_assignment() {
         let c = Control::unlimited();
         let asks = QUERIES
+            .replace(",local.a=$selected.object", "")
             .replace("Assembly.singleton,p=@SNAP/a", "Assembly.within,r=@SNAP/G")
             .replace(
                 "Assembly.desired,using=Assembly.choose,on=@SNAP/A,p=@SNAP/a,b=@SNAP/b",

@@ -288,9 +288,9 @@ pub(super) fn layout_snapshot(
         .transpose()
 }
 
-pub(super) fn compile(
+/// Construct a layout after the shared snapshot check.
+pub(super) fn compile_same_snapshot(
     inputs: &std::sync::Arc<CheckedInputs>,
-    indexes: &InputIndexes<'_>,
     reading: &str,
     target: &Fact,
     roots: &[Fact],
@@ -298,13 +298,7 @@ pub(super) fn compile(
     selected: &BTreeMap<Fact, Scalar>,
     c: &Control,
 ) -> Result<Preparation, ValidationFailure> {
-    if !std::ptr::eq(inputs.as_ref(), indexes.inputs) {
-        return Err(internal!("組立ての入力と索引の由来が違う").into());
-    }
     tick(c)?;
-    if let Some(problem) = layout_snapshot(indexes, reading, target, roots, pairs, c)? {
-        return Ok(Preparation::Unsupported(problem));
-    }
     if roots.is_empty() {
         return Ok(rejected("担当rootの集合が空", vec![target.clone()]));
     }
@@ -696,11 +690,8 @@ mod tests {
         })
     }
     fn build(inputs: &Arc<CheckedInputs>, pairs: &[(Fact, Fact)]) -> Preparation {
-        let env =
-            super::super::environment::Environment::new(inputs, &Control::unlimited()).unwrap();
-        compile(
+        compile_same_snapshot(
             inputs,
-            &env.indexes,
             "Assembly",
             &fact("G"),
             &[fact("A"), fact("B")],
