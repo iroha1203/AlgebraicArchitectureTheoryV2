@@ -1,0 +1,713 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "E12",
+      "version": "1",
+      "digest": "sha256:de1a1eb9376916a20075cd753347233455abde13542db0d39d68632d6b22f60e"
+    }
+  ],
+  "sources": [],
+  "origins": [
+    {
+      "id": "reduced-e12",
+      "mode": "specification",
+      "method": "E12 T3 Consume first と raw cancel の始終状態を縮約する。",
+      "note": "修復前の数量15と、raw cancel の反証に使う対応先は仕様例の構成。",
+      "locations": []
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "comparison",
+      "origin": "reduced-e12",
+      "subjects": [
+        {
+          "id": "native-output1",
+          "type": "E12.Root",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3",
+          "type": "E12.Root",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-before",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-after",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-consume",
+          "type": "E12.Operation",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-output1",
+          "type": "E12.Root",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3",
+          "type": "E12.Root",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-before",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-after",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-consume",
+          "type": "E12.Operation",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-T3",
+          "type": "E12.Route",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel",
+          "type": "E12.Root",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-before",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-retained",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-stopped",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-raw",
+          "type": "E12.Operation",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel",
+          "type": "E12.Root",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-before",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-retained",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-stopped",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-raw",
+          "type": "E12.Operation",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-cancel",
+          "type": "E12.Route",
+          "origin": "reduced-e12"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "native-T3-before.owner",
+          "subject": "native-T3-before",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "native-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-before.quantity",
+          "subject": "native-T3-before",
+          "field": "E12.State.quantity",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-after.owner",
+          "subject": "native-T3-after",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "native-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-after.quantity",
+          "subject": "native-T3-after",
+          "field": "E12.State.quantity",
+          "value": "15",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-consume.owner",
+          "subject": "native-T3-consume",
+          "field": "E12.Operation.owner",
+          "value": [
+            "comparison",
+            "native-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-consume.from",
+          "subject": "native-T3-consume",
+          "field": "E12.Operation.from",
+          "value": [
+            "comparison",
+            "native-T3-before"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-consume.to",
+          "subject": "native-T3-consume",
+          "field": "E12.Operation.to",
+          "value": [
+            "comparison",
+            "native-T3-after"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-before.owner",
+          "subject": "rust-T3-before",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "rust-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-before.quantity",
+          "subject": "rust-T3-before",
+          "field": "E12.State.quantity",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-after.owner",
+          "subject": "rust-T3-after",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "rust-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-after.quantity",
+          "subject": "rust-T3-after",
+          "field": "E12.State.quantity",
+          "value": "16",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-consume.owner",
+          "subject": "rust-T3-consume",
+          "field": "E12.Operation.owner",
+          "value": [
+            "comparison",
+            "rust-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-consume.from",
+          "subject": "rust-T3-consume",
+          "field": "E12.Operation.from",
+          "value": [
+            "comparison",
+            "rust-T3-before"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-consume.to",
+          "subject": "rust-T3-consume",
+          "field": "E12.Operation.to",
+          "value": [
+            "comparison",
+            "rust-T3-after"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-T3.from",
+          "subject": "move-T3",
+          "field": "E12.Route.from",
+          "value": [
+            "comparison",
+            "native-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-T3.to",
+          "subject": "move-T3",
+          "field": "E12.Route.to",
+          "value": [
+            "comparison",
+            "rust-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-T3.states",
+          "subject": "move-T3",
+          "field": "E12.Route.states",
+          "value": [
+            [
+              [
+                "comparison",
+                "native-T3-before"
+              ],
+              [
+                "comparison",
+                "rust-T3-before"
+              ]
+            ],
+            [
+              [
+                "comparison",
+                "native-T3-after"
+              ],
+              [
+                "comparison",
+                "rust-T3-after"
+              ]
+            ]
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-T3.consumes",
+          "subject": "move-T3",
+          "field": "E12.Route.operations",
+          "value": [
+            [
+              [
+                "comparison",
+                "native-T3-consume"
+              ],
+              [
+                "comparison",
+                "rust-T3-consume"
+              ]
+            ]
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-before.building",
+          "subject": "native-T3-before",
+          "field": "E12.State.building",
+          "value": false,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-before.status",
+          "subject": "native-T3-before",
+          "field": "E12.State.status",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-after.building",
+          "subject": "native-T3-after",
+          "field": "E12.State.building",
+          "value": false,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-after.status",
+          "subject": "native-T3-after",
+          "field": "E12.State.status",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-before.building",
+          "subject": "rust-T3-before",
+          "field": "E12.State.building",
+          "value": false,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-before.status",
+          "subject": "rust-T3-before",
+          "field": "E12.State.status",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-after.building",
+          "subject": "rust-T3-after",
+          "field": "E12.State.building",
+          "value": false,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-after.status",
+          "subject": "rust-T3-after",
+          "field": "E12.State.status",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-before.owner",
+          "subject": "native-cancel-before",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "native-cancel"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-before.quantity",
+          "subject": "native-cancel-before",
+          "field": "E12.State.quantity",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-before.building",
+          "subject": "native-cancel-before",
+          "field": "E12.State.building",
+          "value": true,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-before.status",
+          "subject": "native-cancel-before",
+          "field": "E12.State.status",
+          "value": "10",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-retained.owner",
+          "subject": "native-cancel-retained",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "native-cancel"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-retained.quantity",
+          "subject": "native-cancel-retained",
+          "field": "E12.State.quantity",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-retained.building",
+          "subject": "native-cancel-retained",
+          "field": "E12.State.building",
+          "value": true,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-retained.status",
+          "subject": "native-cancel-retained",
+          "field": "E12.State.status",
+          "value": "10",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-stopped.owner",
+          "subject": "native-cancel-stopped",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "native-cancel"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-stopped.quantity",
+          "subject": "native-cancel-stopped",
+          "field": "E12.State.quantity",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-stopped.building",
+          "subject": "native-cancel-stopped",
+          "field": "E12.State.building",
+          "value": false,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-stopped.status",
+          "subject": "native-cancel-stopped",
+          "field": "E12.State.status",
+          "value": "65",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-raw.owner",
+          "subject": "native-cancel-raw",
+          "field": "E12.Operation.owner",
+          "value": [
+            "comparison",
+            "native-cancel"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-raw.from",
+          "subject": "native-cancel-raw",
+          "field": "E12.Operation.from",
+          "value": [
+            "comparison",
+            "native-cancel-before"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-cancel-raw.to",
+          "subject": "native-cancel-raw",
+          "field": "E12.Operation.to",
+          "value": [
+            "comparison",
+            "native-cancel-retained"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-before.owner",
+          "subject": "rust-cancel-before",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "rust-cancel"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-before.quantity",
+          "subject": "rust-cancel-before",
+          "field": "E12.State.quantity",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-before.building",
+          "subject": "rust-cancel-before",
+          "field": "E12.State.building",
+          "value": true,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-before.status",
+          "subject": "rust-cancel-before",
+          "field": "E12.State.status",
+          "value": "10",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-retained.owner",
+          "subject": "rust-cancel-retained",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "rust-cancel"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-retained.quantity",
+          "subject": "rust-cancel-retained",
+          "field": "E12.State.quantity",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-retained.building",
+          "subject": "rust-cancel-retained",
+          "field": "E12.State.building",
+          "value": true,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-retained.status",
+          "subject": "rust-cancel-retained",
+          "field": "E12.State.status",
+          "value": "10",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-stopped.owner",
+          "subject": "rust-cancel-stopped",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "rust-cancel"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-stopped.quantity",
+          "subject": "rust-cancel-stopped",
+          "field": "E12.State.quantity",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-stopped.building",
+          "subject": "rust-cancel-stopped",
+          "field": "E12.State.building",
+          "value": false,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-stopped.status",
+          "subject": "rust-cancel-stopped",
+          "field": "E12.State.status",
+          "value": "65",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-raw.owner",
+          "subject": "rust-cancel-raw",
+          "field": "E12.Operation.owner",
+          "value": [
+            "comparison",
+            "rust-cancel"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-raw.from",
+          "subject": "rust-cancel-raw",
+          "field": "E12.Operation.from",
+          "value": [
+            "comparison",
+            "rust-cancel-before"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-cancel-raw.to",
+          "subject": "rust-cancel-raw",
+          "field": "E12.Operation.to",
+          "value": [
+            "comparison",
+            "rust-cancel-stopped"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-cancel.from",
+          "subject": "move-cancel",
+          "field": "E12.Route.from",
+          "value": [
+            "comparison",
+            "native-cancel"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-cancel.to",
+          "subject": "move-cancel",
+          "field": "E12.Route.to",
+          "value": [
+            "comparison",
+            "rust-cancel"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-cancel.states",
+          "subject": "move-cancel",
+          "field": "E12.Route.states",
+          "value": [
+            [
+              [
+                "comparison",
+                "native-cancel-before"
+              ],
+              [
+                "comparison",
+                "rust-cancel-before"
+              ]
+            ],
+            [
+              [
+                "comparison",
+                "native-cancel-retained"
+              ],
+              [
+                "comparison",
+                "rust-cancel-retained"
+              ]
+            ],
+            [
+              [
+                "comparison",
+                "native-cancel-stopped"
+              ],
+              [
+                "comparison",
+                "rust-cancel-stopped"
+              ]
+            ]
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-cancel.consumes",
+          "subject": "move-cancel",
+          "field": "E12.Route.operations",
+          "value": [
+            [
+              [
+                "comparison",
+                "native-cancel-raw"
+              ],
+              [
+                "comparison",
+                "rust-cancel-raw"
+              ]
+            ]
+          ],
+          "origin": "reduced-e12"
+        }
+      ]
+    }
+  ]
+}

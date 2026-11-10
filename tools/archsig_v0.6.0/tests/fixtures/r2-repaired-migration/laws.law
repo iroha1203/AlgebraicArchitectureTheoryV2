@@ -1,0 +1,14 @@
+law "archsig.law/2" semantics "archsig/0.6.0";
+reading E12Compare {
+  use vocabulary E12 version "1" digest "sha256:de1a1eb9376916a20075cd753347233455abde13542db0d39d68632d6b22f60e";
+  view only(t:Root):Set<Root> = set<Root>{t};
+  view noOverlap(t:Root):Unit = unit;
+  view wide(t:Root,c:Root):Set<Root> = set<Root>{t,c};
+  view noWideOverlap(t:Root,c:Root):Unit = unit;
+  view consume(t:Route):Set<Route> = set<Route>{t};
+  view routes(t:Route,c:Route):Set<Route> = set<Route>{t,c};
+  view singleton(s:State):Set<State> = set<State>{s};
+  view observed(s:State):(Bool,Z) = (s.building,s.status);
+  law optional committed(s:State):s.quantity=16;
+  change tune(s:State, q:Bool)=s with {quantity=if q then 16 else s.quantity};
+}

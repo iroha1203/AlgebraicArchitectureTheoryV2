@@ -1,0 +1,20 @@
+{
+  "before": "refuted",
+  "within": "established",
+  "problem": "established",
+  "solveIt": "established",
+  "chosen": "established",
+  "fixed": "established",
+  "after": "established",
+  "native": "established",
+  "rust": "established",
+  "migrate": "established",
+  "target": "established",
+  "nativeWide": "established",
+  "rustWide": "established",
+  "nativeState": "established",
+  "rustState": "established",
+  "extended": "refuted",
+  "nativeCancel": "established",
+  "rustCancel": "established"
+}

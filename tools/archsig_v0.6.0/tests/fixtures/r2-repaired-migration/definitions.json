@@ -1,0 +1,150 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "E12",
+      "version": "1",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "entity",
+          "name": "E12.Root",
+          "meaning": "output1 の全体または source 別の局所読取り。",
+          "parameters": [],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "E12.State",
+          "meaning": "選択した消費の前後状態。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "E12.Root"
+              ],
+              "meaning": "担当モデル。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "quantity",
+              "type": "Z",
+              "meaning": "選択した source から新たに消費した量。単位は 1/16。"
+            },
+            {
+              "name": "building",
+              "type": "Bool",
+              "meaning": "実行状態の building flag。"
+            },
+            {
+              "name": "status",
+              "type": "Z",
+              "meaning": "保存された状態コード。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "arrow",
+          "name": "E12.Operation",
+          "meaning": "選んだ前後状態を結ぶ名前付き操作。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "E12.Root"
+              ],
+              "meaning": "担当モデル。"
+            },
+            {
+              "name": "from",
+              "type": [
+                "Owned",
+                "E12.State",
+                "owner"
+              ],
+              "meaning": "始域。"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Owned",
+                "E12.State",
+                "owner"
+              ],
+              "meaning": "終域。"
+            }
+          ],
+          "fields": [],
+          "alignments": []
+        },
+        {
+          "kind": "correspondence",
+          "name": "E12.Route",
+          "meaning": "native から P2 Rust への担当別の原始対応。",
+          "parameters": [
+            {
+              "name": "from",
+              "type": [
+                "Ref",
+                "E12.Root"
+              ],
+              "meaning": "対応の端点。"
+            },
+            {
+              "name": "to",
+              "type": [
+                "Ref",
+                "E12.Root"
+              ],
+              "meaning": "対応の端点。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "states",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "E12.State",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "E12.State",
+                  "to"
+                ]
+              ],
+              "meaning": "担当が指定した個体対応。"
+            },
+            {
+              "name": "operations",
+              "type": [
+                "Map",
+                [
+                  "Owned",
+                  "E12.Operation",
+                  "from"
+                ],
+                [
+                  "Owned",
+                  "E12.Operation",
+                  "to"
+                ]
+              ],
+              "meaning": "担当が指定した個体対応。"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}
