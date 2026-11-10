@@ -92,6 +92,7 @@ fn finite_owner_completion_recheck_regenerates_missing_duplicate_assignment_and_
         let a = &old.architecture;
         let changed = Arc::new(Source {
             integer: old.integer.clone(),
+            rational_polyhedron: old.rational_polyhedron,
             architecture: Architecture {
                 witness: a.witness.clone(),
                 reference: a.reference,
