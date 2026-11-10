@@ -11,7 +11,7 @@ use crate::observed::{
 pub(super) fn unsupported_polyhedron(
     env: &Environment<'_>,
     g: &Graph,
-    input: CandidateInput,
+    (witness, domain_type): (Arc<ArchitectureWitness>, ProjectionType),
     reference: NodeRef,
     request: &Request,
     base: usize,
@@ -63,8 +63,8 @@ pub(super) fn unsupported_polyhedron(
             scope,
         },
         request: request.clone(),
-        witness: input.witness,
-        domain_type: input.domain_type,
+        witness,
+        domain_type,
     })
 }
 

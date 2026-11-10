@@ -38,6 +38,7 @@ struct Constraints {
     equalities: Matrix,
     rhs: Vec<Option<Scalar>>,
     inequalities: Option<Vec<Halfspace>>,
+    quantified: bool,
 }
 
 impl Constraints {
@@ -129,6 +130,21 @@ fn equations(
         let law = env.indexes.inputs.law();
         let kind = &law.exprs()[id].kind;
         let allow_bounds = rows.inequalities.is_some();
+        let (v, absent) = if allow_bounds {
+            capture_missing(env, || env.scoped_ast(id, vars, &base, reading))?
+        } else {
+            (env.scoped_ast(id, vars, &base, reading), vec![])
+        };
+        let v = v?;
+        if !v.condition_pending
+            && !v.condition_failed
+            && let Some(Scalar::Bool(holds)) = v.known_value
+        {
+            if !holds {
+                rows.contradiction(axes.len(), env)?;
+            }
+            return Ok(());
+        }
         if allow_bounds
             && matches!(
                 kind,
@@ -150,13 +166,13 @@ fn equations(
             let (domain_value, members) = quantified?;
             missing.awaiting_observation = !absent.is_empty();
             usable(env, domain, &domain_value)?;
-            missing.support.extend(domain_value.support.into_vec());
-            missing.scope.merge(&domain_value.scope);
             let Some(members) = members else {
                 missing.unsupported = Some("rational_change_quantification");
                 return Err(unsupported(env, domain, "有理changeの有限量化域が未確定"));
             };
             let mut local = env.copy_variables(vars)?;
+            let enclosing = rows.quantified;
+            rows.quantified = true;
             for member in members {
                 env.tick()?;
                 if member.ty() != spec.element {
@@ -168,23 +184,12 @@ fn equations(
                 local.insert(spec.name.to_owned(), v);
                 equations(env, spec.body, &local, reading, axes, rows, missing)?;
             }
+            rows.quantified = enclosing;
             return Ok(());
         }
 
-        let (v, absent) = if allow_bounds {
-            capture_missing(env, || env.scoped_ast(id, vars, &base, reading))?
-        } else {
-            (env.scoped_ast(id, vars, &base, reading), vec![])
-        };
-        let v = v?;
         missing.awaiting_observation = v.condition_pending && !absent.is_empty();
         usable(env, id, &v)?;
-        if let Some(Scalar::Bool(holds)) = v.known_value {
-            if !holds {
-                rows.contradiction(axes.len(), env)?;
-            }
-            return Ok(());
-        }
         match kind {
             ExprKind::Group(body) => equations(env, *body, vars, reading, axes, rows, missing),
             ExprKind::Let { name, value, body } => {
@@ -218,7 +223,9 @@ fn equations(
                     }
                     Some(Scalar::Bool(false)) => Ok(()),
                     _ => {
-                        missing.awaiting_observation = !absent.is_empty();
+                        missing.awaiting_observation = !absent.is_empty()
+                            && !guard.scope.assignments
+                            && missing.universal.is_empty();
                         missing.unsupported = Some("rational_change_implication");
                         Err(unsupported(env, *lhs, "有理changeの含意の前件が未確定"))
                     }
@@ -269,7 +276,10 @@ fn equations(
                 let Some(form) = form else {
                     if change_affine::numeric_condition(env, id, &v)? {
                         missing.unsupported = Some("numeric_change_condition");
-                    } else if !absent.is_empty() {
+                    } else if !absent.is_empty()
+                        && !v.scope.assignments
+                        && missing.universal.is_empty()
+                    {
                         missing.awaiting_observation = true;
                     }
                     return Err(unsupported(
@@ -282,7 +292,7 @@ fn equations(
                     rows.contradiction(axes.len(), env)?;
                     return Ok(());
                 }
-                if ordered.is_some()
+                if (ordered.is_some() || rows.quantified)
                     && let Axes::Parameters(parameters) = axes
                 {
                     missing.awaiting_observation =
@@ -696,7 +706,19 @@ fn requirement_equations(
         let (vars, universal) = change_affine::law_variables(env, law_params, bindings)?;
         missing.universal = universal;
         if let Some(guard) = guard {
-            let v = env.scoped_ast(*guard, &vars, &Scope::default(), &law.reading)?;
+            let (v, absent) = if allow_bounds {
+                capture_missing(env, || {
+                    env.scoped_ast(*guard, &vars, &Scope::default(), &law.reading)
+                })?
+            } else {
+                (
+                    env.scoped_ast(*guard, &vars, &Scope::default(), &law.reading),
+                    vec![],
+                )
+            };
+            let v = v?;
+            missing.awaiting_observation =
+                !absent.is_empty() && !v.scope.assignments && missing.universal.is_empty();
             usable(env, *guard, &v)?;
             match v.known_value {
                 Some(Scalar::Bool(false)) => continue,
@@ -720,6 +742,7 @@ fn requirement_equations(
                 }
             }
         }
+        missing.awaiting_observation = false;
         missing.expression = Some(*body);
         missing.bindings = bindings.clone();
         missing.parameters = law_params

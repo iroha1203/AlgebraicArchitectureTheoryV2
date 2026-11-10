@@ -1618,6 +1618,38 @@ pub(super) struct CandidateInput {
     pub domain_type: ProjectionType,
     pub integer_family: Option<super::repair_problem::integer::Family>,
 }
+pub(super) fn checked_polyhedron(
+    env: &Environment<'_>,
+    g: &Graph,
+    reference: NodeRef,
+) -> Result<Option<(Arc<native::ArchitectureWitness>, ProjectionType)>, ValidationFailure> {
+    let node = g.get(reference)?;
+    if node.ty != NodeType::Construction(T::SolutionSet) {
+        return Ok(None);
+    }
+    let Some(Payload::Construction(value)) = &node.payload else {
+        return Ok(None);
+    };
+    let D::Change(data) = &value.data else {
+        return Ok(None);
+    };
+    let Some(Json::Obj(wire)) = data.part().wire_ref() else {
+        return Ok(None);
+    };
+    if !matches!(wire.get("representation"), Some(Json::Obj(fields))
+        if matches!(fields.get("kind"), Some(Json::Str(kind)) if kind == "rational_polyhedron"))
+    {
+        return Ok(None);
+    }
+    let checked = checked_candidate(env, g, reference)?;
+    Ok(Some((
+        checked.source.architecture.witness.clone(),
+        checked
+            .projection_type()
+            .ok_or(internal!("有理半空間の候補域型がない"))?,
+    )))
+}
+
 pub(super) fn candidate_input(
     env: &Environment<'_>,
     g: &Graph,

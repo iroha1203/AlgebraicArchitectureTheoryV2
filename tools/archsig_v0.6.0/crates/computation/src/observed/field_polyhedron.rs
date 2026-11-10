@@ -365,11 +365,13 @@ pub(super) fn solve(
         )?;
     }
     let rows = tight.into_values().collect::<Vec<_>>();
-    let projected = project(&rows, (0..n).rev(), c)?;
-    if let Some(row) = obstruction(&projected.rows, c)? {
-        return Ok(Outcome::Empty(row));
-    }
-    let point = lift(&projected, vec![zero.clone(); n], c)?;
+    let point = {
+        let projected = project(&rows, (0..n).rev(), c)?;
+        if let Some(row) = obstruction(&projected.rows, c)? {
+            return Ok(Outcome::Empty(row));
+        }
+        lift(&projected, vec![zero.clone(); n], c)?
+    };
     let mut forced = Vec::new();
     for axis in 0..n {
         tick(c)?;

@@ -448,6 +448,41 @@ fn r2_exact_backing_solves_all_four_frozen_constraint_sets() {
 }
 
 #[test]
+fn rational_backing_reuse_rejects_a_different_registered_owner() {
+    let dir = workdir("r2-polyhedron-owner");
+    polyhedron_inputs(&dir, "threeUsesExact");
+    // Keep the alternate owner registered and well typed in the current input.
+    std::fs::write(dir.join("archmap.json"), POLY_MAP).unwrap();
+    let ask = POLY_QUERIES.lines().nth(2).unwrap();
+    let run = polyhedron_run(&dir, ask, "first", None);
+    assert_eq!(run.code, 0, "{}{}", run.stdout, run.stderr);
+    let first = result_json(&dir, &run);
+    let domain = solution(&first, "domain");
+    let root = get(
+        get(referenced(&first, get(domain, "base")), "value"),
+        "root",
+    );
+    let id = s(get(root, "node"));
+    let mut changed = owned(&first);
+    let node = items(fields(&mut changed).get_mut("nodes").unwrap())
+        .iter_mut()
+        .find(|node| matches!(node, Json::Obj(fields) if fields["id"] == Json::str(id)))
+        .unwrap();
+    let identity = items(fields(node).get_mut("value").unwrap());
+    assert_eq!(identity[1], Json::str("threeUsesExact"));
+    identity[1] = Json::str("threeUsesMicroShortage");
+    std::fs::create_dir(dir.join("changed")).unwrap();
+    std::fs::write(dir.join("changed/result.json"), changed.canonical()).unwrap();
+    let replay = polyhedron_run(&dir, ask, "replayed", Some("changed"));
+    assert_eq!(replay.code, 0, "{}{}", replay.stdout, replay.stderr);
+    let replay = result_json(&dir, &replay);
+    assert!(!warnings(&replay).is_empty());
+    for key in ["answers", "nodes", "issues"] {
+        assert_eq!(get(&first, key).value, get(&replay, key).value);
+    }
+}
+
+#[test]
 fn rational_backing_distinguishes_nonunique_repair_and_missing_capacity() {
     let case = "overlapFeasible";
     let dir = workdir("r2-polyhedron-decisions");
@@ -586,16 +621,21 @@ fn rational_backing_stops_before_unchecked_solutions_and_saves_the_completed_pre
             panic!("completed exact Q answer");
         };
         assert_eq!((s(n), s(d)), ("0", "1"));
-        assert!(
-            answers[1..]
-                .iter()
-                .all(|a| s(get(a, "status")) != "refuted")
-        );
-        assert!(
-            answers[1..]
-                .iter()
-                .all(|a| !has(get(a, "outputs"), "solutions"))
-        );
+        assert_eq!(answers.len(), 3);
+        for (answer, id) in answers[1..].iter().zip(["overlapFeasible", "after"]) {
+            assert_eq!(s(get(answer, "id")), id);
+            assert_eq!(s(get(answer, "status")), "undetermined");
+            assert!(
+                matches!(&get(answer, "outputs").value, archsig_common::json::JValue::Obj(values) if values.is_empty())
+            );
+            let [reason] = arr(get(answer, "reasons")) else {
+                panic!("signal reason")
+            };
+            assert_eq!(s(get(reason, "code")), "cancelled");
+            assert_eq!(s(get(get(reason, "details"), "signal")), "SIGTERM");
+        }
+        assert!(arr(get(&result, "nodes")).iter().all(|node|
+            !matches!(&get(node, "type").value, archsig_common::json::JValue::Str(ty) if ty == "SolutionSet")));
     }
 }
 
@@ -649,6 +689,7 @@ fn rational_backing_reports_missing_references_units_and_unsupported_disjunction
         ("B1.X.stock", "B1.X", "Pool.Cell.stock"),
         ("B1.X.owner", "B1.X", "Pool.Cell.owner"),
         ("X.quantityUnit", "X", "Pool.Stock.quantityUnit"),
+        ("B1.quantity", "B1", "Pool.Claim.quantity"),
     ] {
         let mut missing = map.clone();
         let snapshot = &mut items(fields(&mut missing).get_mut("snapshots").unwrap())[0];
@@ -695,4 +736,49 @@ fn rational_backing_reports_missing_references_units_and_unsupported_disjunction
         panic!("only unsupported")
     };
     assert_eq!(s(get(reason, "code")), "unsupported_algorithm");
+}
+
+#[test]
+fn rational_backing_separates_guard_observation_from_unsupported_change_condition() {
+    let case = "overlapFeasible";
+    let dir = workdir("r2-polyhedron-guard");
+    let mut map = polyhedron_inputs(&dir, case);
+    let ask = POLY_QUERIES.lines().next().unwrap();
+    let snapshot = &mut items(fields(&mut map).get_mut("snapshots").unwrap())[0];
+    let atoms = items(fields(snapshot).get_mut("atoms").unwrap());
+    atoms.retain(|node| !matches!(node, Json::Obj(fields) if fields["id"] == Json::str("overlapFeasible.X.available")));
+    std::fs::write(dir.join("archmap.json"), map.canonical()).unwrap();
+    for (out, law, codes) in [
+        (
+            "guard",
+            POLY_LAW.replacen(
+                "legal(w:Pool.World):",
+                "legal(w:Pool.World) when (forall s in Pool.Stock[w] . s.available>=rat(0,1)):",
+                1,
+            ),
+            &["missing_observation"][..],
+        ),
+        (
+            "mixed",
+            POLY_LAW.replacen(
+                "b.quantity>=rat(0,1)",
+                "(b.quantity>=rat(10,1) or b.quantity<=b.stock.available)",
+                1,
+            ),
+            &["missing_observation", "unsupported_algorithm"][..],
+        ),
+    ] {
+        std::fs::write(dir.join("laws.law"), law).unwrap();
+        let run = polyhedron_run(&dir, ask, out, None);
+        assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+        let result = result_json(&dir, &run);
+        let answer = &arr(get(&result, "answers"))[0];
+        assert!(!has(get(answer, "outputs"), "solutions"));
+        let mut reasons = arr(get(answer, "reasons"))
+            .iter()
+            .map(|r| s(get(r, "code")))
+            .collect::<Vec<_>>();
+        reasons.sort_unstable();
+        assert_eq!(reasons, codes, "{out}");
+    }
 }

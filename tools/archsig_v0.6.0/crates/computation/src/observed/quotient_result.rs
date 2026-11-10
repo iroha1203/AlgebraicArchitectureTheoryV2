@@ -161,17 +161,18 @@ fn compute(
         let AnswerBinding::Reference(reference) = env.answer_binding(g, on, (0, 0))? else {
             return Err(internal!("商のonが既出参照でない").into());
         };
-        let input = change_result::candidate_input(env, g, reference, c)?;
-        if matches!(input.domain_type, ProjectionType::SolutionSet(_))
-            && input.search.rational.as_ref().is_some_and(|linear| {
-                matches!(
-                    linear.solutions,
-                    super::environment::field_change::Solutions::Polyhedron(_)
-                )
-            })
+        if let Some((witness, domain_type)) = change_result::checked_polyhedron(env, g, reference)?
         {
-            return affine_result::unsupported_polyhedron(env, g, input, reference, request, base);
+            return affine_result::unsupported_polyhedron(
+                env,
+                g,
+                (witness, domain_type),
+                reference,
+                request,
+                base,
+            );
         }
+        let input = change_result::candidate_input(env, g, reference, c)?;
         if input.search.linear.is_some() || input.search.rational.is_some() {
             return affine_result::compute(env, g, input, reference, request, base, c);
         }
