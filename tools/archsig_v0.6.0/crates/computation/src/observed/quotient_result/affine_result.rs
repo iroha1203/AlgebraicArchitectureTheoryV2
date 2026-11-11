@@ -8,6 +8,66 @@ use crate::observed::{
     numeric,
 };
 
+pub(super) fn unsupported_polyhedron(
+    env: &Environment<'_>,
+    g: &Graph,
+    (witness, domain_type): (Arc<ArchitectureWitness>, ProjectionType),
+    reference: NodeRef,
+    request: &Request,
+    base: usize,
+) -> Result<Source, ValidationFailure> {
+    let declaration = &env.indexes.inputs.law().declarations()[request
+        .declaration()
+        .ok_or(internal!("有理半空間の商のViewがない"))?];
+    let Signature::View { body, params, .. } = &declaration.signature else {
+        return Err(internal!("有理半空間の商のView署名が違う").into());
+    };
+    let mut b = Builder {
+        g,
+        base,
+        parts: vec![],
+    };
+    let parameters = params
+        .iter()
+        .map(|p| (p.name.clone(), p.ty.clone()))
+        .collect::<Vec<_>>();
+    let expression = change_result::source_expression(&mut b, env, *body, &[], &parameters)?;
+    let part = &mut b.parts[expression.0 - base];
+    part.arguments.push(reference);
+    part.scope.merge(&g.get(reference)?.scope);
+    let scope = part.scope.clone();
+    let reason = Reason {
+        kind: ReasonKind::UnsupportedAlgorithm {
+            question: request.kind,
+            operand_types: vec![Type::Q],
+            method: "rational_polyhedron_quotient".into(),
+        },
+        request: request.id.clone(),
+        dependencies: vec![expression],
+        missing: vec![],
+        location: Some(Location::Law {
+            span: declaration.span,
+        }),
+    };
+    part.reasons.push(reason.clone());
+    Ok(Source {
+        base,
+        parts: b.parts,
+        answer: Answer {
+            id: request.id.clone(),
+            status: Decision::Undetermined,
+            outputs: BTreeMap::new(),
+            claim: None,
+            evidence: vec![],
+            reasons: vec![reason],
+            scope,
+        },
+        request: request.clone(),
+        witness,
+        domain_type,
+    })
+}
+
 pub(super) fn compute(
     env: &Environment<'_>,
     g: &Graph,

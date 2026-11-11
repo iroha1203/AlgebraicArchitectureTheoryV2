@@ -1,5 +1,5 @@
 //! 担当別の原始モデルと明示対応から、同じ型付き構成を生成する。
-use super::{data, result::*, value_transport};
+use super::{data, environment::InputIndexes, result::*, value_transport};
 use crate::construction::{self, ConfigurationConstruction, ConstructionFailure};
 use archsig_common::{
     control::{Checkpoint, Control},
@@ -7,7 +7,7 @@ use archsig_common::{
     types::Type,
 };
 use archsig_input::{
-    archmap::{Slot, Subject},
+    archmap::{Slot, Subject, Value},
     input::CheckedInputs,
 };
 use std::collections::{BTreeMap, BTreeSet};
@@ -21,6 +21,7 @@ pub(super) enum Preparation {
 }
 #[derive(Clone, Debug)]
 pub(super) struct Unsupported {
+    pub affects_layout: bool,
     pub detail: String,
     pub location: Location,
     pub operand_types: Vec<Type>,
@@ -29,6 +30,7 @@ pub(super) struct Unsupported {
 fn unsupported(s: &Subject, f: &archsig_input::archmap::Field, detail: String) -> Preparation {
     match &f.slot {
         Slot::Known { pointer, .. } => Preparation::Unsupported(Unsupported {
+            affects_layout: false,
             detail,
             location: Location::ArchMap {
                 pointer: pointer.clone(),
@@ -42,6 +44,7 @@ fn unsupported(s: &Subject, f: &archsig_input::archmap::Field, detail: String) -
 }
 #[derive(Debug)]
 pub(super) struct Rejection {
+    pub affects_layout: bool,
     pub detail: String,
     pub facts: Vec<Fact>,
     pub values: Option<(Scalar, Scalar)>,
@@ -49,13 +52,46 @@ pub(super) struct Rejection {
     pub location: Option<Location>,
 }
 pub(super) fn rejected(detail: impl Into<String>, facts: Vec<Fact>) -> Preparation {
-    Preparation::Rejected(Rejection {
+    Preparation::Rejected(rejection(detail, facts, false))
+}
+fn rejection(detail: impl Into<String>, facts: Vec<Fact>, affects_layout: bool) -> Rejection {
+    Rejection {
+        affects_layout,
         detail: detail.into(),
         facts,
         values: None,
         repaired: [None, None],
         location: None,
-    })
+    }
+}
+fn rejected_layout(detail: impl Into<String>, facts: Vec<Fact>) -> Preparation {
+    Preparation::Rejected(rejection(detail, facts, true))
+}
+pub(super) fn layout_root_condition(
+    indexes: &InputIndexes<'_>,
+    target: &Fact,
+    roots: &[Fact],
+    c: &Control,
+) -> Result<Option<Rejection>, ValidationFailure> {
+    if roots.is_empty() {
+        return Ok(Some(rejection("担当集合が空", vec![target.clone()], true)));
+    }
+    let root_subject = indexes.subject(&target.snapshot, &target.subject)?;
+    let mut seen = BTreeSet::new();
+    for root in roots {
+        tick(c)?;
+        if root == target
+            || !seen.insert(root)
+            || indexes.subject(&root.snapshot, &root.subject)?.ty != root_subject.ty
+        {
+            return Ok(Some(rejection(
+                "担当rootは同一snapshot・同一型の異なるrootを要求する",
+                vec![root.clone(), target.clone()],
+                true,
+            )));
+        }
+    }
+    Ok(None)
 }
 pub(super) fn observed_fact(s: &Subject, f: &archsig_input::archmap::Field) -> Fact {
     let mut fact = field_fact(s, f);
@@ -145,7 +181,24 @@ pub(super) fn field_fact(s: &Subject, field: &archsig_input::archmap::Field) -> 
     })
 }
 /// 同値類のrootだけを保持し、全対・全域の積を作らない。
-fn representative(
+pub(super) fn link_shared(
+    parent: &mut BTreeMap<Fact, Fact>,
+    a: &Fact,
+    b: &Fact,
+    c: &Control,
+) -> Result<(), ValidationFailure> {
+    let a = representative(parent, a, c)?;
+    let b = representative(parent, b, c)?;
+    let (small, large) = if a.wire().canonical() < b.wire().canonical() {
+        (a, b)
+    } else {
+        (b, a)
+    };
+    parent.insert(large, small);
+    Ok(())
+}
+
+pub(super) fn representative(
     parent: &mut BTreeMap<Fact, Fact>,
     fact: &Fact,
     c: &Control,
@@ -185,7 +238,94 @@ fn selected_field(
     data::from_input(value, &field.ty.erase(), inputs.law(), c)
 }
 
-pub(super) fn compile(
+pub(super) fn foreign_snapshot(
+    inputs: &CheckedInputs,
+    fact: &Fact,
+    detail: &str,
+) -> Result<Preparation, ValidationFailure> {
+    Ok(Preparation::Unsupported(snapshot_problem(
+        inputs, fact, detail,
+    )?))
+}
+
+fn snapshot_problem(
+    inputs: &CheckedInputs,
+    fact: &Fact,
+    detail: &str,
+) -> Result<Unsupported, ValidationFailure> {
+    let endpoint = subject(inputs, fact)?;
+    Ok(Unsupported {
+        affects_layout: true,
+        detail: detail.into(),
+        location: Location::ArchMap {
+            pointer: endpoint.pointer.clone(),
+            span: None,
+        },
+        operand_types: vec![Type::Ref(endpoint.ty.to_string())],
+        position: None,
+    })
+}
+
+pub(super) fn layout_snapshot(
+    indexes: &InputIndexes<'_>,
+    reading: &str,
+    target: &Fact,
+    roots: &[Fact],
+    pairs: &[(Fact, Fact)],
+    c: &Control,
+) -> Result<Option<Unsupported>, ValidationFailure> {
+    let inputs = indexes.inputs;
+    let mut root_ids = BTreeSet::from([target.subject.as_str()]);
+    for root in roots {
+        tick(c)?;
+        if root.snapshot != target.snapshot {
+            return Ok(Some(snapshot_problem(
+                inputs,
+                root,
+                "担当rootのsnapshotが組立て標識と異なる",
+            )?));
+        }
+        root_ids.insert(root.subject.as_str());
+    }
+    for member in pairs.iter().flat_map(|(left, right)| [left, right]) {
+        tick(c)?;
+        if member.snapshot != target.snapshot {
+            return Ok(Some(snapshot_problem(
+                inputs,
+                member,
+                "共有対の個体が別snapshotに属する",
+            )?));
+        }
+        let holder = indexes.subject(&member.snapshot, &member.subject)?;
+        if let Some((field, _)) =
+            construction::owner_slot_for(inputs, holder, None, c).map_err(failure)?
+            && matches!(&field.slot, Slot::Known {
+                value: Value::Ref { snapshot, .. }, ..
+            } if snapshot != &target.snapshot)
+        {
+            return Ok(Some(snapshot_problem(
+                inputs,
+                member,
+                "共有個体のownerが別snapshotに属する",
+            )?));
+        }
+    }
+    let foreign =
+        construction::foreign_owned_member(inputs, reading, &target.snapshot, &root_ids, c)
+            .map_err(failure)?;
+    foreign
+        .map(|member| {
+            snapshot_problem(
+                inputs,
+                &member,
+                "組立て先または担当の所属個体が別snapshotに属する",
+            )
+        })
+        .transpose()
+}
+
+/// Construct a layout after the shared snapshot and root checks.
+pub(super) fn compile_same_snapshot(
     inputs: &std::sync::Arc<CheckedInputs>,
     reading: &str,
     target: &Fact,
@@ -195,53 +335,28 @@ pub(super) fn compile(
     c: &Control,
 ) -> Result<Preparation, ValidationFailure> {
     tick(c)?;
-    if roots.is_empty() {
-        return Ok(rejected("担当rootの集合が空", vec![target.clone()]));
-    }
     let root_subject = subject(inputs, target)?;
     let target_construction =
         construction::construct(inputs, reading, &target.snapshot, &target.subject, c)
             .map_err(failure)?;
+    if target_construction.local_domain().known().len() != 1 {
+        return Ok(rejected_layout(
+            "組立て先rootに既存の所属個体がある",
+            target_construction.local_domain().known().to_vec(),
+        ));
+    }
     if !target_construction.local_domain().is_complete() {
         return Ok(Preparation::Missing(
             target_construction.base().blocking_slots().to_vec(),
         ));
     }
-    if target_construction.local_domain().known().len() != 1 {
-        return Ok(rejected(
-            "組立て先rootに既存または所属未決の個体がある",
-            target_construction.local_domain().known().to_vec(),
-        ));
-    }
     let mut fragments = Vec::new();
     let mut membership = BTreeMap::new();
     let mut parent = BTreeMap::new();
-    let mut roots_seen = BTreeSet::new();
     let mut missing = BTreeSet::new();
     let mut support = BTreeSet::new();
     for (i, root) in roots.iter().enumerate() {
         tick(c)?;
-        if root.snapshot != target.snapshot {
-            let root_subject = subject(inputs, root)?;
-            return Ok(Preparation::Unsupported(Unsupported {
-                detail: "担当rootのsnapshotが組立て標識と異なる".into(),
-                location: Location::ArchMap {
-                    pointer: root_subject.pointer.clone(),
-                    span: None,
-                },
-                operand_types: vec![Type::Ref(root_subject.ty.to_string())],
-                position: None,
-            }));
-        }
-        if root == target
-            || !roots_seen.insert(root)
-            || subject(inputs, root)?.ty != root_subject.ty
-        {
-            return Ok(rejected(
-                "担当rootは同一snapshot・同一型の異なるrootを要求する",
-                vec![root.clone(), target.clone()],
-            ));
-        }
         let local = construction::construct_fragment(
             inputs,
             &target_construction,
@@ -282,25 +397,18 @@ pub(super) fn compile(
     for (a, b) in pairs {
         tick(c)?;
         let (Some(ia), Some(ib)) = (membership.get(a), membership.get(b)) else {
-            return Ok(rejected(
+            return Ok(rejected_layout(
                 "共有対の個体が担当rootに所属しない",
                 vec![a.clone(), b.clone()],
             ));
         };
         if ia == ib || subject(inputs, a)?.ty != subject(inputs, b)?.ty {
-            return Ok(rejected(
+            return Ok(rejected_layout(
                 "共有対は異なる担当の同じ型の個体を要求する",
                 vec![a.clone(), b.clone()],
             ));
         }
-        let a = representative(&mut parent, a, c)?;
-        let b = representative(&mut parent, b, c)?;
-        let (small, large) = if a.wire().canonical() < b.wire().canonical() {
-            (a, b)
-        } else {
-            (b, a)
-        };
-        parent.insert(large, small);
+        link_shared(&mut parent, a, b, c)?;
     }
     // 一度だけ平坦化し、以後の参照輸送・後続評価で同じ対応を使う。
     let mut transport = BTreeMap::new();
@@ -320,7 +428,7 @@ pub(super) fn compile(
         {
             tick(c)?;
             if !images.insert(transport.get(fact).unwrap_or(fact)) {
-                return Ok(rejected(
+                return Ok(rejected_layout(
                     "共有対応の推移閉包が局所の異なる個体を同一視する",
                     local
                         .base()
@@ -402,6 +510,7 @@ pub(super) fn compile(
                     }
                 }
                 return Ok(Preparation::Rejected(Rejection {
+                    affects_layout: false,
                     detail: format!("共有個体のfield `{}` が参照輸送後に一致しない", af.name),
                     facts,
                     values: Some((moved_a, moved_b)),
@@ -606,7 +715,7 @@ mod tests {
         })
     }
     fn build(inputs: &Arc<CheckedInputs>, pairs: &[(Fact, Fact)]) -> Preparation {
-        compile(
+        compile_same_snapshot(
             inputs,
             "Assembly",
             &fact("G"),
@@ -687,31 +796,58 @@ mod tests {
         assert_eq!(seen.get(), 1);
     }
     #[test]
-    fn cross_snapshot_fragments_are_outside_the_algorithm_not_refuted() {
-        let input = fixture::with_second_snapshot();
-        let ask = fixture::ASSEMBLE
-            .replace("b=@v/B", "b=@w/B")
-            .replace("mb=@v/mb", "mb=@w/mb");
-        let result =
-            crate::observed::evaluate_observed_bytes(input, &[&ask], &Control::unlimited())
-                .unwrap();
-        assert_eq!(
-            result.answers[0].status,
-            Decision::Undetermined,
-            "{:?}",
-            result.issues
-        );
-        assert!(!result.answers[0].outputs.contains_key("object"));
-        assert!(!result.answers[0].outputs.contains_key("assembly"));
-        assert!(result.issues.iter().any(|r| matches!(
-            r.kind,
-            ReasonKind::UnsupportedAlgorithm { .. }
-        ) && !r.dependencies.is_empty()
-            && matches!(r.location, Some(Location::ArchMap { .. }))));
-        assert!(result.issues.iter().all(|r| !matches!(
-            r.kind,
-            ReasonKind::Internal(_) | ReasonKind::ConditionFailed { .. }
-        )));
+    fn cross_snapshot_fragments_and_shared_endpoints_are_outside_the_algorithm_not_refuted() {
+        for (ask, foreign_owner) in [
+            (
+                fixture::ASSEMBLE
+                    .replace("b=@v/B", "b=@w/B")
+                    .replace("mb=@v/mb", "mb=@w/mb"),
+                None,
+            ),
+            (fixture::ASSEMBLE.replace("mb=@v/mb", "mb=@w/mb"), None),
+            (fixture::ASSEMBLE.to_owned(), Some("A")),
+            (fixture::ASSEMBLE.to_owned(), Some("G")),
+        ] {
+            let mut input = fixture::with_second_snapshot();
+            if let Some(owner) = foreign_owner {
+                let map = std::str::from_utf8(input.archmap().bytes()).unwrap();
+                let mixed = map.replacen(
+                    r#""subject":"a","value":["w","A"]"#,
+                    &format!(r#""subject":"a","value":["v","{owner}"]"#),
+                    1,
+                );
+                let mixed = mixed.replace(
+                    r#""subject":"left","value":["w","a"]"#,
+                    r#""subject":"left","value":["w","ma"]"#,
+                );
+                assert_ne!(mixed, map);
+                input = archsig_input::input::InputSources::from_bytes(
+                    vec![input.definitions()[0].bytes().to_vec()],
+                    input.law().bytes().to_vec(),
+                    mixed.into_bytes(),
+                );
+            }
+            let result =
+                crate::observed::evaluate_observed_bytes(input, &[&ask], &Control::unlimited())
+                    .unwrap();
+            assert_eq!(
+                result.answers[0].status,
+                Decision::Undetermined,
+                "{:?}",
+                result.issues
+            );
+            assert!(!result.answers[0].outputs.contains_key("object"));
+            assert!(!result.answers[0].outputs.contains_key("assembly"));
+            assert!(result.issues.iter().any(|r| matches!(
+                r.kind,
+                ReasonKind::UnsupportedAlgorithm { .. }
+            ) && !r.dependencies.is_empty()
+                && matches!(r.location, Some(Location::ArchMap { .. }))));
+            assert!(result.issues.iter().all(|r| !matches!(
+                r.kind,
+                ReasonKind::Internal(_) | ReasonKind::ConditionFailed { .. }
+            )));
+        }
     }
     #[test]
     fn unavailable_parameter_handles_block_assembly_before_reading_views() {

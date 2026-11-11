@@ -121,6 +121,7 @@ pub(super) fn read(
                 domains: trace.domains,
                 condition: trace.condition,
                 unsupported: Some(model_assembly::Unsupported {
+                    affects_layout: true,
                     detail: feature,
                     location,
                     operand_types,
@@ -131,6 +132,24 @@ pub(super) fn read(
         Ok((Err(error), _)) | Err(error) => Err(error),
     }
 }
+pub(super) fn fragment_roots(
+    fragments: &Read,
+    control: &Control,
+) -> Result<Option<Vec<Fact>>, ValidationFailure> {
+    match &fragments.value {
+        Some(Scalar::Set { items, .. }) => items
+            .iter()
+            .map(|item| {
+                control.checkpoint(Checkpoint::ConfigurationMap)?;
+                fact(item)
+            })
+            .collect::<Result<Vec<_>, _>>()
+            .map(Some),
+        Some(_) => Err(internal!("担当Viewの型が集合でない").into()),
+        None => Ok(None),
+    }
+}
+
 #[derive(Debug)]
 pub(super) enum Failure {
     Missing(Vec<Fact>),
@@ -145,6 +164,7 @@ pub(super) struct Fragment {
 }
 #[derive(Debug)]
 pub(super) struct Assembly {
+    pub checked_ownership: bool,
     pub model: Option<Arc<Model>>,
     pub failure: Option<Failure>,
     pub fragments: Read,
@@ -165,7 +185,7 @@ fn failure(e: crate::construction::ConstructionFailure) -> ValidationFailure {
             .into(),
     }
 }
-fn fact(value: &Scalar) -> Result<Fact, ValidationFailure> {
+pub(super) fn fact(value: &Scalar) -> Result<Fact, ValidationFailure> {
     let Scalar::Subject {
         snapshot, subject, ..
     } = value
@@ -179,7 +199,10 @@ fn fact(value: &Scalar) -> Result<Fact, ValidationFailure> {
         atom: None,
     }))
 }
-fn interfaces(value: &Scalar, c: &Control) -> Result<Vec<(Fact, Fact)>, ValidationFailure> {
+pub(super) fn interfaces(
+    value: &Scalar,
+    c: &Control,
+) -> Result<Vec<(Fact, Fact)>, ValidationFailure> {
     let mut pending = vec![value];
     let mut pairs = Vec::new();
     while let Some(value) = pending.pop() {
@@ -189,6 +212,7 @@ fn interfaces(value: &Scalar, c: &Control) -> Result<Vec<(Fact, Fact)>, Validati
             Scalar::Tuple(items) => pending.extend(items.iter().rev()),
             Scalar::List { items, .. } => {
                 for pair in items {
+                    c.checkpoint(Checkpoint::ConfigurationMap)?;
                     let Scalar::Tuple(items) = pair else {
                         return Err(internal!("共有対応が型付きの対でない").into());
                     };
@@ -294,19 +318,44 @@ pub(super) fn prepare(
         let at = reference(e, g, &argument.value)?.ok_or(internal!("選択状態の元出力がない"))?;
         input_refs.push(at);
         selections.push(at);
+        if !is_design && root.snapshot != target.snapshot {
+            rejected_design = false;
+            rejected_design_origin = None;
+            rejected = Some(model_assembly::foreign_snapshot(
+                &p.shared_inputs(),
+                &root,
+                "局所選択の束縛rootが別snapshotに属する",
+            )?);
+            break;
+        }
         let node = g.get(at)?;
-        let source = match &node.payload {
-            Some(Payload::Construction(value)) => match (&value.witness, &value.data) {
-                (Witness::Architecture(witness), native::ConstructionData::SharedRepair(data))
-                    if data.request().kind == super::request::QuestionKind::Apply =>
-                {
-                    Some((Arc::clone(witness), value))
-                }
+        let architecture = match &node.payload {
+            Some(Payload::Construction(value)) => match &value.witness {
+                Witness::Architecture(witness) => Some((witness, value)),
                 _ => None,
             },
             _ => None,
         };
-        let Some((source, value)) = source else {
+        if !is_design
+            && let Some((witness, _)) = architecture
+            && witness.construction().root().snapshot != target.snapshot
+        {
+            rejected_design = false;
+            rejected_design_origin = None;
+            rejected = Some(model_assembly::foreign_snapshot(
+                &p.shared_inputs(),
+                witness.construction().root(),
+                "修復局所の元rootが別snapshotに属する",
+            )?);
+            break;
+        }
+        let Some((source, value)) = architecture.filter(|(_, value)| {
+            matches!(&value.data, native::ConstructionData::SharedRepair(data)
+                if data.request().kind == super::request::QuestionKind::Apply)
+        }) else {
+            if rejected.is_some() {
+                continue;
+            }
             rejected_design = is_design;
             let detail = if is_design {
                 "設計選択にはapplyの実Architectureを要求する"
@@ -317,9 +366,13 @@ pub(super) fn prepare(
             if is_design {
                 rejected_design_origin = Some((at, "apply.object"));
             }
-            break;
+            continue;
         };
         let construction = source.construction();
+        // A later local input can still put the entire assembly outside this snapshot.
+        if rejected.is_some() {
+            continue;
+        }
         if construction.root() != &root
             || (is_design && root.snapshot != target.snapshot)
             || construction.reading() != reading
@@ -364,14 +417,14 @@ pub(super) fn prepare(
                     rejection.detail = "設計選択は未輸送の固有rootを要求する".into();
                     rejected_design_origin = Some((at, "untransported apply.object"));
                     rejected = Some(failure);
-                    break;
+                    continue;
                 };
                 rejection.facts.dedup();
                 rejection.detail = detail.into();
                 rejection.values = Some((left, right));
             }
             rejected = Some(failure);
-            break;
+            continue;
         }
         let (overrides, _) = value.retained_architecture_overrides(g, c)?;
         if is_design {
@@ -390,7 +443,7 @@ pub(super) fn prepare(
             }
             repaired.insert(position.clone(), at);
         }
-        applied.insert(root, (at, source, overrides));
+        applied.insert(root, (at, Arc::clone(source), overrides));
     }
     let selected_reading = design
         .as_ref()
@@ -424,7 +477,30 @@ pub(super) fn prepare(
     missing.extend(shared.metadata.missing.iter().cloned());
     missing.sort();
     missing.dedup();
-    let preparation = if let Some(rejected) = rejected {
+    let roots = fragment_roots(&fragments, c)?.unwrap_or_default();
+    let pairs = shared
+        .value
+        .as_ref()
+        .map(|value| interfaces(value, c))
+        .transpose()?
+        .unwrap_or_default();
+    let layout_problem =
+        model_assembly::layout_snapshot(&e.indexes, reading, &target, &roots, &pairs, c)?;
+    let root_problem = if layout_problem.is_none() && fragments.value.is_some() {
+        model_assembly::layout_root_condition(&e.indexes, &target, &roots, c)?
+    } else {
+        None
+    };
+    let mut checked_ownership = false;
+    let preparation = if rejected_design {
+        rejected.ok_or(internal!("設計選択の拒否理由がない"))?
+    } else if let Some(problem) = layout_problem {
+        Preparation::Unsupported(problem)
+    } else if let Some(Preparation::Unsupported(problem)) = rejected.as_ref() {
+        Preparation::Unsupported(problem.clone())
+    } else if let Some(problem) = root_problem {
+        Preparation::Rejected(problem)
+    } else if let Some(rejected) = rejected {
         rejected
     } else if let Some(failure) = [
         (&fragments.metadata, fragments.condition.as_ref()),
@@ -443,6 +519,7 @@ pub(super) fn prepare(
         facts.sort();
         facts.dedup();
         Preparation::Rejected(model_assembly::Rejection {
+            affects_layout: true,
             detail: failure.detail.into(),
             facts,
             values: Some(failure.values.clone()),
@@ -463,21 +540,14 @@ pub(super) fn prepare(
     {
         Preparation::Unsupported(unsupported.clone())
     } else {
-        let Some(Scalar::Set { items, .. }) = &fragments.value else {
-            return Err(internal!("担当Viewの型付き集合がない").into());
-        };
-        let roots = items.iter().map(fact).collect::<Result<Vec<_>, _>>()?;
-        let pairs = interfaces(
-            shared
-                .value
-                .as_ref()
-                .ok_or(internal!("共有Viewの型付き値がない"))?,
-            c,
-        )?;
+        if fragments.value.is_none() || shared.value.is_none() {
+            return Err(internal!("組立ての担当または共有Viewの値がない").into());
+        }
         if let Some(root) = applied.keys().find(|root| !roots.contains(root)) {
             model_assembly::rejected("修復局所が担当Viewの選択域にない", vec![root.clone()])
         } else {
-            model_assembly::compile(
+            checked_ownership = true;
+            model_assembly::compile_same_snapshot(
                 &p.shared_inputs(),
                 reading,
                 &target,
@@ -580,6 +650,7 @@ pub(super) fn prepare(
     input_refs.extend(locals.iter().map(|a| a.architecture.reference));
     input_refs.extend(restrictions.iter().map(|a| a.reference));
     let assembly = Arc::new(Assembly {
+        checked_ownership,
         model,
         failure: failed,
         fragments,

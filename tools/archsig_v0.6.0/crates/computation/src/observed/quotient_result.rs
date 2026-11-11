@@ -161,6 +161,17 @@ fn compute(
         let AnswerBinding::Reference(reference) = env.answer_binding(g, on, (0, 0))? else {
             return Err(internal!("商のonが既出参照でない").into());
         };
+        if let Some((witness, domain_type)) = change_result::checked_polyhedron(env, g, reference)?
+        {
+            return affine_result::unsupported_polyhedron(
+                env,
+                g,
+                (witness, domain_type),
+                reference,
+                request,
+                base,
+            );
+        }
         let input = change_result::candidate_input(env, g, reference, c)?;
         if input.search.linear.is_some() || input.search.rational.is_some() {
             return affine_result::compute(env, g, input, reference, request, base, c);
@@ -624,7 +635,12 @@ pub(super) fn validate_answer(
             answer
                 .reasons
                 .iter()
-                .find(|r| matches!(r.kind, ReasonKind::Missing))
+                .find(|r| {
+                    matches!(
+                        r.kind,
+                        ReasonKind::Missing | ReasonKind::UnsupportedAlgorithm { .. }
+                    )
+                })
                 .and_then(|r| r.dependencies.first())
         })
         .ok_or(internal!("商の出力・不足の元式がない"))?;

@@ -57,6 +57,7 @@ pub(crate) struct EvaluationState {
     pub(super) missing_slot_reads: RefCell<Option<BTreeSet<Fact>>>,
     pub(super) assembly_domains: RefCell<Option<AssemblyTrace>>,
     pub(super) assembly_occurrence: Cell<Option<usize>>,
+    pub(super) finite_domain_reads: RefCell<Option<Vec<(Quantifier, Vec<Scalar>)>>>,
     pub(super) evaluation_capture: RefCell<Option<quotient_evaluation::EvaluationCapture>>,
     pub(super) scoped_context: Cell<Option<crate::observed::call::Context>>,
     // rootの不変Graph借用でだけ設定する。depthだけでは別Graphの再入を区別できない。
@@ -110,6 +111,7 @@ impl Default for EvaluationState {
             missing_slot_reads: RefCell::new(None),
             assembly_domains: RefCell::new(None),
             assembly_occurrence: Cell::new(None),
+            finite_domain_reads: RefCell::new(None),
             evaluation_capture: RefCell::new(None),
             scoped_context: Cell::new(None),
             validation_graph: Cell::new(None),

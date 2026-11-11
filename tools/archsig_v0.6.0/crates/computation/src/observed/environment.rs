@@ -16,7 +16,7 @@ use archsig_input::{input::CheckedInputs, result::Signal};
 mod indexes;
 mod results;
 mod state;
-use indexes::InputIndexes;
+pub(super) use indexes::InputIndexes;
 use results::ResultStore;
 use state::{EvaluationState, ScopedReplace};
 mod answer_binding;
@@ -8296,7 +8296,9 @@ impl<'a> Environment<'a> {
             .iter()
             .map(|i| self.symbolic_source(*i, variables, base, reading))
             .collect::<Result<Vec<_>, _>>()?;
-        if self.state.assembly_domains.borrow().is_none() {
+        let assembly = self.state.assembly_domains.borrow().is_some();
+        let finite = self.state.finite_domain_reads.borrow().is_some();
+        if !assembly && !finite {
             return f.apply_symbolic(&args, law, &self.control);
         }
         let position = std::cell::Cell::new(0);
@@ -8317,6 +8319,11 @@ impl<'a> Environment<'a> {
                         assembly_instance: None,
                         context: self.state.scoped_context.get(),
                     };
+                    if let Some(domains) = self.state.finite_domain_reads.borrow_mut().as_mut()
+                        && let Some(members) = members
+                    {
+                        domains.push((descriptor.clone(), members.to_vec()));
+                    }
                     if let Some(trace) = self.state.assembly_domains.borrow_mut().as_mut() {
                         trace.term_scope.add_quantifier(descriptor.clone());
                     }
@@ -8502,6 +8509,7 @@ impl<'a> Environment<'a> {
             // 記録中は値だけのmemoを使えない。導出の再評価に不要なキー・値の
             // 複製も行わず、欠測の収集とcapture自体は通常どおり実行する。
             let recording = self.state.unresolved_read_positions.get().is_some()
+                || self.state.finite_domain_reads.borrow().is_some()
                 || self
                     .state
                     .evaluation_capture
@@ -9608,7 +9616,10 @@ impl<'a> Environment<'a> {
                 &self.control,
             )?
             .map(Box::new);
-            let comparison = if matches!(op, BinOp::Eq | BinOp::Ne) {
+            let ordered_q = matches!(op, BinOp::Le | BinOp::Ge)
+                && self.state.finite_domain_reads.borrow().is_some()
+                && self.indexes.inputs.law().expr_type(*lhs) == Some(&Type::Q);
+            let comparison = if matches!(op, BinOp::Eq | BinOp::Ne) || ordered_q {
                 left_affine
                     .as_deref()
                     .zip(right.affine.as_deref())
@@ -9704,6 +9715,21 @@ impl<'a> Environment<'a> {
         }
         Ok(result)
     }
+    fn with_finite_domain_reads<T>(
+        &self,
+        output: &mut Vec<(Quantifier, Vec<Scalar>)>,
+        read: impl FnOnce() -> Result<T, ValidationFailure>,
+    ) -> Result<T, ValidationFailure> {
+        let capture = self.state.finite_domain_reads.scoped(Some(Vec::new()));
+        let result = read();
+        output.extend(
+            capture
+                .restore()
+                .ok_or(internal!("有限域の読取り記録がない"))?,
+        );
+        result
+    }
+
     fn scoped_quantifier_domain(
         &self,
         spec: &quantifier::Spec<'_>,
@@ -9832,6 +9858,9 @@ impl<'a> Environment<'a> {
                     scalar_scope: None,
                 });
             };
+            if let Some(domains) = self.state.finite_domain_reads.borrow_mut().as_mut() {
+                domains.push((descriptor, items.clone()));
+            }
             if let Some(frame) = self
                 .state
                 .evaluation_capture

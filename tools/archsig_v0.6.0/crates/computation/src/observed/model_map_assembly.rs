@@ -622,7 +622,7 @@ pub(super) fn glue(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::observed::model_assembly::{Preparation, compile};
+    use crate::observed::model_assembly::{Preparation, compile_same_snapshot};
     use archsig_common::canonical::Json;
     use archsig_input::input::check_inputs;
     #[allow(dead_code)]
@@ -640,7 +640,7 @@ mod tests {
     fn setup() -> (Arc<CheckedInputs>, Arc<Model>) {
         let c = Control::unlimited();
         let inputs = Arc::new(check_inputs(fixture::input(fixture::without_arrows), &c).unwrap());
-        let Preparation::Ready(model) = compile(
+        let Preparation::Ready(model) = compile_same_snapshot(
             &inputs,
             "Assembly",
             &fact("G"),
@@ -721,7 +721,7 @@ mod tests {
             original
         };
         let inputs = Arc::new(check_inputs(original, &c).unwrap());
-        let Preparation::Ready(model) = compile(
+        let Preparation::Ready(model) = compile_same_snapshot(
             &inputs,
             "Assembly",
             &fact("G"),
@@ -1268,7 +1268,7 @@ mod tests {
                 Some("law required fixed(r:Root):true;")
             },
         );
-        let Preparation::Ready(target) = compile(
+        let Preparation::Ready(target) = compile_same_snapshot(
             &inputs,
             "Assembly",
             &fact("G"),

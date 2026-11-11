@@ -31,17 +31,21 @@ pub(in crate::observed) struct Linear {
     pub rhs: Vec<Z>,
     pub fiber: Fiber,
 }
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub(in crate::observed) struct Pending {
     pub support: Vec<Fact>,
     pub scope: Scope,
     pub universal: Vec<Parameter>,
     pub coefficient_type: Option<Type>,
     pub unsupported: Option<&'static str>,
+    pub awaiting_observation: bool,
+    pub selective_missing: bool,
     pub facts: Vec<Fact>,
     pub expression: Option<usize>,
     pub bindings: Vec<(String, Scalar)>,
     pub parameters: Vec<(String, Type)>,
+    pub additional: Vec<(Location, Pending)>,
+    pub finite_domains: Vec<(Quantifier, Vec<Scalar>)>,
 }
 fn unsupported(env: &Environment<'_>, id: usize, feature: &str) -> ValidationFailure {
     ValidationFailure::UnsupportedExpression {
@@ -1432,7 +1436,7 @@ pub(super) fn with_missing<T>(
     operation: impl FnOnce(&mut Pending) -> Result<T, ValidationFailure>,
 ) -> Result<T, ValidationFailure> {
     let (result, reads) = capture_missing(env, || operation(missing))?;
-    if result.is_err() {
+    if result.is_err() && !missing.selective_missing {
         missing.facts.extend(reads);
     }
     result

@@ -1,6 +1,9 @@
 //! 有理数の全解を元parameter座標のアフィン空間として公開する。
 use super::*;
-use crate::observed::{environment::field_change::Linear, numeric};
+use crate::observed::{
+    environment::field_change::{Linear, Solutions},
+    numeric,
+};
 use archsig_input::law::ast::BinOp;
 use linear_result::{Parts, domain, module};
 pub(in crate::observed) fn map(
@@ -59,10 +62,73 @@ pub(in crate::observed) fn vector(
     )
 }
 
+pub(super) fn materialize_quantifiers(
+    b: &mut Builder<'_>,
+    domains: &[(Quantifier, Vec<Scalar>)],
+    requirements: &[NodeRef],
+    c: &Control,
+) -> Result<Vec<Quantifier>, ValidationFailure> {
+    let mut quantifiers = Vec::new();
+    let mut known = BTreeMap::<((usize, usize), usize), Vec<(&[Scalar], NodeRef)>>::new();
+    let frame = b.base + b.parts.len();
+    for (index, (descriptor, members)) in domains.iter().enumerate() {
+        c.checkpoint(Checkpoint::RationalPolyhedron)?;
+        let alternatives = known
+            .entry((descriptor.occurrence, members.len()))
+            .or_default();
+        let mut previous = None;
+        for (elements, domain) in alternatives.iter() {
+            c.checkpoint(Checkpoint::RationalPolyhedron)?;
+            if *elements == members {
+                previous = Some(*domain);
+                break;
+            }
+        }
+        let domain = if let Some(domain) = previous {
+            domain
+        } else {
+            let mut elements = Vec::new();
+            for member in members {
+                elements.push(b.captured_scalar(member, requirements, c)?);
+            }
+            let domain = b.push(
+                NodeType::Domain,
+                "domain",
+                Json::obj([
+                    ("kind", Json::str("finite")),
+                    ("type", descriptor.ty.wire()),
+                    (
+                        "elements",
+                        Json::Arr(elements.iter().map(|element| element.wire()).collect()),
+                    ),
+                ]),
+                requirements.iter().chain(&elements).copied().collect(),
+                None,
+            )?;
+            b.parts[domain.0 - b.base].domain_type = Some(descriptor.ty.clone());
+            alternatives.push((members, domain));
+            domain
+        };
+        let context = crate::observed::call::Context {
+            request: b.base,
+            frame: Some(frame),
+            iteration: Some(index),
+            ..descriptor.context.unwrap_or_default()
+        };
+        quantifiers.push(Quantifier {
+            domain: Some(domain),
+            context: Some(context),
+            ..descriptor.clone()
+        });
+    }
+    Ok(quantifiers)
+}
+
 pub(super) fn build(
     b: &mut Builder<'_>,
     linear: &Linear,
     requirements: &[NodeRef],
+    partial_architecture: bool,
     c: &Control,
 ) -> Result<Parts, ValidationFailure> {
     let n = linear.parameter_count;
@@ -94,11 +160,68 @@ pub(super) fn build(
         vec![parameters, states, action_linear, offset],
         None,
     )?;
+    let quantifiers = materialize_quantifiers(b, &linear.quantifiers, requirements, c)?;
     let equations = map(b, pm, em, &linear.equations, n, c)?;
+    let part = &mut b.parts[equations.0 - b.base];
+    if partial_architecture {
+        part.support.make_owned().extend(
+            linear
+                .constraint_support
+                .iter()
+                .filter(|fact| fact.field.is_none() || fact.atom.is_some())
+                .cloned(),
+        );
+    }
+    for quantifier in quantifiers {
+        part.arguments.extend(quantifier.domain);
+        part.scope.add_quantifier(quantifier);
+    }
+    part.scope.merge(&linear.scope);
+    part.arguments.sort_by_key(|node| node.0);
+    part.arguments.dedup();
     let rhs = vector(b, em, &linear.rhs, c)?;
+    let partial_obstruction = if partial_architecture
+        && let Solutions::Affine(fiber) = &linear.solutions
+        && let Some(index) = fiber.obstruction
+    {
+        use crate::observed::{environment::field_change::Polyhedron, field_polyhedron};
+        let rows = field_polyhedron::halfspaces(&linear.equations, &linear.rhs, &[], c)?;
+        let outcome = field_polyhedron::affine_obstruction(
+            &fiber.left[index],
+            &fiber.transformed_rhs[index],
+            n,
+            c,
+        )?;
+        field_polyhedron::verify(&rows, n, &outcome, c)?;
+        Some(Solutions::Polyhedron(Polyhedron {
+            inequalities: vec![],
+            outcome,
+        }))
+    } else {
+        None
+    };
+    let fiber = match partial_obstruction.as_ref().unwrap_or(&linear.solutions) {
+        Solutions::Affine(fiber) => fiber,
+        Solutions::Polyhedron(polyhedron) => {
+            return super::field_polyhedron_result::build(
+                b,
+                linear,
+                polyhedron,
+                ring,
+                pm,
+                parameters,
+                states,
+                action,
+                equations,
+                rhs,
+                requirements,
+                c,
+            );
+        }
+    };
     let mut args = vec![equations, rhs];
     args.extend(requirements);
-    let (certificate, representation, representation_args) = if let Some(p) = &linear.particular {
+    let (certificate, representation, representation_args) = if let Some(p) = &fiber.particular {
         let particular = vector(b, pm, p, c)?;
         let mut applied = vec![];
         for row in &linear.equations {
@@ -137,9 +260,9 @@ pub(super) fn build(
             args,
             None,
         )?;
-        let rank = n - linear.fiber.pivots.len();
+        let rank = n - fiber.pivots.len();
         let directions = module(b, ring, rank, "kernel", vec![equations])?;
-        let embedding = map(b, directions, pm, &linear.kernel, rank, c)?;
+        let embedding = map(b, directions, pm, &fiber.kernel, rank, c)?;
         (
             certificate,
             Json::obj([
@@ -151,11 +274,10 @@ pub(super) fn build(
             vec![particular, directions, embedding],
         )
     } else {
-        let row = linear
-            .fiber
+        let row = fiber
             .obstruction
             .ok_or(internal!("有理不整合の左零化子がない"))?;
-        let coefficients = &linear.fiber.left[row];
+        let coefficients = &fiber.left[row];
         let zero = numeric::zero(&Type::Q, c)?;
         for column in 0..n {
             let mut sum = zero.clone();
@@ -180,7 +302,7 @@ pub(super) fn build(
                 c,
             )?;
         }
-        if paired == zero || paired != linear.fiber.transformed_rhs[row] {
+        if paired == zero || paired != fiber.transformed_rhs[row] {
             return Err(internal!("有理空解の左零化子と元右辺の非零積が不一致").into());
         }
         let annihilator = vector(b, em, coefficients, c)?;

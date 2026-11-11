@@ -1,0 +1,240 @@
+{
+  "format": "archsig.atom-definition/1",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "semantics": "archsig/0.6.0",
+      "namespace": "Pool",
+      "version": "0.3",
+      "dependencies": [],
+      "declarations": [
+        {
+          "kind": "data",
+          "name": "Pool.UseKind",
+          "meaning": "Pool.UseKindの区別。合否ではなく比較する原始の選択/区分。",
+          "constructors": [
+            {
+              "name": "Manufacture",
+              "arguments": [],
+              "meaning": "Manufacture"
+            },
+            {
+              "name": "Sale",
+              "arguments": [],
+              "meaning": "Sale"
+            },
+            {
+              "name": "Transfer",
+              "arguments": [],
+              "meaning": "Transfer"
+            }
+          ]
+        },
+        {
+          "kind": "entity",
+          "name": "Pool.World",
+          "meaning": "数量・適格性が重なる承認権利の同時裏付け問題。",
+          "parameters": [],
+          "fields": [
+            {
+              "name": "label",
+              "type": "Text",
+              "meaning": "合成問題の識別。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Pool.Stock",
+          "meaning": "Pool.Stockの原始情報。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Pool.World"
+              ],
+              "meaning": "所属する比較対象。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "key",
+              "type": "Text",
+              "meaning": "材料identity。"
+            },
+            {
+              "name": "quantityUnit",
+              "type": "Text",
+              "meaning": "材料単位。"
+            },
+            {
+              "name": "available",
+              "type": "Q",
+              "meaning": "他の固定義務を除いた利用可能量。"
+            },
+            {
+              "name": "cell0",
+              "type": [
+                "Owned",
+                "Pool.Cell",
+                "owner"
+              ],
+              "meaning": "この材料に対する用途slot 0のbacking。"
+            },
+            {
+              "name": "cell1",
+              "type": [
+                "Owned",
+                "Pool.Cell",
+                "owner"
+              ],
+              "meaning": "この材料に対する用途slot 1のbacking。"
+            },
+            {
+              "name": "cell2",
+              "type": [
+                "Owned",
+                "Pool.Cell",
+                "owner"
+              ],
+              "meaning": "この材料に対する用途slot 2のbacking。"
+            },
+            {
+              "name": "cell3",
+              "type": [
+                "Owned",
+                "Pool.Cell",
+                "owner"
+              ],
+              "meaning": "この材料に対する用途slot 3のbacking。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Pool.Claim",
+          "meaning": "Pool.Claimの原始情報。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Pool.World"
+              ],
+              "meaning": "所属する比較対象。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "key",
+              "type": "Text",
+              "meaning": "承認を求める用途/指図。"
+            },
+            {
+              "name": "useKind",
+              "type": [
+                "Data",
+                "Pool.UseKind"
+              ],
+              "meaning": "製造/販売/移送を区別。"
+            },
+            {
+              "name": "quantityUnit",
+              "type": "Text",
+              "meaning": "求める材料単位。"
+            },
+            {
+              "name": "quantity",
+              "type": "Q",
+              "meaning": "全承認量。"
+            },
+            {
+              "name": "eligible",
+              "type": [
+                "Set",
+                [
+                  "Owned",
+                  "Pool.Stock",
+                  "owner"
+                ]
+              ],
+              "meaning": "その権利を満たす適格材料集合。"
+            },
+            {
+              "name": "cell0",
+              "type": [
+                "Owned",
+                "Pool.Cell",
+                "owner"
+              ],
+              "meaning": "この権利の材料slot 0へのbacking。"
+            },
+            {
+              "name": "cell1",
+              "type": [
+                "Owned",
+                "Pool.Cell",
+                "owner"
+              ],
+              "meaning": "この権利の材料slot 1へのbacking。"
+            },
+            {
+              "name": "cell2",
+              "type": [
+                "Owned",
+                "Pool.Cell",
+                "owner"
+              ],
+              "meaning": "この権利の材料slot 2へのbacking。"
+            }
+          ],
+          "alignments": []
+        },
+        {
+          "kind": "entity",
+          "name": "Pool.Cell",
+          "meaning": "一つの権利を一つの材料量で裏付ける非負の数量対応。0も実量で、欠測の代用ではない。",
+          "parameters": [
+            {
+              "name": "owner",
+              "type": [
+                "Ref",
+                "Pool.World"
+              ],
+              "meaning": "所属する比較対象。"
+            }
+          ],
+          "fields": [
+            {
+              "name": "claim",
+              "type": [
+                "Owned",
+                "Pool.Claim",
+                "owner"
+              ],
+              "meaning": "裏付けられる権利。"
+            },
+            {
+              "name": "stock",
+              "type": [
+                "Owned",
+                "Pool.Stock",
+                "owner"
+              ],
+              "meaning": "裏付け元材料。"
+            },
+            {
+              "name": "quantity",
+              "type": "Q",
+              "meaning": "この材料からこの権利へ対応する実量。"
+            }
+          ],
+          "alignments": []
+        }
+      ]
+    }
+  ]
+}

@@ -40,16 +40,20 @@ impl Input {
         let solutions = matches!(input.domain_type, ProjectionType::SolutionSet(_));
         let (slots, action, offset) = updates(search)?;
         if let Some(x) = &search.rational {
+            let (particular, kernel) = if solutions {
+                let super::super::field_change::Solutions::Affine(fiber) = &x.solutions else {
+                    return Err(internal!("半空間の解集合をアフィン商へ渡した").into());
+                };
+                (fiber.particular.clone(), fiber.kernel.clone())
+            } else {
+                (None, vec![])
+            };
             return Ok(Self {
                 ty: Type::Q,
                 parameter_count: x.parameter_count,
                 axes: x.axes.clone(),
-                particular: if solutions {
-                    x.particular.clone()
-                } else {
-                    None
-                },
-                kernel: if solutions { x.kernel.clone() } else { vec![] },
+                particular,
+                kernel,
                 guard_origin: if solutions {
                     None
                 } else {

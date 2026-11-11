@@ -336,6 +336,20 @@ fn fail(a: &mut Answer, construction: &'static str) {
         location: None,
     });
 }
+fn domain_index(
+    domain: &[Scalar],
+    value: &Scalar,
+    c: &Control,
+) -> Result<Option<usize>, ValidationFailure> {
+    for (position, member) in domain.iter().enumerate() {
+        tick(c)?;
+        if super::data::equal(member, value, c)? {
+            return Ok(Some(position));
+        }
+    }
+    Ok(None)
+}
+
 fn pins(shared: &Shared, enabled: &[bool]) -> Vec<Option<usize>> {
     let mut pins = vec![None; shared.compiled.relations.variables()];
     for o in &shared.compiled.outputs {
@@ -1137,14 +1151,7 @@ fn consume(
             );
             for i in 0..shared.compiled.parameter_count {
                 let value = &shared.compiled.domains[i][original[i]];
-                let mut index = None;
-                for (j, candidate) in other.compiled.domains[i].iter().enumerate() {
-                    tick(c)?;
-                    if crate::observed::data::equal(value, candidate, c)? {
-                        index = Some(j);
-                        break;
-                    }
-                }
+                let index = domain_index(&other.compiled.domains[i], value, c)?;
                 if index.is_none() {
                     invalid = true;
                     break;
@@ -1631,4 +1638,94 @@ pub(super) fn validate_origin(
         return Err(internal!("共通修復問題が現在の入力・要求に属さない").into());
     }
     Ok(())
+}
+
+/// 同じ finite change の元個体・parameter 値を現在の解集合で照合する。
+pub(super) fn reobserved_membership(
+    previous: &Node,
+    current: &Node,
+    subject_image: impl Fn(&Scalar) -> Option<Scalar>,
+    c: &Control,
+) -> Result<Option<bool>, ValidationFailure> {
+    let (Some(Payload::Construction(old)), Some(Payload::Construction(new))) =
+        (&previous.payload, &current.payload)
+    else {
+        return Ok(None);
+    };
+    let (D::SharedRepair(old), D::SharedRepair(new)) = (&old.data, &new.data) else {
+        return Ok(None);
+    };
+    let (Some(a), Some(b), Some(chosen), Some(enabled)) = (
+        old.source.finite(),
+        new.source.finite(),
+        &old.source.chosen,
+        &new.source.range,
+    ) else {
+        return Ok(None);
+    };
+    if old.ty() != NodeType::Construction(T::Assignment)
+        || new.ty() != NodeType::Construction(T::SolutionSet)
+        || a.change != b.change
+        || subject_image(&Scalar::Subject {
+            snapshot: a.witness.construction().root().snapshot.clone(),
+            subject: a.witness.construction().root().subject.clone(),
+            entity: a.root_type.clone(),
+        }) != Some(Scalar::Subject {
+            snapshot: b.witness.construction().root().snapshot.clone(),
+            subject: b.witness.construction().root().subject.clone(),
+            entity: b.root_type.clone(),
+        })
+        || a.compiled.subjects.len() != b.compiled.subjects.len()
+        || a.compiled.parameter_count != b.compiled.parameter_count
+    {
+        return Ok(None);
+    }
+    let width = a
+        .compiled
+        .parameter_count
+        .checked_div(a.compiled.subjects.len())
+        .unwrap_or(0);
+    let mut target_subjects = BTreeMap::new();
+    for (i, subject) in b.compiled.subjects.iter().enumerate() {
+        tick(c)?;
+        let Scalar::Subject {
+            snapshot,
+            subject,
+            entity,
+        } = subject
+        else {
+            return Ok(None);
+        };
+        target_subjects.insert((snapshot.as_str(), subject.as_str(), entity.as_str()), i);
+    }
+    let mut target_pins = pins(b, enabled);
+    for (i, subject) in a.compiled.subjects.iter().enumerate() {
+        tick(c)?;
+        let image = subject_image(subject);
+
+        let Some(Scalar::Subject {
+            snapshot,
+            subject,
+            entity,
+        }) = image.as_ref()
+        else {
+            return Ok(None);
+        };
+        let Some(&j) = target_subjects.get(&(snapshot.as_str(), subject.as_str(), entity.as_str()))
+        else {
+            return Ok(None);
+        };
+        for k in 0..width {
+            tick(c)?;
+            let index = i * width + k;
+            let target = j * width + k;
+            let original = &a.compiled.domains[index][chosen[index]];
+            let found = domain_index(&b.compiled.domains[target], original, c)?;
+            let Some(found) = found else {
+                return Ok(Some(false));
+            };
+            target_pins[target] = Some(found);
+        }
+    }
+    Ok(Some(b.compiled.relations.exists(&target_pins, c)?))
 }
