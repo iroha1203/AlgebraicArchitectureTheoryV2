@@ -1985,7 +1985,7 @@ impl super::result_kind::ResultKind for Data {
             .as_ref()
             .and_then(|s| s.candidates.as_ref())
             .map_or(0, |table| table.rows.len());
-        if points > 0 {
+        if points > 0 && !polyhedral {
             change_search::verify_point(
                 env,
                 &source.architecture.witness,
@@ -1993,17 +1993,6 @@ impl super::result_kind::ResultKind for Data {
                 0,
                 c,
             )?;
-        }
-        if polyhedral {
-            for point in 1..points {
-                change_search::verify_point(
-                    env,
-                    &source.architecture.witness,
-                    verification.as_ref().unwrap(),
-                    point,
-                    c,
-                )?;
-            }
         }
         let existence = source
             .answer

@@ -722,6 +722,14 @@ fn equations(
 #[derive(Default)]
 struct Conjuncts {
     blocked: Option<(ValidationFailure, Pending)>,
+    additional_by_span: BTreeMap<Option<(usize, usize)>, Vec<usize>>,
+}
+
+fn diagnostic_span(location: &Location) -> Option<(usize, usize)> {
+    match location {
+        Location::Law { span } => Some(*span),
+        _ => None,
+    }
 }
 
 impl Conjuncts {
@@ -769,22 +777,35 @@ impl Conjuncts {
                     if first_location == &location && same_source(first) {
                         first.facts.append(&mut pending.facts);
                     } else {
-                        let mut same = None;
-                        for (old, other) in &mut first.additional {
+                        let positions = self
+                            .additional_by_span
+                            .entry(diagnostic_span(&location))
+                            .or_default();
+                        let mut matching = None;
+                        for &index in positions.iter() {
                             control.checkpoint(Checkpoint::RationalPolyhedron)?;
+                            let (old, other) = &first.additional[index];
                             if old == &location && same_source(other) {
-                                same = Some(other);
+                                matching = Some(index);
                                 break;
                             }
                         }
-                        if let Some(other) = same {
-                            other.facts.append(&mut pending.facts);
+                        if let Some(index) = matching {
+                            first.additional[index].1.facts.append(&mut pending.facts);
                         } else {
+                            positions.push(first.additional.len());
                             first.additional.push((location, pending));
                         }
                     }
                 }
             } else {
+                for (index, (location, _)) in pending.additional.iter().enumerate() {
+                    control.checkpoint(Checkpoint::RationalPolyhedron)?;
+                    self.additional_by_span
+                        .entry(diagnostic_span(location))
+                        .or_default()
+                        .push(index);
+                }
                 self.blocked = Some((error, pending));
             }
         }

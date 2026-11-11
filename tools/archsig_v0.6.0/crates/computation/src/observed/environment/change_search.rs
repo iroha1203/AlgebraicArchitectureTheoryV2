@@ -688,19 +688,40 @@ fn search_inner(
                 rows: vec![],
                 complete: true,
             };
+            let polyhedral = matches!(linear.solutions, field_change::Solutions::Polyhedron(_));
             for (i, parameters) in points.into_iter().enumerate() {
                 control.checkpoint(Checkpoint::PrimitiveValuation)?;
-                candidates.rows.push(change_evaluation::candidate(
+                if polyhedral {
+                    control.checkpoint(Checkpoint::ChangeWitness)?;
+                }
+                let candidate = change_evaluation::candidate(
                     &environment,
                     change,
                     &candidates.subjects,
                     &parameters,
-                )?);
-                result.solutions.push(SolutionRow {
-                    candidate: i,
-                    member: Some(true),
-                    missing: vec![],
-                });
+                )?;
+                let row = if polyhedral {
+                    let row = change_evaluation::solution_row(
+                        &environment,
+                        &candidate,
+                        i,
+                        &result.requirements,
+                    )?;
+                    if row.member != Some(true) {
+                        return Err(
+                            internal!("有理全解の点が元change/Lawへの再代入を満たさない").into(),
+                        );
+                    }
+                    row
+                } else {
+                    SolutionRow {
+                        candidate: i,
+                        member: Some(true),
+                        missing: vec![],
+                    }
+                };
+                candidates.rows.push(candidate);
+                result.solutions.push(row);
             }
             result.candidates = Some(candidates);
             result.rational = Some(linear);
