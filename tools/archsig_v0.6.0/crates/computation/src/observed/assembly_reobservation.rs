@@ -1251,16 +1251,16 @@ mod tests {
     }
 
     fn quantity(map: &str, subject: &str, old: u32, new: u32) -> String {
-            let prefix = format!(
-                "\"id\": \"{subject}-quantity\",\n          \"subject\": \"{subject}\",\n          \"field\": \"Assemble.Part.quantity\",\n          \"value\": "
-            );
-            let updated = map.replacen(
-                &format!("{prefix}\"{old}\""),
-                &format!("{prefix}\"{new}\""),
-                1,
-            );
-            assert_ne!(updated, map);
-            updated
+        let prefix = format!(
+            "\"id\": \"{subject}-quantity\",\n          \"subject\": \"{subject}\",\n          \"field\": \"Assemble.Part.quantity\",\n          \"value\": "
+        );
+        let updated = map.replacen(
+            &format!("{prefix}\"{old}\""),
+            &format!("{prefix}\"{new}\""),
+            1,
+        );
+        assert_ne!(updated, map);
+        updated
     }
 
     #[test]
@@ -1696,8 +1696,13 @@ mod tests {
             .unwrap()
             .replace("set<Root>{a,b}", "set<Root>{b}")
             .replace("list<(Part,Part)>[(ma,mb)]", "list<(Part,Part)>[]");
+        let empty = std::str::from_utf8(LAW)
+            .unwrap()
+            .replace("set<Root>{a,b}", "set<Root>{}")
+            .replace("list<(Part,Part)>[(ma,mb)]", "list<(Part,Part)>[]");
         for (law, queries) in [
             (LAW, &foreign_repair),
+            (empty.as_bytes(), &foreign_repair),
             (LAW, &foreign_binding),
             (only_foreign.as_bytes(), &outside),
         ] {
@@ -1876,6 +1881,50 @@ mod tests {
                 &alignment, &c,
             ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("同一視")));
         }
+        let bounded_owned = AFTER.replacen(
+            r#""subjects": ["#,
+            r#""subjects": [{"id":"step","type":"Assemble.Step","origin":"model"},"#,
+            1,
+        ).replacen(
+            r#""atoms": ["#,
+            concat!(
+                r#""atoms": [{"id":"step-owner","subject":"step","field":"Assemble.Step.owner","value":["after","B"],"origin":"model"},"#,
+                r#"{"id":"step-to","subject":"step","field":"Assemble.Step.to","value":["after","mb"],"origin":"model"},"#,
+            ),
+            1,
+        );
+        let raw = QUERIES.replace(",local.a=$selected.object", "");
+        let previous =
+            evaluate_observed(prepared_with("before", BEFORE, LAW, &raw, &c), &c).unwrap();
+        let reobserved = reevaluate_assembly(
+            &previous,
+            prepared_with("after", &bounded_owned, LAW, &raw, &c),
+            &alignment,
+            &c,
+        )
+        .unwrap();
+        assert_eq!(reobserved.candidate(), CandidateContinuity::Retained);
+        assert!(reobserved.layout_missing().is_empty());
+        let joined = reobserved
+            .evaluation()
+            .answers
+            .iter()
+            .find(|answer| answer.id == "joined")
+            .unwrap();
+        assert_eq!(joined.status, Decision::Undetermined);
+        assert!(
+            joined
+                .reasons
+                .iter()
+                .any(|reason| reason.missing.iter().any(|fact| {
+                    fact.subject == "step"
+                        && fact
+                            .field
+                            .as_ref()
+                            .is_some_and(|field| field == "Assemble.Step.from")
+                }))
+        );
+
         let unrelated = concat!(
             ",\n        {\n          \"id\": \"b-links\",\n          \"subject\": \"b\",\n",
             "          \"field\": \"Assemble.Part.links\",\n          \"value\": [],\n",

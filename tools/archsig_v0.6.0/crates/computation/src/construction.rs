@@ -407,12 +407,12 @@ pub(crate) fn has_reference(
     ty: &Type,
     control: &Control,
 ) -> Result<bool, ConstructionFailure> {
-    has_reference_to(inputs, ty, |_| true, control)
+    has_reference_to(inputs, ty, |_, _| true, control)
 }
 fn has_reference_to(
     inputs: &CheckedInputs,
     ty: &Type,
-    matches: impl Fn(&str) -> bool,
+    matches: impl Fn(&str, bool) -> bool,
     control: &Control,
 ) -> Result<bool, ConstructionFailure> {
     let mut pending = vec![ty];
@@ -420,7 +420,8 @@ fn has_reference_to(
     while let Some(ty) = pending.pop() {
         tick(control)?;
         match ty {
-            Type::Ref(name) | Type::Owned(name, _) if matches(name) => return Ok(true),
+            Type::Ref(name) if matches(name, false) => return Ok(true),
+            Type::Owned(name, _) if matches(name, true) => return Ok(true),
             Type::Tuple(items) => pending.extend(items),
             Type::List(t) | Type::Set(t) | Type::Option(t) => pending.push(t),
             Type::Map(k, v) => {
@@ -709,7 +710,7 @@ pub(crate) fn check_layout_inclusions(
                         if has_reference_to(
                             inputs,
                             &field.ty,
-                            |name| relevant_types.contains(name),
+                            |name, owned| !owned && relevant_types.contains(name),
                             control,
                         )? =>
                     {

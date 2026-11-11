@@ -348,6 +348,8 @@ pub(super) fn prepare(
     let mut checked_ownership = false;
     let preparation = if let Some(problem) = layout_problem {
         Preparation::Unsupported(problem)
+    } else if let Some(Preparation::Unsupported(problem)) = rejected.as_ref() {
+        Preparation::Unsupported(problem.clone())
     } else if let Some(problem) = root_problem {
         Preparation::Rejected(problem)
     } else if let Some(rejected) = rejected {
