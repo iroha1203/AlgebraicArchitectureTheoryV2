@@ -467,6 +467,57 @@ pub(super) enum CapturedDomain {
 type CapturedMembers = std::sync::Arc<[Scalar]>;
 type AssemblyDomain = (Quantifier, CapturedDomain);
 
+fn domain_fingerprint(items: &[Scalar], control: &Control) -> Result<u64, ValidationFailure> {
+    use std::hash::{DefaultHasher, Hash, Hasher};
+    let mut key = DefaultHasher::new();
+    let mut pending = items.iter().rev().collect::<Vec<_>>();
+    while let Some(value) = pending.pop() {
+        control.checkpoint(Checkpoint::ConfigurationMap)?;
+        std::mem::discriminant(value).hash(&mut key);
+        match value {
+            Scalar::Unit => {}
+            Scalar::Bool(value) => value.hash(&mut key),
+            Scalar::Text(value) => value.hash(&mut key),
+            Scalar::Z(value) => value.hash(&mut key),
+            Scalar::Q(numerator, denominator) => (numerator, denominator).hash(&mut key),
+            Scalar::Fp { modulus, value } => (modulus, value).hash(&mut key),
+            Scalar::Subject {
+                snapshot,
+                subject,
+                entity,
+            } => (snapshot, subject, entity).hash(&mut key),
+            Scalar::Path(path) => {
+                (&path.reading, &path.snapshot, &path.subject, &path.entity).hash(&mut key);
+                if let Some(step) = &path.step {
+                    step.word_tail.len().hash(&mut key);
+                    pending.push(&step.target);
+                    pending.extend(step.word_tail.iter().rev());
+                    pending.push(&step.generator);
+                }
+            }
+            Scalar::Term(term) => term.body.hash(&mut key),
+            Scalar::Option { value, .. } => {
+                value.is_some().hash(&mut key);
+                pending.extend(value.as_deref());
+            }
+            Scalar::Tuple(items)
+            | Scalar::List { items, .. }
+            | Scalar::Set { items, .. }
+            | Scalar::Data { args: items, .. } => {
+                items.len().hash(&mut key);
+                pending.extend(items.iter().rev());
+            }
+            Scalar::Map { pairs, .. } => {
+                pairs.len().hash(&mut key);
+                for (left, right) in pairs.iter().rev() {
+                    pending.extend([right, left]);
+                }
+            }
+        }
+    }
+    Ok(key.finish())
+}
+
 #[derive(Debug)]
 pub(super) struct AssemblyCondition {
     pub(super) span: (usize, usize),
@@ -483,7 +534,7 @@ pub(super) struct AssemblyTrace {
     captured: BTreeMap<(Option<usize>, (usize, usize), Option<super::call::Context>), Vec<usize>>,
     pub(super) domains: Vec<AssemblyDomain>,
     pub(super) term_scope: Scope,
-    finite_domains: BTreeMap<((usize, usize), usize), Vec<CapturedMembers>>,
+    finite_domains: BTreeMap<((usize, usize), usize, u64), Vec<CapturedMembers>>,
     pub(super) condition: Option<AssemblyCondition>,
     pub(super) scope: Scope,
     pub(super) support: BTreeSet<Fact>,
@@ -720,9 +771,10 @@ impl<'a> Environment<'a> {
         prior.push(trace.domains.len());
         let domain = match members {
             Some(items) => {
+                let fingerprint = domain_fingerprint(items, &self.control)?;
                 let domains = trace
                     .finite_domains
-                    .entry((descriptor.occurrence, items.len()))
+                    .entry((descriptor.occurrence, items.len(), fingerprint))
                     .or_default();
                 let mut shared = None;
                 for domain in domains.iter() {
@@ -8203,7 +8255,7 @@ impl<'a> Environment<'a> {
             .iter()
             .map(|i| self.symbolic_source(*i, variables, base, reading))
             .collect::<Result<Vec<_>, _>>()?;
-        if !self.fixed_assembly_read() {
+        if self.state.assembly_domains.borrow().is_none() {
             return f.apply_symbolic(&args, law, &self.control);
         }
         let position = std::cell::Cell::new(0);

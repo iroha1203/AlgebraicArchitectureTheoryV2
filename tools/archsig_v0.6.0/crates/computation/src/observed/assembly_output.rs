@@ -41,12 +41,29 @@ pub(super) fn materialized_scope(
     inputs: &[NodeRef],
 ) -> Result<Scope, ValidationFailure> {
     let mut scope = read.metadata.scope.clone();
+    let originals = std::mem::take(&mut scope.quantifiers);
+    let mut positions = BTreeMap::<_, Vec<usize>>::new();
+    for (index, descriptor) in originals.iter().enumerate() {
+        positions
+            .entry((descriptor.occurrence, descriptor.context))
+            .or_default()
+            .push(index);
+    }
+    let mut expanded = vec![Vec::new(); originals.len()];
     let source = NodeRef(b.base + b.parts.len());
     let mut references = BTreeMap::new();
     for (index, (quantifier, captured)) in read.domains.iter().enumerate() {
-        if !read.metadata.scope.quantifiers.contains(quantifier) {
+        let Some(position) = positions
+            .get(&(quantifier.occurrence, quantifier.context))
+            .and_then(|indices| {
+                indices
+                    .iter()
+                    .copied()
+                    .find(|index| &originals[*index] == quantifier)
+            })
+        else {
             continue;
-        }
+        };
         let domain = match captured {
             CapturedDomain::Pending => None,
             other => {
@@ -88,14 +105,19 @@ pub(super) fn materialized_scope(
                 Some(reference)
             }
         };
-        scope.quantifiers.retain(|q| q != quantifier);
-        scope.add_quantifier(Quantifier {
+        expanded[position].push(Quantifier {
             domain,
             assembly_instance: Some((source, index)),
             ..quantifier.clone()
         });
     }
-    scope.order_quantifiers_like(&read.metadata.scope);
+    for (original, instances) in originals.into_iter().zip(expanded) {
+        if instances.is_empty() {
+            scope.quantifiers.push(original);
+        } else {
+            scope.quantifiers.extend(instances);
+        }
+    }
     Ok(scope)
 }
 fn input(

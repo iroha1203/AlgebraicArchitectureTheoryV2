@@ -580,9 +580,19 @@ fn compute(
         Scalar::Text("model_map_assembly".into()),
         vec![refs[0], refs[1], expression],
     )?;
+    let mut local_operands = vec![label, expression];
+    if fixed_design {
+        local_operands.extend(refs);
+        local_operands.extend(
+            [source_plan, target_plan]
+                .into_iter()
+                .filter_map(|plan| plan.assembly.as_ref().and_then(|assembly| assembly.design)),
+        );
+        local_operands.extend(value);
+    }
     let local_condition = b.proposition(
         "constructible",
-        vec![label, expression],
+        local_operands,
         vec![refs[0], refs[1]],
         if verified.is_some() {
             Decision::Established
@@ -1253,6 +1263,7 @@ fn compute(
         let condition = b.proposition(
             "constructible",
             std::iter::once(label)
+                .chain(fixed_design.then_some(local_condition))
                 .chain(failed_law.iter().copied())
                 .collect(),
             vec![local_condition, counterexample],
@@ -1273,7 +1284,10 @@ fn compute(
     sort_reasons(&mut reasons);
     let claim = b.proposition(
         "constructible",
-        std::iter::once(label).chain(failed_law).collect(),
+        std::iter::once(label)
+            .chain(fixed_design.then_some(local_condition))
+            .chain(failed_law)
+            .collect(),
         outputs.values().copied().chain(conditions).collect(),
         status,
     )?;

@@ -291,16 +291,17 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
         "routes(t:Route,p:Design):Set<Route> = if p.split then set<Route>{t} else set<Route>{}",
     );
     std::fs::write(dir.join("laws.law"), law).unwrap();
-    let mut map_asks = args[9..]
+    let map_asks = args[9..]
         .chunks_exact(2)
-        .filter(|pair| !pair[1].starts_with("wrongEndpoint="))
-        .map(|pair| pair[1].to_owned())
+        .map(|pair| {
+            let ask = pair[1];
+            if ask.starts_with("migrate=") || ask.starts_with("wrongEndpoint=") {
+                format!("{},p=@comparison/plan)", ask.strip_suffix(')').unwrap())
+            } else {
+                ask.to_owned()
+            }
+        })
         .collect::<Vec<_>>();
-    let migrate = map_asks
-        .iter_mut()
-        .find(|ask| ask.starts_with("migrate="))
-        .unwrap();
-    *migrate = format!("{},p=@comparison/plan)", migrate.strip_suffix(')').unwrap());
     let mut conditional_args = args[..9].to_vec();
     conditional_args[8] = "conditional-route";
     for ask in &map_asks {
@@ -308,11 +309,42 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
     }
     let run = run_binary(&dir, &conditional_args);
     let result = result_json(&dir, &run);
-    let migration = arr(get(&result, "answers"))
-        .iter()
-        .find(|a| s(get(a, "id")) == "migrate")
-        .unwrap();
-    assert_eq!(s(get(migration, "status")), "established", "{}", run.stdout);
+    let answers = arr(get(&result, "answers"));
+    let answer = |id| answers.iter().find(|a| s(get(a, "id")) == id).unwrap();
+    let nodes = arr(get(&result, "nodes"));
+    let resolve = |reference: &JNode| {
+        nodes
+            .iter()
+            .find(|node| s(get(node, "id")) == s(get(reference, "node")))
+            .unwrap()
+    };
+    for (id, expected, target, design) in [
+        ("migrate", "established", "layout1", "planApply1"),
+        ("wrongEndpoint", "refuted", "layout0", "planApply0"),
+    ] {
+        let map = answer(id);
+        assert_eq!(s(get(map, "status")), expected, "{}", run.stdout);
+        let claim = resolve(get(get(map, "outputs"), "proposition"));
+        let endpoint = get(get(answer(target), "outputs"), "assembly");
+        let applied = get(get(answer(design), "outputs"), "object");
+        assert!(
+            arr(get(get(claim, "value"), "operands"))
+                .iter()
+                .any(|operand| {
+                    let local = resolve(operand);
+                    s(get(local, "type")) == "Proposition" && {
+                        let operands = arr(get(get(local, "value"), "operands"));
+                        operands
+                            .iter()
+                            .any(|operand| operand.value == endpoint.value)
+                            && operands
+                                .iter()
+                                .any(|operand| operand.value == applied.value)
+                    }
+                }),
+            "{id}: actual endpoint and design point"
+        );
+    }
     let law = include_str!("fixtures/r2-structure-choice/laws.law").replace("  view selected", concat!(
         "  change chooseDirection(p:Design,q:Bool)=p with {reversed=q};
 ",
@@ -800,4 +832,74 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
         .unwrap();
     assert_eq!(s(get(layout, "status")), "established", "{}", run.stdout);
     assert!(arr(get(layout, "reasons")).is_empty());
+}
+
+#[test]
+fn a_projected_assembly_endpoint_preserves_the_same_evaluated_domains() {
+    let dir = workdir("structure-choice-projected-endpoint");
+    std::fs::write(
+        dir.join("definitions.json"),
+        include_bytes!("fixtures/r2-structure-choice/definitions.json"),
+    )
+    .unwrap();
+    std::fs::write(
+        dir.join("archmap.json"),
+        include_bytes!("fixtures/r2-structure-choice/archmap.json"),
+    )
+    .unwrap();
+    let law = include_str!("fixtures/r2-structure-choice/laws.law").replace(
+        "if p.split!=p.reversed then",
+        "if (forall b in list<Bool>[true] . b=b) and (fn(k:Bool)=>forall m in list<Bool>[k] . m=k)(true) and p.split!=p.reversed then",
+    );
+    std::fs::write(dir.join("laws.law"), law).unwrap();
+    let asks = include_str!("fixtures/r2-structure-choice/queries.txt")
+        .lines()
+        .collect::<Vec<_>>();
+    let mut args = vec![
+        "run",
+        "--atom-definition",
+        "definitions.json",
+        "--law",
+        "laws.law",
+        "--archmap",
+        "archmap.json",
+        "--out",
+        "out",
+    ];
+    for ask in asks[..8].iter().copied().chain([
+        asks[14],
+        "legacyTarget=assemble(E12Compare.selected,on=@comparison/rust-output1,along=E12Compare.interfaces,p=@comparison/lookalike,t=@comparison/move-T3)",
+        "legacy=assemble_map(E12Compare.routes,from=$native.assembly,to=$legacyTarget.assembly,t=@comparison/move-T3)",
+        "projected=assemble_map(E12Compare.routes,from=$legacy.map.source_assembly,to=$layout1.assembly,t=@comparison/move-T3)",
+        "direct=assemble_map(E12Compare.routes,from=$native.assembly,to=$layout1.assembly,t=@comparison/move-T3)",
+    ]) {
+        args.extend(["--ask", ask]);
+    }
+    let run = run_binary(&dir, &args);
+    assert_eq!(run.code, 0, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let answers = arr(get(&result, "answers"));
+    let scope = |id| {
+        let answer = answers
+            .iter()
+            .find(|answer| s(get(answer, "id")) == id)
+            .unwrap();
+        arr(get(get(answer, "scope"), "quantifiers"))
+    };
+    let projected = scope("projected");
+    let direct = scope("direct");
+    assert_eq!(projected.len(), 4);
+    for name in ["b", "m"] {
+        assert_eq!(
+            projected
+                .iter()
+                .filter(|q| s(get(q, "name")) == name && has(q, "domain"))
+                .count(),
+            2
+        );
+    }
+    assert_eq!(
+        projected.iter().map(|q| &q.value).collect::<Vec<_>>(),
+        direct.iter().map(|q| &q.value).collect::<Vec<_>>()
+    );
 }
