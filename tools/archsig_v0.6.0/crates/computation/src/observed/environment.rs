@@ -16,7 +16,7 @@ use archsig_input::{input::CheckedInputs, result::Signal};
 mod indexes;
 mod results;
 mod state;
-use indexes::InputIndexes;
+pub(super) use indexes::InputIndexes;
 use results::ResultStore;
 use state::{EvaluationState, ScopedReplace};
 mod answer_binding;

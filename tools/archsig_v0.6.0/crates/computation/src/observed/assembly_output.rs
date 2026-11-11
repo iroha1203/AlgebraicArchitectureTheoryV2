@@ -398,6 +398,7 @@ pub(super) fn failed(
         )?;
         dependencies.push(expression);
     }
+    let reason_expressions = dependencies.clone();
     if let Some(detail) = detail {
         let actual = b.scalar(
             NodeType::Value(Type::Text),
@@ -552,7 +553,7 @@ pub(super) fn failed(
                 method: "finite_local_model_assembly".into(),
             },
             request: r.id.clone(),
-            dependencies: dependencies.clone(),
+            dependencies: reason_expressions,
             missing: vec![],
             location: Some(unsupported.location.clone()),
         }],

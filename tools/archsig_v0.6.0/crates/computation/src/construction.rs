@@ -407,12 +407,21 @@ pub(crate) fn has_reference(
     ty: &Type,
     control: &Control,
 ) -> Result<bool, ConstructionFailure> {
+    has_reference_to(inputs, ty, |_, _| true, control)
+}
+fn has_reference_to(
+    inputs: &CheckedInputs,
+    ty: &Type,
+    matches: impl Fn(&str, bool) -> bool,
+    control: &Control,
+) -> Result<bool, ConstructionFailure> {
     let mut pending = vec![ty];
     let mut seen = BTreeSet::new();
     while let Some(ty) = pending.pop() {
         tick(control)?;
         match ty {
-            Type::Ref(_) | Type::Owned(..) => return Ok(true),
+            Type::Ref(name) if matches(name, false) => return Ok(true),
+            Type::Owned(name, _) if matches(name, true) => return Ok(true),
             Type::Tuple(items) => pending.extend(items),
             Type::List(t) | Type::Set(t) | Type::Option(t) => pending.push(t),
             Type::Map(k, v) => {
@@ -564,6 +573,205 @@ fn configuration_transported(
         blocking_slots: canonical_facts(blocking, control)?,
     })
 }
+fn owner_signature<'a>(inputs: &'a CheckedInputs, ty: &str) -> Option<(&'a str, bool)> {
+    match &inputs.definitions().declarations().get(ty)?.signature {
+        PrimitiveSignature::Entity {
+            owner: Some(owner), ..
+        } => Some((owner.as_str(), true)),
+        PrimitiveSignature::Arrow { owner, .. } => Some((owner.as_str(), false)),
+        _ => None,
+    }
+}
+
+pub(crate) fn is_owner_fact(inputs: &CheckedInputs, fact: &FactPointer) -> bool {
+    fact.field
+        .as_ref()
+        .filter(|name| name.is_owner())
+        .and_then(|name| name.owner())
+        .is_some_and(|ty| owner_signature(inputs, ty).is_some())
+}
+
+pub(crate) fn owner_slot_for<'a>(
+    inputs: &CheckedInputs,
+    subject: &'a Subject,
+    root_type: Option<&str>,
+    control: &Control,
+) -> Result<Option<(&'a archsig_input::archmap::Field, bool)>, ConstructionFailure> {
+    let Some((owner, entity)) = owner_signature(inputs, subject.ty.as_str()) else {
+        return Ok(None);
+    };
+    if root_type.is_some_and(|root| owner != root) {
+        return Ok(None);
+    }
+    for field in &subject.fields {
+        tick(control)?;
+        if field.name.is_owner() {
+            return Ok(Some((field, entity)));
+        }
+    }
+    Err(ConstructionFailure::Inconsistent(internal!(
+        "owned subjectのowner slotがない"
+    )))
+}
+
+pub(crate) fn layout_ownership(
+    inputs: &CheckedInputs,
+    reading: &str,
+    root_type: &str,
+    target: &FactPointer,
+    control: &Control,
+) -> Result<(Option<FactPointer>, Vec<FactPointer>), ConstructionFailure> {
+    let namespaces = namespaces(inputs, reading, control)?;
+    let mut missing = Vec::new();
+    for snapshot in inputs.archmap().snapshots() {
+        tick(control)?;
+        for subject in &snapshot.subjects {
+            tick(control)?;
+            if visible(inputs, &subject.ty, &namespaces)
+                && let Some((field, _)) = owner_slot_for(inputs, subject, Some(root_type), control)?
+            {
+                match &field.slot {
+                    Slot::Missing => missing.push(slot(subject, &field.name)),
+                    Slot::Known {
+                        value:
+                            Value::Ref {
+                                snapshot,
+                                subject: owner,
+                            },
+                        ..
+                    } if *snapshot == target.snapshot && *owner == target.subject => {
+                        return Ok((Some(exists(subject)), missing));
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+    Ok((None, missing))
+}
+
+/// Check known inclusion collisions and conservatively collect missing references by type.
+pub(crate) fn check_layout_inclusions(
+    inputs: &CheckedInputs,
+    reading: &str,
+    target: &FactPointer,
+    root_type: &str,
+    roots: &[FactPointer],
+    transport: &BTreeMap<FactPointer, FactPointer>,
+    relevant_types: &BTreeSet<&str>,
+    control: &Control,
+) -> Result<(bool, Vec<FactPointer>), ConstructionFailure> {
+    let namespaces = namespaces(inputs, reading, control)?;
+    let roots: BTreeSet<_> = roots.iter().map(|root| root.subject.as_str()).collect();
+    let images: BTreeMap<_, _> = transport
+        .iter()
+        .map(|(fact, image)| ((fact.snapshot.as_str(), fact.subject.as_str()), image))
+        .collect();
+    let mut known = BTreeMap::new();
+    let mut missing = Vec::new();
+    for snapshot in inputs.archmap().snapshots() {
+        tick(control)?;
+        if snapshot.id != target.snapshot {
+            continue;
+        }
+        for subject in &snapshot.subjects {
+            tick(control)?;
+            if !visible(inputs, &subject.ty, &namespaces) {
+                continue;
+            }
+            let root = if roots.contains(subject.id.as_str()) {
+                subject.id.as_str()
+            } else if let Some((field, _)) =
+                owner_slot_for(inputs, subject, Some(root_type), control)?
+                && let Slot::Known {
+                    value:
+                        Value::Ref {
+                            snapshot,
+                            subject: owner,
+                        },
+                    ..
+                } = &field.slot
+                && *snapshot == target.snapshot
+                && roots.contains(owner.as_str())
+            {
+                owner.as_str()
+            } else {
+                continue;
+            };
+            let mut collision = |source| {
+                let Some(image) = images.get(&source) else {
+                    return false;
+                };
+                let old = known.entry((root, *image)).or_insert(source);
+                *old != source
+            };
+            if collision((subject.snapshot.as_str(), subject.id.as_str())) {
+                return Ok((true, missing));
+            }
+            for field in &subject.fields {
+                tick(control)?;
+                match &field.slot {
+                    Slot::Known { value, .. } => {
+                        for source in references(value, control)? {
+                            tick(control)?;
+                            if collision(source) {
+                                return Ok((true, missing));
+                            }
+                        }
+                    }
+                    Slot::Missing
+                        if has_reference_to(
+                            inputs,
+                            &field.ty,
+                            |name, owned| !owned && relevant_types.contains(name),
+                            control,
+                        )? =>
+                    {
+                        missing.push(slot(subject, &field.name));
+                    }
+                    Slot::Missing => {}
+                }
+            }
+        }
+    }
+    Ok((false, missing))
+}
+
+/// Foreign members of ownerless roots are outside same-snapshot assembly.
+pub(crate) fn foreign_owned_member(
+    inputs: &CheckedInputs,
+    reading: &str,
+    snapshot: &str,
+    roots: &BTreeSet<&str>,
+    control: &Control,
+) -> Result<Option<FactPointer>, ConstructionFailure> {
+    let snapshots = inputs.archmap().snapshots();
+    if snapshots.len() <= 1 {
+        return Ok(None);
+    }
+    let namespaces = namespaces(inputs, reading, control)?;
+    for other in snapshots {
+        tick(control)?;
+        if other.id == snapshot {
+            continue;
+        }
+        for subject in &other.subjects {
+            tick(control)?;
+            if !visible(inputs, &subject.ty, &namespaces) {
+                continue;
+            }
+            if let Some((field, _)) = owner_slot_for(inputs, subject, None, control)?
+                && matches!(&field.slot, Slot::Known {
+                    value: Value::Ref { snapshot: owner_snapshot, subject: owner }, ..
+                } if owner_snapshot == snapshot && roots.contains(owner.as_str()))
+            {
+                return Ok(Some(exists(subject)));
+            }
+        }
+    }
+    Ok(None)
+}
+
 /// rootとreadingを選んで標準構成を生成する。値や所属の補完を入力として受け取らない。
 pub fn construct(
     inputs: &CheckedInputs,
@@ -734,31 +942,11 @@ fn construct_inner(
         if !visible(inputs, &subject.ty, &namespaces) {
             continue;
         }
-        let signature = inputs
-            .definitions()
-            .declarations()
-            .get(subject.ty.as_str())
-            .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("subjectの元定義がない")))?;
-        let (owner, is_entity) = match &signature.signature {
-            PrimitiveSignature::Entity {
-                owner: Some(owner), ..
-            } => (owner, true),
-            PrimitiveSignature::Arrow { owner, .. } => (owner, false),
-            _ => continue,
-        };
-        if owner != &selected.ty {
+        let Some((field, is_entity)) =
+            owner_slot_for(inputs, subject, Some(selected.ty.as_str()), control)?
+        else {
             continue;
-        }
-        let mut owner_field = None;
-        for field in &subject.fields {
-            tick(control)?;
-            if field.name.is_owner() {
-                owner_field = Some(field);
-            }
-        }
-        let field = owner_field.ok_or_else(|| {
-            ConstructionFailure::Inconsistent(internal!("owned subjectのowner slotがない"))
-        })?;
+        };
         match &field.slot {
             Slot::Known {
                 value:
