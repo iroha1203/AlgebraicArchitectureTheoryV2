@@ -485,8 +485,16 @@ fn checked_shared_partition(
         .ok_or_else(|| invalid("共有対が未確定"))?
     {
         SharedLayout::Checked(model) => {
-            for (member, representative) in &model.shared_classes {
+            let construction = &model.construction;
+            let transport = construction
+                .transport()
+                .ok_or_else(|| invalid("検査済み組立ての参照輸送がない"))?;
+            for (member, representative) in transport {
                 control.checkpoint(Checkpoint::ConfigurationMap)?;
+                // The transport also contains identities and maps fragment roots to the target.
+                if member == representative || representative == construction.root() {
+                    continue;
+                }
                 let class = classes.entry(representative).or_default();
                 if class.is_empty() {
                     class.insert(image(representative)?);
@@ -1730,6 +1738,12 @@ mod tests {
             })
             .collect::<Vec<_>>()
             .join("\n");
+        let mixed_locals = foreign_repair
+            .replace("joined=", "wrong=build(Assembly,on=@SNAP/A)\njoined=")
+            .replace(
+                "local.a=$selected.object",
+                "local.a=$wrong.object,local.b=$selected.object",
+            );
         let foreign_binding = QUERIES.replace("a=@SNAP/A,b=@SNAP/B", "a=@foreign/A,b=@SNAP/B");
         let outside = QUERIES.replace("b=@SNAP/B", "b=@foreign/B");
         let only_foreign = std::str::from_utf8(LAW)
@@ -1743,6 +1757,7 @@ mod tests {
         for (law, queries) in [
             (LAW, &foreign_repair),
             (empty.as_bytes(), &foreign_repair),
+            (LAW, &mixed_locals),
             (LAW, &foreign_binding),
             (only_foreign.as_bytes(), &outside),
         ] {

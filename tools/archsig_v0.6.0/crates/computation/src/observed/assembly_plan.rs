@@ -277,19 +277,17 @@ pub(super) fn prepare(
                 (Witness::Architecture(witness), native::ConstructionData::SharedRepair(data))
                     if data.request().kind == super::request::QuestionKind::Apply =>
                 {
-                    let (overrides, _) = value.retained_architecture_overrides(g, c)?;
-                    Some((Arc::clone(witness), overrides))
+                    Some((witness, value))
                 }
                 _ => None,
             },
             _ => None,
         };
-        let Some((source, overrides)) = source else {
-            rejected = Some(model_assembly::rejected(
-                "局所入力はapplyの実Architectureを要求する",
-                vec![root],
-            ));
-            break;
+        let Some((source, value)) = source else {
+            rejected.get_or_insert_with(|| {
+                model_assembly::rejected("局所入力はapplyの実Architectureを要求する", vec![root])
+            });
+            continue;
         };
         let construction = source.construction();
         if construction.root().snapshot != target.snapshot {
@@ -305,12 +303,18 @@ pub(super) fn prepare(
             || construction.transport().is_some()
             || applied.contains_key(&root)
         {
-            rejected = Some(model_assembly::rejected(
-                "修復局所の元root・snapshot・readingまたは選択が異なる",
-                vec![root, construction.root().clone()],
-            ));
-            break;
+            rejected.get_or_insert_with(|| {
+                model_assembly::rejected(
+                    "修復局所の元root・snapshot・readingまたは選択が異なる",
+                    vec![root.clone(), construction.root().clone()],
+                )
+            });
         }
+        // A later local input can still put the entire assembly outside this snapshot.
+        if rejected.is_some() {
+            continue;
+        }
+        let (overrides, _) = value.retained_architecture_overrides(g, c)?;
         for (position, value) in overrides.iter() {
             c.checkpoint(Checkpoint::ConfigurationMap)?;
             let mut subject = position.clone();
@@ -323,7 +327,7 @@ pub(super) fn prepare(
             }
             repaired.insert(position.clone(), at);
         }
-        applied.insert(root, (at, source, overrides));
+        applied.insert(root, (at, Arc::clone(source), overrides));
     }
     let fragments = read(e, head, &values)?;
     let shared = read(e, along, &values)?;

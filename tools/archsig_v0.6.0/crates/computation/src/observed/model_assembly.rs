@@ -142,7 +142,6 @@ pub(super) fn counterexample_facts(
 pub(super) struct Model {
     pub construction: std::sync::Arc<ConfigurationConstruction>,
     pub fragments: Vec<std::sync::Arc<ConfigurationConstruction>>,
-    pub shared_classes: Vec<(Fact, Fact)>,
     pub overrides: std::sync::Arc<Vec<(Fact, Scalar)>>,
     pub repaired_values: Vec<(Fact, Scalar)>,
     pub support: Vec<Fact>,
@@ -444,12 +443,8 @@ pub(super) fn compile_same_snapshot(
     let mut members = BTreeSet::from([target.clone()]);
     members.extend(membership.keys().map(|f| transport[f].clone()));
     let mut overrides = Vec::new();
-    let mut shared_classes = Vec::new();
     for (from, to) in &transport {
         tick(c)?;
-        if from != to && membership.contains_key(from) {
-            shared_classes.push((from.clone(), to.clone()));
-        }
         let a = subject(inputs, from)?;
         for af in &a.fields {
             tick(c)?;
@@ -666,7 +661,6 @@ pub(super) fn compile_same_snapshot(
     Ok(Preparation::Ready(Model {
         construction,
         fragments,
-        shared_classes,
         repaired_values,
         overrides: std::sync::Arc::new(overrides),
         support: support.into_iter().collect(),
