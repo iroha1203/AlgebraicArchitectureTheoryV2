@@ -573,25 +573,34 @@ fn configuration_transported(
         blocking_slots: canonical_facts(blocking, control)?,
     })
 }
-fn owner_slot_for<'a>(
-    inputs: &CheckedInputs,
-    subject: &'a Subject,
-    root_type: &str,
-    control: &Control,
-) -> Result<Option<(&'a archsig_input::archmap::Field, bool)>, ConstructionFailure> {
-    let signature = inputs
-        .definitions()
-        .declarations()
-        .get(subject.ty.as_str())
-        .ok_or_else(|| ConstructionFailure::Inconsistent(internal!("subjectの元定義がない")))?;
-    let (owner, entity) = match &signature.signature {
+fn owner_signature<'a>(inputs: &'a CheckedInputs, ty: &str) -> Option<(&'a str, bool)> {
+    match &inputs.definitions().declarations().get(ty)?.signature {
         PrimitiveSignature::Entity {
             owner: Some(owner), ..
-        } => (owner, true),
-        PrimitiveSignature::Arrow { owner, .. } => (owner, false),
-        _ => return Ok(None),
+        } => Some((owner.as_str(), true)),
+        PrimitiveSignature::Arrow { owner, .. } => Some((owner.as_str(), false)),
+        _ => None,
+    }
+}
+
+pub(crate) fn is_owner_fact(inputs: &CheckedInputs, fact: &FactPointer) -> bool {
+    fact.field
+        .as_ref()
+        .filter(|name| name.is_owner())
+        .and_then(|name| name.owner())
+        .is_some_and(|ty| owner_signature(inputs, ty).is_some())
+}
+
+pub(crate) fn owner_slot_for<'a>(
+    inputs: &CheckedInputs,
+    subject: &'a Subject,
+    root_type: Option<&str>,
+    control: &Control,
+) -> Result<Option<(&'a archsig_input::archmap::Field, bool)>, ConstructionFailure> {
+    let Some((owner, entity)) = owner_signature(inputs, subject.ty.as_str()) else {
+        return Ok(None);
     };
-    if owner.as_str() != root_type {
+    if root_type.is_some_and(|root| owner != root) {
         return Ok(None);
     }
     for field in &subject.fields {
@@ -619,7 +628,7 @@ pub(crate) fn layout_ownership(
         for subject in &snapshot.subjects {
             tick(control)?;
             if visible(inputs, &subject.ty, &namespaces)
-                && let Some((field, _)) = owner_slot_for(inputs, subject, root_type, control)?
+                && let Some((field, _)) = owner_slot_for(inputs, subject, Some(root_type), control)?
             {
                 match &field.slot {
                     Slot::Missing => missing.push(slot(subject, &field.name)),
@@ -661,15 +670,19 @@ pub(crate) fn check_layout_inclusions(
     let mut known = BTreeMap::new();
     let mut missing = Vec::new();
     for snapshot in inputs.archmap().snapshots() {
+        tick(control)?;
+        if snapshot.id != target.snapshot {
+            continue;
+        }
         for subject in &snapshot.subjects {
             tick(control)?;
             if !visible(inputs, &subject.ty, &namespaces) {
                 continue;
             }
-            let root = if subject.snapshot == target.snapshot && roots.contains(subject.id.as_str())
-            {
+            let root = if roots.contains(subject.id.as_str()) {
                 subject.id.as_str()
-            } else if let Some((field, _)) = owner_slot_for(inputs, subject, root_type, control)?
+            } else if let Some((field, _)) =
+                owner_slot_for(inputs, subject, Some(root_type), control)?
                 && let Slot::Known {
                     value:
                         Value::Ref {
@@ -747,15 +760,12 @@ pub(crate) fn foreign_owned_member(
             if !visible(inputs, &subject.ty, &namespaces) {
                 continue;
             }
-            for field in &subject.fields {
-                tick(control)?;
-                if field.name.is_owner()
-                    && matches!(&field.slot, Slot::Known {
+            if let Some((field, _)) = owner_slot_for(inputs, subject, None, control)?
+                && matches!(&field.slot, Slot::Known {
                     value: Value::Ref { snapshot: owner_snapshot, subject: owner }, ..
                 } if owner_snapshot == snapshot && roots.contains(owner.as_str()))
-                {
-                    return Ok(Some(exists(subject)));
-                }
+            {
+                return Ok(Some(exists(subject)));
             }
         }
     }
@@ -933,7 +943,7 @@ fn construct_inner(
             continue;
         }
         let Some((field, is_entity)) =
-            owner_slot_for(inputs, subject, selected.ty.as_str(), control)?
+            owner_slot_for(inputs, subject, Some(selected.ty.as_str()), control)?
         else {
             continue;
         };

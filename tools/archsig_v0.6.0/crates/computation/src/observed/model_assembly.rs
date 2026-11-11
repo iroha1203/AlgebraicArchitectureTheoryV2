@@ -296,12 +296,12 @@ pub(super) fn layout_snapshot(
             )?));
         }
         let holder = indexes.subject(&member.snapshot, &member.subject)?;
-        if holder.fields.iter().any(|field| {
-            field.name.is_owner()
-                && matches!(&field.slot, Slot::Known {
+        if let Some((field, _)) =
+            construction::owner_slot_for(inputs, holder, None, c).map_err(failure)?
+            && matches!(&field.slot, Slot::Known {
                 value: Value::Ref { snapshot, .. }, ..
             } if snapshot != &target.snapshot)
-        }) {
+        {
             return Ok(Some(snapshot_problem(
                 inputs,
                 member,

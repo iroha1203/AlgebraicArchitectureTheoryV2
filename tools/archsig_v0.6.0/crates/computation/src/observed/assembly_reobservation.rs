@@ -9,6 +9,7 @@ use super::{
     request::{QuestionKind, Request, Selector},
     result::{Fact, Node, Payload, ReasonKind, Scalar, ValidationFailure},
 };
+use crate::construction::{ConstructionFailure, is_owner_fact, owner_slot_for};
 use archsig_common::control::{Checkpoint, Control, Signal};
 use archsig_input::{
     archmap::{FactData, Slot, Subject, Value},
@@ -97,6 +98,13 @@ impl ReobservedAssembly {
     }
     pub fn continuity_stop(&self) -> Option<Signal> {
         self.continuity_stop
+    }
+}
+
+fn owner_failure(failure: ConstructionFailure) -> ReobservationFailure {
+    match failure {
+        ConstructionFailure::Stopped(signal) => ReobservationFailure::Stopped(signal),
+        _ => ReobservationFailure::Unsupported("定義上の owner を確認できない".into()),
     }
 }
 
@@ -256,7 +264,7 @@ fn checked_layout(
                 layout.missing.extend(
                     positions
                         .iter()
-                        .filter(|fact| fact.field.as_ref().is_some_and(|field| field.is_owner()))
+                        .filter(|fact| is_owner_fact(evaluation.prepared().inputs(), fact))
                         .cloned(),
                 );
             }
@@ -466,7 +474,7 @@ fn checked_shared_partition(
     roster: &BTreeMap<&str, &Subject>,
     snapshot: &str,
     image: impl Fn(&Fact) -> Result<Fact, ReobservationFailure>,
-    check: Option<(&PreparedObserved, &Request)>,
+    check: (&PreparedObserved, &Request),
     missing: &mut Vec<Fact>,
     control: &Control,
 ) -> Result<SharedPartition, ReobservationFailure> {
@@ -505,10 +513,8 @@ fn checked_shared_partition(
             .get(fact.subject.as_str())
             .copied()
             .ok_or_else(|| invalid("共有対の主体がない"))?;
-        let field = member
-            .fields
-            .iter()
-            .find(|field| field.name.is_owner())
+        let (field, _) = owner_slot_for(check.0.inputs(), member, None, control)
+            .map_err(owner_failure)?
             .ok_or_else(|| invalid("共有対の個体が担当 root に所属しない"))?;
         match &field.slot {
             Slot::Known {
@@ -595,11 +601,12 @@ fn check_inclusions(
     mut transport: BTreeMap<Fact, Fact>,
     layout: &Layout,
     roster: &BTreeMap<&str, &Subject>,
-    check: Option<(&PreparedObserved, &Request)>,
+    check: (&PreparedObserved, &Request),
     missing: &mut Vec<Fact>,
     control: &Control,
 ) -> Result<(), ReobservationFailure> {
-    let (Some((prepared, request)), Some(roots)) = (check, &layout.roots) else {
+    let (prepared, request) = check;
+    let Some(roots) = &layout.roots else {
         return Ok(());
     };
     let target = layout_target(request)?;
@@ -797,12 +804,13 @@ pub fn reevaluate_assembly(
     let mut before_missing = Vec::new();
     let mut layout_missing = Vec::new();
     for (old, new) in pairs.values() {
-        for old_field in old.fields.iter().filter(|f| f.name.is_owner()) {
+        if let Some((old_field, _)) =
+            owner_slot_for(before.inputs(), old, None, control).map_err(owner_failure)?
+        {
             control.checkpoint(Checkpoint::ConfigurationMap)?;
-            let new_field = new
-                .fields
-                .iter()
-                .find(|f| f.name == old_field.name && f.ty == old_field.ty)
+            let (new_field, _) = owner_slot_for(current.inputs(), new, None, control)
+                .map_err(owner_failure)?
+                .filter(|(f, _)| f.name == old_field.name && f.ty == old_field.ty)
                 .ok_or_else(|| invalid("owner field の型が対応しない"))?;
             for (slot, snapshot) in [
                 (&old_field.slot, alignment.before_snapshot),
@@ -954,7 +962,7 @@ pub fn reevaluate_assembly(
             return Ok(());
         }
         let Some((old, new)) = pairs.get(needed.subject.as_str()) else {
-            if needed.field.as_ref().is_some_and(|field| field.is_owner()) {
+            if is_owner_fact(before.inputs(), needed) {
                 return Ok(());
             }
             return Err(invalid("組立ての不足位置に subject 対応がない"));
@@ -989,7 +997,7 @@ pub fn reevaluate_assembly(
         .filter(|r| r.kind == ReasonKind::Missing)
         .flat_map(|reason| &reason.missing)
     {
-        if needed.field.as_ref().is_some_and(|field| field.is_owner()) {
+        if is_owner_fact(before.inputs(), needed) {
             before_missing.push(needed.clone());
         }
         record_needed(needed)?;
@@ -1023,7 +1031,7 @@ pub fn reevaluate_assembly(
                 .iter()
                 .filter(|reason| reason.kind == ReasonKind::Missing)
                 .flat_map(|reason| &reason.missing)
-                .filter(|fact| fact.field.as_ref().is_some_and(|field| field.is_owner()))
+                .filter(|fact| is_owner_fact(evaluation.prepared().inputs(), fact))
                 .cloned(),
         );
     }
@@ -1110,7 +1118,7 @@ pub fn reevaluate_assembly(
                     &a,
                     alignment.before_snapshot,
                     before_image,
-                    Some((before, before_request)),
+                    (before, before_request),
                     &mut before_missing,
                     control,
                 )?)
@@ -1119,7 +1127,7 @@ pub fn reevaluate_assembly(
                     BTreeMap::new(),
                     &before_layout,
                     &a,
-                    Some((before, before_request)),
+                    (before, before_request),
                     &mut before_missing,
                     control,
                 )?;
@@ -1131,7 +1139,7 @@ pub fn reevaluate_assembly(
                     &b,
                     alignment.after_snapshot,
                     after_subject,
-                    Some((evaluation.prepared(), after_request_for_layout)),
+                    (evaluation.prepared(), after_request_for_layout),
                     &mut layout_missing,
                     control,
                 )?)
@@ -1140,7 +1148,7 @@ pub fn reevaluate_assembly(
                     BTreeMap::new(),
                     &after_layout,
                     &b,
-                    Some((evaluation.prepared(), after_request_for_layout)),
+                    (evaluation.prepared(), after_request_for_layout),
                     &mut layout_missing,
                     control,
                 )?;
@@ -1286,8 +1294,40 @@ mod tests {
             current_solve: "solveIt",
         };
         let before = evaluate_observed(prepared("before", BEFORE, &c), &c).unwrap();
+        let visits = std::rc::Rc::new(std::cell::RefCell::new(Vec::new()));
+        let recorded = visits.clone();
+        let trace = Control::new(move |point| {
+            recorded.borrow_mut().push(point);
+            None
+        });
         let after =
-            reevaluate_assembly(&before, prepared("after", AFTER, &c), &alignment, &c).unwrap();
+            reevaluate_assembly(&before, prepared("after", AFTER, &c), &alignment, &trace).unwrap();
+        let visits = visits.borrow();
+        let last_result = visits
+            .iter()
+            .rposition(|point| *point == Checkpoint::NativeResultNode)
+            .unwrap();
+        let stop_at = visits
+            .iter()
+            .enumerate()
+            .skip(last_result + 1)
+            .find_map(|(i, point)| (*point == Checkpoint::ConfigurationMap).then_some(i))
+            .unwrap();
+        let mut visit = 0;
+        let stop = Control::new(move |_| {
+            let signal = (visit == stop_at).then_some(Signal::Int);
+            visit += 1;
+            signal
+        });
+        let stopped =
+            reevaluate_assembly(&before, prepared("after", AFTER, &c), &alignment, &stop).unwrap();
+        assert_eq!(stopped.continuity_stop(), Some(Signal::Int));
+        assert_eq!(stopped.candidate(), CandidateContinuity::Undetermined);
+        assert_eq!(stopped.selected_candidate(), Some("pick"));
+        assert_eq!(
+            stopped.evaluation().result_wire().canonical(),
+            after.evaluation().result_wire().canonical()
+        );
         let asks = QUERIES
             .replace("pick=", "replacement=")
             .replace("$pick.assignment", "$replacement.assignment");
@@ -1445,7 +1485,7 @@ mod tests {
                 missing: vec![],
             };
             assert!(matches!(
-                checked_shared_partition(&invalid_layout, &roster, "before", |fact| Ok(fact.clone()), None, &mut Vec::new(), &c),
+                checked_shared_partition(&invalid_layout, &roster, "before", |fact| Ok(fact.clone()), (before_input, before_request), &mut Vec::new(), &c),
                 Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains(detail)
             ));
         }
