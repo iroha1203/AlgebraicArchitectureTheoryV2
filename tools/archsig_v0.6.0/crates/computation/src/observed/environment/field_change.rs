@@ -881,7 +881,7 @@ fn collect_equations(
     rows: &mut Constraints,
     missing: &mut Pending,
 ) -> Result<(), ValidationFailure> {
-    let result = stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
+    stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
         env.tick()?;
         let base = Scope::default();
         let law = env.indexes.inputs.law();
@@ -929,7 +929,9 @@ fn collect_equations(
                 missing.unsupported = Some("rational_change_quantification");
                 return Err(unsupported(env, domain, "有理changeの有限量化域が未確定"));
             };
-            usable(env, domain, &domain_value)?;
+            usable(env, domain, &domain_value).inspect_err(|_| {
+                missing.unsupported = Some("rational_change_quantification");
+            })?;
             record_scope(env, rows, &domain_value, domain_start);
             rows.constraint_support
                 .extend(domain_value.support.iter().cloned());
@@ -1076,6 +1078,7 @@ fn collect_equations(
                 lhs,
                 rhs,
             } if allow_bounds => {
+                let first = rows.quantifiers.len();
                 let guard = observed_source(env, *lhs, vars, &base, reading, rows, missing)?;
                 match guard
                     .known_value
@@ -1089,6 +1092,8 @@ fn collect_equations(
                     }
                     Some(Scalar::Bool(false)) => Ok(()),
                     _ => {
+                        // The complete implication reads the antecedent again.
+                        rows.quantifiers.truncate(first);
                         let actual = observed_source(env, id, vars, &base, reading, rows, missing)?;
                         if !actual.condition_failed
                             && !actual.condition_pending
@@ -1192,6 +1197,7 @@ fn collect_equations(
                 };
                 if form.varies_over(&missing.universal, &env.control)? {
                     rows.contradiction(axes.len(), env)?;
+                    rows.constraint_support.extend(v.support.iter().cloned());
                     return Ok(());
                 }
                 if diagnose && let Axes::Parameters(parameters) = axes {
@@ -1219,18 +1225,7 @@ fn collect_equations(
                 Ok(())
             }
         }
-    });
-    if rows.inequalities.is_some()
-        && missing.unsupported.is_none()
-        && matches!(result, Err(ValidationFailure::UnsupportedExpression { .. }))
-        && matches!(
-            env.indexes.inputs.law().exprs()[id].kind,
-            ExprKind::Quant { .. }
-        )
-    {
-        missing.unsupported = Some("rational_change_quantification");
-    }
-    result
+    })
 }
 
 /// Local declarations use the same rational equation extraction and full fiber.
@@ -1632,6 +1627,7 @@ fn compute_inner(
             let Some(outcome) =
                 field_polyhedron::contradiction(&original, axes.len(), &env.control)?
             else {
+                missing.scope.merge(&rows.scope);
                 missing.finite_domains = rows.quantifiers;
                 return Err(error);
             };
@@ -1663,6 +1659,7 @@ fn compute_inner(
             Solutions::Polyhedron(polyhedron) => matches!(polyhedron.outcome, Outcome::Empty(_)),
         };
         if !empty {
+            missing.scope.merge(&rows.scope);
             missing.finite_domains = rows.quantifiers;
             return Err(error);
         }

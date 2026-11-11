@@ -1091,6 +1091,43 @@ fn rational_backing_keeps_fixed_quantifiers_and_independent_stops() {
             .any(|q| s(get(q, "name")) == "n" && has(q, "domain"))
     );
 
+    let pending_header = header.replace("legal(w:Pool.World)", "legal(w:Pool.World,a:Q)");
+    let pending_law = format!(
+        "{pending_header}forall b in Pool.Cell[w] . ((forall q:Q . q=q and a=a) implies b.quantity<=b.stock.available);\n change {change}"
+    );
+    std::fs::write(dir.join("laws.law"), pending_law).unwrap();
+    let run = polyhedron_run(&dir, ask, "pending-law-with-symbolic-guard", None);
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let [answer] = arr(get(&result, "answers")) else {
+        panic!("one solve")
+    };
+    for binder in ["q", "a"] {
+        assert!(
+            arr(get(get(answer, "scope"), "quantifiers"))
+                .iter()
+                .any(|q| s(get(q, "name")) == binder && s(get(q, "type")) == "Q")
+        );
+    }
+
+    let implication = format!(
+        "{header}(forall s in Pool.Stock[w] . ((forall p in list<Q>[rat(0,1)] . p<=s.available) implies true)) and (forall t in Pool.Stock[w] . stockLoad(t)<=rat(5,1));\n change {change}"
+    );
+    std::fs::write(dir.join("laws.law"), implication).unwrap();
+    let run = polyhedron_run(&dir, ask, "implication-domain-once", None);
+    assert_eq!(run.code, 0, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let [answer] = arr(get(&result, "answers")) else {
+        panic!("one solve")
+    };
+    assert_eq!(
+        arr(get(get(answer, "scope"), "quantifiers"))
+            .iter()
+            .filter(|q| s(get(q, "name")) == "p" && has(q, "domain"))
+            .count(),
+        3,
+    );
+
     let (prefix, _) = POLY_LAW.split_once("   (forall b").unwrap();
     let (_, change) = POLY_LAW.split_once(" change ").unwrap();
     let implicit = prefix.replace("legal(w:Pool.World)", "legal(s:Pool.Stock)");

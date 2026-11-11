@@ -311,8 +311,10 @@ repairの構成条件は、許された候補域の全解における[元Assignm
 Repair/objectは未生成とする。全補完で一意でも値が補完に依存する場合もこれに含む。
 解が空ならinhabitedとunique_solutionを反証し、repairの構成条件もrefutedとする。
 原始対象が欠測で未完成でも、既知の有理制約が全候補を反証する場合は、
-原始 root、元 parameter 域と空集合の証明書を参照する `constructible` 命題で不存在を示す。
+`constructible` 命題で不存在を示す。operands は Text(`rational_solution`)、原始 root、元 parameter の Domain、
+空集合を示す Evidence、元の順序の change 対象、LawInstance の順に並ぶ。
 solve はその命題を proposition に、repair は existence に出す。Scope は全補完を含む。
+repair の proposition は Text(`repair`) と existence を operands に持つ。
 異なる二つの解Assignmentがあればunique_solutionと構成条件をrefuted、理由をcondition_failedとする。
 この場合はinhabitedの成立と全解集合を保持し、Repair/objectを生成しない。
 どちらの反証も修復構成の不成立だが、非一意を修復不存在と読み替えない。
@@ -578,7 +580,8 @@ repairの構成条件はunique_solutionを条件に持ち、唯一のAssignment�
 補完ごとに解が変わる場合の一意性判断は §6 の補完表または同次核の証拠で検査し、
 補完全体に共通する具体Assignmentを要求しない。
 その他は検査する構成のargumentsと同じ順のoperandsを使い、constructibleの第1operandだけは
-Construction名を持つText nodeとする。これらは結果上の命題表示でありLawの呼出しAPIではない。
+Construction名を持つText nodeとする。欠測下の有理解の不存在と repair の形式は上記に従う。
+これらは結果上の命題表示でありLawの呼出しAPIではない。
 
 ### Object algebraの有限表示
 

@@ -472,6 +472,19 @@ fn compute_inner(
                         part.arguments.push(architecture.reference);
                         part.scope.merge(&g.get(architecture.reference)?.scope);
                         part.scope.merge(&pending.scope);
+                        if pending.coefficient_type == Some(Type::Q) {
+                            for parameter in &pending.universal {
+                                c.checkpoint(Checkpoint::RationalPolyhedron)?;
+                                part.scope.add_quantifier(Quantifier {
+                                    kind: archsig_input::law::ast::QuantKind::Forall,
+                                    name: parameter.name.clone(),
+                                    ty: parameter.kind.ty(),
+                                    domain: None,
+                                    occurrence: parameter.binder,
+                                    context: Some(env.current_context(g)),
+                                });
+                            }
+                        }
                         scope.merge(&part.scope);
                         let mut missing = pending.facts.clone();
                         if i == 0 {
@@ -2114,11 +2127,16 @@ mod rational_scope_tests {
             "{},bind.b=@fixture/threeUsesMicroShortage.M1.N)",
             SOLVE.strip_suffix(')').unwrap()
         );
+        let universal = format!(
+            "{}forall b in Pool.Cell[w] . a*b.claim.quantity+b.quantity>=rat(0,1);\n change assign(b:Pool.Cell,q:Q)=b with {{quantity=q}};\n}}",
+            prefix.replace("legal(w:Pool.World):", "legal(w:Pool.World,a:Q):")
+        );
         for (law, ask, field, binder) in [
             (LAW, SOLVE, "Pool.Stock.available", Some("s")),
             (&guard, SOLVE, "Pool.Cell.quantity", Some("n")),
             (&offset, SOLVE, "Pool.Claim.quantity", Some("b")),
             (&owned, &owned_solve, "Pool.Cell.owner", None),
+            (&universal, SOLVE, "Pool.Claim.quantity", Some("b")),
         ] {
             let input = prepare_observed(
                 InputSources::from_bytes(
