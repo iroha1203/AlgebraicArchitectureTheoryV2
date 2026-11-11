@@ -272,32 +272,33 @@ pub(super) fn prepare(
             break;
         }
         let node = g.get(at)?;
-        let source = match &node.payload {
-            Some(Payload::Construction(value)) => match (&value.witness, &value.data) {
-                (Witness::Architecture(witness), native::ConstructionData::SharedRepair(data))
-                    if data.request().kind == super::request::QuestionKind::Apply =>
-                {
-                    Some((witness, value))
-                }
+        let architecture = match &node.payload {
+            Some(Payload::Construction(value)) => match &value.witness {
+                Witness::Architecture(witness) => Some((witness, value)),
                 _ => None,
             },
             _ => None,
         };
-        let Some((source, value)) = source else {
+        if let Some((witness, _)) = architecture
+            && witness.construction().root().snapshot != target.snapshot
+        {
+            rejected = Some(model_assembly::foreign_snapshot(
+                &p.shared_inputs(),
+                witness.construction().root(),
+                "修復局所の元rootが別snapshotに属する",
+            )?);
+            break;
+        }
+        let Some((source, value)) = architecture.filter(|(_, value)| {
+            matches!(&value.data, native::ConstructionData::SharedRepair(data)
+                if data.request().kind == super::request::QuestionKind::Apply)
+        }) else {
             rejected.get_or_insert_with(|| {
                 model_assembly::rejected("局所入力はapplyの実Architectureを要求する", vec![root])
             });
             continue;
         };
         let construction = source.construction();
-        if construction.root().snapshot != target.snapshot {
-            rejected = Some(model_assembly::foreign_snapshot(
-                &p.shared_inputs(),
-                construction.root(),
-                "修復局所の元rootが別snapshotに属する",
-            )?);
-            break;
-        }
         if construction.root() != &root
             || construction.reading() != reading
             || construction.transport().is_some()

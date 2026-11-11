@@ -1744,6 +1744,9 @@ mod tests {
                 "local.a=$selected.object",
                 "local.a=$wrong.object,local.b=$selected.object",
             );
+        let foreign_build = QUERIES
+            .replace("joined=", "wrong=build(Assembly,on=@foreign/A)\njoined=")
+            .replace("local.a=$selected.object", "local.a=$wrong.object");
         let foreign_binding = QUERIES.replace("a=@SNAP/A,b=@SNAP/B", "a=@foreign/A,b=@SNAP/B");
         let outside = QUERIES.replace("b=@SNAP/B", "b=@foreign/B");
         let only_foreign = std::str::from_utf8(LAW)
@@ -1758,6 +1761,7 @@ mod tests {
             (LAW, &foreign_repair),
             (empty.as_bytes(), &foreign_repair),
             (LAW, &mixed_locals),
+            (LAW, &foreign_build),
             (LAW, &foreign_binding),
             (only_foreign.as_bytes(), &outside),
         ] {
