@@ -106,7 +106,7 @@ pub(super) fn read(
             }
             Ok(Read {
                 metadata: family::Read {
-                    failed: false,
+                    failed: trace.condition.is_some(),
                     blocked: true,
                     condition_pending: false,
                     missing: vec![],

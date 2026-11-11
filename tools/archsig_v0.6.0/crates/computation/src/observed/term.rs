@@ -874,12 +874,22 @@ impl Term {
                             .get(&id)
                             .ok_or(internal!("Term量化の元binder型がない"))?;
                         let values = match domain {
-                            QuantDomain::In(i) => match self.eval(*i, vars, law, c, domains)? {
-                                Scalar::List { ref items, .. } | Scalar::Set { ref items, .. } => {
-                                    items.clone()
+                            QuantDomain::In(i) => {
+                                match self.eval(*i, vars, law, c, domains).or_else(|error| {
+                                    if matches!(
+                                        error,
+                                        ValidationFailure::UnsupportedExpression { .. }
+                                    ) && let Some(read) = domains
+                                    {
+                                        read(*kind, &var.name, element, e.span, None)?;
+                                    }
+                                    Err(error)
+                                })? {
+                                    Scalar::List { ref items, .. }
+                                    | Scalar::Set { ref items, .. } => items.clone(),
+                                    _ => return Err(internal!("Term量化域がList/Setでない").into()),
                                 }
-                                _ => return Err(internal!("Term量化域がList/Setでない").into()),
-                            },
+                            }
                             QuantDomain::Type(_) => {
                                 if !super::finite::completion_supported(element, law, c)? {
                                     if let Some(read) = domains {

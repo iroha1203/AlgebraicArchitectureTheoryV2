@@ -955,8 +955,18 @@ impl Term {
                             .ok_or(internal!("Term記号量化の元binder型がない"))?;
                         let values = match domain {
                             QuantDomain::In(i) => self
-                                .symbolic(*i, vars, law, c, domains)?
-                                .known(c)?
+                                .symbolic(*i, vars, law, c, domains)
+                                .and_then(|value| value.known(c))
+                                .or_else(|error| {
+                                    if matches!(
+                                        error,
+                                        ValidationFailure::UnsupportedExpression { .. }
+                                    ) && let Some(read) = domains
+                                    {
+                                        read(*kind, &var.name, element, e.span, None)?;
+                                    }
+                                    Err(error)
+                                })?
                                 .map(|v| match &v {
                                     Scalar::List { items, .. } | Scalar::Set { items, .. } => {
                                         Ok(items.clone())

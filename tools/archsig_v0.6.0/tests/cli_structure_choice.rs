@@ -753,6 +753,27 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
             "interfaces(p:Design,t:Route,x:State,y:State)",
         );
     let selected = "if p.split!=p.reversed then set<Root>{t.to} else set<Root>{t.from}";
+    let failed_then_unsupported = base_law.replace(
+        selected,
+        "let unused=(source(then(identity(x),identity(y))),(fn(k:Z)=>exists q:Z . q*q=2)(0)) in set<Root>{t.to}",
+    );
+    std::fs::write(dir.join("laws.law"), failed_then_unsupported).unwrap();
+    args[8] = "failed-before-unsupported";
+    let run = run_binary(&dir, &args);
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let layout = arr(get(&result, "answers"))
+        .iter()
+        .find(|a| s(get(a, "id")) == "layout")
+        .unwrap();
+    assert_eq!(s(get(layout, "status")), "refuted");
+    let [reason] = arr(get(layout, "reasons")) else {
+        panic!("the actual Path condition failure")
+    };
+    assert_eq!(s(get(reason, "code")), "condition_failed");
+    assert_eq!(s(get(get(reason, "location"), "input")), "law");
+    assert_eq!(arr(get(layout, "counterexamples")).len(), 1);
+
     let term = base_law.replace(
         selected,
         "if (fn(k:Z)=>forall b in list<Z>[k] . b=0)(x.quantity) then set<Root>{t.to} else set<Root>{t.from}",
@@ -870,6 +891,16 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
             "pending-finite-iteration",
             "forall b in list<Bool>[false,true] . forall c in (if b then (if (fn(k:Z)=>exists z:Z . z*z=2)(0) then list<Bool>[false] else list<Bool>[true]) else list<Bool>[true]) . c=c",
             &[("c", true), ("c", false)][..],
+        ),
+        (
+            "pending-term-domain",
+            "(fn(k:Bool)=>forall q in (if (exists z:Z . z*z=2) then list<Bool>[false] else list<Bool>[true]) . q=q)(true)",
+            &[("q", false), ("z", false)][..],
+        ),
+        (
+            "pending-symbolic-term-domain",
+            "forall a:Z . (fn(k:Z)=>forall q in (if (exists z:Z . z*z=k) then list<Bool>[false] else list<Bool>[true]) . q=q)(a)",
+            &[("a", true), ("q", false), ("z", false)][..],
         ),
         (
             "entered-symbolic-binders",
