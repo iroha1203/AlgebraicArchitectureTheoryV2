@@ -632,6 +632,81 @@ pub(crate) fn layout_ownership(
     Ok((None, missing))
 }
 
+/// Read only the existence facts that can collide in a local configuration.
+pub(crate) fn check_layout_inclusions(
+    inputs: &CheckedInputs,
+    reading: &str,
+    target: &FactPointer,
+    root_type: &str,
+    roots: &[FactPointer],
+    transport: &BTreeMap<FactPointer, FactPointer>,
+    control: &Control,
+) -> Result<(bool, Vec<FactPointer>), ConstructionFailure> {
+    let namespaces = namespaces(inputs, reading, control)?;
+    let roots: BTreeSet<_> = roots.iter().map(|root| root.subject.as_str()).collect();
+    let images: BTreeMap<_, _> = transport
+        .iter()
+        .map(|(fact, image)| ((fact.snapshot.as_str(), fact.subject.as_str()), image))
+        .collect();
+    let mut known = BTreeMap::new();
+    let mut missing = Vec::new();
+    for snapshot in inputs.archmap().snapshots() {
+        for subject in &snapshot.subjects {
+            tick(control)?;
+            if !visible(inputs, &subject.ty, &namespaces) {
+                continue;
+            }
+            let root = if subject.snapshot == target.snapshot && roots.contains(subject.id.as_str())
+            {
+                subject.id.as_str()
+            } else if let Some((field, _)) = owner_slot_for(inputs, subject, root_type, control)?
+                && let Slot::Known {
+                    value:
+                        Value::Ref {
+                            snapshot,
+                            subject: owner,
+                        },
+                    ..
+                } = &field.slot
+                && *snapshot == target.snapshot
+                && roots.contains(owner.as_str())
+            {
+                owner.as_str()
+            } else {
+                continue;
+            };
+            let mut collision = |source| {
+                let Some(image) = images.get(&source) else {
+                    return false;
+                };
+                let old = known.entry((root, *image)).or_insert(source);
+                *old != source
+            };
+            if collision((subject.snapshot.as_str(), subject.id.as_str())) {
+                return Ok((true, missing));
+            }
+            for field in &subject.fields {
+                tick(control)?;
+                match &field.slot {
+                    Slot::Known { value, .. } => {
+                        for source in references(value, control)? {
+                            tick(control)?;
+                            if collision(source) {
+                                return Ok((true, missing));
+                            }
+                        }
+                    }
+                    Slot::Missing if has_reference(inputs, &field.ty, control)? => {
+                        missing.push(slot(subject, &field.name));
+                    }
+                    Slot::Missing => {}
+                }
+            }
+        }
+    }
+    Ok((false, missing))
+}
+
 /// Foreign members of ownerless roots are outside same-snapshot assembly.
 pub(crate) fn foreign_owned_member(
     inputs: &CheckedInputs,

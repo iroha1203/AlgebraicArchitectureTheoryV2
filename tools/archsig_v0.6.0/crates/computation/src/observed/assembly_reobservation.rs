@@ -14,7 +14,10 @@ use archsig_input::{
     archmap::{FactData, Slot, Subject, Value},
     law::model::Signature,
 };
-use std::collections::{BTreeMap, BTreeSet};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    sync::Arc,
+};
 
 /// 明示的な同一性の仮定。表の各行は before と after の subject ID。
 #[derive(Debug)]
@@ -188,9 +191,14 @@ fn repair_selection<'a>(
 
 struct Layout {
     roots: Option<Vec<Fact>>,
-    shared: Option<Vec<(Fact, Fact)>>,
+    shared: Option<SharedLayout>,
     missing: Vec<Fact>,
 }
+enum SharedLayout {
+    Reads(Vec<(Fact, Fact)>),
+    Checked(Arc<model_assembly::Model>),
+}
+type SharedPartition = BTreeSet<BTreeSet<Fact>>;
 
 fn retained_layout<'a>(
     evaluation: &'a ObservedEvaluation,
@@ -221,6 +229,19 @@ fn checked_layout(
                 return Err(invalid(&detail.detail));
             }
             _ => {}
+        }
+        if let Some(model) = &assembly.model {
+            return Ok(Layout {
+                roots: Some(
+                    model
+                        .fragments
+                        .iter()
+                        .map(|fragment| fragment.root().clone())
+                        .collect(),
+                ),
+                shared: Some(SharedLayout::Checked(model.clone())),
+                missing: vec![],
+            });
         }
         let mut layout =
             layout_from_reads(&assembly.fragments, &assembly.interfaces, control, |_| {
@@ -303,7 +324,10 @@ fn read_layout(
             reading,
             &target,
             layout.roots.as_deref().unwrap_or_default(),
-            layout.shared.as_deref().unwrap_or_default(),
+            match &layout.shared {
+                Some(SharedLayout::Reads(pairs)) => pairs.as_slice(),
+                _ => &[],
+            },
             control,
         )
         .map_err(classify)?
@@ -397,7 +421,7 @@ fn layout_from_reads(
     missing.dedup();
     let layout = Layout {
         roots,
-        shared,
+        shared: shared.map(SharedLayout::Reads),
         missing,
     };
     validate_snapshot(&layout)?;
@@ -429,13 +453,29 @@ fn checked_shared_partition(
     roster: &BTreeMap<&str, &Subject>,
     snapshot: &str,
     image: impl Fn(&Fact) -> Result<Fact, ReobservationFailure>,
+    check: Option<(&PreparedObserved, &Request)>,
     missing: &mut Vec<Fact>,
     control: &Control,
-) -> Result<BTreeMap<Fact, Fact>, ReobservationFailure> {
-    let shared = layout
+) -> Result<SharedPartition, ReobservationFailure> {
+    let mut classes = BTreeMap::<&Fact, BTreeSet<Fact>>::new();
+    let shared = match layout
         .shared
         .as_ref()
-        .ok_or_else(|| invalid("共有対が未確定"))?;
+        .ok_or_else(|| invalid("共有対が未確定"))?
+    {
+        SharedLayout::Checked(model) => {
+            for (member, representative) in &model.shared_classes {
+                control.checkpoint(Checkpoint::ConfigurationMap)?;
+                let class = classes.entry(representative).or_default();
+                if class.is_empty() {
+                    class.insert(image(representative)?);
+                }
+                class.insert(image(member)?);
+            }
+            return Ok(classes.into_values().collect());
+        }
+        SharedLayout::Reads(pairs) => pairs,
+    };
     let roots = layout.roots.as_ref().map(|roots| {
         roots
             .iter()
@@ -497,20 +537,20 @@ fn checked_shared_partition(
         for endpoint in [left, right] {
             if !members.contains_key(endpoint) {
                 let root = owner_root(endpoint)?;
-                members.insert(endpoint.clone(), (root, image(endpoint)?));
+                members.insert(endpoint.clone(), root);
             }
         }
-        let (left_owner, a) = &members[left];
-        let (right_owner, b) = &members[right];
+        let left_owner = members[left];
+        let right_owner = members[right];
         if left == right
             || (left_owner.is_some() && left_owner == right_owner)
             || roster[left.subject.as_str()].ty != roster[right.subject.as_str()].ty
         {
             return Err(invalid("共有対は別担当の同じ型の個体を要求する"));
         }
-        parent.entry(a.clone()).or_insert_with(|| a.clone());
-        parent.entry(b.clone()).or_insert_with(|| b.clone());
-        model_assembly::link_shared(&mut parent, a, b, control).map_err(classify)?;
+        parent.entry(left.clone()).or_insert_with(|| left.clone());
+        parent.entry(right.clone()).or_insert_with(|| right.clone());
+        model_assembly::link_shared(&mut parent, left, right, control).map_err(classify)?;
     }
     let keys = parent.keys().cloned().collect::<Vec<_>>();
     for item in keys {
@@ -518,7 +558,7 @@ fn checked_shared_partition(
         model_assembly::representative(&mut parent, &item, control).map_err(classify)?;
     }
     let mut local_images = BTreeSet::new();
-    for (owner, member) in members.values() {
+    for (member, owner) in &members {
         control.checkpoint(Checkpoint::ConfigurationMap)?;
         if let Some(owner) = owner
             && !local_images.insert((owner, &parent[member]))
@@ -526,7 +566,60 @@ fn checked_shared_partition(
             return Err(invalid("共有対の閉包が同じ担当の異なる個体を同一視する"));
         }
     }
-    Ok(parent)
+    for (member, representative) in &parent {
+        control.checkpoint(Checkpoint::ConfigurationMap)?;
+        classes
+            .entry(representative)
+            .or_default()
+            .insert(image(member)?);
+    }
+    let partition = classes.into_values().collect();
+    check_inclusions(parent, layout, check, missing, control)?;
+    Ok(partition)
+}
+
+fn check_inclusions(
+    mut transport: BTreeMap<Fact, Fact>,
+    layout: &Layout,
+    check: Option<(&PreparedObserved, &Request)>,
+    missing: &mut Vec<Fact>,
+    control: &Control,
+) -> Result<(), ReobservationFailure> {
+    let (Some((prepared, request)), Some(roots)) = (check, &layout.roots) else {
+        return Ok(());
+    };
+    let target = layout_target(request)?;
+    let root = model_assembly::subject(prepared.inputs(), &target)
+        .map_err(|_| invalid("組立て先の root がない"))?;
+    let head = request
+        .declaration()
+        .ok_or_else(|| invalid("担当 View 宣言がない"))?;
+    let reading = &prepared.inputs().law().declarations()[head].reading;
+    transport.insert(target.clone(), target.clone());
+    for fragment in roots {
+        control.checkpoint(Checkpoint::ConfigurationMap)?;
+        transport.insert(fragment.clone(), target.clone());
+    }
+    let (collapsed, positions) = crate::construction::check_layout_inclusions(
+        prepared.inputs(),
+        reading,
+        &target,
+        root.ty.as_str(),
+        roots,
+        &transport,
+        control,
+    )
+    .map_err(|failure| match failure {
+        crate::construction::ConstructionFailure::Stopped(signal) => {
+            ReobservationFailure::Stopped(signal)
+        }
+        _ => ReobservationFailure::Unsupported("局所構成の参照を確認できない".into()),
+    })?;
+    if collapsed {
+        return Err(invalid("共有対応の推移閉包が局所の異なる個体を同一視する"));
+    }
+    missing.extend(positions);
+    Ok(())
 }
 
 /// 同じ定義・Law を使用し、主体対応を検査してから現在の要求を通常評価する。
@@ -915,15 +1008,12 @@ pub fn reevaluate_assembly(
     if continuity_stop.is_none() {
         let mut compare_layout = || -> Result<(), ReobservationFailure> {
             let before_layout = checked_layout(previous, before_request, control)?;
-            let after_layout = checked_layout(
-                &evaluation,
-                question(
-                    evaluation.prepared(),
-                    alignment.assembly,
-                    QuestionKind::Assemble,
-                )?,
-                control,
+            let after_request_for_layout = question(
+                evaluation.prepared(),
+                alignment.assembly,
+                QuestionKind::Assemble,
             )?;
+            let after_layout = checked_layout(&evaluation, after_request_for_layout, control)?;
             for (layout, (snapshot, subject)) in [&before_layout, &after_layout]
                 .into_iter()
                 .zip(&local_sources)
@@ -997,6 +1087,7 @@ pub fn reevaluate_assembly(
                     &a,
                     alignment.before_snapshot,
                     before_image,
+                    Some((before, before_request)),
                     &mut before_missing,
                     control,
                 )?)
@@ -1009,6 +1100,7 @@ pub fn reevaluate_assembly(
                     &b,
                     alignment.after_snapshot,
                     after_subject,
+                    Some((evaluation.prepared(), after_request_for_layout)),
                     &mut layout_missing,
                     control,
                 )?)
@@ -1160,7 +1252,10 @@ mod tests {
         let before_input = before.prepared();
         let before_request = question(before_input, "joined", QuestionKind::Assemble).unwrap();
         let layout = checked_layout(&before, before_request, &c).unwrap();
-        let (left, right) = &layout.shared.as_ref().unwrap()[0];
+        let Some(SharedLayout::Reads(shared)) = &layout.shared else {
+            panic!("prior shared view");
+        };
+        let (left, right) = &shared[0];
         let old_snapshot = before_input
             .inputs()
             .archmap()
@@ -1177,11 +1272,14 @@ mod tests {
         ] {
             let invalid_layout = Layout {
                 roots: layout.roots.clone(),
-                shared: Some(vec![(left.clone(), right.clone()), edge]),
+                shared: Some(SharedLayout::Reads(vec![
+                    (left.clone(), right.clone()),
+                    edge,
+                ])),
                 missing: vec![],
             };
             assert!(matches!(
-                checked_shared_partition(&invalid_layout, &roster, "before", |fact| Ok(fact.clone()), &mut Vec::new(), &c),
+                checked_shared_partition(&invalid_layout, &roster, "before", |fact| Ok(fact.clone()), None, &mut Vec::new(), &c),
                 Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains(detail)
             ));
         }
@@ -1598,6 +1696,19 @@ mod tests {
                 &previous, prepared_with("after", after, law.as_bytes(), &asks, &c),
                 &alignment, &c,
             ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains(detail)));
+        }
+        let position = concat!(
+            "\"id\": \"a-links\",\n          \"subject\": \"a\",\n",
+            "          \"field\": \"Assemble.Part.links\",\n          \"value\": []",
+        );
+        let after = AFTER.replacen(position, &position.replace("[]", r#"[["after","mb"]]"#), 1);
+        assert_ne!(after, AFTER);
+        let previous = evaluate_observed(prepared("before", BEFORE, &c), &c).unwrap();
+        for asks in [QUERIES.to_owned(), QUERIES.replace("index=0", "index=100")] {
+            assert!(matches!(reevaluate_assembly(
+                &previous, prepared_with("after", &after, LAW, &asks, &c),
+                &alignment, &c,
+            ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("同一視")));
         }
     }
 
