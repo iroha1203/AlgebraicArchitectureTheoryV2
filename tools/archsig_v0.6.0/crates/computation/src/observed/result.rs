@@ -630,7 +630,22 @@ impl Scope {
         self.merge_quantifiers(&scope);
     }
     pub(crate) fn merge_quantifiers(&mut self, other: &Self) {
+        let mut assembly_instances = None;
         for q in &other.quantifiers {
+            if let Some(instance) = q.assembly_instance {
+                let instances = assembly_instances.get_or_insert_with(|| {
+                    self.quantifiers
+                        .iter()
+                        .filter_map(|q| {
+                            q.assembly_instance.map(|(source, index)| (source.0, index))
+                        })
+                        .collect::<BTreeSet<_>>()
+                });
+                if instances.insert((instance.0.0, instance.1)) {
+                    self.quantifiers.push(q.clone());
+                }
+                continue;
+            }
             if self.quantifiers.contains(q) {
                 continue;
             }

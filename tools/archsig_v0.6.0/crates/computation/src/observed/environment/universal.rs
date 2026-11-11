@@ -945,6 +945,18 @@ impl Environment<'_> {
                         &mut scope,
                         self.indexes.inputs.law().exprs()[id].span,
                     )?;
+                    if self.fixed_assembly_read() {
+                        for parameter in &plan.parameters {
+                            self.tick()?;
+                            if let Some(descriptor) = scope
+                                .quantifiers
+                                .iter()
+                                .find(|q| q.occurrence == parameter.binder)
+                            {
+                                self.capture_assembly_domain(descriptor, None, None, true)?;
+                            }
+                        }
+                    }
                     let mut local = self.copy_variables(variables)?;
                     for parameter in &plan.parameters {
                         local.insert(

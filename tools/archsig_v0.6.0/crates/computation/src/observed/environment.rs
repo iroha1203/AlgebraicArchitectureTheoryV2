@@ -529,7 +529,6 @@ pub(super) struct AssemblyCondition {
 #[derive(Default)]
 pub(super) struct AssemblyTrace {
     fixed_design: bool,
-    probing: bool,
     occurrences: BTreeMap<(Option<usize>, usize, Option<usize>), usize>,
     captured: BTreeMap<(Option<usize>, (usize, usize), Option<super::call::Context>), Vec<usize>>,
     pub(super) domains: Vec<AssemblyDomain>,
@@ -538,6 +537,13 @@ pub(super) struct AssemblyTrace {
     pub(super) condition: Option<AssemblyCondition>,
     pub(super) scope: Scope,
     pub(super) support: BTreeSet<Fact>,
+}
+
+struct AssemblyProbe {
+    value: SourceValue,
+    trace: AssemblyTrace,
+    missing: BTreeSet<Fact>,
+    primitive: BTreeSet<Fact>,
 }
 
 pub(crate) struct Environment<'a> {
@@ -667,22 +673,55 @@ impl<'a> Environment<'a> {
     fn probe_fixed_assembly(
         &self,
         read: impl FnOnce() -> Result<SourceValue, ValidationFailure>,
-    ) -> Result<Option<SourceValue>, ValidationFailure> {
-        // Speculative values never enter the actual View's trace or read sets.
-        let _capture = self.state.assembly_domains.scoped(Some(AssemblyTrace {
-            fixed_design: true,
-            probing: true,
-            ..AssemblyTrace::default()
-        }));
+    ) -> Result<Option<AssemblyProbe>, ValidationFailure> {
+        // Commit these observations only if the right operand settles the Boolean.
         let _occurrence = self.state.assembly_occurrence.scoped(None);
-        let _missing = self.state.missing_slot_reads.scoped(None);
-        let _reads = self.state.primitive_reads.scoped(None);
+        let missing = self.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
+        let primitive = self.state.primitive_reads.scoped(Some(BTreeSet::new()));
         let _positions = self.state.unresolved_read_positions.scoped(Some(false));
-        match read() {
-            Ok(value) if !value.condition_failed && !value.condition_pending => Ok(Some(value)),
+        let (result, trace) = self.with_assembly_domains(true, true, read)?;
+        match result {
+            Ok(value) if !value.condition_failed && !value.condition_pending => {
+                Ok(Some(AssemblyProbe {
+                    value,
+                    trace,
+                    missing: missing.restore().ok_or(internal!("試読の欠測がない"))?,
+                    primitive: primitive.restore().ok_or(internal!("試読の観測がない"))?,
+                }))
+            }
             Ok(_) | Err(ValidationFailure::UnsupportedExpression { .. }) => Ok(None),
             Err(error) => Err(error),
         }
+    }
+
+    fn retain_assembly_probe(
+        &self,
+        expression: usize,
+        probe: AssemblyProbe,
+    ) -> Result<SourceValue, ValidationFailure> {
+        if let Some(trace) = self.state.assembly_domains.borrow_mut().as_mut() {
+            trace.scope.merge(&probe.trace.scope);
+            trace.term_scope.merge_quantifiers(&probe.trace.term_scope);
+            trace.support.extend(probe.trace.support);
+        }
+        if let Some(missing) = self.state.missing_slot_reads.borrow_mut().as_mut() {
+            missing.extend(probe.missing);
+        }
+        if let Some(primitive) = self.state.primitive_reads.borrow_mut().as_mut() {
+            primitive.extend(probe.primitive);
+        }
+        for (index, (descriptor, domain)) in probe.trace.domains.into_iter().enumerate() {
+            self.in_assembly_occurrence(expression, Some(index), || match domain {
+                CapturedDomain::Finite(members) => {
+                    self.capture_assembly_domain(&descriptor, None, Some(&members), false)
+                }
+                CapturedDomain::Type => self.capture_assembly_domain(&descriptor, None, None, true),
+                CapturedDomain::Pending => {
+                    self.capture_assembly_domain(&descriptor, None, None, false)
+                }
+            })?;
+        }
+        Ok(probe.value)
     }
 
     fn note_assembly_quantifier(&self, id: usize) -> Result<(), ValidationFailure> {
@@ -739,7 +778,7 @@ impl<'a> Environment<'a> {
     fn capture_assembly_domain(
         &self,
         descriptor: &Quantifier,
-        value: &SourceValue,
+        value: Option<&SourceValue>,
         members: Option<&[Scalar]>,
         symbolic: bool,
     ) -> Result<(), ValidationFailure> {
@@ -747,7 +786,9 @@ impl<'a> Environment<'a> {
         let Some(trace) = capture.as_mut() else {
             return Ok(());
         };
-        if trace.fixed_design {
+        if trace.fixed_design
+            && let Some(value) = value
+        {
             trace.scope.merge_metadata(&value.scope);
             trace.support.extend(value.support.iter().cloned());
         }
@@ -8280,7 +8321,7 @@ impl<'a> Environment<'a> {
                         trace.term_scope.add_quantifier(descriptor.clone());
                     }
                     self.in_assembly_occurrence(id, Some(index), || {
-                        self.capture_assembly_domain(&descriptor, &source, members, false)
+                        self.capture_assembly_domain(&descriptor, Some(&source), members, false)
                     })
                 }),
             )
@@ -8704,6 +8745,8 @@ impl<'a> Environment<'a> {
                     let input = self.scoped_ast(*domain, variables, base, reading)?;
                     let Some(container) = input.known_value.as_ref() else {
                         return Ok(SourceValue {
+                            condition_pending: input.condition_pending
+                                || self.fixed_assembly_read(),
                             symbolic: None,
                             comparison: None,
                             affine: None,
@@ -8787,7 +8830,10 @@ impl<'a> Environment<'a> {
                                 }
                             }
                             Some(false) => {}
-                            None => known = false,
+                            None => {
+                                condition_pending |= self.fixed_assembly_read();
+                                known = false;
+                            }
                         }
                         self.tick()?;
                     }
@@ -8815,6 +8861,8 @@ impl<'a> Environment<'a> {
                     let Some((arm, local)) = self.scoped_match_bindings(id, &input, variables)?
                     else {
                         return Ok(SourceValue {
+                            condition_pending: input.condition_pending
+                                || self.fixed_assembly_read(),
                             symbolic: None,
                             comparison: None,
                             affine: None,
@@ -8843,6 +8891,17 @@ impl<'a> Environment<'a> {
                 }
                 ExprKind::Let { name, value, body } => {
                     let rhs = self.scoped_ast(*value, variables, base, reading)?;
+                    if self.fixed_assembly_read() && (rhs.condition_failed || rhs.condition_pending)
+                    {
+                        return Ok(SourceValue {
+                            known_value: None,
+                            symbolic: None,
+                            comparison: None,
+                            affine: None,
+                            scalar_scope: None,
+                            ..rhs
+                        });
+                    }
                     let mut local = self.copy_variables(variables)?;
                     if local.insert(name.name.clone(), rhs.clone()).is_some() {
                         return Err(internal!("let 名が重複する").into());
@@ -8884,7 +8943,7 @@ impl<'a> Environment<'a> {
                         let Some(Scalar::Bool(take)) = condition.known_value.as_ref() else {
                             return Ok(SourceValue {
                                 condition_failed: condition.condition_failed,
-                                condition_pending: condition.condition_pending,
+                                condition_pending: true,
                                 scope: condition.scope,
                                 support: condition.support,
                                 symbolic: None,
@@ -8894,6 +8953,16 @@ impl<'a> Environment<'a> {
                                 scalar_scope: None,
                             });
                         };
+                        if condition.condition_failed || condition.condition_pending {
+                            return Ok(SourceValue {
+                                known_value: None,
+                                symbolic: None,
+                                comparison: None,
+                                affine: None,
+                                scalar_scope: None,
+                                ..condition
+                            });
+                        }
                         let branch = if *take { *then_branch } else { *else_branch };
                         let mut value = self.scoped_ast(branch, variables, base, reading)?;
                         value.condition_failed |= condition.condition_failed;
@@ -9489,25 +9558,20 @@ impl<'a> Environment<'a> {
                 };
                 if left.is_none() || left_failed || left_pending || decisive.is_some() {
                     let mut known_value = decisive.map(Scalar::Bool);
+                    let mut condition_pending = left_pending;
                     if left.is_none() && !left_failed && !left_pending {
                         let right = || self.scoped_ast(*rhs, variables, base, reading);
                         if let Some(probe) = self.probe_fixed_assembly(right)? {
                             let value = partial_binary(
                                 *op,
                                 None,
-                                probe.known_value.as_ref(),
+                                probe.value.known_value.as_ref(),
                                 self.indexes.inputs.law(),
                                 expression.span,
                                 &self.control,
                             )?;
                             if value.is_some() {
-                                let probing = self
-                                    .state
-                                    .assembly_domains
-                                    .borrow()
-                                    .as_ref()
-                                    .is_some_and(|trace| trace.probing);
-                                let actual = if probing { probe } else { right()? };
+                                let actual = self.retain_assembly_probe(*rhs, probe)?;
                                 scope.merge(&actual.scope);
                                 let support = support.make_owned();
                                 support.extend(actual.support.into_vec());
@@ -9515,11 +9579,13 @@ impl<'a> Environment<'a> {
                                 support.dedup();
                                 known_value = value;
                             }
+                        } else {
+                            condition_pending = true;
                         }
                     }
                     return Ok(SourceValue {
                         condition_failed: left_failed,
-                        condition_pending: left_pending,
+                        condition_pending,
                         symbolic: None,
                         comparison: None,
                         affine: None,
@@ -9715,7 +9781,7 @@ impl<'a> Environment<'a> {
                     {
                         self.tick()?;
                         if let Some(descriptor) = descriptors.get(&var.span) {
-                            self.capture_assembly_domain(descriptor, &value, None, true)?;
+                            self.capture_assembly_domain(descriptor, Some(&value), None, true)?;
                         }
                         at = *body;
                     }
@@ -9723,8 +9789,19 @@ impl<'a> Environment<'a> {
                 return Ok(value);
             }
             let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
+            let descriptor = spec.descriptor(None, self.state.scoped_context.get());
             let (input, members) =
-                self.scoped_quantifier_domain(&spec, variables, base, reading)?;
+                match self.scoped_quantifier_domain(&spec, variables, base, reading) {
+                    Ok(domain) => domain,
+                    Err(error) => {
+                        if self.fixed_assembly_read()
+                            && matches!(error, ValidationFailure::UnsupportedExpression { .. })
+                        {
+                            self.capture_assembly_domain(&descriptor, None, None, false)?;
+                        }
+                        return Err(error);
+                    }
+                };
             // 親/lexical値が既に持つ出現はその由来順を保つ。
             // このdomain式で新たに現れる量化は自身より後に置く。
             let mut inherited = base.clone();
@@ -9739,14 +9816,13 @@ impl<'a> Environment<'a> {
                     .iter()
                     .any(|old| old.occurrence == q.occurrence)
             });
-            let descriptor = spec.descriptor(None, self.state.scoped_context.get());
             scope.add_quantifier(descriptor.clone());
             scope.merge_quantifiers(&input.scope);
-            self.capture_assembly_domain(&descriptor, &input, members.as_deref(), false)?;
+            self.capture_assembly_domain(&descriptor, Some(&input), members.as_deref(), false)?;
             let Some(items) = members else {
                 return Ok(SourceValue {
                     condition_failed: input.condition_failed,
-                    condition_pending: input.condition_pending,
+                    condition_pending: input.condition_pending || self.fixed_assembly_read(),
                     symbolic: None,
                     comparison: None,
                     affine: None,

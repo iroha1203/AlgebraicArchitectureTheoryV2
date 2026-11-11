@@ -36,7 +36,7 @@ pub(super) fn read(
             metadata.scope.merge_quantifiers(&trace.term_scope);
             // The evaluator can determine a value for every completion, for
             // instance when a universal test has a known counterexample.
-            if fixed_design && value.is_some() && !metadata.failed {
+            if fixed_design && value.is_some() && !metadata.failed && !metadata.condition_pending {
                 metadata.missing.clear();
                 metadata.blocked = false;
             }
@@ -108,6 +108,7 @@ pub(super) fn read(
                 metadata: family::Read {
                     failed: false,
                     blocked: true,
+                    condition_pending: false,
                     missing: vec![],
                     support: trace
                         .support
@@ -401,6 +402,7 @@ pub(super) fn prepare(
             metadata: family::Read {
                 failed: false,
                 blocked: false,
+                condition_pending: false,
                 missing: vec![],
                 support: vec![],
                 scope: Scope::default(),

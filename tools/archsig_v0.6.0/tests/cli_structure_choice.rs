@@ -40,6 +40,7 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
     }
     let run = run_binary(&dir, &args);
     assert_eq!(run.code, 1, "{}{}", run.stdout, run.stderr);
+    assert!(run.stdout.contains("condition_detail"));
     let result = result_json(&dir, &run);
     let answers = arr(get(&result, "answers"));
     let nodes = arr(get(&result, "nodes"));
@@ -307,7 +308,7 @@ fn a_checked_design_assignment_selects_a_typed_assembly_and_migration() {
     for ask in &map_asks {
         conditional_args.extend(["--ask", ask]);
     }
-    let run = run_binary(&dir, &conditional_args);
+    let run = crate::common::cli::run(&dir, &conditional_args);
     let result = result_json(&dir, &run);
     let answers = arr(get(&result, "answers"));
     let answer = |id| answers.iter().find(|a| s(get(a, "id")) == id).unwrap();
@@ -824,7 +825,7 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
     let native_ask = path_ask.replace("rust-output1", "native-output1");
     args[at] = &native_ask;
     args[8] = "decisive-right";
-    let run = run_binary(&dir, &args);
+    let run = crate::common::cli::run(&dir, &args);
     let result = result_json(&dir, &run);
     let layout = arr(get(&result, "answers"))
         .iter()
@@ -832,6 +833,71 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
         .unwrap();
     assert_eq!(s(get(layout, "status")), "established", "{}", run.stdout);
     assert!(arr(get(layout, "reasons")).is_empty());
+
+    for (label, body) in [
+        (
+            "pending-path",
+            "let tail=(if y.quantity=0 then t.from else t.to) in let checkPath=then(identity(t.from),identity(tail)) in set<Root>{t.from}",
+        ),
+        (
+            "pending-branch",
+            "let checkPath=(if y.quantity=0 then t.from else source(then(identity(t.from),identity(t.to)))) in set<Root>{t.from}",
+        ),
+    ] {
+        std::fs::write(dir.join("laws.law"), base_law.replace(selected, body)).unwrap();
+        args[8] = label;
+        let run = crate::common::cli::run(&dir, &args);
+        assert_eq!(run.code, 2, "{}", run.stdout);
+        let result = result_json(&dir, &run);
+        let layout = arr(get(&result, "answers"))
+            .iter()
+            .find(|a| s(get(a, "id")) == "layout")
+            .unwrap();
+        assert_eq!(s(get(layout, "status")), "undetermined");
+        assert!(!has(get(layout, "outputs"), "assembly"));
+        let [reason] = arr(get(layout, "reasons")) else {
+            panic!("one pending Path condition")
+        };
+        assert_eq!(s(get(reason, "code")), "missing_observation");
+        let [slot] = arr(get(reason, "missing")) else {
+            panic!("the actual missing slot")
+        };
+        assert_eq!(s(get(slot, "subject")), "rust-T3-before");
+    }
+
+    for (label, body, binders) in [
+        (
+            "pending-finite-iteration",
+            "forall b in list<Bool>[false,true] . forall c in (if b then (if (fn(k:Z)=>exists z:Z . z*z=2)(0) then list<Bool>[false] else list<Bool>[true]) else list<Bool>[true]) . c=c",
+            &[("c", true), ("c", false)][..],
+        ),
+        (
+            "entered-symbolic-binders",
+            "forall z:Z . forall w:Z . (fn(k:Z)=>exists q:Z . q*q=2)(0)",
+            &[("z", true), ("w", true)][..],
+        ),
+    ] {
+        let body = format!("if ({body}) then set<Root>{{t.from}} else set<Root>{{t.to}}");
+        std::fs::write(dir.join("laws.law"), base_law.replace(selected, &body)).unwrap();
+        args[8] = label;
+        let run = crate::common::cli::run(&dir, &args);
+        assert_eq!(run.code, 2, "{}", run.stdout);
+        let result = result_json(&dir, &run);
+        let layout = arr(get(&result, "answers"))
+            .iter()
+            .find(|a| s(get(a, "id")) == "layout")
+            .unwrap();
+        assert_eq!(s(get(layout, "status")), "undetermined");
+        let quantifiers = arr(get(get(layout, "scope"), "quantifiers"));
+        for &(name, domain) in binders {
+            assert!(
+                quantifiers
+                    .iter()
+                    .any(|q| s(get(q, "name")) == name && has(q, "domain") == domain),
+                "{label}: {name}, domain={domain}, {quantifiers:?}"
+            );
+        }
+    }
 }
 
 #[test]

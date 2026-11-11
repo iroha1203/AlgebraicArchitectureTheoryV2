@@ -26,6 +26,7 @@ pub(in crate::observed) enum Preparation {
 pub(in crate::observed) struct Read {
     pub failed: bool,
     pub blocked: bool,
+    pub condition_pending: bool,
     pub missing: Vec<Fact>,
     pub support: Vec<Fact>,
     pub scope: Scope,
@@ -99,13 +100,13 @@ pub(in crate::observed) fn read_with_value(
     let mut support = checks.support;
     support.extend(reads);
     let mut failed = checks.failure.is_some();
-    let mut blocked = checks.blocked || unresolved;
+    let mut condition_pending = checks.blocked;
     let mut known = None;
     if let Some(value) = value {
         support.extend(value.support.iter().cloned());
         scope.merge(&value.scope);
         failed |= value.condition_failed;
-        blocked |= value.condition_pending;
+        condition_pending |= value.condition_pending;
         if !failed && value.known_value.is_none() && missing.is_empty() {
             return Err(unsupported(
                 declaration.span,
@@ -114,7 +115,8 @@ pub(in crate::observed) fn read_with_value(
         }
         known = value.known_value;
     }
-    if blocked && missing.is_empty() {
+    let blocked = condition_pending || unresolved;
+    if blocked && missing.is_empty() && !failed {
         return Err(unsupported(
             declaration.span,
             "observation view requires valid primitive reads",
@@ -124,6 +126,7 @@ pub(in crate::observed) fn read_with_value(
         Read {
             failed,
             blocked,
+            condition_pending,
             missing: missing.into_iter().collect(),
             support: support
                 .into_iter()

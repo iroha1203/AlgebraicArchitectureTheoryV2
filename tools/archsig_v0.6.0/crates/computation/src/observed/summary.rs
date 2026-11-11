@@ -309,7 +309,7 @@ impl ObservedEvaluation {
         let Json::Arr(facts) = &data["facts"] else {
             unreachable!("counterexample facts")
         };
-        self.summary_comparison(
+        let mut summary = self.summary_comparison(
             node,
             node_reference(&data["left"]),
             node_reference(&data["right"]),
@@ -321,7 +321,13 @@ impl ObservedEvaluation {
                 (name.as_str(), node_reference(&binding["value"]))
             }),
             facts.iter().cloned(),
-        )
+        );
+        if let (Json::Obj(fields), Some(Json::Str(detail))) =
+            (&mut summary, data.get("condition_detail"))
+        {
+            brief_text(fields, "condition_detail", detail);
+        }
+        summary
     }
 
     fn summary_comparison<'a>(
