@@ -691,6 +691,18 @@ pub(super) fn failed(
         None
     };
     let claim = b.proposition("constructible", operands, dependencies.clone(), status)?;
+    let unsupported_reason =
+        |unsupported: &super::model_assembly::Unsupported, dependencies| Reason {
+            kind: ReasonKind::UnsupportedAlgorithm {
+                question: r.kind,
+                operand_types: unsupported.operand_types.clone(),
+                method: "finite_local_model_assembly".into(),
+            },
+            request: r.id.clone(),
+            dependencies,
+            missing: vec![],
+            location: Some(unsupported.location.clone()),
+        };
     let mut reasons = match failure {
         Failure::Missing(facts) => native::missing(r, facts.clone()),
         Failure::Rejected(rejection) => vec![Reason {
@@ -703,18 +715,17 @@ pub(super) fn failed(
             missing: vec![],
             location: rejection.location.clone(),
         }],
-        Failure::Unsupported(unsupported) => vec![Reason {
-            kind: ReasonKind::UnsupportedAlgorithm {
-                question: r.kind,
-                operand_types: unsupported.operand_types.clone(),
-                method: "finite_local_model_assembly".into(),
-            },
-            request: r.id.clone(),
-            dependencies: reason_expressions,
-            missing: vec![],
-            location: Some(unsupported.location.clone()),
-        }],
+        Failure::Unsupported(unsupported) => {
+            vec![unsupported_reason(unsupported, reason_expressions)]
+        }
     };
+    if matches!(failure, Failure::Missing(_)) {
+        for (read, expression) in [(&a.fragments, head), (&a.interfaces, along)] {
+            if let Some(unsupported) = &read.unsupported {
+                reasons.push(unsupported_reason(unsupported, vec![expression]));
+            }
+        }
+    }
     for reason in &mut reasons {
         if matches!(reason.kind, ReasonKind::Missing) {
             reason.dependencies = vec![head, along];

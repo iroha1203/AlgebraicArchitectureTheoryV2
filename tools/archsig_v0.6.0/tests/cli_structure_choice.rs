@@ -776,7 +776,7 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
 
     let term = base_law.replace(
         selected,
-        "if (fn(k:Z)=>forall b in list<Z>[k] . b=0)(x.quantity) then set<Root>{t.to} else set<Root>{t.from}",
+        "if (fn(k:Z)=>forall b in list<Z>[k,k] . (forall inner in list<Z>[b] . inner=0))(x.quantity) then set<Root>{t.to} else set<Root>{t.from}",
     );
     std::fs::write(dir.join("laws.law"), term).unwrap();
     args[8] = "term-domain";
@@ -803,6 +803,13 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
         panic!("actual singleton Term domain");
     };
     assert_eq!(s(get(resolve(member), "value")), "0");
+    assert_eq!(
+        arr(get(get(layout, "scope"), "quantifiers"))
+            .iter()
+            .filter(|q| s(get(q, "name")) == "inner")
+            .count(),
+        1,
+    );
 
     let unavailable = concat!(
         "        {\n          \"id\": \"rust-T3-before.quantity\",\n",
@@ -837,6 +844,38 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
     };
     assert_eq!(s(get(slot, "subject")), "rust-T3-before");
     assert_eq!(s(get(slot, "field")), "E12.State.quantity");
+
+    let missing_then_unsupported = base_law.replace(
+        selected,
+        "if (y.quantity=0)=(fn(k:Z)=>exists z:Z . z*z=k)(2) then set<Root>{t.to} else set<Root>{t.from}",
+    );
+    std::fs::write(dir.join("laws.law"), missing_then_unsupported).unwrap();
+    args[8] = "missing-before-unsupported";
+    let run = run_binary(&dir, &args);
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let layout = arr(get(&result, "answers"))
+        .iter()
+        .find(|a| s(get(a, "id")) == "layout")
+        .unwrap();
+    assert_eq!(s(get(layout, "status")), "undetermined");
+    assert_eq!(s(get(get(layout, "scope"), "domain")), "all_completions");
+    let reasons = arr(get(layout, "reasons"));
+    assert_eq!(reasons.len(), 2);
+    let missing = reasons
+        .iter()
+        .find(|reason| s(get(reason, "code")) == "missing_observation")
+        .unwrap();
+    let [slot] = arr(get(missing, "missing")) else {
+        panic!("the earlier missing branch input")
+    };
+    assert_eq!(s(get(slot, "subject")), "rust-T3-before");
+    assert_eq!(s(get(slot, "field")), "E12.State.quantity");
+    assert!(
+        reasons
+            .iter()
+            .any(|reason| s(get(reason, "code")) == "unsupported_algorithm")
+    );
 
     let decisive = base_law.replace(
         selected,
@@ -901,6 +940,11 @@ fn selected_domains_survive_an_unsupported_view_and_its_consumers() {
             "pending-symbolic-term-domain",
             "forall a:Z . (fn(k:Z)=>forall q in (if (exists z:Z . z*z=k) then list<Bool>[false] else list<Bool>[true]) . q=q)(a)",
             &[("a", true), ("q", false), ("z", false)][..],
+        ),
+        (
+            "entered-local-symbolic-binder",
+            "forall a:Z . true and (forall b:Z . (fn(k:Z)=>exists q:Z . q*q=2)(0))",
+            &[("a", true), ("b", true)][..],
         ),
         (
             "entered-symbolic-binders",

@@ -537,6 +537,7 @@ pub(super) struct AssemblyTrace {
     pub(super) condition: Option<AssemblyCondition>,
     pub(super) scope: Scope,
     pub(super) support: BTreeSet<Fact>,
+    pub(super) missing: BTreeSet<Fact>,
 }
 
 struct AssemblyProbe {

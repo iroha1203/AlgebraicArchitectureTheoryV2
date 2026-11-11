@@ -29,7 +29,7 @@ pub(super) fn read(
     capture: bool,
     fixed_design: bool,
 ) -> Result<Read, ValidationFailure> {
-    match env.with_assembly_domains(capture, fixed_design, || {
+    let mut read = match env.with_assembly_domains(capture, fixed_design, || {
         family::read_with_value(env, name, bindings)
     }) {
         Ok((Ok((mut metadata, value)), trace)) => {
@@ -40,44 +40,13 @@ pub(super) fn read(
                 metadata.missing.clear();
                 metadata.blocked = false;
             }
-            // The read collector records positions; native support records actual atoms.
-            let mut observed = Vec::with_capacity(metadata.support.len());
-            for mut fact in std::mem::take(&mut metadata.support) {
-                if env.has_primitive_override(&fact) {
-                    continue;
-                }
-                if fact.atom.is_none()
-                    && let Some(name) = &fact.field
-                {
-                    let subject = env.indexes.subject(&fact.snapshot, &fact.subject)?;
-                    let field = subject
-                        .fields
-                        .iter()
-                        .find(|f| &f.name == name)
-                        .ok_or(internal!("読取り位置のfieldがない"))?;
-                    match &field.slot {
-                        archsig_input::archmap::Slot::Known { atom, .. } => {
-                            fact.atom = Some(atom.clone());
-                        }
-                        archsig_input::archmap::Slot::Missing if fixed_design => continue,
-                        archsig_input::archmap::Slot::Missing => {}
-                    }
-                }
-                observed.push(fact);
-            }
-            metadata.support = observed;
-            metadata
-                .missing
-                .retain(|fact| !env.has_primitive_override(fact));
-            metadata.support.sort();
-            metadata.support.dedup();
-            Ok(Read {
+            Read {
                 metadata,
                 value,
                 domains: trace.domains,
                 condition: trace.condition,
                 unsupported: None,
-            })
+            }
         }
         Ok((Err(ValidationFailure::UnsupportedExpression { location, feature }), trace)) => {
             let law = env.indexes.inputs.law();
@@ -104,17 +73,13 @@ pub(super) fn read(
                     scope.add_quantifier(descriptor.clone());
                 }
             }
-            Ok(Read {
+            Read {
                 metadata: family::Read {
                     failed: trace.condition.is_some(),
                     blocked: true,
                     condition_pending: false,
-                    missing: vec![],
-                    support: trace
-                        .support
-                        .into_iter()
-                        .filter(|fact| !env.has_primitive_override(fact))
-                        .collect(),
+                    missing: trace.missing.into_iter().collect(),
+                    support: trace.support.into_iter().collect(),
                     scope,
                 },
                 value: None,
@@ -127,10 +92,64 @@ pub(super) fn read(
                     operand_types,
                     position: None,
                 }),
-            })
+            }
         }
-        Ok((Err(error), _)) | Err(error) => Err(error),
+        Ok((Err(error), _)) | Err(error) => return Err(error),
+    };
+    // The read collector records positions; native support records actual atoms.
+    let mut observed = Vec::with_capacity(read.metadata.support.len());
+    for mut fact in std::mem::take(&mut read.metadata.support) {
+        if env.has_primitive_override(&fact) {
+            continue;
+        }
+        if fact.atom.is_none()
+            && let Some(name) = &fact.field
+        {
+            let subject = env.indexes.subject(&fact.snapshot, &fact.subject)?;
+            let field = subject
+                .fields
+                .iter()
+                .find(|f| &f.name == name)
+                .ok_or(internal!("読取り位置のfieldがない"))?;
+            match &field.slot {
+                archsig_input::archmap::Slot::Known { atom, .. } => {
+                    fact.atom = Some(atom.clone());
+                }
+                archsig_input::archmap::Slot::Missing if fixed_design => continue,
+                archsig_input::archmap::Slot::Missing => {}
+            }
+        }
+        observed.push(fact);
     }
+    observed.sort();
+    observed.dedup();
+    read.metadata.support = observed;
+    read.metadata
+        .missing
+        .retain(|fact| !env.has_primitive_override(fact));
+    if read.unsupported.is_some() {
+        let reading = &env.indexes.inputs.law().declarations()[name].reading;
+        for fact in read.metadata.support.iter().chain(&read.metadata.missing) {
+            env.control.checkpoint(Checkpoint::ConfigurationMap)?;
+            let subject = env.indexes.subject(&fact.snapshot, &fact.subject)?;
+            let origin = if let Some(name) = &fact.field {
+                let field = env
+                    .indexes
+                    .field(&env.state, &fact.snapshot, &fact.subject, name)?;
+                match &field.slot {
+                    archsig_input::archmap::Slot::Known { origin, .. } => Some(origin.as_str()),
+                    archsig_input::archmap::Slot::Missing => None,
+                }
+            } else {
+                None
+            };
+            read.metadata
+                .scope
+                .merge_metadata(&env.indexes.scope(subject, reading, origin)?);
+        }
+        read.metadata.scope.completions |= !read.metadata.missing.is_empty();
+    }
+    Ok(read)
 }
 pub(super) fn fragment_roots(
     fragments: &Read,

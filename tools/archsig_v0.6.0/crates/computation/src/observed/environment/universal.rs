@@ -1097,7 +1097,7 @@ impl Environment<'_> {
         }
         let mut scope = base.clone();
         scope.assignments = true;
-        scope.add_quantifier(Quantifier {
+        let descriptor = Quantifier {
             kind: *kind,
             name: var.name.clone(),
             ty: ty.clone(),
@@ -1105,7 +1105,11 @@ impl Environment<'_> {
             occurrence: var.span,
             assembly_instance: None,
             context: axis.actual.then_some(origin),
-        });
+        };
+        if self.fixed_assembly_read() {
+            self.capture_assembly_domain(&descriptor, None, None, true)?;
+        }
+        scope.add_quantifier(descriptor);
         self.with_universal(context, || {
             let mut local = self.copy_variables(variables)?;
             for value in local.values_mut() {

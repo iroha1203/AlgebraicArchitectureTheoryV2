@@ -75,6 +75,16 @@ pub(super) fn contains(
     }
     visit(ty, law, c, &mut BTreeSet::new())
 }
+fn finite_in_members(mut value: Scalar, c: &Control) -> Result<Vec<Scalar>, ValidationFailure> {
+    if let Scalar::List { element, items } = &value {
+        value = data::set(element.clone(), items, c)?;
+    }
+    let Scalar::Set { items, .. } = &mut value else {
+        return Err(internal!("Term量化域がList/Setでない").into());
+    };
+    Ok(std::mem::take(items))
+}
+
 fn copy_variables(
     vars: &BTreeMap<String, Scalar>,
     c: &Control,
@@ -875,20 +885,18 @@ impl Term {
                             .ok_or(internal!("Term量化の元binder型がない"))?;
                         let values = match domain {
                             QuantDomain::In(i) => {
-                                match self.eval(*i, vars, law, c, domains).or_else(|error| {
-                                    if matches!(
-                                        error,
-                                        ValidationFailure::UnsupportedExpression { .. }
-                                    ) && let Some(read) = domains
-                                    {
-                                        read(*kind, &var.name, element, e.span, None)?;
-                                    }
-                                    Err(error)
-                                })? {
-                                    Scalar::List { ref items, .. }
-                                    | Scalar::Set { ref items, .. } => items.clone(),
-                                    _ => return Err(internal!("Term量化域がList/Setでない").into()),
-                                }
+                                let input =
+                                    self.eval(*i, vars, law, c, domains).or_else(|error| {
+                                        if matches!(
+                                            error,
+                                            ValidationFailure::UnsupportedExpression { .. }
+                                        ) && let Some(read) = domains
+                                        {
+                                            read(*kind, &var.name, element, e.span, None)?;
+                                        }
+                                        Err(error)
+                                    })?;
+                                finite_in_members(input, c)?
                             }
                             QuantDomain::Type(_) => {
                                 if !super::finite::completion_supported(element, law, c)? {

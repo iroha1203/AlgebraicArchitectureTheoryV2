@@ -84,9 +84,10 @@ pub(in crate::observed) fn read_with_value(
     let mut scope = checks.scope;
     scope.readings.insert(declaration.reading.clone());
     let value = if checks.failure.is_none() && !checks.blocked {
-        Some(env.scoped_ast(*body, &vars, &scope, &declaration.reading)?)
+        env.scoped_ast(*body, &vars, &scope, &declaration.reading)
+            .map(Some)
     } else {
-        None
+        Ok(None)
     };
     let missing = collector
         .restore()
@@ -99,6 +100,15 @@ pub(in crate::observed) fn read_with_value(
         .ok_or(internal!("入力viewの読取り位置収集がない"))?;
     let mut support = checks.support;
     support.extend(reads);
+    if matches!(&value, Err(ValidationFailure::UnsupportedExpression { .. }))
+        && let Some(trace) = env.state.assembly_domains.borrow_mut().as_mut()
+        && trace.fixed_design
+    {
+        trace.scope.merge(&scope);
+        trace.support.extend(support.iter().cloned());
+        trace.missing.extend(missing.iter().cloned());
+    }
+    let value = value?;
     let mut failed = checks.failure.is_some();
     let mut condition_pending = checks.blocked;
     let mut known = None;

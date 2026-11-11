@@ -967,14 +967,7 @@ impl Term {
                                     }
                                     Err(error)
                                 })?
-                                .map(|v| match &v {
-                                    Scalar::List { items, .. } | Scalar::Set { items, .. } => {
-                                        Ok(items.clone())
-                                    }
-                                    _ => Err(ValidationFailure::from(internal!(
-                                        "Term記号量化域が有限containerでない"
-                                    ))),
-                                })
+                                .map(|v| super::finite_in_members(v, c))
                                 .transpose()?,
                             QuantDomain::Type(_) => {
                                 if finite::completion_supported(element, law, c)? {
