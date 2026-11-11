@@ -1498,7 +1498,10 @@ impl Environment<'_> {
         let request = origin.request();
         let (parts, answer, verification) =
             compute(self, g, &d.source.architecture, d.source.base, request, &c)?;
-        if let Some(search) = verification {
+        // Polyhedral search checks each witness against the original change and Law.
+        if let Some(search) = verification
+            && !d.source.rational_polyhedron
+        {
             for point in 0..search
                 .candidates
                 .as_ref()
