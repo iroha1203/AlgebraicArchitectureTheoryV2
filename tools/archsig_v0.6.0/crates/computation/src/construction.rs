@@ -407,12 +407,20 @@ pub(crate) fn has_reference(
     ty: &Type,
     control: &Control,
 ) -> Result<bool, ConstructionFailure> {
+    has_reference_to(inputs, ty, |_| true, control)
+}
+fn has_reference_to(
+    inputs: &CheckedInputs,
+    ty: &Type,
+    matches: impl Fn(&str) -> bool,
+    control: &Control,
+) -> Result<bool, ConstructionFailure> {
     let mut pending = vec![ty];
     let mut seen = BTreeSet::new();
     while let Some(ty) = pending.pop() {
         tick(control)?;
         match ty {
-            Type::Ref(_) | Type::Owned(..) => return Ok(true),
+            Type::Ref(name) | Type::Owned(name, _) if matches(name) => return Ok(true),
             Type::Tuple(items) => pending.extend(items),
             Type::List(t) | Type::Set(t) | Type::Option(t) => pending.push(t),
             Type::Map(k, v) => {
@@ -640,6 +648,7 @@ pub(crate) fn check_layout_inclusions(
     root_type: &str,
     roots: &[FactPointer],
     transport: &BTreeMap<FactPointer, FactPointer>,
+    relevant_types: &BTreeSet<&str>,
     control: &Control,
 ) -> Result<(bool, Vec<FactPointer>), ConstructionFailure> {
     let namespaces = namespaces(inputs, reading, control)?;
@@ -696,7 +705,14 @@ pub(crate) fn check_layout_inclusions(
                             }
                         }
                     }
-                    Slot::Missing if has_reference(inputs, &field.ty, control)? => {
+                    Slot::Missing
+                        if has_reference_to(
+                            inputs,
+                            &field.ty,
+                            |name| relevant_types.contains(name),
+                            control,
+                        )? =>
+                    {
                         missing.push(slot(subject, &field.name));
                     }
                     Slot::Missing => {}

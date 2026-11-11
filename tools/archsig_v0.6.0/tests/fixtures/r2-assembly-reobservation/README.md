@@ -16,10 +16,10 @@ A と B の対応を固定して共有個体 `ma` と `mb` の対応を入れ替
 
 ```sh
 cargo test --locked --manifest-path tools/archsig_v0.6.0/Cargo.toml -p archsig-computation \
-  explicit_reobservation_matches_a_shared_slot_and_rechecks_an_actual_assignment
+  assembly_reobservation::tests
 ```
 
-[期待する証拠](expected.json) は before/after と訂正の区別を示す。各 snapshot 単独の公開 CLI では、
+[期待する証拠](expected.json) は保存入力と上記の訂正ケースについて、`saved_reobservation_matches_the_expected_evidence` が照合する。各 snapshot 単独の公開 CLI では、
 `queries.txt` の `SNAP` を `before` または `after` に置き換え、対応する ArchMap と実行する。
 snapshot 間の対応は Rust API へ明示し、CLI の `--reuse` は保存結果の通常の再検査に使う。
 

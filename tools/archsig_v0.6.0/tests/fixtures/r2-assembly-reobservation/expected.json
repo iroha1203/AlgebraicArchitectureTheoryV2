@@ -1,22 +1,31 @@
 {
-  "before": {
-    "assembly": "undetermined",
-    "global": "undetermined",
-    "missing": ["before", "mb", "Assemble.Part.quantity"]
-  },
   "after": {
     "assembly": "established",
     "global": "established",
-    "observed": ["after", "mb", "Assemble.Part.quantity", "observed-shared-quantity"],
+    "observed": [
+      "after",
+      "mb",
+      "Assemble.Part.quantity",
+      "observed-shared-quantity"
+    ],
     "previous_assignment": "retained",
     "selected_candidate": "pick"
   },
   "after_with_corrected_private_quantities": {
     "assembly": "established",
+    "current_candidate_and_apply": "established",
     "global": "established",
     "previous_assignment": "excluded",
-    "selected_candidate": "replacement",
-    "current_candidate_and_apply": "established"
+    "selected_candidate": "replacement"
+  },
+  "before": {
+    "assembly": "undetermined",
+    "global": "undetermined",
+    "missing": [
+      "before",
+      "mb",
+      "Assemble.Part.quantity"
+    ]
   },
   "swapped_owner_correspondence": "invalid_correspondence"
 }

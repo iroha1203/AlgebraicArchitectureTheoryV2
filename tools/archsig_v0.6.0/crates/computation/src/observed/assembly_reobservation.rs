@@ -203,7 +203,10 @@ type SharedPartition = BTreeSet<BTreeSet<Fact>>;
 fn retained_layout<'a>(
     evaluation: &'a ObservedEvaluation,
     id: &str,
-) -> Option<&'a assembly_plan::Assembly> {
+) -> Option<(
+    &'a assembly_plan::Assembly,
+    &'a super::architecture_result::Architecture,
+)> {
     let answer = evaluation.answers.iter().find(|answer| answer.id == id)?;
     let node = evaluation.nodes.get(answer.claim?.0)?;
     let Some(Payload::Construction(value)) = &node.payload else {
@@ -212,7 +215,8 @@ fn retained_layout<'a>(
     let ConstructionData::Build(data) = &value.data else {
         return None;
     };
-    data.plan().assembly.as_deref()
+    let plan = data.plan();
+    Some((plan.assembly.as_deref()?, &plan.architecture))
 }
 
 fn checked_layout(
@@ -220,7 +224,7 @@ fn checked_layout(
     request: &Request,
     control: &Control,
 ) -> Result<Layout, ReobservationFailure> {
-    if let Some(assembly) = retained_layout(evaluation, &request.id) {
+    if let Some((assembly, architecture)) = retained_layout(evaluation, &request.id) {
         match &assembly.failure {
             Some(assembly_plan::Failure::Unsupported(detail)) if detail.affects_layout => {
                 return Err(ReobservationFailure::Unsupported(detail.detail.clone()));
@@ -257,7 +261,16 @@ fn checked_layout(
                 );
             }
         } else {
-            check_target_ownership(evaluation.prepared(), request, &mut layout, control)?;
+            let domain = architecture.witness.construction().local_domain();
+            if domain.known().len() != 1 {
+                return Err(invalid("組立て先rootに既存の所属個体がある"));
+            }
+            layout.missing.extend(
+                domain
+                    .conditional()
+                    .iter()
+                    .map(|member| member.owner_slot().clone()),
+            );
         }
         return Ok(layout);
     }
@@ -574,13 +587,14 @@ fn checked_shared_partition(
             .insert(image(member)?);
     }
     let partition = classes.into_values().collect();
-    check_inclusions(parent, layout, check, missing, control)?;
+    check_inclusions(parent, layout, roster, check, missing, control)?;
     Ok(partition)
 }
 
 fn check_inclusions(
     mut transport: BTreeMap<Fact, Fact>,
     layout: &Layout,
+    roster: &BTreeMap<&str, &Subject>,
     check: Option<(&PreparedObserved, &Request)>,
     missing: &mut Vec<Fact>,
     control: &Control,
@@ -600,6 +614,14 @@ fn check_inclusions(
         control.checkpoint(Checkpoint::ConfigurationMap)?;
         transport.insert(fragment.clone(), target.clone());
     }
+    let mut relevant_types = BTreeSet::new();
+    for endpoint in transport.keys() {
+        control.checkpoint(Checkpoint::ConfigurationMap)?;
+        let subject = roster
+            .get(endpoint.subject.as_str())
+            .ok_or_else(|| invalid("共有端点の主体がない"))?;
+        relevant_types.insert(subject.ty.as_str());
+    }
     let (collapsed, positions) = crate::construction::check_layout_inclusions(
         prepared.inputs(),
         reading,
@@ -607,6 +629,7 @@ fn check_inclusions(
         root.ty.as_str(),
         roots,
         &transport,
+        &relevant_types,
         control,
     )
     .map_err(|failure| match failure {
@@ -1092,6 +1115,14 @@ pub fn reevaluate_assembly(
                     control,
                 )?)
             } else {
+                check_inclusions(
+                    BTreeMap::new(),
+                    &before_layout,
+                    &a,
+                    Some((before, before_request)),
+                    &mut before_missing,
+                    control,
+                )?;
                 None
             };
             let new_shared = if after_layout.shared.is_some() {
@@ -1105,6 +1136,14 @@ pub fn reevaluate_assembly(
                     control,
                 )?)
             } else {
+                check_inclusions(
+                    BTreeMap::new(),
+                    &after_layout,
+                    &b,
+                    Some((evaluation.prepared(), after_request_for_layout)),
+                    &mut layout_missing,
+                    control,
+                )?;
                 None
             };
             for needed in &before_missing {
@@ -1211,10 +1250,7 @@ mod tests {
         result.answers.iter().find(|a| a.id == id).unwrap().status
     }
 
-    #[test]
-    fn explicit_reobservation_matches_a_shared_slot_and_rechecks_an_actual_assignment() {
-        let c = Control::unlimited();
-        let quantity = |map: &str, subject: &str, old: u32, new: u32| {
+    fn quantity(map: &str, subject: &str, old: u32, new: u32) -> String {
             let prefix = format!(
                 "\"id\": \"{subject}-quantity\",\n          \"subject\": \"{subject}\",\n          \"field\": \"Assemble.Part.quantity\",\n          \"value\": "
             );
@@ -1225,7 +1261,137 @@ mod tests {
             );
             assert_ne!(updated, map);
             updated
+    }
+
+    #[test]
+    fn saved_reobservation_matches_the_expected_evidence() {
+        use archsig_common::{canonical::Json, json::parse};
+        let c = Control::unlimited();
+        let pairs = [
+            ("A", "A"),
+            ("B", "B"),
+            ("G", "G"),
+            ("a", "a"),
+            ("b", "b"),
+            ("ma", "ma"),
+            ("mb", "mb"),
+        ];
+        let alignment = AssemblyAlignment {
+            before_snapshot: "before",
+            after_snapshot: "after",
+            reading: "Assembly",
+            subjects: &pairs,
+            assembly: "joined",
+            previous_candidate: "pick",
+            current_solve: "solveIt",
         };
+        let before = evaluate_observed(prepared("before", BEFORE, &c), &c).unwrap();
+        let after =
+            reevaluate_assembly(&before, prepared("after", AFTER, &c), &alignment, &c).unwrap();
+        let asks = QUERIES
+            .replace("pick=", "replacement=")
+            .replace("$pick.assignment", "$replacement.assignment");
+        let corrected_map = quantity(&quantity(AFTER, "a", 1, 2), "b", 0, 1);
+        let corrected = reevaluate_assembly(
+            &before,
+            prepared_with("after", &corrected_map, LAW, &asks, &c),
+            &alignment,
+            &c,
+        )
+        .unwrap();
+        let [observation] = after.observations() else {
+            panic!("one observed shared slot")
+        };
+        let slot = |fact: &Fact| {
+            let mut members = vec![
+                Json::str(fact.snapshot.as_str()),
+                Json::str(fact.subject.as_str()),
+                Json::str(fact.field.as_ref().unwrap().as_str()),
+            ];
+            members.extend(fact.atom.as_ref().map(|atom| Json::str(atom.as_str())));
+            Json::Arr(members)
+        };
+        assert_eq!(after.candidate(), CandidateContinuity::Retained);
+        assert_eq!(corrected.candidate(), CandidateContinuity::Excluded);
+        let corrected_result = corrected.evaluation();
+        assert_eq!(status(corrected_result, "selected"), Decision::Established);
+        let mut swapped = pairs;
+        swapped[5].1 = "mb";
+        swapped[6].1 = "ma";
+        let swapped = AssemblyAlignment {
+            subjects: &swapped,
+            ..alignment
+        };
+        assert!(matches!(
+            reevaluate_assembly(&before, prepared("after", AFTER, &c), &swapped, &c,),
+            Err(ReobservationFailure::InvalidCorrespondence(_))
+        ));
+        let actual = Json::obj([
+            (
+                "before",
+                Json::obj([
+                    ("assembly", Json::str(status(&before, "joined").wire())),
+                    ("global", Json::str(status(&before, "global").wire())),
+                    ("missing", slot(observation.needed())),
+                ]),
+            ),
+            (
+                "after",
+                Json::obj([
+                    (
+                        "assembly",
+                        Json::str(status(after.evaluation(), "joined").wire()),
+                    ),
+                    (
+                        "global",
+                        Json::str(status(after.evaluation(), "global").wire()),
+                    ),
+                    ("observed", slot(observation.observed().unwrap())),
+                    ("previous_assignment", Json::str("retained")),
+                    (
+                        "selected_candidate",
+                        Json::str(after.selected_candidate().unwrap()),
+                    ),
+                ]),
+            ),
+            (
+                "after_with_corrected_private_quantities",
+                Json::obj([
+                    (
+                        "assembly",
+                        Json::str(status(corrected_result, "joined").wire()),
+                    ),
+                    (
+                        "global",
+                        Json::str(status(corrected_result, "global").wire()),
+                    ),
+                    ("previous_assignment", Json::str("excluded")),
+                    (
+                        "selected_candidate",
+                        Json::str(corrected.selected_candidate().unwrap()),
+                    ),
+                    (
+                        "current_candidate_and_apply",
+                        Json::str(status(corrected_result, "replacement").wire()),
+                    ),
+                ]),
+            ),
+            (
+                "swapped_owner_correspondence",
+                Json::str("invalid_correspondence"),
+            ),
+        ]);
+        let expected =
+            include_bytes!("../../../../tests/fixtures/r2-assembly-reobservation/expected.json");
+        assert_eq!(
+            parse(actual.canonical().as_bytes()).unwrap(),
+            parse(expected).unwrap()
+        );
+    }
+
+    #[test]
+    fn explicit_reobservation_matches_a_shared_slot_and_rechecks_an_actual_assignment() {
+        let c = Control::unlimited();
         let before_map = quantity(BEFORE, "b", 0, 1);
         let before = evaluate_observed(prepared("before", &before_map, &c), &c).unwrap();
         assert_eq!(status(&before, "pick"), Decision::Established);
@@ -1709,6 +1875,34 @@ mod tests {
                 &previous, prepared_with("after", &after, LAW, &asks, &c),
                 &alignment, &c,
             ), Err(ReobservationFailure::InvalidCorrespondence(message)) if message.contains("同一視")));
+        }
+        let unrelated = concat!(
+            ",\n        {\n          \"id\": \"b-links\",\n          \"subject\": \"b\",\n",
+            "          \"field\": \"Assemble.Part.links\",\n          \"value\": [],\n",
+            "          \"origin\": \"model\"\n        }",
+        );
+        let incomplete = AFTER.replacen(unrelated, "", 1);
+        assert_ne!(AFTER, incomplete);
+        let no_alias = law.replace("list<(Part,Part)>[(ma,mb)]", "list<(Part,Part)>[]");
+        let previous = evaluate_observed(
+            prepared_with("before", BEFORE, no_alias.as_bytes(), QUERIES, &c),
+            &c,
+        )
+        .unwrap();
+        for asks in [QUERIES.to_owned(), QUERIES.replace("index=0", "index=100")] {
+            let reobserved = reevaluate_assembly(
+                &previous,
+                prepared_with("after", &incomplete, no_alias.as_bytes(), &asks, &c),
+                &alignment,
+                &c,
+            )
+            .unwrap();
+            assert_eq!(reobserved.candidate(), CandidateContinuity::Retained);
+            assert!(reobserved.layout_missing().is_empty());
+            assert_eq!(
+                status(reobserved.evaluation(), "joined"),
+                Decision::Undetermined
+            );
         }
     }
 
