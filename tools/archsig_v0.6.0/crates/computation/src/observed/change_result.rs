@@ -278,6 +278,58 @@ fn compute(
 ) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
     env.validation_graph_session(g, || compute_inner(env, g, architecture, base, request, c))
 }
+fn architecture_missing_reasons(
+    b: &mut Builder<'_>,
+    env: &Environment<'_>,
+    architecture: &Architecture,
+    request: &Request,
+    explained: &std::collections::BTreeSet<Fact>,
+) -> Result<Vec<Reason>, ValidationFailure> {
+    let mut reasons = Vec::new();
+    let reading = architecture.witness.construction().reading();
+    for reason in &architecture.reasons {
+        for position in &reason.missing {
+            env.tick()?;
+            if explained.contains(position) {
+                continue;
+            }
+            let subject = env.indexes.subject(&position.snapshot, &position.subject)?;
+            let name = position
+                .field
+                .as_ref()
+                .ok_or(internal!("構成の欠測fieldがない"))?;
+            let field =
+                env.indexes
+                    .field(&env.state, &position.snapshot, &position.subject, name)?;
+            let location = reason
+                .location
+                .clone()
+                .unwrap_or_else(|| Location::ArchMap {
+                    pointer: subject.pointer.clone(),
+                    span: None,
+                });
+            let expression = b.field_source(
+                env,
+                position,
+                &field.ty.erase(),
+                &location,
+                reading,
+                vec![architecture.reference],
+            )?;
+            let reason = Reason {
+                kind: ReasonKind::Missing,
+                request: request.id.clone(),
+                dependencies: vec![expression],
+                missing: vec![position.clone()],
+                location: Some(location),
+            };
+            b.parts[expression.0 - b.base].reasons.push(reason.clone());
+            reasons.push(reason);
+        }
+    }
+    Ok(reasons)
+}
+
 fn compute_inner(
     env: &Environment<'_>,
     g: &Graph,
@@ -294,7 +346,7 @@ fn compute_inner(
                     Signature::Change { params, .. }
                         if params.iter().skip(1).any(|param| param.ty == Type::Q)))
     });
-    let mut fixed_refutation = None;
+    let mut partial_search = None;
     if !architecture.complete
         && rational
         && architecture
@@ -309,18 +361,23 @@ fn compute_inner(
             Ok(search)
                 if search.complete && search.rational.is_some() && search.solutions.is_empty() =>
             {
-                fixed_refutation = Some(search);
+                partial_search = Some(Ok(search));
             }
             Ok(_) => {}
             Err(failure)
                 if matches!(
                     &failure.cause,
                     ValidationFailure::UnsupportedExpression { .. }
-                ) => {}
+                ) =>
+            {
+                if failure.partial.pending_integer.is_some() {
+                    partial_search = Some(Err(failure));
+                }
+            }
             Err(failure) => return Err(failure.cause),
         }
     }
-    if !architecture.complete && fixed_refutation.is_none() {
+    if !architecture.complete && partial_search.is_none() {
         if rational
             && !architecture.reasons.is_empty()
             && architecture
@@ -333,48 +390,13 @@ fn compute_inner(
                 base,
                 parts: vec![],
             };
-            let mut reasons = Vec::new();
-            let reading = architecture.witness.construction().reading();
-            for reason in &architecture.reasons {
-                for position in &reason.missing {
-                    env.tick()?;
-                    let subject = env.indexes.subject(&position.snapshot, &position.subject)?;
-                    let name = position
-                        .field
-                        .as_ref()
-                        .ok_or(internal!("構成の欠測fieldがない"))?;
-                    let field = env.indexes.field(
-                        &env.state,
-                        &position.snapshot,
-                        &position.subject,
-                        name,
-                    )?;
-                    let location = reason
-                        .location
-                        .clone()
-                        .unwrap_or_else(|| Location::ArchMap {
-                            pointer: subject.pointer.clone(),
-                            span: None,
-                        });
-                    let expression = b.field_source(
-                        env,
-                        position,
-                        &field.ty.erase(),
-                        &location,
-                        reading,
-                        vec![architecture.reference],
-                    )?;
-                    let reason = Reason {
-                        kind: ReasonKind::Missing,
-                        request: request.id.clone(),
-                        dependencies: vec![expression],
-                        missing: vec![position.clone()],
-                        location: Some(location),
-                    };
-                    b.parts[expression.0 - base].reasons.push(reason.clone());
-                    reasons.push(reason);
-                }
-            }
+            let reasons = architecture_missing_reasons(
+                &mut b,
+                env,
+                architecture,
+                request,
+                &std::collections::BTreeSet::new(),
+            )?;
             return Ok((
                 b.parts,
                 Answer {
@@ -399,8 +421,8 @@ fn compute_inner(
             feature: "未完成Architecture上のchange候補の公開配送は未実装".into(),
         });
     }
-    let searched = if let Some(search) = fixed_refutation {
-        Ok(search)
+    let searched = if let Some(result) = partial_search {
+        result
     } else {
         change_search::search(env, g, &architecture.witness, request, c)
     };
@@ -449,6 +471,7 @@ fn compute_inner(
                         let part = &mut b.parts[expression.0 - base];
                         part.arguments.push(architecture.reference);
                         part.scope.merge(&g.get(architecture.reference)?.scope);
+                        part.scope.merge(&pending.scope);
                         scope.merge(&part.scope);
                         let mut missing = pending.facts.clone();
                         if i == 0 {
@@ -489,6 +512,19 @@ fn compute_inner(
                                 location: Some(location.clone()),
                             });
                         }
+                    }
+                    if !architecture.complete {
+                        let explained = reasons
+                            .iter()
+                            .flat_map(|reason| reason.missing.iter().cloned())
+                            .collect();
+                        reasons.extend(architecture_missing_reasons(
+                            &mut b,
+                            env,
+                            architecture,
+                            request,
+                            &explained,
+                        )?);
                     }
                     for descriptor in field_linear_result::materialize_quantifiers(
                         &mut b,
@@ -2067,10 +2103,22 @@ mod rational_scope_tests {
         let offset = format!(
             "{prefix}forall b in Pool.Cell[w] . b.quantity<=rat(0,1);\n change assign(b:Pool.Cell,q:Q) when q=rat(0,1)=b with {{quantity=q+b.claim.quantity}};\n}}"
         );
-        for (law, field, binder) in [
-            (LAW, "Pool.Stock.available", "s"),
-            (&guard, "Pool.Cell.quantity", "n"),
-            (&offset, "Pool.Claim.quantity", "b"),
+        let owned = format!(
+            "{}false;\n change assign(b:Pool.Cell,q:Q)=b with {{quantity=q}};\n}}",
+            prefix.replace(
+                "legal(w:Pool.World):",
+                "legal(w:Pool.World,b:Pool.Cell[w]):"
+            )
+        );
+        let owned_solve = format!(
+            "{},bind.b=@fixture/threeUsesMicroShortage.M1.N)",
+            SOLVE.strip_suffix(')').unwrap()
+        );
+        for (law, ask, field, binder) in [
+            (LAW, SOLVE, "Pool.Stock.available", Some("s")),
+            (&guard, SOLVE, "Pool.Cell.quantity", Some("n")),
+            (&offset, SOLVE, "Pool.Claim.quantity", Some("b")),
+            (&owned, &owned_solve, "Pool.Cell.owner", None),
         ] {
             let input = prepare_observed(
                 InputSources::from_bytes(
@@ -2078,7 +2126,7 @@ mod rational_scope_tests {
                     law.as_bytes().to_vec(),
                     map.as_bytes().to_vec(),
                 ),
-                &[SOLVE],
+                &[ask],
                 &control,
             )
             .unwrap();
@@ -2088,14 +2136,16 @@ mod rational_scope_tests {
             };
             assert_eq!(answer.status, Decision::Refuted, "{field}");
             assert!(answer.scope.completions);
-            assert!(
-                answer
-                    .scope
-                    .quantifiers
-                    .iter()
-                    .any(|q| q.name == binder && q.domain.is_some()),
-                "{binder}"
-            );
+            if let Some(binder) = binder {
+                assert!(
+                    answer
+                        .scope
+                        .quantifiers
+                        .iter()
+                        .any(|q| q.name == binder && q.domain.is_some()),
+                    "{binder}"
+                );
+            }
             let [certificate] = answer.evidence.as_slice() else {
                 panic!("exact obstruction")
             };

@@ -151,6 +151,22 @@ fn combine(
 type LeftSide = Vec<(BigInt, BigInt)>;
 type Rows = BTreeMap<LeftSide, EliminationRow>;
 
+fn left_side(
+    coefficients: &[Scalar],
+    opposite: bool,
+    c: &Control,
+) -> Result<LeftSide, ValidationFailure> {
+    let mut key = Vec::with_capacity(coefficients.len());
+    for coefficient in coefficients {
+        tick(c)?;
+        let Scalar::Q(n, d) = coefficient else {
+            return Err(internal!("半空間の係数がQでない").into());
+        };
+        key.push((if opposite { -n } else { n.clone() }, d.clone()));
+    }
+    Ok(key)
+}
+
 fn keep_tightest(
     rows: &mut Rows,
     mut row: EliminationRow,
@@ -174,14 +190,7 @@ fn keep_tightest(
         };
         scale_row(&mut row, &factor, c)?;
     }
-    let mut key = Vec::with_capacity(row.inequality.coefficients.len());
-    for x in &row.inequality.coefficients {
-        tick(c)?;
-        let Scalar::Q(n, d) = x else {
-            return Err(internal!("半空間の係数がQでない").into());
-        };
-        key.push((n.clone(), d.clone()));
-    }
+    let key = left_side(&row.inequality.coefficients, false, c)?;
     if let Some(previous) = rows.get(&key)
         && !less(&row.inequality.rhs, &previous.inequality.rhs, c)?
     {
@@ -206,30 +215,21 @@ fn eliminate(rows: &[EliminationRow], axis: usize, c: &Control) -> Result<Rows, 
     }
     // 両側が同じ境界を課す行は等式。各行をその等式で置換すれば、
     // 正負の全対を作らずに同じ射影を得る。組合せ係数は非負のまま保つ。
+    let mut opposite = BTreeMap::new();
+    for (index, row) in lower.iter().enumerate() {
+        tick(c)?;
+        opposite.insert(left_side(&row.inequality.coefficients, false, c)?, index);
+    }
     let mut equation = None;
-    'find: for (i, hi) in upper.iter().enumerate() {
-        let negative_rhs = neg(&hi.inequality.rhs, c)?;
-        for (j, lo) in lower.iter().enumerate() {
+    if !opposite.is_empty() {
+        for (i, row) in upper.iter().enumerate() {
             tick(c)?;
-            if lo.inequality.rhs != negative_rhs {
-                continue;
-            }
-            let mut opposite = true;
-            for (left, right) in hi
-                .inequality
-                .coefficients
-                .iter()
-                .zip(&lo.inequality.coefficients)
+            let key = left_side(&row.inequality.coefficients, true, c)?;
+            if let Some(&j) = opposite.get(&key)
+                && lower[j].inequality.rhs == neg(&row.inequality.rhs, c)?
             {
-                tick(c)?;
-                if neg(left, c)? != *right {
-                    opposite = false;
-                    break;
-                }
-            }
-            if opposite {
                 equation = Some((i, j));
-                break 'find;
+                break;
             }
         }
     }

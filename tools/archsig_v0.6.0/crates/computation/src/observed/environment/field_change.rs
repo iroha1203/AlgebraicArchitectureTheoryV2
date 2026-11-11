@@ -814,6 +814,27 @@ fn needs_observation(pending: &Pending) -> bool {
             .any(|(_, pending)| !pending.facts.is_empty())
 }
 
+fn record_scope(env: &Environment<'_>, rows: &mut Constraints, value: &SourceValue, first: usize) {
+    let mut scope = value.scope.clone();
+    // Symbolic update coefficients quantify only inside extraction, not
+    // over the concrete architecture yielded by an accepted repair.
+    scope.assignments = false;
+    scope.quantifiers.retain(|q| {
+        q.domain.is_none()
+            && !rows.quantifiers[first..]
+                .iter()
+                .any(|(finite, _)| finite.occurrence == q.occurrence)
+            && !env
+                .indexes
+                .inputs
+                .law()
+                .program()
+                .expressions
+                .contains_key(&q.occurrence)
+    });
+    rows.scope.merge(&scope);
+}
+
 fn observed_source(
     env: &Environment<'_>,
     id: usize,
@@ -833,24 +854,7 @@ fn observed_source(
         && !value.condition_failed
         && !value.condition_pending
     {
-        let mut scope = value.scope.clone();
-        // Symbolic update coefficients quantify only inside extraction, not
-        // over the concrete architecture yielded by an accepted repair.
-        scope.assignments = false;
-        scope.quantifiers.retain(|q| {
-            q.domain.is_none()
-                && !rows.quantifiers[first..]
-                    .iter()
-                    .any(|(finite, _)| finite.occurrence == q.occurrence)
-                && !env
-                    .indexes
-                    .inputs
-                    .law()
-                    .program()
-                    .expressions
-                    .contains_key(&q.occurrence)
-        });
-        rows.scope.merge(&scope);
+        record_scope(env, rows, value, first);
     }
     if let Err(ValidationFailure::UnsupportedExpression {
         location: Location::Law { span },
@@ -926,6 +930,7 @@ fn collect_equations(
                 return Err(unsupported(env, domain, "有理changeの有限量化域が未確定"));
             };
             usable(env, domain, &domain_value)?;
+            record_scope(env, rows, &domain_value, domain_start);
             rows.constraint_support
                 .extend(domain_value.support.iter().cloned());
             rows.quantifiers
@@ -1333,153 +1338,82 @@ fn compute_inner(
         capture_reads: allow_bounds,
         ..Constraints::default()
     };
-    for (i, subject) in subjects.iter().enumerate() {
-        let mut vars = BTreeMap::from([(params[0].name.clone(), value(env, subject.clone())?)]);
-        for (p, axis) in params[1..]
-            .iter()
-            .zip(&axes[i * (params.len() - 1)..(i + 1) * (params.len() - 1)])
-        {
-            env.tick()?;
-            let mut v = value(env, numeric::zero(&Type::Q, &env.control)?)?;
-            v.known_value = None;
-            v.scalar_scope = None;
-            v.affine = affine::parameter(&Type::Q, axis, &env.control)?.map(Box::new);
-            vars.insert(p.name.clone(), v);
-        }
-        missing.bindings = vec![(params[0].name.clone(), subject.clone())];
-        missing.parameters = params[1..]
-            .iter()
-            .map(|p| (p.name.clone(), p.ty.clone()))
-            .collect();
-        if let Some(guard) = guard {
-            missing.expression = Some(*guard);
-            if let Err(error) = equations(
-                env,
-                *guard,
-                &vars,
-                &change.reading,
-                Axes::Parameters(&axes),
-                &mut guards,
-                missing,
-            ) {
-                missing.finite_domains = guards.quantifiers;
-                return Err(error);
+    let update_result = (|| {
+        for (i, subject) in subjects.iter().enumerate() {
+            let mut vars = BTreeMap::from([(params[0].name.clone(), value(env, subject.clone())?)]);
+            for (p, axis) in params[1..]
+                .iter()
+                .zip(&axes[i * (params.len() - 1)..(i + 1) * (params.len() - 1)])
+            {
+                env.tick()?;
+                let mut v = value(env, numeric::zero(&Type::Q, &env.control)?)?;
+                v.known_value = None;
+                v.scalar_scope = None;
+                v.affine = affine::parameter(&Type::Q, axis, &env.control)?.map(Box::new);
+                vars.insert(p.name.clone(), v);
             }
-        }
-        missing.expression = Some(*body);
-        let mut current = *body;
-        let mut lexical = LexicalDependencies::new();
-        let analysis = DependencyAnalysis { env, axes: &axes };
-        loop {
-            env.tick()?;
-            match &env.indexes.inputs.law().exprs()[current].kind {
-                ExprKind::Group(inner) => current = *inner,
-                ExprKind::Let { name, value, body } => {
-                    let v = observed_source(
-                        env,
-                        *value,
-                        &vars,
-                        &Scope::default(),
-                        &change.reading,
-                        &mut guards,
-                        missing,
-                    )?;
-                    if allow_bounds {
-                        let dependency = if v.known_value.is_some()
-                            && !v.condition_pending
-                            && !v.condition_failed
-                        {
-                            Dependency::default()
-                        } else {
-                            analysis.read(*value, &vars, &lexical, &change.reading)?
-                        };
-                        if v.condition_pending || v.condition_failed {
-                            dependency.record(missing, Dependence::Fixed);
-                        } else {
-                            lexical.insert(name.name.clone(), dependency);
-                        }
-                    }
-                    usable(env, *value, &v)?;
-                    vars.insert(name.name.clone(), v);
-                    current = *body;
-                }
-                ExprKind::If {
-                    cond,
-                    then_branch,
-                    else_branch,
-                } => {
-                    let v = observed_source(
-                        env,
-                        *cond,
-                        &vars,
-                        &Scope::default(),
-                        &change.reading,
-                        &mut guards,
-                        missing,
-                    )?;
-                    if allow_bounds
-                        && (v.known_value.is_none() || v.condition_pending || v.condition_failed)
-                    {
-                        analysis
-                            .read(*cond, &vars, &lexical, &change.reading)?
-                            .record(missing, Dependence::Fixed);
-                    }
-                    usable(env, *cond, &v)?;
-                    if allow_bounds {
-                        guards.constraint_support.extend(v.support.iter().cloned());
-                    }
-                    current = match v.known_value {
-                        Some(Scalar::Bool(true)) => *then_branch,
-                        Some(Scalar::Bool(false)) => *else_branch,
-                        _ => {
-                            missing.expression = Some(*cond);
-                            if change_affine::numeric_condition(env, *cond, &v)? {
-                                missing.unsupported = Some("numeric_change_condition");
-                            }
-                            return Err(unsupported(env, *cond, "有理changeの未確定分岐は未実装"));
-                        }
-                    };
-                }
-                ExprKind::With {
-                    base,
-                    updates: fields,
-                } => {
-                    let target = observed_source(
-                        env,
-                        *base,
-                        &vars,
-                        &Scope::default(),
-                        &change.reading,
-                        &mut guards,
-                        missing,
-                    )?;
-                    if allow_bounds
-                        && (target.known_value.is_none()
-                            || target.condition_pending
-                            || target.condition_failed)
-                    {
-                        analysis
-                            .read(*base, &vars, &lexical, &change.reading)?
-                            .record(missing, Dependence::Fixed);
-                    }
-                    usable(env, *base, &target)?;
-                    if allow_bounds {
-                        guards
-                            .constraint_support
-                            .extend(target.support.iter().cloned());
-                    }
-                    let Some(Scalar::Subject {
-                        snapshot,
-                        subject,
-                        entity,
-                    }) = &target.known_value
-                    else {
-                        return Err(unsupported(env, *base, "有理changeの更新先が未確定"));
-                    };
-                    for (field, id) in fields {
+            missing.bindings = vec![(params[0].name.clone(), subject.clone())];
+            missing.parameters = params[1..]
+                .iter()
+                .map(|p| (p.name.clone(), p.ty.clone()))
+                .collect();
+            if let Some(guard) = guard {
+                missing.expression = Some(*guard);
+                equations(
+                    env,
+                    *guard,
+                    &vars,
+                    &change.reading,
+                    Axes::Parameters(&axes),
+                    &mut guards,
+                    missing,
+                )?;
+            }
+            missing.expression = Some(*body);
+            let mut current = *body;
+            let mut lexical = LexicalDependencies::new();
+            let analysis = DependencyAnalysis { env, axes: &axes };
+            loop {
+                env.tick()?;
+                match &env.indexes.inputs.law().exprs()[current].kind {
+                    ExprKind::Group(inner) => current = *inner,
+                    ExprKind::Let { name, value, body } => {
                         let v = observed_source(
                             env,
-                            *id,
+                            *value,
+                            &vars,
+                            &Scope::default(),
+                            &change.reading,
+                            &mut guards,
+                            missing,
+                        )?;
+                        if allow_bounds {
+                            let dependency = if v.known_value.is_some()
+                                && !v.condition_pending
+                                && !v.condition_failed
+                            {
+                                Dependency::default()
+                            } else {
+                                analysis.read(*value, &vars, &lexical, &change.reading)?
+                            };
+                            if v.condition_pending || v.condition_failed {
+                                dependency.record(missing, Dependence::Fixed);
+                            } else {
+                                lexical.insert(name.name.clone(), dependency);
+                            }
+                        }
+                        usable(env, *value, &v)?;
+                        vars.insert(name.name.clone(), v);
+                        current = *body;
+                    }
+                    ExprKind::If {
+                        cond,
+                        then_branch,
+                        else_branch,
+                    } => {
+                        let v = observed_source(
+                            env,
+                            *cond,
                             &vars,
                             &Scope::default(),
                             &change.reading,
@@ -1487,52 +1421,136 @@ fn compute_inner(
                             missing,
                         )?;
                         if allow_bounds
-                            && (v.affine.is_none() || v.condition_pending || v.condition_failed)
+                            && (v.known_value.is_none()
+                                || v.condition_pending
+                                || v.condition_failed)
                         {
                             analysis
-                                .read(*id, &vars, &lexical, &change.reading)?
-                                .record(missing, Dependence::Affine);
+                                .read(*cond, &vars, &lexical, &change.reading)?
+                                .record(missing, Dependence::Fixed);
                         }
-                        usable(env, *id, &v)?;
+                        usable(env, *cond, &v)?;
                         if allow_bounds {
                             guards.constraint_support.extend(v.support.iter().cloned());
                         }
-                        let form = v.affine.ok_or_else(|| {
-                            if matches!(env.indexes.inputs.law().expr_type(*id), Some(Type::Q)) {
-                                missing.unsupported = Some("nonlinear_numeric_change");
-                            }
-                            unsupported(env, *id, "有理changeの更新式がQアフィンでない")
-                        })?;
-                        let position = Fact::from(archsig_input::archmap::FactData {
-                            snapshot: snapshot.clone(),
-                            subject: subject.clone(),
-                            field: Some(env.input_name(&format!("{entity}.{}", field.name))?),
-                            atom: None,
-                        });
-                        if let Some((prior, _, _)) = updates.get(&position) {
-                            if prior != form.as_ref() {
+                        current = match v.known_value {
+                            Some(Scalar::Bool(true)) => *then_branch,
+                            Some(Scalar::Bool(false)) => *else_branch,
+                            _ => {
+                                missing.expression = Some(*cond);
+                                if change_affine::numeric_condition(env, *cond, &v)? {
+                                    missing.unsupported = Some("numeric_change_condition");
+                                }
                                 return Err(unsupported(
                                     env,
-                                    *id,
-                                    "有理changeの同時更新衝突のfiberは未実装",
+                                    *cond,
+                                    "有理changeの未確定分岐は未実装",
                                 ));
                             }
-                        } else {
-                            if allow_bounds {
-                                missing.awaiting_observation =
-                                    form.awaiting_rational_observation(&axes, &env.control)?;
-                            }
-                            let (constant, row) =
-                                coordinates(env, *id, &form, Axes::Parameters(&axes), missing)?;
-                            let constant = constant.ok_or(internal!("有理作用の固定項が未確定"))?;
-                            updates.insert(position, (*form, constant, row));
-                        }
+                        };
                     }
-                    break;
+                    ExprKind::With {
+                        base,
+                        updates: fields,
+                    } => {
+                        let target = observed_source(
+                            env,
+                            *base,
+                            &vars,
+                            &Scope::default(),
+                            &change.reading,
+                            &mut guards,
+                            missing,
+                        )?;
+                        if allow_bounds
+                            && (target.known_value.is_none()
+                                || target.condition_pending
+                                || target.condition_failed)
+                        {
+                            analysis
+                                .read(*base, &vars, &lexical, &change.reading)?
+                                .record(missing, Dependence::Fixed);
+                        }
+                        usable(env, *base, &target)?;
+                        if allow_bounds {
+                            guards
+                                .constraint_support
+                                .extend(target.support.iter().cloned());
+                        }
+                        let Some(Scalar::Subject {
+                            snapshot,
+                            subject,
+                            entity,
+                        }) = &target.known_value
+                        else {
+                            return Err(unsupported(env, *base, "有理changeの更新先が未確定"));
+                        };
+                        for (field, id) in fields {
+                            let v = observed_source(
+                                env,
+                                *id,
+                                &vars,
+                                &Scope::default(),
+                                &change.reading,
+                                &mut guards,
+                                missing,
+                            )?;
+                            if allow_bounds
+                                && (v.affine.is_none() || v.condition_pending || v.condition_failed)
+                            {
+                                analysis
+                                    .read(*id, &vars, &lexical, &change.reading)?
+                                    .record(missing, Dependence::Affine);
+                            }
+                            usable(env, *id, &v)?;
+                            if allow_bounds {
+                                guards.constraint_support.extend(v.support.iter().cloned());
+                            }
+                            let form = v.affine.ok_or_else(|| {
+                                if matches!(env.indexes.inputs.law().expr_type(*id), Some(Type::Q))
+                                {
+                                    missing.unsupported = Some("nonlinear_numeric_change");
+                                }
+                                unsupported(env, *id, "有理changeの更新式がQアフィンでない")
+                            })?;
+                            let position = Fact::from(archsig_input::archmap::FactData {
+                                snapshot: snapshot.clone(),
+                                subject: subject.clone(),
+                                field: Some(env.input_name(&format!("{entity}.{}", field.name))?),
+                                atom: None,
+                            });
+                            if let Some((prior, _, _)) = updates.get(&position) {
+                                if prior != form.as_ref() {
+                                    return Err(unsupported(
+                                        env,
+                                        *id,
+                                        "有理changeの同時更新衝突のfiberは未実装",
+                                    ));
+                                }
+                            } else {
+                                if allow_bounds {
+                                    missing.awaiting_observation =
+                                        form.awaiting_rational_observation(&axes, &env.control)?;
+                                }
+                                let (constant, row) =
+                                    coordinates(env, *id, &form, Axes::Parameters(&axes), missing)?;
+                                let constant =
+                                    constant.ok_or(internal!("有理作用の固定項が未確定"))?;
+                                updates.insert(position, (*form, constant, row));
+                            }
+                        }
+                        break;
+                    }
+                    _ => return Err(internal!("有理changeのwithがない").into()),
                 }
-                _ => return Err(internal!("有理changeのwithがない").into()),
             }
         }
+        Ok(())
+    })();
+    if let Err(error) = update_result {
+        missing.scope.merge(&guards.scope);
+        missing.finite_domains = guards.quantifiers;
+        return Err(error);
     }
     let mut slots = vec![];
     let mut action = vec![];
@@ -1567,8 +1585,8 @@ fn compute_inner(
     )?;
     updated.indexes.object = env.object_domain();
     updated.indexes.affine_valuation = valuation;
-    let mut rows = if candidates_empty {
-        Constraints::default()
+    let result = if candidates_empty {
+        Ok(Constraints::default())
     } else {
         with_missing(&updated, missing, |missing| {
             requirement_equations(
@@ -1578,7 +1596,16 @@ fn compute_inner(
                 allow_bounds,
                 missing,
             )
-        })?
+        })
+    };
+    let mut rows = match result {
+        Ok(rows) => rows,
+        Err(error) => {
+            missing.scope.merge(&guards.scope);
+            guards.quantifiers.append(&mut missing.finite_domains);
+            missing.finite_domains = guards.quantifiers;
+            return Err(error);
+        }
     };
     guards.quantifiers.append(&mut rows.quantifiers);
     rows.quantifiers = guards.quantifiers;
@@ -1753,6 +1780,10 @@ fn requirement_equations(
                 missing.facts.extend(checks.missing);
                 missing.awaiting_observation = !missing.facts.is_empty();
                 return Err(unsupported(env, *body, "有理Lawの適用条件が未確定"));
+            }
+            if allow_bounds {
+                rows.constraint_support.extend(checks.support);
+                rows.scope.merge(&checks.scope);
             }
             let (vars, universal) = change_affine::law_variables(env, law_params, bindings)?;
             missing.universal = universal;

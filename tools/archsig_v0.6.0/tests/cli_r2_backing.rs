@@ -979,6 +979,41 @@ fn rational_backing_reports_missing_references_units_and_unsupported_disjunction
         panic!("only unsupported")
     };
     assert_eq!(s(get(reason, "code")), "unsupported_algorithm");
+
+    let mut partial = map.clone();
+    let snapshot = &mut items(fields(&mut partial).get_mut("snapshots").unwrap())[0];
+    items(fields(snapshot).get_mut("atoms").unwrap()).retain(|atom| {
+        !matches!(atom, Json::Obj(fields) if fields["id"] == Json::str("overlapFeasible.B1.X.stock"))
+    });
+    std::fs::write(dir.join("archmap.json"), partial.canonical()).unwrap();
+    let (header, _) = POLY_LAW.split_once("   (forall b").unwrap();
+    let (_, change) = POLY_LAW.split_once(" change ").unwrap();
+    let law = format!("{header}forall b in Pool.Cell[w] . b.quantity>rat(0,1);\n change {change}");
+    std::fs::write(dir.join("laws.law"), law).unwrap();
+    let run = polyhedron_asks(&dir, &[ask], "partial-and-unsupported", None);
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let [answer] = arr(get(&result, "answers")) else {
+        panic!("one solve")
+    };
+    let reasons = arr(get(answer, "reasons"));
+    assert!(
+        reasons
+            .iter()
+            .any(|reason| s(get(reason, "code")) == "unsupported_algorithm")
+    );
+    assert!(reasons.iter().any(|reason| {
+        s(get(reason, "code")) == "missing_observation"
+            && arr(get(reason, "missing")).iter().any(|fact| {
+                s(get(fact, "subject")) == "overlapFeasible.B1.X"
+                    && s(get(fact, "field")) == "Pool.Cell.stock"
+            })
+    }));
+    assert!(
+        arr(get(get(answer, "scope"), "quantifiers"))
+            .iter()
+            .any(|q| s(get(q, "name")) == "b" && has(q, "domain"))
+    );
 }
 
 #[test]
@@ -1019,11 +1054,43 @@ fn rational_backing_keeps_fixed_quantifiers_and_independent_stops() {
         .expect("symbolic guard binder");
     assert_eq!(s(get(binder, "type")), "Q");
 
+    let domain_guard = format!(
+        "{header}(forall b in Pool.Cell[w] . b.quantity>=rat(0,1)) and (forall x in (if (forall q:Q . q=rat(0,1)) then list<Q>[] else list<Q>[rat(1,1)]) . false);\n change {change}"
+    );
+    std::fs::write(dir.join("laws.law"), domain_guard).unwrap();
+    let run = polyhedron_run(&dir, ask, "symbolic-domain-scope", None);
+    assert_eq!(run.code, 1, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let [answer] = arr(get(&result, "answers")) else {
+        panic!("one solve")
+    };
+    assert!(
+        arr(get(get(answer, "scope"), "quantifiers"))
+            .iter()
+            .any(|q| s(get(q, "name")) == "q" && s(get(q, "type")) == "Q")
+    );
+
     let snapshot = &mut items(fields(&mut map).get_mut("snapshots").unwrap())[0];
     items(fields(snapshot).get_mut("atoms").unwrap()).retain(|atom| {
         !matches!(atom, Json::Obj(fields) if fields["id"] == Json::str("overlapFeasible.X.available"))
     });
     std::fs::write(dir.join("archmap.json"), map.canonical()).unwrap();
+    let update = POLY_LAW
+        .replace("stockLoad(s)<=s.available", "stockLoad(s)<=rat(5,1)")
+        .replace("q:Q)=b with {quantity=q}", "q:Q) when (forall n in list<Q>[rat(0,1)] . n>=rat(0,1))=b with {quantity=q+b.stock.available}");
+    std::fs::write(dir.join("laws.law"), update).unwrap();
+    let run = polyhedron_run(&dir, ask, "missing-update-after-guard", None);
+    assert_eq!(run.code, 2, "{}{}", run.stdout, run.stderr);
+    let result = result_json(&dir, &run);
+    let [answer] = arr(get(&result, "answers")) else {
+        panic!("one solve")
+    };
+    assert!(
+        arr(get(get(answer, "scope"), "quantifiers"))
+            .iter()
+            .any(|q| s(get(q, "name")) == "n" && has(q, "domain"))
+    );
+
     let (prefix, _) = POLY_LAW.split_once("   (forall b").unwrap();
     let (_, change) = POLY_LAW.split_once(" change ").unwrap();
     let implicit = prefix.replace("legal(w:Pool.World)", "legal(s:Pool.Stock)");
