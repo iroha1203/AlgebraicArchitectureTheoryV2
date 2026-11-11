@@ -177,3 +177,4 @@ mod shared_inputs;
 mod cli_ux;
 
 mod cli_repaired_migration;
+mod cli_structure_choice;

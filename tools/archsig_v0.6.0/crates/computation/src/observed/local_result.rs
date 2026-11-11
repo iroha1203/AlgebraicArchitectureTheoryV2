@@ -554,6 +554,7 @@ fn compute(
                     ty: p.ty.erase(),
                     domain,
                     occurrence: p.span,
+                    assembly_instance: None,
                     context: Some(env.current_context(g)),
                 });
             }

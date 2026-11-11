@@ -945,6 +945,18 @@ impl Environment<'_> {
                         &mut scope,
                         self.indexes.inputs.law().exprs()[id].span,
                     )?;
+                    if self.fixed_assembly_read() {
+                        for parameter in &plan.parameters {
+                            self.tick()?;
+                            if let Some(descriptor) = scope
+                                .quantifiers
+                                .iter()
+                                .find(|q| q.occurrence == parameter.binder)
+                            {
+                                self.capture_assembly_domain(descriptor, None, None, true)?;
+                            }
+                        }
+                    }
                     let mut local = self.copy_variables(variables)?;
                     for parameter in &plan.parameters {
                         local.insert(
@@ -1085,14 +1097,19 @@ impl Environment<'_> {
         }
         let mut scope = base.clone();
         scope.assignments = true;
-        scope.add_quantifier(Quantifier {
+        let descriptor = Quantifier {
             kind: *kind,
             name: var.name.clone(),
             ty: ty.clone(),
             domain: axis.domain,
             occurrence: var.span,
+            assembly_instance: None,
             context: axis.actual.then_some(origin),
-        });
+        };
+        if self.fixed_assembly_read() {
+            self.capture_assembly_domain(&descriptor, None, None, true)?;
+        }
+        scope.add_quantifier(descriptor);
         self.with_universal(context, || {
             let mut local = self.copy_variables(variables)?;
             for value in local.values_mut() {
@@ -1243,6 +1260,7 @@ impl Environment<'_> {
                     ty: parameter.ty.clone(),
                     domain: context.domains.get(index).copied(),
                     occurrence: parameter.binder,
+                    assembly_instance: None,
                     context: Some(parameter.context),
                 });
             }
@@ -1270,6 +1288,7 @@ impl Environment<'_> {
                     ty: axis.parameter.ty.clone(),
                     domain: axis.domain,
                     occurrence: axis.parameter.binder,
+                    assembly_instance: None,
                     context: axis.actual.then_some(axis.parameter.context),
                 });
             }

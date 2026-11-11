@@ -4,7 +4,10 @@ use super::{
     architecture_result::{self, Architecture},
     build_plan::{self, Plan},
     construction_result::{self as native, ArchitectureWitness, Witness},
-    environment::{AnswerBinding, Environment, change_search, repair_problem::family},
+    environment::{
+        AnswerBinding, AssemblyCondition, CapturedDomain, Environment, change_search,
+        repair_problem::family,
+    },
     model_assembly::{self, Model, Preparation},
     request::{Request, Selector},
     result::*,
@@ -15,65 +18,73 @@ use std::{collections::BTreeMap, sync::Arc};
 pub(super) struct Read {
     pub metadata: family::Read,
     pub value: Option<Scalar>,
+    pub domains: Vec<(Quantifier, CapturedDomain)>,
+    pub condition: Option<AssemblyCondition>,
     pub unsupported: Option<model_assembly::Unsupported>,
 }
 pub(super) fn read(
     env: &Environment<'_>,
     name: &str,
     bindings: &[(String, Scalar)],
+    capture: bool,
+    fixed_design: bool,
 ) -> Result<Read, ValidationFailure> {
-    match family::read_with_value(env, name, bindings) {
-        Ok((mut metadata, value)) => {
-            // The read collector records positions; native support records actual atoms.
-            for fact in &mut metadata.support {
-                if fact.atom.is_none()
-                    && let Some(name) = &fact.field
-                {
-                    let subject = env.indexes.subject(&fact.snapshot, &fact.subject)?;
-                    let field = subject
-                        .fields
-                        .iter()
-                        .find(|f| &f.name == name)
-                        .ok_or(internal!("読取り位置のfieldがない"))?;
-                    if let archsig_input::archmap::Slot::Known { atom, .. } = &field.slot {
-                        fact.atom = Some(atom.clone());
-                    }
-                }
+    let mut read = match env.with_assembly_domains(capture, fixed_design, || {
+        family::read_with_value(env, name, bindings)
+    }) {
+        Ok((Ok((mut metadata, value)), trace)) => {
+            metadata.scope.merge_quantifiers(&trace.term_scope);
+            // The evaluator can determine a value for every completion, for
+            // instance when a universal test has a known counterexample.
+            if fixed_design && value.is_some() && !metadata.failed && !metadata.condition_pending {
+                metadata.missing.clear();
+                metadata.blocked = false;
             }
-            metadata.support.sort();
-            metadata.support.dedup();
-            Ok(Read {
+            Read {
                 metadata,
                 value,
+                domains: trace.domains,
+                condition: trace.condition,
                 unsupported: None,
-            })
+            }
         }
-        Err(ValidationFailure::UnsupportedExpression { location, feature }) => {
+        Ok((Err(ValidationFailure::UnsupportedExpression { location, feature }), trace)) => {
             let law = env.indexes.inputs.law();
-            let operand_types = if let archsig_common::issue::Location::Law { span } = &location {
+            let expression_type = if let archsig_common::issue::Location::Law { span } = &location {
                 law.program()
                     .expressions
                     .get(span)
                     .and_then(|id| law.expr_type(*id))
                     .cloned()
-                    .into_iter()
-                    .collect()
             } else {
-                vec![]
+                None
             };
-            let mut scope = Scope::default();
+            let output_type = match &law.declarations()[name].signature {
+                archsig_input::law::model::Signature::View { returns, .. } => returns.erase(),
+                _ => return Err(internal!("未対応の組立て入力がViewでない").into()),
+            };
+            let operand_types = vec![expression_type.unwrap_or(output_type)];
+            let mut scope = trace.scope;
             scope
                 .readings
                 .insert(law.declarations()[name].reading.clone());
-            Ok(Read {
+            if fixed_design {
+                for (descriptor, _) in &trace.domains {
+                    scope.add_quantifier(descriptor.clone());
+                }
+            }
+            Read {
                 metadata: family::Read {
-                    failed: false,
+                    failed: trace.condition.is_some(),
                     blocked: true,
-                    missing: vec![],
-                    support: vec![],
+                    condition_pending: false,
+                    missing: trace.missing.into_iter().collect(),
+                    support: trace.support.into_iter().collect(),
                     scope,
                 },
                 value: None,
+                domains: trace.domains,
+                condition: trace.condition,
                 unsupported: Some(model_assembly::Unsupported {
                     affects_layout: true,
                     detail: feature,
@@ -81,10 +92,64 @@ pub(super) fn read(
                     operand_types,
                     position: None,
                 }),
-            })
+            }
         }
-        Err(e) => Err(e),
+        Ok((Err(error), _)) | Err(error) => return Err(error),
+    };
+    // The read collector records positions; native support records actual atoms.
+    let mut observed = Vec::with_capacity(read.metadata.support.len());
+    for mut fact in std::mem::take(&mut read.metadata.support) {
+        if env.has_primitive_override(&fact) {
+            continue;
+        }
+        if fact.atom.is_none()
+            && let Some(name) = &fact.field
+        {
+            let subject = env.indexes.subject(&fact.snapshot, &fact.subject)?;
+            let field = subject
+                .fields
+                .iter()
+                .find(|f| &f.name == name)
+                .ok_or(internal!("読取り位置のfieldがない"))?;
+            match &field.slot {
+                archsig_input::archmap::Slot::Known { atom, .. } => {
+                    fact.atom = Some(atom.clone());
+                }
+                archsig_input::archmap::Slot::Missing if fixed_design => continue,
+                archsig_input::archmap::Slot::Missing => {}
+            }
+        }
+        observed.push(fact);
     }
+    observed.sort();
+    observed.dedup();
+    read.metadata.support = observed;
+    read.metadata
+        .missing
+        .retain(|fact| !env.has_primitive_override(fact));
+    if read.unsupported.is_some() {
+        let reading = &env.indexes.inputs.law().declarations()[name].reading;
+        for fact in read.metadata.support.iter().chain(&read.metadata.missing) {
+            env.control.checkpoint(Checkpoint::ConfigurationMap)?;
+            let subject = env.indexes.subject(&fact.snapshot, &fact.subject)?;
+            let origin = if let Some(name) = &fact.field {
+                let field = env
+                    .indexes
+                    .field(&env.state, &fact.snapshot, &fact.subject, name)?;
+                match &field.slot {
+                    archsig_input::archmap::Slot::Known { origin, .. } => Some(origin.as_str()),
+                    archsig_input::archmap::Slot::Missing => None,
+                }
+            } else {
+                None
+            };
+            read.metadata
+                .scope
+                .merge_metadata(&env.indexes.scope(subject, reading, origin)?);
+        }
+        read.metadata.scope.completions |= !read.metadata.missing.is_empty();
+    }
+    Ok(read)
 }
 pub(super) fn fragment_roots(
     fragments: &Read,
@@ -124,6 +189,8 @@ pub(super) struct Assembly {
     pub fragments: Read,
     pub interfaces: Read,
     pub bindings: Vec<Binding>,
+    pub design: Option<NodeRef>,
+    pub rejected_design_origin: Option<(NodeRef, &'static str)>,
     pub locals: Vec<Fragment>,
     pub restrictions: Vec<Architecture>,
     pub repaired: BTreeMap<Fact, NodeRef>,
@@ -247,9 +314,16 @@ pub(super) fn prepare(
     let mut selected = BTreeMap::new();
     let mut repaired = BTreeMap::new();
     let mut selections = Vec::new();
+    let mut design = None;
+    let mut rejected_design_origin = None;
+    let mut rejected_design = false;
     let mut rejected = None;
     for argument in &r.arguments {
-        let Some(name) = argument.name.strip_prefix("local.") else {
+        let (name, is_design) = if let Some(name) = argument.name.strip_prefix("local.") {
+            (name, false)
+        } else if let Some(name) = argument.name.strip_prefix("design.") {
+            (name, true)
+        } else {
             continue;
         };
         c.checkpoint(Checkpoint::ConfigurationMap)?;
@@ -257,13 +331,15 @@ pub(super) fn prepare(
             &values
                 .iter()
                 .find(|(binding, _)| binding == name)
-                .ok_or(internal!("修復局所の元root束縛がない"))?
+                .ok_or(internal!("選択状態の元root束縛がない"))?
                 .1,
         )?;
-        let at = reference(e, g, &argument.value)?.ok_or(internal!("修復局所の元出力がない"))?;
+        let at = reference(e, g, &argument.value)?.ok_or(internal!("選択状態の元出力がない"))?;
         input_refs.push(at);
         selections.push(at);
-        if root.snapshot != target.snapshot {
+        if !is_design && root.snapshot != target.snapshot {
+            rejected_design = false;
+            rejected_design_origin = None;
             rejected = Some(model_assembly::foreign_snapshot(
                 &p.shared_inputs(),
                 &root,
@@ -279,9 +355,12 @@ pub(super) fn prepare(
             },
             _ => None,
         };
-        if let Some((witness, _)) = architecture
+        if !is_design
+            && let Some((witness, _)) = architecture
             && witness.construction().root().snapshot != target.snapshot
         {
+            rejected_design = false;
+            rejected_design_origin = None;
             rejected = Some(model_assembly::foreign_snapshot(
                 &p.shared_inputs(),
                 witness.construction().root(),
@@ -293,29 +372,84 @@ pub(super) fn prepare(
             matches!(&value.data, native::ConstructionData::SharedRepair(data)
                 if data.request().kind == super::request::QuestionKind::Apply)
         }) else {
-            rejected.get_or_insert_with(|| {
-                model_assembly::rejected("局所入力はapplyの実Architectureを要求する", vec![root])
-            });
+            if rejected.is_some() {
+                continue;
+            }
+            rejected_design = is_design;
+            let detail = if is_design {
+                "設計選択にはapplyの実Architectureを要求する"
+            } else {
+                "局所入力はapplyの実Architectureを要求する"
+            };
+            rejected = Some(model_assembly::rejected(detail, vec![root]));
+            if is_design {
+                rejected_design_origin = Some((at, "apply.object"));
+            }
             continue;
         };
         let construction = source.construction();
-        if construction.root() != &root
-            || construction.reading() != reading
-            || construction.transport().is_some()
-            || applied.contains_key(&root)
-        {
-            rejected.get_or_insert_with(|| {
-                model_assembly::rejected(
-                    "修復局所の元root・snapshot・readingまたは選択が異なる",
-                    vec![root.clone(), construction.root().clone()],
-                )
-            });
-        }
         // A later local input can still put the entire assembly outside this snapshot.
         if rejected.is_some() {
             continue;
         }
+        if construction.root() != &root
+            || (is_design && root.snapshot != target.snapshot)
+            || construction.reading() != reading
+            || construction.transport().is_some()
+            || applied.contains_key(&root)
+        {
+            let selected_root = construction.root();
+            rejected_design = is_design;
+            let mut failure = model_assembly::rejected(
+                "修復局所の元root・snapshot・readingまたは選択が異なる",
+                vec![root.clone(), selected_root.clone()],
+            );
+            if is_design && let Preparation::Rejected(rejection) = &mut failure {
+                let (detail, left, right) = if selected_root != &root {
+                    let original_root = |fact: &Fact| -> Result<Scalar, ValidationFailure> {
+                        let subject = e.indexes.subject(&fact.snapshot, &fact.subject)?;
+                        Ok(Scalar::Subject {
+                            snapshot: fact.snapshot.clone(),
+                            subject: fact.subject.clone(),
+                            entity: subject.ty.to_string(),
+                        })
+                    };
+                    (
+                        "設計選択の元rootが明示束縛と異なる",
+                        original_root(&root)?,
+                        original_root(selected_root)?,
+                    )
+                } else if root.snapshot != target.snapshot {
+                    rejection.facts.push(target.clone());
+                    (
+                        "設計選択のsnapshotが組立て先と異なる",
+                        Scalar::Text(target.snapshot.clone()),
+                        Scalar::Text(root.snapshot.clone()),
+                    )
+                } else if construction.reading() != reading {
+                    (
+                        "設計選択のreadingが組立てのreadingと異なる",
+                        Scalar::Text(reading.into()),
+                        Scalar::Text(construction.reading().into()),
+                    )
+                } else {
+                    rejection.detail = "設計選択は未輸送の固有rootを要求する".into();
+                    rejected_design_origin = Some((at, "untransported apply.object"));
+                    rejected = Some(failure);
+                    continue;
+                };
+                rejection.facts.dedup();
+                rejection.detail = detail.into();
+                rejection.values = Some((left, right));
+            }
+            rejected = Some(failure);
+            continue;
+        }
         let (overrides, _) = value.retained_architecture_overrides(g, c)?;
+        if is_design {
+            design = Some((at, overrides));
+            continue;
+        }
         for (position, value) in overrides.iter() {
             c.checkpoint(Checkpoint::ConfigurationMap)?;
             let mut subject = position.clone();
@@ -330,8 +464,34 @@ pub(super) fn prepare(
         }
         applied.insert(root, (at, Arc::clone(source), overrides));
     }
-    let fragments = read(e, head, &values)?;
-    let shared = read(e, along, &values)?;
+    let selected_reading = design
+        .as_ref()
+        .map(|(_, overrides)| e.with_fixed_primitive_values(overrides, c))
+        .transpose()?;
+    let reader = selected_reading.as_ref().unwrap_or(e);
+    let (fragments, shared) = if rejected_design {
+        let unread = || Read {
+            metadata: family::Read {
+                failed: false,
+                blocked: false,
+                condition_pending: false,
+                missing: vec![],
+                support: vec![],
+                scope: Scope::default(),
+            },
+            value: None,
+            domains: vec![],
+            condition: None,
+            unsupported: None,
+        };
+        (unread(), unread())
+    } else {
+        let capture = design.is_some() || p.requests().reads_assembly_domains(&r.id);
+        (
+            read(reader, head, &values, capture, design.is_some())?,
+            read(reader, along, &values, capture, design.is_some())?,
+        )
+    };
     let mut missing = fragments.metadata.missing.clone();
     missing.extend(shared.metadata.missing.iter().cloned());
     missing.sort();
@@ -351,7 +511,9 @@ pub(super) fn prepare(
         None
     };
     let mut checked_ownership = false;
-    let preparation = if let Some(problem) = layout_problem {
+    let preparation = if rejected_design {
+        rejected.ok_or(internal!("設計選択の拒否理由がない"))?
+    } else if let Some(problem) = layout_problem {
         Preparation::Unsupported(problem)
     } else if let Some(Preparation::Unsupported(problem)) = rejected.as_ref() {
         Preparation::Unsupported(problem.clone())
@@ -359,6 +521,30 @@ pub(super) fn prepare(
         Preparation::Rejected(problem)
     } else if let Some(rejected) = rejected {
         rejected
+    } else if let Some(failure) = [
+        (&fragments.metadata, fragments.condition.as_ref()),
+        (&shared.metadata, shared.condition.as_ref()),
+    ]
+    .into_iter()
+    .find_map(|(read, failure)| read.failed.then_some(failure).flatten())
+    {
+        let mut facts = failure.support.clone();
+        for value in [&failure.values.0, &failure.values.1] {
+            if matches!(value, Scalar::Subject { .. }) {
+                facts.push(fact(value)?);
+            }
+        }
+        facts.retain(|fact| !reader.has_primitive_override(fact) && !selected.contains_key(fact));
+        facts.sort();
+        facts.dedup();
+        Preparation::Rejected(model_assembly::Rejection {
+            affects_layout: true,
+            detail: failure.detail.into(),
+            facts,
+            values: Some(failure.values.clone()),
+            repaired: [None, None],
+            location: Some(archsig_common::issue::Location::Law { span: failure.span }),
+        })
     } else if fragments.metadata.failed || shared.metadata.failed {
         model_assembly::rejected(
             "組立てViewの束縛または適用条件が成立しない",
@@ -489,6 +675,8 @@ pub(super) fn prepare(
         fragments,
         interfaces: shared,
         bindings,
+        design: design.map(|(reference, _)| reference),
+        rejected_design_origin,
         locals,
         restrictions,
         repaired,

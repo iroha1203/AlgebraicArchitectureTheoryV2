@@ -26,6 +26,7 @@ pub(in crate::observed) enum Preparation {
 pub(in crate::observed) struct Read {
     pub failed: bool,
     pub blocked: bool,
+    pub condition_pending: bool,
     pub missing: Vec<Fact>,
     pub support: Vec<Fact>,
     pub scope: Scope,
@@ -72,12 +73,21 @@ pub(in crate::observed) fn read_with_value(
             change_evaluation::known(value.clone()),
         );
     }
+    if let Some(failure) = &checks.failure {
+        env.capture_assembly_condition(
+            declaration.span,
+            "View束縛のownerが一致しない",
+            failure,
+            &checks.support,
+        );
+    }
     let mut scope = checks.scope;
     scope.readings.insert(declaration.reading.clone());
     let value = if checks.failure.is_none() && !checks.blocked {
-        Some(env.scoped_ast(*body, &vars, &scope, &declaration.reading)?)
+        env.scoped_ast(*body, &vars, &scope, &declaration.reading)
+            .map(Some)
     } else {
-        None
+        Ok(None)
     };
     let missing = collector
         .restore()
@@ -90,14 +100,23 @@ pub(in crate::observed) fn read_with_value(
         .ok_or(internal!("入力viewの読取り位置収集がない"))?;
     let mut support = checks.support;
     support.extend(reads);
+    if matches!(&value, Err(ValidationFailure::UnsupportedExpression { .. }))
+        && let Some(trace) = env.state.assembly_domains.borrow_mut().as_mut()
+        && trace.fixed_design
+    {
+        trace.scope.merge(&scope);
+        trace.support.extend(support.iter().cloned());
+        trace.missing.extend(missing.iter().cloned());
+    }
+    let value = value?;
     let mut failed = checks.failure.is_some();
-    let mut blocked = checks.blocked || unresolved;
+    let mut condition_pending = checks.blocked;
     let mut known = None;
     if let Some(value) = value {
         support.extend(value.support.iter().cloned());
         scope.merge(&value.scope);
         failed |= value.condition_failed;
-        blocked |= value.condition_pending;
+        condition_pending |= value.condition_pending;
         if !failed && value.known_value.is_none() && missing.is_empty() {
             return Err(unsupported(
                 declaration.span,
@@ -106,7 +125,8 @@ pub(in crate::observed) fn read_with_value(
         }
         known = value.known_value;
     }
-    if blocked && missing.is_empty() {
+    let blocked = condition_pending || unresolved;
+    if blocked && missing.is_empty() && !failed {
         return Err(unsupported(
             declaration.span,
             "observation view requires valid primitive reads",
@@ -116,6 +136,7 @@ pub(in crate::observed) fn read_with_value(
         Read {
             failed,
             blocked,
+            condition_pending,
             missing: missing.into_iter().collect(),
             support: support
                 .into_iter()

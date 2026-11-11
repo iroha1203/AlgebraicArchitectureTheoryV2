@@ -580,6 +580,8 @@ pub(crate) struct Quantifier {
     // 元AST出現を区別する内部索引。wireの名前だけをidentityにしない。
     pub occurrence: (usize, usize),
     pub(super) context: Option<super::call::Context>,
+    // Unresolved domains have no Domain node to distinguish their actual occurrences.
+    pub(super) assembly_instance: Option<(NodeRef, usize)>,
 }
 impl Quantifier {
     pub(super) fn wire(&self) -> Json {
@@ -628,12 +630,28 @@ impl Scope {
         self.merge_quantifiers(&scope);
     }
     pub(crate) fn merge_quantifiers(&mut self, other: &Self) {
+        let mut assembly_instances = None;
         for q in &other.quantifiers {
+            if let Some(instance) = q.assembly_instance {
+                let instances = assembly_instances.get_or_insert_with(|| {
+                    self.quantifiers
+                        .iter()
+                        .filter_map(|q| {
+                            q.assembly_instance.map(|(source, index)| (source.0, index))
+                        })
+                        .collect::<BTreeSet<_>>()
+                });
+                if instances.insert((instance.0.0, instance.1)) {
+                    self.quantifiers.push(q.clone());
+                }
+                continue;
+            }
             if self.quantifiers.contains(q) {
                 continue;
             }
             let same = |old: &Quantifier| {
                 old.occurrence == q.occurrence
+                    && old.assembly_instance == q.assembly_instance
                     && old.kind == q.kind
                     && old.name == q.name
                     && old.ty == q.ty
@@ -667,6 +685,7 @@ impl Scope {
                 let mut q = q.clone();
                 q.domain = None;
                 q.context = None;
+                q.assembly_instance = None;
                 if !qs.contains(&q) {
                     qs.push(q);
                 }
@@ -679,12 +698,20 @@ impl Scope {
         )
     }
     pub(crate) fn merge(&mut self, other: &Self) {
+        self.merge_metadata(other);
+        self.merge_quantifiers(other);
+    }
+    pub(super) fn merge_metadata(&mut self, other: &Self) {
         self.readings.extend(other.readings.iter().cloned());
         self.snapshots.extend(other.snapshots.iter().cloned());
         self.modes.extend(other.modes.iter().cloned());
         self.completions |= other.completions;
         self.assignments |= other.assignments;
-        self.merge_quantifiers(other);
+    }
+    /// A fixed design point is the outer scope. Symbolic algebra on that
+    /// object keeps its own scope on the native nodes.
+    pub(super) fn restrict_to_design_point(&mut self) {
+        self.assignments = false;
     }
     pub(crate) fn wire(&self) -> Json {
         Json::obj([
@@ -4686,6 +4713,12 @@ impl Graph {
                 let domain_type = match &self.get(domain)?.payload {
                     Some(Payload::TypeDomain { ty }) | Some(Payload::Domain { ty, .. }) => ty,
                     Some(Payload::Construction(value)) => match &value.data {
+                        super::construction_result::ConstructionData::Build(data) => data
+                            .scope_domain_type()
+                            .ok_or(internal!("Scopeの組立て参照が量化Domainでない"))?,
+                        super::construction_result::ConstructionData::ModelMap(data) => data
+                            .scope_domain_type()
+                            .ok_or(internal!("Scopeの移行参照が量化Domainでない"))?,
                         super::construction_result::ConstructionData::Change(data) => data
                             .scope_domain_type()
                             .ok_or(internal!("Scopeの修復参照が量化Domainでない"))?,
@@ -5306,6 +5339,7 @@ mod invariant_tests {
             ty: Type::Bool,
             domain: Some(NodeRef(1)),
             occurrence: (10, 20),
+            assembly_instance: None,
             context: Some(super::super::call::Context::default()),
         };
         let a_other_domain = Quantifier {
@@ -5358,6 +5392,7 @@ mod invariant_tests {
             ty: Type::Bool,
             domain: None,
             occurrence: (10, 20),
+            assembly_instance: None,
             context: None,
         }]);
         for case in 0..5 {
@@ -5390,6 +5425,7 @@ mod invariant_tests {
             ty: Type::Bool,
             domain: Some(NodeRef(1)),
             occurrence: (10, 20),
+            assembly_instance: None,
             context: Some(super::super::call::Context::default()),
         };
         let mut changed_context = q.clone();
@@ -5429,6 +5465,7 @@ mod invariant_tests {
             ty: Type::Bool,
             domain: None,
             occurrence: (10, 20),
+            assembly_instance: None,
             context: None,
         };
         let b = Quantifier {

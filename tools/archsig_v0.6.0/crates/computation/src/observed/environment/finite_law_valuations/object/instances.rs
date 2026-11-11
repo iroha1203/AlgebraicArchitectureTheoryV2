@@ -205,6 +205,7 @@ fn populate_with_environment(
                 ty: p.ty.clone(),
                 domain: None,
                 occurrence: p.span,
+                assembly_instance: None,
                 context: None,
             });
             scope.merge(&domain.scope);

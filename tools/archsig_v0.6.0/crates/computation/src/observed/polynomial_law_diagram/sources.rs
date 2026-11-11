@@ -384,6 +384,7 @@ fn original_bound(
                 ty: parameter.ty.clone(),
                 domain: None,
                 occurrence: parameter.span,
+                assembly_instance: None,
                 context: None,
             });
         }

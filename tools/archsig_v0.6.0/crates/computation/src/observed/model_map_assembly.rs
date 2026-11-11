@@ -7,10 +7,7 @@ use crate::construction::{
 };
 use archsig_common::control::{Checkpoint, Control};
 use archsig_input::{archmap::Fact, input::CheckedInputs};
-use std::{
-    collections::{BTreeMap, BTreeSet},
-    sync::Arc,
-};
+use std::{collections::BTreeMap, sync::Arc};
 
 #[derive(Debug)]
 pub(super) struct Local {
@@ -39,6 +36,13 @@ impl SquareKind {
     }
 }
 #[derive(Debug)]
+pub(super) enum CoverageWitness {
+    Outside { from: bool, subject: Fact },
+    Uncovered(Fact),
+    Duplicate { first: Fact, second: Fact },
+}
+
+#[derive(Debug)]
 pub(super) enum Failure {
     Missing(Vec<Fact>),
     Unsupported {
@@ -47,6 +51,7 @@ pub(super) enum Failure {
     },
     Coverage {
         facts: Vec<Fact>,
+        endpoint: Option<CoverageWitness>,
     },
     SharedImage {
         left_correspondence: Fact,
@@ -57,6 +62,7 @@ pub(super) enum Failure {
     },
     Preservation {
         facts: Vec<Fact>,
+        reference_difference: Option<[Fact; 2]>,
     },
     Square {
         kind: SquareKind,
@@ -70,9 +76,10 @@ pub(super) fn select(
     source: &Model,
     target: &Model,
     correspondences: &[Fact],
+    retain_reference_difference: bool,
     c: &Control,
 ) -> Result<Result<Vec<Local>, Failure>, ConstructionFailure> {
-    use super::model_assembly::{counterexample_facts, field_fact, subject};
+    use super::model_assembly::{counterexample_facts, field_fact, observed_fact, subject};
     use archsig_input::{
         archmap::{Slot, Value},
         definition::model::PrimitiveSignature,
@@ -114,6 +121,7 @@ pub(super) fn select(
         } = &declaration.signature
         else {
             return Ok(Err(Failure::Coverage {
+                endpoint: None,
                 facts: vec![raw.clone()],
             }));
         };
@@ -132,6 +140,7 @@ pub(super) fn select(
             }));
         }
         let mut endpoints = Vec::new();
+        let mut endpoint_facts = Vec::new();
         let mut missing = Vec::new();
         for name in ["from", "to"] {
             let field = holder
@@ -147,6 +156,9 @@ pub(super) fn select(
                     value: Value::Ref { snapshot, subject },
                     ..
                 } => {
+                    if retain_reference_difference {
+                        endpoint_facts.push(observed_fact(holder, field));
+                    }
                     endpoints.push(Fact::from(archsig_input::archmap::FactData {
                         snapshot: snapshot.clone(),
                         subject: subject.clone(),
@@ -168,8 +180,14 @@ pub(super) fn select(
             source_index.get(&endpoints[0]),
             target_index.get(&endpoints[1]),
         ) else {
+            let from = !source_index.contains_key(&endpoints[0]);
+            let subject = endpoints[usize::from(!from)].clone();
+            let mut facts = vec![raw.clone()];
+            facts.extend(endpoints);
+            facts.extend(endpoint_facts);
             return Ok(Err(Failure::Coverage {
-                facts: vec![raw.clone(), endpoints[0].clone(), endpoints[1].clone()],
+                endpoint: Some(CoverageWitness::Outside { from, subject }),
+                facts,
             }));
         };
         let result = maps::correspondence_constructed(
@@ -187,7 +205,21 @@ pub(super) fn select(
         let Some(map) = result.map() else {
             let mut facts = vec![raw.clone()];
             facts.extend(counterexample_facts(result.counterexamples()));
-            return Ok(Err(Failure::Preservation { facts }));
+            let reference_difference = if retain_reference_difference {
+                for field in &holder.fields {
+                    tick(c)?;
+                    if matches!(&field.slot, Slot::Known { .. }) {
+                        facts.push(observed_fact(holder, field));
+                    }
+                }
+                first_reference_difference(inputs, &result, c)?
+            } else {
+                None
+            };
+            return Ok(Err(Failure::Preservation {
+                facts,
+                reference_difference,
+            }));
         };
         locals.push(Local {
             correspondence: raw.clone(),
@@ -197,6 +229,46 @@ pub(super) fn select(
         });
     }
     Ok(Ok(locals))
+}
+fn first_reference_difference(
+    inputs: &CheckedInputs,
+    result: &maps::CorrespondenceResult,
+    c: &Control,
+) -> Result<Option<[Fact; 2]>, ConstructionFailure> {
+    let Some(candidate) = result.candidate() else {
+        return Ok(None);
+    };
+    let referent = |fact: &Fact| -> Option<Fact> {
+        let subject = super::model_assembly::subject(inputs, fact).ok()?;
+        let field = fact.field.as_ref()?;
+        let field = subject.fields.iter().find(|f| &f.name == field)?;
+        let archsig_input::archmap::Slot::Known {
+            value: archsig_input::archmap::Value::Ref { snapshot, subject },
+            ..
+        } = &field.slot
+        else {
+            return None;
+        };
+        Some(Fact::from(archsig_input::archmap::FactData {
+            snapshot: snapshot.clone(),
+            subject: subject.clone(),
+            field: None,
+            atom: None,
+        }))
+    };
+    for row in result.counterexamples() {
+        tick(c)?;
+        let maps::Counterexample::ReferenceStructure { source, target } = row else {
+            continue;
+        };
+        if let (Some(source), Some(actual)) = (referent(source), referent(target))
+            && let Some(expected) = candidate.image(&source)
+            && expected != &actual
+        {
+            return Ok(Some([expected.clone(), actual]));
+        }
+    }
+    Ok(None)
 }
 #[derive(Debug)]
 pub(super) struct Verified {
@@ -386,7 +458,7 @@ pub(super) fn glue(
     c: &Control,
 ) -> Result<Result<Glued, Failure>, ConstructionFailure> {
     tick(c)?;
-    let mut covered = BTreeSet::new();
+    let mut covered = BTreeMap::new();
     for local in &locals {
         tick(c)?;
         let (Some(s), Some(t)) = (
@@ -394,16 +466,22 @@ pub(super) fn glue(
             target.fragments.get(local.target),
         ) else {
             return Ok(Err(Failure::Coverage {
+                endpoint: None,
                 facts: vec![local.correspondence.clone()],
             }));
         };
-        if !covered.insert(local.source)
+        let duplicate = covered.insert(local.source, &local.correspondence);
+        if duplicate.is_some()
             || local.map.candidate().source_root() != s.root()
             || local.map.candidate().target_root() != t.root()
             || local.map.candidate().reading() != s.reading()
             || local.map.candidate().to_reading() != t.reading()
         {
             return Ok(Err(Failure::Coverage {
+                endpoint: duplicate.map(|first| CoverageWitness::Duplicate {
+                    first: first.clone(),
+                    second: local.correspondence.clone(),
+                }),
                 facts: vec![
                     local.correspondence.clone(),
                     s.root().clone(),
@@ -413,14 +491,16 @@ pub(super) fn glue(
         }
     }
     if covered.len() != source.fragments.len() {
+        let facts = source
+            .fragments
+            .iter()
+            .enumerate()
+            .filter(|(i, _)| !covered.contains_key(i))
+            .map(|(_, s)| s.root().clone())
+            .collect::<Vec<_>>();
         return Ok(Err(Failure::Coverage {
-            facts: source
-                .fragments
-                .iter()
-                .enumerate()
-                .filter(|(i, _)| !covered.contains(i))
-                .map(|(_, s)| s.root().clone())
-                .collect(),
+            endpoint: facts.first().cloned().map(CoverageWitness::Uncovered),
+            facts,
         }));
     }
     let mut subjects: BTreeMap<Fact, (Fact, usize)> = BTreeMap::new();
@@ -435,6 +515,7 @@ pub(super) fn glue(
             tick(c)?;
             let Some(image) = local.map.candidate().image(fact) else {
                 return Ok(Err(Failure::Preservation {
+                    reference_difference: None,
                     facts: vec![local.correspondence.clone(), fact.clone()],
                 }));
             };
@@ -467,6 +548,7 @@ pub(super) fn glue(
     )?
     else {
         return Ok(Err(Failure::Preservation {
+            reference_difference: None,
             facts: locals.iter().map(|l| l.correspondence.clone()).collect(),
         }));
     };
@@ -515,6 +597,7 @@ pub(super) fn glue(
             maps::assembled_map(inputs, source_image, target_image, restricted_subjects, c)?
         else {
             return Ok(Err(Failure::Preservation {
+                reference_difference: None,
                 facts: vec![local.correspondence.clone()],
             }));
         };
@@ -1090,9 +1173,16 @@ mod tests {
     fn raw_correspondences_glue_and_preserve_global_generators_and_laws() {
         let (inputs, model) = mapped(|s| s);
         let c = Control::unlimited();
-        let locals = select(&inputs, &model, &model, &[fact("moveA"), fact("moveB")], &c)
-            .unwrap()
-            .unwrap();
+        let locals = select(
+            &inputs,
+            &model,
+            &model,
+            &[fact("moveA"), fact("moveB")],
+            false,
+            &c,
+        )
+        .unwrap()
+        .unwrap();
         let glued = glue(&inputs, &model, &model, locals, &c).unwrap().unwrap();
         let readings = Arc::new(
             crate::construction::readings::object_reading_instances_checked(
@@ -1194,9 +1284,16 @@ mod tests {
     }
     fn evaluate(inputs: Arc<CheckedInputs>, source: &Arc<Model>, target: &Arc<Model>) -> Verified {
         let c = Control::unlimited();
-        let locals = select(&inputs, source, target, &[fact("moveA"), fact("moveB")], &c)
-            .unwrap()
-            .unwrap();
+        let locals = select(
+            &inputs,
+            source,
+            target,
+            &[fact("moveA"), fact("moveB")],
+            false,
+            &c,
+        )
+        .unwrap()
+        .unwrap();
         let glued = glue(&inputs, source, target, locals, &c).unwrap().unwrap();
         let caches = [source, target].map(|model| {
             let readings = Arc::new(
@@ -1264,6 +1361,7 @@ mod tests {
             &model,
             &model,
             &[fact("moveA"), fact("moveB")],
+            false,
             &Control::unlimited(),
         )
         .unwrap()

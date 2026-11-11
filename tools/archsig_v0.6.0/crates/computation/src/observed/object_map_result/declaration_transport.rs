@@ -1237,6 +1237,7 @@ pub(super) fn retain(
                     ty: parameter.ty.clone(),
                     domain: None,
                     occurrence: parameter.span,
+                    assembly_instance: None,
                     context: None,
                 })
                 .collect();

@@ -3,6 +3,29 @@ use super::*;
 use archsig_common::control::CheckFailure;
 
 impl<'a> Environment<'a> {
+    pub(in crate::observed) fn has_primitive_override(&self, fact: &Fact) -> bool {
+        self.indexes
+            .primitive_valuation
+            .as_ref()
+            .is_some_and(|values| values.contains_key(fact))
+    }
+
+    pub(in crate::observed) fn with_fixed_primitive_values(
+        &self,
+        assignments: &[(Fact, Scalar)],
+        control: &Control,
+    ) -> Result<Self, ValidationFailure> {
+        let mut selected = self
+            .try_primitive_valuation_from(assignments, control)?
+            .ok_or(internal!("選択済み設計値が原始条件を満たさない"))?;
+        selected.indexes.fixed_primitive_valuation = true;
+        Ok(selected)
+    }
+
+    pub(super) fn primitive_values_vary(&self) -> bool {
+        self.indexes.primitive_valuation.is_some() && !self.indexes.fixed_primitive_valuation
+    }
+
     /// 全候補の生成器が選んだ値を検査し、独立した式評価環境を作る。
     /// 通常のGraph/観測評価への登録や、Law成立の証拠の供給は行わない。
     pub(in crate::observed) fn with_primitive_valuation(

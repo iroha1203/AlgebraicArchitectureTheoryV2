@@ -50,13 +50,13 @@ Kind     ::= build | assemble | assemble_map | evaluate | check | map | compose 
 Head     ::= QName | Handle
 Argument ::= QName | Handle | Enum | Degree | Ordinal
 Handle   ::= "@" Id "/" Id | "$" Name ("." Name | "[" Index "]")*
-Key      ::= Name | "bind." Name | "local." Name
+Key      ::= Name | "bind." Name | "local." Name | "design." Name
 Index    ::= "0" | [1-9][0-9]*
 Degree   ::= Index
 Ordinal  ::= Index
 ```
 
-`local.` の Key は `assemble` にだけ指定できる。
+`local.` と `design.` の Key は `assemble` にだけ指定できる。
 QName、Id、Nameは[入力](inputs.md)と[Law](law.md)の定義に従う。
 ただし固定引数名と公開された射影名の位置では、then、law、some等の当該固定語を受理する。
 Lawの予約語と重なることを理由に、これらの位置の固定語を拒否しない。
@@ -123,7 +123,7 @@ buildの`on=@root`はownerを持たないentityの原始参照を要求する。
 | 問いの正確な形 | 選択と返すfield |
 | --- | --- |
 | `build(Reading,on=Handle)` | rootとreadingから対象と有限表示のobject algebraを生成する。`proposition:Proposition`、構成できた`object:Architecture`、成立時`algebra:ObjectAlgebra` |
-| `assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…)` | 局所rootと共有対から対象を構成する。`proposition:Proposition`、成立時`assembly:ModelAssembly`、`object:Architecture`、`algebra:ObjectAlgebra` |
+| `assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…,design.<parameter>=Handle?)` | 局所rootと共有対から対象を構成する。`proposition:Proposition`、成立時`assembly:ModelAssembly`、`object:Architecture`、`algebra:ObjectAlgebra` |
 | `assemble_map(View,from=Handle,to=Handle,B)` | 始終のModelAssemblyと担当別の原始correspondenceから全体写像を構成する。`proposition:Proposition`、作用構成時`candidate:MapCandidate`、configuration保存時`configuration_map:ConfigurationMap`、全条件成立時`map:ModelMapAssembly` |
 | `evaluate(View,on=Handle?,B)` | viewの全parameterを束縛して評価する。onは結果のArchitectureを読む環境。`value:T`、`evaluation:Evaluation`。TはPathやそのcontainerを含むLawの返り型 |
 | `check(Law,on=Handle?,B)` | Lawの選択instance族について、未束縛parameterと内部量化を保って成立を問う。onは結果のArchitectureを読む環境。`proposition:Proposition`、`evaluation:Evaluation` |
@@ -383,7 +383,7 @@ apply は現在入力の通常の所属・更新式・元Law検査を行い、�
 
 ### 有限の局所モデルを組み立てる問い
 
-`assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…)` は、担当別の root の有限集合を返す View と、
+`assemble(View,on=Handle,along=View,B,local.<parameter>=Handle…,design.<parameter>=Handle?)` は、担当別の root の有限集合を返す View と、
 共有する個体の対を返す along の View を同じ明示束縛 B で評価する。
 両 View は同じ reading に属し、parameter の名前・型を共有する。全 parameter を束縛する。
 第1 View の戻り型は owner を持たない同じ entity 型の `Set<Root>` とする。
@@ -401,6 +401,14 @@ parameter は第1 View の root 型引数で、束縛値と `apply` の元 root�
 異なる引数で同じ担当を二重選択した場合や別担当の `apply` を選んだ場合は整合失敗になる。
 同じ Key を二度書くと不正な問いになる。指定のない担当は原始状態を読む。
 局所の全候補を自動選択する処理は行わず、利用者が各 `candidate` と `apply` を明示する。
+
+有限の構造候補を読み分けるときは、`design.<parameter>=$applyId.object` を一つ指定できる。
+parameter は担当 root と異なる型の ownerless 設計主体で、両 View に明示束縛する。
+設計主体の型・個体・snapshot・reading を `apply` の元と照合し、その実更新値で
+担当集合と共有対を読む。表示名はこの照合に使わない。後続 `assemble_map` は
+選ばれた担当と個体構成に対して対応の始終域と操作を検査する。対応 View は両端で選んだ設計値を読み、
+両端で同じ設計主体を選んだ場合は、終域の更新値と更新されなかった観測値を使う。
+設計値を読む二つの View は選択済みの一点で評価する。分岐を選ぶ観測が欠けると、必要な位置を持つ未決を返す。反証の `condition_detail` は失敗した組立て条件を示す。
 
 返す field は `proposition:Proposition`、成立時 `assembly:ModelAssembly`、
 `object:Architecture`、`algebra:ObjectAlgebra` とする。

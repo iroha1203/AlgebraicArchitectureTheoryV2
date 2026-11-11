@@ -260,6 +260,7 @@ fn metadata(
                 ty: p.ty.erase(),
                 domain: None,
                 occurrence: p.span,
+                assembly_instance: None,
                 context: Some(caller(graph, w)?),
             });
         }

@@ -1,0 +1,332 @@
+{
+  "format": "archsig.archmap/2",
+  "semantics": "archsig/0.6.0",
+  "vocabularies": [
+    {
+      "namespace": "E12",
+      "version": "1",
+      "digest": "sha256:f9a50b83fbbcedae61d81ca66821d2e36765ae4b62dc4f705c1c4889e581a79a"
+    }
+  ],
+  "sources": [],
+  "origins": [
+    {
+      "id": "reduced-e12",
+      "mode": "specification",
+      "method": "E12 の T3 対応と有限配置の仕様例。",
+      "note": "二つの配置と選択主体を追加した仕様入力。",
+      "locations": []
+    }
+  ],
+  "snapshots": [
+    {
+      "id": "comparison",
+      "origin": "reduced-e12",
+      "subjects": [
+        {
+          "id": "native-output1",
+          "type": "E12.Root",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3",
+          "type": "E12.Root",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-before",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-after",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-consume",
+          "type": "E12.Consume",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-output1",
+          "type": "E12.Root",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3",
+          "type": "E12.Root",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-before",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-after",
+          "type": "E12.State",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-consume",
+          "type": "E12.Consume",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-T3",
+          "type": "E12.Route",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "plan",
+          "type": "E12.Design",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "lookalike",
+          "type": "E12.Design",
+          "origin": "reduced-e12"
+        }
+      ],
+      "atoms": [
+        {
+          "id": "native-T3-before.owner",
+          "subject": "native-T3-before",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "native-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-before.quantity",
+          "subject": "native-T3-before",
+          "field": "E12.State.quantity",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-after.owner",
+          "subject": "native-T3-after",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "native-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-after.quantity",
+          "subject": "native-T3-after",
+          "field": "E12.State.quantity",
+          "value": "16",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-consume.owner",
+          "subject": "native-T3-consume",
+          "field": "E12.Consume.owner",
+          "value": [
+            "comparison",
+            "native-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-consume.from",
+          "subject": "native-T3-consume",
+          "field": "E12.Consume.from",
+          "value": [
+            "comparison",
+            "native-T3-before"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "native-T3-consume.to",
+          "subject": "native-T3-consume",
+          "field": "E12.Consume.to",
+          "value": [
+            "comparison",
+            "native-T3-after"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-before.owner",
+          "subject": "rust-T3-before",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "rust-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-before.quantity",
+          "subject": "rust-T3-before",
+          "field": "E12.State.quantity",
+          "value": "0",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-after.owner",
+          "subject": "rust-T3-after",
+          "field": "E12.State.owner",
+          "value": [
+            "comparison",
+            "rust-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-after.quantity",
+          "subject": "rust-T3-after",
+          "field": "E12.State.quantity",
+          "value": "16",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-consume.owner",
+          "subject": "rust-T3-consume",
+          "field": "E12.Consume.owner",
+          "value": [
+            "comparison",
+            "rust-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-consume.from",
+          "subject": "rust-T3-consume",
+          "field": "E12.Consume.from",
+          "value": [
+            "comparison",
+            "rust-T3-before"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "rust-T3-consume.to",
+          "subject": "rust-T3-consume",
+          "field": "E12.Consume.to",
+          "value": [
+            "comparison",
+            "rust-T3-after"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-T3.from",
+          "subject": "move-T3",
+          "field": "E12.Route.from",
+          "value": [
+            "comparison",
+            "native-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-T3.to",
+          "subject": "move-T3",
+          "field": "E12.Route.to",
+          "value": [
+            "comparison",
+            "rust-T3"
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-T3.states",
+          "subject": "move-T3",
+          "field": "E12.Route.states",
+          "value": [
+            [
+              [
+                "comparison",
+                "native-T3-before"
+              ],
+              [
+                "comparison",
+                "rust-T3-before"
+              ]
+            ],
+            [
+              [
+                "comparison",
+                "native-T3-after"
+              ],
+              [
+                "comparison",
+                "rust-T3-after"
+              ]
+            ]
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "move-T3.consumes",
+          "subject": "move-T3",
+          "field": "E12.Route.consumes",
+          "value": [
+            [
+              [
+                "comparison",
+                "native-T3-consume"
+              ],
+              [
+                "comparison",
+                "rust-T3-consume"
+              ]
+            ]
+          ],
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "plan-label",
+          "subject": "plan",
+          "field": "E12.Design.label",
+          "value": "shared-label",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "plan-split",
+          "subject": "plan",
+          "field": "E12.Design.split",
+          "value": false,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "lookalike-label",
+          "subject": "lookalike",
+          "field": "E12.Design.label",
+          "value": "shared-label",
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "lookalike-split",
+          "subject": "lookalike",
+          "field": "E12.Design.split",
+          "value": false,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "plan-reversed",
+          "subject": "plan",
+          "field": "E12.Design.reversed",
+          "value": false,
+          "origin": "reduced-e12"
+        },
+        {
+          "id": "lookalike-reversed",
+          "subject": "lookalike",
+          "field": "E12.Design.reversed",
+          "value": true,
+          "origin": "reduced-e12"
+        }
+      ]
+    }
+  ]
+}

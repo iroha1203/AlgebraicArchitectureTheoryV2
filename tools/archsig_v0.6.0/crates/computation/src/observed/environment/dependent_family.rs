@@ -379,6 +379,7 @@ impl Environment<'_> {
                 ty: p.ty.erase(),
                 domain,
                 occurrence: p.span,
+                assembly_instance: None,
                 context: (numeric_parameters::numeric_width(&p.ty).is_none()).then_some(context),
             };
             if actual.is_empty() {

@@ -943,6 +943,7 @@ pub(super) fn retain(
                     ty: p.ty.clone(),
                     domain: None,
                     occurrence: p.span,
+                    assembly_instance: None,
                     context: None,
                 })
                 .collect::<Vec<_>>();

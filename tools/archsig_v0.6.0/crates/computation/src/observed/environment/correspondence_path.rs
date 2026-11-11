@@ -43,7 +43,7 @@ impl Environment<'_> {
             failure: None,
         };
         out.scope.readings.insert(reading.into());
-        out.scope.assignments = self.indexes.primitive_valuation.is_some();
+        out.scope.assignments = self.primitive_values_vary();
         let from = self.path_slot(
             original,
             self.indexes

@@ -1044,6 +1044,7 @@ fn consume(
     let mut selected_ranges = vec![];
     let mut target_set = None;
     let mut invalid = false;
+    let mut apply_failure = None;
     if r.kind == QuestionKind::Solve {
         let a = r
             .arguments
@@ -1138,6 +1139,7 @@ fn consume(
         };
         enabled = target_range;
         invalid |= !same_domain(&shared, &other);
+        let same_candidate_domain = !invalid;
         chosen = None;
         if !invalid {
             let original = previous_chosen
@@ -1160,6 +1162,15 @@ fn consume(
                 chosen = other.compiled.relations.witness(&target_pins, c)?;
                 invalid = chosen.is_none();
             }
+        }
+        if invalid {
+            apply_failure = Some(if same_candidate_domain {
+                ("apply_assignment_in_solution_set", inputs[0], at)
+            } else if shared.domain != other.domain {
+                ("apply_same_candidate_domain", shared.domain, other.domain)
+            } else {
+                ("apply_same_candidate_domain", inputs[0], at)
+            });
         }
         shared = other;
     }
@@ -1185,7 +1196,48 @@ fn consume(
     };
     let mut ranges = BTreeMap::new();
     let mut outputs = BTreeMap::new();
-    let (claim, status) = if invalid {
+    let mut apply_counterexample = None;
+    let (claim, status) = if let Some((requirement, left, right)) = apply_failure {
+        let label = change_result::value(&mut b, &Scalar::Text(requirement.into()))?;
+        let operands = std::iter::once(label)
+            .chain(inputs.iter().copied())
+            .collect();
+        let counterexample = b.push(
+            NodeType::Evidence,
+            "evidence",
+            Json::obj([
+                ("kind", Json::str(EvidenceKind::Counterexample.name())),
+                (
+                    "data",
+                    Json::obj([
+                        ("bindings", Json::Arr(vec![])),
+                        ("paths", Json::Arr(vec![])),
+                        ("left", left.wire()),
+                        ("right", right.wire()),
+                        ("facts", Json::Arr(vec![])),
+                        ("condition_detail", Json::str(requirement)),
+                    ]),
+                ),
+            ]),
+            vec![left, right],
+            None,
+        )?;
+        let claim = b.proposition(
+            "constructible",
+            operands,
+            vec![counterexample],
+            Decision::Refuted,
+        )?;
+        let part = &mut b.parts[claim.0 - base];
+        part.evidence.push(counterexample);
+        part.judgment
+            .as_mut()
+            .ok_or(internal!("applyの反証判断がない"))?
+            .evidence
+            .push(counterexample);
+        apply_counterexample = Some(counterexample);
+        (claim, Decision::Refuted)
+    } else if invalid {
         (
             condition(&mut b, r, inputs.clone(), Decision::Refuted)?,
             Decision::Refuted,
@@ -1305,6 +1357,7 @@ fn consume(
         (claim, Decision::Established)
     };
     let mut a = answer(r, claim, status, outputs, &b);
+    a.evidence.extend(apply_counterexample);
     if invalid {
         fail(&mut a, r.kind.wire());
     }

@@ -95,7 +95,11 @@ EvaluationResultのPayloadはEvaluationを下表の欄へ射影した値とす�
 到達しないnodeを除き、同じ型・値・環・基底・関係を持つ表示だけを共有する。
 Expression は元式の位置、束縛、parameter、条件、理由を含む保存内容と核の結果型が一致する場合に共有する。
 同じ観測要件で複数の dependents が共有後に同じ参照を指すときは、先頭の参照を残す。
-量化域と量化子の多重度は Scope に保存する。
+量化域と量化子の多重度は Scope に保存する。設計を固定した組立て・移行で担当・共有・対応 View の
+量化域を列挙できたときは、組立てが反証された場合も `domain.node` から実際の要素を辿れる。
+有限修復の `apply` が反証されたときは、失敗条件の命題が Assignment と SolutionSet を取り、
+候補域の不一致を `apply_same_candidate_domain`、同じ候補域内での非所属を
+`apply_assignment_in_solution_set` で区別する。
 保存用node IDはこの値グラフの参照であり、内部導出の番号と一致することを要求しない。
 数学的な値・型・全解・条件・反例の検査と、後続要求が消費する型付き結果は射影前に保持する。
 通常の短い回答表示は[実行 §5](execution.md#5-ファイル操作と出力)に従う。
@@ -477,7 +481,7 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 | Proposition | `{predicate:Predicate,operands:Ref[],quantifiers:Quantifier[]}` |
 | Configuration | `{family:FactPointer[],requirements:FactPointer[],relations:[FactPointer,FactPointer][],identifications:[FactPointer,FactPointer][]}` |
 | Architecture | `{reading:QName,root:Ref,configuration:Configuration,laws:LawInstance[],internal_arrows:Ref[],overrides:{slot:Slot,value:Ref}[],state_of?:Architecture}` |
-| ModelAssembly | `{reading:QName,fragments:Ref,interfaces:Ref,object:Architecture,algebra:ObjectAlgebra,inclusions:{fragment:Architecture,applied?:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,generators:{source:Operation,target:Operation,proposition:Proposition}[]}[]}` |
+| ModelAssembly | `{reading:QName,fragments:Ref,interfaces:Ref,design?:Architecture,object:Architecture,algebra:ObjectAlgebra,inclusions:{fragment:Architecture,applied?:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,generators:{source:Operation,target:Operation,proposition:Proposition}[]}[]}` |
 | ModelMapAssembly | `{source:Architecture,target:Architecture,source_assembly:ModelAssembly,target_assembly:ModelAssembly,correspondences:Ref,configuration_map:ConfigurationMap,locals:{correspondence:Ref,source:Architecture,target:Architecture,map:ConfigurationMap,restriction:ConfigurationMap,proposition:Proposition}[],generators:{source:Operation,target:Operation,proposition:Proposition}[],laws:{source_object:ObjectComponent,target_object:ObjectComponent,source_law:LawInstance,target_law:LawInstance,proposition:Proposition}[]}` |
 | AtomUniverse | `{atoms:FactPointer[]}` |
 | AtomMap | `{universe:AtomUniverse,images:FactPointer[]}` |
@@ -490,6 +494,10 @@ Expressionは原式または核の固定変換を表し、自由parameterとbind
 更新値を共有する。部分対象の所属域と Law の適用は、その component に対して確認する。
 
 ModelAssembly の fragments と interfaces は、元 View・束縛から評価した型付き値を指す。
+`design` は両 View の評価に使った実 `apply` の出力を指す。
+設計選択付きの組立てとその移行は、選択した構成を回答の範囲とする。構成上の代数の
+割当てと代数の量化域は各導出に属する。回答の Scope は実際に読んだ担当・共有・対応 View の
+量化出現を保持し、後段の構成が未決の場合も、確定した有限域を辿れる。
 `local.<parameter>` を選んだ担当は `inclusions[].applied` がその `apply` の出力を直接参照する。
 `fragment` は同じ更新値を保ち、組立てと共通の U で包含・再制限を検査するための局所対象である。
 各 inclusion.map は同じ全体 object を終域とし、generators は局所の各生成操作の像と全 U 上の
@@ -1021,7 +1029,7 @@ Evidenceは結果専用。`{kind:EvidenceKind,data:EvidenceData}`をpayloadと�
 | --- | --- |
 | evaluation | `{instance:LawInstance,lhs:Ref,rhs:Ref,residual?:Ref}` |
 | finite_exhaustion | `{domain:Domain,checked:Nat,instances:Ref[]}` |
-| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[],action_difference?:AssemblyActionDifference,overlap?:AssemblyOverlap,repaired?:{side:"left"\|"right",object:Architecture,slot:Slot}[]}` |
+| counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[],action_difference?:AssemblyActionDifference,overlap?:AssemblyOverlap,condition_detail?:String,repaired?:{side:"left"\|"right",object:Architecture,slot:Slot}[]}` |
 | linear_solution | `{map:ModuleMap,rhs:Vector,solution:Vector,recheck:Proposition}` |
 | linear_inconsistent | `{map:ModuleMap,rhs:Vector,annihilator:Vector,pairing:Ref,modulus?:DecimalNat}` |
 | rational_polyhedron | `{equalities:ModuleMap,rhs:Vector,inequalities:ModuleMap,upper_bounds:Vector,outcome:"empty"\|"unique"\|"multiple",contradiction?:Vector,point?:Vector,second?:Vector,coordinate_bounds?:{lower:Vector,upper:Vector}[]}` |
@@ -1055,6 +1063,9 @@ restrictionではρ_target∘μ_hat_iとμ_i∘ρ_source、generatorではμ∘e
 `AssemblyOverlap={source:FactPointer,left_correspondence:FactPointer,right_correspondence:FactPointer,
 left:FactPointer,right:FactPointer}` は、同じ共有類へ異なる像を指定した二つの原始対応を保持する。
 これらは核が計算した反例の位置であり、新しい観測値や入力証書ではない。
+設計選択付き組立ての反例は `condition_detail` に具体的な失敗理由を保持する。
+選択済み構成を使う移行の端点不一致は、欠けている側、実端点とその側の組立てを保持する。
+局所対応が観測済みの単一参照を保存しない場合は、始域の参照を運んだ像と実際の終域参照を保持する。
 組立てで共有 field の値が合わない場合、修復済みの側は `repaired` に元 `apply` と slot を保持する。
 `left` と `right` は実際に比較した値、`facts` は原始観測の支持である。
 

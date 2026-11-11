@@ -28,6 +28,7 @@ pub(super) trait Interpretation {
         vars: &BTreeMap<String, Self::Value>,
         law: &CheckedLaw,
         c: &Control,
+        domains: Option<&DomainRead<'_>>,
     ) -> Result<Self::Value, ValidationFailure>;
     fn bind(
         vars: &BTreeMap<String, Self::Value>,
@@ -74,41 +75,42 @@ pub(super) fn expression<I: Interpretation>(
     vars: &BTreeMap<String, I::Value>,
     law: &CheckedLaw,
     c: &Control,
+    domains: Option<&DomainRead<'_>>,
 ) -> Result<Option<I::Value>, ValidationFailure> {
     Ok(Some(match &e.kind {
         ExprKind::Match { scrutinee, arms } => {
-            let input = I::eval(term, *scrutinee, vars, law, c)?;
+            let input = I::eval(term, *scrutinee, vars, law, c, domains)?;
             match I::select_match(term, arms, input, vars, law, c)? {
-                Some((body, local)) => I::eval(term, body, &local, law, c)?,
+                Some((body, local)) => I::eval(term, body, &local, law, c, domains)?,
                 None => I::unmatched(ty)?,
             }
         }
-        ExprKind::Tuple(children) => I::tuple(items::<I>(term, children, vars, law, c)?),
+        ExprKind::Tuple(children) => I::tuple(items::<I>(term, children, vars, law, c, domains)?),
         ExprKind::ListLit {
             items: children, ..
         } => {
             let element = I::list_type(ty)?;
-            I::list(element, items::<I>(term, children, vars, law, c)?)
+            I::list(element, items::<I>(term, children, vars, law, c, domains)?)
         }
         ExprKind::Index { base, index, .. } => {
-            I::project(I::eval(term, *base, vars, law, c)?, *index, ty)?
+            I::project(I::eval(term, *base, vars, law, c, domains)?, *index, ty)?
         }
-        ExprKind::Group(body) => I::eval(term, *body, vars, law, c)?,
+        ExprKind::Group(body) => I::eval(term, *body, vars, law, c, domains)?,
         ExprKind::Let { name, value, body } => {
-            let value = I::eval(term, *value, vars, law, c)?;
+            let value = I::eval(term, *value, vars, law, c, domains)?;
             let local = I::bind(vars, &name.name, value, c)?;
-            I::eval(term, *body, &local, law, c)?
+            I::eval(term, *body, &local, law, c, domains)?
         }
         ExprKind::Unary { op, operand } => {
-            let value = I::eval(term, *operand, vars, law, c)?;
+            let value = I::eval(term, *operand, vars, law, c, domains)?;
             I::unary(*op, value, ty, law, e.span, c)?
         }
         ExprKind::Binary { op, lhs, rhs } => {
-            let left = I::eval(term, *lhs, vars, law, c)?;
+            let left = I::eval(term, *lhs, vars, law, c, domains)?;
             if let Some(value) = I::short(*op, &left, c)? {
                 value
             } else {
-                let right = I::eval(term, *rhs, vars, law, c)?;
+                let right = I::eval(term, *rhs, vars, law, c, domains)?;
                 I::binary(*op, left, right, ty, law, e.span, c)?
             }
         }
@@ -117,7 +119,7 @@ pub(super) fn expression<I: Interpretation>(
             then_branch,
             else_branch,
         } => {
-            let condition = I::eval(term, *cond, vars, law, c)?;
+            let condition = I::eval(term, *cond, vars, law, c, domains)?;
             match I::condition(condition, c)? {
                 Some(take) => I::eval(
                     term,
@@ -125,10 +127,11 @@ pub(super) fn expression<I: Interpretation>(
                     vars,
                     law,
                     c,
+                    domains,
                 )?,
                 None => {
-                    let left = I::eval(term, *then_branch, vars, law, c)?;
-                    let right = I::eval(term, *else_branch, vars, law, c)?;
+                    let left = I::eval(term, *then_branch, vars, law, c, None)?;
+                    let right = I::eval(term, *else_branch, vars, law, c, None)?;
                     I::join(left, right, ty, law, c)?
                 }
             }
@@ -143,11 +146,12 @@ pub(super) fn items<I: Interpretation>(
     vars: &BTreeMap<String, I::Value>,
     law: &CheckedLaw,
     c: &Control,
+    domains: Option<&DomainRead<'_>>,
 ) -> Result<Vec<I::Value>, ValidationFailure> {
     let mut values = Vec::new();
     for child in children {
         I::item_tick(c)?;
-        values.push(I::eval(term, *child, vars, law, c)?);
+        values.push(I::eval(term, *child, vars, law, c, domains)?);
         I::item_tick(c)?;
     }
     Ok(values)

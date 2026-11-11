@@ -870,6 +870,16 @@ impl Term {
         law: &CheckedLaw,
         c: &Control,
     ) -> Result<Value, ValidationFailure> {
+        self.apply_symbolic_with_domains(args, law, c, None)
+    }
+
+    pub(in crate::observed) fn apply_symbolic_with_domains(
+        &self,
+        args: &[Value],
+        law: &CheckedLaw,
+        c: &Control,
+        domains: Option<&super::DomainRead<'_>>,
+    ) -> Result<Value, ValidationFailure> {
         self.check(c)?;
         if args.len() != self.params.len() {
             return Err(internal!("Term記号適用の元引数数が違う").into());
@@ -890,9 +900,11 @@ impl Term {
             vars.insert(name.clone(), v.clone());
         }
         if all_known {
-            return Ok(Value::Known(self.apply(&known, law, c)?));
+            return Ok(Value::Known(
+                self.apply_with_domains(&known, law, c, domains)?,
+            ));
         }
-        let value = self.symbolic(self.root, &vars, law, c)?;
+        let value = self.symbolic(self.root, &vars, law, c, domains)?;
         if value.ty(c)? != self.returns {
             return Err(internal!("Term記号適用の元戻り型が違う").into());
         }
@@ -904,6 +916,7 @@ impl Term {
         vars: &BTreeMap<String, Value>,
         law: &CheckedLaw,
         c: &Control,
+        domains: Option<&super::DomainRead<'_>>,
     ) -> Result<Value, ValidationFailure> {
         stacker::maybe_grow(128 * 1024, 1024 * 1024, || {
             tick(c)?;
@@ -917,7 +930,7 @@ impl Term {
                 .ok_or(internal!("Term記号計算の元型がない"))?;
             let unknown = || Value::Unsupported(ty.clone());
             let value = if let Some(value) =
-                super::walk::expression::<Symbolic>(self, e, ty, vars, law, c)?
+                super::walk::expression::<Symbolic>(self, e, ty, vars, law, c, domains)?
             {
                 value
             } else {
@@ -942,16 +955,19 @@ impl Term {
                             .ok_or(internal!("Term記号量化の元binder型がない"))?;
                         let values = match domain {
                             QuantDomain::In(i) => self
-                                .symbolic(*i, vars, law, c)?
-                                .known(c)?
-                                .map(|v| match &v {
-                                    Scalar::List { items, .. } | Scalar::Set { items, .. } => {
-                                        Ok(items.clone())
+                                .symbolic(*i, vars, law, c, domains)
+                                .and_then(|value| value.known(c))
+                                .or_else(|error| {
+                                    if matches!(
+                                        error,
+                                        ValidationFailure::UnsupportedExpression { .. }
+                                    ) && let Some(read) = domains
+                                    {
+                                        read(*kind, &var.name, element, e.span, None)?;
                                     }
-                                    _ => Err(ValidationFailure::from(internal!(
-                                        "Term記号量化域が有限containerでない"
-                                    ))),
-                                })
+                                    Err(error)
+                                })?
+                                .map(|v| super::finite_in_members(v, domains.is_some(), c))
                                 .transpose()?,
                             QuantDomain::Type(_) => {
                                 if finite::completion_supported(element, law, c)? {
@@ -972,6 +988,9 @@ impl Term {
                                 }
                             }
                         };
+                        if let Some(read) = domains {
+                            read(*kind, &var.name, element, e.span, values.as_deref())?;
+                        }
                         if let Some(values) = values {
                             let result = super::walk::quantifier(*kind, values, c, |v| {
                                 let mut local = BTreeMap::new();
@@ -982,7 +1001,7 @@ impl Term {
                                 if local.insert(var.name.clone(), Value::Known(v)).is_some() {
                                     return Err(internal!("Term記号量化束縛が重複する").into());
                                 }
-                                match self.symbolic(*body, &local, law, c)?.known(c)? {
+                                match self.symbolic(*body, &local, law, c, domains)?.known(c)? {
                                     Some(Scalar::Bool(b)) => Ok(Some(b)),
                                     None => Ok(None),
                                     _ => Err(internal!("Term記号量化bodyがBoolでない").into()),
@@ -996,7 +1015,7 @@ impl Term {
                         }
                     }
                     ExprKind::Call { callee, args } => {
-                        let a = super::walk::items::<Symbolic>(self, args, vars, law, c)?;
+                        let a = super::walk::items::<Symbolic>(self, args, vars, law, c, domains)?;
                         // Term bodyの組込みとconstructorの既知引数計算は元の実評価を再利用する。
                         let mut target = *callee;
                         while let ExprKind::Group(inner) = &self
@@ -1016,8 +1035,10 @@ impl Term {
                         };
                         let builtin = matches!(builtin_name, Some("rat" | "count" | "sum"));
                         if !builtin && matches!(self.types.get(callee), Some(Type::Term(..))) {
-                            match self.symbolic(*callee, vars, law, c)?.known(c)? {
-                                Some(Scalar::Term(ref t)) => t.apply_symbolic(&a, law, c)?,
+                            match self.symbolic(*callee, vars, law, c, domains)?.known(c)? {
+                                Some(Scalar::Term(ref t)) => {
+                                    t.apply_symbolic_with_domains(&a, law, c, domains)?
+                                }
                                 _ => unknown(),
                             }
                         } else if matches!(builtin_name, Some("sum" | "count"))
@@ -1078,7 +1099,7 @@ impl Term {
                                 ExprKind::Fn { .. } | ExprKind::None(_) | ExprKind::Dotted(_)
                             )
                         {
-                            Value::Known(self.eval(id, &concrete, law, c)?)
+                            Value::Known(self.eval(id, &concrete, law, c, domains)?)
                         } else {
                             unknown()
                         }
@@ -1390,8 +1411,9 @@ impl super::walk::Interpretation for Symbolic {
         vars: &BTreeMap<String, Value>,
         law: &CheckedLaw,
         c: &Control,
+        domains: Option<&super::DomainRead<'_>>,
     ) -> Result<Value, ValidationFailure> {
-        t.symbolic(id, vars, law, c)
+        t.symbolic(id, vars, law, c, domains)
     }
     fn bind(
         vars: &BTreeMap<String, Value>,

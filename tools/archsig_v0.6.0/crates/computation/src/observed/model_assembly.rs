@@ -49,6 +49,7 @@ pub(super) struct Rejection {
     pub facts: Vec<Fact>,
     pub values: Option<(Scalar, Scalar)>,
     pub repaired: [Option<Fact>; 2],
+    pub location: Option<Location>,
 }
 pub(super) fn rejected(detail: impl Into<String>, facts: Vec<Fact>) -> Preparation {
     Preparation::Rejected(rejection(detail, facts, false))
@@ -60,6 +61,7 @@ fn rejection(detail: impl Into<String>, facts: Vec<Fact>, affects_layout: bool) 
         facts,
         values: None,
         repaired: [None, None],
+        location: None,
     }
 }
 fn rejected_layout(detail: impl Into<String>, facts: Vec<Fact>) -> Preparation {
@@ -91,7 +93,7 @@ pub(super) fn layout_root_condition(
     }
     Ok(None)
 }
-fn observed_fact(s: &Subject, f: &archsig_input::archmap::Field) -> Fact {
+pub(super) fn observed_fact(s: &Subject, f: &archsig_input::archmap::Field) -> Fact {
     let mut fact = field_fact(s, f);
     if let Slot::Known { atom, .. } = &f.slot {
         fact.atom = Some(atom.clone());
@@ -513,6 +515,7 @@ pub(super) fn compile_same_snapshot(
                     facts,
                     values: Some((moved_a, moved_b)),
                     repaired,
+                    location: None,
                 }));
             }
         }

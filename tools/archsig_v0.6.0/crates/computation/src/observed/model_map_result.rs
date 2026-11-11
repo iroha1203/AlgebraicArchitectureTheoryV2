@@ -143,6 +143,9 @@ impl Data {
     pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.part().support.clone(), self.part().scope.clone())
     }
+    pub(super) fn scope_domain_type(&self) -> Option<&Type> {
+        self.part().domain_type.as_ref()
+    }
     pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
         (self.part().support.to_vec(), self.part().scope.clone())
     }
@@ -332,6 +335,11 @@ fn compute(
     tick(c)?;
     let source_plan = plan(g, refs[0])?;
     let target_plan = plan(g, refs[1])?;
+    let fixed_design = [source_plan, target_plan].iter().any(|plan| {
+        plan.assembly
+            .as_ref()
+            .is_some_and(|assembly| assembly.design.is_some())
+    });
     let source = model(source_plan)?;
     let target = model(target_plan)?;
     let mut values = Vec::new();
@@ -342,12 +350,66 @@ fn compute(
         }
     }
     let head = r.declaration().ok_or(internal!("対応Viewがない"))?;
-    let read = assembly_plan::read(e, head, &values)?;
+    let mut overrides = Vec::new();
+    let mut target_root = None;
+    // The destination's effective state includes its unchanged observed
+    // slots. Suppress the whole source overlay when both select one root.
+    for plan in [target_plan, source_plan] {
+        let Some(design) = plan.assembly.as_ref().and_then(|assembly| assembly.design) else {
+            continue;
+        };
+        let Some(Payload::Construction(value)) = &g.get(design)?.payload else {
+            return Err(internal!("対応Viewの設計点が実applyでない").into());
+        };
+        let Witness::Architecture(witness) = &value.witness else {
+            return Err(internal!("対応Viewの設計点の元Architectureがない").into());
+        };
+        let root = witness.construction().root();
+        if target_root == Some(root) {
+            continue;
+        }
+        let (values, _) = value.retained_architecture_overrides(g, c)?;
+        overrides.extend(values.iter().cloned());
+        target_root = Some(root);
+    }
+    let selected_reading = if overrides.is_empty() {
+        None
+    } else {
+        Some(e.with_fixed_primitive_values(&overrides, c)?)
+    };
+    let reader = selected_reading.as_ref().unwrap_or(e);
+    let read = assembly_plan::read(reader, head, &values, fixed_design, fixed_design)?;
     let mut b = Builder {
         g,
         base,
         parts: vec![],
     };
+    let mut selected_scope = Scope::default();
+    if fixed_design {
+        for (origin, reference) in [(source_plan, refs[0]), (target_plan, refs[1])] {
+            let assembly = origin
+                .assembly
+                .as_ref()
+                .ok_or(internal!("移行の元組立てがない"))?;
+            let node = g.get(reference)?;
+            if assembly.design.is_some() {
+                selected_scope.merge_quantifiers(&node.scope);
+            } else {
+                let Some(Payload::Construction(value)) = &node.payload else {
+                    return Err(internal!("移行の元組立てが構成でない").into());
+                };
+                let D::Build(data) = &value.data else {
+                    return Err(internal!("移行の元組立てがbuildでない").into());
+                };
+                let views = data
+                    .assembly_views()
+                    .ok_or(internal!("移行の元組立てにViewがない"))?;
+                for view in views {
+                    selected_scope.merge_quantifiers(&g.get(view)?.scope);
+                }
+            }
+        }
+    }
     let mut bindings = Vec::new();
     for (name, value) in &values {
         let at = if let Some(&reference) = binding_refs.get(name) {
@@ -393,6 +455,8 @@ fn compute(
     else {
         return Err(internal!("対応集合の元がViewでない").into());
     };
+    let source_inputs = bindings.iter().map(|v| v.value).collect::<Vec<_>>();
+    let scope = super::assembly_output::materialized_scope(&mut b, e, &read, &source_inputs)?;
     let expression = b.push(
         NodeType::Expression(returns.erase()),
         "expression",
@@ -417,7 +481,7 @@ fn compute(
                 ),
             ),
         ]),
-        bindings.iter().map(|v| v.value).collect(),
+        source_inputs,
         None,
     )?;
     let part = &mut b.parts[expression.0 - base];
@@ -428,7 +492,8 @@ fn compute(
         part.support.make_owned().sort();
         part.support.make_owned().dedup();
     }
-    part.scope.merge(&read.metadata.scope);
+    part.scope.merge(&scope);
+    selected_scope.merge_quantifiers(&part.scope);
     let value = if let Some(value) = read.value {
         let mut existing = None;
         for &reference in binding_refs.values() {
@@ -450,12 +515,14 @@ fn compute(
     } else {
         None
     };
+    let view_condition = read.condition.as_ref().filter(|_| read.metadata.failed);
     let mut failed = None;
     let mut verified = None;
-    if !read.metadata.missing.is_empty() {
+    if !read.metadata.missing.is_empty() && view_condition.is_none() {
         failed = Some(Failure::Missing(read.metadata.missing.clone()));
     } else if read.metadata.failed {
         failed = Some(Failure::Coverage {
+            endpoint: None,
             facts: read.metadata.support.clone(),
         });
     } else if source.construction.root().snapshot != target.construction.root().snapshot
@@ -477,7 +544,7 @@ fn compute(
             return Err(internal!("原始correspondenceの型付き集合がない").into());
         };
         let cs = items.iter().map(fact).collect::<Result<Vec<_>, _>>()?;
-        match core::select(&inputs, &source, &target, &cs, c).map_err(failure)? {
+        match core::select(&inputs, &source, &target, &cs, fixed_design, c).map_err(failure)? {
             Err(f) => failed = Some(f),
             Ok(locals) => {
                 match core::glue(&inputs, &source, &target, locals, c).map_err(failure)? {
@@ -513,9 +580,19 @@ fn compute(
         Scalar::Text("model_map_assembly".into()),
         vec![refs[0], refs[1], expression],
     )?;
+    let mut local_operands = vec![label, expression];
+    if fixed_design {
+        local_operands.extend(refs);
+        local_operands.extend(
+            [source_plan, target_plan]
+                .into_iter()
+                .filter_map(|plan| plan.assembly.as_ref().and_then(|assembly| assembly.design)),
+        );
+        local_operands.extend(value);
+    }
     let local_condition = b.proposition(
         "constructible",
-        vec![label, expression],
+        local_operands,
         vec![refs[0], refs[1]],
         if verified.is_some() {
             Decision::Established
@@ -748,15 +825,15 @@ fn compute(
             outputs.insert("map".into(), result);
         }
     }
-    if read.unsupported.is_some() || read.metadata.blocked {
+    if (read.unsupported.is_some() || read.metadata.blocked) && view_condition.is_none() {
         status = Decision::Undetermined;
     }
     // 元slotの未知と、実対応・Lawの反例を区別して保持する。
     if let Some(f) = &failed {
         let facts = match f {
             Failure::Missing(fs)
-            | Failure::Coverage { facts: fs }
-            | Failure::Preservation { facts: fs } => fs.clone(),
+            | Failure::Coverage { facts: fs, .. }
+            | Failure::Preservation { facts: fs, .. } => fs.clone(),
             Failure::Unsupported { correspondence, .. } => vec![correspondence.clone()],
             Failure::SharedImage {
                 source,
@@ -845,7 +922,10 @@ fn compute(
             location: Some(unsupported.location.clone()),
         });
     }
+    let mut failed_law = Vec::new();
     if status == Decision::Refuted {
+        let mut refutation_location = view_condition
+            .map(|failure| archsig_common::issue::Location::Law { span: failure.span });
         let mut facts = Vec::new();
         let mut action_difference = None;
         let mut overlap = None;
@@ -891,7 +971,7 @@ fn compute(
 
         if let Some(f) = &failed {
             match f {
-                Failure::Coverage { facts: fs } | Failure::Preservation { facts: fs } => {
+                Failure::Coverage { facts: fs, .. } | Failure::Preservation { facts: fs, .. } => {
                     facts.extend(fs.iter().cloned())
                 }
                 Failure::SharedImage {
@@ -925,10 +1005,79 @@ fn compute(
                 facts.push(local.correspondence.clone());
             }
         }
-        facts.sort();
-        facts.dedup();
         let mut left = value.unwrap_or(expression);
         let mut right = refs[1];
+        let mut endpoint_detail = None;
+        let mut binding =
+            |fact: &Fact, arguments: Vec<NodeRef>| -> Result<NodeRef, ValidationFailure> {
+                let subject = e.indexes.subject(&fact.snapshot, &fact.subject)?;
+                let entity = subject.ty.to_string();
+                b.scalar(
+                    NodeType::Value(Type::Ref(entity.clone())),
+                    "binding",
+                    Scalar::Subject {
+                        snapshot: subject.snapshot.clone(),
+                        subject: subject.id.clone(),
+                        entity,
+                    },
+                    arguments,
+                )
+            };
+        if fixed_design
+            && let Some(Failure::Coverage {
+                endpoint: Some(endpoint),
+                ..
+            }) = &failed
+        {
+            use super::model_map_assembly::CoverageWitness;
+            match endpoint {
+                CoverageWitness::Outside { from, subject } => {
+                    left = binding(subject, vec![expression])?;
+                    right = refs[usize::from(!*from)];
+                    endpoint_detail = Some(if *from {
+                        "correspondence source is outside the selected source fragments"
+                    } else {
+                        "correspondence target is outside the selected target fragments"
+                    });
+                }
+                CoverageWitness::Uncovered(subject) => {
+                    left = binding(subject, vec![expression])?;
+                    right = value.unwrap_or(expression);
+                    endpoint_detail = Some("selected source fragment has no local correspondence");
+                }
+                CoverageWitness::Duplicate { first, second } => {
+                    facts.push(first.clone());
+                    left = binding(first, vec![expression, refs[0]])?;
+                    right = binding(second, vec![expression, refs[0]])?;
+                    endpoint_detail =
+                        Some("two local correspondences cover the same selected source fragment");
+                }
+            }
+        }
+        if fixed_design
+            && let Some(Failure::Preservation {
+                reference_difference: Some([expected, actual]),
+                ..
+            }) = &failed
+        {
+            left = binding(expected, vec![expression, refs[0], refs[1]])?;
+            right = binding(actual, vec![expression, refs[0], refs[1]])?;
+            endpoint_detail = Some("local correspondence does not preserve an observed reference");
+        }
+        if let Some(failure) = view_condition {
+            let operands = [expression, refs[0], refs[1]];
+            left = b.captured_scalar(&failure.values.0, &operands, c)?;
+            right = b.captured_scalar(&failure.values.1, &operands, c)?;
+            endpoint_detail = Some(failure.detail);
+            facts.extend(failure.support.iter().cloned());
+            for value in [&failure.values.0, &failure.values.1] {
+                if matches!(value, Scalar::Subject { .. }) {
+                    facts.push(fact(value)?);
+                }
+            }
+        }
+        facts.sort();
+        facts.dedup();
         let mut counter_bindings = bindings.clone();
         let mut counter_args = vec![local_condition];
         if let Some(v) = &verified {
@@ -939,6 +1088,27 @@ fn compute(
                 .find(|law| matches!(law.outcome(), O::Refuted(_)))
             {
                 let nodes = law_nodes(law, source_plan, target_plan)?;
+                if fixed_design {
+                    failed_law.extend([nodes.source[1], nodes.source[2]]);
+                    if let Some(target) = nodes.target {
+                        failed_law.extend([target[1], target[2]]);
+                    }
+                    refutation_location = Some(archsig_common::issue::Location::Law {
+                        span: law.instance().declaration().span,
+                    });
+                    endpoint_detail = Some(match law.outcome() {
+                        O::Refuted(F::RequiredStatus { .. }) => {
+                            "the corresponding Law has a different required status"
+                        }
+                        O::Refuted(F::Applicability) => {
+                            "the corresponding Law has a different applicability"
+                        }
+                        O::Refuted(F::Holds) => {
+                            "the corresponding Law has a different evaluated truth value"
+                        }
+                        _ => "the selected configuration does not preserve the corresponding Law",
+                    });
+                }
                 counter_args.extend(nodes.source);
                 facts.extend(g.get(nodes.source[2])?.support.iter().cloned());
                 left = nodes.source[2];
@@ -1070,6 +1240,9 @@ fn compute(
         ]
         .into_iter()
         .collect();
+        if let Some(detail) = endpoint_detail {
+            details.insert("condition_detail".into(), Json::str(detail));
+        }
         if let Some(value) = action_difference {
             details.insert("action_difference".into(), value);
         }
@@ -1089,7 +1262,10 @@ fn compute(
         evidence.push(counterexample);
         let condition = b.proposition(
             "constructible",
-            vec![label],
+            std::iter::once(label)
+                .chain(fixed_design.then_some(local_condition))
+                .chain(failed_law.iter().copied())
+                .collect(),
             vec![local_condition, counterexample],
             Decision::Refuted,
         )?;
@@ -1102,13 +1278,16 @@ fn compute(
             request: r.id.clone(),
             dependencies: vec![condition],
             missing: vec![],
-            location: None,
+            location: refutation_location,
         });
     }
     sort_reasons(&mut reasons);
     let claim = b.proposition(
         "constructible",
-        vec![label],
+        std::iter::once(label)
+            .chain(fixed_design.then_some(local_condition))
+            .chain(failed_law)
+            .collect(),
         outputs.values().copied().chain(conditions).collect(),
         status,
     )?;
@@ -1121,8 +1300,14 @@ fn compute(
         judgment.evidence = evidence.clone();
     }
     part.arguments.extend(evidence.iter().copied());
+    if fixed_design {
+        super::assembly_output::select_quantifiers(part, selected_scope);
+    }
     outputs.insert("proposition".into(), claim);
-    let scope = b.parts[claim.0 - base].scope.clone();
+    let mut scope = b.parts[claim.0 - base].scope.clone();
+    if fixed_design {
+        scope.restrict_to_design_point();
+    }
     Ok(Computed {
         parts: b.parts,
         answer: Answer {

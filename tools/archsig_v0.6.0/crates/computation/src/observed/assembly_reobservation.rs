@@ -333,8 +333,8 @@ fn read_layout(
     let head = request
         .declaration()
         .ok_or_else(|| unsupported("担当 View 宣言がない"))?;
-    let fragments = assembly_plan::read(&env, head, &bindings).map_err(classify)?;
-    let interfaces = assembly_plan::read(&env, along, &bindings).map_err(classify)?;
+    let fragments = assembly_plan::read(&env, head, &bindings, false, false).map_err(classify)?;
+    let interfaces = assembly_plan::read(&env, along, &bindings, false, false).map_err(classify)?;
     let target = layout_target(request)?;
     let reading = prepared.inputs().law().declarations()[head]
         .reading

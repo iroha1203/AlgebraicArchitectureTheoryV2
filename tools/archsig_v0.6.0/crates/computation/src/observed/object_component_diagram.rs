@@ -643,6 +643,7 @@ fn reading_plan(
                         ty: original.ty.clone(),
                         occurrence: original.span,
                         domain: None,
+                        assembly_instance: None,
                         context: None,
                     });
                 }

@@ -55,6 +55,8 @@ pub(crate) struct EvaluationState {
     // 原始読取り位置を求める間だけ、未確定のreceiverを記録する。
     pub(super) unresolved_read_positions: Cell<Option<bool>>,
     pub(super) missing_slot_reads: RefCell<Option<BTreeSet<Fact>>>,
+    pub(super) assembly_domains: RefCell<Option<AssemblyTrace>>,
+    pub(super) assembly_occurrence: Cell<Option<usize>>,
     pub(super) finite_domain_reads: RefCell<Option<Vec<(Quantifier, Vec<Scalar>)>>>,
     pub(super) evaluation_capture: RefCell<Option<quotient_evaluation::EvaluationCapture>>,
     pub(super) scoped_context: Cell<Option<crate::observed::call::Context>>,
@@ -107,6 +109,8 @@ impl Default for EvaluationState {
             primitive_reads: RefCell::new(None),
             unresolved_read_positions: Cell::new(None),
             missing_slot_reads: RefCell::new(None),
+            assembly_domains: RefCell::new(None),
+            assembly_occurrence: Cell::new(None),
             finite_domain_reads: RefCell::new(None),
             evaluation_capture: RefCell::new(None),
             scoped_context: Cell::new(None),

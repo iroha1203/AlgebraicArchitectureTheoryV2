@@ -1237,6 +1237,7 @@ pub(in crate::observed) fn scope_at(plan: &Plan, position: Option<usize>) -> Sco
                 ty: certificate_type(),
                 domain: Some(domain),
                 occurrence: (0, 0),
+                assembly_instance: None,
                 context: Some(plan.context),
             });
         }

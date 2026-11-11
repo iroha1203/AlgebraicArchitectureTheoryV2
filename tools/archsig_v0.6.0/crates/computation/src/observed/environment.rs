@@ -458,6 +458,95 @@ struct DomainEnumeration<'a> {
     enumeration: &'a super::finite::Enumeration,
 }
 
+#[derive(Debug, PartialEq, Eq)]
+pub(super) enum CapturedDomain {
+    Finite(CapturedMembers),
+    Type,
+    Pending,
+}
+type CapturedMembers = std::sync::Arc<[Scalar]>;
+type AssemblyDomain = (Quantifier, CapturedDomain);
+
+fn domain_fingerprint(items: &[Scalar], control: &Control) -> Result<u64, ValidationFailure> {
+    use std::hash::{DefaultHasher, Hash, Hasher};
+    let mut key = DefaultHasher::new();
+    let mut pending = items.iter().rev().collect::<Vec<_>>();
+    while let Some(value) = pending.pop() {
+        control.checkpoint(Checkpoint::ConfigurationMap)?;
+        std::mem::discriminant(value).hash(&mut key);
+        match value {
+            Scalar::Unit => {}
+            Scalar::Bool(value) => value.hash(&mut key),
+            Scalar::Text(value) => value.hash(&mut key),
+            Scalar::Z(value) => value.hash(&mut key),
+            Scalar::Q(numerator, denominator) => (numerator, denominator).hash(&mut key),
+            Scalar::Fp { modulus, value } => (modulus, value).hash(&mut key),
+            Scalar::Subject {
+                snapshot,
+                subject,
+                entity,
+            } => (snapshot, subject, entity).hash(&mut key),
+            Scalar::Path(path) => {
+                (&path.reading, &path.snapshot, &path.subject, &path.entity).hash(&mut key);
+                if let Some(step) = &path.step {
+                    step.word_tail.len().hash(&mut key);
+                    pending.push(&step.target);
+                    pending.extend(step.word_tail.iter().rev());
+                    pending.push(&step.generator);
+                }
+            }
+            Scalar::Term(term) => term.body.hash(&mut key),
+            Scalar::Option { value, .. } => {
+                value.is_some().hash(&mut key);
+                pending.extend(value.as_deref());
+            }
+            Scalar::Tuple(items)
+            | Scalar::List { items, .. }
+            | Scalar::Set { items, .. }
+            | Scalar::Data { args: items, .. } => {
+                items.len().hash(&mut key);
+                pending.extend(items.iter().rev());
+            }
+            Scalar::Map { pairs, .. } => {
+                pairs.len().hash(&mut key);
+                for (left, right) in pairs.iter().rev() {
+                    pending.extend([right, left]);
+                }
+            }
+        }
+    }
+    Ok(key.finish())
+}
+
+#[derive(Debug)]
+pub(super) struct AssemblyCondition {
+    pub(super) span: (usize, usize),
+    pub(super) detail: &'static str,
+    pub(super) values: (Scalar, Scalar),
+    pub(super) support: Vec<Fact>,
+}
+
+#[derive(Default)]
+pub(super) struct AssemblyTrace {
+    fixed_design: bool,
+    occurrences: BTreeMap<(Option<usize>, usize, Option<usize>), usize>,
+    captured: BTreeMap<(Option<usize>, (usize, usize), Option<super::call::Context>), Vec<usize>>,
+    pub(super) domains: Vec<AssemblyDomain>,
+    pub(super) term_scope: Scope,
+    finite_domains: BTreeMap<((usize, usize), usize, u64), Vec<CapturedMembers>>,
+    pub(super) condition: Option<AssemblyCondition>,
+    pub(super) scope: Scope,
+    pub(super) support: BTreeSet<Fact>,
+    pub(super) missing: BTreeSet<Fact>,
+}
+
+struct AssemblyProbe {
+    value: SourceValue,
+    trace: AssemblyTrace,
+    missing: BTreeSet<Fact>,
+    primitive: BTreeSet<Fact>,
+}
+
 pub(crate) struct Environment<'a> {
     pub(super) indexes: InputIndexes<'a>,
     pub(super) results: ResultStore,
@@ -554,6 +643,224 @@ impl<'a> Environment<'a> {
             nodes,
         ))
     }
+    pub(super) fn with_assembly_domains<T>(
+        &self,
+        enabled: bool,
+        fixed_design: bool,
+        read: impl FnOnce() -> Result<T, ValidationFailure>,
+    ) -> Result<(Result<T, ValidationFailure>, AssemblyTrace), ValidationFailure> {
+        if !enabled {
+            return Ok((read(), AssemblyTrace::default()));
+        }
+        let capture = self.state.assembly_domains.scoped(Some(AssemblyTrace {
+            fixed_design,
+            ..AssemblyTrace::default()
+        }));
+        let value = read();
+        let trace = capture
+            .restore()
+            .ok_or(internal!("組立てViewの実量化収集がない"))?;
+        Ok((value, trace))
+    }
+
+    fn fixed_assembly_read(&self) -> bool {
+        self.state
+            .assembly_domains
+            .borrow()
+            .as_ref()
+            .is_some_and(|trace| trace.fixed_design)
+    }
+
+    fn probe_fixed_assembly(
+        &self,
+        read: impl FnOnce() -> Result<SourceValue, ValidationFailure>,
+    ) -> Result<Option<AssemblyProbe>, ValidationFailure> {
+        // Commit these observations only if the right operand settles the Boolean.
+        let _occurrence = self.state.assembly_occurrence.scoped(None);
+        let missing = self.state.missing_slot_reads.scoped(Some(BTreeSet::new()));
+        let primitive = self.state.primitive_reads.scoped(Some(BTreeSet::new()));
+        let _positions = self.state.unresolved_read_positions.scoped(Some(false));
+        let (result, trace) = self.with_assembly_domains(true, true, read)?;
+        match result {
+            Ok(value) if !value.condition_failed && !value.condition_pending => {
+                Ok(Some(AssemblyProbe {
+                    value,
+                    trace,
+                    missing: missing.restore().ok_or(internal!("試読の欠測がない"))?,
+                    primitive: primitive.restore().ok_or(internal!("試読の観測がない"))?,
+                }))
+            }
+            Ok(_) | Err(ValidationFailure::UnsupportedExpression { .. }) => Ok(None),
+            Err(error) => Err(error),
+        }
+    }
+
+    fn retain_assembly_probe(
+        &self,
+        expression: usize,
+        probe: AssemblyProbe,
+    ) -> Result<SourceValue, ValidationFailure> {
+        if let Some(trace) = self.state.assembly_domains.borrow_mut().as_mut() {
+            trace.scope.merge(&probe.trace.scope);
+            trace.term_scope.merge_quantifiers(&probe.trace.term_scope);
+            trace.support.extend(probe.trace.support);
+        }
+        if let Some(missing) = self.state.missing_slot_reads.borrow_mut().as_mut() {
+            missing.extend(probe.missing);
+        }
+        if let Some(primitive) = self.state.primitive_reads.borrow_mut().as_mut() {
+            primitive.extend(probe.primitive);
+        }
+        for (index, (descriptor, domain)) in probe.trace.domains.into_iter().enumerate() {
+            self.in_assembly_occurrence(expression, Some(index), || match domain {
+                CapturedDomain::Finite(members) => {
+                    self.capture_assembly_domain(&descriptor, None, Some(&members), false)
+                }
+                CapturedDomain::Type => self.capture_assembly_domain(&descriptor, None, None, true),
+                CapturedDomain::Pending => {
+                    self.capture_assembly_domain(&descriptor, None, None, false)
+                }
+            })?;
+        }
+        Ok(probe.value)
+    }
+
+    fn note_assembly_quantifier(&self, id: usize) -> Result<(), ValidationFailure> {
+        use archsig_input::law::ast::{QuantDomain, QuantSplit};
+        let mut capture = self.state.assembly_domains.borrow_mut();
+        let Some(trace) = capture.as_mut().filter(|trace| trace.fixed_design) else {
+            return Ok(());
+        };
+        let law = self.indexes.inputs.law();
+        let expression = &law.exprs()[id];
+        if let ExprKind::Quant { kind, var, split } = &expression.kind
+            && let Some(ty) = &law.quantifier_types()[id]
+        {
+            let symbolic = matches!(
+                split,
+                QuantSplit::Fixed {
+                    domain: QuantDomain::Type(_),
+                    ..
+                }
+            ) && self.universal_symbolic_type(ty)?;
+            trace.scope.add_quantifier(Quantifier {
+                kind: *kind,
+                name: var.name.clone(),
+                ty: ty.clone(),
+                domain: None,
+                occurrence: if symbolic { var.span } else { expression.span },
+                assembly_instance: None,
+                context: self.state.scoped_context.get(),
+            });
+        }
+        Ok(())
+    }
+
+    fn capture_assembly_condition(
+        &self,
+        span: (usize, usize),
+        detail: &'static str,
+        values: &(Scalar, Scalar),
+        support: &[Fact],
+    ) {
+        let mut capture = self.state.assembly_domains.borrow_mut();
+        if let Some(trace) = capture.as_mut().filter(|trace| trace.fixed_design)
+            && trace.condition.is_none()
+        {
+            trace.condition = Some(AssemblyCondition {
+                span,
+                detail,
+                values: values.clone(),
+                support: support.to_vec(),
+            });
+        }
+    }
+
+    fn capture_assembly_domain(
+        &self,
+        descriptor: &Quantifier,
+        value: Option<&SourceValue>,
+        members: Option<&[Scalar]>,
+        symbolic: bool,
+    ) -> Result<(), ValidationFailure> {
+        let mut capture = self.state.assembly_domains.borrow_mut();
+        let Some(trace) = capture.as_mut() else {
+            return Ok(());
+        };
+        if trace.fixed_design
+            && let Some(value) = value
+        {
+            trace.scope.merge_metadata(&value.scope);
+            trace.support.extend(value.support.iter().cloned());
+        }
+        let key = (
+            self.state.assembly_occurrence.get(),
+            descriptor.occurrence,
+            descriptor.context,
+        );
+        let prior = trace.captured.entry(key).or_default();
+        for &index in prior.iter() {
+            self.tick()?;
+            let same = match (&trace.domains[index].1, members, symbolic) {
+                (CapturedDomain::Finite(old), Some(new), _) => old.as_ref() == new,
+                (CapturedDomain::Type, None, true) | (CapturedDomain::Pending, None, false) => true,
+                _ => false,
+            };
+            if same {
+                return Ok(());
+            }
+        }
+        prior.push(trace.domains.len());
+        let domain = match members {
+            Some(items) => {
+                let fingerprint = domain_fingerprint(items, &self.control)?;
+                let domains = trace
+                    .finite_domains
+                    .entry((descriptor.occurrence, items.len(), fingerprint))
+                    .or_default();
+                let mut shared = None;
+                for domain in domains.iter() {
+                    self.tick()?;
+                    if domain.as_ref() == items {
+                        shared = Some(domain.clone());
+                        break;
+                    }
+                }
+                let domain = shared.unwrap_or_else(|| {
+                    let domain = CapturedMembers::from(items);
+                    domains.push(domain.clone());
+                    domain
+                });
+                CapturedDomain::Finite(domain)
+            }
+            None if symbolic => CapturedDomain::Type,
+            None => CapturedDomain::Pending,
+        };
+        trace.domains.push((descriptor.clone(), domain));
+        Ok(())
+    }
+
+    fn in_assembly_occurrence<T>(
+        &self,
+        expression: usize,
+        member: Option<usize>,
+        read: impl FnOnce() -> Result<T, ValidationFailure>,
+    ) -> Result<T, ValidationFailure> {
+        let context = {
+            let mut capture = self.state.assembly_domains.borrow_mut();
+            capture.as_mut().map(|trace| {
+                let next = trace.occurrences.len();
+                *trace
+                    .occurrences
+                    .entry((self.state.assembly_occurrence.get(), expression, member))
+                    .or_insert(next)
+            })
+        };
+        let _occurrence =
+            context.map(|context| self.state.assembly_occurrence.scoped(Some(context)));
+        read()
+    }
+
     pub(in crate::observed) fn fixed_values(&self) -> Vec<(Fact, Scalar)> {
         let mut values = self
             .state
@@ -7978,8 +8285,8 @@ impl<'a> Environment<'a> {
         let ExprKind::Call { callee, args } = &law.program().nodes[id].kind else {
             return Err(internal!("Term元callがない").into());
         };
-        let f = self.scoped_ast(*callee, variables, base, reading)?;
-        let Some(Scalar::Term(ref f)) = f.known_value else {
+        let source = self.scoped_ast(*callee, variables, base, reading)?;
+        let Some(Scalar::Term(ref f)) = source.known_value else {
             return Ok(Value::Unsupported(
                 law.expr_type(id)
                     .ok_or(internal!("Term元戻り型がない"))?
@@ -7990,7 +8297,43 @@ impl<'a> Environment<'a> {
             .iter()
             .map(|i| self.symbolic_source(*i, variables, base, reading))
             .collect::<Result<Vec<_>, _>>()?;
-        f.apply_symbolic(&args, law, &self.control)
+        let assembly = self.state.assembly_domains.borrow().is_some();
+        let finite = self.state.finite_domain_reads.borrow().is_some();
+        if !assembly && !finite {
+            return f.apply_symbolic(&args, law, &self.control);
+        }
+        let position = std::cell::Cell::new(0);
+        self.in_assembly_occurrence(id, None, || {
+            f.apply_symbolic_with_domains(
+                &args,
+                law,
+                &self.control,
+                Some(&|kind, name, ty, span, members| {
+                    let index = position.get();
+                    position.set(index + 1);
+                    let descriptor = Quantifier {
+                        kind,
+                        name: name.into(),
+                        ty: ty.clone(),
+                        domain: None,
+                        occurrence: span,
+                        assembly_instance: None,
+                        context: self.state.scoped_context.get(),
+                    };
+                    if let Some(domains) = self.state.finite_domain_reads.borrow_mut().as_mut()
+                        && let Some(members) = members
+                    {
+                        domains.push((descriptor.clone(), members.to_vec()));
+                    }
+                    if let Some(trace) = self.state.assembly_domains.borrow_mut().as_mut() {
+                        trace.term_scope.add_quantifier(descriptor.clone());
+                    }
+                    self.in_assembly_occurrence(id, Some(index), || {
+                        self.capture_assembly_domain(&descriptor, Some(&source), members, false)
+                    })
+                }),
+            )
+        })
     }
     // 通常Evaluatorと数値guardが同じ選択arm・pattern束縛を使う。
     fn scoped_match_bindings(
@@ -8411,6 +8754,8 @@ impl<'a> Environment<'a> {
                     let input = self.scoped_ast(*domain, variables, base, reading)?;
                     let Some(container) = input.known_value.as_ref() else {
                         return Ok(SourceValue {
+                            condition_pending: input.condition_pending
+                                || self.fixed_assembly_read(),
                             symbolic: None,
                             comparison: None,
                             affine: None,
@@ -8456,8 +8801,9 @@ impl<'a> Environment<'a> {
                             return Err(internal!("内包binderが重複する").into());
                         }
                         let condition = if let Some(filter) = filter {
-                            let value =
-                                self.scoped_ast_at(*filter, &local, &input.scope, reading, None)?;
+                            let value = self.in_assembly_occurrence(id, Some(position), || {
+                                self.scoped_ast_at(*filter, &local, &input.scope, reading, None)
+                            })?;
                             condition_failed |= value.condition_failed;
                             condition_pending |= value.condition_pending;
                             scope.merge(&value.scope);
@@ -8473,7 +8819,15 @@ impl<'a> Environment<'a> {
                         match condition {
                             Some(true) => {
                                 let value =
-                                    self.scoped_ast_at(*elem, &local, &input.scope, reading, None)?;
+                                    self.in_assembly_occurrence(id, Some(position), || {
+                                        self.scoped_ast_at(
+                                            *elem,
+                                            &local,
+                                            &input.scope,
+                                            reading,
+                                            None,
+                                        )
+                                    })?;
                                 condition_failed |= value.condition_failed;
                                 condition_pending |= value.condition_pending;
                                 scope.merge(&value.scope);
@@ -8485,7 +8839,10 @@ impl<'a> Environment<'a> {
                                 }
                             }
                             Some(false) => {}
-                            None => known = false,
+                            None => {
+                                condition_pending |= self.fixed_assembly_read();
+                                known = false;
+                            }
                         }
                         self.tick()?;
                     }
@@ -8513,6 +8870,8 @@ impl<'a> Environment<'a> {
                     let Some((arm, local)) = self.scoped_match_bindings(id, &input, variables)?
                     else {
                         return Ok(SourceValue {
+                            condition_pending: input.condition_pending
+                                || self.fixed_assembly_read(),
                             symbolic: None,
                             comparison: None,
                             affine: None,
@@ -8541,6 +8900,17 @@ impl<'a> Environment<'a> {
                 }
                 ExprKind::Let { name, value, body } => {
                     let rhs = self.scoped_ast(*value, variables, base, reading)?;
+                    if self.fixed_assembly_read() && (rhs.condition_failed || rhs.condition_pending)
+                    {
+                        return Ok(SourceValue {
+                            known_value: None,
+                            symbolic: None,
+                            comparison: None,
+                            affine: None,
+                            scalar_scope: None,
+                            ..rhs
+                        });
+                    }
                     let mut local = self.copy_variables(variables)?;
                     if local.insert(name.name.clone(), rhs.clone()).is_some() {
                         return Err(internal!("let 名が重複する").into());
@@ -8577,6 +8947,48 @@ impl<'a> Environment<'a> {
                     else_branch,
                 } => {
                     let condition = self.scoped_ast(*cond, variables, base, reading)?;
+                    // A selected assembly reads the actual branch at the fixed point.
+                    if self.fixed_assembly_read() {
+                        let Some(Scalar::Bool(take)) = condition.known_value.as_ref() else {
+                            return Ok(SourceValue {
+                                condition_failed: condition.condition_failed,
+                                condition_pending: true,
+                                scope: condition.scope,
+                                support: condition.support,
+                                symbolic: None,
+                                comparison: None,
+                                affine: None,
+                                known_value: None,
+                                scalar_scope: None,
+                            });
+                        };
+                        if condition.condition_failed || condition.condition_pending {
+                            return Ok(SourceValue {
+                                known_value: None,
+                                symbolic: None,
+                                comparison: None,
+                                affine: None,
+                                scalar_scope: None,
+                                ..condition
+                            });
+                        }
+                        let branch = if *take { *then_branch } else { *else_branch };
+                        let mut value = self.scoped_ast(branch, variables, base, reading)?;
+                        value.condition_failed |= condition.condition_failed;
+                        value.condition_pending |= condition.condition_pending;
+                        let mut scope = condition.scope;
+                        scope.merge(&value.scope);
+                        value.scope = scope;
+                        value.scalar_scope =
+                            value.known_value.as_ref().map(|_| value.scope.clone());
+                        value
+                            .support
+                            .make_owned()
+                            .extend(condition.support.into_vec());
+                        value.support.make_owned().sort();
+                        value.support.make_owned().dedup();
+                        return Ok(value);
+                    }
                     // localの必要欠測だけを選択枝へ制限する。両枝の評価・出現記録は保つ。
                     let (left, right) = if self.state.value_read.get()
                         && let Some(Scalar::Bool(take)) = condition.known_value.as_ref()
@@ -8718,6 +9130,14 @@ impl<'a> Environment<'a> {
                     checks.blocked |= inherited_pending;
                     call_base.merge(&checks.scope);
                     support.extend(checks.support);
+                    if let Some(failure) = &checks.failure {
+                        self.capture_assembly_condition(
+                            expression.span,
+                            "View実引数のownerが一致しない",
+                            failure,
+                            &support,
+                        );
+                    }
                     if checks.failure.is_some() || checks.blocked {
                         let condition_failed = inherited_failure || checks.failure.is_some();
                         let condition_pending = inherited_pending || checks.blocked;
@@ -8738,13 +9158,15 @@ impl<'a> Environment<'a> {
                     for value in local.values_mut() {
                         value.scope.merge(&call_base);
                     }
-                    let body = self.scoped_ast_at(
-                        *body,
-                        &local,
-                        &call_base,
-                        &declaration.reading,
-                        self.universal_call_context(id),
-                    )?;
+                    let body = self.in_assembly_occurrence(id, None, || {
+                        self.scoped_ast_at(
+                            *body,
+                            &local,
+                            &call_base,
+                            &declaration.reading,
+                            self.universal_call_context(id),
+                        )
+                    })?;
                     call_base.merge(&body.scope);
                     support.extend(body.support.into_vec());
                     let returned = Self::owned_source_argument(
@@ -8762,6 +9184,14 @@ impl<'a> Environment<'a> {
                     support.extend(checks.support);
                     support.sort();
                     support.dedup();
+                    if let Some(failure) = &checks.failure {
+                        self.capture_assembly_condition(
+                            expression.span,
+                            "View戻り値のownerが一致しない",
+                            failure,
+                            &support,
+                        );
+                    }
                     let failed = checks.failure.is_some() || checks.blocked;
                     SourceValue {
                         condition_failed: body.condition_failed || checks.failure.is_some(),
@@ -8864,6 +9294,14 @@ impl<'a> Environment<'a> {
                         support.extend(path.support.iter().cloned());
                         support.sort();
                         support.dedup();
+                        if let Some(failure) = &path.failure {
+                            self.capture_assembly_condition(
+                                expression.span,
+                                "Pathの端点または実引数が一致しない",
+                                failure,
+                                &support,
+                            );
+                        }
                         condition_failed |= path.failure.is_some();
                         condition_pending |= path.value.is_none() && path.failure.is_none();
                     }
@@ -8914,6 +9352,17 @@ impl<'a> Environment<'a> {
                         && known_value.is_none()
                         && matches!(&expression.kind, ExprKind::Call { callee, .. } if matches!(self.indexes.inputs.law().expr_type(*callee), Some(Type::Map(..))))
                     {
+                        if self.fixed_assembly_read() {
+                            let [table, argument] = values.as_slice() else {
+                                return Err(internal!("Map適用の実引数数が違う").into());
+                            };
+                            self.capture_assembly_condition(
+                                expression.span,
+                                "Mapの実引数が定義域にない",
+                                &(table.clone(), argument.clone()),
+                                &support,
+                            );
+                        }
                         condition_failed = true;
                     }
                     let affine = symbolic
@@ -9109,6 +9558,53 @@ impl<'a> Environment<'a> {
                 mut support,
                 ..
             } = self.scoped_ast(*lhs, variables, base, reading)?;
+            if self.fixed_assembly_read() && matches!(op, BinOp::And | BinOp::Or | BinOp::Implies) {
+                let decisive = match (op, left.as_ref()) {
+                    (BinOp::And, Some(Scalar::Bool(false))) => Some(false),
+                    (BinOp::Or, Some(Scalar::Bool(true)))
+                    | (BinOp::Implies, Some(Scalar::Bool(false))) => Some(true),
+                    _ => None,
+                };
+                if left.is_none() || left_failed || left_pending || decisive.is_some() {
+                    let mut known_value = decisive.map(Scalar::Bool);
+                    let mut condition_pending = left_pending;
+                    if left.is_none() && !left_failed && !left_pending {
+                        let right = || self.scoped_ast(*rhs, variables, base, reading);
+                        if let Some(probe) = self.probe_fixed_assembly(right)? {
+                            let value = partial_binary(
+                                *op,
+                                None,
+                                probe.value.known_value.as_ref(),
+                                self.indexes.inputs.law(),
+                                expression.span,
+                                &self.control,
+                            )?;
+                            if value.is_some() {
+                                let actual = self.retain_assembly_probe(*rhs, probe)?;
+                                scope.merge(&actual.scope);
+                                let support = support.make_owned();
+                                support.extend(actual.support.into_vec());
+                                support.sort();
+                                support.dedup();
+                                known_value = value;
+                            }
+                        } else {
+                            condition_pending = true;
+                        }
+                    }
+                    return Ok(SourceValue {
+                        condition_failed: left_failed,
+                        condition_pending,
+                        symbolic: None,
+                        comparison: None,
+                        affine: None,
+                        scalar_scope: known_value.as_ref().map(|_| scope.clone()),
+                        known_value,
+                        scope,
+                        support,
+                    });
+                }
+            }
             let right = self.scoped_ast(*rhs, variables, base, reading)?;
             scope.merge(&right.scope);
             support.make_owned().extend(right.support.into_vec());
@@ -9284,15 +9780,55 @@ impl<'a> Environment<'a> {
         base: &Scope,
         reading: &str,
     ) -> Result<SourceValue, ValidationFailure> {
+        self.note_assembly_quantifier(id)?;
         let mut result = {
             if let Some(value) =
                 self.universal_quantifier_source_value(id, variables, base, reading)?
             {
+                let tracing = self.state.assembly_domains.borrow().is_some();
+                if tracing {
+                    use archsig_input::law::ast::{QuantDomain, QuantSplit};
+                    let law = self.indexes.inputs.law();
+                    let descriptors = value
+                        .scope
+                        .quantifiers
+                        .iter()
+                        .map(|q| (q.occurrence, q))
+                        .collect::<BTreeMap<_, _>>();
+                    let mut at = id;
+                    while let ExprKind::Quant {
+                        var,
+                        split:
+                            QuantSplit::Fixed {
+                                domain: QuantDomain::Type(_),
+                                body,
+                            },
+                        ..
+                    } = &law.exprs()[at].kind
+                    {
+                        self.tick()?;
+                        if let Some(descriptor) = descriptors.get(&var.span) {
+                            self.capture_assembly_domain(descriptor, Some(&value), None, true)?;
+                        }
+                        at = *body;
+                    }
+                }
                 return Ok(value);
             }
             let spec = quantifier::spec(self.indexes.inputs.law(), id, &self.control)?;
+            let descriptor = spec.descriptor(None, self.state.scoped_context.get());
             let (input, members) =
-                self.scoped_quantifier_domain(&spec, variables, base, reading)?;
+                match self.scoped_quantifier_domain(&spec, variables, base, reading) {
+                    Ok(domain) => domain,
+                    Err(error) => {
+                        if self.fixed_assembly_read()
+                            && matches!(error, ValidationFailure::UnsupportedExpression { .. })
+                        {
+                            self.capture_assembly_domain(&descriptor, None, None, false)?;
+                        }
+                        return Err(error);
+                    }
+                };
             // 親/lexical値が既に持つ出現はその由来順を保つ。
             // このdomain式で新たに現れる量化は自身より後に置く。
             let mut inherited = base.clone();
@@ -9307,13 +9843,13 @@ impl<'a> Environment<'a> {
                     .iter()
                     .any(|old| old.occurrence == q.occurrence)
             });
-            let descriptor = spec.descriptor(None, self.state.scoped_context.get());
             scope.add_quantifier(descriptor.clone());
             scope.merge_quantifiers(&input.scope);
+            self.capture_assembly_domain(&descriptor, Some(&input), members.as_deref(), false)?;
             let Some(items) = members else {
                 return Ok(SourceValue {
                     condition_failed: input.condition_failed,
-                    condition_pending: input.condition_pending,
+                    condition_pending: input.condition_pending || self.fixed_assembly_read(),
                     symbolic: None,
                     comparison: None,
                     affine: None,
@@ -9339,7 +9875,7 @@ impl<'a> Environment<'a> {
             let mut condition_pending = input.condition_pending;
             let mut support = input.support.clone().into_vec();
             let mut values = Vec::new();
-            for item in items {
+            for (index, item) in items.into_iter().enumerate() {
                 self.tick()?;
                 let mut local = self.copy_variables(variables)?;
                 for value in local.values_mut() {
@@ -9364,7 +9900,9 @@ impl<'a> Environment<'a> {
                 {
                     return Err(internal!("量化binderが重複する").into());
                 }
-                let body = self.scoped_ast_at(spec.body, &local, &scope, reading, None)?;
+                let body = self.in_assembly_occurrence(id, Some(index), || {
+                    self.scoped_ast_at(spec.body, &local, &scope, reading, None)
+                })?;
                 condition_failed |= body.condition_failed;
                 condition_pending |= body.condition_pending;
                 scope.merge(&body.scope);
@@ -9501,10 +10039,10 @@ impl<'a> Environment<'a> {
         } else if let Some(value) = assigned {
             let owner_scope = self.indexes.scope(owner, reading, None)?;
             scope.merge(&owner_scope);
-            scope.assignments = true;
+            scope.assignments |= self.primitive_values_vary();
             let mut scalar_scope = request_base.clone();
             scalar_scope.merge(&owner_scope);
-            scalar_scope.assignments = true;
+            scalar_scope.assignments |= self.primitive_values_vary();
             // 同じslotの元Atomがあっても、別の候補値の観測証拠に使わない。
             let value = if self.indexes.valuation_domain == indexes::ValuationDomain::Input {
                 self.project_object_field(&position, value)?

@@ -44,44 +44,11 @@ pub(super) fn domain_value(
             return push(parts, base, Part::Scalar(value.clone()), c);
         }
         let mut arguments = vec![];
-        let wire = match value {
-            Scalar::Path(path) => {
-                path.check(c)?;
-                let source = domain_value(&path.object(), parts, base, c)?;
-                let target = domain_value(&path.target(), parts, base, c)?;
-                arguments.extend([source, target]);
-                let mut generators = vec![];
-                if let Some(step) = &path.step {
-                    for generator in std::iter::once(&step.generator).chain(&step.word_tail) {
-                        tick(c)?;
-                        let reference = domain_value(generator, parts, base, c)?;
-                        arguments.push(reference);
-                        generators.push(reference.wire());
-                    }
-                }
-                Json::obj([
-                    ("reading", Json::str(&path.reading)),
-                    ("source", source.wire()),
-                    ("target", target.wire()),
-                    ("generators", Json::Arr(generators)),
-                ])
-            }
-            Scalar::Tuple(items) | Scalar::List { items, .. } => {
-                for item in items {
-                    arguments.push(domain_value(item, parts, base, c)?);
-                }
-                refs(&arguments)
-            }
-            Scalar::Option { value: None, .. } => Json::obj([("none", Json::Bool(true))]),
-            Scalar::Option {
-                value: Some(item), ..
-            } => {
-                let reference = domain_value(item, parts, base, c)?;
-                arguments.push(reference);
-                Json::obj([("some", reference.wire())])
-            }
-            _ => return Err(internal!("元量化域のPathを含む結果型が違う").into()),
-        };
+        let wire = crate::observed::path_value::captured_wire(value, c, |item| {
+            let reference = domain_value(item, parts, base, c)?;
+            arguments.push(reference);
+            Ok(reference)
+        })?;
         push(
             parts,
             base,

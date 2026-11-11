@@ -60,14 +60,17 @@ pub(super) fn resolve(
             };
             let name = declaration(law, name, c, &raw.id)?;
             (key.clone(), Selector::Declaration { name })
-        } else if let Some(parameter) = key.strip_prefix("local.") {
+        } else if let Some(parameter) = key
+            .strip_prefix("local.")
+            .or_else(|| key.strip_prefix("design."))
+        {
             if !params.iter().any(|p| p.name == parameter)
                 || !matches!(&value, Selector::Answer { path, .. } if !path.is_empty())
             {
                 return Err(error(
                     &raw.id,
                     &key,
-                    "local requires a fragment parameter and an Architecture Handle",
+                    "assembly state selection requires a named parameter and an Architecture Handle",
                 ));
             }
             let Selector::Answer { id, .. } = &value else {
@@ -236,19 +239,49 @@ pub(super) fn check(
             "assembly root marker has a different type",
         ));
     }
-    for local in &r.arguments {
-        let Some(parameter) = local.name.strip_prefix("local.") else {
+    let mut design_selected = false;
+    for selection in &r.arguments {
+        let (parameter, design) = if let Some(parameter) = selection.name.strip_prefix("local.") {
+            (parameter, false)
+        } else if let Some(parameter) = selection.name.strip_prefix("design.") {
+            if design_selected {
+                return Err(error(
+                    &r.id,
+                    &selection.name,
+                    "assemble accepts one design selection",
+                ));
+            }
+            design_selected = true;
+            (parameter, true)
+        } else {
             continue;
         };
         phase(c, Checkpoint::RequestBinding)?;
-        if !params
-            .iter()
-            .any(|p| p.name == parameter && p.ty == Type::Ref(root.into()))
-        {
+        let Some(Type::Ref(entity)) = params.iter().find(|p| p.name == parameter).map(|p| &p.ty)
+        else {
             return Err(error(
                 &r.id,
-                &local.name,
-                "local parameter must have the fragment root type",
+                &selection.name,
+                "assembly state requires a root parameter",
+            ));
+        };
+        let correct_root = if design {
+            entity != root
+                && matches!(
+                    law.definitions()
+                        .declarations()
+                        .get(entity.as_str())
+                        .map(|d| &d.signature),
+                    Some(archsig_input::definition::PrimitiveSignature::Entity { owner: None, .. })
+                )
+        } else {
+            entity == root
+        };
+        if !correct_root {
+            return Err(error(
+                &r.id,
+                &selection.name,
+                "assembly state parameter has the wrong root type",
             ));
         }
         let (resolved, _) = selector_type(
@@ -256,15 +289,15 @@ pub(super) fn check(
             map,
             requests,
             names,
-            &local.value,
+            &selection.value,
             c,
-            (&r.id, &local.name),
+            (&r.id, &selection.name),
         )?;
-        if resolved.ty != ProjectionType::ArchitectureRoot(root.into()) {
+        if resolved.ty != ProjectionType::ArchitectureRoot(entity.clone()) {
             return Err(error(
                 &r.id,
-                &local.name,
-                "local must select an Architecture of the fragment root type",
+                &selection.name,
+                "assembly state must select an Architecture of the parameter root type",
             ));
         }
     }

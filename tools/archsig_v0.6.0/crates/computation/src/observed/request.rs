@@ -332,6 +332,7 @@ pub struct ResolvedRequests {
     requests: Vec<Request>,
     /// 同順位の要求を指定順にする、依存先からの評価順。
     evaluation_order: Vec<usize>,
+    assembly_domain_reads: BTreeSet<String>,
 }
 impl ResolvedRequests {
     pub fn requests(&self) -> &[Request] {
@@ -339,6 +340,9 @@ impl ResolvedRequests {
     }
     pub fn evaluation_order(&self) -> &[usize] {
         &self.evaluation_order
+    }
+    pub(super) fn reads_assembly_domains(&self, id: &str) -> bool {
+        self.assembly_domain_reads.contains(id)
     }
 }
 
@@ -1154,9 +1158,58 @@ fn resolve_inner(
         evaluation_order
     };
     phase(control, Checkpoint::RequestDependency)?;
+    let mut assembly_domain_reads = BTreeSet::new();
+    let mut assembly_endpoints = BTreeMap::<usize, [usize; 2]>::new();
+    for &index in &evaluation_order {
+        let request = &requests[index];
+        if request.kind != QuestionKind::AssembleMap {
+            continue;
+        }
+        checkpoint(control)?;
+        let endpoint = |key: &str| {
+            let argument = request
+                .arguments
+                .iter()
+                .find(|argument| argument.name == key)?;
+            let Selector::Answer { id, path } = &argument.value else {
+                return None;
+            };
+            let producer = names[id];
+            match (requests[producer].kind, path.as_slice()) {
+                (QuestionKind::Assemble, [ProjectionStep::Field(field)]) if field == "assembly" => {
+                    Some(producer)
+                }
+                (
+                    QuestionKind::AssembleMap,
+                    [ProjectionStep::Field(map), ProjectionStep::Field(side)],
+                ) if map == "map" => {
+                    let endpoints = assembly_endpoints.get(&producer)?;
+                    match side.as_str() {
+                        "source_assembly" => Some(endpoints[0]),
+                        "target_assembly" => Some(endpoints[1]),
+                        _ => None,
+                    }
+                }
+                _ => None,
+            }
+        };
+        if let (Some(source), Some(target)) = (endpoint("from"), endpoint("to")) {
+            let endpoints = [source, target];
+            if endpoints.iter().any(|&index| {
+                requests[index]
+                    .arguments
+                    .iter()
+                    .any(|argument| argument.name.starts_with("design."))
+            }) {
+                assembly_domain_reads.extend(endpoints.map(|index| requests[index].id.clone()));
+            }
+            assembly_endpoints.insert(index, endpoints);
+        }
+    }
     Ok(ResolvedRequests {
         requests,
         evaluation_order,
+        assembly_domain_reads,
     })
 }
 
@@ -2241,7 +2294,9 @@ impl<'a> Parser<'a> {
             self.tick()?;
             let mut key = self.name(false)?;
             if self.take(b'.')? {
-                if key != "bind" && !(kind == "assemble" && key == "local") {
+                if key != "bind"
+                    && !(kind == "assemble" && matches!(key.as_str(), "local" | "design"))
+                {
                     return Err(self.error("invalid dotted argument prefix"));
                 }
                 key.push('.');

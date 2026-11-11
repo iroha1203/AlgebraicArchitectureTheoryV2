@@ -4,7 +4,7 @@ use super::{
     build_plan::Plan,
     build_result::Builder,
     construction_result::{self as native, ConstructionType as T},
-    environment::Environment,
+    environment::{CapturedDomain, Environment},
     request::Request,
     result::*,
 };
@@ -34,6 +34,92 @@ fn field<'a>(e: &'a Environment<'_>, r: &Request, key: &str) -> Result<&'a str, 
         .map(|(n, _)| n.as_str())
         .ok_or_else(|| internal!("組立てViewの定義がない").into())
 }
+pub(super) fn materialized_scope(
+    b: &mut Builder<'_>,
+    e: &Environment<'_>,
+    read: &super::assembly_plan::Read,
+    inputs: &[NodeRef],
+) -> Result<Scope, ValidationFailure> {
+    let mut scope = read.metadata.scope.clone();
+    let originals = std::mem::take(&mut scope.quantifiers);
+    let mut positions = BTreeMap::<_, Vec<usize>>::new();
+    for (index, descriptor) in originals.iter().enumerate() {
+        positions
+            .entry((descriptor.occurrence, descriptor.context))
+            .or_default()
+            .push(index);
+    }
+    let mut expanded = vec![Vec::new(); originals.len()];
+    let source = NodeRef(b.base + b.parts.len());
+    let mut references = BTreeMap::new();
+    for (index, (quantifier, captured)) in read.domains.iter().enumerate() {
+        let Some(position) = positions
+            .get(&(quantifier.occurrence, quantifier.context))
+            .and_then(|indices| {
+                indices
+                    .iter()
+                    .copied()
+                    .find(|index| &originals[*index] == quantifier)
+            })
+        else {
+            continue;
+        };
+        let domain = match captured {
+            CapturedDomain::Pending => None,
+            other => {
+                let key = match other {
+                    CapturedDomain::Finite(members) => {
+                        (quantifier.occurrence, members.as_ptr() as usize)
+                    }
+                    _ => (quantifier.occurrence, 0),
+                };
+                let reference = if let Some(&reference) = references.get(&key) {
+                    reference
+                } else {
+                    let mut elements = Vec::new();
+                    let mut wire = BTreeMap::from([("type".into(), quantifier.ty.wire())]);
+                    if let CapturedDomain::Finite(members) = other {
+                        for member in members.iter() {
+                            e.control.checkpoint(Checkpoint::ConfigurationMap)?;
+                            elements.push(b.captured_scalar(member, inputs, &e.control)?);
+                        }
+                        wire.insert("kind".into(), Json::str("finite"));
+                        wire.insert(
+                            "elements".into(),
+                            Json::Arr(elements.iter().map(|element| element.wire()).collect()),
+                        );
+                    } else {
+                        wire.insert("kind".into(), Json::str("type"));
+                    }
+                    let domain = b.push(
+                        NodeType::Domain,
+                        "domain",
+                        Json::Obj(wire.into()),
+                        inputs.iter().chain(&elements).copied().collect(),
+                        None,
+                    )?;
+                    b.parts[domain.0 - b.base].domain_type = Some(quantifier.ty.clone());
+                    references.insert(key, domain);
+                    domain
+                };
+                Some(reference)
+            }
+        };
+        expanded[position].push(Quantifier {
+            domain,
+            assembly_instance: Some((source, index)),
+            ..quantifier.clone()
+        });
+    }
+    for (original, instances) in originals.into_iter().zip(expanded) {
+        if instances.is_empty() {
+            scope.quantifiers.push(original);
+        } else {
+            scope.quantifiers.extend(instances);
+        }
+    }
+    Ok(scope)
+}
 fn input(
     b: &mut Builder<'_>,
     e: &Environment<'_>,
@@ -45,6 +131,8 @@ fn input(
     let archsig_input::law::model::Signature::View { returns, body, .. } = &d.signature else {
         return Err(internal!("組立て入力がViewでない").into());
     };
+    let inputs: Vec<_> = a.bindings.iter().map(|v| v.value).chain(a.design).collect();
+    let scope = materialized_scope(b, e, read, &inputs)?;
     let source = b.push(
         NodeType::Expression(returns.erase()),
         "expression",
@@ -69,7 +157,7 @@ fn input(
                 ),
             ),
         ]),
-        a.bindings.iter().map(|v| v.value).collect(),
+        inputs,
         None,
     )?;
     let part = &mut b.parts[source.0 - b.base];
@@ -78,7 +166,7 @@ fn input(
         .extend(read.metadata.support.iter().cloned());
     part.support.make_owned().sort();
     part.support.make_owned().dedup();
-    part.scope.merge(&read.metadata.scope);
+    part.scope.merge(&scope);
     let value = read
         .value
         .as_ref()
@@ -86,6 +174,50 @@ fn input(
         .transpose()?;
     Ok((source, value))
 }
+pub(super) fn assembly_reads(
+    b: &mut Builder<'_>,
+    e: &Environment<'_>,
+    request: &Request,
+    assembly: &Assembly,
+) -> Result<(Vec<NodeRef>, Scope), ValidationFailure> {
+    let (head, fragments) = input(
+        b,
+        e,
+        field(e, request, "head")?,
+        assembly,
+        &assembly.fragments,
+    )?;
+    let (along, interfaces) = input(
+        b,
+        e,
+        field(e, request, "along")?,
+        assembly,
+        &assembly.interfaces,
+    )?;
+    let mut scope = b.parts[head.0 - b.base].scope.clone();
+    scope.merge(&b.parts[along.0 - b.base].scope);
+    Ok((
+        [head, along]
+            .into_iter()
+            .chain(fragments)
+            .chain(interfaces)
+            .collect(),
+        scope,
+    ))
+}
+
+pub(super) fn select_quantifiers(part: &mut super::build_result::Part, scope: Scope) {
+    if part.ty == NodeType::Proposition
+        && let Some(Json::Obj(fields)) = part.wire_mut()
+    {
+        fields.insert(
+            "quantifiers".into(),
+            Json::Arr(scope.quantifiers.iter().map(Quantifier::wire).collect()),
+        );
+    }
+    part.scope.quantifiers = scope.quantifiers;
+}
+
 fn attach_facts(
     b: &mut Builder<'_>,
     e: &Environment<'_>,
@@ -316,20 +448,27 @@ pub(super) fn append(
         }
         inclusions.push(wire);
     }
+    let mut wire = Json::obj([
+        (
+            "reading",
+            Json::str(plan.architecture.witness.construction().reading()),
+        ),
+        ("fragments", fragments.wire()),
+        ("interfaces", interfaces.wire()),
+        ("object", plan.architecture.reference.wire()),
+        ("algebra", algebra.wire()),
+        ("inclusions", Json::Arr(inclusions)),
+    ]);
+    if let Some(design) = a.design
+        && let Json::Obj(fields) = &mut wire
+    {
+        fields.insert("design".into(), design.wire());
+        args.push(design);
+    }
     let result = b.push(
         NodeType::Construction(T::ModelAssembly),
         "model_assembly",
-        Json::obj([
-            (
-                "reading",
-                Json::str(plan.architecture.witness.construction().reading()),
-            ),
-            ("fragments", fragments.wire()),
-            ("interfaces", interfaces.wire()),
-            ("object", plan.architecture.reference.wire()),
-            ("algebra", algebra.wire()),
-            ("inclusions", Json::Arr(inclusions)),
-        ]),
+        wire,
         args,
         None,
     )?;
@@ -345,6 +484,14 @@ pub(super) fn append(
         vec![proof],
         Decision::Established,
     )?;
+    if a.design.is_some() {
+        let mut selected = b.parts[fragments.0 - b.base].scope.clone();
+        selected.merge_quantifiers(&b.parts[interfaces.0 - b.base].scope);
+        // Algebra proof nodes keep their own reading and scope. The assembly
+        // result describes the fragment and interface views at the fixed point.
+        select_quantifiers(&mut b.parts[result.0 - b.base], selected.clone());
+        select_quantifiers(&mut b.parts[claim.0 - b.base], selected);
+    }
     Ok((result, claim, deferred))
 }
 pub(super) fn failed(
@@ -411,7 +558,15 @@ pub(super) fn failed(
             let Failure::Rejected(rejection) = failure else {
                 unreachable!()
             };
-            let (left, right) = if let Some((left, right)) = &rejection.values {
+            let (left, right) = if let Some((input, expected)) = a.rejected_design_origin {
+                let expected = b.scalar(
+                    NodeType::Value(Type::Text),
+                    "binding",
+                    Scalar::Text(expected.into()),
+                    vec![head, along],
+                )?;
+                (expected, input)
+            } else if let Some((left, right)) = &rejection.values {
                 let reading = plan.architecture.witness.construction().reading();
                 let has_repaired = rejection.repaired.iter().any(Option::is_some);
                 let mut values = Vec::new();
@@ -424,12 +579,7 @@ pub(super) fn failed(
                                 .ok_or(internal!("修復済み反例の元対象がない"))?,
                         );
                     }
-                    let reference = b.scalar(
-                        NodeType::Value(value.ty()),
-                        "binding",
-                        value.clone(),
-                        operands,
-                    )?;
+                    let reference = b.captured_scalar(value, &operands, &e.control)?;
                     if !has_repaired || position.is_none() {
                         attach_facts(&mut b, e, reading, reference, &rejection.facts)?;
                     }
@@ -450,6 +600,13 @@ pub(super) fn failed(
                     Json::Arr(rejection.facts.iter().map(Fact::wire).collect()),
                 ),
             ]);
+            if r.arguments
+                .iter()
+                .any(|argument| argument.name.starts_with("design."))
+                && let Json::Obj(fields) = &mut data
+            {
+                fields.insert("condition_detail".into(), Json::str(detail));
+            }
             let mut repaired = Vec::new();
             for (side, position) in ["left", "right"].into_iter().zip(&rejection.repaired) {
                 let Some(position) = position else {
@@ -534,9 +691,21 @@ pub(super) fn failed(
         None
     };
     let claim = b.proposition("constructible", operands, dependencies.clone(), status)?;
+    let unsupported_reason =
+        |unsupported: &super::model_assembly::Unsupported, dependencies| Reason {
+            kind: ReasonKind::UnsupportedAlgorithm {
+                question: r.kind,
+                operand_types: unsupported.operand_types.clone(),
+                method: "finite_local_model_assembly".into(),
+            },
+            request: r.id.clone(),
+            dependencies,
+            missing: vec![],
+            location: Some(unsupported.location.clone()),
+        };
     let mut reasons = match failure {
         Failure::Missing(facts) => native::missing(r, facts.clone()),
-        Failure::Rejected(_) => vec![Reason {
+        Failure::Rejected(rejection) => vec![Reason {
             kind: ReasonKind::ConditionFailed {
                 condition: condition.ok_or(internal!("組立ての失敗条件がない"))?,
                 construction: "model_assembly",
@@ -544,20 +713,19 @@ pub(super) fn failed(
             request: r.id.clone(),
             dependencies: vec![condition.ok_or(internal!("組立ての失敗条件がない"))?],
             missing: vec![],
-            location: None,
+            location: rejection.location.clone(),
         }],
-        Failure::Unsupported(unsupported) => vec![Reason {
-            kind: ReasonKind::UnsupportedAlgorithm {
-                question: r.kind,
-                operand_types: unsupported.operand_types.clone(),
-                method: "finite_local_model_assembly".into(),
-            },
-            request: r.id.clone(),
-            dependencies: reason_expressions,
-            missing: vec![],
-            location: Some(unsupported.location.clone()),
-        }],
+        Failure::Unsupported(unsupported) => {
+            vec![unsupported_reason(unsupported, reason_expressions)]
+        }
     };
+    if matches!(failure, Failure::Missing(_)) {
+        for (read, expression) in [(&a.fragments, head), (&a.interfaces, along)] {
+            if let Some(unsupported) = &read.unsupported {
+                reasons.push(unsupported_reason(unsupported, vec![expression]));
+            }
+        }
+    }
     for reason in &mut reasons {
         if matches!(reason.kind, ReasonKind::Missing) {
             reason.dependencies = vec![head, along];
@@ -572,7 +740,10 @@ pub(super) fn failed(
     let judgment = part.judgment.as_mut().unwrap();
     judgment.evidence = evidence.clone();
     judgment.reasons = reasons.clone();
-    let scope = part.scope.clone();
+    let mut scope = part.scope.clone();
+    if a.design.is_some() {
+        scope.restrict_to_design_point();
+    }
     Ok((
         b.parts.into(),
         Answer {
