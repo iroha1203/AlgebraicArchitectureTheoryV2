@@ -650,7 +650,7 @@ pub(crate) fn layout_ownership(
     Ok((None, missing))
 }
 
-/// Read only the existence facts that can collide in a local configuration.
+/// Check known inclusion collisions and conservatively collect missing references by type.
 pub(crate) fn check_layout_inclusions(
     inputs: &CheckedInputs,
     reading: &str,
