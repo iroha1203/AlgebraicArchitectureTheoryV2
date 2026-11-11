@@ -85,7 +85,7 @@ EvaluationResultのPayloadはEvaluationを下表の欄へ射影した値とす�
 | 内部の検査表現 | runの保存表現 |
 | --- | --- |
 | nodeのrule・arguments・evidence・scope・support | 欄を持たない。値の参照とconditionsは保持する |
-| 証明Evidenceとその参照 | 除く。counterexample・completion_pair・separating_pairはCounterexample型としてcounterexamplesへ、completion_fibersはevidenceへ保持する |
+| 証明Evidenceとその参照 | 除く。counterexample・completion_pair・separating_pairはCounterexample型としてcounterexamplesへ、completion_fibersはevidenceへ保持する。`rational_polyhedron` は `SolutionSet.representation.certificate` または欠測下で不存在を示す `constructible` の operands から到達する Evidence として保持する |
 | Law成立だけのclaim/proposition | 回答のstatusへ反映し、重複する参照を除く |
 | 回答のevaluation | applicabilityと、存在すればoutputs.environmentへ射影する |
 | Evaluation値 | EvaluationResult型でapplicability・bindings・value・environmentを保持する |
@@ -307,9 +307,14 @@ repairの構成条件は、許された候補域の全解における[元Assignm
 その割当てと更新後の具体値の確定、元の更新・Lawへの再検査を含む。
 全解集合の非空性は別のinhabited命題として、repairのoutputs.existenceに保持する。
 この命題はsolveのclaimと同じ意味を持ち、repairの構成条件を表すoutputs.propositionとは区別する。
-存在が成立しても一意性・具体値・再検査が未完了なら、existenceを残しrepairのclaimは未決、
+存在の証拠を独立に検査済みで、一意性・具体値・再検査が未完了なら、existenceを残しrepairのclaimは未決、
 Repair/objectは未生成とする。全補完で一意でも値が補完に依存する場合もこれに含む。
 解が空ならinhabitedとunique_solutionを反証し、repairの構成条件もrefutedとする。
+原始対象が欠測で未完成でも、既知の有理制約が全候補を反証する場合は、
+`constructible` 命題で不存在を示す。operands は Text(`rational_solution`)、原始 root、元 parameter の Domain、
+空集合を示す Evidence、元の順序の change 対象、LawInstance の順に並ぶ。
+solve はその命題を proposition に、repair は existence に出す。Scope は全補完を含む。
+repair の proposition は Text(`repair`) と existence を operands に持つ。
 異なる二つの解Assignmentがあればunique_solutionと構成条件をrefuted、理由をcondition_failedとする。
 この場合はinhabitedの成立と全解集合を保持し、Repair/objectを生成しない。
 どちらの反証も修復構成の不成立だが、非一意を修復不存在と読み替えない。
@@ -580,7 +585,8 @@ repairの構成条件はunique_solutionを条件に持ち、唯一のAssignment�
 補完ごとに解が変わる場合の一意性判断は §6 の補完表または同次核の証拠で検査し、
 補完全体に共通する具体Assignmentを要求しない。
 その他は検査する構成のargumentsと同じ順のoperandsを使い、constructibleの第1operandだけは
-Construction名を持つText nodeとする。これらは結果上の命題表示でありLawの呼出しAPIではない。
+Construction名を持つText nodeとする。欠測下の有理解の不存在と repair の形式は上記に従う。
+これらは結果上の命題表示でありLawの呼出しAPIではない。
 
 ### Object algebraの有限表示
 
@@ -760,12 +766,15 @@ usingなしではvariables=[]、parametersはUnit、依存する全slotがfixed�
 
 SolutionRepresentationは`{kind:"empty",certificate:Ref}`、`{kind:"finite",values:Ref[]}`、
 `{kind:"affine",particular:Vector,directions:Module,embedding:ModuleMap}`、
+`{kind:"rational_polyhedron",equalities:ModuleMap,rhs:Vector,inequalities:ModuleMap,upper_bounds:Vector,certificate:Evidence}`、
 `{kind:"symbolic"}`、[有限部品表示](#共通の有限修復問題と明示選択)の
 `{kind:"factored",problem:RepairProblem,range:ChangeRange}`の閉じたunion。記号表示は空集合を意味しない。
 有限解の値はparameter tuple、アフィン解はparticular+embedding(directions)。
 SolutionSetの表示は元changeのparameter座標上に戻し、domain.instancesと元のPositionへの対応を保つ。
 guardの消去等で再parameter化した場合も、particularとembeddingには元parameterへの復元写像を合成する。
 表示が元の全解を尽くすことを検査し、directionsの表示次元だけで一意性を判定しない。
+`rational_polyhedron` は同じ元 Q 座標上の `equalities·x=rhs` と `inequalities·x<=upper_bounds` の交わり。
+`certificate` には空、一意、複数の区別と再検査に使う座標があり、保存結果から参照できる。
 EquationSolutionSetの表示はEquationSpace.variablesの状態座標であり、Assignmentの座標と混同しない。
 作用後の状態が同じでも異なるparameterを潰さず、実状態への商はActionで保持する。
 
@@ -1015,6 +1024,7 @@ Evidenceは結果専用。`{kind:EvidenceKind,data:EvidenceData}`をpayloadと�
 | counterexample | `{bindings:Binding[],paths:Ref[],left:Ref,right:Ref,facts:FactPointer[],action_difference?:AssemblyActionDifference,overlap?:AssemblyOverlap,repaired?:{side:"left"\|"right",object:Architecture,slot:Slot}[]}` |
 | linear_solution | `{map:ModuleMap,rhs:Vector,solution:Vector,recheck:Proposition}` |
 | linear_inconsistent | `{map:ModuleMap,rhs:Vector,annihilator:Vector,pairing:Ref,modulus?:DecimalNat}` |
+| rational_polyhedron | `{equalities:ModuleMap,rhs:Vector,inequalities:ModuleMap,upper_bounds:Vector,outcome:"empty"\|"unique"\|"multiple",contradiction?:Vector,point?:Vector,second?:Vector,coordinate_bounds?:{lower:Vector,upper:Vector}[]}` |
 | smith | `{map:ModuleMap,left:ModuleMap,right:ModuleMap,diagonal:ModuleMap,transformed_rhs?:Vector,divisibility:Proposition[]}` |
 | normalization | `{before:Ref,after:Ref,steps:Expression[]}` |
 | gluing | `{local:Ref[],correction:Ref,global:Ref,rechecks:Proposition[]}` |
@@ -1023,6 +1033,12 @@ Evidenceは結果専用。`{kind:EvidenceKind,data:EvidenceData}`をpayloadと�
 | separating_pair | `{domain:Ref,first:Ref,second:Ref,view_values:[Ref,Ref],law_values:[Ref,Ref]}` |
 
 証拠の算術、全域性、再代入を核で再検査する。rank等のスカラーだけで反証を確定しない。
+`rational_polyhedron` の非負結合は等式の各行を正・負の順に置き、その後ろに不等式の行を置いた座標で読む。
+`empty` はその結合で左辺が零、右辺が負になる `contradiction` を持つ。
+`unique` は元の全制約を満たす `point` と、元座標順の `coordinate_bounds` を持つ。
+各座標について、非負結合からその座標だけに係数を持つ上下限を再構成し、点で両限が一致することを検査する。
+`multiple` は全制約を満たす相異なる `point` と `second` を持つ。二点は非一意性の証拠で、全解は上記の交わりで表す。
+
 linear_inconsistentは自由加群間の実際の表示系Bt=dに対する証拠。
 annihilatorの座標をuとし、modulus省略時はuᵀB=0かつpairing=uᵀd≠0を検査する。
 modulus=m>1指定時は整数系であり、uᵀBの全成分がm倍、pairing=uᵀdがm倍でないことを検査する。

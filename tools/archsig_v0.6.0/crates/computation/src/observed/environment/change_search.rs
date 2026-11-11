@@ -1,6 +1,9 @@
 //! 元Architecture内のchange全instanceとLaw全束縛を同じ候補状態で読む。
 use super::*;
-use crate::observed::{construction_result::ArchitectureWitness, object_evaluate::ObjectDomain};
+use crate::observed::{
+    construction_result::ArchitectureWitness, field_polyhedron::Outcome,
+    object_evaluate::ObjectDomain,
+};
 use archsig_input::law::model::Signature;
 use change_evaluation::{Candidates, SolutionRow};
 use std::sync::Arc;
@@ -310,6 +313,7 @@ pub(in crate::observed) fn selection(
     witness: &ArchitectureWitness,
     request: &Request,
     completions: &[(Fact, Scalar)],
+    include_requirements: bool,
     control: &Control,
 ) -> Result<Selection, ValidationFailure> {
     let inputs = environment.indexes.inputs;
@@ -385,6 +389,10 @@ pub(in crate::observed) fn selection(
                         })
                 })
     });
+    if !include_requirements {
+        result.subjects = Some(subjects);
+        return Ok(result);
+    }
     let mut rows = vec![vec![]];
     for parameter in params {
         control.checkpoint(Checkpoint::PrimitiveValuation)?;
@@ -447,6 +455,36 @@ pub(in crate::observed) fn search_with_completions(
     completions: &[(Fact, Scalar)],
     control: &Control,
 ) -> Result<Search, SearchFailure> {
+    search_inner(
+        original,
+        graph,
+        witness,
+        request,
+        completions,
+        false,
+        control,
+    )
+}
+
+pub(in crate::observed) fn search_rational_domain(
+    original: &Environment<'_>,
+    graph: &Graph,
+    witness: &ArchitectureWitness,
+    request: &Request,
+    control: &Control,
+) -> Result<Search, SearchFailure> {
+    search_inner(original, graph, witness, request, &[], true, control)
+}
+
+fn search_inner(
+    original: &Environment<'_>,
+    graph: &Graph,
+    witness: &ArchitectureWitness,
+    request: &Request,
+    completions: &[(Fact, Scalar)],
+    rational_domain_only: bool,
+    control: &Control,
+) -> Result<Search, SearchFailure> {
     let mut result = Search {
         linear: None,
         rational: None,
@@ -502,6 +540,7 @@ pub(in crate::observed) fn search_with_completions(
             witness,
             request,
             completions,
+            !rational_domain_only,
             control,
         )?;
         result.requirements = selected.requirements;
@@ -536,7 +575,10 @@ pub(in crate::observed) fn search_with_completions(
                 &result.requirements,
                 &mut pending,
             );
-            if !pending.facts.is_empty() || pending.unsupported.is_some() {
+            if !pending.facts.is_empty()
+                || pending.unsupported.is_some()
+                || !pending.additional.is_empty()
+            {
                 result.missing.extend(pending.facts.iter().cloned());
                 result.pending_integer = Some(pending);
             }
@@ -585,31 +627,59 @@ pub(in crate::observed) fn search_with_completions(
         }
         if change_params.iter().skip(1).any(|p| p.ty == Type::Q) {
             let mut pending = change_affine::Pending::default();
-            let computed = field_change::compute(
+            let computed = field_change::compute_with_bounds(
                 &environment,
                 change,
                 &subjects,
                 &result.requirements,
                 &mut pending,
             );
-            if !pending.facts.is_empty() || pending.unsupported.is_some() {
+            if matches!(
+                &computed,
+                Err(ValidationFailure::UnsupportedExpression { .. })
+            ) && pending.expression.is_some()
+            {
                 result.missing.extend(pending.facts.iter().cloned());
+                for (_, other) in &pending.additional {
+                    result.missing.extend(other.facts.iter().cloned());
+                }
                 result.pending_integer = Some(pending);
             }
             let linear = computed?;
+            if rational_domain_only {
+                result.rational = Some(linear);
+                result.complete = true;
+                return Ok(());
+            }
             let mut points = vec![];
-            if let Some(particular) = &linear.particular {
-                points.push(particular.clone());
-                if linear.fiber.pivots.len() < linear.parameter_count {
-                    points.push(
-                        particular
-                            .iter()
-                            .zip(&linear.kernel)
-                            .map(|(p, k)| {
-                                crate::observed::numeric::binary(BinOp::Add, p, &k[0], control)
-                            })
-                            .collect::<Result<Vec<_>, _>>()?,
-                    );
+            match &linear.solutions {
+                field_change::Solutions::Polyhedron(polyhedron) => match &polyhedron.outcome {
+                    Outcome::Empty(_) => {}
+                    Outcome::Unique { point, .. } => points.push(point.clone()),
+                    Outcome::Multiple { first, second } => {
+                        points.extend([first.clone(), second.clone()]);
+                    }
+                },
+                field_change::Solutions::Affine(fiber) => {
+                    if let Some(particular) = &fiber.particular {
+                        points.push(particular.clone());
+                        if fiber.pivots.len() < linear.parameter_count {
+                            points.push(
+                                particular
+                                    .iter()
+                                    .zip(&fiber.kernel)
+                                    .map(|(p, k)| {
+                                        crate::observed::numeric::binary(
+                                            BinOp::Add,
+                                            p,
+                                            &k[0],
+                                            control,
+                                        )
+                                    })
+                                    .collect::<Result<Vec<_>, _>>()?,
+                            );
+                        }
+                    }
                 }
             }
             let mut candidates = Candidates {
@@ -618,19 +688,40 @@ pub(in crate::observed) fn search_with_completions(
                 rows: vec![],
                 complete: true,
             };
+            let polyhedral = matches!(linear.solutions, field_change::Solutions::Polyhedron(_));
             for (i, parameters) in points.into_iter().enumerate() {
                 control.checkpoint(Checkpoint::PrimitiveValuation)?;
-                candidates.rows.push(change_evaluation::candidate(
+                if polyhedral {
+                    control.checkpoint(Checkpoint::ChangeWitness)?;
+                }
+                let candidate = change_evaluation::candidate(
                     &environment,
                     change,
                     &candidates.subjects,
                     &parameters,
-                )?);
-                result.solutions.push(SolutionRow {
-                    candidate: i,
-                    member: Some(true),
-                    missing: vec![],
-                });
+                )?;
+                let row = if polyhedral {
+                    let row = change_evaluation::solution_row(
+                        &environment,
+                        &candidate,
+                        i,
+                        &result.requirements,
+                    )?;
+                    if row.member != Some(true) {
+                        return Err(
+                            internal!("有理全解の点が元change/Lawへの再代入を満たさない").into(),
+                        );
+                    }
+                    row
+                } else {
+                    SolutionRow {
+                        candidate: i,
+                        member: Some(true),
+                        missing: vec![],
+                    }
+                };
+                candidates.rows.push(candidate);
+                result.solutions.push(row);
             }
             result.candidates = Some(candidates);
             result.rational = Some(linear);

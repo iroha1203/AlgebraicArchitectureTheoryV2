@@ -70,7 +70,7 @@ fn compile_inner(
         .try_primitive_valuation_from(&original.fixed_values(), c)?
         .ok_or(internal!("整数修復の基準代入が不適合"))?;
     env.select_local_object(witness, c)?;
-    let selected = change_search::selection(original, &env, g, witness, r, &[], c)?;
+    let selected = change_search::selection(original, &env, g, witness, r, &[], true, c)?;
     let Some(mut subjects) = selected.subjects else {
         return Ok(Preparation::Pending {
             details: Box::new(change_affine::Pending {

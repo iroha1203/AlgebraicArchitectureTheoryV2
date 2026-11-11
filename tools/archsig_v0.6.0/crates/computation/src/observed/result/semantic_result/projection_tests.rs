@@ -85,6 +85,7 @@ fn classes(nodes: &[Node]) -> (BTreeSet<String>, BTreeSet<String>, BTreeSet<Stri
         }
         let id = format!("n{index}");
         match node.evidence_class() {
+            EvidenceClass::Certificate => {}
             EvidenceClass::Proof => {
                 proofs.insert(id);
             }

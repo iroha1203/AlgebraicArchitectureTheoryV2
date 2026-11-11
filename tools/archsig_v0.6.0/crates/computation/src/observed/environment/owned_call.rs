@@ -15,7 +15,7 @@ pub(in crate::observed) struct Checks {
 }
 
 impl Environment<'_> {
-    fn call_type_has_owned(&self, ty: &Type) -> Result<bool, ValidationFailure> {
+    pub(super) fn call_type_has_owned(&self, ty: &Type) -> Result<bool, ValidationFailure> {
         let mut pending = vec![ty];
         while let Some(ty) = pending.pop() {
             self.tick()?;

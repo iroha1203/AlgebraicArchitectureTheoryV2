@@ -1,0 +1,4 @@
+overlapFeasible=solve(Backing.legal,using=Backing.assign,on=@fixture/overlapFeasible,bind.w=@fixture/overlapFeasible)
+overlapInsufficient=solve(Backing.legal,using=Backing.assign,on=@fixture/overlapInsufficient,bind.w=@fixture/overlapInsufficient)
+threeUsesExact=solve(Backing.legal,using=Backing.assign,on=@fixture/threeUsesExact,bind.w=@fixture/threeUsesExact)
+threeUsesMicroShortage=solve(Backing.legal,using=Backing.assign,on=@fixture/threeUsesMicroShortage,bind.w=@fixture/threeUsesMicroShortage)

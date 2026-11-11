@@ -18,6 +18,7 @@ use archsig_common::{canonical::Json, issue::Location, types::Type};
 use archsig_input::law::model::Signature;
 use std::{collections::BTreeMap, sync::Arc};
 pub(super) mod field_linear_result;
+mod field_polyhedron_result;
 pub(super) mod linear_result;
 
 mod owner_completion;
@@ -30,6 +31,7 @@ pub(super) struct Source {
     parts: Vec<Part>,
     answer: Answer,
     integer: Option<Arc<super::environment::change_affine::Linear>>,
+    rational_polyhedron: bool,
 }
 #[derive(Clone, Debug)]
 pub(crate) struct Data {
@@ -52,6 +54,9 @@ impl Data {
     pub(super) fn is_blocked(&self) -> bool {
         self.part().ty == NodeType::Construction(T::SolutionSet)
             && self.part().wire_ref() == Some(&Json::obj([]))
+    }
+    pub(super) fn scope_domain_type(&self) -> Option<&Type> {
+        self.part().domain_type.as_ref()
     }
     pub(super) fn ty(&self) -> NodeType {
         self.part().ty.clone()
@@ -273,6 +278,58 @@ fn compute(
 ) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
     env.validation_graph_session(g, || compute_inner(env, g, architecture, base, request, c))
 }
+fn architecture_missing_reasons(
+    b: &mut Builder<'_>,
+    env: &Environment<'_>,
+    architecture: &Architecture,
+    request: &Request,
+    explained: &std::collections::BTreeSet<Fact>,
+) -> Result<Vec<Reason>, ValidationFailure> {
+    let mut reasons = Vec::new();
+    let reading = architecture.witness.construction().reading();
+    for reason in &architecture.reasons {
+        for position in &reason.missing {
+            env.tick()?;
+            if explained.contains(position) {
+                continue;
+            }
+            let subject = env.indexes.subject(&position.snapshot, &position.subject)?;
+            let name = position
+                .field
+                .as_ref()
+                .ok_or(internal!("構成の欠測fieldがない"))?;
+            let field =
+                env.indexes
+                    .field(&env.state, &position.snapshot, &position.subject, name)?;
+            let location = reason
+                .location
+                .clone()
+                .unwrap_or_else(|| Location::ArchMap {
+                    pointer: subject.pointer.clone(),
+                    span: None,
+                });
+            let expression = b.field_source(
+                env,
+                position,
+                &field.ty.erase(),
+                &location,
+                reading,
+                vec![architecture.reference],
+            )?;
+            let reason = Reason {
+                kind: ReasonKind::Missing,
+                request: request.id.clone(),
+                dependencies: vec![expression],
+                missing: vec![position.clone()],
+                location: Some(location),
+            };
+            b.parts[expression.0 - b.base].reasons.push(reason.clone());
+            reasons.push(reason);
+        }
+    }
+    Ok(reasons)
+}
+
 fn compute_inner(
     env: &Environment<'_>,
     g: &Graph,
@@ -281,7 +338,79 @@ fn compute_inner(
     request: &Request,
     c: &Control,
 ) -> Result<(Vec<Part>, Answer, Option<change_search::Search>), ValidationFailure> {
-    if !architecture.complete {
+    let law = env.indexes.inputs.law();
+    let rational = request.arguments.iter().any(|argument| {
+        argument.name == "using"
+            && matches!(&argument.value, super::request::Selector::Declaration { name }
+                if matches!(&law.declarations()[name].signature,
+                    Signature::Change { params, .. }
+                        if params.iter().skip(1).any(|param| param.ty == Type::Q)))
+    });
+    let mut partial_search = None;
+    if !architecture.complete
+        && rational
+        && architecture
+            .witness
+            .construction()
+            .local_domain()
+            .is_complete()
+    {
+        // An ordinary reference can prevent materializing an object while a
+        // different conjunct already refutes every assignment on the known roster.
+        match change_search::search(env, g, &architecture.witness, request, c) {
+            Ok(search)
+                if search.complete && search.rational.is_some() && search.solutions.is_empty() =>
+            {
+                partial_search = Some(Ok(search));
+            }
+            Ok(_) => {}
+            Err(failure)
+                if matches!(
+                    &failure.cause,
+                    ValidationFailure::UnsupportedExpression { .. }
+                ) =>
+            {
+                if failure.partial.pending_integer.is_some() {
+                    partial_search = Some(Err(failure));
+                }
+            }
+            Err(failure) => return Err(failure.cause),
+        }
+    }
+    if !architecture.complete && partial_search.is_none() {
+        if rational
+            && !architecture.reasons.is_empty()
+            && architecture
+                .reasons
+                .iter()
+                .all(|reason| matches!(reason.kind, ReasonKind::Missing))
+        {
+            let mut b = Builder {
+                g,
+                base,
+                parts: vec![],
+            };
+            let reasons = architecture_missing_reasons(
+                &mut b,
+                env,
+                architecture,
+                request,
+                &std::collections::BTreeSet::new(),
+            )?;
+            return Ok((
+                b.parts,
+                Answer {
+                    id: request.id.clone(),
+                    status: Decision::Undetermined,
+                    outputs: BTreeMap::new(),
+                    claim: None,
+                    evidence: vec![],
+                    reasons,
+                    scope: g.get(architecture.reference)?.scope.clone(),
+                },
+                None,
+            ));
+        }
         if let Some(result) =
             owner_completion::compute(env, g, architecture, base, request, c, &[])?
         {
@@ -292,7 +421,12 @@ fn compute_inner(
             feature: "未完成Architecture上のchange候補の公開配送は未実装".into(),
         });
     }
-    let search = match change_search::search(env, g, &architecture.witness, request, c) {
+    let searched = if let Some(result) = partial_search {
+        result
+    } else {
+        change_search::search(env, g, &architecture.witness, request, c)
+    };
+    let search = match searched {
         Ok(search) => search,
         Err(failure) => {
             if let Some(pending) = &failure.partial.pending_integer {
@@ -302,53 +436,117 @@ fn compute_inner(
                         base,
                         parts: vec![],
                     };
-                    let bindings = pending
-                        .bindings
-                        .iter()
-                        .map(|(name, scalar)| Ok((name.clone(), value(&mut b, scalar)?)))
-                        .collect::<Result<Vec<_>, ValidationFailure>>()?;
-                    let expression = source_expression(
-                        &mut b,
-                        env,
-                        pending
-                            .expression
-                            .ok_or(internal!("整数欠測の元式がない"))?,
-                        &bindings,
-                        &pending.parameters,
-                    )?;
-                    let part = &mut b.parts[expression.0 - base];
-                    part.arguments.push(architecture.reference);
-                    part.scope.merge(&g.get(architecture.reference)?.scope);
-                    let scope = part.scope.clone();
+                    let mut scope = Scope::default();
                     let mut reasons = vec![];
-                    if !failure.partial.missing.is_empty() {
-                        reasons.push(Reason {
-                            kind: ReasonKind::Missing,
-                            request: request.id.clone(),
-                            dependencies: vec![expression],
-                            missing: failure.partial.missing,
-                            location: Some(location.clone()),
-                        });
+                    let diagnostics = || {
+                        std::iter::once((&location, pending)).chain(
+                            pending
+                                .additional
+                                .iter()
+                                .map(|(location, other)| (location, other)),
+                        )
+                    };
+                    let mut other_missing = failure.partial.missing;
+                    if !pending.additional.is_empty() {
+                        let explained = diagnostics()
+                            .flat_map(|(_, reason)| &reason.facts)
+                            .collect::<std::collections::BTreeSet<_>>();
+                        other_missing.retain(|fact| !explained.contains(fact));
                     }
-                    reasons.push(Reason {
-                        kind: ReasonKind::UnsupportedAlgorithm {
-                            question: request.kind,
-                            operand_types: vec![
-                                pending.coefficient_type.clone().unwrap_or(Type::Z),
-                            ],
-                            method: pending.unsupported.map(str::to_owned).unwrap_or_else(|| {
-                                if pending.coefficient_type == Some(Type::Q) {
-                                    "rational_change".into()
-                                } else {
-                                    "integer_change".into()
-                                }
-                            }),
-                        },
-                        request: request.id.clone(),
-                        dependencies: vec![expression],
-                        missing: vec![],
-                        location: Some(location.clone()),
-                    });
+                    for (i, (location, pending)) in diagnostics().enumerate() {
+                        let bindings = pending
+                            .bindings
+                            .iter()
+                            .map(|(name, scalar)| Ok((name.clone(), value(&mut b, scalar)?)))
+                            .collect::<Result<Vec<_>, ValidationFailure>>()?;
+                        let expression = source_expression(
+                            &mut b,
+                            env,
+                            pending
+                                .expression
+                                .ok_or(internal!("整数欠測の元式がない"))?,
+                            &bindings,
+                            &pending.parameters,
+                        )?;
+                        let part = &mut b.parts[expression.0 - base];
+                        part.arguments.push(architecture.reference);
+                        part.scope.merge(&g.get(architecture.reference)?.scope);
+                        part.scope.merge(&pending.scope);
+                        if pending.coefficient_type == Some(Type::Q) {
+                            for parameter in &pending.universal {
+                                c.checkpoint(Checkpoint::RationalPolyhedron)?;
+                                part.scope.add_quantifier(Quantifier {
+                                    kind: archsig_input::law::ast::QuantKind::Forall,
+                                    name: parameter.name.clone(),
+                                    ty: parameter.kind.ty(),
+                                    domain: None,
+                                    occurrence: parameter.binder,
+                                    context: Some(env.current_context(g)),
+                                });
+                            }
+                        }
+                        scope.merge(&part.scope);
+                        let mut missing = pending.facts.clone();
+                        if i == 0 {
+                            missing.append(&mut other_missing);
+                        }
+                        missing.sort();
+                        missing.dedup();
+                        let has_missing = !missing.is_empty();
+                        if has_missing {
+                            reasons.push(Reason {
+                                kind: ReasonKind::Missing,
+                                request: request.id.clone(),
+                                dependencies: vec![expression],
+                                missing,
+                                location: Some(location.clone()),
+                            });
+                        }
+                        if !pending.awaiting_observation || !has_missing {
+                            reasons.push(Reason {
+                                kind: ReasonKind::UnsupportedAlgorithm {
+                                    question: request.kind,
+                                    operand_types: vec![
+                                        pending.coefficient_type.clone().unwrap_or(Type::Z),
+                                    ],
+                                    method: pending.unsupported.map(str::to_owned).unwrap_or_else(
+                                        || {
+                                            if pending.coefficient_type == Some(Type::Q) {
+                                                "rational_change".into()
+                                            } else {
+                                                "integer_change".into()
+                                            }
+                                        },
+                                    ),
+                                },
+                                request: request.id.clone(),
+                                dependencies: vec![expression],
+                                missing: vec![],
+                                location: Some(location.clone()),
+                            });
+                        }
+                    }
+                    if !architecture.complete {
+                        let explained = reasons
+                            .iter()
+                            .flat_map(|reason| reason.missing.iter().cloned())
+                            .collect();
+                        reasons.extend(architecture_missing_reasons(
+                            &mut b,
+                            env,
+                            architecture,
+                            request,
+                            &explained,
+                        )?);
+                    }
+                    for descriptor in field_linear_result::materialize_quantifiers(
+                        &mut b,
+                        &pending.finite_domains,
+                        &[],
+                        c,
+                    )? {
+                        scope.add_quantifier(descriptor);
+                    }
                     return Ok((
                         b.parts,
                         Answer {
@@ -645,6 +843,7 @@ pub(super) fn render_search(
             &mut b,
             linear,
             &requirements,
+            !architecture.complete,
             c,
         )?)
     } else {
@@ -654,6 +853,75 @@ pub(super) fn render_search(
             .map(|linear| linear_result::build(&mut b, linear, &requirements, c))
             .transpose()?
     };
+    if !architecture.complete && search.rational.is_some() && search.solutions.is_empty() {
+        let linear = linear_parts
+            .as_ref()
+            .ok_or(internal!("未完成対象の有理反証に証拠がない"))?;
+        let label = value(&mut b, &Scalar::Text("rational_solution".into()))?;
+        let root = architecture.witness.construction().root();
+        let entity = env
+            .indexes
+            .subject(&root.snapshot, &root.subject)?
+            .ty
+            .to_string();
+        let root = value(
+            &mut b,
+            &Scalar::Subject {
+                snapshot: root.snapshot.clone(),
+                subject: root.subject.clone(),
+                entity,
+            },
+        )?;
+        let existence = b.proposition(
+            "constructible",
+            [label, root, linear.parameters, linear.certificate]
+                .into_iter()
+                .chain(subjects)
+                .chain(requirements)
+                .collect(),
+            vec![linear.certificate],
+            Decision::Refuted,
+        )?;
+        let mut scope = b.parts[existence.0 - base].scope.clone();
+        scope.merge(&g.get(architecture.reference)?.scope);
+        scope.completions = true;
+        let mut outputs = BTreeMap::new();
+        let claim = if request.kind == QuestionKind::Repair {
+            outputs.insert("existence".into(), existence);
+            let label = value(&mut b, &Scalar::Text("repair".into()))?;
+            b.proposition(
+                "constructible",
+                vec![label, existence],
+                vec![linear.certificate],
+                Decision::Refuted,
+            )?
+        } else {
+            existence
+        };
+        outputs.insert("proposition".into(), claim);
+        for reference in [existence, claim] {
+            let part = &mut b.parts[reference.0 - base];
+            part.scope.merge(&scope);
+            part.evidence = vec![linear.certificate];
+            part.judgment
+                .as_mut()
+                .ok_or(internal!("有理反証の判断がない"))?
+                .evidence = vec![linear.certificate];
+        }
+        return Ok((
+            b.parts,
+            Answer {
+                id: request.id.clone(),
+                status: Decision::Refuted,
+                outputs,
+                claim: Some(claim),
+                evidence: vec![linear.certificate],
+                reasons: vec![],
+                scope,
+            },
+            None,
+        ));
+    }
     let parameters = if let Some(linear) = &linear_parts {
         linear.parameters
     } else {
@@ -1230,7 +1498,10 @@ impl Environment<'_> {
         let request = origin.request();
         let (parts, answer, verification) =
             compute(self, g, &d.source.architecture, d.source.base, request, &c)?;
-        if let Some(search) = verification {
+        // Polyhedral search checks each witness against the original change and Law.
+        if let Some(search) = verification
+            && !d.source.rational_polyhedron
+        {
             for point in 0..search
                 .candidates
                 .as_ref()
@@ -1547,6 +1818,33 @@ pub(super) struct CandidateInput {
     pub domain_type: ProjectionType,
     pub integer_family: Option<super::repair_problem::integer::Family>,
 }
+pub(super) fn checked_polyhedron(
+    env: &Environment<'_>,
+    g: &Graph,
+    reference: NodeRef,
+) -> Result<Option<(Arc<native::ArchitectureWitness>, ProjectionType)>, ValidationFailure> {
+    let node = g.get(reference)?;
+    if node.ty != NodeType::Construction(T::SolutionSet) {
+        return Ok(None);
+    }
+    let Some(Payload::Construction(value)) = &node.payload else {
+        return Ok(None);
+    };
+    let D::Change(data) = &value.data else {
+        return Ok(None);
+    };
+    if !data.source.rational_polyhedron {
+        return Ok(None);
+    }
+    let checked = checked_candidate(env, g, reference)?;
+    Ok(Some((
+        checked.source.architecture.witness.clone(),
+        checked
+            .projection_type()
+            .ok_or(internal!("有理半空間の候補域型がない"))?,
+    )))
+}
+
 pub(super) fn candidate_input(
     env: &Environment<'_>,
     g: &Graph,
@@ -1562,8 +1860,20 @@ pub(super) fn candidate_input(
     let request = origin.request();
     env.with_request_context(g, request, || {
         let _selected = env.enter_architecture(g)?;
-        let search = change_search::search(env, g, &d.source.architecture.witness, request, c)
-            .map_err(|f| f.cause)?;
+        let search = if d.source.rational_polyhedron
+            && d.ty() == NodeType::Construction(T::CandidateSpace)
+        {
+            change_search::search_rational_domain(
+                env,
+                g,
+                &d.source.architecture.witness,
+                request,
+                c,
+            )
+        } else {
+            change_search::search(env, g, &d.source.architecture.witness, request, c)
+        }
+        .map_err(|f| f.cause)?;
         Ok(CandidateInput {
             integer_family: None,
             architecture: d.source.architecture.reference,
@@ -1656,9 +1966,18 @@ impl super::result_kind::ResultKind for Data {
         let boundary = Boundary::capture(env, g, producer, vec![architecture.reference], c)?;
         let base = g.nodes.len();
         let (parts, answer, verification) = compute(env, g, &architecture, base, request, c)?;
+        let polyhedral = verification.as_ref().is_some_and(|search| {
+            search.rational.as_ref().is_some_and(|linear| {
+                matches!(
+                    linear.solutions,
+                    super::environment::field_change::Solutions::Polyhedron(_)
+                )
+            })
+        });
         let integer = verification.as_ref().and_then(|s| s.linear.clone());
         let source = Arc::new(Source {
             integer,
+            rational_polyhedron: polyhedral,
             architecture,
             boundary,
             base,
@@ -1669,7 +1988,7 @@ impl super::result_kind::ResultKind for Data {
             .as_ref()
             .and_then(|s| s.candidates.as_ref())
             .map_or(0, |table| table.rows.len());
-        if points > 0 {
+        if points > 0 && !polyhedral {
             change_search::verify_point(
                 env,
                 &source.architecture.witness,
@@ -1709,7 +2028,7 @@ impl super::result_kind::ResultKind for Data {
                 part.evidence.clone(),
                 part.judgment.clone(),
             )?;
-            if base + index == existence.0 && points > 1 {
+            if base + index == existence.0 && points > 1 && !polyhedral {
                 for point in 1..points {
                     if let Err(failure) = change_search::verify_point(
                         env,
@@ -1756,5 +2075,98 @@ impl super::result_kind::ResultKind for Data {
     ) -> Result<(), ValidationFailure> {
         env.recheck_change(graph, value, limit)?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod rational_scope_tests {
+    use super::*;
+    use crate::observed::{evaluate_observed, prepare_observed};
+    use archsig_input::input::InputSources;
+
+    const DEFINITIONS: &[u8] =
+        include_bytes!("../../../../tests/fixtures/r2-backing-polyhedron/definitions.json");
+    const MAP: &str = include_str!("../../../../tests/fixtures/r2-backing-polyhedron/archmap.json");
+    const LAW: &str = include_str!("../../../../tests/fixtures/r2-backing-polyhedron/laws.law");
+    const SOLVE: &str = "solveIt=solve(Backing.legal,using=Backing.assign,on=@fixture/threeUsesMicroShortage,bind.w=@fixture/threeUsesMicroShortage)";
+
+    #[test]
+    fn partial_rational_refutation_keeps_observations_from_law_guard_and_update() {
+        let map = MAP
+            .lines()
+            .filter(|line| !line.contains(r#""id":"threeUsesMicroShortage.M1.N.stock""#))
+            .collect::<Vec<_>>()
+            .join(
+                "
+",
+            );
+        let control = Control::unlimited();
+        let (prefix, _) = LAW.split_once("   (forall b").unwrap();
+        let guard = format!(
+            "{prefix}true;\n change assign(b:Pool.Cell,q:Q) when (forall n in list<Q>[b.quantity] . n>rat(1,1))=b with {{quantity=q}};\n}}"
+        );
+        let offset = format!(
+            "{prefix}forall b in Pool.Cell[w] . b.quantity<=rat(0,1);\n change assign(b:Pool.Cell,q:Q) when q=rat(0,1)=b with {{quantity=q+b.claim.quantity}};\n}}"
+        );
+        let owned = format!(
+            "{}false;\n change assign(b:Pool.Cell,q:Q)=b with {{quantity=q}};\n}}",
+            prefix.replace(
+                "legal(w:Pool.World):",
+                "legal(w:Pool.World,b:Pool.Cell[w]):"
+            )
+        );
+        let owned_solve = format!(
+            "{},bind.b=@fixture/threeUsesMicroShortage.M1.N)",
+            SOLVE.strip_suffix(')').unwrap()
+        );
+        let universal = format!(
+            "{}forall b in Pool.Cell[w] . a*b.claim.quantity+b.quantity>=rat(0,1);\n change assign(b:Pool.Cell,q:Q)=b with {{quantity=q}};\n}}",
+            prefix.replace("legal(w:Pool.World):", "legal(w:Pool.World,a:Q):")
+        );
+        for (law, ask, field, binder) in [
+            (LAW, SOLVE, "Pool.Stock.available", Some("s")),
+            (&guard, SOLVE, "Pool.Cell.quantity", Some("n")),
+            (&offset, SOLVE, "Pool.Claim.quantity", Some("b")),
+            (&owned, &owned_solve, "Pool.Cell.owner", None),
+            (&universal, SOLVE, "Pool.Claim.quantity", Some("b")),
+        ] {
+            let input = prepare_observed(
+                InputSources::from_bytes(
+                    vec![DEFINITIONS.to_vec()],
+                    law.as_bytes().to_vec(),
+                    map.as_bytes().to_vec(),
+                ),
+                &[ask],
+                &control,
+            )
+            .unwrap();
+            let evaluation = evaluate_observed(input, &control).unwrap();
+            let [answer] = evaluation.answers.as_slice() else {
+                panic!("one solve")
+            };
+            assert_eq!(answer.status, Decision::Refuted, "{field}");
+            assert!(answer.scope.completions);
+            if let Some(binder) = binder {
+                assert!(
+                    answer
+                        .scope
+                        .quantifiers
+                        .iter()
+                        .any(|q| q.name == binder && q.domain.is_some()),
+                    "{binder}"
+                );
+            }
+            let [certificate] = answer.evidence.as_slice() else {
+                panic!("exact obstruction")
+            };
+            for reference in [*certificate, answer.claim.unwrap()] {
+                assert!(
+                    evaluation.nodes[reference.0].support.iter().any(|fact| {
+                        fact.field.as_ref().is_some_and(|name| name == field) && fact.atom.is_some()
+                    }),
+                    "{field}"
+                );
+            }
+        }
     }
 }

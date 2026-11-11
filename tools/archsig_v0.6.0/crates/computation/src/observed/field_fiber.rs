@@ -26,7 +26,7 @@ fn tick(c: &Control) -> Result<(), ValidationFailure> {
 fn op(a: &Scalar, operation: BinOp, b: &Scalar, c: &Control) -> Result<Scalar, ValidationFailure> {
     numeric::binary(operation, a, b, c)
 }
-fn inverse(value: &Scalar, c: &Control) -> Result<Scalar, ValidationFailure> {
+pub(super) fn inverse(value: &Scalar, c: &Control) -> Result<Scalar, ValidationFailure> {
     tick(c)?;
     numeric::check(value, c)?;
     let result = match value {

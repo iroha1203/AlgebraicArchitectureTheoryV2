@@ -13,6 +13,7 @@ mod equation_family;
 mod equation_presentation_node;
 pub mod evaluate;
 mod field_fiber;
+mod field_polyhedron;
 mod finite;
 mod finite_integer_function;
 mod finite_law_diagram;

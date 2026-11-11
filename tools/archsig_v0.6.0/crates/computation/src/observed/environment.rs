@@ -8167,6 +8167,7 @@ impl<'a> Environment<'a> {
             // 記録中は値だけのmemoを使えない。導出の再評価に不要なキー・値の
             // 複製も行わず、欠測の収集とcapture自体は通常どおり実行する。
             let recording = self.state.unresolved_read_positions.get().is_some()
+                || self.state.finite_domain_reads.borrow().is_some()
                 || self
                     .state
                     .evaluation_capture
@@ -9120,7 +9121,10 @@ impl<'a> Environment<'a> {
                 &self.control,
             )?
             .map(Box::new);
-            let comparison = if matches!(op, BinOp::Eq | BinOp::Ne) {
+            let ordered_q = matches!(op, BinOp::Le | BinOp::Ge)
+                && self.state.finite_domain_reads.borrow().is_some()
+                && self.indexes.inputs.law().expr_type(*lhs) == Some(&Type::Q);
+            let comparison = if matches!(op, BinOp::Eq | BinOp::Ne) || ordered_q {
                 left_affine
                     .as_deref()
                     .zip(right.affine.as_deref())
@@ -9216,6 +9220,21 @@ impl<'a> Environment<'a> {
         }
         Ok(result)
     }
+    fn with_finite_domain_reads<T>(
+        &self,
+        output: &mut Vec<(Quantifier, Vec<Scalar>)>,
+        read: impl FnOnce() -> Result<T, ValidationFailure>,
+    ) -> Result<T, ValidationFailure> {
+        let capture = self.state.finite_domain_reads.scoped(Some(Vec::new()));
+        let result = read();
+        output.extend(
+            capture
+                .restore()
+                .ok_or(internal!("有限域の読取り記録がない"))?,
+        );
+        result
+    }
+
     fn scoped_quantifier_domain(
         &self,
         spec: &quantifier::Spec<'_>,
@@ -9288,7 +9307,8 @@ impl<'a> Environment<'a> {
                     .iter()
                     .any(|old| old.occurrence == q.occurrence)
             });
-            scope.add_quantifier(spec.descriptor(None, self.state.scoped_context.get()));
+            let descriptor = spec.descriptor(None, self.state.scoped_context.get());
+            scope.add_quantifier(descriptor.clone());
             scope.merge_quantifiers(&input.scope);
             let Some(items) = members else {
                 return Ok(SourceValue {
@@ -9303,6 +9323,9 @@ impl<'a> Environment<'a> {
                     scalar_scope: None,
                 });
             };
+            if let Some(domains) = self.state.finite_domain_reads.borrow_mut().as_mut() {
+                domains.push((descriptor, items.clone()));
+            }
             if let Some(frame) = self
                 .state
                 .evaluation_capture
