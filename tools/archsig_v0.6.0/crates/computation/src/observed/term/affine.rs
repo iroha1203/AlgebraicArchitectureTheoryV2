@@ -967,7 +967,7 @@ impl Term {
                                     }
                                     Err(error)
                                 })?
-                                .map(|v| super::finite_in_members(v, c))
+                                .map(|v| super::finite_in_members(v, domains.is_some(), c))
                                 .transpose()?,
                             QuantDomain::Type(_) => {
                                 if finite::completion_supported(element, law, c)? {

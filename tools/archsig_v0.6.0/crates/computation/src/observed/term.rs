@@ -75,11 +75,15 @@ pub(super) fn contains(
     }
     visit(ty, law, c, &mut BTreeSet::new())
 }
-fn finite_in_members(mut value: Scalar, c: &Control) -> Result<Vec<Scalar>, ValidationFailure> {
-    if let Scalar::List { element, items } = &value {
+fn finite_in_members(
+    mut value: Scalar,
+    capture: bool,
+    c: &Control,
+) -> Result<Vec<Scalar>, ValidationFailure> {
+    if capture && let Scalar::List { element, items } = &value {
         value = data::set(element.clone(), items, c)?;
     }
-    let Scalar::Set { items, .. } = &mut value else {
+    let (Scalar::List { items, .. } | Scalar::Set { items, .. }) = &mut value else {
         return Err(internal!("Term量化域がList/Setでない").into());
     };
     Ok(std::mem::take(items))
@@ -896,7 +900,7 @@ impl Term {
                                         }
                                         Err(error)
                                     })?;
-                                finite_in_members(input, c)?
+                                finite_in_members(input, domains.is_some(), c)?
                             }
                             QuantDomain::Type(_) => {
                                 if !super::finite::completion_supported(element, law, c)? {
