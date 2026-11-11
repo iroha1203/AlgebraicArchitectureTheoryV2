@@ -163,10 +163,15 @@ pub(super) fn build(
     let quantifiers = materialize_quantifiers(b, &linear.quantifiers, requirements, c)?;
     let equations = map(b, pm, em, &linear.equations, n, c)?;
     let part = &mut b.parts[equations.0 - b.base];
-    part.scope.merge(&linear.scope);
-    part.support
-        .make_owned()
-        .extend(linear.constraint_support.iter().cloned());
+    if partial_architecture {
+        part.support.make_owned().extend(
+            linear
+                .constraint_support
+                .iter()
+                .filter(|fact| fact.field.is_none() || fact.atom.is_some())
+                .cloned(),
+        );
+    }
     for quantifier in quantifiers {
         part.arguments.extend(quantifier.domain);
         part.scope.add_quantifier(quantifier);

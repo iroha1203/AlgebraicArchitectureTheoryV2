@@ -43,6 +43,7 @@ struct Constraints {
     inequalities: Option<Vec<Halfspace>>,
     quantifiers: Vec<(Quantifier, Vec<Scalar>)>,
     refuted: bool,
+    capture_reads: bool,
     constraint_support: BTreeSet<Fact>,
     scope: Scope,
     pending_failure: Option<ValidationFailure>,
@@ -265,16 +266,10 @@ impl DependencyAnalysis<'_, '_> {
 
     fn form(&self, form: &Form) -> Result<Dependency, ValidationFailure> {
         let control = &self.env.control;
-        let dependence = if form.awaiting_rational_observation(self.axes, control)?
-            || form.rational_coordinates(self.axes, control)?.is_some()
-        {
-            if form.varies_over(self.axes, control)? {
-                Dependence::Affine
-            } else {
-                Dependence::Fixed
-            }
-        } else {
-            Dependence::Other
+        let dependence = match form.rational_parameter_dependence(self.axes, control)? {
+            Some(true) => Dependence::Affine,
+            Some(false) => Dependence::Fixed,
+            None => Dependence::Other,
         };
         Ok(Dependency {
             dependence,
@@ -829,7 +824,7 @@ fn observed_source(
     missing: &mut Pending,
 ) -> Result<SourceValue, ValidationFailure> {
     let read = || env.scoped_ast(id, vars, base, reading);
-    if rows.inequalities.is_none() {
+    if !rows.capture_reads {
         return read();
     }
     let first = rows.quantifiers.len();
@@ -839,6 +834,9 @@ fn observed_source(
         && !value.condition_pending
     {
         let mut scope = value.scope.clone();
+        // Symbolic update coefficients quantify only inside extraction, not
+        // over the concrete architecture yielded by an accepted repair.
+        scope.assignments = false;
         scope.quantifiers.retain(|q| {
             q.domain.is_none()
                 && !rows.quantifiers[first..]
@@ -879,7 +877,7 @@ fn collect_equations(
     rows: &mut Constraints,
     missing: &mut Pending,
 ) -> Result<(), ValidationFailure> {
-    stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
+    let result = stacker::maybe_grow(256 * 1024, 1024 * 1024, || {
         env.tick()?;
         let base = Scope::default();
         let law = env.indexes.inputs.law();
@@ -1006,6 +1004,7 @@ fn collect_equations(
                     missing.awaiting_observation &= result.extractable();
                 }
                 usable(env, *value, &v)?;
+                let known = v.known_value.is_some();
                 local.insert(name.name.clone(), v);
                 if !diagnose {
                     return collect_equations(
@@ -1015,7 +1014,11 @@ fn collect_equations(
                 let mut dependencies = lexical.clone();
                 dependencies.insert(
                     name.name.clone(),
-                    analysis.read(*value, vars, lexical, reading)?,
+                    if known {
+                        Dependency::default()
+                    } else {
+                        analysis.read(*value, vars, lexical, reading)?
+                    },
                 );
                 collect_equations(
                     env,
@@ -1211,7 +1214,18 @@ fn collect_equations(
                 Ok(())
             }
         }
-    })
+    });
+    if rows.inequalities.is_some()
+        && missing.unsupported.is_none()
+        && matches!(result, Err(ValidationFailure::UnsupportedExpression { .. }))
+        && matches!(
+            env.indexes.inputs.law().exprs()[id].kind,
+            ExprKind::Quant { .. }
+        )
+    {
+        missing.unsupported = Some("rational_change_quantification");
+    }
+    result
 }
 
 /// Local declarations use the same rational equation extraction and full fiber.
@@ -1315,7 +1329,10 @@ fn compute_inner(
         }
     }
     let mut updates = BTreeMap::<Fact, (Form, Scalar, Vec<Scalar>)>::new();
-    let mut guards = Constraints::default();
+    let mut guards = Constraints {
+        capture_reads: allow_bounds,
+        ..Constraints::default()
+    };
     for (i, subject) in subjects.iter().enumerate() {
         let mut vars = BTreeMap::from([(params[0].name.clone(), value(env, subject.clone())?)]);
         for (p, axis) in params[1..]
@@ -1336,7 +1353,7 @@ fn compute_inner(
             .collect();
         if let Some(guard) = guard {
             missing.expression = Some(*guard);
-            equations(
+            if let Err(error) = equations(
                 env,
                 *guard,
                 &vars,
@@ -1344,7 +1361,10 @@ fn compute_inner(
                 Axes::Parameters(&axes),
                 &mut guards,
                 missing,
-            )?;
+            ) {
+                missing.finite_domains = guards.quantifiers;
+                return Err(error);
+            }
         }
         missing.expression = Some(*body);
         let mut current = *body;
@@ -1355,9 +1375,24 @@ fn compute_inner(
             match &env.indexes.inputs.law().exprs()[current].kind {
                 ExprKind::Group(inner) => current = *inner,
                 ExprKind::Let { name, value, body } => {
-                    let v = env.scoped_ast(*value, &vars, &Scope::default(), &change.reading)?;
+                    let v = observed_source(
+                        env,
+                        *value,
+                        &vars,
+                        &Scope::default(),
+                        &change.reading,
+                        &mut guards,
+                        missing,
+                    )?;
                     if allow_bounds {
-                        let dependency = analysis.read(*value, &vars, &lexical, &change.reading)?;
+                        let dependency = if v.known_value.is_some()
+                            && !v.condition_pending
+                            && !v.condition_failed
+                        {
+                            Dependency::default()
+                        } else {
+                            analysis.read(*value, &vars, &lexical, &change.reading)?
+                        };
                         if v.condition_pending || v.condition_failed {
                             dependency.record(missing, Dependence::Fixed);
                         } else {
@@ -1373,7 +1408,15 @@ fn compute_inner(
                     then_branch,
                     else_branch,
                 } => {
-                    let v = env.scoped_ast(*cond, &vars, &Scope::default(), &change.reading)?;
+                    let v = observed_source(
+                        env,
+                        *cond,
+                        &vars,
+                        &Scope::default(),
+                        &change.reading,
+                        &mut guards,
+                        missing,
+                    )?;
                     if allow_bounds
                         && (v.known_value.is_none() || v.condition_pending || v.condition_failed)
                     {
@@ -1382,6 +1425,9 @@ fn compute_inner(
                             .record(missing, Dependence::Fixed);
                     }
                     usable(env, *cond, &v)?;
+                    if allow_bounds {
+                        guards.constraint_support.extend(v.support.iter().cloned());
+                    }
                     current = match v.known_value {
                         Some(Scalar::Bool(true)) => *then_branch,
                         Some(Scalar::Bool(false)) => *else_branch,
@@ -1398,8 +1444,15 @@ fn compute_inner(
                     base,
                     updates: fields,
                 } => {
-                    let target =
-                        env.scoped_ast(*base, &vars, &Scope::default(), &change.reading)?;
+                    let target = observed_source(
+                        env,
+                        *base,
+                        &vars,
+                        &Scope::default(),
+                        &change.reading,
+                        &mut guards,
+                        missing,
+                    )?;
                     if allow_bounds
                         && (target.known_value.is_none()
                             || target.condition_pending
@@ -1410,6 +1463,11 @@ fn compute_inner(
                             .record(missing, Dependence::Fixed);
                     }
                     usable(env, *base, &target)?;
+                    if allow_bounds {
+                        guards
+                            .constraint_support
+                            .extend(target.support.iter().cloned());
+                    }
                     let Some(Scalar::Subject {
                         snapshot,
                         subject,
@@ -1419,7 +1477,15 @@ fn compute_inner(
                         return Err(unsupported(env, *base, "有理changeの更新先が未確定"));
                     };
                     for (field, id) in fields {
-                        let v = env.scoped_ast(*id, &vars, &Scope::default(), &change.reading)?;
+                        let v = observed_source(
+                            env,
+                            *id,
+                            &vars,
+                            &Scope::default(),
+                            &change.reading,
+                            &mut guards,
+                            missing,
+                        )?;
                         if allow_bounds
                             && (v.affine.is_none() || v.condition_pending || v.condition_failed)
                         {
@@ -1428,6 +1494,9 @@ fn compute_inner(
                                 .record(missing, Dependence::Affine);
                         }
                         usable(env, *id, &v)?;
+                        if allow_bounds {
+                            guards.constraint_support.extend(v.support.iter().cloned());
+                        }
                         let form = v.affine.ok_or_else(|| {
                             if matches!(env.indexes.inputs.law().expr_type(*id), Some(Type::Q)) {
                                 missing.unsupported = Some("nonlinear_numeric_change");
@@ -1511,6 +1580,12 @@ fn compute_inner(
             )
         })?
     };
+    guards.quantifiers.append(&mut rows.quantifiers);
+    rows.quantifiers = guards.quantifiers;
+    guards.scope.merge(&rows.scope);
+    rows.scope = guards.scope;
+    rows.constraint_support
+        .append(&mut guards.constraint_support);
     guard_matrix.extend(rows.equalities);
     guard_rhs.extend(
         rows.rhs
@@ -1635,6 +1710,7 @@ fn requirement_equations(
     missing.selective_missing = allow_bounds;
     let mut rows = Constraints {
         inequalities: allow_bounds.then(Vec::new),
+        capture_reads: allow_bounds,
         ..Default::default()
     };
     let mut conjuncts = Conjuncts::default();

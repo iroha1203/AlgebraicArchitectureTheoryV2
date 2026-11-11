@@ -2050,7 +2050,7 @@ mod rational_scope_tests {
     const SOLVE: &str = "solveIt=solve(Backing.legal,using=Backing.assign,on=@fixture/threeUsesMicroShortage,bind.w=@fixture/threeUsesMicroShortage)";
 
     #[test]
-    fn partial_rational_refutation_keeps_the_observed_capacity() {
+    fn partial_rational_refutation_keeps_observations_from_law_guard_and_update() {
         let map = MAP
             .lines()
             .filter(|line| !line.contains(r#""id":"threeUsesMicroShortage.M1.N.stock""#))
@@ -2060,29 +2060,53 @@ mod rational_scope_tests {
 ",
             );
         let control = Control::unlimited();
-        let input = prepare_observed(
-            InputSources::from_bytes(
-                vec![DEFINITIONS.to_vec()],
-                LAW.as_bytes().to_vec(),
-                map.into_bytes(),
-            ),
-            &[SOLVE],
-            &control,
-        )
-        .unwrap();
-        let evaluation = evaluate_observed(input, &control).unwrap();
-        let [answer] = evaluation.answers.as_slice() else {
-            panic!("one solve")
-        };
-        assert_eq!(answer.status, Decision::Refuted);
-        assert!(answer.scope.completions);
-        let [certificate] = answer.evidence.as_slice() else {
-            panic!("exact obstruction")
-        };
-        for reference in [*certificate, answer.claim.unwrap()] {
-            assert!(evaluation.nodes[reference.0].support.iter().any(|fact| {
-                fact.atom.as_deref() == Some("threeUsesMicroShortage.N.available")
-            }));
+        let (prefix, _) = LAW.split_once("   (forall b").unwrap();
+        let guard = format!(
+            "{prefix}true;\n change assign(b:Pool.Cell,q:Q) when (forall n in list<Q>[b.quantity] . n>rat(1,1))=b with {{quantity=q}};\n}}"
+        );
+        let offset = format!(
+            "{prefix}forall b in Pool.Cell[w] . b.quantity<=rat(0,1);\n change assign(b:Pool.Cell,q:Q) when q=rat(0,1)=b with {{quantity=q+b.claim.quantity}};\n}}"
+        );
+        for (law, field, binder) in [
+            (LAW, "Pool.Stock.available", "s"),
+            (&guard, "Pool.Cell.quantity", "n"),
+            (&offset, "Pool.Claim.quantity", "b"),
+        ] {
+            let input = prepare_observed(
+                InputSources::from_bytes(
+                    vec![DEFINITIONS.to_vec()],
+                    law.as_bytes().to_vec(),
+                    map.as_bytes().to_vec(),
+                ),
+                &[SOLVE],
+                &control,
+            )
+            .unwrap();
+            let evaluation = evaluate_observed(input, &control).unwrap();
+            let [answer] = evaluation.answers.as_slice() else {
+                panic!("one solve")
+            };
+            assert_eq!(answer.status, Decision::Refuted, "{field}");
+            assert!(answer.scope.completions);
+            assert!(
+                answer
+                    .scope
+                    .quantifiers
+                    .iter()
+                    .any(|q| q.name == binder && q.domain.is_some()),
+                "{binder}"
+            );
+            let [certificate] = answer.evidence.as_slice() else {
+                panic!("exact obstruction")
+            };
+            for reference in [*certificate, answer.claim.unwrap()] {
+                assert!(
+                    evaluation.nodes[reference.0].support.iter().any(|fact| {
+                        fact.field.as_ref().is_some_and(|name| name == field) && fact.atom.is_some()
+                    }),
+                    "{field}"
+                );
+            }
         }
     }
 }

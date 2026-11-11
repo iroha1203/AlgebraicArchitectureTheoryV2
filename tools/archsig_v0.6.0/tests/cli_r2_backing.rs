@@ -527,7 +527,7 @@ fn r2_exact_backing_solves_all_four_frozen_constraint_sets() {
                 &dir,
                 &[
                     "fix=repair(Backing.legal,using=Backing.assign,on=@fixture/threeUsesExact,bind.w=@fixture/threeUsesExact)",
-                    "recheckedLaw=check(Backing.legal,on=$fix.object,w=@fixture/threeUsesExact)",
+                    "recheckedLaw=check(Backing.legal,on=$fix.object)",
                 ],
                 "repaired",
                 None,

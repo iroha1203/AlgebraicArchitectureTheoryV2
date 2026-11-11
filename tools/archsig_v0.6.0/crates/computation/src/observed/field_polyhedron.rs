@@ -285,6 +285,7 @@ fn project(
     mut rows: Vec<EliminationRow>,
     axes: impl IntoIterator<Item = usize>,
     zero: &LeftSide,
+    keep_history: bool,
     c: &Control,
 ) -> Result<Projected, ValidationFailure> {
     let mut eliminated = Vec::new();
@@ -294,7 +295,9 @@ fn project(
         if let Some(row) = obstruction(&mut next, zero, c)? {
             return Ok(Projected::Obstruction(row));
         }
-        eliminated.push((axis, rows));
+        if keep_history {
+            eliminated.push((axis, rows));
+        }
         rows = next.into_values().collect();
     }
     Ok(Projected::Rows(Projection { rows, eliminated }))
@@ -429,6 +432,7 @@ pub(super) fn affine_obstruction(
 fn project_all(
     original: &[Halfspace],
     n: usize,
+    keep_history: bool,
     c: &Control,
 ) -> Result<Projected, ValidationFailure> {
     let one = integer(1);
@@ -457,7 +461,13 @@ fn project_all(
     if let Some(row) = obstruction(&mut tight, &zero_row, c)? {
         return Ok(Projected::Obstruction(row));
     }
-    project(tight.into_values().collect(), (0..n).rev(), &zero_row, c)
+    project(
+        tight.into_values().collect(),
+        (0..n).rev(),
+        &zero_row,
+        keep_history,
+        c,
+    )
 }
 
 pub(super) fn contradiction(
@@ -465,7 +475,7 @@ pub(super) fn contradiction(
     n: usize,
     c: &Control,
 ) -> Result<Option<Outcome>, ValidationFailure> {
-    match project_all(original, n, c)? {
+    match project_all(original, n, false, c)? {
         Projected::Rows(_) => Ok(None),
         Projected::Obstruction(row) => {
             Ok(Some(Outcome::Empty(row.certificate(original.len(), c)?)))
@@ -481,7 +491,7 @@ pub(super) fn solve(
     let zero = integer(0);
     let one = integer(1);
     let zero_row = vec![(BigInt::from(0), BigInt::from(1)); n];
-    let mut eliminated = match project_all(original, n, c)? {
+    let mut eliminated = match project_all(original, n, true, c)? {
         Projected::Rows(Projection { eliminated, .. }) => eliminated,
         Projected::Obstruction(row) => {
             return Ok(Outcome::Empty(row.certificate(original.len(), c)?));
@@ -497,7 +507,8 @@ pub(super) fn solve(
         if next_axis != axis {
             return Err(internal!("射影の消去層が元座標順と違う").into());
         }
-        let Projected::Rows(projected) = project(prefix, (0..axis).rev(), &zero_row, c)? else {
+        let Projected::Rows(projected) = project(prefix, (0..axis).rev(), &zero_row, true, c)?
+        else {
             return Err(internal!("可解な半空間系の射影が矛盾する").into());
         };
         let (low, high) = bounds(&projected.rows, axis, &point, c)?;

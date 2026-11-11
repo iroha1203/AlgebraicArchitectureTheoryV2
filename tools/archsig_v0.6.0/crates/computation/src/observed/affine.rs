@@ -426,6 +426,27 @@ impl Form {
         Ok(missing)
     }
 
+    /// Classify compatible sparse Q forms without allocating a coordinate row.
+    pub(super) fn rational_parameter_dependence(
+        &self,
+        axes: &[Parameter],
+        c: &Control,
+    ) -> Result<Option<bool>, ValidationFailure> {
+        if self.ty != Type::Q {
+            return Ok(None);
+        }
+        let mut varies = false;
+        for key in self.coefficients.keys() {
+            tick(c)?;
+            match key {
+                Symbol::Parameter(axis) if axes.contains(axis) => varies = true,
+                Symbol::Missing(_) => {}
+                _ => return Ok(None),
+            }
+        }
+        Ok(Some(varies))
+    }
+
     pub(in crate::observed) fn rational_coordinates(
         &self,
         axes: &[Parameter],
