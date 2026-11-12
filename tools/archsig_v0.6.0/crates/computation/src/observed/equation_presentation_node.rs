@@ -231,11 +231,15 @@ pub(super) fn global_metadata(
     a: &Arc<ArchitectureWitness>,
     support: &mut Vec<Fact>,
     scope: &mut Scope,
+    c: &Control,
 ) -> Result<(), ValidationFailure> {
-    let (facts, s) = native::metadata(&ConstructionValue {
-        witness: Witness::Architecture(a.clone()),
-        data: D::AtomUniverse(a.construction().universe().to_vec()),
-    })?;
+    let (facts, s) = native::metadata(
+        &ConstructionValue {
+            witness: Witness::Architecture(a.clone()),
+            data: D::AtomUniverse(a.construction().universe().to_vec()),
+        },
+        c,
+    )?;
     support.extend(facts);
     support.sort_by_key(|f| f.wire().canonical());
     support.dedup();

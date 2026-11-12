@@ -51,7 +51,7 @@ struct Source {
     architecture: Arc<ArchitectureWitness>,
     origin: ViewOrigin,
     base: usize,
-    support: Vec<Fact>,
+    support: Support,
     scope: Scope,
 }
 #[derive(Clone, Debug)]
@@ -71,42 +71,26 @@ fn metadata_sources(o: &ViewOrigin) -> impl Iterator<Item = NodeRef> + '_ {
         .into_iter()
         .chain(o.bindings.iter().map(|b| b.value))
 }
-fn metadata(g: &Graph, o: &ViewOrigin) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+fn metadata(g: &Graph, o: &ViewOrigin) -> Result<(Support, Scope), ValidationFailure> {
     let mut support = vec![];
     let mut scope = Scope::default();
     for r in metadata_sources(o) {
         g.tick()?;
         let n = g.get(r)?;
-        support.extend(n.support.iter().cloned());
+        support.push(n.support.clone());
         scope.merge(&n.scope);
     }
-    support.sort();
-    support.dedup();
-    Ok((support, scope))
+    Ok((Support::sum(vec![], support), scope))
 }
-/// `metadata` と同じ支持と Scope になるかを、支持を複製・整列せずに確かめる。
-/// 食い違っても途中で抜けず、`metadata` と同じ区切りと参照を通る。
+/// 実際の元参照から得たrecipeを比較する。別factorizationも物理Arcだけでは拒否しない。
 fn metadata_matches(
     g: &Graph,
     o: &ViewOrigin,
-    support: &[Fact],
+    support: &Support,
     scope: &Scope,
 ) -> Result<bool, ValidationFailure> {
-    let mut matches = support.windows(2).all(|w| w[0] < w[1]);
-    let mut seen = vec![false; support.len()];
-    let mut merged = Scope::default();
-    for r in metadata_sources(o) {
-        g.tick()?;
-        let n = g.get(r)?;
-        for fact in &n.support {
-            match support.binary_search(fact) {
-                Ok(i) if matches => seen[i] = true,
-                _ => matches = false,
-            }
-        }
-        merged.merge(&n.scope);
-    }
-    Ok(matches && seen.into_iter().all(|s| s) && merged == *scope)
+    let (expected, merged) = metadata(g, o)?;
+    Ok(support.same_facts(&expected, g.control())? && merged == *scope)
 }
 impl Data {
     pub(super) fn scalar(&self) -> Option<&Scalar> {
@@ -153,8 +137,17 @@ impl Data {
             ]),
         }
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+    pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.source.support.clone(), self.source.scope.clone())
+    }
+    pub(super) fn metadata(
+        &self,
+        control: &Control,
+    ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+        Ok((
+            self.source.support.materialize(control)?,
+            self.source.scope.clone(),
+        ))
     }
     pub(super) fn position(&self, at: usize) -> Result<(), ValidationFailure> {
         let n = self.source.origin.bindings.len();
@@ -261,7 +254,7 @@ pub(super) fn validate_node(
         || n.ty != d.ty()
         || n.rule != Rule::Construction(d.construction())
         || n.arguments != d.arguments()
-        || n.support != d.source.support
+        || !n.support.same_facts(&d.source.support, g.control())?
         || n.scope != d.source.scope
         || !n.evidence.is_empty()
         || !n.reasons.is_empty()

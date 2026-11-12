@@ -502,7 +502,10 @@ fn every_counter_ast_occurrence_has_source_expression_and_child_evaluation() {
                     || &LAW[position.0..position.1] == b"s",
                 "省略guardへ架空の原式spanを作らない"
             );
-            expressions.insert(position, text(field(node, "id")));
+            expressions
+                .entry(position)
+                .or_insert_with(BTreeSet::new)
+                .insert(text(field(node, "id")));
             let declaration = checked
                 .law()
                 .declarations()
@@ -550,16 +553,24 @@ fn every_counter_ast_occurrence_has_source_expression_and_child_evaluation() {
         if checked.law().expr_type(expr_id).is_none() {
             continue;
         }
-        let source = expressions
+        let sources = expressions
             .get(&expr.span)
-            .expect("各 AST 出現の source Expression");
+            .expect("各 AST 出現の source Expression候補");
         let evaluation = index
             .values()
             .find(|n| {
                 field(n, "type") == &Json::str("Evaluation")
-                    && field(value(n), "expression") == &Json::obj([("node", Json::str(*source))])
+                    && sources.iter().any(|source| {
+                        field(value(n), "expression") == &Json::obj([("node", Json::str(*source))])
+                    })
             })
-            .expect("各出現の評価");
+            .expect("各実AST出現の評価から実Sourceを選ぶ");
+        let source = typed(&index, field(value(evaluation), "expression"), "Expression");
+        assert_eq!(span(field(value(source), "location")), expr.span);
+        assert_eq!(
+            field(value(source), "bindings"),
+            field(value(evaluation), "bindings")
+        );
         let part = arr(field(value(evaluation), "parts"))
             .iter()
             .find(|p| span(field(p, "location")) == expr.span)

@@ -508,6 +508,54 @@ mod tests {
         )
     }
     #[test]
+    fn ordinary_roots_in_finite_rows_keep_the_object_binding_validator() {
+        use std::{cell::Cell, rc::Rc};
+        for law in [
+            "view family(c:Part,take:Bool):Z=if take then c.quantity else 0;",
+            "view family(c:Part,candidate:Option<Part>):Bool=candidate=some(c);",
+        ] {
+            let inputs = fixture(law);
+            let construction = construct(&inputs, "Selected", "v", "A", &quiet()).unwrap();
+            let readings = object_reading_instances(&inputs, &construction, &quiet()).unwrap();
+            let instance = readings
+                .instances()
+                .iter()
+                .position(|row| {
+                    row.bindings()
+                        .iter()
+                        .any(|binding| binding.subject().subject == "p")
+                })
+                .unwrap();
+            let calls = Rc::new(Cell::new((0, 0)));
+            let observed = calls.clone();
+            crate::observed::data::observe_iterations(move |_, _, phase, _| {
+                let (internal, raw) = observed.get();
+                match phase {
+                    "internal_answer_finish" => observed.set((internal + 1, raw)),
+                    "answer_raw_fallback" => observed.set((internal, raw + 1)),
+                    _ => (),
+                }
+            });
+            let result = evaluate_finite_view(inputs.clone(), &readings, 0, instance, &quiet());
+            crate::observed::data::clear_iteration_observer();
+            let family = result.unwrap_or_else(|failure| panic!("{law}: {failure:?}"));
+            assert!(family.is_complete());
+            assert_eq!(family.rows().len(), family.domains()[0].values.len());
+            assert!(!family.rows().is_empty());
+            assert_eq!(
+                calls.get().0,
+                0,
+                "finite row must not use explicit-only finishing"
+            );
+            assert!(
+                calls.get().1 > 0,
+                "finite row must use its dedicated raw validator"
+            );
+            family.recheck(inputs, &quiet()).unwrap();
+        }
+    }
+
+    #[test]
     fn finite_view_parameters_are_full_typed_functions_and_keep_each_original_evaluation() {
         let i =
             fixture("view family(c:Part,b:Bool,k:Bool):(Z,Bool)=(if b then c.quantity else 0,k);");

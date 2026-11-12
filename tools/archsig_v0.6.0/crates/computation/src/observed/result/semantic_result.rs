@@ -257,7 +257,7 @@ fn cleaned_node(
 ) -> Result<Json, Signal> {
     control.checkpoint(point)?;
     // Path/compound の既出 Ref 解決には元の全 prior と arguments を使う。
-    let mut node = native[index].wire_with_support(index, &native[..index], false);
+    let mut node = native[index].wire_with_support(index, &native[..index], false, control)?;
     control.checkpoint(point)?;
     clean_reasons(&mut node, control, point)?;
     Ok(node)

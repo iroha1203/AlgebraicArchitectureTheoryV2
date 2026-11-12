@@ -134,6 +134,8 @@ pub(super) fn iteration(
         && a.source == b.source
         && a.domain == b.domain
         && a.finite == b.finite
+        && a.position == b.position
+        && a.producer == b.producer
         && match (&a.member, &b.member) {
             (
                 super::super::call::Member::ListPosition(a),

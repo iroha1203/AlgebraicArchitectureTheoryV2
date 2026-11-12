@@ -85,7 +85,7 @@ fn finite_map_domains_recheck_totality_membership_type_support_and_scope() {
         *codomain = "Maps.Void".into();
     });
     completion_mutation(&r, t, |nodes| {
-        nodes[t].support.make_owned().clear();
+        nodes[t].support.materialize_mut_for_test().clear();
     });
     completion_mutation(&r, d, |nodes| {
         nodes[d].scope.snapshots.remove("w");

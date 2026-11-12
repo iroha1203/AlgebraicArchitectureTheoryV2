@@ -304,7 +304,7 @@ fn build_origin_rejects_modified_root_reading_request_inputs_edges_support_and_s
         match mode {
             0 => n.ty = NodeType::Construction(T::Configuration),
             1 => n.arguments.clear(),
-            2 => n.support.make_owned().clear(),
+            2 => n.support.materialize_mut_for_test().clear(),
             3 => {
                 n.scope.readings.insert("Foreign".into());
             }
@@ -591,7 +591,7 @@ fn view_root_and_tuple_projection_are_rechecked_from_the_actual_original_handle(
                         }))
                     }
                     1 => n.arguments.clear(),
-                    2 => n.support.make_owned().clear(),
+                    2 => n.support.materialize_mut_for_test().clear(),
                     _ => {
                         n.scope.readings.insert("Foreign".into());
                     }
@@ -917,7 +917,7 @@ fn missing_membership_with_direct_and_projected_root_handles_keeps_partial_archi
             let mut nodes = g.nodes.clone();
             let n = &mut nodes[a.reference.0];
             match mode {
-                0 => n.support.make_owned().clear(),
+                0 => n.support.materialize_mut_for_test().clear(),
                 1 => {
                     n.scope.readings.insert("Foreign".into());
                 }

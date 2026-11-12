@@ -168,18 +168,32 @@ fn native_map_and_its_source_keep_one_shared_support_buffer() {
     let result = example();
     let at = result.answers[2].outputs["configuration_map"];
     let node = &result.nodes[at.0];
-    assert!(!node.support.is_empty());
+    assert!(
+        !node
+            .support
+            .is_empty(&archsig_common::control::Control::unlimited())
+            .unwrap()
+    );
     let Some(Payload::Construction(value)) = &node.payload else {
         panic!("native")
     };
     let D::ModelMap(data) = &value.data else {
         panic!("map")
     };
-    assert_eq!(node.support.as_ptr(), data.part().support.as_ptr());
+    assert!(
+        node.support
+            .shares_recipe_storage_for_test(&data.part().support)
+    );
     let candidate = data.part().reference("candidate").unwrap();
     let other = &result.nodes[candidate.0];
-    assert_eq!(node.support, other.support);
-    assert_eq!(node.support.as_ptr(), other.support.as_ptr());
+    assert_eq!(
+        node.support.materialize_for_test(),
+        other.support.materialize_for_test()
+    );
+    assert!(
+        node.support
+            .shares_largest_fact_storage_for_test(&other.support)
+    );
 }
 #[test]
 fn a_native_set_operand_and_its_identity_view_keep_the_original_value_reference() {

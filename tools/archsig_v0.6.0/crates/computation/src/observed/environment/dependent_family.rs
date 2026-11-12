@@ -164,7 +164,7 @@ impl Environment<'_> {
                 };
                 enumeration.values.push(value);
                 enumeration.scope = node.scope;
-                enumeration.support = node.support.to_vec();
+                enumeration.support = node.support.materialize(&self.control)?;
             }
             _ => return Err(internal!("固定fiberが元subject/Answer selectorでない").into()),
         }
@@ -348,10 +348,9 @@ impl Environment<'_> {
         domains: &[(usize, NodeRef)],
         context: super::super::call::Context,
     ) -> Result<(), ValidationFailure> {
-        scope.merge_quantifiers(&Scope {
-            quantifiers: self.dependent_family_descriptors(plan, domains, context),
-            ..Scope::default()
-        });
+        scope.merge_quantifiers(&Scope::from_quantifiers(
+            self.dependent_family_descriptors(plan, domains, context),
+        ));
         self.family_order_scope(plan, scope)
     }
 
@@ -477,7 +476,7 @@ impl Environment<'_> {
             step.enumeration.scope.merge(&graph.get(pair[1])?.scope);
             step.enumeration
                 .support
-                .extend(graph.get(pair[1])?.support.iter().cloned());
+                .extend(graph.get(pair[1])?.support.materialize(&self.control)?);
             domains.push((indices[position], pair[0]));
         }
         self.dependent_merge_scope(
@@ -566,7 +565,7 @@ impl Environment<'_> {
             layout.scope.merge(&graph.get(domain)?.scope);
             layout
                 .support
-                .extend(graph.get(domain)?.support.iter().cloned());
+                .extend(graph.get(domain)?.support.materialize(&self.control)?);
             let Some(Payload::Domain { elements, .. }) = &graph.get(domain)?.payload else {
                 return Err(internal!("実fiberがDomainでない").into());
             };
@@ -715,7 +714,7 @@ impl Environment<'_> {
                 node,
                 &items[parameter],
                 &graph.get(record.domain)?.scope,
-                &graph.get(record.domain)?.support,
+                graph.get(record.domain)?.support.clone(),
             )?;
             return Ok(true);
         }
@@ -747,7 +746,7 @@ impl Environment<'_> {
                     node,
                     value,
                     &step.enumeration.scope,
-                    &step.enumeration.support,
+                    step.enumeration.support.clone(),
                 )?;
             } else if let Some(Payload::Domain { ty, elements }) = &node.payload {
                 if node.ty != NodeType::Domain
@@ -755,7 +754,9 @@ impl Environment<'_> {
                     || node.arguments.get(end..) != Some(elements.as_slice())
                     || elements.len() != step.enumeration.values.len()
                     || node.scope != step.enumeration.scope
-                    || node.support != step.enumeration.support
+                    || !node
+                        .support
+                        .matches_flat(&step.enumeration.support, &self.control)?
                     || !node.evidence.is_empty()
                     || !node.reasons.is_empty()
                     || node.judgment.is_some()
@@ -792,7 +793,7 @@ impl Environment<'_> {
                 return Err(internal!("依存rowの元実pathが違う").into());
             }
             let expected = self.dependent_row_value(graph, &plan, path)?;
-            self.dependent_clean_scalar(node, &expected, &layout.scope, &layout.support)?;
+            self.dependent_clean_scalar(node, &expected, &layout.scope, layout.support.clone())?;
             if value != &expected {
                 return Err(internal!("依存row値が元宣言順と違う").into());
             }
@@ -813,7 +814,7 @@ impl Environment<'_> {
                 || node.arguments.get(end..) != Some(elements.as_slice())
                 || elements.len() != layout.paths.len()
                 || node.scope != layout.scope
-                || node.support != layout.support
+                || !node.support.matches_flat(&layout.support, &self.control)?
                 || !node.evidence.is_empty()
                 || !node.reasons.is_empty()
                 || node.judgment.is_some()
@@ -846,13 +847,13 @@ impl Environment<'_> {
         node: &Node,
         expected: &Scalar,
         scope: &Scope,
-        support: &[Fact],
+        support: impl Into<Support>,
     ) -> Result<(), ValidationFailure> {
         data::check(expected, self.indexes.inputs.law(), &self.control)?;
         if node.ty != NodeType::Value(expected.ty())
             || !matches!(&node.payload,Some(Payload::Scalar(value)) if value == expected)
             || node.scope != *scope
-            || *node.support != support
+            || !node.support.same_facts(&support.into(), &self.control)?
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
             || node.judgment.is_some()

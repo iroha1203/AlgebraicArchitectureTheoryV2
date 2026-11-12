@@ -338,6 +338,21 @@ impl Environment<'_> {
         if value.is_some() {
             return Ok(false);
         }
+        if matches!(
+            graph.get(evaluation)?.rule,
+            Rule::Construction("field_evaluation" | "alias_evaluation")
+        ) {
+            let Some(Payload::Evaluation { parts, .. }) = &graph.get(evaluation)?.payload else {
+                return Err(internal!("fieldのPending payloadがない").into());
+            };
+            if let Some(child) = parts.first().and_then(|part| part.children.first()) {
+                return self.evaluation_condition_pending(graph, *child);
+            }
+            return Ok(false);
+        }
+        if graph.get(evaluation)?.rule == Rule::Construction("ordinary_evaluation") {
+            return self.ordinary_pending(graph, evaluation);
+        }
         Ok(self
             .original_evaluation_source(graph, evaluation, source, bindings)?
             .condition_pending)
@@ -817,7 +832,7 @@ impl Environment<'_> {
         source: NodeRef,
         children: &[NodeRef],
         limit: usize,
-    ) -> Result<Option<Checks>, ValidationFailure> {
+    ) -> Result<Option<(Checks, Support)>, ValidationFailure> {
         if !matches!(
             graph.get(source)?.payload,
             Some(Payload::Expression {
@@ -880,7 +895,7 @@ impl Environment<'_> {
             }
             values.push(self.owned_call_argument(graph, child)?);
             scope.merge(&graph.get(child)?.scope);
-            support.extend(graph.get(child)?.support.iter().cloned());
+            support.push(graph.get(child)?.support.clone());
         }
         let mut checks = if inherited_failure {
             Checks {
@@ -933,17 +948,14 @@ impl Environment<'_> {
             let partial = self.owned_call_argument(graph, child)?;
             checks = self.owned_call_checks(declaration, &values, Some(&partial), span)?;
             scope.merge(&graph.get(child)?.scope);
-            support.extend(graph.get(child)?.support.iter().cloned());
+            support.push(graph.get(child)?.support.clone());
         } else if checks.failure.is_none() && !checks.blocked {
             return Err(internal!("所属適合callに元body評価がない").into());
         }
         scope.merge(&checks.scope);
-        support.extend(checks.support);
-        support.sort();
-        support.dedup();
+        let support = Support::sum(checks.support.clone(), support);
         checks.scope = scope;
-        checks.support = support;
-        Ok(Some(checks))
+        Ok(Some((checks, support)))
     }
 
     pub(super) fn validate_owned_call_condition_node(
@@ -994,7 +1006,8 @@ impl Environment<'_> {
             }
             return Err(internal!("whole族Sourceをcall所属条件に転用した").into());
         }
-        let Some(checks) = self.owned_call_inputs(graph, source, &node.arguments[1..n], limit)?
+        let Some((checks, support)) =
+            self.owned_call_inputs(graph, source, &node.arguments[1..n], limit)?
         else {
             if extra == 0 {
                 return Ok(false);
@@ -1007,7 +1020,9 @@ impl Environment<'_> {
             }
             return Err(internal!("Owned条件に元所属不適合がない").into());
         };
-        if node.scope != checks.scope || node.support != checks.support || !node.reasons.is_empty()
+        if node.scope != checks.scope
+            || !node.support.same_facts(&support, &self.control)?
+            || !node.reasons.is_empty()
         {
             return Err(internal!("Owned条件の元Scope・支持・理由が違う").into());
         }
@@ -1069,7 +1084,8 @@ impl Environment<'_> {
         children: &[NodeRef],
         limit: usize,
     ) -> Result<Option<Reason>, ValidationFailure> {
-        let Some(checks) = self.owned_call_inputs(graph, source, children, limit)? else {
+        let Some((checks, support)) = self.owned_call_inputs(graph, source, children, limit)?
+        else {
             return Ok(None);
         };
         if checks.failure.is_none() {
@@ -1147,7 +1163,8 @@ impl Environment<'_> {
         if children.len() != params.len() && children.len() != params.len() + 1 {
             return Ok(false);
         }
-        let Some(checks) = self.owned_call_inputs(graph, source, children, limit)? else {
+        let Some((checks, support)) = self.owned_call_inputs(graph, source, children, limit)?
+        else {
             return Ok(false);
         };
         if checks.failure.is_none() && !checks.blocked {
@@ -1185,7 +1202,7 @@ impl Environment<'_> {
                         .ok_or(internal!("Owned callの元型がない"))?
                         .clone(),
                 )
-            || node.support != checks.support
+            || !node.support.same_facts(&support, &self.control)?
             || node.scope != checks.scope
             || !node.evidence.is_empty()
             || node.judgment.is_some()

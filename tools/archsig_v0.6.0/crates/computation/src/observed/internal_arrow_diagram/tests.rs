@@ -248,11 +248,15 @@ fn generators_use_actual_owned_architectures_and_total_actions_with_fixed_comple
     for (i, n) in g.nodes.iter().enumerate().skip(start) {
         assert!(n.arguments.iter().all(|r| r.0 < i));
         assert_eq!(n.scope, g.get(a.reference).unwrap().scope);
-        assert!(n.support.contains(&fact("x", Some("quantity"))));
-        assert!(std::ptr::eq(
-            &*n.support,
-            &*data(&g, NodeRef(i)).source.support
-        ));
+        assert!(
+            n.support
+                .materialize_for_test()
+                .contains(&fact("x", Some("quantity")))
+        );
+        assert!(
+            n.support
+                .shares_recipe_storage_for_test(&data(&g, NodeRef(i)).source.support)
+        );
     }
     replay(&p, &g, &g.nodes).unwrap();
 }
@@ -352,10 +356,23 @@ fn changed_inputs_requests_plans_metadata_and_edges_are_rejected() {
             0 => nodes[r.0].arguments.swap(3, 4),
             1 => {
                 let original = &data(&g, r).source.support;
-                assert!(!original.is_empty());
-                nodes[r.0].support.make_owned().clear();
-                assert!(!original.is_empty());
-                assert!(nodes[r.0].support.is_empty());
+                assert!(
+                    !original
+                        .is_empty(&archsig_common::control::Control::unlimited())
+                        .unwrap()
+                );
+                nodes[r.0].support.materialize_mut_for_test().clear();
+                assert!(
+                    !original
+                        .is_empty(&archsig_common::control::Control::unlimited())
+                        .unwrap()
+                );
+                assert!(
+                    nodes[r.0]
+                        .support
+                        .is_empty(&archsig_common::control::Control::unlimited())
+                        .unwrap()
+                );
             }
             2 => nodes[r.0].scope = Scope::default(),
             3 => {
@@ -729,8 +746,8 @@ fn shared_universe_keeps_external_snapshot_and_mode_in_every_generated_scope() {
     for node in &g.nodes[start..] {
         assert!(node.scope.snapshots.contains("w"));
         assert!(node.scope.modes.contains("proposed"));
-        assert!(node.support.contains(&existence));
-        assert!(node.support.contains(&quantity));
+        assert!(node.support.materialize_for_test().contains(&existence));
+        assert!(node.support.materialize_for_test().contains(&quantity));
     }
     for row in &d.rows {
         let Part::Operation { action, .. } = data(&g, row.operation.unwrap()).part() else {

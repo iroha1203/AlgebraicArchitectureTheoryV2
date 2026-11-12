@@ -246,7 +246,7 @@ fn metadata(
     };
     for r in args {
         let n = graph.get(r)?;
-        support.extend(n.support.iter().cloned());
+        support.extend(n.support.materialize(graph.control())?);
         scope.merge(&n.scope);
     }
     if let Kind::Domain {
@@ -297,7 +297,7 @@ pub(in crate::observed) fn validate_node(
         || n.arguments != data.arguments()
         || data.support != support
         || data.scope != scope
-        || n.support != support
+        || !n.support.matches_flat(&support, graph.control())?
         || n.scope != scope
         || n.judgment.is_some()
         || !n.evidence.is_empty()

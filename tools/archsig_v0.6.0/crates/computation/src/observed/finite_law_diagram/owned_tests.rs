@@ -275,13 +275,15 @@ fn owned_missing_observation_keeps_symbolic_domain_originals_and_omits_evaluatio
     assert!(
         !g.nodes[d.ring.0]
             .support
-            .iter()
+            .materialize_for_test()
+            .into_iter()
             .any(|f| f.atom.as_deref() == Some("qx"))
     );
     assert!(
         g.nodes[d.ring.0]
             .support
-            .iter()
+            .materialize_for_test()
+            .into_iter()
             .any(|f| f.subject == "q" && f.field.is_none())
     );
     assert_eq!(data(&g, d.ring).source.reference, f.architectures[1]);
@@ -399,7 +401,7 @@ fn cached_owned_source_rejects_changed_consumer_index_origin_and_node_metadata()
         let n = &mut nodes[d.ring.0];
         match mode {
             0 => n.arguments[0] = fb.architectures[1],
-            1 => n.support.make_owned().clear(),
+            1 => n.support.materialize_mut_for_test().clear(),
             2 => n.scope.assignments = false,
             3 => n.ty = NodeType::Construction(T::Ideal),
             _ => {
@@ -600,7 +602,10 @@ fn cache_hit_still_checks_the_actual_owned_architecture_node_and_root_request() 
     for mode in 0..5 {
         let mut changed = replay(&e, &g.nodes, &g.contexts).unwrap();
         match mode {
-            0 => changed.nodes[owned.0].support.make_owned().clear(),
+            0 => changed.nodes[owned.0]
+                .support
+                .materialize_mut_for_test()
+                .clear(),
             1 => changed.nodes[owned.0].scope.assignments = true,
             2 => changed.nodes[owned.0].arguments.reverse(),
             3 => changed.nodes[owned.0].ty = NodeType::Construction(T::ObjectComponent),

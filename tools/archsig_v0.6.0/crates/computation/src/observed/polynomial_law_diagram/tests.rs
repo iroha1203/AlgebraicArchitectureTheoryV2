@@ -181,7 +181,8 @@ fn missing_symbol_keeps_polynomials_but_never_fabricates_epsilon_or_total_evalua
     assert!(
         !g.nodes[d.rings[0].0]
             .support
-            .iter()
+            .materialize_for_test()
+            .into_iter()
             .any(|f| f.atom.as_deref() == Some("qx"))
     );
     replay(&e, &g.nodes, &g.contexts).unwrap();
@@ -453,7 +454,8 @@ fn zero_cancellation_keeps_the_original_symbol_support_and_zero_polynomial_encod
     assert!(
         g.nodes[d.rings[0].0]
             .support
-            .iter()
+            .materialize_for_test()
+            .into_iter()
             .any(|f| f.atom.as_deref() == Some("px"))
     );
     replay(&e, &g.nodes, &g.contexts).unwrap();
@@ -585,7 +587,7 @@ fn cached_native_validation_rejects_foreign_consumer_input_witness_request_and_n
             0 => n.arguments.clear(),
             1 => n.arguments[0] = b,
             2 => n.ty = NodeType::Construction(T::Ideal),
-            3 => n.support.make_owned().clear(),
+            3 => n.support.materialize_mut_for_test().clear(),
             4 => n.scope.assignments = false,
             _ => {
                 let Some(Payload::Construction(v)) = &mut n.payload else {
@@ -1471,7 +1473,8 @@ fn global_equation_context_keeps_same_subject_ids_in_different_snapshots_and_the
         assert!(node.scope.modes.contains("proposed"));
         assert!(
             node.support
-                .iter()
+                .materialize_for_test()
+                .into_iter()
                 .any(|f| f.snapshot == "w" && f.subject == "a" && f.field.is_none())
         );
     }

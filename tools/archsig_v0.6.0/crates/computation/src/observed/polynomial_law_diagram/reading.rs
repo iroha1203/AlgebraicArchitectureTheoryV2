@@ -130,10 +130,13 @@ pub(super) fn append(
     base: usize,
     c: &Control,
 ) -> Result<(), ValidationFailure> {
-    let (base_support, base_scope) = native::metadata(&ConstructionValue {
-        witness: Witness::Architecture(a.clone()),
-        data: D::ConstructionLabel(Scalar::Text("polynomial_law_reading".into())),
-    })?;
+    let (base_support, base_scope) = native::metadata(
+        &ConstructionValue {
+            witness: Witness::Architecture(a.clone()),
+            data: D::ConstructionLabel(Scalar::Text("polynomial_law_reading".into())),
+        },
+        c,
+    )?;
     for original in &out.originals {
         tick(c)?;
         let e = core
@@ -189,7 +192,7 @@ pub(super) fn append(
                         .nodes
                         .get(root.0)
                         .ok_or(internal!("元観測Law評価の参照がない"))?;
-                    support.extend(node.support.iter().cloned());
+                    support.extend(node.support.materialize(c)?);
                     scope.merge(&self::scope(
                         &node.scope,
                         graph,

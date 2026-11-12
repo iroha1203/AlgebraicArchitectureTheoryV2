@@ -37,10 +37,7 @@ impl Evaluator<'_, '_> {
         scope.merge(&owner.scope);
         scope.merge(&members.enumeration.scope);
         let own_support = members.enumeration.support;
-        let mut support = own_support.clone();
-        support.extend(owner.support.iter().cloned());
-        support.sort();
-        support.dedup();
+        let support = Support::sum(own_support.clone(), [owner.support.clone()]);
         let unresolved = known.is_none() || !members.missing.is_empty();
         let mut reasons = Vec::new();
         if !members.missing.is_empty() {

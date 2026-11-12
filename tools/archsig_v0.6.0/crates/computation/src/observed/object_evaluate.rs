@@ -545,7 +545,7 @@ mod tests {
                 }
                 1 => nodes[value].payload = Some(Payload::Scalar(Scalar::Bool(false))),
                 2 => {
-                    nodes[domain].support.make_owned().clear();
+                    nodes[domain].support.materialize_mut_for_test().clear();
                 }
                 3 => {
                     nodes[domain].scope.readings.insert("Foreign".into());
@@ -559,12 +559,12 @@ mod tests {
                     nodes[domain].arguments.push(first);
                 }
                 _ => {
-                    let before = nodes[domain].support.len();
+                    let before = nodes[domain].support.materialize_for_test().len();
                     nodes[domain]
                         .support
-                        .make_owned()
+                        .materialize_mut_for_test()
                         .retain(|fact| fact.atom.as_deref() != Some("p-owner"));
-                    assert!(nodes[domain].support.len() < before);
+                    assert!(nodes[domain].support.materialize_for_test().len() < before);
                 }
             }
             assert!(

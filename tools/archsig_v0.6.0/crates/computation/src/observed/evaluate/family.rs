@@ -113,7 +113,7 @@ impl Evaluator<'_, '_> {
             .transpose()?;
         let mut domains = Vec::new();
         let mut all_scope = raw_scope.clone();
-        let mut all_support = Vec::new();
+        let mut all_support = Support::default();
         for (parameter_index, p) in plan.unbound.iter().enumerate() {
             self.family_observe("family_domain", parameter_index);
             self.tick(Checkpoint::FiniteIteration)?;
@@ -163,12 +163,11 @@ impl Evaluator<'_, '_> {
             })?;
             domains.push(domain);
             all_scope.merge(&scope);
-            all_support.extend(enumeration.support);
+            all_support = Support::sum(enumeration.support, [all_support]);
         }
         self.environment
             .family_merge_scope(&plan, &mut all_scope, &domains, root)?;
-        all_support.sort();
-        all_support.dedup();
+
         self.retained_scope.merge(&all_scope);
         let types: Vec<_> = plan.unbound.iter().map(|p| p.ty.clone()).collect();
         let product = if domains.len() == 1 {
@@ -321,7 +320,10 @@ impl Evaluator<'_, '_> {
                 value = None;
             }
             all_scope.merge(&row.scope);
-            all_support.extend(self.graph.get(evaluation)?.support.iter().cloned());
+            all_support = Support::sum(
+                vec![],
+                [all_support, self.graph.get(evaluation)?.support.clone()],
+            );
             reasons.extend(row.reasons);
             for e in row.evidence {
                 if matches!(
@@ -334,8 +336,7 @@ impl Evaluator<'_, '_> {
             rows.push(evaluation);
             self.tick(Checkpoint::FiniteIteration)?;
         }
-        all_support.sort();
-        all_support.dedup();
+
         sort_reasons(&mut reasons);
         self.environment.family_order_scope(&plan, &mut all_scope)?;
         let template = self.push(Node {

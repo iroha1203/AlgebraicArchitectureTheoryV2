@@ -1228,12 +1228,110 @@ fn bool_completions_resolve_lexical_reference_fields_and_keep_other_missing() {
             condition_spans[0]
         );
         assert!(arr(f(original_source, "support")).is_empty());
+        // Static preparation no longer executes the body. The original condition
+        // and receiver are genuinely evaluated before the unknown field stops.
+        let original_reach = reached(&ns, &[seed]);
+        let original_evaluations = original_reach
+            .iter()
+            .map(|node| ns[node.as_str()])
+            .filter(|node| f(node, "type") == &Json::str("Evaluation"))
+            .collect::<Vec<_>>();
         assert!(
-            arr(f(seed, "arguments"))
-                .iter()
-                .all(|r| f(ns[txt(f(r, "node"))], "type") != &Json::str("Evaluation")),
-            "元prepare_sourceが未知Ref先fieldで止まるためeval_inner由来の元Evalを捏造しない"
+            !original_evaluations.is_empty(),
+            "実行済みの元条件/receiverを保持する"
         );
+        let archsig_input::law::ast::ExprKind::Let {
+            body: unresolved_field,
+            value: receiver,
+            ..
+        } = &checked.law().exprs()[*body].kind
+        else {
+            panic!("original let body")
+        };
+        let unresolved_span = checked.law().exprs()[*unresolved_field].span;
+        let receiver_span = checked.law().exprs()[*receiver].span;
+        let immediate_receiver_span = match &checked.law().exprs()[*unresolved_field].kind {
+            ExprKind::Dotted(parts) => parts[0].span,
+            ExprKind::Field { base, .. } => checked.law().exprs()[*base].span,
+            _ => panic!("typed original field"),
+        };
+        let before_seed = arr(f(&wire, "nodes"))
+            .iter()
+            .take_while(|node| f(node, "id") != f(seed, "id"))
+            .collect::<Vec<_>>();
+        let immediate_receivers = before_seed
+            .iter()
+            .filter(|node| {
+                f(node, "type") == &Json::str("Evaluation") && {
+                    let source = target(&ns, f(val(node), "expression"), &Json::str("Expression"));
+                    span(f(val(source), "location")) == immediate_receiver_span
+                }
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            immediate_receivers.len(),
+            1,
+            "未知fieldへ渡した実receiverを保持する"
+        );
+        assert!(!obj(val(immediate_receivers[0])).contains_key("value"));
+        for node in before_seed
+            .iter()
+            .filter(|node| f(node, "type") == &Json::str("Evaluation"))
+        {
+            let source = target(&ns, f(val(node), "expression"), &Json::str("Expression"));
+            let actual = span(f(val(source), "location"));
+            assert_ne!(
+                actual, unresolved_span,
+                "元実行prefixに未知先field Evalを捏造しない"
+            );
+            assert_ne!(actual, at, "元実行prefixに未完成let Evalを捏造しない");
+        }
+        assert!(
+            original_evaluations.iter().any(|node| {
+                let source = target(&ns, f(val(node), "expression"), &Json::str("Expression"));
+                span(f(val(source), "location")) == receiver_span
+                    && !obj(val(node)).contains_key("value")
+            }),
+            "未知Refになる実receiver Ifを保持する"
+        );
+        for node in &original_evaluations {
+            let source = target(&ns, f(val(node), "expression"), &Json::str("Expression"));
+            let actual = span(f(val(source), "location"));
+            assert_ne!(
+                actual, unresolved_span,
+                "未知Refの先のfield Evaluationを捏造しない"
+            );
+            assert_ne!(actual, at, "未完成の元let bodyをEvaluationへ昇格しない");
+            assert_eq!(f(val(source), "bindings"), f(val(node), "bindings"));
+        }
+        let condition_evaluations = original_evaluations
+            .iter()
+            .filter(|node| {
+                f(val(node), "expression")
+                    == &Json::obj([("node", f(original_source, "id").clone())])
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            condition_evaluations.len(),
+            1,
+            "元s.pの実read Evaluationは一つ"
+        );
+        assert!(!obj(val(condition_evaluations[0])).contains_key("value"));
+        for node in original_reach.iter().map(|id| ns[id.as_str()]) {
+            assert!(
+                !arr(f(node, "support"))
+                    .iter()
+                    .any(|fact| { obj(fact).get("field") == Some(&Json::str("Branch.Sample.z")) }),
+                "元seedで未知参照の先のz事実を読まない"
+            );
+            assert!(
+                !arr(f(node, "reasons"))
+                    .iter()
+                    .flat_map(|reason| arr(f(reason, "missing")))
+                    .any(|fact| obj(fact).get("field") == Some(&Json::str("Branch.Sample.z"))),
+                "元seedへ未実行z slotのMissingを補わない"
+            );
+        }
         let original_ref = Json::obj([("node", f(original_source, "id").clone())]);
         let slot = Json::obj([
             ("snapshot", Json::str("v")),
@@ -1246,6 +1344,10 @@ fn bool_completions_resolve_lexical_reference_fields_and_keep_other_missing() {
             .filter(|reason| arr(f(reason, "dependencies")).contains(&original_ref))
             .collect::<Vec<_>>();
         assert_eq!(original_missing.len(), 1);
+        assert!(
+            arr(f(condition_evaluations[0], "reasons")).contains(original_missing[0]),
+            "元s.p実Evaluationとseedは同じcanonical Missingを保持する"
+        );
         assert_eq!(f(original_missing[0], "request"), &Json::str(id));
         assert_eq!(
             f(original_missing[0], "dependencies"),

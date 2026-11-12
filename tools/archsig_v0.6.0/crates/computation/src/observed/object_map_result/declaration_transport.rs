@@ -1214,9 +1214,7 @@ pub(super) fn retain(
                 comparison.status,
             )?;
             let p = &mut b.parts[commutes.0 - b.base];
-            p.support.make_owned().extend(comparison.support);
-            p.support.make_owned().sort();
-            p.support.make_owned().dedup();
+            p.support = Support::sum(comparison.support, [p.support.clone()]);
             p.scope.merge(&comparison.scope);
             p.reasons.extend(comparison.reasons.iter().cloned());
             sort_reasons(&mut p.reasons);

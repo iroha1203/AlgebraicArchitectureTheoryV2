@@ -205,7 +205,7 @@ fn correspondence_condition_counterexample_recheck_rejects_changed_operands_and_
                 };
                 std::mem::swap(left, right);
             }
-            1 => bad.support.make_owned().clear(),
+            1 => bad.support.materialize_mut_for_test().clear(),
             _ => {
                 let Some(Payload::PathCounterexample { facts, .. }) = &mut bad.payload else {
                     panic!()

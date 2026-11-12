@@ -74,7 +74,7 @@ fn owned_type_domain_rejects_missing_duplicate_foreign_members_and_scope() {
         if scope {
             bad.scope.quantifiers.clear();
         } else {
-            bad.support.make_owned().clear();
+            bad.support.materialize_mut_for_test().clear();
         }
         reject(&r, i, bad);
     }

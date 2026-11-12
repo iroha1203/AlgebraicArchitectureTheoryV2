@@ -1276,19 +1276,19 @@ fn original_positions(
         {
             for n in &g.nodes {
                 tick(c)?;
-                for f in n
-                    .support
-                    .iter()
-                    .chain(n.reasons.iter().flat_map(|r| &r.missing))
-                {
+                n.support.visit_facts(c, |fact| {
+                    if fact.field.is_some() {
+                        let mut position = fact.clone();
+                        position.atom = None;
+                        positions.insert(position);
+                    }
+                })?;
+                for fact in n.reasons.iter().flat_map(|reason| &reason.missing) {
                     tick(c)?;
-                    if f.field.is_some() {
-                        positions.insert({
-                            let aat_field_0 = None;
-                            let mut aat_fact = f.clone();
-                            aat_fact.atom = aat_field_0;
-                            aat_fact
-                        });
+                    if fact.field.is_some() {
+                        let mut position = fact.clone();
+                        position.atom = None;
+                        positions.insert(position);
                     }
                 }
             }
@@ -1554,10 +1554,13 @@ fn metadata_for_cores<'a>(
 ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
     let mut cores = cores.peekable();
     let has_core = cores.peek().is_some();
-    let (mut support, mut scope) = native::metadata(&ConstructionValue {
-        witness: Witness::Architecture(a.clone()),
-        data: D::ConstructionLabel(Scalar::Text("polynomial_law".into())),
-    })?;
+    let (mut support, mut scope) = native::metadata(
+        &ConstructionValue {
+            witness: Witness::Architecture(a.clone()),
+            data: D::ConstructionLabel(Scalar::Text("polynomial_law".into())),
+        },
+        c,
+    )?;
     let env = Environment::new(inputs, c)?;
     for ring in cores.flat_map(|core| core.rings()) {
         for symbol in &ring.symbols {
@@ -1589,7 +1592,7 @@ fn metadata_for_cores<'a>(
                     aat_fact
                 })?
             };
-            let (facts, s) = native::metadata(&value)?;
+            let (facts, s) = native::metadata(&value, c)?;
             support.extend(facts);
             scope.merge(&s);
         }
@@ -1611,7 +1614,7 @@ fn metadata_for_cores<'a>(
     support.dedup();
     scope.assignments = true;
     if has_core {
-        super::equation_presentation_node::global_metadata(a, &mut support, &mut scope)?;
+        super::equation_presentation_node::global_metadata(a, &mut support, &mut scope, c)?;
     }
     tick(c)?;
     Ok((support, scope))
@@ -2054,7 +2057,7 @@ pub(super) fn validate_node(graph: &Graph, n: &Node, data: &Data) -> Result<(), 
     if n.ty != part.ty()
         || n.rule != Rule::Construction(part.construction())
         || n.arguments != data.arguments()
-        || n.support != support
+        || !n.support.matches_flat(&support, graph.control())?
         || n.scope != scope
         || n.reasons
             != match part {

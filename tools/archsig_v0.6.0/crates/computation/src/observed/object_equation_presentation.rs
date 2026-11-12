@@ -9,7 +9,7 @@ use super::{
         object_law_residuals,
     },
     object_law_transport::LawApplication,
-    result::{Fact, NodeRef, ObservedEvaluation, Payload, Scalar},
+    result::{Fact, NodeRef, ObservedEvaluation, Payload, Scalar, ValidationFailure},
 };
 use crate::{
     construction::ConstructionFailure, observed::object_evaluation_table::ObjectEvaluationPosition,
@@ -23,6 +23,14 @@ mod source_polynomial;
 #[track_caller]
 fn bad(s: &str) -> ConstructionFailure {
     ConstructionFailure::Inconsistent(internal!(s))
+}
+fn support_failure(failure: ValidationFailure) -> ConstructionFailure {
+    match failure {
+        ValidationFailure::Stop(signal) => ConstructionFailure::Stopped(signal),
+        other => ConstructionFailure::Inconsistent(
+            other.internal_context(format!("支持query: {other:?}")),
+        ),
+    }
 }
 // 数値binderが消えた原式の差を、元の共有slotへの観測代入で評価する。
 pub(super) fn parameter_constant_source_value(
@@ -461,11 +469,13 @@ fn has_fields(
         .nodes
         .get(r.0)
         .ok_or_else(|| bad("原始依存の元評価がない"))?;
-    for fact in n
-        .support
-        .iter()
-        .chain(n.reasons.iter().flat_map(|reason| &reason.missing))
+    if n.support
+        .any_fact(c, |fact| fact.field.is_some())
+        .map_err(support_failure)?
     {
+        return Ok(true);
+    }
+    for fact in n.reasons.iter().flat_map(|reason| &reason.missing) {
         tick(c)?;
         if fact.field.is_some() {
             return Ok(true);
@@ -524,16 +534,22 @@ impl Compiler<'_> {
         };
         let field = format!("{entity}.{name}");
         let n = &self.g.nodes[r.0];
+        let matches = |fact: &Fact| {
+            fact.snapshot == *snapshot
+                && fact.subject == *subject
+                && fact.field.as_deref() == Some(field.as_str())
+        };
         let fact = n
             .support
-            .iter()
-            .chain(n.reasons.iter().flat_map(|r| &r.missing))
-            .find(|f| {
-                f.snapshot == *snapshot
-                    && f.subject == *subject
-                    && f.field.as_deref() == Some(field.as_str())
-            })
-            .cloned();
+            .find_fact(c, matches)
+            .map_err(support_failure)?
+            .or_else(|| {
+                n.reasons
+                    .iter()
+                    .flat_map(|reason| &reason.missing)
+                    .find(|fact| matches(fact))
+                    .cloned()
+            });
         let Some(fact) = fact else { return Ok(None) };
         let assignment = value(self.g, r, path).map(NumericTransportValue::observed);
         let observed = fact.atom.as_ref().and(assignment.clone());
@@ -657,16 +673,15 @@ impl Compiler<'_> {
         };
         let field = format!("{entity}.{name}");
         // 補完caseのSubject値は観測済みの参照Atomではない。
-        let mut observed = false;
-        for fact in &self.g.nodes[r.0].support {
-            tick(c)?;
-            if fact.snapshot == *snapshot
-                && fact.subject == *subject
-                && fact.field.as_deref() == Some(field.as_str())
-            {
-                observed |= fact.atom.is_some();
-            }
-        }
+        let observed = self.g.nodes[r.0]
+            .support
+            .any_fact(c, |fact| {
+                fact.snapshot == *snapshot
+                    && fact.subject == *subject
+                    && fact.field.as_deref() == Some(field.as_str())
+                    && fact.atom.is_some()
+            })
+            .map_err(support_failure)?;
         Ok(observed && self.fixed_reference(*base, &[], c)?)
     }
     fn fixed_match(

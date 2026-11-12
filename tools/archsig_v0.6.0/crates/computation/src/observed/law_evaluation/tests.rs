@@ -208,7 +208,8 @@ fn native_false_guard_keeps_guard_evaluation_and_never_evaluates_missing_body() 
     for n in &g.nodes[before..] {
         assert!(
             !n.support
-                .iter()
+                .materialize_for_test()
+                .into_iter()
                 .any(|f| f.field.as_deref() == Some("Family.Part.quantity"))
         );
     }

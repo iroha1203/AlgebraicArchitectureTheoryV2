@@ -359,11 +359,8 @@ pub(super) fn apply_object(
     b.parts[object.0 - b.base]
         .scope
         .merge(&candidate.update.scope);
-    b.parts[object.0 - b.base]
-        .support
-        .make_owned()
-        .extend(candidate.update.support.iter().cloned());
-    b.parts[object.0 - b.base].support.make_owned().sort();
-    b.parts[object.0 - b.base].support.make_owned().dedup();
+    let part = &mut b.parts[object.0 - b.base];
+    part.support = Support::sum(candidate.update.support.clone(), [part.support.clone()]);
+
     Ok((object, checks))
 }

@@ -527,7 +527,7 @@ pub(super) fn validate_node(
     if node.ty != v.ty()
         || node.rule != v.rule()
         || node.arguments != v.arguments()
-        || node.support != c.support
+        || !node.support.matches_flat(&c.support, graph.control())?
         || node.scope != c.scope
         || !node.reasons.is_empty()
     {
@@ -880,8 +880,9 @@ pub(super) fn evaluate(
     let (middle_right, target, _, right_word) = components(graph, right)?;
     word.extend(right_word);
     let universe = universe(graph, action)?;
-    let mut support = graph.get(left)?.support.clone().into_vec();
-    support.extend(graph.get(right)?.support.iter().cloned());
+    // 旧公開native witnessのflat metadata入力境界。通常式kernelは通らない。
+    let mut support = graph.get(left)?.support.materialize(control)?;
+    support.extend(graph.get(right)?.support.materialize(control)?);
     support.sort_by_key(|f| f.wire().canonical());
     support.dedup();
     let mut scope = graph.get(left)?.scope.clone();

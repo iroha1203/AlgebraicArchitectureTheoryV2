@@ -713,7 +713,8 @@ fn native_false_guard_body_source_never_becomes_a_regular_or_universal_evaluatio
                     assert!(answer.reasons.is_empty());
                     assert!(g.nodes[before..].iter().all(|n| {
                         n.support
-                            .iter()
+                            .materialize_for_test()
+                            .into_iter()
                             .all(|f| f.field.as_deref() != Some("Family.Part.quantity"))
                     }));
                     let Some(Payload::Proposition { instance }) =

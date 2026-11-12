@@ -17,7 +17,51 @@ fn known_map_private_result(asks: &[&str]) -> ObservedEvaluation {
     evaluate_observed(p, &control).unwrap()
 }
 fn known_map_private_atom(r: &ObservedEvaluation) -> usize {
-    r.nodes.iter().position(|n|matches!((&n.payload,&n.rule),(Some(Payload::Scalar(Scalar::Map{pairs,..})),Rule::Input{kind:"atom",..}) if !pairs.is_empty())).unwrap()
+    let value = r.answers[0].outputs["value"];
+    let node = &r.nodes[value.0];
+    let subject = r.prepared.inputs().archmap().snapshots()[0]
+        .subjects
+        .iter()
+        .find(|subject| subject.id == "s")
+        .unwrap();
+    let field = subject
+        .fields
+        .iter()
+        .find(|field| field.name == "Maps.Sample.m")
+        .unwrap();
+    let Slot::Known { pointer, .. } = &field.slot else {
+        panic!("observed Map slot")
+    };
+    assert!(matches!((&node.payload, &node.rule),
+        (Some(Payload::Scalar(Scalar::Map { pairs, .. })), Rule::FieldValue { kind: "atom", location: Some(Location::ArchMap { pointer: actual, span: None }) })
+            if !pairs.is_empty() && actual == pointer));
+    let [source, base] = node.arguments.as_slice() else {
+        panic!("actual field source/base")
+    };
+    let Some(Payload::Expression {
+        location: Location::Law { span },
+        ..
+    }) = &r.nodes[source.0].payload
+    else {
+        panic!("Map source")
+    };
+    assert_eq!(
+        &r.prepared.inputs().sources().law().bytes()[span.0..span.1],
+        b"s.m"
+    );
+    let Some(Payload::Evaluation {
+        value: Some(owner), ..
+    }) = &r.nodes[base.0].payload
+    else {
+        panic!("Map base")
+    };
+    assert!(
+        matches!(&r.nodes[owner.0].payload, Some(Payload::Scalar(Scalar::Subject { snapshot, subject, entity })) if snapshot == "v" && subject == "s" && entity == "Maps.Sample")
+    );
+    assert!(r.nodes.iter().any(|evaluation| matches!(&evaluation.payload,
+        Some(Payload::Evaluation { expression, parts, value: Some(actual), .. })
+            if expression == source && *actual == value && parts.len() == 1 && parts[0].children == [*base])));
+    value.0
 }
 
 #[test]
@@ -73,10 +117,11 @@ fn quantified_map_reads_share_payload_and_keep_each_source() {
         else {
             continue;
         };
-        let [fact] = node.support.as_slice() else {
+        let facts = node.support.materialize_for_test();
+        let [fact] = facts.as_slice() else {
             panic!("Map atom の元支持")
         };
-        let atom = fact.atom.as_deref().unwrap();
+        let atom = fact.atom.as_ref().unwrap().clone();
         map_reads.entry(atom).or_default().push((index, pairs));
     }
     let counts: Vec<_> = map_reads
@@ -86,7 +131,7 @@ fn quantified_map_reads_share_payload_and_keep_each_source() {
                 .iter()
                 .map(|(_, pairs)| pairs.as_ptr())
                 .collect::<BTreeSet<_>>();
-            (*atom, reads.len(), allocations.len())
+            (atom.as_str(), reads.len(), allocations.len())
         })
         .collect();
     eprintln!("(Map atom, reads, retained row allocations) {counts:?}");
@@ -144,7 +189,7 @@ fn known_map_rechecks_original_pairs_types_support_and_scope() {
         *codomain = "Maps.Void".into();
     });
     completion_mutation(&r, t, |nodes| {
-        nodes[t].support.make_owned().clear();
+        nodes[t].support.materialize_mut_for_test().clear();
     });
     completion_mutation(&r, t, |nodes| {
         nodes[t].scope.modes.clear();
@@ -197,7 +242,7 @@ fn known_map_private_stop(after_answer: bool) {
                 let (arm, seen, law) = (armed.clone(), seen.clone(), law.clone());
                 data::observe_iterations(move |span, context, operation, _| {
                     if context.request == 1
-                        && operation == "expression"
+                        && operation == "ordinary_source"
                         && &law[span.0..span.1] == b"s.m=s.n"
                     {
                         assert!(!seen.replace(true));
@@ -265,11 +310,53 @@ fn owned_map_wrapper_values_recheck_original_nested_types_and_owner_sources() {
         known_map_fixture::owned_archmap(digest).into_bytes(),
     );
     let control = quiet();
-    let prepared =
-        prepare_observed(input, &["a=evaluate(Maps.tables,s=@v/h)"], &control).unwrap();
+    let prepared = prepare_observed(input, &["a=evaluate(Maps.tables,s=@v/h)"], &control).unwrap();
     let result = evaluate_observed(prepared, &control).unwrap();
     assert_eq!(result.status(), "complete");
-    let target=result.nodes.iter().position(|n|matches!((&n.payload,&n.rule),(Some(Payload::Scalar(Scalar::List{items,..})),Rule::Input{kind:"atom",..}) if !items.is_empty())).unwrap();
+    let holder = result.prepared.inputs().archmap().snapshots()[0]
+        .subjects
+        .iter()
+        .find(|subject| subject.id == "h")
+        .unwrap();
+    let field = holder
+        .fields
+        .iter()
+        .find(|field| field.name == "Maps.Holder.tables")
+        .unwrap();
+    let Slot::Known { pointer, .. } = &field.slot else {
+        panic!("observed tables slot")
+    };
+    let location = Location::ArchMap {
+        pointer: pointer.clone(),
+        span: None,
+    };
+    let target = result.nodes.iter().position(|node| {
+        matches!((&node.payload, &node.rule),
+            (Some(Payload::Scalar(Scalar::List { items, .. })), Rule::FieldValue { kind: "atom", location: Some(actual) }) if !items.is_empty() && *actual == location)
+    }).expect("actual tables FieldValue at its original atom pointer");
+    let [source, base] = result.nodes[target].arguments.as_slice() else {
+        panic!("actual Source/base refs")
+    };
+    let Some(Payload::Expression {
+        location: Location::Law { span },
+        ..
+    }) = &result.nodes[source.0].payload
+    else {
+        panic!("tables source")
+    };
+    assert_eq!(
+        &result.prepared.inputs().sources().law().bytes()[span.0..span.1],
+        b"s.tables"
+    );
+    let Some(Payload::Evaluation {
+        value: Some(owner), ..
+    }) = &result.nodes[base.0].payload
+    else {
+        panic!("tables base")
+    };
+    assert!(
+        matches!(&result.nodes[owner.0].payload, Some(Payload::Scalar(Scalar::Subject { snapshot, subject, entity })) if snapshot == "v" && subject == "h" && entity == "Maps.Holder")
+    );
     rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
     rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=target]).unwrap();
     completion_mutation(&result, target, |nodes| {
@@ -294,7 +381,7 @@ fn owned_map_wrapper_values_recheck_original_nested_types_and_owner_sources() {
         *snapshot = "other".into();
     });
     completion_mutation(&result, target, |nodes| {
-        nodes[target].support.make_owned().clear();
+        nodes[target].support.materialize_mut_for_test().clear();
     });
     completion_mutation(&result, target, |nodes| {
         nodes[target].scope.snapshots.clear();
@@ -358,7 +445,8 @@ fn inherited_map_reads_keep_the_expanded_snapshot_and_atom() {
                 assert!(
                     result.nodes[value]
                         .support
-                        .iter()
+                        .materialize_for_test()
+                        .into_iter()
                         .any(|fact| fact.snapshot == snapshot
                             && fact.subject == "h"
                             && fact.atom.as_deref() == Some("tables"))

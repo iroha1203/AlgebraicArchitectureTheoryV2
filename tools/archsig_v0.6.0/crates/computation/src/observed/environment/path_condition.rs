@@ -49,16 +49,14 @@ impl Environment<'_> {
                 return Ok(None);
             };
             values.push(graph.scalar(value)?.clone());
-            support.extend(graph.get(child)?.support.iter().cloned());
+            support.push(graph.get(child)?.support.clone());
             scope.merge(&graph.get(child)?.scope);
         }
         let info = self.internal_path_at(graph, id, &values)?;
         let Some((left, right)) = info.failure else {
             return Ok(None);
         };
-        support.extend(info.support);
-        support.sort();
-        support.dedup();
+        let support = Support::sum(info.support, support).materialize(&self.control)?;
         scope.merge(&info.scope);
         Ok(Some(Condition {
             left,
@@ -132,7 +130,10 @@ impl Environment<'_> {
                 Ok(false)
             };
         };
-        if node.support != plan.support || node.scope != plan.scope || !node.reasons.is_empty() {
+        if !node.support.matches_flat(&plan.support, &self.control)?
+            || node.scope != plan.scope
+            || !node.reasons.is_empty()
+        {
             return Err(internal!("Path条件の元支持・Scope・理由が違う").into());
         }
         let edges: Vec<_> = std::iter::once(source)

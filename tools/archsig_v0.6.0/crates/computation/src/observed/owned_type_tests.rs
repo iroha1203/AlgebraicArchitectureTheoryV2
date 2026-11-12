@@ -657,7 +657,12 @@ fn owned_type_domain_member_checks_value_origin_scope_and_support_before_success
     let domain = owned_type_private_domains(&result, 0)[0];
     let member = owned_type_private_elements(&result, domain)[0].0;
     let original = &result.nodes[member];
-    assert!(!original.support.is_empty());
+    assert!(
+        !original
+            .support
+            .is_empty(&archsig_common::control::Control::unlimited())
+            .unwrap()
+    );
     assert!(original.arguments.len() >= 2);
     let control = quiet();
     let environment = || {
@@ -702,7 +707,7 @@ fn owned_type_domain_member_checks_value_origin_scope_and_support_before_success
                 "future_owner" => bad.arguments[1] = NodeRef(domain),
                 "owner" => bad.arguments[1] = bad.arguments[0],
                 "scope" => bad.scope.completions = !bad.scope.completions,
-                "support" => bad.support.make_owned().clear(),
+                "support" => bad.support.materialize_mut_for_test().clear(),
                 "evidence" => bad.evidence.push(bad.arguments[0]),
                 "reason" => bad
                     .reasons

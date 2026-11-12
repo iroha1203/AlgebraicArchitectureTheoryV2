@@ -652,9 +652,9 @@ pub(crate) fn finite_declaration_value_transport_checked(
     let source = domain(inputs, &source_type, control)?;
     let target = domain(inputs, &target_type, control)?;
     let mut snapshots = source.scope.snapshots.clone();
-    snapshots.extend(target.scope.snapshots);
+    snapshots.extend(target.scope.snapshots.iter().cloned());
     let mut modes = source.scope.modes.clone();
-    modes.extend(target.scope.modes);
+    modes.extend(target.scope.modes.iter().cloned());
     let mut support = source.support;
     support.extend(target.support);
     support.sort();

@@ -6,7 +6,7 @@ impl Evaluator<'_, '_> {
         payload: Payload,
         rule: &'static str,
         arguments: Vec<NodeRef>,
-        support: &[Fact],
+        support: &Support,
         scope: &Scope,
     ) -> Result<NodeRef, Failure> {
         let ty = match &payload {
@@ -18,7 +18,7 @@ impl Evaluator<'_, '_> {
             payload: Some(payload),
             rule: Rule::Construction(rule),
             arguments,
-            support: support.to_vec().into(),
+            support: support.clone(),
             scope: scope.clone(),
             evidence: vec![],
             judgment: None,
@@ -31,7 +31,7 @@ impl Evaluator<'_, '_> {
         op: BinOp,
         left: &Evaluated,
         right: &Evaluated,
-        support: &[Fact],
+        support: &Support,
         scope: &Scope,
     ) -> Result<Vec<NodeRef>, Failure> {
         if !matches!(op, BinOp::Eq | BinOp::Ne) {
@@ -126,7 +126,7 @@ impl Evaluator<'_, '_> {
                     bindings,
                     left: outputs[0],
                     right: outputs[1],
-                    facts: support.to_vec(),
+                    facts: support.materialize(self.control)?,
                 },
                 "evidence",
                 args,

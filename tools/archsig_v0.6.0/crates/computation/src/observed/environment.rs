@@ -21,10 +21,13 @@ use results::ResultStore;
 use state::{EvaluationState, ScopedReplace};
 mod answer_binding;
 pub(super) mod architecture_environment;
+mod field_read;
 mod law_evaluation;
 mod object_reading_environment;
 mod object_view_family;
+pub(super) mod ordinary;
 pub(in crate::observed) use answer_binding::AnswerBinding;
+pub(in crate::observed) use ordinary::Plan as OrdinaryPlan;
 mod answer_dependency;
 mod answer_projection;
 mod answer_projection_condition;
@@ -82,7 +85,7 @@ pub(crate) struct SourceAnalysis {
     pub known_value: Option<Scalar>,
     pub affine: Option<Box<super::affine::Form>>,
     pub missing: Option<PendingMissing>,
-    pub support: Support,
+    pub support: FlatFacts,
     pub scalar_scope: Option<Scope>,
 }
 
@@ -97,7 +100,7 @@ struct SourceValue {
     scope: Scope,
     known_value: Option<Scalar>,
     affine: Option<Box<super::affine::Form>>,
-    support: Support,
+    support: FlatFacts,
     scalar_scope: Option<Scope>,
 }
 
@@ -136,7 +139,15 @@ type SourceCacheEntry = (usize, (usize, usize), Vec<Binding>, SourceAnalysis);
 type FrameInputs = (Vec<Binding>, BTreeMap<String, SourceValue>, Scope);
 type NodeRefKey = (super::call::Context, usize);
 // 同じ検査epochの成功値は不変。利用側が必要とする部分だけをコピーする。
-type IterationInputs = std::rc::Rc<(NodeRef, Scalar, SourceAnalysis)>;
+type IterationInputs = std::rc::Rc<(NodeRef, Scalar, IterationAnalysis)>;
+
+// 元collectionの値は照合中だけ必要。binderの利用側へは実memberと、
+// その利用に必要なScope・支持だけを渡し、cutoff別memoに集合全体を残さない。
+#[derive(Clone)]
+struct IterationAnalysis {
+    scope: Scope,
+    support: Support,
+}
 
 // 検査済み型反復は同じGraphのepochでだけcutoffを跨ぐ。通常経路の成功と混ぜない。
 // Graphのアドレスは同一性の比較専用で、参照解除しない。epochの失効でentryも破棄する。
@@ -445,6 +456,13 @@ impl SourceCache {
         let index = self.entries.len();
         self.entries.push(entry);
         self.by_context.entry(context).or_default().push(index);
+        #[cfg(test)]
+        data::observe_actual(
+            self.entries[index].1,
+            context,
+            "source_cache_insert",
+            self.entries[index].3.support.len(),
+        );
     }
 }
 
@@ -908,6 +926,20 @@ impl<'a> Environment<'a> {
                 .as_deref()
                 .ok_or(internal!("構成対象のfieldがない"))?,
         )?;
+        self.object_field_value_descriptor(position, field)
+    }
+
+    fn object_field_value_descriptor(
+        &self,
+        position: &Fact,
+        field: &'a archsig_input::archmap::Field,
+    ) -> Result<Option<(Scalar, Fact)>, ValidationFailure> {
+        let Some(domain) = self.object_domain() else {
+            return Ok(None);
+        };
+        if domain.identity.constructed_context().is_none() {
+            return Ok(None);
+        }
         let Slot::Known { atom, .. } = &field.slot else {
             return Ok(None);
         };
@@ -924,7 +956,7 @@ impl<'a> Environment<'a> {
         let Some(raw) = self.indexes.raw_observed_scalar(field, &self.control)? else {
             return Ok(None);
         };
-        let Some(moved) = self.project_object_field(position, &raw)? else {
+        let Some(moved) = self.project_object_field_descriptor(position, field, &raw)? else {
             return Ok(None);
         };
         let mut fact = position.clone();
@@ -944,7 +976,7 @@ impl<'a> Environment<'a> {
         let Some(construction) = domain.identity.constructed_context() else {
             return Ok(None);
         };
-        let Some(transport) = construction.transport() else {
+        let Some(_) = construction.transport() else {
             return Ok(None);
         };
         if !construction
@@ -964,6 +996,32 @@ impl<'a> Environment<'a> {
                 .as_deref()
                 .ok_or(internal!("構成対象のfieldがない"))?,
         )?;
+        self.project_object_field_descriptor(position, field, raw)
+    }
+
+    fn project_object_field_descriptor(
+        &self,
+        position: &Fact,
+        field: &'a archsig_input::archmap::Field,
+        raw: &Scalar,
+    ) -> Result<Option<Scalar>, ValidationFailure> {
+        let Some(domain) = self.object_domain() else {
+            return Ok(None);
+        };
+        let Some(construction) = domain.identity.constructed_context() else {
+            return Ok(None);
+        };
+        let Some(transport) = construction.transport() else {
+            return Ok(None);
+        };
+        if !construction
+            .local_domain()
+            .known()
+            .iter()
+            .any(|f| f.snapshot == position.snapshot && f.subject == position.subject)
+        {
+            return Ok(None);
+        }
         if !crate::construction::has_reference(self.indexes.inputs, &field.ty, &self.control)
             .map_err(|e| match e {
                 crate::construction::ConstructionFailure::Stopped(s) => ValidationFailure::Stop(s),
@@ -1134,7 +1192,10 @@ impl<'a> Environment<'a> {
                 .get(limit)
                 .is_some_and(|actual| std::ptr::eq(actual, node));
             let key = (context, limit);
-            if resident && self.results.cache.borrow().checked.contains(&key) {
+            if resident
+                && !self.field_read_collecting()
+                && self.results.cache.borrow().checked.contains(&key)
+            {
                 return Ok(());
             }
             let previous = self.state.context.scoped(Some(context));
@@ -1224,6 +1285,15 @@ impl<'a> Environment<'a> {
                 if let Some(case) = context.case {
                     *self.state.completion_values.borrow_mut() =
                         self.completion_values(graph, case)?;
+                }
+                if self.validate_field_read(graph, node, limit)? {
+                    return Ok(());
+                }
+                if self.validate_in_domain(graph, node, limit)? {
+                    return Ok(());
+                }
+                if self.validate_ordinary(graph, node, limit)? {
+                    return Ok(());
                 }
                 if let Some(active) = self.universal_node_context(graph, node, limit)? {
                     self.with_universal(active, || {
@@ -1441,7 +1511,7 @@ impl<'a> Environment<'a> {
         )? {
             reasons.push(reason);
         }
-        if let Some(checks) = self.owned_call_inputs(
+        if let Some((checks, _support)) = self.owned_call_inputs(
             graph,
             expression,
             children,
@@ -1612,20 +1682,14 @@ impl<'a> Environment<'a> {
     pub(super) fn current_context(&self, graph: &Graph) -> super::call::Context {
         self.state.context.get().unwrap_or(graph.active)
     }
-    fn validate_in_context(
+    /// raw producer共通の形・既出参照・Context・実Fact検査。
+    /// 内部生成のprivate commitはこの再検査を呼ばない。
+    fn validate_node_inputs(
         &self,
         graph: &Graph,
         node: &Node,
         limit: usize,
-        domain: Option<DomainEnumeration<'_>>,
     ) -> Result<(), ValidationFailure> {
-        self.tick()?;
-        if self.validate_owned_binding(graph, node, limit)? {
-            return Ok(());
-        }
-        if self.validate_projection_check(graph, node, limit)? {
-            return Ok(());
-        }
         // 保存済みnodeの再検査も、Graph.push時の表現検査を前提にしない。
         // 不正な重複Set/Mapを数学的等値で比較する前に形・型を確認する。
         if let Some(Payload::Scalar(value)) = &node.payload {
@@ -1773,10 +1837,38 @@ impl<'a> Environment<'a> {
         {
             return Err(internal!("nodeの補完がinstance元と違う").into());
         }
-        for f in &node.support {
+        let composed_local = matches!(
+            node.rule,
+            Rule::OrdinarySource(_)
+                | Rule::OrdinaryValue(_)
+                | Rule::OperandValue(_)
+                | Rule::BinderValue(_)
+                | Rule::FieldSource(_)
+                | Rule::FieldValue { .. }
+                | Rule::InSet
+                | Rule::InMember { .. }
+                | Rule::InDomain
+                | Rule::Construction(
+                    "ordinary_evaluation" | "field_evaluation" | "alias_evaluation"
+                )
+        );
+        let legacy_facts;
+        // 継承した支持handleの直葉は、このnodeが導入したFactとは限らない。
+        // binder/alias/In memberのcollection葉をここで再走査しない。
+        // 局所規則は実依存を独立認証する。terminal FactはFieldValueが導入し、
+        // FieldEvalはその実valueRefを認証する（Missing時の継承葉も再走査しない）。
+        let facts: &[Fact] = if matches!(node.rule, Rule::FieldValue { .. }) {
+            node.support.direct_facts()
+        } else if composed_local {
+            &[]
+        } else {
+            legacy_facts = node.support.materialize(&self.control)?;
+            &legacy_facts
+        };
+        for fact in facts {
             self.tick()?;
-            self.fact(f)?;
-            if f.field.is_some() && f.atom.is_none() {
+            self.fact(fact)?;
+            if fact.field.is_some() && fact.atom.is_none() {
                 return Err(internal!("未観測 slot を support Atom にしている").into());
             }
             self.tick()?;
@@ -1790,6 +1882,23 @@ impl<'a> Environment<'a> {
             }
             self.tick()?;
         }
+        Ok(())
+    }
+    fn validate_in_context(
+        &self,
+        graph: &Graph,
+        node: &Node,
+        limit: usize,
+        domain: Option<DomainEnumeration<'_>>,
+    ) -> Result<(), ValidationFailure> {
+        self.tick()?;
+        if self.validate_owned_binding(graph, node, limit)? {
+            return Ok(());
+        }
+        if self.validate_projection_check(graph, node, limit)? {
+            return Ok(());
+        }
+        self.validate_node_inputs(graph, node, limit)?;
         if self.validate_owned_call_condition_node(graph, node, limit)? {
             return Ok(());
         }
@@ -1928,7 +2037,7 @@ impl<'a> Environment<'a> {
                     location: Location::ArchMap { pointer, .. },
                 } => {
                     let mut found = false;
-                    for f in &node.support {
+                    for f in &node.support.materialize(&self.control)? {
                         self.tick()?;
                         if f.atom.is_some() {
                             let subject = self.indexes.subject(&f.snapshot, &f.subject)?;
@@ -2045,7 +2154,7 @@ impl<'a> Environment<'a> {
                     self.quant_counter_parts(graph, node, limit)?;
                     if scalar != &Scalar::Bool(true)
                         || node.scope != graph.get(node.arguments[2])?.scope
-                        || !node.support.is_empty()
+                        || !node.support.is_empty(&self.control)?
                     {
                         return Err(internal!("量化のtrue要求値が違う").into());
                     }
@@ -2078,7 +2187,7 @@ impl<'a> Environment<'a> {
                 _ => return Err(internal!("値 leaf の導出規則がない").into()),
             }
             let support = self.scalar_support(graph, node, limit, domain)?;
-            if node.support != support {
+            if !node.support.matches_flat(&support, &self.control)? {
                 return Err(internal!("値の支持が元入力・実引数の完全な集合と違う").into());
             }
         }
@@ -2098,7 +2207,7 @@ impl<'a> Environment<'a> {
         }) = &node.payload
         {
             if !matches!(&node.rule, Rule::Input {kind: "law", location: Location::Law {span: actual}} if actual == span)
-                || !node.support.is_empty()
+                || !node.support.is_empty(&self.control)?
                 || !node.evidence.is_empty()
                 || !node.reasons.is_empty()
                 || node.judgment.is_some()
@@ -2309,7 +2418,7 @@ impl<'a> Environment<'a> {
                 {
                     return Err(internal!("Evaluation と元式の範囲が元入力と違う").into());
                 }
-                if node.support != analysis.support {
+                if node.support.to_flat_facts(&self.control)? != analysis.support {
                     return Err(
                         internal!("Evaluation の支持が元 AST・原始事実の完全な集合と違う").into(),
                     );
@@ -2325,7 +2434,7 @@ impl<'a> Environment<'a> {
                             internal!("評価値Scalarの範囲が元Source・束縛・originと違う").into(),
                         );
                     }
-                    used_support.extend(graph.get(*reference)?.support.iter());
+                    used_support.extend(graph.get(*reference)?.support.materialize(&self.control)?);
                 }
                 let expected_evidence = if let Some(value) = value {
                     graph.get(*value)?.evidence.as_slice()
@@ -2338,17 +2447,17 @@ impl<'a> Environment<'a> {
                 let children = &parts[0].children;
                 for &child in children {
                     self.tick()?;
-                    used_support.extend(graph.get(child)?.support.iter());
+                    used_support.extend(graph.get(child)?.support.materialize(&self.control)?);
                     self.tick()?;
                 }
                 let path_support =
                     self.path_used_support(graph, *expression, &parts[0].children)?;
                 if let Some(support) = &path_support {
-                    used_support.extend(support)
+                    used_support.extend(support.iter().cloned())
                 }
                 used_support.sort();
                 used_support.dedup();
-                if !node.support.iter().eq(used_support) {
+                if !node.support.matches_flat(&used_support, &self.control)? {
                     return Err(
                         internal!("Evaluation の支持が使用した値・子評価の和集合と違う").into(),
                     );
@@ -3245,7 +3354,11 @@ impl<'a> Environment<'a> {
                 {
                     return Err(internal!("反例の元束縛・false 評価不一致").into());
                 }
-                if facts != &graph.get(evaluation)?.support {
+                if !graph
+                    .get(evaluation)?
+                    .support
+                    .matches_flat(facts, &self.control)?
+                {
                     return Err(internal!("反例 facts が元評価と違う").into());
                 }
                 for fact in facts {
@@ -3291,7 +3404,9 @@ impl<'a> Environment<'a> {
                 .arguments
                 .get(1)
                 .ok_or(internal!("結論に適用評価がない"))?;
-            if node.support != graph.get(evaluation)?.support
+            if !node
+                .support
+                .same_facts(&graph.get(evaluation)?.support, &self.control)?
                 || node.scope != graph.get(evaluation)?.scope
             {
                 return Err(internal!("結論の支持・範囲が適用評価と合わない").into());
@@ -3344,7 +3459,7 @@ impl<'a> Environment<'a> {
                         || !matches!(&node.payload,Some(Payload::Scalar(value)) if value==&expected)
                         || node.ty != NodeType::Value(expected.ty())
                         || node.scope != analysis.scope
-                        || node.support != analysis.support
+                        || node.support.to_flat_facts(&self.control)? != analysis.support
                         || !node.evidence.is_empty()
                         || !node.reasons.is_empty()
                     {
@@ -3534,7 +3649,7 @@ impl<'a> Environment<'a> {
                 &node.arguments,
             )?;
             if analysis.known_value.as_ref() != Some(scalar)
-                || analysis.support != node.support
+                || analysis.support != node.support.to_flat_facts(&self.control)?
                 || analysis.scalar_scope.as_ref() != Some(&node.scope)
             {
                 return Err(internal!("let/if 値・支持・Scope が元式・実入力と違う").into());
@@ -3687,7 +3802,7 @@ impl<'a> Environment<'a> {
                         &node.arguments,
                     )?;
                     if analysis.known_value.as_ref() != Some(scalar)
-                        || analysis.support != node.support
+                        || analysis.support != node.support.to_flat_facts(&self.control)?
                         || analysis.scalar_scope.as_ref() != Some(&node.scope)
                     {
                         return Err(internal!(
@@ -3953,7 +4068,7 @@ impl<'a> Environment<'a> {
             || node.ty != NodeType::Expression(parts.residual.ty())
             || !matches!(&node.rule, Rule::Construction("expression"))
             || node.scope != parts.analysis.scope
-            || node.support != parts.analysis.support
+            || node.support.to_flat_facts(&self.control)? != parts.analysis.support
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
             || node.judgment.is_some()
@@ -3986,7 +4101,7 @@ impl<'a> Environment<'a> {
             || !matches!(&node.payload, Some(Payload::Scalar(value)) if value==&parts.residual)
             || !matches!(&node.rule, Rule::Construction("evaluation"))
             || node.scope != parts.analysis.scope
-            || node.support != parts.analysis.support
+            || node.support.to_flat_facts(&self.control)? != parts.analysis.support
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
             || node.judgment.is_some()
@@ -4030,7 +4145,7 @@ impl<'a> Environment<'a> {
             || node.ty != NodeType::Evidence
             || !matches!(&node.rule, Rule::Construction("evidence"))
             || node.scope != parts.analysis.scope
-            || node.support != parts.analysis.support
+            || node.support.to_flat_facts(&self.control)? != parts.analysis.support
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
             || node.judgment.is_some()
@@ -4066,7 +4181,7 @@ impl<'a> Environment<'a> {
             || !matches!(&node.rule, Rule::Input {kind:"law",location:Location::Law{span:actual}} if *actual==span)
             || node.evidence != [*normalization]
             || node.scope != parts.analysis.scope
-            || node.support != parts.analysis.support
+            || node.support.to_flat_facts(&self.control)? != parts.analysis.support
             || !node.reasons.is_empty()
             || node.judgment.is_some()
         {
@@ -4239,7 +4354,7 @@ impl<'a> Environment<'a> {
         };
         if recomputed.as_ref() != Some(scalar)
             || analysis.known_value.as_ref() != Some(scalar)
-            || analysis.support != node.support
+            || analysis.support != node.support.to_flat_facts(&self.control)?
             || analysis.scalar_scope.as_ref() != Some(&node.scope)
         {
             return Err(internal!("アフィン定数値・係数相殺・支持・Scope が元入力と違う").into());
@@ -4352,7 +4467,7 @@ impl<'a> Environment<'a> {
                         &node.arguments,
                     )?;
                     if analysis.known_value != Some(Scalar::Bool(left == right))
-                        || analysis.support != node.support
+                        || analysis.support != node.support.to_flat_facts(&self.control)?
                         || analysis.scope != node.scope
                         || analysis.scalar_scope.as_ref() != Some(&node.scope)
                     {
@@ -4530,7 +4645,7 @@ impl<'a> Environment<'a> {
             };
             if analysis.known_value.as_ref() != Some(&Scalar::Bool(*value))
                 || analysis.scalar_scope.as_ref() != Some(&node.scope)
-                || analysis.support != node.support
+                || analysis.support != node.support.to_flat_facts(&self.control)?
             {
                 return Err(internal!("Bool 論理値・支持・Scope が元 AST・実入力と違う").into());
             }
@@ -4548,8 +4663,8 @@ impl<'a> Environment<'a> {
         let Some(Payload::Scalar(actual)) = &node.payload else {
             return Err(internal!("対象fieldの値がScalarでない").into());
         };
-        let mut position = node
-            .support
+        let facts = node.support.materialize(&self.control)?;
+        let mut position = facts
             .first()
             .ok_or(internal!("対象fieldの元支持がない"))?
             .clone();
@@ -4560,7 +4675,7 @@ impl<'a> Environment<'a> {
         if node.rule != Rule::Construction("object_field")
             || node.ty != NodeType::Value(expected.ty())
             || actual != &expected
-            || node.support.as_slice() != [fact.clone()]
+            || !node.support.matches_flat(&[fact.clone()], &self.control)?
         {
             return Err(internal!("対象fieldの型・値・原始支持が違う").into());
         }
@@ -4580,8 +4695,12 @@ impl<'a> Environment<'a> {
             let Some(Payload::Scalar(value)) = &node.payload else {
                 return Err(internal!("支持の依存先が通常値でない").into());
             };
+            if matches!(node.rule, Rule::FieldValue { .. }) {
+                self.validate_field_read(graph, node, limit)?;
+                return node.support.materialize(&self.control);
+            }
             if self.finite_view_input(graph, node)? {
-                return Ok(node.support.to_vec());
+                return node.support.materialize(&self.control);
             }
             for reference in &node.arguments {
                 self.tick()?;
@@ -4766,7 +4885,7 @@ impl<'a> Environment<'a> {
                 }
                 Rule::Construction("domain") => {
                     self.domain_member(graph, node, limit, domain)?;
-                    node.support.to_vec()
+                    node.support.materialize(&self.control)?
                 }
                 Rule::Construction("evidence") => {
                     self.quant_counter_parts(graph, node, limit)?;
@@ -5613,6 +5732,18 @@ impl<'a> Environment<'a> {
         id: usize,
         bindings: &[Binding],
     ) -> Result<NodeRef, ValidationFailure> {
+        let reference = self.actual_evaluation_reference(graph, id, bindings)?;
+        self.recheck_evaluation(graph, reference)?;
+        Ok(reference)
+    }
+
+    /// 既出producerの位置だけを選ぶ。数学の再検査はraw callerの責務。
+    fn actual_evaluation_reference(
+        &self,
+        graph: &Graph,
+        id: usize,
+        bindings: &[Binding],
+    ) -> Result<NodeRef, ValidationFailure> {
         let context = self.lexical_evaluation_context(graph, id)?;
         let mut found = None;
         for (index, node) in graph
@@ -5661,7 +5792,6 @@ impl<'a> Environment<'a> {
             }
         }
         let reference = found.ok_or(internal!("元scrutineeの既出実Evaluationがない"))?;
-        self.recheck_evaluation(graph, reference)?;
         Ok(reference)
     }
     fn lexical_argument(
@@ -6184,7 +6314,7 @@ impl<'a> Environment<'a> {
             || !matches!(&node.payload, Some(Payload::Scalar(value)) if value == &expected)
             || analysis.known_value.as_ref() != Some(&expected)
             || analysis.scalar_scope.as_ref() != Some(&node.scope)
-            || *node.support != [fact.clone()]
+            || !node.support.matches_flat(&[fact.clone()], &self.control)?
         {
             return Err(internal!("chain field値の元slot・型・支持・Scopeが違う").into());
         }
@@ -6204,6 +6334,7 @@ impl<'a> Environment<'a> {
         if node.arguments.len() != 1 {
             return Err(internal!("field owner数が違う").into());
         }
+        let object_facts;
         let (input_snapshot, pointer) = if let Rule::Input {
             kind: "atom",
             location: Location::ArchMap { pointer, .. },
@@ -6214,8 +6345,8 @@ impl<'a> Environment<'a> {
             };
             (snapshot.as_str(), pointer.as_str())
         } else if node.rule == Rule::Construction("object_field") {
-            let fact = node
-                .support
+            object_facts = node.support.materialize(&self.control)?;
+            let fact = object_facts
                 .first()
                 .ok_or(internal!("対象fieldの元Atomがない"))?;
             let field = self.indexes.field(
@@ -6367,7 +6498,7 @@ impl<'a> Environment<'a> {
                 });
                 if !(matches!(&node.rule, Rule::Input {kind: "atom", location: Location::ArchMap {pointer: actual, ..}} if actual == pointer)
                     || node.rule == Rule::Construction("object_field"))
-                    || *node.support != [expected]
+                    || !node.support.matches_flat(&[expected], &self.control)?
                 {
                     continue;
                 }
@@ -6433,7 +6564,7 @@ impl<'a> Environment<'a> {
             self.resolve_analysis(graph, self.analyze_source(graph, span, bindings)?, children)?;
         let failed = self
             .owned_call_inputs(graph, frame.source, children, limit)?
-            .is_some_and(|checks| checks.failure.is_some() || checks.blocked);
+            .is_some_and(|(checks, _support)| checks.failure.is_some() || checks.blocked);
         let value = if failed { None } else { value };
         if value.map(|r| graph.scalar(r)).transpose()? != analysis.known_value.as_ref() {
             return Err(internal!("call body値が元入力展開と違う").into());
@@ -6455,7 +6586,7 @@ impl<'a> Environment<'a> {
         };
         let (_, analysis, _) = self.call_parts(graph, *span, &node.arguments, limit)?;
         if !matches!(&node.payload, Some(Payload::Scalar(value)) if analysis.known_value.as_ref() == Some(value))
-            || node.support != analysis.support
+            || node.support.to_flat_facts(&self.control)? != analysis.support
             || analysis.scalar_scope.as_ref() != Some(&node.scope)
         {
             return Err(internal!("call Scalarが元call値・支持・Scopeと違う").into());
@@ -6526,7 +6657,7 @@ impl<'a> Environment<'a> {
             analysis.missing.as_ref(),
         )?;
         if source != *expression
-            || node.support != analysis.support
+            || node.support.to_flat_facts(&self.control)? != analysis.support
             || node.scope != analysis.scope
             || !graph.get(source)?.scope.source_compatible(&analysis.scope)
         {
@@ -6866,7 +6997,7 @@ impl<'a> Environment<'a> {
         let input_value = value.map(|r| graph.scalar(r)).transpose()?;
         let mut cursor = 1;
         let mut seen = Vec::new();
-        let mut used_support = graph.get(input)?.support.clone().into_vec();
+        let mut used_support = graph.get(input)?.support.materialize(&self.control)?;
         let mut scope = graph.get(input)?.scope.clone();
         let mut collected = Vec::new();
         let mut known = input_value.is_some();
@@ -6930,7 +7061,13 @@ impl<'a> Environment<'a> {
                     if actual != bindings {
                         return Err(internal!("内包子の宣言束縛が違う").into());
                     }
-                    used_support.extend(graph.get(reference)?.support.iter().cloned());
+                    used_support.extend(
+                        graph
+                            .get(reference)?
+                            .support
+                            .materialize(&self.control)?
+                            .into_iter(),
+                    );
                     scope.merge(&graph.get(reference)?.scope);
                     Ok(value)
                 };
@@ -6989,7 +7126,7 @@ impl<'a> Environment<'a> {
         };
         let (_, analysis) = self.comprehension_parts(graph, *span, &node.arguments, limit)?;
         if !matches!(&node.payload,Some(Payload::Scalar(value)) if analysis.known_value.as_ref()==Some(value))
-            || node.support != analysis.support
+            || node.support.to_flat_facts(&self.control)? != analysis.support
             || analysis.scalar_scope.as_ref() != Some(&node.scope)
         {
             return Err(internal!("内包Scalarが元入力/値/支持/Scopeと違う").into());
@@ -7036,7 +7173,7 @@ impl<'a> Environment<'a> {
         if own != *expression
             || self.expression_bindings(graph, own)? != bindings
             || node.scope != analysis.scope
-            || node.support != analysis.support
+            || node.support.to_flat_facts(&self.control)? != analysis.support
         {
             return Err(internal!("内包Evaluationが元Source/支持/Scopeと違う").into());
         }
@@ -7114,6 +7251,40 @@ impl<'a> Environment<'a> {
         index: usize,
     ) -> Result<IterationInputs, ValidationFailure> {
         self.tick()?;
+        let record = graph
+            .iterations
+            .get(index)
+            .ok_or(internal!("反復元がない"))?;
+        if matches!(graph.get(record.source)?.rule, Rule::OrdinarySource(_)) {
+            let (input, producer, scope) = self.ordinary_iteration_input(
+                graph,
+                index,
+                self.state.cutoff.get().min(graph.nodes.len()),
+            )?;
+            let previous = self.state.context.scoped(Some(record.caller));
+            let verified = (|| {
+                for reference in [
+                    record.source,
+                    input,
+                    record.finite.ok_or(internal!("In Domain無し"))?,
+                    producer,
+                ] {
+                    self.validate_at(graph, graph.get(reference)?, reference.0)?;
+                }
+                Ok::<_, ValidationFailure>(())
+            })();
+            previous.restore();
+            verified?;
+            return Ok(std::rc::Rc::new((
+                input,
+                graph.scalar(producer)?.clone(),
+                IterationAnalysis {
+                    scope,
+                    support: graph.get(input)?.support.clone(),
+                },
+            )));
+        }
+
         let mut cache_key =
             IterationKey::Cutoff(index, self.state.cutoff.get().min(graph.nodes.len()));
         let typed_environment = self.state.validation_graph.get() == Some(graph as *const Graph)
@@ -7216,17 +7387,9 @@ impl<'a> Environment<'a> {
                 return Ok((
                     finite,
                     member.clone(),
-                    SourceAnalysis {
-                        condition_failed: false,
-                        condition_pending: false,
-                        symbolic: None,
-                        comparison: None,
-                        affine: None,
+                    IterationAnalysis {
                         scope: scope.clone(),
-                        known_value: None,
                         support: node.support.clone(),
-                        scalar_scope: Some(scope),
-                        missing: None,
                     },
                 ));
             }
@@ -7310,7 +7473,14 @@ impl<'a> Environment<'a> {
                 }
                 _ => return Err(internal!("List位置/Set要素が元domainと違う").into()),
             };
-            Ok((record.domain, member, analysis))
+            Ok((
+                record.domain,
+                member,
+                IterationAnalysis {
+                    scope: analysis.scope,
+                    support: analysis.support.into(),
+                },
+            ))
         })();
         let result = result.map(std::rc::Rc::new);
         previous.restore();
@@ -7388,6 +7558,15 @@ impl<'a> Environment<'a> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<Vec<NodeRef>, ValidationFailure> {
+        self.source_arguments_mode(graph, span, bindings, true)
+    }
+    fn source_arguments_mode(
+        &self,
+        graph: &Graph,
+        span: (usize, usize),
+        bindings: &[Binding],
+        legacy_iteration: bool,
+    ) -> Result<Vec<NodeRef>, ValidationFailure> {
         let mut arguments: Vec<_> = bindings.iter().map(|b| b.value).collect();
         let context = self.current_context(graph);
         if context.frame.is_none() && context.iteration.is_none() && context.instance.is_none() {
@@ -7427,7 +7606,11 @@ impl<'a> Environment<'a> {
             arguments.push(frame.source);
             arguments.extend(&frame.arguments);
         }
-        if let Some(index) = self.current_context(graph).iteration {
+        if let Some(index) = self
+            .current_context(graph)
+            .iteration
+            .filter(|_| legacy_iteration)
+        {
             let record = graph
                 .iterations
                 .get(index)
@@ -7602,7 +7785,9 @@ impl<'a> Environment<'a> {
         span: (usize, usize),
         bindings: &[Binding],
     ) -> Result<SourceAnalysis, ValidationFailure> {
-        self.analyze_source_with_guard(graph, span, bindings, None)
+        #[cfg(test)]
+        data::observe_actual(span, self.current_context(graph), "source_analysis", 0);
+        self.analyze_source_with_guard(graph, span, bindings, None, false)
     }
     fn analyze_source_with_guard(
         &self,
@@ -7610,6 +7795,7 @@ impl<'a> Environment<'a> {
         span: (usize, usize),
         bindings: &[Binding],
         forms: Option<&mut Option<Vec<super::affine::Form>>>,
+        inputs_only: bool,
     ) -> Result<SourceAnalysis, ValidationFailure> {
         let mut declaration = None;
         for d in self.indexes.inputs.law().declarations().values() {
@@ -7799,7 +7985,7 @@ impl<'a> Environment<'a> {
                             affine: None,
                             scope: base.clone(),
                             known_value: Some(value.clone()),
-                            support: original.support.clone(),
+                            support: original.support.to_flat_facts(&self.control)?,
                             scalar_scope: Some(original.scope.clone()),
                         },
                     );
@@ -7820,7 +8006,7 @@ impl<'a> Environment<'a> {
                             affine: None,
                             scope: base.clone(),
                             known_value: Some(value.clone()),
-                            support: original.support.clone(),
+                            support: original.support.to_flat_facts(&self.control)?,
                             scalar_scope: Some(original.scope.clone()),
                         },
                     );
@@ -7922,6 +8108,20 @@ impl<'a> Environment<'a> {
                 self.family_order_scope(&plan, &mut base)?;
             }
         }
+        if inputs_only {
+            return Ok(SourceAnalysis {
+                condition_failed: false,
+                condition_pending: false,
+                symbolic: None,
+                comparison: None,
+                affine: None,
+                scope: base,
+                known_value: None,
+                missing: None,
+                support: FlatFacts::default(),
+                scalar_scope: None,
+            });
+        }
         // parameter の範囲は全明示束縛を含む。Scalar 自体の由来範囲とは区別する。
         for variable in variables.values_mut() {
             self.tick()?;
@@ -7967,7 +8167,7 @@ impl<'a> Environment<'a> {
                         affine: super::affine::constant(&member, &self.control)?.map(Box::new),
                         scope: base.clone(),
                         known_value: Some(member),
-                        support: analysis.support.clone(),
+                        support: analysis.support.to_flat_facts(&self.control)?,
                         scalar_scope: Some(base.clone()),
                     }
                 }
@@ -10026,6 +10226,7 @@ impl<'a> Environment<'a> {
         let (known_value, scalar_scope) = if assigned.is_none() && repaired.is_some() {
             let (_, value) = repaired.ok_or(internal!("修復slot値がない"))?;
             if let Some(source_support) = self.state.architecture_support(&position) {
+                let source_support = source_support.to_flat_facts(&self.control)?;
                 if support.iter().all(|f| source_support.contains(f)) {
                     support = source_support;
                 } else {
@@ -10199,7 +10400,7 @@ impl<'a> Environment<'a> {
             if node.ty != NodeType::Expression(Type::Bool)
                 || !matches!(&node.rule, Rule::Construction("expression"))
                 || operands.len() != operation.arity()
-                || !node.support.is_empty()
+                || !node.support.is_empty(&self.control)?
                 || !node.evidence.is_empty()
                 || !node.reasons.is_empty()
                 || node.judgment.is_some()
@@ -10477,7 +10678,7 @@ impl<'a> Environment<'a> {
             let actual = value.ok_or(internal!("対象fieldの評価値がない"))?;
             let node = graph.get(actual)?;
             if graph.scalar(actual)? != &expected
-                || node.support.as_slice() != [fact]
+                || !node.support.matches_flat(&[fact], &self.control)?
                 || if chained {
                     node.arguments != [base, expression]
                         || !matches!(&node.rule,Rule::Input{kind:"law",location:Location::Law{span:at}} if *at==span)
@@ -10537,7 +10738,8 @@ impl<'a> Environment<'a> {
         self.validation_graph_session(graph, || {
             self.tick()?;
             let key = (graph.context_at(root.0), root.0);
-            if self.results.cache.borrow().rechecked.contains(&key) {
+            if !self.field_read_collecting() && self.results.cache.borrow().rechecked.contains(&key)
+            {
                 return Ok(());
             }
             self.recheck_evaluation_uncached(graph, root)?;
@@ -10555,7 +10757,8 @@ impl<'a> Environment<'a> {
         while let Some(reference) = pending.pop() {
             self.tick()?;
             let key = (graph.context_at(reference.0), reference.0);
-            if self.results.cache.borrow().rechecked.contains(&key) {
+            if !self.field_read_collecting() && self.results.cache.borrow().rechecked.contains(&key)
+            {
                 continue;
             }
             checked.push(key);
@@ -10609,6 +10812,12 @@ impl<'a> Environment<'a> {
                 self.tick()?;
             }
             self.validate_at(graph, node, reference.0)?;
+            if matches!(
+                node.rule,
+                Rule::Construction("ordinary_evaluation" | "field_evaluation" | "alias_evaluation")
+            ) {
+                continue;
+            }
             self.validate_at(graph, graph.get(*expression)?, expression.0)?;
             if super::object_reading_result::source(graph, node)?.is_some() {
                 // 元viewの全体読取りは、専用検査が元対象と実bodyを再検査した。
@@ -10680,7 +10889,13 @@ impl<'a> Environment<'a> {
             let mut support = Vec::new();
             if let Some(value) = value {
                 self.validate_at(graph, graph.get(*value)?, value.0)?;
-                support.extend(graph.get(*value)?.support.iter().cloned());
+                support.extend(
+                    graph
+                        .get(*value)?
+                        .support
+                        .materialize(&self.control)?
+                        .into_iter(),
+                );
             }
             for part in parts {
                 self.tick()?;
@@ -10690,7 +10905,13 @@ impl<'a> Environment<'a> {
                         return Err(internal!("再検査する子評価が既出でない").into());
                     }
                     pending.push(child);
-                    support.extend(graph.get(child)?.support.iter().cloned());
+                    support.extend(
+                        graph
+                            .get(child)?
+                            .support
+                            .materialize(&self.control)?
+                            .into_iter(),
+                    );
                     self.tick()?;
                 }
                 self.tick()?;
@@ -10706,7 +10927,7 @@ impl<'a> Environment<'a> {
             }
             support.sort();
             support.dedup();
-            if node.support != support {
+            if !node.support.matches_flat(&support, &self.control)? {
                 return Err(internal!("評価の支持が元値・子評価に合わない").into());
             }
             self.tick()?;
@@ -10788,7 +11009,7 @@ impl<'a> Environment<'a> {
         }
         let (support, scope) =
             self.application_context(graph, body_evaluation, guard_evaluation)?;
-        if instance.support != support || instance.scope != scope {
+        if !instance.support.matches_flat(&support, &self.control)? || instance.scope != scope {
             return Err(internal!("LawInstance の適用支持・範囲不一致").into());
         }
         Ok((body_evaluation, guard_evaluation))
@@ -10799,11 +11020,17 @@ impl<'a> Environment<'a> {
         body: NodeRef,
         guard: Option<NodeRef>,
     ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
-        let mut support = graph.get(body)?.support.clone().into_vec();
+        let mut support = graph.get(body)?.support.materialize(&self.control)?;
         let mut scope = graph.get(body)?.scope.clone();
         if let Some(guard) = guard {
             self.tick()?;
-            support.extend(graph.get(guard)?.support.iter().cloned());
+            support.extend(
+                graph
+                    .get(guard)?
+                    .support
+                    .materialize(&self.control)?
+                    .into_iter(),
+            );
             scope.merge(&graph.get(guard)?.scope);
             self.tick()?;
         }
@@ -10906,7 +11133,7 @@ impl<'a> Environment<'a> {
             self.tick()?;
         }
         let (support, scope) = self.application_context(graph, body, Some(guard))?;
-        if node.support != support || node.scope != scope {
+        if !node.support.matches_flat(&support, &self.control)? || node.scope != scope {
             return Err(internal!("適用評価の支持・範囲不一致").into());
         }
         Ok(())
@@ -11062,7 +11289,7 @@ impl<'a> Environment<'a> {
         self.validate_at(graph, graph.get(value)?, value.0)?;
         let analysis = self.analyze_source(graph, span, bindings)?;
         if node.scope != analysis.scope
-            || node.support != analysis.support
+            || node.support.to_flat_facts(&self.control)? != analysis.support
             || analysis.known_value.as_ref() != Some(&expected)
         {
             return Err(internal!("型binder Evaluationの元Scope/支持が違う").into());
@@ -11168,7 +11395,7 @@ impl<'a> Environment<'a> {
             super::finite::Enumeration {
                 values: items.clone(),
                 scope: graph.get(input)?.scope.clone(),
-                support: graph.get(input)?.support.to_vec(),
+                support: graph.get(input)?.support.materialize(&self.control)?,
             },
         ))
     }
@@ -11241,7 +11468,9 @@ impl<'a> Environment<'a> {
         scope.merge(&enumeration.scope);
         if value.ty() != spec.element
             || !data::contains(&enumeration.values, value, &self.control)?
-            || node.support != enumeration.support
+            || !node
+                .support
+                .matches_flat(&enumeration.support, &self.control)?
             || node.scope != scope
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
@@ -11359,14 +11588,37 @@ impl<'a> Environment<'a> {
         let mut scope = input.scope.clone();
         scope.merge(&enumeration.scope);
         scope.add_quantifier(spec.descriptor(None, Some(self.current_context(graph))));
-        scope.order_quantifiers_like(&graph.get(node.arguments[0])?.scope);
+        self.order_quantifier_scope(graph, node.arguments[0], &mut scope)?;
         if node.scope != scope
-            || node.support != enumeration.support
+            || !node
+                .support
+                .matches_flat(&enumeration.support, &self.control)?
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()
         {
             return Err(internal!("DomainのScope/支持/証拠が違う").into());
         }
+        Ok(())
+    }
+    /// 既知入力/ancestor、own、domain/bodyの順を実descriptorのまま保持する。
+    pub(in crate::observed) fn order_quantifier_scope(
+        &self,
+        graph: &Graph,
+        source: NodeRef,
+        scope: &mut Scope,
+    ) -> Result<(), ValidationFailure> {
+        let original = graph.get(source)?;
+        let mut order = original.scope.clone();
+        if matches!(original.rule, Rule::OrdinarySource(_)) {
+            let span = self.expression_span(graph, source)?;
+            let context = graph.context_at(source.0);
+            for descriptor in &scope.quantifiers {
+                if descriptor.occurrence == span && descriptor.context == Some(context) {
+                    order.add_quantifier(descriptor.clone());
+                }
+            }
+        }
+        scope.order_quantifiers_like(&order);
         Ok(())
     }
     fn quant_parts(
@@ -11422,10 +11674,11 @@ impl<'a> Environment<'a> {
         }
         let mut scope = graph.get(input)?.scope.clone();
         scope.add_quantifier(descriptor.clone());
-        scope.order_quantifiers_like(&graph.get(source)?.scope);
-        let mut support = graph.get(input)?.support.clone().into_vec();
+        self.order_quantifier_scope(graph, source, &mut scope)?;
+        let mut support = vec![graph.get(input)?.support.clone()];
         let mut results = Vec::new();
         let mut seen = Vec::new();
+        let mut seen_positions = BTreeSet::new();
         let finite = descriptor.domain;
         match known {
             false => {
@@ -11478,7 +11731,13 @@ impl<'a> Environment<'a> {
                     }
                     let inputs = self.iteration_input(graph, index)?;
                     let member = inputs.1.clone();
-                    if !matches!(record.member, super::call::Member::SetElement(_))
+                    if matches!(graph.get(source)?.rule, Rule::OrdinarySource(_)) {
+                        if !seen_positions.insert(record.position)
+                            || elements.get(record.position) != record.producer.as_ref()
+                        {
+                            return Err(internal!("In量化の実member位置/全coverageが違う").into());
+                        }
+                    } else if !matches!(record.member, super::call::Member::SetElement(_))
                         || data::contains(&seen, &member, &self.control)?
                         || !elements
                             .iter()
@@ -11495,12 +11754,21 @@ impl<'a> Environment<'a> {
                     }
                     results.push(graph.boolean(value)?);
                     scope.merge(&graph.get(*body)?.scope);
-                    support.extend(graph.get(*body)?.support.iter().cloned());
+                    support.push(graph.get(*body)?.support.clone());
                 }
             }
         }
-        support.sort();
-        support.dedup();
+        // 各bodyの共通支持をN回展開せず、旧sorted/unique契約の列を最後に一度作る。
+        #[cfg(test)]
+        data::observe_actual(span, self.current_context(graph), "quant_parts_support", 0);
+        let support = Support::sum(vec![], support).to_flat_facts(&self.control)?;
+        #[cfg(test)]
+        data::observe_actual(
+            span,
+            self.current_context(graph),
+            "quant_parts_support_verified",
+            0,
+        );
         let failed = children.iter().any(|r| {
             graph.nodes[r.0]
                 .reasons
@@ -11516,13 +11784,15 @@ impl<'a> Environment<'a> {
         } else {
             None
         };
-        let analysis = self.analyze_source(graph, span, bindings)?;
-        if analysis.known_value != computed
-            || analysis.support != support
-            || !analysis.scope.source_compatible(&scope)
-            || !graph.get(source)?.scope.source_compatible(&scope)
-        {
-            return Err(internal!("量化の元AST/Bool集約/支持/Scopeが違う").into());
+        if !matches!(graph.get(source)?.rule, Rule::OrdinarySource(_)) {
+            let analysis = self.analyze_source(graph, span, bindings)?;
+            if analysis.known_value != computed
+                || analysis.support != support
+                || !analysis.scope.source_compatible(&scope)
+                || !graph.get(source)?.scope.source_compatible(&scope)
+            {
+                return Err(internal!("量化の元AST/Bool集約/支持/Scopeが違う").into());
+            }
         }
         Ok((
             SourceAnalysis {
@@ -11601,7 +11871,7 @@ impl<'a> Environment<'a> {
             self.quant_parts(graph, source, &node.arguments, &node.scope, limit)?;
         if !matches!(&node.payload,Some(Payload::Scalar(value)) if analysis.known_value.as_ref()==Some(value))
             || node.scope != analysis.scope
-            || node.support != analysis.support
+            || node.support.to_flat_facts(&self.control)? != analysis.support
         {
             return Err(internal!("量化Scalarの値/元Scope/支持が違う").into());
         }
@@ -11672,7 +11942,7 @@ impl<'a> Environment<'a> {
         let (analysis, domain) =
             self.quant_parts(graph, *expression, &children, &node.scope, limit)?;
         if node.scope != analysis.scope
-            || node.support != analysis.support
+            || node.support.to_flat_facts(&self.control)? != analysis.support
             || value.map(|r| graph.scalar(r)).transpose() != Ok(analysis.known_value.as_ref())
         {
             return Err(internal!("量化Evaluationの値/Scope/支持が違う").into());
@@ -11940,8 +12210,11 @@ impl<'a> Environment<'a> {
             return Err(internal!("量化反例payloadがない").into());
         };
         let body = graph.get(node.arguments[2])?;
-        let mut support = graph.get(node.arguments[1])?.support.clone().into_vec();
-        support.extend(body.support.iter().cloned());
+        let mut support = graph
+            .get(node.arguments[1])?
+            .support
+            .materialize(&self.control)?;
+        support.extend(body.support.materialize(&self.control)?);
         support.sort();
         support.dedup();
         if bindings != &expected
@@ -11949,7 +12222,7 @@ impl<'a> Environment<'a> {
             || graph.scalar(*right)? != &Scalar::Bool(true)
             || graph.get(*right)?.arguments != node.arguments
             || facts != &support
-            || node.support != support
+            || !node.support.matches_flat(&support, &self.control)?
             || node.scope != body.scope
             || !node.reasons.is_empty()
         {
@@ -12026,7 +12299,7 @@ impl<'a> Environment<'a> {
                     .chain([*domain])
                     .chain(instances.iter().copied())
                     .collect::<Vec<_>>()
-            || node.support != analysis.support
+            || node.support.to_flat_facts(&self.control)? != analysis.support
             || node.scope != analysis.scope
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()

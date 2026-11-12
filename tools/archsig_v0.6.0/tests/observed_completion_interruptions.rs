@@ -130,6 +130,35 @@ fn map_without_codomain() -> InputSources {
 }
 
 #[test]
+fn known_reference_constraints_do_not_repeat_every_earlier_prefix() {
+    fn input(size: usize) -> InputSources {
+        let names: Vec<_> = (0..size).map(|i| format!("h{i}")).collect();
+        let mut subjects = vec![("a", "A")];
+        subjects.extend(names.iter().map(|name| (name.as_str(), "Holder")));
+        let atoms: Vec<_> = names
+            .iter()
+            .map(|name| (name.as_str(), "Holder.value", r#"["s","a"]"#))
+            .collect();
+        source(
+            &[
+                entity("V.A", "[]"),
+                entity(
+                    "V.Holder",
+                    &format!("[{}]", common::field_json("value", r#"["Ref","V.A"]"#)),
+                ),
+            ],
+            &subjects,
+            &atoms,
+        )
+    }
+    // 実時間ではなく、停止可能な補完処理の仕事量を小さい入力で比較する。
+    // 全条件が既知なら、条件数を倍にして過去の全prefixを再探索しない。
+    let small = count_completion(&input(32), true);
+    let large = count_completion(&input(64), true);
+    assert!(large < 3 * small, "completion steps: {small} -> {large}");
+}
+
+#[test]
 fn single_map_constraint_interrupts_before_early_inconsistent_return() {
     // A は登録済み、B は未登録。唯一の欠測 Map 制約が false を返す経路。
     let input = map_without_codomain();

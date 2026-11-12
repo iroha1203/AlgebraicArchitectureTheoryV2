@@ -600,7 +600,19 @@ pub(in crate::observed) fn constant_numeric_family(
         && matches!(value, Scalar::Z(n) | Scalar::Q(n, _) if n == &num_bigint::BigInt::from(0));
     // 全域で零と実評価した本文ではguardの真偽に依存しない。guardの支持・
     // 欠測は元評価へ残し、未観測guardを真や偽へ補わない。
-    if (symbolic_constant.is_none() && !zero_body && node.support.iter().any(|f| f.field.is_some()))
+    if (symbolic_constant.is_none()
+        && !zero_body
+        && node
+            .support
+            .any_fact(c, |f| f.field.is_some())
+            .map_err(|failure| match failure {
+                super::super::result::ValidationFailure::Stop(signal) => {
+                    ConstructionFailure::Stopped(signal)
+                }
+                other => ConstructionFailure::Inconsistent(
+                    other.internal_context(format!("支持query: {other:?}")),
+                ),
+            })?)
         || node.reasons.iter().any(|reason| {
             (symbolic_constant.is_none() && !zero_body)
                 || !matches!(reason.kind, super::super::result::ReasonKind::Missing)

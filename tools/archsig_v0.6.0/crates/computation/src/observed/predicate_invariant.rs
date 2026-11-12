@@ -34,9 +34,26 @@ struct Part {
     construction: &'static str,
     wire: Json,
     arguments: Vec<NodeRef>,
-    support: Vec<Fact>,
+    support: Support,
     scope: Scope,
     reasons: Vec<Reason>,
+}
+impl Part {
+    /// Cold authentication keeps the mathematical value and provenance exact;
+    /// only the representation of its support may differ.
+    fn matches_with_support(
+        &self,
+        expected: &Self,
+        control: &Control,
+    ) -> Result<bool, ValidationFailure> {
+        Ok(self.ty == expected.ty
+            && self.construction == expected.construction
+            && self.wire == expected.wire
+            && self.arguments == expected.arguments
+            && self.scope == expected.scope
+            && self.reasons == expected.reasons
+            && self.support.same_facts(&expected.support, control)?)
+    }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(super) struct Invariant {
@@ -54,16 +71,42 @@ struct Source {
     base: usize,
     parts: Vec<Part>,
     outputs: Vec<Invariant>,
+    // The whole producer depends only on original, pre-base table/readings.
+    arguments: Vec<NodeRef>,
+}
+#[derive(Clone, Debug)]
+enum Origin {
+    Whole(Arc<Source>),
+    Projection {
+        first: NodeRef,
+        architecture: Arc<ArchitectureWitness>,
+    },
 }
 #[derive(Clone, Debug)]
 pub(crate) struct Data {
-    source: Arc<Source>,
+    origin: Origin,
     index: usize,
     part: Part,
 }
 impl PartialEq for Data {
     fn eq(&self, b: &Self) -> bool {
-        Arc::ptr_eq(&self.source, &b.source) && self.index == b.index && self.part == b.part
+        let same_origin = match (&self.origin, &b.origin) {
+            (Origin::Whole(a), Origin::Whole(b)) => Arc::ptr_eq(a, b),
+            (
+                Origin::Projection {
+                    first: a,
+                    architecture: x,
+                },
+                Origin::Projection {
+                    first: b,
+                    architecture: y,
+                },
+            ) => a == b && x == y,
+            _ => false,
+        };
+        // Equality is not authentication: cold Whole validation recomputes the table
+        // and all parts; projections authenticate their actual first producer.
+        same_origin && self.index == b.index && self.part == b.part
     }
 }
 impl Eq for Data {}
@@ -88,8 +131,8 @@ fn components(
     }
     Ok((a, r, objects))
 }
-fn earlier_table_references(t: &Table, base: usize, c: &Control) -> Result<(), ValidationFailure> {
-    let references = [t.architecture, t.component_source()]
+fn table_references(t: &Table) -> impl Iterator<Item = NodeRef> + '_ {
+    [t.architecture, t.component_source()]
         .into_iter()
         .chain(t.indices.iter().copied())
         .chain(t.objects.iter().flat_map(|o| {
@@ -98,8 +141,10 @@ fn earlier_table_references(t: &Table, base: usize, c: &Control) -> Result<(), V
                 .chain(o.origins.iter().copied())
                 .chain(o.evaluations.iter().copied())
                 .chain(o.holds.iter().copied())
-        }));
-    for r in references {
+        }))
+}
+fn earlier_table_references(t: &Table, base: usize, c: &Control) -> Result<(), ValidationFailure> {
+    for r in table_references(t) {
         tick(c)?;
         if r.0 >= base {
             return Err(internal!("述語不変量の元表参照が構成開始より前でない").into());
@@ -107,11 +152,32 @@ fn earlier_table_references(t: &Table, base: usize, c: &Control) -> Result<(), V
     }
     Ok(())
 }
+fn whole_arguments(
+    t: &Table,
+    parts: &[Part],
+    base: usize,
+    c: &Control,
+) -> Result<Vec<NodeRef>, ValidationFailure> {
+    let mut arguments = table_references(t).collect::<Vec<_>>();
+    for part in parts {
+        for &reference in &part.arguments {
+            tick(c)?;
+            // Generated part refs are projections of this producer, never inputs to it.
+            if reference.0 < base {
+                arguments.push(reference);
+            }
+        }
+    }
+    arguments.sort_by_key(|r| r.0);
+    arguments.dedup();
+    Ok(arguments)
+}
+
 fn metadata(
     g: &Graph,
     arguments: &[NodeRef],
     c: &Control,
-) -> Result<(Vec<Fact>, Scope, Vec<Reason>), ValidationFailure> {
+) -> Result<(Support, Scope, Vec<Reason>), ValidationFailure> {
     let mut support = vec![];
     let mut scope = Scope::default();
     let mut reasons = vec![];
@@ -119,12 +185,11 @@ fn metadata(
         tick(c)?;
         saved_context(g, *r)?;
         let n = g.get(*r)?;
-        support.extend(n.support.iter().cloned());
+        support.push(n.support.clone());
         scope.merge(&n.scope);
         reasons.extend(n.reasons.iter().cloned());
     }
-    support.sort();
-    support.dedup();
+    let support = Support::sum(vec![], support);
     reasons.sort_by_key(|r| r.wire().canonical());
     reasons.dedup();
     Ok((support, scope, reasons))
@@ -197,6 +262,8 @@ fn compute(
     c: &Control,
 ) -> Result<(Vec<Part>, Vec<Invariant>), ValidationFailure> {
     tick(c)?;
+    #[cfg(test)]
+    super::data::observe_actual((0, 0), g.active, "predicate_whole_compute", base);
     let ds = t.diagrams()?;
     let first = ds.first().ok_or(internal!("述語不変量に元Law計画がない"))?;
     let templates = first
@@ -362,7 +429,7 @@ fn compute(
             });
             dependencies.extend(arguments);
             dependencies.push(evaluation);
-            support.extend(facts);
+            support.push(facts);
             scope.merge(&s);
             reasons.extend(why);
             evaluations.push(evaluation);
@@ -374,8 +441,7 @@ fn compute(
         }
         dependencies.sort_by_key(|r| r.0);
         dependencies.dedup();
-        support.sort();
-        support.dedup();
+        let support = Support::sum(vec![], support);
         reasons.sort_by_key(|r| r.wire().canonical());
         reasons.dedup();
         let invariant = NodeRef(
@@ -413,20 +479,80 @@ impl Data {
     pub(super) fn construction(&self) -> &'static str {
         self.part.construction
     }
+    fn base(&self) -> usize {
+        match &self.origin {
+            Origin::Whole(source) => source.base,
+            Origin::Projection { first, .. } => first.0,
+        }
+    }
+    fn architecture(&self) -> &Arc<ArchitectureWitness> {
+        match &self.origin {
+            Origin::Whole(source) => &source.architecture,
+            Origin::Projection { architecture, .. } => architecture,
+        }
+    }
+    /// Physical proof dependencies. Every projection uses the actual earlier Whole.
     pub(super) fn arguments(&self) -> Vec<NodeRef> {
-        self.part.arguments.clone()
+        match &self.origin {
+            Origin::Whole(source) => source.arguments.clone(),
+            Origin::Projection { first, .. } => {
+                let mut arguments = self.part.arguments.clone();
+                arguments.push(*first);
+                arguments.sort_by_key(|r| r.0);
+                arguments.dedup();
+                arguments
+            }
+        }
+    }
+    /// Preserve the prior inspection arguments; proof edges remain internal.
+    pub(super) fn public_arguments(&self) -> &[NodeRef] {
+        &self.part.arguments
     }
     pub(super) fn wire(&self) -> Json {
         self.part.wire.clone()
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+    pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.part.support.clone(), self.part.scope.clone())
     }
+    pub(super) fn metadata(&self, c: &Control) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+        Ok((self.part.support.materialize(c)?, self.part.scope.clone()))
+    }
+    fn whole<'a>(&'a self, g: &'a Graph) -> Result<&'a Source, ValidationFailure> {
+        match &self.origin {
+            Origin::Whole(source) if self.index == 0 => Ok(source),
+            Origin::Projection {
+                first,
+                architecture,
+            } if self.index != 0 => {
+                let Some(Payload::Construction(value)) = &g.get(*first)?.payload else {
+                    return Err(internal!("述語射影の全体producerがnativeでない").into());
+                };
+                let D::PredicateInvariant(producer) = &value.data else {
+                    return Err(internal!("述語射影の全体producerが別構成").into());
+                };
+                let Origin::Whole(source) = &producer.origin else {
+                    return Err(internal!("述語射影の元producerが全体でない").into());
+                };
+                if producer.index != 0
+                    || source.base != first.0
+                    || &source.architecture != architecture
+                {
+                    return Err(internal!("述語射影の全体producer/元Architectureが違う").into());
+                }
+                // The first producer's own shape/Part metadata is authenticated at
+                // its dependency boundary; do not recompare that entire Part here.
+                Ok(source)
+            }
+            _ => Err(internal!("述語不変量の全体/射影位置が違う").into()),
+        }
+    }
     fn context(&self, g: &Graph) -> Result<(), ValidationFailure> {
-        let expected = saved_context(g, self.source.table.architecture)?;
+        let expected = match &self.origin {
+            Origin::Whole(source) => saved_context(g, source.table.architecture)?,
+            Origin::Projection { first, .. } => saved_context(g, *first)?,
+        };
         let at = self
-            .source
-            .base
+            .base()
             .checked_add(self.index)
             .ok_or(internal!("述語不変量のContext位置が域外"))?;
         let actual = if at < g.nodes.len() {
@@ -442,7 +568,9 @@ impl Data {
         Ok(())
     }
     pub(super) fn position(&self, at: usize) -> Result<(), ValidationFailure> {
-        if self.source.base.checked_add(self.index) != Some(at)
+        if self.base().checked_add(self.index) != Some(at)
+            || matches!(self.origin, Origin::Whole(_)) != (self.index == 0)
+            || self.part.arguments.iter().any(|r| r.0 >= at)
             || self.arguments().iter().any(|r| r.0 >= at)
         {
             return Err(internal!("述語不変量の元生成位置/既出Refが違う").into());
@@ -460,7 +588,7 @@ impl Data {
             evidence: vec![],
             judgment: None,
             payload: Some(Payload::Construction(Box::new(ConstructionValue {
-                witness: Witness::Architecture(self.source.architecture.clone()),
+                witness: Witness::Architecture(self.architecture().clone()),
                 data: D::PredicateInvariant(self.clone()),
             }))),
         }
@@ -484,10 +612,14 @@ pub(super) fn validate_node(
     let Witness::Architecture(a) = &v.witness else {
         return Err(internal!("述語不変量のconsumerが別種").into());
     };
-    if !Arc::ptr_eq(a, &d.source.architecture)
-        || d.source.parts.get(d.index) != Some(&d.part)
-        || n != &d.node()
-        || &d.node() != n
+    let source = d.whole(g)?;
+    let expected = source
+        .parts
+        .get(d.index)
+        .ok_or(internal!("述語不変量の元Part位置がない"))?;
+    if a != d.architecture()
+        || !d.part.matches_with_support(expected, g.control())?
+        || !n.matches_with_support(&d.node(), g.control())?
     {
         return Err(internal!("述語不変量の元由来/全対象/metadataが違う").into());
     }
@@ -508,13 +640,26 @@ impl Environment<'_> {
         };
         d.position(at)?;
         d.context(g)?;
+        if let Origin::Projection { first, .. } = &d.origin {
+            // This real dependency is checked at its own original cutoff. Success
+            // sharing is the existing immutable Graph-prefix machinery, not a new cache.
+            self.validate_at(g, g.get(*first)?, first.0)?;
+            let source = d.whole(g)?;
+            let expected = source
+                .parts
+                .get(d.index)
+                .ok_or(internal!("述語射影の元Part位置がない"))?;
+            if !d.part.matches_with_support(expected, &self.control)? {
+                return Err(internal!("述語射影が認証済み全体の元Partと違う").into());
+            }
+            return Ok(());
+        }
+        let source = d.whole(g)?;
         let c = self.control.clone();
-        earlier_table_references(&d.source.table, d.source.base, &c)?;
-        d.source.table.recheck(self, g, &c)?;
-        let (a, components, objects) = components(g, &d.source.table)?;
-        if !Arc::ptr_eq(&a, &d.source.architecture)
-            || components != d.source.components
-            || objects != d.source.objects
+        earlier_table_references(&source.table, source.base, &c)?;
+        source.table.recheck(self, g, &c)?;
+        let (a, components, objects) = components(g, &source.table)?;
+        if a != source.architecture || components != source.components || objects != source.objects
         {
             return Err(internal!("述語不変量の元入力/対象表が違う").into());
         }
@@ -522,13 +667,26 @@ impl Environment<'_> {
             self,
             g,
             &a,
-            &d.source.table,
+            &source.table,
             components,
             &objects,
-            d.source.base,
+            source.base,
             &c,
         )?;
-        if parts != d.source.parts || outputs != d.source.outputs {
+        let mut same_parts = parts.len() == source.parts.len();
+        if same_parts {
+            for (actual, expected) in source.parts.iter().zip(&parts) {
+                tick(&c)?;
+                if !actual.matches_with_support(expected, &c)? {
+                    same_parts = false;
+                    break;
+                }
+            }
+        }
+        if !same_parts
+            || outputs != source.outputs
+            || whole_arguments(&source.table, &parts, source.base, &c)? != source.arguments
+        {
             return Err(internal!("述語不変量の元全Law/全域評価/metadataが違う").into());
         }
         Ok(())
@@ -557,6 +715,7 @@ impl super::result_kind::ResultKind for Data {
         t.recheck(env, g, c)?;
         let (a, components, objects) = components(g, &t)?;
         let (parts, outputs) = compute(env, g, &a, &t, components, &objects, base, c)?;
+        let arguments = whole_arguments(&t, &parts, base, c)?;
         let source = Arc::new(Source {
             architecture: a,
             table: t,
@@ -565,11 +724,19 @@ impl super::result_kind::ResultKind for Data {
             base,
             parts,
             outputs,
+            arguments,
         });
         for (index, part) in source.parts.iter().enumerate() {
             tick(c)?;
             let data = Data {
-                source: source.clone(),
+                origin: if index == 0 {
+                    Origin::Whole(source.clone())
+                } else {
+                    Origin::Projection {
+                        first: NodeRef(base),
+                        architecture: source.architecture.clone(),
+                    }
+                },
                 index,
                 part: part.clone(),
             };

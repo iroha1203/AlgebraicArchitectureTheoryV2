@@ -33,11 +33,7 @@ pub(super) fn base_scope(
     name: &str,
 ) -> Result<Scope, ValidationFailure> {
     let witness = Witness::Architecture(a.clone());
-    let mut scope = native::metadata(&ConstructionValue {
-        witness: witness.clone(),
-        data: D::ConstructionLabel(Scalar::Text("law_evaluation".into())),
-    })?
-    .1;
+    let mut scope = a.scope().clone();
     let declaration = witness
         .inputs()
         .law()
@@ -215,7 +211,7 @@ pub(super) fn validate_node(
         || n.ty != d.ty()
         || n.rule != Rule::Construction("domain")
         || n.arguments != d.arguments()
-        || n.support != d.support
+        || !n.support.matches_flat(&d.support, graph.control())?
         || n.scope != d.scope
         || !n.reasons.is_empty()
         || !n.evidence.is_empty()

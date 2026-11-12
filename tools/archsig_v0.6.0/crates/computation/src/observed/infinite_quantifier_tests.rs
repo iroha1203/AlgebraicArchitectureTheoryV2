@@ -141,12 +141,9 @@ fn infinite_exists_callee_returns_typed_undetermined_instead_of_early_error() {
         &[],
         "view unsupported(s:Sample):Bool=exists item:Z.item*item=0; view caller(s:Sample):Bool=unsupported(s);",
     );
-    let result = evaluate_observed_bytes(
-        inputs,
-        &["v=evaluate(Calc.caller,s=@v/sample)"],
-        &quiet(),
-    )
-    .expect("有効な無限域の算法非対応は型付き未決回答を返す");
+    let result =
+        evaluate_observed_bytes(inputs, &["v=evaluate(Calc.caller,s=@v/sample)"], &quiet())
+            .expect("有効な無限域の算法非対応は型付き未決回答を返す");
     assert_eq!(result.status(), "partial");
     assert_eq!(result.answers[0].status, Decision::Undetermined);
     assert!(
@@ -329,7 +326,8 @@ fn infinite_exists_preserves_mathematics_and_current_observation_provenance() {
         let (_, _, whole) = quantified(&result);
         let support = &result.nodes[whole].support;
         let fact = support
-            .iter()
+            .materialize_for_test()
+            .into_iter()
             .find(|f| f.field.as_deref() == Some("Numeric.Sample.q"))
             .expect("既知qの支持");
         assert_eq!(fact.atom.as_deref(), Some("q"));

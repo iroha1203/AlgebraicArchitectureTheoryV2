@@ -214,7 +214,7 @@ impl Environment<'_> {
                 Ok(Selected {
                     scalar,
                     scope: node.scope,
-                    support: node.support.to_vec(),
+                    support: node.support.materialize(&self.control)?,
                     root: Some(root),
                     producer: Some(id.clone()),
                 })

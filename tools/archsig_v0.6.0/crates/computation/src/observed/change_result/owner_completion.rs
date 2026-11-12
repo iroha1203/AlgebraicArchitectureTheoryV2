@@ -97,12 +97,9 @@ pub(super) fn compute(
     )?;
     b.parts[solutions.0 - base].reasons = vec![reason.clone()];
     b.parts[solutions.0 - base].scope.merge(&enumeration.scope);
-    b.parts[solutions.0 - base]
-        .support
-        .make_owned()
-        .extend(enumeration.support.iter().cloned());
-    b.parts[solutions.0 - base].support.make_owned().sort();
-    b.parts[solutions.0 - base].support.make_owned().dedup();
+    let part = &mut b.parts[solutions.0 - base];
+    part.support = Support::sum(enumeration.support.clone(), [part.support.clone()]);
+
     let mut cases = vec![];
     let mut counts = vec![];
     let mut arguments = vec![expression, solutions];

@@ -1713,7 +1713,8 @@ impl Environment<'_> {
             if let Some(case) = context.case {
                 *self.state.completion_values.borrow_mut() = self.completion_values(graph, case)?;
             }
-            let mut analysis = self.analyze_source_with_guard(graph, span, bindings, forms)?;
+            let mut analysis =
+                self.analyze_source_with_guard(graph, span, bindings, forms, false)?;
             // 同じslotの相関を既存族で消去できた場合だけ元bodyの値を確定する。
             // 元の読取り・欠測・Scopeは保持し、観測値は補わない。
             let plan = self

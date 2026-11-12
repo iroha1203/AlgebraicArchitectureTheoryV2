@@ -930,9 +930,7 @@ pub(super) fn retain(
                 status,
             )?;
             let part = &mut b.parts[proposition.0 - b.base];
-            part.support = support.clone().into();
-            part.support.make_owned().sort();
-            part.support.make_owned().dedup();
+            part.support = Support::sum(support.clone(), []);
             part.scope.merge(&scope);
             part.scope.assignments = true;
             let quantifiers = sp

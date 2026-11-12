@@ -207,8 +207,17 @@ fn all_queries_use_the_actual_common_universe_and_keep_equal_pattern_objects_dis
             Some([vec![0, 1]].as_slice())
         );
         let node = g.get(row.pattern).unwrap();
-        assert!(!data.source.support.is_empty());
-        assert!(std::ptr::eq(&*node.support, &*data.source.support));
+        assert!(
+            !data
+                .source
+                .support
+                .is_empty(&archsig_common::control::Control::unlimited())
+                .unwrap()
+        );
+        assert!(
+            node.support
+                .shares_recipe_storage_for_test(&data.source.support)
+        );
         assert_eq!(node.ty, NodeType::Construction(T::CircuitPattern));
         assert_eq!(node.rule, Rule::Construction("circuit_pattern"));
         assert!(node.judgment.is_none() && node.reasons.is_empty() && node.evidence.is_empty());
@@ -453,10 +462,22 @@ fn altered_queries_source_tables_positions_edges_and_metadata_are_rejected() {
             4 => n.scope = Scope::default(),
             5 => {
                 let original = &data(&g, r).source.support;
-                assert!(!original.is_empty());
-                n.support.make_owned().clear();
-                assert!(!original.is_empty());
-                assert!(n.support.is_empty());
+                assert!(
+                    !original
+                        .is_empty(&archsig_common::control::Control::unlimited())
+                        .unwrap()
+                );
+                n.support.materialize_mut_for_test().clear();
+                assert!(
+                    !original
+                        .is_empty(&archsig_common::control::Control::unlimited())
+                        .unwrap()
+                );
+                assert!(
+                    n.support
+                        .is_empty(&archsig_common::control::Control::unlimited())
+                        .unwrap()
+                );
             }
             6 => n.evidence.push(r),
             7 => {

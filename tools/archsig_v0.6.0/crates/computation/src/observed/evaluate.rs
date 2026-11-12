@@ -145,7 +145,7 @@ pub(in crate::observed) fn instance_expression<'a>(
                 expression: value.expression,
                 evaluation: value.evaluation,
                 value: value.value,
-                support: value.support.to_vec(),
+                support: value.support.materialize(control)?,
                 scope: value.scope,
                 reasons: value.reasons,
             }),
@@ -362,12 +362,10 @@ impl Evaluator<'_, '_> {
         for child in children {
             self.tick(Checkpoint::FiniteIteration)?;
             scope.merge(&child.scope);
-            support.extend(child.support.iter().cloned());
+            support.push(child.support.clone());
             self.tick(Checkpoint::FiniteIteration)?;
         }
-        support.sort();
-        support.dedup();
-        let support = Support::from(support);
+        let support = Support::sum(vec![], support);
         let arguments = std::iter::once(source.expression)
             .chain(children.iter().map(|child| child.evaluation))
             .collect();
@@ -420,11 +418,7 @@ impl Evaluator<'_, '_> {
         let mut scope = source.scope;
         scope.merge(&left.scope);
         scope.merge(&right.scope);
-        let mut support = left.support.clone().into_vec();
-        support.extend(right.support.iter().cloned());
-        support.sort();
-        support.dedup();
-        let support = Support::from(support);
+        let support = Support::sum(vec![], [left.support.clone(), right.support.clone()]);
         let difference = self.push(Node {
             ty: NodeType::Expression(ty.clone()),
             payload: Some(Payload::Transform {
@@ -744,6 +738,35 @@ impl Evaluator<'_, '_> {
                 .expr_type(id)
                 .ok_or_else(|| Failure::Internal(internal!("元式の型がない")))?
                 .clone();
+            if self.environment.ordinary_source_eligible(self.graph, id)?
+                && self.environment.ordinary_in_domain(id)?
+            {
+                return self.prepare_static_source(span, ty);
+            }
+            if let ExprKind::Dotted(_) = &expr.kind
+                && matches!(
+                    expr.lexical.as_ref().map(|lexical| lexical.source),
+                    Some(archsig_input::law::ir::BindingSource::Iteration)
+                )
+                && self.graph.active.iteration.is_some()
+                && self
+                    .environment
+                    .ordinary_binder(
+                        self.graph,
+                        self.environment.dotted_prefixes(id)?[0].0,
+                        self.graph.nodes.len(),
+                    )?
+                    .is_some()
+            {
+                for (prefix, prefix_ty) in self.environment.dotted_prefixes(id)? {
+                    self.prepare_static_source(prefix, prefix_ty)?;
+                }
+                return self
+                    .sources
+                    .get(&span)
+                    .cloned()
+                    .ok_or_else(|| Failure::Internal(internal!("In Dotted静的Source無し")));
+            }
             if let Some(source) = self.sources.get(&span) {
                 self.graph
                     .expect(source.expression, &NodeType::Expression(ty))?;
@@ -766,59 +789,110 @@ impl Evaluator<'_, '_> {
                         .ok_or_else(|| self.unsupported(span, "未対応Data constructor"))?;
                 }
                 ExprKind::Dotted(parts) => {
-                    let first = parts
-                        .first()
-                        .ok_or_else(|| Failure::Internal(internal!("空のドット式")))?;
-                    let lexical = expr.lexical.as_ref().ok_or_else(|| {
-                        self.unsupported(span, "束縛変数以外を先頭とするドット式")
-                    })?;
-                    let parameter = lexical.ty.clone();
-                    let mut owner = self.source(first.span, parameter)?;
-                    // 元の各 token prefix を、その prefix 自身の検査済み型と範囲で
-                    // commit する。最終型を中間 Ref の型として流用しない。
-                    for (_index, (prefix, prefix_ty)) in self
-                        .environment
-                        .dotted_prefixes(id)?
-                        .into_iter()
-                        .enumerate()
-                        .skip(1)
-                    {
-                        self.tick(Checkpoint::FiniteIteration)?;
+                    if !self.environment.ordinary_context(self.graph)? {
+                        let first = parts
+                            .first()
+                            .ok_or_else(|| Failure::Internal(internal!("空のドット式")))?;
+                        let lexical = expr.lexical.as_ref().ok_or_else(|| {
+                            self.unsupported(span, "束縛変数以外を先頭とするドット式")
+                        })?;
+                        let parameter = lexical.ty.clone();
+                        let mut owner = self.source(first.span, parameter)?;
+                        // 元の各 token prefix を、その prefix 自身の検査済み型と範囲で
+                        // commit する。最終型を中間 Ref の型として流用しない。
+                        for (_index, (prefix, prefix_ty)) in self
+                            .environment
+                            .dotted_prefixes(id)?
+                            .into_iter()
+                            .enumerate()
+                            .skip(1)
+                        {
+                            self.tick(Checkpoint::FiniteIteration)?;
+                            if !(owner.condition_failed || owner.condition_pending)
+                                && !matches!(owner.known_value, Some(Scalar::Subject { .. }))
+                            {
+                                return Err(
+                                    self.unsupported(prefix, "未確定の参照からの field 読取り")
+                                );
+                            }
+                            if !matches!(prefix_ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
+                                && !data::supported(
+                                    &prefix_ty,
+                                    self.environment.indexes.inputs.law(),
+                                    self.control,
+                                )?
+                            {
+                                return Err(
+                                    self.unsupported(prefix, "Z/Bool/Ref 以外の原始 slot 評価")
+                                );
+                            }
+                            owner = self.source(prefix, prefix_ty)?;
+                            #[cfg(test)]
+                            data::observe_actual(span, self.graph.active, "field_prepare", _index);
+                            self.tick(Checkpoint::FiniteIteration)?;
+                        }
+                    } else {
+                        let first = parts
+                            .first()
+                            .ok_or_else(|| Failure::Internal(internal!("空のドット式")))?;
+                        let lexical = expr.lexical.as_ref().ok_or_else(|| {
+                            self.unsupported(span, "束縛変数以外を先頭とするドット式")
+                        })?;
+                        let parameter = lexical.ty.clone();
+                        if matches!(
+                            lexical.source,
+                            archsig_input::law::ir::BindingSource::Parameter
+                                | archsig_input::law::ir::BindingSource::Let
+                        ) {
+                            self.field_source(first.span, parameter)?;
+                        } else {
+                            // In/型/pattern binderの値producerは、それぞれの専用規則に委ねる。
+                            self.source(first.span, parameter)?;
+                        }
+                        for (_index, (prefix, prefix_ty)) in self
+                            .environment
+                            .dotted_prefixes(id)?
+                            .into_iter()
+                            .enumerate()
+                            .skip(1)
+                        {
+                            self.field_source(prefix, prefix_ty)?;
+                            #[cfg(test)]
+                            data::observe_actual(span, self.graph.active, "field_prepare", _index);
+                            self.tick(Checkpoint::FiniteIteration)?;
+                        }
+                    }
+                }
+                ExprKind::Field { base, .. } => {
+                    if !self.environment.ordinary_context(self.graph)? {
+                        let owner = self.prepare_source(*base)?;
                         if !(owner.condition_failed || owner.condition_pending)
                             && !matches!(owner.known_value, Some(Scalar::Subject { .. }))
                         {
-                            return Err(self.unsupported(prefix, "未確定の参照からの field 読取り"));
+                            return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
                         }
-                        if !matches!(prefix_ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
+                        if !matches!(ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
                             && !data::supported(
-                                &prefix_ty,
+                                &ty,
                                 self.environment.indexes.inputs.law(),
                                 self.control,
                             )?
                         {
-                            return Err(self.unsupported(prefix, "Z/Bool/Ref 以外の原始 slot 評価"));
+                            return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
                         }
-                        owner = self.source(prefix, prefix_ty)?;
-                        #[cfg(test)]
-                        data::observe_actual(span, self.graph.active, "field_prepare", _index);
+                    } else {
+                        // 通常の実子はeval自身が静的Sourceから一度構成する。
+                        // 親fieldの元出現準備で同じ子を先に意味評価しない。
+                        if self
+                            .environment
+                            .ordinary_children(self.graph, *base)?
+                            .is_none()
+                        {
+                            self.prepare_source_child(*base)?;
+                        }
+                        let source = self.field_source(span, ty)?;
                         self.tick(Checkpoint::FiniteIteration)?;
-                    }
-                }
-                ExprKind::Field { base, .. } => {
-                    let owner = self.prepare_source(*base)?;
-                    if !(owner.condition_failed || owner.condition_pending)
-                        && !matches!(owner.known_value, Some(Scalar::Subject { .. }))
-                    {
-                        return Err(self.unsupported(span, "未確定の参照からの field 読取り"));
-                    }
-                    if !matches!(ty, Type::Bool | Type::Ref(_) | Type::Owned(_, _))
-                        && !data::supported(
-                            &ty,
-                            self.environment.indexes.inputs.law(),
-                            self.control,
-                        )?
-                    {
-                        return Err(self.unsupported(span, "Z/Bool/Ref 以外の原始 slot 評価"));
+                        return Ok(source);
                     }
                 }
                 ExprKind::Quant { .. } => {
@@ -929,7 +1003,7 @@ impl Evaluator<'_, '_> {
         ty: Type,
         value: Option<NodeRef>,
         children: Vec<Evaluated>,
-        own_support: Vec<Fact>,
+        own_support: impl Into<Support>,
         missing: Option<Fact>,
         comparison: Option<(NodeRef, NodeRef)>,
         residual: Option<NodeRef>,
@@ -953,7 +1027,7 @@ impl Evaluator<'_, '_> {
         ty: Type,
         value: Option<NodeRef>,
         children: Vec<Evaluated>,
-        own_support: Vec<Fact>,
+        own_support: impl Into<Support>,
         missing: Option<Fact>,
         comparison: Option<(NodeRef, NodeRef)>,
         residual: Option<NodeRef>,
@@ -980,7 +1054,7 @@ impl Evaluator<'_, '_> {
         ty: Type,
         value: Option<NodeRef>,
         children: Vec<Evaluated>,
-        own_support: Vec<Fact>,
+        own_support: impl Into<Support>,
         missing: Option<Fact>,
         comparison: Option<(NodeRef, NodeRef)>,
         residual: Option<NodeRef>,
@@ -1007,21 +1081,17 @@ impl Evaluator<'_, '_> {
             scope.merge_quantifiers(&self.graph.get(value)?.scope);
         }
         let expression = source.expression;
-        let mut support = own_support;
+        let mut factors = vec![own_support.into()];
         for child in &children {
             self.tick(Checkpoint::FiniteIteration)?;
-            support.extend(child.support.iter().cloned());
-
-            self.tick(Checkpoint::FiniteIteration)?;
+            factors.push(child.support.clone());
         }
+        let support = Support::sum(vec![], factors);
         reasons.extend(self.environment.evaluation_child_reasons(
             self.graph,
             expression,
             &children.iter().map(|c| c.evaluation).collect::<Vec<_>>(),
         )?);
-        support.sort();
-        support.dedup();
-        let support = Support::from(support);
         if let Some(reason) = source.missing {
             reasons.push(reason);
         }
@@ -1107,6 +1177,13 @@ impl Evaluator<'_, '_> {
                 self.tick(Checkpoint::Expression)?;
                 return Ok(value);
             }
+            if self
+                .environment
+                .ordinary_children(self.graph, id)?
+                .is_some()
+            {
+                return self.eval_ordinary(id);
+            }
             self.prepare_source(id)?;
             #[cfg(test)]
             data::observe_actual(
@@ -1190,6 +1267,25 @@ impl Evaluator<'_, '_> {
                     lexical.source,
                     archsig_input::law::ir::BindingSource::Parameter
                 );
+                if let Some((input, _, _)) = self.environment.ordinary_binder(
+                    self.graph,
+                    first.span,
+                    self.graph.nodes.len(),
+                )? {
+                    let child = self.evaluated_reference(input)?;
+                    let source = self.prepare_static_source(first.span, lexical.ty.clone())?;
+                    let mut current =
+                        self.commit_ordinary(None, first.span, source.expression, vec![child])?;
+                    for part in &lexical.projections {
+                        current = self.field(
+                            current,
+                            &part.name,
+                            (first.span.0, part.span.1),
+                            parts.len() > 2,
+                        )?;
+                    }
+                    return Ok(current);
+                }
                 let mut found = None;
                 for binding in &self.bindings {
                     self.control.checkpoint(Checkpoint::FiniteIteration)?;
@@ -1263,7 +1359,7 @@ impl Evaluator<'_, '_> {
                         ty,
                         Some(value),
                         vec![],
-                        support.to_vec(),
+                        support,
                         None,
                         None,
                         None,
@@ -1276,46 +1372,13 @@ impl Evaluator<'_, '_> {
                     self.lexical_result(first.span, known.ty(), Some(known), vec![child])?
                 } else if parameter && let Some(argument) = self.formal.get(&lexical.name).cloned()
                 {
-                    let NodeType::Evaluation(parameter_ty) =
-                        &self.graph.get(argument.evaluation)?.ty
-                    else {
-                        return Err(Failure::Internal(internal!("実引数がEvaluationでない")));
-                    };
-                    self.finish(
-                        first.span,
-                        parameter_ty.clone(),
-                        argument.value,
-                        vec![argument],
-                        vec![],
-                        None,
-                        None,
-                        None,
-                    )?
+                    self.alias_result(first.span, argument.value, vec![argument])?
                 } else if let Some(binding) = found {
-                    self.finish(
-                        first.span,
-                        binding.ty.clone(),
-                        Some(binding.value),
-                        vec![],
-                        self.graph.get(binding.value)?.support.to_vec(),
-                        None,
-                        None,
-                        None,
-                    )?
+                    self.alias_result(first.span, Some(binding.value), vec![])?
                 } else if matches!(lexical.source, archsig_input::law::ir::BindingSource::Let)
                     && let Some(rhs) = self.lexical.get(&lexical.name).cloned()
                 {
-                    let ty = lexical.ty.clone();
-                    self.finish(
-                        first.span,
-                        ty,
-                        rhs.value,
-                        vec![rhs],
-                        vec![],
-                        None,
-                        None,
-                        None,
-                    )?
+                    self.alias_result(first.span, rhs.value, vec![rhs])?
                 } else {
                     return Err(self.unsupported(span, "束縛変数以外を先頭とするドット式"));
                 };
@@ -1469,114 +1532,7 @@ impl Evaluator<'_, '_> {
                 }
                 let left = self.eval(*lhs)?;
                 let right = self.eval(*rhs)?;
-                let source = self.source(span, ty.clone())?;
-                if source.condition_pending
-                    || self
-                        .environment
-                        .evaluation_child_reasons(
-                            self.graph,
-                            source.expression,
-                            &[left.evaluation, right.evaluation],
-                        )?
-                        .iter()
-                        .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
-                {
-                    return self.lexical_result(span, ty, None, vec![left, right]);
-                }
-                let mut scope = left.scope.clone();
-                scope.merge(&right.scope);
-                let mut support = left.support.clone().into_vec();
-                support.extend(right.support.iter().cloned());
-                support.sort();
-                support.dedup();
-                let support = Support::from(support);
-                let pair = left.value.zip(right.value);
-                let mut comparison = pair.filter(|_| is_comparison(*op));
-                #[cfg(test)]
-                let previous = data::evaluation_context(Some((span, self.graph.active)));
-                let computed = partial_binary(
-                    *op,
-                    left.value.map(|r| self.graph.scalar(r)).transpose()?,
-                    right.value.map(|r| self.graph.scalar(r)).transpose()?,
-                    self.environment.indexes.inputs.law(),
-                    span,
-                    self.control,
-                );
-                #[cfg(test)]
-                data::evaluation_context(previous);
-                let known_value = computed?;
-                let affine = if known_value.is_none() && matches!(op, BinOp::Eq | BinOp::Ne) {
-                    self.affine_equality(span, input_ty, &left, &right)?
-                } else {
-                    None
-                };
-                if affine.is_some() {
-                    comparison = Some((left.evaluation, right.evaluation));
-                }
-                let value = if let Some(value) = known_value {
-                    let arguments = if is_boolean_binary(*op) {
-                        vec![left.evaluation, right.evaluation]
-                    } else {
-                        let (l, r) = pair.ok_or_else(|| {
-                            Failure::Internal(internal!("既知二項演算の左右値がない"))
-                        })?;
-                        vec![l, r]
-                    };
-                    let evidence =
-                        self.term_comparison_evidence(span, *op, &left, &right, &support, &scope)?;
-                    Some(self.push(Node {
-                        ty: NodeType::Value(value.ty()),
-                        payload: Some(Payload::Scalar(value)),
-                        rule: Rule::Input {
-                            kind: "law",
-                            location: Location::Law { span },
-                        },
-                        arguments,
-                        support: support.clone(),
-                        scope: scope.clone(),
-                        evidence,
-                        judgment: None,
-                        reasons: vec![],
-                    })?)
-                } else if let Some((value, _)) = affine {
-                    Some(value)
-                } else if matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul) {
-                    self.affine_constant(span, &ty, &[&left, &right])?
-                } else {
-                    None
-                };
-                let residual = if let Some((_, residual)) = affine {
-                    Some(residual)
-                } else if *op == BinOp::Eq && numeric::is_numeric_type(input_ty, self.control)? {
-                    if let Some((l, r)) = comparison {
-                        Some(self.value(
-                            numeric::binary(
-                                BinOp::Sub,
-                                self.graph.scalar(l)?,
-                                self.graph.scalar(r)?,
-                                self.control,
-                            )?,
-                            Rule::Construction("evaluation"),
-                            vec![l, r],
-                            support.clone(),
-                            scope,
-                        )?)
-                    } else {
-                        None
-                    }
-                } else {
-                    None
-                };
-                self.finish(
-                    span,
-                    ty,
-                    value,
-                    vec![left, right],
-                    vec![],
-                    None,
-                    comparison,
-                    residual,
-                )
+                self.binary_from_evaluated(*op, input_ty, span, ty, left, right)
             }
             ExprKind::Call { args, .. } if self.environment.named_view(id)?.is_some() => {
                 self.call(id, args, span, ty)
@@ -1593,6 +1549,119 @@ impl Evaluator<'_, '_> {
             | ExprKind::Call { .. } => self.composite(id, span, ty),
             _ => Err(self.unsupported(span, format!("式形 {:?}", expr.kind))),
         }
+    }
+    fn binary_from_evaluated(
+        &mut self,
+        op: BinOp,
+        input_ty: &Type,
+        span: (usize, usize),
+        ty: Type,
+        left: Evaluated,
+        right: Evaluated,
+    ) -> Result<Evaluated, Failure> {
+        let source = self.source(span, ty.clone())?;
+        if source.condition_pending
+            || self
+                .environment
+                .evaluation_child_reasons(
+                    self.graph,
+                    source.expression,
+                    &[left.evaluation, right.evaluation],
+                )?
+                .iter()
+                .any(|r| matches!(r.kind, ReasonKind::ConditionFailed { .. }))
+        {
+            return self.lexical_result(span, ty, None, vec![left, right]);
+        }
+        let mut scope = left.scope.clone();
+        scope.merge(&right.scope);
+        let support = Support::sum(vec![], [left.support.clone(), right.support.clone()]);
+        let pair = left.value.zip(right.value);
+        let mut comparison = pair.filter(|_| is_comparison(op));
+        #[cfg(test)]
+        let previous = data::evaluation_context(Some((span, self.graph.active)));
+        let computed = partial_binary(
+            op,
+            left.value.map(|r| self.graph.scalar(r)).transpose()?,
+            right.value.map(|r| self.graph.scalar(r)).transpose()?,
+            self.environment.indexes.inputs.law(),
+            span,
+            self.control,
+        );
+        #[cfg(test)]
+        data::evaluation_context(previous);
+        let known_value = computed?;
+        let affine = if known_value.is_none() && matches!(op, BinOp::Eq | BinOp::Ne) {
+            self.affine_equality(span, input_ty, &left, &right)?
+        } else {
+            None
+        };
+        if affine.is_some() {
+            comparison = Some((left.evaluation, right.evaluation));
+        }
+        let value = if let Some(value) = known_value {
+            let arguments = if is_boolean_binary(op) {
+                vec![left.evaluation, right.evaluation]
+            } else {
+                let (l, r) =
+                    pair.ok_or_else(|| Failure::Internal(internal!("既知二項演算の左右値がない")))?;
+                vec![l, r]
+            };
+            let evidence =
+                self.term_comparison_evidence(span, op, &left, &right, &support, &scope)?;
+            Some(self.push(Node {
+                ty: NodeType::Value(value.ty()),
+                payload: Some(Payload::Scalar(value)),
+                rule: Rule::Input {
+                    kind: "law",
+                    location: Location::Law { span },
+                },
+                arguments,
+                support: support.clone(),
+                scope: scope.clone(),
+                evidence,
+                judgment: None,
+                reasons: vec![],
+            })?)
+        } else if let Some((value, _)) = affine {
+            Some(value)
+        } else if matches!(op, BinOp::Add | BinOp::Sub | BinOp::Mul) {
+            self.affine_constant(span, &ty, &[&left, &right])?
+        } else {
+            None
+        };
+        let residual = if let Some((_, residual)) = affine {
+            Some(residual)
+        } else if op == BinOp::Eq && numeric::is_numeric_type(input_ty, self.control)? {
+            if let Some((l, r)) = comparison {
+                Some(self.value(
+                    numeric::binary(
+                        BinOp::Sub,
+                        self.graph.scalar(l)?,
+                        self.graph.scalar(r)?,
+                        self.control,
+                    )?,
+                    Rule::Construction("evaluation"),
+                    vec![l, r],
+                    support.clone(),
+                    scope,
+                )?)
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+        self.finish(
+            span,
+            ty,
+            value,
+            vec![left, right],
+            vec![],
+            None,
+            comparison,
+            residual,
+        )
     }
     fn evaluated_reference(&self, reference: NodeRef) -> Result<Evaluated, Failure> {
         let node = self.graph.get(reference)?;
@@ -1662,22 +1731,49 @@ impl Evaluator<'_, '_> {
         let mut finite = None;
         let mut owners = Vec::new();
         let mut unresolved_reasons = Vec::new();
+        let mut prepared_domain = None;
         let members = if let Some(input) = &input {
-            input
-                .value
-                .map(|value| -> Result<Vec<Scalar>, Failure> {
-                    let (Scalar::List { items, .. } | Scalar::Set { items, .. }) =
-                        self.graph.scalar(value)?
-                    else {
-                        return Err(Failure::Internal(internal!("量化域がList/Setでない")));
-                    };
-                    let value = data::set(spec.element.clone(), items, self.control)?;
-                    let Scalar::Set { items, .. } = &value else {
+            // The private ordinary factory consumes only static ordinary inputs.
+            // Finite evaluation inside an all-assignment/native context owns a
+            // specialized Source and keeps its original Domain certification.
+            if self.environment.ordinary_context(self.graph)?
+                && matches!(self.graph.get(source)?.rule, Rule::OrdinarySource(_))
+            {
+                let retained = &mut self.retained_scope;
+                let outcome = self.environment.construct_in_domain(
+                    self.graph,
+                    source,
+                    input.evaluation,
+                    |_, scope| retained.merge(scope),
+                )?;
+                if let Some(domain) = outcome {
+                    let Scalar::Set { items, .. } = self.graph.scalar(domain.producer)? else {
                         unreachable!()
                     };
-                    Ok(items.clone())
-                })
-                .transpose()?
+                    let items = items.clone();
+                    debug_assert_eq!(items.len(), domain.elements_len);
+                    prepared_domain = Some(domain.domain);
+                    Some(items)
+                } else {
+                    None
+                }
+            } else {
+                input
+                    .value
+                    .map(|value| -> Result<Vec<Scalar>, Failure> {
+                        let (Scalar::List { items, .. } | Scalar::Set { items, .. }) =
+                            self.graph.scalar(value)?
+                        else {
+                            return Err(Failure::Internal(internal!("量化域がList/Setでない")));
+                        };
+                        let normalized = data::set(spec.element.clone(), items, self.control)?;
+                        let Scalar::Set { items, .. } = &normalized else {
+                            unreachable!()
+                        };
+                        Ok(items.clone())
+                    })
+                    .transpose()?
+            }
         } else {
             #[cfg(test)]
             let (span, context) = (spec.span, self.graph.active);
@@ -1709,48 +1805,54 @@ impl Evaluator<'_, '_> {
         };
         let member_scope = scope.clone();
         if let Some(items) = members {
-            let mut elements = Vec::new();
-            for item in &items {
-                self.tick(Checkpoint::FiniteIteration)?;
-                elements.push(
-                    self.value(
-                        item.clone(),
-                        Rule::Construction("domain"),
-                        std::iter::once(source)
-                            .chain(input.as_ref().map(|input| input.evaluation))
-                            .chain(owners.iter().copied())
-                            .collect(),
-                        domain_support.clone(),
-                        member_scope.clone(),
-                    )?,
-                );
-                self.tick(Checkpoint::FiniteIteration)?;
-            }
-            let mut domain_scope = member_scope.clone();
-            domain_scope.add_quantifier(spec.descriptor(None, Some(self.graph.active)));
-            domain_scope.order_quantifiers_like(&self.graph.get(source)?.scope);
-            let arguments = std::iter::once(source)
-                .chain(input.as_ref().map(|input| input.evaluation))
-                .chain(owners.iter().copied())
-                .chain(elements.iter().copied())
-                .collect();
-            let domain = self.push(Node {
-                ty: NodeType::Domain,
-                payload: Some(Payload::Domain {
-                    ty: spec.element.clone(),
-                    elements,
-                }),
-                rule: Rule::Construction("domain"),
-                arguments,
-                support: domain_support.clone(),
-                evidence: vec![],
-                judgment: None,
-                scope: domain_scope,
-                reasons: vec![],
-            })?;
+            let domain = if let Some(domain) = prepared_domain {
+                domain
+            } else {
+                let mut elements = Vec::new();
+                for item in &items {
+                    self.tick(Checkpoint::FiniteIteration)?;
+                    elements.push(
+                        self.value(
+                            item.clone(),
+                            Rule::Construction("domain"),
+                            std::iter::once(source)
+                                .chain(input.as_ref().map(|input| input.evaluation))
+                                .chain(owners.iter().copied())
+                                .collect(),
+                            domain_support.clone(),
+                            member_scope.clone(),
+                        )?,
+                    );
+                    self.tick(Checkpoint::FiniteIteration)?;
+                }
+                let mut domain_scope = member_scope.clone();
+                domain_scope.add_quantifier(spec.descriptor(None, Some(self.graph.active)));
+                self.environment
+                    .order_quantifier_scope(self.graph, source, &mut domain_scope)?;
+                let arguments = std::iter::once(source)
+                    .chain(input.as_ref().map(|input| input.evaluation))
+                    .chain(owners.iter().copied())
+                    .chain(elements.iter().copied())
+                    .collect();
+                self.push(Node {
+                    ty: NodeType::Domain,
+                    payload: Some(Payload::Domain {
+                        ty: spec.element.clone(),
+                        elements,
+                    }),
+                    rule: Rule::Construction("domain"),
+                    arguments,
+                    support: domain_support.clone(),
+                    evidence: vec![],
+                    judgment: None,
+                    scope: domain_scope,
+                    reasons: vec![],
+                })?
+            };
             finite = Some(domain);
             scope.add_quantifier(spec.descriptor(finite, Some(self.graph.active)));
-            scope.order_quantifiers_like(&self.graph.get(source)?.scope);
+            self.environment
+                .order_quantifier_scope(self.graph, source, &mut scope)?;
             for position in 0..items.len() {
                 self.tick(Checkpoint::FiniteIteration)?;
                 let index = self.graph.append_iteration_from(
@@ -1783,21 +1885,20 @@ impl Evaluator<'_, '_> {
                         let bindings = this
                             .environment
                             .quant_bindings(this.graph, this.graph.active)?;
-                        let mut counter_support = domain_support.clone().into_vec();
-                        counter_support.extend(body.support.iter().cloned());
-                        counter_support.sort();
-                        counter_support.dedup();
+                        let counter_support =
+                            Support::sum(vec![], [domain_support.clone(), body.support.clone()]);
+                        let counter_facts = counter_support.materialize(this.control)?;
                         evidence.push(this.push(Node {
                             ty: NodeType::Evidence,
                             payload: Some(Payload::Counterexample {
                                 bindings,
                                 left: body.value.expect("falsebody"),
                                 right,
-                                facts: counter_support.to_vec(),
+                                facts: counter_facts,
                             }),
                             rule: Rule::Construction("evidence"),
                             arguments,
-                            support: counter_support.into(),
+                            support: counter_support,
                             evidence: vec![],
                             judgment: None,
                             scope: body.scope.clone(),
@@ -1813,7 +1914,8 @@ impl Evaluator<'_, '_> {
             }
         } else {
             scope.add_quantifier(spec.descriptor(None, Some(self.graph.active)));
-            scope.order_quantifiers_like(&self.graph.get(source)?.scope);
+            self.environment
+                .order_quantifier_scope(self.graph, source, &mut scope)?;
         }
         let failed = children.iter().any(|a| {
             a.reasons
@@ -1831,15 +1933,13 @@ impl Evaluator<'_, '_> {
         } else {
             None
         };
-        let mut support = domain_support.clone().into_vec();
+        let mut factors = vec![domain_support.clone()];
         for child in &children {
             self.tick(Checkpoint::FiniteIteration)?;
             scope.merge(&child.scope);
-            support.extend(child.support.iter().cloned());
+            factors.push(child.support.clone());
         }
-        support.sort();
-        support.dedup();
-        let support = Support::from(support);
+        let support = Support::sum(vec![], factors);
         if matches!(
             (spec.kind, known),
             (archsig_input::law::ast::QuantKind::Forall, Some(true))
@@ -1878,6 +1978,13 @@ impl Evaluator<'_, '_> {
         } else {
             vec![]
         };
+        if let Some(source_handle) = self.sources.get_mut(&spec.span)
+            && matches!(self.graph.get(source)?.rule, Rule::OrdinarySource(_))
+        {
+            source_handle.scope.merge(&scope);
+            source_handle.condition_failed = failed;
+            source_handle.condition_pending = pending;
+        }
         let value = if let Some(known) = known {
             Some(
                 self.push(Node {
@@ -1908,7 +2015,7 @@ impl Evaluator<'_, '_> {
             Type::Bool,
             value,
             children,
-            domain_support.to_vec(),
+            domain_support,
             None,
             None,
             None,
@@ -2001,16 +2108,28 @@ impl Evaluator<'_, '_> {
             .composite_children(id)?
             .ok_or_else(|| self.unsupported(span, "数値組・射影・rat 以外の構成"))?;
         let mut evaluated = Vec::new();
+        for child in children {
+            self.tick(Checkpoint::FiniteIteration)?;
+            evaluated.push(self.eval(child)?);
+            self.tick(Checkpoint::FiniteIteration)?;
+        }
+        self.composite_from_evaluated(id, span, ty, evaluated)
+    }
+    fn composite_from_evaluated(
+        &mut self,
+        id: ExprId,
+        span: (usize, usize),
+        ty: Type,
+        evaluated: Vec<Evaluated>,
+    ) -> Result<Evaluated, Failure> {
         let mut arguments = Vec::new();
         let mut values = Vec::new();
         let mut known = true;
         let mut scope = self.base.clone();
         let mut support = Vec::new();
-        for child in children {
-            self.tick(Checkpoint::FiniteIteration)?;
-            let child = self.eval(child)?;
+        for child in &evaluated {
             scope.merge(&child.scope);
-            support.extend(child.support.iter().cloned());
+            support.push(child.support.clone());
             if let Some(value) = child.value {
                 arguments.push(value);
                 let original = self.graph.scalar(value)?;
@@ -2030,12 +2149,8 @@ impl Evaluator<'_, '_> {
             } else {
                 known = false;
             }
-            evaluated.push(child);
-            self.tick(Checkpoint::FiniteIteration)?;
         }
-        support.sort();
-        support.dedup();
-        let support = Support::from(support);
+        let support = Support::sum(vec![], support);
         if self.environment.is_path(id)? {
             return self.path_construct(id, span, ty, evaluated, values, known);
         }
@@ -2319,13 +2434,11 @@ impl Evaluator<'_, '_> {
         for child in &children {
             self.tick(Checkpoint::FiniteIteration)?;
             scope.merge(&child.scope);
-            support.extend(child.support.iter().cloned());
+            support.push(child.support.clone());
             arguments.push(child.evaluation);
             self.tick(Checkpoint::FiniteIteration)?;
         }
-        support.sort();
-        support.dedup();
-        let support = Support::from(support);
+        let support = Support::sum(vec![], support);
         let source = self.source(span, ty.clone())?;
         let failed = source.condition_pending
             || self
@@ -2353,6 +2466,192 @@ impl Evaluator<'_, '_> {
         };
         self.finish(span, ty, value, children, vec![], None, None, None)
     }
+    fn alias_result(
+        &mut self,
+        span: (usize, usize),
+        value: Option<NodeRef>,
+        children: Vec<Evaluated>,
+    ) -> Result<Evaluated, Failure> {
+        let source = self
+            .sources
+            .get(&span)
+            .ok_or_else(|| Failure::Internal(internal!("aliasの元Sourceがない")))?
+            .expression;
+        if !matches!(self.graph.get(source)?.rule, Rule::OrdinarySource(_)) {
+            let NodeType::Expression(ty) = &self.graph.get(source)?.ty else {
+                return Err(Failure::Internal(internal!("aliasの元型がない")));
+            };
+            let support = if children.is_empty() {
+                value
+                    .map(|r| self.graph.get(r).map(|node| node.support.clone()))
+                    .transpose()?
+                    .unwrap_or_default()
+            } else {
+                Support::default()
+            };
+            return self.finish(span, ty.clone(), value, children, support, None, None, None);
+        }
+        let refs = children
+            .iter()
+            .map(|child| child.evaluation)
+            .collect::<Vec<_>>();
+        let node = self.environment.alias_evaluation_node(
+            self.graph,
+            source,
+            &refs,
+            value,
+            self.graph.nodes.len(),
+        )?;
+        let scope = node.scope.clone();
+        let support = node.support.clone();
+        let reasons = node.reasons.clone();
+        let retained = &mut self.retained_scope;
+        let registry = &mut self.reasons;
+        let evaluation = self.graph.push_with_metadata(node, |_| {
+            retained.merge(&scope);
+            registry.extend(reasons.iter().cloned());
+        })?;
+        Ok(Evaluated {
+            expression: source,
+            evaluation,
+            value,
+            scope,
+            support,
+            reasons,
+            comparison: None,
+            residual: None,
+        })
+    }
+
+    fn field_source(&mut self, span: (usize, usize), ty: Type) -> Result<SourceHandle, Failure> {
+        if !self.environment.ordinary_context(self.graph)? {
+            return self.source(span, ty);
+        }
+        if let Some(source) = self.sources.get(&span) {
+            self.graph
+                .expect(source.expression, &NodeType::Expression(ty))?;
+            return Ok(source.clone());
+        }
+        let mut node =
+            self.environment
+                .ordinary_source_at(self.graph, span, &ty, &self.bindings)?;
+        self.reuse_scope_if_exact(&mut node.scope);
+        let scope = node.scope.clone();
+        let retained = &mut self.retained_scope;
+        let cache = &mut self.sources;
+        self.graph.push_with_metadata(node, |expression| {
+            retained.merge(&scope);
+            cache.insert(
+                span,
+                SourceHandle {
+                    expression,
+                    scope,
+                    known_value: None,
+                    missing: None,
+                    condition_failed: false,
+                    condition_pending: false,
+                },
+            );
+        })?;
+        self.sources
+            .get(&span)
+            .cloned()
+            .ok_or_else(|| Failure::Internal(internal!("fieldのSource commit結果がない")))
+    }
+
+    fn field_from_actual_base(
+        &mut self,
+        base: Evaluated,
+        span: (usize, usize),
+    ) -> Result<Evaluated, Failure> {
+        let source = self
+            .sources
+            .get(&span)
+            .ok_or_else(|| Failure::Internal(internal!("fieldの元Sourceがない")))?
+            .expression;
+        let origin =
+            if matches!(self.graph.get(source)?.rule, Rule::FieldSource(_)) {
+                *self.graph.get(source)?.arguments.first().ok_or_else(|| {
+                    Failure::Internal(internal!("field readのstatic Originがない"))
+                })?
+            } else {
+                source
+            };
+        let retained = &mut self.retained_scope;
+        let mut plan = self.environment.field_read_observation(
+            self.graph,
+            origin,
+            base.evaluation,
+            self.graph.nodes.len(),
+            |scope, _| retained.merge(scope),
+        )?;
+        self.reuse_scope_if_exact(&mut plan.scope);
+        self.reuse_scope_if_exact(&mut plan.scalar_scope);
+        if plan.position.is_some() {
+            let node = self.environment.field_read_source_node(self.graph, &plan)?;
+            let environment = self.environment;
+            let reasons = &mut self.reasons;
+            let sources = &mut self.sources;
+            self.graph.push_with_metadata(node, |read_source| {
+                environment.field_bind_read_source(&mut plan, read_source);
+                // 入力Origin nodeは不変。後続の既存partial/completion consumerには
+                // この実readを示す同spanのcarrierを渡す。
+                if let Some(handle) = sources.get_mut(&span) {
+                    handle.expression = read_source;
+                    handle.scope = plan.scope.clone();
+                    handle.missing = plan
+                        .reasons
+                        .iter()
+                        .find(|reason| {
+                            reason.kind == ReasonKind::Missing
+                                && reason.dependencies == [read_source]
+                        })
+                        .cloned();
+                }
+                reasons.extend(plan.reasons.iter().cloned());
+            })?;
+            #[cfg(test)]
+            data::observe_actual(span, self.graph.active, "field_read", 0);
+        }
+        self.environment.resolve_field_read(self.graph, &mut plan)?;
+        let value = if let Some(reference) = plan.reused {
+            Some(reference)
+        } else if let Some(node) = self.environment.field_value_node(&plan) {
+            let scope = node.scope.clone();
+            let retained = &mut self.retained_scope;
+            Some(
+                self.graph
+                    .push_with_metadata(node, |_| retained.merge(&scope))?,
+            )
+        } else {
+            None
+        };
+        let node = self
+            .environment
+            .field_evaluation_node(self.graph, &plan, value)?;
+        let result = &mut None;
+        let retained = &mut self.retained_scope;
+        let reasons = &mut self.reasons;
+        self.graph.push_with_metadata(node, |evaluation| {
+            let evaluated = Evaluated {
+                expression: plan.source,
+                evaluation,
+                value,
+                scope: plan.scope,
+                support: plan.support,
+                reasons: plan.reasons,
+                comparison: None,
+                residual: None,
+            };
+            retained.merge(&evaluated.scope);
+            reasons.extend(evaluated.reasons.iter().cloned());
+            *result = Some(evaluated);
+        })?;
+        result
+            .take()
+            .ok_or_else(|| Failure::Internal(internal!("fieldのEvaluation commit結果がない")))
+    }
+
     fn field(
         &mut self,
         base: Evaluated,
@@ -2360,6 +2659,14 @@ impl Evaluator<'_, '_> {
         span: (usize, usize),
         chain: bool,
     ) -> Result<Evaluated, Failure> {
+        if self.sources.get(&span).is_some_and(|source| {
+            matches!(
+                self.graph.get(source.expression).map(|node| &node.rule),
+                Ok(Rule::OrdinarySource(_) | Rule::FieldSource(_))
+            )
+        }) {
+            return self.field_from_actual_base(base, span);
+        }
         let Some(reference) = base.value else {
             if self
                 .environment
@@ -2417,7 +2724,7 @@ impl Evaluator<'_, '_> {
             atom: None,
         });
         if let Some(assigned) = self.environment.state.architecture_value_reference(&fact) {
-            let support = self.graph.get(assigned)?.support.to_vec();
+            let support = self.graph.get(assigned)?.support.clone();
             return self.finish(
                 span,
                 field.ty.erase(),
@@ -2632,6 +2939,169 @@ impl Evaluator<'_, '_> {
             *completed = Some(reference);
         })?)
     }
+    /// Only the live evaluator can finish its own ordinary root. Raw Graph callers
+    /// keep Environment::validate_answer; this is not a validation-cache success.
+    fn finish_internal_answer(&self, answer: &Answer) -> Result<bool, Failure> {
+        // Eligibility precedes strict explicit-selector correspondence. A native
+        // object/finite row legitimately has additional bindings outside bind.*.
+        if !matches!(
+            self.request.kind,
+            QuestionKind::Check | QuestionKind::Evaluate
+        ) || !self.environment.ordinary_answer_context()
+        {
+            return Ok(false);
+        }
+        let (Signature::View { params, body, .. }
+        | Signature::Law {
+            params,
+            body,
+            guard: None,
+            ..
+        }) = &self.declaration.signature
+        else {
+            return Ok(false);
+        };
+        if self.completing
+            || self.graph.active.frame.is_some()
+            || self.graph.active.iteration.is_some()
+            || self.graph.active.instance.is_some()
+            || self.graph.active.case.is_some()
+            || self.finite_universal.is_some()
+        {
+            return Ok(false);
+        }
+        let Some(root) = self.completed.get(body) else {
+            return Ok(false);
+        };
+        let source = self.graph.get(root.expression)?;
+        let span = self.environment.indexes.inputs.law().exprs()[*body].span;
+        if self.sources.get(&span).map(|source| source.expression) != Some(root.expression) {
+            return Ok(false);
+        }
+        if !matches!(source.rule, Rule::OrdinarySource(_)) {
+            return Ok(false);
+        }
+        let node = self.graph.get(root.evaluation)?;
+        if !matches!(
+            node.rule,
+            Rule::Construction("ordinary_evaluation" | "field_evaluation" | "evaluation")
+        ) {
+            return Ok(false);
+        }
+        // This correspondence is established from the evaluator's private completed
+        // outcome, never by trusting a tag on an arbitrary caller-provided Graph.
+        if answer.id != self.request.id
+            || answer.outputs.get("evaluation") != Some(&root.evaluation)
+            || self.graph.requests.get(self.graph.active.request) != Some(self.request)
+            || self.graph.context_at(root.evaluation.0) != self.graph.active
+            || self.graph.context_at(root.expression.0) != self.graph.active
+        {
+            return Err(internal!("内部Answerの元Request/root対応が違う").into());
+        }
+        let Selector::Declaration { name } = &self.request.head else {
+            return Err(internal!("内部Answerの宣言selectorがない").into());
+        };
+        if name != &self.declaration.name
+            || params.len() != self.bindings.len()
+            || self
+                .request
+                .arguments
+                .iter()
+                .filter(|argument| argument.name.starts_with("bind."))
+                .count()
+                != params.len()
+        {
+            return Err(internal!("内部Answerの元宣言/束縛数が違う").into());
+        }
+        let Some(Payload::Evaluation {
+            expression,
+            bindings,
+            value,
+            ..
+        }) = &node.payload
+        else {
+            return Err(internal!("内部Answer rootがEvaluationでない").into());
+        };
+        if *expression != root.expression || bindings != &self.bindings || *value != root.value {
+            return Err(internal!("内部Answer rootが完成済みOutcomeと違う").into());
+        }
+        for (parameter, binding) in params.iter().zip(&self.bindings) {
+            if parameter.name != binding.name || parameter.ty.erase() != binding.ty {
+                return Err(internal!("内部Answerのparameter署名が違う").into());
+            }
+            let key = format!("bind.{}", parameter.name);
+            let selected = self
+                .request
+                .arguments
+                .iter()
+                .find(|argument| argument.name == key);
+            match selected.map(|argument| &argument.value) {
+                Some(Selector::Subject { snapshot, subject }) => {
+                    if !matches!(self.graph.scalar(binding.value)?, Scalar::Subject {
+                        snapshot: actual_snapshot, subject: actual_subject, ..
+                    } if actual_snapshot == snapshot && actual_subject == subject)
+                    {
+                        return Err(internal!("内部Answerのsubject selectorが違う").into());
+                    }
+                }
+                Some(selector @ Selector::Answer { .. }) => {
+                    // Partial migration: shared $answer authentication remains cold.
+                    self.environment.answer_binding_matches(
+                        self.graph,
+                        selector,
+                        binding.value,
+                        parameter.span,
+                    )?;
+                }
+                _ => return Ok(false), // object/native binding keeps its full validator
+            }
+        }
+        self.graph
+            .validate_answer(answer, self.request.kind == QuestionKind::Check)?;
+        if self.request.kind == QuestionKind::Check {
+            let claim = answer.claim.ok_or(internal!("内部checkのclaimがない"))?;
+            let Some(Payload::Proposition { instance }) = &self.graph.get(claim)?.payload else {
+                return Err(internal!("内部checkのclaimが命題でない").into());
+            };
+            let Some(Payload::LawInstance {
+                name: actual,
+                bindings,
+                ..
+            }) = &self.graph.get(*instance)?.payload
+            else {
+                return Err(internal!("内部checkのLawInstanceがない").into());
+            };
+            if actual != name
+                || bindings != &self.bindings
+                || self.graph.get(*instance)?.arguments.first() != Some(&root.evaluation)
+                || self.graph.get(claim)?.arguments != [*instance, root.evaluation]
+            {
+                return Err(internal!("内部checkのclaim/instance/root対応が違う").into());
+            }
+        }
+        #[cfg(test)]
+        data::observe_actual(
+            self.declaration.span,
+            self.graph.active,
+            "internal_answer_finish",
+            root.evaluation.0,
+        );
+        Ok(true)
+    }
+    fn finish_answer(&self, answer: &Answer) -> Result<(), Failure> {
+        if !self.finish_internal_answer(answer)? {
+            #[cfg(test)]
+            data::observe_actual(
+                self.declaration.span,
+                self.graph.active,
+                "answer_raw_fallback",
+                0,
+            );
+            self.environment
+                .validate_answer(self.graph, self.request, answer)?;
+        }
+        Ok(())
+    }
     fn answer(
         &mut self,
         params: &[Param],
@@ -2696,15 +3166,10 @@ impl Evaluator<'_, '_> {
         if let Some(g) = &guard {
             scope.merge(&g.scope);
         }
-        let mut support = body.support.clone().into_vec();
-        if let Some(g) = &guard {
-            self.tick(Checkpoint::FiniteIteration)?;
-            support.extend(g.support.iter().cloned());
-            self.tick(Checkpoint::FiniteIteration)?;
-        }
-        support.sort();
-        support.dedup();
-        let support = Support::from(support);
+        let support = Support::sum(
+            vec![],
+            std::iter::once(body.support.clone()).chain(guard.iter().map(|g| g.support.clone())),
+        );
         let mut reasons = body.reasons.clone();
         if let Some(g) = &guard {
             reasons.extend(g.reasons.iter().cloned());
@@ -2890,7 +3355,7 @@ impl Evaluator<'_, '_> {
                         bindings: self.bindings.clone(),
                         left,
                         right,
-                        facts: support.to_vec(),
+                        facts: support.materialize(self.control)?,
                     }),
                     rule: Rule::Construction("evidence"),
                     arguments: vec![instance, evaluation],
@@ -2930,22 +3395,22 @@ pub fn evaluate_observed(
     prepared: PreparedObserved,
     control: &Control,
 ) -> Result<ObservedEvaluation, EvaluationFailure> {
-    evaluate_observed_with_validator(prepared, control, |environment, graph, request, answer| {
-        environment.validate_answer(graph, request, answer)
-    })
+    evaluate_observed_with_validator(prepared, control, |_, _, _, _| Ok(()))
 }
 
+/// Additional audit/failure hook, after intrinsic Answer completion.
+/// The hook cannot replace either internal completion or raw fallback validation.
 fn evaluate_observed_with_validator(
     prepared: PreparedObserved,
     control: &Control,
-    validate_answer: impl FnMut(
+    after_answer: impl FnMut(
         &Environment<'_>,
         &Graph,
         &Request,
         &Answer,
     ) -> Result<(), ValidationFailure>,
 ) -> Result<ObservedEvaluation, EvaluationFailure> {
-    evaluate_observed_with_reuse(prepared, control, None, validate_answer)
+    evaluate_observed_with_reuse(prepared, control, None, after_answer)
 }
 
 /// 現在の検査済み三入力で再評価し、不変な有限修復関係・整数分解を前回と共有する。
@@ -2954,12 +3419,7 @@ pub fn reevaluate_observed(
     prepared: PreparedObserved,
     control: &Control,
 ) -> Result<ObservedEvaluation, EvaluationFailure> {
-    evaluate_observed_with_reuse(
-        prepared,
-        control,
-        Some(previous),
-        |environment, graph, request, answer| environment.validate_answer(graph, request, answer),
-    )
+    evaluate_observed_with_reuse(prepared, control, Some(previous), |_, _, _, _| Ok(()))
 }
 
 /// 現在の三入力と要求を通常検査してからnativeな前回結果と再評価する。
@@ -2978,7 +3438,7 @@ fn evaluate_observed_with_reuse(
     prepared: PreparedObserved,
     control: &Control,
     previous: Option<&ObservedEvaluation>,
-    mut validate_answer: impl FnMut(
+    mut after_answer: impl FnMut(
         &Environment<'_>,
         &Graph,
         &Request,
@@ -3111,8 +3571,9 @@ fn evaluate_observed_with_reuse(
                     Ok(answer) => {
                         let validated = control.stop_reason().is_none();
                         if validated {
-                            if let Err(failure) =
-                                validate_answer(environment, &graph, request, &answer)
+                            if let Err(failure) = environment
+                                .validate_answer(&graph, request, &answer)
+                                .and_then(|()| after_answer(environment, &graph, request, &answer))
                             {
                                 let reason = match failure {
                                     ValidationFailure::Stop(stop) => {
@@ -3312,7 +3773,8 @@ fn evaluate_observed_with_reuse(
             };
             // Answer の検査は意味導出の完了前に行い、post 停止で完成済み Answer を捨てない。
             let result = result.and_then(|a| {
-                validate_answer(evaluator.environment, evaluator.graph, request, &a)?;
+                evaluator.finish_answer(&a)?;
+                after_answer(evaluator.environment, evaluator.graph, request, &a)?;
                 Ok(a)
             });
             let result = match result {
@@ -3544,6 +4006,9 @@ mod recheck_tests {
     mod affine_finite_tests {
         include!("affine_finite_tests.rs");
     }
+    mod affine_finite_context_tests {
+        include!("affine_finite_context_tests.rs");
+    }
     use archsig_common::canonical::Json;
     mod reference_completion_tests {
         include!("reference_completion_tests.rs");
@@ -3625,6 +4090,9 @@ mod recheck_tests {
     include!("term_tests.rs");
     include!("term_equality_tests.rs");
     include!("affine_term_tests.rs");
+    include!("ordinary_tests.rs");
+    include!("internal_answer_tests.rs");
+    include!("ordinary_in_tests.rs");
     include!("owned_call_tests.rs");
     include!("owned_compound_call_tests.rs");
     include!("owned_partial_call_tests.rs");
@@ -4295,6 +4763,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
                 .get(amount.outputs["evaluation"])
                 .unwrap()
                 .support
+                .materialize_for_test()
                 .contains(&count)
         );
         let bounded = &result.answers[1];
@@ -4304,7 +4773,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         let judgment = claim.judgment.as_ref().unwrap();
         assert_eq!(judgment.status, Decision::Refuted);
         assert_eq!(judgment.evidence, bounded.evidence);
-        assert!(claim.support.contains(&count));
+        assert!(claim.support.materialize_for_test().contains(&count));
         let counterexample = bounded
             .evidence
             .iter()
@@ -4326,7 +4795,7 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         let (node, bindings, left, right, facts) = counterexample;
         assert_eq!(graph.scalar(*left).unwrap(), &Scalar::Z(12.into()));
         assert_eq!(graph.scalar(*right).unwrap(), &Scalar::Z(10.into()));
-        assert!(node.support.contains(&count));
+        assert!(node.support.materialize_for_test().contains(&count));
         assert!(facts.contains(&count));
         assert_eq!(bindings[0].name, "s");
         assert_eq!(
@@ -4338,10 +4807,19 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
             }
         );
         assert!(result.nodes.iter().any(|node| {
-            node.support.contains(&count)
+            node.support.materialize_for_test().contains(&count)
+                && node.ty == NodeType::Value(Type::Z)
+                && node.payload == Some(Payload::Scalar(Scalar::Z(12.into())))
                 && matches!(&node.rule,
-                Rule::Input { kind: "atom", location: Location::ArchMap { pointer, .. } }
+                Rule::FieldValue { kind: "atom", location: Some(Location::ArchMap { pointer, .. }) }
                 if pointer == "/snapshots/0/atoms/0/value")
+                && matches!(node.arguments.as_slice(), [source, base]
+                    if matches!(graph.get(*source).map(|n| &n.ty), Ok(NodeType::Expression(Type::Z)))
+                    && matches!(graph.get(*base).map(|n| &n.payload),
+                        Ok(Some(Payload::Evaluation { value: Some(owner), .. }))
+                        if graph.scalar(*owner).is_ok_and(|value| matches!(value,
+                            Scalar::Subject { snapshot, subject, entity }
+                            if snapshot == "v" && subject == "s" && entity == "Counter.State"))))
         }));
         let Json::Obj(ref normal_wire) = normal.wire() else {
             unreachable!()
@@ -5005,7 +5483,8 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         assert!(!parts[0].children.is_empty());
         let count_fact = result.nodes[body.0]
             .support
-            .iter()
+            .materialize_for_test()
+            .into_iter()
             .find(|f| {
                 f.field.as_deref() == Some("Counter.State.count")
                     && f.atom.as_deref() == Some("count")
@@ -5019,8 +5498,13 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         affected.dedup();
         let (mut evaluation_evidence, mut counterexample) = (false, false);
         for index in affected {
-            assert!(changed[index].support.contains(&count_fact));
-            changed[index].support.make_owned().clear();
+            assert!(
+                changed[index]
+                    .support
+                    .materialize_for_test()
+                    .contains(&count_fact)
+            );
+            changed[index].support.materialize_mut_for_test().clear();
             match &mut changed[index].payload {
                 Some(Payload::EvaluationEvidence { .. }) => evaluation_evidence = true,
                 Some(Payload::Counterexample {
@@ -5037,12 +5521,12 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         }
         assert!(evaluation_evidence && counterexample);
         // 子値・子Evaluationには元支持を残す。bodyと全下流を空へ揃えただけである。
-        assert!(
-            parts[0]
-                .children
-                .iter()
-                .any(|r| changed[r.0].support.contains(&count_fact))
-        );
+        assert!(parts[0].children.iter().any(|r| {
+            changed[r.0]
+                .support
+                .materialize_for_test()
+                .contains(&count_fact)
+        }));
         assert!(
             matches!(
                 rebuild_for_origin_and_support_recheck(&result, &changed),
@@ -5061,10 +5545,11 @@ reading Calc {{ use vocabulary Affine version "1" digest "{digest}";
         assert!(
             changed[amount.0]
                 .support
-                .iter()
+                .materialize_for_test()
+                .into_iter()
                 .any(|f| f.field.as_deref() == Some("Counter.State.count"))
         );
-        changed[amount.0].support.make_owned().clear();
+        changed[amount.0].support.materialize_mut_for_test().clear();
         assert!(
             matches!(
                 rebuild_for_origin_and_support_recheck(&values, &changed),
@@ -5130,7 +5615,16 @@ reading Follow {{
         let value = answer.outputs["value"];
         assert_eq!(graph.scalar(value).unwrap(), &Scalar::Z(7.into()));
         let leaf = &graph.nodes[value.0];
-        assert!(matches!(&leaf.rule, Rule::Input { kind: "atom", .. }));
+        assert!(matches!(
+            &leaf.rule,
+            Rule::Input {
+                kind: "atom",
+                location: Location::ArchMap { .. }
+            } | Rule::FieldValue {
+                kind: "atom",
+                location: Some(Location::ArchMap { .. })
+            }
+        ));
         let set = |values: &[&str]| {
             values
                 .iter()
@@ -5142,10 +5636,15 @@ reading Follow {{
         assert_eq!(leaf.scope.snapshots, set(&["v", "x"]));
         assert_eq!(leaf.scope.modes, set(&["observed", "specification"]));
         assert!(!leaf.scope.completions);
-        assert!(leaf.support.iter().any(|f| f.snapshot == "x"
-            && f.subject == "u"
-            && f.field.as_deref() == Some("Counter.State.count")
-            && f.atom.as_deref() == Some("count-u")));
+        assert!(
+            leaf.support
+                .materialize_for_test()
+                .into_iter()
+                .any(|f| f.snapshot == "x"
+                    && f.subject == "u"
+                    && f.field.as_deref() == Some("Counter.State.count")
+                    && f.atom.as_deref() == Some("count-u"))
+        );
         let evaluation = &graph.nodes[answer.outputs["evaluation"].0];
         let Some(Payload::Evaluation {
             value: evaluated, ..
@@ -5167,10 +5666,16 @@ reading Follow {{
             ("w", "t", "next-t", "Counter.State.next"),
             ("x", "u", "count-u", "Counter.State.count"),
         ] {
-            assert!(evaluation.support.iter().any(|f| f.snapshot == snapshot
-                && f.subject == subject
-                && f.atom.as_deref() == Some(atom)
-                && f.field.as_deref() == Some(field)));
+            assert!(
+                evaluation
+                    .support
+                    .materialize_for_test()
+                    .into_iter()
+                    .any(|f| f.snapshot == snapshot
+                        && f.subject == subject
+                        && f.atom.as_deref() == Some(atom)
+                        && f.field.as_deref() == Some(field))
+            );
         }
         let environment = Environment::new(result.prepared.inputs(), &control).unwrap();
         environment
@@ -6137,7 +6642,7 @@ reading Calc {{
         .unwrap();
         assert_eq!(result.status(), "complete", "{:?}", result.issues);
         let root = result.answers[0].outputs["evaluation"].0;
-        let support = &result.nodes[root].support;
+        let support = result.nodes[root].support.materialize_for_test();
         assert_eq!(support.len(), 3);
         assert_eq!(
             support
@@ -6153,14 +6658,19 @@ reading Calc {{
             parts[0]
                 .children
                 .iter()
-                .filter(|child| { result.nodes[child.0].support.contains(&support[2]) })
+                .filter(|child| {
+                    result.nodes[child.0]
+                        .support
+                        .materialize_for_test()
+                        .contains(&support[2])
+                })
                 .count(),
             2,
             "同じq支持を二つの実子が使う",
         );
         for mutation in 0..4 {
             recheck_mutation(&result, |nodes| {
-                let facts = nodes[root].support.make_owned();
+                let facts = nodes[root].support.materialize_mut_for_test();
                 match mutation {
                     0 => {
                         facts.pop();
@@ -6237,7 +6747,10 @@ reading Calc {{
                 match mutation {
                     0 => changed[residual.0].payload = Some(Payload::Scalar(Scalar::Z(0.into()))),
                     1 => changed[residual.0].arguments.swap(0, 1),
-                    2 => changed[residual.0].support.make_owned().clear(),
+                    2 => changed[residual.0]
+                        .support
+                        .materialize_mut_for_test()
+                        .clear(),
                     _ => changed[residual.0].scope.modes = ["specification".to_owned()].into(),
                 }
                 assert!(matches!(
@@ -6254,6 +6767,47 @@ reading Calc {{
             rebuild_for_origin_and_support_recheck(&result, &changed),
             Err(ValidationFailure::Internal(_))
         ));
+    }
+
+    // 実read carrier/実base/Case代入の役割を、改変対象の選択前に確かめる。
+    fn checked_field_inputs(
+        result: &ObservedEvaluation,
+        scalar: usize,
+    ) -> (NodeRef, NodeRef, NodeRef, Option<NodeRef>) {
+        let node = &result.nodes[scalar];
+        assert!(matches!(node.rule, Rule::FieldValue { .. }));
+        let [source, base, rest @ ..] = node.arguments.as_slice() else {
+            panic!("field Scalarの実依存")
+        };
+        let [origin, actual_base] = result.nodes[source.0].arguments.as_slice() else {
+            panic!("read carrierの実依存")
+        };
+        assert!(matches!(result.nodes[source.0].rule, Rule::FieldSource(_)));
+        assert!(matches!(
+            result.nodes[origin.0].rule,
+            Rule::OrdinarySource(_)
+        ));
+        assert_eq!(actual_base, base);
+        let Some(Payload::Evaluation {
+            value: Some(owner), ..
+        }) = &result.nodes[base.0].payload
+        else {
+            panic!("fieldの実base Evaluation/owner")
+        };
+        assert!(matches!(
+            result.nodes[owner.0].payload,
+            Some(Payload::Scalar(Scalar::Subject { .. }))
+        ));
+        let assigned = match rest {
+            [] => None,
+            [assigned] => Some(*assigned),
+            _ => panic!("field ScalarのCase代入数"),
+        };
+        if let Some(assigned) = assigned {
+            let case = result.contexts[scalar].case.expect("補完fieldの元Case");
+            assert!(result.cases[case].values.contains(&assigned));
+        }
+        (*source, *base, *owner, assigned)
     }
 
     fn lexical_alias_evaluation(result: &ObservedEvaluation, answer_id: &str) -> NodeRef {
@@ -6508,7 +7062,36 @@ reading Calc {{
             unreachable!()
         };
         assert!(value.is_none());
-        assert!(result.nodes[expression.0].scope.completions);
+        assert!(matches!(
+            result.nodes[expression.0].rule,
+            Rule::OrdinarySource(_)
+        ));
+        assert!(result.nodes[alias.0].scope.completions);
+        let Some(Payload::Evaluation { parts, .. }) = &result.nodes[alias.0].payload else {
+            unreachable!()
+        };
+        assert_eq!(parts[0].children.len(), 1);
+        let rhs = &result.nodes[parts[0].children[0].0];
+        assert!(rhs.scope.completions);
+        let missing = rhs
+            .reasons
+            .iter()
+            .find(|reason| reason.kind == ReasonKind::Missing)
+            .expect("実RHS readの元Missing");
+        assert_eq!(missing.missing.len(), 1);
+        assert_eq!(missing.missing[0].snapshot, "v");
+        assert_eq!(missing.missing[0].subject, "sample");
+        assert_eq!(missing.missing[0].atom, None);
+        assert_eq!(
+            missing.missing[0].field.as_deref(),
+            Some("Numeric.Sample.q")
+        );
+        assert_eq!(missing.dependencies.len(), 1);
+        assert!(missing.dependencies.iter().all(|source| matches!(
+            result.nodes[source.0].rule,
+            Rule::FieldSource(_)
+        )
+            && result.nodes[source.0].scope.completions));
         let Some(Payload::Expression {
             parameters,
             bindings,
@@ -6718,12 +7301,20 @@ reading Calc {{
             .filter_map(|(i, node)| {
                 (partial.contexts[i].case.is_some()
                     && partial.contexts[i].frame.is_some()
-                    && matches!(&node.rule, Rule::Input { kind: "atom", .. })
+                    && matches!(
+                        &node.rule,
+                        Rule::Input { kind: "atom", .. } | Rule::FieldValue { kind: "atom", .. }
+                    )
                     && matches!(&node.payload, Some(Payload::Scalar(Scalar::Q(_, _)))))
                 .then_some(i)
             })
             .collect();
         assert_eq!(values.len(), 1);
+        let (_, _, _, assigned) = checked_field_inputs(&partial, values[0]);
+        assert!(
+            assigned.is_none(),
+            "calleeの既知qは補完代入でなく元atomを読む"
+        );
         assert!(
             matches!(&partial.nodes[values[0]].payload,Some(Payload::Scalar(Scalar::Q(n,d))) if n==&(-2).into() && d==&3.into())
         );
@@ -7134,7 +7725,9 @@ reading Calc {{
             matches!(&result.nodes[value.0].payload, Some(Payload::Scalar(Scalar::Q(n,d))) if n == &5.into() && d == &6.into())
         );
         rebuild_for_origin_and_support_recheck(&result, &result.nodes).unwrap();
-        let scalar = result.nodes.iter().enumerate().find_map(|(index, node)| (result.contexts[index].frame == Some(0) && matches!(&node.rule, Rule::Input {kind: "atom", location: Location::ArchMap {pointer, ..}} if pointer.ends_with("/atoms/1/value"))).then_some(index)).unwrap();
+        let scalar = result.nodes.iter().enumerate().find_map(|(index, node)| (result.contexts[index].frame == Some(0) && matches!(&node.rule, Rule::Input {kind: "atom", location: Location::ArchMap {pointer, ..}} | Rule::FieldValue {kind: "atom", location: Some(Location::ArchMap {pointer, ..})} if pointer.ends_with("/atoms/1/value"))).then_some(index)).unwrap();
+        let (_, _, _, assigned) = checked_field_inputs(&result, scalar);
+        assert!(assigned.is_none());
         rebuild_for_origin_and_support_recheck(&result, &result.nodes[..=scalar]).unwrap();
     }
     #[test]
@@ -7191,8 +7784,12 @@ reading Calc {{
             .iter()
             .enumerate()
             .find_map(|(index, node)| {
-                (normal.contexts[index].frame == Some(0)
-                    && matches!(&node.payload, Some(Payload::Evaluation { .. })))
+                (normal.contexts[index].request == 2
+                    && normal.contexts[index].frame == Some(0)
+                    && normal.contexts[index].case.is_none()
+                    && matches!(&node.payload, Some(Payload::Evaluation { expression, .. })
+                        if matches!(&normal.nodes[expression.0].payload,
+                            Some(Payload::Expression { location: Location::Law { span }, .. }) if *span == parameter_span)))
                 .then_some(index)
             })
             .unwrap();
@@ -7394,12 +7991,26 @@ reading Calc {{
                 {
                     return None;
                 }
-                let Rule::Input {
-                    kind: "law",
-                    location: Location::Law { span },
-                } = &node.rule
-                else {
-                    return None;
+                let span = match &node.rule {
+                    Rule::Input {
+                        kind: "law",
+                        location: Location::Law { span },
+                    } => *span,
+                    Rule::OrdinaryValue(_) | Rule::BinderValue(_) | Rule::OperandValue(_) => {
+                        let source = *node.arguments.first()?;
+                        let Some(Payload::Expression {
+                            location: Location::Law { span },
+                            ..
+                        }) = &result.nodes.get(source.0)?.payload
+                        else {
+                            return None;
+                        };
+                        if !matches!(result.nodes[source.0].rule, Rule::OrdinarySource(_)) {
+                            return None;
+                        }
+                        *span
+                    }
+                    _ => return None,
                 };
                 (result
                     .prepared
@@ -7495,14 +8106,15 @@ reading Calc {{
             if mutation == 0 {
                 changed[binder].scope.readings.insert("Foreign".into());
             } else {
-                changed[binder].support.make_owned().push(Fact::from(
-                    archsig_input::archmap::FactData {
+                changed[binder]
+                    .support
+                    .materialize_mut_for_test()
+                    .push(Fact::from(archsig_input::archmap::FactData {
                         snapshot: "v".into(),
                         subject: "sample".into(),
                         field: None,
                         atom: None,
-                    },
-                ));
+                    }));
             }
             rejects_named_prefix(&result, &changed);
         }
@@ -8042,14 +8654,15 @@ reading Calc {{
                     changed[source].scope.readings.insert("Foreign".into());
                 }
                 1 => {
-                    changed[binder].support.make_owned().push(Fact::from(
-                        archsig_input::archmap::FactData {
+                    changed[binder]
+                        .support
+                        .materialize_mut_for_test()
+                        .push(Fact::from(archsig_input::archmap::FactData {
                             snapshot: "v".into(),
                             subject: "sample".into(),
                             field: None,
                             atom: None,
-                        },
-                    ));
+                        }));
                 }
                 _ => {
                     changed[source].arguments.pop();
@@ -8409,7 +9022,7 @@ reading Calc {{
                     changed[proof].scope.modes.remove("observed");
                 }
                 _ => {
-                    changed[proof].support.make_owned().clear();
+                    changed[proof].support.materialize_mut_for_test().clear();
                 }
             }
             rejects_named_prefix(&result, &changed);
@@ -8750,11 +9363,126 @@ reading Calc {{
     }
     fn finite_completion_field_scalars(result: &ObservedEvaluation, bytes: &[u8]) -> Vec<usize> {
         let law = result.prepared.inputs().sources().law().bytes();
-        result.nodes.iter().enumerate().filter_map(|(index,node)| {
-            (result.contexts[index].case.is_some() && node.arguments.len()==3
-                && matches!(&node.payload,Some(Payload::Scalar(_)))
-                && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if &law[span.0..span.1]==bytes)).then_some(index)
-        }).collect()
+        let (base_name, field_name) = std::str::from_utf8(bytes).unwrap().split_once('.').unwrap();
+        result
+            .nodes
+            .iter()
+            .enumerate()
+            .filter_map(|(index, node)| {
+                let context = result.contexts[index];
+                let case = context.case?;
+                let Some(Payload::Scalar(value)) = &node.payload else {
+                    return None;
+                };
+                let (span, source, owner, assigned) = match (&node.rule, node.arguments.as_slice())
+                {
+                    // Current field Scalars keep their actual Source/base Eval and
+                    // the exact selected completion projection internally.
+                    (
+                        Rule::FieldValue {
+                            kind: "law",
+                            location: Some(Location::Law { span }),
+                        },
+                        [source, base, assigned],
+                    ) => {
+                        if result.contexts[base.0] != context || base.0 >= index {
+                            return None;
+                        }
+                        let Some(Payload::Evaluation {
+                            expression,
+                            bindings,
+                            value: Some(owner),
+                            ..
+                        }) = &result.nodes[base.0].payload
+                        else {
+                            return None;
+                        };
+                        let Some(Payload::Expression {
+                            location: Location::Law { span: base_span },
+                            bindings: source_bindings,
+                            ..
+                        }) = &result.nodes[expression.0].payload
+                        else {
+                            return None;
+                        };
+                        let Some(Payload::Expression {
+                            bindings: actual, ..
+                        }) = &result.nodes[source.0].payload
+                        else {
+                            return None;
+                        };
+                        if law.get(base_span.0..base_span.1) != Some(base_name.as_bytes())
+                            || bindings != actual
+                            || source_bindings != actual
+                            || expression.0 >= base.0
+                            || owner.0 >= base.0
+                        {
+                            return None;
+                        }
+                        (*span, *source, *owner, *assigned)
+                    }
+                    // Retain the old exact shape for a legacy Context; do not treat
+                    // unrelated Law Scalars as completion field occurrences.
+                    (
+                        Rule::Input {
+                            kind: "law",
+                            location: Location::Law { span },
+                        },
+                        [source, owner, assigned],
+                    ) => (*span, *source, *owner, *assigned),
+                    _ => return None,
+                };
+                if law.get(span.0..span.1) != Some(bytes)
+                    || source.0 >= index
+                    || owner.0 >= index
+                    || assigned.0 >= index
+                    || result.contexts[source.0] != context
+                    || node.ty != NodeType::Value(value.ty())
+                {
+                    return None;
+                }
+                let Some(Payload::Expression {
+                    location: Location::Law { span: source_span },
+                    parameters,
+                    ..
+                }) = &result.nodes[source.0].payload
+                else {
+                    return None;
+                };
+                if *source_span != span
+                    || !parameters.is_empty()
+                    || result.nodes[source.0].ty != NodeType::Expression(value.ty())
+                {
+                    return None;
+                }
+                let Some(Payload::Scalar(Scalar::Subject {
+                    snapshot,
+                    subject,
+                    entity,
+                })) = &result.nodes[owner.0].payload
+                else {
+                    return None;
+                };
+                let record = &result.cases[case];
+                let Some(Payload::CompletionSeed { fields, .. }) =
+                    &result.nodes[record.seed.0].payload
+                else {
+                    return None;
+                };
+                let field = format!("{entity}.{field_name}");
+                let position = fields.iter().position(|fact| {
+                    fact.snapshot == *snapshot
+                        && fact.subject == *subject
+                        && fact.field.as_deref() == Some(field.as_str())
+                })?;
+                if record.values.get(position) != Some(&assigned)
+                    || result.nodes[assigned.0].payload != Some(Payload::Scalar(value.clone()))
+                {
+                    return None;
+                }
+                Some(index)
+            })
+            .collect()
     }
     fn replace_completion_scalar(nodes: &mut [Node], target: usize, value: Scalar) {
         nodes[target].ty = NodeType::Value(value.ty());
@@ -9536,7 +10264,7 @@ reading Calc {{
         result.nodes.iter().enumerate().filter_map(|(index,node)| {
             (result.contexts[index].case.is_some() && node.arguments.len()==3
                 && matches!(&node.payload,Some(Payload::Scalar(Scalar::Fp {..})))
-                && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if &law[span.0..span.1]==bytes)).then_some(index)
+                && matches!(&node.rule, Rule::Input {kind:"law",location:Location::Law {span}} | Rule::FieldValue {kind:"law",location:Some(Location::Law {span})} if &law[span.0..span.1]==bytes)).then_some(index)
         }).collect()
     }
     #[test]
@@ -9602,8 +10330,11 @@ reading Calc {{
         });
         let fields = fp_completion_field_scalars(&result, b"s.f");
         assert_eq!(fields.len(), 4);
+        for &field in &fields {
+            assert!(checked_field_inputs(&result, field).3.is_some());
+        }
         let field = fields[0];
-        let projection = result.nodes[field].arguments[2].0;
+        let projection = checked_field_inputs(&result, field).3.unwrap().0;
         for variant in 0..2 {
             completion_mutation(&result, projection, |nodes| {
                 let ty = if variant == 0 {
@@ -9628,7 +10359,7 @@ reading Calc {{
             };
             fields[0].field = Some("FiniteScalar.Sample.g".into());
         });
-        let source = result.nodes[field].arguments[0].0;
+        let source = checked_field_inputs(&result, field).0.0;
         completion_mutation(&result, source, |nodes| {
             let Some(Payload::Expression { bindings, .. }) = &mut nodes[source].payload else {
                 unreachable!()
@@ -9744,7 +10475,12 @@ reading Calc {{
             fields.swap(0, 1);
         });
         for scalar in fp_completion_field_scalars(&result, b"s.f") {
-            assert!(result.nodes[scalar].support.is_empty());
+            assert!(
+                result.nodes[scalar]
+                    .support
+                    .is_empty(&archsig_common::control::Control::unlimited())
+                    .unwrap()
+            );
             assert_eq!(
                 result.nodes[scalar].ty,
                 NodeType::Value(Type::Fp("2".into()))
@@ -10018,8 +10754,8 @@ reading Calc {{
         let mut prefix = result.nodes[..=target].to_vec();
         change(&mut prefix);
         assert_ne!(
-            format!("{prefix:?}"),
-            format!("{:?}", &result.nodes[..=target]),
+            prefix.as_slice(),
+            &result.nodes[..=target],
             "mutation must change a claim"
         );
         rejects_named_prefix(result, &prefix);
@@ -10108,12 +10844,15 @@ reading Calc {{
         let law = result.prepared.inputs().sources().law().bytes();
         let fields:Vec<_>=result.nodes.iter().enumerate().filter_map(|(i,node)| {
             (result.contexts[i].case.is_some() && node.arguments.len()==3
-                && matches!(&node.rule,Rule::Input {kind:"law",location:Location::Law {span}} if &law[span.0..span.1]==b"s.p")
+                && matches!(&node.rule, Rule::Input {kind:"law",location:Location::Law {span}} | Rule::FieldValue {kind:"law",location:Some(Location::Law {span})} if &law[span.0..span.1]==b"s.p")
                 && matches!(&node.payload,Some(Payload::Scalar(Scalar::Bool(_)))))
                 .then_some(i)
         }).collect();
         assert_eq!(fields.len(), 4);
-        let projection = result.nodes[fields[0]].arguments[2].0;
+        for &field in &fields {
+            assert!(checked_field_inputs(&result, field).3.is_some());
+        }
+        let projection = checked_field_inputs(&result, fields[0]).3.unwrap().0;
         completion_mutation(&result, projection, |nodes| {
             let Some(Payload::Scalar(value)) = &mut nodes[projection].payload else {
                 unreachable!()
@@ -10123,7 +10862,7 @@ reading Calc {{
             };
             *value = !*value;
         });
-        let source = result.nodes[fields[0]].arguments[0].0;
+        let source = checked_field_inputs(&result, fields[0]).0.0;
         completion_mutation(&result, source, |nodes| {
             let Some(Payload::Expression { bindings, .. }) = &mut nodes[source].payload else {
                 unreachable!()
@@ -10544,5 +11283,216 @@ mod internal_error_location_tests {
         };
         assert_eq!(error.location(), location);
         assert_eq!(error.message(), "元の内部エラー");
+    }
+}
+
+impl Evaluator<'_, '_> {
+    /// 所有だけを既存metadataへ寄せる。Scope/認証/保持時点は変えない。
+    fn reuse_scope_if_exact(&self, scope: &mut Scope) {
+        if !scope.reuse_if_exact(&self.retained_scope) {
+            scope.reuse_if_exact(&self.base);
+        }
+    }
+    /// 検査済み入力と実子からだけ構成し、内部生成をraw再検査へ戻さない。
+    fn prepare_static_source(
+        &mut self,
+        span: (usize, usize),
+        ty: Type,
+    ) -> Result<SourceHandle, Failure> {
+        let mut node =
+            self.environment
+                .ordinary_source_at(self.graph, span, &ty, &self.bindings)?;
+        self.reuse_scope_if_exact(&mut node.scope);
+        let scope = node.scope.clone();
+        let retained = &mut self.retained_scope;
+        let cache = &mut self.sources;
+        let mut result = None;
+        self.graph.push_with_metadata(node, |expression| {
+            retained.merge(&scope);
+            let source = SourceHandle {
+                expression,
+                scope,
+                known_value: None,
+                missing: None,
+                condition_failed: false,
+                condition_pending: false,
+            };
+            cache.insert(span, source.clone());
+            result = Some(source);
+        })?;
+        #[cfg(test)]
+        data::observe_actual(span, self.graph.active, "ordinary_source", 0);
+        result.ok_or_else(|| Failure::Internal(internal!("静的Source commit結果無し")))
+    }
+    fn eval_ordinary(&mut self, id: ExprId) -> Result<Evaluated, Failure> {
+        let law = self.environment.indexes.inputs.law();
+        let span = law.exprs()[id].span;
+        let ty = law
+            .expr_type(id)
+            .ok_or(internal!("通常式の元型無し"))?
+            .clone();
+        let expression = self.prepare_static_source(span, ty.clone())?.expression;
+        let syntax = self.environment.indexes.inputs.law().exprs()[id]
+            .kind
+            .clone();
+        let ids = self
+            .environment
+            .ordinary_children(self.graph, id)?
+            .ok_or_else(|| Failure::Internal(internal!("通常式の対象が変わった")))?;
+        let children = if let ExprKind::Let { name, .. } = &syntax {
+            let rhs = self.eval(ids[0])?;
+            if self
+                .lexical
+                .insert(name.name.clone(), rhs.clone())
+                .is_some()
+            {
+                return Err(Failure::Internal(internal!("let の名前が重複する")));
+            }
+            let body = self.eval(ids[1]);
+            self.lexical.remove(&name.name);
+            vec![rhs, body?]
+        } else {
+            let mut children = Vec::new();
+            for id in ids {
+                children.push(self.eval(id)?);
+            }
+            children
+        };
+        let refs = children
+            .iter()
+            .map(|child| child.evaluation)
+            .collect::<Vec<_>>();
+        let plan = self.environment.ordinary_plan(
+            self.graph,
+            expression,
+            &refs,
+            self.graph.nodes.len(),
+        )?;
+        if plan.legacy {
+            // Only the parent needs the old unknown/domain-condition semantics.
+            // Children above remain the actual already evaluated producers.
+            self.sources.remove(&span);
+            self.source(span, ty.clone())?;
+            let call = matches!(&syntax, ExprKind::Call { .. });
+            let value = match syntax {
+                ExprKind::Binary { op, lhs, .. } => {
+                    let input_ty = self
+                        .environment
+                        .indexes
+                        .inputs
+                        .law()
+                        .expr_type(lhs)
+                        .ok_or(internal!("比較の元型無し"))?
+                        .clone();
+                    let mut children = children.into_iter();
+                    self.binary_from_evaluated(
+                        op,
+                        &input_ty,
+                        span,
+                        ty,
+                        children.next().unwrap(),
+                        children.next().unwrap(),
+                    )
+                }
+                ExprKind::Call { .. } => self.composite_from_evaluated(id, span, ty, children),
+                _ => Err(Failure::Internal(internal!("通常式の予期しないfallback"))),
+            }?;
+            // This branch returns early from eval(), so it owns the same
+            // completed-root registration and post checkpoint as eval_inner.
+            self.completed.insert(id, value.clone());
+            #[cfg(test)]
+            {
+                if call {
+                    data::observe_actual(span, self.graph.active, "call_evaluation_complete", 0);
+                }
+                data::observe_actual(span, self.graph.active, "ordinary_fallback_evaluation", 0);
+            }
+            #[cfg(not(test))]
+            let _ = call;
+            self.tick(Checkpoint::Expression)?;
+            return Ok(value);
+        }
+        self.commit_ordinary_plan(Some(id), span, expression, children, plan)
+    }
+    fn commit_ordinary(
+        &mut self,
+        id: Option<ExprId>,
+        span: (usize, usize),
+        expression: NodeRef,
+        children: Vec<Evaluated>,
+    ) -> Result<Evaluated, Failure> {
+        let refs: Vec<_> = children.iter().map(|child| child.evaluation).collect();
+        let plan = self.environment.ordinary_plan(
+            self.graph,
+            expression,
+            &refs,
+            self.graph.nodes.len(),
+        )?;
+        self.commit_ordinary_plan(id, span, expression, children, plan)
+    }
+    fn commit_ordinary_plan(
+        &mut self,
+        id: Option<ExprId>,
+        span: (usize, usize),
+        expression: NodeRef,
+        children: Vec<Evaluated>,
+        mut plan: super::environment::OrdinaryPlan,
+    ) -> Result<Evaluated, Failure> {
+        self.reuse_scope_if_exact(&mut plan.scope);
+        self.reuse_scope_if_exact(&mut plan.scalar_scope);
+        let refs = children
+            .iter()
+            .map(|child| child.evaluation)
+            .collect::<Vec<_>>();
+        // post停止でも完成済みScalarのScopeだけを保持する。未完成Evalを公開しない。
+        #[cfg(test)]
+        let context = self.graph.active;
+        let value = if let Some(value) = plan.reused {
+            Some(value)
+        } else if let Some(node) = self
+            .environment
+            .ordinary_value_node(expression, &refs, &plan)
+        {
+            let scope = node.scope.clone();
+            let retained = &mut self.retained_scope;
+            Some(self.graph.push_with_metadata(node, |_| {
+                retained.merge(&scope);
+                #[cfg(test)]
+                data::observe_actual(span, context, "ordinary_scalar", 0);
+            })?)
+        } else {
+            None
+        };
+        let node = self
+            .environment
+            .ordinary_evaluation_node(self.graph, expression, &refs, value, &plan)?;
+        let retained = &mut self.retained_scope;
+        let registry = &mut self.reasons;
+        let completed = &mut self.completed;
+        let result = &mut None;
+        self.graph.push_with_metadata(node, |evaluation| {
+            let evaluated = Evaluated {
+                expression,
+                evaluation,
+                value,
+                scope: plan.scope,
+                support: plan.support,
+                reasons: plan.reasons,
+                comparison: plan.comparison,
+                residual: None,
+            };
+            retained.merge(&evaluated.scope);
+            registry.extend(evaluated.reasons.iter().cloned());
+            if let Some(id) = id {
+                completed.insert(id, evaluated.clone());
+            }
+            #[cfg(test)]
+            data::observe_actual(span, context, "ordinary_evaluation", 0);
+            *result = Some(evaluated);
+        })?;
+        self.tick(Checkpoint::Expression)?;
+        result
+            .take()
+            .ok_or_else(|| Failure::Internal(internal!("通常評価のcommit結果がない")))
     }
 }

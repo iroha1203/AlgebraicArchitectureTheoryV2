@@ -23,7 +23,7 @@ pub(crate) struct Data {
     pub bindings: Vec<Binding>,
     pub location: Location,
     pub kind: Kind,
-    pub support: Vec<Fact>,
+    pub support: Support,
     pub scope: Scope,
 }
 impl Data {
@@ -121,7 +121,7 @@ fn original_body(graph: &Graph, origin: NodeRef) -> Result<NodeRef, ValidationFa
 fn expected(
     graph: &Graph,
     d: &Data,
-) -> Result<(frames::Origin, Vec<Fact>, Scope), ValidationFailure> {
+) -> Result<(frames::Origin, Support, Scope), ValidationFailure> {
     let row = frames::origin(graph, d.origin)?.ok_or(internal!("対象外Lawの検査済み元行がない"))?;
     frames::check_architecture(graph, d.architecture, &row)?;
     if !row.outside || row.ready {
@@ -149,15 +149,16 @@ fn expected(
     if d.location != location {
         return Err(internal!("対象外Lawの元body出現が違う").into());
     }
-    let mut support = graph.get(d.origin)?.support.clone();
-    support
-        .make_owned()
-        .extend(graph.get(d.architecture)?.support.clone().into_vec());
-    support.make_owned().sort();
-    support.make_owned().dedup();
+    let support = Support::sum(
+        vec![],
+        [
+            graph.get(d.origin)?.support.clone(),
+            graph.get(d.architecture)?.support.clone(),
+        ],
+    );
     let mut scope = graph.get(d.origin)?.scope.clone();
     scope.merge(&graph.get(d.architecture)?.scope);
-    Ok((row, support.into_vec(), scope))
+    Ok((row, support, scope))
 }
 pub(crate) fn validate_node(
     graph: &Graph,
@@ -174,7 +175,7 @@ pub(crate) fn validate_node(
         || n.rule != Rule::Construction(d.construction())
         || n.arguments != d.arguments()
         || d.support != support
-        || n.support != support
+        || !n.support.same_facts(&support, graph.control())?
         || d.scope != scope
         || n.scope != scope
         || !n.evidence.is_empty()
@@ -312,7 +313,7 @@ impl super::result_kind::ResultKind for Data {
                     .span,
             },
             kind: Kind::Value(Scalar::Bool(true)),
-            support: vec![],
+            support: Support::default(),
             scope: Scope::default(),
         };
         let (_, support, scope) = expected(graph, &data)?;

@@ -26,7 +26,7 @@ fn closed_term_rechecks_body_parameters_hidden_ast_types_support_and_scope() {
     for mode in 0..7 {
         completion_mutation(&r, t, |ns| {
             if mode == 5 {
-                ns[t].support.make_owned().clear();
+                ns[t].support.materialize_mut_for_test().clear();
                 return;
             }
             if mode == 6 {

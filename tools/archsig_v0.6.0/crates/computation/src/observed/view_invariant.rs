@@ -32,7 +32,7 @@ struct Output {
     returns: Type,
     values: Vec<Value>,
     arguments: Vec<NodeRef>,
-    support: Vec<Fact>,
+    support: Support,
     scope: Scope,
     reasons: Vec<Reason>,
 }
@@ -185,12 +185,11 @@ fn compute(
     for r in &arguments {
         tick(c)?;
         let n = g.get(*r)?;
-        support.extend(n.support.iter().cloned());
+        support.push(n.support.clone());
         scope.merge(&n.scope);
         reasons.extend(n.reasons.iter().cloned());
     }
-    support.sort();
-    support.dedup();
+    let support = Support::sum(vec![], support);
     reasons.sort_by_key(|r| r.wire().canonical());
     reasons.dedup();
     Ok(Output {
@@ -230,8 +229,14 @@ impl Data {
         }
         rs
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+    pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.output.support.clone(), self.output.scope.clone())
+    }
+    pub(super) fn metadata(&self, c: &Control) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+        Ok((
+            self.output.support.materialize(c)?,
+            self.output.scope.clone(),
+        ))
     }
     pub(super) fn wire(&self) -> Json {
         if self.axis {
@@ -296,7 +301,7 @@ impl Data {
         Ok(())
     }
     fn node(&self) -> Node {
-        let (support, scope) = self.metadata();
+        let (support, scope) = self.retained_metadata();
         Node {
             ty: self.ty(),
             rule: Rule::Construction(self.construction()),

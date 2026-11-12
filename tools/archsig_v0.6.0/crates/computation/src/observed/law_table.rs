@@ -24,7 +24,7 @@ pub(super) struct Table {
     pub architecture: NodeRef,
     pub indices: Vec<NodeRef>,
     pub objects: Vec<ObjectRow>,
-    pub support: Vec<Fact>,
+    pub support: Support,
     pub scope: Scope,
     pub reasons: Vec<Reason>,
     component_source: NodeRef,
@@ -226,7 +226,7 @@ impl Table {
             return Err(internal!("全Law表の元全添字/順序が違う").into());
         }
         refs(env, g, self.indices.iter().copied(), c)?;
-        let mut support = g.get(self.architecture)?.support.clone().into_vec();
+        let mut support = vec![g.get(self.architecture)?.support.clone()];
         let mut scope = g.get(self.architecture)?.scope.clone();
         let mut reasons = vec![];
         for (object, (actual, diagram)) in self.objects.iter().zip(&ds).enumerate() {
@@ -239,7 +239,7 @@ impl Table {
             g.expect(actual.object, &NodeType::Construction(T::ObjectComponent))?;
             refs(env, g, [actual.object, actual.architecture], c)?;
             for r in [actual.object, actual.architecture] {
-                support.extend(g.get(r)?.support.iter().cloned());
+                support.push(g.get(r)?.support.clone());
                 scope.merge(&g.get(r)?.scope);
             }
             let ts = templates(diagram);
@@ -272,17 +272,17 @@ impl Table {
                     c,
                 )?;
                 for r in [target.reference, actual.evaluations[i], actual.holds[i]] {
-                    support.extend(g.get(r)?.support.iter().cloned());
+                    support.push(g.get(r)?.support.clone());
                     scope.merge(&g.get(r)?.scope);
                 }
                 reasons.extend(g.get(actual.holds[i])?.reasons.iter().cloned());
             }
         }
-        support.sort();
-        support.dedup();
+        let support = Support::sum(vec![], support);
         reasons.sort_by_key(|r| r.wire().canonical());
         reasons.dedup();
-        if self.support != support || self.scope != scope || self.reasons != reasons {
+        if !self.support.same_facts(&support, c)? || self.scope != scope || self.reasons != reasons
+        {
             return Err(internal!("全Law表の支持/Scope/理由が実表と違う").into());
         }
         tick(c)
@@ -313,7 +313,7 @@ pub(super) fn retain(
         return Err(internal!("全Law表の元対象計画数が違う").into());
     }
     let mut rows = vec![];
-    let mut support = g.get(architecture)?.support.clone().into_vec();
+    let mut support = vec![g.get(architecture)?.support.clone()];
     let mut scope = g.get(architecture)?.scope.clone();
     let mut reasons = vec![];
     for (object, d) in ds.iter().enumerate() {
@@ -330,7 +330,7 @@ pub(super) fn retain(
             holds: vec![],
         };
         for r in [row.object, row.architecture] {
-            support.extend(g.get(r)?.support.iter().cloned());
+            support.push(g.get(r)?.support.clone());
             scope.merge(&g.get(r)?.scope);
         }
         for (original, t) in base.iter().zip(ts) {
@@ -377,7 +377,7 @@ pub(super) fn retain(
             row.evaluations.push(e);
             row.holds.push(p);
             for r in [t.reference, e, p] {
-                support.extend(g.get(r)?.support.iter().cloned());
+                support.push(g.get(r)?.support.clone());
                 scope.merge(&g.get(r)?.scope);
             }
             reasons.extend(g.get(p)?.reasons.iter().cloned());
@@ -385,8 +385,7 @@ pub(super) fn retain(
         }
         rows.push(row);
     }
-    support.sort();
-    support.dedup();
+    let support = Support::sum(vec![], support);
     reasons.sort_by_key(|r| r.wire().canonical());
     reasons.dedup();
     let table = Table {

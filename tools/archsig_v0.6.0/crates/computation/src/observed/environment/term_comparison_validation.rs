@@ -78,7 +78,9 @@ impl Environment<'_> {
         node: &Node,
         analysis: &SourceAnalysis,
     ) -> Result<(), ValidationFailure> {
-        if node.support != analysis.support
+        if !node
+            .support
+            .matches_flat(&analysis.support, &self.control)?
             || node.scope != analysis.scope
             || !node.evidence.is_empty()
             || !node.reasons.is_empty()

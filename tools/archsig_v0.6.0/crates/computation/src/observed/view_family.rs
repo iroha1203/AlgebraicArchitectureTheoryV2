@@ -181,7 +181,7 @@ struct Source {
     domains: Vec<NodeRef>,
     product: NodeRef,
     rows: Vec<NodeRef>,
-    support: Vec<Fact>,
+    support: Support,
     scope: Scope,
 }
 #[derive(Clone, Debug)]
@@ -238,8 +238,14 @@ impl Data {
         rs.dedup();
         rs
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
+    pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.source.support.clone(), self.source.scope.clone())
+    }
+    pub(super) fn metadata(&self, c: &Control) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+        Ok((
+            self.source.support.materialize(c)?,
+            self.source.scope.clone(),
+        ))
     }
     pub(super) fn position(&self, at: usize) -> Result<(), ValidationFailure> {
         self.part()?;
@@ -365,11 +371,11 @@ fn build_source(
     let mut parts = vec![];
     let mut domains = vec![];
     let mut axes = vec![];
-    let mut support = g.get(o.expression)?.support.clone().into_vec();
+    let mut support = vec![g.get(o.expression)?.support.clone()];
     let mut scope = g.get(o.architecture)?.scope.clone();
     scope.merge(&g.get(o.component)?.scope);
     for b in &o.bindings {
-        support.extend(g.get(b.value)?.support.iter().cloned());
+        support.push(g.get(b.value)?.support.clone());
         scope.merge(&g.get(b.value)?.scope);
     }
     for p in &ps {
@@ -377,7 +383,7 @@ fn build_source(
         if !p.missing.is_empty() {
             return Err(internal!("有限view域の所属が欠測").into());
         }
-        support.extend(p.support.iter().cloned());
+        support.push(p.support.clone().into());
         scope.merge(&p.scope);
         if symbolic(p) {
             continue;
@@ -523,8 +529,7 @@ fn build_source(
             c,
         )?);
     }
-    support.sort();
-    support.dedup();
+    let support = Support::sum(vec![], support);
     Ok(Source {
         architecture: a,
         origin: o,
@@ -554,7 +559,7 @@ pub(super) fn validate_node(
     if n.ty != d.ty()
         || n.rule != Rule::Construction(d.construction())
         || n.arguments != d.arguments()
-        || n.support != d.source.support
+        || !n.support.same_facts(&d.source.support, g.control())?
         || n.scope != d.source.scope
         || !n.reasons.is_empty()
         || !n.evidence.is_empty()
@@ -646,12 +651,11 @@ fn family_node(g: &Graph, s: &Source, rows: &[NodeRef]) -> Result<Node, Validati
             return Err(internal!("有限view rowの元式/型/Contextが違う").into());
         }
         whole::validate(g, n, r.0)?;
-        support.extend(n.support.iter().cloned());
+        support = Support::sum(vec![], [support, n.support.clone()]);
         scope.merge(&n.scope);
         reasons.extend(n.reasons.iter().cloned());
     }
-    support.sort();
-    support.dedup();
+
     reasons.sort_by_key(|r| r.wire().canonical());
     reasons.dedup();
     let mut arguments = vec![s.origin.expression, s.origin.architecture];

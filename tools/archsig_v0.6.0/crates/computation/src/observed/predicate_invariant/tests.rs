@@ -444,13 +444,18 @@ fn saved_table_self_and_later_references_fail_before_recursive_or_interrupted_va
         (first, 6),
     ] {
         let mut bad = copy_graph(&g, &quiet());
-        let Some(Payload::Construction(v)) = &mut bad.nodes[target.0].payload else {
+        // The original Table now belongs only to the actual first/Whole producer.
+        // Rechecking a later projection must reject tampering through that edge too.
+        let Some(Payload::Construction(v)) = &mut bad.nodes[first.0].payload else {
             panic!()
         };
         let D::PredicateInvariant(d) = &mut v.data else {
             panic!()
         };
-        let s = Arc::make_mut(&mut d.source);
+        let Origin::Whole(source) = &mut d.origin else {
+            panic!("whole producer")
+        };
+        let s = Arc::make_mut(source);
         let t = Arc::make_mut(&mut s.table);
         let r = match mode {
             0 | 3 => target,
@@ -493,4 +498,368 @@ fn saved_table_self_and_later_references_fail_before_recursive_or_interrupted_va
         assert_eq!(g.contexts, before.contexts);
         assert_eq!(g.active, before.active);
     }
+}
+
+#[test]
+fn projection_dependencies_share_one_cold_whole_and_preserve_public_arguments() {
+    use std::{cell::Cell, rc::Rc};
+    let p = prepared(
+        fixture::inputs(
+            false,
+            false,
+            "law required zero(c:Part):c.quantity=0;law optional same(c:Part,d:Part):c.quantity=d.quantity;",
+        ),
+        "root",
+    );
+    let (mut g, t) = table(&p);
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let base = g.nodes.len();
+    let out = retain(&env, &mut g, t, &quiet()).unwrap();
+    assert!(!out.is_empty());
+    let first = NodeRef(base);
+    let count = Rc::new(Cell::new(0));
+    let seen = count.clone();
+    crate::observed::data::observe_iterations(move |_, _, phase, _| {
+        if phase == "predicate_whole_compute" {
+            seen.set(seen.get() + 1);
+        }
+    });
+    let cold = Environment::with_prepared(&p, &quiet()).unwrap();
+    // Start at a projection, not at the Whole: its actual dependency must authenticate it.
+    let last = out.last().unwrap().invariant;
+    cold.recheck_node(&g, g.get(last).unwrap(), last.0).unwrap();
+    for at in base..g.nodes.len() {
+        let n = &g.nodes[at];
+        let d = data(&g, NodeRef(at));
+        if at == base {
+            assert!(matches!(d.origin, Origin::Whole(_)));
+            assert!(n.arguments.iter().all(|reference| reference.0 < base));
+        } else {
+            assert!(
+                matches!(d.origin, Origin::Projection { first: actual, .. } if actual == first)
+            );
+            assert!(n.arguments.contains(&first));
+        }
+        let Json::Obj(ref wire) = n.wire(at, &g.nodes[..at]) else {
+            panic!("node wire")
+        };
+        assert_eq!(wire["arguments"], refs(d.public_arguments()));
+        cold.recheck_node(&g, n, at).unwrap();
+    }
+    crate::observed::data::clear_iteration_observer();
+    assert_eq!(
+        count.get(),
+        1,
+        "all parts must project one independently checked whole"
+    );
+    replay(&p, &g).unwrap();
+}
+
+#[test]
+fn projections_reject_wrong_producer_position_metadata_and_changed_whole() {
+    let p = prepared(
+        fixture::inputs(
+            false,
+            false,
+            "law required zero(c:Part):c.quantity=0;law optional same(c:Part,d:Part):c.quantity=d.quantity;",
+        ),
+        "root",
+    );
+    let (mut g, t) = table(&p);
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let old_base = g.nodes.len();
+    retain(&env, &mut g, t.clone(), &quiet()).unwrap();
+    let base = g.nodes.len();
+    let out = retain(&env, &mut g, t, &quiet()).unwrap();
+    let target = out.last().unwrap().invariant;
+    for mode in 0..6 {
+        let mut bad = copy_graph(&g, &quiet());
+        let mut d = data(&bad, target).clone();
+        match mode {
+            0 | 1 | 2 | 3 => {
+                let Origin::Projection { first, .. } = &mut d.origin else {
+                    panic!("projection")
+                };
+                *first = match mode {
+                    0 => target,
+                    1 => NodeRef(g.nodes.len() + 1),
+                    2 => NodeRef(base + 1),
+                    _ => NodeRef(old_base),
+                };
+                if matches!(mode, 2 | 3) {
+                    // Keep the arithmetic position valid: reject the actual wrong
+                    // producer/extent, not merely an inconsistent base+index.
+                    d.index = target.0 - first.0;
+                }
+            }
+            4 => d.index += 1,
+            5 => d.part.scope.readings.clear(),
+            _ => unreachable!(),
+        }
+        bad.nodes[target.0] = d.node();
+        let cold = Environment::with_prepared(&p, &quiet()).unwrap();
+        assert!(
+            cold.recheck_node(&bad, bad.get(target).unwrap(), target.0)
+                .is_err(),
+            "mode{mode}"
+        );
+    }
+    // A checked projection must lose success after COW changes to its real producer.
+    let warm = Environment::with_prepared(&p, &quiet()).unwrap();
+    let mut bad = copy_graph(&g, &quiet());
+    warm.recheck_node(&bad, bad.get(target).unwrap(), target.0)
+        .unwrap();
+    let mut whole = data(&bad, NodeRef(base)).clone();
+    let Origin::Whole(source) = &mut whole.origin else {
+        panic!("whole")
+    };
+    Arc::make_mut(source)
+        .parts
+        .last_mut()
+        .unwrap()
+        .scope
+        .readings
+        .clear();
+    bad.nodes[base] = whole.node();
+    assert!(
+        warm.recheck_node(&bad, bad.get(target).unwrap(), target.0)
+            .is_err()
+    );
+}
+
+#[test]
+fn projection_architecture_clones_are_values_not_physical_identity_certificates() {
+    let p = prepared(
+        fixture::inputs(false, false, "law required zero(c:Part):c.quantity=0;"),
+        "root",
+    );
+    let (mut g, t) = table(&p);
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let out = retain(&env, &mut g, t, &quiet()).unwrap();
+    let target = out.last().unwrap().invariant;
+    let mut d = data(&g, target).clone();
+    let Origin::Projection { architecture, .. } = &mut d.origin else {
+        panic!("projection")
+    };
+    *architecture = Arc::new(architecture.as_ref().clone());
+    g.nodes[target.0] = d.node();
+    let cold = Environment::with_prepared(&p, &quiet()).unwrap();
+    cold.recheck_node(&g, g.get(target).unwrap(), target.0)
+        .unwrap();
+}
+
+#[test]
+fn interrupted_projection_authentication_keeps_graph_and_retries_whole_cold() {
+    use std::{cell::Cell, rc::Rc};
+    let p = prepared(
+        fixture::inputs(false, false, "law required zero(c:Part):c.quantity=0;"),
+        "root",
+    );
+    let (mut g, t) = table(&p);
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let out = retain(&env, &mut g, t, &quiet()).unwrap();
+    let target = out.last().unwrap().invariant;
+    let before = g.nodes.clone();
+    let armed = Rc::new(Cell::new(false));
+    let observed = armed.clone();
+    crate::observed::data::observe_iterations(move |_, _, phase, _| {
+        if phase == "predicate_whole_compute" {
+            observed.set(true);
+        }
+    });
+    let control = Control::new(move |_| armed.get().then_some(archsig_input::result::Signal::Term));
+    let cold = Environment::with_prepared(&p, &control).unwrap();
+    let result = cold.recheck_node(&g, g.get(target).unwrap(), target.0);
+    crate::observed::data::clear_iteration_observer();
+    assert!(matches!(result, Err(ValidationFailure::Stop(_))));
+    assert_eq!(g.nodes, before);
+    let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
+    fresh
+        .recheck_node(&g, g.get(target).unwrap(), target.0)
+        .unwrap();
+}
+
+fn refactor_predicate_supports(g: &mut Graph, base: usize, flat: bool) {
+    let mut whole = data(g, NodeRef(base)).clone();
+    let Origin::Whole(source) = &mut whole.origin else {
+        panic!("whole")
+    };
+    let source = Arc::make_mut(source);
+    for part in &mut source.parts {
+        part.support = if flat {
+            Support::from(part.support.materialize_for_test())
+        } else {
+            Support::concat([Support::default(), part.support.clone()])
+        };
+    }
+    whole.part = source.parts[0].clone();
+    g.nodes[base] = whole.node();
+    for at in base + 1..g.nodes.len() {
+        let mut projection = data(g, NodeRef(at)).clone();
+        projection.part.support = if flat {
+            Support::from(projection.part.support.materialize_for_test())
+        } else {
+            Support::concat([Support::default(), projection.part.support.clone()])
+        };
+        g.nodes[at] = projection.node();
+    }
+    for at in base..g.nodes.len() {
+        let original = g.nodes[at].support.clone();
+        // Node top support deliberately differs from its own native payload too.
+        g.nodes[at].support = if flat {
+            Support::concat([Support::default(), original])
+        } else {
+            Support::from(original.materialize_for_test())
+        };
+    }
+}
+
+#[test]
+fn cold_and_warm_authenticate_old_flat_and_alternative_native_part_supports() {
+    let p = prepared(
+        fixture::inputs(
+            false,
+            false,
+            "law required zero(c:Part):c.quantity=0;law optional same(c:Part,d:Part):c.quantity=d.quantity;",
+        ),
+        "root",
+    );
+    let (mut g, t) = table(&p);
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let base = g.nodes.len();
+    retain(&env, &mut g, t, &quiet()).unwrap();
+    for flat in [true, false] {
+        let mut changed = copy_graph(&g, &quiet());
+        refactor_predicate_supports(&mut changed, base, flat);
+        let target = NodeRef(changed.nodes.len() - 1);
+        assert!(
+            !data(&changed, target)
+                .part
+                .support
+                .same_recipe(&data(&g, target).part.support)
+        );
+        assert!(
+            !changed.nodes[target.0]
+                .support
+                .same_recipe(&data(&changed, target).part.support)
+        );
+        let cold = Environment::with_prepared(&p, &quiet()).unwrap();
+        for _ in 0..2 {
+            for at in base..changed.nodes.len() {
+                cold.recheck_node(&changed, &changed.nodes[at], at).unwrap();
+                assert_eq!(
+                    changed.nodes[at].wire(at, &changed.nodes[..at]),
+                    g.nodes[at].wire(at, &g.nodes[..at])
+                );
+            }
+        }
+        replay(&p, &changed).unwrap();
+    }
+}
+
+#[test]
+fn equivalent_support_does_not_hide_coordinated_fact_or_value_forgery() {
+    let p = prepared(
+        fixture::inputs(
+            false,
+            false,
+            "law required zero(c:Part):c.quantity=0;law optional same(c:Part,d:Part):c.quantity=d.quantity;",
+        ),
+        "root",
+    );
+    let (mut g, t) = table(&p);
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let base = g.nodes.len();
+    let out = retain(&env, &mut g, t, &quiet()).unwrap();
+    for (wrong_fact, wrong_value) in [(true, false), (false, true), (true, true)] {
+        let mut bad = copy_graph(&g, &quiet());
+        refactor_predicate_supports(&mut bad, base, true);
+        let mut whole = data(&bad, NodeRef(base)).clone();
+        let Origin::Whole(source) = &mut whole.origin else {
+            panic!("whole")
+        };
+        let source = Arc::make_mut(source);
+        let index = if wrong_value {
+            source
+                .parts
+                .iter()
+                .position(|part| {
+                    matches!(&part.wire,
+                Json::Obj(wire) if wire.contains_key("value"))
+                })
+                .unwrap()
+        } else {
+            out.last().unwrap().invariant.0 - base
+        };
+        if wrong_value {
+            let Json::Obj(wire) = &mut source.parts[index].wire else {
+                panic!("value")
+            };
+            let original = reference(&wire["value"]);
+            let original = g.boolean(Some(original)).unwrap().unwrap();
+            let opposite = g.nodes[..base].iter().position(|node|
+                matches!(node.payload, Some(Payload::Scalar(Scalar::Bool(value))) if value != original)
+            ).map(NodeRef).unwrap();
+            wire.insert("value".into(), opposite.wire());
+            source.parts[index].arguments.push(opposite);
+            source.parts[index].arguments.sort_by_key(|r| r.0);
+            source.parts[index].arguments.dedup();
+        }
+        if wrong_fact {
+            let mut facts = source.parts[index].support.materialize_for_test();
+            facts.push(Fact::from(archsig_input::archmap::FactData {
+                snapshot: "v".into(),
+                subject: "forged".into(),
+                field: None,
+                atom: None,
+            }));
+            source.parts[index].support = Support::from(facts);
+        }
+        source.arguments =
+            whole_arguments(&source.table, &source.parts, source.base, &quiet()).unwrap();
+        let local = source.parts[index].clone();
+        whole.part = source.parts[0].clone();
+        bad.nodes[base] = whole.node();
+        let target = NodeRef(base + index);
+        if index != 0 {
+            let mut projection = data(&bad, target).clone();
+            projection.part = local;
+            bad.nodes[target.0] = projection.node();
+        }
+        let cold = Environment::with_prepared(&p, &quiet()).unwrap();
+        assert!(
+            matches!(
+                cold.recheck_node(&bad, bad.get(target).unwrap(), target.0),
+                Err(ValidationFailure::Internal(_))
+            ),
+            "wrong_fact={wrong_fact}/wrong_value={wrong_value}"
+        );
+    }
+}
+
+#[test]
+fn native_part_semantic_support_comparison_obeys_control_without_changing_graph() {
+    let p = prepared(
+        fixture::inputs(false, false, "law required zero(c:Part):c.quantity=0;"),
+        "root",
+    );
+    let (mut g, t) = table(&p);
+    let env = Environment::with_prepared(&p, &quiet()).unwrap();
+    let out = retain(&env, &mut g, t, &quiet()).unwrap();
+    let target = out.last().unwrap().invariant;
+    let original = data(&g, target).part.clone();
+    let mut alternate = original.clone();
+    alternate.support = Support::concat([Support::default(), original.support.clone()]);
+    assert!(!alternate.support.same_recipe(&original.support));
+    let control = Control::new(|_| Some(archsig_input::result::Signal::Term));
+    let before = g.nodes.clone();
+    assert!(matches!(
+        alternate.matches_with_support(&original, &control),
+        Err(ValidationFailure::Stop(_))
+    ));
+    assert_eq!(g.nodes, before);
+    let fresh = Environment::with_prepared(&p, &quiet()).unwrap();
+    fresh
+        .recheck_node(&g, g.get(target).unwrap(), target.0)
+        .unwrap();
 }

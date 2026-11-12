@@ -485,7 +485,8 @@ fn tuple_integer_rational_components_keep_distinct_factors_and_original_field_sl
         g.get(r)
             .unwrap()
             .support
-            .iter()
+            .materialize_for_test()
+            .into_iter()
             .any(|f| f.subject == "r2" && f.field.as_deref() == Some("Family.Root.amount"))
     );
     assert_eq!(
@@ -510,10 +511,20 @@ fn family_recheck_rejects_equal_architecture_clones_and_altered_requests_or_cont
     let env = Environment::with_prepared(&p, &quiet()).unwrap();
     let r = retain(&env, &mut g, l.clone(), &quiet()).unwrap().unwrap();
     let n = g.get(r).unwrap();
-    assert!(!l.data.support.is_empty());
+    assert!(
+        !l.data
+            .support
+            .is_empty(&archsig_common::control::Control::unlimited())
+            .unwrap()
+    );
     let mut changed_support = n.clone();
-    changed_support.support.make_owned().clear();
-    assert!(!l.data.support.is_empty());
+    changed_support.support.materialize_mut_for_test().clear();
+    assert!(
+        !l.data
+            .support
+            .is_empty(&archsig_common::control::Control::unlimited())
+            .unwrap()
+    );
     assert!(env.recheck_node(&g, &changed_support, r.0).is_err());
     assert_ne!(l.data.scope, Scope::default());
     let mut changed_scope = n.clone();

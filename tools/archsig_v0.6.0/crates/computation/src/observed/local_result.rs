@@ -102,8 +102,12 @@ impl Data {
     pub(super) fn retained_metadata(&self) -> (Support, Scope) {
         (self.part().support.clone(), self.part().scope.clone())
     }
-    pub(super) fn metadata(&self) -> (Vec<Fact>, Scope) {
-        (self.part().support.to_vec(), self.part().scope.clone())
+    pub(super) fn metadata(
+        &self,
+        control: &Control,
+    ) -> Result<(Vec<Fact>, Scope), ValidationFailure> {
+        let (support, scope) = self.retained_metadata();
+        Ok((support.materialize(control)?, scope))
     }
     pub(super) fn projection_type(&self) -> Option<ProjectionType> {
         match self.ty() {

@@ -29,17 +29,16 @@ impl Evaluator<'_, '_> {
     ) -> Result<Evaluated, Failure> {
         let mut scope = source.scope.clone();
         scope.merge(&checks.scope);
-        let mut support = checks.support.clone();
+        let mut support = vec![Support::from(checks.support.clone())];
         let edges: Vec<_> = std::iter::once(source.expression)
             .chain(children.iter().map(|c| c.evaluation))
             .collect();
         for child in &children {
             self.tick(Checkpoint::FiniteIteration)?;
             scope.merge(&child.scope);
-            support.extend(child.support.iter().cloned());
+            support.push(child.support.clone());
         }
-        support.sort();
-        support.dedup();
+        let support = Support::sum(vec![], support);
         let mut reasons = checks
             .missing
             .iter()
@@ -76,7 +75,7 @@ impl Evaluator<'_, '_> {
                     bindings: self.bindings.clone(),
                     left,
                     right,
-                    facts: support.clone(),
+                    facts: support.materialize(self.control)?,
                 }),
                 rule: Rule::Construction("evidence"),
                 arguments: edges.iter().copied().chain([left, right]).collect(),

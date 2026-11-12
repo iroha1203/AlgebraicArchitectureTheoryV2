@@ -4,7 +4,7 @@ use super::{
     request::{QuestionKind, Request, Selector},
     result::{
         Answer, Decision, Fact, Graph, Node, NodeRef, NodeType, Payload, ReasonKind, Rule, Scope,
-        ValidationFailure, sort_reasons,
+        Support, ValidationFailure, sort_reasons,
     },
 };
 use archsig_common::control::{Checkpoint, Control};
@@ -110,7 +110,7 @@ fn expected(
     let mut requirements: BTreeMap<Fact, Requirement> = BTreeMap::new();
     let mut blockers = Vec::new();
     let mut scope = Scope::default();
-    let mut support = BTreeSet::new();
+    let mut support = Vec::new();
     let mut arguments = BTreeSet::new();
     let mut pending = Vec::new();
     let sources = sources(graph, request, control)?;
@@ -162,7 +162,7 @@ fn expected(
                 return Err(internal!("ObservationPlanの元回答が既出でない").into());
             }
             let node = graph.get(*reference)?;
-            support.extend(node.support.iter().cloned());
+            support.push(node.support.clone());
             arguments.insert(reference.0);
         }
         if answer.status == Decision::Undetermined {
@@ -210,7 +210,7 @@ fn expected(
             }
             let node = graph.get(*reference)?;
             arguments.insert(reference.0);
-            support.extend(node.support.iter().cloned());
+            support.push(node.support.clone());
             pending.extend(node.reasons.iter().cloned());
         }
     }
@@ -235,7 +235,7 @@ fn expected(
         }),
         rule: Rule::Construction("observation_plan"),
         arguments: arguments.into_iter().map(NodeRef).collect(),
-        support: support.into_iter().collect::<Vec<_>>().into(),
+        support: Support::sum(vec![], support),
         evidence: vec![],
         judgment: None,
         scope,
@@ -264,7 +264,7 @@ pub(super) fn validate_node(
 ) -> Result<(), ValidationFailure> {
     let request = producer(graph, limit)?;
     let original = expected(graph, request, limit, control)?;
-    if node != &original {
+    if !node.matches_with_support(&original, control)? {
         return Err(
             internal!("ObservationPlanのslot・依存・位置・理由・由来が元回答と違う").into(),
         );
@@ -412,7 +412,7 @@ mod tests {
                 "scope" => {
                     changed.scope.readings.insert("Forged".into());
                 }
-                "support" => changed.support.make_owned().push(Fact::from(
+                "support" => changed.support.materialize_mut_for_test().push(Fact::from(
                     archsig_input::archmap::FactData {
                         snapshot: "v".into(),
                         subject: "forged".into(),

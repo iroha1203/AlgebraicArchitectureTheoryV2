@@ -867,9 +867,7 @@ pub(super) fn retain(
             check.status,
         )?;
         let part = &mut b.parts[commutes.0 - b.base];
-        part.support = check.support.into();
-        part.support.make_owned().sort();
-        part.support.make_owned().dedup();
+        part.support = Support::sum(check.support, []);
         part.scope.merge(&check.scope);
         part.scope.assignments = true;
         let quantifiers = params[0]

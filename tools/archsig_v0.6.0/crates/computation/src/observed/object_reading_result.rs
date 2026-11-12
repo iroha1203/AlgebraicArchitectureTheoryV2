@@ -32,7 +32,7 @@ pub(super) fn source(g: &Graph, n: &Node) -> Result<Option<NodeRef>, ValidationF
 }
 struct Plan {
     origin: ViewOrigin,
-    support: Vec<Fact>,
+    support: Support,
     scope: Scope,
     reasons: Vec<Reason>,
     body: Option<NodeRef>,
@@ -146,7 +146,7 @@ fn plan(
     {
         g.tick()?;
         let n = g.get(r)?;
-        support.extend(n.support.iter().cloned());
+        support.push(n.support.clone());
         scope.merge(&n.scope);
         reasons.extend(n.reasons.iter().cloned());
     }
@@ -225,7 +225,7 @@ fn plan(
             if actual != &location {
                 return Err(internal!("view bodyの原式出現が違う").into());
             }
-            support.extend(n.support.iter().cloned());
+            support.push(n.support.clone());
             scope.merge(&n.scope);
             reasons.extend(n.reasons.iter().cloned());
             body_value = *value;
@@ -248,8 +248,7 @@ fn plan(
             (wrapped, "applicable")
         }
     };
-    support.sort();
-    support.dedup();
+    let support = Support::sum(vec![], support);
     reasons.dedup();
     // 全引数の関数を、一つのOption値として公開しない。
     let value = if o.parameters.is_empty() { value } else { None };

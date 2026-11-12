@@ -2528,7 +2528,7 @@ impl Environment<'_> {
             node,
             NodeType::LawInstance,
             &whole.scope,
-            &whole.support,
+            &whole.support.materialize(&self.control)?,
             &[],
             "law_instance",
         )?;
@@ -3175,6 +3175,10 @@ impl Environment<'_> {
         reference: NodeRef,
     ) -> Result<bool, ValidationFailure> {
         let node = graph.get(reference)?;
+        // 通常の静的元出現は、同じ構文でもnative templateのproducerではない。
+        if matches!(node.rule, Rule::OrdinarySource(_)) {
+            return Ok(false);
+        }
         // 有限Law族のroot Sourceは、消費側が実instanceでも同じ族に属する。
         if self.family_source_root(graph, reference)?
             || self.finite_family_skipped_source_ref(graph, reference)?
@@ -3408,7 +3412,7 @@ impl Environment<'_> {
         self.tick()?;
         if node.ty != ty
             || node.scope != *scope
-            || *node.support != support
+            || !node.support.matches_flat(support, &self.control)?
             || !reasons_equal(&node.reasons, reasons)
             || !matches!(node.rule,Rule::Construction(actual) if actual==rule)
             || node.judgment.is_some()
@@ -3429,7 +3433,7 @@ impl Environment<'_> {
         self.tick()?;
         if node.ty != ty
             || node.scope != *scope
-            || *node.support != support
+            || !node.support.matches_flat(support, &self.control)?
             || !node.reasons.is_empty()
             || !node.evidence.is_empty()
             || node.judgment.is_some()
@@ -3550,11 +3554,67 @@ impl Environment<'_> {
             .scoped(Some(graph.context_at(evaluation.0)));
         let result = (|| {
             let span = self.expression_span(graph, source)?;
+            if matches!(graph.get(source)?.rule, Rule::OrdinarySource(_))
+                && self
+                    .indexes
+                    .inputs
+                    .law()
+                    .program()
+                    .expressions
+                    .get(&span)
+                    .map(|id| self.ordinary_in_domain(*id))
+                    .transpose()?
+                    .unwrap_or(false)
+            {
+                let node = graph.get(evaluation)?;
+                let Some(Payload::Evaluation {
+                    expression, parts, ..
+                }) = &node.payload
+                else {
+                    return Err(internal!("In sourceの実Evaluation無し").into());
+                };
+                if *expression != source || parts.len() != 1 {
+                    return Err(internal!("In sourceの実Evaluation出現/part不一致").into());
+                }
+                return self
+                    .quant_parts(graph, source, &parts[0].children, &node.scope, evaluation.0)
+                    .map(|(analysis, _)| analysis);
+            }
             if let Some(template) = self.universal_source_root(graph, source)? {
                 let (_, fixed) = self.universal_source_fields(graph, template)?;
                 let plan = self.universal_plan_at(graph, template, fixed)?;
-                let domains =
-                    self.universal_domains_from(graph, graph.get(source)?, template, &plan)?;
+                let domains = if source == template {
+                    // root template自身は自己参照を持たない。実whole Evaluationの
+                    // 明示Domain辺を使い、派生Source用の引数schemaと区別する。
+                    let evaluated = graph.get(evaluation)?;
+                    if evaluated.rule != Rule::Construction("evaluation")
+                        || evaluated.arguments.first() != Some(&template)
+                    {
+                        return Err(internal!("全域rootの実Evaluationが元templateと違う").into());
+                    }
+                    let mut domains = Vec::new();
+                    for &reference in &evaluated.arguments[1..] {
+                        self.tick()?;
+                        if !matches!(
+                            graph.get(reference)?.payload,
+                            Some(Payload::TypeDomain { .. })
+                        ) {
+                            break;
+                        }
+                        if reference.0 >= evaluation.0 {
+                            return Err(internal!("全域rootのDomainが未出").into());
+                        }
+                        domains.push(reference);
+                        self.tick()?;
+                    }
+                    self.universal_check_domains(graph, template, &domains, &plan)?;
+                    for &domain in &domains {
+                        self.validate_at(graph, graph.get(domain)?, domain.0)?;
+                    }
+                    domains
+                } else {
+                    self.universal_domains_from(graph, graph.get(source)?, template, &plan)?
+                };
                 Ok(self
                     .universal_source_analysis(graph, span, bindings, &plan, &domains, template)?
                     .analysis)
